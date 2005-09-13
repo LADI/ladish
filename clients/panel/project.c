@@ -118,6 +118,26 @@ project_create(lash_client_t* lash_client, const char* const name)
 	project->tab_label = gtk_label_new("Unnamed project");
 	gtk_widget_show(project->tab_label);
 
+	/* Clients header */
+	project->clients_label = gtk_label_new("<span weight=\"bold\">Clients</span>");
+	gtk_widget_show(project->clients_label);
+	gtk_misc_set_alignment(GTK_MISC(project->clients_label), 0.0, 0.5);
+	gtk_label_set_use_markup(GTK_LABEL(project->clients_label), TRUE);
+	gtk_box_pack_start(GTK_BOX(project->box), project->clients_label, FALSE, FALSE, 0);
+	
+	project->clients_align_box = gtk_hbox_new(FALSE, 2);
+	gtk_widget_show(project->clients_align_box);
+	project->clients_align_label = gtk_label_new("    ");
+	gtk_widget_show(project->clients_align_label);
+	gtk_box_pack_start(GTK_BOX(project->clients_align_box), project->clients_align_label, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(project->box), project->clients_align_box, TRUE, TRUE, 0);
+
+	project->clients_list_scroll = gtk_scrolled_window_new(NULL, NULL);
+	gtk_widget_show(project->clients_list_scroll);
+	gtk_box_pack_start(GTK_BOX(project->clients_align_box), project->clients_list_scroll, TRUE, TRUE, 0);
+	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(project->clients_list_scroll),
+	                                GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+	
 	/* Properties header */
 	project->properties_label = gtk_label_new("<span weight=\"bold\">Properties</span>");
 	gtk_widget_show(project->properties_label);
@@ -170,8 +190,9 @@ project_create(lash_client_t* lash_client, const char* const name)
 	/* Buttons */
 	project->clients_button_box = gtk_hbutton_box_new();
 	gtk_widget_show(project->clients_button_box);
-	gtk_button_box_set_layout(GTK_BUTTON_BOX(project->clients_button_box), GTK_BUTTONBOX_SPREAD);
-	gtk_box_pack_start(GTK_BOX(project->box), project->clients_button_box, FALSE, TRUE, 0);
+	gtk_button_box_set_layout(GTK_BUTTON_BOX(project->clients_button_box), GTK_BUTTONBOX_END);
+	gtk_button_box_set_spacing(GTK_BUTTON_BOX(project->clients_button_box), 4);
+	gtk_box_pack_start(GTK_BOX(project->box), project->clients_button_box, FALSE, TRUE, 4);
 
 	/* Close button */
 	project->close_button = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
@@ -185,25 +206,7 @@ project_create(lash_client_t* lash_client, const char* const name)
 	g_signal_connect(G_OBJECT(project->save_button), "clicked", G_CALLBACK(save_cb), project);
 	gtk_box_pack_start(GTK_BOX(project->clients_button_box), project->save_button, FALSE, TRUE, 6);
 	
-	/* Clients header */
-	project->clients_label = gtk_label_new("<span weight=\"bold\">Clients</span>");
-	gtk_widget_show(project->clients_label);
-	gtk_misc_set_alignment(GTK_MISC(project->clients_label), 0.0, 0.5);
-	gtk_label_set_use_markup(GTK_LABEL(project->clients_label), TRUE);
-	gtk_box_pack_start(GTK_BOX(project->box), project->clients_label, FALSE, FALSE, 0);
 	
-	project->clients_align_box = gtk_hbox_new(FALSE, 2);
-	gtk_widget_show(project->clients_align_box);
-	project->clients_align_label = gtk_label_new("    ");
-	gtk_widget_show(project->clients_align_label);
-	gtk_box_pack_start(GTK_BOX(project->clients_align_box), project->clients_align_label, FALSE, FALSE, 0);
-	gtk_box_pack_start(GTK_BOX(project->box), project->clients_align_box, TRUE, TRUE, 0);
-
-	project->clients_list_scroll = gtk_scrolled_window_new(NULL, NULL);
-	gtk_widget_show(project->clients_list_scroll);
-	gtk_box_pack_start(GTK_BOX(project->clients_align_box), project->clients_list_scroll, TRUE, TRUE, 0);
-	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(project->clients_list_scroll),
-	                                GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
 	/* Client list */
 	project->clients = gtk_list_store_new(CLIENT_NUM_COLUMNS, G_TYPE_STRING, G_TYPE_STRING);
