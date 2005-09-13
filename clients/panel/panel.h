@@ -27,7 +27,6 @@ typedef struct _panel panel_t;
 
 enum
 {
-    PROJECT_NAME_COLUMN,
 	PROJECT_PROJECT_COLUMN,
     PROJECT_NUM_COLUMNS
 };
@@ -35,21 +34,16 @@ enum
 
 struct _panel
 {
-	lash_client_t *  lash_client;
+	lash_client_t* lash_client;
 
-	GtkListStore *  projects;
-	GtkTextBuffer * file_data;
-
-	GtkWidget *     window;
-	GtkWidget *     status_bar;
-	GtkWidget *     project_notebook;
-	/*GtkWidget *     project_editor;
-	GtkWidget *     project_editor_name;
-	GtkWidget *     project_editor_dir;*/
+	GtkListStore* projects;
+	
+	GtkWidget* window;
+	GtkWidget* status_bar;
+	GtkWidget* project_notebook;
 };
 
-extern const char * filename;
-panel_t * panel_create (lash_client_t * client);
+panel_t* panel_create (lash_client_t * client);
 
 
 

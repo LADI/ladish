@@ -46,10 +46,10 @@ struct _project {
 	GtkWidget* tab_label;
 	
 	GtkWidget*         properties_label;
-	GtkWidget*         name_box;
+	GtkWidget*         properties_table;
 	GtkWidget*         name_label;
 	GtkWidget*         name_entry;
-	GtkWidget*         dir_box;
+	GtkWidget*         set_name_button;
 	GtkWidget*         dir_label;
 	GtkWidget*         dir_entry;
 	GtkWidget*         set_dir_button;
@@ -61,7 +61,6 @@ struct _project {
 	GtkCellRenderer*   clients_renderer;
 	GtkTreeViewColumn* name_column;
 	GtkTreeViewColumn* id_column;
-	GtkWidget*         buttons_separator;
 	GtkWidget*         clients_button_box;
 	GtkWidget*         save_button;
 	GtkWidget*         close_button;

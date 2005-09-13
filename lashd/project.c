@@ -437,16 +437,17 @@ project_move(project_t * project, const char *new_dir)
 	if (strcmp(new_dir, project->directory) == 0)
 		return;
 
-	/* check to be sure directory does not already exist (etc) */
+	/* Check to be sure directory is acceptable
+	 * FIXME: thorough enough error checking? */
 	DIR* dir = opendir(new_dir);
 	if (dir != NULL) {
-		fprintf(stderr, "Can not move project directory to %s - directory exists\n", new_dir);
+		fprintf(stderr, "Warning: directory %s exists, files may be overwritten.\n", new_dir);
 		closedir(dir);
-		return;
-	} else if (errno == ENOTDIR) {
-		/* FIXME: thorough enough error checking? */
+	} else if (dir == NULL && errno == ENOTDIR) {
 		fprintf(stderr, "Can not move project directory to %s - exists but is not a directory\n", new_dir);
 		return;
+	} else if (dir == NULL && errno == ENOENT) {
+		printf("Directory %s does not exist, and will be created.\n", new_dir);
 	}
 	
 	/* close all the clients' stores */

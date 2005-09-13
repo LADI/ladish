@@ -45,7 +45,7 @@ close_cb(GtkButton * button, void * data)
 	lash_event_set_project(event, project->name);
 	lash_send_event(project->lash_client, event);
 
-	printf ("Told server to close project %s\n", project->name);
+	printf("Told server to close project %s\n", project->name);
 }
 
 
@@ -72,10 +72,30 @@ set_dir_cb(GtkButton * button, void* data)
 		lash_event_set_project(event, project->name);
 		lash_event_set_string(event, filename);
 		lash_send_event(project->lash_client, event);
+		
+		printf("Told server to set project directory %s\n", filename);
 	}
 
 	gtk_widget_destroy(open_dialog);
 }
+
+
+void
+set_name_cb(GtkEntry* entry, void* data)
+{
+	project_t*    project  = (project_t*)data;
+	lash_event_t* event    = NULL;
+	const char*   new_name = gtk_entry_get_text(GTK_ENTRY(project->name_entry));
+	
+
+	printf("Name changed: %s\n", new_name);
+		
+	event = lash_event_new_with_type(LASH_Project_Name);
+	lash_event_set_project(event, project->name);
+	lash_event_set_string(event, new_name);
+	lash_send_event(project->lash_client, event);
+}
+
 
 
 /* Project */
@@ -104,39 +124,66 @@ project_create(lash_client_t* lash_client, const char* const name)
 	gtk_misc_set_alignment(GTK_MISC(project->properties_label), 0.0, 0.5);
 	gtk_label_set_use_markup(GTK_LABEL(project->properties_label), TRUE);
 	gtk_box_pack_start(GTK_BOX(project->box), project->properties_label, FALSE, FALSE, 0);
-	
+
+	/* Properties table */
+	project->properties_table = gtk_table_new(2, 3, FALSE);
+	gtk_widget_show(project->properties_table);
+	gtk_box_pack_start(GTK_BOX(project->box), project->properties_table, FALSE, TRUE, 0);
+
 	/* Name label */
-	project->name_box = gtk_hbox_new(FALSE, 3);
-	gtk_widget_show(project->name_box);
-	gtk_box_pack_start(GTK_BOX(project->box), project->name_box, FALSE, TRUE, 0);
-	
 	project->name_label = gtk_label_new("    Name: ");
 	gtk_widget_show(project->name_label);
-	gtk_box_pack_start(GTK_BOX(project->name_box), project->name_label, FALSE, FALSE, 0);
+	gtk_table_attach(GTK_TABLE(project->properties_table), project->name_label, 0, 1, 0, 1,
+		0, 0, 2, 2);
 
 	project->name_entry = gtk_entry_new();
-	gtk_entry_set_editable(GTK_ENTRY(project->name_entry), FALSE);
+	gtk_entry_set_editable(GTK_ENTRY(project->name_entry), TRUE);
 	gtk_widget_show(project->name_entry);
-	gtk_box_pack_start(GTK_BOX(project->name_box), project->name_entry, TRUE, TRUE, 0);
+	g_signal_connect(G_OBJECT(project->name_entry), "activate", G_CALLBACK(set_name_cb), project);
+	gtk_table_attach(GTK_TABLE(project->properties_table), project->name_entry, 1, 2, 0, 1,
+		GTK_EXPAND|GTK_FILL, 0, 2, 2);
+	
+	project->set_name_button = gtk_button_new_with_label("Apply");
+	gtk_widget_show(project->set_name_button);
+	g_signal_connect(G_OBJECT(project->set_name_button), "clicked", G_CALLBACK(set_name_cb), project);
+	gtk_table_attach(GTK_TABLE(project->properties_table), project->set_name_button, 2, 3, 0, 1,
+		GTK_FILL, GTK_FILL, 2, 2);
 	
 	/* Directory label */
-	project->dir_box = gtk_hbox_new(FALSE, 3);
-	gtk_widget_show(project->dir_box);
-	gtk_box_pack_start(GTK_BOX(project->box), project->dir_box, FALSE, TRUE, 0);
-	
 	project->dir_label = gtk_label_new("    Directory: ");
 	gtk_widget_show(project->dir_label);
-	gtk_box_pack_start(GTK_BOX(project->dir_box), project->dir_label, FALSE, FALSE, 0);
+	gtk_table_attach(GTK_TABLE(project->properties_table), project->dir_label, 0, 1, 1, 2,
+		0, 0, 2, 2);
 
 	project->dir_entry = gtk_entry_new();
 	gtk_entry_set_editable(GTK_ENTRY(project->dir_entry), FALSE);
 	gtk_widget_show(project->dir_entry);
-	gtk_box_pack_start(GTK_BOX(project->dir_box), project->dir_entry, TRUE, TRUE, 0);
+	gtk_table_attach(GTK_TABLE(project->properties_table), project->dir_entry, 1, 2, 1, 2,
+		GTK_EXPAND|GTK_FILL, 0, 2, 2);
 	
-	project->set_dir_button = gtk_button_new_with_label("Select...");
+	project->set_dir_button = gtk_button_new_with_label("Browse...");
 	gtk_widget_show(project->set_dir_button);
 	g_signal_connect(G_OBJECT(project->set_dir_button), "clicked", G_CALLBACK(set_dir_cb), project);
-	gtk_box_pack_start(GTK_BOX(project->dir_box), project->set_dir_button, FALSE, TRUE, 6);
+	gtk_table_attach(GTK_TABLE(project->properties_table), project->set_dir_button, 2, 3, 1, 2,
+		GTK_FILL, GTK_FILL, 2, 2);
+	
+	/* Buttons */
+	project->clients_button_box = gtk_hbutton_box_new();
+	gtk_widget_show(project->clients_button_box);
+	gtk_button_box_set_layout(GTK_BUTTON_BOX(project->clients_button_box), GTK_BUTTONBOX_SPREAD);
+	gtk_box_pack_start(GTK_BOX(project->box), project->clients_button_box, FALSE, TRUE, 0);
+
+	/* Close button */
+	project->close_button = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
+	gtk_widget_show(project->close_button);
+	g_signal_connect(G_OBJECT(project->close_button), "clicked", G_CALLBACK(close_cb), project);
+	gtk_box_pack_start(GTK_BOX(project->clients_button_box), project->close_button, FALSE, TRUE, 6);
+	
+	/* Save button */
+	project->save_button = gtk_button_new_from_stock(GTK_STOCK_SAVE);
+	gtk_widget_show(project->save_button);
+	g_signal_connect(G_OBJECT(project->save_button), "clicked", G_CALLBACK(save_cb), project);
+	gtk_box_pack_start(GTK_BOX(project->clients_button_box), project->save_button, FALSE, TRUE, 6);
 	
 	/* Clients header */
 	project->clients_label = gtk_label_new("<span weight=\"bold\">Clients</span>");
@@ -175,31 +222,6 @@ project_create(lash_client_t* lash_client, const char* const name)
 	project->id_column = gtk_tree_view_column_new_with_attributes("ID", project->clients_renderer,
 		"text", CLIENT_ID_COLUMN, NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(project->clients_list), project->id_column);
-	
-	/* Separator */
-	project->buttons_separator = gtk_hseparator_new();
-	gtk_widget_show(project->buttons_separator);
-	gtk_box_pack_start(GTK_BOX(project->box), project->buttons_separator, FALSE, TRUE, 6);
-	
-	/* Buttons */
-	project->clients_button_box = gtk_hbutton_box_new();
-	gtk_widget_show(project->clients_button_box);
-	gtk_button_box_set_layout(GTK_BUTTON_BOX(project->clients_button_box), GTK_BUTTONBOX_SPREAD);
-	gtk_box_pack_start(GTK_BOX(project->box), project->clients_button_box, FALSE, TRUE, 0);
-
-	/* Close button */
-	project->close_button = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
-	gtk_widget_show(project->close_button);
-	g_signal_connect(G_OBJECT(project->close_button), "clicked", G_CALLBACK(close_cb), project);
-	gtk_box_pack_start(GTK_BOX(project->clients_button_box), project->close_button, FALSE, TRUE, 6);
-	
-	/* Save button */
-	project->save_button = gtk_button_new_from_stock(GTK_STOCK_SAVE);
-	gtk_widget_show(project->save_button);
-	g_signal_connect(G_OBJECT(project->save_button), "clicked", G_CALLBACK(save_cb), project);
-	gtk_box_pack_start(GTK_BOX(project->clients_button_box), project->save_button, FALSE, TRUE, 6);
-	
-
 	
 	/* Set name (field and tab label) */
 	project_set_name(project, name);
@@ -240,10 +262,10 @@ project_set_name(project_t* project, const char* const name)
 {
 	assert(project != NULL);
 	free(project->name);
-	project->name = malloc(sizeof(char) * (strlen(name)+1));
+	project->name = calloc(strlen(name)+1, sizeof(char));
 	strncpy(project->name, name, strlen(name)+1);
-	gtk_label_set_text(GTK_LABEL(project->tab_label), name);
-	gtk_entry_set_text(GTK_ENTRY(project->name_entry), name);
+	gtk_label_set_text(GTK_LABEL(project->tab_label), project->name);
+	gtk_entry_set_text(GTK_ENTRY(project->name_entry), project->name);
 }
 
 
@@ -252,8 +274,8 @@ project_set_dir(project_t* project, const char* const dir)
 {
 	assert(project != NULL);
 	free(project->dir);
-	project->dir = malloc(sizeof(char) * (strlen(dir)+1));
+	project->dir = calloc(strlen(dir)+1, sizeof(char));
 	strncpy(project->dir, dir, strlen(dir)+1);
-	gtk_entry_set_text(GTK_ENTRY(project->dir_entry), dir);
+	gtk_entry_set_text(GTK_ENTRY(project->dir_entry), project->dir);
 }
 
