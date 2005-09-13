@@ -1,0 +1,18 @@
+* Clean up memory better
+* A decent logging system with verbosity levels
+* Lose projects?
+* preset saving/loading, similar to configs?
+* use AAF format for project's files?
+* save midi instrument setups with sysex?
+* use OSC for comms?
+
+in 0.4:
+* Clean up the messy client/conn structures in liblash
+* use client name dirs in save/restore events
+* xml project description files
+* use IPv6 rather than IPv4
+* Ensure project directories stay clean
+
+in 0.2:
+* Make stores safer
+* Protocol versioning

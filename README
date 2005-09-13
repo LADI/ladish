@@ -1,0 +1,26 @@
+LASH Audio Session Handler
+
+This is a daemon, a client library and a some clients that implement a session
+management system for audio applications on GNU/Linux.
+
+To get an idea of what it can do, I suggest doing this:
+
+$ ./configure
+$ make
+# make install
+$ lashd
+
+then, in different consoles, run lash_gtk_client and lash_synth.  Make
+some jack and aseq connections to the synth using aconnect and jack_connect.
+Add some configs and open a file in lash_gtk_client.  Then click on save
+in lash_gtk_client.  Now close both the clients (just ^C the synth.)  Now
+run lash_control and type "restore /home/<user>/audio-projects/project-1". 
+The synth and gtk client should restart, and the synth's connections should
+be restored.  Phat.
+
+The interesting header files are client_interface.h, types.h, config.h and
+event.h, all in the lash/ directory.  There is a partially complete
+texinfo manual in the docs/ directory.
+
+All source code is released under the GNU GENERAL PUBLIC LICENSE.  NO code
+in this release is under the GNU Lesser General Public License.
