@@ -1,3 +1,11 @@
+0.5.0:
+
+* numerous fixed for random behaviour resulting in failed session restores
+* bitrot removal, GCC4 fixes, autotools updates, etc
+* added GTK control panel server interface client
+* removed all traces of former name (API is incompatible with previous
+  releases)
+
 0.4.0:
 
 * low level tcp protocol has changed along with a lot of structure clean ups

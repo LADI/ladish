@@ -7,7 +7,7 @@
 
 @ifinfo
 This is the LASH Audio Session Handler Reference Manual,
-Edition 0.4.0, October 2003 for LASH version 0.2.
+Edition 0.5.0, September 2005 for LASH version 0.5.
 
 Copyright @copyright{} 2002, 2003 Robert Ham (rah@@bash.sh)
 
@@ -24,8 +24,8 @@ Free Documentation License''.
 @titlepage
 @title LASH Reference Manual
 @subtitle Audio application session management and configuration
-@subtitle Edition 0.4.0, October 2003
-@subtitle Covering LASH 0.4.0
+@subtitle Edition 0.5.0, September 2005
+@subtitle Covering LASH 0.5.0
 @author Bob Ham (rah@@bash.sh)
 
 @page
@@ -48,9 +48,9 @@ Free Documentation License''.
 @ifinfo
 
 This is the LASH Audio Session Handler
-Reference Manual, edition 0.4.0, October 2003 for LASH version 0.4.0.
+Reference Manual, edition 0.5.0, September 2005 for LASH version 0.5.0.
 
-@url{http://pkl.net/~node/lash.html}
+@url{http://www.nongnu.org/lash}
 
 @end ifinfo
 

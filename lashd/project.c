@@ -641,7 +641,7 @@ project_create_xml(project_t * project)
 	/* dtd */
 	xmlCreateIntSubset(doc, BAD_CAST "lash_project", NULL,
 					   BAD_CAST
-					   "http://purge.bash.sh/~rah/lash-project-1.0.dtd");
+					   "http://www.nongnu.org/lash/lash-project-1.0.dtd");
 
 	/* root node */
 	lash_project = xmlNewDocNode(doc, NULL, BAD_CAST "lash_project", NULL);

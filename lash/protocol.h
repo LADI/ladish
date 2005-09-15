@@ -31,6 +31,7 @@ typedef uint32_t lash_protocol_t;
 /*
  * Protocol versions (release: protocol):
  *
+ * 0.4: 2.0
  * 0.3: 1.1
  * 0.2: 1.0
  * 0.1: 0.0 (implied by the 0ing of the lash_event_t.event_data)
