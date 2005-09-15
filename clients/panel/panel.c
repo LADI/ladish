@@ -25,6 +25,7 @@
 
 #include "panel.h"
 #include "project.h"
+#include "config.h"
 
 #define WINDOW_TITLE "LASH Control Panel"
 
@@ -66,6 +67,29 @@ error_dialog(panel_t * client, const char *message)
 	response = gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_destroy(dialog);
 }
+
+
+void
+about_cb(GtkButton* button, void* client)
+{
+	/*panel_t* panel = (panel_t*)client;*/
+	GtkWidget *dialog;
+	gint response;
+
+	dialog = gtk_about_dialog_new();
+	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(dialog), "LASH Panel");
+	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), PACKAGE_VERSION);
+	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog),
+		"Copyright (C) 2005 Dave Robillard");
+	gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog),
+		"http://www.nongnu.org/lash");
+
+	
+
+	response = gtk_dialog_run(GTK_DIALOG(dialog));
+	gtk_widget_destroy(dialog);
+}
+
 
 void
 server_disconnect(panel_t * panel)
@@ -303,11 +327,14 @@ panel_create(lash_client_t * lash_client)
 	GtkWidget *main_box = NULL;
 
 	GtkWidget *menu_bar = NULL;
-	GtkWidget *menu = NULL;
-	GtkWidget *root_menu = NULL;
+	GtkWidget *file_menu = NULL;
+	GtkWidget *file_menuitem = NULL;
+	GtkWidget *help_menu = NULL;
+	GtkWidget *help_menuitem = NULL;
 	GtkWidget *open_menu_item = NULL;
 	GtkWidget *menu_separator = NULL;
 	GtkWidget *quit_menu_item = NULL;
+	GtkWidget *about_menu_item = NULL;
 
 	guint status_context;
 
@@ -329,36 +356,52 @@ panel_create(lash_client_t * lash_client)
 	/*
 	 * menu bar
 	 */
-	menu = gtk_menu_new();
+	file_menu = gtk_menu_new();
 
 	open_menu_item = gtk_image_menu_item_new_with_label("Open Project...");
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(open_menu_item),
 								  gtk_image_new_from_stock(GTK_STOCK_OPEN,
 														   GTK_ICON_SIZE_MENU));
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), open_menu_item);
+	gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), open_menu_item);
 	g_signal_connect(G_OBJECT(open_menu_item), "activate",
 					 G_CALLBACK(open_cb), panel);
 	gtk_widget_show(open_menu_item);
 	
 	menu_separator = gtk_separator_menu_item_new();
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_separator);
+	gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), menu_separator);
 	gtk_widget_show(menu_separator);
 
 	quit_menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_QUIT, NULL);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu), quit_menu_item);
+	gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), quit_menu_item);
 	g_signal_connect(G_OBJECT(quit_menu_item), "activate",
 					 G_CALLBACK(quit_cb), panel);
 	gtk_widget_show(quit_menu_item);
 
-	root_menu = gtk_menu_item_new_with_label("File");
-	gtk_widget_show(root_menu);
-	gtk_menu_item_set_submenu(GTK_MENU_ITEM(root_menu), menu);
+	file_menuitem = gtk_menu_item_new_with_label("File");
+	gtk_widget_show(file_menuitem);
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(file_menuitem), file_menu);
 
+	help_menu = gtk_menu_new();
+	help_menuitem = gtk_menu_item_new_with_label("Help");
+	gtk_widget_show(help_menuitem);
+	gtk_menu_item_set_submenu(GTK_MENU_ITEM(help_menuitem), help_menu);
+
+	about_menu_item = gtk_image_menu_item_new_with_label("About...");
+	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(about_menu_item),
+								  gtk_image_new_from_stock(GTK_STOCK_ABOUT,
+														   GTK_ICON_SIZE_MENU));
+	gtk_menu_shell_append(GTK_MENU_SHELL(help_menu), about_menu_item);
+	g_signal_connect(G_OBJECT(about_menu_item), "activate",
+					 G_CALLBACK(about_cb), panel);
+	
+	gtk_widget_show(about_menu_item);
+	
 	menu_bar = gtk_menu_bar_new();
 	gtk_widget_show(menu_bar);
 	gtk_box_pack_start(GTK_BOX(main_box), menu_bar, FALSE, TRUE, 0);
 
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), root_menu);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), file_menuitem);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), help_menuitem);
 
 	/*
 	 * projects notebook
