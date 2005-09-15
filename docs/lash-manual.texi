@@ -95,8 +95,9 @@ The server deals with things in terms of collections of clients, called
 @dfn{projects}.  A project has a unique string name, a current directory
 and a list of clients that are in that project.  The server can have one
 client that is a @dfn{server interface} that allows the user to control the
-server.  There is one server interface included with the system, the
-@command{lash_control} program.
+server.  There are two server interface included with the system, the
+@command{lash_control} command-line interface, and the @command{lash_panel}
+GTK interface.
 
 
 
@@ -148,7 +149,7 @@ The libxml2 library is available from @url{http://www.xmlsoft.org/}.
 The LASH Control client depends on the GNU Readline library,
 available from @url{ftp://ftp.gnu.org/pub/gnu/readline/}.
 
-The LASH GTK Test Client and the LASH Save Button 2 client both depend
+The LASH GTK Test Client, LASH Save Button 2, and LASH Panel all depend
 on the GTK+ 2 toolkit, available from @url{ftp://ftp.gtk.org/pub/gtk/v2.0/}.
 The LASH Synth client has an optional GUI which also uses the GTK+ 2 toolkit.
 
@@ -158,10 +159,10 @@ available from @url{ftp://ftp.gtk.org/pub/gtk/v1.2/}.
 @section Installation
 
 First off, you need to download the package.  It is available from the
-LASH webpage, @url{http://pkl.net/~node/lash.html}.  After you have
-downloaded it, unpack the tarball into a directory using @command{tar xzf
-/where/ever/you/put/lash-0.4.0.tar.gz} and change into the source directory
-with @command{cd lash-0.4.0}.
+LASH webpage, @url{http://www.nongnu.org/lash}.  After you have
+downloaded it, unpack the tarball into a directory using @command{tar -xzf
+/where/ever/you/put/lash-0.5.0.tar.gz} and change into the source directory
+with @command{cd lash-0.5.0}.
 
 The package uses the GNU autotools for configuration and makefile creation. 
 In order to install the package, you must complete three steps:
@@ -242,7 +243,10 @@ The LASH server is called @file{lashd}.
 @node Server interface, Client reference, Server, Top
 @chapter Server interface
 
-Run the @command{lashd_control}.  There is a @command{help} command.
+For a command line interface, run the command @command{lashd_control}.
+There is a @command{help} command.
+
+For a graphical interface, run the command @command{lash_panel}.
 
 
 
