@@ -208,7 +208,9 @@ project_create(lash_client_t * lash_client, const char *const name)
 					   FALSE, TRUE, 4);
 
 	/* Close button */
-	project->close_button = gtk_button_new_from_stock(GTK_STOCK_CLOSE);
+	project->close_button = gtk_button_new_with_label("Close Project");
+	gtk_button_set_image(GTK_BUTTON(project->close_button),
+		gtk_image_new_from_stock(GTK_STOCK_CLOSE, GTK_ICON_SIZE_BUTTON));
 	gtk_widget_show(project->close_button);
 	g_signal_connect(G_OBJECT(project->close_button), "clicked",
 					 G_CALLBACK(close_cb), project);
@@ -216,7 +218,9 @@ project_create(lash_client_t * lash_client, const char *const name)
 					   project->close_button, FALSE, TRUE, 6);
 
 	/* Save button */
-	project->save_button = gtk_button_new_from_stock(GTK_STOCK_SAVE);
+	project->save_button = gtk_button_new_with_label("Save Project");
+	gtk_button_set_image(GTK_BUTTON(project->save_button),
+		gtk_image_new_from_stock(GTK_STOCK_SAVE, GTK_ICON_SIZE_BUTTON));
 	gtk_widget_show(project->save_button);
 	g_signal_connect(G_OBJECT(project->save_button), "clicked",
 					 G_CALLBACK(save_cb), project);

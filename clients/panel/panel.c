@@ -299,14 +299,15 @@ open_cb(GtkButton * button, void *data)
 panel_t *
 panel_create(lash_client_t * lash_client)
 {
-	panel_t *panel;
-	GtkWidget *main_box;
+	panel_t *panel = NULL;
+	GtkWidget *main_box = NULL;
 
-	GtkWidget *menu_bar;
-	GtkWidget *menu;
-	GtkWidget *root_menu;
-	GtkWidget *quit_menu_item;
-	GtkWidget *open_menu_item;
+	GtkWidget *menu_bar = NULL;
+	GtkWidget *menu = NULL;
+	GtkWidget *root_menu = NULL;
+	GtkWidget *open_menu_item = NULL;
+	GtkWidget *menu_separator = NULL;
+	GtkWidget *quit_menu_item = NULL;
 
 	guint status_context;
 
@@ -330,13 +331,20 @@ panel_create(lash_client_t * lash_client)
 	 */
 	menu = gtk_menu_new();
 
-	open_menu_item = gtk_menu_item_new_with_label("Open Project...");
+	open_menu_item = gtk_image_menu_item_new_with_label("Open Project...");
+	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(open_menu_item),
+								  gtk_image_new_from_stock(GTK_STOCK_OPEN,
+														   GTK_ICON_SIZE_MENU));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), open_menu_item);
 	g_signal_connect(G_OBJECT(open_menu_item), "activate",
 					 G_CALLBACK(open_cb), panel);
 	gtk_widget_show(open_menu_item);
+	
+	menu_separator = gtk_separator_menu_item_new();
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_separator);
+	gtk_widget_show(menu_separator);
 
-	quit_menu_item = gtk_menu_item_new_with_label("Quit");
+	quit_menu_item = gtk_image_menu_item_new_from_stock(GTK_STOCK_QUIT, NULL);
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), quit_menu_item);
 	g_signal_connect(G_OBJECT(quit_menu_item), "activate",
 					 G_CALLBACK(quit_cb), panel);
