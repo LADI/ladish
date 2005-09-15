@@ -132,6 +132,8 @@ project_create(lash_client_t * lash_client, const char *const name)
 
 	project->clients_list_scroll = gtk_scrolled_window_new(NULL, NULL);
 	gtk_widget_show(project->clients_list_scroll);
+	gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(project->clients_list_scroll),
+		GTK_SHADOW_IN);
 	gtk_box_pack_start(GTK_BOX(project->clients_align_box),
 					   project->clients_list_scroll, TRUE, TRUE, 0);
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW
@@ -156,9 +158,10 @@ project_create(lash_client_t * lash_client, const char *const name)
 
 	/* Name label */
 	project->name_label = gtk_label_new("    Name: ");
+	gtk_misc_set_alignment(GTK_MISC(project->name_label), 1.0, 0.5);
 	gtk_widget_show(project->name_label);
 	gtk_table_attach(GTK_TABLE(project->properties_table),
-					 project->name_label, 0, 1, 0, 1, 0, 0, 2, 2);
+					 project->name_label, 0, 1, 0, 1, GTK_FILL, GTK_FILL, 2, 2);
 
 	project->name_entry = gtk_entry_new();
 	gtk_entry_set_editable(GTK_ENTRY(project->name_entry), TRUE);
@@ -179,9 +182,10 @@ project_create(lash_client_t * lash_client, const char *const name)
 
 	/* Directory label */
 	project->dir_label = gtk_label_new("    Directory: ");
+	gtk_misc_set_alignment(GTK_MISC(project->dir_label), 1.0, 0.5);
 	gtk_widget_show(project->dir_label);
 	gtk_table_attach(GTK_TABLE(project->properties_table), project->dir_label,
-					 0, 1, 1, 2, 0, 0, 2, 2);
+					 0, 1, 1, 2, GTK_FILL, GTK_FILL, 2, 2);
 
 	project->dir_entry = gtk_entry_new();
 	gtk_entry_set_editable(GTK_ENTRY(project->dir_entry), FALSE);
@@ -228,8 +232,7 @@ project_create(lash_client_t * lash_client, const char *const name)
 					   project->save_button, FALSE, TRUE, 6);
 
 	/* Client list */
-	project->clients =
-		gtk_list_store_new(CLIENT_NUM_COLUMNS, G_TYPE_STRING, G_TYPE_STRING);
+	project->clients = gtk_list_store_new(CLIENT_NUM_COLUMNS, G_TYPE_STRING, G_TYPE_STRING);
 
 	project->clients_list =
 		gtk_tree_view_new_with_model(GTK_TREE_MODEL(project->clients));
