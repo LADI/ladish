@@ -24,43 +24,43 @@
 #include <lash/internal.h>
 
 lash_client_t *
-lash_client_new ()
+lash_client_new()
 {
-  lash_client_t * client;
-  client = lash_malloc0 (sizeof (lash_client_t));
-  pthread_mutex_init (&client->configs_in_lock, NULL);
-  pthread_mutex_init (&client->events_in_lock, NULL);
-  pthread_mutex_init (&client->comm_events_out_lock, NULL);
-  pthread_cond_init (&client->send_conditional, NULL);
-  return client;
+	lash_client_t *client;
+
+	client = lash_malloc0(sizeof(lash_client_t));
+	pthread_mutex_init(&client->configs_in_lock, NULL);
+	pthread_mutex_init(&client->events_in_lock, NULL);
+	pthread_mutex_init(&client->comm_events_out_lock, NULL);
+	pthread_cond_init(&client->send_conditional, NULL);
+	return client;
 }
 
 void
-lash_client_destroy (lash_client_t * client)
+lash_client_destroy(lash_client_t * client)
 {
-  pthread_mutex_destroy (&client->configs_in_lock);
-  pthread_mutex_destroy (&client->events_in_lock);
-  pthread_mutex_destroy (&client->comm_events_out_lock);
-  pthread_cond_destroy  (&client->send_conditional);
+	pthread_mutex_destroy(&client->configs_in_lock);
+	pthread_mutex_destroy(&client->events_in_lock);
+	pthread_mutex_destroy(&client->comm_events_out_lock);
+	pthread_cond_destroy(&client->send_conditional);
 
-  lash_client_set_class        (client, NULL);
+	lash_client_set_class(client, NULL);
 
-  lash_args_destroy (client->args);
+	lash_args_destroy(client->args);
 
-  free (client);
+	free(client);
 }
 
 const char *
-lash_client_get_class (const lash_client_t * client)
+lash_client_get_class(const lash_client_t * client)
 {
-  return client->class;
+	return client->class;
 }
 
 void
-lash_client_set_class (lash_client_t * client, const char * class)
+lash_client_set_class(lash_client_t * client, const char *class)
 {
-  set_string_property (client->class, class);
+	set_string_property(client->class, class);
 }
 
 /* EOF */
-

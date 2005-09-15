@@ -429,27 +429,33 @@ escape_file_name(const char *fn)
 void
 project_move(project_t * project, const char *new_dir)
 {
-	lash_list_t* list             = NULL;
-	client_t*    client           = NULL;
-	char*        esc_proj_dir     = NULL;
-	char*        esc_new_proj_dir = NULL;
+	lash_list_t *list = NULL;
+	client_t *client = NULL;
+	char *esc_proj_dir = NULL;
+	char *esc_new_proj_dir = NULL;
 
 	if (strcmp(new_dir, project->directory) == 0)
 		return;
 
 	/* Check to be sure directory is acceptable
 	 * FIXME: thorough enough error checking? */
-	DIR* dir = opendir(new_dir);
+	DIR *dir = opendir(new_dir);
+
 	if (dir != NULL) {
-		fprintf(stderr, "Warning: directory %s exists, files may be overwritten.\n", new_dir);
+		fprintf(stderr,
+				"Warning: directory %s exists, files may be overwritten.\n",
+				new_dir);
 		closedir(dir);
 	} else if (dir == NULL && errno == ENOTDIR) {
-		fprintf(stderr, "Can not move project directory to %s - exists but is not a directory\n", new_dir);
+		fprintf(stderr,
+				"Can not move project directory to %s - exists but is not a directory\n",
+				new_dir);
 		return;
 	} else if (dir == NULL && errno == ENOENT) {
-		printf("Directory %s does not exist, and will be created.\n", new_dir);
+		printf("Directory %s does not exist, and will be created.\n",
+			   new_dir);
 	}
-	
+
 	/* close all the clients' stores */
 	for (list = project->clients; list; list = lash_list_next(list)) {
 		client = (client_t *) list->data;
@@ -460,26 +466,28 @@ project_move(project_t * project, const char *new_dir)
 	/* move the directory */
 	esc_proj_dir = escape_file_name(project->directory);
 	esc_new_proj_dir = escape_file_name(new_dir);
-	
+
 	if (rename(esc_proj_dir, esc_new_proj_dir)) {
-		fprintf(stderr, "Unable to move project directory to %s (%s)", new_dir, strerror(errno));
+		fprintf(stderr, "Unable to move project directory to %s (%s)",
+				new_dir, strerror(errno));
 	} else {
-		printf("Project %s moved from %s to %s\n", project->name, project->directory, new_dir);
+		printf("Project %s moved from %s to %s\n", project->name,
+			   project->directory, new_dir);
 		project_set_directory(project, new_dir);
 		server_notify_interfaces(project, client, LASH_Project_Dir, new_dir);
-		
+
 		/* open all the clients' stores again */
 		for (list = project->clients; list; list = lash_list_next(list)) {
 			client = (client_t *) list->data;
-			client_store_open(client, project_get_client_config_dir(project, client));
+			client_store_open(client,
+							  project_get_client_config_dir(project, client));
 			/* FIXME: check for errors */
 		}
 	}
-	
+
 	free(esc_proj_dir);
 	free(esc_new_proj_dir);
 }
-
 
 void
 project_restore_data_set(project_t * project, client_t * client)

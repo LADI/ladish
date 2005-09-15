@@ -35,22 +35,19 @@
 #define XA_WIN_STATE			"_WIN_STATE"
 
 /* flags for the window layer */
-typedef enum
-{
+typedef enum {
 	WIN_LAYER_DESKTOP = 0,
 	WIN_LAYER_BELOW = 2,
 	WIN_LAYER_NORMAL = 4,
 	WIN_LAYER_ONTOP = 6,
 	WIN_LAYER_DOCK = 8,
 	WIN_LAYER_ABOVE_DOCK = 10
-}
-WinLayer;
+} WinLayer;
 
 #define WIN_STATE_STICKY		(1<<0)
 
-#define WIN_HINTS_SKIP_WINLIST		(1<<1) /* not in win list */
-#define WIN_HINTS_SKIP_TASKBAR		(1<<2) /* not on taskbar */
-
+#define WIN_HINTS_SKIP_WINLIST		(1<<1)	/* not in win list */
+#define WIN_HINTS_SKIP_TASKBAR		(1<<2)	/* not on taskbar */
 
 #define XA_NET_SUPPORTING_WM_CHECK	"_NET_SUPPORTING_WM_CHECK"
 #define XA_NET_WM_STATE			"_NET_WM_STATE"
@@ -61,39 +58,42 @@ WinLayer;
 #define _NET_WM_STATE_ADD      1
 #define _NET_WM_STATE_TOGGLE   2
 
+void (*set_always_func) (GtkWidget *, gboolean);
+void (*set_sticky_func) (GtkWidget *, gboolean);
+void (*set_skip_winlist_func) (GtkWidget *);
 
-void (*set_always_func)(GtkWidget *, gboolean);
-void (*set_sticky_func)(GtkWidget *, gboolean);
-void (*set_skip_winlist_func)(GtkWidget *);
-
-gboolean hint_always_on_top_available (void)
+gboolean
+hint_always_on_top_available(void)
 {
 	return !!set_always_func;
 }
 
-gboolean hint_sticky_available (void)
+gboolean
+hint_sticky_available(void)
 {
 	return !!set_sticky_func;
 }
 
-gboolean hint_skip_winlist_available (void)
+gboolean
+hint_skip_winlist_available(void)
 {
 	return !!set_skip_winlist_func;
 }
 
-static void gnome_wm_set_skip_winlist(GtkWidget *widget)
+static void
+gnome_wm_set_skip_winlist(GtkWidget * widget)
 {
-        long data[1];
-        Atom xa_win_hints = gdk_atom_intern(XA_WIN_HINTS, FALSE);
+	long data[1];
+	Atom xa_win_hints = gdk_atom_intern(XA_WIN_HINTS, FALSE);
 
-        data[0] = WIN_HINTS_SKIP_WINLIST | WIN_HINTS_SKIP_TASKBAR;
-        XChangeProperty(GDK_DISPLAY(), GDK_WINDOW_XWINDOW(widget->window),
-                        xa_win_hints, XA_CARDINAL, 32,
-                        PropModeReplace, (unsigned char *) data, 1);
+	data[0] = WIN_HINTS_SKIP_WINLIST | WIN_HINTS_SKIP_TASKBAR;
+	XChangeProperty(GDK_DISPLAY(), GDK_WINDOW_XWINDOW(widget->window),
+					xa_win_hints, XA_CARDINAL, 32,
+					PropModeReplace, (unsigned char *)data, 1);
 }
 
-
-static void gnome_wm_set_window_always(GtkWidget * window, gboolean always)
+static void
+gnome_wm_set_window_always(GtkWidget * window, gboolean always)
 {
 	XEvent xev;
 	int prev_error;
@@ -106,8 +106,7 @@ static void gnome_wm_set_window_always(GtkWidget * window, gboolean always)
 	prev_error = gdk_error_warnings;
 	gdk_error_warnings = 0;
 
-	if (GTK_WIDGET_MAPPED(window))
-	{
+	if (GTK_WIDGET_MAPPED(window)) {
 		xev.type = ClientMessage;
 		xev.xclient.type = ClientMessage;
 		xev.xclient.window = GDK_WINDOW_XWINDOW(window->window);
@@ -116,23 +115,22 @@ static void gnome_wm_set_window_always(GtkWidget * window, gboolean always)
 		xev.xclient.data.l[0] = layer;
 
 		XSendEvent(GDK_DISPLAY(), GDK_ROOT_WINDOW(), False,
-			   SubstructureNotifyMask, (XEvent *) & xev);
-	}
-	else
-	{
+				   SubstructureNotifyMask, (XEvent *) & xev);
+	} else {
 		long data[1];
 
 		data[0] = layer;
 		XChangeProperty(GDK_DISPLAY(),
-				GDK_WINDOW_XWINDOW(window->window),
-				xa_win_layer, XA_CARDINAL, 32, PropModeReplace,
-				(unsigned char *) data,	1);
+						GDK_WINDOW_XWINDOW(window->window),
+						xa_win_layer, XA_CARDINAL, 32, PropModeReplace,
+						(unsigned char *)data, 1);
 	}
 	gdk_error_warnings = prev_error;
 
 }
 
-static void gnome_wm_set_window_sticky(GtkWidget * window, gboolean sticky)
+static void
+gnome_wm_set_window_sticky(GtkWidget * window, gboolean sticky)
 {
 	XEvent xev;
 	int prev_error;
@@ -145,8 +143,7 @@ static void gnome_wm_set_window_sticky(GtkWidget * window, gboolean sticky)
 	prev_error = gdk_error_warnings;
 	gdk_error_warnings = 0;
 
-	if (GTK_WIDGET_MAPPED(window))
-	{
+	if (GTK_WIDGET_MAPPED(window)) {
 		xev.type = ClientMessage;
 		xev.xclient.type = ClientMessage;
 		xev.xclient.window = GDK_WINDOW_XWINDOW(window->window);
@@ -156,23 +153,22 @@ static void gnome_wm_set_window_sticky(GtkWidget * window, gboolean sticky)
 		xev.xclient.data.l[1] = state;
 
 		XSendEvent(GDK_DISPLAY(), GDK_ROOT_WINDOW(), False,
-			   SubstructureNotifyMask, (XEvent *) &xev);
-	}
-	else
-	{
+				   SubstructureNotifyMask, (XEvent *) & xev);
+	} else {
 		long data[2];
 
 		data[0] = state;
 		XChangeProperty(GDK_DISPLAY(),
-				GDK_WINDOW_XWINDOW(window->window),
-				xa_win_state, XA_CARDINAL, 32, PropModeReplace,
-				(unsigned char *) data, 1);
+						GDK_WINDOW_XWINDOW(window->window),
+						xa_win_state, XA_CARDINAL, 32, PropModeReplace,
+						(unsigned char *)data, 1);
 	}
 	gdk_error_warnings = prev_error;
 
 }
 
-static gboolean gnome_wm_found(void)
+static gboolean
+gnome_wm_found(void)
 {
 	Atom r_type, support_check;
 	int r_format, prev_error, p;
@@ -183,22 +179,21 @@ static gboolean gnome_wm_found(void)
 	prev_error = gdk_error_warnings;
 	gdk_error_warnings = 0;
 	support_check = gdk_atom_intern(XA_WIN_SUPPORTING_WM_CHECK, FALSE);
-	
+
 	p = XGetWindowProperty(GDK_DISPLAY(), GDK_ROOT_WINDOW(), support_check,
-			       0, 1, False, XA_CARDINAL, &r_type, &r_format,
-			       &count, &bytes_remain, &prop);
+						   0, 1, False, XA_CARDINAL, &r_type, &r_format,
+						   &count, &bytes_remain, &prop);
 
 	if (p == Success && prop && r_type == XA_CARDINAL &&
-	    r_format == 32 && count == 1)
-	{
-		Window n = *(long *) prop;
+		r_format == 32 && count == 1) {
+		Window n = *(long *)prop;
 
 		p = XGetWindowProperty(GDK_DISPLAY(), n, support_check, 0, 1,
-				       False, XA_CARDINAL, &r_type, &r_format,
-				       &count, &bytes_remain, &prop2);
+							   False, XA_CARDINAL, &r_type, &r_format,
+							   &count, &bytes_remain, &prop2);
 
 		if (p == Success && prop2 && r_type == XA_CARDINAL &&
-		    r_format == 32 && count == 1)
+			r_format == 32 && count == 1)
 			ret = TRUE;
 	}
 
@@ -210,7 +205,8 @@ static gboolean gnome_wm_found(void)
 	return ret;
 }
 
-static gboolean net_wm_found(void)
+static gboolean
+net_wm_found(void)
 {
 	Atom r_type, support_check;
 	int r_format, prev_error, p;
@@ -220,23 +216,22 @@ static gboolean net_wm_found(void)
 
 	prev_error = gdk_error_warnings;
 	gdk_error_warnings = 0;
-        support_check = gdk_atom_intern(XA_NET_SUPPORTING_WM_CHECK, FALSE);
+	support_check = gdk_atom_intern(XA_NET_SUPPORTING_WM_CHECK, FALSE);
 
 	p = XGetWindowProperty(GDK_DISPLAY(), GDK_ROOT_WINDOW(), support_check,
-			       0, 1, False, XA_WINDOW, &r_type, &r_format,
-			       &count, &bytes_remain, &prop);
+						   0, 1, False, XA_WINDOW, &r_type, &r_format,
+						   &count, &bytes_remain, &prop);
 
 	if (p == Success && prop && r_type == XA_WINDOW &&
-	    r_format == 32 && count == 1)
-	{
+		r_format == 32 && count == 1) {
 		Window n = *(Window *) prop;
 
 		p = XGetWindowProperty(GDK_DISPLAY(), n, support_check, 0, 1,
-				       False, XA_WINDOW, &r_type, &r_format,
-				       &count, &bytes_remain, &prop2);
-	
+							   False, XA_WINDOW, &r_type, &r_format,
+							   &count, &bytes_remain, &prop2);
+
 		if (p == Success && prop2 && *prop2 == *prop &&
-		    r_type == XA_WINDOW && r_format == 32 && count == 1)
+			r_type == XA_WINDOW && r_format == 32 && count == 1)
 			ret = TRUE;
 	}
 
@@ -248,7 +243,8 @@ static gboolean net_wm_found(void)
 	return ret;
 }
 
-static void net_wm_set_property(GtkWidget * window, char *atom, gboolean state)
+static void
+net_wm_set_property(GtkWidget * window, char *atom, gboolean state)
 {
 	XEvent xev;
 	gint prev_error;
@@ -272,34 +268,34 @@ static void net_wm_set_property(GtkWidget * window, char *atom, gboolean state)
 	xev.xclient.data.l[0] = set;
 	xev.xclient.data.l[1] = property;
 	xev.xclient.data.l[2] = 0;
-	
+
 	XSendEvent(GDK_DISPLAY(), GDK_ROOT_WINDOW(), False,
-		   SubstructureNotifyMask, (XEvent *) &xev);
+			   SubstructureNotifyMask, (XEvent *) & xev);
 
 	gdk_error_warnings = prev_error;
 
 }
 
-static void net_wm_set_window_always(GtkWidget * window, gboolean always)
+static void
+net_wm_set_window_always(GtkWidget * window, gboolean always)
 {
 	net_wm_set_property(window, XA_NET_STATE_STAYS_ON_TOP, always);
 }
 
-static void net_wm_set_window_sticky(GtkWidget * window, gboolean sticky)
+static void
+net_wm_set_window_sticky(GtkWidget * window, gboolean sticky)
 {
 	net_wm_set_property(window, XA_NET_STATE_STICKY, sticky);
 }
 
-void check_wm_hints(void)
+void
+check_wm_hints(void)
 {
-	if (gnome_wm_found())
-	{
+	if (gnome_wm_found()) {
 		set_sticky_func = gnome_wm_set_window_sticky;
 		set_always_func = gnome_wm_set_window_always;
 		set_skip_winlist_func = gnome_wm_set_skip_winlist;
-	}
-	else if (net_wm_found())
-	{
+	} else if (net_wm_found()) {
 		set_sticky_func = net_wm_set_window_sticky;
 		set_always_func = net_wm_set_window_always;
 	}

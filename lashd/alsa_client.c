@@ -27,129 +27,125 @@
 #include "alsa_patch.h"
 
 void
-alsa_client_init (alsa_client_t * client)
+alsa_client_init(alsa_client_t * client)
 {
-  client->client_id = 0;
-  client->patches = NULL;
-  client->old_patches = NULL;
-  client->backup_patches = NULL;
-  
-  uuid_clear (client->id);
+	client->client_id = 0;
+	client->patches = NULL;
+	client->old_patches = NULL;
+	client->backup_patches = NULL;
+
+	uuid_clear(client->id);
 }
 
 static void
-alsa_client_free_patch_list (lash_list_t ** list_ptr)
+alsa_client_free_patch_list(lash_list_t ** list_ptr)
 {
-  lash_list_t * list;
-  alsa_patch_t * patch;
+	lash_list_t *list;
+	alsa_patch_t *patch;
 
-  for (list = *list_ptr; list; list = lash_list_next (list))
-    {
-      patch = (alsa_patch_t *) list->data;
-      if (!patch)
-        {
-          LASH_PRINT_DEBUG ("NULL patch!")
-        }
-      else
-        alsa_patch_destroy (patch);
-    }
-    
-  lash_list_free (*list_ptr);
-  
-  *list_ptr = NULL;
+	for (list = *list_ptr; list; list = lash_list_next(list)) {
+		patch = (alsa_patch_t *) list->data;
+		if (!patch) {
+			LASH_PRINT_DEBUG("NULL patch!")
+		} else
+			alsa_patch_destroy(patch);
+	}
+
+	lash_list_free(*list_ptr);
+
+	*list_ptr = NULL;
 }
 
 void
-alsa_client_free_patches (alsa_client_t * client)
+alsa_client_free_patches(alsa_client_t * client)
 {
-  if (!client->patches)
-    return;
-  
-  alsa_client_free_patch_list (&client->patches);
+	if (!client->patches)
+		return;
+
+	alsa_client_free_patch_list(&client->patches);
 }
 
 void
-alsa_client_free_backup_patches (alsa_client_t * client)
+alsa_client_free_backup_patches(alsa_client_t * client)
 {
-  if (!client->backup_patches)
-    return;
-  
-  alsa_client_free_patch_list (&client->backup_patches);
+	if (!client->backup_patches)
+		return;
+
+	alsa_client_free_patch_list(&client->backup_patches);
 }
 
 static void
-alsa_client_free_old_patches (alsa_client_t * client)
+alsa_client_free_old_patches(alsa_client_t * client)
 {
-  alsa_client_free_patch_list (&client->old_patches);
+	alsa_client_free_patch_list(&client->old_patches);
 }
 
 void
-alsa_client_free (alsa_client_t * client)
+alsa_client_free(alsa_client_t * client)
 {
-  alsa_client_free_patches (client);
-  alsa_client_free_old_patches (client);
+	alsa_client_free_patches(client);
+	alsa_client_free_old_patches(client);
 }
 
 alsa_client_t *
-alsa_client_new ()
+alsa_client_new()
 {
-  alsa_client_t * client;
-  client = lash_malloc (sizeof (alsa_client_t));
-  alsa_client_init (client);
-  return client;
+	alsa_client_t *client;
+
+	client = lash_malloc(sizeof(alsa_client_t));
+	alsa_client_init(client);
+	return client;
 }
 
 void
-alsa_client_destroy (alsa_client_t * client)
+alsa_client_destroy(alsa_client_t * client)
 {
-  alsa_client_free (client);
-  free (client);
+	alsa_client_free(client);
+	free(client);
 }
 
 void
-alsa_client_set_id          (alsa_client_t * client, uuid_t id)
+alsa_client_set_id(alsa_client_t * client, uuid_t id)
 {
-  uuid_copy (client->id, id);
+	uuid_copy(client->id, id);
 }
 
 void
-alsa_client_set_client_id        (alsa_client_t * client, unsigned char id)
+alsa_client_set_client_id(alsa_client_t * client, unsigned char id)
 {
-  client->client_id = id;
+	client->client_id = id;
 }
 
 lash_list_t *
-alsa_client_dup_patches	(const alsa_client_t * client)
+alsa_client_dup_patches(const alsa_client_t * client)
 {
-  lash_list_t * list = NULL, * exlist;
-  alsa_patch_t * patch;
-  
-  for (exlist = client->patches; exlist; exlist = lash_list_next (exlist))
-    {
-      patch = alsa_patch_dup ((alsa_patch_t *) exlist->data);
-      list = lash_list_append (list, patch);
-    }
-  
-  return list;
+	lash_list_t *list = NULL, *exlist;
+	alsa_patch_t *patch;
+
+	for (exlist = client->patches; exlist; exlist = lash_list_next(exlist)) {
+		patch = alsa_patch_dup((alsa_patch_t *) exlist->data);
+		list = lash_list_append(list, patch);
+	}
+
+	return list;
 }
 
 lash_list_t *
-alsa_client_get_patches	(alsa_client_t * client)
+alsa_client_get_patches(alsa_client_t * client)
 {
-  return client->patches;
+	return client->patches;
 }
 
 unsigned char
-alsa_client_get_client_id        (const alsa_client_t * client)
+alsa_client_get_client_id(const alsa_client_t * client)
 {
-  return client->client_id;
+	return client->client_id;
 }
 
 void
-alsa_client_get_id          (const alsa_client_t * client, uuid_t id)
+alsa_client_get_id(const alsa_client_t * client, uuid_t id)
 {
-  uuid_copy (id, ((alsa_client_t *)client)->id);
+	uuid_copy(id, ((alsa_client_t *) client)->id);
 }
 
 /* EOF */
-

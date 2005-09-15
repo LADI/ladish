@@ -24,16 +24,15 @@
 #include <lash/protocol.h>
 
 const char *
-lash_protocol_string (lash_protocol_t protocol)
+lash_protocol_string(lash_protocol_t protocol)
 {
-  static char str[32];
-  
-  sprintf (str, "%" PRIu32 ".%" PRIu32,
-	   LASH_PROTOCOL_GET_MAJOR (protocol),
-	   LASH_PROTOCOL_GET_MINOR (protocol));
-  
-  return str;
+	static char str[32];
+
+	sprintf(str, "%" PRIu32 ".%" PRIu32,
+			LASH_PROTOCOL_GET_MAJOR(protocol),
+			LASH_PROTOCOL_GET_MINOR(protocol));
+
+	return str;
 }
 
 /* EOF */
-

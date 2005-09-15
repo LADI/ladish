@@ -25,43 +25,43 @@
 #include "client.h"
 
 project_t *
-project_new (const char * name)
+project_new(const char *name)
 {
-  project_t *project;
-  project = lash_malloc0 (sizeof (project_t));
+	project_t *project;
 
-  project_set_name (project, name);
+	project = lash_malloc0(sizeof(project_t));
 
-  return project;
+	project_set_name(project, name);
+
+	return project;
 }
 
 void
-project_destroy (project_t * project)
+project_destroy(project_t * project)
 {
-  lash_list_t * node;
-  project_set_name (project, NULL);
-  project_set_dir (project, NULL);
+	lash_list_t *node;
 
-  for (node = project->clients; node; node = lash_list_next (node))
-    client_destroy ((client_t *) node->data);
+	project_set_name(project, NULL);
+	project_set_dir(project, NULL);
 
-  lash_list_free (project->clients);
+	for (node = project->clients; node; node = lash_list_next(node))
+		client_destroy((client_t *) node->data);
 
-  free (project);
+	lash_list_free(project->clients);
+
+	free(project);
 }
 
 void
-project_set_name (project_t * project, const char * name)
+project_set_name(project_t * project, const char *name)
 {
-  set_string_property (project->name, name);
+	set_string_property(project->name, name);
 }
 
 void
-project_set_dir (project_t * project, const char * dir)
+project_set_dir(project_t * project, const char *dir)
 {
-  set_string_property (project->dir, dir);
+	set_string_property(project->dir, dir);
 }
-
-
 
 /* EOF */

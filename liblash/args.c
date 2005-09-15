@@ -25,130 +25,133 @@
 #include <lash/internal.h>
 
 void
-lash_args_free_argv (lash_args_t * args)
+lash_args_free_argv(lash_args_t * args)
 {
-  if (args->argv)
-    {
-      int i;
-      for (i = 0; i < args->argc; i++)
-        free (args->argv[i]);
-      free (args->argv);
-      args->argv = NULL;
-    }
+	if (args->argv) {
+		int i;
+
+		for (i = 0; i < args->argc; i++)
+			free(args->argv[i]);
+		free(args->argv);
+		args->argv = NULL;
+	}
 }
 
 void
-lash_args_free (lash_args_t * args)
+lash_args_free(lash_args_t * args)
 {
-  if (args->project)
-    free (args->project);
-  if (args->server)
-    free (args->server);
-  lash_args_free_argv (args);
+	if (args->project)
+		free(args->project);
+	if (args->server)
+		free(args->server);
+	lash_args_free_argv(args);
 }
 
 lash_args_t *
-lash_args_new ()
+lash_args_new()
 {
-  lash_args_t * args;
-  args = lash_malloc0 (sizeof (lash_args_t));
-  uuid_clear (args->id);
-  return args;
+	lash_args_t *args;
+
+	args = lash_malloc0(sizeof(lash_args_t));
+	uuid_clear(args->id);
+	return args;
 }
 
 void
-lash_args_destroy (lash_args_t * args)
+lash_args_destroy(lash_args_t * args)
 {
-  lash_args_free (args);
-  free (args);
+	lash_args_free(args);
+	free(args);
 }
 
 void
-lash_args_set_project (lash_args_t * args, const char * project)
+lash_args_set_project(lash_args_t * args, const char *project)
 {
-  set_string_property (args->project, project);
+	set_string_property(args->project, project);
 }
 
 void
-lash_args_set_server  (lash_args_t * args, const char * server)
+lash_args_set_server(lash_args_t * args, const char *server)
 {
-  set_string_property (args->server, server);
-}
-void
-lash_args_set_id      (lash_args_t * args, uuid_t id)
-{
-  uuid_copy (args->id, id);
+	set_string_property(args->server, server);
 }
 
 void
-lash_args_set_flags (lash_args_t * args, int flags)
+lash_args_set_id(lash_args_t * args, uuid_t id)
 {
-  args->flags = flags;
+	uuid_copy(args->id, id);
 }
 
 void
-lash_args_set_flag (lash_args_t * args, int flag)
+lash_args_set_flags(lash_args_t * args, int flags)
 {
-  args->flags |= flag;
+	args->flags = flags;
+}
+
+void
+lash_args_set_flag(lash_args_t * args, int flag)
+{
+	args->flags |= flag;
 }
 
 const char *
-lash_args_get_project (const lash_args_t * args)
+lash_args_get_project(const lash_args_t * args)
 {
-  return args->project;
+	return args->project;
 }
 
 const char *
-lash_args_get_server  (const lash_args_t * args)
+lash_args_get_server(const lash_args_t * args)
 {
-  return args->server;
+	return args->server;
 }
 
 void
-lash_args_get_id      (const lash_args_t * args, uuid_t id)
+lash_args_get_id(const lash_args_t * args, uuid_t id)
 {
-  uuid_copy (id, ((lash_args_t *)args)->id);
+	uuid_copy(id, ((lash_args_t *) args)->id);
 }
 
 int
-lash_args_get_flags    (const lash_args_t * args)
+lash_args_get_flags(const lash_args_t * args)
 {
-  return args->flags;
+	return args->flags;
 }
 
-void lash_args_set_args    (lash_args_t * args, int argc, const char * const * argv)
+void
+lash_args_set_args(lash_args_t * args, int argc, const char *const *argv)
 {
-  int i;
-  
-  lash_args_free_argv (args);
-  
-  args->argc = argc;
-  args->argv = lash_malloc (sizeof (char *) * argc);
+	int i;
 
-  for (i = 0; i < argc; i++)
-    args->argv[i] = lash_strdup (argv[i]);
+	lash_args_free_argv(args);
+
+	args->argc = argc;
+	args->argv = lash_malloc(sizeof(char *) * argc);
+
+	for (i = 0; i < argc; i++)
+		args->argv[i] = lash_strdup(argv[i]);
 }
 
 int
-lash_args_get_argc    (const lash_args_t * args)
+lash_args_get_argc(const lash_args_t * args)
 {
-  return args->argc;
+	return args->argc;
 }
 
 char **
-lash_args_take_argv   (lash_args_t * args)
+lash_args_take_argv(lash_args_t * args)
 {
-  char ** argv;
-  argv = args->argv;
-  args->argv = NULL;
-  return argv;
+	char **argv;
+
+	argv = args->argv;
+	args->argv = NULL;
+	return argv;
 }
 
-const char * const *
-lash_args_get_argv   (const lash_args_t * args)
+const char *const *
+lash_args_get_argv(const lash_args_t * args)
 {
-  return (const char * const *) args->argv;
+	return (const char *const *)args->argv;
 }
-
 
 /* EOF */

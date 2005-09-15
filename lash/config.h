@@ -19,32 +19,30 @@
  */
 
 #ifndef __LASH_CONFIG_H__
-#define __LASH_CONFIG_H__
+#  define __LASH_CONFIG_H__
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <sys/types.h>
+#  include <stdlib.h>
+#  include <stdint.h>
+#  include <sys/types.h>
 
-#include <lash/lash.h>
+#  include <lash/lash.h>
 
-#ifdef __cplusplus
+#  ifdef __cplusplus
 extern "C" {
-#endif
+#  endif
 
-lash_config_t * lash_config_new          (void);
-lash_config_t * lash_config_dup          (const lash_config_t * config);
-lash_config_t * lash_config_new_with_key (const char * key);
-void           lash_config_destroy      (lash_config_t * config);
+	lash_config_t *lash_config_new(void);
+	lash_config_t *lash_config_dup(const lash_config_t * config);
+	lash_config_t *lash_config_new_with_key(const char *key);
+	void lash_config_destroy(lash_config_t * config);
 
+	const char *lash_config_get_key(const lash_config_t * config);
+	const void *lash_config_get_value(const lash_config_t * config);
+	size_t lash_config_get_value_size(const lash_config_t * config);
 
-const char * lash_config_get_key        (const lash_config_t * config);
-const void * lash_config_get_value      (const lash_config_t * config);
-size_t       lash_config_get_value_size (const lash_config_t * config);
-
-void lash_config_set_key   (lash_config_t * config, const char * key);
-void lash_config_set_value (lash_config_t * config, const void * value, size_t value_size);
-
-
+	void lash_config_set_key(lash_config_t * config, const char *key);
+	void lash_config_set_value(lash_config_t * config, const void *value,
+							   size_t value_size);
 
 /*
  * with these functions, no type checking is done; you can do
@@ -54,18 +52,18 @@ void lash_config_set_value (lash_config_t * config, const void * value, size_t v
  * the int values are converted to and from network byte order as
  * appropriate
  */
-uint32_t     lash_config_get_value_int    (const lash_config_t * config);
-float        lash_config_get_value_float  (const lash_config_t * config);
-double       lash_config_get_value_double (const lash_config_t * config);
-const char * lash_config_get_value_string (const lash_config_t * config);
+	uint32_t lash_config_get_value_int(const lash_config_t * config);
+	float lash_config_get_value_float(const lash_config_t * config);
+	double lash_config_get_value_double(const lash_config_t * config);
+	const char *lash_config_get_value_string(const lash_config_t * config);
 
-void lash_config_set_value_int    (lash_config_t * config, uint32_t value);
-void lash_config_set_value_float  (lash_config_t * config, float value);
-void lash_config_set_value_double (lash_config_t * config, double value);
-void lash_config_set_value_string (lash_config_t * config, const char * value);
+	void lash_config_set_value_int(lash_config_t * config, uint32_t value);
+	void lash_config_set_value_float(lash_config_t * config, float value);
+	void lash_config_set_value_double(lash_config_t * config, double value);
+	void lash_config_set_value_string(lash_config_t * config,
+									  const char *value);
 
-#ifdef __cplusplus
+#  ifdef __cplusplus
 }
-#endif
-
-#endif /* __LASH_CONFIG_H__ */
+#  endif
+#endif							/* __LASH_CONFIG_H__ */

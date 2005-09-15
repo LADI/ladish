@@ -29,75 +29,77 @@
 
 #include "gtk_client.h"
 
-const char * filename = "lash_gtk_client.data";
+const char *filename = "lash_gtk_client.data";
 
-static void print_help () {
-  printf("LASH GTK Test Client version %s\n", PACKAGE_VERSION);
-  printf("Copyright (C) 2002 Robert Ham <rah@bash.sh>\n");
-  printf("\n");
-  printf("This program comes with ABSOLUTELY NO WARRANTY.  You are licensed to use it\n");
-  printf("under the terms of the GNU General Public License, version 2 or later.  See\n");
-  printf("the COPYING file that came with this software for details.\n");
-  printf("\n");
-  printf(" -h, --help                  Display this help info\n");
-  printf(" -f, --filename <filename>   Store data with LASH using the specified file name\n");
-  printf("     --lash-port=<port>    Connect to server on port <port>\n");
-  printf("\n");
-}                            
-
-int main (int argc, char ** argv)
+static void
+print_help()
 {
-  lash_args_t * lash_args;
-  lash_client_t * lash_client;
-  gtk_client_t * gtk_client;
-  int opt;
-  const char * options = "hf:";
-  struct option long_options[] = {
-    { "help", 0, NULL, 'h' },
-    { "filename", 1, NULL, 'f' },
-    { 0, 0, 0, 0 }
-  };
-  
-  lash_args = lash_extract_args (&argc, &argv);
-
-  gtk_set_locale ();
-  gtk_init (&argc, &argv);
-      
-  while ((opt = getopt_long (argc, argv, options, long_options, NULL)) != -1)
-    {
-      switch (opt)
-      {
-      case 'f':
-        filename = optarg;
-        break;
-      case 'h':
-        print_help ();
-        exit (0);
-        break;
-
-      case ':':
-      case '?':
-        print_help ();
-        exit (1);
-        break;
-    }
-  }
-  
-  lash_client = lash_init (lash_args, "LASH GTK Client", LASH_Config_Data_Set|LASH_Config_File,
-                         LASH_PROTOCOL (2,0));
-
-  if (!lash_client)
-    {
-      fprintf (stderr, "%s: could not initialise lash\n", __FUNCTION__);
-      exit (1);
-    }
-  
-  
-  
-  gtk_client = gtk_client_create (lash_client);
-  
-  gtk_main ();
-  
-  return 0;
+	printf("LASH GTK Test Client version %s\n", PACKAGE_VERSION);
+	printf("Copyright (C) 2002 Robert Ham <rah@bash.sh>\n");
+	printf("\n");
+	printf
+		("This program comes with ABSOLUTELY NO WARRANTY.  You are licensed to use it\n");
+	printf
+		("under the terms of the GNU General Public License, version 2 or later.  See\n");
+	printf("the COPYING file that came with this software for details.\n");
+	printf("\n");
+	printf(" -h, --help                  Display this help info\n");
+	printf
+		(" -f, --filename <filename>   Store data with LASH using the specified file name\n");
+	printf("     --lash-port=<port>    Connect to server on port <port>\n");
+	printf("\n");
 }
 
+int
+main(int argc, char **argv)
+{
+	lash_args_t *lash_args;
+	lash_client_t *lash_client;
+	gtk_client_t *gtk_client;
+	int opt;
+	const char *options = "hf:";
+	struct option long_options[] = {
+		{"help", 0, NULL, 'h'},
+		{"filename", 1, NULL, 'f'},
+		{0, 0, 0, 0}
+	};
+
+	lash_args = lash_extract_args(&argc, &argv);
+
+	gtk_set_locale();
+	gtk_init(&argc, &argv);
+
+	while ((opt = getopt_long(argc, argv, options, long_options, NULL)) != -1) {
+		switch (opt) {
+		case 'f':
+			filename = optarg;
+			break;
+		case 'h':
+			print_help();
+			exit(0);
+			break;
+
+		case ':':
+		case '?':
+			print_help();
+			exit(1);
+			break;
+		}
+	}
+
+	lash_client =
+		lash_init(lash_args, "LASH GTK Client",
+				  LASH_Config_Data_Set | LASH_Config_File, LASH_PROTOCOL(2,
+																		 0));
+
+	if (!lash_client) {
+		fprintf(stderr, "%s: could not initialise lash\n", __FUNCTION__);
+		exit(1);
+	}
+
+	gtk_client = gtk_client_create(lash_client);
+
+	gtk_main();
+
+	return 0;
+}

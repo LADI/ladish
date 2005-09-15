@@ -24,60 +24,58 @@
 #include "client.h"
 
 client_t *
-client_new ()
+client_new()
 {
-  client_t *client;
-  client = lash_malloc0 (sizeof (client_t));
-  uuid_clear (client->id);
-  return client;
+	client_t *client;
+
+	client = lash_malloc0(sizeof(client_t));
+	uuid_clear(client->id);
+	return client;
 }
 
 void
-client_destroy (client_t * client)
+client_destroy(client_t * client)
 {
-  client_set_name (client, NULL);
-  client_set_jack_client_name (client, NULL);
-  free (client);
+	client_set_name(client, NULL);
+	client_set_jack_client_name(client, NULL);
+	free(client);
 }
 
 void
-client_set_name (client_t * client, const char * name)
+client_set_name(client_t * client, const char *name)
 {
-  set_string_property (client->name, name);
+	set_string_property(client->name, name);
 }
 
 void
-client_set_jack_client_name (client_t * client, const char * name)
+client_set_jack_client_name(client_t * client, const char *name)
 {
-  set_string_property (client->jack_client_name, name);
+	set_string_property(client->jack_client_name, name);
 }
 
 const char *
-client_get_identity (client_t * client)
+client_get_identity(client_t * client)
 {
-  static char * identity = NULL;
-  static size_t identity_size = sizeof (char[37]);
+	static char *identity = NULL;
+	static size_t identity_size = sizeof(char[37]);
 
-  if (!identity)
-    identity = lash_malloc (identity_size);
+	if (!identity)
+		identity = lash_malloc(identity_size);
 
-  if (client->name)
-    {
-      size_t name_size;
+	if (client->name) {
+		size_t name_size;
 
-      name_size = strlen (client->name) + 1;
-      if (name_size > identity_size)
-	{
-	  identity_size = name_size;
-	  identity = lash_realloc (identity, identity_size);
-	}
+		name_size = strlen(client->name) + 1;
+		if (name_size > identity_size) {
+			identity_size = name_size;
+			identity = lash_realloc(identity, identity_size);
+		}
 
-      strcpy (identity, client->name);
-    }
-  else
-    uuid_unparse (client->id, identity);
+		strcpy(identity, client->name);
+	} else
+		uuid_unparse(client->id, identity);
 
-  return identity;
+	return identity;
 }
 
 /* EOF */

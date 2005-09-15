@@ -25,128 +25,129 @@
 #include <lash/xmalloc.h>
 #include <lash/event.h>
 
-
 lash_event_t *
-lash_event_new ()
+lash_event_new()
 {
-  lash_event_t * event;
-  event = lash_malloc0 (sizeof (lash_event_t));
-  uuid_clear (event->client_id);
-  return event;
+	lash_event_t *event;
+
+	event = lash_malloc0(sizeof(lash_event_t));
+	uuid_clear(event->client_id);
+	return event;
 }
 
 lash_event_t *
-lash_event_new_with_type (enum LASH_Event_Type type)
+lash_event_new_with_type(enum LASH_Event_Type type)
 {
-  lash_event_t * event;
-  event = lash_event_new ();
-  lash_event_set_type (event, type);
-  return event;
+	lash_event_t *event;
+
+	event = lash_event_new();
+	lash_event_set_type(event, type);
+	return event;
 }
 
 lash_event_t *
-lash_event_new_with_all (enum LASH_Event_Type type, const char * string)
+lash_event_new_with_all(enum LASH_Event_Type type, const char *string)
 {
-  lash_event_t * event;
-  event = lash_event_new ();
-  lash_event_set_type (event, type);
-  lash_event_set_string (event, string);
-  return event;
+	lash_event_t *event;
+
+	event = lash_event_new();
+	lash_event_set_type(event, type);
+	lash_event_set_string(event, string);
+	return event;
 }
 
 void
-lash_event_free (lash_event_t * event)
+lash_event_free(lash_event_t * event)
 {
-  event->type = 0;
-  lash_event_set_string  (event, NULL);
-  lash_event_set_project (event, NULL);
+	event->type = 0;
+	lash_event_set_string(event, NULL);
+	lash_event_set_project(event, NULL);
 }
 
 void
-lash_event_destroy (lash_event_t * event)
+lash_event_destroy(lash_event_t * event)
 {
-  lash_event_free (event);
-  free (event);
+	lash_event_free(event);
+	free(event);
 }
 
 enum LASH_Event_Type
-lash_event_get_type (const lash_event_t * event)
+lash_event_get_type(const lash_event_t * event)
 {
-  return event->type;
+	return event->type;
 }
 
 void
-lash_event_set_type (lash_event_t * event, enum LASH_Event_Type type)
+lash_event_set_type(lash_event_t * event, enum LASH_Event_Type type)
 {
-  event->type = type;
+	event->type = type;
 }
 
 const char *
-lash_event_get_string (const lash_event_t * event)
+lash_event_get_string(const lash_event_t * event)
 {
-  return event->string;
+	return event->string;
 }
 
 void
-lash_event_set_string (lash_event_t * event, const char * string)
+lash_event_set_string(lash_event_t * event, const char *string)
 {
-  set_string_property (event->string, string);
+	set_string_property(event->string, string);
 }
 
 const char *
-lash_event_get_project (const lash_event_t *event)
+lash_event_get_project(const lash_event_t * event)
 {
-  return event->project;
+	return event->project;
 }
 
 void
-lash_event_set_project (lash_event_t *event, const char *project)
+lash_event_set_project(lash_event_t * event, const char *project)
 {
-  set_string_property (event->project, project);
+	set_string_property(event->project, project);
 }
 
 void
-lash_event_get_client_id (const lash_event_t * event, uuid_t id)
+lash_event_get_client_id(const lash_event_t * event, uuid_t id)
 {
-  uuid_copy (id, event->client_id);
+	uuid_copy(id, event->client_id);
 }
 
 void
-lash_event_set_client_id (lash_event_t * event, uuid_t id)
+lash_event_set_client_id(lash_event_t * event, uuid_t id)
 {
-  uuid_copy (event->client_id, id);
+	uuid_copy(event->client_id, id);
 }
 
 void
-lash_event_set_alsa_client_id (lash_event_t * event, unsigned char alsa_id)
+lash_event_set_alsa_client_id(lash_event_t * event, unsigned char alsa_id)
 {
-  char id[2];
-  
-  lash_str_set_alsa_client_id (id, alsa_id);
-  
-  lash_event_set_type   (event, LASH_Alsa_Client_ID);
-  lash_event_set_string (event, id);
+	char id[2];
+
+	lash_str_set_alsa_client_id(id, alsa_id);
+
+	lash_event_set_type(event, LASH_Alsa_Client_ID);
+	lash_event_set_string(event, id);
 }
 
 unsigned char
-lash_event_get_alsa_client_id (const lash_event_t * event)
+lash_event_get_alsa_client_id(const lash_event_t * event)
 {
-  return lash_str_get_alsa_client_id (lash_event_get_string (event));
+	return lash_str_get_alsa_client_id(lash_event_get_string(event));
 }
 
 void
-lash_str_set_alsa_client_id (char * str, unsigned char alsa_id)
+lash_str_set_alsa_client_id(char *str, unsigned char alsa_id)
 {
-  str[0] = (char) alsa_id;
-  str[1] = '\0';
+	str[0] = (char)alsa_id;
+	str[1] = '\0';
 }
 
 unsigned
-char lash_str_get_alsa_client_id (const char * str)
+	char
+lash_str_get_alsa_client_id(const char *str)
 {
-  return (unsigned char) *str;
+	return (unsigned char)*str;
 }
 
-
 /* EOF */
-

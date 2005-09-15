@@ -24,74 +24,72 @@
 #include "jack_fport.h"
 
 jack_fport_t *
-jack_fport_new ()
+jack_fport_new()
 {
-  jack_fport_t * port;
-  
-  port = lash_malloc (sizeof (jack_fport_t));
+	jack_fport_t *port;
 
-  port->id = 0;
-  port->name = NULL;
-  
-  return port;
+	port = lash_malloc(sizeof(jack_fport_t));
+
+	port->id = 0;
+	port->name = NULL;
+
+	return port;
 }
 
 jack_fport_t *
-jack_fport_new_with_id (jack_port_id_t id)
+jack_fport_new_with_id(jack_port_id_t id)
 {
-  jack_fport_t * port;
-  
-  port = jack_fport_new ();
-  jack_fport_set_id (port, id);
-  
-  return port;
+	jack_fport_t *port;
+
+	port = jack_fport_new();
+	jack_fport_set_id(port, id);
+
+	return port;
 }
 
 void
-jack_fport_destroy (jack_fport_t * port)
+jack_fport_destroy(jack_fport_t * port)
 {
-  jack_fport_set_name (port, NULL);
-  free (port);
+	jack_fport_set_name(port, NULL);
+	free(port);
 }
 
 void
-jack_fport_set_id	  (jack_fport_t * port, jack_port_id_t id)
+jack_fport_set_id(jack_fport_t * port, jack_port_id_t id)
 {
-  port->id = id;
+	port->id = id;
 }
 
 void
-jack_fport_set_name  (jack_fport_t * port, const char * name)
+jack_fport_set_name(jack_fport_t * port, const char *name)
 {
-  set_string_property (port->name, name);
+	set_string_property(port->name, name);
 }
 
 int
-jack_fport_find_name (jack_fport_t * port, jack_client_t * jack_client)
+jack_fport_find_name(jack_fport_t * port, jack_client_t * jack_client)
 {
-  jack_port_t * jack_port;
-  
-  jack_port = jack_port_by_id (jack_client, port->id);
+	jack_port_t *jack_port;
 
-  if (!jack_port)
-    return 1;
-  
-  jack_fport_set_name (port, jack_port_name (jack_port));
-  return 0;
+	jack_port = jack_port_by_id(jack_client, port->id);
+
+	if (!jack_port)
+		return 1;
+
+	jack_fport_set_name(port, jack_port_name(jack_port));
+	return 0;
 }
 
 jack_port_id_t
-jack_fport_get_id   (const jack_fport_t * port)
+jack_fport_get_id(const jack_fport_t * port)
 {
-  return port->id;
+	return port->id;
 }
 
 const char *
-jack_fport_get_name (const jack_fport_t * port)
+jack_fport_get_name(const jack_fport_t * port)
 {
-  return port->name;
+	return port->name;
 }
 
-
 /* EOF */
-

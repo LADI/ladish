@@ -28,66 +28,63 @@
 #ifndef LASH_DEBUG
 
 void *
-lash_xmalloc (size_t size)
+lash_xmalloc(size_t size)
 {
-  void * ptr;
-  
-  ptr = malloc (size);
-  
-  if (!ptr)
-    {
-      fprintf (stderr, "%s: could not allocate memory; aborting\n",
-               __FUNCTION__);
-      abort ();
-    }
-  
-  return ptr;
+	void *ptr;
+
+	ptr = malloc(size);
+
+	if (!ptr) {
+		fprintf(stderr, "%s: could not allocate memory; aborting\n",
+				__FUNCTION__);
+		abort();
+	}
+
+	return ptr;
 }
 
 void *
-lash_xrealloc (void * data, size_t size)
+lash_xrealloc(void *data, size_t size)
 {
-  void * ptr;
-  
-  ptr = realloc (data, size);
-  
-  if (!ptr)
-    {
-      fprintf (stderr, "%s: could not allocate memory; aborting\n",
-               __FUNCTION__);
-      abort ();
-    }
-  
-  return ptr;
+	void *ptr;
+
+	ptr = realloc(data, size);
+
+	if (!ptr) {
+		fprintf(stderr, "%s: could not allocate memory; aborting\n",
+				__FUNCTION__);
+		abort();
+	}
+
+	return ptr;
 }
 
 char *
-lash_xstrdup (const char * string)
+lash_xstrdup(const char *string)
 {
-  void * str;
-  
-  str = strdup (string);
-  
-  if (!str)
-    {
-      fprintf (stderr, "%s: could not allocate memory; aborting\n",
-               __FUNCTION__);
-      abort ();
-    }
-  
-  return str;
+	void *str;
+
+	str = strdup(string);
+
+	if (!str) {
+		fprintf(stderr, "%s: could not allocate memory; aborting\n",
+				__FUNCTION__);
+		abort();
+	}
+
+	return str;
 }
 
 #endif /* LASH_DEBUG */
 
 void *
-lash_malloc0  (size_t size)
+lash_malloc0(size_t size)
 {
-  void * data;
+	void *data;
 
-  data = lash_malloc (size);
+	data = lash_malloc(size);
 
-  memset (data, 0, size);
+	memset(data, 0, size);
 
-  return data;
+	return data;
 }
