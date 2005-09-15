@@ -158,7 +158,7 @@ project_create(lash_client_t * lash_client, const char *const name)
 
 	/* Name label */
 	project->name_label = gtk_label_new("    Name: ");
-	gtk_misc_set_alignment(GTK_MISC(project->name_label), 1.0, 0.5);
+	gtk_misc_set_alignment(GTK_MISC(project->name_label), 0.0, 0.5);
 	gtk_widget_show(project->name_label);
 	gtk_table_attach(GTK_TABLE(project->properties_table),
 					 project->name_label, 0, 1, 0, 1, GTK_FILL, GTK_FILL, 2, 2);
@@ -182,7 +182,7 @@ project_create(lash_client_t * lash_client, const char *const name)
 
 	/* Directory label */
 	project->dir_label = gtk_label_new("    Directory: ");
-	gtk_misc_set_alignment(GTK_MISC(project->dir_label), 1.0, 0.5);
+	gtk_misc_set_alignment(GTK_MISC(project->dir_label), 0.0, 0.5);
 	gtk_widget_show(project->dir_label);
 	gtk_table_attach(GTK_TABLE(project->properties_table), project->dir_label,
 					 0, 1, 1, 2, GTK_FILL, GTK_FILL, 2, 2);
