@@ -1,4 +1,4 @@
-AC_INIT([LASH],[0.5.0pre0])
+AC_INIT([LASH],[0.5.0])
 AC_CONFIG_SRCDIR([lash/types.h])
 AC_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE

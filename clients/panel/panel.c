@@ -424,9 +424,9 @@ panel_create(lash_client_t * lash_client)
 	/*
 	 * "no project" label (shown instead of a notebook tab when no projects are present)
 	 */
-	panel->no_projects_label = gtk_label_new("(No projects open.  Start a LASH client, or load a project from the File menu)");
+	panel->no_projects_label = gtk_label_new("No projects open.  Start a LASH client, or load a project from the File menu.");
 	gtk_widget_show(panel->no_projects_label);
-	gtk_box_pack_start(GTK_BOX(main_box), panel->no_projects_label, TRUE, TRUE, 0);
+	gtk_box_pack_start(GTK_BOX(main_box), panel->no_projects_label, FALSE, TRUE, 10);
 	
 	/*
 	 * status bar

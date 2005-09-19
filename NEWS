@@ -4,7 +4,7 @@
 * bitrot removal, GCC4 fixes, autotools updates, etc
 * added GTK control panel server interface client
 * removed all traces of former name (API is incompatible with previous
-  releases)
+  releases, search replace "CCA" and "LADCCA" with "LASH", and "cca_" with "lash_")
 
 0.4.0:
 

@@ -10,13 +10,18 @@ $ make
 # make install
 $ lashd
 
-then, in different consoles, run lash_gtk_client and lash_synth.  Make
-some jack and aseq connections to the synth using aconnect and jack_connect.
-Add some configs and open a file in lash_gtk_client.  Then click on save
-in lash_gtk_client.  Now close both the clients (just ^C the synth.)  Now
-run lash_control and type "restore /home/<user>/audio-projects/project-1". 
-The synth and gtk client should restart, and the synth's connections should
-be restored.  Phat.
+then, in different consoles, run lash_panel and lash_synth.  Make
+some Jack and Alsa Sequencer connections to the synth using aconnect and 
+jack_connect (or your patch bay of choice).
+
+Play around with the settings of lash_synth, and click "Save Project" in the
+control panel (you'll have to select a directory to save to).  Then click
+"Close Project" and all running LASH clients should exit, and the project
+tab in lash_panel should disappear.
+
+Now use the "File->Open Session" menu item to open your saved project.  The
+synth (and any other runnings LASH clients) should restart, and all the Jack
+and Alsa MIDI connections should be restored.  Phat.
 
 The interesting header files are client_interface.h, types.h, config.h and
 event.h, all in the lash/ directory.  There is a partially complete
