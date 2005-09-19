@@ -108,6 +108,9 @@ event_project_add(panel_t * panel, lash_event_t * event)
 
 	printf("Add project: %s\n", name);
 
+	if (panel->num_projects == 0)
+		gtk_label_set_text(GTK_LABEL(panel->no_projects_label), "");
+	
 	gtk_list_store_append(panel->projects, &iter);
 
 	project = project_create(panel->lash_client, name);
@@ -115,12 +118,11 @@ event_project_add(panel_t * panel, lash_event_t * event)
 	gtk_list_store_set(panel->projects, &iter,
 					   PROJECT_PROJECT_COLUMN, project, -1);
 
-	/*gtk_widget_unparent(project->box); */
-
 	project->page_number =
 		gtk_notebook_append_page(GTK_NOTEBOOK(panel->project_notebook),
 								 project->box, project->tab_label);
-
+	
+	panel->num_projects++;
 }
 
 void
@@ -133,6 +135,10 @@ event_project_remove(panel_t * panel, lash_event_t * event)
 
 	printf("Remove project: %s\n", name);
 
+	if (panel->num_projects == 1)
+		gtk_label_set_text(GTK_LABEL(panel->no_projects_label),
+			"(No projects open.  Start a LASH client, or load a project from the File menu)");
+	
 	if (project != NULL)
 		if (gtk_tree_model_get_iter_first(tree_model, &iter))
 			do {
@@ -148,6 +154,8 @@ event_project_remove(panel_t * panel, lash_event_t * event)
 					break;
 				}
 			} while (gtk_tree_model_iter_next(tree_model, &iter));
+
+	panel->num_projects--;
 }
 
 void
@@ -342,6 +350,7 @@ panel_create(lash_client_t * lash_client)
 	panel->lash_client = lash_client;
 
 	panel->projects = gtk_list_store_new(PROJECT_NUM_COLUMNS, G_TYPE_POINTER);
+	panel->num_projects = 0;
 
 	panel->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(panel->window), WINDOW_TITLE);
@@ -410,9 +419,15 @@ panel_create(lash_client_t * lash_client)
 	gtk_notebook_set_tab_pos(GTK_NOTEBOOK(panel->project_notebook),
 							 GTK_POS_TOP);
 	gtk_widget_show(panel->project_notebook);
-	gtk_box_pack_start(GTK_BOX(main_box), panel->project_notebook, TRUE, TRUE,
-					   0);
+	gtk_box_pack_start(GTK_BOX(main_box), panel->project_notebook, TRUE, TRUE, 0);
 
+	/*
+	 * "no project" label (shown instead of a notebook tab when no projects are present)
+	 */
+	panel->no_projects_label = gtk_label_new("(No projects open.  Start a LASH client, or load a project from the File menu)");
+	gtk_widget_show(panel->no_projects_label);
+	gtk_box_pack_start(GTK_BOX(main_box), panel->no_projects_label, TRUE, TRUE, 0);
+	
 	/*
 	 * status bar
 	 */

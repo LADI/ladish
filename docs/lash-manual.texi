@@ -73,31 +73,33 @@ Appendicies
 @comment node-name, next, previous, up
 @chapter Introduction
 
-LASH stands for LASH Audio Session Handler. 
-It is a session management system for audio applications on GNU/Linux.  It
-understands the JACK low latency audio API and the ALSA MIDI sequencer
-interface. The system is comprised of a server program, @command{lashd},
-an application library, @code{liblash}, and a command line control program,
-@command{laddca_control}.  The server and clients communicate over TCP
-sockets.  There are three kinds of clients: normal clients (audio
-applications), user interfaces for the server, and connection patchbays.
+LASH stands for LASH Audio Session Handler.  It is a session management
+system for audio applications on GNU/Linux.  It understands the
+JACK low latency audio API and the ALSA MIDI sequencer interface. The
+system is comprised of a server program, @command{lashd}, an application
+library, @code{liblash}, and a control program - either the command-line
+@command{lash_control} or the GTK @command{lash_panel}.  The server and
+clients communicate over TCP sockets.  There are three kinds of clients:
+normal clients (audio applications), user interfaces for the server,
+and connection patchbays.
 
 @section Nomenclature
 
-In order to describe the system, we should introduce some terminology. 
+In order to describe the system, we should introduce some terminology.
 First of all, the @dfn{server} is the @command{lashd} server program, an
-omni-present marshaller and database for storing arbitrary application data.
-The @dfn{library} is the @samp{liblash} shared library.  It contains all
-the functions that an application uses to communicate with the server and
-take part in the system.  Such an application is called a @dfn{client}.
+omni-present marshaller and database for storing arbitrary application
+data.  The @dfn{library} is the @samp{liblash} shared library.
+It contains all the functions that an application uses to communicate
+with the server and take part in the system.  Such an application is
+called a @dfn{client}.
 
-The server deals with things in terms of collections of clients, called
-@dfn{projects}.  A project has a unique string name, a current directory
-and a list of clients that are in that project.  The server can have one
-client that is a @dfn{server interface} that allows the user to control the
-server.  There are two server interface included with the system, the
-@command{lash_control} command-line interface, and the @command{lash_panel}
-GTK interface.
+The server deals with things in terms of collections of clients,
+called @dfn{projects}.  A project has a unique string name, a current
+directory and a list of clients that are in that project.  The server
+can have one client that is a @dfn{server interface} that allows the
+user to control the server.  There are two server interface included
+with the system, the @command{lash_control} command-line interface,
+and the @command{lash_panel} GTK interface.
 
 
 
@@ -106,23 +108,25 @@ GTK interface.
 @comment node-name, next, previous, up
 @chapter Copying LASH
 
-LASH is distributed under the GNU General Public License.  A copy of the
-license text is provided in the file @file{COPYING} along with the software
-source code, or you can get a copy by writing to the Free Software
-Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+LASH is distributed under the GNU General Public License.  A copy of
+the license text is provided in the file @file{COPYING} along with
+the software source code, or you can get a copy by writing to the
+Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston,
+MA 02110-1301 USA.
 
 In plain english, the GPL basically restricts you from restricting other
-people's use of the LASH source code (ie, all of LASH), and any additions you make to
-the code, including linking with the LASH library.  If you use code from this
-software, your software must be relased under the GPL.  If you modify this
-software and release it, your modifications must be released under the GPL. If
-you release software linked against the LASH library, your software must be
-released under the GPL.
+people's use of the LASH source code (ie, all of LASH), and any additions
+you make to the code, including linking with the LASH library.  If you
+use code from this software, your software must be relased under the GPL.
+If you modify this software and release it, your modifications must be
+released under the GPL. If you release software linked against the LASH
+library, your software must be released under the GPL.
 
-Note that this in no way restricts those people who want to release non-free
-LASH clients.  LASH operates using a well defined protocol over TCP
-sockets.  The high-level protocol is described within this document and
-the lower-level bit-wise protocol can be garnered from the source itself.
+Note that this in no way restricts those people who want to release
+non-free LASH clients.  LASH operates using a well defined protocol
+over TCP sockets.  The high-level protocol is described within this
+document and the lower-level bit-wise protocol can be garnered from the
+source itself.
 
 
 
@@ -134,99 +138,100 @@ This chapter describes how to get LASH installed on your system.
 @section Dependencies
 
 LASH depends on the ALSA library, the JACK library, a unique ID library
-called libuuid and the XML library libxml2.  You need these installed before attempting to install
-LASH.
+called libuuid and the XML library libxml2.  You need these installed
+before attempting to install LASH.
 
-ALSA is available from @url{http://www.alsa-project.org/}. 
+ALSA is available from @url{http://www.alsa-project.org/}.
 
 JACK is available from @url{http://jackit.sf.net/}.
 
 The libuuid library is included with the ubiquitous e2fsprogs package,
 but if this is not installed on your system, it is available from
-@url{http://e2fsprogs.sf.net/}.
-The libxml2 library is available from @url{http://www.xmlsoft.org/}.
+@url{http://e2fsprogs.sf.net/}.  The libxml2 library is available from
+@url{http://www.xmlsoft.org/}.
 
-The LASH Control client depends on the GNU Readline library,
-available from @url{ftp://ftp.gnu.org/pub/gnu/readline/}.
+The LASH Control client depends on the GNU Readline library, available
+from @url{ftp://ftp.gnu.org/pub/gnu/readline/}.
 
-The LASH GTK Test Client, LASH Save Button 2, and LASH Panel all depend
-on the GTK+ 2 toolkit, available from @url{ftp://ftp.gtk.org/pub/gtk/v2.0/}.
-The LASH Synth client has an optional GUI which also uses the GTK+ 2 toolkit.
+The LASH GTK Test Client, LASH Save Button 2, and LASH Panel all depend on
+the GTK+ 2 toolkit, available from @url{ftp://ftp.gtk.org/pub/gtk/v2.0/}.
+The LASH Synth client has an optional GUI which also uses the GTK+
+2 toolkit.
 
 The LASH Save Button client depends on the GTK+ 1.2 toolkit, also
-available from @url{ftp://ftp.gtk.org/pub/gtk/v1.2/}. 
+available from @url{ftp://ftp.gtk.org/pub/gtk/v1.2/}.
 
 @section Installation
 
-First off, you need to download the package.  It is available from the
-LASH webpage, @url{http://www.nongnu.org/lash}.  After you have
-downloaded it, unpack the tarball into a directory using @command{tar -xzf
-/where/ever/you/put/lash-0.5.0.tar.gz} and change into the source directory
-with @command{cd lash-0.5.0}.
+First off, you need to download the package.  It is available from
+the LASH webpage, @url{http://www.nongnu.org/lash}.  After you have
+downloaded it, unpack the tarball into a directory using @command{tar
+-xzf /where/ever/you/put/lash-0.5.0.tar.gz} and change into the source
+directory with @command{cd lash-0.5.0}.
 
-The package uses the GNU autotools for configuration and makefile creation. 
-In order to install the package, you must complete three steps:
+The package uses the GNU autotools for configuration and makefile
+creation.  In order to install the package, you must complete three steps:
 configuration; building; and installing.
 
-@subsection Configuration
-To configure the package, there is a shell script named @file{configure} in the
-top source directory.  It is a standard GNU autoconf configure script, and
-so accepts the standard GNU configuration options (such as
-@option{--prefix}, @option{--datadir}, etc.)  To run it type
-@command{./configure} and add any options.  The non-standard options that
-the script recognises are described below. 
+@subsection Configuration To configure the package, there is a shell
+script named @file{configure} in the top source directory.  It is a
+standard GNU autoconf configure script, and so accepts the standard GNU
+configuration options (such as @option{--prefix}, @option{--datadir},
+etc.)  To run it type @command{./configure} and add any options.
+The non-standard options that the script recognises are described below.
 Running the script with the @option{--help} option will also provide a
 quick summary of the recognised options.
 
 @subsubsection Configure script options
 
 @table @option
-@item --disable-gtk2
-Prevents the configure script from checking for the presence of the
-GTK+ 2 toolkit and disables the building of any code that relies on it.  The
-LASH Save Button 2 and LASH GTK Test Client both rely on GTK+ 2.
+@item --disable-gtk2 Prevents the configure script from
+checking for the presence of the GTK+ 2 toolkit and disables the building
+of any code that relies on it.  The LASH Save Button 2 and LASH GTK Test
+Client both rely on GTK+ 2.
 
-@item --disable-gtk
-Prevents the configure script from checking for the presence of the
-GTK+ 1.2 toolkit and disables the building of any code that relies on it. 
-The LASH Save Button client relies on GTK+ 1.2.
+@item --disable-gtk Prevents the configure script from checking for the
+presence of the GTK+ 1.2 toolkit and disables the building of any code
+that relies on it.  The LASH Save Button client relies on GTK+ 1.2.
 
-@item --enable-debug
-Causes the library, server and clients to be built with debugging output. 
-This is not very useful and only recommended for developers working on the
-LASH code itself.
+@item --enable-debug Causes the library, server and clients to be built
+with debugging output.  This is not very useful and only recommended
+for developers working on the LASH code itself.
 
-@item --with-default-dir=DIR
-Specifies the default directory, relative to \$HOME under which the server will create new project
-directories.  Without this option, the value defaults to @file{audio-projects}.
+@item --with-default-dir=DIR Specifies the default directory, relative
+to \$HOME under which the server will create new project directories.
+Without this option, the value defaults to @file{audio-projects}.
 
-@item --disable-serv-inst
-The LASH server and library look up port addresses for the LASH service
-using standard system calls that refer to the @file{/etc/services} database.
-If @file{/etc/services} does not contain a valid entry, an error will result.
-By default, the installation routine will install a service entry if one does not
-exist.  This flag disables that action.
+@item --disable-serv-inst The LASH server and library look up port
+addresses for the LASH service using standard system calls that
+refer to the @file{/etc/services} database.  If @file{/etc/services}
+does not contain a valid entry, an error will result.  By default, the
+installation routine will install a service entry if one does not exist.
+This flag disables that action.
 
 @end table
 
 @subsection Building
-To build the package, simply type @command{make} in the top source
-directory.  This will build the server, the library and the clients that are
-compatible with the resources found by the configure script.
+To build the package, simply type @command{make}
+in the top source directory.  This will build the server, the library
+and the clients that are compatible with the resources found by the
+configure script.
 
 @subsection Installing
-To install the package, type @command{make install} in the top source
-directory.  By default the package installation prefix is @file{/usr/local} but
-the @option{--prefix} option to the configure script will change this.  The
-@command{lashd} server and the clients that were built are installed in
-@file{@var{prefix}/bin}.  The @code{liblash} client library is installed
-in @file{@var{prefix}/lib}.  The C header files for the client library are
-installed under @file{@var{prefix}/include}.  This manual is installed under
+To install the package, type @command{make install}
+in the top source directory.  By default the package installation
+prefix is @file{/usr/local} but the @option{--prefix} option to the
+configure script will change this.  The @command{lashd} server and
+the clients that were built are installed in @file{@var{prefix}/bin}.
+The @code{liblash} client library is installed in @file{@var{prefix}/lib}.
+The C header files for the client library are installed under
+@file{@var{prefix}/include}.  This manual is installed under
 @file{@var{prefix}/info}.
 
-With @command{make install}, the package is installed with debugging symbols in the object
-files.  To save space, you can install with @command{make install-strip} to
-install the object files without debugging symbols.
+With @command{make install}, the package is installed with debugging
+symbols in the object files.  To save space, you can install with
+@command{make install-strip} to install the object files without
+debugging symbols.
 
 
 
@@ -247,6 +252,7 @@ For a command line interface, run the command @command{lashd_control}.
 There is a @command{help} command.
 
 For a graphical interface, run the command @command{lash_panel}.
+It should be relatively self-explanatory.
 
 
 
@@ -266,142 +272,154 @@ programmers of LASH clients.
 @section Operational overview
 
 In this section we give an overview of how the LASH system operates,
-describing the server and client objects and operations that make it work.  The
-@command{lashd} server must be running in order for clients to participate
-in the system; clients cannot interoperate soley between themselves.  The
-server maintains a list of connected clients and a list of projects with
-which these clients are associated.
+describing the server and client objects and operations that make it
+work.  The @command{lashd} server must be running in order for clients
+to participate in the system; clients cannot interoperate soley between
+themselves.  The server maintains a list of connected clients and a list
+of projects with which these clients are associated.
 
-The server and clients exchange events and configs over their connections.  There
-is one, and only one, bi-directional connection between a client and
-the server.  The transport for this connection is currently TCP.
+The server and clients exchange events and configs over their connections.
+There is one, and only one, bi-directional connection between a client
+and the server.  The transport for this connection is currently TCP.
 
-An @dfn{event} is a very simple object having two relevant properties: a type and an
-optional arbitrary character string.  The type defines what the event means to the recipient,
-and the string allows additional information to be included with it.  For
-example, if a client wishes the server to save the current project, it sends a
-@code{LASH_Save} event to the server.  While saving the project, the server
-may wish to tell a client to save its data in a certain directory.  To so,
-it sends a @code{LASH_Save_File} event to the client with a string containing the
-name of a directory into which the client should save its data files.
+An @dfn{event} is a very simple object having two relevant properties:
+a type and an optional arbitrary character string.  The type defines
+what the event means to the recipient, and the string allows additional
+information to be included with it.  For example, if a client wishes
+the server to save the current project, it sends a @code{LASH_Save}
+event to the server.  While saving the project, the server may wish to
+tell a client to save its data in a certain directory.  To so, it sends
+a @code{LASH_Save_File} event to the client with a string containing
+the name of a directory into which the client should save its data files.
 
 Clients can save data on the server if they wish.  To do this, the
-client declares that it wants to save data on the server when it initialises the server connection
-and then later sends one or more @dfn{config}s to the server.  A config is
-also a very simple object.  It has a client-unique character string key, and
-a value of arbitrary size and type (well, almost arbitrary; its size must
-be able to be described by a @code{uint32_t} integer due to byte-order conversions
+client declares that it wants to save data on the server when it
+initialises the server connection and then later sends one or more
+@dfn{config}s to the server.  A config is also a very simple object.
+It has a client-unique character string key, and a value of arbitrary
+size and type (well, almost arbitrary; its size must be able to be
+described by a @code{uint32_t} integer due to byte-order conversions
 done when sending data over the network.)
 
 @subsection Session example
 
-In this section we will examine a typical session in some detail, describing
-the server and client operations that take place.  In the session, the
-server is started, a number of clients connect, the session is saved and
-then restored.
+In this section we will examine a typical session in some detail,
+describing the server and client operations that take place.  In the
+session, the server is started, a number of clients connect, the session
+is saved and then restored.
 
 @subsubsection Starting up the server
 
-Before all else, the user starts the server.  It starts up and begins listening for
-connections from clients.  It doesn't do much else.
+Before all else, the user starts the server.  It starts up and begins
+listening for connections from clients.  It doesn't do much else.
 
+To keep track of what is happening with LASH, the user can run the
+@command{lash_panel} program (though this is not necessary, and it can
+be started later at any time).
 
 @subsubsection A client connection
 
-The user then starts a JACK client program.  It opens a connection to the server
-and provides it with all information that the server will need to run the
-application again.  This information includes: the current directory that
-the user was in when they ran the program, the command line that started the
-application and the @emph{class} of the client (a character string that the
-client application provides the initialisation routine that will never
-change over all initialisations.)
+The user then starts a JACK client program.  It opens a connection
+to the server and provides it with all information that the server
+will need to run the application again.  This information includes:
+the current directory that the user was in when they ran the program,
+the command line that started the application and the @emph{class} of
+the client (a character string that the client application provides the
+initialisation routine that will never change over all initialisations.)
 
-With this information is included a set
-of flags that describe the client to the server.  This particular
-client saves data to files and wants the server to tell it where to
-save files when the project is saved, so it has the
-@code{LASH_Config_File} flag set.
+With this information is included a set of flags that describe the client
+to the server.  This particular client saves data to files and wants
+the server to tell it where to save files when the project is saved,
+so it has the @code{LASH_Config_File} flag set.
 
 The client library starts two threads for communication with the server,
-one for sending data and the other for recieving.  It also sends, along with
-the client supplied data, a number of parameters that were extracted from
-the client's command line options before it checked them.  This optionally includes the
-name of the project that the client should initially be associated
-with and a 128-bit, world-unique identifier for this particular client
-instance (the @dfn{LASH ID}.)
+one for sending data and the other for recieving.  It also sends,
+along with the client supplied data, a number of parameters that were
+extracted from the client's command line options before it checked them.
+This optionally includes the name of the project that the client should
+initially be associated with and a 128-bit, world-unique identifier for
+this particular client instance (the @dfn{LASH ID}.)
 
 Server-side, the server wakes up to the fact that a new connection has
 arrived and immediately adds it to a list of open connections and then
-goes back to waiting.  When the client sends the requisite information, the
-server looks at it and decides what to do with the client.  This client has
-not requested a specific project to which it should be connected.  However,
-there are no existing projects so the server creates a new project with the
-name @samp{project-1} in the directory
+goes back to waiting.  When the client sends the requisite information,
+the server looks at it and decides what to do with the client.
+This client has not requested a specific project to which it should
+be connected.  However, there are no existing projects so the server
+creates a new project with the name @samp{project-1} in the directory
 @file{/home/@var{user}/audio-projects/project-1} (assuming the user
-didn't specify a different default directory when running configure.)  It
-also generates a new LASH ID for the client.  It then adds the
-client to the new project and goes back to listening.
+didn't specify a different default directory when running configure.)
+It also generates a new LASH ID for the client.  It then adds the client
+to the new project and goes back to listening.
 
-The client then connects up to the JACK server and, after having done this,
-sends a @code{LASH_Jack_Client_Name} event to the server with the name that
-it registered to JACK with as the string.  This notifies the server that it
-is a JACK client and needs its JACK port connections saved and restored.
-The server will now pay attention to any activity regarding the client
-(ie, port creation and destruction and port connection and disconnection.)
+If the user has the @command{lash_panel} client running, the new project
+will appear as a tab with the title @samp{project-1}, and the new client
+will appear in the client list for that project.
+
+The client then connects up to the JACK server and, after having done
+this, sends a @code{LASH_Jack_Client_Name} event to the server with the
+name that it registered to JACK with as the string.  This notifies the
+server that it is a JACK client and needs its JACK port connections saved
+and restored.  The server will now pay attention to any activity regarding
+the client (ie, port creation and destruction and port connection and
+disconnection.)
 
 
 @subsubsection Another client
 
-The user then starts a second client that uses the ALSA sequencer interface
-and wishes to save data on the server.  It connects to the server with a
-different class to the JACK client and with the
+The user then starts a second client that uses the ALSA sequencer
+interface and wishes to save data on the server.  It connects to
+the server with a different class to the JACK client and with the
 @code{LASH_Config_Data_Set} flag set.
 
-The server sees that this client also didn't specify a project, and so adds
-it to the first available project; the same one as the previous project,
-@samp{project-1}.  It also sees that the client wants to store data on the
-server, and so it creates a directory within the project directory for this
-data to be stored in and creates a database-style object to manage the
-client's data.
+The server sees that this client also didn't specify a project, and so
+adds it to the first available project; the same one as the previous
+project, @samp{project-1}.  It also sees that the client wants to store
+data on the server, and so it creates a directory within the project
+directory for this data to be stored in and creates a database-style
+object to manage the client's data.
 
-The client then connects to the ALSA sequencer and sends its client ID to
-the server in the first character of the string of a
-@code{LASH_Alsa_Client_Name} event.  The server regards this similarly to
-the other client's JACK client name.
+If the user has the @command{lash_panel} client running, both clients
+will now be visible in the clients list for @samp{project-1}.
+
+The client then connects to the ALSA sequencer and sends its
+client ID to the server in the first character of the string of a
+@code{LASH_Alsa_Client_Name} event.  The server regards this similarly
+to the other client's JACK client name.
 
 @subsubsection Saving the project
 
-After the user has done some work in the two clients, they want to save
-their work.  They click a button on one of the clients (or something similar)
-and the client sends a @code{LASH_Save} event to server.  The server recieves
-this and then iterates through each client in the project and checks its
-flags.  The JACK client saves data by itself (it has the
-@code{LASH_Config_File} flag set,) so the server creates a
-directory under the project directory for it to save in and then sends a
-@code{LASH_Save_File} event to the client with a string containing the name
-of the directory it made.  The client recieves the event and saves its data into
-the specified directory.
+After the user has done some work in the two clients, they want to
+save their work.  They click the Save button in @command{lash_panel}
+(or use the @command{save} command in @command{lash_control}), and a
+@code{LASH_Save} event is sent to the server.  The server recieves this
+and then iterates through each client in the project and checks its flags.
+The JACK client saves data by itself (it has the @code{LASH_Config_File}
+flag set,) so the server creates a directory under the project directory
+for it to save in and then sends a @code{LASH_Save_File} event to the
+client with a string containing the name of the directory it made.
+The client recieves the event and saves its data into the specified
+directory.
 
 Next, the server examines the ALSA client.  It wishes to save data on the
-server, so the server sends a @code{LASH_Save_Data_Set} to the client.  With
-all of the clients iterated through, it now saves all the information it
-needs to be able to restore them; their working directory, command line
-options, etc.  In order to do this, it asks the JACK server
-to find the connections for the JACK client, and asks the ALSA sequencer to
-find the connections for the ALSA client.  It uses the client name and ID
-that both clients sent to the server after opening their connections to the
-respective systems.  All of this information is stored
-in a file under the project's directory.  When this is done, the server goes
-back to listening for events and configs.
+server, so the server sends a @code{LASH_Save_Data_Set} to the client.
+With all of the clients iterated through, it now saves all the information
+it needs to be able to restore them; their working directory, command
+line options, etc.  In order to do this, it asks the JACK server to
+find the connections for the JACK client, and asks the ALSA sequencer to
+find the connections for the ALSA client.  It uses the client name and
+ID that both clients sent to the server after opening their connections
+to the respective systems.  All of this information is stored in a file
+under the project's directory.  When this is done, the server goes back
+to listening for events and configs.
 
-The client, meanwhile,
-has recieved the @code{LASH_Save_Data_Set} event and sends back a number of
-configs to the server.  When it has sent all the data it wishes to be saved,
-it sends back a @code{LASH_Save_Data_Set} event.  The server passes all of
-the configs to the object managing the data store for the ALSA client.
-When the server recieves the @code{LASH_Save_Data_Set} event
-from the client, it tells the data store to write the data to
-disk.  The save is now complete.
+The client, meanwhile, has recieved the @code{LASH_Save_Data_Set} event
+and sends back a number of configs to the server.  When it has sent all
+the data it wishes to be saved, it sends back a @code{LASH_Save_Data_Set}
+event.  The server passes all of the configs to the object managing
+the data store for the ALSA client.  When the server recieves the
+@code{LASH_Save_Data_Set} event from the client, it tells the data store
+to write the data to disk.  The save is now complete.
 
 @subsubsection Client resumption
 
@@ -409,59 +427,61 @@ Unfortunately for the user, the ALSA client crashes.  The server detects
 that the client has disconnected, and puts the client on a list of lost
 clients for the project.  The user then starts another copy of the client,
 which connects to the server in the same way it did before.  This time,
-however, the server checks through the list of lost clients and finds that
-the class of the new client matches the class of the lost client and so it
-resumes the lost client using the new one.  It gives it the 128-bit ID of
-the lost client, adds it to the project, and then sends a
-@code{LASH_Restore_Data_Set} event to the client.  The client then cleans
-itself up, ready to recieve the data set.  The server sends the client the
-configs, and then another @code{LASH_Restore_Data_Set} event.  The client
-recieves this data and its state has been restored that of the client that
-crashed.
+however, the server checks through the list of lost clients and finds
+that the class of the new client matches the class of the lost client
+and so it resumes the lost client using the new one.  It gives it the
+128-bit ID of the lost client, adds it to the project, and then sends
+a @code{LASH_Restore_Data_Set} event to the client.  The client then
+cleans itself up, ready to recieve the data set.  The server sends the
+client the configs, and then another @code{LASH_Restore_Data_Set} event.
+The client recieves this data and its state has been restored that of
+the client that crashed.
 
 The user can stop this behaviour by specifying the
 @option{--lash-no-autoresume} option on the client's command line.
 
 @subsubsection Restoring the project
 
-The user has to go off and do other things, and so they close down
-the clients and the server.  Some time later, the user comes back and
-wants to start working again so first, as always, they start up the server. 
-They then start the @command{lash_control} program.  This is a text
-interface command program for controlling the server.  They get a command
-prompt and into it type @kbd{restore
-/home/@var{user}/audio-projects/project-1}.  The lash_control client sends
-a @code{LASH_Restore} event to the server with the specified directory as the
-string.  The server opens the file that it saved before, and reads in all
-the information about the project and its clients.  It creates a new project
-with this information.  The clients are created as lost clients, however. 
+The user has to go off and do other things, and so they close down the
+clients and the server.  Some time later, the user comes back and wants
+to start working again so first, as always, they start up the server.
+They then start the @command{lash_panel} program.  Using the File->Open
+menu item, the user selects the directory (not file!) where they saved
+the project (by default @file{~/audio-projects/project-1}, but you
+can save to a more descriptive name).  The lash_panel client sends a
+@code{LASH_Restore} event to the server with the specified directory as
+the string.  The server opens the file that it saved before, and reads
+in all the information about the project and its clients.  It creates
+a new project with this information.  The clients are created as lost
+clients, however.
 
-The server then iterates through each client and starts a new copy of it
-using the information provided when the original client connected.  It also
-adds some command line options that are extracted by the client library. 
-These specify the LASH ID of the client, the project name that it should
-be connecting to and the server's hostname and port.  It then goes back to
-waiting.
+The server then iterates through each client and starts a new copy of
+it using the information provided when the original client connected.
+It also adds some command line options that are extracted by the client
+library.  These specify the LASH ID of the client, the project name
+that it should be connecting to and the server's hostname and port.
+It then goes back to waiting.
 
-The new JACK client then connects to the server as normal.  When the server
-recieves it connection, it checks the client against the project's list of
-lost clients.  This time, however, it has its ID specified, so the server
-will only resume a client with a matching ID.  Lo and behold, such a client
-exists.  The server resumes the old JACK client, telling it to load its
-state from the files in the project directory that the client previously
-stored.  It does so with a @code{LASH_Restore_File} event with the string as
-the directory name.  The ALSA client does exactly the same, except having
-its data restored through @code{LASH_Restore_Data_Set} as described above.
+The new JACK client then connects to the server as normal.  When the
+server recieves it connection, it checks the client against the project's
+list of lost clients.  This time, however, it has its ID specified, so
+the server will only resume a client with a matching ID.  Lo and behold,
+such a client exists.  The server resumes the old JACK client, telling it
+to load its state from the files in the project directory that the client
+previously stored.  It does so with a @code{LASH_Restore_File} event with
+the string as the directory name.  The ALSA client does exactly the same,
+except having its data restored through @code{LASH_Restore_Data_Set}
+as described above.
 
 Only one thing remains for the clients to be fully restored: the JACK and
 ALSA sequencer connections.  This happens when the clients send their
-@code{LASH_Jack_Client_Name} and @code{LASH_Alsa_Client_ID} events.  The
-connections are stored with the LASH ID rather than the JACK
-client name or ALSA client ID.  When the client registers its name or ID,
-the connections are converted from the LASH ID to the JACK client name or
-ALSA client ID, and the connections are restored.  It also pays attention to
-connections to other clients within the same project, converting between JACK client
-names, ALSA client IDs and LASH IDs as appropriate.
+@code{LASH_Jack_Client_Name} and @code{LASH_Alsa_Client_ID} events.
+The connections are stored with the LASH ID rather than the JACK client
+name or ALSA client ID.  When the client registers its name or ID, the
+connections are converted from the LASH ID to the JACK client name or ALSA
+client ID, and the connections are restored.  It also pays attention to
+connections to other clients within the same project, converting between
+JACK client names, ALSA client IDs and LASH IDs as appropriate.
 
 @node Types and functions, Event protocol, Operational overview, Client reference
 @section Types and functions

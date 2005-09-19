@@ -36,11 +36,13 @@ struct _panel
 {
 	lash_client_t* lash_client;
 
+	size_t        num_projects;
 	GtkListStore* projects;
 	
 	GtkWidget* window;
 	GtkWidget* status_bar;
 	GtkWidget* project_notebook;
+	GtkWidget* no_projects_label;
 };
 
 panel_t* panel_create (lash_client_t * client);
