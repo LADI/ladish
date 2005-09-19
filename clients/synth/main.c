@@ -50,8 +50,7 @@
 #define RELEASE_DEFAULT       0.2
 #define GAIN_DEFAULT          1.0
 
-#define CLIENT_NAME_BASE           "LASH Synth"
-#define JACK_CLIENT_NAME_BASE      "lash_synth"
+#define CLIENT_NAME_BASE      "lash_synth"
 
 static void
 print_help()
@@ -151,8 +150,8 @@ main(int argc, char **argv)
 	gtk_init(&argc, &argv);
 #endif
 
-	sprintf(alsa_client_name, "%s (%d)", CLIENT_NAME_BASE, getpid());
-	sprintf(jack_client_name, "%s_%d", JACK_CLIENT_NAME_BASE, getpid());
+	sprintf(alsa_client_name, "%s_%d", CLIENT_NAME_BASE, getpid());
+	sprintf(jack_client_name, "%s_%d", CLIENT_NAME_BASE, getpid());
 
 	while ((opt = getopt_long(argc, argv, options, long_options, NULL)) != -1) {
 		switch (opt) {
@@ -188,17 +187,17 @@ main(int argc, char **argv)
 			pid_t pid;
 
 			pid = getpid();
-			sprintf(alsa_client_name, "%s (%d)", CLIENT_NAME_BASE, pid);
-			sprintf(jack_client_name, "%s_%d", JACK_CLIENT_NAME_BASE, pid);
+			sprintf(alsa_client_name, "%s_%d", CLIENT_NAME_BASE, pid);
+			sprintf(jack_client_name, "%s_%d", CLIENT_NAME_BASE, pid);
 			break;
 		}
 		case 'e':
-			sprintf(alsa_client_name, "%s (%s)", CLIENT_NAME_BASE, optarg);
-			sprintf(jack_client_name, "%s_%s", JACK_CLIENT_NAME_BASE, optarg);
+			sprintf(alsa_client_name, "%s_%s", CLIENT_NAME_BASE, optarg);
+			sprintf(jack_client_name, "%s_%s", CLIENT_NAME_BASE, optarg);
 			break;
 		case 'b':
 			sprintf(alsa_client_name, "%s", CLIENT_NAME_BASE);
-			sprintf(jack_client_name, "%s", JACK_CLIENT_NAME_BASE);
+			sprintf(jack_client_name, "%s", CLIENT_NAME_BASE);
 			break;
 		case 'h':
 			print_help();
