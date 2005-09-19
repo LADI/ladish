@@ -83,7 +83,7 @@ open_jack()
 
 	jack_port =
 		jack_port_register(jack_client, "out_1", JACK_DEFAULT_AUDIO_TYPE,
-						   JackPortIsOutput | JackPortIsTerminal, 0);
+						   JackPortIsOutput, 0);
 	if (!jack_port) {
 		fprintf(stderr, "%s: could not register jack port, exiting\n",
 				__FUNCTION__);
