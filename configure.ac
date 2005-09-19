@@ -258,7 +258,7 @@ AC_CONFIG_FILES([clients/gtk_client/Makefile])
 AC_CONFIG_FILES([clients/synth/Makefile])
 AC_CONFIG_FILES([clients/save_button/Makefile])
 AC_CONFIG_FILES([clients/panel/Makefile])
-AC_CONFIG_FILES([patches/Makefile])
+AC_CONFIG_FILES([icons/Makefile])
 
 AC_OUTPUT
 

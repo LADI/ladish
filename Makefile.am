@@ -1,4 +1,4 @@
-SUBDIRS = m4 docs lash liblash lashd clients patches
+SUBDIRS = m4 docs lash liblash lashd clients icons
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = lash-1.0.pc
