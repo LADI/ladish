@@ -295,6 +295,7 @@ void
 project_set_name(project_t * project, const char *const name)
 {
 	assert(project != NULL);
+	assert(name != NULL);
 	free(project->name);
 	project->name = calloc(strlen(name) + 1, sizeof(char));
 	strncpy(project->name, name, strlen(name) + 1);
@@ -306,6 +307,7 @@ void
 project_set_dir(project_t * project, const char *const dir)
 {
 	assert(project != NULL);
+	assert(name != NULL);
 	free(project->dir);
 	project->dir = calloc(strlen(dir) + 1, sizeof(char));
 	strncpy(project->dir, dir, strlen(dir) + 1);

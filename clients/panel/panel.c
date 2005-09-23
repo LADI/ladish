@@ -191,18 +191,35 @@ event_client_add(panel_t * panel, lash_event_t * event)
 	const char *project_name = lash_event_get_project(event);
 	project_t *project = get_project(panel, project_name);
 	char *client_id_str = malloc(37);
+	char *search_id_str = NULL;
 	uuid_t client_id;
 	GtkTreeIter iter;
-
+	GtkTreeModel *tree_model;
+	int client_exists = FALSE;
+	
 	lash_event_get_client_id(event, client_id);
 	uuid_unparse(client_id, client_id_str);
 
 	printf("Add client (%s): %s\n", project_name, client_id_str);
 
 	if (client_id != NULL && project != NULL) {
-		gtk_list_store_append(project->clients, &iter);
-		gtk_list_store_set(project->clients, &iter,
-						   CLIENT_ID_COLUMN, client_id_str, -1);
+		tree_model = GTK_TREE_MODEL(project->clients);
+
+		if (gtk_tree_model_get_iter_first(tree_model, &iter)) {
+			do {
+				gtk_tree_model_get(tree_model, &iter, CLIENT_ID_COLUMN, &search_id_str, -1);
+
+				if (!strcmp(search_id_str, client_id_str)) {
+					client_exists = TRUE;
+					break;
+				}
+			} while (gtk_tree_model_iter_next(tree_model, &iter));
+		}
+		if (!client_exists) {
+			gtk_list_store_append(project->clients, &iter);
+			gtk_list_store_set(project->clients, &iter,
+							   CLIENT_ID_COLUMN, client_id_str, -1);
+		}
 	}
 }
 
