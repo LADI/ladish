@@ -399,12 +399,12 @@ deal_with_command(lash_control_t * control, char *command)
 static void
 deal_with_events(lash_control_t * control)
 {
-	lash_event_t *event;
-	const char *event_str;
-	project_t *project;
-	client_t *client;
+	lash_event_t *event = NULL;
+	const char *event_str = NULL;
+	project_t *project = NULL;
+	client_t *client = NULL;
 	uuid_t client_id;
-	lash_list_t *node, *clnode;
+	lash_list_t *node = NULL, *clnode = NULL;
 
 	if (lash_get_pending_event_count(control->client) == 0)
 		return;

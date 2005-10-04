@@ -553,9 +553,9 @@ server_event_client_disconnect(server_t * server, server_event_t * event)
 void
 server_event_client_event(server_t * server, server_event_t * server_event)
 {
-	lash_event_t *event;
-	project_t *project;
-	client_t *client, *ref_client;
+	lash_event_t *event = NULL;
+	project_t *project = NULL;
+	client_t *client = NULL, *ref_client = NULL;
 
 	event = server_event_take_lash_event(server_event);
 

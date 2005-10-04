@@ -18,6 +18,8 @@
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#define _POSIX_SOURCE /* addrinfo */
+
 #include <stdint.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -38,9 +40,9 @@ extern int h_errno;
 int
 lash_sendall(int socket, const void *buf, size_t buf_size, int flags)
 {
-	int sent, err;
+	int err;
 	char *new_buf;
-	size_t new_buf_size;
+	size_t sent, new_buf_size;
 	uint32_t *iptr;
 
 	/* create the new buffer */
@@ -93,9 +95,9 @@ lash_sendall(int socket, const void *buf, size_t buf_size, int flags)
 int
 lash_recvall(int socket, void **buf_ptr, size_t * buf_size_ptr, int flags)
 {
-	int err, recvd;
+	int err;
 	char *buf = NULL;
-	size_t buf_size;
+	size_t recvd, buf_size;
 	uint32_t *iptr;
 	size_t packet_size;
 
@@ -157,7 +159,7 @@ lash_open_socket(int *sockptr, const char *host, const char *service)
 	struct addrinfo hints;
 	struct addrinfo *addrs;
 	struct addrinfo *addr;
-	int sock;
+	int sock = 0;
 	int err;
 	int connected = 0;
 

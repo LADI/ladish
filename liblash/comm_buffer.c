@@ -18,6 +18,8 @@
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#define _GNU_SOURCE /* strdup */
+
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>

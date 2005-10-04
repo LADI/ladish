@@ -295,11 +295,11 @@ store_write_config(store_t * store, const lash_config_t * config)
 		return 1;
 	}
 
-	if (size > 0) {
+	if (lash_config_get_value_size(config) > 0) {
 		written =
 			write(config_file, lash_config_get_value(config),
 				  lash_config_get_value_size(config));
-		if (written == -1 || written < sizeof(size)) {
+		if (written == -1 || written < lash_config_get_value_size(config)) {
 			fprintf(stderr,
 					"%s: error writing to config file '%s' in store '%s'!: %s\n",
 					__FUNCTION__, lash_config_get_key(config), store->dir,
@@ -541,10 +541,10 @@ lash_config_t *
 store_get_config(store_t * store, const char *key)
 {
 	uint32_t size;
-	void *value;
+	void *value = NULL;
 	size_t value_size;
 	int config_file;
-	lash_config_t *config;
+	lash_config_t *config = NULL;
 	ssize_t err;
 
 	config = store_get_unstored_config(store, key);
@@ -575,7 +575,7 @@ store_get_config(store_t * store, const char *key)
 		value = lash_malloc(value_size);
 
 		err = read(config_file, value, value_size);
-		if (err == -1 || err < sizeof(size)) {
+		if (err == -1 || err < value_size) {
 			fprintf(stderr,
 					"%s: error reading value size in config file '%s': %s\n",
 					__FUNCTION__, store_get_config_filename(store, key),

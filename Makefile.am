@@ -11,7 +11,7 @@ buildcheck:
 	cd $(top_srcdir) && ./autogen.sh --no-conf
 	mkdir -p $(top_srcdir)/buildcheck
 	cd $(top_srcdir)/buildcheck && \
-          CFLAGS="$$CFLAGS -Werror -Wall -pedantic -Wno-switch" \
+          CFLAGS="$$CFLAGS -std=c99 -Werror -Wall -pedantic -Wno-switch" \
           ../configure \
             --disable-debug \
             --disable-gtk \

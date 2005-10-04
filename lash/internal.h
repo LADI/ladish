@@ -42,7 +42,7 @@ typedef struct _lash_comm lash_comm_t;
 
 enum LASH_Internal_Client_Flag
   {
-    LASH_Saved              =  0x01000000,  /* client has been saved */
+    LASH_Saved              =  0x01000000  /* client has been saved */
   };
 
 struct _lash_config

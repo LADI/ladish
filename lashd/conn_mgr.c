@@ -18,14 +18,15 @@
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#define _GNU_SOURCE /* addrinfo */
+
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netdb.h>
 #include <netinet/in.h>
 #include <string.h>
 #include <arpa/inet.h>
 #include <pthread.h>
-#include <time.h>
-#include <netdb.h>
 
 #include <lash/lash.h>
 #include <lash/internal_headers.h>
@@ -380,8 +381,8 @@ conn_mgr_accept_connection(conn_mgr_t * conn_mgr)
 {
 	conn_t *conn;
 
-	//struct sockaddr_storage ss;
-	//size_t ss_len;
+	/*struct sockaddr_storage ss;
+	size_t ss_len;*/
 	int err;
 
 	conn = conn_new();

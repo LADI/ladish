@@ -433,19 +433,32 @@ project_move(project_t * project, const char *new_dir)
 	client_t *client = NULL;
 	char *esc_proj_dir = NULL;
 	char *esc_new_proj_dir = NULL;
-
+	char *esc_new_proj_bak_dir = NULL;
+	DIR *dir = NULL;
+	
 	if (strcmp(new_dir, project->directory) == 0)
 		return;
+	
+	esc_proj_dir = escape_file_name(project->directory);
+	esc_new_proj_dir = escape_file_name(new_dir);
 
 	/* Check to be sure directory is acceptable
 	 * FIXME: thorough enough error checking? */
-	DIR *dir = opendir(new_dir);
+	dir = opendir(esc_new_proj_dir);
 
 	if (dir != NULL) {
 		fprintf(stderr,
-				"Warning: directory %s exists, files may be overwritten.\n",
-				new_dir);
+				"Warning: directory %s exists, it will be moved to %s.lashbak.\n",
+				new_dir, new_dir);
 		closedir(dir);
+		esc_new_proj_bak_dir = (char*)calloc(strlen(esc_new_proj_dir) + 8, sizeof(char));
+		strncpy(esc_new_proj_bak_dir, esc_new_proj_dir, strlen(esc_new_proj_dir + 8));
+		strncat(esc_new_proj_bak_dir, ".lashbak", strlen(esc_new_proj_dir + 8));
+		if (rename(esc_new_proj_dir, esc_new_proj_bak_dir)) {
+			fprintf(stderr, "Unable to backup directory %s to %s.lashbak (%s)",
+				new_dir, new_dir, strerror(errno));
+			return;
+		}
 	} else if (dir == NULL && errno == ENOTDIR) {
 		fprintf(stderr,
 				"Can not move project directory to %s - exists but is not a directory\n",
@@ -464,8 +477,7 @@ project_move(project_t * project, const char *new_dir)
 	}
 
 	/* move the directory */
-	esc_proj_dir = escape_file_name(project->directory);
-	esc_new_proj_dir = escape_file_name(new_dir);
+	
 
 	if (rename(esc_proj_dir, esc_new_proj_dir)) {
 		fprintf(stderr, "Unable to move project directory to %s (%s)",
@@ -754,8 +766,9 @@ project_t *
 project_new_from_xml(server_t * server, xmlDocPtr doc)
 {
 	xmlNodePtr projectnode, xmlnode;
-	xmlChar *content;
-
+	xmlChar *content = NULL;
+	project_t *project = NULL;
+	
 	for (projectnode = doc->children; projectnode;
 		 projectnode = projectnode->next)
 		if (projectnode->type == XML_ELEMENT_NODE
@@ -766,8 +779,6 @@ project_new_from_xml(server_t * server, xmlDocPtr doc)
 		LASH_PRINT_DEBUG("no lash_project node in doc");
 		return NULL;
 	}
-
-	project_t *project;
 
 	project = project_new(server);
 
