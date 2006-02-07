@@ -558,7 +558,7 @@ ownership of the memory and it should not be freed by the client.
 Send some configuration data to the server.  The config must be created using
 @code{lash_config_new}, @code{lash_config_new_with_key} or
 @code{lash_config_dup}.  The library takes
-over ownership of the memory and it should not be freed by the client.
+over ownership of the memory (including the key, etc) and it should not be freed by the client.
 @end deftypefun
 
 @defmac lash_enabled (client)
