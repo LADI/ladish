@@ -448,25 +448,17 @@ project_move(project_t * project, const char *new_dir)
 
 	if (dir != NULL) {
 		fprintf(stderr,
-				"Warning: directory %s exists, it will be moved to %s.lashbak.\n",
-				new_dir, new_dir);
-		closedir(dir);
-		esc_new_proj_bak_dir = (char*)calloc(strlen(esc_new_proj_dir) + 8, sizeof(char));
-		strncpy(esc_new_proj_bak_dir, esc_new_proj_dir, strlen(esc_new_proj_dir + 8));
-		strncat(esc_new_proj_bak_dir, ".lashbak", strlen(esc_new_proj_dir + 8));
-		if (rename(esc_new_proj_dir, esc_new_proj_bak_dir)) {
-			fprintf(stderr, "Unable to backup directory %s to %s.lashbak (%s)",
-				new_dir, new_dir, strerror(errno));
-			return;
-		}
+				"Can not move project directory to %s - exists\n",
+				new_dir);
+		return;
 	} else if (dir == NULL && errno == ENOTDIR) {
 		fprintf(stderr,
 				"Can not move project directory to %s - exists but is not a directory\n",
 				new_dir);
 		return;
 	} else if (dir == NULL && errno == ENOENT) {
-		printf("Directory %s does not exist, and will be created.\n",
-			   new_dir);
+		/* This is what we want... */
+		/*printf("Directory %s does not exist, creating.\n", new_dir);*/
 	}
 
 	/* close all the clients' stores */

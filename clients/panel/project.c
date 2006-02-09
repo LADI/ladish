@@ -20,6 +20,7 @@
 #include <malloc.h>
 #include <lash/lash.h>
 #include <assert.h>
+#include <unistd.h>
 
 /* Button callbacks */
 
@@ -57,7 +58,7 @@ set_dir_cb(GtkButton * button, void *data)
 
 	GtkWidget *open_dialog =
 		gtk_file_chooser_dialog_new("Set Project Directory", NULL,
-									GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+									GTK_FILE_CHOOSER_ACTION_SAVE,
 									GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 									GTK_STOCK_OPEN, GTK_RESPONSE_OK, NULL);
 
@@ -193,7 +194,7 @@ project_create(lash_client_t * lash_client, const char *const name)
 	gtk_table_attach(GTK_TABLE(project->properties_table), project->dir_entry,
 					 1, 2, 1, 2, GTK_EXPAND | GTK_FILL, 0, 2, 2);
 
-	project->set_dir_button = gtk_button_new_with_label("Browse...");
+	project->set_dir_button = gtk_button_new_with_label("Move...");
 	gtk_widget_show(project->set_dir_button);
 	g_signal_connect(G_OBJECT(project->set_dir_button), "clicked",
 					 G_CALLBACK(set_dir_cb), project);
