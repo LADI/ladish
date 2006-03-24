@@ -1,5 +1,7 @@
 #!/bin/sh
 
+echo -n "Generating build files... "
+
 if ! test -d docs/lash-manual-html-split; then
   mkdir docs/lash-manual-html-split;
   ln -s ../lash-manual-html-one-page/Makefile.am docs/lash-manual-html-split;
@@ -24,3 +26,5 @@ libtoolize --copy --force \
 #    sh conf;
 #  fi
 #fi
+
+echo "done"

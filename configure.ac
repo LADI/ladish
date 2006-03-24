@@ -12,6 +12,11 @@ AC_PROG_LIBTOOL
 ### texi2html ###
 #################
 AC_CHECK_PROG(lash_texi2html, texi2html, "yes", "no")
+if test x$lash_texi2html = xyes; then
+  AC_MSG_NOTICE([texi2html found, building manual])
+else
+  AC_MSG_WARN([texi2html not found, manual will not be built])
+fi
 AM_CONDITIONAL(HAVE_TEXI2HTML, test x$lash_texi2html = xyes)
 
 ############
@@ -287,7 +292,7 @@ AC_MSG_RESULT([
   gtk 2 support:           $lash_gtk2
   gtk 1 support:           $lash_gtk
   debugging output:        $lash_debug
-  texi2html:               $lash_texi2html
+  building manual:         $lash_texi2html
 
   JACK_CFLAGS:   $JACK_CFLAGS
   ALSA_CFLAGS:   $ALSA_CFLAGS
