@@ -317,6 +317,21 @@ To keep track of what is happening with LASH, the user can run the
 @command{lash_panel} program (though this is not necessary, and it can
 be started later at any time).
 
+The environment variable @code{LASH_START_SERVER} can be set to have any
+LASH client automatically start the server if one isn't already running.
+Doing this you can simply put @command{lash_panel} (or any other LASH
+client) in your applications menu and have LASH automatically work without
+having to remember to start the server manually.
+
+If you're using a Bourne compatible shell like @command{bash} (if you don't
+know, you probably are) you can enable auto-start with the following command:
+
+@command{export LASH_START_SERVER=1}
+
+If you would like to always have the server started, put that command in the
+file ~/.bashrc (or in /etc/profile if you are root and want it set system
+wide) to have it run whenever a new shell is started.
+
 @subsubsection A client connection
 
 The user then starts a JACK client program.  It opens a connection

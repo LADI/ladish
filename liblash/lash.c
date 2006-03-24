@@ -129,6 +129,8 @@ lash_init(lash_args_t * args,
 	char *str;
 	const char *cstr;
 	char wd[MAXPATHLEN];
+	int tries;
+	uuid_t id;
 
 	client = lash_client_new();
 	connect_params = lash_connect_params_new();
@@ -167,11 +169,51 @@ lash_init(lash_args_t * args,
 	err = lash_comm_connect_to_server(client,
 									  cstr ? cstr : "localhost",
 									  "lash", connect_params);
+	
+	/* couldn't connect, try to start a new server */
+	/* but not if this client has been started by a server, in which 
+	   case something must be broken if we can't connect */
+	lash_args_get_id(args, id);
+	if (err && getenv("LASH_START_SERVER") != NULL && uuid_is_null(id)) {
+		fprintf(stderr, "%s: trying to start new LASH server\n", 
+			__FUNCTION__);
+		err = fork();
+		if (err == 0) {
+			daemon(0, 0);
+			execlp("lashd", "lashd", NULL);
+			_exit(-1);
+		}
+
+		/* if the fork succeeded, try to connect to the new server */
+		else if (err > 0) {
+			for (tries = 0; tries < 5; ++tries) {
+				sleep(1);
+				err = lash_comm_connect_to_server(client,
+								  cstr ? cstr : "localhost",
+								  "lash", connect_params);
+				if (err == 0)
+					break;
+			}
+		}
+		
+		/* fork failed */
+		else {
+			fprintf(stderr, "%s: fork failed while starting new server: %s\n",
+				__FUNCTION__, strerror(err));
+		}
+	}
+	
 	lash_connect_params_destroy(connect_params);
 	if (err) {
 		fprintf(stderr,
-				"%s: could not connect to server '%s' - disabling lash\n",
+				"%s: could not connect to server '%s' - disabling LASH\n",
 				__FUNCTION__, cstr ? cstr : "localhost");
+		
+		if (getenv("LAST_START_SERVER") == NULL)
+			fprintf(stderr, "%s: set the environment variable LASH_START_SERVER "
+					"to have the LASH \n%s: server started automatically\n",
+					__FUNCTION__, __FUNCTION__);
+
 		lash_client_destroy(client);
 		return NULL;
 	}
@@ -183,7 +225,7 @@ lash_init(lash_args_t * args,
 					   client);
 	if (err) {
 		fprintf(stderr,
-				"%s: error creating recieve thread - disabling lash: %s\n",
+				"%s: error creating recieve thread - disabling LASH: %s\n",
 				__FUNCTION__, strerror(err));
 
 		lash_client_destroy(client);
@@ -195,7 +237,7 @@ lash_init(lash_args_t * args,
 					   client);
 	if (err) {
 		fprintf(stderr,
-				"%s: error creating send thread - disabling lash: %s\n",
+				"%s: error creating send thread - disabling LASH: %s\n",
 				__FUNCTION__, strerror(err));
 
 		client->recv_close = 1;
