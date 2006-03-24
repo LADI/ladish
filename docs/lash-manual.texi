@@ -153,13 +153,10 @@ but if this is not installed on your system, it is available from
 The LASH Control client depends on the GNU Readline library, available
 from @url{ftp://ftp.gnu.org/pub/gnu/readline/}.
 
-The LASH GTK Test Client, LASH Save Button 2, and LASH Panel all depend on
+The LASH GTK Test Client, LASH Save Button, and LASH Panel all depend on
 the GTK+ 2 toolkit, available from @url{ftp://ftp.gtk.org/pub/gtk/v2.0/}.
 The LASH Synth client has an optional GUI which also uses the GTK+
 2 toolkit.
-
-The LASH Save Button client depends on the GTK+ 1.2 toolkit, also
-available from @url{ftp://ftp.gtk.org/pub/gtk/v1.2/}.
 
 @section Installation
 
@@ -173,7 +170,8 @@ The package uses the GNU autotools for configuration and makefile
 creation.  In order to install the package, you must complete three steps:
 configuration; building; and installing.
 
-@subsection Configuration To configure the package, there is a shell
+@subsection Configuration
+To configure the package, there is a shell
 script named @file{configure} in the top source directory.  It is a
 standard GNU autoconf configure script, and so accepts the standard GNU
 configuration options (such as @option{--prefix}, @option{--datadir},
@@ -187,12 +185,7 @@ quick summary of the recognised options.
 @table @option
 @item --disable-gtk2 Prevents the configure script from
 checking for the presence of the GTK+ 2 toolkit and disables the building
-of any code that relies on it.  The LASH Save Button 2 and LASH GTK Test
-Client both rely on GTK+ 2.
-
-@item --disable-gtk Prevents the configure script from checking for the
-presence of the GTK+ 1.2 toolkit and disables the building of any code
-that relies on it.  The LASH Save Button client relies on GTK+ 1.2.
+of any code that relies on it.
 
 @item --enable-debug Causes the library, server and clients to be built
 with debugging output.  This is not very useful and only recommended
