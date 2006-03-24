@@ -31,10 +31,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef GTK2
-#  include "hints.h"
-#endif
-
 GtkWidget *window;
 GtkWidget *button;
 GtkWidget *menu;
@@ -45,11 +41,7 @@ int position = 1;
 
 lash_client_t *lash_client;
 
-#ifdef GTK2
-const char *client_class = "LASH Save Button 2";
-#else
 const char *client_class = "LASH Save Button";
-#endif
 
 void
 quit_cb()
@@ -57,46 +49,14 @@ quit_cb()
 	gtk_main_quit();
 }
 
-#ifndef GTK2
-gboolean
-motion_cb(GtkWidget * widget, GdkEventMotion * event, gpointer user_data)
-{
-	int x, y;
-
-	gdk_window_get_position(gtk_widget_get_parent_window(button), &x, &y);
-	gdk_window_move(gtk_widget_get_parent_window(button), x + event->x,
-					y + event->y);
-	return TRUE;
-}
-
-gboolean
-button_release_cb(GtkWidget * widget,
-				  GdkEventButton * event, gpointer user_data)
-{
-	gtk_signal_disconnect_by_func(GTK_OBJECT(button),
-								  GTK_SIGNAL_FUNC(motion_cb), NULL);
-	gtk_grab_remove(button);
-	return FALSE;
-}
-#endif /* ndef GTK2 */
-
 gboolean
 button_press_cb(GtkWidget * widget,
 				GdkEventButton * event, gpointer user_data)
 {
 	switch (event->button) {
 	case 2:
-#ifdef GTK2
 		gtk_window_begin_move_drag(GTK_WINDOW(window), 2,
 								   event->x_root, event->y_root, event->time);
-#else
-		printf("middle button press\n");
-		gtk_signal_connect(GTK_OBJECT(button), "motion-notify-event",
-						   GTK_SIGNAL_FUNC(motion_cb), NULL);
-		gtk_signal_connect(GTK_OBJECT(button), "button-release-event",
-						   GTK_SIGNAL_FUNC(button_release_cb), NULL);
-		gtk_grab_add(button);
-#endif
 		return TRUE;
 	case 3:
 		quit_cb();
@@ -122,11 +82,7 @@ send_window_position()
 	int x, y;
 	char pos[16];
 
-#ifdef GTK2
 	gtk_window_get_position(GTK_WINDOW(window), &x, &y);
-#else
-	gdk_window_get_position(gtk_widget_get_parent_window(button), &x, &y);
-#endif
 
 	sprintf(pos, "%d %d", x, y);
 	config = lash_config_new_with_key("window-position");
@@ -166,19 +122,13 @@ idle_cb(void *data)
 			int x, y;
 
 			sscanf(lash_config_get_value_string(config), "%d %d", &x, &y);
-#ifdef GTK2
 			gtk_window_move(GTK_WINDOW(window), x, y);
-#else
-			gdk_window_move(gtk_widget_get_parent_window(button), x, y);
-#endif
 		}
 		lash_config_destroy(config);
 	}
 
-#ifdef GTK2
 	if (on_top)
 		gdk_window_raise(gtk_widget_get_parent_window(button));
-#endif
 
 	usleep(10000);
 
@@ -265,54 +215,25 @@ main(int argc, char **argv)
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(window), client_class);
 	gtk_window_set_policy(GTK_WINDOW(window), FALSE, FALSE, TRUE);
-#ifdef GTK2
 	g_signal_connect(G_OBJECT(window), "delete_event",
 					 G_CALLBACK(quit_cb), NULL);
 	if (on_top)
 		gtk_window_set_type_hint(GTK_WINDOW(window),
 								 GDK_WINDOW_TYPE_HINT_MENU);
 	gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
-#else
-	gtk_signal_connect(GTK_OBJECT(window), "delete_event",
-					   GTK_SIGNAL_FUNC(quit_cb), NULL);
-
-	gtk_widget_realize(window);
-	gdk_window_set_decorations(window->window, 0);
-#endif /* GTK2 */
 
 	button = gtk_button_new_with_label("Save");
 /*  GTK_WIDGET_UNSET_FLAGS ((button), (GTK_CAN_FOCUS)); */
 	gtk_widget_show(button);
 	gtk_container_add(GTK_CONTAINER(window), button);
-#ifdef GTK2
 	g_signal_connect(G_OBJECT(button), "clicked",
 					 G_CALLBACK(clicked_cb), NULL);
 	g_signal_connect(G_OBJECT(button), "button-press-event",
 					 G_CALLBACK(button_press_cb), NULL);
-#else
-	gtk_signal_connect(GTK_OBJECT(button), "clicked",
-					   GTK_SIGNAL_FUNC(clicked_cb), NULL);
-	gtk_signal_connect(GTK_OBJECT(button), "button-press-event",
-					   GTK_SIGNAL_FUNC(button_press_cb), NULL);
-	gtk_widget_add_events(button, GDK_POINTER_MOTION_MASK);
-#endif /* GTK2 */
 	gtk_widget_show(window);
 
-#ifdef GTK2
 	if (sticky)
 		gtk_window_stick(GTK_WINDOW(window));
-#else
-	check_wm_hints();
-
-	if (sticky && hint_sticky_available())
-		set_sticky_func(window, TRUE);
-
-	if (on_top && hint_always_on_top_available()) {
-		set_always_func(window, TRUE);
-		if (hint_skip_winlist_available())
-			set_skip_winlist_func(window);
-	}
-#endif
 
 	gtk_idle_add(idle_cb, NULL);
 

@@ -131,34 +131,6 @@ fi
 AM_CONDITIONAL(HAVE_READLINE, test "x$lash_readline" != "xno")
 
 
-##############
-### GTK+ 1 ###
-##############
-lash_gtk="yes"
-AC_ARG_ENABLE(gtk,
-[  --disable-gtk           disable the gtk test client],[
-  case "$enableval" in
-    "yes")
-      ;;
-    "no")
-      lash_gtk="no";
-      ;;
-    *)
-      AC_MSG_ERROR([must use --enable-gtk(=yes/no) or --disable-gtk])
-      ;;
-  esac
-])
-
-if test x$lash_gtk = xyes; then
-  AM_PATH_GTK(1.2.0, GTK_FOUND="yes", GTK_FOUND="no")
-  lash_gtk=$GTK_FOUND
-fi
-
-AC_SUBST(GTK_CFLAGS)
-AC_SUBST(GTK_LIBS)
-AM_CONDITIONAL(HAVE_GTK, test x$GTK_FOUND = xyes)
-
-
 ######################
 ### --enable-debug ###
 ######################
@@ -259,7 +231,6 @@ AC_CONFIG_FILES([lashd/Makefile])
 AC_CONFIG_FILES([clients/Makefile])
 AC_CONFIG_FILES([clients/simple_client/Makefile])
 AC_CONFIG_FILES([clients/control/Makefile])
-AC_CONFIG_FILES([clients/gtk_client/Makefile])
 AC_CONFIG_FILES([clients/synth/Makefile])
 AC_CONFIG_FILES([clients/save_button/Makefile])
 AC_CONFIG_FILES([clients/panel/Makefile])
@@ -290,7 +261,6 @@ AC_MSG_RESULT([
 
   readline support:        $lash_readline
   gtk 2 support:           $lash_gtk2
-  gtk 1 support:           $lash_gtk
   debugging output:        $lash_debug
   building manual:         $lash_texi2html
 
@@ -301,9 +271,6 @@ AC_MSG_RESULT([
 if test x$GTK2_FOUND = xyes; then
   AC_MSG_RESULT([  GTK2_CFLAGS:   $GTK2_CFLAGS ])
 fi
-if test x$GTK_FOUND = xyes; then
-  AC_MSG_RESULT([  GTK_CFLAGS:    $GTK_CFLAGS ])
-fi
 
 AC_MSG_RESULT([  JACK_LIBS:     $JACK_LIBS ])
 AC_MSG_RESULT([  ALSA_LIBS:     $ALSA_LIBS ])
@@ -311,9 +278,6 @@ AC_MSG_RESULT([  XML2_LIBS:     $XML2_LIBS ])
 
 if test x$GTK2_FOUND = xyes; then
   AC_MSG_RESULT([  GTK2_LIBS:     $GTK2_LIBS ])
-fi
-if test x$GTK_FOUND = xyes; then
-  AC_MSG_RESULT([  GTK_LIBS:      $GTK_LIBS ])
 fi
 if test x$lash_readline = xyes; then
   AC_MSG_RESULT([  READLINE_LIBS: $READLINE_LIBS])
