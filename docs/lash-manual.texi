@@ -7,9 +7,10 @@
 
 @ifinfo
 This is the LASH Audio Session Handler Reference Manual,
-Edition 0.5.0, September 2005 for LASH version 0.5.
+Edition 0.5.1, March 2006 for LASH version 0.5.1.
 
 Copyright @copyright{} 2002, 2003 Robert Ham (rah@@bash.sh)
+Copyright @copyright{} 2005, 2006 Dave Robillard (drobilla@@connect.carleton.ca)
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.2
@@ -24,14 +25,16 @@ Free Documentation License''.
 @titlepage
 @title LASH Reference Manual
 @subtitle Audio application session management and configuration
-@subtitle Edition 0.5.0, September 2005
-@subtitle Covering LASH 0.5.0
+@subtitle Edition 0.5.1, March 2006
+@subtitle Covering LASH 0.5.1
 @author Bob Ham (rah@@bash.sh)
+@author Dave Robillard (drobilla@@connect.carleton.ca)
 
 @page
 @vskip 0pt plus 1filll
 
 Copyright @copyright{} 2002, 2003 Robert Ham (rah@@bash.sh)
+Copyright @copyright{} 2005, 2006 Dave Robillard (drobilla@@connect.carleton.ca)
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.2
@@ -48,7 +51,7 @@ Free Documentation License''.
 @ifinfo
 
 This is the LASH Audio Session Handler
-Reference Manual, edition 0.5.0, September 2005 for LASH version 0.5.0.
+Reference Manual, edition 0.5.1, March 2006 for LASH version 0.5.1.
 
 @url{http://www.nongnu.org/lash}
 
@@ -163,8 +166,8 @@ The LASH Synth client has an optional GUI which also uses the GTK+
 First off, you need to download the package.  It is available from
 the LASH webpage, @url{http://www.nongnu.org/lash}.  After you have
 downloaded it, unpack the tarball into a directory using @command{tar
--xzf /where/ever/you/put/lash-0.5.0.tar.gz} and change into the source
-directory with @command{cd lash-0.5.0}.
+-xzf /where/ever/you/put/lash-0.5.1.tar.gz} and change into the source
+directory with @command{cd lash-0.5.1}.
 
 The package uses the GNU autotools for configuration and makefile
 creation.  In order to install the package, you must complete three steps:

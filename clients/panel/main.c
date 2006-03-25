@@ -1,5 +1,5 @@
 /* LASH Control Panel
- * Copyright(C) 2005 Dave Robillarrd <drobilla@connect.carleton.ca>
+ * Copyright(C) 2006 Dave Robillarrd <drobilla@connect.carleton.ca>
  *  
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ print_help()
 {
 	printf("LASH Control Panel version %s\n", PACKAGE_VERSION);
 	printf
-		("Copyright(C) 2005 Dave Robillard <drobilla@connect.carleton.ca>\n");
+		("Copyright(C) 2006 Dave Robillard <drobilla@connect.carleton.ca>\n");
 	printf("\n");
 	printf
 		("This program comes with ABSOLUTELY NO WARRANTY.  You are licensed to use it\n");

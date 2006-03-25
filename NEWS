@@ -1,3 +1,8 @@
+0.5.1:
+
+* auto server start (if LASH_START_SERVER is set)
+* panel fixes (save dialog makes sense, no duplicated clients)
+
 0.5.0:
 
 * numerous fixed for random behaviour resulting in failed session restores

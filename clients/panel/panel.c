@@ -1,5 +1,5 @@
 /* LASH Control Panel
- * Copyright (C) 2005 Dave Robillard <drobilla@connect.carleton.ca>
+ * Copyright (C) 2006 Dave Robillard <drobilla@connect.carleton.ca>
  *  
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -80,7 +80,7 @@ about_cb(GtkButton* button, void* client)
 	gtk_about_dialog_set_name(GTK_ABOUT_DIALOG(dialog), "LASH Panel");
 	gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), PACKAGE_VERSION);
 	gtk_about_dialog_set_copyright(GTK_ABOUT_DIALOG(dialog),
-		"Copyright (C) 2005 Dave Robillard");
+		"Copyright (C) 2006 Dave Robillard");
 	gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog),
 		"http://www.nongnu.org/lash");
 
