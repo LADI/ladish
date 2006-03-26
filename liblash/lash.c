@@ -210,8 +210,8 @@ lash_init(lash_args_t * args,
 				__FUNCTION__, cstr ? cstr : "localhost");
 		
 		if (getenv("LAST_START_SERVER") == NULL)
-			fprintf(stderr, "%s: set the environment variable LASH_START_SERVER "
-					"to have the LASH \n%s: server started automatically\n",
+			fprintf(stderr, "%s: LASH_START_SERVER unset, not attempting to start"
+					" server automatically\n",
 					__FUNCTION__, __FUNCTION__);
 
 		lash_client_destroy(client);

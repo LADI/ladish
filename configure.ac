@@ -83,7 +83,7 @@ AC_SUBST(UUID_LIBS)
 ##############
 lash_gtk2="yes"
 AC_ARG_ENABLE(gtk2,
-[  --disable-gtk2          disable the gtk 2 test client],[
+[AS_HELP_STRING(--disable-gtk2, Disable all clients that require GTK)],[
   case "$enableval" in
     "yes")
       ;;
@@ -137,7 +137,7 @@ AM_CONDITIONAL(HAVE_READLINE, test "x$lash_readline" != "xno")
 AC_MSG_CHECKING([whether to enable debugging output])
 lash_debug="no"
 AC_ARG_ENABLE(debug,
-[  --enable-debug          enable debugging output (from everything)],[
+[AS_HELP_STRING(--enable-debug, enable debugging output (from everything))],[
   case "$enableval" in
     "yes")
       lash_debug="yes"
@@ -163,7 +163,7 @@ fi
 AC_MSG_CHECKING([whether to install service in /etc/services])
 lash_serv_inst="yes"
 AC_ARG_ENABLE(serv-inst,
-[  --disable-serv-inst     disable installation of lash service in /etc/services],[
+[AS_HELP_STRING(--disable-serv-ins, disable installation of lash service in /etc/services)],[
   case "$enableval" in
     "yes")
       ;;
@@ -188,7 +188,7 @@ fi
 ##########################
 AC_MSG_CHECKING([where to create projects])
 AC_ARG_WITH(default-dir,
-[  --with-default-dir=DIR  tell the server to use \$HOME/DIR to store project directories in],[
+[AS_HELP_STRING(--with-default-dir=DIR, [tell the server to use $HOME/DIR to store project directories in])],[
   if test x$withval = xno; then
     AC_MSG_ERROR([use --with-default-dir=DIR, not --without-default-dir])
   fi
@@ -257,16 +257,16 @@ fi
 
 AC_MSG_RESULT([
 
-  LASH configured
+  LASH Configured
 
-  readline support:        $lash_readline
-  gtk 2 support:           $lash_gtk2
-  debugging output:        $lash_debug
-  building manual:         $lash_texi2html
+  Readline support:      $lash_readline
+  Gtk support:           $lash_gtk2
+  Debugging output:      $lash_debug
+  Building manual:       $lash_texi2html
 
-  JACK_CFLAGS:   $JACK_CFLAGS
-  ALSA_CFLAGS:   $ALSA_CFLAGS
-  XML2_CFLAGS:   $XML2_CFLAGS ])
+  JACK_CFLAGS:  $JACK_CFLAGS
+  ALSA_CFLAGS:  $ALSA_CFLAGS
+  XML2_CFLAGS:  $XML2_CFLAGS ])
 
 if test x$GTK2_FOUND = xyes; then
   AC_MSG_RESULT([  GTK2_CFLAGS:   $GTK2_CFLAGS ])
