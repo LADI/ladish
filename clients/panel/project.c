@@ -17,6 +17,7 @@
  */
 
 #include "project.h"
+#include "config.h"
 #include <malloc.h>
 #include <lash/lash.h>
 #include <assert.h>
@@ -56,17 +57,22 @@ set_dir_cb(GtkButton * button, void *data)
 	char *filename = NULL;
 	lash_event_t *event = NULL;
 
-	GtkWidget *open_dialog =
+	GtkWidget *save_dialog =
 		gtk_file_chooser_dialog_new("Set Project Directory", NULL,
 									GTK_FILE_CHOOSER_ACTION_SAVE,
 									GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 									GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
-
-	response = gtk_dialog_run(GTK_DIALOG(open_dialog));
+	
+	char default_dir[256];
+	snprintf(default_dir, 256, "%s/%s", getenv("HOME"), DEFAULT_PROJECT_DIR);
+	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(save_dialog),
+		default_dir);
+	
+	response = gtk_dialog_run(GTK_DIALOG(save_dialog));
 
 	if (response == GTK_RESPONSE_OK) {
 		filename =
-			gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(open_dialog));
+			gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(save_dialog));
 		project_set_dir(project, filename);
 		event = lash_event_new_with_type(LASH_Project_Dir);
 		lash_event_set_project(event, project->name);
@@ -76,7 +82,7 @@ set_dir_cb(GtkButton * button, void *data)
 		printf("Told server to set project directory %s\n", filename);
 	}
 
-	gtk_widget_destroy(open_dialog);
+	gtk_widget_destroy(save_dialog);
 }
 
 void
