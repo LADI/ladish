@@ -331,6 +331,11 @@ open_cb(GtkButton * button, void *data)
 									GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
 									GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 									GTK_STOCK_OPEN, GTK_RESPONSE_OK, NULL);
+	
+	char default_dir[256];
+	snprintf(default_dir, 256, "%s/%s", getenv("HOME"), DEFAULT_PROJECT_DIR);
+	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(open_dialog),
+		default_dir);
 
 	response = gtk_dialog_run(GTK_DIALOG(open_dialog));
 
