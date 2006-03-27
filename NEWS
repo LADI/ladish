@@ -2,6 +2,7 @@
 
 * auto server start (if LASH_START_SERVER is set)
 * panel fixes (save dialog makes sense, no duplicated clients)
+* Fix for saving over existing project directories (impossible now)
 
 0.5.0:
 

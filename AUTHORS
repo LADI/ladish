@@ -3,3 +3,7 @@ Original Author:
 
 Maintainer (as of Lash 0.5.0):
 	Dave Robillard <drobilla@connect.carelton.ca>
+
+Server auto-start support:
+	Lars Luthman <larsl@users.sourceforge.net>
+
