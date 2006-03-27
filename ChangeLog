@@ -1,167 +1,220 @@
-This file has not been updated for any of the > 0.5.0 changes.  Sorry.
+2006-03-26 20:49  drobilla
 
--Dave
+	* AUTHORS, NEWS, README.SECURITY: [no log message]
 
+2006-03-26 13:59  drobilla
 
+	* clients/panel/panel.c: Made open dialog use default project dir
 
-Wed Jul 23 22:16:09 BST 2003 node <node@insanity.tek.net>
-lashd
-* moved loader to $(top_srcdir)/loader
-liblash
-* 
+2006-03-26 13:48  drobilla
 
-Mon Jul 21 19:40:31 BST 2003 node <node@insanity.tek.net>
-liblash
-* comm.c, comm_buffer.[ch], comm_event.[ch]: lash_comm_t -> lash_client_t
+	* clients/panel/project.c: Made save dialog default to default
+	  project directory
 
-Tue Jul 15 20:35:08 BST 2003 node <node@insanity.tek.net>
-liblash
-* types.h, client.h: CCA_Server_UI -> CCA_Server_Interface
-* client.h, comm.h: lash_comm_t, lash_client_t merged
+2006-03-26 12:21  drobilla
 
-Thu Feb 20 19:04:14 GMT 2003 node <node@insanity.tek.net>
-lashd
-* server.c: added server_lose_project ()
-* project.c: made project_save_clients use client names if they exist
-liblash
-* types.h: removed CCA_Project, added CCA_Project_Add and CCA_Project_Remove
+	* configure.ac, liblash/lash.c: Configure script cleanups
 
-*** Released 0.3.1 ***
+2006-03-24 19:47  drobilla
 
-*** Released 0.3.0 ***
+	* ChangeLog, NEWS, configure.ac, clients/panel/main.c,
+	  clients/panel/panel.c, clients/panel/panel.h,
+	  clients/panel/project.c, clients/panel/project.h,
+	  docs/lash-manual.texi: Bumped copyright date and version number
+	  for 0.5.1 release
 
-Wed Feb 05 19:49:40 GMT 2003 node <node@insanity.tek.net>
-lashd
-* alsa_mgr.c: added alsa_mgr_{,un}lock_clients ()
-* alsa_mgr.c: added alsa_mgr_{,un}lock_seq ()
+2006-03-24 17:03  drobilla
 
-Tue Feb 04 12:59:53 GMT 2003 node <node@insanity.tek.net>
-lashd
-* alsa_mgr.c: wrapped stray alsa_client_lock with
-  pthread_mutex_{,un}lock (&alsa_mgr->clients_lock)
-* alsa_mgr.c: made clients_lock PTHREAD_MUTEX_RECURSIVE
-liblash
-* config.h,event.h: func () -> func (void)
+	* icons/Makefile.am: Icons are now installed in
+	  $(PREFIX)/share/lash/icons
 
-Sun Jan 26 19:16:26 GMT 2003 node <node@insanity.tek.net>
-lashd
-* jack_mgr.c: fixed bug with jack_mgr's client pointers
-* project.c: fixed list data casting bug
+2006-03-24 15:59  drobilla
 
-Sun Jan 12 16:46:45 GMT 2003 node <node@insanity.tek.net>
-lashd
-loader.[ch], server.c: changed loader->load_in_terms to CCA_Terminal usage
-liblash
-* protocol.h: bumped protocol to 1.1 (Use_Terminal is backward compatible)
-* types.h, client.h: added Use_Terminal
+	* docs/lash-manual.texi: Updated documentation
 
-*** Released 0.2 ***
+2006-03-24 15:52  drobilla
 
-Sun Dec 22 19:26:07 GMT 2002 node <node@insanity.tek.net>
-lashd
-* alsa_patch.[ch]: changed gets to use const patches, added _dup
-* added alsa_client.[ch]
-* project.[ch], server.c: made it use the alsa_mgr
+	* configure.ac, clients/Makefile.am,
+	  clients/save_button/Makefile.am,
+	  clients/save_button/save_button.c,
+	  clients/save_button/save_button_2.0.c: Removed GTK1 support and
+	  confusing "gtk_client_
 
-Sat Dec 21 23:48:45 GMT 2002 node <node@insanity.tek.net>
-lashd
-* added alsa_mgr.[ch], alsa_fport.[ch]
-* server.[ch]: added alsa_mgr field
+2006-03-24 15:34  drobilla
 
-Thu Dec 19 17:34:26 GMT 2002 node <node@insanity.tek.net>
-lashd
-* client.[ch]: change alsa_client_id field from int to unsigned char
-* client_event.[ch], server.c: made the server not accept a second jack
-  client name
-liblash
-* protocol.[ch]: protocol_t -> lash_protocol_t
-* [API~] client_interface.h, lash.c: added protocol argument to lash_init
-* lash.c: added null pointer checks
+	* autogen.sh, configure.ac: More descriptive configure output about
+	  manual building
 
-Wed Dec 18 21:19:34 GMT 2002 node <node@insanity.tek.net>
-liblash
-* [API+] config.[ch]: added {get,set}_double
+2006-03-24 14:22  drobilla
 
-Mon Dec 16 19:05:16 GMT 2002 node <node@insanity.tek.net>
-lashd
-* server.c, client_event.[ch]: removed support for CCA_{Jack,Alsa}_Ports events
-* added jack_fport.[ch]
-* jack_mgr.[ch]: added jack_fport use
-liblash
-* internal.h: changed event's type field from int to enum CCA_Event_Types
-* types.h: removed CCA_{Jack,Alsa}_Ports event types
-* [API+] list.h: added lash_list_concat
+	* docs/lash-manual.texi, liblash/lash.c: Added server auto starting
+	  support
 
-Sun Dec 15 22:30:16 GMT 2002 node <node@insanity.tek.net>
-lashd
-* conn_mgr.[ch], server.[ch], main.c: made conn_mgr more of a server property
-* jack_mgr.c: made the jack_mgr quit properly
-* conn_mgr.c: made the conn_mgr quit properly
-* loader.c: ignore KILL, TERM and HUP signals
+2006-02-09 15:14  drobilla
 
-Sat Dec 14 17:33:30 GMT 2002 node <node@insanity.tek.net>
-lashd
-* jack_mgr.[ch]: using socket pair instead of cond
-* jack_patch.[ch]: added jack_patch_get_from_port, changed set/unset to
-  use jack_mgr_clients instead of projects
-* project.[ch], server.c: changed conn_mgr field to server in project_t
-* project.[ch], client_event.[ch], server.c: changed to using jack_mgr
+	* clients/panel/project.c: Fixed project directory change button
+	  label
 
-Fri Dec 13 11:55:10 GMT 2002 node <node@insanity.tek.net>
-lashd:
-* store.c: handle configs with value_size = 0
-* client_event.[ch]: server.c: added port creation handlers
-* jack_patch.[ch]: added jack_patch_dup, made gets parameters consts
-* server.[ch], conn_mgr.[ch]: moved server event queue to the server
-* added jack_mgr*
-liblash:
-* types.h: added CCA_Jack_Ports, CCA_Alsa_Ports
+2006-02-09 14:04  drobilla
 
-Thu Dec 12 20:43:27 GMT 2002 node <node@insanity.tek.net>
-lashd:
-* conn_mgr.c: added protocol checking
-liblash:
-* [API+] added protocol.[ch]
-* [API+] comm_buffer.[ch], comm.c: added protocol mismatch handling
-* [API+] comm_buffer.[ch]: added lash_comm_event_get_number
-* [API~] client.[ch]: changed lash_client_t.server_connected from int to uint32_t
-* comm_buffer.c: changed some direct access to _new
-* comm_buffer.c: removed jack client/alsa client code
+	* clients/panel/project.c, lashd/project.c: Fix for project saving
 
-Wed Dec 11 16:39:41 GMT 2002 node <node@insanity.tek.net>
-lashd
-* store.[ch], client.[ch], project.c: made projects and clients work
-  with the new safer stores
-* server.c, client_event.[ch]: added server_lash_event_save_data_set, telling
-  stores to write to disk and removed the writing after every config, removed
-  useless assert (config)
-* project.[ch], client_event.c: added check for an active project with the
-  specified directory when restoring
-* project.c: project_lose_client: fixed:
-  project->lost_clients = lash_list_append (project->client, client);
-* conn.[ch], conn_mgr.c: implemented pinging
-* jack_patch.[ch]: added jack_patch_switch_clients
-* alsa_patch.[ch]: fixed bug not changing the uuids in alsa_patch_switch_clients
-* project.c: made client_get_jack_patches get input connections properly by
-  wrapping it up in client_get_jack_patches_with_type and using
-  jack_patch_switch_clients
-* client_event.c: added sleep(1) in jack client name and alsa client id handler,
-  so as to allow the client to register its ports - perhaps a Port_Registered
-  event is needed?
-* jack_patch.c: removed debugging output
-* project.c: added alsa patch specs debugging output
-liblash
-* comm.c: changed ping code to use lash_comm_event_* instead of direct access
-* comm.c: added some debugging output
-* socket.c: removed buffer debugging output
-* comm.c: removed send/recv event debugging output
-* client_interface.h: "lash_config_t * event" -> "lash_config_t * config"
-* [API+] event.[ch]: added lash_event_set_alsa_id
-* [API+] event.[ch]: added lash_event_new_with_all
-* [API+] client_interface.h, lash.c: reintroduced lash_jack_client_name and 
-  lash_alsa_client_id
+2006-02-06 21:55  drobilla
 
-Tue Dec 10 18:21:01 GMT 2002 node <node@insanity.tek.net>
-lashd
-* store.[ch], client.c: made the store always exist, regardless of whether or
-  not it opened correctly.  Returns ints and things to indicate success instead.
+	* docs/lash-manual.texi: Minor memory ownership clarification
+
+2005-10-03 23:41  drobilla
+
+	* Makefile.am, clients/control/lash_control.c, lash/internal.h,
+	  lashd/conn_mgr.c, lashd/project.c, lashd/server.c, lashd/store.c,
+	  liblash/comm_buffer.c, liblash/socket.c: Applied non-integer
+	  configs patch from Mark Vitek, fixed some ununitialized vars
+	  warnings
+
+2005-09-23 12:41  drobilla
+
+	* clients/panel/project.c: Removed invalid assert
+
+2005-09-23 04:27  drobilla
+
+	* clients/panel/: panel.c, project.c: Fixed a bug with resumed
+	  clients showing up twice in the clients list
+
+2005-09-19 07:53  drobilla
+
+	* clients/synth/synth.c: Fixed jack port flags in synth
+
+2005-09-19 07:47  drobilla
+
+	* clients/synth/main.c: Made synth use same client name for Alsa
+	  and Jack
+
+2005-09-19 07:34  drobilla
+
+	* NEWS, README, configure.ac, clients/panel/panel.c: Tweaked panel
+	  slightly, updated README and NEWS
+
+2005-09-19 06:17  drobilla
+
+	* Makefile.am, configure.ac, icons/Makefile.am, icons/lash.svg,
+	  icons/lash.xcf, icons/lash_16px.png, icons/lash_24px.png,
+	  icons/lash_48px.png, icons/lash_96px.png: Added icons, removed
+	  patches dir
+
+2005-09-19 05:34  drobilla
+
+	* clients/panel/panel.c, clients/panel/panel.h,
+	  docs/lash-manual.texi: Added "no projects" label to lash_panel,
+	  updated manual
+
+2005-09-15 07:02  drobilla
+
+	* clients/panel/panel.c: Added about dialog
+
+2005-09-15 06:37  drobilla
+
+	* clients/panel/project.c: Fixed label alignment in control panel
+
+2005-09-15 06:18  drobilla
+
+	* clients/panel/project.c: Layout tweaks of the control panel
+
+2005-09-15 05:50  drobilla
+
+	* clients/panel/: panel.c, project.c: GUI shinifications in the
+	  panel client
+
+2005-09-15 05:23  drobilla
+
+	* ChangeLog, NEWS, lash-configure-template, docs/lash-manual.texi,
+	  lash/protocol.h, lashd/project.c: Updated version numbers, URLs,
+	  and dates throughout
+
+2005-09-15 04:23  drobilla
+
+	* clients/control/client.c, clients/control/lash_control.c,
+	  clients/control/main.c, clients/control/project.c,
+	  clients/gtk_client/gtk_client.c, clients/gtk_client/main.c,
+	  clients/panel/panel.c, clients/panel/project.c,
+	  clients/save_button/hints.c, clients/save_button/save_button.c,
+	  clients/simple_client/simple_client.c, clients/synth/interface.c,
+	  clients/synth/lash.c, clients/synth/main.c,
+	  clients/synth/synth.c, lash/config.h, lashd/alsa_client.c,
+	  lashd/alsa_fport.c, lashd/alsa_mgr.c, lashd/alsa_patch.c,
+	  lashd/client.c, lashd/client_event.c, lashd/conn.c,
+	  lashd/conn_mgr.c, lashd/jack_fport.c, lashd/jack_mgr.c,
+	  lashd/jack_mgr_client.c, lashd/jack_patch.c, lashd/main.c,
+	  lashd/project.c, lashd/server.c, lashd/server_event.c,
+	  lashd/store.c, liblash/args.c, liblash/client.c, liblash/comm.c,
+	  liblash/comm_buffer.c, liblash/comm_event.c, liblash/config.c,
+	  liblash/connect_params.c, liblash/event.c, liblash/exec_params.c,
+	  liblash/file.c, liblash/lash.c, liblash/loader.c,
+	  liblash/protocol.c, liblash/socket.c, liblash/xmalloc.c: Indented
+	  entire source tree consistently
+
+2005-09-15 04:18  drobilla
+
+	* docs/lash-manual.texi: Updated documentation
+
+2005-09-13 12:29  drobilla
+
+	* clients/panel/project.c: Shuffled around widgets in control panel
+
+2005-09-13 06:04  drobilla
+
+	* clients/panel/main.c, clients/panel/panel.c,
+	  clients/panel/panel.h, clients/panel/project.c,
+	  clients/panel/project.h, lashd/project.c: Tidied up layour of
+	  control panel window, removed unused code from panel
+
+2005-09-13 01:22  drobilla
+
+	* AUTHORS, COPYING, ChangeLog, INSTALL, Makefile.am, NEWS, README,
+	  README.SECURITY, TODO, autogen.sh, common.am, configure.ac,
+	  lash-1.0.pc.in, lash-configure-template, clients/Makefile.am,
+	  clients/control/Makefile.am, clients/control/client.c,
+	  clients/control/client.h, clients/control/lash_control.c,
+	  clients/control/lash_control.h, clients/control/main.c,
+	  clients/control/project.c, clients/control/project.h,
+	  clients/gtk_client/Makefile.am, clients/gtk_client/gtk_client.c,
+	  clients/gtk_client/gtk_client.h, clients/gtk_client/main.c,
+	  clients/panel/Makefile.am, clients/panel/main.c,
+	  clients/panel/panel.c, clients/panel/panel.h,
+	  clients/panel/project.c, clients/panel/project.h,
+	  clients/save_button/Makefile.am, clients/save_button/hints.c,
+	  clients/save_button/hints.h, clients/save_button/save_button.c,
+	  clients/save_button/save_button_2.0.c,
+	  clients/simple_client/Makefile.am,
+	  clients/simple_client/simple_client.c, clients/synth/Makefile.am,
+	  clients/synth/interface.c, clients/synth/interface.h,
+	  clients/synth/lash.c, clients/synth/lash.h, clients/synth/main.c,
+	  clients/synth/synth.c, clients/synth/synth.h, docs/Makefile.am,
+	  docs/api-proposal.html, docs/fdl.texi, docs/lash-manual.texi,
+	  docs/lash-manual-html-one-page/Makefile.am,
+	  docs/lash-manual-html-split/Makefile.am, lash/Makefile.am,
+	  lash/args.h, lash/client.h, lash/client_interface.h,
+	  lash/comm_buffer.h, lash/comm_event.h, lash/config.h,
+	  lash/connect_params.h, lash/debug.h, lash/event.h,
+	  lash/exec_params.h, lash/file.h, lash/internal.h,
+	  lash/internal_headers.h, lash/lash.h, lash/list.h, lash/loader.h,
+	  lash/protocol.h, lash/server_client.h, lash/socket.h,
+	  lash/types.h, lash/xmalloc.h, lashd/Makefile.am,
+	  lashd/alsa_client.c, lashd/alsa_client.h, lashd/alsa_fport.c,
+	  lashd/alsa_fport.h, lashd/alsa_mgr.c, lashd/alsa_mgr.h,
+	  lashd/alsa_patch.c, lashd/alsa_patch.h, lashd/client.c,
+	  lashd/client.h, lashd/client_event.c, lashd/client_event.h,
+	  lashd/conn.c, lashd/conn.h, lashd/conn_mgr.c, lashd/conn_mgr.h,
+	  lashd/globals.h, lashd/jack_fport.c, lashd/jack_fport.h,
+	  lashd/jack_mgr.c, lashd/jack_mgr.h, lashd/jack_mgr_client.c,
+	  lashd/jack_mgr_client.h, lashd/jack_patch.c, lashd/jack_patch.h,
+	  lashd/lash-project-1.0.dtd, lashd/main.c, lashd/project.c,
+	  lashd/project.h, lashd/server.c, lashd/server.h,
+	  lashd/server_event.c, lashd/server_event.h, lashd/store.c,
+	  lashd/store.h, liblash/Makefile.am, liblash/args.c,
+	  liblash/client.c, liblash/comm.c, liblash/comm_buffer.c,
+	  liblash/comm_event.c, liblash/config.c, liblash/connect_params.c,
+	  liblash/event.c, liblash/exec_params.c, liblash/file.c,
+	  liblash/lash.c, liblash/loader.c, liblash/protocol.c,
+	  liblash/socket.c, liblash/xmalloc.c, m4/Makefile.am,
+	  m4/aclocal-include.m4, m4/readline.m4: Initial checkin
+
