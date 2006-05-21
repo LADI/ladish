@@ -20,6 +20,8 @@
 
 #define _GNU_SOURCE
 
+#include "config.h"
+
 #include <signal.h>
 #include <assert.h>
 #include <uuid/uuid.h>
@@ -51,7 +53,9 @@ server_new(const char *default_dir)
 
 	LASH_PRINT_DEBUG("starting jack, alsa and comm threads");
 	server->jack_mgr = jack_mgr_new(server);
+#ifdef HAVE_ALSA
 	server->alsa_mgr = alsa_mgr_new(server);
+#endif
 	server->conn_mgr = conn_mgr_new(server);
 	if (!server->conn_mgr)
 		exit(1);
@@ -71,9 +75,11 @@ server_destroy(server_t * server)
 
 	LASH_PRINT_DEBUG("destroying connection manager");
 	conn_mgr_destroy(server->conn_mgr);
+#ifdef HAVE_ALSA
 	LASH_PRINT_DEBUG("destroying alsa manager");
 	alsa_mgr_lock(server->alsa_mgr);
 	alsa_mgr_destroy(server->alsa_mgr);
+#endif
 	LASH_PRINT_DEBUG("destroying jack manager");
 	jack_mgr_lock(server->jack_mgr);
 	jack_mgr_destroy(server->jack_mgr);
@@ -537,12 +543,13 @@ server_event_client_disconnect(server_t * server, server_event_t * event)
 		jack_patches = jack_mgr_remove_client(server->jack_mgr, client->id);
 		jack_mgr_unlock(server->jack_mgr);
 	}
-
+#ifdef HAVE_ALSA
 	if (client->alsa_client_id) {
 		alsa_mgr_lock(server->alsa_mgr);
 		alsa_patches = alsa_mgr_remove_client(server->alsa_mgr, client->id);
 		alsa_mgr_unlock(server->alsa_mgr);
 	}
+#endif
 
 	project_lose_client(project, client, jack_patches, alsa_patches);
 

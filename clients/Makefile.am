@@ -1,1 +1,5 @@
-SUBDIRS = simple_client control synth save_button panel
+SUBDIRS = control save_button panel
+
+if WITH_ALSA
+SUBDIRS += simple_client synth 
+endif

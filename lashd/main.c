@@ -71,9 +71,11 @@ print_help()
 		("under the terms of the GNU General Public License, version 2 or later.  See\n");
 	printf("the COPYING file that came with this software for details.\n");
 	printf("\n");
-	printf("Compiled with ALSA %s, JACK %s and libxml2 %s\n", ALSA_VERSION,
-		   JACK_VERSION, XML2_VERSION);
-	printf("\n");
+	printf("Compiled with JACK %s, libxml2 %s", JACK_VERSION, XML2_VERSION);
+#ifdef ALSA_SUPPORT
+	printf(", ALSA %s", ALSA_VERSION);
+#endif
+	printf("\n\n");
 	printf(" -h, --help                  Display this help info\n");
 	printf
 		(" -d, --default-dir <dir>     Use <dir> within $HOME to store project directories\n");

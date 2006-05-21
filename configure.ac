@@ -32,24 +32,41 @@ AC_DEFINE_UNQUOTED(JACK_VERSION, "$JACK_VERSION", [The version of jack we're com
 ############
 ### ALSA ###
 ############
-PKG_CHECK_MODULES(ALSA, alsa >= 0.9, true, AC_MSG_ERROR([you need alsa >= 0.9. see http://www.alsa-project.org/]))
 
-# check that there's seq functions in the library
-ORIG_LIBS="$LIBS"
-LIBS="$LIBS $ALSA_LIBS"
-ORIG_CFLAGS="$CFLAGS"
-CFLAGS="$CFLAGS $ALSA_CFLAGS"
+lash_alsa_midi="yes"
+AC_ARG_ENABLE(alsa-midi,
+	[AS_HELP_STRING(--enable-alsa-midi, [Enable Alsa sequencer support (true)])],
+	[ if test x$enable_alsa_midi = xno ; then lash_alsa_midi=no ; fi ])
 
-AC_CHECK_FUNC(snd_seq_open, true,
-  AC_MSG_ERROR([the alsa library you're using doesn't have sequencer functions]))
+if test "x$lash_alsa_midi" = "xyes"; then
 
-LIBS="$ORIG_LIBS"
-CFLAGS="$ORIG_CFLAGS"
+	PKG_CHECK_MODULES(ALSA, alsa >= 0.9, ALSA_FOUND="true", ALSA_FOUND="false")
 
-ALSA_VERSION=$( pkg-config --modversion alsa )
-AC_SUBST(ALSA_CFLAGS)
-AC_SUBST(ALSA_LIBS)
-AC_DEFINE_UNQUOTED(ALSA_VERSION, "$ALSA_VERSION", [The version of alsa we're compiling against])
+	if test "x$ALSA_FOUND" = "xyes"; then
+		# Check that there's seq functions in the library
+		ORIG_LIBS="$LIBS"
+		LIBS="$LIBS $ALSA_LIBS"
+		ORIG_CFLAGS="$CFLAGS"
+		CFLAGS="$CFLAGS $ALSA_CFLAGS"
+		
+		AC_CHECK_FUNC(snd_seq_open, true,
+		  AC_MSG_ERROR([The Alsa library you're using doesn't have sequencer functions]))
+		
+		LIBS="$ORIG_LIBS"
+		CFLAGS="$ORIG_CFLAGS"
+		
+		ALSA_VERSION=$( pkg-config --modversion alsa )
+		AC_SUBST(ALSA_CFLAGS)
+		AC_SUBST(ALSA_LIBS)
+		AC_DEFINE(HAVE_ALSA, 1, [Alsa sequencer support])
+		AC_DEFINE_UNQUOTED(ALSA_VERSION, "$ALSA_VERSION", [The version of alsa we're compiling against])
+	else
+		AC_MSG_WARN([You don't have ALSA >= 0.9. See http://www.alsa-project.org/])
+		AC_MSG_WARN([ALSA support not being built.])
+	fi
+fi
+AM_CONDITIONAL(WITH_ALSA, [test "x$ALSA_FOUND" = "xyes"])
+
 
 ###############
 ### libxml2 ###
@@ -117,7 +134,9 @@ AM_CONDITIONAL(HAVE_GTK2, test x$GTK2_FOUND = xyes)
 ### readline ###
 ################
 lash_readline="yes"
-VL_LIB_READLINE
+#VL_LIB_READLINE
+AC_CHECK_READLINE
+AC_SUBST(READLINE_INCLUDES)
 AC_SUBST(READLINE_LIBS)
 
 AC_MSG_CHECKING([whether to enable readline])
@@ -259,6 +278,7 @@ AC_MSG_RESULT([
 
   LASH Configured
 
+  Alsa support:          $lash_alsa_midi
   Readline support:      $lash_readline
   Gtk support:           $lash_gtk2
   Debugging output:      $lash_debug

@@ -21,6 +21,8 @@
 #ifndef __LASH_ALSA_CLIENT_H__
 #define __LASH_ALSA_CLIENT_H__
 
+#ifdef WITH_ALSA
+
 #include <pthread.h>
 #include <uuid/uuid.h>
 
@@ -48,5 +50,7 @@ void          alsa_client_get_id          (const alsa_client_t * client, uuid_t 
 
 void alsa_client_free_patches (alsa_client_t * client);
 void alsa_client_free_backup_patches (alsa_client_t * client);
+
+#endif /* WITH_ALSA */
 
 #endif /* __LASH_ALSA_CLIENT_H__ */

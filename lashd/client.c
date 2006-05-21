@@ -20,6 +20,7 @@
 
 #include <lash/internal_headers.h>
 
+#include "config.h"
 #include "client.h"
 #include "jack_patch.h"
 #include "alsa_patch.h"
@@ -210,7 +211,9 @@ client_parse_xml(client_t * client, xmlNodePtr parent)
 	xmlNodePtr xmlnode, argnode;
 	xmlChar *content;
 	jack_patch_t *jack_patch;
+#ifdef HAVE_ALSA
 	alsa_patch_t *alsa_patch;
+#endif
 
 	LASH_PRINT_DEBUG("parsing client");
 
@@ -262,14 +265,19 @@ client_parse_xml(client_t * client, xmlNodePtr parent)
 						lash_list_append(client->jack_patches, jack_patch);
 				}
 		} else if (strcmp(CAST_BAD(xmlnode->name), "alsa_patch_set") == 0) {
-			for (argnode = xmlnode->children; argnode;
-				 argnode = argnode->next)
+#ifdef HAVE_ALSA
+			for (argnode = xmlnode->children; argnode; argnode = argnode->next) {
 				if (strcmp(CAST_BAD argnode->name, "alsa_patch") == 0) {
 					alsa_patch = alsa_patch_new();
 					alsa_patch_parse_xml(alsa_patch, argnode);
 					client->alsa_patches =
 						lash_list_append(client->alsa_patches, alsa_patch);
 				}
+			}
+#else
+			LASH_PRINT_DEBUG("Warning:  Session contains ALSA information, but LASH"
+				" is built without ALSA support.");
+#endif
 		}
 	}
 

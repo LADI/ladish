@@ -21,6 +21,8 @@
 #ifndef __LASHD_ALSA_FPORT_H__
 #define __LASHD_ALSA_FPORT_H__
 
+#ifdef WITH_ALSA
+
 #include <pthread.h>
 
 typedef struct _alsa_fport alsa_fport_t;
@@ -40,5 +42,7 @@ void alsa_fport_set_port   (alsa_fport_t * fport, unsigned char port);
 
 unsigned char alsa_fport_get_client (const alsa_fport_t * fport);
 unsigned char alsa_fport_get_port   (const alsa_fport_t * fport);
+
+#endif /* WITH_ALSA */
 
 #endif /* __LASHD_ALSA_FPORT_H__ */

@@ -175,29 +175,48 @@ lash_init(lash_args_t * args,
 	   case something must be broken if we can't connect */
 	lash_args_get_id(args, id);
 	if (err && getenv("LASH_START_SERVER") != NULL && uuid_is_null(id)) {
-		fprintf(stderr, "%s: trying to start new LASH server\n", 
+		LASH_DEBUGARGS("%s: trying to start new LASH server\n", 
 			__FUNCTION__);
+		
+		/* using the same double fork() trick as JACK does to prevent
+		   zombie children */
 		err = fork();
+		
+		/* child process will run this statement */
 		if (err == 0) {
-			daemon(0, 0);
-			execlp("lashd", "lashd", NULL);
-			_exit(-1);
+			switch (fork()) {
+			  
+			/* grandchild process will run this block */
+			case 0:
+				setsid();
+				execlp("lashd", "lashd", NULL);
+				_exit(-1);
+				
+			/* this block only runs if the second fork() fails */
+			case -1:
+				_exit (-1);
+				
+			/* exit the child process here */
+			default: 
+				_exit (0);
+			}
 		}
 
 		/* if the fork succeeded, try to connect to the new server */
 		else if (err > 0) {
+			waitpid(err, NULL, 0);
 			for (tries = 0; tries < 5; ++tries) {
 				sleep(1);
 				err = lash_comm_connect_to_server(client,
 								  cstr ? cstr : "localhost",
 								  "lash", connect_params);
-				if (err == 0)
+				if (err == 0) {
+					LASH_PRINT_DEBUG("successfully launched and connected to lashd");
 					break;
+				}
 			}
-		}
-		
 		/* fork failed */
-		else {
+		} else { 
 			fprintf(stderr, "%s: fork failed while starting new server: %s\n",
 				__FUNCTION__, strerror(err));
 		}

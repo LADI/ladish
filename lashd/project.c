@@ -20,6 +20,8 @@
 
 #define _GNU_SOURCE
 
+#include "config.h"
+
 #include <stdlib.h>
 #include <sys/types.h>
 #include <dirent.h>
@@ -33,8 +35,11 @@
 #include <stdio.h>
 
 #include <jack/jack.h>
-#include <alsa/asoundlib.h>
 #include <libxml/tree.h>
+
+#ifdef HAVE_ALSA
+#include <alsa/asoundlib.h>
+#endif
 
 #include <lash/lash.h>
 #include <lash/internal_headers.h>
@@ -600,6 +605,7 @@ project_create_client_jack_patch_xml(project_t * project, client_t * client,
 	lash_list_free(patches);
 }
 
+#ifdef HAVE_ALSA
 void
 project_create_client_alsa_patch_xml(project_t * project, client_t * client,
 									 xmlNodePtr clientxml)
@@ -629,6 +635,8 @@ project_create_client_alsa_patch_xml(project_t * project, client_t * client,
 
 	lash_list_free(patches);
 }
+#endif
+
 
 static xmlDocPtr
 project_create_xml(project_t * project)
@@ -676,9 +684,10 @@ project_create_xml(project_t * project)
 
 		if (client->jack_client_name)
 			project_create_client_jack_patch_xml(project, client, clientxml);
-
+#ifdef HAVE_ALSA
 		if (client->alsa_client_id)
 			project_create_client_alsa_patch_xml(project, client, clientxml);
+#endif
 	}
 
 	return doc;
@@ -850,24 +859,25 @@ project_restore(server_t * server, const char *dir)
 		lash_list_t *list;
 		int i;
 
-		LASH_DEBUG("resored project with:");
+		LASH_PRINT_DEBUG("resored project with:");
 		LASH_DEBUGARGS("  directory: '%s'", project->directory);
 		LASH_DEBUGARGS("  name:      '%s'", project->name);
-		LASH_DEBUG("  clients:");
+		LASH_PRINT_DEBUG("  clients:");
 		for (client_list = project->lost_clients; client_list;
 			 client_list = client_list->next) {
 			client = (client_t *) client_list->data;
 
-			LASH_DEBUG("  ------");
+			LASH_PRINT_DEBUG("  ------");
 			LASH_DEBUGARGS("    id:          '%s'",
 						   client_get_id_str(client));
 			LASH_DEBUGARGS("    working dir: '%s'", client->working_dir);
 			LASH_DEBUGARGS("    flags:       %d", client->flags);
 			LASH_DEBUGARGS("    argc:        %d", client->argc);
-			LASH_DEBUG("    args:");
+			LASH_PRINT_DEBUG("    args:");
 			for (i = 0; i < client->argc; i++) {
 				LASH_DEBUGARGS("      %d: '%s'", i, client->argv[i]);
 			}
+#ifdef HAVE_ALSA
 			if (client->alsa_patches) {
 				LASH_PRINT_DEBUG("    alsa patches:");
 				for (list = client->alsa_patches; list; list = list->next) {
@@ -877,6 +887,7 @@ project_restore(server_t * server, const char *dir)
 				}
 			} else
 				LASH_PRINT_DEBUG("    no alsa patches");
+#endif
 
 			if (client->jack_patches) {
 				LASH_PRINT_DEBUG("    jack patches:");
@@ -983,6 +994,7 @@ project_destroy(project_t * project)
 			lash_list_free(patches);
 		}
 
+#ifdef HAVE_ALSA
 		if (client->alsa_client_id) {
 			alsa_mgr_lock(project->server->alsa_mgr);
 			patches =
@@ -993,6 +1005,7 @@ project_destroy(project_t * project)
 				alsa_patch_destroy((alsa_patch_t *) pnode->data);
 			lash_list_free(patches);
 		}
+#endif
 
 		/* remove the client name links */
 		if (CLIENT_CONFIG_DATA_SET(client) || CLIENT_CONFIG_FILE(client))

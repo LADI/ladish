@@ -20,6 +20,8 @@
 
 #define _GNU_SOURCE
 
+#include "config.h"
+
 #include <unistd.h>
 #include <errno.h>
 
@@ -109,7 +111,7 @@ server_lash_event_alsa_client_id(project_t * project, client_t * client,
 					__FUNCTION__, client_get_id_str(client));
 			return;
 		}
-
+#ifdef HAVE_ALSA
 		alsa_id = (unsigned char)string[0];
 		client_set_alsa_client_id(client, alsa_id);
 
@@ -121,6 +123,7 @@ server_lash_event_alsa_client_id(project_t * project, client_t * client,
 
 		server_notify_interfaces(project, client, LASH_Alsa_Client_ID,
 								 string);
+#endif
 	} else {
 		lash_event_t *event;
 		char id[2];

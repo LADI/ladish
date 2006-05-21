@@ -36,7 +36,12 @@ struct _server
 {
   conn_mgr_t *    conn_mgr;
   jack_mgr_t *    jack_mgr;
+#ifdef WITH_ALSA
   alsa_mgr_t *    alsa_mgr;
+#else
+  void * alsa_mgr;
+#endif
+
   loader_t *      loader;
   int             loader_quit;
 

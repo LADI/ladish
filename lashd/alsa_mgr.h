@@ -21,6 +21,8 @@
 #ifndef __LASH_ALSA_MGR_H__
 #define __LASH_ALSA_MGR_H__
 
+#ifdef WITH_ALSA
+
 #include <pthread.h>
 #include <uuid/uuid.h>
 #include <alsa/asoundlib.h>
@@ -60,5 +62,6 @@ void alsa_mgr_unlock (alsa_mgr_t * alsa_mgr);
 
 const char * get_alsa_port_name_only (const char * port_name);
 
+#endif /* WITH_ALSA */
 
 #endif /* __LASH_ALSA_MGR_H__ */

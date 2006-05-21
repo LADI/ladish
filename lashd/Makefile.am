@@ -12,15 +12,19 @@ lashd_SOURCES = \
 	store.c store.h \
 	server.c server.h \
 	client_event.c client_event.h \
-	alsa_patch.c alsa_patch.h \
 	jack_patch.c jack_patch.h \
 	jack_mgr.c jack_mgr.h \
 	jack_mgr_client.c jack_mgr_client.h \
 	jack_fport.c jack_fport.h \
+	globals.h
+
+if WITH_ALSA
+lashd_SOURCES += \
+	alsa_patch.c alsa_patch.h \
 	alsa_fport.c alsa_fport.h \
 	alsa_mgr.c alsa_mgr.h \
-	alsa_client.c alsa_client.h \
-	globals.h
+	alsa_client.c alsa_client.h
+endif
 
 lashd_LDADD = \
 	$(LASH_LIBS) \
@@ -28,7 +32,7 @@ lashd_LDADD = \
 	$(ALSA_LIBS) \
 	$(XML2_LIBS) \
 	$(UUID_LIBS) \
-        $(top_builddir)/liblash/liblash.la
+	$(top_builddir)/liblash/liblash.la
 
 lashd_CFLAGS = \
 	$(LASH_CFLAGS) \
@@ -48,3 +52,4 @@ install-data-local:
 	  echo -e "\nlash\t\t14541/tcp\t\t\t# LASH client/server protocol" >> /etc/services; \
 	fi
 endif
+
