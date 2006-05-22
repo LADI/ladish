@@ -169,7 +169,7 @@ lash_comm_recv_finish(lash_client_t * client)
 	pthread_join(client->send_thread, NULL);
 
 	close(client->socket);
-	lash_args_destroy(client->args);
+	/*lash_args_destroy(client->args);*/
 	client->args = NULL;
 	free(client->class);
 	client->class = NULL;

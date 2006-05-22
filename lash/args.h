@@ -41,7 +41,8 @@ struct _lash_args
 void lash_args_free (lash_args_t * args);
 
 lash_args_t * lash_args_new ();
-void         lash_args_destroy (lash_args_t * args);
+lash_args_t * lash_args_duplicate (const lash_args_t *const src);
+void          lash_args_destroy (lash_args_t * args);
 
 void lash_args_set_project (lash_args_t * args, const char * project);
 void lash_args_set_server  (lash_args_t * args, const char * server);

@@ -42,7 +42,7 @@ void lash_args_destroy (lash_args_t* args);
 /** open a connection to the server
  * returns NULL on failure
  */
-lash_client_t * lash_init (lash_args_t * args, const char * client_class, int client_flags, lash_protocol_t protocol); 
+lash_client_t * lash_init (const lash_args_t * args, const char * client_class, int client_flags, lash_protocol_t protocol); 
 
 /** get the hostname of the server
  */

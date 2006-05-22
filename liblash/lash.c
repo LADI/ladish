@@ -92,6 +92,17 @@ lash_extract_args(int *argc, char ***argv)
 
 			continue;
 		}
+		
+		if (strncmp("--lash-no-start-server", (*argv)[i], 22) == 0) {
+			LASH_PRINT_DEBUG
+				("setting LASH_No_Start_Server flag from command line");
+
+			lash_args_set_flag(args, LASH_No_Start_Server);
+
+			(*argv)[i] = NULL;
+
+			continue;
+		}
 	}
 
 	LASH_PRINT_DEBUG("args checked");
@@ -120,7 +131,7 @@ lash_extract_args(int *argc, char ***argv)
 }
 
 lash_client_t *
-lash_init(lash_args_t * args,
+lash_init(const lash_args_t * args,
 		  const char *class, int client_flags, lash_protocol_t protocol)
 {
 	lash_connect_params_t *connect_params;
@@ -135,7 +146,7 @@ lash_init(lash_args_t * args,
 	client = lash_client_new();
 	connect_params = lash_connect_params_new();
 
-	client->args = args;
+	client->args = lash_args_duplicate(args);
 	client->args->flags |= client_flags;
 	lash_client_set_class(client, class);
 
@@ -173,66 +184,71 @@ lash_init(lash_args_t * args,
 	/* couldn't connect, try to start a new server */
 	/* but not if this client has been started by a server, in which 
 	   case something must be broken if we can't connect */
-	lash_args_get_id(args, id);
-	if (err && getenv("LASH_START_SERVER") != NULL && uuid_is_null(id)) {
-		LASH_DEBUGARGS("%s: trying to start new LASH server\n", 
-			__FUNCTION__);
-		
-		/* using the same double fork() trick as JACK does to prevent
-		   zombie children */
-		err = fork();
-		
-		/* child process will run this statement */
-		if (err == 0) {
-			switch (fork()) {
-			  
-			/* grandchild process will run this block */
-			case 0:
-				setsid();
-				execlp("lashd", "lashd", NULL);
-				_exit(-1);
-				
-			/* this block only runs if the second fork() fails */
-			case -1:
-				_exit (-1);
-				
-			/* exit the child process here */
-			default: 
-				_exit (0);
-			}
-		}
+	if ( !(client_flags | LASH_No_Start_Server) ) {
+		lash_args_get_id(args, id);
+		if (err && getenv("LASH_START_SERVER") != NULL && uuid_is_null(id)) {
+			LASH_DEBUGARGS("%s: trying to start new LASH server\n", 
+					__FUNCTION__);
 
-		/* if the fork succeeded, try to connect to the new server */
-		else if (err > 0) {
-			waitpid(err, NULL, 0);
-			for (tries = 0; tries < 5; ++tries) {
-				sleep(1);
-				err = lash_comm_connect_to_server(client,
-								  cstr ? cstr : "localhost",
-								  "lash", connect_params);
-				if (err == 0) {
-					LASH_PRINT_DEBUG("successfully launched and connected to lashd");
-					break;
+			/* using the same double fork() trick as JACK does to prevent
+			   zombie children */
+			err = fork();
+
+			/* child process will run this statement */
+			if (err == 0) {
+				switch (fork()) {
+
+					/* grandchild process will run this block */
+					case 0:
+						setsid();
+						execlp("lashd", "lashd", NULL);
+						_exit(-1);
+
+						/* this block only runs if the second fork() fails */
+					case -1:
+						_exit (-1);
+
+						/* exit the child process here */
+					default: 
+						_exit (0);
 				}
 			}
-		/* fork failed */
-		} else { 
-			fprintf(stderr, "%s: fork failed while starting new server: %s\n",
-				__FUNCTION__, strerror(err));
+
+			/* if the fork succeeded, try to connect to the new server */
+			else if (err > 0) {
+				waitpid(err, NULL, 0);
+				for (tries = 0; tries < 5; ++tries) {
+					sleep(1);
+					err = lash_comm_connect_to_server(client,
+							cstr ? cstr : "localhost",
+							"lash", connect_params);
+					if (err == 0) {
+						LASH_PRINT_DEBUG("successfully launched and connected to lashd");
+						break;
+					}
+				}
+				/* fork failed */
+			} else { 
+				fprintf(stderr, "%s: fork failed while starting new server: %s\n",
+						__FUNCTION__, strerror(err));
+			}
+		} else {
+			fprintf(stderr, "%s: Not attempting to start daemon server automatically\n",
+					__FUNCTION__, __FUNCTION__);
 		}
+			
 	}
 	
-	lash_connect_params_destroy(connect_params);
+	// this deletes the contained strings, but we don't want to do that
+	// since they point to the strings in args
+	//lash_connect_params_destroy(connect_params);
+	connect_params = NULL;
+
 	if (err) {
 		fprintf(stderr,
 				"%s: could not connect to server '%s' - disabling LASH\n",
 				__FUNCTION__, cstr ? cstr : "localhost");
 		
-		if (getenv("LAST_START_SERVER") == NULL)
-			fprintf(stderr, "%s: LASH_START_SERVER unset, not attempting to start"
-					" server automatically\n",
-					__FUNCTION__, __FUNCTION__);
-
 		lash_client_destroy(client);
 		return NULL;
 	}

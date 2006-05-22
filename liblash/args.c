@@ -53,9 +53,40 @@ lash_args_new()
 	lash_args_t *args;
 
 	args = lash_malloc0(sizeof(lash_args_t));
+	args->project = NULL;
+	args->server = NULL;
 	uuid_clear(args->id);
+	args->flags = 0;
+	args->argc = 0;
+	args->argv = NULL;
+
 	return args;
 }
+
+
+lash_args_t *
+lash_args_duplicate(const lash_args_t *const src)
+{
+	if (src == NULL)
+		return NULL;
+	
+	lash_args_t* result = lash_args_new();
+
+	if (src->project)
+		result->project = lash_strdup(src->project);
+	if (src->server)
+		result->server = lash_strdup(src->server);
+	if (!uuid_is_null(src->id))
+		uuid_copy(result->id, src->id);
+	result->flags = src->flags;
+	result->argc = 0;
+	result->argv = NULL;
+	if (result->argc > 0 && result->argv)
+		lash_args_set_args(result, src->argc, src->argv);
+
+	return result;
+}
+
 
 void
 lash_args_destroy(lash_args_t * args)
@@ -153,5 +184,6 @@ lash_args_get_argv(const lash_args_t * args)
 {
 	return (const char *const *)args->argv;
 }
+
 
 /* EOF */

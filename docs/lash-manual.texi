@@ -319,6 +319,9 @@ Doing this you can simply put @command{lash_panel} (or any other LASH
 client) in your applications menu and have LASH automatically work without
 having to remember to start the server manually.
 
+Starting the server can be disabled by specifying the
+@option{--lash-no-start-server} option on the client's command line.
+
 If you're using a Bourne compatible shell like @command{bash} (if you don't
 know, you probably are) you can enable auto-start with the following command:
 
@@ -526,6 +529,7 @@ should not normally be set by clients themselves.
 The client is dependant on being run in a terminal.
 @item LASH_No_Start_Server
 Do not attempt to start LASH server.
+This flag can be set by the @command{--lash-no-start-server} command line option.
 @end table
 
 The @var{protocol} argument should be the version of the high-level protocol that the client
