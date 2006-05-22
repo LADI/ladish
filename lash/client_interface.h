@@ -35,6 +35,10 @@ extern "C" {
  */
 lash_args_t   * lash_extract_args (int * argc, char *** argv);
 
+/** Destroy a lash_args_t (returned from lash_extract_args).
+ */
+void lash_args_destroy (lash_args_t* args);
+
 /** open a connection to the server
  * returns NULL on failure
  */

@@ -524,6 +524,8 @@ This flag is set by the @command{--lash-no-autoresume} command line option and
 should not normally be set by clients themselves.
 @item LASH_Terminal
 The client is dependant on being run in a terminal.
+@item LASH_No_Start_Server
+Do not attempt to start LASH server.
 @end table
 
 The @var{protocol} argument should be the version of the high-level protocol that the client
@@ -534,7 +536,7 @@ variable.
 
 @deftypefun {lash_args_t *} lash_extract_args (int * @var{argc}, char *** @var{argv})
 Extract LASH-specific arguments from argc/argv for use in @code{lash_init}.  This should be done before the
-client checks the arguments, obviously.
+client checks the arguments, obviously.  Returned object must be cleaned up with lash_args_destroy.
 @end deftypefun
 
 @deftypefun {const char *} lash_get_server_name (lash_client_t * @var{client})

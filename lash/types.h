@@ -35,8 +35,11 @@ enum LASH_Client_Flag
 
   LASH_Server_Interface   =  0x00000004,  /* is a server interface */
   LASH_No_Autoresume      =  0x00000008,  /* server shouldn't try to resume a lost client with this one */
-  LASH_Terminal           =  0x00000010   /* runs in a terminal */
+  LASH_Terminal           =  0x00000010,   /* runs in a terminal */
+
+  LASH_No_Start_Server    =  0x00000020   /* do not attempt to automatically start server */
 };
+
 
 enum LASH_Event_Type
 {
