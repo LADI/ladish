@@ -21,7 +21,9 @@
 #ifndef __LASHD_ALSA_PATCH_H__
 #define __LASHD_ALSA_PATCH_H__
 
-#ifdef WITH_ALSA
+#include "config.h"
+
+#ifdef HAVE_ALSA
 
 #include <uuid/uuid.h>
 #include <alsa/asoundlib.h>
@@ -70,6 +72,6 @@ void alsa_patch_parse_xml  (alsa_patch_t * patch, xmlNodePtr parent);
 
 const char * alsa_patch_get_desc (alsa_patch_t * patch);
 
-#endif /* WITH_ALSA */
+#endif /* HAVE_ALSA */
 
 #endif /* __LASHD_ALSA_PATCH_H__ */

@@ -24,6 +24,7 @@
 #include <lash/lash.h>
 #include <lash/loader.h>
 
+#include "config.h"
 #include "conn_mgr.h"
 #include "client.h"
 #include "project.h"
@@ -36,7 +37,7 @@ struct _server
 {
   conn_mgr_t *    conn_mgr;
   jack_mgr_t *    jack_mgr;
-#ifdef WITH_ALSA
+#ifdef HAVE_ALSA
   alsa_mgr_t *    alsa_mgr;
 #else
   void * alsa_mgr;
