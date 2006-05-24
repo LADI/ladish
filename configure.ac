@@ -40,7 +40,7 @@ AC_ARG_ENABLE(alsa-midi,
 
 if test "x$lash_alsa_midi" = "xyes"; then
 
-	PKG_CHECK_MODULES(ALSA, alsa >= 0.9, ALSA_FOUND="true", ALSA_FOUND="false")
+	PKG_CHECK_MODULES(ALSA, alsa >= 0.9, ALSA_FOUND="yes", ALSA_FOUND="no")
 
 	if test "x$ALSA_FOUND" = "xyes"; then
 		# Check that there's seq functions in the library
