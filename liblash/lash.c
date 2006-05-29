@@ -167,7 +167,7 @@ lash_init(const lash_args_t * args,
 	LASH_DEBUGARGS("protocol version for connect: %s",
 				   lash_protocol_string(protocol));
 	connect_params->protocol_version = protocol;
-	connect_params->flags = args->flags;
+	connect_params->flags = client->args->flags;
 	lash_connect_params_set_project(connect_params, args->project);
 	lash_connect_params_set_class(connect_params, class);
 	uuid_copy(connect_params->id, args->id);
@@ -184,7 +184,7 @@ lash_init(const lash_args_t * args,
 	/* couldn't connect, try to start a new server */
 	/* but not if this client has been started by a server, in which 
 	   case something must be broken if we can't connect */
-	if ( !(client_flags | LASH_No_Start_Server) ) {
+	if ( !(client_flags & LASH_No_Start_Server) ) {
 		lash_args_get_id(args, id);
 		if (err && getenv("LASH_START_SERVER") != NULL && uuid_is_null(id)) {
 			LASH_DEBUGARGS("%s: trying to start new LASH server\n", 
