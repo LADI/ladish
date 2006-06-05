@@ -28,7 +28,6 @@
 #include <slv2/types.h>
 #include <slv2/plugin.h>
 #include <slv2/pluginlist.h>
-#include <slv2/bundle.h>
 #include "util.h"
 
 

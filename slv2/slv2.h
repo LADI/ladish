@@ -24,7 +24,6 @@ extern "C" {
 #endif
 	
 #include <slv2/types.h>
-#include <slv2/bundle.h>
 #include <slv2/plugin.h>
 #include <slv2/plugininstance.h>
 #include <slv2/pluginlist.h>
