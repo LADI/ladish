@@ -1,0 +1,7 @@
+import glob
+
+env = Environment();
+env.Append(LINKFLAGS="-nostartfiles")
+ 
+for i in glob.glob("*.c"):
+	env.SharedLibrary(i[:-2], i)
