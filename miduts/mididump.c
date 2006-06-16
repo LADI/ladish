@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <assert.h>
 
 #include <jack/jack.h>
 #include <jack/midiport.h>
@@ -39,20 +40,66 @@ frames_to_seconds(jack_nframes_t frames)
 }
 
 void
+print_raw(unsigned char* buf, size_t len)
+{
+	for (int i=0; i < len; ++i)
+		printf("0x%X ", buf[i] & 0xFF);
+	printf("\n");
+}
+
+
+void
+print_sysex(unsigned char* buf, size_t len)
+{
+	assert(buf[0] == 0xF0 && buf[1] == 0x7F);
+
+	if (buf[3] == 0x01 && buf[4] == 0x01) {
+		printf("MTC Full Frame (%hhu:%hhu:%hhu:%hhu)\n"
+			, buf[5] &0xF, buf[6], buf[7], buf[8]);
+	} else if (buf[3] == 0x06 && buf[4] == 0x01) {
+		printf("MMC Stop\n");
+	} else if (buf[3] == 0x06 && buf[4] == 0x02) {
+		printf("MMC Play\n");
+	} else if (buf[3] == 0x06 && buf[4] == 0x03) {
+		printf("MMC Deferred Play\n");
+	} else if (buf[3] == 0x06 && buf[4] == 0x04) {
+		printf("MMC Fast Forward\n");
+	} else if (buf[3] == 0x06 && buf[4] == 0x05) {
+		printf("MMC Rewind\n");
+	} else if (buf[3] == 0x06 && buf[4] == 0x06) {
+		printf("MMC Record Strobe (Punch In)\n");
+	} else if (buf[3] == 0x06 && buf[4] == 0x07) {
+		printf("MMC Record Exit (Punch Out)\n");
+	} else if (buf[3] == 0x06 && buf[4] == 0x09) {
+		printf("MMC Pause\n");
+	} else if (buf[3] == 0x06 && buf[4] == 0x44 && buf[5] == 0x06 && buf[6] == 0x01) {
+		printf("MMC Goto (%hhu:%hhu:%hhu:%hhu:%hhu)\n"
+			, buf[7], buf[8], buf[9], buf[10], buf[11]);
+	} else {
+		printf("Unknown sysex: ");
+		for (int i=0; i < len; ++i) {
+			printf("0x%X ", buf[i] & 0xFF);
+			if (buf[i] == 0xF7)
+				break;
+		}
+		printf("\n");
+	}
+}
+
+
+void
 print_midi_message(unsigned char* buf, size_t len)
 {	
 	if (buf[0] == 0xF0 && buf[1] == 0x7F) {
-		printf("MTC Full Frame (%hhu:%hhu:%hhu:%hhu)\n"
-			, buf[5] &0xF, buf[6], buf[7], buf[8]);
+		print_sysex(buf, len);
 	} else if (buf[0] == 0xF1) {
 		printf("MTC Quarter Frame %d\n", (buf[1] & 0xF0) >> 4);
 	} else {
 		printf("Unknown Raw: ");
-		for (int i=0; i < len; ++i)
-			printf("0x%X ", buf[i] & 0xFF);
-		printf("\n");
+		print_raw(buf, len);
 	}
 }
+
 
 int
 process(jack_nframes_t nframes, void *arg)
@@ -65,14 +112,16 @@ process(jack_nframes_t nframes, void *arg)
 	jack_position_t pos;
 	jack_transport_query(client, &pos);
 	
-	current_frame = pos.frame;
+	current_frame = jack_frame_time(client);
 
 	for (int i=0; i < event_count; ++i) {
 		jack_midi_event_get(&in_event, port_buf, i, nframes);
-	
+
+		jack_nframes_t timestamp = current_frame + in_event.time;
+		
+		printf("%u: ", timestamp);
 		print_midi_message(in_event.buffer, in_event.size);
 		
-		jack_nframes_t timestamp = current_frame + in_event.time;
 		printf("\tFrames since last: %u", timestamp - last_event_timestamp);
 		printf("\t(%7.2lf ms)\n",
 			frames_to_seconds(timestamp - last_event_timestamp) * 1000.0);
