@@ -37,6 +37,9 @@ static const int MODULE_TITLE_COLOUR          = 0xFFFFFFFF;
  * Note you must call resize() at some point or the module will look ridiculous.
  * This it to avoid unecessary text measuring and resizing, which is insanely
  * expensive.
+ *
+ * If @a name is the empty string, the space where the title would usually be
+ * is not created (eg the module will be shorter).
  */
 Module::Module(FlowCanvas* canvas, const string& name, double x, double y)
 : Gnome::Canvas::Group(*canvas->root(), x, y),
@@ -406,6 +409,12 @@ Module::resize()
 	double widest_in = 0.0;
 	double widest_out = 0.0;
 	
+	// The amount of space between a port edge and the module edge (on the
+	// side that the port isn't right on the edge).
+	double hor_pad = 5.0;
+	if (m_name.length() == 0)
+		hor_pad = 10.0; // leave more room for something to grab for dragging
+
 	Port* p = NULL;
 	
 	// Find widest in/out ports
@@ -419,16 +428,19 @@ Module::resize()
 	
 	// Make sure module is wide enough for ports
 	if (widest_in > widest_out)
-		width(widest_in + 5.0 + border_width()*2.0);
+		width(widest_in + hor_pad + border_width()*2.0);
 	else
-		width(widest_out + 5.0 + border_width()*2.0);
+		width(widest_out + hor_pad + border_width()*2.0);
 	
 	// Make sure module is wide enough for title
 	if (m_canvas_title.property_text_width() + 6.0 > m_width)
 		width(m_canvas_title.property_text_width() + 6.0);
 
 	// Set height to contain ports and title
-	double height_base = m_canvas_title.property_text_height() + 2;
+	double height_base = 2;
+	if (m_name.length() > 0)
+		height_base += m_canvas_title.property_text_height();
+
 	double h = height_base;
 	if (m_ports.size() > 0)
 		h += m_ports.size() * ((*m_ports.begin())->height()+2.0);
