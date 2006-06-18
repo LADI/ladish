@@ -70,6 +70,14 @@ FlowCanvas::~FlowCanvas()
 
 
 void
+FlowCanvas::on_show()
+{
+	Gnome::Canvas::Canvas::on_show();
+	get_window()->set_cursor(Gdk::Cursor(Gdk::HAND2));
+}
+
+
+void
 FlowCanvas::zoom(float pix_per_unit)
 {
 	// Round to .25
