@@ -115,7 +115,7 @@ protected:
 
 	virtual bool canvas_event(GdkEvent* event);
 	
-	virtual void on_show();
+	virtual void on_map();
 
 private:
 	Connection* get_connection(const Port* port1, const Port* port2);

@@ -70,9 +70,10 @@ FlowCanvas::~FlowCanvas()
 
 
 void
-FlowCanvas::on_show()
+FlowCanvas::on_map()
 {
-	Gnome::Canvas::Canvas::on_show();
+	Gnome::Canvas::Canvas::on_map();
+	assert(get_window());
 	get_window()->set_cursor(Gdk::Cursor(Gdk::HAND2));
 }
 
