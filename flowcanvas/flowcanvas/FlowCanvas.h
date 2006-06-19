@@ -18,7 +18,6 @@
 #ifndef FLOWCANVAS_H
 #define FLOWCANVAS_H
 
-#include "config.h"
 #include <string>
 #include <list>
 #include <libgnomecanvasmm.h>
@@ -52,11 +51,8 @@ class Module;
  *
  * \ingroup FlowCanvas
  */
-#ifdef FLOWCANVAS_AA
-class FlowCanvas : public Gnome::Canvas::CanvasAA
-#else
-class FlowCanvas : public Gnome::Canvas::Canvas
-#endif
+class FlowCanvas : public /*CANVASBASE*/Gnome::Canvas::CanvasAA
+// The CANVASBASE is a hook for a sed script in configure.ac
 {
 public:
 	FlowCanvas(double width, double height);

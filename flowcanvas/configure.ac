@@ -61,8 +61,13 @@ anti_alias="no"
 AC_ARG_ENABLE(anti-aliasing,
 	[AS_HELP_STRING(--enable-anti-aliasing, [Enable anti aliased canvas (false, slow)])],
 	[ anti_alias="$enableval"])
+# Yes, this is dirty...
 if test "$anti_alias" = "yes"; then
-	AC_DEFINE(FLOWCANVAS_AA, 1, [Anti alias patch bay canvas])
+	AC_CONFIG_COMMANDS([set_aa],
+		[sed 's/\(\/\*CANVASBASE\*\/\).*/\1Gnome::Canvas::CanvasAA/' -i flowcanvas/FlowCanvas.h])
+else
+	AC_CONFIG_COMMANDS([set_no_aa],
+		[sed 's/\(\/\*CANVASBASE\*\/\).*/\1Gnome::Canvas::Canvas/' -i flowcanvas/FlowCanvas.h])
 fi
 
 # Write it!
