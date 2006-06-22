@@ -73,7 +73,7 @@ FlowCanvas::on_map()
 {
 	Gnome::Canvas::Canvas::on_map();
 	assert(get_window());
-	get_window()->set_cursor(Gdk::Cursor(Gdk::HAND2));
+	get_window()->set_cursor(Gdk::Cursor(Gdk::HAND1));
 }
 
 
@@ -802,7 +802,7 @@ FlowCanvas::connection_drag_handler(GdkEvent* event)
 				drag_port->rect()->property_y2() = p->rect()->property_y2().get_value();
 			} else {
 				drag_module->property_x() = x;
-				drag_module->property_y() = y;
+				drag_module->property_y() = y - 7; // FIXME: s#7#cursor_height/2#
 			}
 			drag_connection->update_location();
 		}

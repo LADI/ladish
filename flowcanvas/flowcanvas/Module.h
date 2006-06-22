@@ -85,7 +85,7 @@ public:
 protected:
 
 	bool module_event(GdkEvent* event);
-	
+
 	virtual void on_double_click(GdkEventButton* ev) {}
 	virtual void on_middle_click(GdkEventButton* ev) {}
 	virtual void on_right_click(GdkEventButton* ev)  {}
