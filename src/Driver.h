@@ -35,7 +35,7 @@ public:
 	{ return false; }
 	
 	virtual bool disconnect(const PatchagePort* src_port,
-	                     const PatchagePort* dst_port)
+	                        const PatchagePort* dst_port)
 	{ return false; }
 	
 	/** Returns whether or not a refresh is required. */

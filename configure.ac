@@ -88,8 +88,8 @@ AC_ARG_ENABLE(strict,
 	[strict="$enableval"])
 if test "$strict" = "yes"; then
   # Useless POS gnomecanvasmm doesn't build w/ -pedantic
-  CFLAGS="$CFLAGS -ansi -Wall -Wconversion -Winit-self"
-  CXXFLAGS="$CXXFLAGS -ansi -Wall -Wconversion -Winit-self -Woverloaded-virtual -Wsign-promo"
+  CFLAGS="$CFLAGS -ansi -Wall -Wextra -Wno-unused-parameter -Wconversion -Winit-self"
+  CXXFLAGS="$CXXFLAGS -ansi -Wall -Wextra -Wno-unused-parameter -Wconversion -Winit-self -Woverloaded-virtual -Wsign-promo"
 fi
 
 # Bolt on a few specific flags to CXXFLAGS that should always be used
