@@ -74,7 +74,7 @@ AC_ARG_ENABLE(debug,
 	[debug="$enableval"])
 if test "$debug" = "yes"; then
   # Useless POS gnomecanvasmm doesn't build w/ -pedantic
-  CFLAGS="-O1 -g -DDEBUG"
+  CFLAGS="-O0 -g -DDEBUG"
   CXXFLAGS="$CFLAGS"
 else
   CFLAGS="$CFLAGS -DNDEBUG"
