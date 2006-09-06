@@ -182,7 +182,7 @@ fi
 AC_MSG_CHECKING([whether to install service in /etc/services])
 lash_serv_inst="yes"
 AC_ARG_ENABLE(serv-inst,
-[AS_HELP_STRING(--disable-serv-ins, disable installation of lash service in /etc/services)],[
+[AS_HELP_STRING(--disable-serv-inst, disable installation of lash service in /etc/services)],[
   case "$enableval" in
     "yes")
       ;;
