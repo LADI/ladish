@@ -15,7 +15,9 @@
  */
 
 #include "FlowCanvas.h"
+#include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <map>
 #include <iostream>
 #include <cmath>
@@ -73,22 +75,63 @@ FlowCanvas::on_map()
 {
 	Gnome::Canvas::Canvas::on_map();
 	assert(get_window());
-	get_window()->set_cursor(Gdk::Cursor(Gdk::HAND1));
 }
 
 
 void
-FlowCanvas::zoom(float pix_per_unit)
+FlowCanvas::set_zoom(double pix_per_unit)
 {
-	// Round to .25
-	m_zoom = static_cast<int>(pix_per_unit*4) / 4.0;
-	if (m_zoom < 0.25)
-		m_zoom = 0.25;
-	
+	if (m_zoom == pix_per_unit)
+		return;
+
+	m_zoom = pix_per_unit;
 	set_pixels_per_unit(m_zoom);
 
 	for (ModuleMap::iterator m = m_modules.begin(); m != m_modules.end(); ++m)
 		(*m).second->zoom(m_zoom);
+}
+
+
+void
+FlowCanvas::zoom_full()
+{
+	int win_width, win_height;
+	Glib::RefPtr<Gdk::Window> win = get_window();
+	win->get_size(win_width, win_height);
+
+	// Box containing all canvas items
+	double left   = DBL_MAX;
+	double right  = DBL_MIN;
+	double top    = DBL_MIN;
+	double bottom = DBL_MAX;
+
+	for (ModuleMap::iterator m = m_modules.begin(); m != m_modules.end(); ++m) {
+		Module* const mod = (*m).second;
+		if (mod->property_x() < left)
+			left = mod->property_x();
+		if (mod->property_x() + mod->width() > right)
+			right = mod->property_x() + mod->width();
+		if (mod->property_y() < bottom)
+			bottom = mod->property_y();
+		if (mod->property_y() + mod->height() > top)
+			top = mod->property_y() + mod->height();
+	}
+	const double bound_width = right - left;
+	const double bound_height = top - bottom;
+
+	static const double pad = 4.0;
+
+	const double new_zoom = std::min(
+		((double)win_width / (double)(right - left + pad*2.0)),
+		((double)win_height / (double)(top - bottom + pad*2.0)));
+
+	set_zoom(new_zoom);
+	
+	int scroll_x, scroll_y;
+	w2c(lrintf(left - pad), lrintf(bottom - pad), scroll_x, scroll_y);
+
+	scroll_to(scroll_x, scroll_y);
+
 }
 
 

@@ -205,9 +205,9 @@ Patchage::idle_callback()
 void
 Patchage::zoom_changed() 
 {
-	const float z = m_zoom_slider->get_value();
+	const double z = m_zoom_slider->get_value();
 	
-	m_canvas->zoom(z);
+	m_canvas->set_zoom(z);
 	m_state_manager->set_zoom(z);
 }
 

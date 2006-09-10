@@ -233,9 +233,9 @@ Module::module_event(GdkEvent* event)
 
 
 void
-Module::zoom(float z)
+Module::zoom(double z)
 {
-	m_canvas_title.property_size() = static_cast<int>(roundf(10000.0f * z));
+	m_canvas_title.property_size() = static_cast<int>(floor((double)10000.0f * z));
 	for (PortList::iterator p = m_ports.begin(); p != m_ports.end(); ++p)
 		(*p)->zoom(z);
 }

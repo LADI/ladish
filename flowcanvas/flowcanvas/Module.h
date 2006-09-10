@@ -43,7 +43,7 @@ public:
 
 	void destroy_all_ports(bool resize = true);
 
-	void zoom(float z);
+	void zoom(double z);
 	void resize();
 	
 	void         move(double dx, double dy);
@@ -87,7 +87,7 @@ protected:
 	virtual void on_double_click(GdkEventButton* ev) {}
 	virtual void on_middle_click(GdkEventButton* ev) {}
 	virtual void on_right_click(GdkEventButton* ev)  {}
-	
+
 	bool   m_add_to_canvas;
 	double m_border_width;
 	double m_width;

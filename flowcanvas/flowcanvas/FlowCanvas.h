@@ -77,9 +77,10 @@ public:
 	list<Module*>&     selected_modules()     { return m_selected_modules; }
 	list<Connection*>& selected_connections() { return m_selected_connections; }
 
-	float zoom()                    { return m_zoom; }
-	void  zoom(float pix_per_unit);
-	
+	double get_zoom() { return m_zoom; }
+	void  set_zoom(double pix_per_unit);
+	void zoom_full();
+
 	double width() const  { return m_width; }
 	double height() const { return m_height; }
 
@@ -132,7 +133,7 @@ private:
 	Port*  m_selected_port; ///< Selected port (hilited red from clicking once)
 	Port*  m_connect_port;  ///< Port for which a connection is being made (if applicable)
 	
-	float  m_zoom;   ///< Current zoom level
+	double m_zoom;   ///< Current zoom level
 	double m_width;  
 	double m_height; 
 
