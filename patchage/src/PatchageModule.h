@@ -55,10 +55,9 @@ public:
 	
 	virtual void add_patchage_port(const string& port_name, bool is_input, PortType type)
 	{
-		PatchagePort* port = new PatchagePort(this, type, port_name, is_input,
-			m_app->state_manager()->get_port_color(type));
+		new PatchagePort(this, type, port_name, is_input, m_app->state_manager()->get_port_color(type));
 
-	    Module::add_port(port, true);
+		resize();
 	}
 
 	virtual void add_patchage_port(const string& port_name, bool is_input, PortType type, const snd_seq_addr_t addr)
@@ -68,7 +67,7 @@ public:
 
 		port->alsa_addr(addr);
 
-	    Module::add_port(port, true);
+		resize();
 	}
 
 

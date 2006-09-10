@@ -134,10 +134,23 @@ FlowCanvas::select_module(Module* m)
 
 
 void
+FlowCanvas::unselect_connection(Connection* connection)
+{
+	for (ConnectionList::iterator i = m_selected_connections.begin(); i != m_selected_connections.end();) {
+		if ((*i) == connection) {
+			i = m_selected_connections.erase(i);
+		} else {
+			++i;
+		}
+	}
+
+	connection->selected(false);
+}
+
+
+void
 FlowCanvas::unselect_module(Module* m)
 {
-	assert(m->selected());
-	
 	// Remove any connections that aren't selected anymore because this module isn't
 	Connection* c;
 	for (ConnectionList::iterator i = m_selected_connections.begin(); i != m_selected_connections.end();) {
@@ -172,10 +185,14 @@ FlowCanvas::destroy()
 {
 	clear_selection();
 
-	for (ConnectionList::iterator c = m_connections.begin(); c != m_connections.end(); ++c)
-		delete (*c);
-	for (ModuleMap::iterator m = m_modules.begin(); m != m_modules.end(); ++m)
-		delete (*m).second;
+	for (ConnectionList::iterator c = m_connections.begin(); c != m_connections.end() ; ) {
+		Connection* connection = *c;
+		c = m_connections.erase(c);
+		delete connection;
+	}
+
+	while (m_modules.size() > 0)
+		delete ((*m_modules.begin()).second);
 
 	m_modules.clear();
 	m_connections.clear();
@@ -188,25 +205,22 @@ FlowCanvas::destroy()
 void
 FlowCanvas::selected_port(Port* p)
 {
-	if (m_selected_port != NULL)
+	if (m_selected_port)
 		m_selected_port->rect()->property_fill_color_rgba() = m_selected_port->colour(); // "turn off" the old one
 	
 	m_selected_port = p;
 	
-	if (p != NULL)
-		m_selected_port->rect()->property_fill_color() = "red";
+	if (p)
+		p->rect()->property_fill_color() = "red";
 }
 
 
 Module*
-FlowCanvas::find_module(const string& name)
+FlowCanvas::get_module(const string& name)
 {
 	ModuleMap::iterator m = m_modules.find(name);
 
-	if (m != m_modules.end())
-		return (*m).second;
-	else
-		return NULL;
+	return (m == m_modules.end()) ? NULL : (*m).second;
 }
 
 
@@ -228,7 +242,8 @@ FlowCanvas::set_default_placement(Module* m)
 void
 FlowCanvas::add_module(Module* m)
 {
-	assert(m != NULL);
+	assert(m);
+	assert(m->canvas() == this);
 
 	std::pair<string, Module*> p(m->name(), m);
 	m_modules.insert(p);
@@ -239,75 +254,46 @@ void
 FlowCanvas::remove_module(const string& name)
 {
 	ModuleMap::iterator m = m_modules.find(name);
-
-	if (m != m_modules.end()) {
-		delete (*m).second;
-		m_modules.erase(m);
-	} else {
-		cerr << "[FlowCanvas::remove_module] Unable to find module " << name << endl;
-	}
+	assert(m != m_modules.end());
+	m_modules.erase(m);
 }
 
 
 Port*
-FlowCanvas::find_port(const string& node_name, const string& port_name)
+FlowCanvas::get_port(const string& node_name, const string& port_name)
 {
 	Module* module = NULL;
 	Port*   port   = NULL;
 	
 	for (ModuleMap::iterator i = m_modules.begin(); i != m_modules.end(); ++i) {
 		module = (*i).second;
-		port = module->port(port_name);
+		port = module->get_port(port_name);
 		if (module->name() == node_name && port != NULL)
 			return port;
 	}
 	
-	cerr << "[FlowCanvas::find_port] Failed to find port " <<
-		node_name << ":" << port_name << endl;
-
 	return NULL;
 }
 
 
-void
-FlowCanvas::rename_module(const string& old_name, const string& new_name)
+bool
+FlowCanvas::rename_module(const string& old_name, const string& current_name)
 {
 	Module* module = NULL;
 	
 	for (ModuleMap::iterator i = m_modules.begin(); i != m_modules.end(); ++i) {
 		module = (*i).second;
-		assert(module != NULL);
-		if (module->name() == old_name) {
+		assert(module);
+		assert(module->name() != old_name);
+		if ((*i).first == old_name) {
+			assert(module->name() == current_name);
 			m_modules.erase(i);
-			module->name(new_name);
 			add_module(module);
-			return;
+			return true;
 		}
 	}
-	
-	cerr << "[FlowCanvas::rename_module] Failed to find module " <<
-		old_name << endl;
-}
 
-
-/** Add a connection.
- */
-void
-FlowCanvas::add_connection(const string& node1_name, const string& port1_name,
-                             const string& node2_name, const string& port2_name)
-{
-	Port* port1 = find_port(node1_name, port1_name);
-	Port* port2 = find_port(node2_name, port2_name);
-
-	if (port1 == NULL) {
-		cerr << "Unable to find port " << node1_name << "/" << port1_name
-			<< " to make connection." << endl;
-	} else if (port2 == NULL) {
-		cerr << "Unable to find port " << node2_name << "/" << port2_name
-			<< " to make connection." << endl;
-	} else {
-		add_connection(port1, port2);
-	}
+	return false;
 }
 
 
@@ -318,25 +304,6 @@ FlowCanvas::remove_connection(Port* port1, Port* port2)
 	assert(port2 != NULL);
 	
 	Connection* c = get_connection(port1, port2);
-	if (c == NULL) {
-		cerr << "Couldn't find connection.\n";
-		return false;
-	} else {
-		remove_connection(c);
-		return true;
-	}
-}
-
-
-/** Remove a connection.
- * 
- * Returns whether or not the connection was found (and removed).
- */
-bool
-FlowCanvas::remove_connection(const string& mod1_name, const string& port1_name, const string& mod2_name, const string& port2_name)
-{
-	Connection* c = get_connection(find_port(mod1_name, port1_name),
-	                               find_port(mod2_name, port2_name));
 	if (c == NULL) {
 		cerr << "Couldn't find connection.\n";
 		return false;
@@ -386,42 +353,52 @@ FlowCanvas::get_connection(const Port* port1, const Port* port2)
 }
 
 
-void
+bool
 FlowCanvas::add_connection(Port* port1, Port* port2)
 {
-	assert(port1->is_input() != port2->is_input());
-	assert(port1->is_output() != port2->is_output());
+	if (port1->module()->canvas() != this
+		|| port2->module()->canvas() != this
+		|| port1->is_input() == port2->is_input()
+		|| port1->is_output() == port2->is_output()) {
+		return false;
+	}
+
 	Port* src_port = NULL;
 	Port* dst_port = NULL;
-	if (port1->is_output() && port2->is_input()) {
+	if (port1->is_output()) {
+		assert(port2->is_input());
 		src_port = port1;
 		dst_port = port2;
 	} else {
+		assert(port2->is_output());
 		src_port = port2;
 		dst_port = port1;
 	}
 
 	// Create (graphical) connection object
-	if (get_connection(port1, port2) == NULL) {
-		Connection* c = new Connection(this, src_port, dst_port);
+	if ( ! get_connection(src_port, dst_port)) {
+		Connection* const c = new Connection(this, src_port, dst_port);
 		port1->add_connection(c);
 		port2->add_connection(c);
 		m_connections.push_back(c);
 	}
+
+	return true;
 }
 
 
 void
 FlowCanvas::remove_connection(Connection* connection)
 {
-	assert(connection != NULL);
-	
 	ConnectionList::iterator i = find(m_connections.begin(), m_connections.end(), connection);
-	Connection* c = *i;
-	
-	c->disconnect();
-	m_connections.erase(i);
-	delete c;
+
+	if (i != m_connections.end()) {
+		Connection* c = *i;
+
+		c->disconnect();
+		m_connections.erase(i);
+		delete c;
+	}
 }
 
 
@@ -430,8 +407,8 @@ FlowCanvas::remove_connection(Connection* connection)
 void
 FlowCanvas::ports_joined(Port* port1, Port* port2)
 {
-	assert(port1 != NULL);
-	assert(port2 != NULL);
+	assert(port1);
+	assert(port2);
 
 	port1->hilite(false);
 	port2->hilite(false);
@@ -723,13 +700,12 @@ FlowCanvas::connection_drag_handler(GdkEvent* event)
 			assert(drag_port == NULL);
 			assert(m_connect_port != NULL);
 			
-			drag_module = new Module(this, "");
+			drag_module = new Module(this, "", x, y, false);
 			bool drag_port_is_input = true;
 			if (m_connect_port->is_input())
 				drag_port_is_input = false;
 				
 			drag_port = new Port(drag_module, "", drag_port_is_input, m_connect_port->colour());
-			drag_module->add_port(drag_port);
 
 			//drag_port->hide();
 			drag_module->hide();
@@ -752,7 +728,7 @@ FlowCanvas::connection_drag_handler(GdkEvent* event)
 			if (drag_connection != NULL) drag_connection->hide();
 			Port* p = get_port_at(x, y);
 			if (drag_connection != NULL) drag_connection->show();
-			if (p != NULL) {
+			if (p) {
 				if (p != m_selected_port) {
 					if (snapped_port != NULL)
 						snapped_port->hilite(false);
@@ -866,6 +842,12 @@ Port*
 FlowCanvas::get_port_at(double x, double y)
 {
 	Gnome::Canvas::Item* item = get_item_at(x, y);
+
+	Port* const ret = dynamic_cast<Port*>(item);
+	
+	return ret ? ret : dynamic_cast<Port*>(item->property_parent().get_value());
+
+	/*
 	if (item == NULL) return NULL;
 	
 	Port* p = NULL;
@@ -882,7 +864,7 @@ FlowCanvas::get_port_at(double x, double y)
 			}
 		}
 	}
-	return NULL;
+	return NULL;*/
 }
 
 

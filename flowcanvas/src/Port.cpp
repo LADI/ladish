@@ -61,6 +61,13 @@ Port::Port(Module* module, const string& name, bool is_input, int color)
 
 	m_label.raise_to_top();
 
+	m_module->add_port(this);
+}
+
+
+Port::~Port()
+{
+	m_module->remove_port(this);
 }
 
 

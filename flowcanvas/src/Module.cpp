@@ -41,8 +41,9 @@ static const int MODULE_TITLE_COLOUR          = 0xFFFFFFFF;
  * If @a name is the empty string, the space where the title would usually be
  * is not created (eg the module will be shorter).
  */
-Module::Module(FlowCanvas* canvas, const string& name, double x, double y)
+Module::Module(FlowCanvas* canvas, const string& name, double x, double y, bool add)
 : Gnome::Canvas::Group(*canvas->root(), x, y),
+  m_add_to_canvas(add),
   m_name(name),
   m_selected(false),
   m_canvas(canvas),
@@ -66,6 +67,9 @@ Module::Module(FlowCanvas* canvas, const string& name, double x, double y)
 	height(10.0);
 
 	signal_event().connect(sigc::mem_fun(this, &Module::module_event));
+	
+	if (m_add_to_canvas)
+		canvas->add_module(this);
 }
 
 
@@ -81,8 +85,11 @@ Module::~Module()
 			}
 		}
 	}
-	for (PortList::iterator p = m_ports.begin(); p != m_ports.end(); ++p)
-		delete (*p);
+
+	destroy_all_ports();
+
+	if (m_add_to_canvas)
+		m_canvas->remove_module(name());
 }
 
 
@@ -296,26 +303,28 @@ Module::is_within(const Gnome::Canvas::Rect* const rect)
 
 
 void
-Module::remove_port(const string& port_name, bool resize_to_fit)
+Module::remove_port(Port* port)
 {
-	for (PortList::iterator i = m_ports.begin(); i != m_ports.end(); ++i) {
-		if ((*i)->name() == port_name) {
-			delete (*i);
-			i = m_ports.erase(i);
-		}
-	}
+	for (PortList::iterator i = m_ports.begin(); i != m_ports.end() ; ) {
+		PortList::iterator next = i;
+		++next;
 
-	if (resize_to_fit)
-		resize();
+		if ((*i) == port)
+			m_ports.erase(i);
+		
+		i = next;
+	}
 }
 
 
 void
-Module::remove_all_ports(bool resize_to_fit)
+Module::destroy_all_ports(bool resize_to_fit)
 {
 	for (PortList::iterator i = m_ports.begin(); i != m_ports.end() ; ) {
+		PortList::iterator next = i;
+		++next;
 		delete (*i);
-		i = m_ports.erase(i);
+		i = next;
 	}
 
 	if (resize_to_fit)
@@ -382,22 +391,38 @@ Module::move_to(double x, double y)
 void
 Module::name(const string& n)
 {
-	m_name = n;
-	m_canvas_title.property_text() = m_name;
-	resize();
+	if (m_name != n) {
+		string old_name = m_name;
+		m_name = n;
+		m_canvas->rename_module(old_name, m_name);
+		m_canvas_title.property_text() = m_name;
+		resize();
+	}
 }
 
 
 void
-Module::add_port(Port* p, bool resize_to_fit)
+Module::add_port(Port* p)
 {
-	m_ports.push_back(p);
+	assert(p->module() == this);
+
+	Port* existing = 0;
+
+	// Replace an existing port with this name, if there is one
+	for (PortList::iterator i = m_ports.begin(); i != m_ports.end(); ++i) {
+		if ((*i)->name() == p->name()) {
+			existing = *i;
+			(*i) = p;
+			delete existing;
+			break;
+		}
+	}
+	
+	if (!existing)
+		m_ports.push_back(p);
 	
 	p->signal_event().connect(
 		sigc::bind<Port*>(sigc::mem_fun(m_canvas, &FlowCanvas::port_event), p));
-	
-	if (resize_to_fit)
-		resize();
 }
 
 
@@ -413,7 +438,7 @@ Module::resize()
 	// side that the port isn't right on the edge).
 	double hor_pad = 5.0;
 	if (m_name.length() == 0)
-		hor_pad = 10.0; // leave more room for something to grab for dragging
+		hor_pad = 15.0; // leave more room for something to grab for dragging
 
 	Port* p = NULL;
 	

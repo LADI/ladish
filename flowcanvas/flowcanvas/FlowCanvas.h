@@ -51,7 +51,7 @@ class Module;
  *
  * \ingroup FlowCanvas
  */
-class FlowCanvas : public /*CANVASBASE*/Gnome::Canvas::Canvas
+class FlowCanvas : public /*CANVASBASE*/Gnome::Canvas::CanvasAA
 // The CANVASBASE is a hook for a sed script in configure.ac
 {
 public:
@@ -59,43 +59,34 @@ public:
 	virtual	~FlowCanvas();
 
 	void destroy();
-	
-	void add_module(Module* m);
-	void remove_module(const string& name);
 		
-	void add_connection(const string& mod1_name, const string& port1_name, const string& mod2_name, const string& port2_name);
-	bool remove_connection(const string& mod1_name, const string& port1_name, const string& mod2_name, const string& port2_name);
+	Module* get_module(const string& name);
+	Port*   get_port(const string& module_name, const string& port_name);
 
-	void add_connection(Port* port1, Port* port2);
+	bool add_connection(Port* port1, Port* port2);
 	bool remove_connection(Port* port1, Port* port2);
-	
-	Module* find_module(const string& name);
-	Port*   find_port(const string& module_name, const string& port_name);
-	
-	void rename_module(const string& old_name, const string& new_name);
 	
 	void set_default_placement(Module* m);
 	
+	void clear_selection();
+	void select_module(Module* m);
+	void unselect_module(Module* m);
+	void unselect_connection(Connection* c);
+	
+	ModuleMap&         modules()              { return m_modules; }
+	list<Module*>&     selected_modules()     { return m_selected_modules; }
+	list<Connection*>& selected_connections() { return m_selected_connections; }
+
 	float zoom()                    { return m_zoom; }
 	void  zoom(float pix_per_unit);
 	
 	double width() const  { return m_width; }
 	double height() const { return m_height; }
 
-	void clear_selection();
-	void select_module(Module* m);
-	void unselect_module(Module* m);
-
-	ModuleMap&         modules()              { return m_modules; }
-	list<Module*>&     selected_modules()     { return m_selected_modules; }
-	list<Connection*>& selected_connections() { return m_selected_connections; }
 	
 	/** Dash applied to selected items.
-	 * Always animating, set a rect's property_dash() to this and it
-	 * will automagically do the rubber band thing. */
+	 * Set an object's property_dash() to this for the "rubber band" effect */
 	ArtVpathDash* const select_dash() { return m_select_dash; }
-
-	virtual bool port_event(GdkEvent* event, Port* port);
 	
 	/** Make a connection.  Should be overridden by an implementation to do something. */
 	virtual void connect(const Port* src_port, const Port* dst_port) = 0;
@@ -114,8 +105,18 @@ protected:
 	virtual void on_map();
 
 private:
+	friend class Module;
+	void add_module(Module* m);
+	void remove_module(const string& name);
+	bool rename_module(const string& old_name, const string& new_name);
+
+	friend class Connection;
 	Connection* get_connection(const Port* port1, const Port* port2);
 	void        remove_connection(Connection* c);
+
+	friend class Port;
+	virtual bool port_event(GdkEvent* event, Port* port);
+
 	void        selected_port(Port* p);
 	Port*       selected_port() { return m_selected_port; }
 	bool        are_connected(const Port* port1, const Port* port2);

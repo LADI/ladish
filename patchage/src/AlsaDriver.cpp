@@ -173,7 +173,7 @@ AlsaDriver::refresh_ports()
 					m = new PatchageModule(m_app, client_name, InputOutput);
 					m->load_location();
 					m->store_location();
-					m_canvas->add_module(m);
+					m->show();
 				}
 				
 				if (!is_duplex) {
@@ -202,7 +202,6 @@ AlsaDriver::refresh_ports()
 						m = new PatchageModule(m_app, client_name, type);
 						m->load_location();
 						m->store_location();
-						m_canvas->add_module(m);
 					}
 					m->add_patchage_port(port_name, is_input, ALSA_MIDI, addr);
 				} else {  // two ports to add
@@ -217,7 +216,6 @@ AlsaDriver::refresh_ports()
 						m = new PatchageModule(m_app, client_name, type);
 						m->load_location();
 						m->store_location();
-						m_canvas->add_module(m);
 					}
 					m->add_patchage_port(port_name, true, ALSA_MIDI, addr);
 
@@ -232,10 +230,10 @@ AlsaDriver::refresh_ports()
 						m = new PatchageModule(m_app, client_name, type);
 						m->load_location();
 						m->store_location();
-						m_canvas->add_module(m);
 					}
 					m->add_patchage_port(port_name, false, ALSA_MIDI, addr);
 				}
+				m->show();
 			}
 		}
 	}

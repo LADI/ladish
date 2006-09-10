@@ -36,14 +36,12 @@ class FlowCanvas;
 class Module : public Gnome::Canvas::Group
 {
 public:
-	Module(FlowCanvas* canvas, const string& name, double x=0, double y=0);
+	Module(FlowCanvas* canvas, const string& name, double x=0, double y=0, bool add_to_canvas=true);
 	virtual ~Module();
 	
-	inline Port* const port(const string& port_name) const;
+	inline Port* const get_port(const string& port_name) const;
 
-	void add_port(Port* port, bool resize=true);
-	void remove_port(const string& port_name, bool resize = true);
-	void remove_all_ports(bool resize = true);
+	void destroy_all_ports(bool resize = true);
 
 	void zoom(float z);
 	void resize();
@@ -90,6 +88,7 @@ protected:
 	virtual void on_middle_click(GdkEventButton* ev) {}
 	virtual void on_right_click(GdkEventButton* ev)  {}
 	
+	bool   m_add_to_canvas;
 	double m_border_width;
 	double m_width;
 	double m_height;
@@ -101,6 +100,11 @@ protected:
 
 	Gnome::Canvas::Rect m_module_box;
 	Gnome::Canvas::Text m_canvas_title;
+
+private:
+	friend class Port;
+	void add_port(Port* port);
+	void remove_port(Port* port);
 };
 
 
@@ -114,7 +118,7 @@ typedef multimap<string,Module*> ModuleMap;
  * Making this faster would be a very good idea - better data structure?
  */
 inline Port* const
-Module::port(const string& port_name) const
+Module::get_port(const string& port_name) const
 {
 	for (PortList::const_iterator i = m_ports.begin(); i != m_ports.end(); ++i)
 		if ((*i)->name() == port_name)

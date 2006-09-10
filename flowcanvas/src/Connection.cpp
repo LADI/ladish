@@ -60,6 +60,8 @@ Connection::~Connection()
 			}
 		}
 	}
+
+	m_canvas->remove_connection(this);
 }
 
 

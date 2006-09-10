@@ -42,7 +42,7 @@ class Port : public Gnome::Canvas::Group
 {
 public:
 	Port(Module* module, const string& name, bool is_input, int colour);
-	virtual ~Port() {};
+	virtual ~Port();
 	
 	void add_connection(Connection* c) { m_connections.push_back(c); }
 	void remove_connection(Connection* c);
