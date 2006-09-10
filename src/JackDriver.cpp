@@ -134,7 +134,7 @@ JackDriver::refresh()
 			m = new PatchageModule(m_app, client1_name, type);
 			m->load_location();
 			m->store_location();
-			m_canvas->add_module(m);
+			m->show();
 		}
 		
 		// FIXME: leak?  jack docs don't say
@@ -166,7 +166,11 @@ JackDriver::refresh()
 				port2_name = client2_name.substr(client2_name.find(':')+1);
 				client2_name = client2_name.substr(0, client2_name.find(':'));
 				
-				m_canvas->add_connection(client1_name, port1_name, client2_name, port2_name);
+				Port* const port1 = m_canvas->get_port(client1_name, port1_name);
+				Port* const port2 = m_canvas->get_port(client2_name, port2_name);
+				
+				if (port1 && port2) 
+					m_canvas->add_connection(port1, port2);
 			}
 			free(connected_ports);
 		}		
