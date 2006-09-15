@@ -14,8 +14,8 @@
  * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef CONNECTION_H
-#define CONNECTION_H
+#ifndef FLOWCANVAS_CONNECTION_H
+#define FLOWCANVAS_CONNECTION_H
 
 #include <libgnomecanvasmm.h>
 #include <libgnomecanvasmm/bpath.h>
@@ -68,4 +68,4 @@ typedef list<Connection*> ConnectionList;
 
 } // namespace LibFlowCanvas
 
-#endif // CONNECTION_H
+#endif // FLOWCANVAS_CONNECTION_H

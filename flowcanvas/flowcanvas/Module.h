@@ -14,8 +14,8 @@
  * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MODULE_H
-#define MODULE_H
+#ifndef FLOWCANVAS_MODULE_H
+#define FLOWCANVAS_MODULE_H
 
 #include <string>
 #include <map>
@@ -130,4 +130,4 @@ Module::get_port(const string& port_name) const
 
 } // namespace LibFlowCanvas
 
-#endif // MODULE_H
+#endif // FLOWCANVAS_MODULE_H

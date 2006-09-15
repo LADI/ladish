@@ -14,9 +14,8 @@
  * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-
-#ifndef FLOWCANVAS_H
-#define FLOWCANVAS_H
+#ifndef FLOWCANVAS_FLOWCANVAS_H
+#define FLOWCANVAS_FLOWCANVAS_H
 
 #include <string>
 #include <list>
@@ -148,4 +147,4 @@ private:
 
 } // namespace LibFlowCanvas
 
-#endif // FLOWCANVAS_H
+#endif // FLOWCANVAS_FLOWCANVAS_H

@@ -14,8 +14,8 @@
  * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef PORT_H
-#define PORT_H
+#ifndef FLOWCANVAS_PORT_H
+#define FLOWCANVAS_PORT_H
 
 #include <string>
 #include <list>
@@ -98,4 +98,4 @@ typedef list<Port*> PortList;
 
 } // namespace LibFlowCanvas
 
-#endif // PORT_H
+#endif // FLOWCANVAS_PORT_H
