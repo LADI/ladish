@@ -81,7 +81,7 @@ lash_args_duplicate(const lash_args_t *const src)
 	result->flags = src->flags;
 	result->argc = 0;
 	result->argv = NULL;
-	if (result->argc > 0 && result->argv)
+	if (src->argc > 0 && src->argv)
 		lash_args_set_args(result, src->argc, src->argv);
 
 	return result;
@@ -150,7 +150,7 @@ lash_args_get_flags(const lash_args_t * args)
 }
 
 void
-lash_args_set_args(lash_args_t * args, int argc, const char *const *argv)
+lash_args_set_args(lash_args_t * args, int argc, const char *const * argv)
 {
 	int i;
 

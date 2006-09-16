@@ -30,7 +30,7 @@
 
 struct _lash_client
 {
-  lash_args_t       *args;
+  lash_args_t      *args;
   char             *class;
 
   short             server_connected;

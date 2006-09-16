@@ -135,7 +135,7 @@ lash_comm_connect_to_server(lash_client_t * client, const char *server,
 	lash_comm_event_t connect_event;
 	int err;
 
-	err = lash_open_socket(&client->socket, server, "lash");
+	err = lash_open_socket(&client->socket, server, service);
 	if (err) {
 		fprintf(stderr, "%s: could not create server connection\n",
 				__FUNCTION__);

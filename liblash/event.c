@@ -22,7 +22,7 @@
 
 #include <lash/types.h>
 #include <lash/internal.h>
-#include <lash/xmalloc.h>
+#include <lash/list.h>
 #include <lash/event.h>
 
 lash_event_t *

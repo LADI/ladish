@@ -27,6 +27,8 @@
 
 #  include <lash/lash.h>
 
+#define LASH_PORT "14541"
+
 #  ifdef __cplusplus
 extern "C" {
 #  endif

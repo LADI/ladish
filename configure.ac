@@ -176,31 +176,6 @@ else
   AC_MSG_RESULT([no])
 fi
 
-###########################
-### --disable-serv-inst ###
-###########################
-AC_MSG_CHECKING([whether to install service in /etc/services])
-lash_serv_inst="yes"
-AC_ARG_ENABLE(serv-inst,
-[AS_HELP_STRING(--disable-serv-inst, disable installation of lash service in /etc/services)],[
-  case "$enableval" in
-    "yes")
-      ;;
-    "no")
-      lash_serv_inst="no"
-      ;;
-    *)
-      AC_MSG_ERROR([must use --enable-serv-inst(=yes/no) or --disable-serv-inst])
-      ;;
-  esac
-])
-
-AM_CONDITIONAL(SERVICE_INSTALL, test x$lash_serv_inst = xyes)
-if test x$lash_serv_inst = xyes; then
-  AC_MSG_RESULT([yes])
-else
-  AC_MSG_RESULT([no])
-fi
 
 ##########################
 ### --with-default-dir ###

@@ -33,8 +33,7 @@ extern int h_errno;
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <ctype.h>
-
-#include <lash/xmalloc.h>
+#include <lash/list.h> 
 #include <lash/debug.h>
 
 int

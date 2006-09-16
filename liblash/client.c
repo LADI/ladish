@@ -20,7 +20,7 @@
 
 #include <lash/types.h>
 #include <lash/client.h>
-#include <lash/xmalloc.h>
+#include <lash/list.h>
 #include <lash/internal.h>
 
 lash_client_t *

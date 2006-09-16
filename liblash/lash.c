@@ -125,7 +125,7 @@ lash_extract_args(int *argc, char ***argv)
 
 	*argc = valid_count;
 
-	lash_args_set_args(args, *argc, (const char *const *)*argv);
+	lash_args_set_args(args, *argc, *argv);
 
 	return args;
 }
@@ -179,7 +179,7 @@ lash_init(const lash_args_t * args,
 	cstr = lash_args_get_server(args);
 	err = lash_comm_connect_to_server(client,
 									  cstr ? cstr : "localhost",
-									  "lash", connect_params);
+									  LASH_PORT, connect_params);
 	
 	/* couldn't connect, try to start a new server */
 	/* but not if this client has been started by a server, in which 
@@ -196,6 +196,13 @@ lash_init(const lash_args_t * args,
 
 			/* child process will run this statement */
 			if (err == 0) {
+				
+				/* need to close all open file descriptors except the std ones */
+				int max_fds = getdtablesize();
+				int fd;
+				for (fd = 3; fd < max_fds; ++fd)
+					close(fd);
+
 				switch (fork()) {
 
 					/* grandchild process will run this block */
@@ -221,7 +228,7 @@ lash_init(const lash_args_t * args,
 					sleep(1);
 					err = lash_comm_connect_to_server(client,
 							cstr ? cstr : "localhost",
-							"lash", connect_params);
+							LASH_PORT, connect_params);
 					if (err == 0) {
 						LASH_PRINT_DEBUG("successfully launched and connected to lashd");
 						break;

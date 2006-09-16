@@ -46,10 +46,3 @@ dtd_DATA = lash-project-1.0.dtd
 
 EXTRA_DIST = $(dtd_DATA)
 
-if SERVICE_INSTALL
-install-data-local:
-	if ! grep -q ^lash /etc/services; then \
-	  echo -e "\nlash\t\t14541/tcp\t\t\t# LASH client/server protocol" >> /etc/services; \
-	fi
-endif
-

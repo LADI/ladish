@@ -22,7 +22,7 @@
 #include <stdio.h>
 
 #include <lash/config.h>
-#include <lash/xmalloc.h>
+#include <lash/list.h>
 #include <lash/internal.h>
 
 void

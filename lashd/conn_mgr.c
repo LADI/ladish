@@ -185,7 +185,7 @@ conn_mgr_start(conn_mgr_t * conn_mgr)
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE;
 
-	err = getaddrinfo(NULL, "lash", &hints, &addrs);
+	err = getaddrinfo(NULL, LASH_PORT, &hints, &addrs);
 	if (err) {
 		fprintf(stderr, "%s: could not look up service name: %s\n",
 				__FUNCTION__, gai_strerror(err));

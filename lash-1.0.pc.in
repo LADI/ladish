@@ -7,5 +7,6 @@ Name: LASH
 Description: Audio session management
 Requires: jack alsa
 Version: @PACKAGE_VERSION@
-Libs: -Wl,--rpath -Wl,${libdir} -L${libdir} -llash -lpthread -luuid
+Libs: -llash
+Libs.static: -lpthread -luuid
 Cflags: -I${includedir}/lash-1.0

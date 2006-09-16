@@ -198,13 +198,6 @@ for developers working on the LASH code itself.
 to \$HOME under which the server will create new project directories.
 Without this option, the value defaults to @file{audio-projects}.
 
-@item --disable-serv-inst The LASH server and library look up port
-addresses for the LASH service using standard system calls that
-refer to the @file{/etc/services} database.  If @file{/etc/services}
-does not contain a valid entry, an error will result.  By default, the
-installation routine will install a service entry if one does not exist.
-This flag disables that action.
-
 @end table
 
 @subsection Building
