@@ -1,9 +1,9 @@
 # This is template code you can put in your configure.ac to check
 # for LASH support
 
-##############
+############
 ### LASH ###
-##############
+############
 build_lash="yes"
 AC_ARG_ENABLE(lash,
 	[AS_HELP_STRING(--enable-lash, [Enable LASH session management support (true)])],

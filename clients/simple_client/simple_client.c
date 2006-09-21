@@ -127,6 +127,7 @@ main(int argc, char **argv)
 				fclose(config_file);
 				LASH_PRINT_DEBUG("wrote config file");
 				lash_send_event(client, event);
+				break;
 			}
 			case LASH_Restore_File:
 			{
