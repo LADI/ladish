@@ -1,0 +1,19 @@
+At some point a spiffy build script of some variety should live here.
+Until then, the build orders:
+
+
+* Ingen:
+
+flowcanvas
+libslv2
+ingen
+
+
+* Patchage:
+
+flowcanvas
+patchage
+
+
+(Everything else has no interdependencies)
+
