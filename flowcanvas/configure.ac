@@ -5,6 +5,8 @@ AC_CONFIG_SRCDIR([flowcanvas/FlowCanvas.h])
 AC_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE
 
+AC_LANG([C++])
+
 # Checks for compiler
 AC_PROG_CXX
 
@@ -55,6 +57,12 @@ AC_SUBST(GTKMM_LIBS)
 PKG_CHECK_MODULES(GNOMECANVASMM, libgnomecanvasmm-2.6)
 AC_SUBST(GNOMECANVASMM_CFLAGS)
 AC_SUBST(GNOMECANVASMM_LIBS)
+
+# Check for boost smart pointers
+AC_CHECK_HEADERS(boost/shared_ptr.hpp, ,  
+	AC_MSG_ERROR([You need the boost headers package (e.g. libboost-dev)]))
+AC_CHECK_HEADERS(boost/weak_ptr.hpp, ,  
+	AC_MSG_ERROR([You need the boost headers package (e.g. libboost-dev)]))
 
 # Check for anti-aliased flag
 anti_alias="no"

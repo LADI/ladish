@@ -1,11 +1,11 @@
 /* This file is part of Patchage.  Copyright (C) 2005 Dave Robillard.
  * 
- * Om is free software; you can redistribute it and/or modify it under the
+ * Patchage is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 2 of the License, or (at your option) any later
  * version.
  * 
- * Om is distributed in the hope that it will be useful, but WITHOUT ANY
+ * Patchage is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for details.
  * 
@@ -49,25 +49,24 @@ AlsaDriver::~AlsaDriver()
  * @a launch_daemon is ignored, as ALSA has no daemon to launch/connect to.
  */
 void
-AlsaDriver::attach(bool launch_daemon)
+AlsaDriver::attach(bool /*launch_daemon*/)
 {
-	cout << "Connecting to Alsa... ";
-	cout.flush();
-
 	int ret = snd_seq_open(&m_seq, "default",
 	                       SND_SEQ_OPEN_DUPLEX,
 	                       SND_SEQ_NONBLOCK);
 	if (ret) {
-		cout << "Failed" << endl;
+		m_app->status_message("[ALSA] Unable to attach");
 		m_seq = NULL;
 	} else {
-		cout << "Connected" << endl;
+		m_app->status_message("[ALSA] Attached");
 
 		snd_seq_set_client_name(m_seq, "Patchage");
 	
 		ret = pthread_create(&m_refresh_thread, NULL, &AlsaDriver::refresh_main, this);
 		if (ret)
 			cerr << "Couldn't start refresh thread" << endl;
+		
+		signal_attached.emit();
 	}
 }
 
@@ -80,7 +79,8 @@ AlsaDriver::detach()
 		pthread_join(m_refresh_thread, NULL);
 		snd_seq_close(m_seq);
 		m_seq = NULL;
-		cout << "Disconnected from Alsa" << endl;
+		signal_detached.emit();
+		m_app->status_message("[ALSA] Detached");
 	}
 }
 
@@ -99,6 +99,18 @@ AlsaDriver::refresh()
 	refresh_connections();
 
 	undirty();
+}
+
+
+boost::shared_ptr<PatchagePort>
+AlsaDriver::create_port(boost::shared_ptr<PatchageModule> parent,
+		const string& name, bool is_input, snd_seq_addr_t addr)
+{
+	boost::shared_ptr<PatchagePort> ret(
+		new PatchagePort(parent, ALSA_MIDI, name, is_input,
+			m_app->state_manager()->get_port_color(ALSA_MIDI)));
+	ret->alsa_addr(addr);
+	return ret;
 }
 
 
@@ -159,7 +171,7 @@ AlsaDriver::refresh_ports()
 
 			is_application = (type & SND_SEQ_PORT_TYPE_APPLICATION);
 			port_name = snd_seq_port_info_get_name(pinfo);
-			PatchageModule* m = NULL;
+			boost::shared_ptr<PatchageModule> m;
 			
 			//cout << client_name << " : " << port_name << " is_application = " << is_application
 			//	<< " is_duplex = " << is_duplex << endl;
@@ -168,22 +180,23 @@ AlsaDriver::refresh_ports()
 			
 			// Application input/output ports go on the same module
 			if (!split) {
-				m = (PatchageModule*)m_canvas->find_module(client_name, InputOutput);
-				if (m == NULL) {
-					m = new PatchageModule(m_app, client_name, InputOutput);
+				m = m_canvas->find_module(client_name, InputOutput);
+				if (!m) {
+					m = boost::shared_ptr<PatchageModule>(new PatchageModule(m_app, client_name, InputOutput));
 					m->load_location();
 					m->store_location();
-					m->show();
+					m_app->canvas()->add_module(m);
 				}
 				
-				if (!is_duplex) {
-					m->add_patchage_port(port_name, is_input, ALSA_MIDI, addr);
-				} else {
-					m->add_patchage_port(port_name, true, ALSA_MIDI, addr);
-					m->add_patchage_port(port_name, false, ALSA_MIDI, addr);
+				if (!m->get_port(port_name)) {
+					if (!is_duplex) {
+						m->add_port(create_port(m, port_name, is_input, addr));
+					} else {
+						m->add_port(create_port(m, port_name, true, addr));
+						m->add_port(create_port(m, port_name, false, addr));
+					}
 				}
 			} else { // non-application input/output ports (hw interface, etc) go on separate modules
-				PatchageModule* m = NULL;
 				ModuleType type = InputOutput;
 				
 				// The 'application' hint isn't always set by clients, so this bit
@@ -194,46 +207,61 @@ AlsaDriver::refresh_ports()
 					else type = Output;
 					
 					// See if an InputOutput module exists (maybe with Jack ports on it)
-					m = (PatchageModule*)m_canvas->find_module(client_name, InputOutput);
+					m = m_canvas->find_module(client_name, InputOutput);
 				
-					if (m == NULL)
-						m = (PatchageModule*)m_canvas->find_module(client_name, type);
-					if (m == NULL) {
-						m = new PatchageModule(m_app, client_name, type);
+					if (!m)
+						m = m_canvas->find_module(client_name, type);
+
+					if (!m) {
+						m = boost::shared_ptr<PatchageModule>(
+							new PatchageModule(m_app, client_name, type));
 						m->load_location();
 						m->store_location();
+						m_app->canvas()->add_module(m);
 					}
-					m->add_patchage_port(port_name, is_input, ALSA_MIDI, addr);
+					if (!m->get_port(port_name))
+						m->add_port(create_port(m, port_name, is_input, addr));
 				} else {  // two ports to add
 					type = Input;
 					
 					// See if an InputOutput module exists (maybe with Jack ports on it)
-					m = (PatchageModule*)m_canvas->find_module(client_name, InputOutput);
+					m = m_canvas->find_module(client_name, InputOutput);
 					
-					if (m == NULL)
-						m = (PatchageModule*)m_canvas->find_module(client_name, type);
-					if (m == NULL) {
-						m = new PatchageModule(m_app, client_name, type);
+					if (!m)
+						m = m_canvas->find_module(client_name, type);
+
+					if (!m) {
+						m = boost::shared_ptr<PatchageModule>(
+							new PatchageModule(m_app, client_name, type));
 						m->load_location();
 						m->store_location();
 					}
-					m->add_patchage_port(port_name, true, ALSA_MIDI, addr);
+
+					assert(m);
+
+					if (!m->get_port(port_name))
+						m->add_port(create_port(m, port_name, true, addr));
 
 					type = Output;
 					
 					// See if an InputOutput module exists (maybe with Jack ports on it)
-					m = (PatchageModule*)m_canvas->find_module(client_name, InputOutput);
+					m = m_canvas->find_module(client_name, InputOutput);
 					
-					if (m == NULL)
-						m = (PatchageModule*)m_canvas->find_module(client_name, type);
-					if (m == NULL) {
-						m = new PatchageModule(m_app, client_name, type);
+					if (!m)
+						m = m_canvas->find_module(client_name, type);
+
+					if (!m) {
+						m = boost::shared_ptr<PatchageModule>(
+							new PatchageModule(m_app, client_name, type));
+
 						m->load_location();
 						m->store_location();
 					}
-					m->add_patchage_port(port_name, false, ALSA_MIDI, addr);
+					if (!m->get_port(port_name))
+						m->add_port(create_port(m, port_name, false, addr));
 				}
-				m->show();
+				m->resize();
+				m_app->canvas()->add_module(m);
 			}
 		}
 	}
@@ -248,16 +276,18 @@ AlsaDriver::refresh_connections()
 	assert(is_attached());
 	assert(m_seq);
 	
-	PatchageModule* m = NULL;
-	PatchagePort*   p = NULL;
+	boost::shared_ptr<PatchageModule> m;
+	boost::shared_ptr<PatchagePort>   p;
 	
 	for (ModuleMap::iterator i = m_canvas->modules().begin();
 			i != m_canvas->modules().end(); ++i) {
-		m = (PatchageModule*)((*i).second);
-		for (PortList::iterator j = m->ports().begin(); j != m->ports().end(); ++j) {
-			p = (PatchagePort*)(*j);
-			if (p->type() == ALSA_MIDI)
-				add_connections(p);
+		m = boost::dynamic_pointer_cast<PatchageModule>((*i).second);
+		if (m) {
+			for (PortVector::const_iterator j = m->ports().begin(); j != m->ports().end(); ++j) {
+				p = boost::dynamic_pointer_cast<PatchagePort>(*j);
+				if (p->type() == ALSA_MIDI)
+					add_connections(p);
+			}
 		}
 	}
 }
@@ -266,13 +296,13 @@ AlsaDriver::refresh_connections()
 /** Add all connections for the given port.
  */
 void
-AlsaDriver::add_connections(PatchagePort* port)
+AlsaDriver::add_connections(boost::shared_ptr<PatchagePort> port)
 {
 	assert(is_attached());
 	assert(m_seq);
 	
-	const snd_seq_addr_t* addr           = port->alsa_addr();
-	PatchagePort*         connected_port = NULL;
+	const snd_seq_addr_t* addr = port->alsa_addr();
+	boost::shared_ptr<PatchagePort> connected_port;
 	
 	// Fix a problem with duplex->duplex connections (would show up twice)
 	// No sense doing them all twice anyway..
@@ -287,10 +317,15 @@ AlsaDriver::add_connections(PatchagePort* port)
 	while(!snd_seq_query_port_subscribers(m_seq, subsinfo)) {
 		const snd_seq_addr_t* connected_addr = snd_seq_query_subscribe_get_addr(subsinfo);
 		
-		connected_port = m_canvas->find_port(connected_addr, !port->is_input());
+		connected_port = m_canvas->find_port(connected_addr);
 
-		if (connected_port != NULL) {
-			m_canvas->add_connection(port, connected_port);
+		if (connected_port) {
+			boost::shared_ptr<Connection> existing = m_canvas->get_connection(port, connected_port);
+			if (existing) {
+				existing->set_flagged(false);
+			} else {
+				m_canvas->add_connection(port, connected_port);
+			}
 		}
 
 		snd_seq_query_subscribe_set_index(subsinfo, snd_seq_query_subscribe_get_index(subsinfo) + 1);
@@ -304,12 +339,12 @@ AlsaDriver::add_connections(PatchagePort* port)
  * \return Whether connection succeeded.
  */
 bool
-AlsaDriver::connect(const PatchagePort* const src_port, const PatchagePort* const dst_port) 
+AlsaDriver::connect(boost::shared_ptr<PatchagePort> src_port, boost::shared_ptr<PatchagePort> dst_port) 
 {
 	const snd_seq_addr_t* src = src_port->alsa_addr();
 	const snd_seq_addr_t* dst = dst_port->alsa_addr();
 
-	bool result = false;
+	bool result = true;
 	
 	if (src && dst) {
 		snd_seq_port_subscribe_t* subs;
@@ -332,6 +367,13 @@ AlsaDriver::connect(const PatchagePort* const src_port, const PatchagePort* cons
 			result = false;
 		}
 	}
+	
+	if (result)
+		m_app->status_message(string("[ALSA] Connected ")
+			+ src_port->full_name() + " -> " + dst_port->full_name());
+	else
+		m_app->status_message(string("[ALSA] Unable to connect ")
+			+ src_port->full_name() + " -> " + dst_port->full_name());
 
 	return (!result);
 }
@@ -342,12 +384,12 @@ AlsaDriver::connect(const PatchagePort* const src_port, const PatchagePort* cons
  * \return Whether disconnection succeeded.
  */
 bool
-AlsaDriver::disconnect(const PatchagePort* const src_port, const PatchagePort* const dst_port) 
+AlsaDriver::disconnect(boost::shared_ptr<PatchagePort> src_port, boost::shared_ptr<PatchagePort> dst_port) 
 {
 	const snd_seq_addr_t* src = src_port->alsa_addr();
 	const snd_seq_addr_t* dst = dst_port->alsa_addr();
 	
-	bool result = false;
+	bool result = true;
 
 	snd_seq_port_subscribe_t* subs;
 	snd_seq_port_subscribe_malloc(&subs);
@@ -368,6 +410,13 @@ AlsaDriver::disconnect(const PatchagePort* const src_port, const PatchagePort* c
 		cerr << "Alsa unsubscription failed: " << snd_strerror(ret) << endl;
 		result = false;
 	}
+	
+	if (result)
+		m_app->status_message(string("[ALSA] Disconnected ")
+			+ src_port->full_name() + " -> " + dst_port->full_name());
+	else
+		m_app->status_message(string("[ALSA] Unable to disconnect ")
+			+ src_port->full_name() + " -> " + dst_port->full_name());
 
 	return (!result);
 }

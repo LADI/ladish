@@ -1,11 +1,11 @@
 /* This file is part of Patchage.  Copyright (C) 2005 Dave Robillard.
  * 
- * Om is free software; you can redistribute it and/or modify it under the
+ * Patchage is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 2 of the License, or (at your option) any later
  * version.
  * 
- * Om is distributed in the hope that it will be useful, but WITHOUT ANY
+ * Patchage is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for details.
  * 
@@ -16,6 +16,9 @@
 
 #ifndef DRIVER_H
 #define DRIVER_H
+
+#include <boost/shared_ptr.hpp>
+#include <sigc++/sigc++.h>
 
 class PatchagePort;
 
@@ -30,19 +33,20 @@ public:
 
 	virtual void refresh() = 0;
 
-	virtual bool connect(const PatchagePort* src_port,
-	                     const PatchagePort* dst_port)
-	{ return false; }
+	virtual bool connect(boost::shared_ptr<PatchagePort> src_port,
+	                     boost::shared_ptr<PatchagePort> dst_port) = 0;
 	
-	virtual bool disconnect(const PatchagePort* src_port,
-	                        const PatchagePort* dst_port)
-	{ return false; }
+	virtual bool disconnect(boost::shared_ptr<PatchagePort> src_port,
+	                        boost::shared_ptr<PatchagePort> dst_port) = 0;
 	
-	/** Returns whether or not a refresh is required. */
-	bool is_dirty() const { return m_is_dirty; }
+	/** Returns whether or not a refresh is required (pending). */
+	inline bool is_dirty() const { return m_is_dirty; }
 
 	/** Clear 'dirty' status after a refresh. */
-	void undirty() { m_is_dirty = false; }
+	inline void undirty() { m_is_dirty = false; }
+
+	sigc::signal<void> signal_attached;
+	sigc::signal<void> signal_detached;
 
 protected:
 	Driver() : m_is_dirty(false) {}

@@ -17,10 +17,11 @@
 #ifndef FLOWCANVAS_CONNECTION_H
 #define FLOWCANVAS_CONNECTION_H
 
+#include <list>
+#include <boost/weak_ptr.hpp>
 #include <libgnomecanvasmm.h>
 #include <libgnomecanvasmm/bpath.h>
 #include <libgnomecanvasmm/path-def.h>
-#include <list>
 #include "Port.h"
 
 using std::list;
@@ -37,33 +38,41 @@ class FlowCanvas;
 class Connection : public Gnome::Canvas::Bpath
 {
 public:
-	Connection(FlowCanvas* canvas, Port* source_port, Port* dest_port);
+	Connection(FlowCanvas&             canvas,
+	           boost::shared_ptr<Port> source_port,
+	           boost::shared_ptr<Port> dest_port);
+
 	virtual ~Connection();
 	
-	void update_location();
-	void disconnect();
-	void hilite(bool b);
+	bool flagged() const     { return m_flag; }
+	void set_flagged(bool b) { m_flag = b; }
 	
-	bool selected()        { return m_selected; }
-	void selected(bool b);
+	bool selected() const { return m_selected; }
+	void set_selected(bool b);
 	
-	void        source_port(Port* p) { m_source_port = p; }
-	const Port* source_port() const  { return m_source_port; }
-	void        dest_port(Port* p)   { m_dest_port = p; }
-	const Port* dest_port() const    { return m_dest_port; }
+	void set_highlighted(bool b);
+	
+	const boost::weak_ptr<Port> source_port() const { return m_source_port; }
+	const boost::weak_ptr<Port> dest_port() const   { return m_dest_port; }
 
 private:
-	FlowCanvas* m_canvas;
-	Port*         m_source_port;
-	Port*         m_dest_port;
-	int           m_colour;
-	bool          m_selected;
+	friend class FlowCanvas;
+	friend class Port;
+
+	void update_location();
+	
+	FlowCanvas&                 m_canvas;
+	const boost::weak_ptr<Port> m_source_port;
+	const boost::weak_ptr<Port> m_dest_port;
+	int                         m_color;
+	bool                        m_selected;
+	bool                        m_flag;
 
 	//Glib::RefPtr<Gnome::Canvas::PathDef> m_path;
 	GnomeCanvasPathDef* m_path;
 };
 
-typedef list<Connection*> ConnectionList;
+typedef list<boost::shared_ptr<Connection> > ConnectionList;
 
 
 } // namespace LibFlowCanvas

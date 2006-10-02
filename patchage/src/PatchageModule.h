@@ -35,7 +35,7 @@ class PatchageModule : public Module
 {
 public:
 	PatchageModule(Patchage* app, const string& title, ModuleType type, double x=0, double y=0)
-	: Module(app->canvas(), title, x, y),
+	: Module(*app->canvas(), title, x, y),
 	  m_app(app),
 	  m_type(type)
 	{
@@ -53,7 +53,7 @@ public:
 
 	virtual ~PatchageModule() { }
 	
-	virtual void add_patchage_port(const string& port_name, bool is_input, PortType type)
+	/*virtual void add_patchage_port(const string& port_name, bool is_input, PortType type)
 	{
 		new PatchagePort(this, type, port_name, is_input, m_app->state_manager()->get_port_color(type));
 
@@ -68,7 +68,7 @@ public:
 		port->alsa_addr(addr);
 
 		resize();
-	}
+	}*/
 
 
 	virtual void load_location() {
@@ -79,8 +79,8 @@ public:
 		if (loc.x != -1)
 			move_to(loc.x, loc.y);
 		else
-			move_to((m_canvas->width()/2) - 100 + rand() % 400,
-			         (m_canvas->height()/2) - 100 + rand() % 400);
+			move_to((m_canvas.width()/2) - 100 + rand() % 400,
+			         (m_canvas.height()/2) - 100 + rand() % 400);
 	}
 
 	void split() {
@@ -103,7 +103,7 @@ public:
 	virtual void show_dialog() {}
 	virtual void on_right_click(GdkEventButton* ev) { m_menu.popup(ev->button, ev->time); }
 	virtual void menu_disconnect_all() {
-		for (PortList::iterator p = m_ports.begin(); p != m_ports.end(); ++p)
+		for (PortVector::iterator p = m_ports.begin(); p != m_ports.end(); ++p)
 			(*p)->disconnect_all();
 	}
 

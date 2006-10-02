@@ -19,6 +19,7 @@
 
 #include <string>
 #include <map>
+#include <algorithm>
 #include <libgnomecanvasmm.h>
 #include "Port.h"
 
@@ -36,12 +37,17 @@ class FlowCanvas;
 class Module : public Gnome::Canvas::Group
 {
 public:
-	Module(FlowCanvas* canvas, const string& name, double x=0, double y=0, bool add_to_canvas=true);
+	Module(FlowCanvas& canvas, const string& name, double x=0, double y=0);
 	virtual ~Module();
 	
-	inline Port* const get_port(const string& port_name) const;
-
-	void destroy_all_ports(bool resize = true);
+	FlowCanvas&       canvas() const { return m_canvas; }
+	const PortVector& ports()  const { return m_ports; }
+	
+	inline boost::shared_ptr<Port> get_port(const string& name) const;
+	
+	void add_port(boost::shared_ptr<Port> port);
+	void remove_port(boost::shared_ptr<Port> port);
+	void remove_port(const string& name);
 
 	void zoom(double z);
 	void resize();
@@ -49,67 +55,70 @@ public:
 	void         move(double dx, double dy);
 	virtual void move_to(double x, double y);
 	
-	bool is_within(const Gnome::Canvas::Rect* const rect);
+	bool is_within(const Gnome::Canvas::Rect* rect);
+	bool point_is_within(double x, double y);
 
 	virtual void load_location()  {}
 	virtual void store_location() {}
+	
+	const string& name() const { return m_name; }
+	virtual void  set_name(const string& n);
 
-	// For connection drawing
-	double port_connection_point_offset(Port* port);
-	double port_connection_points_range();
+	double width() { return m_width; }
+	void   set_width(double w);
 	
-	double width()           { return m_width; }
-	void   width(double w);
-	double height()          { return m_height; }
-	void   height(double h);
+	double height() { return m_height; }
+	void   set_height(double h);
 
-	void hilite(bool b);
-	void selected(bool b);
-	bool selected() const  { return m_selected; }
+	bool selected() const { return m_selected; }
+	void set_selected(bool b);
 	
-	virtual void  name(const string& n);
-	const string& name()         const     { return m_name; }
-	
-	FlowCanvas*   canvas()       const     { return m_canvas; }
-	int           num_ports()    const     { return m_ports.size(); }
-	int           base_colour()  const     { return 0x1F2A3CFF; }
-	PortList&     ports()                  { return m_ports; }
-	double        border_width() const     { return m_border_width; }
-	void          border_width(double w);
-	
-	Gnome::Canvas::Rect* rect()  { return &m_module_box; }
-	Gnome::Canvas::Text* title() { return &m_canvas_title; }
+	void set_highlighted(bool b);
 
+	int         num_ports()    const     { return m_ports.size(); }
+	int         base_color()   const     { return 0x1F2A3CFF; }
+	double      border_width() const     { return m_border_width; }
+	void        set_border_width(double w);
+	
 protected:
-
 	bool module_event(GdkEvent* event);
 
 	virtual void on_double_click(GdkEventButton* ev) {}
 	virtual void on_middle_click(GdkEventButton* ev) {}
 	virtual void on_right_click(GdkEventButton* ev)  {}
 
-	bool   m_add_to_canvas;
 	double m_border_width;
 	double m_width;
 	double m_height;
 	string m_name;
 	bool   m_selected;
 
-	FlowCanvas* m_canvas;
-	PortList    m_ports;
+	FlowCanvas& m_canvas;
+	PortVector  m_ports;
 
 	Gnome::Canvas::Rect m_module_box;
 	Gnome::Canvas::Text m_canvas_title;
 
 private:
 	friend class Port;
-	void add_port(Port* port);
-	void remove_port(Port* port);
+	friend class FlowCanvas;
+	friend class Connection;
+	
+	// For connection drawing
+	double port_connection_point_offset(boost::shared_ptr<Port> port);
+	double port_connection_points_range();
+	
+
+	struct PortComparator {
+		PortComparator(const string& name) : _name(name) {}
+		inline bool operator()(const boost::shared_ptr<Port> port)
+			{ return (port && port->name() == _name); }
+		const string& _name;
+	};
 };
 
 
-typedef multimap<string,Module*> ModuleMap;
-
+typedef multimap<string,boost::shared_ptr<Module> > ModuleMap;
 
 
 /** Find a port on this module.
@@ -117,13 +126,12 @@ typedef multimap<string,Module*> ModuleMap;
  * Profiling has shown this to be performance critical, hence the inlining.
  * Making this faster would be a very good idea - better data structure?
  */
-inline Port* const
+inline boost::shared_ptr<Port>
 Module::get_port(const string& port_name) const
 {
-	for (PortList::const_iterator i = m_ports.begin(); i != m_ports.end(); ++i)
-		if ((*i)->name() == port_name)
-			return (*i);
-	return NULL;
+	PortComparator comp(port_name);
+	PortVector::const_iterator i = std::find_if(m_ports.begin(), m_ports.end(), comp);
+	return (i != m_ports.end()) ? *i : boost::shared_ptr<Port>();
 }
 
 

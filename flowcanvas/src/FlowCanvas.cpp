@@ -30,12 +30,11 @@ namespace LibFlowCanvas {
 	
 
 FlowCanvas::FlowCanvas(double width, double height)
-: m_selected_port(NULL),
-  m_connect_port(NULL),
-  m_zoom(1.0),
+: m_zoom(1.0),
   m_width(width),
   m_height(height),
   m_drag_state(NOT_DRAGGING),
+  m_remove_objects(true),
   m_base_rect(*root(), 0, 0, width, height),
   m_select_rect(NULL),
   m_select_dash(NULL)
@@ -106,7 +105,10 @@ FlowCanvas::zoom_full()
 	double bottom = DBL_MAX;
 
 	for (ModuleMap::iterator m = m_modules.begin(); m != m_modules.end(); ++m) {
-		Module* const mod = (*m).second;
+		boost::shared_ptr<Module> mod = (*m).second;
+		if (!mod)
+			continue;
+		
 		if (mod->property_x() < left)
 			left = mod->property_x();
 		if (mod->property_x() + mod->width() > right)
@@ -116,8 +118,8 @@ FlowCanvas::zoom_full()
 		if (mod->property_y() + mod->height() > top)
 			top = mod->property_y() + mod->height();
 	}
-	const double bound_width = right - left;
-	const double bound_height = top - bottom;
+	//const double bound_width = right - left;
+	//const double bound_height = top - bottom;
 
 	static const double pad = 4.0;
 
@@ -138,29 +140,56 @@ FlowCanvas::zoom_full()
 void
 FlowCanvas::clear_selection()
 {
-	for (list<Module*>::iterator m = m_selected_modules.begin(); m != m_selected_modules.end(); ++m)
-		(*m)->selected(false);
+	unselect_ports();
+
+	for (list<boost::shared_ptr<Module> >::iterator m = m_selected_modules.begin(); m != m_selected_modules.end(); ++m)
+		(*m)->set_selected(false);
 	
-	for (list<Connection*>::iterator c = m_selected_connections.begin(); c != m_selected_connections.end(); ++c)
-		(*c)->selected(false);
+	for (list<boost::shared_ptr<Connection> >::iterator c = m_selected_connections.begin(); c != m_selected_connections.end(); ++c)
+		(*c)->set_selected(false);
 
 	m_selected_modules.clear();
 	m_selected_connections.clear();
 }
 
-	
+
+void
+FlowCanvas::unselect_connection(Connection* connection)
+{
+	for (ConnectionList::iterator i = m_selected_connections.begin(); i != m_selected_connections.end();) {
+		if ((*i).get() == connection) {
+			i = m_selected_connections.erase(i);
+		} else {
+			++i;
+		}
+	}
+
+	connection->set_selected(false);
+}
+
+
+void
+FlowCanvas::select_module(const string& name)
+{
+	boost::shared_ptr<Module> m = get_module(name);
+	if (m)
+		select_module(m);
+}
+
+
 /** Add a module to the current selection, and automagically select any connections
  * between selected modules */
 void
-FlowCanvas::select_module(Module* m)
+FlowCanvas::select_module(boost::shared_ptr<Module> m)
 {
 	assert(! m->selected());
 	
 	m_selected_modules.push_back(m);
 
-	Connection* c;
+	cerr << "FIXME: select connection\n";
+	/*
 	for (ConnectionList::iterator i = m_connections.begin(); i != m_connections.end(); ++i) {
-		c = (*i);
+		const boost::shared_ptr<Connection> c = (*i);
 		if ( !c->selected()) {
 			if (c->source_port()->module() == m && c->dest_port()->module()->selected()) {
 				c->selected(true);
@@ -170,32 +199,20 @@ FlowCanvas::select_module(Module* m)
 				m_selected_connections.push_back(c);
 			} 
 		}
-	}
+	}*/
 				
-	m->selected(true);
+	m->set_selected(true);
 }
 
 
 void
-FlowCanvas::unselect_connection(Connection* connection)
+FlowCanvas::unselect_module(boost::shared_ptr<Module> m)
 {
-	for (ConnectionList::iterator i = m_selected_connections.begin(); i != m_selected_connections.end();) {
-		if ((*i) == connection) {
-			i = m_selected_connections.erase(i);
-		} else {
-			++i;
-		}
-	}
 
-	connection->selected(false);
-}
-
-
-void
-FlowCanvas::unselect_module(Module* m)
-{
 	// Remove any connections that aren't selected anymore because this module isn't
-	Connection* c;
+	cerr << "FIXME: remove connection selection\n";
+#if 0
+	boost::shared_ptr<Connection> c;
 	for (ConnectionList::iterator i = m_selected_connections.begin(); i != m_selected_connections.end();) {
 		c = (*i);
 		if (c->selected()
@@ -208,16 +225,25 @@ FlowCanvas::unselect_module(Module* m)
 			++i;
 		}
 	}
-
+#endif
 	// Remove the module
-	for (list<Module*>::iterator i = m_selected_modules.begin(); i != m_selected_modules.end(); ++i) {
+	for (list<boost::shared_ptr<Module> >::iterator i = m_selected_modules.begin(); i != m_selected_modules.end(); ++i) {
 		if ((*i) == m) {
 			m_selected_modules.erase(i);
 			break;
 		}
 	}
 	
-	m->selected(false);
+	m->set_selected(false);
+}
+
+
+void
+FlowCanvas::unselect_module(const string& name)
+{
+	boost::shared_ptr<Module> m = get_module(name);
+	if (m)
+		unselect_module(m);
 }
 
 
@@ -226,53 +252,57 @@ FlowCanvas::unselect_module(Module* m)
 void
 FlowCanvas::destroy()
 {
+	m_remove_objects = false;
+
 	clear_selection();
 
-	for (ConnectionList::iterator c = m_connections.begin(); c != m_connections.end() ; ) {
-		Connection* connection = *c;
-		c = m_connections.erase(c);
-		delete connection;
-	}
-
-	while (m_modules.size() > 0)
-		delete ((*m_modules.begin()).second);
-
-	m_modules.clear();
 	m_connections.clear();
+	m_modules.clear();
 
-	m_selected_port = NULL;
-	m_connect_port = NULL;
+	m_selected_port.reset();
+	m_connect_port.reset();
+
+	m_remove_objects = true;
 }
 
 
 void
-FlowCanvas::selected_port(Port* p)
+FlowCanvas::unselect_ports()
 {
 	if (m_selected_port)
-		m_selected_port->rect()->property_fill_color_rgba() = m_selected_port->colour(); // "turn off" the old one
+		m_selected_port->set_fill_color(m_selected_port->color()); // deselect the old one
+	
+	m_selected_port.reset();
+}
+
+
+void
+FlowCanvas::selected_port(boost::shared_ptr<Port> p)
+{
+	unselect_ports();
 	
 	m_selected_port = p;
 	
 	if (p)
-		p->rect()->property_fill_color() = "red";
+		p->set_fill_color(0xFF0000FF);
 }
 
 
-Module*
+boost::shared_ptr<Module>
 FlowCanvas::get_module(const string& name)
 {
 	ModuleMap::iterator m = m_modules.find(name);
 
-	return (m == m_modules.end()) ? NULL : (*m).second;
+	return (m == m_modules.end()) ? boost::shared_ptr<Module>() : (*m).second;
 }
 
 
 /** Sets the passed module's location to a reasonable default.
  */
 void
-FlowCanvas::set_default_placement(Module* m)
+FlowCanvas::set_default_placement(boost::shared_ptr<Module> m)
 {
-	assert(m != NULL);
+	assert(m);
 	
 	// Simple cascade.  This will get more clever in the future.
 	double x = ((m_width / 2.0) + (m_modules.size() * 25));
@@ -283,51 +313,51 @@ FlowCanvas::set_default_placement(Module* m)
 
 
 void
-FlowCanvas::add_module(Module* m)
+FlowCanvas::add_module(boost::shared_ptr<Module> m)
 {
 	assert(m);
-	assert(m->canvas() == this);
-
-	std::pair<string, Module*> p(m->name(), m);
+	std::pair<string, boost::shared_ptr<Module> > p(m->name(), m);
 	m_modules.insert(p);
+	m->show();
 }
 
 
 void
 FlowCanvas::remove_module(const string& name)
 {
+	if (!m_remove_objects)
+		return;
+
 	ModuleMap::iterator m = m_modules.find(name);
 	assert(m != m_modules.end());
 	m_modules.erase(m);
 }
 
 
-Port*
+boost::shared_ptr<Port>
 FlowCanvas::get_port(const string& node_name, const string& port_name)
 {
-	Module* module = NULL;
-	Port*   port   = NULL;
-	
 	for (ModuleMap::iterator i = m_modules.begin(); i != m_modules.end(); ++i) {
-		module = (*i).second;
-		port = module->get_port(port_name);
-		if (module->name() == node_name && port != NULL)
+		const boost::shared_ptr<Module> module = (*i).second;
+		const boost::shared_ptr<Port>   port = module->get_port(port_name);
+		if (module->name() == node_name && port)
 			return port;
 	}
 	
-	return NULL;
+	return boost::shared_ptr<Port>();
 }
 
 
 bool
 FlowCanvas::rename_module(const string& old_name, const string& current_name)
 {
-	Module* module = NULL;
-	
 	for (ModuleMap::iterator i = m_modules.begin(); i != m_modules.end(); ++i) {
-		module = (*i).second;
-		assert(module);
+		const boost::shared_ptr<Module> module = (*i).second;
+		if (!module)
+			continue;
+		
 		assert(module->name() != old_name);
+		
 		if ((*i).first == old_name) {
 			assert(module->name() == current_name);
 			m_modules.erase(i);
@@ -341,13 +371,16 @@ FlowCanvas::rename_module(const string& old_name, const string& current_name)
 
 
 bool
-FlowCanvas::remove_connection(Port* port1, Port* port2)
+FlowCanvas::remove_connection(boost::shared_ptr<Port> port1, boost::shared_ptr<Port> port2)
 {
-	assert(port1 != NULL);
-	assert(port2 != NULL);
+	if (!m_remove_objects)
+		return false;
+
+	assert(port1);
+	assert(port2);
 	
-	Connection* c = get_connection(port1, port2);
-	if (c == NULL) {
+	boost::shared_ptr<Connection> c = get_connection(port1, port2);
+	if (!c) {
 		cerr << "Couldn't find connection.\n";
 		return false;
 	} else {
@@ -358,20 +391,20 @@ FlowCanvas::remove_connection(Port* port1, Port* port2)
 
 
 bool
-FlowCanvas::are_connected(const Port* port1, const Port* port2)
+FlowCanvas::are_connected(boost::shared_ptr<const Port> port1, boost::shared_ptr<const Port> port2)
 {
-	assert(port1 != NULL);
-	assert(port2 != NULL);
+	assert(port1);
+	assert(port2);
 	
 	ConnectionList::const_iterator c;
-	const Connection* connection;
-
 
 	for (c = m_connections.begin(); c != m_connections.end(); ++c) {
-		connection = *c;
-		if (connection->source_port() == port1 && connection->dest_port() == port2)
-			return true;
-		if (connection->source_port() == port2 && connection->dest_port() == port1)
+		boost::shared_ptr<Port> src = (*c)->source_port().lock();
+		boost::shared_ptr<Port> dst = (*c)->dest_port().lock();
+		if (!src || !dst)
+			continue;
+
+		if ( (src == port1 && dst == port2) || (dst == port1 && src == port2) )
 			return true;
 	}
 
@@ -379,35 +412,38 @@ FlowCanvas::are_connected(const Port* port1, const Port* port2)
 }
 
 
-Connection*
-FlowCanvas::get_connection(const Port* port1, const Port* port2)
+boost::shared_ptr<Connection>
+FlowCanvas::get_connection(boost::shared_ptr<Port> port1, boost::shared_ptr<Port> port2)
 {
-	assert(port1 != NULL);
-	assert(port2 != NULL);
+	assert(port1);
+	assert(port2);
 	
 	for (ConnectionList::iterator i = m_connections.begin(); i != m_connections.end(); ++i) {
-		if ( (*i)->source_port() == port1 && (*i)->dest_port() == port2 )
-			return *i;
-		else if ( (*i)->dest_port() == port1 && (*i)->source_port() == port2 )
+		boost::shared_ptr<Port> src = (*i)->source_port().lock();
+		boost::shared_ptr<Port> dst = (*i)->dest_port().lock();
+		if (!src || !dst)
+			continue;
+
+		if ( (src == port1 && dst == port2) || (dst == port1 && src == port2) )
 			return *i;
 	}
 	
-	return NULL;
+	return boost::shared_ptr<Connection>();
 }
 
 
 bool
-FlowCanvas::add_connection(Port* port1, Port* port2)
+FlowCanvas::add_connection(boost::shared_ptr<Port> port1, boost::shared_ptr<Port> port2)
 {
-	if (port1->module()->canvas() != this
+	/*if (port1->module()->canvas() != this
 		|| port2->module()->canvas() != this
 		|| port1->is_input() == port2->is_input()
 		|| port1->is_output() == port2->is_output()) {
 		return false;
-	}
+	}*/
 
-	Port* src_port = NULL;
-	Port* dst_port = NULL;
+	boost::shared_ptr<Port> src_port;
+	boost::shared_ptr<Port> dst_port;
 	if (port1->is_output()) {
 		assert(port2->is_input());
 		src_port = port1;
@@ -420,7 +456,7 @@ FlowCanvas::add_connection(Port* port1, Port* port2)
 
 	// Create (graphical) connection object
 	if ( ! get_connection(src_port, dst_port)) {
-		Connection* const c = new Connection(this, src_port, dst_port);
+		boost::shared_ptr<Connection> c(new Connection(*this, src_port, dst_port));
 		port1->add_connection(c);
 		port2->add_connection(c);
 		m_connections.push_back(c);
@@ -431,35 +467,85 @@ FlowCanvas::add_connection(Port* port1, Port* port2)
 
 
 void
-FlowCanvas::remove_connection(Connection* connection)
+FlowCanvas::remove_connection(boost::shared_ptr<Connection> connection)
 {
+	if (!m_remove_objects)
+		return;
+
 	ConnectionList::iterator i = find(m_connections.begin(), m_connections.end(), connection);
 
 	if (i != m_connections.end()) {
-		Connection* c = *i;
+		boost::shared_ptr<Connection> c = *i;
 
-		c->disconnect();
+		c->source_port().lock()->remove_connection(c);
+		c->dest_port().lock()->remove_connection(c);
+		
 		m_connections.erase(i);
-		delete c;
 	}
+}
+
+
+void
+FlowCanvas::flag_all_connections()
+{
+	for (ConnectionList::iterator c = m_connections.begin(); c != m_connections.end(); ++c)
+		(*c)->set_flagged(true);
+}
+
+
+void
+FlowCanvas::destroy_all_flagged_connections()
+{
+	m_remove_objects = false;
+
+	for (ConnectionList::iterator c = m_connections.begin(); c != m_connections.end() ; ) {
+		if ((*c)->flagged()) {
+			ConnectionList::iterator next = c;
+			++next;
+			(*c)->source_port().lock()->remove_connection(*c);
+			(*c)->dest_port().lock()->remove_connection(*c);
+			m_connections.erase(c);
+			c = next;
+		} else {
+			++c;
+		}
+	}
+
+	m_remove_objects = true;
+}
+
+
+void
+FlowCanvas::destroy_all_connections()
+{
+	m_remove_objects = false;
+
+	for (ConnectionList::iterator c = m_connections.begin(); c != m_connections.end(); ++c) {
+		(*c)->source_port().lock()->remove_connection(*c);
+		(*c)->dest_port().lock()->remove_connection(*c);
+	}
+
+	m_connections.clear();
+
+	m_remove_objects = true;
 }
 
 
 /** Called when two ports are 'toggled' (connected or disconnected)
  */
 void
-FlowCanvas::ports_joined(Port* port1, Port* port2)
+FlowCanvas::ports_joined(boost::shared_ptr<Port> port1, boost::shared_ptr<Port> port2)
 {
 	assert(port1);
 	assert(port2);
 
-	port1->hilite(false);
-	port2->hilite(false);
+	port1->set_highlighted(false);
+	port2->set_highlighted(false);
 
 	string src_mod_name, dst_mod_name, src_port_name, dst_port_name;
 
-	Port* src_port = NULL;
-	Port* dst_port = NULL;
+	boost::shared_ptr<Port> src_port;
+	boost::shared_ptr<Port> dst_port;
 	
 	if (port2->is_input() && ! port1->is_input()) {
 		src_port = port1;
@@ -485,8 +571,12 @@ FlowCanvas::ports_joined(Port* port1, Port* port2)
  * pass their events on to this function to get around this.
  */
 bool
-FlowCanvas::port_event(GdkEvent* event, Port* port)
+FlowCanvas::port_event(GdkEvent* event, boost::weak_ptr<Port> weak_port)
 {
+	boost::shared_ptr<Port> port = weak_port.lock();
+	if (!port)
+		return false;
+
 	static bool port_dragging = false;
 	bool handled = true;
 	
@@ -510,8 +600,8 @@ FlowCanvas::port_event(GdkEvent* event, Port* port)
 				m_connect_port = port;
 			} else {
 				ports_joined(port, m_connect_port);
-				m_connect_port = NULL;
-				selected_port(NULL);
+				m_connect_port.reset();
+				selected_port(boost::shared_ptr<Port>());
 			}
 			port_dragging = false;
 		} else {
@@ -522,7 +612,7 @@ FlowCanvas::port_event(GdkEvent* event, Port* port)
 
 	case GDK_ENTER_NOTIFY:
 		if (port != m_selected_port)
-			port->hilite(true);
+			port->set_highlighted(true);
 		break;
 
 	case GDK_LEAVE_NOTIFY:
@@ -536,7 +626,7 @@ FlowCanvas::port_event(GdkEvent* event, Port* port)
 			port_dragging = false;
 		} else {
 			if (port != m_selected_port)
-				port->hilite(false);
+				port->set_highlighted(false);
 		}
 		break;
 
@@ -636,7 +726,7 @@ FlowCanvas::scroll_drag_handler(GdkEvent* event)
 bool
 FlowCanvas::select_drag_handler(GdkEvent* event)
 {
-	Module* module = NULL;
+	boost::shared_ptr<Module> module;
 	
 	if (event->type == GDK_BUTTON_PRESS && event->button.button == 1) {
 		assert(m_select_rect == NULL);
@@ -651,7 +741,7 @@ FlowCanvas::select_drag_handler(GdkEvent* event)
 		m_base_rect.lower_to_bottom();
 		return true;
 	} else if (event->type == GDK_MOTION_NOTIFY && m_drag_state == SELECT) {
-		assert(m_select_rect != NULL);
+		assert(m_select_rect);
 		double x = event->button.x, y = event->button.y;
 		
 		if (event->motion.is_hint) {
@@ -700,10 +790,10 @@ FlowCanvas::animate_selected()
 	
 	m_select_dash->offset = i;
 	
-	for (list<Module*>::iterator m = m_selected_modules.begin(); m != m_selected_modules.end(); ++m)
-		(*m)->rect()->property_dash() = m_select_dash;
+	for (list<boost::shared_ptr<Module> >::iterator m = m_selected_modules.begin(); m != m_selected_modules.end(); ++m)
+		(*m)->m_module_box.property_dash() = m_select_dash;
 	
-	for (list<Connection*>::iterator c = m_selected_connections.begin(); c != m_selected_connections.end(); ++c)
+	for (list<boost::shared_ptr<Connection> >::iterator c = m_selected_connections.begin(); c != m_selected_connections.end(); ++c)
 		(*c)->property_dash() = m_select_dash;
 	
 	return true;
@@ -716,11 +806,11 @@ FlowCanvas::connection_drag_handler(GdkEvent* event)
 	bool handled = true;
 	
 	// These are invisible, just used for making connections (while dragging)
-	static Module*      drag_module = NULL;
-	static Port*        drag_port = NULL;
+	static boost::shared_ptr<Module> drag_module;
+	static boost::shared_ptr<Port>   drag_port;
 	
-	static Connection*  drag_connection = NULL;
-	static Port*        snapped_port = NULL;
+	static boost::shared_ptr<Connection> drag_connection;
+	static boost::shared_ptr<Port>       snapped_port;
 
 	static bool snapped = false;
 	
@@ -739,16 +829,16 @@ FlowCanvas::connection_drag_handler(GdkEvent* event)
 		}
 		root()->w2i(x, y);
 
-		if (drag_connection == NULL) { // Havn't created the connection yet
+		if (!drag_connection) { // Havn't created the connection yet
 			assert(drag_port == NULL);
-			assert(m_connect_port != NULL);
+			assert(m_connect_port);
 			
-			drag_module = new Module(this, "", x, y, false);
+			drag_module = boost::shared_ptr<Module>(new Module(*this, "", x, y));
 			bool drag_port_is_input = true;
 			if (m_connect_port->is_input())
 				drag_port_is_input = false;
 				
-			drag_port = new Port(drag_module, "", drag_port_is_input, m_connect_port->colour());
+			drag_port = boost::shared_ptr<Port>(new Port(drag_module, "", drag_port_is_input, m_connect_port->color()));
 
 			//drag_port->hide();
 			drag_module->hide();
@@ -757,68 +847,80 @@ FlowCanvas::connection_drag_handler(GdkEvent* event)
 			
 			drag_port->property_x() = 0;
 			drag_port->property_y() = 0;
-			drag_port->rect()->property_x2() = 1;
-			drag_port->rect()->property_y2() = 1;
+			drag_port->m_rect.property_x2() = 1;
+			drag_port->m_rect.property_y2() = 1;
 			if (drag_port_is_input)
-				drag_connection = new Connection(this, m_connect_port, drag_port);
+				drag_connection = boost::shared_ptr<Connection>(new Connection(*this, m_connect_port, drag_port));
 			else
-				drag_connection = new Connection(this, drag_port, m_connect_port);
+				drag_connection = boost::shared_ptr<Connection>(new Connection(*this, drag_port, m_connect_port));
 				
 			drag_connection->update_location();
 		}
 
 		if (snapped) {
-			if (drag_connection != NULL) drag_connection->hide();
-			Port* p = get_port_at(x, y);
-			if (drag_connection != NULL) drag_connection->show();
+			if (drag_connection)
+				drag_connection->hide();
+
+			boost::shared_ptr<Port> p = get_port_at(x, y);
+
+			if (drag_connection)
+				drag_connection->show();
+
 			if (p) {
+				boost::shared_ptr<Module> m = p->module().lock();
 				if (p != m_selected_port) {
-					if (snapped_port != NULL)
-						snapped_port->hilite(false);
-					p->hilite(true);
+					if (snapped_port)
+						snapped_port->set_highlighted(false);
+					p->set_highlighted(true);
 					snapped_port = p;
 				}
-				drag_module->property_x() = p->module()->property_x().get_value();
-				drag_module->rect()->property_x2() = p->module()->rect()->property_x2().get_value();
-				drag_module->property_y() = p->module()->property_y().get_value();
-				drag_module->rect()->property_y2() = p->module()->rect()->property_y2().get_value();
+				drag_module->property_x() = m->property_x().get_value();
+				drag_module->m_module_box.property_x2() = m->m_module_box.property_x2().get_value();
+				drag_module->property_y() = m->property_y().get_value();
+				drag_module->m_module_box.property_y2() = m->m_module_box.property_y2().get_value();
 				drag_port->property_x() = p->property_x().get_value();
 				drag_port->property_y() = p->property_y().get_value();
 			} else {  // off the port now, unsnap
-				if (snapped_port != NULL)
-					snapped_port->hilite(false);
-				snapped_port = NULL;
+				if (snapped_port)
+					snapped_port->set_highlighted(false);
+				snapped_port.reset();
 				snapped = false;
 				drag_module->property_x() = x;
 				drag_module->property_y() = y;
 				drag_port->property_x() = 0;
 				drag_port->property_y() = 0;
-				drag_port->rect()->property_x2() = 1;
-				drag_port->rect()->property_y2() = 1;
+				drag_port->m_rect.property_x2() = 1;
+				drag_port->m_rect.property_y2() = 1;
 			}
 			drag_connection->update_location();
 		} else { // not snapped to a port
-			assert(drag_module != NULL);
-			assert(drag_port != NULL);
-			assert(m_connect_port != NULL);
+			assert(drag_module);
+			assert(drag_port);
+			assert(m_connect_port);
 
 			// "Snap" to port, if we're on a port and it's the right direction
-			if (drag_connection != NULL) drag_connection->hide();
-			Port* p = get_port_at(x, y);
-			if (drag_connection != NULL) drag_connection->show();
-			if (p != NULL && p->is_input() != m_connect_port->is_input()) {
-				p->hilite(true);
+			if (drag_connection)
+				drag_connection->hide();
+			
+			boost::shared_ptr<Port> p = get_port_at(x, y);
+			
+			if (drag_connection)
+				drag_connection->show();
+			
+			if (p && p->is_input() != m_connect_port->is_input()) {
+				boost::shared_ptr<Module> m = p->module().lock();
+				p->set_highlighted(true);
 				snapped_port = p;
 				snapped = true;
 				// Make drag module and port exactly the same size/loc as the snapped
-				drag_module->move_to(p->module()->property_x().get_value(), p->module()->property_y().get_value());
-				drag_module->width(p->module()->width());
-				drag_module->height(p->module()->height());
+				drag_module->move_to(m->property_x().get_value(), m->property_y().get_value());
+				drag_module->set_width(m->width());
+				drag_module->set_height(m->height());
 				drag_port->property_x() = p->property_x().get_value();
 				drag_port->property_y() = p->property_y().get_value();
 				// Make the drag port as wide as the snapped port so the connection coords are the same
-				drag_port->rect()->property_x2() = p->rect()->property_x2().get_value();
-				drag_port->rect()->property_y2() = p->rect()->property_y2().get_value();
+				drag_port->m_rect.property_x2() = p->m_rect.property_x2().get_value();
+				drag_port->m_rect.property_y2() = p->m_rect.property_y2().get_value();
 			} else {
 				drag_module->property_x() = x;
 				drag_module->property_y() = y - 7; // FIXME: s#7#cursor_height/2#
@@ -832,27 +934,31 @@ FlowCanvas::connection_drag_handler(GdkEvent* event)
 		double y = event->button.y;
 		m_base_rect.i2w(x, y);
 
-		if (drag_connection != NULL) drag_connection->hide();
-		Port* p = get_port_at(x, y);
-		if (drag_connection != NULL) drag_connection->show();
+		if (drag_connection)
+			drag_connection->hide();
+		
+		boost::shared_ptr<Port> p = get_port_at(x, y);
+		
+		if (drag_connection)
+			drag_connection->show();
 	
-		if (p != NULL) {
+		if (p) {
 			if (p == m_connect_port) {   // drag ended on same port it started on
 				if (m_selected_port == NULL) {  // no active port, just activate (hilite) it
 					selected_port(m_connect_port);
 				} else {  // there is already an active port, connect it with this one
 					if (m_selected_port != m_connect_port)
 						ports_joined(m_selected_port, m_connect_port);
-					selected_port(NULL);
-					m_connect_port = NULL;
-					snapped_port = NULL;
+					unselect_ports();
+					m_connect_port.reset();
+					snapped_port.reset();
 				}
 			} else {  // drag ended on different port
-				//p->hilite(false);
+				//p->set_highlighted(false);
 				ports_joined(m_connect_port, p);
-				selected_port(NULL);
-				m_connect_port = NULL;
-				snapped_port = NULL;
+				unselect_ports();
+				m_connect_port.reset();
+				snapped_port.reset();
 			}
 		}
 		
@@ -860,19 +966,16 @@ FlowCanvas::connection_drag_handler(GdkEvent* event)
 		
 		m_base_rect.ungrab(event->button.time);
 		
-		if (m_connect_port != NULL)
-			m_connect_port->hilite(false);
+		if (m_connect_port)
+			m_connect_port->set_highlighted(false);
 
 		m_drag_state = NOT_DRAGGING;
-		delete drag_connection;
-		drag_connection = NULL;
-		//delete drag_port;
-		drag_port = NULL;
-		delete drag_module; // deletes drag_port
-		drag_module = NULL;
-		snapped_port = NULL;
-		selected_port(NULL);
-		m_connect_port = NULL;
+		drag_connection.reset();
+		drag_module.reset();
+		drag_port.reset();
+		unselect_ports();
+		snapped_port.reset();
+		m_connect_port.reset();
 	} else {
 		handled = false;
 	}
@@ -881,33 +984,46 @@ FlowCanvas::connection_drag_handler(GdkEvent* event)
 }
 
 
-Port*
+boost::shared_ptr<Port>
 FlowCanvas::get_port_at(double x, double y)
 {
-	Gnome::Canvas::Item* item = get_item_at(x, y);
-
-	Port* const ret = dynamic_cast<Port*>(item);
-	
-	return ret ? ret : dynamic_cast<Port*>(item->property_parent().get_value());
-
 	/*
-	if (item == NULL) return NULL;
-	
-	Port* p = NULL;
+	   Gnome::Canvas::Item* item = get_item_at(x, y);
+
+	   Port* const port_ptr = dynamic_cast<Port*>(item);
+
+	   if (port_ptr) {
+	   for (ModuleMap::iterator i = m_modules.begin(); i != m_modules.end(); ++i) {
+	   const boost::shared_ptr<Module> module = (*i).second;
+	   for (PortVector::const_iterator p = module->ports().begin(); p != module->ports().end(); ++p) {
+	   const boost::shared_ptr<Port> port = (*p);
+	   if (port && port.get() == port_ptr)
+	   return port;
+	   }
+	   }
+	   }*/
+
 	// Loop through every port and see if the item at these coordinates is that port
-	// yes, this is disgusting ;)
+	// (if you're thinking this is slow, stupid, and disgusting, you're right)
 	for (ModuleMap::iterator i = m_modules.begin(); i != m_modules.end(); ++i) {
-		for (PortList::iterator j = (*i).second->ports().begin(); j != (*i).second->ports().end(); ++j) {
+		const boost::shared_ptr<Module> m = (*i).second;
+		if (m->point_is_within(x, y)) {
+			cerr << "Module at (" << x << ", " << y << "): " << m->name() << endl;
+		}
+		/*for (PortList::iterator j = (*i).second->ports().begin(); j != (*i).second->ports().end(); ++j) {
 			p = (*j);
-			
+
 			if ((Gnome::Canvas::Item*)p == item
 					|| (Gnome::Canvas::Item*)(p->rect()) == item
 					|| (Gnome::Canvas::Item*)(p->label()) == item) {
 				return p;
+
+
+
 			}
-		}
+		}*/
 	}
-	return NULL;*/
+	return boost::shared_ptr<Port>();
 }
 
 

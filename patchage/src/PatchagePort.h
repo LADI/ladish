@@ -1,11 +1,11 @@
-/* This file is part of Om.  Copyright (C) 2004 Dave Robillard.
+/* This file is part of Patchage.  Copyright (C) 2004 Dave Robillard.
  * 
- * Om is free software; you can redistribute it and/or modify it under the
+ * Patchage is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 2 of the License, or (at your option) any later
  * version.
  * 
- * Om is distributed in the hope that it will be useful, but WITHOUT ANY
+ * Patchage is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for details.
  * 
@@ -13,7 +13,6 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
 
 #ifndef PATCHAGEPORT_H
 #define PATCHAGEPORT_H
@@ -37,7 +36,7 @@ enum PortType { JACK_AUDIO, JACK_MIDI, ALSA_MIDI };
 class PatchagePort : public LibFlowCanvas::Port
 {
 public:
-	PatchagePort(LibFlowCanvas::Module* module, PortType type, const string& name, bool is_input, int color)
+	PatchagePort(boost::shared_ptr<Module> module, PortType type, const string& name, bool is_input, int color)
 	: Port(module, name, is_input, color),
 	  m_type(type)
 	{
@@ -53,7 +52,7 @@ public:
 	{ return (m_type == ALSA_MIDI) ? &m_alsa_addr : NULL; }
 
 	/** Returns the full name of this port, as "modulename:portname" */
-	string full_name() const { return m_module->name() + ":" + m_name; }
+	string full_name() const { return m_module.lock()->name() + ":" + m_name; }
 
 	PortType type() const { return m_type; }
 

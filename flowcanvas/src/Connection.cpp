@@ -20,15 +20,13 @@
 #include <libgnomecanvasmm.h>
 #include "FlowCanvas.h"
 
-// FIXME: remove
-//#include <iostream>
-//using std::cerr; using std::endl;
-
 namespace LibFlowCanvas {
 	
 
-Connection::Connection(FlowCanvas* canvas, Port* source_port, Port* dest_port)
-: Gnome::Canvas::Bpath(*canvas->root()),
+Connection::Connection(FlowCanvas&             canvas,
+	                   boost::shared_ptr<Port> source_port,
+	                   boost::shared_ptr<Port> dest_port)
+: Gnome::Canvas::Bpath(*canvas.root()),
   m_canvas(canvas),
   m_source_port(source_port),
   m_dest_port(dest_port),
@@ -36,12 +34,12 @@ Connection::Connection(FlowCanvas* canvas, Port* source_port, Port* dest_port)
 //  m_path(Gnome::Canvas::PathDef::create())
   m_path(gnome_canvas_path_def_new())
 {
-	assert(m_source_port->is_output());
-	assert(m_dest_port->is_input());
+	assert(source_port->is_output());
+	assert(dest_port->is_input());
 	
-	m_colour = m_source_port->colour() + 0x22222200;
+	m_color = source_port->color() + 0x22222200;
 	property_width_units() = 1.0;
-	property_outline_color_rgba() = m_colour;
+	property_outline_color_rgba() = m_color;
 	property_cap_style() = (Gdk::CapStyle)GDK_CAP_ROUND;
 
 	update_location();	
@@ -50,18 +48,6 @@ Connection::Connection(FlowCanvas* canvas, Port* source_port, Port* dest_port)
 
 Connection::~Connection()
 {
-	if (m_selected) {
-		for (list<Connection*>::iterator c = m_canvas->selected_connections().begin();
-				c != m_canvas->selected_connections().end(); ++c)
-		{
-			if ((*c) == this) {
-				m_canvas->selected_connections().erase(c);
-				break;
-			}
-		}
-	}
-
-	m_canvas->remove_connection(this);
 }
 
 
@@ -82,10 +68,10 @@ Connection::~Connection()
 void
 Connection::update_location()
 {
-	const double src_x = m_source_port->connection_coords().get_x();
-	const double src_y = m_source_port->connection_coords().get_y();
-	const double dst_x = m_dest_port->connection_coords().get_x();
-	const double dst_y = m_dest_port->connection_coords().get_y();
+	const double src_x = m_source_port->connection_point().get_x();
+	const double src_y = m_source_port->connection_point().get_y();
+	const double dst_x = m_dest_port->connection_point().get_x();
+	const double dst_y = m_dest_port->connection_point().get_y();
 	
 	const double src_mod_x = m_source_port->module()->property_x();
 	const double src_mod_y = m_source_port->module()->property_y();
@@ -348,19 +334,27 @@ Connection::update_location()
 void
 Connection::update_location()
 {
-	const double src_x = m_source_port->connection_coords().get_x();
-	const double src_y = m_source_port->connection_coords().get_y();
-	const double dst_x = m_dest_port->connection_coords().get_x();
-	const double dst_y = m_dest_port->connection_coords().get_y();
+	boost::shared_ptr<Port> src = m_source_port.lock();
+	boost::shared_ptr<Port> dst = m_dest_port.lock();
+	boost::shared_ptr<Module> src_mod = src->module().lock();
+	boost::shared_ptr<Module> dst_mod = dst->module().lock();
+
+	if (!src || !dst || !src_mod || !dst_mod)
+		return;
+
+	const double src_x = src->connection_point().get_x();
+	const double src_y = src->connection_point().get_y();
+	const double dst_x = dst->connection_point().get_x();
+	const double dst_y = dst->connection_point().get_y();
 	
-	const double src_mod_x = m_source_port->module()->property_x();
-	const double src_mod_y = m_source_port->module()->property_y();
-	const double src_mod_w = m_source_port->module()->width();
-	const double src_mod_h = m_source_port->module()->height();
-	const double dst_mod_x = m_dest_port->module()->property_x();
-	const double dst_mod_y = m_dest_port->module()->property_y();
-	const double dst_mod_w = m_dest_port->module()->width();
-	const double dst_mod_h = m_dest_port->module()->height();
+	const double src_mod_x = src_mod->property_x();
+	const double src_mod_y = src_mod->property_y();
+	const double src_mod_w = src_mod->width();
+	const double src_mod_h = src_mod->height();
+	const double dst_mod_x = dst_mod->property_x();
+	const double dst_mod_y = dst_mod->property_y();
+	const double dst_mod_w = dst_mod->width();
+	const double dst_mod_h = dst_mod->height();
 	
 	// Vertical distance between modules
 	double y_mod_dist = dst_mod_y - src_mod_y - src_mod_h;
@@ -382,21 +376,21 @@ Connection::update_location()
 	double x_dist = fabsl(src_x - dst_x);
 	double y_dist = fabsl(src_y - dst_y);
 	
-	double src_port_offset = m_source_port->module()->port_connection_point_offset(m_source_port);
-	double src_offset_range = m_source_port->module()->port_connection_points_range();
-	double dst_port_offset = m_dest_port->module()->port_connection_point_offset(m_dest_port);
-	double dst_offset_range = m_dest_port->module()->port_connection_points_range();
+	double src_port_offset = src_mod->port_connection_point_offset(src);
+	double src_offset_range = src_mod->port_connection_points_range();
+	double dst_port_offset = dst_mod->port_connection_point_offset(dst);
+	double dst_offset_range = dst_mod->port_connection_points_range();
 
 	double smallest_offset = (src_offset_range < dst_offset_range)
 			? src_port_offset : dst_port_offset;
 
 	double smallest_offset_range = (src_offset_range < dst_offset_range)
-			? m_source_port->module()->port_connection_points_range()
-	  		: m_dest_port->module()->port_connection_points_range();
+			? src_mod->port_connection_points_range()
+	  		: dst_mod->port_connection_points_range();
 
-	double tallest_module_height = m_source_port->module()->height();
-	if (m_dest_port->module()->height() > tallest_module_height)
-		tallest_module_height = m_dest_port->module()->height();
+	double tallest_module_height = src_mod->height();
+	if (dst_mod->height() > tallest_module_height)
+		tallest_module_height = dst_mod->height();
 	
 	double src_x1, src_y1, src_x2, src_y2, join_x, join_y; // Path 1
 	double dst_x2, dst_y2, dst_x1, dst_y1;                 // Path 2
@@ -642,38 +636,26 @@ Connection::update_location()
 }
 
 
-/** Removes the reference to this connection contained in the ports.
- *
- * Must be called before destroying a connection.
- */
 void
-Connection::disconnect()
-{
-	m_source_port->remove_connection(this);
-	m_dest_port->remove_connection(this);
-	m_source_port = NULL;
-	m_dest_port = NULL;
-}
-
-
-void
-Connection::hilite(bool b)
+Connection::set_highlighted(bool b)
 {
 	if (b)
 		property_outline_color_rgba() = 0xFF0000FF;
 	else
-		property_outline_color_rgba() = m_colour;
+		property_outline_color_rgba() = m_color;
 }
 
 
 void
-Connection::selected(bool selected)
+Connection::set_selected(bool selected)
 {
 	m_selected = selected;
-	if (selected)
-		property_dash() = m_canvas->select_dash();
-	else
+
+	if (selected) {
+		property_dash() = m_canvas.select_dash();
+	} else {
 		property_dash() = NULL;
+	}
 }
 
 
