@@ -29,73 +29,72 @@ PatchageFlowCanvas::PatchageFlowCanvas(Patchage* app, int width, int height)
 }
 
 
-PatchageModule*
+boost::shared_ptr<PatchageModule>
 PatchageFlowCanvas::find_module(const string& name, ModuleType type)
 {
-	PatchageModule* pm = NULL;
-	
 	for (ModuleMap::iterator m = m_modules.begin(); m != m_modules.end(); ++m) {
-		pm = (PatchageModule*)(*m).second;
-		if (pm->name() == name && pm->type() == type) {
+		boost::shared_ptr<PatchageModule> pm = boost::dynamic_pointer_cast<PatchageModule>((*m).second);
+		if (pm && pm->name() == name && pm->type() == type) {
 			return pm;
 		}
 	}
 
-	return NULL;
+	return boost::shared_ptr<PatchageModule>();
 }
 
 
-PatchagePort*
-PatchageFlowCanvas::find_port(const snd_seq_addr_t* alsa_addr, bool is_input)
+boost::shared_ptr<PatchagePort>
+PatchageFlowCanvas::find_port(const snd_seq_addr_t* alsa_addr)
 {
-	PatchagePort* pp = NULL;
+	boost::shared_ptr<PatchagePort> pp;
 	for (ModuleMap::iterator m = m_modules.begin(); m != m_modules.end(); ++m) {
-		for (PortList::iterator p = (*m).second->ports().begin(); p != (*m).second->ports().end(); ++p) {
-			pp = (PatchagePort*)(*p);
-			if (pp->type() == ALSA_MIDI && pp->alsa_addr()
+		for (PortVector::const_iterator p = (*m).second->ports().begin(); p != (*m).second->ports().end(); ++p) {
+			pp = boost::dynamic_pointer_cast<PatchagePort>(*p);
+			if (pp && pp->type() == ALSA_MIDI && pp->alsa_addr()
 					&& pp->alsa_addr()->client == alsa_addr->client
 					&& pp->alsa_addr()->port == alsa_addr->port)
-				if (is_input == pp->is_input())
 					return pp;
 		}
 	}
 
-	return NULL;
+	return boost::shared_ptr<PatchagePort>();
 }
 
 
 void
-PatchageFlowCanvas::connect(const Port* port1, const Port* port2)
+PatchageFlowCanvas::connect(boost::shared_ptr<Port> port1, boost::shared_ptr<Port> port2)
 {
-	PatchagePort* p1 = (PatchagePort*)port1;
-	PatchagePort* p2 = (PatchagePort*)port2;
-	
+	boost::shared_ptr<PatchagePort> p1 = boost::dynamic_pointer_cast<PatchagePort>(port1);
+	boost::shared_ptr<PatchagePort> p2 = boost::dynamic_pointer_cast<PatchagePort>(port2);
+	if (!p1 || !p2)
+		return;
+
 	if (p1->type() == JACK_AUDIO && p2->type() == JACK_AUDIO
 			|| (p1->type() == JACK_MIDI && p2->type() == JACK_MIDI))
-		/*m_app->jack_driver()->connect(p1->module()->name(), p1->name(),
-	                                  p2->module()->name(), p2->name());*/
 		m_app->jack_driver()->connect(p1, p2);
 	else if (p1->type() == ALSA_MIDI && p2->type() == ALSA_MIDI)
 		m_app->alsa_driver()->connect(p1, p2);
 	else
-		m_app->status_message("Cannot make connection, incompatible port types.");
+		status_message("WARNING: Cannot make connection, incompatible port types.");
 }
 
 
 void
-PatchageFlowCanvas::disconnect(const Port* port1, const Port* port2)
+PatchageFlowCanvas::disconnect(boost::shared_ptr<Port> port1, boost::shared_ptr<Port> port2)
 {
-	PatchagePort* input = NULL;
-	PatchagePort* output = NULL;
+	boost::shared_ptr<PatchagePort> input;
+	boost::shared_ptr<PatchagePort> output;
 	
 	if (port1->is_input() && !port2->is_input()) {
-		input = (PatchagePort*)port1;
-		output = (PatchagePort*)port2;
+		input = boost::dynamic_pointer_cast<PatchagePort>(port1);
+		output = boost::dynamic_pointer_cast<PatchagePort>(port2);
 	} else if (port2->is_input() && !port1->is_input()) {
-		input = (PatchagePort*)port2;
-		output = (PatchagePort*)port1;
-	} else {
-		m_app->status_message("Attempt to disconnect two input (or output) ports?? Please report bug.");
+		input = boost::dynamic_pointer_cast<PatchagePort>(port2);
+		output = boost::dynamic_pointer_cast<PatchagePort>(port1);
+	}
+
+	if (!input || !output) {
+		status_message("ERROR: Attempt to disconnect mismatched/unknown ports");
 		return;
 	}
 	
@@ -105,13 +104,13 @@ PatchageFlowCanvas::disconnect(const Port* port1, const Port* port2)
 	else if (input->type() == ALSA_MIDI && output->type() == ALSA_MIDI)
 		m_app->alsa_driver()->disconnect(output, input);
 	else
-		m_app->status_message("Attempt to disconnect Jack audio port from Alsa Midi port?? Please report bug.");
+		status_message("ERROR: Attempt to disconnect ports with mismatched types");
 }
 
 
 void
 PatchageFlowCanvas::status_message(const string& msg)
 {
-	m_app->status_message(msg);
+	m_app->status_message(string("[Canvas] ").append(msg));
 }
 

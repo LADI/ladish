@@ -1,11 +1,11 @@
 /* This file is part of Patchage.  Copyright (C) 2005 Dave Robillard.
  * 
- * Om is free software; you can redistribute it and/or modify it under the
+ * Patchage is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 2 of the License, or (at your option) any later
  * version.
  * 
- * Om is distributed in the hope that it will be useful, but WITHOUT ANY
+ * Patchage is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for details.
  * 
@@ -44,25 +44,22 @@ LashDriver::~LashDriver()
 void
 LashDriver::attach(bool launch_daemon)
 {
-	cout << "Connecting to Lash... ";
-	cout.flush();
-
-	if (m_client != NULL) {
-		cout << "already connected." << endl;
+	// Already connected
+	if (m_client)
 		return;
-	}
 
 	int lash_flags = LASH_Config_File;
 	if (launch_daemon)
 		lash_flags |= LASH_No_Start_Server;
 	m_client = lash_init(m_args, PACKAGE_NAME, lash_flags, LASH_PROTOCOL(2, 0));
 	if (m_client == NULL) {
-		cout << "Failed.  Session management will not occur." << endl;
+		m_app->status_message("[LASH] Unable to attach to server");
 	} else {
 		lash_event_t* event = lash_event_new_with_type(LASH_Client_Name);
 		lash_event_set_string(event, "Patchage");
 		lash_send_event(m_client, event);
-		cout << "Connected" << endl;
+		signal_attached.emit();
+		m_app->status_message("[LASH] Attached");
 	}
 }
 
@@ -72,7 +69,8 @@ LashDriver::detach()
 {
 	// FIXME: send some notification that we're gone??
 	m_client = NULL;
-	cout << "Disconnected from Lash" << endl;
+	m_app->status_message("[LASH] Detached");
+	signal_detached.emit();
 }
 
 

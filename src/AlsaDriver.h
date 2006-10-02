@@ -1,11 +1,11 @@
 /* This file is part of Patchage.  Copyright (C) 2005 Dave Robillard.
  * 
- * Om is free software; you can redistribute it and/or modify it under the
+ * Patchage is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 2 of the License, or (at your option) any later
  * version.
  * 
- * Om is distributed in the hope that it will be useful, but WITHOUT ANY
+ * Patchage is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for details.
  * 
@@ -45,8 +45,11 @@ public:
 
 	void refresh();
 
-	bool connect(const PatchagePort* const src_port, const PatchagePort* const dst_port);
-	bool disconnect(const PatchagePort* const src_port, const PatchagePort* const dst_port);
+	bool connect(boost::shared_ptr<PatchagePort> src_port,
+	             boost::shared_ptr<PatchagePort> dst_port);
+
+	bool disconnect(boost::shared_ptr<PatchagePort> src_port,
+	                boost::shared_ptr<PatchagePort> dst_port);
 	
 	PatchageFlowCanvas* canvas() { return m_canvas; }
 
@@ -54,12 +57,15 @@ private:
 	void refresh_ports();
 	void refresh_connections();
 	
-	void add_connections(PatchagePort* port);
+	void add_connections(boost::shared_ptr<PatchagePort> port);
 	
 	bool create_refresh_port();
 	static void* refresh_main(void* me);
 	void m_refresh_main();
 	
+	boost::shared_ptr<PatchagePort> create_port(boost::shared_ptr<PatchageModule> parent,
+		const string& name, bool is_input, snd_seq_addr_t addr);
+	                                            
 	Patchage*             m_app;
 	PatchageFlowCanvas*   m_canvas;
 

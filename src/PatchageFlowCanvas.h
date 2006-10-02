@@ -33,11 +33,11 @@ class PatchageFlowCanvas : public FlowCanvas
 public:
 	PatchageFlowCanvas(Patchage* m_app, int width, int height);
 	
-	PatchageModule* find_module(const string& name, ModuleType type);
-	PatchagePort*   find_port(const snd_seq_addr_t* alsa_addr, bool is_input);
+	boost::shared_ptr<PatchageModule> find_module(const string& name, ModuleType type);
+	boost::shared_ptr<PatchagePort>   find_port(const snd_seq_addr_t* alsa_addr);
 
-	void connect(const Port* port1, const Port* port2);
-	void disconnect(const Port* port1, const Port* port2);
+	void connect(boost::shared_ptr<Port> port1, boost::shared_ptr<Port> port2);
+	void disconnect(boost::shared_ptr<Port> port1, boost::shared_ptr<Port> port2);
 
 	void status_message(const string& msg);
 

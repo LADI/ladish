@@ -1,11 +1,11 @@
 /* This file is part of Patchage.  Copyright (C) 2005 Dave Robillard.
  * 
- * Om is free software; you can redistribute it and/or modify it under the
+ * Patchage is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 2 of the License, or (at your option) any later
  * version.
  * 
- * Om is distributed in the hope that it will be useful, but WITHOUT ANY
+ * Patchage is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for details.
  * 
@@ -29,6 +29,12 @@
 int main(int argc, char** argv)
 {
 	try {
+	
+	//lash_args_t* const lash_args = lash_extract_args(&argc, &argv);
+	
+	//lash_client_t* const lash_server_client = lash_init(lash_args, "Patchage Server Interface",
+	//						LASH_Server_Interface, LASH_PROTOCOL(2, 0));
+
 		
 	Gnome::Canvas::init();
 	Gtk::Main app(argc, argv);

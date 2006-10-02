@@ -1,11 +1,11 @@
 /* This file is part of Patchage.  Copyright (C) 2005 Dave Robillard.
  * 
- * Om is free software; you can redistribute it and/or modify it under the
+ * Patchage is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 2 of the License, or (at your option) any later
  * version.
  * 
- * Om is distributed in the hope that it will be useful, but WITHOUT ANY
+ * Patchage is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for details.
  * 
@@ -57,16 +57,13 @@ public:
 	inline void queue_refresh() { m_refresh = true; }
 
 protected:
-	void update_menu_items();
+	void attach_menu_items();
 
-	void menu_jack_launch();
-	void menu_jack_connect();
-	void menu_jack_disconnect();
-	void menu_file_save();
+	void menu_store_positions();
 	void menu_file_quit();
 	void menu_view_refresh();
 	void menu_help_about();
-	void close_about();
+	void zoom(double z);
 	void zoom_changed();
 	bool idle_callback();
 
@@ -98,19 +95,20 @@ protected:
 	bool   m_refresh;
 	
 	Gtk::Window*         m_main_window;
-	Gtk::Window*         m_about_window;
-	Gtk::Label*          m_about_project_label;
+	Gtk::AboutDialog*    m_about_window;
 	Gtk::MenuItem*       m_menu_jack_launch;
 	Gtk::MenuItem*       m_menu_jack_connect;
 	Gtk::MenuItem*       m_menu_jack_disconnect;
-	Gtk::MenuItem*       m_menu_file_save;
+	Gtk::MenuItem*       m_menu_store_positions;
 	Gtk::MenuItem*       m_menu_file_quit;
 	Gtk::MenuItem*       m_menu_view_refresh;
 	Gtk::MenuItem*       m_menu_help_about;
 	Gtk::ScrolledWindow* m_canvas_scrolledwindow;
 	Gtk::HScale*         m_zoom_slider;
-	Gtk::Button*         m_about_close_button;
-	Gtk::Label*          m_status_label;
+	Gtk::TextView*       m_status_text;
+	Gtk::Paned*          m_main_paned;
+	Gtk::Button*         m_zoom_normal_button;
+	Gtk::Button*         m_zoom_full_button;
 };
 
 #endif // PATCHAGE_H
