@@ -35,7 +35,7 @@ class PatchageModule : public Module
 {
 public:
 	PatchageModule(Patchage* app, const string& title, ModuleType type, double x=0, double y=0)
-	: Module(*app->canvas(), title, x, y),
+	: Module(app->canvas(), title, x, y),
 	  m_app(app),
 	  m_type(type)
 	{
@@ -79,8 +79,8 @@ public:
 		if (loc.x != -1)
 			move_to(loc.x, loc.y);
 		else
-			move_to((m_canvas.width()/2) - 100 + rand() % 400,
-			         (m_canvas.height()/2) - 100 + rand() % 400);
+			move_to((m_canvas.lock()->width()/2) - 100 + rand() % 400,
+			         (m_canvas.lock()->height()/2) - 100 + rand() % 400);
 	}
 
 	void split() {

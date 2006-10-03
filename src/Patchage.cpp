@@ -37,7 +37,6 @@ Patchage::Patchage(int argc, char** argv)
 #ifdef HAVE_ALSA
   m_alsa_driver(NULL),
 #endif
-  m_canvas(NULL),
   m_jack_driver(NULL),
   m_state_manager(NULL),
   m_refresh(false)
@@ -46,7 +45,7 @@ Patchage::Patchage(int argc, char** argv)
 	m_settings_filename += "/.patchagerc";
 
 	m_state_manager = new StateManager();
-	m_canvas = new PatchageFlowCanvas(this, 1600*2, 1200*2);
+	m_canvas = boost::shared_ptr<PatchageFlowCanvas>(new PatchageFlowCanvas(this, 1600*2, 1200*2));
 	m_jack_driver = new JackDriver(this);
 #ifdef HAVE_ALSA
 	m_alsa_driver = new AlsaDriver(this);
@@ -159,7 +158,6 @@ Patchage::~Patchage()
 	delete m_lash_driver;
 #endif
 	delete m_state_manager;
-	delete m_canvas;
 }
 
 

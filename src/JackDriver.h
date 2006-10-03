@@ -56,7 +56,6 @@ public:
 	
 private:
 	Patchage*             m_app;
-	PatchageFlowCanvas*   m_canvas;
 
 	jack_client_t* m_client;
 

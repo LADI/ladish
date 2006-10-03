@@ -33,7 +33,6 @@ using namespace LibFlowCanvas;
 
 AlsaDriver::AlsaDriver(Patchage* app)
 : m_app(app),
-  m_canvas(app->canvas()),
   m_seq(NULL)
 {
 }
@@ -180,7 +179,7 @@ AlsaDriver::refresh_ports()
 			
 			// Application input/output ports go on the same module
 			if (!split) {
-				m = m_canvas->find_module(client_name, InputOutput);
+				m = m_app->canvas()->find_module(client_name, InputOutput);
 				if (!m) {
 					m = boost::shared_ptr<PatchageModule>(new PatchageModule(m_app, client_name, InputOutput));
 					m->load_location();
@@ -207,10 +206,10 @@ AlsaDriver::refresh_ports()
 					else type = Output;
 					
 					// See if an InputOutput module exists (maybe with Jack ports on it)
-					m = m_canvas->find_module(client_name, InputOutput);
+					m = m_app->canvas()->find_module(client_name, InputOutput);
 				
 					if (!m)
-						m = m_canvas->find_module(client_name, type);
+						m = m_app->canvas()->find_module(client_name, type);
 
 					if (!m) {
 						m = boost::shared_ptr<PatchageModule>(
@@ -225,10 +224,10 @@ AlsaDriver::refresh_ports()
 					type = Input;
 					
 					// See if an InputOutput module exists (maybe with Jack ports on it)
-					m = m_canvas->find_module(client_name, InputOutput);
+					m = m_app->canvas()->find_module(client_name, InputOutput);
 					
 					if (!m)
-						m = m_canvas->find_module(client_name, type);
+						m = m_app->canvas()->find_module(client_name, type);
 
 					if (!m) {
 						m = boost::shared_ptr<PatchageModule>(
@@ -245,10 +244,10 @@ AlsaDriver::refresh_ports()
 					type = Output;
 					
 					// See if an InputOutput module exists (maybe with Jack ports on it)
-					m = m_canvas->find_module(client_name, InputOutput);
+					m = m_app->canvas()->find_module(client_name, InputOutput);
 					
 					if (!m)
-						m = m_canvas->find_module(client_name, type);
+						m = m_app->canvas()->find_module(client_name, type);
 
 					if (!m) {
 						m = boost::shared_ptr<PatchageModule>(
@@ -279,8 +278,8 @@ AlsaDriver::refresh_connections()
 	boost::shared_ptr<PatchageModule> m;
 	boost::shared_ptr<PatchagePort>   p;
 	
-	for (ModuleMap::iterator i = m_canvas->modules().begin();
-			i != m_canvas->modules().end(); ++i) {
+	for (ModuleMap::iterator i = m_app->canvas()->modules().begin();
+			i != m_app->canvas()->modules().end(); ++i) {
 		m = boost::dynamic_pointer_cast<PatchageModule>((*i).second);
 		if (m) {
 			for (PortVector::const_iterator j = m->ports().begin(); j != m->ports().end(); ++j) {
@@ -317,14 +316,14 @@ AlsaDriver::add_connections(boost::shared_ptr<PatchagePort> port)
 	while(!snd_seq_query_port_subscribers(m_seq, subsinfo)) {
 		const snd_seq_addr_t* connected_addr = snd_seq_query_subscribe_get_addr(subsinfo);
 		
-		connected_port = m_canvas->find_port(connected_addr);
+		connected_port = m_app->canvas()->find_port(connected_addr);
 
 		if (connected_port) {
-			boost::shared_ptr<Connection> existing = m_canvas->get_connection(port, connected_port);
+			boost::shared_ptr<Connection> existing = m_app->canvas()->get_connection(port, connected_port);
 			if (existing) {
 				existing->set_flagged(false);
 			} else {
-				m_canvas->add_connection(port, connected_port);
+				m_app->canvas()->add_connection(port, connected_port);
 			}
 		}
 

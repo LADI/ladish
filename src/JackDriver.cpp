@@ -32,7 +32,6 @@ using namespace LibFlowCanvas;
 
 JackDriver::JackDriver(Patchage* app)
 : m_app(app),
-  m_canvas(app->canvas()),
   m_client(NULL)
 {
 }
@@ -91,7 +90,7 @@ JackDriver::detach()
 void
 JackDriver::destroy_all_ports()
 {
-	ModuleMap modules = m_canvas->modules(); // copy
+	ModuleMap modules = m_app->canvas()->modules(); // copy
 	for (ModuleMap::iterator m = modules.begin(); m != modules.end(); ++m) {
 		PortVector ports = m->second->ports(); // copy
 		for (PortVector::iterator p = ports.begin(); p != ports.end(); ++p) {
@@ -178,7 +177,7 @@ JackDriver::refresh()
 			}
 		}
 
-		boost::shared_ptr<PatchageModule> m = m_canvas->find_module(client1_name, type);
+		boost::shared_ptr<PatchageModule> m = m_app->canvas()->find_module(client1_name, type);
 
 		if (!m) {
 			m = boost::shared_ptr<PatchageModule>(new PatchageModule(m_app, client1_name, type));
@@ -212,7 +211,7 @@ JackDriver::refresh()
 		const string module_name = (*i).substr(0, i->find(":"));
 		const string port_name = (*i).substr(i->find(":")+1);
 		
-		for (ModuleMap::iterator m = m_canvas->modules().begin(); m != m_canvas->modules().end(); ++m) {
+		for (ModuleMap::iterator m = m_app->canvas()->modules().begin(); m != m_app->canvas()->modules().end(); ++m) {
 			if (m->second->name() == module_name)
 				m->second->remove_port(port_name);
 		}
@@ -235,15 +234,15 @@ JackDriver::refresh()
 				port2_name = client2_name.substr(client2_name.find(':')+1);
 				client2_name = client2_name.substr(0, client2_name.find(':'));
 
-				boost::shared_ptr<Port> port1 = m_canvas->get_port(client1_name, port1_name);
-				boost::shared_ptr<Port> port2 = m_canvas->get_port(client2_name, port2_name);
+				boost::shared_ptr<Port> port1 = m_app->canvas()->get_port(client1_name, port1_name);
+				boost::shared_ptr<Port> port2 = m_app->canvas()->get_port(client2_name, port2_name);
 
 				if (port1 && port2) {
-					boost::shared_ptr<Connection> existing = m_canvas->get_connection(port1, port2);
+					boost::shared_ptr<Connection> existing = m_app->canvas()->get_connection(port1, port2);
 					if (existing) {
 						existing->set_flagged(false);
 					} else {
-						m_canvas->add_connection(port1, port2);
+						m_app->canvas()->add_connection(port1, port2);
 					}
 				}
 			}

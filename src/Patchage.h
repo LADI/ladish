@@ -19,6 +19,7 @@
 
 #include "config.h"
 #include <string>
+#include <boost/shared_ptr.hpp>
 #include <libgnomecanvasmm.h>
 
 using namespace std;
@@ -36,15 +37,16 @@ public:
 	Patchage(int argc, char** argv);
 	~Patchage();
 
-	PatchageFlowCanvas*   canvas()          { return m_canvas; }
-	StateManager*         state_manager()   { return m_state_manager; }
-	Gtk::Window*          window()          { return m_main_window; }
-	JackDriver*           jack_driver()     { return m_jack_driver; }
+	boost::shared_ptr<PatchageFlowCanvas> canvas() { return m_canvas; }
+	
+	StateManager* state_manager() { return m_state_manager; }
+	Gtk::Window*  window()        { return m_main_window; }
+	JackDriver*   jack_driver()   { return m_jack_driver; }
 #ifdef HAVE_ALSA
-	AlsaDriver*           alsa_driver()     { return m_alsa_driver; }
+	AlsaDriver*   alsa_driver()   { return m_alsa_driver; }
 #endif
 #ifdef HAVE_LASH
-	LashDriver*       lash_driver()     { return m_lash_driver; }
+	LashDriver*   lash_driver()   { return m_lash_driver; }
 #endif
 	
 	void attach();
@@ -85,7 +87,8 @@ protected:
 	void menu_alsa_disconnect();
 #endif
 
-	PatchageFlowCanvas* m_canvas;
+	boost::shared_ptr<PatchageFlowCanvas> m_canvas;
+
 	JackDriver*         m_jack_driver;
 	StateManager*       m_state_manager;
 
