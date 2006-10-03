@@ -259,13 +259,8 @@ Module::port_at(double x, double y)
 		boost::shared_ptr<Port> port = *p;
 		if (x > port->property_x() && x < port->property_x() + port->width()
 				&& y > port->property_y() && y < port->property_y() + port->height()) {
-			std::cerr << "HIT: " << name() << ":" << port->name() << std::endl;
 			return port;
-		} else {
-			std::cerr << "MISS: (" << x << ", " << y << ") not within " <<
-				name() << ":" << port->name() << "(" << port->property_x() << ", "
-				<< port->property_y() << ")" << std::endl;
-		}
+		} 
 	}
 
 	return boost::shared_ptr<Port>();

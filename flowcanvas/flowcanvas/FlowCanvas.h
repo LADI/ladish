@@ -50,7 +50,7 @@ class Module;
  *
  * \ingroup FlowCanvas
  */
-class FlowCanvas : public /*CANVASBASE*/Gnome::Canvas::Canvas
+class FlowCanvas : public /*CANVASBASE*/Gnome::Canvas::CanvasAA
 // The CANVASBASE is a hook for a sed script in configure.ac
 {
 public:
