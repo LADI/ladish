@@ -987,41 +987,14 @@ FlowCanvas::connection_drag_handler(GdkEvent* event)
 boost::shared_ptr<Port>
 FlowCanvas::get_port_at(double x, double y)
 {
-	/*
-	   Gnome::Canvas::Item* item = get_item_at(x, y);
-
-	   Port* const port_ptr = dynamic_cast<Port*>(item);
-
-	   if (port_ptr) {
-	   for (ModuleMap::iterator i = m_modules.begin(); i != m_modules.end(); ++i) {
-	   const boost::shared_ptr<Module> module = (*i).second;
-	   for (PortVector::const_iterator p = module->ports().begin(); p != module->ports().end(); ++p) {
-	   const boost::shared_ptr<Port> port = (*p);
-	   if (port && port.get() == port_ptr)
-	   return port;
-	   }
-	   }
-	   }*/
-
 	// Loop through every port and see if the item at these coordinates is that port
 	// (if you're thinking this is slow, stupid, and disgusting, you're right)
-	for (ModuleMap::iterator i = m_modules.begin(); i != m_modules.end(); ++i) {
+	for (ModuleMap::const_iterator i = m_modules.begin(); i != m_modules.end(); ++i) {
 		const boost::shared_ptr<Module> m = (*i).second;
-		if (m->point_is_within(x, y)) {
-			cerr << "Module at (" << x << ", " << y << "): " << m->name() << endl;
-		}
-		/*for (PortList::iterator j = (*i).second->ports().begin(); j != (*i).second->ports().end(); ++j) {
-			p = (*j);
+		
+		if (m->point_is_within(x, y))
+			return m->port_at(x, y);
 
-			if ((Gnome::Canvas::Item*)p == item
-					|| (Gnome::Canvas::Item*)(p->rect()) == item
-					|| (Gnome::Canvas::Item*)(p->label()) == item) {
-				return p;
-
-
-
-			}
-		}*/
 	}
 	return boost::shared_ptr<Port>();
 }

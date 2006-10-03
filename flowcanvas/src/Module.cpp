@@ -247,17 +247,28 @@ Module::set_selected(bool selected)
 }
 
 
-/** Returns whether or not the point @a x, @a y (world units) is within the module.
+/** Get the port on this module at world coordinate @a x @a y.
  */
-bool
-Module::point_is_within(double x, double y)
+boost::shared_ptr<Port>
+Module::port_at(double x, double y)
 {
-	const double x1 = m_module_box.property_x1();
-	const double y1 = m_module_box.property_y1();
-	const double x2 = m_module_box.property_x2();
-	const double y2 = m_module_box.property_y2();
+	x -= property_x();
+	y -= property_y();
 
-	return (x > x1 && x < x2 && y > y1 && y < y2);
+	for (PortVector::iterator p = m_ports.begin(); p != m_ports.end(); ++p) {
+		boost::shared_ptr<Port> port = *p;
+		if (x > port->property_x() && x < port->property_x() + port->width()
+				&& y > port->property_y() && y < port->property_y() + port->height()) {
+			std::cerr << "HIT: " << name() << ":" << port->name() << std::endl;
+			return port;
+		} else {
+			std::cerr << "MISS: (" << x << ", " << y << ") not within " <<
+				name() << ":" << port->name() << "(" << port->property_x() << ", "
+				<< port->property_y() << ")" << std::endl;
+		}
+	}
+
+	return boost::shared_ptr<Port>();
 }
 
 
@@ -480,7 +491,9 @@ Module::resize()
 }
 
 
-/** Port offset, for connection drawing.  See doc/port_offsets.dia */
+/** Port offset, for connection drawing.
+ * See doc/port_offsets.dia
+ */
 double
 Module::port_connection_point_offset(boost::shared_ptr<Port> port)
 {
@@ -491,7 +504,9 @@ Module::port_connection_point_offset(boost::shared_ptr<Port> port)
 }
 
 
-/** Range of port offsets, for connection drawing.  See doc/port_offsets.dia */
+/** Range of port offsets, for connection drawing.
+ * See doc/port_offsets.dia
+ */
 double
 Module::port_connection_points_range()
 {

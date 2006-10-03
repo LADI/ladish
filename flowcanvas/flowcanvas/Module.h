@@ -55,8 +55,9 @@ public:
 	void         move(double dx, double dy);
 	virtual void move_to(double x, double y);
 	
-	bool is_within(const Gnome::Canvas::Rect* rect);
-	bool point_is_within(double x, double y);
+	bool                    is_within(const Gnome::Canvas::Rect* rect);
+	bool                    point_is_within(double x, double y);
+	boost::shared_ptr<Port> port_at(double x, double y);
 
 	virtual void load_location()  {}
 	virtual void store_location() {}
@@ -121,10 +122,12 @@ private:
 typedef multimap<string,boost::shared_ptr<Module> > ModuleMap;
 
 
+// Performance critical functions:
+
+
 /** Find a port on this module.
  *
- * Profiling has shown this to be performance critical, hence the inlining.
- * Making this faster would be a very good idea - better data structure?
+ * TODO: Make this faster.
  */
 inline boost::shared_ptr<Port>
 Module::get_port(const string& port_name) const
@@ -134,6 +137,15 @@ Module::get_port(const string& port_name) const
 	return (i != m_ports.end()) ? *i : boost::shared_ptr<Port>();
 }
 
+
+/** Returns whether or not the point @a x, @a y (world units) is within the module.
+ */
+inline bool
+Module::point_is_within(double x, double y)
+{
+	return (x > property_x() && x < property_x() + m_width
+			&& y > property_y() && y < property_y() + m_height);
+}
 
 
 } // namespace LibFlowCanvas
