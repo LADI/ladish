@@ -22,6 +22,7 @@
 #include <alsa/asoundlib.h>
 #include <flowcanvas/Port.h>
 #include <flowcanvas/Module.h>
+#include <boost/shared_ptr.hpp>
 
 using namespace LibFlowCanvas;
 using std::string; using std::list;
