@@ -51,8 +51,6 @@ public:
 	bool disconnect(boost::shared_ptr<PatchagePort> src_port,
 	                boost::shared_ptr<PatchagePort> dst_port);
 	
-	PatchageFlowCanvas* canvas() { return m_canvas; }
-
 private:
 	void refresh_ports();
 	void refresh_connections();
@@ -66,8 +64,7 @@ private:
 	boost::shared_ptr<PatchagePort> create_port(boost::shared_ptr<PatchageModule> parent,
 		const string& name, bool is_input, snd_seq_addr_t addr);
 	                                            
-	Patchage*             m_app;
-	PatchageFlowCanvas*   m_canvas;
+	Patchage* m_app;
 
 	snd_seq_t* m_seq;
 

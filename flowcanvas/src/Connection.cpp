@@ -23,10 +23,10 @@
 namespace LibFlowCanvas {
 	
 
-Connection::Connection(FlowCanvas&             canvas,
-	                   boost::shared_ptr<Port> source_port,
-	                   boost::shared_ptr<Port> dest_port)
-: Gnome::Canvas::Bpath(*canvas.root()),
+Connection::Connection(boost::shared_ptr<FlowCanvas> canvas,
+	                   boost::shared_ptr<Port>       source_port,
+	                   boost::shared_ptr<Port>       dest_port)
+: Gnome::Canvas::Bpath(*canvas->root()),
   m_canvas(canvas),
   m_source_port(source_port),
   m_dest_port(dest_port),
@@ -652,7 +652,7 @@ Connection::set_selected(bool selected)
 	m_selected = selected;
 
 	if (selected) {
-		property_dash() = m_canvas.select_dash();
+		property_dash() = m_canvas.lock()->select_dash();
 	} else {
 		property_dash() = NULL;
 	}

@@ -20,6 +20,7 @@
 #include <string>
 #include <map>
 #include <algorithm>
+#include <boost/shared_ptr.hpp>
 #include <libgnomecanvasmm.h>
 #include "Port.h"
 
@@ -37,17 +38,16 @@ class FlowCanvas;
 class Module : public Gnome::Canvas::Group
 {
 public:
-	Module(FlowCanvas& canvas, const string& name, double x=0, double y=0);
+	Module(boost::shared_ptr<FlowCanvas> canvas, const string& name, double x=0, double y=0);
 	virtual ~Module();
 	
-	FlowCanvas&       canvas() const { return m_canvas; }
-	const PortVector& ports()  const { return m_ports; }
+	boost::weak_ptr<FlowCanvas> canvas() const { return m_canvas; }
+	const PortVector&           ports()  const { return m_ports; }
 	
 	inline boost::shared_ptr<Port> get_port(const string& name) const;
 	
-	void add_port(boost::shared_ptr<Port> port);
-	void remove_port(boost::shared_ptr<Port> port);
-	void remove_port(const string& name);
+	void                    add_port(boost::shared_ptr<Port> port);
+	boost::shared_ptr<Port> remove_port(const string& name);
 
 	void zoom(double z);
 	void resize();
@@ -82,6 +82,8 @@ public:
 	void        set_border_width(double w);
 	
 protected:
+	void remove_port(boost::shared_ptr<Port> port);
+
 	bool module_event(GdkEvent* event);
 
 	virtual void on_double_click(GdkEventButton* ev) {}
@@ -94,8 +96,8 @@ protected:
 	string m_name;
 	bool   m_selected;
 
-	FlowCanvas& m_canvas;
-	PortVector  m_ports;
+	const boost::weak_ptr<FlowCanvas> m_canvas;
+	PortVector                        m_ports;
 
 	Gnome::Canvas::Rect m_module_box;
 	Gnome::Canvas::Text m_canvas_title;

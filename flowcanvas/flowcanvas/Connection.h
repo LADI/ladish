@@ -38,9 +38,9 @@ class FlowCanvas;
 class Connection : public Gnome::Canvas::Bpath
 {
 public:
-	Connection(FlowCanvas&             canvas,
-	           boost::shared_ptr<Port> source_port,
-	           boost::shared_ptr<Port> dest_port);
+	Connection(boost::shared_ptr<FlowCanvas> canvas,
+	           boost::shared_ptr<Port>       source_port,
+	           boost::shared_ptr<Port>       dest_port);
 
 	virtual ~Connection();
 	
@@ -61,12 +61,12 @@ private:
 
 	void update_location();
 	
-	FlowCanvas&                 m_canvas;
-	const boost::weak_ptr<Port> m_source_port;
-	const boost::weak_ptr<Port> m_dest_port;
-	int                         m_color;
-	bool                        m_selected;
-	bool                        m_flag;
+	const boost::weak_ptr<FlowCanvas> m_canvas;
+	const boost::weak_ptr<Port>       m_source_port;
+	const boost::weak_ptr<Port>       m_dest_port;
+	int                               m_color;
+	bool                              m_selected;
+	bool                              m_flag;
 
 	//Glib::RefPtr<Gnome::Canvas::PathDef> m_path;
 	GnomeCanvasPathDef* m_path;

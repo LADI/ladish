@@ -19,6 +19,7 @@
 
 #include <string>
 #include <list>
+#include <boost/enable_shared_from_this.hpp>
 #include <libgnomecanvasmm.h>
 #include "Connection.h"
 #include "Module.h"
@@ -50,7 +51,8 @@ class Module;
  *
  * \ingroup FlowCanvas
  */
-class FlowCanvas : public /*CANVASBASE*/Gnome::Canvas::CanvasAA
+class FlowCanvas : public boost::enable_shared_from_this<FlowCanvas>
+                 , public /*CANVASBASE*/Gnome::Canvas::CanvasAA
 // The CANVASBASE is a hook for a sed script in configure.ac
 {
 public:
@@ -59,15 +61,21 @@ public:
 
 	void destroy();
 		
-	void add_module(boost::shared_ptr<Module> m);
-	void remove_module(const string& name);
+	void                      add_module(boost::shared_ptr<Module> m);
+	boost::shared_ptr<Module> remove_module(const string& name);
+	boost::shared_ptr<Module> get_module(const string& name);
+	
+	boost::shared_ptr<Port> get_port(const string& module_name,
+                                     const string& port_name);
 
-	boost::shared_ptr<Module>     get_module(const string& name);
-	boost::shared_ptr<Port>       get_port(const string& module_name, const string& port_name);
-	boost::shared_ptr<Connection> get_connection(const boost::shared_ptr<Port> src, const boost::shared_ptr<Port> dst);
-
-	bool add_connection(boost::shared_ptr<Port> port1, boost::shared_ptr<Port> port2);
-	bool remove_connection(boost::shared_ptr<Port> port1, boost::shared_ptr<Port> port2);
+	boost::shared_ptr<Connection> get_connection(const boost::shared_ptr<Port> src,
+	                                             const boost::shared_ptr<Port> dst);
+	
+	bool add_connection(boost::shared_ptr<Port> port1,
+	                    boost::shared_ptr<Port> port2);
+	
+	boost::shared_ptr<Connection> remove_connection(boost::shared_ptr<Port> port1,
+	                                                boost::shared_ptr<Port> port2);
 	
 	void destroy_all_connections();
 	
@@ -114,9 +122,11 @@ protected:
 
 	virtual bool canvas_event(GdkEvent* event);
 	
-	virtual void on_map();
-
 private:
+	// Prevent copies (undefined)
+	FlowCanvas(const FlowCanvas& copy);
+	FlowCanvas& operator=(const FlowCanvas& other);
+
 	friend class Module;
 	bool rename_module(const string& old_name, const string& new_name);
 

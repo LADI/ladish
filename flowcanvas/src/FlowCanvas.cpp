@@ -21,6 +21,7 @@
 #include <map>
 #include <iostream>
 #include <cmath>
+#include <boost/enable_shared_from_this.hpp>
 #include "Port.h"
 #include "Module.h"
 
@@ -66,14 +67,6 @@ FlowCanvas::FlowCanvas(double width, double height)
 FlowCanvas::~FlowCanvas()
 {
 	destroy();
-}
-
-
-void
-FlowCanvas::on_map()
-{
-	Gnome::Canvas::Canvas::on_map();
-	assert(get_window());
 }
 
 
@@ -322,15 +315,25 @@ FlowCanvas::add_module(boost::shared_ptr<Module> m)
 }
 
 
-void
+/** Remove a module from the canvas, cutting all references.
+ *
+ * The removed Module is returned, or NULL if not found.
+ */
+boost::shared_ptr<Module>
 FlowCanvas::remove_module(const string& name)
 {
+	boost::shared_ptr<Module> ret;
+
 	if (!m_remove_objects)
-		return;
+		return ret;
 
 	ModuleMap::iterator m = m_modules.find(name);
-	assert(m != m_modules.end());
-	m_modules.erase(m);
+	if (m != m_modules.end()) {
+		ret = m->second;
+		m_modules.erase(m);
+	}
+	
+	return ret;
 }
 
 
@@ -370,11 +373,13 @@ FlowCanvas::rename_module(const string& old_name, const string& current_name)
 }
 
 
-bool
+boost::shared_ptr<Connection>
 FlowCanvas::remove_connection(boost::shared_ptr<Port> port1, boost::shared_ptr<Port> port2)
 {
+	boost::shared_ptr<Connection> ret;
+
 	if (!m_remove_objects)
-		return false;
+		return ret;
 
 	assert(port1);
 	assert(port2);
@@ -382,10 +387,10 @@ FlowCanvas::remove_connection(boost::shared_ptr<Port> port1, boost::shared_ptr<P
 	boost::shared_ptr<Connection> c = get_connection(port1, port2);
 	if (!c) {
 		cerr << "Couldn't find connection.\n";
-		return false;
+		return ret;
 	} else {
 		remove_connection(c);
-		return true;
+		return c;
 	}
 }
 
@@ -456,7 +461,7 @@ FlowCanvas::add_connection(boost::shared_ptr<Port> port1, boost::shared_ptr<Port
 
 	// Create (graphical) connection object
 	if ( ! get_connection(src_port, dst_port)) {
-		boost::shared_ptr<Connection> c(new Connection(*this, src_port, dst_port));
+		boost::shared_ptr<Connection> c(new Connection(shared_from_this(), src_port, dst_port));
 		port1->add_connection(c);
 		port2->add_connection(c);
 		m_connections.push_back(c);
@@ -833,7 +838,7 @@ FlowCanvas::connection_drag_handler(GdkEvent* event)
 			assert(drag_port == NULL);
 			assert(m_connect_port);
 			
-			drag_module = boost::shared_ptr<Module>(new Module(*this, "", x, y));
+			drag_module = boost::shared_ptr<Module>(new Module(shared_from_this(), "", x, y));
 			bool drag_port_is_input = true;
 			if (m_connect_port->is_input())
 				drag_port_is_input = false;
@@ -850,9 +855,9 @@ FlowCanvas::connection_drag_handler(GdkEvent* event)
 			drag_port->m_rect.property_x2() = 1;
 			drag_port->m_rect.property_y2() = 1;
 			if (drag_port_is_input)
-				drag_connection = boost::shared_ptr<Connection>(new Connection(*this, m_connect_port, drag_port));
+				drag_connection = boost::shared_ptr<Connection>(new Connection(shared_from_this(), m_connect_port, drag_port));
 			else
-				drag_connection = boost::shared_ptr<Connection>(new Connection(*this, drag_port, m_connect_port));
+				drag_connection = boost::shared_ptr<Connection>(new Connection(shared_from_this(), drag_port, m_connect_port));
 				
 			drag_connection->update_location();
 		}

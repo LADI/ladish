@@ -41,8 +41,8 @@ static const int MODULE_TITLE_COLOUR          = 0xFFFFFFFF;
  * If @a name is the empty string, the space where the title would usually be
  * is not created (eg the module will be shorter).
  */
-Module::Module(FlowCanvas& canvas, const string& name, double x, double y)
-: Gnome::Canvas::Group(*canvas.root(), x, y),
+Module::Module(boost::shared_ptr<FlowCanvas> canvas, const string& name, double x, double y)
+: Gnome::Canvas::Group(*canvas->root(), x, y),
   m_name(name),
   m_selected(false),
   m_canvas(canvas),
@@ -87,6 +87,10 @@ Module::set_border_width(double w)
 bool
 Module::module_event(GdkEvent* event)
 {
+	boost::shared_ptr<FlowCanvas> canvas = m_canvas.lock();
+	if (!canvas)
+		return false;
+
 	/* FIXME:  Some things need to be handled here (ie dragging), but handling double
 	 * clicks and whatnot here is just filthy (look at this method.  I mean, c'mon now).
 	 * Move double clicks out to on_double_click_event overridden methods etc. */
@@ -108,7 +112,7 @@ Module::module_event(GdkEvent* event)
 	switch (event->type) {
 
 	case GDK_2BUTTON_PRESS:
-		m_canvas.clear_selection();
+		canvas->clear_selection();
 		double_click = true;
 		on_double_click(&event->button);
 		handled = true;
@@ -153,8 +157,8 @@ Module::module_event(GdkEvent* event)
 
 			// Move any other selected modules if we're selected
 			if (m_selected) {
-				for (list<boost::shared_ptr<Module> >::iterator i = m_canvas.selected_modules().begin();
-						i != m_canvas.selected_modules().end(); ++i) {
+				for (list<boost::shared_ptr<Module> >::iterator i = canvas->selected_modules().begin();
+						i != canvas->selected_modules().end(); ++i) {
 					(*i)->move(new_x - x, new_y - y);
 				}
 			} else {
@@ -176,12 +180,12 @@ Module::module_event(GdkEvent* event)
 				store_location();
 			} else if (!double_click) { // just a single-click release
 				if (m_selected) {
-					m_canvas.unselect_module(m_name);
+					canvas->unselect_module(m_name);
 					assert(!m_selected);
 				} else {
 					if ( !(event->button.state & GDK_CONTROL_MASK))
-						m_canvas.clear_selection();
-					m_canvas.select_module(m_name);
+						canvas->clear_selection();
+					canvas->select_module(m_name);
 					assert(m_selected);
 				}
 			}
@@ -234,11 +238,15 @@ Module::set_highlighted(bool b)
 void
 Module::set_selected(bool selected)
 {
+	boost::shared_ptr<FlowCanvas> canvas = m_canvas.lock();
+	if (!canvas)
+		return;
+
 	m_selected = selected;
 	if (selected) {
 		m_module_box.property_fill_color_rgba() = MODULE_HILITE_FILL_COLOUR;
 		m_module_box.property_outline_color_rgba() = MODULE_HILITE_OUTLINE_COLOUR;
-		m_module_box.property_dash() = m_canvas.select_dash();
+		m_module_box.property_dash() = canvas->select_dash();
 	} else {
 		m_module_box.property_fill_color_rgba() = MODULE_FILL_COLOUR;
 		m_module_box.property_outline_color_rgba() = MODULE_OUTLINE_COLOUR;
@@ -301,10 +309,15 @@ Module::is_within(const Gnome::Canvas::Rect* rect)
 }
 
 
-void
+boost::shared_ptr<Port>
 Module::remove_port(const string& name)
 {
-	remove_port(get_port(name));
+	boost::shared_ptr<Port> ret = get_port(name);
+
+	if (ret)
+		remove_port(ret);
+	
+	return ret;
 }
 
 
@@ -342,14 +355,22 @@ Module::set_height(double h)
 void
 Module::move(double dx, double dy)
 {
+	boost::shared_ptr<FlowCanvas> canvas = m_canvas.lock();
+	if (!canvas)
+		return;
+
 	double new_x = property_x() + dx;
 	double new_y = property_y() + dy;
 	
-	if (new_x < 0) dx = property_x() * -1;
-	else if (new_x + m_width > m_canvas.width()) dx = m_canvas.width() - property_x() - m_width;
+	if (new_x < 0)
+		dx = property_x() * -1;
+	else if (new_x + m_width > canvas->width())
+		dx = canvas->width() - property_x() - m_width;
 	
-	if (new_y < 0) dy = property_y() * -1;
-	else if (new_y + m_height > m_canvas.height()) dy = m_canvas.height() - property_y() - m_height;
+	if (new_y < 0)
+		dy = property_y() * -1;
+	else if (new_y + m_height > canvas->height())
+		dy = canvas->height() - property_y() - m_height;
 
 	Gnome::Canvas::Group::move(dx, dy);
 
@@ -367,16 +388,29 @@ Module::move(double dx, double dy)
 void
 Module::move_to(double x, double y)
 {
+	boost::shared_ptr<FlowCanvas> canvas = m_canvas.lock();
+	if (!canvas)
+		return;
+
+	assert(canvas->width() > 0);
+	assert(canvas->height() > 0);
+
 	if (x < 0) x = 0;
 	if (y < 0) y = 0;
-	if (x + m_width > m_canvas.width()) x = m_canvas.width() - m_width;
-	if (y + m_height > m_canvas.height()) y = m_canvas.height() - m_height;
+	if (x + m_width > canvas->width()) x = canvas->width() - m_width - 1;
+	if (y + m_height > canvas->height()) y = canvas->height() - m_height - 1;
 		
+	assert(x >= 0);
+	assert(x + m_width < canvas->width());
+	assert(y >= 0);
+	assert(y + m_height < canvas->height());
+
 	// Man, not many things left to try to get the damn things to move! :)
 	property_x() = x;
 	property_y() = y;
-	move(0, 0);
-	// Deal with moving the connection lines
+	//move(0, 0);
+	
+	// Update any connection line positions
 	for (PortVector::iterator p = m_ports.begin(); p != m_ports.end(); ++p)
 		(*p)->move_connections();
 }
@@ -388,13 +422,20 @@ Module::set_name(const string& n)
 	if (m_name != n) {
 		string old_name = m_name;
 		m_name = n;
-		m_canvas.rename_module(old_name, m_name);
 		m_canvas_title.property_text() = m_name;
 		resize();
+
+		boost::shared_ptr<FlowCanvas> canvas = m_canvas.lock();
+		if (canvas)
+			canvas->rename_module(old_name, m_name);
 	}
 }
 
 
+/** Add a port to this module.
+ *
+ * A reference to p is held until remove_port is called to remove it.
+ */
 void
 Module::add_port(boost::shared_ptr<Port> p)
 {
@@ -404,8 +445,11 @@ Module::add_port(boost::shared_ptr<Port> p)
 	
 	m_ports.push_back(p);
 	
-	p->signal_event().connect(
-		sigc::bind(sigc::mem_fun(&m_canvas, &FlowCanvas::port_event), p));
+	boost::shared_ptr<FlowCanvas> canvas = m_canvas.lock();
+	if (canvas) {
+		p->signal_event().connect(
+			sigc::bind(sigc::mem_fun(m_canvas.lock().get(), &FlowCanvas::port_event), p));
+	}
 }
 
 

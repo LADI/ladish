@@ -158,7 +158,7 @@ Port::disconnect_all()
 	for (list<boost::weak_ptr<Connection> >::iterator i = connections.begin(); i != connections.end(); ++i) {
 		boost::shared_ptr<Connection> c = (*i).lock();
 		if (c)
-			module->canvas().disconnect(c->source_port().lock(), c->dest_port().lock());
+			module->canvas().lock()->disconnect(c->source_port().lock(), c->dest_port().lock());
 	}
 
 	m_connections.clear();
