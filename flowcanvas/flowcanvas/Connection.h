@@ -31,7 +31,7 @@ namespace LibFlowCanvas {
 class FlowCanvas;
 
 
-/** A connection between two ports.
+/** A connection (line) between two Ports.
  *
  * \ingroup FlowCanvas
  */
@@ -39,10 +39,10 @@ class Connection : public Gnome::Canvas::Bpath
 {
 public:
 	Connection(boost::shared_ptr<FlowCanvas> canvas,
-	           boost::shared_ptr<Port>       source_port,
-	           boost::shared_ptr<Port>       dest_port);
+	           boost::shared_ptr<Port>       source,
+	           boost::shared_ptr<Port>       dest);
 
-	virtual ~Connection();
+	virtual ~Connection() {}
 	
 	bool flagged() const     { return m_flag; }
 	void set_flagged(bool b) { m_flag = b; }
@@ -52,8 +52,8 @@ public:
 	
 	void set_highlighted(bool b);
 	
-	const boost::weak_ptr<Port> source_port() const { return m_source_port; }
-	const boost::weak_ptr<Port> dest_port() const   { return m_dest_port; }
+	const boost::weak_ptr<Port> source() const { return m_source; }
+	const boost::weak_ptr<Port> dest() const   { return m_dest; }
 
 private:
 	friend class FlowCanvas;
@@ -62,8 +62,8 @@ private:
 	void update_location();
 	
 	const boost::weak_ptr<FlowCanvas> m_canvas;
-	const boost::weak_ptr<Port>       m_source_port;
-	const boost::weak_ptr<Port>       m_dest_port;
+	const boost::weak_ptr<Port>       m_source;
+	const boost::weak_ptr<Port>       m_dest;
 	int                               m_color;
 	bool                              m_selected;
 	bool                              m_flag;

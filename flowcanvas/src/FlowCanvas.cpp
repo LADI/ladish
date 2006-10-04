@@ -179,20 +179,28 @@ FlowCanvas::select_module(boost::shared_ptr<Module> m)
 	
 	m_selected_modules.push_back(m);
 
-	cerr << "FIXME: select connection\n";
-	/*
 	for (ConnectionList::iterator i = m_connections.begin(); i != m_connections.end(); ++i) {
 		const boost::shared_ptr<Connection> c = (*i);
+		const boost::shared_ptr<Port> source = c->source().lock();
+		const boost::shared_ptr<Port> dest = c->dest().lock();
+		if (!source || !dest)
+			continue;
+
+		const boost::shared_ptr<Module> source_module = source->module().lock();
+		const boost::shared_ptr<Module> dest_module = dest->module().lock();
+		if (!source_module || !dest_module)
+			continue;
+
 		if ( !c->selected()) {
-			if (c->source_port()->module() == m && c->dest_port()->module()->selected()) {
-				c->selected(true);
+			if (source_module == m && dest_module->selected()) {
+				c->set_selected(true);
 				m_selected_connections.push_back(c);
-			} else if (c->dest_port()->module() == m && c->source_port()->module()->selected()) {
-				c->selected(true);
+			} else if (dest_module == m && source_module->selected()) {
+				c->set_selected(true);
 				m_selected_connections.push_back(c);
 			} 
 		}
-	}*/
+	}
 				
 	m->set_selected(true);
 }
@@ -209,8 +217,8 @@ FlowCanvas::unselect_module(boost::shared_ptr<Module> m)
 	for (ConnectionList::iterator i = m_selected_connections.begin(); i != m_selected_connections.end();) {
 		c = (*i);
 		if (c->selected()
-			&& ((c->source_port()->module() == m && c->dest_port()->module()->selected())
-				|| c->dest_port()->module() == m && c->source_port()->module()->selected()))
+			&& ((c->source()->module() == m && c->dest()->module()->selected())
+				|| c->dest()->module() == m && c->source()->module()->selected()))
 			{
 				c->selected(false);
 				i = m_selected_connections.erase(i);
@@ -404,8 +412,8 @@ FlowCanvas::are_connected(boost::shared_ptr<const Port> port1, boost::shared_ptr
 	ConnectionList::const_iterator c;
 
 	for (c = m_connections.begin(); c != m_connections.end(); ++c) {
-		boost::shared_ptr<Port> src = (*c)->source_port().lock();
-		boost::shared_ptr<Port> dst = (*c)->dest_port().lock();
+		boost::shared_ptr<Port> src = (*c)->source().lock();
+		boost::shared_ptr<Port> dst = (*c)->dest().lock();
 		if (!src || !dst)
 			continue;
 
@@ -424,8 +432,8 @@ FlowCanvas::get_connection(boost::shared_ptr<Port> port1, boost::shared_ptr<Port
 	assert(port2);
 	
 	for (ConnectionList::iterator i = m_connections.begin(); i != m_connections.end(); ++i) {
-		boost::shared_ptr<Port> src = (*i)->source_port().lock();
-		boost::shared_ptr<Port> dst = (*i)->dest_port().lock();
+		boost::shared_ptr<Port> src = (*i)->source().lock();
+		boost::shared_ptr<Port> dst = (*i)->dest().lock();
 		if (!src || !dst)
 			continue;
 
@@ -472,6 +480,13 @@ FlowCanvas::add_connection(boost::shared_ptr<Port> port1, boost::shared_ptr<Port
 
 
 void
+FlowCanvas::add_connection(boost::shared_ptr<Connection> c)
+{
+	m_connections.push_back(c);
+}
+
+
+void
 FlowCanvas::remove_connection(boost::shared_ptr<Connection> connection)
 {
 	if (!m_remove_objects)
@@ -482,8 +497,8 @@ FlowCanvas::remove_connection(boost::shared_ptr<Connection> connection)
 	if (i != m_connections.end()) {
 		boost::shared_ptr<Connection> c = *i;
 
-		c->source_port().lock()->remove_connection(c);
-		c->dest_port().lock()->remove_connection(c);
+		c->source().lock()->remove_connection(c);
+		c->dest().lock()->remove_connection(c);
 		
 		m_connections.erase(i);
 	}
@@ -507,8 +522,8 @@ FlowCanvas::destroy_all_flagged_connections()
 		if ((*c)->flagged()) {
 			ConnectionList::iterator next = c;
 			++next;
-			(*c)->source_port().lock()->remove_connection(*c);
-			(*c)->dest_port().lock()->remove_connection(*c);
+			(*c)->source().lock()->remove_connection(*c);
+			(*c)->dest().lock()->remove_connection(*c);
 			m_connections.erase(c);
 			c = next;
 		} else {
@@ -526,8 +541,8 @@ FlowCanvas::destroy_all_connections()
 	m_remove_objects = false;
 
 	for (ConnectionList::iterator c = m_connections.begin(); c != m_connections.end(); ++c) {
-		(*c)->source_port().lock()->remove_connection(*c);
-		(*c)->dest_port().lock()->remove_connection(*c);
+		(*c)->source().lock()->remove_connection(*c);
+		(*c)->dest().lock()->remove_connection(*c);
 	}
 
 	m_connections.clear();
@@ -764,7 +779,7 @@ FlowCanvas::select_drag_handler(GdkEvent* event)
 		// Select all modules within rect
 		for (ModuleMap::iterator i = m_modules.begin(); i != m_modules.end(); ++i) {
 			module = (*i).second;
-			if (module->is_within(m_select_rect)) {
+			if (module->is_within(*m_select_rect)) {
 				if (module->selected())
 					unselect_module(module);
 				else

@@ -50,7 +50,7 @@ CFLAGS="$CFLAGS -pipe  -fmessage-length=139 -fdiagnostics-show-location=every-li
 
 # Boost shared_ptr debugging
 pointer_debug="no"
-AC_ARG_ENABLE(debug,
+AC_ARG_ENABLE(pointer_debug,
 	[AS_HELP_STRING(--enable-pointer-debug, [Enable smart pointer debugging (no)])],
 	[pointer_debug="$enableval"])
 if test "$pointer_debug" = "yes"; then

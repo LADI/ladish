@@ -122,7 +122,7 @@ Port::move_connections()
 }
 
 
-/** Add a connection to this port.
+/** Add a Connection to this port.
  *
  * A reference to the connection is not retained (only a weak_ptr is stored).
  */
@@ -135,6 +135,10 @@ Port::add_connection(boost::shared_ptr<Connection> c)
 }
 
 
+/** Remove a Connection from this port.
+ *
+ * Cuts all references to @a c held by the Port.
+ */
 void
 Port::remove_connection(boost::shared_ptr<Connection> c)
 {
@@ -158,7 +162,7 @@ Port::disconnect_all()
 	for (list<boost::weak_ptr<Connection> >::iterator i = connections.begin(); i != connections.end(); ++i) {
 		boost::shared_ptr<Connection> c = (*i).lock();
 		if (c)
-			module->canvas().lock()->disconnect(c->source_port().lock(), c->dest_port().lock());
+			module->canvas().lock()->disconnect(c->source().lock(), c->dest().lock());
 	}
 
 	m_connections.clear();

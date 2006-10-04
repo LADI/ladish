@@ -15,6 +15,7 @@
  */
 
 #include "Connection.h"
+#include <algorithm>
 #include <cassert>
 #include <math.h>
 #include <libgnomecanvasmm.h>
@@ -24,20 +25,20 @@ namespace LibFlowCanvas {
 	
 
 Connection::Connection(boost::shared_ptr<FlowCanvas> canvas,
-	                   boost::shared_ptr<Port>       source_port,
-	                   boost::shared_ptr<Port>       dest_port)
+	                   boost::shared_ptr<Port>       source,
+	                   boost::shared_ptr<Port>       dest)
 : Gnome::Canvas::Bpath(*canvas->root()),
   m_canvas(canvas),
-  m_source_port(source_port),
-  m_dest_port(dest_port),
+  m_source(source),
+  m_dest(dest),
   m_selected(false),
 //  m_path(Gnome::Canvas::PathDef::create())
   m_path(gnome_canvas_path_def_new())
 {
-	assert(source_port->is_output());
-	assert(dest_port->is_input());
+	assert(source->is_output());
+	assert(dest->is_input());
 	
-	m_color = source_port->color() + 0x22222200;
+	m_color = source->color() + 0x22222200;
 	property_width_units() = 1.0;
 	property_outline_color_rgba() = m_color;
 	property_cap_style() = (Gdk::CapStyle)GDK_CAP_ROUND;
@@ -45,17 +46,6 @@ Connection::Connection(boost::shared_ptr<FlowCanvas> canvas,
 	update_location();	
 }
 
-
-Connection::~Connection()
-{
-}
-
-
-#undef MIN
-#define MIN(x,y) (((x) < (y)) ? (x) : (y))
-
-#undef MAX
-#define MAX(x,y) (((x) > (y)) ? (x) : (y))
 
 #if 0									   
 /** Updates the connection's location to match it's source/dest ports.
@@ -68,19 +58,19 @@ Connection::~Connection()
 void
 Connection::update_location()
 {
-	const double src_x = m_source_port->connection_point().get_x();
-	const double src_y = m_source_port->connection_point().get_y();
-	const double dst_x = m_dest_port->connection_point().get_x();
-	const double dst_y = m_dest_port->connection_point().get_y();
+	const double src_x = m_source->connection_point().get_x();
+	const double src_y = m_source->connection_point().get_y();
+	const double dst_x = m_dest->connection_point().get_x();
+	const double dst_y = m_dest->connection_point().get_y();
 	
-	const double src_mod_x = m_source_port->module()->property_x();
-	const double src_mod_y = m_source_port->module()->property_y();
-	const double src_mod_w = m_source_port->module()->width();
-	const double src_mod_h = m_source_port->module()->height();
-	const double dst_mod_x = m_dest_port->module()->property_x();
-	const double dst_mod_y = m_dest_port->module()->property_y();
-	const double dst_mod_w = m_dest_port->module()->width();
-	const double dst_mod_h = m_dest_port->module()->height();
+	const double src_mod_x = m_source->module()->property_x();
+	const double src_mod_y = m_source->module()->property_y();
+	const double src_mod_w = m_source->module()->width();
+	const double src_mod_h = m_source->module()->height();
+	const double dst_mod_x = m_dest->module()->property_x();
+	const double dst_mod_y = m_dest->module()->property_y();
+	const double dst_mod_w = m_dest->module()->width();
+	const double dst_mod_h = m_dest->module()->height();
 
 	// Y Modifier (-1 if src module is below dst module)
 	double y_mod = (src_y < dst_y) ? 1.0 : -1.0;
@@ -92,29 +82,29 @@ Connection::update_location()
 		src_port_offset = src_mod_y + src_mod_h - src_y;
 		dst_port_offset = dst_mod_y + dst_mod_h - dst_y;
 	}*/
-	double src_port_offset = m_source_port->module()->port_connection_point_offset(m_source_port);
-	double src_offset_range = m_source_port->module()->port_connection_points_range();
-	double dst_port_offset = m_dest_port->module()->port_connection_point_offset(m_dest_port);
-	double dst_offset_range = m_dest_port->module()->port_connection_points_range();
+	double src_port_offset = m_source->module()->port_connection_point_offset(m_source);
+	double src_offset_range = m_source->module()->port_connection_points_range();
+	double dst_port_offset = m_dest->module()->port_connection_point_offset(m_dest);
+	double dst_offset_range = m_dest->module()->port_connection_points_range();
 	
 	/*
 	double smallest_offset = (src_port_offset < dst_port_offset)
 		? src_port_offset : dst_port_offset;
 
 	double smallest_offset_range = (src_port_offset < dst_port_offset)
-		? m_source_port->module()->port_connection_points_range()
-		: m_dest_port->module()->port_connection_points_range();
+		? m_source->module()->port_connection_points_range()
+		: m_dest->module()->port_connection_points_range();
 	*/
 	double smallest_offset = (src_offset_range < dst_offset_range)
 			? src_port_offset : dst_port_offset;
 
 	double smallest_offset_range = (src_offset_range < dst_offset_range)
-			? m_source_port->module()->port_connection_points_range()
-	  		: m_dest_port->module()->port_connection_points_range();
+			? m_source->module()->port_connection_points_range()
+	  		: m_dest->module()->port_connection_points_range();
 
 	//double largest_offset_range = (src_offset_range > dst_offset_range)
-	//		? m_source_port->module()->port_connection_points_range()
-	 //		: m_dest_port->module()->port_connection_points_range();
+	//		? m_source->module()->port_connection_points_range()
+	 //		: m_dest->module()->port_connection_points_range();
 	
 	double x_dist = fabs(dst_x - src_x);
 	double y_dist = fabs(dst_y - src_y);
@@ -133,9 +123,9 @@ Connection::update_location()
 	if (x_mod_dist < 1.0)
 		x_mod_dist = 1.0;
 
-	double tallest_mod_h = m_source_port->module()->height();
-	if (m_dest_port->module()->height() > tallest_mod_h)
-		tallest_mod_h = m_dest_port->module()->height();
+	double tallest_mod_h = m_source->module()->height();
+	if (m_dest->module()->height() > tallest_mod_h)
+		tallest_mod_h = m_dest->module()->height();
 	
 	double src_x1, src_y1, src_x2, src_y2, join_x, join_y; // Path 1
 	double dst_x2, dst_y2, dst_x1, dst_y1;                 // Path 2
@@ -169,8 +159,8 @@ Connection::update_location()
 		// Calculate join point
 		join_x = dst_mod_x + dst_mod_w + x_mod_dist/2.0;
 		join_y = (src_y < dst_y)
-			? MIN(src_mod_y, dst_mod_y)
-			: MAX(src_mod_y + src_mod_h, dst_mod_y + dst_mod_h);
+			? std::min(src_mod_y, dst_mod_y)
+			: std::max(src_mod_y + src_mod_h, dst_mod_y + dst_mod_h);
 		join_y -= (smallest_offset/smallest_offset_range*join_range + module_padding) * y_mod;
 
 		if (join_x > src_mod_x)
@@ -183,9 +173,9 @@ Connection::update_location()
 		src_y2 = join_y;
 	
 		// Path 2, (join_x, join_y) -> (dst_x, dst_y)
-		dst_x1 = MIN(dst_x, src_mod_x) - x_dist/5.0 - dst_offset/dst_offset_range*join_range;
-		dst_y1 = MIN(dst_y, src_mod_y + src_mod_h) - (x_dist/3.0 + dst_offset) * y_mod;
-		dst_x2 = MIN(dst_x, src_mod_x) - x_dist/3.0 - dst_offset/dst_offset_range*join_range;
+		dst_x1 = std::min(dst_x, src_mod_x) - x_dist/5.0 - dst_offset/dst_offset_range*join_range;
+		dst_y1 = std::min(dst_y, src_mod_y + src_mod_h) - (x_dist/3.0 + dst_offset) * y_mod;
+		dst_x2 = std::min(dst_x, src_mod_x) - x_dist/3.0 - dst_offset/dst_offset_range*join_range;
 		dst_y2 = join_y;
 
 	
@@ -334,8 +324,8 @@ Connection::update_location()
 void
 Connection::update_location()
 {
-	boost::shared_ptr<Port> src = m_source_port.lock();
-	boost::shared_ptr<Port> dst = m_dest_port.lock();
+	boost::shared_ptr<Port> src = m_source.lock();
+	boost::shared_ptr<Port> dst = m_dest.lock();
 	boost::shared_ptr<Module> src_mod = src->module().lock();
 	boost::shared_ptr<Module> dst_mod = dst->module().lock();
 
@@ -426,8 +416,8 @@ Connection::update_location()
 		// Calculate join point
 		join_x = dst_mod_x + dst_mod_w + x_mod_dist/2.0;
 		join_y = (src_y < dst_y)
-			? MIN(src_mod_y, dst_mod_y)
-			: MAX(src_mod_y + src_mod_h, dst_mod_y + dst_mod_h);
+			? std::min(src_mod_y, dst_mod_y)
+			: std::max(src_mod_y + src_mod_h, dst_mod_y + dst_mod_h);
 		join_y -= (smallest_offset/smallest_offset_range*join_range + module_padding) * y_mod;
 
 		if (join_x > src_mod_x)
@@ -440,16 +430,16 @@ Connection::update_location()
 		src_y2 = join_y;
 	
 		// Path 2, (join_x, join_y) -> (dst_x, dst_y)
-		dst_x1 = MIN(dst_x, src_mod_x) - x_dist/5.0 - dst_offset/dst_offset_range*join_range;
-		dst_y1 = MIN(dst_y, src_mod_y + src_mod_h) - (x_dist/3.0 + dst_offset) * y_mod;
-		dst_x2 = MIN(dst_x, src_mod_x) - x_dist/3.0 - dst_offset/dst_offset_range*join_range;
+		dst_x1 = std::min(dst_x, src_mod_x) - x_dist/5.0 - dst_offset/dst_offset_range*join_range;
+		dst_y1 = std::min(dst_y, src_mod_y + src_mod_h) - (x_dist/3.0 + dst_offset) * y_mod;
+		dst_x2 = std::min(dst_x, src_mod_x) - x_dist/3.0 - dst_offset/dst_offset_range*join_range;
 		dst_y2 = join_y;
 
 
 	// Curve through connections
 	} else if (dst_x < src_x) {
 		
-		join_range = MIN(join_range, smallest_offset_range);
+		join_range = std::min(join_range, smallest_offset_range);
 
 		// Calculate join point
 		double ratio = (x_dist - y_dist) / (y_dist + x_dist);
@@ -476,8 +466,8 @@ Connection::update_location()
 		
 		//cerr << "ratio: " << ratio << endl;
 			
-		double src_x_offset = fabs(src_x - join_x)/8.0 + MAX(src_offset_range,join_range) - src_offset/src_offset_range*join_range;
-		double dst_x_offset = fabs(dst_x - join_x)/8.0 + MAX(dst_offset_range,join_range) + dst_offset/dst_offset_range*join_range;
+		double src_x_offset = fabs(src_x - join_x)/8.0 + std::max(src_offset_range,join_range) - src_offset/src_offset_range*join_range;
+		double dst_x_offset = fabs(dst_x - join_x)/8.0 + std::max(dst_offset_range,join_range) + dst_offset/dst_offset_range*join_range;
 		double src_y_offset = fabs(src_y - join_y)/4.0 + src_offset/src_offset_range*(src_offset_range+join_range)/2.0;
 		double dst_y_offset = fabs(dst_y - join_y)/4.0 + (dst_offset_range-dst_offset)/dst_offset_range*(dst_offset_range+join_range)/2.0;
 
@@ -559,22 +549,22 @@ Connection::update_location()
 		join_x = (src_x + dst_x)/2.0;
 		join_y = (src_y + dst_y)/2.0;
 #if 0
-		join_range = MIN(join_range, x_dist/2.0);
+		join_range = std::min(join_range, x_dist/2.0);
 
 		
 		
 		/************ Find join point **************/
 
 		//const double join_range = 15.0;
-		//const double join_range = MIN(smallest_offset_range, x_dist/2.0);
-		//const double join_range = MIN(30.0, x_dist/2.0);
+		//const double join_range = std::min(smallest_offset_range, x_dist/2.0);
+		//const double join_range = std::min(30.0, x_dist/2.0);
 
 		// Calculate join point
 		double ratio = (x_dist - y_dist) / (y_dist + x_dist);
 	
 		cerr << "ratio: " << ratio << endl;
 		
-	/*	if (MAX(x_dist, y_dist) > smallest_offset_range * 2.0) {
+	/*	if (std::max(x_dist, y_dist) > smallest_offset_range * 2.0) {
 			// Vertical centre point between the modules
 			join_y = (src_y < dst_y)
 				? (dst_mod_y - (dst_mod_y - (src_mod_y + src_mod_h)) / 2.0)

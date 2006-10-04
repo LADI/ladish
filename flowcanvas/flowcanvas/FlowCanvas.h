@@ -44,7 +44,7 @@ class Module;
  */
 
 
-/** The canvas widget.
+/** The 'master' canvas widget which contains all other objects.
  *
  * Applications must override some virtual methods to make the widget actually
  * do anything (ie connect).
@@ -53,7 +53,7 @@ class Module;
  */
 class FlowCanvas : public boost::enable_shared_from_this<FlowCanvas>
                  , public /*CANVASBASE*/Gnome::Canvas::CanvasAA
-// The CANVASBASE is a hook for a sed script in configure.ac
+// (CANVASBASE is a hook for a sed script in configure.ac)
 {
 public:
 	FlowCanvas(double width, double height);
@@ -73,6 +73,8 @@ public:
 	
 	bool add_connection(boost::shared_ptr<Port> port1,
 	                    boost::shared_ptr<Port> port2);
+	
+	void add_connection(boost::shared_ptr<Connection> connection);
 	
 	boost::shared_ptr<Connection> remove_connection(boost::shared_ptr<Port> port1,
 	                                                boost::shared_ptr<Port> port2);

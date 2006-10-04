@@ -31,7 +31,7 @@ namespace LibFlowCanvas {
 class FlowCanvas;
 
 
-/** A module on the canvas.
+/** A named block (possibly) containing input and output ports.
  *
  * \ingroup FlowCanvas
  */
@@ -48,16 +48,15 @@ public:
 	
 	void                    add_port(boost::shared_ptr<Port> port);
 	boost::shared_ptr<Port> remove_port(const string& name);
+	boost::shared_ptr<Port> port_at(double x, double y);
+
+	bool point_is_within(double x, double y);
 
 	void zoom(double z);
 	void resize();
 	
 	void         move(double dx, double dy);
 	virtual void move_to(double x, double y);
-	
-	bool                    is_within(const Gnome::Canvas::Rect* rect);
-	bool                    point_is_within(double x, double y);
-	boost::shared_ptr<Port> port_at(double x, double y);
 
 	virtual void load_location()  {}
 	virtual void store_location() {}
@@ -71,20 +70,23 @@ public:
 	double height() { return m_height; }
 	void   set_height(double h);
 
+	double border_width() const { return m_border_width; }
+	void   set_border_width(double w);
+
 	bool selected() const { return m_selected; }
 	void set_selected(bool b);
 	
 	void set_highlighted(bool b);
 
-	int         num_ports()    const     { return m_ports.size(); }
-	int         base_color()   const     { return 0x1F2A3CFF; }
-	double      border_width() const     { return m_border_width; }
-	void        set_border_width(double w);
-	
+	int num_ports()    const     { return m_ports.size(); }
+	int base_color()   const     { return 0x1F2A3CFF; }
+
 protected:
 	void remove_port(boost::shared_ptr<Port> port);
 
 	bool module_event(GdkEvent* event);
+	
+	bool is_within(const Gnome::Canvas::Rect& rect);
 
 	virtual void on_double_click(GdkEventButton* ev) {}
 	virtual void on_middle_click(GdkEventButton* ev) {}

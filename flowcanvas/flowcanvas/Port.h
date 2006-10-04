@@ -35,7 +35,7 @@ class Module;
 static const int PORT_LABEL_SIZE = 8000; // in thousandths of a point
 
 
-/** A port on a module on the canvas.
+/** A port on a Module.
  *
  * This is a group that contains both the label and rectangle for a port.
  *
@@ -54,22 +54,22 @@ public:
 	void disconnect_all();
 	
 	Gnome::Art::Point connection_point();
+
+	boost::weak_ptr<Module>             module() const { return m_module; }
+	list<boost::weak_ptr<Connection> >& connections()  { return m_connections; }
 	
 	void set_fill_color(uint32_t c) { m_rect.property_fill_color_rgba() = c; }
 	
 	void set_highlighted(bool b);
+	
 	void zoom(float z);
 
 	void popup_menu(guint button, guint32 activate_time) {
 		m_menu.popup(button, activate_time);
 	}
 
-	boost::weak_ptr<Module>             module() const { return m_module; }
-	list<boost::weak_ptr<Connection> >& connections()  { return m_connections; }
-
-	bool is_input()  const { return m_is_input; }
-	bool is_output() const { return !m_is_input; }
-	int  color()     const { return m_color; }
+	double width() const { return m_width; }
+	void   set_width(double w);
 	
 	double border_width() const { return m_border_width; }
 	void   set_border_width(double w);
@@ -77,10 +77,10 @@ public:
 	const string& name() const { return m_name; }
 	virtual void  set_name(const string& n);
 	
-	double width() const { return m_width; }
-	void   set_width(double w);
-	
-	double height() const { return m_height; }
+	bool   is_input()  const { return m_is_input; }
+	bool   is_output() const { return !m_is_input; }
+	int    color()     const { return m_color; }
+	double height()    const { return m_height; }
 
 	bool operator==(const string& name) { return (m_name == name); }
 

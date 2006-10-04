@@ -276,12 +276,12 @@ Module::port_at(double x, double y)
 
 
 bool
-Module::is_within(const Gnome::Canvas::Rect* rect)
+Module::is_within(const Gnome::Canvas::Rect& rect)
 {
-	const double x1 = rect->property_x1();
-	const double y1 = rect->property_y1();
-	const double x2 = rect->property_x2();
-	const double y2 = rect->property_y2();
+	const double x1 = rect.property_x1();
+	const double y1 = rect.property_y1();
+	const double x2 = rect.property_x2();
+	const double y2 = rect.property_y2();
 
 	if (x1 < x2 && y1 < y2) {
 		return (property_x() > x1
