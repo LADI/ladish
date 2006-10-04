@@ -16,6 +16,7 @@ patchage_SOURCES = \
 	StateManager.cpp  \
 	PatchageModule.h \
 	PatchagePort.h \
+	Driver.h \
 	JackDriver.h \
 	JackDriver.cpp \
 	AlsaDriver.h \
