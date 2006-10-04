@@ -74,7 +74,7 @@ public:
 	bool add_connection(boost::shared_ptr<Port> port1,
 	                    boost::shared_ptr<Port> port2);
 	
-	void add_connection(boost::shared_ptr<Connection> connection);
+	bool add_connection(boost::shared_ptr<Connection> connection);
 	
 	boost::shared_ptr<Connection> remove_connection(boost::shared_ptr<Port> port1,
 	                                                boost::shared_ptr<Port> port2);

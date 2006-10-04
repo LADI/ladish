@@ -479,10 +479,20 @@ FlowCanvas::add_connection(boost::shared_ptr<Port> port1, boost::shared_ptr<Port
 }
 
 
-void
+bool
 FlowCanvas::add_connection(boost::shared_ptr<Connection> c)
 {
-	m_connections.push_back(c);
+	boost::shared_ptr<Port> src = c->source().lock();
+	boost::shared_ptr<Port> dst = c->dest().lock();
+
+	if (src && dst) {
+		src->add_connection(c);
+		dst->add_connection(c);
+		m_connections.push_back(c);
+		return true;
+	} else {
+		return false;
+	}
 }
 
 

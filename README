@@ -1,0 +1,15 @@
+This is not a "project", but an entire repository of code containing many
+projects (checked out from http://codeson.net).  The only common thread
+tying it all together is that I wrote it.  Hi. :)
+
+There are build scripts in this directory for convenience, but every
+subdirectory can be used individually as an independent (autotoolized)
+project.
+
+'./configure --help=recursive' will give you a (horribly large and bloated)
+listing of all configure options which you can pass to the top level
+configure script to build everything however you like.
+
+Enjoy,
+
+-Dave

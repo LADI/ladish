@@ -127,11 +127,15 @@ Port::move_connections()
  * A reference to the connection is not retained (only a weak_ptr is stored).
  */
 void
-Port::add_connection(boost::shared_ptr<Connection> c)
+Port::add_connection(boost::shared_ptr<Connection> connection)
 {
-	//list<boost::weak_ptr<Connection> >::iterator i = find(m_connections.begin(), m_connections.end(), boost::weak_ptr<Connection>(c));
-	//if (i == m_connections.end())
-		m_connections.push_back(c);
+	for (list<boost::weak_ptr<Connection> >::iterator i = m_connections.begin(); i != m_connections.end(); i++) {
+		boost::shared_ptr<Connection> c = (*i).lock();
+		if (c && c == connection)
+			return;
+	}
+	
+	m_connections.push_back(connection);
 }
 
 
