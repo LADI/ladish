@@ -14,44 +14,29 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef SLAVE_H
-#define SLAVE_H
+#ifndef RAUL_CONDITION_H
+#define RAUL_CONDITION_H
 
 #include <pthread.h>
-#include "util/Semaphore.h"
-#include "util/Thread.h"
 
 
-/** Thread driven by (realtime safe) signals.
+/** Trivial (but pretty) wrapper around POSIX Conditions (zero overhead).
  *
- * \ingroup engine
+ * A semaphore that isn't a counter, is slow, and not realtime safe.  Yay.
  */
-class Slave : public Thread
-{
+class Condition {
 public:
-	Slave() : _whip(0) {}
-
-	/** Tell the slave to do whatever work it does.  Realtime safe. */
-	inline void whip() { _whip.post(); }
-
-protected:
-	virtual void _whipped() = 0;
-
-	Semaphore _whip;
+	inline Condition() { pthread_cond_init(&_cond, NULL); }
+	
+	inline ~Condition() { pthread_cond_destroy(&_cond); }
+	
+	inline void signal()           { pthread_cond_signal(&_cond); }
+	inline void wait(Mutex& mutex) { pthread_cond_wait(&_cond, &mutex._mutex); }
 
 private:
-	// Prevent copies (undefined)
-	Slave(const Slave&);
-	Slave& operator=(const Slave&);
-
-	inline void _run()
-	{
-		while (true) {
-			_whip.wait();
-			_whipped();
-		}
-	}
+	pthread_cond_t _cond;
 };
 
 
-#endif // SLAVE_H
+#endif // RAUL_CONDITION_H
+

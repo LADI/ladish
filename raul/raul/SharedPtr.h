@@ -15,8 +15,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef COUNTED_PTR_H
-#define COUNTED_PTR_H
+#ifndef RAUL_SHARED_PTR_H
+#define RAUL_SHARED_PTR_H
 
 #include <cassert>
 #include <cstddef>
@@ -26,22 +26,22 @@
 #include <list>
 #include <algorithm>
 
-static std::list<void*> counted_ptr_counters;
+static std::list<void*> shared_ptr_counters;
 
 // Use debug hooks to ensure 2 shared_ptrs never point to the same thing
 namespace boost {
 	
 	inline void sp_scalar_constructor_hook(void* object, unsigned long cnt, void* ptr) {
-		assert(std::find(counted_ptr_counters.begin(), counted_ptr_counters.end(),
-				(void*)object) == counted_ptr_counters.end());
-		counted_ptr_counters.push_back(object);
-		//std::cerr << "Creating CountedPtr to "
+		assert(std::find(shared_ptr_counters.begin(), shared_ptr_counters.end(),
+				(void*)object) == shared_ptr_counters.end());
+		shared_ptr_counters.push_back(object);
+		//std::cerr << "Creating SharedPtr to "
 		//	<< object << ", count = " << cnt << std::endl;
 	}
 	
 	inline void sp_scalar_destructor_hook(void* object, unsigned long cnt, void* ptr) {
-		counted_ptr_counters.remove(object);
-		//std::cerr << "Destroying CountedPtr to "
+		shared_ptr_counters.remove(object);
+		//std::cerr << "Destroying SharedPtr to "
 		//	<< object << ", count = " << cnt << std::endl;
 	}
 
@@ -51,8 +51,8 @@ namespace boost {
 
 #include <boost/shared_ptr.hpp>
 
-#define CountedPtr boost::shared_ptr
-#define PtrCast    boost::dynamic_pointer_cast
+#define SharedPtr boost::shared_ptr
+#define PtrCast   boost::dynamic_pointer_cast
 
-#endif // COUNTED_PTR_H
+#endif // RAUL_SHARED_PTR_H
 

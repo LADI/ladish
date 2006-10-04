@@ -7,16 +7,8 @@ AM_INIT_AUTOMAKE
 
 AC_LANG([C++])
 
-# Checks for compiler
 AC_PROG_CXX
-
-# Check pedantic other stuff autoscan says I should :)
-AC_C_CONST
-AC_C_INLINE
-AC_HEADER_STDBOOL
 AC_TYPE_SIZE_T
-
-# Library building stuff
 AC_PROG_LIBTOOL
 
 # Check for debugging flag
@@ -69,9 +61,9 @@ AC_SUBST(GNOMECANVASMM_CFLAGS)
 AC_SUBST(GNOMECANVASMM_LIBS)
 
 # Check for boost smart pointers
-AC_CHECK_HEADERS(boost/shared_ptr.hpp, ,  
+AC_CHECK_HEADERS([boost/shared_ptr.hpp], [],  
 	AC_MSG_ERROR([You need the boost headers package (e.g. libboost-dev)]))
-AC_CHECK_HEADERS(boost/weak_ptr.hpp, ,  
+AC_CHECK_HEADERS([boost/weak_ptr.hpp], [],  
 	AC_MSG_ERROR([You need the boost headers package (e.g. libboost-dev)]))
 
 # Check for anti-aliased flag

@@ -1,0 +1,5 @@
+RAUL - Realtime Audio Utility Library
+
+Raul is a lightweight header-only C++ convenience library for realtime
+programming, with a (slight) bias towards audio applications.
+

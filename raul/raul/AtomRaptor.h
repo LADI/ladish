@@ -14,13 +14,13 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef REDLAND_ATOM_H
-#define REDLAND_ATOM_H
+#ifndef RAUL_ATOM_RAPTOR_H
+#define RAUL_ATOM_RAPTOR_H
 
 #include <sstream>
 #include <cstring>
 #include <raptor.h>
-#include "util/Atom.h"
+#include "raul/Atom.h"
 
 #define U(x) ((const unsigned char*)(x))
 
@@ -28,7 +28,7 @@
  *
  * (Here to prevent a unnecessary redland dependency for Atom).
  */
-class RedlandAtom {
+class AtomRaptor {
 public:
 	/** Set this atom's value to the object (value) portion of an RDF triple.
 	 *
@@ -90,4 +90,4 @@ public:
 };
 
 
-#endif // REDLAND_ATOM_H
+#endif // RAUL_ATOM_RAPTOR_H

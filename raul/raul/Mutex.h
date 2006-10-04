@@ -14,29 +14,28 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef CONDITION_H
-#define CONDITION_H
+#ifndef RAUL_MUTEX_H
+#define RAUL_MUTEX_H
 
 #include <pthread.h>
 
 
-/** Trivial (but pretty) wrapper around POSIX Conditions (zero memory overhead).
- *
- * A semaphore that isn't a counter and is slow and NOT realtime safe.
+/** Trivial (but pretty) wrapper around POSIX Mutexes (zero overhead).
  */
-class Condition {
+class Mutex {
 public:
-	inline Condition() { pthread_cond_init(&_cond, NULL); }
+	inline Mutex() { pthread_mutex_init(&_mutex, NULL); }
 	
-	inline ~Condition() { pthread_cond_destroy(&_cond); }
-	
-	inline void signal()           { pthread_cond_signal(&_cond); }
-	inline void wait(Mutex& mutex) { pthread_cond_wait(&_cond, &mutex._mutex); }
+	inline ~Mutex() { pthread_mutex_destroy(&_mutex); }
+
+	inline bool try_lock() { return (pthread_mutex_trylock(&_mutex) == 0); }
+	inline void lock()     { pthread_mutex_lock(&_mutex); }
+	inline void unlock()   { pthread_mutex_unlock(&_mutex); }
 
 private:
-	pthread_cond_t _cond;
+	friend class Condition;
+	pthread_mutex_t _mutex;
 };
 
 
-#endif // CONDITION_H
-
+#endif // RAUL_MUTEX_H

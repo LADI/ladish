@@ -2,6 +2,7 @@ AC_PREREQ(2.59)
 AC_INIT([ingen],[svn],[drobilla@connect.carleton.ca])
 AM_INIT_AUTOMAKE
 
+AC_CONFIG_SUBDIRS([raul])
 AC_CONFIG_SUBDIRS([flowcanvas])
 AC_CONFIG_SUBDIRS([patchage])
 AC_CONFIG_SUBDIRS([libslv2])

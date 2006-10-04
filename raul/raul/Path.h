@@ -14,8 +14,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef PATH_H
-#define PATH_H
+#ifndef RAUL_PATH_H
+#define RAUL_PATH_H
 
 #include <cctype>
 #include <string>
@@ -41,7 +41,7 @@ public:
 	/** Construct a Path from an std::string.
 	 *
 	 * It is a fatal error to construct a Path from an invalid string,
-	 * use @ref is_valid first to check.
+	 * use is_valid first to check.
 	 */
 	Path(const std::basic_string<char>& path)
 	: std::basic_string<char>(path)
@@ -53,7 +53,7 @@ public:
 	/** Construct a Path from a C string.
 	 *
 	 * It is a fatal error to construct a Path from an invalid string,
-	 * use @ref is_valid first to check.
+	 * use is_valid first to check.
 	 */
 	Path(const char* cpath)
 	: std::basic_string<char>(cpath)
@@ -248,4 +248,4 @@ public:
 };
 	
 
-#endif // PATH_H
+#endif // RAUL_PATH_H

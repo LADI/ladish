@@ -6,6 +6,11 @@ echo 'Generating necessary files (recursively)...'
 
 aclocal &
 
+echo -n "* raul * \t"
+cd raul
+./autogen.sh
+cd $top
+
 echo -n "* flowcanvas * \t"
 cd flowcanvas
 ./autogen.sh

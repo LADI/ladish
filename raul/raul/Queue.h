@@ -14,8 +14,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef QUEUE_H
-#define QUEUE_H
+#ifndef RAUL_QUEUE_H
+#define RAUL_QUEUE_H
 
 #include <cassert>
 #include <cstdlib>
@@ -157,4 +157,4 @@ Queue<T>::pop()
 }
 
 
-#endif // QUEUE_H
+#endif // RAUL_QUEUE_H

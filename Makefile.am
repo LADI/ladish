@@ -1,1 +1,1 @@
-SUBDIRS = flowcanvas patchage libslv2 omins ingen
+SUBDIRS = raul flowcanvas patchage libslv2 omins ingen

@@ -14,8 +14,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef ATOM_H
-#define ATOM_H
+#ifndef RAUL_ATOM_H
+#define RAUL_ATOM_H
 
 #include <cstdlib>
 #include <cassert>
@@ -124,4 +124,4 @@ private:
 	};
 };
 
-#endif // ATOM_H
+#endif // RAUL_ATOM_H

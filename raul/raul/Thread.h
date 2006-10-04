@@ -14,8 +14,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef THREAD_H
-#define THREAD_H
+#ifndef RAUL_THREAD_H
+#define RAUL_THREAD_H
 
 #include <string>
 #include <iostream>
@@ -38,6 +38,7 @@ public:
 	
 	void set_name(const std::string& name) { _name = name; }
 	
+	/** Launch and start the thread. */
 	virtual void start() {
 		std::cout << "[" << _name << " Thread] Starting." << std::endl;
 
@@ -49,6 +50,7 @@ public:
 		_pthread_exists = true;
 	}
 
+	/** Stop and terminate the thread. */
 	virtual void stop() {
 		if (_pthread_exists) {
 			pthread_cancel(_pthread);
@@ -78,6 +80,11 @@ public:
 
 
 protected:
+	/** Thread function to execute.
+	 *
+	 * This is called once on start, and terminated on stop.
+	 * Implementations likely want to put some infinite loop here.
+	 */
 	virtual void _run() = 0;
 
 private:
@@ -97,4 +104,4 @@ private:
 };
 
 
-#endif // THREAD_H
+#endif // RAUL_THREAD_H

@@ -14,8 +14,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef SEMAPHORE_H
-#define SEMAPHORE_H
+#ifndef RAUL_SEMAPHORE_H
+#define RAUL_SEMAPHORE_H
 
 #include <semaphore.h>
 
@@ -60,4 +60,4 @@ private:
 };
 
 
-#endif // SEMAPHORE_H
+#endif // RAUL_SEMAPHORE_H

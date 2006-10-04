@@ -9,7 +9,6 @@ dist_sharefiles_DATA = patchage.glade
 bin_PROGRAMS = patchage
 patchage_SOURCES = \
 	main.cpp  \
-	Mutex.h \
 	Patchage.h \
 	Patchage.cpp \
 	StateManager.h \

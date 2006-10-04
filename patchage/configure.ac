@@ -17,6 +17,8 @@ AC_CHECK_LIB(pthread, pthread_create, [],
 	AC_MSG_ERROR([*** Patchage requires POSIX threads support]))
 AC_CHECK_HEADER([pthread.h])
 
+PKG_CHECK_MODULES(RAUL, raul >= 0.0.0)
+
 # Check for FlowCanvas
 PKG_CHECK_MODULES(FLOWCANVAS, flowcanvas >= 0.1.0)
 AC_SUBST(FLOWCANVAS_CFLAGS)

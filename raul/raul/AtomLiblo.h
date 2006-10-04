@@ -14,18 +14,18 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef LIBLO_ATOM_H
-#define LIBLO_ATOM_H
+#ifndef RAUL_ATOM_LIBLO_H
+#define RAUL_ATOM_LIBLO_H
 
 #include <lo/lo.h>
-#include "util/Atom.h"
+#include "raul/Atom.h"
 
 
 /** Support for serializing an Atom to/from liblo messages.
  *
  * (Here to prevent a unnecessary liblo dependency for Atom).
  */
-class LibloAtom {
+class AtomLiblo {
 public:
 	static void lo_message_add_atom(lo_message m, const Atom& atom) {
 		switch (atom.type()) {
@@ -70,4 +70,4 @@ public:
 };
 
 
-#endif // LIBLO_ATOM_H
+#endif // RAUL_ATOM_LIBLO_H
