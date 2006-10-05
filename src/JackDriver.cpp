@@ -18,6 +18,7 @@
 #include <cstring>
 #include <string>
 #include <iostream>
+#include "config.h"
 #include <jack/jack.h>
 #include "PatchageFlowCanvas.h"
 #include "JackDriver.h"
@@ -111,10 +112,13 @@ JackDriver::create_port(boost::shared_ptr<PatchageModule> parent, jack_port_t* p
 {
 	const char* const type_str = jack_port_type(port);
 	PortType port_type;
-	if (!strcmp(type_str, JACK_DEFAULT_MIDI_TYPE)) {
-		port_type = JACK_MIDI;
-	} else if (!strcmp(type_str, JACK_DEFAULT_AUDIO_TYPE)) {
+
+	if (!strcmp(type_str, JACK_DEFAULT_AUDIO_TYPE)) {
 		port_type = JACK_AUDIO;
+#ifdef HAVE_JACK_MIDI
+	} else if (!strcmp(type_str, JACK_DEFAULT_MIDI_TYPE)) {
+		port_type = JACK_MIDI;
+#endif
 	} else {
 		cerr << "WARNING: " << jack_port_name(port) << " has unknown type \'" << type_str << "\'" << endl;
 		return boost::shared_ptr<PatchagePort>();
@@ -189,10 +193,13 @@ JackDriver::refresh()
 		// FIXME: leak?  jack docs don't say
 		const char* const type_str = jack_port_type(port);
 		PortType port_type;
-		if (!strcmp(type_str, JACK_DEFAULT_MIDI_TYPE)) {
-			port_type = JACK_MIDI;
-		} else if (!strcmp(type_str, JACK_DEFAULT_AUDIO_TYPE)) {
+
+		if (!strcmp(type_str, JACK_DEFAULT_AUDIO_TYPE)) {
 			port_type = JACK_AUDIO;
+#ifdef HAVE_JACK_MIDI
+		} else if (!strcmp(type_str, JACK_DEFAULT_MIDI_TYPE)) {
+			port_type = JACK_MIDI;
+#endif
 		} else {
 			cerr << "WARNING: " << ports[i] << " has unknown type \'" << type_str << "\'" << endl;
 			continue;
