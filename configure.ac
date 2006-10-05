@@ -5,10 +5,9 @@ AC_CONFIG_SRCDIR([src/main.cpp])
 AC_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE
 
-# Checks for compilers
-AC_PROG_CXX
+AC_LANG([C++])
 
-# Check other stuff..
+AC_PROG_CXX
 AC_TYPE_SIZE_T
 AC_CHECK_FUNCS([strerror])
 
@@ -21,8 +20,6 @@ PKG_CHECK_MODULES(RAUL, raul >= 0.0.0)
 
 # Check for FlowCanvas
 PKG_CHECK_MODULES(FLOWCANVAS, flowcanvas >= 0.1.0)
-AC_SUBST(FLOWCANVAS_CFLAGS)
-AC_SUBST(FLOWCANVAS_LIBS)
 
 # Check for Jack
 PKG_CHECK_MODULES(JACK, jack >= 0.100.0)
@@ -61,8 +58,6 @@ if test "$build_lash" = "yes"; then
 fi
 if test "$have_lash" = "yes"; then
 	AC_DEFINE(HAVE_LASH, 1, [Has lash.h])
-	AC_SUBST(LASH_CFLAGS)
-	AC_SUBST(LASH_LIBS)
 else
 	AC_MSG_WARN([LASH not found, session support will not be built.])
 fi
@@ -98,22 +93,21 @@ fi
 CXXFLAGS="$CXXFLAGS -pipe -Wall -fmessage-length=139 -fdiagnostics-show-location=every-line"
 CFLAGS="$CFLAGS -pipe -Wall -fmessage-length=139 -fdiagnostics-show-location=every-line"
 
-# Check for GTKMM
 PKG_CHECK_MODULES(GTKMM, gtkmm-2.4)
-AC_SUBST(GTKMM_CFLAGS)
-AC_SUBST(GTKMM_LIBS)
-
-# Check for gnomecanvasmm
 PKG_CHECK_MODULES(GNOMECANVASMM, libgnomecanvasmm-2.6)
-AC_SUBST(GNOMECANVASMM_CFLAGS)
-AC_SUBST(GNOMECANVASMM_LIBS)
-
-# Check for libglademm
 PKG_CHECK_MODULES(LIBGLADEMM, libglademm-2.4)
-AC_SUBST(LIBGLADEMM_CFLAGS)
-AC_SUBST(LIBGLADEMM_LIBS)
 
-# Write it!
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
+
 AC_OUTPUT
+
+AC_MSG_RESULT([])
+AC_MSG_RESULT([**********************************************************************])
+AC_MSG_RESULT([Patchage build configuration:])
+AC_MSG_RESULT([])
+AC_MSG_RESULT([Alsa support: $ALSA_FOUND])
+AC_MSG_RESULT([Lash support: $have_lash])
+AC_MSG_RESULT([**********************************************************************])
+AC_MSG_RESULT([])
+
