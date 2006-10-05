@@ -24,6 +24,15 @@ PKG_CHECK_MODULES(FLOWCANVAS, flowcanvas >= 0.1.0)
 # Check for Jack
 PKG_CHECK_MODULES(JACK, jack >= 0.100.0)
 
+# Jack MIDI
+build_jack_midi="yes"
+AC_ARG_ENABLE(jack_midi,
+	[AS_HELP_STRING(--enable-jack-midi, [Enable Jack MIDI support (yes)])],
+	[ if test x$enable_jack_midi = xno ; then build_jack_midi=no ; fi ])
+if test "$build_jack_midi" = "yes"; then
+	AC_DEFINE(HAVE_JACK_MIDI, 1, [whether or not we have Jack MIDI])
+fi
+
 # Check for ALSA
 enable_alsa="yes"
 AC_ARG_ENABLE(alsa,

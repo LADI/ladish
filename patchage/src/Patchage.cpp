@@ -264,6 +264,7 @@ Patchage::status_message(const string& msg)
 void
 Patchage::attach_menu_items()
 {
+#ifdef HAVE_LASH
 	m_lash_driver->signal_attached.connect(sigc::bind(
 			sigc::mem_fun(m_menu_lash_launch, &Gtk::MenuItem::set_sensitive), false));
 	m_lash_driver->signal_attached.connect(sigc::bind(
@@ -277,7 +278,8 @@ Patchage::attach_menu_items()
 			sigc::mem_fun(m_menu_lash_connect, &Gtk::MenuItem::set_sensitive), true));
 	m_lash_driver->signal_detached.connect(sigc::bind(
 			sigc::mem_fun(m_menu_lash_disconnect, &Gtk::MenuItem::set_sensitive), false));
-	
+#endif
+
 	m_jack_driver->signal_attached.connect(sigc::bind(
 			sigc::mem_fun(m_menu_jack_launch, &Gtk::MenuItem::set_sensitive), false));
 	m_jack_driver->signal_attached.connect(sigc::bind(
