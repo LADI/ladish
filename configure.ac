@@ -1,4 +1,4 @@
-AC_INIT([LASH],[0.5.1])
+AC_INIT([LASH],[0.5.2pre])
 AC_CONFIG_SRCDIR([lash/types.h])
 AC_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE
@@ -212,10 +212,14 @@ AC_MSG_RESULT($LASH_CFLAGS)
 AC_MSG_CHECKING(LASH_LIBS)
 AC_MSG_RESULT($LASH_LIBS)
 
+# For the manual
+DATE="`date -u`"
+AC_SUBST(DATE)
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([lash-1.0.pc])
 AC_CONFIG_FILES([m4/Makefile])
+AC_CONFIG_FILES([docs/lash-manual.texi])
 AC_CONFIG_FILES([docs/Makefile])
 AC_CONFIG_FILES([docs/lash-manual-html-one-page/Makefile])
 AC_CONFIG_FILES([docs/lash-manual-html-split/Makefile])

@@ -7,7 +7,7 @@
 
 @ifinfo
 This is the LASH Audio Session Handler Reference Manual,
-Edition 0.5.1, March 2006 for LASH version 0.5.1.
+Edition @PACKAGE_VERSION@, @DATE@ for LASH version @PACKAGE_VERSION@.
 
 Copyright @copyright{} 2002, 2003 Robert Ham (rah@@bash.sh)
 Copyright @copyright{} 2005, 2006 Dave Robillard (drobilla@@connect.carleton.ca)
@@ -25,8 +25,8 @@ Free Documentation License''.
 @titlepage
 @title LASH Reference Manual
 @subtitle Audio application session management and configuration
-@subtitle Edition 0.5.1, March 2006
-@subtitle Covering LASH 0.5.1
+@subtitle Edition @PACKAGE_VERSION@, @DATE@
+@subtitle Covering LASH @PACKAGE_VERSION@
 @author Bob Ham (rah@@bash.sh)
 @author Dave Robillard (drobilla@@connect.carleton.ca)
 
@@ -51,19 +51,19 @@ Free Documentation License''.
 @ifinfo
 
 This is the LASH Audio Session Handler
-Reference Manual, edition 0.5.1, March 2006 for LASH version 0.5.1.
+Reference Manual, edition @PACKAGE_VERSION@, @DATE@ for LASH version @PACKAGE_VERSION@.
 
 @url{http://www.nongnu.org/lash}
 
 @end ifinfo
 
 @menu
-* Introduction::	What LASH is all about
-* Copying LASH::	How you can copy and distribute the LASH source code
-* Installation::	How to get LASH onto your computer
-* Server::		How to use the LASH server, @command{lashd}
-* Server interface::	How to use the simple LASH server interface, @command{lash_control}
-* Client reference::	How to program LASH clients using @code{liblash}
+* Introduction::      What LASH is all about
+* Copying LASH::      How you can copy and distribute the LASH source code
+* Installation::      How to get LASH onto your computer
+* Server::            How to use the LASH server, @command{lashd}
+* Server interface::  How to use the simple LASH server interface, @command{lash_control}
+* Client reference::  How to program LASH clients using @code{liblash}
 
 Appendicies
 * GNU Free Documentation License::             How you can copy and distribute this document.
@@ -166,8 +166,8 @@ The LASH Synth client has an optional GUI which also uses the GTK+
 First off, you need to download the package.  It is available from
 the LASH webpage, @url{http://www.nongnu.org/lash}.  After you have
 downloaded it, unpack the tarball into a directory using @command{tar
--xzf /where/ever/you/put/lash-0.5.1.tar.gz} and change into the source
-directory with @command{cd lash-0.5.1}.
+-xzf /where/ever/you/put/lash-@PACKAGE_VERSION@.tar.gz} and change into
+the source directory with @command{cd lash-@PACKAGE_VERSION@}.
 
 The package uses the GNU autotools for configuration and makefile
 creation.  In order to install the package, you must complete three steps:

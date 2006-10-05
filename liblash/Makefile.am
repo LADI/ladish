@@ -27,12 +27,12 @@ liblash_la_LIBADD = \
 	-lpthread
 
 liblash_la_LDFLAGS = \
-	-export-dynamic -version-info 2:0:0
+	-export-dynamic -version-info 2:0:1
 
 #
 # Library versions
+# (< 2:0:0 was the "ladcca" days)
 #
-# 0.3.0: 1:1:0
-# 0.2: 1:0:0
-# 0.1: 0:0:0
-#
+# 0.5.0: 2:0:0
+# 0.5.1: 2:1:0
+# 0.5.2: 2:0:1

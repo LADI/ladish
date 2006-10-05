@@ -15,6 +15,9 @@ if ! test -e ltmain.sh; then
   fi
 fi
 
+# Shuts up automake..
+touch docs/lash-manual.texi
+
 libtoolize --copy --force \
   && aclocal -I m4 \
   && autoheader \

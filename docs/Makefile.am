@@ -1,10 +1,8 @@
 SUBDIRS = lash-manual-html-one-page lash-manual-html-split
 
-info_TEXINFOS = lash-manual.texi
+#info_TEXINFOS = lash-manual.texi
 
-EXTRA_DIST = api-proposal.html fdl.texi
-
-
+EXTRA_DIST = api-proposal.html fdl.texi lash-manual.texi.in
 
 if HAVE_TEXI2HTML
 
@@ -12,7 +10,7 @@ all-local: html-manual
 
 html-manual: html-manual-stamp
 
-html-manual-stamp: lash-manual.texi
+html-manual-stamp: lash-manual.texi.in
 	if test ! -d lash-manual-html-one-page; then \
 	  mkdir lash-manual-html-one-page; \
 	fi
