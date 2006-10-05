@@ -99,6 +99,7 @@ PKG_CHECK_MODULES(LIBGLADEMM, libglademm-2.4)
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
+AC_CONFIG_FILES([patchage.desktop])
 
 AC_OUTPUT
 
