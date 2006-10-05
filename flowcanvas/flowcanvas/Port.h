@@ -20,6 +20,7 @@
 #include <string>
 #include <list>
 #include <vector>
+#include <inttypes.h>
 #include <libgnomecanvasmm.h>
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
