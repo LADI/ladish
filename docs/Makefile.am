@@ -18,9 +18,9 @@ html-manual-stamp: lash-manual.texi.in
 	  mkdir -lash-manual-html-split; \
 	fi
 	cd lash-manual-html-one-page && \
-	  texi2html -number -monolithic ../$(top_srcdir)/docs/lash-manual.texi
+	  texi2html --number ../$(top_srcdir)/docs/lash-manual.texi
 	cd lash-manual-html-split && \
-	  texi2html -menu -number -split_node ../$(top_srcdir)/docs/lash-manual.texi
+	  texi2html --number --split=chapter ../$(top_srcdir)/docs/lash-manual.texi
 	touch html-manual-stamp
 
 CLEANFILES = html-manual-stamp lash-manual.cps
