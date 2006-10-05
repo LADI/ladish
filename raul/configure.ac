@@ -44,8 +44,6 @@ AC_ARG_ENABLE(raptor,
 if test "$build_raptor" = "yes"; then
 	PKG_CHECK_MODULES(RAPTOR, raptor >= 1.4.0, [],
 		AC_MSG_ERROR([RDF support requires raptor (>= 1.4.0)]))
-	AC_SUBST(RAPTOR_CFLAGS)
-	AC_SUBST(RAPTOR_LIBS)
 fi
 AM_CONDITIONAL(WITH_RAPTOR, [test "$build_raptor" = "yes"])
 
@@ -57,8 +55,6 @@ AC_ARG_ENABLE(liblo,
 if test "$build_liblo" = "yes"; then
 	PKG_CHECK_MODULES(LIBLO, liblo >= 0.22, [],
 		AC_MSG_ERROR([OSC support requires liblo (>= 0.22)]))
-	AC_SUBST(LIBLO_LIBS)
-	AC_SUBST(LIBLO_CFLAGS)
 fi
 AM_CONDITIONAL(WITH_LIBLO, [test "$build_liblo" = "yes"])
 
@@ -71,9 +67,12 @@ AC_CONFIG_FILES([raul.pc])
 AC_OUTPUT
 
 AC_MSG_RESULT([])
+AC_MSG_RESULT([**********************************************************************])
 AC_MSG_RESULT([Raul build configuration:])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([OSC supprt:     $build_liblo])
 AC_MSG_RESULT([RDF supprt:     $build_raptor])
 AC_MSG_RESULT([Smart Pointers: $build_smart_pointers])
+AC_MSG_RESULT([**********************************************************************])
+AC_MSG_RESULT([])
 

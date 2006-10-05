@@ -64,8 +64,17 @@ fi
 CFLAGS="$CFLAGS -pipe -fmessage-length=139 -fdiagnostics-show-location=every-line"
 
 
-
-# Write it!
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
+
 AC_OUTPUT
+
+
+AC_MSG_RESULT([])
+AC_MSG_RESULT([**********************************************************************])
+AC_MSG_RESULT([Omins build configuration:])
+AC_MSG_RESULT([])
+AC_MSG_RESULT([Install directory: $ladspadir])
+AC_MSG_RESULT([**********************************************************************])
+AC_MSG_RESULT([])
+

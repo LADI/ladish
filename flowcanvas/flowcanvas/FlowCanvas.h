@@ -52,7 +52,7 @@ class Module;
  * \ingroup FlowCanvas
  */
 class FlowCanvas : public boost::enable_shared_from_this<FlowCanvas>
-                 , public /*CANVASBASE*/Gnome::Canvas::Canvas
+                 , public /*CANVASBASE*/Gnome::Canvas::CanvasAA
 // (CANVASBASE is a hook for a sed script in configure.ac)
 {
 public:

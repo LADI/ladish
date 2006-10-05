@@ -16,6 +16,11 @@ cd flowcanvas
 ./autogen.sh
 cd $top
 
+echo -n "* patchage * \t"
+cd patchage
+./autogen.sh
+cd $top
+
 echo -n "* libslv2 * \t"
 cd libslv2
 ./autogen.sh

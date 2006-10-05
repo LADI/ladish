@@ -21,7 +21,7 @@
 #include <string>
 #include <boost/shared_ptr.hpp>
 #include <jack/jack.h>
-#include "Mutex.h"
+#include <raul/Mutex.h>
 #include "Driver.h"
 class Patchage;
 class PatchageFlowCanvas;

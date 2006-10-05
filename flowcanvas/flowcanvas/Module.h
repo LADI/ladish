@@ -88,9 +88,9 @@ protected:
 	
 	bool is_within(const Gnome::Canvas::Rect& rect);
 
-	virtual void on_double_click(GdkEventButton* ev) {}
-	virtual void on_middle_click(GdkEventButton* ev) {}
-	virtual void on_right_click(GdkEventButton* ev)  {}
+	virtual void on_double_click(GdkEventButton*) {}
+	virtual void on_middle_click(GdkEventButton*) {}
+	virtual void on_right_click(GdkEventButton*)  {}
 
 	double m_border_width;
 	double m_width;

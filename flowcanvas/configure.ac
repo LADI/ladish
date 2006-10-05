@@ -50,15 +50,8 @@ if test "$pointer_debug" = "yes"; then
   CXXFLAGS+=" -DBOOST_SP_ENABLE_DEBUG_HOOKS"
 fi
 
-# Check for GTKMM
 PKG_CHECK_MODULES(GTKMM, gtkmm-2.4)
-AC_SUBST(GTKMM_CFLAGS)
-AC_SUBST(GTKMM_LIBS)
-
-# Check for gnomecanvasmm
 PKG_CHECK_MODULES(GNOMECANVASMM, libgnomecanvasmm-2.6)
-AC_SUBST(GNOMECANVASMM_CFLAGS)
-AC_SUBST(GNOMECANVASMM_LIBS)
 
 # Check for boost smart pointers
 AC_CHECK_HEADERS([boost/shared_ptr.hpp], [],  
@@ -80,10 +73,20 @@ else
 		[sed 's/\(\/\*CANVASBASE\*\/\).*/\1Gnome::Canvas::Canvas/' -i flowcanvas/FlowCanvas.h])
 fi
 
-# Write it!
+
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
 AC_CONFIG_FILES([flowcanvas/Makefile])
 AC_CONFIG_FILES([doc/Makefile])
 AC_CONFIG_FILES([flowcanvas.pc])
+
 AC_OUTPUT
+
+AC_MSG_RESULT([])
+AC_MSG_RESULT([**********************************************************************])
+AC_MSG_RESULT([FlowCanvas build configuration:])
+AC_MSG_RESULT([])
+AC_MSG_RESULT([Anti-Aliasing: $anti_alias])
+AC_MSG_RESULT([**********************************************************************])
+AC_MSG_RESULT([])
+

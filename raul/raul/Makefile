@@ -62,21 +62,21 @@ HEADERS = $(raulinclude_HEADERS)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} /home/dave/code/codesonnet/raul/missing --run aclocal-1.9
+ACLOCAL = ${SHELL} /home/dave/code/codesonnet/missing --run aclocal-1.9
 AMDEP_FALSE = #
 AMDEP_TRUE = 
-AMTAR = ${SHELL} /home/dave/code/codesonnet/raul/missing --run tar
-AUTOCONF = ${SHELL} /home/dave/code/codesonnet/raul/missing --run autoconf
-AUTOHEADER = ${SHELL} /home/dave/code/codesonnet/raul/missing --run autoheader
-AUTOMAKE = ${SHELL} /home/dave/code/codesonnet/raul/missing --run automake-1.9
+AMTAR = ${SHELL} /home/dave/code/codesonnet/missing --run tar
+AUTOCONF = ${SHELL} /home/dave/code/codesonnet/missing --run autoconf
+AUTOHEADER = ${SHELL} /home/dave/code/codesonnet/missing --run autoheader
+AUTOMAKE = ${SHELL} /home/dave/code/codesonnet/missing --run automake-1.9
 AWK = gawk
 BOOST_CFLAGS = 
 BOOST_LIBS = 
 CPPFLAGS = 
 CXX = g++
 CXXCPP = g++ -E
-CXXDEPMODE = depmode=none
-CXXFLAGS = -pipe -O2 -march=pentium4 -msse -msse2 -mfpmath=sse -ffast-math -ftree-vectorize -DNDEBUG -finline-functions -fomit-frame-pointer -fmessage-length=139 -fdiagnostics-show-location=every-line
+CXXDEPMODE = depmode=gcc3
+CXXFLAGS = -O2 -march=athlon64 -fomit-frame-pointer
 CYGPATH_W = echo
 DEFS = -DPACKAGE_NAME=\"raul\" -DPACKAGE_TARNAME=\"raul\" -DPACKAGE_VERSION=\"0.0.0\" -DPACKAGE_STRING=\"raul\ 0.0.0\" -DPACKAGE_BUGREPORT=\"drobilla@connect.carleton.ca\" -DPACKAGE=\"raul\" -DVERSION=\"0.0.0\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DSTDC_HEADERS=1 -DHAVE_STDLIB_H=1 -DHAVE_MALLOC=1 -DHAVE_STRDUP=1 -DHAVE_STRERROR=1
 DEPDIR = .deps
@@ -96,7 +96,7 @@ LIBLO_LIBS = -L/usr/local/lib -llo -lpthread
 LIBOBJS = 
 LIBS = 
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /home/dave/code/codesonnet/raul/missing --run makeinfo
+MAKEINFO = ${SHELL} /home/dave/code/codesonnet/missing --run makeinfo
 OBJEXT = o
 PACKAGE = raul
 PACKAGE_BUGREPORT = drobilla@connect.carleton.ca
@@ -119,8 +119,8 @@ WITH_LIBLO_TRUE =
 WITH_RAPTOR_FALSE = #
 WITH_RAPTOR_TRUE = 
 ac_ct_CXX = g++
-am__fastdepCXX_FALSE = 
-am__fastdepCXX_TRUE = #
+am__fastdepCXX_FALSE = #
+am__fastdepCXX_TRUE = 
 am__include = include
 am__leading_dot = .
 am__quote = 
@@ -137,7 +137,7 @@ host_alias =
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = /home/dave/code/codesonnet/raul/install-sh
+install_sh = /home/dave/code/codesonnet/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
