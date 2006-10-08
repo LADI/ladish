@@ -1,7 +1,4 @@
 0.5.2:
-
-* 
-0.5.2:
 * support for building without ALSA
 * server auto-launching bug fixes
 * removed dependence on /etc/services (sandbox clean)
