@@ -21,8 +21,8 @@ cd patchage
 ./autogen.sh
 cd $top
 
-echo -n "* libslv2 * \t"
-cd libslv2
+echo -n "* slv2 * \t"
+cd slv2
 ./autogen.sh
 cd $top
 
