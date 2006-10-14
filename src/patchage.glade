@@ -5,7 +5,6 @@
 
 <widget class="GtkWindow" id="patchage_win">
   <property name="border_width">1</property>
-  <property name="visible">True</property>
   <property name="title" translatable="yes">Patchage</property>
   <property name="type">GTK_WINDOW_TOPLEVEL</property>
   <property name="window_position">GTK_WIN_POS_NONE</property>
@@ -536,7 +535,7 @@
 	      <property name="height_request">407</property>
 	      <property name="visible">True</property>
 	      <property name="can_focus">True</property>
-	      <property name="position">1</property>
+	      <property name="position">1000</property>
 
 	      <child>
 		<widget class="GtkScrolledWindow" id="canvas_scrolledwindow">
