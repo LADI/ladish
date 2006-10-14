@@ -51,6 +51,11 @@ namespace boost {
 
 #include <boost/shared_ptr.hpp>
 
+#ifdef BOOST_AC_USE_PTHREADS
+#error "Boost is using mutex locking for pointer reference counting."
+#error "This is VERY slow.  Please report your platform."
+#endif
+
 #define SharedPtr boost::shared_ptr
 #define PtrCast   boost::dynamic_pointer_cast
 

@@ -41,14 +41,14 @@ CXXFLAGS="$CXXFLAGS -pipe -fmessage-length=139 -fdiagnostics-show-location=every
 CFLAGS="$CFLAGS -pipe  -fmessage-length=139 -fdiagnostics-show-location=every-line"
 
 # Boost shared_ptr debugging
-pointer_debug="no"
-AC_ARG_ENABLE(pointer_debug,
-	[AS_HELP_STRING(--enable-pointer-debug, [Enable smart pointer debugging (no)])],
-	[pointer_debug="$enableval"])
-if test "$pointer_debug" = "yes"; then
-  CFLAGS+=" -DBOOST_SP_ENABLE_DEBUG_HOOKS"
-  CXXFLAGS+=" -DBOOST_SP_ENABLE_DEBUG_HOOKS"
-fi
+#pointer_debug="no"
+#AC_ARG_ENABLE(pointer_debug,
+#	[AS_HELP_STRING(--enable-pointer-debug, [Enable smart pointer debugging (no)])],
+#	[pointer_debug="$enableval"])
+#if test "$pointer_debug" = "yes"; then
+#  CFLAGS+=" -DBOOST_SP_ENABLE_DEBUG_HOOKS"
+#  CXXFLAGS+=" -DBOOST_SP_ENABLE_DEBUG_HOOKS"
+#fi
 
 PKG_CHECK_MODULES(GTKMM, gtkmm-2.4)
 PKG_CHECK_MODULES(GNOMECANVASMM, libgnomecanvasmm-2.6)

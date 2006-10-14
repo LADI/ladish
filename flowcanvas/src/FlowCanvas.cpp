@@ -412,8 +412,8 @@ FlowCanvas::are_connected(boost::shared_ptr<const Port> port1, boost::shared_ptr
 	ConnectionList::const_iterator c;
 
 	for (c = m_connections.begin(); c != m_connections.end(); ++c) {
-		boost::shared_ptr<Port> src = (*c)->source().lock();
-		boost::shared_ptr<Port> dst = (*c)->dest().lock();
+		const boost::shared_ptr<Port> src = (*c)->source().lock();
+		const boost::shared_ptr<Port> dst = (*c)->dest().lock();
 		if (!src || !dst)
 			continue;
 
@@ -432,8 +432,8 @@ FlowCanvas::get_connection(boost::shared_ptr<Port> port1, boost::shared_ptr<Port
 	assert(port2);
 	
 	for (ConnectionList::iterator i = m_connections.begin(); i != m_connections.end(); ++i) {
-		boost::shared_ptr<Port> src = (*i)->source().lock();
-		boost::shared_ptr<Port> dst = (*i)->dest().lock();
+		const boost::shared_ptr<Port> src = (*i)->source().lock();
+		const boost::shared_ptr<Port> dst = (*i)->dest().lock();
 		if (!src || !dst)
 			continue;
 
@@ -482,8 +482,8 @@ FlowCanvas::add_connection(boost::shared_ptr<Port> port1, boost::shared_ptr<Port
 bool
 FlowCanvas::add_connection(boost::shared_ptr<Connection> c)
 {
-	boost::shared_ptr<Port> src = c->source().lock();
-	boost::shared_ptr<Port> dst = c->dest().lock();
+	const boost::shared_ptr<Port> src = c->source().lock();
+	const boost::shared_ptr<Port> dst = c->dest().lock();
 
 	if (src && dst) {
 		src->add_connection(c);
@@ -505,10 +505,16 @@ FlowCanvas::remove_connection(boost::shared_ptr<Connection> connection)
 	ConnectionList::iterator i = find(m_connections.begin(), m_connections.end(), connection);
 
 	if (i != m_connections.end()) {
-		boost::shared_ptr<Connection> c = *i;
+		const boost::shared_ptr<Connection> c = *i;
+		
+		const boost::shared_ptr<Port> src = c->source().lock();
+		const boost::shared_ptr<Port> dst = c->dest().lock();
 
-		c->source().lock()->remove_connection(c);
-		c->dest().lock()->remove_connection(c);
+		if (src)
+			src->remove_connection(c);
+
+		if (dst)
+			dst->remove_connection(c);
 		
 		m_connections.erase(i);
 	}
@@ -532,8 +538,12 @@ FlowCanvas::destroy_all_flagged_connections()
 		if ((*c)->flagged()) {
 			ConnectionList::iterator next = c;
 			++next;
-			(*c)->source().lock()->remove_connection(*c);
-			(*c)->dest().lock()->remove_connection(*c);
+			const boost::shared_ptr<Port> src = (*c)->source().lock();
+			const boost::shared_ptr<Port> dst = (*c)->dest().lock();
+			if (src)
+				src->remove_connection(*c);
+			if (dst)
+				dst->remove_connection(*c);
 			m_connections.erase(c);
 			c = next;
 		} else {
@@ -551,8 +561,12 @@ FlowCanvas::destroy_all_connections()
 	m_remove_objects = false;
 
 	for (ConnectionList::iterator c = m_connections.begin(); c != m_connections.end(); ++c) {
-		(*c)->source().lock()->remove_connection(*c);
-		(*c)->dest().lock()->remove_connection(*c);
+		const boost::shared_ptr<Port> src = (*c)->source().lock();
+		const boost::shared_ptr<Port> dst = (*c)->dest().lock();
+		if (src)
+			src->remove_connection(*c);
+		if (dst)
+			dst->remove_connection(*c);
 	}
 
 	m_connections.clear();
@@ -898,18 +912,20 @@ FlowCanvas::connection_drag_handler(GdkEvent* event)
 
 			if (p) {
 				boost::shared_ptr<Module> m = p->module().lock();
-				if (p != m_selected_port) {
-					if (snapped_port)
-						snapped_port->set_highlighted(false);
-					p->set_highlighted(true);
-					snapped_port = p;
+				if (m) {
+					if (p != m_selected_port) {
+						if (snapped_port)
+							snapped_port->set_highlighted(false);
+						p->set_highlighted(true);
+						snapped_port = p;
+					}
+					drag_module->property_x() = m->property_x().get_value();
+					drag_module->m_module_box.property_x2() = m->m_module_box.property_x2().get_value();
+					drag_module->property_y() = m->property_y().get_value();
+					drag_module->m_module_box.property_y2() = m->m_module_box.property_y2().get_value();
+					drag_port->property_x() = p->property_x().get_value();
+					drag_port->property_y() = p->property_y().get_value();
 				}
-				drag_module->property_x() = m->property_x().get_value();
-				drag_module->m_module_box.property_x2() = m->m_module_box.property_x2().get_value();
-				drag_module->property_y() = m->property_y().get_value();
-				drag_module->m_module_box.property_y2() = m->m_module_box.property_y2().get_value();
-				drag_port->property_x() = p->property_x().get_value();
-				drag_port->property_y() = p->property_y().get_value();
 			} else {  // off the port now, unsnap
 				if (snapped_port)
 					snapped_port->set_highlighted(false);
@@ -939,18 +955,20 @@ FlowCanvas::connection_drag_handler(GdkEvent* event)
 			
 			if (p && p->is_input() != m_connect_port->is_input()) {
 				boost::shared_ptr<Module> m = p->module().lock();
-				p->set_highlighted(true);
-				snapped_port = p;
-				snapped = true;
-				// Make drag module and port exactly the same size/loc as the snapped
-				drag_module->move_to(m->property_x().get_value(), m->property_y().get_value());
-				drag_module->set_width(m->width());
-				drag_module->set_height(m->height());
-				drag_port->property_x() = p->property_x().get_value();
-				drag_port->property_y() = p->property_y().get_value();
-				// Make the drag port as wide as the snapped port so the connection coords are the same
-				drag_port->m_rect.property_x2() = p->m_rect.property_x2().get_value();
-				drag_port->m_rect.property_y2() = p->m_rect.property_y2().get_value();
+				if (m) {
+					p->set_highlighted(true);
+					snapped_port = p;
+					snapped = true;
+					// Make drag module and port exactly the same size/loc as the snapped
+					drag_module->move_to(m->property_x().get_value(), m->property_y().get_value());
+					drag_module->set_width(m->width());
+					drag_module->set_height(m->height());
+					drag_port->property_x() = p->property_x().get_value();
+					drag_port->property_y() = p->property_y().get_value();
+					// Make the drag port as wide as the snapped port so the connection coords are the same
+					drag_port->m_rect.property_x2() = p->m_rect.property_x2().get_value();
+					drag_port->m_rect.property_y2() = p->m_rect.property_y2().get_value();
+				}
 			} else {
 				drag_module->property_x() = x;
 				drag_module->property_y() = y - 7; // FIXME: s#7#cursor_height/2#

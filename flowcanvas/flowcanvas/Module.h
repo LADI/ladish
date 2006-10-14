@@ -47,6 +47,7 @@ public:
 	inline boost::shared_ptr<Port> get_port(const string& name) const;
 	
 	void                    add_port(boost::shared_ptr<Port> port);
+	void                    remove_port(boost::shared_ptr<Port> port);
 	boost::shared_ptr<Port> remove_port(const string& name);
 	boost::shared_ptr<Port> port_at(double x, double y);
 
@@ -82,8 +83,6 @@ public:
 	int base_color()   const     { return 0x1F2A3CFF; }
 
 protected:
-	void remove_port(boost::shared_ptr<Port> port);
-
 	bool module_event(GdkEvent* event);
 	
 	bool is_within(const Gnome::Canvas::Rect& rect);

@@ -67,7 +67,6 @@ LashDriver::attach(bool launch_daemon)
 void
 LashDriver::detach()
 {
-	// FIXME: send some notification that we're gone??
 	m_client = NULL;
 	m_app->status_message("[LASH] Detached");
 	signal_detached.emit();
