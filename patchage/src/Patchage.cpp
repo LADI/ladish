@@ -111,16 +111,10 @@ Patchage::Patchage(int argc, char** argv)
 	xml->get_widget("zoom_full_but", m_zoom_full_button);
 	xml->get_widget("zoom_normal_but", m_zoom_normal_button);
 	
-	update_state();
-	m_main_paned->set_position(m_main_paned->get_height() - 20);
-
 	m_canvas_scrolledwindow->add(*m_canvas);
 	//m_canvas_scrolledwindow->signal_event().connect(sigc::mem_fun(m_canvas, &FlowCanvas::scroll_event_handler));
 	m_canvas->scroll_to(static_cast<int>(m_canvas->width()/2 - 320),
 	                       static_cast<int>(m_canvas->height()/2 - 240)); // FIXME: hardcoded
-
-	// Idle callback, check if we need to refresh
-	Glib::signal_timeout().connect(sigc::mem_fun(this, &Patchage::idle_callback), 100);
 
 	m_zoom_slider->signal_value_changed().connect(sigc::mem_fun(this, &Patchage::zoom_changed));
 	m_zoom_normal_button->signal_clicked().connect(sigc::bind(
@@ -148,7 +142,14 @@ Patchage::Patchage(int argc, char** argv)
 
 	attach_menu_items();
 	
+	update_state();
+
 	m_canvas->show();
+
+	m_main_paned->set_position(INT_MAX);
+	
+	// Idle callback, check if we need to refresh
+	Glib::signal_timeout().connect(sigc::mem_fun(this, &Patchage::idle_callback), 100);
 }
 
 
