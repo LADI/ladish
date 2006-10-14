@@ -75,12 +75,12 @@ JackDriver::attach(bool launch_daemon)
 void
 JackDriver::detach() 
 {
-	if (m_client != NULL) {
+	if (m_client) {
 		jack_deactivate(m_client);
 		jack_client_close(m_client);
 		m_client = NULL;
-		signal_detached.emit();
 		destroy_all_ports();
+		signal_detached.emit();
 		m_app->status_message("[JACK] Detached");
 	}
 }
@@ -97,12 +97,12 @@ JackDriver::destroy_all_ports()
 		for (PortVector::iterator p = ports.begin(); p != ports.end(); ++p) {
 			boost::shared_ptr<PatchagePort> port = boost::dynamic_pointer_cast<PatchagePort>(*p);
 			if (port && port->type() == JACK_AUDIO || port->type() == JACK_MIDI) {
-				port.reset();
+				m->second->remove_port(port);
 			}
 		}
 
 		if (m->second->ports().empty())
-			m->second.reset();
+			m_app->canvas()->remove_module(m->second->name());
 	}
 }
 
@@ -144,8 +144,8 @@ JackDriver::refresh()
 	if (m_client == NULL) {
 		// Shutdown
 		if (m_is_dirty) {
-			signal_detached.emit();
 			destroy_all_ports();
+			signal_detached.emit();
 		}
 		m_is_dirty = false;
 		m_mutex.unlock();

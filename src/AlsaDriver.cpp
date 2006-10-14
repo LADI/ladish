@@ -73,7 +73,7 @@ AlsaDriver::attach(bool /*launch_daemon*/)
 void
 AlsaDriver::detach() 
 {
-	if (m_seq != NULL) {
+	if (m_seq) {
 		pthread_cancel(m_refresh_thread);
 		pthread_join(m_refresh_thread, NULL);
 		snd_seq_close(m_seq);

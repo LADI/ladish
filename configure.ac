@@ -98,6 +98,16 @@ if test "$strict" = "yes"; then
   CXXFLAGS="$CXXFLAGS -ansi -Wall -Wextra -Wno-unused-parameter -Wconversion -Winit-self -Woverloaded-virtual -Wsign-promo"
 fi
 
+# Boost shared_ptr debugging
+pointer_debug="no"
+AC_ARG_ENABLE(pointer_debug,
+	[AS_HELP_STRING(--enable-pointer-debug, [Enable smart pointer debugging (no)])],
+	[pointer_debug="$enableval"])
+if test "$pointer_debug" = "yes"; then
+  CFLAGS+=" -DBOOST_SP_ENABLE_DEBUG_HOOKS"
+  CXXFLAGS+=" -DBOOST_SP_ENABLE_DEBUG_HOOKS"
+fi
+
 # Bolt on a few specific flags to CXXFLAGS that should always be used
 CXXFLAGS="$CXXFLAGS -pipe -Wall -fmessage-length=139 -fdiagnostics-show-location=every-line"
 CFLAGS="$CFLAGS -pipe -Wall -fmessage-length=139 -fdiagnostics-show-location=every-line"

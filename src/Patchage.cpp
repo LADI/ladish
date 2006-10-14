@@ -28,6 +28,8 @@
 #include "LashDriver.h"
 #endif
 
+// FIXME: include to avoid undefined reference to boost SP debug hooks stuff
+#include <raul/SharedPtr.h>
 
 Patchage::Patchage(int argc, char** argv)
 : 
@@ -47,6 +49,8 @@ Patchage::Patchage(int argc, char** argv)
 	m_state_manager = new StateManager();
 	m_canvas = boost::shared_ptr<PatchageFlowCanvas>(new PatchageFlowCanvas(this, 1600*2, 1200*2));
 	m_jack_driver = new JackDriver(this);
+	m_jack_driver->signal_detached.connect(sigc::mem_fun(this, &Patchage::queue_refresh));
+
 #ifdef HAVE_ALSA
 	m_alsa_driver = new AlsaDriver(this);
 #endif
@@ -108,6 +112,7 @@ Patchage::Patchage(int argc, char** argv)
 	xml->get_widget("zoom_normal_but", m_zoom_normal_button);
 	
 	update_state();
+	m_main_paned->set_position(m_main_paned->get_height() - 20);
 
 	m_canvas_scrolledwindow->add(*m_canvas);
 	//m_canvas_scrolledwindow->signal_event().connect(sigc::mem_fun(m_canvas, &FlowCanvas::scroll_event_handler));
@@ -142,7 +147,6 @@ Patchage::Patchage(int argc, char** argv)
 	m_menu_help_about->signal_activate().connect(     sigc::mem_fun(this, &Patchage::menu_help_about));
 
 	attach_menu_items();
-	m_main_paned->set_position(m_main_paned->get_height() - 20);
 	
 	m_canvas->show();
 }
@@ -231,15 +235,16 @@ Patchage::update_state()
 	for (ModuleMap::iterator i = m_canvas->modules().begin(); i != m_canvas->modules().end(); ++i)
 		(*i).second->load_location();
 
-	cerr << "[Patchage] Resizing window: (" << m_state_manager->get_window_size().x
-		<< "," << m_state_manager->get_window_size().y << ")" << endl;
+	//cerr << "[Patchage] Resizing window: (" << m_state_manager->get_window_size().x
+	//	<< "," << m_state_manager->get_window_size().y << ")" << endl;
 
 	m_main_window->resize(
 		static_cast<int>(m_state_manager->get_window_size().x),
 		static_cast<int>(m_state_manager->get_window_size().y));
 	
-	cerr << "[Patchage] Moving window: (" << m_state_manager->get_window_location().x
-		<< "," << m_state_manager->get_window_location().y << ")" << endl;
+	//cerr << "[Patchage] Moving window: (" << m_state_manager->get_window_location().x
+	//	<< "," << m_state_manager->get_window_location().y << ")" << endl;
+	
 	m_main_window->move(
 		static_cast<int>(m_state_manager->get_window_location().x),
 		static_cast<int>(m_state_manager->get_window_location().y));
