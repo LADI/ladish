@@ -103,6 +103,7 @@ Patchage::Patchage(int argc, char** argv)
 	xml->get_widget("store_positions_menuitem", m_menu_store_positions);
 	xml->get_widget("file_quit_menuitem", m_menu_file_quit);
 	xml->get_widget("view_refresh_menuitem", m_menu_view_refresh);
+	xml->get_widget("view_messages_menuitem", m_menu_view_messages);
 	xml->get_widget("help_about_menuitem", m_menu_help_about);
 	xml->get_widget("canvas_scrolledwindow", m_canvas_scrolledwindow);
 	xml->get_widget("zoom_scale", m_zoom_slider);
@@ -138,6 +139,7 @@ Patchage::Patchage(int argc, char** argv)
 	m_menu_store_positions->signal_activate().connect(      sigc::mem_fun(this, &Patchage::menu_store_positions));
 	m_menu_file_quit->signal_activate().connect(      sigc::mem_fun(this, &Patchage::menu_file_quit));
 	m_menu_view_refresh->signal_activate().connect(   sigc::mem_fun(this, &Patchage::menu_view_refresh));
+	m_menu_view_messages->signal_toggled().connect(   sigc::mem_fun(this, &Patchage::show_messages_toggled));
 	m_menu_help_about->signal_activate().connect(     sigc::mem_fun(this, &Patchage::menu_help_about));
 
 	attach_menu_items();
@@ -366,6 +368,18 @@ Patchage::menu_file_quit()
 #endif
 	m_jack_driver->detach();
 	m_main_window->hide();
+}
+
+
+void
+Patchage::show_messages_toggled()
+{
+	const bool show = m_menu_view_messages->get_active();
+
+	if (show)
+		m_main_paned->set_position(static_cast<int>(m_main_paned->get_height() * 3/4));
+	else
+		m_main_paned->set_position(INT_MAX);
 }
 
 
