@@ -63,6 +63,7 @@ protected:
 
 	void menu_store_positions();
 	void menu_file_quit();
+	void show_messages_toggled();
 	void menu_view_refresh();
 	void menu_help_about();
 	void zoom(double z);
@@ -104,6 +105,7 @@ protected:
 	Gtk::MenuItem*       m_menu_jack_disconnect;
 	Gtk::MenuItem*       m_menu_store_positions;
 	Gtk::MenuItem*       m_menu_file_quit;
+	Gtk::CheckMenuItem*  m_menu_view_messages;
 	Gtk::MenuItem*       m_menu_view_refresh;
 	Gtk::MenuItem*       m_menu_help_about;
 	Gtk::ScrolledWindow* m_canvas_scrolledwindow;
