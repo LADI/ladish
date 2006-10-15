@@ -184,7 +184,6 @@ AlsaDriver::refresh_ports()
 					m = boost::shared_ptr<PatchageModule>(new PatchageModule(m_app, client_name, InputOutput));
 					m->load_location();
 					m->store_location();
-					m_app->canvas()->add_module(m);
 				}
 				
 				if (!m->get_port(port_name)) {
@@ -216,7 +215,6 @@ AlsaDriver::refresh_ports()
 							new PatchageModule(m_app, client_name, type));
 						m->load_location();
 						m->store_location();
-						m_app->canvas()->add_module(m);
 					}
 					if (!m->get_port(port_name))
 						m->add_port(create_port(m, port_name, is_input, addr));
@@ -252,16 +250,15 @@ AlsaDriver::refresh_ports()
 					if (!m) {
 						m = boost::shared_ptr<PatchageModule>(
 							new PatchageModule(m_app, client_name, type));
-
 						m->load_location();
 						m->store_location();
 					}
 					if (!m->get_port(port_name))
 						m->add_port(create_port(m, port_name, false, addr));
 				}
-				m->resize();
-				m_app->canvas()->add_module(m);
 			}
+			m->resize();
+			m_app->canvas()->add_module(m);
 		}
 	}
 }
