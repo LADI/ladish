@@ -186,7 +186,6 @@ Module::module_event(GdkEvent* event)
 					if ( !(event->button.state & GDK_CONTROL_MASK))
 						canvas->clear_selection();
 					canvas->select_module(m_name);
-					assert(m_selected);
 				}
 			}
 		} else {
@@ -434,7 +433,10 @@ Module::set_name(const string& n)
 
 /** Add a port to this module.
  *
- * A reference to p is held until remove_port is called to remove it.
+ * A reference to p is held until remove_port is called to remove it.  Note
+ * that the module will not be resized (for performance reasons when adding
+ * many ports in succession), so you must explicitly call resize() after this
+ * for the module to look at all sensible.
  */
 void
 Module::add_port(boost::shared_ptr<Port> p)
