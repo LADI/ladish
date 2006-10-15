@@ -28,6 +28,8 @@
  * the push and pop operations themselves are not thread-safe.
  *
  * FIXME: Verify atomicity of everything here.
+ *
+ * \ingroup raul
  */
 template <typename T>
 class Queue

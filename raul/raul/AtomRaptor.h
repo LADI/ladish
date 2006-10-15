@@ -27,6 +27,8 @@
 /** Support for serializing an Atom to/from RDF (via redland aka librdf).
  *
  * (Here to prevent a unnecessary redland dependency for Atom).
+ * 
+ * \ingroup raul
  */
 class AtomRaptor {
 public:

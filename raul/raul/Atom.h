@@ -26,6 +26,8 @@ using std::string;
 
 
 /** An OSC atom (fundamental data types OSC messages are composed of).
+ *
+ * \ingroup raul
  */
 class Atom {
 public:

@@ -34,6 +34,8 @@ using std::string;
  *
  * Valid characters are the 95 printable ASCII characters (32-126), excluding:
  * space # * , ? [ ] { }
+ *
+ * \ingroup raul
  */
 class Path : public std::basic_string<char> {
 public:

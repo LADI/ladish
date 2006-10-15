@@ -28,6 +28,8 @@
  * really needs to update it's man pages.
  *
  * This class remains as a trivial (yet pretty) wrapper/abstraction.
+ *
+ * \ingroup raul
  */
 class Semaphore {
 public:

@@ -23,6 +23,8 @@
 /** Trivial (but pretty) wrapper around POSIX Conditions (zero overhead).
  *
  * A semaphore that isn't a counter, is slow, and not realtime safe.  Yay.
+ *
+ * \ingroup raul
  */
 class Condition {
 public:

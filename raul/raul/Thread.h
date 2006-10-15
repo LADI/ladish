@@ -27,7 +27,7 @@
  * Extend this and override the _run method to easily create a thread
  * to perform some task.
  *
- * \ingroup engine
+ * \ingroup raul
  */
 class Thread
 {

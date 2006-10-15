@@ -24,6 +24,8 @@
 /** Support for serializing an Atom to/from liblo messages.
  *
  * (Here to prevent a unnecessary liblo dependency for Atom).
+ *
+ * \ingroup raul
  */
 class AtomLiblo {
 public:

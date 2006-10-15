@@ -8,6 +8,7 @@ raulinclude_HEADERS = \
 	Semaphore.h \
 	Mutex.h \
 	Condition.h \
+	Process.h \
 	Thread.h \
 	Slave.h \
 	Atom.h

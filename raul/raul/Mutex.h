@@ -21,6 +21,8 @@
 
 
 /** Trivial (but pretty) wrapper around POSIX Mutexes (zero overhead).
+ *
+ * \ingroup raul
  */
 class Mutex {
 public:
