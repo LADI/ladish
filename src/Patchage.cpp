@@ -33,7 +33,9 @@
 #include <raul/SharedPtr.h>
 
 Patchage::Patchage(int argc, char** argv)
-: 
+: m_pane_closed(false),
+  m_update_pane_position(true),
+  m_user_pane_position(0),
 #ifdef HAVE_LASH
   m_lash_driver(NULL),
 #endif
@@ -112,6 +114,7 @@ Patchage::Patchage(int argc, char** argv)
 	xml->get_widget("zoom_scale", m_zoom_slider);
 	xml->get_widget("status_text", m_status_text);
 	xml->get_widget("main_paned", m_main_paned);
+	xml->get_widget("messages_expander", m_messages_expander);
 	xml->get_widget("zoom_full_but", m_zoom_full_button);
 	xml->get_widget("zoom_normal_but", m_zoom_normal_button);
 	
@@ -157,8 +160,22 @@ Patchage::Patchage(int argc, char** argv)
 
 	m_canvas->show();
 
-	m_main_paned->set_position(INT_MAX);
+	m_main_window->present();
+
+	m_update_pane_position = false;
+	m_main_paned->set_position(max_pane_position());
+
+	m_main_paned->property_position().signal_changed().connect(
+		sigc::mem_fun(*this, &Patchage::on_pane_position_changed));
 	
+	m_messages_expander->property_expanded().signal_changed().connect(
+		sigc::mem_fun(*this, &Patchage::on_messages_expander_changed));
+	
+	m_main_paned->set_position(max_pane_position());
+	m_user_pane_position = max_pane_position() - m_main_window->get_height()/8;
+	m_update_pane_position = true;
+	m_pane_closed = true;
+
 	// Idle callback, check if we need to refresh
 	Glib::signal_timeout().connect(sigc::mem_fun(this, &Patchage::idle_callback), 100);
 }
@@ -386,14 +403,57 @@ Patchage::menu_file_quit()
 
 
 void
+Patchage::on_pane_position_changed()
+{
+	// avoid infinite recursion...
+	if (!m_update_pane_position)
+		return;
+
+	m_update_pane_position = false;
+
+	int new_position = m_main_paned->get_position();
+
+	if (m_pane_closed && new_position < max_pane_position()) {
+		m_user_pane_position = new_position;
+		m_messages_expander->set_expanded(true);
+		m_pane_closed = false;
+		m_menu_view_messages->set_active(true);
+	} else if (new_position >= max_pane_position()) {
+		m_pane_closed = true;
+		m_messages_expander->set_expanded(false);
+		if (new_position > max_pane_position())
+			m_main_paned->set_position(max_pane_position()); // ... here
+		m_menu_view_messages->set_active(false);
+	}
+
+	m_update_pane_position = true;
+}
+
+
+void
+Patchage::on_messages_expander_changed()
+{
+	if (!m_pane_closed) {
+		// Store pane position for restoring
+		m_user_pane_position = m_main_paned->get_position();
+		if (m_update_pane_position) {
+			m_update_pane_position = false;
+			m_main_paned->set_position(max_pane_position());
+			m_update_pane_position = true;
+		}
+		m_pane_closed = true;
+	} else {
+		m_main_paned->set_position(m_user_pane_position);
+		m_pane_closed = false;
+	}
+}
+
+
+void
 Patchage::show_messages_toggled()
 {
-	const bool show = m_menu_view_messages->get_active();
-
-	if (show)
-		m_main_paned->set_position(static_cast<int>(m_main_paned->get_height() * 3/4));
-	else
-		m_main_paned->set_position(INT_MAX);
+	if (m_update_pane_position)
+		m_messages_expander->set_expanded(m_menu_view_messages->get_active());
 }
 
 

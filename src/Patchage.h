@@ -59,6 +59,9 @@ public:
 	void status_message(const string& msg);
 	inline void queue_refresh() { m_refresh = true; }
 
+	int max_pane_position()
+	{ return m_main_paned->property_max_position() - m_messages_expander->get_label_widget()->get_height() - 8; }
+
 protected:
 	void attach_menu_items();
 
@@ -70,6 +73,13 @@ protected:
 	void zoom(double z);
 	void zoom_changed();
 	bool idle_callback();
+
+	void on_pane_position_changed();
+	void on_messages_expander_changed();
+
+	bool m_pane_closed;
+	bool m_update_pane_position;
+	int  m_user_pane_position;
 
 #ifdef HAVE_LASH
 	LashDriver*    m_lash_driver;
@@ -115,6 +125,7 @@ protected:
 	Gtk::HScale*         m_zoom_slider;
 	Gtk::TextView*       m_status_text;
 	Gtk::Paned*          m_main_paned;
+	Gtk::Expander*       m_messages_expander;
 	Gtk::Button*         m_zoom_normal_button;
 	Gtk::Button*         m_zoom_full_button;
 };
