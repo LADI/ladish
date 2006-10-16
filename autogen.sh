@@ -6,32 +6,32 @@ echo 'Generating necessary files (recursively)...'
 
 aclocal &
 
-echo -n "* raul * \t"
+echo -ne "* raul * \t"
 cd raul
 ./autogen.sh
 cd $top
 
-echo -n "* flowcanvas * \t"
+echo -ne "* flowcanvas * \t"
 cd flowcanvas
 ./autogen.sh
 cd $top
 
-echo -n "* patchage * \t"
+echo -ne "* patchage * \t"
 cd patchage
 ./autogen.sh
 cd $top
 
-echo -n "* slv2 * \t"
+echo -ne "* slv2 * \t"
 cd slv2
 ./autogen.sh
 cd $top
 
-echo -n "* omins * \t"
+echo -ne "* omins * \t"
 cd omins
 ./autogen.sh
 cd $top
 
-echo -n "* ingen * \t"
+echo -ne "* ingen * \t"
 cd ingen
 ./autogen.sh
 cd $top
