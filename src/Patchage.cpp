@@ -24,6 +24,7 @@
 #include "PatchageFlowCanvas.h"
 #include "AlsaDriver.h"
 #include "JackDriver.h"
+#include "JackSettingsDialog.h"
 #ifdef HAVE_LASH
 #include "LashDriver.h"
 #endif
@@ -87,7 +88,9 @@ Patchage::Patchage(int argc, char** argv)
 	}
 
 	xml->get_widget("patchage_win", m_main_window);
+	xml->get_widget_derived("jack_settings_win", m_jack_settings_dialog);
 	xml->get_widget("about_win", m_about_window);
+	xml->get_widget("jack_settings_menuitem", m_menu_jack_settings);
 	xml->get_widget("launch_jack_menuitem", m_menu_jack_launch);
 	xml->get_widget("connect_to_jack_menuitem", m_menu_jack_connect);
 	xml->get_widget("disconnect_from_jack_menuitem", m_menu_jack_disconnect);
@@ -118,8 +121,14 @@ Patchage::Patchage(int argc, char** argv)
 	                       static_cast<int>(m_canvas->height()/2 - 240)); // FIXME: hardcoded
 
 	m_zoom_slider->signal_value_changed().connect(sigc::mem_fun(this, &Patchage::zoom_changed));
+	
 	m_zoom_normal_button->signal_clicked().connect(sigc::bind(
 		sigc::mem_fun(this, &Patchage::zoom), 1.0));
+	
+	m_zoom_full_button->signal_clicked().connect(sigc::mem_fun(m_canvas.get(), &PatchageFlowCanvas::zoom_full));
+
+	m_menu_jack_settings->signal_activate().connect(
+		sigc::hide_return(sigc::mem_fun(m_jack_settings_dialog, &JackSettingsDialog::run)));
 
 	m_menu_jack_launch->signal_activate().connect(sigc::bind(
 		sigc::mem_fun(m_jack_driver, &JackDriver::attach), true));
@@ -220,15 +229,20 @@ Patchage::idle_callback()
 void
 Patchage::zoom(double z)
 {
-	m_canvas->set_zoom(z);
 	m_state_manager->set_zoom(z);
+	m_canvas->set_zoom(z);
 }
 
 
 void
 Patchage::zoom_changed() 
 {
-	zoom(m_zoom_slider->get_value());
+	static bool enable_signal = true;
+	if (enable_signal) {
+		enable_signal = false;
+		zoom(m_zoom_slider->get_value());
+		enable_signal = true;
+	}
 }
 
 

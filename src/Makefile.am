@@ -8,9 +8,10 @@ dist_sharefiles_DATA = patchage.glade
 
 bin_PROGRAMS = patchage
 patchage_SOURCES = \
-	main.cpp  \
+	main.cpp \
 	Patchage.h \
 	Patchage.cpp \
+	JackSettingsDialog.h \
 	StateManager.h \
 	StateManager.cpp  \
 	PatchageModule.h \

@@ -29,6 +29,7 @@ class JackDriver;
 class AlsaDriver;
 class LashDriver;
 class StateManager;
+class JackSettingsDialog;
 
 
 class Patchage
@@ -99,7 +100,9 @@ protected:
 	bool   m_refresh;
 	
 	Gtk::Window*         m_main_window;
+	JackSettingsDialog*  m_jack_settings_dialog;
 	Gtk::AboutDialog*    m_about_window;
+	Gtk::MenuItem*       m_menu_jack_settings;
 	Gtk::MenuItem*       m_menu_jack_launch;
 	Gtk::MenuItem*       m_menu_jack_connect;
 	Gtk::MenuItem*       m_menu_jack_disconnect;
