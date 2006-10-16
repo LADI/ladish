@@ -414,16 +414,21 @@ Patchage::on_pane_position_changed()
 	int new_position = m_main_paned->get_position();
 
 	if (m_pane_closed && new_position < max_pane_position()) {
+		// Auto open
 		m_user_pane_position = new_position;
 		m_messages_expander->set_expanded(true);
 		m_pane_closed = false;
 		m_menu_view_messages->set_active(true);
 	} else if (new_position >= max_pane_position()) {
+		// Auto close
 		m_pane_closed = true;
+
 		m_messages_expander->set_expanded(false);
 		if (new_position > max_pane_position())
 			m_main_paned->set_position(max_pane_position()); // ... here
 		m_menu_view_messages->set_active(false);
+		
+		m_user_pane_position = max_pane_position() - m_main_window->get_height()/8;
 	}
 
 	m_update_pane_position = true;
