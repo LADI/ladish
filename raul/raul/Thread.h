@@ -20,6 +20,7 @@
 #include <string>
 #include <iostream>
 #include <pthread.h>
+#include <boost/utility.hpp>
 
 
 /** Abstract base class for a thread.
@@ -29,7 +30,7 @@
  *
  * \ingroup raul
  */
-class Thread
+class Thread : boost::noncopyable
 {
 public:
 	Thread() : _pthread_exists(false) {}
@@ -88,10 +89,6 @@ protected:
 	virtual void _run() = 0;
 
 private:
-	// Prevent copies (undefined)
-	Thread(const Thread&);
-	Thread& operator=(const Thread&);
-
 	inline static void* _static_run(void* me) {
 		Thread* myself = (Thread*)me;
 		myself->_run();

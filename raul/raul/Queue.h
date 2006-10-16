@@ -19,6 +19,7 @@
 
 #include <cassert>
 #include <cstdlib>
+#include <boost/utility.hpp>
 
 
 /** Realtime-safe single-reader single-writer queue (aka lock-free ringbuffer)
@@ -32,7 +33,7 @@
  * \ingroup raul
  */
 template <typename T>
-class Queue
+class Queue : boost::noncopyable
 {
 public:
 	Queue(size_t size);
@@ -50,10 +51,6 @@ public:
 	inline T&   pop();
 	
 private:
-	// Prevent copies (these are undefined)
-	Queue(const Queue& copy);
-	Queue& operator=(const Queue& copy);
-	
 	volatile size_t m_front;   ///< Index to front of queue (circular)
 	volatile size_t m_back;    ///< Index to back of queue (one past last element) (circular)
 	const    size_t m_size;    ///< Size of @ref m_objects (you can store m_size-1 objects)

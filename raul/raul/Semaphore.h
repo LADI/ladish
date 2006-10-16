@@ -18,6 +18,7 @@
 #define RAUL_SEMAPHORE_H
 
 #include <semaphore.h>
+#include <boost/utility.hpp>
 
 
 /** Trivial wrapper around POSIX semaphores (zero memory overhead).
@@ -31,7 +32,7 @@
  *
  * \ingroup raul
  */
-class Semaphore {
+class Semaphore : boost::noncopyable {
 public:
 	inline Semaphore(unsigned int initial) { sem_init(&m_sem, 0, initial); }
 	

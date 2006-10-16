@@ -18,13 +18,14 @@
 #define RAUL_MUTEX_H
 
 #include <pthread.h>
+#include <boost/utility.hpp>
 
 
-/** Trivial (but pretty) wrapper around POSIX Mutexes (zero overhead).
+/** Trivial (zero overhead) wrapper around POSIX Mutexes.
  *
  * \ingroup raul
  */
-class Mutex {
+class Mutex : boost::noncopyable {
 public:
 	inline Mutex() { pthread_mutex_init(&_mutex, NULL); }
 	

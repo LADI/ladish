@@ -20,12 +20,14 @@
 #include <string>
 #include <iostream>
 #include <unistd.h>
+#include <boost/utility.hpp>
+
 
 /** A child process.
  *
  * \ingroup raul
  */
-class Process
+class Process : boost::noncopyable
 {
 public:
 
@@ -75,10 +77,7 @@ public:
 	}
 
 private:
-	// .... no :) (undefined)
-	Process();
-	Process(const Process&);
-	Process& operator=(const Process&);
+	Process() {}
 };
 
 

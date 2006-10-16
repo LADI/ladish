@@ -18,15 +18,16 @@
 #define RAUL_CONDITION_H
 
 #include <pthread.h>
+#include <boost/utility.hpp>
 
 
-/** Trivial (but pretty) wrapper around POSIX Conditions (zero overhead).
+/** Trivial (zero overhead) wrapper around POSIX Conditions.
  *
  * A semaphore that isn't a counter, is slow, and not realtime safe.  Yay.
  *
  * \ingroup raul
  */
-class Condition {
+class Condition : boost::noncopyable {
 public:
 	inline Condition() { pthread_cond_init(&_cond, NULL); }
 	

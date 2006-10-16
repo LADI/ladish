@@ -49,10 +49,6 @@ protected:
 	Semaphore _whip;
 
 private:
-	// Prevent copies (undefined)
-	Slave(const Slave&);
-	Slave& operator=(const Slave&);
-
 	inline void _run()
 	{
 		while (true) {

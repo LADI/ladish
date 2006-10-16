@@ -30,6 +30,9 @@ if test "$build_smart_pointers" = "yes"; then
 
 	AC_CHECK_HEADER([boost/weak_ptr.hpp], [],  
 		AC_MSG_ERROR([You need the boost headers package (e.g. libboost-dev)]))
+	
+	AC_CHECK_HEADER([boost/utility.hpp], [],  
+		AC_MSG_ERROR([You need the boost headers package (e.g. libboost-dev)]))
 
 	AC_SUBST(BOOST_CFLAGS)
 	AC_SUBST(BOOST_LIBS)

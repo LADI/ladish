@@ -20,6 +20,7 @@
 #include <string>
 #include <list>
 #include <boost/enable_shared_from_this.hpp>
+#include <boost/utility.hpp>
 #include <libgnomecanvasmm.h>
 #include "Connection.h"
 #include "Module.h"
@@ -51,7 +52,8 @@ class Module;
  *
  * \ingroup FlowCanvas
  */
-class FlowCanvas : public boost::enable_shared_from_this<FlowCanvas>
+class FlowCanvas : boost::noncopyable
+                 , public boost::enable_shared_from_this<FlowCanvas>
                  , public /*CANVASBASE*/Gnome::Canvas::CanvasAA
 // (CANVASBASE is a hook for a sed script in configure.ac)
 {
@@ -125,10 +127,6 @@ protected:
 	virtual bool canvas_event(GdkEvent* event);
 	
 private:
-	// Prevent copies (undefined)
-	FlowCanvas(const FlowCanvas& copy);
-	FlowCanvas& operator=(const FlowCanvas& other);
-
 	friend class Module;
 	bool rename_module(const string& old_name, const string& new_name);
 
