@@ -45,7 +45,7 @@ Port::Port(boost::shared_ptr<Module> module, const string& name, bool is_input, 
 	//m_rect.property_outline_color_rgba() = 0x8899AAFF;
 	m_rect.property_outline_color_rgba() = color;
 	m_rect.property_join_style() = Gdk::JOIN_MITER;
-	set_border_width(1.0);
+	set_border_width(0.0);
 	
 	// Make label pretty
 	m_label.property_size() = PORT_LABEL_SIZE;

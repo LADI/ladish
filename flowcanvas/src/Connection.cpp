@@ -39,7 +39,11 @@ Connection::Connection(boost::shared_ptr<FlowCanvas> canvas,
 	assert(dest->is_input());
 	
 	m_color = source->color() + 0x22222200;
-	property_width_units() = 1.0;
+	if (canvas->property_aa())
+		property_width_units() = 0.75;
+	else
+		property_width_units() = 1.0;
+
 	property_outline_color_rgba() = m_color;
 	property_cap_style() = (Gdk::CapStyle)GDK_CAP_ROUND;
 

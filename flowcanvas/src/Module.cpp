@@ -27,7 +27,7 @@ namespace LibFlowCanvas {
 
 static const int MODULE_FILL_COLOUR           = 0x292929FF;
 static const int MODULE_HILITE_FILL_COLOUR    = 0x393939FF;
-static const int MODULE_OUTLINE_COLOUR        = 0x505050FF;
+static const int MODULE_OUTLINE_COLOUR        = 0x606060FF;
 static const int MODULE_HILITE_OUTLINE_COLOUR = 0x606060FF;
 static const int MODULE_TITLE_COLOUR          = 0xFFFFFFFF;
 
@@ -47,12 +47,16 @@ Module::Module(boost::shared_ptr<FlowCanvas> canvas, const string& name, double 
   m_selected(false),
   m_canvas(canvas),
   m_module_box(*this, 0, 0, 0, 0), // w, h set later
-  m_canvas_title(*this, 0, 6, name) // x set later
+  m_canvas_title(*this, 0, 8, name) // x set later
 {
 	m_module_box.property_fill_color_rgba() = MODULE_FILL_COLOUR;
 
 	m_module_box.property_outline_color_rgba() = MODULE_OUTLINE_COLOUR;
-	set_border_width(1.0);
+	
+	if (canvas->property_aa())
+		set_border_width(0.5);
+	else
+		set_border_width(1.0);
 
 	m_canvas_title.property_size_set() = true;
 	m_canvas_title.property_size() = 9000;
@@ -487,11 +491,11 @@ Module::resize()
 		set_width(widest_out + hor_pad + border_width()*2.0);
 	
 	// Make sure module is wide enough for title
-	if (m_canvas_title.property_text_width() + 6.0 > m_width)
-		set_width(m_canvas_title.property_text_width() + 6.0);
+	if (m_canvas_title.property_text_width() + 8.0 > m_width)
+		set_width(m_canvas_title.property_text_width() + 8.0);
 
 	// Set height to contain ports and title
-	double height_base = 2;
+	double height_base = 4;
 	if (m_name.length() > 0)
 		height_base += m_canvas_title.property_text_height();
 

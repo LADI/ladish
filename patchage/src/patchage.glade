@@ -52,7 +52,7 @@
 		      <accelerator key="O" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image450">
+			<widget class="GtkImage" id="image563">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-open</property>
 			  <property name="icon_size">1</property>
@@ -74,7 +74,7 @@
 		      <accelerator key="S" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image451">
+			<widget class="GtkImage" id="image564">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-save</property>
 			  <property name="icon_size">1</property>
@@ -96,7 +96,7 @@
 		      <accelerator key="S" modifiers="GDK_CONTROL_MASK | GDK_SHIFT_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image452">
+			<widget class="GtkImage" id="image565">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-save-as</property>
 			  <property name="icon_size">1</property>
@@ -116,17 +116,18 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="launch_lash_menuitem">
+		    <widget class="GtkImageMenuItem" id="store_positions_menuitem">
 		      <property name="visible">True</property>
-		      <property name="label" translatable="yes">Launch LASH</property>
+		      <property name="tooltip" translatable="yes">Store the current module positions as the defaults</property>
+		      <property name="label" translatable="yes">_Store Positions</property>
 		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="on_launch_lash1_activate" last_modification_time="Mon, 22 May 2006 01:14:33 GMT"/>
-		      <accelerator key="L" modifiers="GDK_CONTROL_MASK | GDK_MOD1_MASK" signal="activate"/>
+		      <signal name="activate" handler="on_save_settings1_activate" last_modification_time="Mon, 13 Sep 2004 02:42:14 GMT"/>
+		      <accelerator key="S" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image453">
+			<widget class="GtkImage" id="image566">
 			  <property name="visible">True</property>
-			  <property name="stock">gtk-execute</property>
+			  <property name="stock">gtk-save</property>
 			  <property name="icon_size">1</property>
 			  <property name="xalign">0.5</property>
 			  <property name="yalign">0.5</property>
@@ -138,17 +139,45 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="connect_to_lash_menuitem">
+		    <widget class="GtkSeparatorMenuItem" id="separator3">
 		      <property name="visible">True</property>
-		      <property name="label" translatable="yes">Connect to _LASH</property>
+		    </widget>
+		  </child>
+
+		  <child>
+		    <widget class="GtkImageMenuItem" id="file_quit_menuitem">
+		      <property name="visible">True</property>
+		      <property name="label">gtk-quit</property>
+		      <property name="use_stock">True</property>
+		      <signal name="activate" handler="on_quit1_activate" last_modification_time="Sat, 11 Sep 2004 20:05:11 GMT"/>
+		    </widget>
+		  </child>
+		</widget>
+	      </child>
+	    </widget>
+	  </child>
+
+	  <child>
+	    <widget class="GtkMenuItem" id="file_system_menuitem">
+	      <property name="visible">True</property>
+	      <property name="label" translatable="yes">_System</property>
+	      <property name="use_underline">True</property>
+
+	      <child>
+		<widget class="GtkMenu" id="file_system_menuitem_menu">
+
+		  <child>
+		    <widget class="GtkImageMenuItem" id="jack_settings_menuitem">
+		      <property name="visible">True</property>
+		      <property name="label" translatable="yes">Jack _Settings</property>
 		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="on_connect_to_lash1_activate" last_modification_time="Mon, 22 May 2006 01:14:33 GMT"/>
-		      <accelerator key="L" modifiers="GDK_MOD1_MASK" signal="activate"/>
+		      <signal name="activate" handler="on_jack_settings1_activate" last_modification_time="Mon, 16 Oct 2006 00:17:34 GMT"/>
+		      <accelerator key="P" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image454">
+			<widget class="GtkImage" id="image567">
 			  <property name="visible">True</property>
-			  <property name="stock">gtk-connect</property>
+			  <property name="stock">gtk-preferences</property>
 			  <property name="icon_size">1</property>
 			  <property name="xalign">0.5</property>
 			  <property name="yalign">0.5</property>
@@ -160,29 +189,7 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="disconnect_from_lash_menuitem">
-		      <property name="visible">True</property>
-		      <property name="label" translatable="yes">Disconnect from LASH</property>
-		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="on_disconnect_from_lash1_activate" last_modification_time="Mon, 22 May 2006 01:14:33 GMT"/>
-		      <accelerator key="L" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK" signal="activate"/>
-
-		      <child internal-child="image">
-			<widget class="GtkImage" id="image455">
-			  <property name="visible">True</property>
-			  <property name="stock">gtk-disconnect</property>
-			  <property name="icon_size">1</property>
-			  <property name="xalign">0.5</property>
-			  <property name="yalign">0.5</property>
-			  <property name="xpad">0</property>
-			  <property name="ypad">0</property>
-			</widget>
-		      </child>
-		    </widget>
-		  </child>
-
-		  <child>
-		    <widget class="GtkSeparatorMenuItem" id="separator1">
+		    <widget class="GtkSeparatorMenuItem" id="separator6">
 		      <property name="visible">True</property>
 		    </widget>
 		  </child>
@@ -196,7 +203,7 @@
 		      <accelerator key="J" modifiers="GDK_CONTROL_MASK | GDK_MOD1_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image456">
+			<widget class="GtkImage" id="image568">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-execute</property>
 			  <property name="icon_size">1</property>
@@ -218,7 +225,7 @@
 		      <accelerator key="J" modifiers="GDK_MOD1_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image457">
+			<widget class="GtkImage" id="image569">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-connect</property>
 			  <property name="icon_size">1</property>
@@ -240,7 +247,7 @@
 		      <accelerator key="J" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image458">
+			<widget class="GtkImage" id="image570">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-disconnect</property>
 			  <property name="icon_size">1</property>
@@ -268,7 +275,7 @@
 		      <accelerator key="A" modifiers="GDK_MOD1_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image459">
+			<widget class="GtkImage" id="image571">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-connect</property>
 			  <property name="icon_size">1</property>
@@ -290,7 +297,7 @@
 		      <accelerator key="A" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image460">
+			<widget class="GtkImage" id="image572">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-disconnect</property>
 			  <property name="icon_size">1</property>
@@ -304,23 +311,23 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkSeparatorMenuItem" id="separator3">
+		    <widget class="GtkSeparatorMenuItem" id="separator1">
 		      <property name="visible">True</property>
 		    </widget>
 		  </child>
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="store_positions_menuitem">
+		    <widget class="GtkImageMenuItem" id="launch_lash_menuitem">
 		      <property name="visible">True</property>
-		      <property name="label" translatable="yes">_Store Positions</property>
+		      <property name="label" translatable="yes">Launch LASH</property>
 		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="on_save_settings1_activate" last_modification_time="Mon, 13 Sep 2004 02:42:14 GMT"/>
-		      <accelerator key="S" modifiers="GDK_CONTROL_MASK" signal="activate"/>
+		      <signal name="activate" handler="on_launch_lash1_activate" last_modification_time="Mon, 22 May 2006 01:14:33 GMT"/>
+		      <accelerator key="L" modifiers="GDK_CONTROL_MASK | GDK_MOD1_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image461">
+			<widget class="GtkImage" id="image573">
 			  <property name="visible">True</property>
-			  <property name="stock">gtk-save</property>
+			  <property name="stock">gtk-execute</property>
 			  <property name="icon_size">1</property>
 			  <property name="xalign">0.5</property>
 			  <property name="yalign">0.5</property>
@@ -332,17 +339,46 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkSeparatorMenuItem" id="separator2">
+		    <widget class="GtkImageMenuItem" id="connect_to_lash_menuitem">
 		      <property name="visible">True</property>
+		      <property name="label" translatable="yes">Connect to _LASH</property>
+		      <property name="use_underline">True</property>
+		      <signal name="activate" handler="on_connect_to_lash1_activate" last_modification_time="Mon, 22 May 2006 01:14:33 GMT"/>
+		      <accelerator key="L" modifiers="GDK_MOD1_MASK" signal="activate"/>
+
+		      <child internal-child="image">
+			<widget class="GtkImage" id="image574">
+			  <property name="visible">True</property>
+			  <property name="stock">gtk-connect</property>
+			  <property name="icon_size">1</property>
+			  <property name="xalign">0.5</property>
+			  <property name="yalign">0.5</property>
+			  <property name="xpad">0</property>
+			  <property name="ypad">0</property>
+			</widget>
+		      </child>
 		    </widget>
 		  </child>
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="file_quit_menuitem">
+		    <widget class="GtkImageMenuItem" id="disconnect_from_lash_menuitem">
 		      <property name="visible">True</property>
-		      <property name="label">gtk-quit</property>
-		      <property name="use_stock">True</property>
-		      <signal name="activate" handler="on_quit1_activate" last_modification_time="Sat, 11 Sep 2004 20:05:11 GMT"/>
+		      <property name="label" translatable="yes">Disconnect from LASH</property>
+		      <property name="use_underline">True</property>
+		      <signal name="activate" handler="on_disconnect_from_lash1_activate" last_modification_time="Mon, 22 May 2006 01:14:33 GMT"/>
+		      <accelerator key="L" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK" signal="activate"/>
+
+		      <child internal-child="image">
+			<widget class="GtkImage" id="image575">
+			  <property name="visible">True</property>
+			  <property name="stock">gtk-disconnect</property>
+			  <property name="icon_size">1</property>
+			  <property name="xalign">0.5</property>
+			  <property name="yalign">0.5</property>
+			  <property name="xpad">0</property>
+			  <property name="ypad">0</property>
+			</widget>
+		      </child>
 		    </widget>
 		  </child>
 		</widget>
@@ -380,7 +416,7 @@
 		      <accelerator key="R" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image463">
+			<widget class="GtkImage" id="image576">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-refresh</property>
 			  <property name="icon_size">1</property>
@@ -511,11 +547,11 @@
 
 	      <child>
 		<widget class="GtkHScale" id="zoom_scale">
-		  <property name="width_request">150</property>
+		  <property name="width_request">200</property>
 		  <property name="visible">True</property>
 		  <property name="can_focus">True</property>
 		  <property name="draw_value">False</property>
-		  <property name="value_pos">GTK_POS_RIGHT</property>
+		  <property name="value_pos">GTK_POS_TOP</property>
 		  <property name="digits">1</property>
 		  <property name="update_policy">GTK_UPDATE_CONTINUOUS</property>
 		  <property name="inverted">False</property>
@@ -644,6 +680,198 @@ along with Patchage; if not, write to the Free Software Foundation, Inc.,
   <property name="website">http://codeson.net/software/patchage</property>
   <property name="authors">Dave Robillard &lt;dave@codeson.net&gt;</property>
   <property name="translator_credits" translatable="yes" comments="TRANSLATORS: Replace this string with your names, one name per line.">translator-credits</property>
+</widget>
+
+<widget class="GtkDialog" id="jack_settings_win">
+  <property name="border_width">8</property>
+  <property name="width_request">400</property>
+  <property name="height_request">200</property>
+  <property name="title" translatable="yes">JACK Settings</property>
+  <property name="type">GTK_WINDOW_TOPLEVEL</property>
+  <property name="window_position">GTK_WIN_POS_CENTER_ON_PARENT</property>
+  <property name="modal">False</property>
+  <property name="default_width">400</property>
+  <property name="default_height">200</property>
+  <property name="resizable">True</property>
+  <property name="destroy_with_parent">True</property>
+  <property name="icon">patchage-icon.svg</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
+  <property name="focus_on_map">True</property>
+  <property name="urgency_hint">False</property>
+  <property name="has_separator">True</property>
+
+  <child internal-child="vbox">
+    <widget class="GtkVBox" id="dialog-vbox1">
+      <property name="visible">True</property>
+      <property name="homogeneous">False</property>
+      <property name="spacing">0</property>
+
+      <child internal-child="action_area">
+	<widget class="GtkHButtonBox" id="dialog-action_area1">
+	  <property name="visible">True</property>
+	  <property name="layout_style">GTK_BUTTONBOX_END</property>
+
+	  <child>
+	    <widget class="GtkButton" id="jack_settings_cancel_button">
+	      <property name="visible">True</property>
+	      <property name="can_focus">True</property>
+	      <property name="label">gtk-cancel</property>
+	      <property name="use_stock">True</property>
+	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
+	      <property name="response_id">-6</property>
+	    </widget>
+	  </child>
+
+	  <child>
+	    <widget class="GtkButton" id="jack_settings_ok_button">
+	      <property name="visible">True</property>
+	      <property name="can_default">True</property>
+	      <property name="has_default">True</property>
+	      <property name="can_focus">True</property>
+	      <property name="label">gtk-ok</property>
+	      <property name="use_stock">True</property>
+	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
+	      <property name="response_id">-5</property>
+	    </widget>
+	  </child>
+	</widget>
+	<packing>
+	  <property name="padding">0</property>
+	  <property name="expand">False</property>
+	  <property name="fill">True</property>
+	  <property name="pack_type">GTK_PACK_END</property>
+	</packing>
+      </child>
+
+      <child>
+	<widget class="GtkVBox" id="vbox2">
+	  <property name="visible">True</property>
+	  <property name="homogeneous">False</property>
+	  <property name="spacing">0</property>
+
+	  <child>
+	    <widget class="GtkLabel" id="label1">
+	      <property name="visible">True</property>
+	      <property name="label" translatable="yes">&lt;b&gt;Command Line&lt;/b&gt;</property>
+	      <property name="use_underline">False</property>
+	      <property name="use_markup">True</property>
+	      <property name="justify">GTK_JUSTIFY_LEFT</property>
+	      <property name="wrap">True</property>
+	      <property name="selectable">False</property>
+	      <property name="xalign">0</property>
+	      <property name="yalign">0.5</property>
+	      <property name="xpad">0</property>
+	      <property name="ypad">6</property>
+	      <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
+	      <property name="width_chars">-1</property>
+	      <property name="single_line_mode">False</property>
+	      <property name="angle">0</property>
+	    </widget>
+	    <packing>
+	      <property name="padding">0</property>
+	      <property name="expand">False</property>
+	      <property name="fill">False</property>
+	    </packing>
+	  </child>
+
+	  <child>
+	    <widget class="GtkHBox" id="hbox2">
+	      <property name="visible">True</property>
+	      <property name="homogeneous">False</property>
+	      <property name="spacing">0</property>
+
+	      <child>
+		<widget class="GtkLabel" id="label2">
+		  <property name="visible">True</property>
+		  <property name="label" translatable="yes">    </property>
+		  <property name="use_underline">False</property>
+		  <property name="use_markup">False</property>
+		  <property name="justify">GTK_JUSTIFY_LEFT</property>
+		  <property name="wrap">False</property>
+		  <property name="selectable">False</property>
+		  <property name="xalign">0.5</property>
+		  <property name="yalign">0.5</property>
+		  <property name="xpad">0</property>
+		  <property name="ypad">0</property>
+		  <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
+		  <property name="width_chars">-1</property>
+		  <property name="single_line_mode">False</property>
+		  <property name="angle">0</property>
+		</widget>
+		<packing>
+		  <property name="padding">0</property>
+		  <property name="expand">False</property>
+		  <property name="fill">False</property>
+		</packing>
+	      </child>
+
+	      <child>
+		<widget class="GtkEntry" id="jack_settings_command_entry">
+		  <property name="visible">True</property>
+		  <property name="can_focus">True</property>
+		  <property name="editable">True</property>
+		  <property name="visibility">True</property>
+		  <property name="max_length">0</property>
+		  <property name="text" translatable="yes"></property>
+		  <property name="has_frame">True</property>
+		  <property name="invisible_char">*</property>
+		  <property name="activates_default">True</property>
+		</widget>
+		<packing>
+		  <property name="padding">0</property>
+		  <property name="expand">True</property>
+		  <property name="fill">True</property>
+		</packing>
+	      </child>
+	    </widget>
+	    <packing>
+	      <property name="padding">0</property>
+	      <property name="expand">False</property>
+	      <property name="fill">False</property>
+	    </packing>
+	  </child>
+
+	  <child>
+	    <widget class="GtkLabel" id="label3">
+	      <property name="width_request">323</property>
+	      <property name="height_request">200</property>
+	      <property name="visible">True</property>
+	      <property name="label" translatable="yes">Note:  This will change your default setting in ~/.jackdrc</property>
+	      <property name="use_underline">False</property>
+	      <property name="use_markup">False</property>
+	      <property name="justify">GTK_JUSTIFY_LEFT</property>
+	      <property name="wrap">False</property>
+	      <property name="selectable">False</property>
+	      <property name="xalign">0.5</property>
+	      <property name="yalign">0.5</property>
+	      <property name="xpad">0</property>
+	      <property name="ypad">12</property>
+	      <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
+	      <property name="width_chars">-1</property>
+	      <property name="single_line_mode">False</property>
+	      <property name="angle">0</property>
+	    </widget>
+	    <packing>
+	      <property name="padding">0</property>
+	      <property name="expand">True</property>
+	      <property name="fill">True</property>
+	    </packing>
+	  </child>
+	</widget>
+	<packing>
+	  <property name="padding">0</property>
+	  <property name="expand">True</property>
+	  <property name="fill">True</property>
+	</packing>
+      </child>
+    </widget>
+  </child>
 </widget>
 
 </glade-interface>

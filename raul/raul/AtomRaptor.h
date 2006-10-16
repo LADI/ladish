@@ -24,9 +24,9 @@
 
 #define U(x) ((const unsigned char*)(x))
 
-/** Support for serializing an Atom to/from RDF (via redland aka librdf).
+/** Support for serializing an Atom to/from RDF (via raptor, a part of librdf).
  *
- * (Here to prevent a unnecessary redland dependency for Atom).
+ * (Here to prevent a unnecessary raptor dependency for Atom).
  * 
  * \ingroup raul
  */
