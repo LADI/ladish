@@ -53,7 +53,18 @@ public:
 
 	bool disconnect(boost::shared_ptr<PatchagePort> src,
 	                boost::shared_ptr<PatchagePort> dst);
+
+	void start_transport() { jack_transport_start(m_client); }
+	void stop_transport()  { jack_transport_stop(m_client); }
 	
+	void rewind_transport() {
+		jack_position_t zero;
+		zero.frame = 0;
+		zero.valid = (jack_position_bits_t)0;
+		jack_transport_reposition(m_client, &zero);
+	}
+	
+
 private:
 	Patchage*             m_app;
 
@@ -64,10 +75,16 @@ private:
 	list<string> m_added_ports;
 	list<string> m_removed_ports;
 
+	jack_position_t m_last_pos;
+
 	boost::shared_ptr<PatchagePort> create_port(boost::shared_ptr<PatchageModule> parent,
 		jack_port_t* port);
 
+	static void error_cb(const char* msg);
+
 	void destroy_all_ports();
+
+	void update_time();
 
 	static void jack_port_registration_cb(jack_port_id_t port_id, int registered, void* controller);
 	static int  jack_graph_order_cb(void* controller);

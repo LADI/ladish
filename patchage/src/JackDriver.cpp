@@ -35,6 +35,8 @@ JackDriver::JackDriver(Patchage* app)
 : m_app(app),
   m_client(NULL)
 {
+	m_last_pos.frame = 0;
+	m_last_pos.valid = (jack_position_bits_t)0;
 }
 
 
@@ -53,11 +55,14 @@ JackDriver::attach(bool launch_daemon)
 	if (m_client)
 		return;
 	
+	jack_set_error_function(error_cb);
+
 	jack_options_t options = (!launch_daemon) ? JackNoStartServer : JackNullOption;
 	m_client = jack_client_open("Patchage", options, NULL);
 	if (m_client == NULL) {
 		m_app->status_message("[JACK] Unable to attach");
 	} else {
+		jack_set_error_function(error_cb);
 		jack_on_shutdown(m_client, jack_shutdown_cb, this);
 		jack_set_port_registration_callback(m_client, jack_port_registration_cb, this);
 		jack_set_graph_order_callback(m_client, jack_graph_order_cb, this);
@@ -312,6 +317,12 @@ JackDriver::disconnect(boost::shared_ptr<PatchagePort> const src_port, boost::sh
 
 
 void
+JackDriver::update_time()
+{
+}
+
+
+void
 JackDriver::jack_port_registration_cb(jack_port_id_t port_id, int /*registered*/, void* jack_driver) 
 {
 	assert(jack_driver);
@@ -361,6 +372,13 @@ JackDriver::jack_shutdown_cb(void* jack_driver)
 	me->m_client = NULL;
 	me->m_is_dirty = true;
 	//(me->m_mutex).unlock();
+}
+
+
+void
+JackDriver::error_cb(const char* msg)
+{
+	cerr << "JACK ERROR: " << msg << endl;
 }
 
 

@@ -115,6 +115,9 @@ Patchage::Patchage(int argc, char** argv)
 	xml->get_widget("status_text", m_status_text);
 	xml->get_widget("main_paned", m_main_paned);
 	xml->get_widget("messages_expander", m_messages_expander);
+	xml->get_widget("rewind_but", m_rewind_button);
+	xml->get_widget("play_but", m_play_button);
+	xml->get_widget("stop_but", m_stop_button);
 	xml->get_widget("zoom_full_but", m_zoom_full_button);
 	xml->get_widget("zoom_normal_but", m_zoom_normal_button);
 	
@@ -125,6 +128,10 @@ Patchage::Patchage(int argc, char** argv)
 
 	m_zoom_slider->signal_value_changed().connect(sigc::mem_fun(this, &Patchage::zoom_changed));
 	
+	m_rewind_button->signal_clicked().connect(sigc::mem_fun(m_jack_driver, &JackDriver::rewind_transport));
+	m_play_button->signal_clicked().connect(sigc::mem_fun(m_jack_driver, &JackDriver::start_transport));
+	m_stop_button->signal_clicked().connect(sigc::mem_fun(m_jack_driver, &JackDriver::stop_transport));
+
 	m_zoom_normal_button->signal_clicked().connect(sigc::bind(
 		sigc::mem_fun(this, &Patchage::zoom), 1.0));
 	
@@ -197,10 +204,10 @@ Patchage::~Patchage()
 void
 Patchage::attach()
 {
-	m_jack_driver->attach(false);
+	m_jack_driver->attach(true);
 
 #ifdef HAVE_LASH
-	m_lash_driver->attach(false);
+	m_lash_driver->attach(true);
 #endif
 #ifdef HAVE_ALSA
 	m_alsa_driver->attach();

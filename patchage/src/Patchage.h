@@ -126,6 +126,9 @@ protected:
 	Gtk::TextView*       m_status_text;
 	Gtk::Paned*          m_main_paned;
 	Gtk::Expander*       m_messages_expander;
+	Gtk::Button*         m_rewind_button;
+	Gtk::Button*         m_play_button;
+	Gtk::Button*         m_stop_button;
 	Gtk::Button*         m_zoom_normal_button;
 	Gtk::Button*         m_zoom_full_button;
 };
