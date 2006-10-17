@@ -306,23 +306,26 @@ To keep track of what is happening with LASH, the user can run the
 @command{lash_panel} program (though this is not necessary, and it can
 be started later at any time).
 
-The environment variable @code{LASH_START_SERVER} can be set to have any
-LASH client automatically start the server if one isn't already running.
-Doing this you can simply put @command{lash_panel} (or any other LASH
-client) in your applications menu and have LASH automatically work without
-having to remember to start the server manually.
+Unless the environment variable @code{LASH_NO_START_SERVER} is set any
+LASH client will automatically start the server if one isn't already running.
+Doing this you can simply run applications normally (e.g. from a terminal or
+your Applications menu) and have LASH automatically work without having to
+remember to start the server manually.
 
-Starting the server can be disabled by specifying the
-@option{--lash-no-start-server} option on the client's command line.
+Starting the server can also be disabled by specifying the
+@command{--lash-no-start-server} option on the client's command line.
 
-If you're using a Bourne compatible shell like @command{bash} (if you don't
-know, you probably are) you can enable auto-start with the following command:
+If you're using a Bourne compatible shell like @code{bash} (if you don't
+know, you probably are) you can disable auto-start with the following
+command:
 
-@command{export LASH_START_SERVER=1}
+@command{export LASH_NO_START_SERVER=1}
 
-If you would like to always have the server started, put that command in the
-file ~/.bashrc (or in /etc/profile if you are root and want it set system
-wide) to have it run whenever a new shell is started.
+Some applications may also choose themselves whether to start the
+server (or have a configurable option), however risabling the automatic
+start (by any method) is not recommended if you want to gain the benefits of
+LASH.  With auto launching enabled you don't need to worry about
+LASH until you actually want to save a session.
 
 @subsubsection A client connection
 

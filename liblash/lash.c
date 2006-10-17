@@ -186,7 +186,7 @@ lash_init(const lash_args_t * args,
 	   case something must be broken if we can't connect */
 	if ( !(client_flags & LASH_No_Start_Server) ) {
 		lash_args_get_id(args, id);
-		if (err && getenv("LASH_START_SERVER") != NULL && uuid_is_null(id)) {
+		if (err && getenv("LASH_NO_START_SERVER") == NULL && uuid_is_null(id)) {
 			LASH_DEBUGARGS("%s: trying to start new LASH server\n", 
 					__FUNCTION__);
 

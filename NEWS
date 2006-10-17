@@ -1,3 +1,6 @@
+0.5.3:
+* switch LASH_START_SERVER for LASH_NO_START_SERVER with opposite semantics
+
 0.5.2:
 * support for building without ALSA
 * server auto-launching bug fixes
