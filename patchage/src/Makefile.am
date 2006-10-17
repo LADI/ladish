@@ -6,6 +6,9 @@ EXTRA_DIST = patchage.gladep
 sharefilesdir = $(pkgdatadir)
 dist_sharefiles_DATA = patchage.glade
 
+globalpixmapsdir = $(datadir)/pixmaps
+dist_globalpixmaps_DATA = patchage-icon.svg
+
 bin_PROGRAMS = patchage
 patchage_SOURCES = \
 	main.cpp \

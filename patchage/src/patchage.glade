@@ -52,7 +52,7 @@
 		      <accelerator key="O" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image563">
+			<widget class="GtkImage" id="image607">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-open</property>
 			  <property name="icon_size">1</property>
@@ -74,7 +74,7 @@
 		      <accelerator key="S" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image564">
+			<widget class="GtkImage" id="image608">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-save</property>
 			  <property name="icon_size">1</property>
@@ -96,7 +96,7 @@
 		      <accelerator key="S" modifiers="GDK_CONTROL_MASK | GDK_SHIFT_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image565">
+			<widget class="GtkImage" id="image609">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-save-as</property>
 			  <property name="icon_size">1</property>
@@ -125,7 +125,7 @@
 		      <accelerator key="S" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image566">
+			<widget class="GtkImage" id="image610">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-save</property>
 			  <property name="icon_size">1</property>
@@ -175,7 +175,7 @@
 		      <accelerator key="P" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image567">
+			<widget class="GtkImage" id="image611">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-preferences</property>
 			  <property name="icon_size">1</property>
@@ -197,13 +197,13 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="launch_jack_menuitem">
 		      <property name="visible">True</property>
-		      <property name="label" translatable="yes">Launch JACK</property>
+		      <property name="label" translatable="yes">Connect to JACK (Launch)</property>
 		      <property name="use_underline">True</property>
 		      <signal name="activate" handler="on_launch_jack_menuitem_activate" last_modification_time="Wed, 05 Apr 2006 04:52:35 GMT"/>
 		      <accelerator key="J" modifiers="GDK_CONTROL_MASK | GDK_MOD1_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image568">
+			<widget class="GtkImage" id="image612">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-execute</property>
 			  <property name="icon_size">1</property>
@@ -219,13 +219,13 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="connect_to_jack_menuitem">
 		      <property name="visible">True</property>
-		      <property name="label" translatable="yes">Connect to _JACK</property>
+		      <property name="label" translatable="yes">Connect to _JACK (Don't Launch)</property>
 		      <property name="use_underline">True</property>
 		      <signal name="activate" handler="on_connect_to_jack_menuitem_activate" last_modification_time="Wed, 05 Apr 2006 04:27:40 GMT"/>
 		      <accelerator key="J" modifiers="GDK_MOD1_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image569">
+			<widget class="GtkImage" id="image613">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-connect</property>
 			  <property name="icon_size">1</property>
@@ -247,7 +247,7 @@
 		      <accelerator key="J" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image570">
+			<widget class="GtkImage" id="image614">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-disconnect</property>
 			  <property name="icon_size">1</property>
@@ -275,7 +275,7 @@
 		      <accelerator key="A" modifiers="GDK_MOD1_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image571">
+			<widget class="GtkImage" id="image615">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-connect</property>
 			  <property name="icon_size">1</property>
@@ -297,7 +297,7 @@
 		      <accelerator key="A" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image572">
+			<widget class="GtkImage" id="image616">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-disconnect</property>
 			  <property name="icon_size">1</property>
@@ -319,13 +319,13 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="launch_lash_menuitem">
 		      <property name="visible">True</property>
-		      <property name="label" translatable="yes">Launch LASH</property>
+		      <property name="label" translatable="yes">Connect to LASH (Launch)</property>
 		      <property name="use_underline">True</property>
 		      <signal name="activate" handler="on_launch_lash1_activate" last_modification_time="Mon, 22 May 2006 01:14:33 GMT"/>
 		      <accelerator key="L" modifiers="GDK_CONTROL_MASK | GDK_MOD1_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image573">
+			<widget class="GtkImage" id="image617">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-execute</property>
 			  <property name="icon_size">1</property>
@@ -341,13 +341,13 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="connect_to_lash_menuitem">
 		      <property name="visible">True</property>
-		      <property name="label" translatable="yes">Connect to _LASH</property>
+		      <property name="label" translatable="yes">Connect to _LASH (Don't Launch)</property>
 		      <property name="use_underline">True</property>
 		      <signal name="activate" handler="on_connect_to_lash1_activate" last_modification_time="Mon, 22 May 2006 01:14:33 GMT"/>
 		      <accelerator key="L" modifiers="GDK_MOD1_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image574">
+			<widget class="GtkImage" id="image618">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-connect</property>
 			  <property name="icon_size">1</property>
@@ -369,7 +369,7 @@
 		      <accelerator key="L" modifiers="GDK_SHIFT_MASK | GDK_MOD1_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image575">
+			<widget class="GtkImage" id="image619">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-disconnect</property>
 			  <property name="icon_size">1</property>
@@ -416,7 +416,7 @@
 		      <accelerator key="R" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image576">
+			<widget class="GtkImage" id="image620">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-refresh</property>
 			  <property name="icon_size">1</property>
@@ -836,7 +836,7 @@
   <property name="destroy_with_parent">True</property>
   <property name="name" translatable="yes">Patchage</property>
   <property name="copyright" translatable="yes">© 2006 Dave Robillard</property>
-  <property name="comments" translatable="yes">A control centre for audio and music production systems</property>
+  <property name="comments" translatable="yes">A control centre for music/audio systems</property>
   <property name="license" translatable="yes">Patchage is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
@@ -855,6 +855,7 @@ along with Patchage; if not, write to the Free Software Foundation, Inc.,
   <property name="website">http://codeson.net/software/patchage</property>
   <property name="authors">Dave Robillard &lt;dave@codeson.net&gt;</property>
   <property name="translator_credits" translatable="yes" comments="TRANSLATORS: Replace this string with your names, one name per line.">translator-credits</property>
+  <property name="logo">patchage-icon.svg</property>
 </widget>
 
 <widget class="GtkDialog" id="jack_settings_win">

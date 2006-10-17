@@ -49,7 +49,7 @@ LashDriver::attach(bool launch_daemon)
 		return;
 
 	int lash_flags = LASH_Config_File;
-	if (launch_daemon)
+	if (!launch_daemon)
 		lash_flags |= LASH_No_Start_Server;
 	m_client = lash_init(m_args, PACKAGE_NAME, lash_flags, LASH_PROTOCOL(2, 0));
 	if (m_client == NULL) {
