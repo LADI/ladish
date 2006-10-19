@@ -111,8 +111,6 @@ FlowCanvas::zoom_full()
 		if (mod->property_y() + mod->height() > top)
 			top = mod->property_y() + mod->height();
 	}
-	//const double bound_width = right - left;
-	//const double bound_height = top - bottom;
 
 	static const double pad = 4.0;
 

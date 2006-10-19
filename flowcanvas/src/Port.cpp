@@ -52,16 +52,16 @@ Port::Port(boost::shared_ptr<Module> module, const string& name, bool is_input, 
 	m_label.property_fill_color_rgba() = 0xFFFFFFFF;
 	m_label.property_weight() = 200;
 	
-	m_width = m_label.property_text_width() + 4.0;
+	m_width = m_label.property_text_width() + 6.0;
 	m_height = m_label.property_text_height();
-
+	
 	// Place everything
 	m_rect.property_x1() = 0;
 	m_rect.property_y1() = 0;
 	m_rect.property_x2() = m_width;	
 	m_rect.property_y2() = m_height;
-	m_label.property_x() = m_label.property_text_width() / 2 + 1;
-	m_label.property_y() = m_height / 2;
+	m_label.property_x() = m_label.property_text_width() / 2.0 + 3.0;
+	m_label.property_y() = m_height / 2.0;
 
 	m_label.raise_to_top();
 }
@@ -219,7 +219,7 @@ Gnome::Art::Point
 Port::connection_point()
 {
 	double x = (is_input()) ? m_rect.property_x1()-1.0 : m_rect.property_x2()+1.0;
-	double y = m_rect.property_y1() + m_height / 2;
+	double y = m_rect.property_y1() + m_height / 2.0;
 	
 	i2w(x, y); // convert to world-relative coords
 	

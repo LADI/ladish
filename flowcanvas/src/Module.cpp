@@ -18,6 +18,7 @@
 #include "FlowCanvas.h"
 #include <functional>
 #include <list>
+#include <algorithm>
 #include <cstdlib>
 #include <cassert>
 #include <cmath>
@@ -28,7 +29,7 @@ namespace LibFlowCanvas {
 static const int MODULE_FILL_COLOUR           = 0x292929FF;
 static const int MODULE_HILITE_FILL_COLOUR    = 0x393939FF;
 static const int MODULE_OUTLINE_COLOUR        = 0x606060FF;
-static const int MODULE_HILITE_OUTLINE_COLOUR = 0x606060FF;
+static const int MODULE_HILITE_OUTLINE_COLOUR = 0x808080FF;
 static const int MODULE_TITLE_COLOUR          = 0xFFFFFFFF;
 
 
@@ -411,7 +412,6 @@ Module::move_to(double x, double y)
 	// Man, not many things left to try to get the damn things to move! :)
 	property_x() = x;
 	property_y() = y;
-	//move(0, 0);
 	
 	// Update any connection line positions
 	for (PortVector::iterator p = m_ports.begin(); p != m_ports.end(); ++p)
@@ -485,23 +485,24 @@ Module::resize()
 	}
 	
 	// Make sure module is wide enough for ports
-	if (widest_in > widest_out)
-		set_width(widest_in + hor_pad + border_width()*2.0);
-	else
-		set_width(widest_out + hor_pad + border_width()*2.0);
+	set_width(std::max(widest_in, widest_out) + hor_pad + border_width()*2.0);
 	
 	// Make sure module is wide enough for title
 	if (m_canvas_title.property_text_width() + 8.0 > m_width)
 		set_width(m_canvas_title.property_text_width() + 8.0);
 
 	// Set height to contain ports and title
-	double height_base = 4;
+	double height_base = 2;
 	if (m_name.length() > 0)
-		height_base += m_canvas_title.property_text_height();
+		height_base += 2 + m_canvas_title.property_text_height();
 
 	double h = height_base;
 	if (m_ports.size() > 0)
 		h += m_ports.size() * ((*m_ports.begin())->height()+2.0);
+
+	if (m_name.length() > 0 && m_ports.size() > 0)
+		h += 0.5;
+
 	set_height(h);
 	
 	// Move ports to appropriate locations
@@ -514,11 +515,11 @@ Module::resize()
 		y = height_base + (i * (p->height() + 2.0));
 		if (p->is_input()) {
 			p->set_width(widest_in);
-			p->property_x() = 1.0;//border_width();
+			p->property_x() = 0.0;
 			p->property_y() = y;
 		} else {
 			p->set_width(widest_out);
-			p->property_x() = m_width - p->width() - 1.0;//p->border_width();
+			p->property_x() = m_width - p->width() - 0.0;
 			p->property_y() = y;
 		}
 	}
