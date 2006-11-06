@@ -27,6 +27,7 @@ JACK_VERSION=$( pkg-config --modversion jack )
 AC_SUBST(JACK_CFLAGS)
 AC_SUBST(JACK_LIBS)
 AC_DEFINE_UNQUOTED(JACK_VERSION, "$JACK_VERSION", [The version of jack we're compiling against])
+PC_REQUIRES="jack"
 
 
 ############
@@ -60,6 +61,7 @@ if test "x$lash_alsa_midi" = "xyes"; then
 		AC_SUBST(ALSA_LIBS)
 		AC_DEFINE(HAVE_ALSA, 1, [Alsa sequencer support])
 		AC_DEFINE_UNQUOTED(ALSA_VERSION, "$ALSA_VERSION", [The version of alsa we're compiling against])
+    PC_REQUIRES="$PC_REQUIRES alsa"
 	else
 		AC_MSG_WARN([You don't have ALSA >= 0.9. See http://www.alsa-project.org/])
 		AC_MSG_WARN([ALSA support not being built.])
@@ -215,6 +217,9 @@ AC_MSG_RESULT($LASH_LIBS)
 # For the manual
 DATE="`date -u`"
 AC_SUBST(DATE)
+
+# For the Requires: line in the PC file
+AC_SUBST(PC_REQUIRES)
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([lash-1.0.pc])
