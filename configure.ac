@@ -34,13 +34,12 @@ if test "$build_jack_midi" = "yes"; then
 fi
 
 # Check for ALSA
-enable_alsa="yes"
+build_alsa="yes"
 AC_ARG_ENABLE(alsa,
 [AS_HELP_STRING(--enable-alsa, [Enable Alsa MIDI driver (yes)])],
-[ enable_alsa="$enableval" ]
-)
+	[ if test x$enable_alsa = xno ; then build_alsa=no ; fi ])
 
-if test "$enable_alsa" = "yes"; then
+if test "$build_alsa" = "yes"; then
   AC_CHECK_LIB(asound, snd_seq_open, ALSA_FOUND="yes", ALSA_FOUND="no", -lm -ldl -lpthread)
 
   if test "$ALSA_FOUND" = "yes"; then
@@ -126,7 +125,7 @@ AC_MSG_RESULT([])
 AC_MSG_RESULT([**********************************************************************])
 AC_MSG_RESULT([Patchage build configuration:])
 AC_MSG_RESULT([])
-AC_MSG_RESULT([Alsa support: $ALSA_FOUND])
+AC_MSG_RESULT([Alsa support: $build_alsa])
 AC_MSG_RESULT([Lash support: $have_lash])
 AC_MSG_RESULT([**********************************************************************])
 AC_MSG_RESULT([])
