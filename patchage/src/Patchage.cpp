@@ -22,11 +22,13 @@
 #include <pthread.h>
 #include "StateManager.h"
 #include "PatchageFlowCanvas.h"
-#include "AlsaDriver.h"
 #include "JackDriver.h"
 #include "JackSettingsDialog.h"
 #ifdef HAVE_LASH
 #include "LashDriver.h"
+#endif
+#ifdef HAVE_ALSA
+#include "AlsaDriver.h"
 #endif
 
 // FIXME: include to avoid undefined reference to boost SP debug hooks stuff

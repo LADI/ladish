@@ -14,13 +14,15 @@
  * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "config.h"
 #include "PatchageFlowCanvas.h"
 #include "Patchage.h"
 #include "JackDriver.h"
-#include "AlsaDriver.h"
 #include "PatchageModule.h"
 #include "PatchagePort.h"
-
+#ifdef HAVE_ALSA
+#include "AlsaDriver.h"
+#endif
 
 PatchageFlowCanvas::PatchageFlowCanvas(Patchage* app, int width, int height)
 : FlowCanvas(width, height),
