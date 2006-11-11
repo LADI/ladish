@@ -779,6 +779,7 @@ FlowCanvas::select_drag_handler(GdkEvent* event)
 			event->button.x, event->button.y, event->button.x, event->button.y);
 		m_select_rect->property_fill_color_rgba() = 0x273344FF;
 		m_select_rect->property_outline_color_rgba() = 0xEEEEFFFF;
+		m_select_rect->property_width_units() = 0.5;
 		m_select_rect->lower_to_bottom();
 		m_base_rect.lower_to_bottom();
 		return true;
