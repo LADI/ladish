@@ -48,6 +48,8 @@ if test "$build_alsa" = "yes"; then
     ALSA_LIBS="-lasound -lm -ldl -lpthread"
     AC_SUBST(ALSA_CFLAGS)
     AC_SUBST(ALSA_LIBS)
+  else
+    build_alsa="no"
   fi
 else
   ALSA_FOUND="no"
