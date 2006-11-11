@@ -241,6 +241,7 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="disconnect_from_jack_menuitem">
 		      <property name="visible">True</property>
+		      <property name="sensitive">False</property>
 		      <property name="label" translatable="yes">Disconnect from JACK</property>
 		      <property name="use_underline">True</property>
 		      <signal name="activate" handler="on_disconnect_from_jack1_activate" last_modification_time="Sun, 21 May 2006 23:48:26 GMT"/>
@@ -291,6 +292,7 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="disconnect_from_alsa_menuitem">
 		      <property name="visible">True</property>
+		      <property name="sensitive">False</property>
 		      <property name="label" translatable="yes">Disconnect from ALSA</property>
 		      <property name="use_underline">True</property>
 		      <signal name="activate" handler="on_disconnect_from_alsa_menuitem_activate" last_modification_time="Mon, 22 May 2006 00:10:31 GMT"/>
@@ -363,6 +365,7 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="disconnect_from_lash_menuitem">
 		      <property name="visible">True</property>
+		      <property name="sensitive">False</property>
 		      <property name="label" translatable="yes">Disconnect from LASH</property>
 		      <property name="use_underline">True</property>
 		      <signal name="activate" handler="on_disconnect_from_lash1_activate" last_modification_time="Mon, 22 May 2006 01:14:33 GMT"/>
@@ -479,6 +482,7 @@
 
 	      <child>
 		<widget class="GtkButton" id="rewind_but">
+		  <property name="border_width">1</property>
 		  <property name="visible">True</property>
 		  <property name="can_focus">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
@@ -513,6 +517,7 @@
 
 	      <child>
 		<widget class="GtkButton" id="play_but">
+		  <property name="border_width">1</property>
 		  <property name="visible">True</property>
 		  <property name="can_focus">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
@@ -547,6 +552,7 @@
 
 	      <child>
 		<widget class="GtkButton" id="stop_but">
+		  <property name="border_width">1</property>
 		  <property name="visible">True</property>
 		  <property name="can_focus">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
@@ -573,20 +579,8 @@
 	  </child>
 
 	  <child>
-	    <widget class="GtkSeparatorToolItem" id="separatortoolitem3">
-	      <property name="visible">True</property>
-	      <property name="draw">True</property>
-	      <property name="visible_horizontal">True</property>
-	      <property name="visible_vertical">True</property>
-	    </widget>
-	    <packing>
-	      <property name="expand">False</property>
-	      <property name="homogeneous">False</property>
-	    </packing>
-	  </child>
-
-	  <child>
 	    <widget class="GtkToolItem" id="toolitem14">
+	      <property name="border_width">1</property>
 	      <property name="visible">True</property>
 	      <property name="visible_horizontal">True</property>
 	      <property name="visible_vertical">True</property>
@@ -636,6 +630,7 @@
 
 	      <child>
 		<widget class="GtkButton" id="zoom_normal_but">
+		  <property name="border_width">1</property>
 		  <property name="visible">True</property>
 		  <property name="can_focus">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
@@ -670,6 +665,7 @@
 
 	      <child>
 		<widget class="GtkButton" id="zoom_full_but">
+		  <property name="border_width">1</property>
 		  <property name="visible">True</property>
 		  <property name="can_focus">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
@@ -697,6 +693,7 @@
 
 	  <child>
 	    <widget class="GtkToolItem" id="toolitem1">
+	      <property name="border_width">1</property>
 	      <property name="visible">True</property>
 	      <property name="visible_horizontal">True</property>
 	      <property name="visible_vertical">True</property>
@@ -704,7 +701,7 @@
 
 	      <child>
 		<widget class="GtkHScale" id="zoom_scale">
-		  <property name="width_request">200</property>
+		  <property name="width_request">180</property>
 		  <property name="visible">True</property>
 		  <property name="can_focus">True</property>
 		  <property name="draw_value">False</property>

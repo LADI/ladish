@@ -71,5 +71,4 @@ private:
 	pthread_t m_refresh_thread;
 };
 
-
 #endif // ALSADRIVER_H

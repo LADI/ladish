@@ -153,8 +153,10 @@ Patchage::Patchage(int argc, char** argv)
 	m_menu_lash_connect->signal_activate().connect(   sigc::mem_fun(this, &Patchage::menu_lash_connect));
 	m_menu_lash_disconnect->signal_activate().connect(sigc::mem_fun(this, &Patchage::menu_lash_disconnect));
 #endif
+#ifdef HAVE_ALSA
 	m_menu_alsa_connect->signal_activate().connect(   sigc::mem_fun(this, &Patchage::menu_alsa_connect));
 	m_menu_alsa_disconnect->signal_activate().connect(sigc::mem_fun(this, &Patchage::menu_alsa_disconnect));
+#endif 
 	m_menu_store_positions->signal_activate().connect(      sigc::mem_fun(this, &Patchage::menu_store_positions));
 	m_menu_file_quit->signal_activate().connect(      sigc::mem_fun(this, &Patchage::menu_file_quit));
 	m_menu_view_refresh->signal_activate().connect(   sigc::mem_fun(this, &Patchage::menu_view_refresh));
@@ -339,7 +341,8 @@ Patchage::attach_menu_items()
 			sigc::mem_fun(m_menu_jack_connect, &Gtk::MenuItem::set_sensitive), true));
 	m_jack_driver->signal_detached.connect(sigc::bind(
 			sigc::mem_fun(m_menu_jack_disconnect, &Gtk::MenuItem::set_sensitive), false));
-	
+
+#ifdef HAVE_ALSA	
 	m_alsa_driver->signal_attached.connect(sigc::bind(
 			sigc::mem_fun(m_menu_alsa_connect, &Gtk::MenuItem::set_sensitive), false));
 	m_alsa_driver->signal_attached.connect(sigc::bind(
@@ -349,6 +352,7 @@ Patchage::attach_menu_items()
 			sigc::mem_fun(m_menu_alsa_connect, &Gtk::MenuItem::set_sensitive), true));
 	m_alsa_driver->signal_detached.connect(sigc::bind(
 			sigc::mem_fun(m_menu_alsa_disconnect, &Gtk::MenuItem::set_sensitive), false));
+#endif
 }
 
 

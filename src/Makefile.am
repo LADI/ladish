@@ -22,11 +22,13 @@ patchage_SOURCES = \
 	Driver.h \
 	JackDriver.h \
 	JackDriver.cpp \
-	AlsaDriver.h \
-	AlsaDriver.cpp \
 	PatchageFlowCanvas.h \
 	PatchageFlowCanvas.cpp
 
 if WITH_LASH
 patchage_SOURCES += LashDriver.h LashDriver.cpp
+endif
+
+if WITH_ALSA
+patchage_SOURCES += AlsaDriver.h AlsaDriver.cpp
 endif

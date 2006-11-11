@@ -30,12 +30,6 @@ int main(int argc, char** argv)
 {
 	try {
 	
-	//lash_args_t* const lash_args = lash_extract_args(&argc, &argv);
-	
-	//lash_client_t* const lash_server_client = lash_init(lash_args, "Patchage Server Interface",
-	//						LASH_Server_Interface, LASH_PROTOCOL(2, 0));
-
-		
 	Gnome::Canvas::init();
 	Gtk::Main app(argc, argv);
 	

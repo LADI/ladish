@@ -17,8 +17,6 @@
 #include <string>
 #include <iostream>
 #include <cassert>
-#include <sys/poll.h>
-#include <errno.h>
 #include "PatchageFlowCanvas.h"
 #include "AlsaDriver.h"
 #include "Patchage.h"
@@ -525,3 +523,4 @@ AlsaDriver::m_refresh_main()
 		}
 	}
 }
+

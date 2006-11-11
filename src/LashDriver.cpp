@@ -48,16 +48,16 @@ LashDriver::attach(bool launch_daemon)
 	if (m_client)
 		return;
 
-	int lash_flags = LASH_Config_File;
+	int lash_flags = LASH_Server_Interface | LASH_Config_File;
 	if (!launch_daemon)
 		lash_flags |= LASH_No_Start_Server;
 	m_client = lash_init(m_args, PACKAGE_NAME, lash_flags, LASH_PROTOCOL(2, 0));
-	if (m_client == NULL) {
+	if (!m_client) {
 		m_app->status_message("[LASH] Unable to attach to server");
 	} else {
-		lash_event_t* event = lash_event_new_with_type(LASH_Client_Name);
-		lash_event_set_string(event, "Patchage");
-		lash_send_event(m_client, event);
+		//lash_event_t* event = lash_event_new_with_type(LASH_Client_Name);
+		//lash_event_set_string(event, "Patchage");
+		//lash_send_event(m_client, event);
 		signal_attached.emit();
 		m_app->status_message("[LASH] Attached");
 	}
@@ -100,27 +100,72 @@ LashDriver::handle_event(lash_event_t* ev)
 	const char*    c_str = lash_event_get_string(ev);
 	string         str   = (c_str == NULL) ? "" : c_str;
 	
-	//cout << "[LashDriver] LASH Event.  Type = " << type << ", string = " << str << "**********" << endl;
+	cout << "[LashDriver] LASH Event.  Type = " << (unsigned int)type << ", string = " << str << "**********" << endl;
 	
-	if (type == LASH_Save_File) {
-		//cout << "[LashDriver] LASH Save File - " << str << endl;
+	switch (type) {
+	case LASH_Project_Add:
+		cerr << "LASH project add\n";
+		break;
+	case LASH_Project_Remove:
+		cerr << "LASH remove\n";
+		break;
+	case LASH_Project_Dir:
+		cerr << "LASH project dir\n";
+		break;
+	case LASH_Project_Name:
+		cerr << "LASH project name\n";
+		break;
+	case LASH_Client_Add:
+		cerr << "LASH client add\n";
+		break;
+	case LASH_Client_Name:
+		cerr << "LASH client name\n";
+		break;
+	case LASH_Jack_Client_Name:
+		cerr << "LASH jack client name\n";
+		break;
+	case LASH_Alsa_Client_ID:
+		cerr << "LASH alsa client id\n";
+		break;
+	case LASH_Percentage:
+		cerr << "LASH percentage\n";
+		break;
+	case LASH_Save:
+		cerr << "LASH save\n";
+		break;
+	case LASH_Restore_Data_Set:
+		cerr << "LASH restore data set\n";
+		break;
+	case LASH_Server_Lost:
+		cerr << "LASH server lost\n";
+		break;
+	case LASH_Client_Remove:
+		cerr << "LASH client remove\n";
+		break;
+	case LASH_Save_File:
+		cout << "[LashDriver] LASH Save File - " << str << endl;
 		m_app->store_window_location();
 		m_app->state_manager()->save(str.append("/locations"));
 		lash_send_event(m_client, lash_event_new_with_type(LASH_Save_File));
-	} else if (type == LASH_Restore_File) {
-		//cout << "[LashDriver] LASH Restore File - " << str << endl;
+		break;
+
+	case LASH_Restore_File:
+		cout << "[LashDriver] LASH Restore File - " << str << endl;
 		m_app->state_manager()->load(str.append("/locations"));
 		m_app->update_state();
 		lash_send_event(m_client, lash_event_new_with_type(LASH_Restore_File));
-	} else if (type == LASH_Save_Data_Set) {
-		//cout << "[LashDriver] LASH Save Data Set - " << endl;
-		
-		// Tell LASH we're done
+		break;
+
+	case LASH_Save_Data_Set:
+		cout << "[LashDriver] LASH Save Data Set - " << endl;
 		lash_send_event(m_client, lash_event_new_with_type(LASH_Save_Data_Set));
-	} else if (type == LASH_Quit) {
-		//stop_thread();
+		break;
+
+	case LASH_Quit:
+		cout << "[LashDriver] Quit" << endl;
 		m_client = NULL;
 		m_app->quit();
+		break;
 	}
 }
 
@@ -132,7 +177,7 @@ LashDriver::handle_config(lash_config_t* conf)
 	const void*    val      = NULL;
 	size_t         val_size = 0;
 
-	//cout << "[LashDriver] LASH Config.  Key = " << key << endl;
+	cout << "[LashDriver] LASH Config.  Key = " << key << endl;
 
 	key      = lash_config_get_key(conf);
 	val      = lash_config_get_value(conf);
