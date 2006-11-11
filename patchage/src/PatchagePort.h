@@ -17,12 +17,16 @@
 #ifndef PATCHAGEPORT_H
 #define PATCHAGEPORT_H
 
+#include "config.h"
 #include <string>
 #include <list>
-#include <alsa/asoundlib.h>
 #include <flowcanvas/Port.h>
 #include <flowcanvas/Module.h>
 #include <boost/shared_ptr.hpp>
+
+#ifdef HAVE_ALSA
+#include <alsa/asoundlib.h>
+#endif
 
 using namespace LibFlowCanvas;
 using std::string; using std::list;
@@ -41,24 +45,29 @@ public:
 	: Port(module, name, is_input, color),
 	  m_type(type)
 	{
+#ifdef HAVE_ALSA
 		m_alsa_addr.client = '\0';
 		m_alsa_addr.port = '\0';
+#endif
 	}
 
 	virtual ~PatchagePort() {}
 
+#ifdef HAVE_ALSA
 	// FIXME: This driver specific crap really needs to go
 	void                  alsa_addr(const snd_seq_addr_t addr) { m_alsa_addr = addr; }
 	const snd_seq_addr_t* alsa_addr() const
 	{ return (m_type == ALSA_MIDI) ? &m_alsa_addr : NULL; }
-
+#endif
 	/** Returns the full name of this port, as "modulename:portname" */
 	string full_name() const { return m_module.lock()->name() + ":" + m_name; }
 
 	PortType type() const { return m_type; }
 
 private:
+#ifdef HAVE_ALSA
 	snd_seq_addr_t m_alsa_addr;
+#endif
 	PortType       m_type;
 };
 

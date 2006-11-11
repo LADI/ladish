@@ -53,7 +53,7 @@ if test "$enable_alsa" = "yes"; then
 else
   ALSA_FOUND="no"
 fi
-AM_CONDITIONAL(ALSA, test "$ALSA_FOUND" = "yes")
+AM_CONDITIONAL(WITH_ALSA, test "$ALSA_FOUND" = "yes")
 
 # LASH config option
 build_lash="yes"

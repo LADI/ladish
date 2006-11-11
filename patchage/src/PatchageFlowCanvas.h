@@ -18,9 +18,14 @@
 #define PATCHAGEPATCHBAYAREA_H
 
 #include <string>
+#ifdef HAVE_ALSA
 #include <alsa/asoundlib.h>
+#endif
 #include <flowcanvas/FlowCanvas.h>
 #include "StateManager.h"
+
+
+
 class Patchage;
 class PatchageModule;
 class PatchagePort;
@@ -34,8 +39,9 @@ public:
 	PatchageFlowCanvas(Patchage* m_app, int width, int height);
 	
 	boost::shared_ptr<PatchageModule> find_module(const string& name, ModuleType type);
+#ifdef HAVE_ALSA
 	boost::shared_ptr<PatchagePort>   find_port(const snd_seq_addr_t* alsa_addr);
-
+#endif
 	void connect(boost::shared_ptr<Port> port1, boost::shared_ptr<Port> port2);
 	void disconnect(boost::shared_ptr<Port> port1, boost::shared_ptr<Port> port2);
 
