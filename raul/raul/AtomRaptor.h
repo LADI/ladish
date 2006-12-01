@@ -53,12 +53,14 @@ public:
 			os << atom.get_float();
 			triple->object = (unsigned char*)strdup(os.str().c_str());
 			triple->object_type = RAPTOR_IDENTIFIER_TYPE_LITERAL;
+			/* Use xsd:decimal so turtle abbreviation works */
 			triple->object_literal_datatype = raptor_new_uri(
-				U("http://www.w3.org/2001/XMLSchema#float"));
+				U("http://www.w3.org/2001/XMLSchema#decimal"));
 			break;
 		case Atom::STRING:
 			triple->object = strdup(atom.get_string());
 			triple->object_type = RAPTOR_IDENTIFIER_TYPE_LITERAL;
+			triple->object_literal_datatype = NULL;
 			break;
 		case Atom::BLOB:
 		case Atom::NIL:
