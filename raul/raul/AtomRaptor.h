@@ -17,10 +17,12 @@
 #ifndef RAUL_ATOM_RAPTOR_H
 #define RAUL_ATOM_RAPTOR_H
 
+#include <iostream>
 #include <sstream>
 #include <cstring>
 #include <raptor.h>
 #include "raul/Atom.h"
+using std::cerr; using std::endl;
 
 #define U(x) ((const unsigned char*)(x))
 
