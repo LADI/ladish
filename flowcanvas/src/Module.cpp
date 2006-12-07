@@ -26,9 +26,9 @@ using std::string;
 
 namespace LibFlowCanvas {
 
-static const int MODULE_FILL_COLOUR           = 0x292929FF;
+static const int MODULE_FILL_COLOUR           = 0x292929C0;
 static const int MODULE_HILITE_FILL_COLOUR    = 0x393939FF;
-static const int MODULE_OUTLINE_COLOUR        = 0x606060FF;
+static const int MODULE_OUTLINE_COLOUR        = 0x606060E0;
 static const int MODULE_HILITE_OUTLINE_COLOUR = 0x808080FF;
 static const int MODULE_TITLE_COLOUR          = 0xFFFFFFFF;
 
