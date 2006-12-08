@@ -61,7 +61,7 @@ Port::Port(boost::shared_ptr<Module> module, const string& name, bool is_input, 
 	m_rect.property_x2() = m_width;	
 	m_rect.property_y2() = m_height;
 	m_label.property_x() = m_label.property_text_width() / 2.0 + 3.0;
-	m_label.property_y() = m_height / 2.0;
+	m_label.property_y() = (m_height / 2.0) - 1.0;
 
 	m_label.raise_to_top();
 }

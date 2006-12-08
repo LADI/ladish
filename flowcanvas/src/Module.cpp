@@ -26,10 +26,10 @@ using std::string;
 
 namespace LibFlowCanvas {
 
-static const int MODULE_FILL_COLOUR           = 0x292929C0;
-static const int MODULE_HILITE_FILL_COLOUR    = 0x393939FF;
-static const int MODULE_OUTLINE_COLOUR        = 0x606060E0;
-static const int MODULE_HILITE_OUTLINE_COLOUR = 0x808080FF;
+static const int MODULE_FILL_COLOUR           = 0x292929C8;
+static const int MODULE_HILITE_FILL_COLOUR    = 0x292929F4;
+static const int MODULE_OUTLINE_COLOUR        = 0x686868E8;
+static const int MODULE_HILITE_OUTLINE_COLOUR = 0x808080F4;
 static const int MODULE_TITLE_COLOUR          = 0xFFFFFFFF;
 
 
@@ -233,8 +233,10 @@ Module::set_highlighted(bool b)
 {
 	if (b) {
 		m_module_box.property_fill_color_rgba() = MODULE_HILITE_FILL_COLOUR;
+		m_module_box.property_outline_color_rgba() = MODULE_HILITE_OUTLINE_COLOUR;
 	} else {
 		m_module_box.property_fill_color_rgba() = MODULE_FILL_COLOUR;
+		m_module_box.property_outline_color_rgba() = MODULE_OUTLINE_COLOUR;
 	}
 }
 
