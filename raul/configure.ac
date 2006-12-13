@@ -20,6 +20,13 @@ AC_CHECK_FUNCS([strdup strerror])
 AC_CHECK_HEADER([pthread.h], [],
 	AC_MSG_ERROR([Raul requires POSIX threads.]))
 
+# Build unit tests?
+build_unit_tests="no"
+AC_ARG_ENABLE(unit-tests,
+	[AS_HELP_STRING(--enable-unit-tests, [Build unit tests (no) - Developers only])],
+	[build_unit_tests="$enableval"])
+AM_CONDITIONAL(BUILD_TESTS, [test "$build_unit_tests" = "yes"])
+
 build_smart_pointers="yes"
 AC_ARG_ENABLE(smart_pointers,
 	[AS_HELP_STRING(--enable-smart_pointers, [Include smart pointers - requires boost (yes)])],
@@ -63,6 +70,7 @@ AM_CONDITIONAL(WITH_LIBLO, [test "$build_liblo" = "yes"])
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([raul/Makefile])
+AC_CONFIG_FILES([tests/Makefile])
 AC_CONFIG_FILES([doc/Makefile])
 AC_CONFIG_FILES([doc/reference.doxygen])
 AC_CONFIG_FILES([raul.pc])
@@ -73,9 +81,11 @@ AC_MSG_RESULT([])
 AC_MSG_RESULT([**********************************************************************])
 AC_MSG_RESULT([Raul build configuration:])
 AC_MSG_RESULT([])
-AC_MSG_RESULT([OSC supprt:     $build_liblo])
-AC_MSG_RESULT([RDF supprt:     $build_raptor])
-AC_MSG_RESULT([Smart Pointers: $build_smart_pointers])
+AC_MSG_RESULT([Building unit tests: $build_unit_tests])
+AC_MSG_RESULT([])
+AC_MSG_RESULT([OSC supprt:          $build_liblo])
+AC_MSG_RESULT([RDF supprt:          $build_raptor])
+AC_MSG_RESULT([Smart Pointers:      $build_smart_pointers])
 AC_MSG_RESULT([**********************************************************************])
 AC_MSG_RESULT([])
 

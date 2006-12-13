@@ -240,7 +240,11 @@ public:
 
 	inline bool is_child_of(const Path& parent) const
 	{
-		return (length() > parent.length() && substr(0, parent.length()) == parent);
+		/*return (length() > parent.length()
+			&& substr(0, parent.length()) == parent
+			&& (*this)[parent.length()] == '/');*/
+		const string parent_base = parent.base();
+		return (substr(0, parent_base.length()) == parent_base);
 	}
 	
 	inline bool is_parent_of(const Path& child) const
