@@ -236,11 +236,11 @@ int
 StateManager::get_port_color(PortType type)
 {
 	if (type == JACK_AUDIO)
-		return 0x305171FF;
+		return 0x305171B0;
 	else if (type == JACK_MIDI)
-		return 0x663939FF;
+		return 0x663939B0;
 	else if (type == ALSA_MIDI)
-		return 0x307130FF;
+		return 0x307130B0;
 	else
-		return 0xFF0000FF;
+		return 0xFF0000B0;
 }	
