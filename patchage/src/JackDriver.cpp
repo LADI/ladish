@@ -20,6 +20,8 @@
 #include <iostream>
 #include "config.h"
 #include <jack/jack.h>
+#include <jack/statistics.h>
+#include <jack/thread.h>
 #include "PatchageFlowCanvas.h"
 #include "JackDriver.h"
 #include "Patchage.h"
@@ -32,8 +34,11 @@ using namespace LibFlowCanvas;
 
 
 JackDriver::JackDriver(Patchage* app)
-: m_app(app),
-  m_client(NULL)
+: m_app(app)
+, m_client(NULL)
+, m_is_activated(false)
+, m_xruns(0)
+, m_xrun_delay(0)
 {
 	m_last_pos.frame = 0;
 	m_last_pos.valid = (jack_position_bits_t)0;
@@ -60,19 +65,27 @@ JackDriver::attach(bool launch_daemon)
 	jack_options_t options = (!launch_daemon) ? JackNoStartServer : JackNullOption;
 	m_client = jack_client_open("Patchage", options, NULL);
 	if (m_client == NULL) {
-		m_app->status_message("[JACK] Unable to attach");
+		m_app->status_message("[JACK] Unable to create client");
+		m_is_activated = false;
 	} else {
 		jack_set_error_function(error_cb);
 		jack_on_shutdown(m_client, jack_shutdown_cb, this);
 		jack_set_port_registration_callback(m_client, jack_port_registration_cb, this);
 		jack_set_graph_order_callback(m_client, jack_graph_order_cb, this);
+		jack_set_buffer_size_callback(m_client, jack_buffer_size_cb, this);
+		jack_set_xrun_callback(m_client, jack_xrun_cb, this);
 	
 		m_is_dirty = true;
-		
-		jack_activate(m_client);
-	
-		signal_attached.emit();
-		m_app->status_message("[JACK] Attached");
+		m_buffer_size = jack_get_buffer_size(m_client);
+
+		if (!jack_activate(m_client)) {
+			m_is_activated = true;
+			signal_attached.emit();
+			m_app->status_message("[JACK] Attached");
+		} else {
+			m_app->status_message("[JACK] ERROR: Failed to attach");
+			m_is_activated = false;
+		}
 	}
 }
 
@@ -85,6 +98,7 @@ JackDriver::detach()
 		jack_client_close(m_client);
 		m_client = NULL;
 		destroy_all_ports();
+		m_is_activated = false;
 		signal_detached.emit();
 		m_app->status_message("[JACK] Detached");
 	}
@@ -144,7 +158,7 @@ JackDriver::create_port(boost::shared_ptr<PatchageModule> parent, jack_port_t* p
 void
 JackDriver::refresh() 
 {
-	m_mutex.lock();
+	//m_mutex.lock();
 
 	if (m_client == NULL) {
 		// Shutdown
@@ -153,7 +167,7 @@ JackDriver::refresh()
 			signal_detached.emit();
 		}
 		m_is_dirty = false;
-		m_mutex.unlock();
+		//m_mutex.unlock();
 		return;
 	}
 
@@ -266,7 +280,7 @@ JackDriver::refresh()
 	free(ports);
 	undirty();
 
-	m_mutex.unlock();
+	//m_mutex.unlock();
 }
 
 
@@ -331,6 +345,8 @@ JackDriver::jack_port_registration_cb(jack_port_id_t port_id, int /*registered*/
 
 	jack_port_t* const port = jack_port_by_id(me->m_client, port_id);
 	const string full_name = jack_port_name(port);
+	
+	jack_reset_max_delayed_usecs(me->m_client);
 
 	//(me->m_mutex).lock();
 
@@ -353,10 +369,53 @@ JackDriver::jack_graph_order_cb(void* jack_driver)
 	JackDriver* me = reinterpret_cast<JackDriver*>(jack_driver);
 	assert(me->m_client);
 	
+	jack_reset_max_delayed_usecs(me->m_client);
+	
 	//(me->m_mutex).lock();
 	me->m_is_dirty = true;
 	//(me->m_mutex).unlock();
 
+	return 0;
+}
+
+
+int
+JackDriver::jack_buffer_size_cb(jack_nframes_t buffer_size, void* jack_driver) 
+{
+	assert(jack_driver);
+	JackDriver* me = reinterpret_cast<JackDriver*>(jack_driver);
+	assert(me->m_client);
+	
+	jack_reset_max_delayed_usecs(me->m_client);
+
+	//(me->m_mutex).lock();
+	me->m_buffer_size = buffer_size;
+	me->reset_xruns();
+	me->reset_delay();
+	//(me->m_mutex).unlock();
+
+	return 0;
+}
+
+
+int
+JackDriver::jack_xrun_cb(void* jack_driver)
+{
+	assert(jack_driver);
+	JackDriver* me = reinterpret_cast<JackDriver*>(jack_driver);
+	assert(me->m_client);
+
+	//(me->m_mutex).lock();
+	me->m_xruns++;
+	me->m_xrun_delay = jack_get_xrun_delayed_usecs(me->m_client);
+	jack_reset_max_delayed_usecs(me->m_client);
+
+	//cerr << "** XRUN Delay = " << me->m_xrun_delay << endl;
+
+	me->m_is_dirty = true;
+
+	//(me->m_mutex).unlock();
+	
 	return 0;
 }
 
@@ -367,6 +426,8 @@ JackDriver::jack_shutdown_cb(void* jack_driver)
 	assert(jack_driver);
 	JackDriver* me = reinterpret_cast<JackDriver*>(jack_driver);
 	assert(me->m_client);
+
+	jack_reset_max_delayed_usecs(me->m_client);
 
 	//(me->m_mutex).lock();
 	me->m_client = NULL;
@@ -381,4 +442,46 @@ JackDriver::error_cb(const char* msg)
 	cerr << "JACK ERROR: " << msg << endl;
 }
 
+
+jack_nframes_t
+JackDriver::buffer_size()
+{
+	if (m_is_activated)
+		return m_buffer_size;
+	else
+		return jack_get_buffer_size(m_client);
+}
+
+
+void
+JackDriver::reset_xruns()
+{
+	m_xruns = 0;
+	m_xrun_delay = 0;
+}
+
+
+void
+JackDriver::set_buffer_size(jack_nframes_t size)
+{
+	if (m_client && jack_set_buffer_size(m_client, size))
+		m_app->status_message("[JACK] ERROR: Unable to set buffer size");
+}
+
+void
+JackDriver::set_realtime(bool /*realtime*/, int /*priority*/)
+{
+	/* need a jack_set_realtime, this doesn't make sense
+	pthread_t jack_thread = jack_client_thread_id(m_client);
+
+	if (realtime)
+		if (jack_acquire_real_time_scheduling(jack_thread, priority))
+			m_app->status_message("[JACK] ERROR: Unable to set real-time priority");
+	else
+		if (jack_drop_real_time_scheduling(jack_thread))
+			m_app->status_message("[JACK] ERROR: Unable to drop real-time priority");
+
+	cerr << "Set Jack realtime: " << realtime << endl;
+	*/
+}
 

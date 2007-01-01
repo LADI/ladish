@@ -14,6 +14,7 @@
  * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include <cmath>
 #include "Patchage.h"
 #include "config.h"
 #include <libgnomecanvasmm.h>
@@ -22,6 +23,7 @@
 #include <pthread.h>
 #include "StateManager.h"
 #include "PatchageFlowCanvas.h"
+#include <jack/statistics.h>
 #include "JackDriver.h"
 #include "JackSettingsDialog.h"
 #ifdef HAVE_LASH
@@ -33,6 +35,40 @@
 
 // FIXME: include to avoid undefined reference to boost SP debug hooks stuff
 #include <raul/SharedPtr.h>
+
+
+
+/* Gtk helpers (resize combo boxes) */
+
+static void
+gtkmm_get_ink_pixel_size (Glib::RefPtr<Pango::Layout> layout,
+			       int& width,
+			       int& height)
+{
+	Pango::Rectangle ink_rect = layout->get_ink_extents ();
+	
+	width = (ink_rect.get_width() + PANGO_SCALE / 2) / PANGO_SCALE;
+	height = (ink_rect.get_height() + PANGO_SCALE / 2) / PANGO_SCALE;
+}
+
+static void
+gtkmm_set_width_for_given_text (Gtk::Widget &w, const gchar *text,
+						   gint hpadding/*, gint vpadding*/)
+	
+{
+	int old_width, old_height;
+	w.get_size_request(old_width, old_height);
+
+	int width, height;
+	w.ensure_style ();
+	
+	gtkmm_get_ink_pixel_size (w.create_pango_layout (text), width, height);
+	w.set_size_request(width + hpadding, old_height);//height + vpadding);
+}
+
+/* end Gtk helpers */
+
+
 
 Patchage::Patchage(int argc, char** argv)
 : m_pane_closed(false),
@@ -122,7 +158,19 @@ Patchage::Patchage(int argc, char** argv)
 	xml->get_widget("stop_but", m_stop_button);
 	xml->get_widget("zoom_full_but", m_zoom_full_button);
 	xml->get_widget("zoom_normal_but", m_zoom_normal_button);
+	//xml->get_widget("main_statusbar", m_status_bar);
+	//xml->get_widget("main_load_progress", m_load_progress_bar);
+	xml->get_widget("main_jack_connect_toggle", m_jack_connect_toggle);
+	xml->get_widget("main_jack_realtime_check", m_jack_realtime_check);
+	xml->get_widget("main_buffer_size_combo", m_buffer_size_combo);
+	xml->get_widget("main_sample_rate_combo", m_sample_rate_combo);
+	xml->get_widget("main_xrun_progress", m_xrun_progress_bar);
+	xml->get_widget("main_xrun_counter", m_xrun_counter);
+	xml->get_widget("main_clear_load_button", m_clear_load_button);
 	
+	gtkmm_set_width_for_given_text(*m_buffer_size_combo, "4096", 40);
+	gtkmm_set_width_for_given_text(*m_sample_rate_combo, "44.1", 40);
+
 	m_canvas_scrolledwindow->add(*m_canvas);
 	//m_canvas_scrolledwindow->signal_event().connect(sigc::mem_fun(m_canvas, &FlowCanvas::scroll_event_handler));
 	m_canvas->scroll_to(static_cast<int>(m_canvas->width()/2 - 320),
@@ -130,9 +178,17 @@ Patchage::Patchage(int argc, char** argv)
 
 	m_zoom_slider->signal_value_changed().connect(sigc::mem_fun(this, &Patchage::zoom_changed));
 	
+	m_jack_connect_toggle->signal_toggled().connect(sigc::mem_fun(this, &Patchage::jack_connect_changed));
+
+	m_buffer_size_combo->signal_changed().connect(sigc::mem_fun(this, &Patchage::buffer_size_changed));
+	m_sample_rate_combo->signal_changed().connect(sigc::mem_fun(this, &Patchage::sample_rate_changed));
+	m_jack_realtime_check->signal_toggled().connect(sigc::mem_fun(this, &Patchage::realtime_changed));
+	
 	m_rewind_button->signal_clicked().connect(sigc::mem_fun(m_jack_driver, &JackDriver::rewind_transport));
 	m_play_button->signal_clicked().connect(sigc::mem_fun(m_jack_driver, &JackDriver::start_transport));
 	m_stop_button->signal_clicked().connect(sigc::mem_fun(m_jack_driver, &JackDriver::stop_transport));
+
+	m_clear_load_button->signal_clicked().connect(sigc::mem_fun(this, &Patchage::clear_load));
 
 	m_zoom_normal_button->signal_clicked().connect(sigc::bind(
 		sigc::mem_fun(this, &Patchage::zoom), 1.0));
@@ -165,7 +221,7 @@ Patchage::Patchage(int argc, char** argv)
 	m_menu_view_messages->signal_toggled().connect(   sigc::mem_fun(this, &Patchage::show_messages_toggled));
 	m_menu_help_about->signal_activate().connect(     sigc::mem_fun(this, &Patchage::menu_help_about));
 
-	attach_menu_items();
+	connect_widgets();
 	
 	update_state();
 
@@ -189,6 +245,9 @@ Patchage::Patchage(int argc, char** argv)
 
 	// Idle callback, check if we need to refresh
 	Glib::signal_timeout().connect(sigc::mem_fun(this, &Patchage::idle_callback), 100);
+	
+	// Faster idle callback to update DSP load progress bar
+	//Glib::signal_timeout().connect(sigc::mem_fun(this, &Patchage::update_load), 50);
 }
 
 
@@ -218,6 +277,10 @@ Patchage::attach()
 #endif
 
 	menu_view_refresh();
+
+	update_toolbar();
+
+	//m_status_bar->push("Connected to JACK server");
 }
 	
 
@@ -250,6 +313,76 @@ Patchage::idle_callback()
 		m_refresh = false;
 	}
 
+	update_load();
+
+	return true;
+}
+
+
+void
+Patchage::update_toolbar()
+{
+	m_jack_connect_toggle->set_active(m_jack_driver->is_attached());
+	m_jack_realtime_check->set_active(m_jack_driver->is_realtime());
+
+	if (m_jack_driver->is_attached()) {
+		m_buffer_size_combo->set_active((int)log2f(m_jack_driver->buffer_size()) - 5);
+
+		switch ((int)m_jack_driver->sample_rate()) {
+			case 44100:
+				m_sample_rate_combo->set_active(0);
+				break;
+			case 48000:
+				m_sample_rate_combo->set_active(1);
+				break;
+			case 96000:
+				m_sample_rate_combo->set_active(2);
+				break;
+			default:
+				m_sample_rate_combo->set_active(-1);
+				status_message("[JACK] ERROR: Unknown sample rate");
+				break;
+		}
+	}
+}
+
+
+bool
+Patchage::update_load()
+{
+	if (!m_jack_driver->is_attached())
+		return true;
+
+	static float last_delay = 0;
+
+	const float max_delay = m_jack_driver->max_delay();
+
+	if (max_delay != last_delay) {
+		const float sample_rate = m_jack_driver->sample_rate();
+		const float buffer_size = m_jack_driver->buffer_size();
+		const float period      = buffer_size / sample_rate * 1000000; // usecs
+		/*
+		   if (max_delay > 0) {
+		   cerr << "SR: " << sample_rate << ", BS: " << buffer_size << ", P = " << period
+		   << ", MD: " << max_delay << endl;
+		   }*/
+
+		m_xrun_progress_bar->set_fraction(max_delay / period);
+
+		char tmp_buf[8];
+		snprintf(tmp_buf, 8, "%zd", m_jack_driver->xruns());
+
+		//m_xrun_progress_bar->set_text(string(tmp_buf) + " XRuns");
+		m_xrun_counter->set_text(tmp_buf);
+
+		if (max_delay > period) {
+			m_xrun_progress_bar->set_fraction(1.0);
+			m_jack_driver->reset_delay();
+		}
+
+		last_delay = max_delay;
+	}
+	
 	return true;
 }
 
@@ -312,7 +445,7 @@ Patchage::status_message(const string& msg)
  * (eg. disable "Connect to Jack" when Patchage is already connected to Jack)
  */
 void
-Patchage::attach_menu_items()
+Patchage::connect_widgets()
 {
 #ifdef HAVE_LASH
 	m_lash_driver->signal_attached.connect(sigc::bind(
@@ -330,6 +463,12 @@ Patchage::attach_menu_items()
 			sigc::mem_fun(m_menu_lash_disconnect, &Gtk::MenuItem::set_sensitive), false));
 #endif
 
+	m_jack_driver->signal_attached.connect(
+			sigc::mem_fun(this, &Patchage::update_toolbar));
+
+	m_jack_driver->signal_attached.connect(sigc::bind(
+			sigc::mem_fun(m_jack_connect_toggle, &Gtk::ToggleButton::set_active), true));
+
 	m_jack_driver->signal_attached.connect(sigc::bind(
 			sigc::mem_fun(m_menu_jack_launch, &Gtk::MenuItem::set_sensitive), false));
 	m_jack_driver->signal_attached.connect(sigc::bind(
@@ -337,6 +476,8 @@ Patchage::attach_menu_items()
 	m_jack_driver->signal_attached.connect(sigc::bind(
 			sigc::mem_fun(m_menu_jack_disconnect, &Gtk::MenuItem::set_sensitive), true));
 	
+	m_jack_driver->signal_detached.connect(sigc::bind(
+			sigc::mem_fun(m_jack_connect_toggle, &Gtk::ToggleButton::set_active), false));
 	m_jack_driver->signal_detached.connect(sigc::bind(
 			sigc::mem_fun(m_menu_jack_launch, &Gtk::MenuItem::set_sensitive), true));
 	m_jack_driver->signal_detached.connect(sigc::bind(
@@ -517,4 +658,73 @@ Patchage::store_window_location()
 	m_state_manager->set_window_size(window_size);
 }
 
+
+void
+Patchage::clear_load()
+{
+	cerr << "CLEAR LOAD\n";
+	m_xrun_progress_bar->set_fraction(0.0);
+	m_jack_driver->reset_xruns();
+	m_jack_driver->reset_delay();
+}
+
+
+void
+Patchage::buffer_size_changed()
+{
+	const int selected = m_buffer_size_combo->get_active_row_number();
+
+	if (selected == -1) {
+		update_toolbar();
+	} else {
+		jack_nframes_t buffer_size = 1 << (selected+5);
+	
+		//cerr << "BS Changed: " << selected << ": " << buffer_size << endl;
+
+		m_jack_driver->set_buffer_size(buffer_size);
+	}
+}
+
+
+void
+Patchage::sample_rate_changed()
+{
+	const int selected = m_sample_rate_combo->get_active_row_number();
+
+	if (selected == -1) {
+		update_toolbar();
+	} else {
+		jack_nframes_t rate = 44100; // selected == 0
+		if (selected == 1)
+			rate = 48000;
+		else if (selected == 2)
+			rate = 96000;
+	
+		//cerr << "SR Changed: " << selected << ": " << rate << endl;
+
+		//m_jack_driver->set_sample_rate(rate);
+	}
+}
+
+
+void
+Patchage::realtime_changed()
+{
+	m_jack_driver->set_realtime(m_jack_realtime_check->get_active());
+}
+
+
+void
+Patchage::jack_connect_changed()
+{
+	const bool selected = m_jack_connect_toggle->get_active();
+
+	if (selected != m_jack_driver->is_attached()) {
+		if (selected) {
+			m_jack_driver->attach(true);
+		} else {
+			m_jack_driver->detach();
+		}
+	}
+}
 
