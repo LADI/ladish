@@ -21,6 +21,7 @@
 #include <string>
 #include <boost/shared_ptr.hpp>
 #include <jack/jack.h>
+#include <jack/statistics.h>
 #include <raul/Mutex.h>
 #include "Driver.h"
 class Patchage;
@@ -46,6 +47,7 @@ public:
 	void detach();
 
 	bool is_attached() const { return (m_client != NULL); }
+	bool is_realtime() const { return m_client && jack_is_realtime(m_client); }
 	void refresh();
 
 	bool connect(boost::shared_ptr<PatchagePort> src,
@@ -57,6 +59,9 @@ public:
 	void start_transport() { jack_transport_start(m_client); }
 	void stop_transport()  { jack_transport_stop(m_client); }
 	
+	void reset_xruns();
+	void reset_delay() { jack_reset_max_delayed_usecs(m_client); }
+
 	void rewind_transport() {
 		jack_position_t zero;
 		zero.frame = 0;
@@ -64,18 +69,20 @@ public:
 		jack_transport_reposition(m_client, &zero);
 	}
 	
+	//jack_client_t* client() { return m_client; }
+	
+	jack_nframes_t buffer_size();
+	void           set_buffer_size(jack_nframes_t size);
+
+	inline float sample_rate() { return jack_get_sample_rate(m_client); }
+
+	void set_realtime(bool realtime, int priority=80);
+
+	inline size_t xruns() { return m_xruns; }
+
+	inline float max_delay() { return jack_get_max_delayed_usecs(m_client); }
 
 private:
-	Patchage*             m_app;
-
-	jack_client_t* m_client;
-
-	Mutex m_mutex;
-
-	list<string> m_added_ports;
-	list<string> m_removed_ports;
-
-	jack_position_t m_last_pos;
 
 	boost::shared_ptr<PatchagePort> create_port(boost::shared_ptr<PatchageModule> parent,
 		jack_port_t* port);
@@ -86,9 +93,30 @@ private:
 
 	void update_time();
 
-	static void jack_port_registration_cb(jack_port_id_t port_id, int registered, void* controller);
-	static int  jack_graph_order_cb(void* controller);
-	static void jack_shutdown_cb(void* controller);
+	static void jack_port_registration_cb(jack_port_id_t port_id, int registered, void* me);
+	static int  jack_graph_order_cb(void* me);
+	static int  jack_buffer_size_cb(jack_nframes_t buffer_size, void* me);
+	static int  jack_xrun_cb(void* me);
+	static void jack_shutdown_cb(void* me);
+
+	Patchage*      m_app;
+
+	jack_client_t* m_client;
+
+	bool m_is_activated;
+
+	//Mutex          m_mutex;
+
+	list<string> m_added_ports;
+	list<string> m_removed_ports;
+
+	jack_position_t m_last_pos;
+
+	jack_nframes_t m_buffer_size;
+	size_t         m_xruns;
+	float          m_xrun_delay;
+
+	bool           m_settings_changed;
 };
 
 

@@ -53,6 +53,8 @@ public:
 	void attach();
 	void quit() { m_main_window->hide(); }
 
+	void clear_load();
+
 	void update_state();
 	void store_window_location();
 
@@ -63,7 +65,7 @@ public:
 	{ return m_main_paned->property_max_position() - m_messages_expander->get_label_widget()->get_height() - 8; }
 
 protected:
-	void attach_menu_items();
+	void connect_widgets();
 
 	void menu_store_positions();
 	void menu_file_quit();
@@ -73,7 +75,14 @@ protected:
 	void zoom(double z);
 	void zoom_changed();
 	bool idle_callback();
+	bool update_load();
+	void update_toolbar();
 
+	void jack_connect_changed();
+	void buffer_size_changed();
+	void sample_rate_changed();
+	void realtime_changed();
+	
 	void on_pane_position_changed();
 	void on_messages_expander_changed();
 
@@ -131,6 +140,15 @@ protected:
 	Gtk::Button*         m_stop_button;
 	Gtk::Button*         m_zoom_normal_button;
 	Gtk::Button*         m_zoom_full_button;
+	//Gtk::ProgressBar*    m_load_progress_bar;
+	Gtk::ToggleButton*   m_jack_connect_toggle;
+	Gtk::ToggleButton*   m_jack_realtime_check;
+	Gtk::ComboBox*       m_buffer_size_combo;
+	Gtk::ComboBox*       m_sample_rate_combo;
+	Gtk::ProgressBar*    m_xrun_progress_bar;
+	Gtk::Entry*          m_xrun_counter;
+	Gtk::Button*         m_clear_load_button;
+	//Gtk::Statusbar*      m_status_bar;
 };
 
 #endif // PATCHAGE_H
