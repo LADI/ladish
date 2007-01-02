@@ -169,6 +169,7 @@ public:
 			if (str[i] == ' ' || str[i] == '_') {
 				str[i+1] = std::toupper(str[i+1]); // capitalize next char
 				str = str.substr(0, i) + str.substr(i+1); // chop space/underscore
+				--i;
 			} else if (str[i] ==  '[' || str[i] ==  '{') {
 				str[i] = '(';
 			} else if (str[i] ==  ']' || str[i] ==  '}') {

@@ -12,5 +12,7 @@ main()
 	cerr <<  (Path("/foo").is_parent_of(Path("/foo/bar"))) << endl;
 	cerr << !(Path("/foo").is_parent_of(Path("/foo2"))) << endl;
 	
+	cerr << Path::nameify("Signal Level [dB]") << endl;
+	
 	return 0;
 }
