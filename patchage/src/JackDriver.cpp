@@ -464,6 +464,9 @@ JackDriver::reset_xruns()
 void
 JackDriver::set_buffer_size(jack_nframes_t size)
 {
+	if (buffer_size() == size)
+		return;
+	
 	if (m_client && jack_set_buffer_size(m_client, size))
 		m_app->status_message("[JACK] ERROR: Unable to set buffer size");
 }
