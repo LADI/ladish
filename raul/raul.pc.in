@@ -6,5 +6,5 @@ includedir=@includedir@
 Name: raul
 Version: @VERSION@
 Description: A C++ convenience library for realtime audio applications
-Libs:
+Libs: -L${libdir} -lraul
 Cflags: -I${includedir}

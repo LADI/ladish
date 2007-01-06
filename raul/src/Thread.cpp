@@ -14,46 +14,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "GraphObject.h"
-#include "Patch.h"
-#include "ObjectStore.h"
+#include "raul/Thread.h"
 
-namespace Ingen {
-
-
-Patch*
-GraphObject::parent_patch() const
-{
-	return dynamic_cast<Patch*>((Node*)_parent);
-}
-
-
-// FIXME: these functions are stupid/ugly
-
-void
-GraphObject::add_to_store(ObjectStore* store)
-{
-	assert(!_store);
-	store->add(this);
-	_store = store;
-}
-
-
-void
-GraphObject::remove_from_store()
-{
-	assert(_store);
-
-	if (_store) {
-		TreeNode<GraphObject*>* node = _store->remove(path());
-		if (node != NULL) {
-			assert(_store->find(path()) == NULL);
-			delete node;
-		}
-	}
-
-	_store = NULL;
-}
-
-
-} // namespace Ingen
+/* Thread-specific data key (once-only initialized) */
+pthread_once_t Thread::_thread_key_once = PTHREAD_ONCE_INIT;
+pthread_key_t  Thread::_thread_key;

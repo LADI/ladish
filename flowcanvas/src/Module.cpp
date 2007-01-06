@@ -42,10 +42,11 @@ static const int MODULE_TITLE_COLOUR          = 0xFFFFFFFF;
  * If @a name is the empty string, the space where the title would usually be
  * is not created (eg the module will be shorter).
  */
-Module::Module(boost::shared_ptr<FlowCanvas> canvas, const string& name, double x, double y)
+Module::Module(boost::shared_ptr<FlowCanvas> canvas, const string& name, double x, double y, bool show_title)
 : Gnome::Canvas::Group(*canvas->root(), x, y),
   m_name(name),
   m_selected(false),
+  m_title_visible(show_title),
   m_canvas(canvas),
   m_module_box(*this, 0, 0, 0, 0), // w, h set later
   m_canvas_title(*this, 0, 8, name) // x set later
@@ -59,11 +60,15 @@ Module::Module(boost::shared_ptr<FlowCanvas> canvas, const string& name, double 
 	else
 		set_border_width(1.0);
 
-	m_canvas_title.property_size_set() = true;
-	m_canvas_title.property_size() = 9000;
-	m_canvas_title.property_weight_set() = true;
-	m_canvas_title.property_weight() = 400;
-	m_canvas_title.property_fill_color_rgba() = MODULE_TITLE_COLOUR;
+	if (show_title) {
+		m_canvas_title.property_size_set() = true;
+		m_canvas_title.property_size() = 9000;
+		m_canvas_title.property_weight_set() = true;
+		m_canvas_title.property_weight() = 400;
+		m_canvas_title.property_fill_color_rgba() = MODULE_TITLE_COLOUR;
+	} else {
+		m_canvas_title.hide();
+	}
 
 	set_width(10.0);
 	set_height(10.0);
@@ -332,8 +337,12 @@ Module::remove_port(boost::shared_ptr<Port> port)
 {
 	PortVector::iterator i = std::find(m_ports.begin(), m_ports.end(), port);
 
-	if (i != m_ports.end())
+	if (i != m_ports.end()) {
 		m_ports.erase(i);
+		resize();
+	} else {
+		std::cerr << "Unable to find port " << port->name() << " to remove." << std::endl;
+	}
 }
 
 
@@ -428,7 +437,8 @@ Module::set_name(const string& n)
 		string old_name = m_name;
 		m_name = n;
 		m_canvas_title.property_text() = m_name;
-		resize();
+		if (m_title_visible)
+			resize();
 
 		boost::shared_ptr<FlowCanvas> canvas = m_canvas.lock();
 		if (canvas)
@@ -472,7 +482,7 @@ Module::resize()
 	// The amount of space between a port edge and the module edge (on the
 	// side that the port isn't right on the edge).
 	double hor_pad = 5.0;
-	if (m_name.length() == 0)
+	if (!m_title_visible)
 		hor_pad = 15.0; // leave more room for something to grab for dragging
 
 	boost::shared_ptr<Port> p;
@@ -480,6 +490,7 @@ Module::resize()
 	// Find widest in/out ports
 	for (PortVector::iterator i = m_ports.begin(); i != m_ports.end(); ++i) {
 		p = (*i);
+		assert(p);
 		if (p->is_input() && p->width() > widest_in)
 			widest_in = p->width();
 		else if (p->is_output() && p->width() > widest_out)
@@ -490,19 +501,19 @@ Module::resize()
 	set_width(std::max(widest_in, widest_out) + hor_pad + border_width()*2.0);
 	
 	// Make sure module is wide enough for title
-	if (m_canvas_title.property_text_width() + 8.0 > m_width)
+	if (m_title_visible && m_canvas_title.property_text_width() + 8.0 > m_width)
 		set_width(m_canvas_title.property_text_width() + 8.0);
 
 	// Set height to contain ports and title
 	double height_base = 2;
-	if (m_name.length() > 0)
+	if (m_title_visible)
 		height_base += 2 + m_canvas_title.property_text_height();
 
 	double h = height_base;
 	if (m_ports.size() > 0)
 		h += m_ports.size() * ((*m_ports.begin())->height()+2.0);
 
-	if (m_name.length() > 0 && m_ports.size() > 0)
+	if (!m_title_visible && m_ports.size() > 0)
 		h += 0.5;
 
 	set_height(h);

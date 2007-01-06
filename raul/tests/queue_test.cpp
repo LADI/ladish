@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-#include "../../common/Queue.h"
+#include "raul/Queue.h"
 
 using std::string; using std::cerr; using std::cout; using std::endl;
 

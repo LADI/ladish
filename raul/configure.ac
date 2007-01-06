@@ -8,7 +8,7 @@ AC_LANG([C++])
 
 #AC_PROG_CXX
 AC_TYPE_SIZE_T
-#AC_PROG_LIBTOOL
+AC_PROG_LIBTOOL
 
 AC_HEADER_STDC
 AC_TYPE_INT32_T
@@ -69,6 +69,7 @@ fi
 AM_CONDITIONAL(WITH_LIBLO, [test "$build_liblo" = "yes"])
 
 AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([src/Makefile])
 AC_CONFIG_FILES([raul/Makefile])
 AC_CONFIG_FILES([tests/Makefile])
 AC_CONFIG_FILES([doc/Makefile])

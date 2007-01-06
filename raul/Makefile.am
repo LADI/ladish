@@ -1,4 +1,4 @@
-SUBDIRS = raul doc
+SUBDIRS = raul src doc
 
 if BUILD_TESTS
 SUBDIRS += tests

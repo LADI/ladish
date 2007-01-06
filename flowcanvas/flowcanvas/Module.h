@@ -38,7 +38,7 @@ class FlowCanvas;
 class Module : public Gnome::Canvas::Group
 {
 public:
-	Module(boost::shared_ptr<FlowCanvas> canvas, const string& name, double x=0, double y=0);
+	Module(boost::shared_ptr<FlowCanvas> canvas, const string& name, double x=0, double y=0, bool show_title=true);
 	virtual ~Module();
 	
 	boost::weak_ptr<FlowCanvas> canvas() const { return m_canvas; }
@@ -96,6 +96,7 @@ protected:
 	double m_height;
 	string m_name;
 	bool   m_selected;
+	bool   m_title_visible;
 
 	const boost::weak_ptr<FlowCanvas> m_canvas;
 	PortVector                        m_ports;

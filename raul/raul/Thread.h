@@ -28,17 +28,34 @@
  * Extend this and override the _run method to easily create a thread
  * to perform some task.
  *
+ * The current Thread can be accessed using the get() method.
+ * 
  * \ingroup raul
  */
 class Thread : boost::noncopyable
 {
 public:
-	Thread() : _pthread_exists(false) {}
-
 	virtual ~Thread() { stop(); }
+
+	static Thread* create(const std::string& name="")
+		{ return new Thread(name); }
 	
-	void set_name(const std::string& name) { _name = name; }
+	/** Must be called from thread */
+	static Thread* create_for_this_thread(const std::string& name="")
+		{ return new Thread(pthread_self(), name); }
 	
+	/** Return the calling thread.
+	 * The return value of this should NOT be cached unless the thread is
+	 * explicitly user created with create().
+	 */
+	static Thread& get() {
+		Thread* this_thread = reinterpret_cast<Thread*>(pthread_getspecific(_thread_key));
+		if (!this_thread)
+			this_thread = new Thread(); // sets thread-specific data
+
+		return *this_thread;
+	}
+
 	/** Launch and start the thread. */
 	virtual void start() {
 		std::cout << "[" << _name << " Thread] Starting." << std::endl;
@@ -78,23 +95,56 @@ public:
 				<< strerror(result) << ")" << std::endl;
 		}
 	}
-
+	
+	const std::string& name() { return _name; }
+	void set_name(const std::string& name) { _name = name; }
+	
+	const unsigned context()                    { return _context; }
+	void          set_context(unsigned context) { _context = context; }
 
 protected:
+	Thread(const std::string& name="") : _context(0), _name(name), _pthread_exists(false)
+	{
+		pthread_once(&_thread_key_once, thread_key_alloc);
+	}
+	
+	/** Must be called from thread */
+	Thread(pthread_t thread, const std::string& name="")
+	: _context(0), _name(name), _pthread_exists(true), _pthread(thread)
+	{
+		pthread_once(&_thread_key_once, thread_key_alloc);
+		pthread_setspecific(_thread_key, this);
+	}
+
 	/** Thread function to execute.
 	 *
 	 * This is called once on start, and terminated on stop.
 	 * Implementations likely want to put some infinite loop here.
 	 */
-	virtual void _run() = 0;
+	virtual void _run() {}
 
 private:
+
 	inline static void* _static_run(void* me) {
+		pthread_setspecific(_thread_key, me);
 		Thread* myself = (Thread*)me;
 		myself->_run();
 		return NULL; // and I
 	}
 
+	/** Allocate thread-specific data key */
+	static void thread_key_alloc()
+	{
+		pthread_key_create(&_thread_key, NULL);
+	}
+
+	/* Key for the thread-specific buffer */
+	static pthread_key_t _thread_key;
+	
+	/* Once-only initialisation of the key */
+	static pthread_once_t _thread_key_once;
+
+	unsigned    _context;
 	std::string _name;
 	bool        _pthread_exists;
 	pthread_t   _pthread;
