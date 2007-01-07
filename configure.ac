@@ -14,10 +14,10 @@ AC_CONFIG_FILES([Makefile])
 # FIXME
 abs_srcdir=`pwd`
 
-export PKG_CONFIG_PATH="$abs_srcdir/flowcanvas:$abs_srcdir/raul:$abs_srcdir/slv2:$PKG_CONFIG_PATH"
+export PKG_CONFIG_PATH="$abs_srcdir/flowcanvas:$abs_srcdir/raul:$abs_srcdir/slv2:$abs_srcdir/raul:$PKG_CONFIG_PATH"
 
 export RAUL_CFLAGS="-I$abs_srcdir/raul"
-export RAUL_LIBS=""
+export RAUL_LIBS="-L$abs_srcdir/raul/src/.libs -lraul"
 
 export FLOWCANVAS_CFLAGS="-I$abs_srcdir/flowcanvas"
 export FLOWCANVAS_LIBS="-L$abs_srcdir/flowcanvas/src/.libs -lflowcanvas"
