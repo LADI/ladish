@@ -20,6 +20,29 @@ AC_CHECK_FUNCS([strdup strerror])
 AC_CHECK_HEADER([pthread.h], [],
 	AC_MSG_ERROR([Raul requires POSIX threads.]))
 
+# Check for debugging flag
+debug="no"
+AC_ARG_ENABLE(debug,
+	[AS_HELP_STRING(--enable-debug, [Enable debugging (false)])],
+	[debug="$enableval"])
+if test "$debug" = "yes"; then
+  CFLAGS="-O0 -g -DDEBUG"
+  CXXFLAGS="-O0 -g -DDEBUG"
+else
+  CFLAGS="$CFLAGS -DNDEBUG"
+  CXXFLAGS="$CXXFLAGS -DNDEBUG"
+fi
+
+# Check for strict flag
+strict="no"
+AC_ARG_ENABLE(strict,
+	[AS_HELP_STRING(--enable-strict, [Enable strict compiler warnings and errors (false)])],
+	[strict="$enableval"])
+if test "$strict" = "yes"; then
+  CFLAGS="$CFLAGS -std=c99 -pedantic -Wall -Wextra -Wconversion -Winit-self"
+  CXXFLAGS="$CXXFLAGS -ansi -pedantic -Wall -Wextra -Wconversion -Winit-self"
+fi
+
 # Build unit tests?
 build_unit_tests="no"
 AC_ARG_ENABLE(unit-tests,

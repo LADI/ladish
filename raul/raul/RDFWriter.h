@@ -44,7 +44,7 @@ class RDFWriter {
 public:
 	RDFWriter();
 
-	void   setup_prefixes();
+	void add_prefix(const string& prefix, const string& uri);
 	string expand_uri(const string& uri);
 
 	void start_to_filename(const string& filename) throw (std::logic_error);
@@ -62,6 +62,8 @@ public:
 	           const Atom&  object);
 
 private:
+	void setup_prefixes();
+
 	raptor_serializer*               _serializer;
 	unsigned char*                   _string_output;
 	map<string, string>              _prefixes;

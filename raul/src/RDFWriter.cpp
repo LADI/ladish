@@ -14,7 +14,7 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "RDFWriter.h"
+#include "raul/RDFWriter.h"
 #include "raul/AtomRaptor.h"
 
 #define U(x) ((const unsigned char*)(x))
@@ -27,16 +27,23 @@ RDFWriter::RDFWriter()
 	: _serializer(NULL)
 	, _string_output(NULL)
 {
-	//_prefixes["xsd"]       = "http://www.w3.org/2001/XMLSchema#";
-	_prefixes["rdf"]       = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
-	_prefixes["ingen"]     = "http://codeson.net/ns/ingen#";
-	_prefixes["ingenuity"] = "http://codeson.net/ns/ingenuity#";
+	add_prefix("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
+	//add_prefix("rdfs", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
+}
+
+
+void
+RDFWriter::add_prefix(const string& prefix, const string& uri)
+{
+	_prefixes[prefix] = uri;
 }
 
 
 void
 RDFWriter::setup_prefixes()
 {
+	assert(_serializer);
+
 	for (map<string,string>::const_iterator i = _prefixes.begin(); i != _prefixes.end(); ++i) {
 		raptor_serialize_set_namespace(_serializer,
 			raptor_new_uri(U(i->second.c_str())), U(i->first.c_str()));
@@ -45,22 +52,15 @@ RDFWriter::setup_prefixes()
 
 
 /** Expands the prefix of URI, if the prefix is registered.
- *
- * If uri is not a valid URI, the empty string is returned (so invalid URIs won't be serialized).
  */
 string
 RDFWriter::expand_uri(const string& uri)
 {
-	// FIXME: slow, stupid
 	for (map<string,string>::const_iterator i = _prefixes.begin(); i != _prefixes.end(); ++i)
 		if (uri.substr(0, i->first.length()+1) == i->first + ":")
 			return i->second + uri.substr(i->first.length()+1);
 
-	// FIXME: find a correct way to validate a URI
-	if (uri.find(":") == string::npos && uri.find("/") == string::npos)
-		return "";
-	else
-		return uri;
+	return uri;
 }
 
 
@@ -129,6 +129,8 @@ RDFWriter::finish() throw(std::logic_error)
 	raptor_free_serializer(_serializer);
 	_serializer = NULL;
 
+	raptor_finish();
+
 	return ret;
 }
 
@@ -145,7 +147,8 @@ RDFWriter::write(const RdfId& subject,
 	// FIXME: leaks?
 	
 	if (subject.type() == RdfId::RESOURCE) {
-		triple.subject = (void*)raptor_new_uri((const unsigned char*)subject.to_string().c_str());
+		triple.subject = (void*)raptor_new_uri((const unsigned char*)
+				expand_uri(subject.to_string()).c_str());
 		triple.subject_type = RAPTOR_IDENTIFIER_TYPE_RESOURCE;
 	} else {
 		assert(subject.type() == RdfId::ANONYMOUS);
@@ -154,11 +157,13 @@ RDFWriter::write(const RdfId& subject,
 	}
 	
 	assert(predicate.type() == RdfId::RESOURCE);
-	triple.predicate = (void*)raptor_new_uri((const unsigned char*)predicate.to_string().c_str());
+	triple.predicate = (void*)raptor_new_uri((const unsigned char*)
+			expand_uri(predicate.to_string()).c_str());
 	triple.predicate_type = RAPTOR_IDENTIFIER_TYPE_RESOURCE;
 
 	if (object.type() == RdfId::RESOURCE) {
-		triple.object = (void*)raptor_new_uri((const unsigned char*)object.to_string().c_str());
+		triple.object = (void*)raptor_new_uri((const unsigned char*)
+				expand_uri(object.to_string()).c_str());
 		triple.object_type = RAPTOR_IDENTIFIER_TYPE_RESOURCE;
 	} else {
 		assert(object.type() == RdfId::ANONYMOUS);
@@ -188,7 +193,8 @@ RDFWriter::write(const RdfId& subject,
 	raptor_statement triple;
 	
 	if (subject.type() == RdfId::RESOURCE) {
-		triple.subject = (void*)raptor_new_uri((const unsigned char*)subject.to_string().c_str());
+		triple.subject = (void*)raptor_new_uri((const unsigned char*)
+				expand_uri(subject.to_string()).c_str());
 		triple.subject_type = RAPTOR_IDENTIFIER_TYPE_RESOURCE;
 	} else {
 		assert(subject.type() == RdfId::ANONYMOUS);
@@ -197,7 +203,8 @@ RDFWriter::write(const RdfId& subject,
 	}
 	
 	assert(predicate.type() == RdfId::RESOURCE);
-	triple.predicate = (void*)raptor_new_uri((const unsigned char*)predicate.to_string().c_str());
+	triple.predicate = (void*)raptor_new_uri((const unsigned char*)
+			expand_uri(predicate.to_string()).c_str());
 	triple.predicate_type = RAPTOR_IDENTIFIER_TYPE_RESOURCE;
 
 	AtomRaptor::atom_to_triple_object(&triple, object);

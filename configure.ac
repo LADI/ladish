@@ -27,11 +27,14 @@ export SLV2_LIBS="-L$abs_srcdir/slv2/src/.libs -lslv2"
 
 AC_MSG_NOTICE([])
 AC_MSG_NOTICE([Note: PKG_CONFIG_PATH value changed to build against local libraries])
-AC_MSG_NOTICE([PKG_CONFIG_PATH = $PKG_CONFIG_PATH])
+AC_MSG_NOTICE([      PKG_CONFIG_PATH = $PKG_CONFIG_PATH])
 AC_MSG_NOTICE([])
 
 AC_OUTPUT
 
+AC_MSG_NOTICE([])
+AC_MSG_NOTICE([Note: './configure --help=recursive' will show options for each package])
+AC_MSG_NOTICE([      which can all be passed to this configure script])
 AC_MSG_NOTICE([])
 AC_MSG_NOTICE([Now type 'make' to marvel at screenfuls of unintelligible junk])
 AC_MSG_NOTICE([for what seems like days.])
