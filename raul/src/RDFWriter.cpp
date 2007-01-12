@@ -77,8 +77,8 @@ RDFWriter::start_to_filename(const string& filename) throw (std::logic_error)
 
 	raptor_init();
 	_serializer = raptor_new_serializer(RDF_LANG);
-	setup_prefixes();
 	raptor_serialize_start_to_filename(_serializer, filename.c_str());
+	setup_prefixes();
 }
 
 
@@ -97,11 +97,11 @@ RDFWriter::start_to_string() throw (std::logic_error)
 
 	raptor_init();
 	_serializer = raptor_new_serializer(RDF_LANG);
-	setup_prefixes();
 	raptor_serialize_start_to_string(_serializer,
 	                                 NULL /*base_uri*/,
 									 (void**)&_string_output,
 									 NULL /*size*/);
+	setup_prefixes();
 }
 
 
