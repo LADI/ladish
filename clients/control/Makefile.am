@@ -14,7 +14,7 @@ lash_control_SOURCES = \
 	project.c \
 	project.h
 
-lash_control_CFLAGS = $(LASH_CFLAGS) @READLINE_INCLUDES@
+lash_control_CFLAGS = $(LASH_CFLAGS)
 
 lash_control_LDADD = \
 	$(top_builddir)/liblash/liblash.la \

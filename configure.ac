@@ -136,9 +136,7 @@ AM_CONDITIONAL(HAVE_GTK2, test x$GTK2_FOUND = xyes)
 ### readline ###
 ################
 lash_readline="yes"
-#VL_LIB_READLINE
-AC_CHECK_READLINE
-AC_SUBST(READLINE_INCLUDES)
+VL_LIB_READLINE
 AC_SUBST(READLINE_LIBS)
 
 AC_MSG_CHECKING([whether to enable readline])
