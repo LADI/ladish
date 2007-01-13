@@ -2,6 +2,7 @@ AC_INIT([LASH],[0.5.2])
 AC_CONFIG_SRCDIR([lash/types.h])
 AC_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE
+AM_ACLOCAL_INCLUDE([m4])
 
 ### Check for programs ###
 AC_LANG([C])
@@ -218,6 +219,7 @@ AC_SUBST(DATE)
 
 # For the Requires: line in the PC file
 AC_SUBST(PC_REQUIRES)
+AC_SUBST(PACKAGE_VERSION)
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([lash-1.0.pc])
@@ -265,6 +267,8 @@ AC_MSG_RESULT([
   Gtk support:           $lash_gtk2
   Debugging output:      $lash_debug
   Building manual:       $lash_texi2html
+
+  CFLAGS: $CFLAGS
 
   JACK_CFLAGS:  $JACK_CFLAGS
   ALSA_CFLAGS:  $ALSA_CFLAGS

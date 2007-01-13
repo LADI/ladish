@@ -25,10 +25,8 @@ AC_DEFUN([VL_LIB_READLINE], [
     if test -z "$vl_cv_lib_readline"; then
       vl_cv_lib_readline="no"
       LIBS="$ORIG_LIBS"
-	  AC_MSG_NOTICE([NO READLINE $LIBS])
     else
 	  READLINE_LIBS=$LIBS
-	  AC_MSG_NOTICE([READLINE $LIBS])
 	fi
   ])
 

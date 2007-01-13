@@ -24,7 +24,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
-#include <mcheck.h>
 #include <limits.h>
 
 #include <jack/jack.h>
@@ -38,6 +37,10 @@
 #include "config.h"
 #include "conn_mgr.h"
 #include "server.h"
+
+#ifdef LASH_DEBUG
+#  include <mcheck.h>
+#endif
 
 int no_v6 = 0;
 server_t *global_server = NULL;
@@ -96,7 +99,7 @@ main(int argc, char **argv)
 		{0, 0, 0, 0}
 	};
 	char *default_dir = NULL;
-	sighandler_t sigh;
+	sig_t sigh;
 
 #ifdef LASH_DEBUG
 	mtrace();

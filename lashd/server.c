@@ -25,6 +25,7 @@
 #include <signal.h>
 #include <assert.h>
 #include <uuid/uuid.h>
+#include <unistd.h>
 
 #include <lash/loader.h>
 #include <lash/internal_headers.h>

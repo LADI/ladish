@@ -50,7 +50,7 @@ void lash_args_set_port    (lash_args_t * args, int port);
 void lash_args_set_id      (lash_args_t * args, uuid_t id);
 void lash_args_set_flags   (lash_args_t * args, int flags);
 void lash_args_set_flag    (lash_args_t * args, int flag);
-void lash_args_set_args    (lash_args_t * args, int argc, const char *const * argv);
+void lash_args_set_args    (lash_args_t * args, int argc, const char ** argv);
 
 const char *         lash_args_get_project (const lash_args_t * args);
 const char *         lash_args_get_server  (const lash_args_t * args);

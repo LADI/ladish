@@ -21,7 +21,6 @@
 #ifndef __LASH_INTERNAL_H__
 #define __LASH_INTERNAL_H__
 
-#include <alsa/asoundlib.h>
 #include <uuid/uuid.h>
 
 #include <lash/types.h>

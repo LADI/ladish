@@ -33,6 +33,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #include <jack/jack.h>
 #include <libxml/tree.h>
@@ -438,7 +439,6 @@ project_move(project_t * project, const char *new_dir)
 	client_t *client = NULL;
 	char *esc_proj_dir = NULL;
 	char *esc_new_proj_dir = NULL;
-	char *esc_new_proj_bak_dir = NULL;
 	DIR *dir = NULL;
 	
 	if (strcmp(new_dir, project->directory) == 0)

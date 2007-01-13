@@ -22,6 +22,8 @@
 #include <string.h>
 #include <strings.h>
 #include <pthread.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <sys/socket.h>
 #include <netdb.h>
 extern int h_errno;
@@ -198,9 +200,11 @@ lash_init(const lash_args_t * args,
 			if (err == 0) {
 				
 				/* need to close all open file descriptors except the std ones */
-				int max_fds = getdtablesize();
+				struct rlimit max_fds;
+				getrlimit(RLIMIT_NOFILE, &max_fds);
+				
 				int fd;
-				for (fd = 3; fd < max_fds; ++fd)
+				for (fd = 3; fd < max_fds.rlim_cur; ++fd)
 					close(fd);
 
 				switch (fork()) {
@@ -211,11 +215,11 @@ lash_init(const lash_args_t * args,
 						execlp("lashd", "lashd", NULL);
 						_exit(-1);
 
-						/* this block only runs if the second fork() fails */
+					/* this block only runs if the second fork() fails */
 					case -1:
 						_exit (-1);
 
-						/* exit the child process here */
+					/* exit the child process here */
 					default: 
 						_exit (0);
 				}
@@ -241,7 +245,7 @@ lash_init(const lash_args_t * args,
 			}
 		} else {
 			fprintf(stderr, "%s: Not attempting to start daemon server automatically\n",
-					__FUNCTION__, __FUNCTION__);
+					__FUNCTION__);
 		}
 			
 	}

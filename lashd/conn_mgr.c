@@ -27,6 +27,9 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <pthread.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <errno.h>
 
 #include <lash/lash.h>
 #include <lash/internal_headers.h>

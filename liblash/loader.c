@@ -25,6 +25,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <signal.h>
+#include <fcntl.h>
 
 #include <lash/lash.h>
 #include <lash/loader.h>

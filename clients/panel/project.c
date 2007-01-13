@@ -18,7 +18,7 @@
 
 #include "project.h"
 #include "config.h"
-#include <malloc.h>
+#include <stdlib.h>
 #include <lash/lash.h>
 #include <assert.h>
 #include <unistd.h>

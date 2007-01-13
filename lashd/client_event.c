@@ -100,8 +100,6 @@ server_lash_event_alsa_client_id(project_t * project, client_t * client,
 								 client_t * query_client, const char *string)
 {
 	if (string) {
-		unsigned char alsa_id;
-
 		LASH_DEBUGARGS("setting alsa client id for client '%s' to %d",
 					   client_get_id_str(client), (unsigned char)string[0]);
 
@@ -112,7 +110,7 @@ server_lash_event_alsa_client_id(project_t * project, client_t * client,
 			return;
 		}
 #ifdef HAVE_ALSA
-		alsa_id = (unsigned char)string[0];
+		unsigned char alsa_id = (unsigned char)string[0];
 		client_set_alsa_client_id(client, alsa_id);
 
 		alsa_mgr_lock(project->server->alsa_mgr);

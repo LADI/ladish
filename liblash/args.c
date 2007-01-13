@@ -150,7 +150,7 @@ lash_args_get_flags(const lash_args_t * args)
 }
 
 void
-lash_args_set_args(lash_args_t * args, int argc, const char *const * argv)
+lash_args_set_args(lash_args_t * args, int argc, const char ** argv)
 {
 	int i;
 
