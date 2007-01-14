@@ -203,8 +203,7 @@ lash_init(const lash_args_t * args,
 				struct rlimit max_fds;
 				getrlimit(RLIMIT_NOFILE, &max_fds);
 				
-				int fd;
-				for (fd = 3; fd < max_fds.rlim_cur; ++fd)
+				for (rlim_t fd = 3; fd < max_fds.rlim_cur; ++fd)
 					close(fd);
 
 				switch (fork()) {
