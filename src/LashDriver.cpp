@@ -97,10 +97,10 @@ void
 LashDriver::handle_event(lash_event_t* ev)
 {
 	LASH_Event_Type type = lash_event_get_type(ev);
-	const char*    c_str = lash_event_get_string(ev);
-	string         str   = (c_str == NULL) ? "" : c_str;
+	const char*     c_str = lash_event_get_string(ev);
+	string          str   = (c_str == NULL) ? "" : c_str;
 	
-	cout << "[LashDriver] LASH Event.  Type = " << (unsigned int)type << ", string = " << str << "**********" << endl;
+	//cout << "[LashDriver] LASH Event.  Type = " << (unsigned int)type << ", string = " << str << "**********" << endl;
 	
 	switch (type) {
 	case LASH_Project_Add:

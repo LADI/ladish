@@ -22,9 +22,10 @@
 #include <boost/shared_ptr.hpp>
 #include <jack/jack.h>
 #include <jack/statistics.h>
-#include <raul/Mutex.h>
+#include <raul/Queue.h>
 #include "Driver.h"
 class Patchage;
+class PatchageEvent;
 class PatchageFlowCanvas;
 class PatchagePort;
 class PatchageModule;
@@ -48,6 +49,9 @@ public:
 
 	bool is_attached() const { return (m_client != NULL); }
 	bool is_realtime() const { return m_client && jack_is_realtime(m_client); }
+	
+	Queue<PatchageEvent>& events() { return m_events; }
+
 	void refresh();
 
 	bool connect(boost::shared_ptr<PatchagePort> src,
@@ -69,7 +73,7 @@ public:
 		jack_transport_reposition(m_client, &zero);
 	}
 	
-	//jack_client_t* client() { return m_client; }
+	jack_client_t* client() { return m_client; }
 	
 	jack_nframes_t buffer_size();
 	void           set_buffer_size(jack_nframes_t size);
@@ -82,10 +86,10 @@ public:
 
 	inline float max_delay() { return jack_get_max_delayed_usecs(m_client); }
 
-private:
-
 	boost::shared_ptr<PatchagePort> create_port(boost::shared_ptr<PatchageModule> parent,
 		jack_port_t* port);
+
+private:
 
 	static void error_cb(const char* msg);
 
@@ -100,23 +104,15 @@ private:
 	static void jack_shutdown_cb(void* me);
 
 	Patchage*      m_app;
-
 	jack_client_t* m_client;
 
-	bool m_is_activated;
+	Queue<PatchageEvent> m_events;
 
-	//Mutex          m_mutex;
-
-	list<string> m_added_ports;
-	list<string> m_removed_ports;
-
+	bool            m_is_activated;
 	jack_position_t m_last_pos;
-
-	jack_nframes_t m_buffer_size;
-	size_t         m_xruns;
-	float          m_xrun_delay;
-
-	bool           m_settings_changed;
+	jack_nframes_t  m_buffer_size;
+	size_t          m_xruns;
+	float           m_xrun_delay;
 };
 
 
