@@ -80,7 +80,7 @@ protected:
 
 	void jack_connect_changed();
 	void buffer_size_changed();
-	void sample_rate_changed();
+	//void sample_rate_changed();
 	void realtime_changed();
 	
 	void on_pane_position_changed();
@@ -150,7 +150,7 @@ protected:
 	Gtk::ToggleButton*   m_jack_connect_toggle;
 	Gtk::ToggleButton*   m_jack_realtime_check;
 	Gtk::ComboBox*       m_buffer_size_combo;
-	Gtk::ComboBox*       m_sample_rate_combo;
+	Gtk::Label*          m_sample_rate_label;
 	Gtk::ProgressBar*    m_xrun_progress_bar;
 	Gtk::Entry*          m_xrun_counter;
 	Gtk::Button*         m_clear_load_button;
