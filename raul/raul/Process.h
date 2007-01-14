@@ -35,14 +35,14 @@ public:
 	 *
 	 * @param command can be a typical shell command with parameters, the PATH is searched etc.
 	 */
-	bool launch(std::string command)
+	static bool launch(std::string command)
 	{
-		const string executable = (command.find(" ") != string::npos)
+		const std::string executable = (command.find(" ") != std::string::npos)
 			? command.substr(0, command.find(" "))
 			: command;
 
 		std::cerr << "Launching child process '" << executable << "' with command line '"
-			<< command << "'" << endl;
+			<< command << "'" << std::endl;
 
 		// Use the same double fork() trick as JACK to prevent zombie children
 		const int err = fork();
@@ -51,13 +51,13 @@ public:
 			// (child)
 
 			// close all nonstandard file descriptors
-			const int max_fds = getdtablesize();
-			int fd;
-			for (fd = 3; fd < max_fds; ++fd)
+			struct rlimit max_fds;
+			getrlimit(RLIMIT_NOFILE, &max_fds);
+
+			for (rlim_t fd = 3; fd < max_fds.rlim_cur; ++fd)
 				close(fd);
 
 			switch (fork()) {
-
 				case 0:
 					// (grandchild)
 					setsid();
@@ -72,6 +72,7 @@ public:
 				default: 
 					_exit (0);
 			}
+		}
 
 		return (err > 0);
 	}
