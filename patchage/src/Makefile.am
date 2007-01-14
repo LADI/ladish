@@ -20,6 +20,8 @@ patchage_SOURCES = \
 	PatchageModule.h \
 	PatchagePort.h \
 	Driver.h \
+	PatchageEvent.h \
+	PatchageEvent.cpp \
 	JackDriver.h \
 	JackDriver.cpp \
 	PatchageFlowCanvas.h \

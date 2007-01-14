@@ -23,6 +23,7 @@
 #include <jack/statistics.h>
 #include <jack/thread.h>
 #include "PatchageFlowCanvas.h"
+#include "PatchageEvent.h"
 #include "JackDriver.h"
 #include "Patchage.h"
 #include "PatchageModule.h"
@@ -36,6 +37,7 @@ using namespace LibFlowCanvas;
 JackDriver::JackDriver(Patchage* app)
 : m_app(app)
 , m_client(NULL)
+, m_events(1024) // FIXME: size?
 , m_is_activated(false)
 , m_xruns(0)
 , m_xrun_delay(0)
@@ -134,9 +136,11 @@ JackDriver::create_port(boost::shared_ptr<PatchageModule> parent, jack_port_t* p
 
 	if (!strcmp(type_str, JACK_DEFAULT_AUDIO_TYPE)) {
 		port_type = JACK_AUDIO;
+		//cerr << "TYPE: AUDIO\n";
 #ifdef HAVE_JACK_MIDI
 	} else if (!strcmp(type_str, JACK_DEFAULT_MIDI_TYPE)) {
 		port_type = JACK_MIDI;
+		//cerr << "TYPE: MIDI\n";
 #endif
 	} else {
 		cerr << "WARNING: " << jack_port_name(port) << " has unknown type \'" << type_str << "\'" << endl;
@@ -233,7 +237,7 @@ JackDriver::refresh()
 	
 	
 	// Remove any since-removed ports
-	for (list<string>::iterator i = m_removed_ports.begin(); i != m_removed_ports.end(); ++i) {
+	/*for (list<string>::iterator i = m_removed_ports.begin(); i != m_removed_ports.end(); ++i) {
 		const string module_name = (*i).substr(0, i->find(":"));
 		const string port_name = (*i).substr(i->find(":")+1);
 		
@@ -241,7 +245,7 @@ JackDriver::refresh()
 			if (m->second->name() == module_name)
 				m->second->remove_port(port_name);
 		}
-	}
+	}*/
 
 
 	// Add all connections
@@ -337,7 +341,7 @@ JackDriver::update_time()
 
 
 void
-JackDriver::jack_port_registration_cb(jack_port_id_t port_id, int /*registered*/, void* jack_driver) 
+JackDriver::jack_port_registration_cb(jack_port_id_t port_id, int registered, void* jack_driver) 
 {
 	assert(jack_driver);
 	JackDriver* me = reinterpret_cast<JackDriver*>(jack_driver);
@@ -348,17 +352,13 @@ JackDriver::jack_port_registration_cb(jack_port_id_t port_id, int /*registered*/
 	
 	jack_reset_max_delayed_usecs(me->m_client);
 
-	//(me->m_mutex).lock();
-
-	/*if (registered) {
-		me->m_added_ports.push_back(full_name);
+	if (registered) {
+		me->m_events.push(PatchageEvent(me->m_app,
+				PatchageEvent::PORT_CREATION, port_id));
 	} else {
-		me->m_removed_ports.push_back(full_name);
-	}*/
-
-	me->m_is_dirty = true;
-	
-	//(me->m_mutex).unlock();
+		me->m_events.push(PatchageEvent(me->m_app,
+				PatchageEvent::PORT_DESTRUCTION, port_id));
+	}
 }
 
 
@@ -371,9 +371,7 @@ JackDriver::jack_graph_order_cb(void* jack_driver)
 	
 	jack_reset_max_delayed_usecs(me->m_client);
 	
-	//(me->m_mutex).lock();
 	me->m_is_dirty = true;
-	//(me->m_mutex).unlock();
 
 	return 0;
 }

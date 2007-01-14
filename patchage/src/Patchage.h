@@ -92,9 +92,15 @@ protected:
 
 #ifdef HAVE_LASH
 	LashDriver*    m_lash_driver;
+	Gtk::MenuItem* m_menu_open_session;
+	Gtk::MenuItem* m_menu_save_session;
+	Gtk::MenuItem* m_menu_save_session_as;
 	Gtk::MenuItem* m_menu_lash_launch;
 	Gtk::MenuItem* m_menu_lash_connect;
 	Gtk::MenuItem* m_menu_lash_disconnect;
+	void menu_open_session();
+	void menu_save_session();
+	void menu_save_session_as();
 	void menu_lash_launch();
 	void menu_lash_connect();
 	void menu_lash_disconnect();

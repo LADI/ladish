@@ -16,6 +16,7 @@
 
 #include <cmath>
 #include "Patchage.h"
+#include "PatchageEvent.h"
 #include "config.h"
 #include <libgnomecanvasmm.h>
 #include <libglademm/xml.h>
@@ -135,6 +136,9 @@ Patchage::Patchage(int argc, char** argv)
 	xml->get_widget("connect_to_jack_menuitem", m_menu_jack_connect);
 	xml->get_widget("disconnect_from_jack_menuitem", m_menu_jack_disconnect);
 #ifdef HAVE_LASH
+	xml->get_widget("open_session_menuitem", m_menu_open_session);
+	xml->get_widget("save_session_menuitem", m_menu_save_session);
+	xml->get_widget("save_session_as_menuitem", m_menu_save_session_as);
 	xml->get_widget("launch_lash_menuitem", m_menu_lash_launch);
 	xml->get_widget("connect_to_lash_menuitem", m_menu_lash_connect);
 	xml->get_widget("disconnect_from_lash_menuitem", m_menu_lash_disconnect);
@@ -207,6 +211,9 @@ Patchage::Patchage(int argc, char** argv)
 	m_menu_jack_disconnect->signal_activate().connect(sigc::mem_fun(m_jack_driver, &JackDriver::detach));
 
 #ifdef HAVE_LASH
+	m_menu_open_session->signal_activate().connect(   sigc::mem_fun(this, &Patchage::menu_open_session));
+	m_menu_save_session->signal_activate().connect(   sigc::mem_fun(this, &Patchage::menu_save_session));
+	m_menu_save_session_as->signal_activate().connect(sigc::mem_fun(this, &Patchage::menu_save_session_as));
 	m_menu_lash_launch->signal_activate().connect(    sigc::mem_fun(this, &Patchage::menu_lash_launch));
 	m_menu_lash_connect->signal_activate().connect(   sigc::mem_fun(this, &Patchage::menu_lash_connect));
 	m_menu_lash_disconnect->signal_activate().connect(sigc::mem_fun(this, &Patchage::menu_lash_disconnect));
@@ -215,7 +222,7 @@ Patchage::Patchage(int argc, char** argv)
 	m_menu_alsa_connect->signal_activate().connect(   sigc::mem_fun(this, &Patchage::menu_alsa_connect));
 	m_menu_alsa_disconnect->signal_activate().connect(sigc::mem_fun(this, &Patchage::menu_alsa_disconnect));
 #endif 
-	m_menu_store_positions->signal_activate().connect(      sigc::mem_fun(this, &Patchage::menu_store_positions));
+	m_menu_store_positions->signal_activate().connect(sigc::mem_fun(this, &Patchage::menu_store_positions));
 	m_menu_file_quit->signal_activate().connect(      sigc::mem_fun(this, &Patchage::menu_file_quit));
 	m_menu_view_refresh->signal_activate().connect(   sigc::mem_fun(this, &Patchage::menu_view_refresh));
 	m_menu_view_messages->signal_toggled().connect(   sigc::mem_fun(this, &Patchage::show_messages_toggled));
@@ -287,6 +294,11 @@ Patchage::attach()
 bool
 Patchage::idle_callback() 
 {
+	if (m_jack_driver)
+		while (m_jack_driver->events().fill() > 0)
+			m_jack_driver->events().pop().execute();
+
+	
 	bool refresh = m_refresh;
 
 	refresh = refresh || (m_jack_driver && m_jack_driver->is_dirty());
@@ -295,6 +307,7 @@ Patchage::idle_callback()
 #endif
 
 	if (refresh) {
+		
 		m_canvas->flag_all_connections();
 
 		m_jack_driver->refresh();
@@ -500,6 +513,21 @@ Patchage::connect_widgets()
 
 
 #ifdef HAVE_LASH
+void
+Patchage::menu_open_session() 
+{
+}
+
+void
+Patchage::menu_save_session() 
+{
+}
+
+void
+Patchage::menu_save_session_as() 
+{
+}
+
 void
 Patchage::menu_lash_launch() 
 {
