@@ -15,6 +15,7 @@
  */
 
 #include <cmath>
+#include <sstream>
 #include "Patchage.h"
 #include "PatchageEvent.h"
 #include "config.h"
@@ -167,13 +168,13 @@ Patchage::Patchage(int argc, char** argv)
 	xml->get_widget("main_jack_connect_toggle", m_jack_connect_toggle);
 	xml->get_widget("main_jack_realtime_check", m_jack_realtime_check);
 	xml->get_widget("main_buffer_size_combo", m_buffer_size_combo);
-	xml->get_widget("main_sample_rate_combo", m_sample_rate_combo);
+	xml->get_widget("main_sample_rate_label", m_sample_rate_label);
 	xml->get_widget("main_xrun_progress", m_xrun_progress_bar);
 	xml->get_widget("main_xrun_counter", m_xrun_counter);
 	xml->get_widget("main_clear_load_button", m_clear_load_button);
 	
 	gtkmm_set_width_for_given_text(*m_buffer_size_combo, "4096", 40);
-	gtkmm_set_width_for_given_text(*m_sample_rate_combo, "44.1", 40);
+	//gtkmm_set_width_for_given_text(*m_sample_rate_combo, "44.1", 40);
 
 	m_canvas_scrolledwindow->add(*m_canvas);
 	//m_canvas_scrolledwindow->signal_event().connect(sigc::mem_fun(m_canvas, &FlowCanvas::scroll_event_handler));
@@ -185,7 +186,7 @@ Patchage::Patchage(int argc, char** argv)
 	m_jack_connect_toggle->signal_toggled().connect(sigc::mem_fun(this, &Patchage::jack_connect_changed));
 
 	m_buffer_size_combo->signal_changed().connect(sigc::mem_fun(this, &Patchage::buffer_size_changed));
-	m_sample_rate_combo->signal_changed().connect(sigc::mem_fun(this, &Patchage::sample_rate_changed));
+	//m_sample_rate_combo->signal_changed().connect(sigc::mem_fun(this, &Patchage::sample_rate_changed));
 	m_jack_realtime_check->signal_toggled().connect(sigc::mem_fun(this, &Patchage::realtime_changed));
 	
 	m_rewind_button->signal_clicked().connect(sigc::mem_fun(m_jack_driver, &JackDriver::rewind_transport));
@@ -341,7 +342,7 @@ Patchage::update_toolbar()
 	if (m_jack_driver->is_attached()) {
 		m_buffer_size_combo->set_active((int)log2f(m_jack_driver->buffer_size()) - 5);
 
-		switch ((int)m_jack_driver->sample_rate()) {
+		/*switch ((int)m_jack_driver->sample_rate()) {
 			case 44100:
 				m_sample_rate_combo->set_active(0);
 				break;
@@ -355,7 +356,10 @@ Patchage::update_toolbar()
 				m_sample_rate_combo->set_active(-1);
 				status_message("[JACK] ERROR: Unknown sample rate");
 				break;
-		}
+		}*/
+		stringstream srate;
+		srate << m_jack_driver->sample_rate()/1000.0;
+		m_sample_rate_label->set_text(srate.str());
 	}
 }
 
@@ -690,7 +694,6 @@ Patchage::store_window_location()
 void
 Patchage::clear_load()
 {
-	cerr << "CLEAR LOAD\n";
 	m_xrun_progress_bar->set_fraction(0.0);
 	m_jack_driver->reset_xruns();
 	m_jack_driver->reset_delay();
@@ -714,6 +717,7 @@ Patchage::buffer_size_changed()
 }
 
 
+/*
 void
 Patchage::sample_rate_changed()
 {
@@ -733,7 +737,7 @@ Patchage::sample_rate_changed()
 		//m_jack_driver->set_sample_rate(rate);
 	}
 }
-
+*/
 
 void
 Patchage::realtime_changed()
