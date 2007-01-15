@@ -712,7 +712,8 @@ Patchage::buffer_size_changed()
 	
 		//cerr << "BS Changed: " << selected << ": " << buffer_size << endl;
 
-		m_jack_driver->set_buffer_size(buffer_size);
+		if ( ! m_jack_driver->set_buffer_size(buffer_size))
+			update_toolbar(); // reset combo box to actual value
 	}
 }
 
