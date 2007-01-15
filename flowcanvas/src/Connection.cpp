@@ -57,10 +57,14 @@ Connection::update_location()
 {
 	boost::shared_ptr<Port> src = m_source.lock();
 	boost::shared_ptr<Port> dst = m_dest.lock();
+	
+	if (!src || !dst)
+		return;
+
 	boost::shared_ptr<Module> src_mod = src->module().lock();
 	boost::shared_ptr<Module> dst_mod = dst->module().lock();
 
-	if (!src || !dst || !src_mod || !dst_mod)
+	if (!src_mod || !dst_mod)
 		return;
 
 	const double src_x = src->connection_point().get_x();
