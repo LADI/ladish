@@ -1,0 +1,10 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Machina
+Version=@PACKAGE_VERSION@
+Comment=Sequencer influenced by finite automata
+Exec=machina
+Terminal=false
+Icon=machina-icon.svg
+Type=Application
+Categories=Application;AudioVideo;Sound;Audio

@@ -97,9 +97,9 @@ JackDriver::detach()
 
 
 void
-JackDriver::jack_port_registration_cb(jack_port_id_t port_id, int registered, void* jack_driver) 
+JackDriver::jack_port_registration_cb(jack_port_id_t /*port_id*/, int /*registered*/, void* /*jack_driver*/) 
 {
-	/* shrug. */
+	/* whatever. */
 }
 
 

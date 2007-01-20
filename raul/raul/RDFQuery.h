@@ -22,9 +22,6 @@
 #include <glibmm/ustring.h>
 #include "raul/Namespaces.h"
 
-namespace Ingen {
-namespace Client {
-
 
 /** Pretty wrapper for a SPARQL query.
  *
@@ -69,9 +66,6 @@ private:
 	Glib::ustring _query;
 };
 
-
-} // namespace Client
-} // namespace Ingen
 
 #endif // RAUL_RDFQUERY_H
 

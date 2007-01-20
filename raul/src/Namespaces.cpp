@@ -14,10 +14,7 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "Namespaces.h"
-
-namespace Ingen {
-namespace Client {
+#include "raul/Namespaces.h"
 
 
 /** Create a prefixed qname from @a uri, if possible.
@@ -25,10 +22,10 @@ namespace Client {
  * If @a uri can not be qualified with the namespaces currently in this
  * Namespaces, @a uri will be returned unmodified.
  */
-string
-Namespaces::qualify(string uri)
+std::string
+Namespaces::qualify(std::string uri)
 {
-	for (std::map<string,string>::iterator i = _namespaces.begin(); i != _namespaces.end(); ++i) {
+	for (iterator i = begin(); i != end(); ++i) {
 		size_t ns_len = i->second.length();
 
 		if (uri.substr(0, ns_len) == i->second)
@@ -38,6 +35,3 @@ Namespaces::qualify(string uri)
 	return uri;
 }
 
-
-} // namespace Client
-} // namespace Ingen

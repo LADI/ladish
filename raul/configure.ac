@@ -50,6 +50,9 @@ AC_ARG_ENABLE(unit-tests,
 	[build_unit_tests="$enableval"])
 AM_CONDITIONAL(BUILD_TESTS, [test "$build_unit_tests" = "yes"])
 
+# Check for glibmm
+PKG_CHECK_MODULES(GLIBMM, glibmm-2.4)
+
 build_smart_pointers="yes"
 AC_ARG_ENABLE(smart_pointers,
 	[AS_HELP_STRING(--enable-smart_pointers, [Include smart pointers - requires boost (yes)])],
@@ -69,6 +72,15 @@ if test "$build_smart_pointers" = "yes"; then
 fi
 AM_CONDITIONAL(WITH_BOOST, [test "$build_smart_pointers" = "yes"])
 
+build_jack="yes"
+AC_ARG_ENABLE(jack,
+	[AS_HELP_STRING(--enable-jack, [Include JACK audio/midi support (yes)])],
+	[ if test x$enable_jack = xno ; then build_jack=no ; fi ])
+if test "$build_jack" = "yes"; then
+	PKG_CHECK_MODULES(JACK, jack >= 0.102.20, [],
+		AC_MSG_ERROR([JACK support requires jack (>= 0.102.20)]))
+fi
+AM_CONDITIONAL(WITH_JACK, [test "$build_jack" = "yes"])
 
 build_raptor="yes"
 AC_ARG_ENABLE(raptor,
@@ -80,6 +92,15 @@ if test "$build_raptor" = "yes"; then
 fi
 AM_CONDITIONAL(WITH_RAPTOR, [test "$build_raptor" = "yes"])
 
+build_rasqal="yes"
+AC_ARG_ENABLE(rasqal,
+	[AS_HELP_STRING(--enable-rasqal, [Include Rasqal (RDF Querying) support (yes)])],
+	[ if test x$enable_rasqal = xno ; then build_rasqal=no ; fi ])
+if test "$build_rasqal" = "yes"; then
+	PKG_CHECK_MODULES(RASQAL, rasqal >= 0.9.11, [],
+		AC_MSG_ERROR([RDF query support requires rasqal (>= 0.9.11)]))
+fi
+AM_CONDITIONAL(WITH_RASQAL, [test "$build_rasqal" = "yes"])
 
 build_liblo="yes"
 AC_ARG_ENABLE(liblo,
@@ -107,9 +128,11 @@ AC_MSG_RESULT([Raul build configuration:])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([Building unit tests: $build_unit_tests])
 AC_MSG_RESULT([])
-AC_MSG_RESULT([OSC supprt:          $build_liblo])
-AC_MSG_RESULT([RDF supprt:          $build_raptor])
-AC_MSG_RESULT([Smart Pointers:      $build_smart_pointers])
+AC_MSG_RESULT([OSC (Liblo) support:                $build_liblo])
+AC_MSG_RESULT([RDF Serialization (Raptor) support: $build_raptor])
+AC_MSG_RESULT([RDF Querying (Rasqal) support:      $build_rasqal])
+AC_MSG_RESULT([Jack support:                       $build_jack])
+AC_MSG_RESULT([Smart Pointers (Boost):             $build_smart_pointers])
 AC_MSG_RESULT([**********************************************************************])
 AC_MSG_RESULT([])
 

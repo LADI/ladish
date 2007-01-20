@@ -17,13 +17,7 @@
 #include <iostream>
 #include <cassert>
 #include <rasqal.h>
-#include "RDFQuery.h"
-
-#include <iostream>
-using std::cerr; using std::endl;
-
-namespace Ingen {
-namespace Client {
+#include "raul/RDFQuery.h"
 
 
 RDFQuery::Results
@@ -75,6 +69,3 @@ RDFQuery::run(const Glib::ustring base_uri_str) const
 	return result;
 }
 
-
-} // namespace Client
-} // namespace Ingen

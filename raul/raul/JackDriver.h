@@ -65,7 +65,7 @@ public:
 
 protected:
 	/** Process callback.  Derived classes should do all audio processing here. */
-	virtual void on_process(jack_nframes_t nframes) {}
+	virtual void on_process(jack_nframes_t /*nframes*/) {}
 
 	/** Graph order change callback. */
 	virtual void on_graph_order_changed() {}
@@ -74,11 +74,11 @@ protected:
 	 * At the time this is called, buffer_size() will still return the old
 	 * size.  Immediately afterwards, it will be set to the new value.
 	 */
-	virtual void on_buffer_size_changed(jack_nframes_t size) {}
+	virtual void on_buffer_size_changed(jack_nframes_t /*size*/) {}
 
-	virtual void on_xrun()                                   {}
-	virtual void on_shutdown()                               {}
-	virtual void on_error()                                  {}
+	virtual void on_xrun()     {}
+	virtual void on_shutdown() {}
+	virtual void on_error()    {}
 
 private:
 
@@ -87,8 +87,6 @@ private:
 	void destroy_all_ports();
 
 	void update_time();
-
-
 
 	static void jack_port_registration_cb(jack_port_id_t port_id, int registered, void* me);
 	static int  jack_graph_order_cb(void* me);

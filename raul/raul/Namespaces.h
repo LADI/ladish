@@ -20,9 +20,6 @@
 #include <map>
 #include <string>
 
-namespace Ingen {
-namespace Client {
-
 
 /** Collection of RDF namespaces with prefixes.
  */
@@ -31,8 +28,5 @@ public:
 	std::string qualify(std::string uri);
 };
 
-
-} // namespace Client
-} // namespace Ingen
 
 #endif // RAUL_NAMESPACES_H
