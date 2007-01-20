@@ -8,6 +8,9 @@ lib_LTLIBRARIES = libraul.la
 libraul_la_SOURCES = \
 	Thread.cpp \
 	Path.cpp \
-	RDFWriter.cpp
+	RDFWriter.cpp \
+	JackDriver.cpp \
+	RDFQuery.cpp \
+	Namespaces.cpp
 
 

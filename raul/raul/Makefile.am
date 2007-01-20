@@ -11,7 +11,10 @@ raulinclude_HEADERS = \
 	Process.h \
 	Thread.h \
 	Slave.h \
-	Atom.h
+	Atom.h \
+	JackDriver.h \
+	RDFQuery.h \
+	Namespaces.h
 
 if WITH_LIBLO
 raulinclude_HEADERS += AtomLiblo.h
