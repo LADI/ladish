@@ -22,7 +22,7 @@
 #include <boost/shared_ptr.hpp>
 #include <jack/jack.h>
 #include <jack/statistics.h>
-#include <raul/Queue.h>
+#include <raul/SRSWQueue.h>
 #include "Driver.h"
 class Patchage;
 class PatchageEvent;
@@ -50,7 +50,7 @@ public:
 	bool is_attached() const { return (m_client != NULL); }
 	bool is_realtime() const { return m_client && jack_is_realtime(m_client); }
 	
-	Queue<PatchageEvent>& events() { return m_events; }
+	SRSWQueue<PatchageEvent>& events() { return m_events; }
 
 	void refresh();
 
@@ -106,7 +106,7 @@ private:
 	Patchage*      m_app;
 	jack_client_t* m_client;
 
-	Queue<PatchageEvent> m_events;
+	SRSWQueue<PatchageEvent> m_events;
 
 	bool            m_is_activated;
 	jack_position_t m_last_pos;

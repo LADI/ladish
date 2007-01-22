@@ -1,0 +1,9 @@
+@prefix : <http://codeson.net/ns/machina#> .
+
+<#test>
+    a Machine;
+    node [
+        a Node;
+		midiNote 60;
+		duration 100;
+	] .

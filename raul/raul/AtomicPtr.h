@@ -1,4 +1,4 @@
-/* This file is part of Ingen.  Copyright (C) 2006 Dave Robillard.
+/* This file is part of Ingen.  Copyright (C) 2007 Dave Robillard.
  * 
  * Ingen is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -14,34 +14,30 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "Maid.h"
-#include "MaidObject.h"
+#ifndef RAUL_ATOMIC_PTR_H
+#define RAUL_ATOMIC_PTR_H
 
+#include <glib.h>
 
-Maid::Maid(size_t size)
-: _objects(size)
-{
-}
+template<typename T>
+class AtomicPtr {
+public:
 
+	inline AtomicPtr(const AtomicPtr& copy)
+		{ g_atomic_pointer_set(&_val, copy.get()); }
 
-Maid::~Maid()
-{
-	cleanup();
-}
+	inline T* get() const
+		{ return (T*)g_atomic_pointer_get(&_val); }
 
+	inline void operator=(T* val)
+		{ g_atomic_pointer_set(&_val, val); }
 
-/** Free all the objects in the queue (passed by push()).
- */
-void
-Maid::cleanup()
-{
-	MaidObject* obj = NULL;
+	/** Set value to newval iff current value is oldval */
+	inline bool compare_and_exchange(int oldval, int newval)
+		{ return g_atomic_pointer_compare_and_exchange(&_val, oldval, newval); }
 
-	while (!_objects.empty()) {
-		obj = _objects.front();
-		_objects.pop();
-		delete obj;
-	}
-}
+private:
+	volatile T* _val;
+};
 
-
+#endif // RAUL_ATOMIC_PTR_H

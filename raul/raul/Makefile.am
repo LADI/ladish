@@ -4,7 +4,8 @@ raulinclude_HEADERS = \
 	SharedPtr.h \
 	WeakPtr.h \
 	Path.h \
-	Queue.h \
+	SRSWQueue.h \
+	SRMWQueue.h \
 	Semaphore.h \
 	Mutex.h \
 	Condition.h \
@@ -14,7 +15,8 @@ raulinclude_HEADERS = \
 	Atom.h \
 	JackDriver.h \
 	RDFQuery.h \
-	Namespaces.h
+	Namespaces.h \
+	AtomicInt.h
 
 if WITH_LIBLO
 raulinclude_HEADERS += AtomLiblo.h

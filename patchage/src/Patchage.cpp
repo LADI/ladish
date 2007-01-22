@@ -295,9 +295,13 @@ Patchage::attach()
 bool
 Patchage::idle_callback() 
 {
-	if (m_jack_driver)
-		while (m_jack_driver->events().fill() > 0)
-			m_jack_driver->events().pop().execute();
+	if (m_jack_driver) {
+		while (!m_jack_driver->events().empty()) {
+			PatchageEvent& ev = m_jack_driver->events().front();
+			m_jack_driver->events().pop();
+			ev.execute();
+		}
+	}
 
 	
 	bool refresh = m_refresh;
