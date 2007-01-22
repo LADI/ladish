@@ -1,11 +1,11 @@
-/* This file is part of Ingen.  Copyright (C) 2006-2007 Dave Robillard.
+/* This file is part of Raul.  Copyright (C) 2007-2007 Dave Robillard.
  * 
- * Ingen is free software; you can redistribute it and/or modify it under the
+ * Raul is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 2 of the License, or (at your option) any later
  * version.
  * 
- * Ingen is distributed in the hope that it will be useful, but WITHOUT ANY
+ * Raul is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for details.
  * 
@@ -21,6 +21,8 @@
 #include <string>
 #include <cassert>
 using std::string;
+
+namespace Raul {
 
 	
 /** Simple wrapper around standard string with useful path-specific methods.
@@ -118,6 +120,8 @@ public:
 			return (*this) + "/";
 	}
 };
-	
+
+
+} // namespace Raul
 
 #endif // RAUL_PATH_H

@@ -2,6 +2,7 @@
 #include <raul/Path.h>
 
 using namespace std;
+using namespace Raul;
 
 int
 main()

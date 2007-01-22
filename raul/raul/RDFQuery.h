@@ -1,11 +1,11 @@
-/* This file is part of Ingen.  Copyright (C) 2006 Dave Robillard.
+/* This file is part of Raul.  Copyright (C) 2007 Dave Robillard.
  * 
- * Ingen is free software; you can redistribute it and/or modify it under the
+ * Raul is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 2 of the License, or (at your option) any later
  * version.
  * 
- * Ingen is distributed in the hope that it will be useful, but WITHOUT ANY
+ * Raul is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for details.
  * 
@@ -22,10 +22,12 @@
 #include <glibmm/ustring.h>
 #include "raul/Namespaces.h"
 
+namespace Raul {
+
 
 /** Pretty wrapper for a SPARQL query.
  *
- * Automatically handles things like prepending prefixes, etc.  Ingen specific.
+ * Automatically handles things like prepending prefixes, etc.  Raul specific.
  */
 class RDFQuery {
 public:
@@ -66,6 +68,8 @@ private:
 	Glib::ustring _query;
 };
 
+
+} // namespace Raul
 
 #endif // RAUL_RDFQUERY_H
 

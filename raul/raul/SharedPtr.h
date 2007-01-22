@@ -1,5 +1,5 @@
 /* A Reference Counting Smart Pointer.
- * Copyright (C) 2006 Dave Robillard.
+ * Copyright (C) 2007 Dave Robillard.
  * 
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -53,7 +53,7 @@ namespace boost {
 
 #ifdef BOOST_AC_USE_PTHREADS
 #error "Boost is using mutex locking for pointer reference counting."
-#error "This is VERY slow.  Please report your platform."
+#error "This is VERY slow.  Please report your platform to dave@codeson.net"
 #endif
 
 #define SharedPtr boost::shared_ptr

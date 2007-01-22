@@ -3,7 +3,8 @@
 #include "raul/SRSWQueue.h"
 #include "raul/SRMWQueue.h"
 
-using std::string; using std::cerr; using std::cout; using std::endl;
+using namespace std;
+using namespace Raul;
 
 
 int main()

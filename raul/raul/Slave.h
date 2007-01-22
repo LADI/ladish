@@ -1,4 +1,4 @@
-/* This file is part of Raul.  Copyright (C) 2006 Dave Robillard.
+/* This file is part of Raul.  Copyright (C) 2007 Dave Robillard.
  * 
  * Raul is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -20,6 +20,8 @@
 #include <pthread.h>
 #include "raul/Semaphore.h"
 #include "raul/Thread.h"
+
+namespace Raul {
 
 
 /** Thread driven by (realtime safe) signals.
@@ -58,5 +60,7 @@ private:
 	}
 };
 
+
+} // namespace Raul
 
 #endif // RAUL_SLAVE_H

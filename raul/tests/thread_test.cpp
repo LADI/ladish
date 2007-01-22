@@ -2,6 +2,7 @@
 #include <raul/Thread.h>
 
 using namespace std;
+using namespace Raul;
 
 int
 main()
@@ -9,7 +10,9 @@ main()
 	Thread& this_thread = Thread::get();
 	this_thread.set_name("Main");
 
-	cerr << "Thread name: " << Thread::get().name() << endl;
+	cout << "Thread name should be Main" << endl;
+
+	cout << "Thread name: " << Thread::get().name() << endl;
 
 	return 0;
 }

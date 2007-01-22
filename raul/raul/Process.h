@@ -1,4 +1,4 @@
-/* This file is part of Raul.  Copyright (C) 2006 Dave Robillard.
+/* This file is part of Raul.  Copyright (C) 2007 Dave Robillard.
  * 
  * Raul is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -21,6 +21,8 @@
 #include <iostream>
 #include <unistd.h>
 #include <boost/utility.hpp>
+
+namespace Raul {
 
 
 /** A child process.
@@ -81,5 +83,7 @@ private:
 	Process() {}
 };
 
+
+} // namespace Raul
 
 #endif // RAUL_PROCESS_H

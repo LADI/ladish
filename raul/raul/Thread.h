@@ -1,11 +1,11 @@
-/* This file is part of Ingen.  Copyright (C) 2006 Dave Robillard.
+/* This file is part of Raul.  Copyright (C) 2007 Dave Robillard.
  * 
- * Ingen is free software; you can redistribute it and/or modify it under the
+ * Raul is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 2 of the License, or (at your option) any later
  * version.
  * 
- * Ingen is distributed in the hope that it will be useful, but WITHOUT ANY
+ * Raul is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for details.
  * 
@@ -21,6 +21,8 @@
 #include <iostream>
 #include <pthread.h>
 #include <boost/utility.hpp>
+
+namespace Raul {
 
 
 /** Abstract base class for a thread.
@@ -106,6 +108,7 @@ protected:
 	Thread(const std::string& name="") : _context(0), _name(name), _pthread_exists(false)
 	{
 		pthread_once(&_thread_key_once, thread_key_alloc);
+		pthread_setspecific(_thread_key, this);
 	}
 	
 	/** Must be called from thread */
@@ -150,5 +153,7 @@ private:
 	pthread_t   _pthread;
 };
 
+
+} // namespace Raul
 
 #endif // RAUL_THREAD_H

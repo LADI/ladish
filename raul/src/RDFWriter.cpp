@@ -1,11 +1,11 @@
-/* This file is part of Ingen.  Copyright (C) 2006 Dave Robillard.
+/* This file is part of Raul.  Copyright (C) 2007 Dave Robillard.
  * 
- * Ingen is free software; you can redistribute it and/or modify it under the
+ * Raul is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 2 of the License, or (at your option) any later
  * version.
  * 
- * Ingen is distributed in the hope that it will be useful, but WITHOUT ANY
+ * Raul is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for details.
  * 
@@ -18,6 +18,9 @@
 #include "raul/AtomRaptor.h"
 
 #define U(x) ((const unsigned char*)(x))
+
+namespace Raul {
+
 
 //static const char* const RDF_LANG = "rdfxml-abbrev";
 static const char* const RDF_LANG = "turtle";
@@ -44,7 +47,7 @@ RDFWriter::setup_prefixes()
 {
 	assert(_serializer);
 
-	for (map<string,string>::const_iterator i = _prefixes.begin(); i != _prefixes.end(); ++i) {
+	for (Namespaces::const_iterator i = _prefixes.begin(); i != _prefixes.end(); ++i) {
 		raptor_serialize_set_namespace(_serializer,
 			raptor_new_uri(U(i->second.c_str())), U(i->first.c_str()));
 	}
@@ -56,7 +59,7 @@ RDFWriter::setup_prefixes()
 string
 RDFWriter::expand_uri(const string& uri)
 {
-	for (map<string,string>::const_iterator i = _prefixes.begin(); i != _prefixes.end(); ++i)
+	for (Namespaces::const_iterator i = _prefixes.begin(); i != _prefixes.end(); ++i)
 		if (uri.substr(0, i->first.length()+1) == i->first + ":")
 			return i->second + uri.substr(i->first.length()+1);
 
@@ -216,3 +219,7 @@ RDFWriter::write(const RdfId& subject,
 	
 	raptor_free_uri((raptor_uri*)triple.predicate);
 }
+
+
+} // namespace Raul
+

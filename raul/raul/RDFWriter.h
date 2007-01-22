@@ -1,11 +1,11 @@
-/* This file is part of Ingen.  Copyright (C) 2006 Dave Robillard.
+/* This file is part of Raul.  Copyright (C) 2007 Dave Robillard.
  * 
- * Ingen is free software; you can redistribute it and/or modify it under the
+ * Raul is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 2 of the License, or (at your option) any later
  * version.
  * 
- * Ingen is distributed in the hope that it will be useful, but WITHOUT ANY
+ * Raul is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for details.
  * 
@@ -19,24 +19,25 @@
 
 #include <stdexcept>
 #include <string>
-#include <map>
 #include <raptor.h>
+#include "raul/Namespaces.h"
 #include "raul/Atom.h"
-using std::string; using std::map;
+
+namespace Raul {
 
 
 class RdfId {
 public:
 	enum Type { ANONYMOUS, RESOURCE };
 
-	RdfId(Type t, const string& s) : _type(t), _string(s) {}
+	RdfId(Type t, const std::string& s) : _type(t), _string(s) {}
 
-	Type          type() const      { return _type; }
-	const string& to_string() const { return _string; }
+	Type               type() const      { return _type; }
+	const std::string& to_string() const { return _string; }
 
 private:
-	Type   _type;
-	string _string; ///< URI or blank node ID, depending on _type
+	Type        _type;
+	std::string _string; ///< URI or blank node ID, depending on _type
 };
 
 
@@ -44,12 +45,12 @@ class RDFWriter {
 public:
 	RDFWriter();
 
-	void add_prefix(const string& prefix, const string& uri);
-	string expand_uri(const string& uri);
+	void add_prefix(const std::string& prefix, const std::string& uri);
+	std::string expand_uri(const std::string& uri);
 
-	void start_to_filename(const string& filename) throw (std::logic_error);
-	void start_to_string()                         throw (std::logic_error);
-	string finish()                                throw (std::logic_error);
+	void start_to_filename(const std::string& filename) throw (std::logic_error);
+	void start_to_string()                              throw (std::logic_error);
+	std::string finish()                                throw (std::logic_error);
 	
 	bool serialization_in_progress() { return (_serializer != NULL); }
 
@@ -64,10 +65,12 @@ public:
 private:
 	void setup_prefixes();
 
-	raptor_serializer*               _serializer;
-	unsigned char*                   _string_output;
-	map<string, string>              _prefixes;
+	raptor_serializer* _serializer;
+	unsigned char*     _string_output;
+	Namespaces         _prefixes;
 };
 
+
+} // namespace Raul
 
 #endif // RDFWRITER_H

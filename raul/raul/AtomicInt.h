@@ -1,11 +1,11 @@
-/* This file is part of Ingen.  Copyright (C) 2007 Dave Robillard.
+/* This file is part of Raul.  Copyright (C) 2007 Dave Robillard.
  * 
- * Ingen is free software; you can redistribute it and/or modify it under the
+ * Raul is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 2 of the License, or (at your option) any later
  * version.
  * 
- * Ingen is distributed in the hope that it will be useful, but WITHOUT ANY
+ * Raul is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for details.
  * 
@@ -18,6 +18,9 @@
 #define RAUL_ATOMIC_INT_H
 
 #include <glib.h>
+
+namespace Raul {
+
 
 class AtomicInt {
 public:
@@ -71,5 +74,8 @@ public:
 private:
 	volatile int _val;
 };
+
+
+} // namespace Raul
 
 #endif // RAUL_ATOMIC_INT_H

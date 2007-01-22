@@ -1,5 +1,5 @@
 /* A "weak" pointer to a resource owned by a shared pointer.
- * Copyright (C) 2006 Dave Robillard.
+ * Copyright (C) 2007 Dave Robillard.
  * 
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
