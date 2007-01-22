@@ -50,7 +50,7 @@ public:
 	bool is_attached() const { return (m_client != NULL); }
 	bool is_realtime() const { return m_client && jack_is_realtime(m_client); }
 	
-	SRSWQueue<PatchageEvent>& events() { return m_events; }
+	Raul::SRSWQueue<PatchageEvent>& events() { return m_events; }
 
 	void refresh();
 
@@ -106,7 +106,7 @@ private:
 	Patchage*      m_app;
 	jack_client_t* m_client;
 
-	SRSWQueue<PatchageEvent> m_events;
+	Raul::SRSWQueue<PatchageEvent> m_events;
 
 	bool            m_is_activated;
 	jack_position_t m_last_pos;
