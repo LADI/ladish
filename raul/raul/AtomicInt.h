@@ -55,7 +55,9 @@ public:
 	inline AtomicInt& operator--() // prefix
 		{ g_atomic_int_add(&_val, -1); return *this; }
 	
-	/** Set value to newval iff current value is oldval */
+	/** Set value to newval iff current value is oldval.
+	 * @return whether set succeeded.
+	 */
 	inline bool compare_and_exchange(int oldval, int newval)
 		{ return g_atomic_int_compare_and_exchange(&_val, oldval, newval); }
 
