@@ -15,7 +15,7 @@
  */
 
 #include <iostream>
-#include "MetaState.hpp"
+#include "Machine.hpp"
 #include "Node.hpp"
 #include "Action.hpp"
 #include "Edge.hpp"
@@ -42,19 +42,19 @@ Node* create_debug_node(const string& name, FrameCount duration)
 int
 main()//int argc, char** argv)
 {
-	MetaState ms(1);
+	Machine m(1);
 
 	Node* n1 = create_debug_node("1", 1);
 	Node* n2 = create_debug_node("2", 10);
 
-	ms.initial_node()->add_outgoing_edge(new Edge(n1));
+	m.initial_node()->add_outgoing_edge(new Edge(n1));
 	n1->add_outgoing_edge(new Edge(n2));
-	n2->add_outgoing_edge(new Edge(ms.initial_node()));
+	n2->add_outgoing_edge(new Edge(m.initial_node()));
 
 	Timestamp t = 0;
 
 	while (t < 80) {
-		ms.process(10);
+		m.process(10);
 		t += 10;
 	}
 

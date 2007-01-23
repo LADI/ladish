@@ -15,14 +15,14 @@
  */
 
 #include <algorithm>
-#include "MetaState.hpp"
+#include "Machine.hpp"
 #include "Node.hpp"
 #include "Edge.hpp"
 
 namespace Machina {
 
 
-MetaState::MetaState(size_t poly)
+Machine::Machine(size_t poly)
 	: _initial_node(new Node())
 	, _voices(poly, NULL)//_initial_node)
 	, _time(0)
@@ -33,14 +33,14 @@ MetaState::MetaState(size_t poly)
 }
 
 
-MetaState::~MetaState()
+Machine::~Machine()
 {
 	delete _initial_node;
 }
 
 
 void
-MetaState::reset()
+Machine::reset()
 {
 	for (std::vector<Node*>::iterator i = _voices.begin();
 			i != _voices.end(); ++i) {
@@ -50,7 +50,7 @@ MetaState::reset()
 
 
 void
-MetaState::process(FrameCount nframes)
+Machine::process(FrameCount nframes)
 {
 	const FrameCount cycle_end = _time + nframes;
 	bool             done      = false;

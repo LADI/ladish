@@ -14,8 +14,8 @@
  * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef MACHINA_METASTATE_HPP
-#define MACHINA_METASTATE_HPP
+#ifndef MACHINA_MACHINE_HPP
+#define MACHINA_MACHINE_HPP
 
 #include <vector>
 #include "types.hpp"
@@ -25,10 +25,10 @@ namespace Machina {
 class Node;
 
 
-class MetaState {
+class Machine {
 public:
-	MetaState(size_t poly);
-	~MetaState();
+	Machine(size_t poly);
+	~Machine();
 
 	Node* initial_node() { return _initial_node; }
 
@@ -45,4 +45,4 @@ private:
 
 } // namespace Machina
 
-#endif // MACHINA_METASTATE_HPP
+#endif // MACHINA_MACHINE_HPP
