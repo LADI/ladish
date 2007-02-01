@@ -1,9 +1,24 @@
-@prefix : <http://codeson.net/ns/machina#> .
+@prefix : <http://drobilla.net/ns/machina#> .
 
-<#test>
-    a Machine;
-    node [
-        a Node;
-		midiNote 60;
-		duration 100;
+<>
+	a :Machine;
+
+	:initialNode <#n1> ;
+	:node <#n2> ;
+
+	:edge [
+		:tail <#n1> ;
+		:head <#n2> ;
 	] .
+
+	
+<#n1>
+	a :Node ;
+	:midiNote 60 ;
+	:duration 600 .
+
+<#n2>
+	a :Node ;
+	:midiNote 70 ;
+	:duration 700 .
+

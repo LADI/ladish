@@ -34,6 +34,8 @@ class Edge;
  */
 class Node : public boost::noncopyable {
 public:
+	typedef std::string ID;
+
 	Node(FrameCount duration=0);
 
 	void add_enter_action(Action* action);

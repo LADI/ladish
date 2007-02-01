@@ -18,11 +18,12 @@
 #define MACHINA_MACHINE_HPP
 
 #include <vector>
+#include <map>
+#include "raul/SharedPtr.h"
 #include "types.hpp"
+#include "Node.hpp"
 
 namespace Machina {
-
-class Node;
 
 
 class Machine {
@@ -30,14 +31,23 @@ public:
 	Machine(size_t poly);
 	~Machine();
 
-	Node* initial_node() { return _initial_node; }
+	// Main context
+	void activate()   { _activated = true; }
+	void deactivate() { _activated = false; }
+	void add_node(const Node::ID& id, SharedPtr<Node> node);
 
+	// Audio context
 	void reset();
 	void process(FrameCount nframes);
+	
+	SharedPtr<Node> initial_node() { return _initial_node; }
 
 private:
-	Node*              _initial_node;
+	bool               _activated;
+	SharedPtr<Node>    _initial_node;
 	std::vector<Node*> _voices;
+	
+	std::map<Node::ID, SharedPtr<Node> > _nodes;
 
 	FrameCount _time;
 };

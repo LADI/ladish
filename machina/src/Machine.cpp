@@ -23,7 +23,8 @@ namespace Machina {
 
 
 Machine::Machine(size_t poly)
-	: _initial_node(new Node())
+	: _activated(false)
+	, _initial_node(new Node())
 	, _voices(poly, NULL)//_initial_node)
 	, _time(0)
 {
@@ -35,13 +36,14 @@ Machine::Machine(size_t poly)
 
 Machine::~Machine()
 {
-	delete _initial_node;
 }
 
 
 void
 Machine::reset()
 {
+	assert(!_activated);
+
 	for (std::vector<Node*>::iterator i = _voices.begin();
 			i != _voices.end(); ++i) {
 		*i = NULL;
@@ -50,10 +52,20 @@ Machine::reset()
 
 
 void
+Machine::add_node(const Node::ID& id, SharedPtr<Node> node)
+{
+	assert(!_activated);
+	_nodes[id] = node;
+}
+
+
+void
 Machine::process(FrameCount nframes)
 {
 	const FrameCount cycle_end = _time + nframes;
 	bool             done      = false;
+
+	assert(_activated);
 
 	FrameCount latest_event = _time;
 

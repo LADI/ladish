@@ -19,29 +19,24 @@
 #include "Node.hpp"
 #include "Action.hpp"
 #include "Edge.hpp"
+#include "Loader.hpp"
 
 using namespace std;
 using namespace Machina;
 
 
-Node* create_debug_node(const string& name, FrameCount duration)
-{
-	// leaks like a sieve, obviously
-	
-	Node* n = new Node(duration);
-	PrintAction* a_enter = new PrintAction(string("> ") + name);
-	PrintAction* a_exit = new PrintAction(string("< ")/* + name*/);
-
-	n->add_enter_action(a_enter);
-	n->add_exit_action(a_exit);
-
-	return n;
-}
-
-	
 int
-main()//int argc, char** argv)
+main(int argc, char** argv)
 {
+	if (argc != 2)
+		return -1;
+
+	Loader l;
+	SharedPtr<Machine> m = l.load(argv[1]);
+
+	m->activate();
+
+	/*
 	Machine m(1);
 
 	Node* n1 = create_debug_node("1", 1);
@@ -50,12 +45,13 @@ main()//int argc, char** argv)
 	m.initial_node()->add_outgoing_edge(new Edge(n1));
 	n1->add_outgoing_edge(new Edge(n2));
 	n2->add_outgoing_edge(new Edge(m.initial_node()));
+	*/
 
 	Timestamp t = 0;
 
-	while (t < 80) {
-		m.process(10);
-		t += 10;
+	while (t < 4000) {
+		m->process(1000);
+		t += 1000;
 	}
 
 	return 0;

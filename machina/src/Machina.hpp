@@ -16,9 +16,12 @@
 
 #include <list>
 
+namespace Machina {
 
 class Machina {
 private:
 	std::list<Node> _nodes;
 };
 
+
+} // namespace Machina

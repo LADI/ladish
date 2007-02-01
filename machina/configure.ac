@@ -12,6 +12,7 @@ AC_TYPE_SIZE_T
 
 PKG_CHECK_MODULES(JACK, jack >= 0.102.20)
 PKG_CHECK_MODULES(RAUL, raul >= 0.0.0)
+PKG_CHECK_MODULES(GLIBMM, glibmm-2.4)
 
 # Check for debugging flag
 debug="no"
