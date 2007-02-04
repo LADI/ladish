@@ -1,6 +1,7 @@
 This is not a "project", but an entire repository of code containing many
-projects (checked out from http://codeson.net).  The only common thread
-tying it all together is that I wrote it.  Hi. :)
+projects (checked out from http://drobilla.net).  Most things in here have
+interdependencies, so it is much simpler to follow a single repository in
+this style than have to keep n separate ones in sync.
 
 There are build scripts in this directory for convenience, but every
 subdirectory can be used individually as an independent (autotoolized)
