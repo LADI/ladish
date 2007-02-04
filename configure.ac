@@ -15,11 +15,11 @@ AC_CONFIG_FILES([Makefile])
 abs_srcdir=`pwd`
 
 # FIXME: dirty hack for ingen engine lib dependence on raul
-PKG_CHECK_MODULES(GLIB, glib-2.0)
+PKG_CHECK_MODULES(GLIBMM, glibmm-2.4)
 
 export PKG_CONFIG_PATH="$abs_srcdir/flowcanvas:$abs_srcdir/raul:$abs_srcdir/slv2:$abs_srcdir/raul:$PKG_CONFIG_PATH"
 
-export RAUL_CFLAGS="-I$abs_srcdir/raul $GLIB_CFLAGS"
+export RAUL_CFLAGS="-I$abs_srcdir/raul $GLIBMM_CFLAGS"
 export RAUL_LIBS="-L$abs_srcdir/raul/src/.libs -lraul"
 
 export FLOWCANVAS_CFLAGS="-I$abs_srcdir/flowcanvas"

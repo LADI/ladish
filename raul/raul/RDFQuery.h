@@ -39,7 +39,7 @@ public:
 		// Prepend prefix header
 		for (Namespaces::const_iterator i = prefixes.begin();
 				i != prefixes.end(); ++i) {
-			_query = "PREFIX ";
+			_query += "PREFIX ";
 			_query += i->first + ": <" + i->second + ">\n";
 		}
 		_query += "\n";
