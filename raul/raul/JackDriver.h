@@ -65,6 +65,9 @@ public:
 	inline float max_delay() { return jack_get_max_delayed_usecs(_client); }
 	inline void reset_delay() { jack_reset_max_delayed_usecs(_client); }
 
+	jack_client_t* jack_client() { return _client; }
+
+
 protected:
 	/** Process callback.  Derived classes should do all audio processing here. */
 	virtual void on_process(jack_nframes_t /*nframes*/) {}
@@ -92,8 +95,10 @@ private:
 
 	static void jack_port_registration_cb(jack_port_id_t port_id, int registered, void* me);
 	static int  jack_graph_order_cb(void* me);
-	static int  jack_buffer_size_cb(jack_nframes_t buffer_size, void* me);
 	static int  jack_xrun_cb(void* me);
+	static int  jack_buffer_size_cb(jack_nframes_t buffer_size, void* me);
+	static int  jack_process_cb(jack_nframes_t nframes, void* me);
+
 	static void jack_shutdown_cb(void* me);
 
 	jack_client_t* _client;

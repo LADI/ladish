@@ -37,7 +37,9 @@ RDFQuery::run(const Glib::ustring base_uri_str) const
 	rasqal_query_prepare(rq, (unsigned char*)_query.c_str(), base_uri);
 
 	rasqal_query_results* results = rasqal_query_execute(rq);
-	assert(results);
+	
+	if (!results)
+		return result; /* Return an empty Results */
 
 	while (!rasqal_query_results_finished(results)) {
 		

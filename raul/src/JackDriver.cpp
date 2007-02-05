@@ -68,6 +68,7 @@ JackDriver::attach(const string& client_name)
 		jack_set_graph_order_callback(_client, jack_graph_order_cb, this);
 		jack_set_buffer_size_callback(_client, jack_buffer_size_cb, this);
 		jack_set_xrun_callback(_client, jack_xrun_cb, this);
+		jack_set_process_callback(_client, jack_process_cb, this);
 	
 		//_is_dirty = true;
 		_buffer_size = jack_get_buffer_size(_client);
@@ -117,6 +118,23 @@ JackDriver::jack_graph_order_cb(void* jack_driver)
 
 
 int
+JackDriver::jack_xrun_cb(void* jack_driver)
+{
+	JackDriver* me = reinterpret_cast<JackDriver*>(jack_driver);
+	
+	assert(me);
+
+	me->_xruns++;
+	me->_xrun_delay = jack_get_xrun_delayed_usecs(me->_client);
+	me->reset_delay();
+
+	me->on_xrun();
+	
+	return 0;
+}
+
+
+int
 JackDriver::jack_buffer_size_cb(jack_nframes_t buffer_size, void* jack_driver) 
 {
 	JackDriver* me = reinterpret_cast<JackDriver*>(jack_driver);
@@ -130,19 +148,15 @@ JackDriver::jack_buffer_size_cb(jack_nframes_t buffer_size, void* jack_driver)
 	return 0;
 }
 
-
+	
 int
-JackDriver::jack_xrun_cb(void* jack_driver)
+JackDriver::jack_process_cb(jack_nframes_t nframes, void* jack_driver)
 {
 	JackDriver* me = reinterpret_cast<JackDriver*>(jack_driver);
 	
 	assert(me);
 
-	me->_xruns++;
-	me->_xrun_delay = jack_get_xrun_delayed_usecs(me->_client);
-	me->reset_delay();
-
-	me->on_xrun();
+	me->on_process(nframes);
 	
 	return 0;
 }
