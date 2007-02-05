@@ -107,7 +107,7 @@ process(jack_nframes_t nframes, void *arg)
 	void *port_buf = jack_port_get_buffer(input_port, nframes);
 	jack_midi_event_t in_event;
 	jack_nframes_t event_count =
-		jack_midi_port_get_info(port_buf, nframes)->event_count;
+		jack_midi_get_event_count(port_buf, nframes);
 	
 	jack_position_t pos;
 	jack_transport_query(client, &pos);
