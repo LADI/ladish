@@ -19,6 +19,8 @@
 
 #include <list>
 #include <boost/utility.hpp>
+#include <raul/WeakPtr.h>
+#include <raul/SharedPtr.h>
 #include "types.hpp"
 #include "Action.hpp"
 
@@ -29,16 +31,17 @@ class Node;
 class Edge : boost::noncopyable {
 public:
 
-	Edge(Node* dst) : _src(NULL) , _dst(dst) {}
+	Edge(WeakPtr<Node> src, SharedPtr<Node> dst) : _src(src) , _dst(dst) {}
 
-	Node* src() { return _src; }
-	Node* dst() { return _dst; }
+	WeakPtr<Node>   src() { return _src; }
+	SharedPtr<Node> dst() { return _dst; }
 
-	void set_src(Node* src) { _src = src; }
+	void set_src(WeakPtr<Node> src)   { _src = src; }
+	void set_dst(SharedPtr<Node> dst) { _dst = dst; }
 
 private:
-	Node* _src;
-	Node* _dst;
+	WeakPtr<Node>   _src;
+	SharedPtr<Node> _dst;
 };
 
 

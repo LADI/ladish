@@ -14,35 +14,26 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef MACHINA_LOADER_HPP
-#define MACHINA_LOADER_HPP
+#ifndef MACHINA_NODEFACTORY_HPP
+#define MACHINA_NODEFACTORY_HPP
 
-#include <glibmm/ustring.h>
-#include "raul/SharedPtr.h"
-#include "raul/Path.h"
-#include "raul/Namespaces.h"
-
-using Raul::Namespaces;
+#include <raul/SharedPtr.h>
+#include "types.hpp"
+#include "Node.hpp"
 
 namespace Machina {
 
-class Machine;
-class NodeFactory;
 
-
-class Loader {
+class NodeFactory {
 public:
-	Loader(SharedPtr<NodeFactory> node_factory,
-	       SharedPtr<Namespaces> = SharedPtr<Namespaces>());
+	virtual ~NodeFactory() {}
 
-	SharedPtr<Machine> load(const Glib::ustring& filename);
-
-private:
-	SharedPtr<NodeFactory> _node_factory;
-	SharedPtr<Namespaces>  _namespaces;
+	virtual SharedPtr<Node> create_node(Node::ID      id,
+	                                    unsigned char note,
+	                                    FrameCount    duration) = 0;
 };
 
 
 } // namespace Machina
 
-#endif // MACHINA_LOADER_HPP
+#endif // MACHINA_NODEFACTORY_HPP

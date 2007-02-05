@@ -21,9 +21,10 @@
 namespace Machina {
 
 
-Node::Node(FrameCount duration)
-	: _is_active(false)
-	, _start_time(0)
+Node::Node(FrameCount duration, bool initial)
+	: _is_initial(initial)
+	, _is_active(false)
+	, _enter_time(0)
 	, _duration(duration)
 	, _enter_action(NULL)
 	, _exit_action(NULL)
@@ -66,7 +67,7 @@ void
 Node::enter(Timestamp time)
 {
 	_is_active = true;
-	_start_time = time;
+	_enter_time = time;
 	if (_enter_action)
 		_enter_action->execute(time);
 }
@@ -78,20 +79,21 @@ Node::exit(Timestamp time)
 	if (_exit_action)
 		_exit_action->execute(time);
 	_is_active = false;
-	_start_time = 0;
+	_enter_time = 0;
 }
 
 
 void
-Node::add_outgoing_edge(Edge* edge)
+Node::add_outgoing_edge(SharedPtr<Edge> edge)
 {
-	edge->set_src(this);
+	assert(edge->src().lock().get() == this);
+	
 	_outgoing_edges.push_back(edge);
 }
 
 
 void
-Node::remove_outgoing_edge(Edge* edge)
+Node::remove_outgoing_edge(SharedPtr<Edge> edge)
 {
 	_outgoing_edges.remove(edge);
 }

@@ -22,15 +22,11 @@
 namespace Machina {
 
 
-Machine::Machine(size_t poly)
-	: _activated(false)
-	, _initial_node(new Node())
-	, _voices(poly, NULL)//_initial_node)
+Machine::Machine()
+	: _is_activated(false)
+	, _is_finished(false)
 	, _time(0)
 {
-	/* reserve poly spaces in _voices, so accessing it
-	 * with operator[] should be realtime safe.
-	 */
 }
 
 
@@ -40,39 +36,122 @@ Machine::~Machine()
 
 
 void
+Machine::add_node(SharedPtr<Node> node)
+{
+	assert(!_is_activated);
+
+	_nodes.push_back(node);
+}
+
+
+/** Exit all active states and reset time to 0.
+ */
+void
 Machine::reset()
 {
-	assert(!_activated);
+	if (!_is_finished) {
+		for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n) {
+			const SharedPtr<Node> node = (*n);
 
-	for (std::vector<Node*>::iterator i = _voices.begin();
-			i != _voices.end(); ++i) {
-		*i = NULL;
+			if (node->is_active())
+				node->exit(_time);
+		}
+	}
+
+	_time = 0;
+	_is_finished = false;
+}
+
+
+/** Return the active Node with the earliest exit time.
+ */
+SharedPtr<Node>
+Machine::earliest_node() const
+{	
+	SharedPtr<Node> earliest;
+	
+	for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n) {
+		const SharedPtr<Node> node = (*n);
+		
+		if (node->is_active())
+			if (!earliest || node->exit_time() < earliest->exit_time())
+				earliest = node;
+	}
+
+	return earliest;
+}
+
+
+/** Exit an active node at the current _time.
+ */
+void
+Machine::exit_node(const SharedPtr<Node> node)
+{
+	node->exit(_time);
+
+	// Activate all successors to this node
+	// (that aren't aready active right now)
+	for (Node::EdgeList::const_iterator s = node->outgoing_edges().begin();
+			s != node->outgoing_edges().end(); ++s) {
+		SharedPtr<Node> dst = (*s)->dst();
+
+		if (!dst->is_active())
+			dst->enter(_time);
+
 	}
 }
 
 
-void
-Machine::add_node(const Node::ID& id, SharedPtr<Node> node)
+/** Run the machine for @a nframes frames.
+ *
+ * Returns false when the machine has finished running (i.e. there are
+ * no currently active states).
+ *
+ * If this returns false, time() will return the exact time stamp the
+ * machine actually finished on (so it can be restarted immediately
+ * with sample accuracy if necessary).
+ */
+bool
+Machine::run(FrameCount nframes)
 {
-	assert(!_activated);
-	_nodes[id] = node;
-}
+	if (_is_finished)
+		return false;
 
-
-void
-Machine::process(FrameCount nframes)
-{
 	const FrameCount cycle_end = _time + nframes;
-	bool             done      = false;
 
-	assert(_activated);
+	assert(_is_activated);
 
-	FrameCount latest_event = _time;
+	//std::cerr << "--------- " << _time << " - " << _time + nframes << std::endl;
 
-	std::cerr << "--------- " << _time << " - " << _time + nframes << std::endl;
-
-	// FIXME: way too much iteration
+	// Initial run, enter all initial states
+	if (_time == 0)
+		for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n)
+			if ((*n)->is_initial())
+				(*n)->enter(0);
 	
+	while (true) {
+
+		SharedPtr<Node> earliest = earliest_node();
+
+		// No more active states, machine is finished
+		if (!earliest) {
+			_is_finished = true;
+			return false;
+
+		// Earliest active state ends this cycle
+		} else if (earliest->exit_time() < cycle_end) {
+			_time = earliest->exit_time();
+			exit_node(earliest);
+
+		// Earliest active state ends in the future, done this cycle
+		} else {
+			_time = cycle_end;
+			return true;
+		}
+
+	}
+
+#if 0
 	while (!done) {
 
 		done = true;
@@ -130,8 +209,10 @@ Machine::process(FrameCount nframes)
 			}
 		}
 	}
-	
 	_time += nframes;
+
+	return false;
+#endif
 }
 
 

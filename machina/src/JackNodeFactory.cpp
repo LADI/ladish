@@ -14,35 +14,28 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef MACHINA_LOADER_HPP
-#define MACHINA_LOADER_HPP
-
-#include <glibmm/ustring.h>
-#include "raul/SharedPtr.h"
-#include "raul/Path.h"
-#include "raul/Namespaces.h"
-
-using Raul::Namespaces;
+#include "JackNodeFactory.hpp"
+#include "JackActions.hpp"
+#include "Node.hpp"
 
 namespace Machina {
 
-class Machine;
-class NodeFactory;
 
+SharedPtr<Node>
+JackNodeFactory::create_node(Node::ID, unsigned char note, FrameCount duration)
+{
+	// FIXME: leaks like a sieve, obviously
+	
+	Node* n = new Node(duration);
+	JackNoteOnAction* a_enter = new JackNoteOnAction(_driver, note);
+	JackNoteOffAction* a_exit = new JackNoteOffAction(_driver, note);
 
-class Loader {
-public:
-	Loader(SharedPtr<NodeFactory> node_factory,
-	       SharedPtr<Namespaces> = SharedPtr<Namespaces>());
+	n->add_enter_action(a_enter);
+	n->add_exit_action(a_exit);
 
-	SharedPtr<Machine> load(const Glib::ustring& filename);
-
-private:
-	SharedPtr<NodeFactory> _node_factory;
-	SharedPtr<Namespaces>  _namespaces;
-};
+	return SharedPtr<Node>(n);
+}
 
 
 } // namespace Machina
 
-#endif // MACHINA_LOADER_HPP

@@ -19,6 +19,7 @@
 
 #include <list>
 #include <boost/utility.hpp>
+#include <raul/SharedPtr.h>
 #include "types.hpp"
 #include "Action.hpp"
 
@@ -31,12 +32,15 @@ class Edge;
  *
  * It contains a action, as well as a duration and pointers to it's
  * successors (states/nodes that (may) follow it).
+ *
+ * Initial nodes do not have enter actions (since they are entered at
+ * an undefined point in time <= 0).
  */
 class Node : public boost::noncopyable {
 public:
 	typedef std::string ID;
 
-	Node(FrameCount duration=0);
+	Node(FrameCount duration=0, bool initial=false);
 
 	void add_enter_action(Action* action);
 	void remove_enter_action(Action* action);
@@ -47,23 +51,24 @@ public:
 	void enter(Timestamp time);
 	void exit(Timestamp time);
 
-	void add_outgoing_edge(Edge* edge);
-	void remove_outgoing_edge(Edge* edge);
+	void add_outgoing_edge(SharedPtr<Edge> edge);
+	void remove_outgoing_edge(SharedPtr<Edge> edge);
 
-	Timestamp process(Timestamp time, FrameCount nframes);
-
+	bool       is_initial() const         { return _is_initial; }
+	void       set_initial(bool i)        { _is_initial = i; }
 	bool       is_active() const          { return _is_active; }
-	Timestamp  start_time() const         { return _start_time; }
-	Timestamp  end_time() const           { return _start_time + _duration; }
+	Timestamp  enter_time() const         { return _enter_time; }
+	Timestamp  exit_time() const          { return _enter_time + _duration; }
 	FrameCount duration()                 { return _duration; }
 	void       set_duration(FrameCount d) { _duration = d; }
 	
-	typedef std::list<Edge*> EdgeList;
+	typedef std::list<SharedPtr<Edge> > EdgeList;
 	const EdgeList& outgoing_edges() const { return _outgoing_edges; }
 	
 private:
+	bool       _is_initial;
 	bool       _is_active;
-	Timestamp  _start_time; ///< valid iff _is_active
+	Timestamp  _enter_time; ///< valid iff _is_active
 	FrameCount _duration;
 	Action*    _enter_action;
 	Action*    _exit_action;

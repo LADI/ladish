@@ -14,35 +14,29 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef MACHINA_LOADER_HPP
-#define MACHINA_LOADER_HPP
+#ifndef MACHINA_JACKNODEFACTORY_HPP
+#define MACHINA_JACKNODEFACTORY_HPP
 
-#include <glibmm/ustring.h>
-#include "raul/SharedPtr.h"
-#include "raul/Path.h"
-#include "raul/Namespaces.h"
-
-using Raul::Namespaces;
+#include <raul/WeakPtr.h>
+#include "NodeFactory.hpp"
 
 namespace Machina {
 
-class Machine;
-class NodeFactory;
+class JackDriver;
 
 
-class Loader {
+class JackNodeFactory : public NodeFactory {
 public:
-	Loader(SharedPtr<NodeFactory> node_factory,
-	       SharedPtr<Namespaces> = SharedPtr<Namespaces>());
+	JackNodeFactory(WeakPtr<JackDriver> driver) : _driver(driver) {}
 
-	SharedPtr<Machine> load(const Glib::ustring& filename);
-
+	SharedPtr<Node> create_node(Node::ID      id,
+	                            unsigned char note,
+	                            FrameCount    duration);
 private:
-	SharedPtr<NodeFactory> _node_factory;
-	SharedPtr<Namespaces>  _namespaces;
+	WeakPtr<JackDriver> _driver;
 };
 
 
 } // namespace Machina
 
-#endif // MACHINA_LOADER_HPP
+#endif // MACHINA_JACKNODEFACTORY_HPP

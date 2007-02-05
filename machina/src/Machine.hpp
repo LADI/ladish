@@ -28,28 +28,33 @@ namespace Machina {
 
 class Machine {
 public:
-	Machine(size_t poly);
+	Machine();
 	~Machine();
 
 	// Main context
-	void activate()   { _activated = true; }
-	void deactivate() { _activated = false; }
-	void add_node(const Node::ID& id, SharedPtr<Node> node);
+	void activate()   { _is_activated = true; }
+	void deactivate() { _is_activated = false; }
+	
+	void add_node(SharedPtr<Node> node);
 
 	// Audio context
-	void reset();
-	void process(FrameCount nframes);
+	void            reset();
+	bool            run(FrameCount nframes);
 	
-	SharedPtr<Node> initial_node() { return _initial_node; }
+	// Any context
+	FrameCount time() { return _time; }
 
 private:
-	bool               _activated;
-	SharedPtr<Node>    _initial_node;
-	std::vector<Node*> _voices;
+	typedef std::vector<SharedPtr<Node> > Nodes;
 	
-	std::map<Node::ID, SharedPtr<Node> > _nodes;
+	// Audio context
+	SharedPtr<Node> earliest_node() const;
+	void            exit_node(const SharedPtr<Node>);
 
+	bool       _is_activated;
+	bool       _is_finished;
 	FrameCount _time;
+	Nodes      _nodes;
 };
 
 

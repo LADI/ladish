@@ -15,10 +15,10 @@
 <#n1>
 	a :Node ;
 	:midiNote 60 ;
-	:duration 600 .
+	:duration 20000 .
 
 <#n2>
 	a :Node ;
-	:midiNote 70 ;
-	:duration 700 .
+	:midiNote 72 ;
+	:duration 20000 .
 

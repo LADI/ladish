@@ -14,35 +14,43 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef MACHINA_LOADER_HPP
-#define MACHINA_LOADER_HPP
+#ifndef MACHINA_JACKACTIONS_HPP
+#define MACHINA_JACKACTIONS_HPP
 
-#include <glibmm/ustring.h>
-#include "raul/SharedPtr.h"
-#include "raul/Path.h"
-#include "raul/Namespaces.h"
-
-using Raul::Namespaces;
+#include <raul/WeakPtr.h>
+#include "types.hpp"
+#include "Action.hpp"
 
 namespace Machina {
 
-class Machine;
-class NodeFactory;
+class Node;
+class JackDriver;
 
 
-class Loader {
+class JackNoteOnAction : public Action {
 public:
-	Loader(SharedPtr<NodeFactory> node_factory,
-	       SharedPtr<Namespaces> = SharedPtr<Namespaces>());
+	JackNoteOnAction(WeakPtr<JackDriver> driver, unsigned char note_num);
 
-	SharedPtr<Machine> load(const Glib::ustring& filename);
+	void execute(Timestamp time);
 
 private:
-	SharedPtr<NodeFactory> _node_factory;
-	SharedPtr<Namespaces>  _namespaces;
+	WeakPtr<JackDriver> _driver;
+	unsigned char       _note_num;
+};
+
+
+class JackNoteOffAction : public Action {
+public:
+	JackNoteOffAction(WeakPtr<JackDriver> driver, unsigned char note_num);
+
+	void execute(Timestamp time);
+
+private:
+	WeakPtr<JackDriver> _driver;
+	unsigned char       _note_num;
 };
 
 
 } // namespace Machina
 
-#endif // MACHINA_LOADER_HPP
+#endif // MACHINA_JACKACTIONS_HPP

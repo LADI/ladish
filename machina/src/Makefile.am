@@ -17,4 +17,11 @@ machina_SOURCES = \
 	Machine.cpp \
 	Loader.h \
 	Loader.cpp \
+	JackDriver.h \
+	JackDriver.cpp \
+	JackActions.hpp \
+	JackActions.cpp \
+	NodeFactory.hpp \
+	JackNodeFactory.hpp \
+	JackNodeFactory.cpp \
 	main.cpp

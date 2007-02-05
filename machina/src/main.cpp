@@ -15,26 +15,65 @@
  */
 
 #include <iostream>
+#include <signal.h>
 #include "Machine.hpp"
 #include "Node.hpp"
 #include "Action.hpp"
 #include "Edge.hpp"
 #include "Loader.hpp"
+#include "JackDriver.hpp"
+#include "JackNodeFactory.hpp"
 
 using namespace std;
 using namespace Machina;
 
 
+bool quit = false;
+
+
+void
+catch_int(int)
+{
+	signal(SIGINT, catch_int);
+	signal(SIGTERM, catch_int);
+
+	std::cout << "Interrupted" << std::endl;
+
+	quit = true;
+}
+
+
 int
 main(int argc, char** argv)
 {
-	if (argc != 2)
+	if (argc != 2) {
+		cout << "Usage: " << argv[0] << " FILE" << endl;
 		return -1;
+	}
+	
+	SharedPtr<JackDriver>  driver(new JackDriver());
+	SharedPtr<NodeFactory> factory(new JackNodeFactory(driver));
 
-	Loader l;
+	Loader l(factory);
+
 	SharedPtr<Machine> m = l.load(argv[1]);
 
 	m->activate();
+
+	driver->set_machine(m);
+	driver->attach("machina");
+
+	signal(SIGINT, catch_int);
+	signal(SIGTERM, catch_int);
+
+	while (!quit)
+		sleep(1);
+	
+	driver->detach();
+
+	return 0;
+}
+
 
 	/*
 	Machine m(1);
@@ -47,14 +86,12 @@ main(int argc, char** argv)
 	n2->add_outgoing_edge(new Edge(m.initial_node()));
 	*/
 
+	/*
 	Timestamp t = 0;
 
 	while (t < 4000) {
-		m->process(1000);
+		m->run(1000);
 		t += 1000;
 	}
-
-	return 0;
-}
-
+	*/
 
