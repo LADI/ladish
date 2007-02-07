@@ -1,4 +1,5 @@
-/* This file is part of FlowCanvas.  Copyright (C) 2005 Dave Robillard.
+/* This file is part of FlowCanvas.
+ * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
  * 
  * FlowCanvas is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -11,7 +12,7 @@
  * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
 #ifndef FLOWCANVAS_FLOWCANVAS_H
@@ -70,16 +71,18 @@ public:
 	boost::shared_ptr<Port> get_port(const string& module_name,
                                      const string& port_name);
 
-	boost::shared_ptr<Connection> get_connection(const boost::shared_ptr<Port> src,
-	                                             const boost::shared_ptr<Port> dst);
+	boost::shared_ptr<Connection>
+	get_connection(boost::shared_ptr<Connectable> src,
+	               boost::shared_ptr<Connectable> dst) const;
 	
-	bool add_connection(boost::shared_ptr<Port> port1,
-	                    boost::shared_ptr<Port> port2);
+	bool add_connection(boost::shared_ptr<Connectable> src,
+	                    boost::shared_ptr<Connectable> dst,
+	                    uint32_t                       color);
 	
 	bool add_connection(boost::shared_ptr<Connection> connection);
 	
-	boost::shared_ptr<Connection> remove_connection(boost::shared_ptr<Port> port1,
-	                                                boost::shared_ptr<Port> port2);
+	boost::shared_ptr<Connection> remove_connection(boost::shared_ptr<Connectable> src,
+	                                                boost::shared_ptr<Connectable> dst);
 	
 	void destroy_all_connections();
 	
@@ -113,10 +116,12 @@ public:
 	ArtVpathDash* const select_dash() { return _select_dash; }
 	
 	/** Make a connection.  Should be overridden by an implementation to do something. */
-	virtual void connect(boost::shared_ptr<Port> src_port, boost::shared_ptr<Port> dst_port) = 0;
+	virtual void connect(boost::shared_ptr<Connectable> src,
+	                     boost::shared_ptr<Connectable> dst) = 0;
 	
 	/** Disconnect two ports.  Should be overridden by an implementation to do something */
-	virtual void disconnect(boost::shared_ptr<Port> src_port, boost::shared_ptr<Port> dst_port) = 0;
+	virtual void disconnect(boost::shared_ptr<Connectable> src,
+	                        boost::shared_ptr<Connectable> dst) = 0;
 
 protected:
 	ModuleMap		                     _modules;              ///< All modules on this canvas
@@ -136,7 +141,9 @@ private:
 	friend class Port;
 	virtual bool port_event(GdkEvent* event, boost::weak_ptr<Port> port);
 
-	bool are_connected(boost::shared_ptr<const Port> port1, boost::shared_ptr<const Port> port2);
+	bool are_connected(boost::shared_ptr<const Connectable> port1,
+	                   boost::shared_ptr<const Connectable> port2);
+	
 	void selected_port(boost::shared_ptr<Port> p);
 	boost::shared_ptr<Port> selected_port() { return _selected_port; }
 	

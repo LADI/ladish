@@ -1,4 +1,5 @@
-/* This file is part of FlowCanvas.  Copyright (C) 2005 Dave Robillard.
+/* This file is part of FlowCanvas.
+ * Copyright (C) 2007 Dave Robillard <drobilla.net>
  * 
  * FlowCanvas is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -11,33 +12,32 @@
  * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include "Connection.h"
 #include <algorithm>
 #include <cassert>
-#include <math.h>
+#include <cmath>
 #include <libgnomecanvasmm.h>
+#include "Connection.h"
 #include "FlowCanvas.h"
+#include "Connectable.h"
 
 namespace LibFlowCanvas {
 	
 
-Connection::Connection(boost::shared_ptr<FlowCanvas> canvas,
-	                   boost::shared_ptr<Port>       source,
-	                   boost::shared_ptr<Port>       dest)
+Connection::Connection(boost::shared_ptr<FlowCanvas>  canvas,
+	                   boost::shared_ptr<Connectable> source,
+	                   boost::shared_ptr<Connectable> dest,
+                       uint32_t                       color)
 : Gnome::Canvas::Bpath(*canvas->root()),
   _canvas(canvas),
   _source(source),
   _dest(dest),
+  _color(color),
   _selected(false),
   _path(gnome_canvas_path_def_new())
 {
-	assert(source->is_output());
-	assert(dest->is_input());
-	
-	_color = source->color() + 0x22222200;
 	if (canvas->property_aa())
 		property_width_units() = 0.75;
 	else
@@ -55,16 +55,10 @@ Connection::Connection(boost::shared_ptr<FlowCanvas> canvas,
 void
 Connection::update_location()
 {
-	boost::shared_ptr<Port> src = _source.lock();
-	boost::shared_ptr<Port> dst = _dest.lock();
+	boost::shared_ptr<Connectable> src = _source.lock();
+	boost::shared_ptr<Connectable> dst = _dest.lock();
 	
 	if (!src || !dst)
-		return;
-
-	boost::shared_ptr<Module> src_mod = src->module().lock();
-	boost::shared_ptr<Module> dst_mod = dst->module().lock();
-
-	if (!src_mod || !dst_mod)
 		return;
 
 	const double src_x = src->connection_point().get_x();

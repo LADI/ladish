@@ -1,4 +1,5 @@
-/* This file is part of FlowCanvas.  Copyright (C) 2005 Dave Robillard.
+/* This file is part of FlowCanvas.
+ * Copyright (C) 2007 Dave Robillard <drobilla.net>
  * 
  * FlowCanvas is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -11,7 +12,7 @@
  * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
 #include <boost/weak_ptr.hpp>
@@ -27,7 +28,7 @@ namespace LibFlowCanvas {
  *
  * A reference to @a module is not retained (only a weak_ptr is stored).
  */
-Port::Port(boost::shared_ptr<Module> module, const string& name, bool is_input, int color)
+Port::Port(boost::shared_ptr<Module> module, const string& name, bool is_input, uint32_t color)
 : Gnome::Canvas::Group(*module.get(), 0, 0),
   _module(module),
   _name(name),
@@ -129,6 +130,11 @@ Port::move_connections()
 void
 Port::add_connection(boost::shared_ptr<Connection> connection)
 {
+	if (is_output())
+		assert(connection->source().lock().get() == this);
+	else if (is_input())
+		assert(connection->dest().lock().get() == this);
+
 	for (list<boost::weak_ptr<Connection> >::iterator i = _connections.begin(); i != _connections.end(); i++) {
 		boost::shared_ptr<Connection> c = (*i).lock();
 		if (c && c == connection)
@@ -165,8 +171,9 @@ Port::disconnect_all()
 	list<boost::weak_ptr<Connection> > connections = _connections; // copy
 	for (list<boost::weak_ptr<Connection> >::iterator i = connections.begin(); i != connections.end(); ++i) {
 		boost::shared_ptr<Connection> c = (*i).lock();
-		if (c)
+		if (c) {
 			module->canvas().lock()->disconnect(c->source().lock(), c->dest().lock());
+		}
 	}
 
 	_connections.clear();

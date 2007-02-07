@@ -65,7 +65,7 @@ PatchageFlowCanvas::find_port(const snd_seq_addr_t* alsa_addr)
 #endif
 
 void
-PatchageFlowCanvas::connect(boost::shared_ptr<Port> port1, boost::shared_ptr<Port> port2)
+PatchageFlowCanvas::connect(boost::shared_ptr<Connectable> port1, boost::shared_ptr<Connectable> port2)
 {
 	boost::shared_ptr<PatchagePort> p1 = boost::dynamic_pointer_cast<PatchagePort>(port1);
 	boost::shared_ptr<PatchagePort> p2 = boost::dynamic_pointer_cast<PatchagePort>(port2);
@@ -85,20 +85,24 @@ PatchageFlowCanvas::connect(boost::shared_ptr<Port> port1, boost::shared_ptr<Por
 
 
 void
-PatchageFlowCanvas::disconnect(boost::shared_ptr<Port> port1, boost::shared_ptr<Port> port2)
+PatchageFlowCanvas::disconnect(boost::shared_ptr<Connectable> port1, boost::shared_ptr<Connectable> port2)
 {
-	boost::shared_ptr<PatchagePort> input;
-	boost::shared_ptr<PatchagePort> output;
-	
-	if (port1->is_input() && !port2->is_input()) {
-		input = boost::dynamic_pointer_cast<PatchagePort>(port1);
-		output = boost::dynamic_pointer_cast<PatchagePort>(port2);
-	} else if (port2->is_input() && !port1->is_input()) {
-		input = boost::dynamic_pointer_cast<PatchagePort>(port2);
-		output = boost::dynamic_pointer_cast<PatchagePort>(port1);
+	boost::shared_ptr<PatchagePort> input
+		= boost::dynamic_pointer_cast<PatchagePort>(port1);
+	boost::shared_ptr<PatchagePort> output
+		= boost::dynamic_pointer_cast<PatchagePort>(port2);
+
+	if (!input || !output)
+		return;
+
+	if (input->is_output() && output->is_input()) {
+		// Damn, guessed wrong
+		boost::shared_ptr<PatchagePort> swap = input;
+		input = output;
+		output = swap;
 	}
 
-	if (!input || !output) {
+	if (!input || !output || input->is_output() || output->is_input()) {
 		status_message("ERROR: Attempt to disconnect mismatched/unknown ports");
 		return;
 	}

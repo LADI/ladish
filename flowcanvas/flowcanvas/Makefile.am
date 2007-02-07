@@ -4,4 +4,5 @@ flowcanvasinclude_HEADERS = \
 	FlowCanvas.h \
 	Module.h \
 	Port.h \
-	Connection.h
+	Connection.h \
+	Connectable.h

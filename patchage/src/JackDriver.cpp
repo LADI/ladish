@@ -264,15 +264,30 @@ JackDriver::refresh()
 				port2_name = client2_name.substr(client2_name.find(':')+1);
 				client2_name = client2_name.substr(0, client2_name.find(':'));
 
-				boost::shared_ptr<Port> port1 = _app->canvas()->get_port(client1_name, port1_name);
-				boost::shared_ptr<Port> port2 = _app->canvas()->get_port(client2_name, port2_name);
+				boost::shared_ptr<Port> port1
+					= _app->canvas()->get_port(client1_name, port1_name);
+				boost::shared_ptr<Port> port2
+					= _app->canvas()->get_port(client2_name, port2_name);
 
-				if (port1 && port2) {
-					boost::shared_ptr<Connection> existing = _app->canvas()->get_connection(port1, port2);
+				boost::shared_ptr<Port> src;
+				boost::shared_ptr<Port> dst;
+
+				if (port1->is_output() && port2->is_input()) {
+					src = port1;
+					dst = port2;
+				} else if (port2->is_output() && port1->is_input()) {
+					src = port2;
+					dst = port1;
+				}
+
+				if (src && dst) {
+					boost::shared_ptr<Connection> existing
+						= _app->canvas()->get_connection(src, dst);
+
 					if (existing) {
 						existing->set_flagged(false);
 					} else {
-						_app->canvas()->add_connection(port1, port2);
+						_app->canvas()->add_connection(src, dst, port1->color() + 0x22222200);
 					}
 				}
 			}

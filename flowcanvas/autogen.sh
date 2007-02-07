@@ -2,8 +2,8 @@
 
 echo 'Generating necessary files...'
 libtoolize --copy --force
-aclocal
+aclocal-1.9
 autoheader -Wall
-automake --gnu --add-missing -Wall
+automake-1.9 --gnu --add-missing -Wall
 autoconf
 

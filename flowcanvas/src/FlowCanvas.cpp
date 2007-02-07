@@ -1,4 +1,5 @@
-/* This file is part of FlowCanvas.  Copyright (C) 2005 Dave Robillard.
+/* This file is part of FlowCanvas.
+ * Copyright (C) 2007 Dave Robillard <drobilla.net>
  * 
  * FlowCanvas is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -11,7 +12,7 @@
  * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
 #include "FlowCanvas.h"
@@ -178,22 +179,30 @@ FlowCanvas::select_module(boost::shared_ptr<Module> m)
 	_selected_modules.push_back(m);
 
 	for (ConnectionList::iterator i = _connections.begin(); i != _connections.end(); ++i) {
-		const boost::shared_ptr<Connection> c = (*i);
-		const boost::shared_ptr<Port> source = c->source().lock();
-		const boost::shared_ptr<Port> dest = c->dest().lock();
-		if (!source || !dest)
+		const boost::shared_ptr<Connection>  c = (*i);
+		const boost::shared_ptr<Connectable> src = c->source().lock();
+		const boost::shared_ptr<Connectable> dst = c->dest().lock();
+		if (!src || !dst)
 			continue;
 
-		const boost::shared_ptr<Module> source_module = source->module().lock();
-		const boost::shared_ptr<Module> dest_module = dest->module().lock();
-		if (!source_module || !dest_module)
+		const boost::shared_ptr<Port> src_port
+			= boost::dynamic_pointer_cast<Port>(src);
+		const boost::shared_ptr<Port> dst_port
+			= boost::dynamic_pointer_cast<Port>(dst);
+
+		if (!src_port || !dst_port)
+			continue;
+
+		const boost::shared_ptr<Module> src_module = src_port->module().lock();
+		const boost::shared_ptr<Module> dst_module = dst_port->module().lock();
+		if (!src_module || !dst_module)
 			continue;
 
 		if ( !c->selected()) {
-			if (source_module == m && dest_module->selected()) {
+			if (src_module == m && dst_module->selected()) {
 				c->set_selected(true);
 				_selected_connections.push_back(c);
-			} else if (dest_module == m && source_module->selected()) {
+			} else if (dst_module == m && src_module->selected()) {
 				c->set_selected(true);
 				_selected_connections.push_back(c);
 			} 
@@ -380,17 +389,18 @@ FlowCanvas::rename_module(const string& old_name, const string& current_name)
 
 
 boost::shared_ptr<Connection>
-FlowCanvas::remove_connection(boost::shared_ptr<Port> port1, boost::shared_ptr<Port> port2)
+FlowCanvas::remove_connection(boost::shared_ptr<Connectable> item1,
+                              boost::shared_ptr<Connectable> item2)
 {
 	boost::shared_ptr<Connection> ret;
 
 	if (!_remove_objects)
 		return ret;
 
-	assert(port1);
-	assert(port2);
+	assert(item1);
+	assert(item2);
 	
-	boost::shared_ptr<Connection> c = get_connection(port1, port2);
+	boost::shared_ptr<Connection> c = get_connection(item1, item2);
 	if (!c) {
 		cerr << "Couldn't find connection.\n";
 		return ret;
@@ -402,20 +412,21 @@ FlowCanvas::remove_connection(boost::shared_ptr<Port> port1, boost::shared_ptr<P
 
 
 bool
-FlowCanvas::are_connected(boost::shared_ptr<const Port> port1, boost::shared_ptr<const Port> port2)
+FlowCanvas::are_connected(boost::shared_ptr<const Connectable> item1,
+                          boost::shared_ptr<const Connectable> item2)
 {
-	assert(port1);
-	assert(port2);
+	assert(item1);
+	assert(item2);
 	
 	ConnectionList::const_iterator c;
 
 	for (c = _connections.begin(); c != _connections.end(); ++c) {
-		const boost::shared_ptr<Port> src = (*c)->source().lock();
-		const boost::shared_ptr<Port> dst = (*c)->dest().lock();
+		const boost::shared_ptr<Connectable> src = (*c)->source().lock();
+		const boost::shared_ptr<Connectable> dst = (*c)->dest().lock();
 		if (!src || !dst)
 			continue;
 
-		if ( (src == port1 && dst == port2) || (dst == port1 && src == port2) )
+		if ( (src == item1 && dst == item2) || (dst == item1 && src == item2) )
 			return true;
 	}
 
@@ -424,18 +435,19 @@ FlowCanvas::are_connected(boost::shared_ptr<const Port> port1, boost::shared_ptr
 
 
 boost::shared_ptr<Connection>
-FlowCanvas::get_connection(boost::shared_ptr<Port> port1, boost::shared_ptr<Port> port2)
+FlowCanvas::get_connection(boost::shared_ptr<Connectable> item1,
+                           boost::shared_ptr<Connectable> item2) const
 {
-	assert(port1);
-	assert(port2);
+	assert(item1);
+	assert(item2);
 	
-	for (ConnectionList::iterator i = _connections.begin(); i != _connections.end(); ++i) {
-		const boost::shared_ptr<Port> src = (*i)->source().lock();
-		const boost::shared_ptr<Port> dst = (*i)->dest().lock();
+	for (ConnectionList::const_iterator i = _connections.begin(); i != _connections.end(); ++i) {
+		const boost::shared_ptr<Connectable> src = (*i)->source().lock();
+		const boost::shared_ptr<Connectable> dst = (*i)->dest().lock();
 		if (!src || !dst)
 			continue;
 
-		if ( (src == port1 && dst == port2) || (dst == port1 && src == port2) )
+		if ( (src == item1 && dst == item2) || (dst == item1 && src == item2) )
 			return *i;
 	}
 	
@@ -444,32 +456,16 @@ FlowCanvas::get_connection(boost::shared_ptr<Port> port1, boost::shared_ptr<Port
 
 
 bool
-FlowCanvas::add_connection(boost::shared_ptr<Port> port1, boost::shared_ptr<Port> port2)
+FlowCanvas::add_connection(boost::shared_ptr<Connectable> src,
+                           boost::shared_ptr<Connectable> dst,
+                           uint32_t                       color)
 {
-	/*if (port1->module()->canvas() != this
-		|| port2->module()->canvas() != this
-		|| port1->is_input() == port2->is_input()
-		|| port1->is_output() == port2->is_output()) {
-		return false;
-	}*/
-
-	boost::shared_ptr<Port> src_port;
-	boost::shared_ptr<Port> dst_port;
-	if (port1->is_output()) {
-		assert(port2->is_input());
-		src_port = port1;
-		dst_port = port2;
-	} else {
-		assert(port2->is_output());
-		src_port = port2;
-		dst_port = port1;
-	}
-
 	// Create (graphical) connection object
-	if ( ! get_connection(src_port, dst_port)) {
-		boost::shared_ptr<Connection> c(new Connection(shared_from_this(), src_port, dst_port));
-		port1->add_connection(c);
-		port2->add_connection(c);
+	if ( ! get_connection(src, dst)) {
+		boost::shared_ptr<Connection> c(new Connection(shared_from_this(),
+			src, dst, color));
+		src->add_connection(c);
+		dst->add_connection(c);
 		_connections.push_back(c);
 	}
 
@@ -480,8 +476,8 @@ FlowCanvas::add_connection(boost::shared_ptr<Port> port1, boost::shared_ptr<Port
 bool
 FlowCanvas::add_connection(boost::shared_ptr<Connection> c)
 {
-	const boost::shared_ptr<Port> src = c->source().lock();
-	const boost::shared_ptr<Port> dst = c->dest().lock();
+	const boost::shared_ptr<Connectable> src = c->source().lock();
+	const boost::shared_ptr<Connectable> dst = c->dest().lock();
 
 	if (src && dst) {
 		src->add_connection(c);
@@ -505,8 +501,8 @@ FlowCanvas::remove_connection(boost::shared_ptr<Connection> connection)
 	if (i != _connections.end()) {
 		const boost::shared_ptr<Connection> c = *i;
 		
-		const boost::shared_ptr<Port> src = c->source().lock();
-		const boost::shared_ptr<Port> dst = c->dest().lock();
+		const boost::shared_ptr<Connectable> src = c->source().lock();
+		const boost::shared_ptr<Connectable> dst = c->dest().lock();
 
 		if (src)
 			src->remove_connection(c);
@@ -536,8 +532,8 @@ FlowCanvas::destroy_all_flagged_connections()
 		if ((*c)->flagged()) {
 			ConnectionList::iterator next = c;
 			++next;
-			const boost::shared_ptr<Port> src = (*c)->source().lock();
-			const boost::shared_ptr<Port> dst = (*c)->dest().lock();
+			const boost::shared_ptr<Connectable> src = (*c)->source().lock();
+			const boost::shared_ptr<Connectable> dst = (*c)->dest().lock();
 			if (src)
 				src->remove_connection(*c);
 			if (dst)
@@ -559,8 +555,8 @@ FlowCanvas::destroy_all_connections()
 	_remove_objects = false;
 
 	for (ConnectionList::iterator c = _connections.begin(); c != _connections.end(); ++c) {
-		const boost::shared_ptr<Port> src = (*c)->source().lock();
-		const boost::shared_ptr<Port> dst = (*c)->dest().lock();
+		const boost::shared_ptr<Connectable> src = (*c)->source().lock();
+		const boost::shared_ptr<Connectable> dst = (*c)->dest().lock();
 		if (src)
 			src->remove_connection(*c);
 		if (dst)
@@ -892,10 +888,15 @@ FlowCanvas::connection_drag_handler(GdkEvent* event)
 			drag_port->property_y() = 0;
 			drag_port->_rect.property_x2() = 1;
 			drag_port->_rect.property_y2() = 1;
+			
 			if (drag_port_is_input)
-				drag_connection = boost::shared_ptr<Connection>(new Connection(shared_from_this(), _connect_port, drag_port));
+				drag_connection = boost::shared_ptr<Connection>(new Connection(
+					shared_from_this(), _connect_port, drag_port,
+					_connect_port->color() + 0x22222200));
 			else
-				drag_connection = boost::shared_ptr<Connection>(new Connection(shared_from_this(), drag_port, _connect_port));
+				drag_connection = boost::shared_ptr<Connection>(new Connection(
+					shared_from_this(), drag_port, _connect_port,
+					_connect_port->color() + 0x22222200));
 				
 			drag_connection->update_location();
 		}

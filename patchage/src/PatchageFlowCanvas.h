@@ -24,8 +24,6 @@
 #include <flowcanvas/FlowCanvas.h>
 #include "StateManager.h"
 
-
-
 class Patchage;
 class PatchageModule;
 class PatchagePort;
@@ -42,8 +40,8 @@ public:
 #ifdef HAVE_ALSA
 	boost::shared_ptr<PatchagePort>   find_port(const snd_seq_addr_t* alsa_addr);
 #endif
-	void connect(boost::shared_ptr<Port> port1, boost::shared_ptr<Port> port2);
-	void disconnect(boost::shared_ptr<Port> port1, boost::shared_ptr<Port> port2);
+	void connect(boost::shared_ptr<Connectable> port1, boost::shared_ptr<Connectable> port2);
+	void disconnect(boost::shared_ptr<Connectable> port1, boost::shared_ptr<Connectable> port2);
 
 	void status_message(const string& msg);
 

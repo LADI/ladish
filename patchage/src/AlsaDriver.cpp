@@ -318,7 +318,7 @@ AlsaDriver::add_connections(boost::shared_ptr<PatchagePort> port)
 			if (existing) {
 				existing->set_flagged(false);
 			} else {
-				_app->canvas()->add_connection(port, connected_port);
+				_app->canvas()->add_connection(port, connected_port, port->color() + 0x22222200);
 			}
 		}
 

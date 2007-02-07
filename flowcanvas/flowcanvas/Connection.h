@@ -1,4 +1,5 @@
-/* This file is part of FlowCanvas.  Copyright (C) 2005 Dave Robillard.
+/* This file is part of FlowCanvas.
+ * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
  * 
  * FlowCanvas is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -11,7 +12,7 @@
  * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
 #ifndef FLOWCANVAS_CONNECTION_H
@@ -22,25 +23,26 @@
 #include <libgnomecanvasmm.h>
 #include <libgnomecanvasmm/bpath.h>
 #include <libgnomecanvasmm/path-def.h>
-#include "Port.h"
 
 using std::list;
 
 namespace LibFlowCanvas {
 
 class FlowCanvas;
+class Connectable;
 
 
-/** A connection (line) between two Ports.
+/** A connection (line) between two canvas objects.
  *
  * \ingroup FlowCanvas
  */
 class Connection : public Gnome::Canvas::Bpath
 {
 public:
-	Connection(boost::shared_ptr<FlowCanvas> canvas,
-	           boost::shared_ptr<Port>       source,
-	           boost::shared_ptr<Port>       dest);
+	Connection(boost::shared_ptr<FlowCanvas>  canvas,
+	           boost::shared_ptr<Connectable> source,
+	           boost::shared_ptr<Connectable> dest,
+	           uint32_t                       color);
 
 	virtual ~Connection() {}
 	
@@ -52,8 +54,8 @@ public:
 	
 	void set_highlighted(bool b);
 	
-	const boost::weak_ptr<Port> source() const { return _source; }
-	const boost::weak_ptr<Port> dest() const   { return _dest; }
+	const boost::weak_ptr<Connectable> source() const { return _source; }
+	const boost::weak_ptr<Connectable> dest() const   { return _dest; }
 
 private:
 	friend class FlowCanvas;
@@ -61,12 +63,12 @@ private:
 
 	void update_location();
 	
-	const boost::weak_ptr<FlowCanvas> _canvas;
-	const boost::weak_ptr<Port>       _source;
-	const boost::weak_ptr<Port>       _dest;
-	int                               _color;
-	bool                              _selected;
-	bool                              _flag;
+	const boost::weak_ptr<FlowCanvas>  _canvas;
+	const boost::weak_ptr<Connectable> _source;
+	const boost::weak_ptr<Connectable> _dest;
+	int                                _color;
+	bool                               _selected;
+	bool                               _flag;
 
 	//Glib::RefPtr<Gnome::Canvas::PathDef> _path;
 	GnomeCanvasPathDef* _path;
