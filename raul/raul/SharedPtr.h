@@ -1,5 +1,5 @@
 /* A Reference Counting Smart Pointer.
- * Copyright (C) 2007 Dave Robillard.
+ * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
  * 
  * This is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software

@@ -1,4 +1,5 @@
-/* This file is part of Raul.  Copyright (C) 2007 Dave Robillard.
+/* This file is part of Raul.
+ * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
  * 
  * Raul is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -44,20 +45,7 @@ public:
 		}
 		_query += "\n";
 		_query += query;
-		
-		/*const char* const prefix_header =
-			"PREFIX rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n"
-			"PREFIX xsd:   <http://www.w3.org/2001/XMLSchema#>\n"
-			"PREFIX ingen: <http://codeson.net/ns/ingen#>\n"
-			"PREFIX lv2:   <http://lv2plug.in/ontology#>\n";
-
-		_query = _prefix_header + query;*/
 	}
-
-	/*RDFQuery(Glib::ustring query)
-	{
-		_query = _prefix_header + query;
-	}*/
 
 	Results run(const Glib::ustring base_uri) const;
 
