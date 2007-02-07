@@ -26,18 +26,18 @@ using std::cerr; using std::cout; using std::endl;
 
 StateManager::StateManager()
 {
-	m_window_location.x = 0;
-	m_window_location.y = 0;
-	m_window_size.x = 640;
-	m_window_size.y = 480;
-	m_zoom = 1.0;
+	_window_location.x = 0;
+	_window_location.y = 0;
+	_window_size.x = 640;
+	_window_size.y = 480;
+	_zoom = 1.0;
 }
 
 
 Coord
 StateManager::get_module_location(const string& name, ModuleType type) 
 {
-	for (std::list<ModuleLocation>::iterator i = m_module_locations.begin(); i != m_module_locations.end(); ++i) {
+	for (std::list<ModuleLocation>::iterator i = _module_locations.begin(); i != _module_locations.end(); ++i) {
 		if ((*i).name == name && (*i).type == type)
 			return (*i).loc;
 	}
@@ -51,7 +51,7 @@ StateManager::get_module_location(const string& name, ModuleType type)
 void
 StateManager::set_module_location(const string& name, ModuleType type, Coord loc) 
 {
-	for (std::list<ModuleLocation>::iterator i = m_module_locations.begin(); i != m_module_locations.end(); ++i) {
+	for (std::list<ModuleLocation>::iterator i = _module_locations.begin(); i != _module_locations.end(); ++i) {
 		if ((*i).name == name && (*i).type == type) {
 			(*i).loc = loc;
 			return;
@@ -60,7 +60,7 @@ StateManager::set_module_location(const string& name, ModuleType type, Coord loc
 	
 	// If we get here, module isn't in list yet
 	ModuleLocation ml = { name, type, loc };
-	m_module_locations.push_back(ml);
+	_module_locations.push_back(ml);
 }
 
 
@@ -72,8 +72,8 @@ StateManager::set_module_location(const string& name, ModuleType type, Coord loc
 bool
 StateManager::get_module_split(const string& name, bool default_val) const
 {
-	map<string, bool>::const_iterator i = m_module_splits.find(name);
-	if (i == m_module_splits.end())
+	map<string, bool>::const_iterator i = _module_splits.find(name);
+	if (i == _module_splits.end())
 		return default_val;
 	else
 		return (*i).second;
@@ -83,14 +83,14 @@ StateManager::get_module_split(const string& name, bool default_val) const
 void
 StateManager::set_module_split(const string& name, bool split) 
 {
-	m_module_splits[name] = split;
+	_module_splits[name] = split;
 }
 
 
 void
 StateManager::load(const string& filename) 
 {	
-	m_module_locations.clear();
+	_module_locations.clear();
 
 	cerr << "Loading configuration file " << filename << endl;
 	
@@ -107,21 +107,21 @@ StateManager::load(const string& filename)
 	is >> s;
 	if (s != "window_location") throw "Corrupt settings file.";
 	is >> s;
-	m_window_location.x = atoi(s.c_str());
+	_window_location.x = atoi(s.c_str());
 	is >> s;
-	m_window_location.y = atoi(s.c_str());
+	_window_location.y = atoi(s.c_str());
 
 	is >> s;
 	if (s != "window_size") throw "Corrupt settings file.";
 	is >> s;
-	m_window_size.x = atoi(s.c_str());
+	_window_size.x = atoi(s.c_str());
 	is >> s;
-	m_window_size.y = atoi(s.c_str());
+	_window_size.y = atoi(s.c_str());
 
 	is >> s;
 	if (s != "zoom_level") throw "Corrupt settings file.";
 	is >> s;
-	m_zoom = atof(s.c_str());
+	_zoom = atof(s.c_str());
 
 	ModuleLocation ml;
 	while (1) {
@@ -156,7 +156,7 @@ StateManager::load(const string& filename)
 		is >> s;
 		ml.loc.y = atoi(s.c_str());
 
-		m_module_locations.push_back(ml);
+		_module_locations.push_back(ml);
 	}
 
 	is.close();
@@ -169,12 +169,12 @@ StateManager::save(const string& filename)
 	std::ofstream os;
 	os.open(filename.c_str(), std::ios::out);
 
-	os << "window_location " << m_window_location.x << " " << m_window_location.y << std::endl;
-	os << "window_size " << m_window_size.x << " " << m_window_size.y << std::endl;
-	os << "zoom_level " << m_zoom << std::endl;
+	os << "window_location " << _window_location.x << " " << _window_location.y << std::endl;
+	os << "window_size " << _window_size.x << " " << _window_size.y << std::endl;
+	os << "zoom_level " << _zoom << std::endl;
 
 	ModuleLocation ml;
-	for (std::list<ModuleLocation>::iterator i = m_module_locations.begin(); i != m_module_locations.end(); ++i) {
+	for (std::list<ModuleLocation>::iterator i = _module_locations.begin(); i != _module_locations.end(); ++i) {
 		ml = *i;
 		os << "\"" << ml.name << "\"";
 		
@@ -193,42 +193,42 @@ StateManager::save(const string& filename)
 Coord
 StateManager::get_window_location() 
 {
-	return m_window_location;
+	return _window_location;
 }
 
 
 void
 StateManager::set_window_location(Coord loc) 
 {
-	m_window_location = loc;
+	_window_location = loc;
 }
 
 
 Coord
 StateManager::get_window_size() 
 {
-	return m_window_size;
+	return _window_size;
 }
 
 
 void
 StateManager::set_window_size(Coord size) 
 {
-	m_window_size = size;
+	_window_size = size;
 }
 
 
 float
 StateManager::get_zoom() 
 {
-	return m_zoom;
+	return _zoom;
 }
 
 
 void
 StateManager::set_zoom(float zoom) 
 {
-	m_zoom = zoom;
+	_zoom = zoom;
 }
 
 

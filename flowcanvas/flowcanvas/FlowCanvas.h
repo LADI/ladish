@@ -96,21 +96,21 @@ public:
 	void unselect_module(boost::shared_ptr<Module> module);
 	void unselect_connection(Connection* c);
 	
-	ModuleMap&                            modules()              { return m_modules; }
-	list<boost::shared_ptr<Module> >&     selected_modules()     { return m_selected_modules; }
-	list<boost::shared_ptr<Connection> >& selected_connections() { return m_selected_connections; }
+	ModuleMap&                            modules()              { return _modules; }
+	list<boost::shared_ptr<Module> >&     selected_modules()     { return _selected_modules; }
+	list<boost::shared_ptr<Connection> >& selected_connections() { return _selected_connections; }
 
-	double get_zoom() { return m_zoom; }
+	double get_zoom() { return _zoom; }
 	void   set_zoom(double pix_per_unit);
 	void   zoom_full();
 
-	double width() const  { return m_width; }
-	double height() const { return m_height; }
+	double width() const  { return _width; }
+	double height() const { return _height; }
 
 	
 	/** Dash applied to selected items.
 	 * Set an object's property_dash() to this for the "rubber band" effect */
-	ArtVpathDash* const select_dash() { return m_select_dash; }
+	ArtVpathDash* const select_dash() { return _select_dash; }
 	
 	/** Make a connection.  Should be overridden by an implementation to do something. */
 	virtual void connect(boost::shared_ptr<Port> src_port, boost::shared_ptr<Port> dst_port) = 0;
@@ -119,10 +119,10 @@ public:
 	virtual void disconnect(boost::shared_ptr<Port> src_port, boost::shared_ptr<Port> dst_port) = 0;
 
 protected:
-	ModuleMap		                     m_modules;              ///< All modules on this canvas
-	ConnectionList	                     m_connections;          ///< All connections on this canvas
-	list<boost::shared_ptr<Module> >     m_selected_modules;     ///< All currently selected modules
-	list<boost::shared_ptr<Connection> > m_selected_connections; ///< All currently selected connections
+	ModuleMap		                     _modules;              ///< All modules on this canvas
+	ConnectionList	                     _connections;          ///< All connections on this canvas
+	list<boost::shared_ptr<Module> >     _selected_modules;     ///< All currently selected modules
+	list<boost::shared_ptr<Connection> > _selected_connections; ///< All currently selected connections
 
 	virtual bool canvas_event(GdkEvent* event);
 	
@@ -138,7 +138,7 @@ private:
 
 	bool are_connected(boost::shared_ptr<const Port> port1, boost::shared_ptr<const Port> port2);
 	void selected_port(boost::shared_ptr<Port> p);
-	boost::shared_ptr<Port> selected_port() { return m_selected_port; }
+	boost::shared_ptr<Port> selected_port() { return _selected_port; }
 	
 	boost::shared_ptr<Port> get_port_at(double x, double y);
 
@@ -149,21 +149,21 @@ private:
 	void ports_joined(boost::shared_ptr<Port> port1, boost::shared_ptr<Port> port2);
 	bool animate_selected();
 
-	boost::shared_ptr<Port> m_selected_port; ///< Selected port (hilited red from clicking once)
-	boost::shared_ptr<Port> m_connect_port;  ///< Port for which a connection is being made (if applicable)
+	boost::shared_ptr<Port> _selected_port; ///< Selected port (hilited red from clicking once)
+	boost::shared_ptr<Port> _connect_port;  ///< Port for which a connection is being made (if applicable)
 	
-	double m_zoom;   ///< Current zoom level
-	double m_width;  
-	double m_height; 
+	double _zoom;   ///< Current zoom level
+	double _width;  
+	double _height; 
 
 	enum DragState { NOT_DRAGGING, CONNECTION, SCROLL, SELECT };
-	DragState      m_drag_state;
+	DragState      _drag_state;
 	
-	bool m_remove_objects; // flag to avoid removing objects from destructors when unnecessary
+	bool _remove_objects; // flag to avoid removing objects from destructors when unnecessary
 
-	Gnome::Canvas::Rect  m_base_rect;   ///< Background
-	Gnome::Canvas::Rect* m_select_rect; ///< Rectangle for drag selection
-	ArtVpathDash*        m_select_dash; ///< Animated selection dash style
+	Gnome::Canvas::Rect  _base_rect;   ///< Background
+	Gnome::Canvas::Rect* _select_rect; ///< Rectangle for drag selection
+	ArtVpathDash*        _select_dash; ///< Animated selection dash style
 };
 
 

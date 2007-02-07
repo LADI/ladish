@@ -41,8 +41,8 @@ public:
 	Module(boost::shared_ptr<FlowCanvas> canvas, const string& name, double x=0, double y=0, bool show_title=true);
 	virtual ~Module();
 	
-	boost::weak_ptr<FlowCanvas> canvas() const { return m_canvas; }
-	const PortVector&           ports()  const { return m_ports; }
+	boost::weak_ptr<FlowCanvas> canvas() const { return _canvas; }
+	const PortVector&           ports()  const { return _ports; }
 	
 	inline boost::shared_ptr<Port> get_port(const string& name) const;
 	
@@ -62,24 +62,24 @@ public:
 	virtual void load_location()  {}
 	virtual void store_location() {}
 	
-	const string& name() const { return m_name; }
+	const string& name() const { return _name; }
 	virtual void  set_name(const string& n);
 
-	double width() { return m_width; }
+	double width() { return _width; }
 	void   set_width(double w);
 	
-	double height() { return m_height; }
+	double height() { return _height; }
 	void   set_height(double h);
 
-	double border_width() const { return m_border_width; }
+	double border_width() const { return _border_width; }
 	void   set_border_width(double w);
 
-	bool selected() const { return m_selected; }
+	bool selected() const { return _selected; }
 	void set_selected(bool b);
 	
 	void set_highlighted(bool b);
 
-	int num_ports()    const     { return m_ports.size(); }
+	int num_ports()    const     { return _ports.size(); }
 	int base_color()   const     { return 0x1F2A3CFF; }
 
 protected:
@@ -91,18 +91,18 @@ protected:
 	virtual void on_middle_click(GdkEventButton*) {}
 	virtual void on_right_click(GdkEventButton*)  {}
 
-	double m_border_width;
-	double m_width;
-	double m_height;
-	string m_name;
-	bool   m_selected;
-	bool   m_title_visible;
+	double _border_width;
+	double _width;
+	double _height;
+	string _name;
+	bool   _selected;
+	bool   _title_visible;
 
-	const boost::weak_ptr<FlowCanvas> m_canvas;
-	PortVector                        m_ports;
+	const boost::weak_ptr<FlowCanvas> _canvas;
+	PortVector                        _ports;
 
-	Gnome::Canvas::Rect m_module_box;
-	Gnome::Canvas::Text m_canvas_title;
+	Gnome::Canvas::Rect _module_box;
+	Gnome::Canvas::Text _canvas_title;
 
 private:
 	friend class Port;
@@ -137,8 +137,8 @@ inline boost::shared_ptr<Port>
 Module::get_port(const string& port_name) const
 {
 	PortComparator comp(port_name);
-	PortVector::const_iterator i = std::find_if(m_ports.begin(), m_ports.end(), comp);
-	return (i != m_ports.end()) ? *i : boost::shared_ptr<Port>();
+	PortVector::const_iterator i = std::find_if(_ports.begin(), _ports.end(), comp);
+	return (i != _ports.end()) ? *i : boost::shared_ptr<Port>();
 }
 
 
@@ -147,8 +147,8 @@ Module::get_port(const string& port_name) const
 inline bool
 Module::point_is_within(double x, double y)
 {
-	return (x > property_x() && x < property_x() + m_width
-			&& y > property_y() && y < property_y() + m_height);
+	return (x > property_x() && x < property_x() + _width
+			&& y > property_y() && y < property_y() + _height);
 }
 
 

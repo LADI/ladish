@@ -56,53 +56,53 @@ public:
 	
 	Gnome::Art::Point connection_point();
 
-	boost::weak_ptr<Module>             module() const { return m_module; }
-	list<boost::weak_ptr<Connection> >& connections()  { return m_connections; }
+	boost::weak_ptr<Module>             module() const { return _module; }
+	list<boost::weak_ptr<Connection> >& connections()  { return _connections; }
 	
-	void set_fill_color(uint32_t c) { m_rect.property_fill_color_rgba() = c; }
+	void set_fill_color(uint32_t c) { _rect.property_fill_color_rgba() = c; }
 	
 	void set_highlighted(bool b);
 	
 	void zoom(float z);
 
 	void popup_menu(guint button, guint32 activate_time) {
-		m_menu.popup(button, activate_time);
+		_menu.popup(button, activate_time);
 	}
 
-	double width() const { return m_width; }
+	double width() const { return _width; }
 	void   set_width(double w);
 	
-	double border_width() const { return m_border_width; }
+	double border_width() const { return _border_width; }
 	void   set_border_width(double w);
 
-	const string& name() const { return m_name; }
+	const string& name() const { return _name; }
 	virtual void  set_name(const string& n);
 	
-	bool   is_input()  const { return m_is_input; }
-	bool   is_output() const { return !m_is_input; }
-	int    color()     const { return m_color; }
-	double height()    const { return m_height; }
+	bool   is_input()  const { return _is_input; }
+	bool   is_output() const { return !_is_input; }
+	int    color()     const { return _color; }
+	double height()    const { return _height; }
 
-	bool operator==(const string& name) { return (m_name == name); }
+	bool operator==(const string& name) { return (_name == name); }
 
 	sigc::signal<void, string> signal_renamed;
 
 protected:
 	friend class FlowCanvas;
 
-	boost::weak_ptr<Module> m_module;
-	string                  m_name;
-	bool                    m_is_input;
-	double                  m_width;
-	double                  m_height;
-	double                  m_border_width;
-	int                     m_color;
+	boost::weak_ptr<Module> _module;
+	string                  _name;
+	bool                    _is_input;
+	double                  _width;
+	double                  _height;
+	double                  _border_width;
+	int                     _color;
 	
-	list<boost::weak_ptr<Connection> > m_connections; // needed for dragging
+	list<boost::weak_ptr<Connection> > _connections; // needed for dragging
 	
-	Gnome::Canvas::Text m_label;
-	Gnome::Canvas::Rect m_rect;
-	Gtk::Menu           m_menu;
+	Gnome::Canvas::Text _label;
+	Gnome::Canvas::Rect _rect;
+	Gtk::Menu           _menu;
 };
 
 typedef vector<boost::shared_ptr<Port> > PortVector;

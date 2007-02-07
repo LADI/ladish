@@ -29,41 +29,41 @@ namespace LibFlowCanvas {
  */
 Port::Port(boost::shared_ptr<Module> module, const string& name, bool is_input, int color)
 : Gnome::Canvas::Group(*module.get(), 0, 0),
-  m_module(module),
-  m_name(name),
-  m_is_input(is_input),
-  m_color(color),
-  m_label(*this, 1, 1, m_name),
-  m_rect(*this, 0, 0, 0, 0)
+  _module(module),
+  _name(name),
+  _is_input(is_input),
+  _color(color),
+  _label(*this, 1, 1, _name),
+  _rect(*this, 0, 0, 0, 0)
 {
-	m_menu.items().push_back(Gtk::Menu_Helpers::MenuElem(
+	_menu.items().push_back(Gtk::Menu_Helpers::MenuElem(
 		"Disconnect All", sigc::mem_fun(this, &Port::disconnect_all)));
 
-	m_rect.property_fill_color_rgba() = color;
+	_rect.property_fill_color_rgba() = color;
 	
 	// Make rectangle pretty
 	//m_rect.property_outline_color_rgba() = 0x8899AAFF;
-	m_rect.property_outline_color_rgba() = color;
-	m_rect.property_join_style() = Gdk::JOIN_MITER;
+	_rect.property_outline_color_rgba() = color;
+	_rect.property_join_style() = Gdk::JOIN_MITER;
 	set_border_width(0.0);
 	
 	// Make label pretty
-	m_label.property_size() = PORT_LABEL_SIZE;
-	m_label.property_fill_color_rgba() = 0xFFFFFFFF;
-	m_label.property_weight() = 200;
+	_label.property_size() = PORT_LABEL_SIZE;
+	_label.property_fill_color_rgba() = 0xFFFFFFFF;
+	_label.property_weight() = 200;
 	
-	m_width = m_label.property_text_width() + 6.0;
-	m_height = m_label.property_text_height();
+	_width = _label.property_text_width() + 6.0;
+	_height = _label.property_text_height();
 	
 	// Place everything
-	m_rect.property_x1() = 0;
-	m_rect.property_y1() = 0;
-	m_rect.property_x2() = m_width;	
-	m_rect.property_y2() = m_height;
-	m_label.property_x() = m_label.property_text_width() / 2.0 + 3.0;
-	m_label.property_y() = (m_height / 2.0) - 1.0;
+	_rect.property_x1() = 0;
+	_rect.property_y1() = 0;
+	_rect.property_x2() = _width;	
+	_rect.property_y2() = _height;
+	_label.property_x() = _label.property_text_width() / 2.0 + 3.0;
+	_label.property_y() = (_height / 2.0) - 1.0;
 
-	m_label.raise_to_top();
+	_label.raise_to_top();
 }
 
 
@@ -79,24 +79,24 @@ Port::~Port()
 void
 Port::set_border_width(double w)
 {
-	m_border_width = w;
-	m_rect.property_width_units() = w;
+	_border_width = w;
+	_rect.property_width_units() = w;
 }
 
 
 void
 Port::set_name(const string& n)
 {
-	m_name = n;
+	_name = n;
 	
 	// Reposition label
-	m_label.property_text() = m_name;
-	m_width = m_label.property_text_width() + 4.0;
-	m_height = m_label.property_text_height();
-	m_rect.property_x2() = m_width;	
-	m_rect.property_y2() = m_height;
-	m_label.property_x() = m_label.property_text_width() / 2 + 1;
-	m_label.property_y() = m_height / 2;
+	_label.property_text() = _name;
+	_width = _label.property_text_width() + 4.0;
+	_height = _label.property_text_height();
+	_rect.property_x2() = _width;	
+	_rect.property_y2() = _height;
+	_label.property_x() = _label.property_text_width() / 2 + 1;
+	_label.property_y() = _height / 2;
 
 	signal_renamed.emit(n);
 }
@@ -105,7 +105,7 @@ Port::set_name(const string& n)
 void
 Port::zoom(float z)
 {
-	m_label.property_size() = static_cast<int>(8000 * z);
+	_label.property_size() = static_cast<int>(8000 * z);
 }
 
 
@@ -113,7 +113,7 @@ Port::zoom(float z)
 void
 Port::move_connections()
 {
-	for (list<boost::weak_ptr<Connection> >::iterator i = m_connections.begin(); i != m_connections.end(); i++) {
+	for (list<boost::weak_ptr<Connection> >::iterator i = _connections.begin(); i != _connections.end(); i++) {
 		boost::shared_ptr<Connection> c = i->lock();
 		if (c) {
 			c->update_location();
@@ -129,13 +129,13 @@ Port::move_connections()
 void
 Port::add_connection(boost::shared_ptr<Connection> connection)
 {
-	for (list<boost::weak_ptr<Connection> >::iterator i = m_connections.begin(); i != m_connections.end(); i++) {
+	for (list<boost::weak_ptr<Connection> >::iterator i = _connections.begin(); i != _connections.end(); i++) {
 		boost::shared_ptr<Connection> c = (*i).lock();
 		if (c && c == connection)
 			return;
 	}
 	
-	m_connections.push_back(connection);
+	_connections.push_back(connection);
 }
 
 
@@ -146,10 +146,10 @@ Port::add_connection(boost::shared_ptr<Connection> connection)
 void
 Port::remove_connection(boost::shared_ptr<Connection> c)
 {
-	for (list<boost::weak_ptr<Connection> >::iterator i = m_connections.begin(); i != m_connections.end(); i++) {
+	for (list<boost::weak_ptr<Connection> >::iterator i = _connections.begin(); i != _connections.end(); i++) {
 		boost::shared_ptr<Connection> connection = i->lock();
 		if (connection && connection == c) {
-			m_connections.erase(i);
+			_connections.erase(i);
 			break;
 		}
 	}
@@ -158,29 +158,29 @@ Port::remove_connection(boost::shared_ptr<Connection> c)
 void
 Port::disconnect_all()
 {
-	boost::shared_ptr<Module> module = m_module.lock();
+	boost::shared_ptr<Module> module = _module.lock();
 	if (!module)
 		return;
 
-	list<boost::weak_ptr<Connection> > connections = m_connections; // copy
+	list<boost::weak_ptr<Connection> > connections = _connections; // copy
 	for (list<boost::weak_ptr<Connection> >::iterator i = connections.begin(); i != connections.end(); ++i) {
 		boost::shared_ptr<Connection> c = (*i).lock();
 		if (c)
 			module->canvas().lock()->disconnect(c->source().lock(), c->dest().lock());
 	}
 
-	m_connections.clear();
+	_connections.clear();
 }
 
 
 void
 Port::set_highlighted(bool b)
 {
-	boost::shared_ptr<Module> module = m_module.lock();
+	boost::shared_ptr<Module> module = _module.lock();
 	if (module)
 		module->set_highlighted(b);
 
-	for (list<boost::weak_ptr<Connection> >::iterator i = m_connections.begin(); i != m_connections.end(); ++i) {
+	for (list<boost::weak_ptr<Connection> >::iterator i = _connections.begin(); i != _connections.end(); ++i) {
 		boost::shared_ptr<Connection> connection = (*i).lock();
 		if (connection) {
 			connection->set_highlighted(b);
@@ -191,13 +191,13 @@ Port::set_highlighted(bool b)
 	
 	if (b) {
 		raise_to_top();
-		m_rect.raise_to_top();
-		m_label.raise_to_top();
-		m_rect.property_fill_color_rgba() = m_color + 0x33333300;
-		m_rect.property_outline_color_rgba() = m_color + 0x33333300;
+		_rect.raise_to_top();
+		_label.raise_to_top();
+		_rect.property_fill_color_rgba() = _color + 0x33333300;
+		_rect.property_outline_color_rgba() = _color + 0x33333300;
 	} else {
-		m_rect.property_fill_color_rgba() = m_color;
-		m_rect.property_outline_color_rgba() = m_color;
+		_rect.property_fill_color_rgba() = _color;
+		_rect.property_outline_color_rgba() = _color;
 	}
 }
 	
@@ -205,7 +205,7 @@ Port::set_highlighted(bool b)
 void
 Port::raise_connections()
 {
-	for (list<boost::weak_ptr<Connection> >::iterator i = m_connections.begin(); i != m_connections.end(); ++i) {
+	for (list<boost::weak_ptr<Connection> >::iterator i = _connections.begin(); i != _connections.end(); ++i) {
 		boost::shared_ptr<Connection> connection = (*i).lock();
 		if (connection)
 			connection->raise_to_top();
@@ -218,8 +218,8 @@ Port::raise_connections()
 Gnome::Art::Point
 Port::connection_point()
 {
-	double x = (is_input()) ? m_rect.property_x1()-1.0 : m_rect.property_x2()+1.0;
-	double y = m_rect.property_y1() + m_height / 2.0;
+	double x = (is_input()) ? _rect.property_x1()-1.0 : _rect.property_x2()+1.0;
+	double y = _rect.property_y1() + _height / 2.0;
 	
 	i2w(x, y); // convert to world-relative coords
 	
@@ -230,9 +230,9 @@ Port::connection_point()
 void
 Port::set_width(double w)
 {
-	double diff = w - m_width;
-	m_rect.property_x2() = m_rect.property_x2() + diff;
-	m_width = w;
+	double diff = w - _width;
+	_rect.property_x2() = _rect.property_x2() + diff;
+	_width = w;
 }
 
 

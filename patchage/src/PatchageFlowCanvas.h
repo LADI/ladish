@@ -36,7 +36,7 @@ using namespace LibFlowCanvas;
 class PatchageFlowCanvas : public FlowCanvas
 {
 public:
-	PatchageFlowCanvas(Patchage* m_app, int width, int height);
+	PatchageFlowCanvas(Patchage* _app, int width, int height);
 	
 	boost::shared_ptr<PatchageModule> find_module(const string& name, ModuleType type);
 #ifdef HAVE_ALSA
@@ -48,7 +48,7 @@ public:
 	void status_message(const string& msg);
 
 private:
-	Patchage* m_app;
+	Patchage* _app;
 };
 
 

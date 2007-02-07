@@ -44,16 +44,16 @@ static const int MODULE_TITLE_COLOUR          = 0xFFFFFFFF;
  */
 Module::Module(boost::shared_ptr<FlowCanvas> canvas, const string& name, double x, double y, bool show_title)
 : Gnome::Canvas::Group(*canvas->root(), x, y),
-  m_name(name),
-  m_selected(false),
-  m_title_visible(show_title),
-  m_canvas(canvas),
-  m_module_box(*this, 0, 0, 0, 0), // w, h set later
-  m_canvas_title(*this, 0, 8, name) // x set later
+  _name(name),
+  _selected(false),
+  _title_visible(show_title),
+  _canvas(canvas),
+  _module_box(*this, 0, 0, 0, 0), // w, h set later
+  _canvas_title(*this, 0, 8, name) // x set later
 {
-	m_module_box.property_fill_color_rgba() = MODULE_FILL_COLOUR;
+	_module_box.property_fill_color_rgba() = MODULE_FILL_COLOUR;
 
-	m_module_box.property_outline_color_rgba() = MODULE_OUTLINE_COLOUR;
+	_module_box.property_outline_color_rgba() = MODULE_OUTLINE_COLOUR;
 	
 	if (canvas->property_aa())
 		set_border_width(0.5);
@@ -61,13 +61,13 @@ Module::Module(boost::shared_ptr<FlowCanvas> canvas, const string& name, double 
 		set_border_width(1.0);
 
 	if (show_title) {
-		m_canvas_title.property_size_set() = true;
-		m_canvas_title.property_size() = 9000;
-		m_canvas_title.property_weight_set() = true;
-		m_canvas_title.property_weight() = 400;
-		m_canvas_title.property_fill_color_rgba() = MODULE_TITLE_COLOUR;
+		_canvas_title.property_size_set() = true;
+		_canvas_title.property_size() = 9000;
+		_canvas_title.property_weight_set() = true;
+		_canvas_title.property_weight() = 400;
+		_canvas_title.property_fill_color_rgba() = MODULE_TITLE_COLOUR;
 	} else {
-		m_canvas_title.hide();
+		_canvas_title.hide();
 	}
 
 	set_width(10.0);
@@ -89,15 +89,15 @@ Module::~Module()
 void
 Module::set_border_width(double w)
 {
-	m_border_width = w;
-	m_module_box.property_width_units() = w;
+	_border_width = w;
+	_module_box.property_width_units() = w;
 }
 
 
 bool
 Module::module_event(GdkEvent* event)
 {
-	boost::shared_ptr<FlowCanvas> canvas = m_canvas.lock();
+	boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
 	if (!canvas)
 		return false;
 
@@ -166,7 +166,7 @@ Module::module_event(GdkEvent* event)
 			}
 
 			// Move any other selected modules if we're selected
-			if (m_selected) {
+			if (_selected) {
 				for (list<boost::shared_ptr<Module> >::iterator i = canvas->selected_modules().begin();
 						i != canvas->selected_modules().end(); ++i) {
 					(*i)->move(new_x - x, new_y - y);
@@ -189,13 +189,13 @@ Module::module_event(GdkEvent* event)
 			if (module_x != drag_start_x || module_y != drag_start_y) { // dragged
 				store_location();
 			} else if (!double_click) { // just a single-click release
-				if (m_selected) {
-					canvas->unselect_module(m_name);
-					assert(!m_selected);
+				if (_selected) {
+					canvas->unselect_module(_name);
+					assert(!_selected);
 				} else {
 					if ( !(event->button.state & GDK_CONTROL_MASK))
 						canvas->clear_selection();
-					canvas->select_module(m_name);
+					canvas->select_module(_name);
 				}
 			}
 		} else {
@@ -207,7 +207,7 @@ Module::module_event(GdkEvent* event)
 	case GDK_ENTER_NOTIFY:
 		set_highlighted(true);
 		raise_to_top();
-		for (PortVector::iterator p = m_ports.begin(); p != m_ports.end(); ++p)
+		for (PortVector::iterator p = _ports.begin(); p != _ports.end(); ++p)
 			(*p)->raise_connections();
 		break;
 
@@ -227,8 +227,8 @@ Module::module_event(GdkEvent* event)
 void
 Module::zoom(double z)
 {
-	m_canvas_title.property_size() = static_cast<int>(floor((double)9000.0f * z));
-	for (PortVector::iterator p = m_ports.begin(); p != m_ports.end(); ++p)
+	_canvas_title.property_size() = static_cast<int>(floor((double)9000.0f * z));
+	for (PortVector::iterator p = _ports.begin(); p != _ports.end(); ++p)
 		(*p)->zoom(z);
 }
 
@@ -237,11 +237,11 @@ void
 Module::set_highlighted(bool b)
 {
 	if (b) {
-		m_module_box.property_fill_color_rgba() = MODULE_HILITE_FILL_COLOUR;
-		m_module_box.property_outline_color_rgba() = MODULE_HILITE_OUTLINE_COLOUR;
+		_module_box.property_fill_color_rgba() = MODULE_HILITE_FILL_COLOUR;
+		_module_box.property_outline_color_rgba() = MODULE_HILITE_OUTLINE_COLOUR;
 	} else {
-		m_module_box.property_fill_color_rgba() = MODULE_FILL_COLOUR;
-		m_module_box.property_outline_color_rgba() = MODULE_OUTLINE_COLOUR;
+		_module_box.property_fill_color_rgba() = MODULE_FILL_COLOUR;
+		_module_box.property_outline_color_rgba() = MODULE_OUTLINE_COLOUR;
 	}
 }
 
@@ -249,19 +249,19 @@ Module::set_highlighted(bool b)
 void
 Module::set_selected(bool selected)
 {
-	boost::shared_ptr<FlowCanvas> canvas = m_canvas.lock();
+	boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
 	if (!canvas)
 		return;
 
-	m_selected = selected;
+	_selected = selected;
 	if (selected) {
-		m_module_box.property_fill_color_rgba() = MODULE_HILITE_FILL_COLOUR;
-		m_module_box.property_outline_color_rgba() = MODULE_HILITE_OUTLINE_COLOUR;
-		m_module_box.property_dash() = canvas->select_dash();
+		_module_box.property_fill_color_rgba() = MODULE_HILITE_FILL_COLOUR;
+		_module_box.property_outline_color_rgba() = MODULE_HILITE_OUTLINE_COLOUR;
+		_module_box.property_dash() = canvas->select_dash();
 	} else {
-		m_module_box.property_fill_color_rgba() = MODULE_FILL_COLOUR;
-		m_module_box.property_outline_color_rgba() = MODULE_OUTLINE_COLOUR;
-		m_module_box.property_dash() = NULL;
+		_module_box.property_fill_color_rgba() = MODULE_FILL_COLOUR;
+		_module_box.property_outline_color_rgba() = MODULE_OUTLINE_COLOUR;
+		_module_box.property_dash() = NULL;
 	}
 }
 
@@ -274,7 +274,7 @@ Module::port_at(double x, double y)
 	x -= property_x();
 	y -= property_y();
 
-	for (PortVector::iterator p = m_ports.begin(); p != m_ports.end(); ++p) {
+	for (PortVector::iterator p = _ports.begin(); p != _ports.end(); ++p) {
 		boost::shared_ptr<Port> port = *p;
 		if (x > port->property_x() && x < port->property_x() + port->width()
 				&& y > port->property_y() && y < port->property_y() + port->height()) {
@@ -335,10 +335,10 @@ Module::remove_port(const string& name)
 void
 Module::remove_port(boost::shared_ptr<Port> port)
 {
-	PortVector::iterator i = std::find(m_ports.begin(), m_ports.end(), port);
+	PortVector::iterator i = std::find(_ports.begin(), _ports.end(), port);
 
-	if (i != m_ports.end()) {
-		m_ports.erase(i);
+	if (i != _ports.end()) {
+		_ports.erase(i);
 		resize();
 	} else {
 		std::cerr << "Unable to find port " << port->name() << " to remove." << std::endl;
@@ -349,16 +349,16 @@ Module::remove_port(boost::shared_ptr<Port> port)
 void
 Module::set_width(double w)
 {
-	m_width = w;
-	m_module_box.property_x2() = m_module_box.property_x1() + w;
+	_width = w;
+	_module_box.property_x2() = _module_box.property_x1() + w;
 }
 
 
 void
 Module::set_height(double h)
 {
-	m_height = h;
-	m_module_box.property_y2() = m_module_box.property_y1() + h;
+	_height = h;
+	_module_box.property_y2() = _module_box.property_y1() + h;
 }
 
 
@@ -370,7 +370,7 @@ Module::set_height(double h)
 void
 Module::move(double dx, double dy)
 {
-	boost::shared_ptr<FlowCanvas> canvas = m_canvas.lock();
+	boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
 	if (!canvas)
 		return;
 
@@ -379,18 +379,18 @@ Module::move(double dx, double dy)
 	
 	if (new_x < 0)
 		dx = property_x() * -1;
-	else if (new_x + m_width > canvas->width())
-		dx = canvas->width() - property_x() - m_width;
+	else if (new_x + _width > canvas->width())
+		dx = canvas->width() - property_x() - _width;
 	
 	if (new_y < 0)
 		dy = property_y() * -1;
-	else if (new_y + m_height > canvas->height())
-		dy = canvas->height() - property_y() - m_height;
+	else if (new_y + _height > canvas->height())
+		dy = canvas->height() - property_y() - _height;
 
 	Gnome::Canvas::Group::move(dx, dy);
 
 	// Deal with moving the connection lines
-	for (PortVector::iterator p = m_ports.begin(); p != m_ports.end(); ++p)
+	for (PortVector::iterator p = _ports.begin(); p != _ports.end(); ++p)
 		(*p)->move_connections();
 }
 
@@ -403,7 +403,7 @@ Module::move(double dx, double dy)
 void
 Module::move_to(double x, double y)
 {
-	boost::shared_ptr<FlowCanvas> canvas = m_canvas.lock();
+	boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
 	if (!canvas)
 		return;
 
@@ -412,20 +412,20 @@ Module::move_to(double x, double y)
 
 	if (x < 0) x = 0;
 	if (y < 0) y = 0;
-	if (x + m_width > canvas->width()) x = canvas->width() - m_width - 1;
-	if (y + m_height > canvas->height()) y = canvas->height() - m_height - 1;
+	if (x + _width > canvas->width()) x = canvas->width() - _width - 1;
+	if (y + _height > canvas->height()) y = canvas->height() - _height - 1;
 		
 	assert(x >= 0);
-	assert(x + m_width < canvas->width());
+	assert(x + _width < canvas->width());
 	assert(y >= 0);
-	assert(y + m_height < canvas->height());
+	assert(y + _height < canvas->height());
 
 	// Man, not many things left to try to get the damn things to move! :)
 	property_x() = x;
 	property_y() = y;
 	
 	// Update any connection line positions
-	for (PortVector::iterator p = m_ports.begin(); p != m_ports.end(); ++p)
+	for (PortVector::iterator p = _ports.begin(); p != _ports.end(); ++p)
 		(*p)->move_connections();
 }
 
@@ -433,16 +433,16 @@ Module::move_to(double x, double y)
 void
 Module::set_name(const string& n)
 {
-	if (m_name != n) {
-		string old_name = m_name;
-		m_name = n;
-		m_canvas_title.property_text() = m_name;
-		if (m_title_visible)
+	if (_name != n) {
+		string old_name = _name;
+		_name = n;
+		_canvas_title.property_text() = _name;
+		if (_title_visible)
 			resize();
 
-		boost::shared_ptr<FlowCanvas> canvas = m_canvas.lock();
+		boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
 		if (canvas)
-			canvas->rename_module(old_name, m_name);
+			canvas->rename_module(old_name, _name);
 	}
 }
 
@@ -457,16 +457,16 @@ Module::set_name(const string& n)
 void
 Module::add_port(boost::shared_ptr<Port> p)
 {
-	PortVector::const_iterator i = std::find(m_ports.begin(), m_ports.end(), p);
-	if (i != m_ports.end()) // already added
+	PortVector::const_iterator i = std::find(_ports.begin(), _ports.end(), p);
+	if (i != _ports.end()) // already added
 		return;             // so do nothing
 	
-	m_ports.push_back(p);
+	_ports.push_back(p);
 	
-	boost::shared_ptr<FlowCanvas> canvas = m_canvas.lock();
+	boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
 	if (canvas) {
 		p->signal_event().connect(
-			sigc::bind(sigc::mem_fun(m_canvas.lock().get(), &FlowCanvas::port_event), p));
+			sigc::bind(sigc::mem_fun(_canvas.lock().get(), &FlowCanvas::port_event), p));
 	}
 }
 
@@ -482,13 +482,13 @@ Module::resize()
 	// The amount of space between a port edge and the module edge (on the
 	// side that the port isn't right on the edge).
 	double hor_pad = 5.0;
-	if (!m_title_visible)
+	if (!_title_visible)
 		hor_pad = 15.0; // leave more room for something to grab for dragging
 
 	boost::shared_ptr<Port> p;
 	
 	// Find widest in/out ports
-	for (PortVector::iterator i = m_ports.begin(); i != m_ports.end(); ++i) {
+	for (PortVector::iterator i = _ports.begin(); i != _ports.end(); ++i) {
 		p = (*i);
 		assert(p);
 		if (p->is_input() && p->width() > widest_in)
@@ -501,19 +501,19 @@ Module::resize()
 	set_width(std::max(widest_in, widest_out) + hor_pad + border_width()*2.0);
 	
 	// Make sure module is wide enough for title
-	if (m_title_visible && m_canvas_title.property_text_width() + 8.0 > m_width)
-		set_width(m_canvas_title.property_text_width() + 8.0);
+	if (_title_visible && _canvas_title.property_text_width() + 8.0 > _width)
+		set_width(_canvas_title.property_text_width() + 8.0);
 
 	// Set height to contain ports and title
 	double height_base = 2;
-	if (m_title_visible)
-		height_base += 2 + m_canvas_title.property_text_height();
+	if (_title_visible)
+		height_base += 2 + _canvas_title.property_text_height();
 
 	double h = height_base;
-	if (m_ports.size() > 0)
-		h += m_ports.size() * ((*m_ports.begin())->height()+2.0);
+	if (_ports.size() > 0)
+		h += _ports.size() * ((*_ports.begin())->height()+2.0);
 
-	if (!m_title_visible && m_ports.size() > 0)
+	if (!_title_visible && _ports.size() > 0)
 		h += 0.5;
 
 	set_height(h);
@@ -522,7 +522,7 @@ Module::resize()
 	
 	double y;
 	int i = 0;
-	for (PortVector::iterator pi = m_ports.begin(); pi != m_ports.end(); ++pi, ++i) {
+	for (PortVector::iterator pi = _ports.begin(); pi != _ports.end(); ++pi, ++i) {
 		boost::shared_ptr<Port> p = (*pi);
 
 		y = height_base + (i * (p->height() + 2.0));
@@ -532,16 +532,16 @@ Module::resize()
 			p->property_y() = y;
 		} else {
 			p->set_width(widest_out);
-			p->property_x() = m_width - p->width() - 0.0;
+			p->property_x() = _width - p->width() - 0.0;
 			p->property_y() = y;
 		}
 	}
 
 	// Center title
-	m_canvas_title.property_x() = m_width/2.0;
+	_canvas_title.property_x() = _width/2.0;
 
 	// Update connection locations if we've moved/resized
-	for (PortVector::iterator pi = m_ports.begin(); pi != m_ports.end(); ++pi, ++i) {
+	for (PortVector::iterator pi = _ports.begin(); pi != _ports.end(); ++pi, ++i) {
 		(*pi)->move_connections();
 	}
 	
@@ -556,10 +556,10 @@ Module::resize()
 double
 Module::port_connection_point_offset(boost::shared_ptr<Port> port)
 {
-	if (m_ports.size() == 0)
+	if (_ports.size() == 0)
 		return port->connection_point().get_y();
 	else
-		return (port->connection_point().get_y() - m_ports.front()->connection_point().get_y());
+		return (port->connection_point().get_y() - _ports.front()->connection_point().get_y());
 }
 
 
@@ -569,9 +569,9 @@ Module::port_connection_point_offset(boost::shared_ptr<Port> port)
 double
 Module::port_connection_points_range()
 {
-	if (m_ports.size() > 0) {
-		double ret = fabs(m_ports.back()->connection_point().get_y()
-				- m_ports.front()->connection_point().get_y());
+	if (_ports.size() > 0) {
+		double ret = fabs(_ports.back()->connection_point().get_y()
+				- _ports.front()->connection_point().get_y());
 	
 		return (ret < 1.0) ? 1.0 : ret;
 	} else {

@@ -41,7 +41,7 @@ public:
 	void attach(bool launch_daemon = false);
 	void detach();
 
-	bool is_attached() const { return (m_seq != NULL); }
+	bool is_attached() const { return (_seq != NULL); }
 
 	void refresh();
 
@@ -59,16 +59,16 @@ private:
 	
 	bool create_refresh_port();
 	static void* refresh_main(void* me);
-	void m_refresh_main();
+	void _refresh_main();
 	
 	boost::shared_ptr<PatchagePort> create_port(boost::shared_ptr<PatchageModule> parent,
 		const string& name, bool is_input, snd_seq_addr_t addr);
 	                                            
-	Patchage* m_app;
+	Patchage* _app;
 
-	snd_seq_t* m_seq;
+	snd_seq_t* _seq;
 
-	pthread_t m_refresh_thread;
+	pthread_t _refresh_thread;
 };
 
 #endif // ALSADRIVER_H

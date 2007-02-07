@@ -28,22 +28,22 @@ Connection::Connection(boost::shared_ptr<FlowCanvas> canvas,
 	                   boost::shared_ptr<Port>       source,
 	                   boost::shared_ptr<Port>       dest)
 : Gnome::Canvas::Bpath(*canvas->root()),
-  m_canvas(canvas),
-  m_source(source),
-  m_dest(dest),
-  m_selected(false),
-  m_path(gnome_canvas_path_def_new())
+  _canvas(canvas),
+  _source(source),
+  _dest(dest),
+  _selected(false),
+  _path(gnome_canvas_path_def_new())
 {
 	assert(source->is_output());
 	assert(dest->is_input());
 	
-	m_color = source->color() + 0x22222200;
+	_color = source->color() + 0x22222200;
 	if (canvas->property_aa())
 		property_width_units() = 0.75;
 	else
 		property_width_units() = 1.0;
 
-	property_outline_color_rgba() = m_color;
+	property_outline_color_rgba() = _color;
 	property_cap_style() = (Gdk::CapStyle)GDK_CAP_ROUND;
 
 	update_location();	
@@ -55,8 +55,8 @@ Connection::Connection(boost::shared_ptr<FlowCanvas> canvas,
 void
 Connection::update_location()
 {
-	boost::shared_ptr<Port> src = m_source.lock();
-	boost::shared_ptr<Port> dst = m_dest.lock();
+	boost::shared_ptr<Port> src = _source.lock();
+	boost::shared_ptr<Port> dst = _dest.lock();
 	
 	if (!src || !dst)
 		return;
@@ -95,33 +95,33 @@ Connection::update_location()
 
 	// This was broken in libgnomecanvasmm with GTK 2.8.  Nice work, guys.  
 	/*
-	m_path->reset();
-	m_path->moveto(src_x, src_y);
-	m_path->curveto(src_x1, src_y1, src_x2, src_y2, join_x, join_y);
-	m_path->curveto(dst_x2, dst_y2, dst_x1, dst_y1, dst_x, dst_y);
-	set_bpath(m_path);
+	_path->reset();
+	_path->moveto(src_x, src_y);
+	_path->curveto(src_x1, src_y1, src_x2, src_y2, join_x, join_y);
+	_path->curveto(dst_x2, dst_y2, dst_x1, dst_y1, dst_x, dst_y);
+	set_bpath(_path);
 	*/
 
 	// Work around it w/ the C API
-	gnome_canvas_path_def_reset(m_path);
-	gnome_canvas_path_def_moveto(m_path, src_x, src_y);
-	gnome_canvas_path_def_curveto(m_path, src_x1, src_y1, src_x2, src_y2, join_x, join_y);
-	gnome_canvas_path_def_curveto(m_path, dst_x2, dst_y2, dst_x1, dst_y1, dst_x, dst_y);
+	gnome_canvas_path_def_reset(_path);
+	gnome_canvas_path_def_moveto(_path, src_x, src_y);
+	gnome_canvas_path_def_curveto(_path, src_x1, src_y1, src_x2, src_y2, join_x, join_y);
+	gnome_canvas_path_def_curveto(_path, dst_x2, dst_y2, dst_x1, dst_y1, dst_x, dst_y);
 	
 	// Uncomment to see control point path as straight lines
 	/*
-	gnome_canvas_path_def_reset(m_path);
-	gnome_canvas_path_def_moveto(m_path, src_x, src_y);
-	gnome_canvas_path_def_lineto(m_path, src_x1, src_y1);
-	gnome_canvas_path_def_lineto(m_path, src_x2, src_y2);
-	gnome_canvas_path_def_lineto(m_path, join_x, join_y);
-	gnome_canvas_path_def_lineto(m_path, dst_x2, dst_y2);
-	gnome_canvas_path_def_lineto(m_path, dst_x1, dst_y1);
-	gnome_canvas_path_def_lineto(m_path, dst_x, dst_y);
+	gnome_canvas_path_def_reset(_path);
+	gnome_canvas_path_def_moveto(_path, src_x, src_y);
+	gnome_canvas_path_def_lineto(_path, src_x1, src_y1);
+	gnome_canvas_path_def_lineto(_path, src_x2, src_y2);
+	gnome_canvas_path_def_lineto(_path, join_x, join_y);
+	gnome_canvas_path_def_lineto(_path, dst_x2, dst_y2);
+	gnome_canvas_path_def_lineto(_path, dst_x1, dst_y1);
+	gnome_canvas_path_def_lineto(_path, dst_x, dst_y);
 	*/
 
 	GnomeCanvasBpath* c_obj = gobj();
-	gnome_canvas_item_set(GNOME_CANVAS_ITEM(c_obj), "bpath", m_path, NULL);
+	gnome_canvas_item_set(GNOME_CANVAS_ITEM(c_obj), "bpath", _path, NULL);
 }
 
 
@@ -131,17 +131,17 @@ Connection::set_highlighted(bool b)
 	if (b)
 		property_outline_color_rgba() = 0xFF0000FF;
 	else
-		property_outline_color_rgba() = m_color;
+		property_outline_color_rgba() = _color;
 }
 
 
 void
 Connection::set_selected(bool selected)
 {
-	m_selected = selected;
+	_selected = selected;
 
 	if (selected) {
-		property_dash() = m_canvas.lock()->select_dash();
+		property_dash() = _canvas.lock()->select_dash();
 	} else {
 		property_dash() = NULL;
 	}

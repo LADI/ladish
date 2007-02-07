@@ -64,11 +64,11 @@ public:
 	int get_port_color(PortType type);
 
 private:
-	list<ModuleLocation> m_module_locations;
-	map<string,bool>     m_module_splits;
-	Coord                m_window_location;
-	Coord                m_window_size;
-	float                m_zoom;
+	list<ModuleLocation> _module_locations;
+	map<string,bool>     _module_splits;
+	Coord                _window_location;
+	Coord                _window_size;
+	float                _zoom;
 };
 
 

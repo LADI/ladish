@@ -44,16 +44,16 @@ public:
 
 	virtual ~Connection() {}
 	
-	bool flagged() const     { return m_flag; }
-	void set_flagged(bool b) { m_flag = b; }
+	bool flagged() const     { return _flag; }
+	void set_flagged(bool b) { _flag = b; }
 	
-	bool selected() const { return m_selected; }
+	bool selected() const { return _selected; }
 	void set_selected(bool b);
 	
 	void set_highlighted(bool b);
 	
-	const boost::weak_ptr<Port> source() const { return m_source; }
-	const boost::weak_ptr<Port> dest() const   { return m_dest; }
+	const boost::weak_ptr<Port> source() const { return _source; }
+	const boost::weak_ptr<Port> dest() const   { return _dest; }
 
 private:
 	friend class FlowCanvas;
@@ -61,15 +61,15 @@ private:
 
 	void update_location();
 	
-	const boost::weak_ptr<FlowCanvas> m_canvas;
-	const boost::weak_ptr<Port>       m_source;
-	const boost::weak_ptr<Port>       m_dest;
-	int                               m_color;
-	bool                              m_selected;
-	bool                              m_flag;
+	const boost::weak_ptr<FlowCanvas> _canvas;
+	const boost::weak_ptr<Port>       _source;
+	const boost::weak_ptr<Port>       _dest;
+	int                               _color;
+	bool                              _selected;
+	bool                              _flag;
 
-	//Glib::RefPtr<Gnome::Canvas::PathDef> m_path;
-	GnomeCanvasPathDef* m_path;
+	//Glib::RefPtr<Gnome::Canvas::PathDef> _path;
+	GnomeCanvasPathDef* _path;
 };
 
 typedef list<boost::shared_ptr<Connection> > ConnectionList;

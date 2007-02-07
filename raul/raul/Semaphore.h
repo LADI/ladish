@@ -36,15 +36,15 @@ namespace Raul {
  */
 class Semaphore : boost::noncopyable {
 public:
-	inline Semaphore(unsigned int initial) { sem_init(&m_sem, 0, initial); }
+	inline Semaphore(unsigned int initial) { sem_init(&_sem, 0, initial); }
 	
-	inline ~Semaphore() { sem_destroy(&m_sem); }
+	inline ~Semaphore() { sem_destroy(&_sem); }
 
 	/** Increment (and signal any waiters).
 	 * 
 	 * Realtime safe.
 	 */
-	inline void post() { sem_post(&m_sem); }
+	inline void post() { sem_post(&_sem); }
 
 	/** Wait until count is > 0, then decrement.
 	 *
@@ -53,15 +53,15 @@ public:
 	 *
 	 * Obviously not realtime safe.
 	 */
-	inline void wait() { while (sem_wait(&m_sem) != 0) ; }
+	inline void wait() { while (sem_wait(&_sem) != 0) ; }
 	
 	/** Non-blocking version of wait().
 	 *
 	 * Realtime safe?
 	 */
-	inline int  try_wait() { return sem_trywait(&m_sem); }
+	inline int  try_wait() { return sem_trywait(&_sem); }
 private:
-	sem_t m_sem;
+	sem_t _sem;
 };
 
 

@@ -40,18 +40,18 @@ public:
 	                        boost::shared_ptr<PatchagePort> dst_port) = 0;
 	
 	/** Returns whether or not a refresh is required (pending). */
-	inline bool is_dirty() const { return m_is_dirty; }
+	inline bool is_dirty() const { return _is_dirty; }
 
 	/** Clear 'dirty' status after a refresh. */
-	inline void undirty() { m_is_dirty = false; }
+	inline void undirty() { _is_dirty = false; }
 
 	sigc::signal<void> signal_attached;
 	sigc::signal<void> signal_detached;
 
 protected:
-	Driver() : m_is_dirty(false) {}
+	Driver() : _is_dirty(false) {}
 	
-	bool m_is_dirty;
+	bool _is_dirty;
 };
 
 
