@@ -37,10 +37,10 @@ class PatchageModule : public Module
 public:
 	PatchageModule(Patchage* app, const string& title, ModuleType type, double x=0, double y=0)
 	: Module(app->canvas(), title, x, y),
-	  m_app(app),
-	  m_type(type)
+	  _app(app),
+	  _type(type)
 	{
-		Gtk::Menu::MenuList& items = m_menu.items();
+		Gtk::Menu::MenuList& items = _menu.items();
 		if (type == InputOutput) {
 			items.push_back(Gtk::Menu_Helpers::MenuElem("Split",
 				sigc::mem_fun(this, &PatchageModule::split)));
@@ -56,7 +56,7 @@ public:
 	
 	/*virtual void add_patchage_port(const string& port_name, bool is_input, PortType type)
 	{
-		new PatchagePort(this, type, port_name, is_input, m_app->state_manager()->get_port_color(type));
+		new PatchagePort(this, type, port_name, is_input, _app->state_manager()->get_port_color(type));
 
 		resize();
 	}
@@ -64,7 +64,7 @@ public:
 	virtual void add_patchage_port(const string& port_name, bool is_input, PortType type, const snd_seq_addr_t addr)
 	{
 		PatchagePort* port = new PatchagePort(this, type, port_name, is_input,
-			m_app->state_manager()->get_port_color(type));
+			_app->state_manager()->get_port_color(type));
 
 		port->alsa_addr(addr);
 
@@ -73,47 +73,47 @@ public:
 
 
 	virtual void load_location() {
-		Coord loc = m_app->state_manager()->get_module_location(m_name, m_type);
+		Coord loc = _app->state_manager()->get_module_location(_name, _type);
 
-		//cerr << "******" << m_name << " MOVING TO (" << loc.x << "," << loc.y << ")" << endl;
+		//cerr << "******" << _name << " MOVING TO (" << loc.x << "," << loc.y << ")" << endl;
 
 		if (loc.x != -1)
 			move_to(loc.x, loc.y);
 		else
-			move_to((m_canvas.lock()->width()/2) - 100 + rand() % 400,
-			         (m_canvas.lock()->height()/2) - 100 + rand() % 400);
+			move_to((_canvas.lock()->width()/2) - 100 + rand() % 400,
+			         (_canvas.lock()->height()/2) - 100 + rand() % 400);
 	}
 
 	void split() {
-		assert(m_type == InputOutput);
-		m_app->state_manager()->set_module_split(m_name, true);
-		m_app->queue_refresh();
+		assert(_type == InputOutput);
+		_app->state_manager()->set_module_split(_name, true);
+		_app->queue_refresh();
 	}
 
 	void join() {
-		assert(m_type != InputOutput);
-		m_app->state_manager()->set_module_split(m_name, false);
-		m_app->queue_refresh();
+		assert(_type != InputOutput);
+		_app->state_manager()->set_module_split(_name, false);
+		_app->queue_refresh();
 	}
 		
 	virtual void store_location() {
 		Coord loc = { property_x().get_value(), property_y().get_value() };
-		m_app->state_manager()->set_module_location(m_name, m_type, loc);
+		_app->state_manager()->set_module_location(_name, _type, loc);
 	}
 	
 	virtual void show_dialog() {}
-	virtual void on_right_click(GdkEventButton* ev) { m_menu.popup(ev->button, ev->time); }
+	virtual void on_right_click(GdkEventButton* ev) { _menu.popup(ev->button, ev->time); }
 	virtual void menu_disconnect_all() {
-		for (PortVector::iterator p = m_ports.begin(); p != m_ports.end(); ++p)
+		for (PortVector::iterator p = _ports.begin(); p != _ports.end(); ++p)
 			(*p)->disconnect_all();
 	}
 
-	ModuleType type() { return m_type; }
+	ModuleType type() { return _type; }
 
 protected:
-	Patchage*  m_app;
-	Gtk::Menu  m_menu;
-	ModuleType m_type;
+	Patchage*  _app;
+	Gtk::Menu  _menu;
+	ModuleType _type;
 };
 
 

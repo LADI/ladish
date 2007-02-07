@@ -26,18 +26,18 @@ using std::string;
 
 
 LashDriver::LashDriver(Patchage* app, int argc, char** argv)
-: m_app(app),
-  m_client(NULL),
-  m_args(NULL)
+: _app(app),
+  _client(NULL),
+  _args(NULL)
 {
-	m_args = lash_extract_args(&argc, &argv);
+	_args = lash_extract_args(&argc, &argv);
 }
 
 
 LashDriver::~LashDriver()
 {
-	if (m_args)
-		lash_args_destroy(m_args);
+	if (_args)
+		lash_args_destroy(_args);
 }
 
 
@@ -45,21 +45,21 @@ void
 LashDriver::attach(bool launch_daemon)
 {
 	// Already connected
-	if (m_client)
+	if (_client)
 		return;
 
 	int lash_flags = LASH_Server_Interface | LASH_Config_File;
 	if (!launch_daemon)
 		lash_flags |= LASH_No_Start_Server;
-	m_client = lash_init(m_args, PACKAGE_NAME, lash_flags, LASH_PROTOCOL(2, 0));
-	if (!m_client) {
-		m_app->status_message("[LASH] Unable to attach to server");
+	_client = lash_init(_args, PACKAGE_NAME, lash_flags, LASH_PROTOCOL(2, 0));
+	if (!_client) {
+		_app->status_message("[LASH] Unable to attach to server");
 	} else {
 		//lash_event_t* event = lash_event_new_with_type(LASH_Client_Name);
 		//lash_event_set_string(event, "Patchage");
-		//lash_send_event(m_client, event);
+		//lash_send_event(_client, event);
 		signal_attached.emit();
-		m_app->status_message("[LASH] Attached");
+		_app->status_message("[LASH] Attached");
 	}
 }
 
@@ -67,8 +67,8 @@ LashDriver::attach(bool launch_daemon)
 void
 LashDriver::detach()
 {
-	m_client = NULL;
-	m_app->status_message("[LASH] Detached");
+	_client = NULL;
+	_app->status_message("[LASH] Detached");
 	signal_detached.emit();
 }
 
@@ -80,13 +80,13 @@ LashDriver::process_events()
 	lash_config_t* conf = NULL;
 
 	// Process events
-	while ((ev = lash_get_event(m_client)) != NULL) {
+	while ((ev = lash_get_event(_client)) != NULL) {
 		handle_event(ev);
 		lash_event_destroy(ev);	
 	}
 
 	// Process configs
-	while ((conf = lash_get_config(m_client)) != NULL) {
+	while ((conf = lash_get_config(_client)) != NULL) {
 		handle_config(conf);
 		lash_config_destroy(conf);	
 	}
@@ -144,27 +144,27 @@ LashDriver::handle_event(lash_event_t* ev)
 		break;
 	case LASH_Save_File:
 		cout << "[LashDriver] LASH Save File - " << str << endl;
-		m_app->store_window_location();
-		m_app->state_manager()->save(str.append("/locations"));
-		lash_send_event(m_client, lash_event_new_with_type(LASH_Save_File));
+		_app->store_window_location();
+		_app->state_manager()->save(str.append("/locations"));
+		lash_send_event(_client, lash_event_new_with_type(LASH_Save_File));
 		break;
 
 	case LASH_Restore_File:
 		cout << "[LashDriver] LASH Restore File - " << str << endl;
-		m_app->state_manager()->load(str.append("/locations"));
-		m_app->update_state();
-		lash_send_event(m_client, lash_event_new_with_type(LASH_Restore_File));
+		_app->state_manager()->load(str.append("/locations"));
+		_app->update_state();
+		lash_send_event(_client, lash_event_new_with_type(LASH_Restore_File));
 		break;
 
 	case LASH_Save_Data_Set:
 		cout << "[LashDriver] LASH Save Data Set - " << endl;
-		lash_send_event(m_client, lash_event_new_with_type(LASH_Save_Data_Set));
+		lash_send_event(_client, lash_event_new_with_type(LASH_Save_Data_Set));
 		break;
 
 	case LASH_Quit:
 		cout << "[LashDriver] Quit" << endl;
-		m_client = NULL;
-		m_app->quit();
+		_client = NULL;
+		_app->quit();
 		break;
 	}
 }

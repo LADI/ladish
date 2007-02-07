@@ -43,11 +43,11 @@ class PatchagePort : public LibFlowCanvas::Port
 public:
 	PatchagePort(boost::shared_ptr<Module> module, PortType type, const string& name, bool is_input, int color)
 	: Port(module, name, is_input, color),
-	  m_type(type)
+	  _type(type)
 	{
 #ifdef HAVE_ALSA
-		m_alsa_addr.client = '\0';
-		m_alsa_addr.port = '\0';
+		_alsa_addr.client = '\0';
+		_alsa_addr.port = '\0';
 #endif
 	}
 
@@ -55,20 +55,20 @@ public:
 
 #ifdef HAVE_ALSA
 	// FIXME: This driver specific crap really needs to go
-	void                  alsa_addr(const snd_seq_addr_t addr) { m_alsa_addr = addr; }
+	void                  alsa_addr(const snd_seq_addr_t addr) { _alsa_addr = addr; }
 	const snd_seq_addr_t* alsa_addr() const
-	{ return (m_type == ALSA_MIDI) ? &m_alsa_addr : NULL; }
+	{ return (_type == ALSA_MIDI) ? &_alsa_addr : NULL; }
 #endif
 	/** Returns the full name of this port, as "modulename:portname" */
-	string full_name() const { return m_module.lock()->name() + ":" + m_name; }
+	string full_name() const { return _module.lock()->name() + ":" + _name; }
 
-	PortType type() const { return m_type; }
+	PortType type() const { return _type; }
 
 private:
 #ifdef HAVE_ALSA
-	snd_seq_addr_t m_alsa_addr;
+	snd_seq_addr_t _alsa_addr;
 #endif
-	PortType       m_type;
+	PortType       _type;
 };
 
 

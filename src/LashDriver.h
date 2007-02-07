@@ -31,7 +31,7 @@ public:
 	void attach(bool launch_daemon);
 	void detach();
 
-	bool is_attached() const { return lash_enabled(m_client); }
+	bool is_attached() const { return lash_enabled(_client); }
 	
 	bool connect(boost::shared_ptr<PatchagePort>, boost::shared_ptr<PatchagePort>)
 	{ return false; }
@@ -44,9 +44,9 @@ public:
 	void process_events();
 
 private:
-	Patchage*      m_app;
-	lash_client_t* m_client;
-	lash_args_t*   m_args;
+	Patchage*      _app;
+	lash_client_t* _client;
+	lash_args_t*   _args;
 
 	void handle_event(lash_event_t* conf);
 	void handle_config(lash_config_t* conf);

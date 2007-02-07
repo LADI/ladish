@@ -38,20 +38,20 @@ public:
 	Patchage(int argc, char** argv);
 	~Patchage();
 
-	boost::shared_ptr<PatchageFlowCanvas> canvas() { return m_canvas; }
+	boost::shared_ptr<PatchageFlowCanvas> canvas() { return _canvas; }
 	
-	StateManager* state_manager() { return m_state_manager; }
-	Gtk::Window*  window()        { return m_main_window; }
-	JackDriver*   jack_driver()   { return m_jack_driver; }
+	StateManager* state_manager() { return _state_manager; }
+	Gtk::Window*  window()        { return _main_window; }
+	JackDriver*   jack_driver()   { return _jack_driver; }
 #ifdef HAVE_ALSA
-	AlsaDriver*   alsa_driver()   { return m_alsa_driver; }
+	AlsaDriver*   alsa_driver()   { return _alsa_driver; }
 #endif
 #ifdef HAVE_LASH
-	LashDriver*   lash_driver()   { return m_lash_driver; }
+	LashDriver*   lash_driver()   { return _lash_driver; }
 #endif
 	
 	void attach();
-	void quit() { m_main_window->hide(); }
+	void quit() { _main_window->hide(); }
 
 	void clear_load();
 
@@ -59,10 +59,10 @@ public:
 	void store_window_location();
 
 	void status_message(const string& msg);
-	inline void queue_refresh() { m_refresh = true; }
+	inline void queue_refresh() { _refresh = true; }
 
 	int max_pane_position()
-	{ return m_main_paned->property_max_position() - m_messages_expander->get_label_widget()->get_height() - 8; }
+	{ return _main_paned->property_max_position() - _messages_expander->get_label_widget()->get_height() - 8; }
 
 protected:
 	void connect_widgets();
@@ -86,18 +86,18 @@ protected:
 	void on_pane_position_changed();
 	void on_messages_expander_changed();
 
-	bool m_pane_closed;
-	bool m_update_pane_position;
-	int  m_user_pane_position;
+	bool _pane_closed;
+	bool _update_pane_position;
+	int  _user_pane_position;
 
 #ifdef HAVE_LASH
-	LashDriver*    m_lash_driver;
-	Gtk::MenuItem* m_menu_open_session;
-	Gtk::MenuItem* m_menu_save_session;
-	Gtk::MenuItem* m_menu_save_session_as;
-	Gtk::MenuItem* m_menu_lash_launch;
-	Gtk::MenuItem* m_menu_lash_connect;
-	Gtk::MenuItem* m_menu_lash_disconnect;
+	LashDriver*    _lash_driver;
+	Gtk::MenuItem* _menu_open_session;
+	Gtk::MenuItem* _menu_save_session;
+	Gtk::MenuItem* _menu_save_session_as;
+	Gtk::MenuItem* _menu_lash_launch;
+	Gtk::MenuItem* _menu_lash_connect;
+	Gtk::MenuItem* _menu_lash_disconnect;
 	void menu_open_session();
 	void menu_save_session();
 	void menu_save_session_as();
@@ -107,54 +107,54 @@ protected:
 #endif
 
 #ifdef HAVE_ALSA
-	AlsaDriver*    m_alsa_driver;
-	Gtk::MenuItem* m_menu_alsa_connect;
-	Gtk::MenuItem* m_menu_alsa_disconnect;
+	AlsaDriver*    _alsa_driver;
+	Gtk::MenuItem* _menu_alsa_connect;
+	Gtk::MenuItem* _menu_alsa_disconnect;
 	void menu_alsa_connect();
 	void menu_alsa_disconnect();
 #endif
 
-	boost::shared_ptr<PatchageFlowCanvas> m_canvas;
+	boost::shared_ptr<PatchageFlowCanvas> _canvas;
 
-	JackDriver*         m_jack_driver;
-	StateManager*       m_state_manager;
+	JackDriver*         _jack_driver;
+	StateManager*       _state_manager;
 
-	Gtk::Main* m_gtk_main;
+	Gtk::Main* _gtk_main;
 
-	string m_settings_filename;
-	bool   m_refresh;
+	string _settings_filename;
+	bool   _refresh;
 	
-	Gtk::Window*         m_main_window;
-	JackSettingsDialog*  m_jack_settings_dialog;
-	Gtk::AboutDialog*    m_about_window;
-	Gtk::MenuItem*       m_menu_jack_settings;
-	Gtk::MenuItem*       m_menu_jack_launch;
-	Gtk::MenuItem*       m_menu_jack_connect;
-	Gtk::MenuItem*       m_menu_jack_disconnect;
-	Gtk::MenuItem*       m_menu_store_positions;
-	Gtk::MenuItem*       m_menu_file_quit;
-	Gtk::CheckMenuItem*  m_menu_view_messages;
-	Gtk::MenuItem*       m_menu_view_refresh;
-	Gtk::MenuItem*       m_menu_help_about;
-	Gtk::ScrolledWindow* m_canvas_scrolledwindow;
-	Gtk::HScale*         m_zoom_slider;
-	Gtk::TextView*       m_status_text;
-	Gtk::Paned*          m_main_paned;
-	Gtk::Expander*       m_messages_expander;
-	Gtk::Button*         m_rewind_button;
-	Gtk::Button*         m_play_button;
-	Gtk::Button*         m_stop_button;
-	Gtk::Button*         m_zoom_normal_button;
-	Gtk::Button*         m_zoom_full_button;
-	//Gtk::ProgressBar*    m_load_progress_bar;
-	Gtk::ToggleButton*   m_jack_connect_toggle;
-	Gtk::ToggleButton*   m_jack_realtime_check;
-	Gtk::ComboBox*       m_buffer_size_combo;
-	Gtk::Label*          m_sample_rate_label;
-	Gtk::ProgressBar*    m_xrun_progress_bar;
-	Gtk::Entry*          m_xrun_counter;
-	Gtk::Button*         m_clear_load_button;
-	//Gtk::Statusbar*      m_status_bar;
+	Gtk::Window*         _main_window;
+	JackSettingsDialog*  _jack_settings_dialog;
+	Gtk::AboutDialog*    _about_window;
+	Gtk::MenuItem*       _menu_jack_settings;
+	Gtk::MenuItem*       _menu_jack_launch;
+	Gtk::MenuItem*       _menu_jack_connect;
+	Gtk::MenuItem*       _menu_jack_disconnect;
+	Gtk::MenuItem*       _menu_store_positions;
+	Gtk::MenuItem*       _menu_file_quit;
+	Gtk::CheckMenuItem*  _menu_view_messages;
+	Gtk::MenuItem*       _menu_view_refresh;
+	Gtk::MenuItem*       _menu_help_about;
+	Gtk::ScrolledWindow* _canvas_scrolledwindow;
+	Gtk::HScale*         _zoom_slider;
+	Gtk::TextView*       _status_text;
+	Gtk::Paned*          _main_paned;
+	Gtk::Expander*       _messages_expander;
+	Gtk::Button*         _rewind_button;
+	Gtk::Button*         _play_button;
+	Gtk::Button*         _stop_button;
+	Gtk::Button*         _zoom_normal_button;
+	Gtk::Button*         _zoom_full_button;
+	//Gtk::ProgressBar*    _load_progress_bar;
+	Gtk::ToggleButton*   _jack_connect_toggle;
+	Gtk::ToggleButton*   _jack_realtime_check;
+	Gtk::ComboBox*       _buffer_size_combo;
+	Gtk::Label*          _sample_rate_label;
+	Gtk::ProgressBar*    _xrun_progress_bar;
+	Gtk::Entry*          _xrun_counter;
+	Gtk::Button*         _clear_load_button;
+	//Gtk::Statusbar*      _status_bar;
 };
 
 #endif // PATCHAGE_H
