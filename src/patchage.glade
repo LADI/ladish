@@ -1231,11 +1231,11 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with Patchage; if not, write to the Free Software Foundation, Inc.,
-59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 </property>
   <property name="wrap_license">False</property>
-  <property name="website">http://codeson.net/software/patchage</property>
-  <property name="authors">Dave Robillard &lt;dave@codeson.net&gt;</property>
+  <property name="website">http://drobilla.net/software/patchage</property>
+  <property name="authors">Dave Robillard &lt;dave@drobilla.net&gt;</property>
   <property name="translator_credits" translatable="yes" comments="TRANSLATORS: Replace this string with your names, one name per line.">translator-credits</property>
   <property name="logo">patchage-icon.svg</property>
 </widget>
