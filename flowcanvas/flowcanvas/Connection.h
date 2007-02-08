@@ -42,10 +42,14 @@ public:
 	Connection(boost::shared_ptr<FlowCanvas>  canvas,
 	           boost::shared_ptr<Connectable> source,
 	           boost::shared_ptr<Connectable> dest,
-	           uint32_t                       color);
+	           uint32_t                       color,
+			   bool                           show_arrow_head = false);
 
 	virtual ~Connection() {}
 	
+	virtual void move(double /*dx*/, double /*dy*/)
+	{ /* ignore, src/dst take care of it */ }
+
 	bool flagged() const     { return _flag; }
 	void set_flagged(bool b) { _flag = b; }
 	
@@ -53,14 +57,15 @@ public:
 	void set_selected(bool b);
 	
 	void set_highlighted(bool b);
-	
+	void raise_to_top();
+
 	const boost::weak_ptr<Connectable> source() const { return _source; }
 	const boost::weak_ptr<Connectable> dest() const   { return _dest; }
 
 private:
 	friend class FlowCanvas;
-	friend class Port;
 
+	friend class Connectable;
 	void update_location();
 	
 	const boost::weak_ptr<FlowCanvas>  _canvas;
@@ -69,6 +74,7 @@ private:
 	int                                _color;
 	bool                               _selected;
 	bool                               _flag;
+	bool                               _show_arrowhead;
 
 	//Glib::RefPtr<Gnome::Canvas::PathDef> _path;
 	GnomeCanvasPathDef* _path;

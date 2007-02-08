@@ -432,8 +432,11 @@ Patchage::zoom_changed()
 void
 Patchage::update_state()
 {
-	for (ModuleMap::iterator i = _canvas->modules().begin(); i != _canvas->modules().end(); ++i)
-		(*i).second->load_location();
+	for (ItemMap::iterator i = _canvas->items().begin(); i != _canvas->items().end(); ++i) {
+		SharedPtr<Module> module = PtrCast<Module>((*i).second);
+		if (module) 
+		module->load_location();
+	}
 
 	//cerr << "[Patchage] Resizing window: (" << _state_manager->get_window_size().x
 	//	<< "," << _state_manager->get_window_size().y << ")" << endl;

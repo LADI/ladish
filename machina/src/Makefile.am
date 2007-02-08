@@ -1,6 +1,7 @@
 #globalpixmapsdir = $(datadir)/pixmaps
 #dist_globalpixmaps_DATA = machina-icon.svg
 
+SUBDIRS = gui
 
 bin_PROGRAMS = machina
 

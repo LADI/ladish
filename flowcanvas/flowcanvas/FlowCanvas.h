@@ -25,6 +25,7 @@
 #include <libgnomecanvasmm.h>
 #include "Connection.h"
 #include "Module.h"
+#include "Item.h"
 
 using std::string;
 using std::list;
@@ -64,9 +65,9 @@ public:
 
 	void destroy();
 		
-	void                      add_module(boost::shared_ptr<Module> m);
-	boost::shared_ptr<Module> remove_module(const string& name);
-	boost::shared_ptr<Module> get_module(const string& name);
+	void                    add_item(boost::shared_ptr<Item> i);
+	boost::shared_ptr<Item> remove_item(const string& name);
+	boost::shared_ptr<Item> get_item(const string& name);
 	
 	boost::shared_ptr<Port> get_port(const string& module_name,
                                      const string& port_name);
@@ -92,15 +93,15 @@ public:
 	void set_default_placement(boost::shared_ptr<Module> m);
 	
 	void clear_selection();
-	void select_module(const string& name);
-	void select_module(boost::shared_ptr<Module> module);
+	void select_item(const string& name);
+	void select_item(boost::shared_ptr<Item> item);
 	void unselect_ports();
-	void unselect_module(const string& name);
-	void unselect_module(boost::shared_ptr<Module> module);
+	void unselect_item(const string& name);
+	void unselect_item(boost::shared_ptr<Item> item);
 	void unselect_connection(Connection* c);
 	
-	ModuleMap&                            modules()              { return _modules; }
-	list<boost::shared_ptr<Module> >&     selected_modules()     { return _selected_modules; }
+	ItemMap&                              items()              { return _items; }
+	list<boost::shared_ptr<Item> >&       selected_items()     { return _selected_items; }
 	list<boost::shared_ptr<Connection> >& selected_connections() { return _selected_connections; }
 
 	double get_zoom() { return _zoom; }
@@ -124,16 +125,17 @@ public:
 	                        boost::shared_ptr<Connectable> dst) = 0;
 
 protected:
-	ModuleMap		                     _modules;              ///< All modules on this canvas
-	ConnectionList	                     _connections;          ///< All connections on this canvas
-	list<boost::shared_ptr<Module> >     _selected_modules;     ///< All currently selected modules
+	ItemMap                              _items;              ///< All modules on this canvas
+	ConnectionList                       _connections;          ///< All connections on this canvas
+	list<boost::shared_ptr<Item> >       _selected_items;     ///< All currently selected modules
 	list<boost::shared_ptr<Connection> > _selected_connections; ///< All currently selected connections
 
 	virtual bool canvas_event(GdkEvent* event);
 	
 private:
 	friend class Module;
-	bool rename_module(const string& old_name, const string& new_name);
+	friend class Item;
+	bool rename_item(const string& old_name, const string& new_name);
 
 	friend class Connection;
 	void        remove_connection(boost::shared_ptr<Connection> c);

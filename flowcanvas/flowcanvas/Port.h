@@ -52,10 +52,6 @@ public:
 	
 	virtual ~Port();
 	
-	void add_connection(boost::shared_ptr<Connection> c);
-	void remove_connection(boost::shared_ptr<Connection> c);
-	void move_connections();
-	void raise_connections();
 	void disconnect_all();
 	
 	virtual Gnome::Art::Point connection_point();
@@ -102,7 +98,7 @@ protected:
 	double                  _border_width;
 	uint32_t                _color;
 	
-	std::list<boost::weak_ptr<Connection> > _connections; // needed for dragging
+	
 	
 	Gnome::Canvas::Text _label;
 	Gnome::Canvas::Rect _rect;

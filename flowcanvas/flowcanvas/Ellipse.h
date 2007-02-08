@@ -15,14 +15,15 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef FLOWCANVAS_MODULE_H
-#define FLOWCANVAS_MODULE_H
+#ifndef FLOWCANVAS_ELLIPSE_H
+#define FLOWCANVAS_ELLIPSE_H
 
 #include <string>
+#include <map>
 #include <algorithm>
 #include <boost/shared_ptr.hpp>
 #include <libgnomecanvasmm.h>
-#include "Port.h"
+#include "Connectable.h"
 #include "Item.h"
 
 namespace LibFlowCanvas {
@@ -30,44 +31,46 @@ namespace LibFlowCanvas {
 class FlowCanvas;
 
 
-/** A named block (possibly) containing input and output ports.
+/** A named circle (possibly).
+ *
+ * Unlike a Module, this doesn't contain ports, but is directly Connectable itself
+ * (think your classic circles 'n' lines diagram, ala FSM).
  *
  * \ingroup FlowCanvas
  */
-class Module : public LibFlowCanvas::Item
+class Ellipse : public LibFlowCanvas::Item, public Connectable
 {
 public:
-	Module(boost::shared_ptr<FlowCanvas> canvas,
-	       const std::string&            name,
-	       double                        x = 0,
-	       double                        y = 0,
-	       bool                          show_title = true);
+	Ellipse(boost::shared_ptr<FlowCanvas> canvas,
+	        const std::string&            name,
+			double                        x,
+	        double                        y,
+	        double                        x_radius,
+	        double                        y_radius,
+	        bool                          show_title = true);
 
-	virtual ~Module();
+	virtual ~Ellipse();
 	
-	const PortVector& ports()  const { return _ports; }
-	
-	inline boost::shared_ptr<Port> get_port(const string& name) const;
-	
-	void                    add_port(boost::shared_ptr<Port> port);
-	void                    remove_port(boost::shared_ptr<Port> port);
-	boost::shared_ptr<Port> remove_port(const string& name);
-	boost::shared_ptr<Port> port_at(double x, double y);
+	virtual Gnome::Art::Point connection_point() {
+		return Gnome::Art::Point(property_x(), property_y());
+	}
+
+	bool point_is_within(double x, double y);
 
 	void zoom(double z);
 	void resize();
 	
-	virtual void set_width(double w);
-	
-	virtual void set_height(double h);
-
 	virtual void move(double dx, double dy);
 	virtual void move_to(double x, double y);
 
 	virtual void load_location()  {}
 	virtual void store_location() {}
 	
-	virtual void set_name(const string& n);
+	virtual void  set_name(const string& n);
+
+	void   set_width(double w);
+	
+	void   set_height(double h);
 
 	double border_width() const { return _border_width; }
 	void   set_border_width(double w);
@@ -77,10 +80,12 @@ public:
 	
 	void set_highlighted(bool b);
 
-	int num_ports() const { return _ports.size(); }
+	uint32_t base_color() const { return 0x1F2A3CFF; }
 
 protected:
-	bool module_event(GdkEvent* event);
+	bool ellipse_event(GdkEvent* event);
+	
+	bool is_within(const Gnome::Canvas::Rect& rect);
 
 	virtual void on_double_click(GdkEventButton*) {}
 	virtual void on_middle_click(GdkEventButton*) {}
@@ -89,10 +94,8 @@ protected:
 	double _border_width;
 	bool   _title_visible;
 
-	PortVector _ports;
-
-	Gnome::Canvas::Rect _module_box;
-	Gnome::Canvas::Text _canvas_title;
+	Gnome::Canvas::Ellipse _ellipse;
+	Gnome::Canvas::Text    _label;
 
 private:
 	friend class Port;
@@ -100,36 +103,19 @@ private:
 	friend class Connection;
 	
 	// For connection drawing
-	double port_connection_point_offset(boost::shared_ptr<Port> port);
-	double port_connection_points_range();
+	//double port_connection_point_offset(boost::shared_ptr<Port> port);
+	//double port_connection_points_range();
 	
 
-	struct PortComparator {
+	/*struct PortComparator {
 		PortComparator(const string& name) : _name(name) {}
 		inline bool operator()(const boost::shared_ptr<Port> port)
 			{ return (port && port->name() == _name); }
 		const string& _name;
-	};
+	};*/
 };
-
-
-
-// Performance critical functions:
-
-
-/** Find a port on this module.
- *
- * TODO: Make this faster.
- */
-inline boost::shared_ptr<Port>
-Module::get_port(const std::string& port_name) const
-{
-	PortComparator comp(port_name);
-	PortVector::const_iterator i = std::find_if(_ports.begin(), _ports.end(), comp);
-	return (i != _ports.end()) ? *i : boost::shared_ptr<Port>();
-}
 
 
 } // namespace LibFlowCanvas
 
-#endif // FLOWCANVAS_MODULE_H
+#endif // FLOWCANVAS_ELLIPSE_H

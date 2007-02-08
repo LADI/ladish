@@ -1,5 +1,5 @@
 /* This file is part of FlowCanvas.
- * Copyright (C) 2007 Dave Robillard <drobilla.net>
+ * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
  * 
  * FlowCanvas is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -80,7 +80,7 @@ FlowCanvas::set_zoom(double pix_per_unit)
 	_zoom = pix_per_unit;
 	set_pixels_per_unit(_zoom);
 
-	for (ModuleMap::iterator m = _modules.begin(); m != _modules.end(); ++m)
+	for (ItemMap::iterator m = _items.begin(); m != _items.end(); ++m)
 		(*m).second->zoom(_zoom);
 }
 
@@ -98,8 +98,8 @@ FlowCanvas::zoom_full()
 	double top    = DBL_MIN;
 	double bottom = DBL_MAX;
 
-	for (ModuleMap::iterator m = _modules.begin(); m != _modules.end(); ++m) {
-		boost::shared_ptr<Module> mod = (*m).second;
+	for (ItemMap::iterator m = _items.begin(); m != _items.end(); ++m) {
+		boost::shared_ptr<Item> mod = (*m).second;
 		if (!mod)
 			continue;
 		
@@ -134,13 +134,13 @@ FlowCanvas::clear_selection()
 {
 	unselect_ports();
 
-	for (list<boost::shared_ptr<Module> >::iterator m = _selected_modules.begin(); m != _selected_modules.end(); ++m)
+	for (list<boost::shared_ptr<Item> >::iterator m = _selected_items.begin(); m != _selected_items.end(); ++m)
 		(*m)->set_selected(false);
 	
 	for (list<boost::shared_ptr<Connection> >::iterator c = _selected_connections.begin(); c != _selected_connections.end(); ++c)
 		(*c)->set_selected(false);
 
-	_selected_modules.clear();
+	_selected_items.clear();
 	_selected_connections.clear();
 }
 
@@ -161,22 +161,22 @@ FlowCanvas::unselect_connection(Connection* connection)
 
 
 void
-FlowCanvas::select_module(const string& name)
+FlowCanvas::select_item(const string& name)
 {
-	boost::shared_ptr<Module> m = get_module(name);
+	boost::shared_ptr<Item> m = get_item(name);
 	if (m)
-		select_module(m);
+		select_item(m);
 }
 
 
 /** Add a module to the current selection, and automagically select any connections
  * between selected modules */
 void
-FlowCanvas::select_module(boost::shared_ptr<Module> m)
+FlowCanvas::select_item(boost::shared_ptr<Item> m)
 {
 	assert(! m->selected());
 	
-	_selected_modules.push_back(m);
+	_selected_items.push_back(m);
 
 	for (ConnectionList::iterator i = _connections.begin(); i != _connections.end(); ++i) {
 		const boost::shared_ptr<Connection>  c = (*i);
@@ -214,7 +214,7 @@ FlowCanvas::select_module(boost::shared_ptr<Module> m)
 
 
 void
-FlowCanvas::unselect_module(boost::shared_ptr<Module> m)
+FlowCanvas::unselect_item(boost::shared_ptr<Item> m)
 {
 
 	// Remove any connections that aren't selected anymore because this module isn't
@@ -235,9 +235,9 @@ FlowCanvas::unselect_module(boost::shared_ptr<Module> m)
 	}
 #endif
 	// Remove the module
-	for (list<boost::shared_ptr<Module> >::iterator i = _selected_modules.begin(); i != _selected_modules.end(); ++i) {
+	for (list<boost::shared_ptr<Item> >::iterator i = _selected_items.begin(); i != _selected_items.end(); ++i) {
 		if ((*i) == m) {
-			_selected_modules.erase(i);
+			_selected_items.erase(i);
 			break;
 		}
 	}
@@ -247,11 +247,11 @@ FlowCanvas::unselect_module(boost::shared_ptr<Module> m)
 
 
 void
-FlowCanvas::unselect_module(const string& name)
+FlowCanvas::unselect_item(const string& name)
 {
-	boost::shared_ptr<Module> m = get_module(name);
+	boost::shared_ptr<Item> m = get_item(name);
 	if (m)
-		unselect_module(m);
+		unselect_item(m);
 }
 
 
@@ -265,7 +265,7 @@ FlowCanvas::destroy()
 	clear_selection();
 
 	_connections.clear();
-	_modules.clear();
+	_items.clear();
 
 	_selected_port.reset();
 	_connect_port.reset();
@@ -296,12 +296,12 @@ FlowCanvas::selected_port(boost::shared_ptr<Port> p)
 }
 
 
-boost::shared_ptr<Module>
-FlowCanvas::get_module(const string& name)
+boost::shared_ptr<Item>
+FlowCanvas::get_item(const string& name)
 {
-	ModuleMap::iterator m = _modules.find(name);
+	ItemMap::iterator m = _items.find(name);
 
-	return (m == _modules.end()) ? boost::shared_ptr<Module>() : (*m).second;
+	return (m == _items.end()) ? boost::shared_ptr<Item>() : (*m).second;
 }
 
 
@@ -313,39 +313,39 @@ FlowCanvas::set_default_placement(boost::shared_ptr<Module> m)
 	assert(m);
 	
 	// Simple cascade.  This will get more clever in the future.
-	double x = ((_width / 2.0) + (_modules.size() * 25));
-	double y = ((_height / 2.0) + (_modules.size() * 25));
+	double x = ((_width / 2.0) + (_items.size() * 25));
+	double y = ((_height / 2.0) + (_items.size() * 25));
 
 	m->move_to(x, y);
 }
 
 
 void
-FlowCanvas::add_module(boost::shared_ptr<Module> m)
+FlowCanvas::add_item(boost::shared_ptr<Item> m)
 {
 	assert(m);
-	std::pair<string, boost::shared_ptr<Module> > p(m->name(), m);
-	_modules.insert(p);
-	m->show();
+	std::pair<string, boost::shared_ptr<Item> > p(m->name(), m);
+	_items.insert(p);
+	//m->show();
 }
 
 
-/** Remove a module from the canvas, cutting all references.
+/** Remove an item from the canvas, cutting all references.
  *
- * The removed Module is returned, or NULL if not found.
+ * The removed Item is returned, or NULL if not found.
  */
-boost::shared_ptr<Module>
-FlowCanvas::remove_module(const string& name)
+boost::shared_ptr<Item>
+FlowCanvas::remove_item(const string& name)
 {
-	boost::shared_ptr<Module> ret;
+	boost::shared_ptr<Item> ret;
 
 	if (!_remove_objects)
 		return ret;
 
-	ModuleMap::iterator m = _modules.find(name);
-	if (m != _modules.end()) {
+	ItemMap::iterator m = _items.find(name);
+	if (m != _items.end()) {
 		ret = m->second;
-		_modules.erase(m);
+		_items.erase(m);
 	}
 	
 	return ret;
@@ -355,9 +355,13 @@ FlowCanvas::remove_module(const string& name)
 boost::shared_ptr<Port>
 FlowCanvas::get_port(const string& node_name, const string& port_name)
 {
-	for (ModuleMap::iterator i = _modules.begin(); i != _modules.end(); ++i) {
-		const boost::shared_ptr<Module> module = (*i).second;
-		const boost::shared_ptr<Port>   port = module->get_port(port_name);
+	for (ItemMap::iterator i = _items.begin(); i != _items.end(); ++i) {
+		const boost::shared_ptr<Item> item = (*i).second;
+		const boost::shared_ptr<Module> module
+			= boost::dynamic_pointer_cast<Module>(item);
+		if (!module)
+			continue;
+		const boost::shared_ptr<Port> port = module->get_port(port_name);
 		if (module->name() == node_name && port)
 			return port;
 	}
@@ -367,19 +371,19 @@ FlowCanvas::get_port(const string& node_name, const string& port_name)
 
 
 bool
-FlowCanvas::rename_module(const string& old_name, const string& current_name)
+FlowCanvas::rename_item(const string& old_name, const string& current_name)
 {
-	for (ModuleMap::iterator i = _modules.begin(); i != _modules.end(); ++i) {
-		const boost::shared_ptr<Module> module = (*i).second;
-		if (!module)
+	for (ItemMap::iterator i = _items.begin(); i != _items.end(); ++i) {
+		const boost::shared_ptr<Item> item = (*i).second;
+		if (!item)
 			continue;
 		
-		assert(module->name() != old_name);
+		assert(item->name() != old_name);
 		
 		if ((*i).first == old_name) {
-			assert(module->name() == current_name);
-			_modules.erase(i);
-			add_module(module);
+			assert(item->name() == current_name);
+			_items.erase(i);
+			add_item(item);
 			return true;
 		}
 	}
@@ -466,6 +470,7 @@ FlowCanvas::add_connection(boost::shared_ptr<Connectable> src,
 			src, dst, color));
 		src->add_connection(c);
 		dst->add_connection(c);
+		//c->lower_to_bottom();
 		_connections.push_back(c);
 	}
 
@@ -764,7 +769,7 @@ FlowCanvas::scroll_drag_handler(GdkEvent* event)
 bool
 FlowCanvas::select_drag_handler(GdkEvent* event)
 {
-	boost::shared_ptr<Module> module;
+	boost::shared_ptr<Item> module;
 	
 	if (event->type == GDK_BUTTON_PRESS && event->button.button == 1) {
 		assert(_select_rect == NULL);
@@ -796,13 +801,13 @@ FlowCanvas::select_drag_handler(GdkEvent* event)
 		return true;
 	} else if (event->type == GDK_BUTTON_RELEASE && _drag_state == SELECT) {
 		// Select all modules within rect
-		for (ModuleMap::iterator i = _modules.begin(); i != _modules.end(); ++i) {
+		for (ItemMap::iterator i = _items.begin(); i != _items.end(); ++i) {
 			module = (*i).second;
 			if (module->is_within(*_select_rect)) {
 				if (module->selected())
-					unselect_module(module);
+					unselect_item(module);
 				else
-					select_module(module);
+					select_item(module);
 			}
 		}
 		
@@ -829,8 +834,8 @@ FlowCanvas::animate_selected()
 	
 	_select_dash->offset = i;
 	
-	for (list<boost::shared_ptr<Module> >::iterator m = _selected_modules.begin(); m != _selected_modules.end(); ++m)
-		(*m)->_module_box.property_dash() = _select_dash;
+	for (list<boost::shared_ptr<Item> >::iterator m = _selected_items.begin(); m != _selected_items.end(); ++m)
+		(*m)->select_tick();
 	
 	for (list<boost::shared_ptr<Connection> >::iterator c = _selected_connections.begin(); c != _selected_connections.end(); ++c)
 		(*c)->property_dash() = _select_dash;
@@ -1037,10 +1042,11 @@ FlowCanvas::get_port_at(double x, double y)
 {
 	// Loop through every port and see if the item at these coordinates is that port
 	// (if you're thinking this is slow, stupid, and disgusting, you're right)
-	for (ModuleMap::const_iterator i = _modules.begin(); i != _modules.end(); ++i) {
-		const boost::shared_ptr<Module> m = (*i).second;
+	for (ItemMap::const_iterator i = _items.begin(); i != _items.end(); ++i) {
+		const boost::shared_ptr<Module> m
+			= boost::dynamic_pointer_cast<Module>((*i).second);
 		
-		if (m->point_is_within(x, y))
+		if (m && m->point_is_within(x, y))
 			return m->port_at(x, y);
 
 	}

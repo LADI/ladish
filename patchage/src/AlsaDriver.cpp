@@ -257,7 +257,7 @@ AlsaDriver::refresh_ports()
 				}
 			}
 			m->resize();
-			_app->canvas()->add_module(m);
+			_app->canvas()->add_item(m);
 		}
 	}
 }
@@ -274,8 +274,8 @@ AlsaDriver::refresh_connections()
 	boost::shared_ptr<PatchageModule> m;
 	boost::shared_ptr<PatchagePort>   p;
 	
-	for (ModuleMap::iterator i = _app->canvas()->modules().begin();
-			i != _app->canvas()->modules().end(); ++i) {
+	for (ItemMap::iterator i = _app->canvas()->items().begin();
+			i != _app->canvas()->items().end(); ++i) {
 		m = boost::dynamic_pointer_cast<PatchageModule>((*i).second);
 		if (m) {
 			for (PortVector::const_iterator j = m->ports().begin(); j != m->ports().end(); ++j) {

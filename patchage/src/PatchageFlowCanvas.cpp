@@ -15,6 +15,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include <raul/SharedPtr.h>
 #include "config.h"
 #include "PatchageFlowCanvas.h"
 #include "Patchage.h"
@@ -35,7 +36,7 @@ PatchageFlowCanvas::PatchageFlowCanvas(Patchage* app, int width, int height)
 boost::shared_ptr<PatchageModule>
 PatchageFlowCanvas::find_module(const string& name, ModuleType type)
 {
-	for (ModuleMap::iterator m = _modules.begin(); m != _modules.end(); ++m) {
+	for (ItemMap::iterator m = _items.begin(); m != _items.end(); ++m) {
 		boost::shared_ptr<PatchageModule> pm = boost::dynamic_pointer_cast<PatchageModule>((*m).second);
 		if (pm && pm->name() == name && pm->type() == type) {
 			return pm;
@@ -51,8 +52,11 @@ boost::shared_ptr<PatchagePort>
 PatchageFlowCanvas::find_port(const snd_seq_addr_t* alsa_addr)
 {
 	boost::shared_ptr<PatchagePort> pp;
-	for (ModuleMap::iterator m = _modules.begin(); m != _modules.end(); ++m) {
-		for (PortVector::const_iterator p = (*m).second->ports().begin(); p != (*m).second->ports().end(); ++p) {
+	for (ItemMap::iterator m = _items.begin(); m != _items.end(); ++m) {
+		SharedPtr<Module> module = PtrCast<Module>(m->second);
+		if (!module)
+			continue;
+		for (PortVector::const_iterator p = module->ports().begin(); p != module->ports().end(); ++p) {
 			pp = boost::dynamic_pointer_cast<PatchagePort>(*p);
 			if (pp && pp->type() == ALSA_MIDI && pp->alsa_addr()
 					&& pp->alsa_addr()->client == alsa_addr->client

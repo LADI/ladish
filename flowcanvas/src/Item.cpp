@@ -15,33 +15,37 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef FLOWCANVAS_CONNECTABLE_H
-#define FLOWCANVAS_CONNECTABLE_H
-
 #include <boost/shared_ptr.hpp>
+#include "Item.h"
+#include "FlowCanvas.h"
 
 namespace LibFlowCanvas {
 
-class Connection;
+
+Item::Item(boost::shared_ptr<FlowCanvas> canvas,
+     const string&                 name,
+     double                        x,
+     double                        y,
+     uint32_t                      color)
+	: Gnome::Canvas::Group(*canvas->root(), x, y)
+	, _canvas(canvas)
+	, _name(name)
+	, _width(1)
+	, _height(1)
+	, _color(color)
+	, _selected(false)
+{}
 
 
-class Connectable {
-public:
-	virtual ~Connectable() {}
+void
+Item::set_selected(bool s)
+{
+	_selected = s;
 
-	virtual Gnome::Art::Point connection_point() = 0;
-	
-	virtual void add_connection(boost::shared_ptr<Connection> c);
-	virtual void remove_connection(boost::shared_ptr<Connection> c);
-
-	virtual void move_connections();
-	virtual void raise_connections();
-
-protected:
-	std::list<boost::weak_ptr<Connection> > _connections; ///< needed for dragging
-};
-
+	if (s)
+		signal_selected.emit();
+	else
+		signal_unselected.emit();
+}
 
 } // namespace LibFlowCanvas
-
-#endif // FLOWCANVAS_CONNECTABLE_H

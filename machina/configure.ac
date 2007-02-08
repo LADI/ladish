@@ -1,13 +1,16 @@
 # configure.in for machina
 
-AC_INIT(machina, 0.0.1, dave@codeson.net)
+AC_INIT(machina, 0.0.1, dave@drobilla.net)
 AC_CONFIG_SRCDIR([src/main.cpp])
+AC_CONFIG_SRCDIR([src/gui/main.cpp])
 #AC_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE
 
 AC_LANG([C++])
 
 AC_PROG_CXX
+AC_PROG_LIBTOOL
+
 AC_TYPE_SIZE_T
 
 PKG_CHECK_MODULES(JACK, jack >= 0.102.20)
@@ -49,12 +52,26 @@ if test "$pointer_debug" = "yes"; then
   CXXFLAGS+=" -DBOOST_SP_ENABLE_DEBUG_HOOKS"
 fi
 
+# Build GUI?
+build_gui="yes"
+AC_ARG_ENABLE(gui,
+	[AS_HELP_STRING(--enable-gui, [Build GUI (yes)])],
+	[build_gui="$enableval"])
+if test "$build_gui" = "yes"; then
+	PKG_CHECK_MODULES(GTKMM, gtkmm-2.4)
+	PKG_CHECK_MODULES(GNOMECANVASMM, libgnomecanvasmm-2.6)
+	PKG_CHECK_MODULES(LIBGLADEMM, libglademm-2.4)
+	PKG_CHECK_MODULES(FLOWCANVAS, flowcanvas >= 0.1.0)
+fi
+AM_CONDITIONAL(WITH_GUI, [test "x$build_gui" = "xyes"])
+
 # Bolt on a few specific flags to CXXFLAGS that should always be used
 CXXFLAGS="$CXXFLAGS -pipe -Wall -fmessage-length=139 -fdiagnostics-show-location=every-line"
 CFLAGS="$CFLAGS -pipe -Wall -fmessage-length=139 -fdiagnostics-show-location=every-line"
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
+AC_CONFIG_FILES([src/gui/Makefile])
 AC_CONFIG_FILES([machina.desktop])
 
 AC_OUTPUT

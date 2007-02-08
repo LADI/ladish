@@ -33,7 +33,7 @@ PatchageEvent::execute()
 	const string port_name = full_name.substr(full_name.find(":")+1);
 
 	SharedPtr<PatchageModule> module = PtrCast<PatchageModule>(
-		_patchage->canvas()->get_module(module_name));
+		_patchage->canvas()->get_item(module_name));
 
 	if (_type == PORT_CREATION) {
 
@@ -42,7 +42,7 @@ PatchageEvent::execute()
 					new PatchageModule(_patchage, module_name, InputOutput));
 			module->load_location();
 			module->store_location();
-			_patchage->canvas()->add_module(module);
+			_patchage->canvas()->add_item(module);
 			module->show();
 		}
 	
@@ -75,7 +75,7 @@ PatchageEvent::execute()
 	}
 
 	if (module->num_ports() == 0) {
-		_patchage->canvas()->remove_module(module->name()); // FIXME: slow
+		_patchage->canvas()->remove_item(module->name()); // FIXME: slow
 		module->hide();
 		module.reset();
 	}

@@ -2,7 +2,7 @@ AC_PREREQ(2.59)
 AC_INIT([flowcanvas],[0.1.0],[drobilla@connect.carleton.ca])
 AC_CONFIG_SRCDIR([src/FlowCanvas.cpp])
 AC_CONFIG_SRCDIR([flowcanvas/FlowCanvas.h])
-AC_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADER([src/config.h])
 AM_INIT_AUTOMAKE
 
 AC_LANG([C++])
@@ -60,9 +60,9 @@ AC_CHECK_HEADERS([boost/weak_ptr.hpp], [],
 	AC_MSG_ERROR([You need the boost headers package (e.g. libboost-dev)]))
 
 # Check for anti-aliased flag
-anti_alias="no"
+anti_alias="yes"
 AC_ARG_ENABLE(anti-aliasing,
-	[AS_HELP_STRING(--enable-anti-aliasing, [Enable anti aliased canvas (false, slow)])],
+	[AS_HELP_STRING(--enable-anti-aliasing, [Enable anti aliased canvas (yes)])],
 	[ anti_alias="$enableval"])
 # Yes, this is dirty...
 if test "$anti_alias" = "yes"; then

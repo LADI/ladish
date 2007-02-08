@@ -1,5 +1,5 @@
 /* This file is part of FlowCanvas.
- * Copyright (C) 2007 Dave Robillard <drobilla.net>
+ * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
  * 
  * FlowCanvas is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -29,13 +29,16 @@ namespace LibFlowCanvas {
 Connection::Connection(boost::shared_ptr<FlowCanvas>  canvas,
 	                   boost::shared_ptr<Connectable> source,
 	                   boost::shared_ptr<Connectable> dest,
-                       uint32_t                       color)
+                       uint32_t                       color,
+                       bool                           show_arrowhead)
 : Gnome::Canvas::Bpath(*canvas->root()),
   _canvas(canvas),
   _source(source),
   _dest(dest),
   _color(color),
   _selected(false),
+  _flag(false),
+  _show_arrowhead(false),
   _path(gnome_canvas_path_def_new())
 {
 	if (canvas->property_aa())
@@ -114,6 +117,12 @@ Connection::update_location()
 	gnome_canvas_path_def_lineto(_path, dst_x, dst_y);
 	*/
 
+	// Draw arrowhead
+	/*gnome_canvas_path_def_moveto(_path, join_x, join_y);
+	gnome_canvas_path_def_lineto(_path, join_x - 10, join_y - 10);
+	gnome_canvas_path_def_moveto(_path, join_x, join_y);
+	gnome_canvas_path_def_lineto(_path, join_x + 10, join_y + 10);*/
+
 	GnomeCanvasBpath* c_obj = gobj();
 	gnome_canvas_item_set(GNOME_CANVAS_ITEM(c_obj), "bpath", _path, NULL);
 }
@@ -139,6 +148,32 @@ Connection::set_selected(bool selected)
 	} else {
 		property_dash() = NULL;
 	}
+}
+
+
+/** Overloaded Gnome::Canvas::Item::raise_to_top to ensure src and dst
+ * are still above connections (to hide the part behind connected Ellipses).
+ */
+void
+Connection::raise_to_top()
+{
+	Gnome::Canvas::Item::raise_to_top();
+	
+	// Raise source above us
+	boost::shared_ptr<Item> item = boost::dynamic_pointer_cast<Item>(_source.lock());
+	if (item)
+		item->raise_to_top();
+
+	// Raise dest above us
+	item = boost::dynamic_pointer_cast<Item>(_dest.lock());
+	if (item)
+		item->raise_to_top();
+
+	/* Raise the roof
+	       \o/ 
+	        |
+	       / \ 
+	*/
 }
 
 
