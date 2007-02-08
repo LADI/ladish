@@ -23,6 +23,7 @@
 #include <jack/jack.h>
 #include <jack/statistics.h>
 #include <jack/thread.h>
+#include <raul/SharedPtr.h>
 #include "PatchageFlowCanvas.h"
 #include "PatchageEvent.h"
 #include "JackDriver.h"
@@ -113,18 +114,21 @@ JackDriver::detach()
 void
 JackDriver::destroy_all_ports()
 {
-	ModuleMap modules = _app->canvas()->modules(); // copy
-	for (ModuleMap::iterator m = modules.begin(); m != modules.end(); ++m) {
-		PortVector ports = m->second->ports(); // copy
+	ItemMap modules = _app->canvas()->items(); // copy
+	for (ItemMap::iterator m = modules.begin(); m != modules.end(); ++m) {
+		SharedPtr<Module> module = PtrCast<Module>(m->second);
+		if (!module)
+			continue;
+		PortVector ports = module->ports(); // copy
 		for (PortVector::iterator p = ports.begin(); p != ports.end(); ++p) {
 			boost::shared_ptr<PatchagePort> port = boost::dynamic_pointer_cast<PatchagePort>(*p);
 			if (port && port->type() == JACK_AUDIO || port->type() == JACK_MIDI) {
-				m->second->remove_port(port);
+				module->remove_port(port);
 			}
 		}
 
-		if (m->second->ports().empty())
-			_app->canvas()->remove_module(m->second->name());
+		if (module->ports().empty())
+			_app->canvas()->remove_item(module->name());
 	}
 }
 
@@ -211,7 +215,7 @@ JackDriver::refresh()
 			m = boost::shared_ptr<PatchageModule>(new PatchageModule(_app, client1_name, type));
 			m->load_location();
 			m->store_location();
-			_app->canvas()->add_module(m);
+			_app->canvas()->add_item(m);
 		}
 
 		// FIXME: leak?  jack docs don't say
@@ -242,7 +246,7 @@ JackDriver::refresh()
 		const string module_name = (*i).substr(0, i->find(":"));
 		const string port_name = (*i).substr(i->find(":")+1);
 		
-		for (ModuleMap::iterator m = _app->canvas()->modules().begin(); m != _app->canvas()->modules().end(); ++m) {
+		for (ItemMap::iterator m = _app->canvas()->items().begin(); m != _app->canvas()->items().end(); ++m) {
 			if (m->second->name() == module_name)
 				m->second->remove_port(port_name);
 		}
