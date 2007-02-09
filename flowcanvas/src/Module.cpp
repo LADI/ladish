@@ -72,7 +72,12 @@ Module::Module(boost::shared_ptr<FlowCanvas> canvas, const string& name, double 
 	set_width(10.0);
 	set_height(10.0);
 
-	signal_event().connect(sigc::mem_fun(this, &Module::module_event));
+	signal_pointer_entered.connect(sigc::bind(sigc::mem_fun(this,
+		&Module::set_highlighted), true));
+	signal_pointer_exited.connect(sigc::bind(sigc::mem_fun(this,
+		&Module::set_highlighted), false));
+	signal_dropped.connect(sigc::mem_fun(this,
+		&Module::on_drop));
 }
 
 
@@ -93,133 +98,10 @@ Module::set_border_width(double w)
 }
 
 
-bool
-Module::module_event(GdkEvent* event)
+void
+Module::on_drop(double new_x, double new_y)
 {
-	boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
-	if (!canvas)
-		return false;
-
-	/* FIXME:  Some things need to be handled here (ie dragging), but handling double
-	 * clicks and whatnot here is just filthy (look at this method.  I mean, c'mon now).
-	 * Move double clicks out to on_double_click_event overridden methods etc. */
-	
-	assert(event);
-
-	static double x, y;
-	static double drag_start_x, drag_start_y;
-	double module_x, module_y; // FIXME: bad name, actually mouse click loc
-	static bool dragging = false;
-	bool handled = true;
-	static bool double_click = false;
-	
-	module_x = event->button.x;
-	module_y = event->button.y;
-
-	property_parent().get_value()->w2i(module_x, module_y);
-	
-	switch (event->type) {
-
-	case GDK_2BUTTON_PRESS:
-		canvas->clear_selection();
-		double_click = true;
-		on_double_click(&event->button);
-		handled = true;
-		break;
-
-	case GDK_BUTTON_PRESS:
-		if (event->button.button == 1) {
-			x = module_x;
-			y = module_y;
-			// Set these so we can tell on a button release if a drag actually
-			// happened (if not, it's just a click)
-			drag_start_x = x;
-			drag_start_y = y;
-			grab(GDK_POINTER_MOTION_MASK | GDK_BUTTON_RELEASE_MASK | GDK_BUTTON_PRESS_MASK,
-			           Gdk::Cursor(Gdk::FLEUR),
-			           event->button.time);
-			dragging = true;
-			handled = true;
-		} else if (event->button.button == 2) {
-			on_middle_click(&event->button);
-			handled = true;
-		} else if (event->button.button == 3) {
-			on_right_click(&event->button);
-		} else {
-			handled = false;
-		}
-		break;
-	
-	case GDK_MOTION_NOTIFY:
-		if ((dragging && (event->motion.state & GDK_BUTTON1_MASK))) {
-			double new_x = module_x;
-			double new_y = module_y;
-
-			if (event->motion.is_hint) {
-				gint t_x;
-				gint t_y;
-				GdkModifierType state;
-				gdk_window_get_pointer(event->motion.window, &t_x, &t_y, &state);
-				new_x = t_x;
-				new_y = t_y;
-			}
-
-			// Move any other selected modules if we're selected
-			if (_selected) {
-				for (list<boost::shared_ptr<LibFlowCanvas::Item> >::iterator i = canvas->selected_items().begin();
-						i != canvas->selected_items().end(); ++i) {
-					(*i)->move(new_x - x, new_y - y);
-				}
-			} else {
-				move(new_x - x, new_y - y);
-			}
-
-			x = new_x;
-			y = new_y;
-		} else {
-			handled = false;
-		}
-		break;
-
-	case GDK_BUTTON_RELEASE:
-		if (dragging) {
-			ungrab(event->button.time);
-			dragging = false;
-			if (module_x != drag_start_x || module_y != drag_start_y) { // dragged
-				store_location();
-			} else if (!double_click) { // just a single-click release
-				if (_selected) {
-					canvas->unselect_item(_name);
-					assert(!_selected);
-				} else {
-					if ( !(event->button.state & GDK_CONTROL_MASK))
-						canvas->clear_selection();
-					canvas->select_item(_name);
-				}
-			}
-		} else {
-			handled = false;
-		}
-		double_click = false;
-		break;
-
-	case GDK_ENTER_NOTIFY:
-		set_highlighted(true);
-		raise_to_top();
-		for (PortVector::iterator p = _ports.begin(); p != _ports.end(); ++p)
-			(*p)->raise_connections();
-		break;
-
-	case GDK_LEAVE_NOTIFY:
-		set_highlighted(false);
-		break;
-
-	default:
-		handled = false;
-	}
-
-	return handled;
-	//return false;
+	store_location();
 }
 
 
@@ -513,36 +395,6 @@ Module::resize()
 	
 	// Make things actually move to their new locations (?!)
 	move(0, 0);
-}
-
-
-/** Port offset, for connection drawing.
- * See doc/port_offsets.dia
- */
-double
-Module::port_connection_point_offset(boost::shared_ptr<Port> port)
-{
-	if (_ports.size() == 0)
-		return port->connection_point().get_y();
-	else
-		return (port->connection_point().get_y() - _ports.front()->connection_point().get_y());
-}
-
-
-/** Range of port offsets, for connection drawing.
- * See doc/port_offsets.dia
- */
-double
-Module::port_connection_points_range()
-{
-	if (_ports.size() > 0) {
-		double ret = fabs(_ports.back()->connection_point().get_y()
-				- _ports.front()->connection_point().get_y());
-	
-		return (ret < 1.0) ? 1.0 : ret;
-	} else {
-		return 1.0;
-	}
 }
 
 

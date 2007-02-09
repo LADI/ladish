@@ -22,6 +22,7 @@
 #include "Connection.h"
 #include "FlowCanvas.h"
 #include "Connectable.h"
+#include "Ellipse.h"
 
 namespace LibFlowCanvas {
 	
@@ -38,7 +39,7 @@ Connection::Connection(boost::shared_ptr<FlowCanvas>  canvas,
   _color(color),
   _selected(false),
   _flag(false),
-  _show_arrowhead(false),
+  _show_arrowhead(show_arrowhead),
   _path(gnome_canvas_path_def_new())
 {
 	if (canvas->property_aa())
@@ -64,64 +65,83 @@ Connection::update_location()
 	if (!src || !dst)
 		return;
 
-	const double src_x = src->connection_point().get_x();
-	const double src_y = src->connection_point().get_y();
-	const double dst_x = dst->connection_point().get_x();
-	const double dst_y = dst->connection_point().get_y();
+	bool straight = (boost::dynamic_pointer_cast<Ellipse>(src)
+	              || boost::dynamic_pointer_cast<Ellipse>(dst));
 
-	const double join_x = (src_x + dst_x)/2.0;
-	const double join_y = (src_y + dst_y)/2.0;
+	const Gnome::Art::Point src_point = src->src_connection_point();
+	const Gnome::Art::Point dst_point = dst->dst_connection_point(src_point);
 
-	const double x_dist = fabs(dst_x - src_x)/4.0;
+	const double src_x = src_point.get_x();
+	const double src_y = src_point.get_y();
+	const double dst_x = dst_point.get_x();
+	const double dst_y = dst_point.get_y();
 
-	// Path 1 (src_x, src_y) -> (join_x, join_y)
-	// Control point 1
-	const double src_x1 = src_x + std::max(x_dist, 40.0);
-	const double src_y1 = src_y;
-	// Control point 2
-	const double src_x2 = (join_x + src_x1) / 2.0;
-	const double src_y2 = (join_y + src_y1) / 2.0;
+	if (straight) {
 
-	// Path 2, (join_x, join_y) -> (dst_x, dst_y)
-	// Control point 1
-	const double dst_x1 = dst_x - std::max(x_dist, 40.0);
-	const double dst_y1 = dst_y;
-	// Control point 2
-	const double dst_x2 = (join_x + dst_x1) / 2.0;
-	const double dst_y2 = (join_y + dst_y1) / 2.0;
+		gnome_canvas_path_def_reset(_path);
+		gnome_canvas_path_def_moveto(_path, src_x, src_y);
+		gnome_canvas_path_def_lineto(_path, dst_x, dst_y);
 
-	// This was broken in libgnomecanvasmm with GTK 2.8.  Nice work, guys.  
-	/*
-	_path->reset();
-	_path->moveto(src_x, src_y);
-	_path->curveto(src_x1, src_y1, src_x2, src_y2, join_x, join_y);
-	_path->curveto(dst_x2, dst_y2, dst_x1, dst_y1, dst_x, dst_y);
-	set_bpath(_path);
-	*/
+		if (_show_arrowhead) {
+			double       dx = src_x - dst_x;
+			double       dy = src_y - dst_y;
+			const double h  = sqrt(dx*dx + dy*dy);
 
-	// Work around it w/ the C API
-	gnome_canvas_path_def_reset(_path);
-	gnome_canvas_path_def_moveto(_path, src_x, src_y);
-	gnome_canvas_path_def_curveto(_path, src_x1, src_y1, src_x2, src_y2, join_x, join_y);
-	gnome_canvas_path_def_curveto(_path, dst_x2, dst_y2, dst_x1, dst_y1, dst_x, dst_y);
-	
-	// Uncomment to see control point path as straight lines
-	/*
-	gnome_canvas_path_def_reset(_path);
-	gnome_canvas_path_def_moveto(_path, src_x, src_y);
-	gnome_canvas_path_def_lineto(_path, src_x1, src_y1);
-	gnome_canvas_path_def_lineto(_path, src_x2, src_y2);
-	gnome_canvas_path_def_lineto(_path, join_x, join_y);
-	gnome_canvas_path_def_lineto(_path, dst_x2, dst_y2);
-	gnome_canvas_path_def_lineto(_path, dst_x1, dst_y1);
-	gnome_canvas_path_def_lineto(_path, dst_x, dst_y);
-	*/
+			dx = dx / h * 10;
+			dy = dy / h * 10;
 
-	// Draw arrowhead
-	/*gnome_canvas_path_def_moveto(_path, join_x, join_y);
-	gnome_canvas_path_def_lineto(_path, join_x - 10, join_y - 10);
-	gnome_canvas_path_def_moveto(_path, join_x, join_y);
-	gnome_canvas_path_def_lineto(_path, join_x + 10, join_y + 10);*/
+			gnome_canvas_path_def_lineto(_path,
+				dst_x + dx - dy/1.5,
+				dst_y + dy + dx/1.5);
+			
+			gnome_canvas_path_def_moveto(_path, dst_x, dst_y);
+			
+			gnome_canvas_path_def_lineto(_path,
+				dst_x + dx + dy/1.5,
+				dst_y + dy - dx/1.5);
+		}
+
+	} else {
+
+		const double join_x = (src_x + dst_x)/2.0;
+		const double join_y = (src_y + dst_y)/2.0;
+
+		const double x_dist = fabs(dst_x - src_x)/4.0;
+
+		// Path 1 (src_x, src_y) -> (join_x, join_y)
+		// Control point 1
+		const double src_x1 = src_x + std::max(x_dist, 40.0);
+		const double src_y1 = src_y;
+		// Control point 2
+		const double src_x2 = (join_x + src_x1) / 2.0;
+		const double src_y2 = (join_y + src_y1) / 2.0;
+
+		// Path 2, (join_x, join_y) -> (dst_x, dst_y)
+		// Control point 1
+		const double dst_x1 = dst_x - std::max(x_dist, 40.0);
+		const double dst_y1 = dst_y;
+		// Control point 2
+		const double dst_x2 = (join_x + dst_x1) / 2.0;
+		const double dst_y2 = (join_y + dst_y1) / 2.0;
+
+		// libgnomecanvasmm + GTK 2.8 screwed up the Path API; use the C one.
+		gnome_canvas_path_def_reset(_path);
+		gnome_canvas_path_def_moveto(_path, src_x, src_y);
+		gnome_canvas_path_def_curveto(_path, src_x1, src_y1, src_x2, src_y2, join_x, join_y);
+		gnome_canvas_path_def_curveto(_path, dst_x2, dst_y2, dst_x1, dst_y1, dst_x, dst_y);
+
+		// Uncomment to see control point path as straight lines
+		/*
+		gnome_canvas_path_def_reset(_path);
+		gnome_canvas_path_def_moveto(_path, src_x, src_y);
+		gnome_canvas_path_def_lineto(_path, src_x1, src_y1);
+		gnome_canvas_path_def_lineto(_path, src_x2, src_y2);
+		gnome_canvas_path_def_lineto(_path, join_x, join_y);
+		gnome_canvas_path_def_lineto(_path, dst_x2, dst_y2);
+		gnome_canvas_path_def_lineto(_path, dst_x1, dst_y1);
+		gnome_canvas_path_def_lineto(_path, dst_x, dst_y);
+		*/
+	}
 
 	GnomeCanvasBpath* c_obj = gobj();
 	gnome_canvas_item_set(GNOME_CANVAS_ITEM(c_obj), "bpath", _path, NULL);

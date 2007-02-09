@@ -25,6 +25,7 @@ MachinaCanvas::MachinaCanvas(MachinaGUI* app, int width, int height)
 : FlowCanvas(width, height),
   _app(app)
 {
+
 }
 
 
@@ -99,11 +100,11 @@ MachinaCanvas::status_message(const string& msg)
 void
 MachinaCanvas::item_selected(SharedPtr<Item> i)
 {
+	cerr << "SELECTED: " << i->name() << endl;
+	
 	SharedPtr<Connectable> item = PtrCast<Connectable>(i);
 	if (!item)
 		return;
-
-	cerr << "SELECTED: " << i->name() << endl;
 	
 	SharedPtr<Connectable> last = _last_selected.lock();
 
@@ -121,6 +122,15 @@ MachinaCanvas::item_selected(SharedPtr<Item> i)
 }
 
 
+void
+MachinaCanvas::item_clicked(SharedPtr<Item> i, GdkEventButton* event)
+{
+	cerr << "CLICKED " << event->button << ": " <<  i->name() << endl;
+
+	//return false;
+}
+
+
 bool
 MachinaCanvas::canvas_event(GdkEvent* event)
 {
@@ -133,25 +143,26 @@ MachinaCanvas::canvas_event(GdkEvent* event)
 		const double x = event->button.x;
 		const double y = event->button.y;
 
+		SharedPtr<Item> item;
+
 		if (event->button.button == 1) {
-			SharedPtr<Ellipse> item(new Ellipse(shared_from_this(),
+			item = SharedPtr<Item>(new Ellipse(shared_from_this(),
 				string("Note")+(char)(last++ +'0'), x, y, 30, 30, true));
+		} else if (event->button.button == 2) {
+			item = SharedPtr<Item>(new Module(shared_from_this(),
+				string("Note")+(char)(last++ +'0'), x, y, true));
+		}
+
+		if (item) {
 			item->signal_selected.connect(sigc::bind(sigc::mem_fun(this,
 				&MachinaCanvas::item_selected), item));
+			item->signal_clicked.connect(sigc::bind<0>(sigc::mem_fun(this,
+				&MachinaCanvas::item_clicked), item));
 			add_item(item);
-			item->raise_to_top();
-		} else if (event->button.button == 2) {
-			SharedPtr<Module> item(new Module(shared_from_this(),
-				string("Note")+(char)(last++ +'0'), x, y, true));
 			item->resize();
-			add_item(item);
-		} else if (event->button.button == 3) {
-			//_last_click_x = (int)event->button.x;
-			//_last_click_y = (int)event->button.y;
-			//show_menu(event);
+			item->raise_to_top();
 		}
 	}
 
 	return FlowCanvas::canvas_event(event);
 }
-

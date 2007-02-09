@@ -44,6 +44,7 @@ protected:
 	bool canvas_event(GdkEvent* event);
 
 	void item_selected(SharedPtr<Item> item);
+	void item_clicked(SharedPtr<Item> item, GdkEventButton* ev);
 
 private:
 	MachinaGUI* _app;

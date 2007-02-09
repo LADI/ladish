@@ -159,9 +159,23 @@ Port::set_highlighted(bool b)
 	
 
 // Returns the world-relative coordinates of where a connection line
-// should attach
+// should attach if this is it's source
 Gnome::Art::Point
-Port::connection_point()
+Port::src_connection_point()
+{
+	double x = (is_input()) ? _rect.property_x1()-1.0 : _rect.property_x2()+1.0;
+	double y = _rect.property_y1() + _height / 2.0;
+	
+	i2w(x, y); // convert to world-relative coords
+	
+	return Gnome::Art::Point(x, y);
+}
+
+
+// Returns the world-relative coordinates of where a connection line
+// should attach if this is it's dest
+Gnome::Art::Point
+Port::dst_connection_point(const Gnome::Art::Point& src)
 {
 	double x = (is_input()) ? _rect.property_x1()-1.0 : _rect.property_x2()+1.0;
 	double y = _rect.property_y1() + _height / 2.0;

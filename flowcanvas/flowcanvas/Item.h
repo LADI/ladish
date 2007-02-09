@@ -34,8 +34,6 @@ class FlowCanvas;
 
 /** An item on the canvas.
  *
- * Note this doesn't derive from Gnome::Canvas::Item to avoid the 'dreaded diamond'.
- *
  * \ingroup FlowCanvas
  */
 class Item : public Gnome::Canvas::Group
@@ -65,6 +63,8 @@ public:
 	double height() const { return _height; }
 	virtual void set_height(double h) = 0;
 
+	virtual void resize() = 0;
+
 	bool        is_within(const Gnome::Canvas::Rect& rect) const;
 	inline bool point_is_within(double x, double y) const;
 
@@ -74,13 +74,27 @@ public:
 	uint32_t     base_color() const         { return _color; }
 	virtual void set_base_color(uint32_t c) { _color = c; }
 
+	sigc::signal<void> signal_pointer_entered;
+	sigc::signal<void> signal_pointer_exited;
 	sigc::signal<void> signal_selected;
 	sigc::signal<void> signal_unselected;
+	
+	sigc::signal<void, GdkEventButton*> signal_clicked;
+	sigc::signal<void, GdkEventButton*> signal_double_clicked;
+
+	sigc::signal<void, double, double> signal_dragged;
+	sigc::signal<void, double, double> signal_dropped;
 
 protected:
 	
+	virtual void on_drag(double dx, double dy);
+	virtual void on_click(GdkEventButton*);
+	virtual void on_double_click(GdkEventButton*);
+
 	const boost::weak_ptr<FlowCanvas> _canvas;
 	
+	bool item_event(GdkEvent* event);
+
 	std::string _name;
 	double      _width;
 	double      _height;

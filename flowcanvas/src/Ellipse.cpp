@@ -82,13 +82,35 @@ Ellipse::Ellipse(boost::shared_ptr<FlowCanvas> canvas,
 
 	set_width(x_radius * 2.0);
 	set_height(y_radius * 2.0);
-
-	signal_event().connect(sigc::mem_fun(this, &Ellipse::ellipse_event));
 }
 
 
 Ellipse::~Ellipse()
 {
+}
+
+
+Gnome::Art::Point
+Ellipse::dst_connection_point(const Gnome::Art::Point& src)
+{
+	const double c_x   = property_x();
+	const double c_y   = property_y();
+	const double src_x = src.get_x();
+	const double src_y = src.get_y();
+
+	const double dx = src.get_x() - c_x;
+	const double dy = src.get_y() - c_y;
+	const double h  = sqrt(dx*dx + dy*dy);
+
+	const double theta = asin(dx/h);
+
+	const double y_mod = (c_y < src_y) ? 1 : -1;
+
+	const double ret_h = h - _width/2.0;
+	const double ret_x = src_x - sin(theta) * ret_h;
+	const double ret_y = src_y - cos(theta) * ret_h * y_mod;
+
+	return Gnome::Art::Point(ret_x, ret_y);
 }
 
 
@@ -101,135 +123,6 @@ Ellipse::set_border_width(double w)
 {
 	_border_width = w;
 	//_ellipse.property_width_units() = w;
-}
-
-
-bool
-Ellipse::ellipse_event(GdkEvent* event)
-{
-	boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
-	if (!canvas)
-		return false;
-
-	/* FIXME:  Some things need to be handled here (ie dragging), but handling double
-	 * clicks and whatnot here is just filthy (look at this method.  I mean, c'mon now).
-	 * Move double clicks out to on_double_click_event overridden methods etc. */
-	
-	assert(event);
-
-	static double x, y;
-	static double drag_start_x, drag_start_y;
-	double module_x, module_y; // FIXME: bad name, actually mouse click loc
-	static bool dragging = false;
-	bool handled = true;
-	static bool double_click = false;
-	
-	module_x = event->button.x;
-	module_y = event->button.y;
-
-	property_parent().get_value()->w2i(module_x, module_y);
-	
-	switch (event->type) {
-
-	case GDK_2BUTTON_PRESS:
-		canvas->clear_selection();
-		double_click = true;
-		on_double_click(&event->button);
-		handled = true;
-		break;
-
-	case GDK_BUTTON_PRESS:
-		if (event->button.button == 1) {
-			x = module_x;
-			y = module_y;
-			// Set these so we can tell on a button release if a drag actually
-			// happened (if not, it's just a click)
-			drag_start_x = x;
-			drag_start_y = y;
-			grab(GDK_POINTER_MOTION_MASK | GDK_BUTTON_RELEASE_MASK | GDK_BUTTON_PRESS_MASK,
-			           Gdk::Cursor(Gdk::FLEUR),
-			           event->button.time);
-			dragging = true;
-			handled = true;
-		} else if (event->button.button == 2) {
-			on_middle_click(&event->button);
-			handled = true;
-		} else if (event->button.button == 3) {
-			on_right_click(&event->button);
-		} else {
-			handled = false;
-		}
-		break;
-	
-	case GDK_MOTION_NOTIFY:
-		if ((dragging && (event->motion.state & GDK_BUTTON1_MASK))) {
-			double new_x = module_x;
-			double new_y = module_y;
-
-			if (event->motion.is_hint) {
-				gint t_x;
-				gint t_y;
-				GdkModifierType state;
-				gdk_window_get_pointer(event->motion.window, &t_x, &t_y, &state);
-				new_x = t_x;
-				new_y = t_y;
-			}
-
-			// Move any other selected modules if we're selected
-			if (_selected) {
-				for (list<boost::shared_ptr<LibFlowCanvas::Item> >::iterator i = canvas->selected_items().begin();
-						i != canvas->selected_items().end(); ++i) {
-					(*i)->move(new_x - x, new_y - y);
-				}
-			} else {
-				move(new_x - x, new_y - y);
-			}
-
-			x = new_x;
-			y = new_y;
-		} else {
-			handled = false;
-		}
-		break;
-
-	case GDK_BUTTON_RELEASE:
-		if (dragging) {
-			ungrab(event->button.time);
-			dragging = false;
-			if (module_x != drag_start_x || module_y != drag_start_y) { // dragged
-				store_location();
-			} else if (!double_click) { // just a single-click release
-				if (_selected) {
-					canvas->unselect_item(_name);
-					assert(!_selected);
-				} else {
-					if ( !(event->button.state & GDK_CONTROL_MASK))
-						canvas->clear_selection();
-					canvas->select_item(_name);
-				}
-			}
-		} else {
-			handled = false;
-		}
-		double_click = false;
-		break;
-
-	case GDK_ENTER_NOTIFY:
-		set_highlighted(true);
-		raise_connections();
-		raise_to_top();
-		break;
-
-	case GDK_LEAVE_NOTIFY:
-		set_highlighted(false);
-		break;
-
-	default:
-		handled = false;
-	}
-
-	return handled;
-	//return false;
 }
 
 
@@ -312,7 +205,7 @@ Ellipse::is_within(const Gnome::Canvas::Rect& rect)
 void
 Ellipse::set_width(double w)
 {
-//	_width = w;
+	_width = w;
 //	_ellipse.property_x2() = _ellipse.property_x1() + w;
 }
 
@@ -320,7 +213,7 @@ Ellipse::set_width(double w)
 void
 Ellipse::set_height(double h)
 {
-//	_height = h;
+	_height = h;
 //	_ellipse.property_y2() = _ellipse.property_y1() + h;
 }
 
@@ -493,6 +386,14 @@ void
 Ellipse::select_tick()
 {
 	_ellipse.property_dash() = _canvas.lock()->select_dash();
+}
+
+
+void
+Ellipse::add_connection(boost::shared_ptr<Connection> c)
+{
+	Connectable::add_connection(c);
+	raise_to_top();
 }
 
 

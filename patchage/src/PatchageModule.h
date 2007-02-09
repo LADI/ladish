@@ -74,6 +74,10 @@ public:
 
 
 	virtual void load_location() {
+		boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
+		if (!canvas)
+			return;
+
 		Coord loc = _app->state_manager()->get_module_location(_name, _type);
 
 		//cerr << "******" << _name << " MOVING TO (" << loc.x << "," << loc.y << ")" << endl;
@@ -81,8 +85,8 @@ public:
 		if (loc.x != -1)
 			move_to(loc.x, loc.y);
 		else
-			move_to((_canvas.lock()->width()/2) - 100 + rand() % 400,
-			         (_canvas.lock()->height()/2) - 100 + rand() % 400);
+			move_to((canvas->width()/2) - 100 + rand() % 400,
+			         (canvas->height()/2) - 100 + rand() % 400);
 	}
 
 	void split() {

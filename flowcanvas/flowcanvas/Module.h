@@ -80,11 +80,9 @@ public:
 	int num_ports() const { return _ports.size(); }
 
 protected:
-	bool module_event(GdkEvent* event);
-
-	virtual void on_double_click(GdkEventButton*) {}
-	virtual void on_middle_click(GdkEventButton*) {}
-	virtual void on_right_click(GdkEventButton*)  {}
+	/*virtual void on_middle_click(GdkEventButton&) {}
+	virtual void on_right_click(GdkEventButton&)  {}*/
+	virtual void on_drop(double new_x, double new_y);
 
 	double _border_width;
 	bool   _title_visible;
@@ -99,11 +97,6 @@ private:
 	friend class FlowCanvas;
 	friend class Connection;
 	
-	// For connection drawing
-	double port_connection_point_offset(boost::shared_ptr<Port> port);
-	double port_connection_points_range();
-	
-
 	struct PortComparator {
 		PortComparator(const string& name) : _name(name) {}
 		inline bool operator()(const boost::shared_ptr<Port> port)

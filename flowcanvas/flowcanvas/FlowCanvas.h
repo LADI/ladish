@@ -111,7 +111,6 @@ public:
 	double width() const  { return _width; }
 	double height() const { return _height; }
 
-	
 	/** Dash applied to selected items.
 	 * Set an object's property_dash() to this for the "rubber band" effect */
 	ArtVpathDash* const select_dash() { return _select_dash; }
@@ -125,10 +124,10 @@ public:
 	                        boost::shared_ptr<Connectable> dst) = 0;
 
 protected:
-	ItemMap                              _items;              ///< All modules on this canvas
-	ConnectionList                       _connections;          ///< All connections on this canvas
-	list<boost::shared_ptr<Item> >       _selected_items;     ///< All currently selected modules
-	list<boost::shared_ptr<Connection> > _selected_connections; ///< All currently selected connections
+	ItemMap                              _items;  ///< All modules on this canvas
+	ConnectionList                       _connections;  ///< All connections on this canvas
+	list<boost::shared_ptr<Item> >       _selected_items;  ///< All currently selected modules
+	list<boost::shared_ptr<Connection> > _selected_connections;  ///< All currently selected connections
 
 	virtual bool canvas_event(GdkEvent* event);
 	

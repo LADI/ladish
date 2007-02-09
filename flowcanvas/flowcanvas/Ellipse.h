@@ -51,9 +51,13 @@ public:
 
 	virtual ~Ellipse();
 	
-	virtual Gnome::Art::Point connection_point() {
+	Gnome::Art::Point src_connection_point() {
 		return Gnome::Art::Point(property_x(), property_y());
 	}
+	
+	Gnome::Art::Point dst_connection_point(const Gnome::Art::Point& src);
+
+	void add_connection(boost::shared_ptr<Connection> c);
 
 	bool point_is_within(double x, double y);
 
@@ -83,36 +87,17 @@ public:
 	uint32_t base_color() const { return 0x1F2A3CFF; }
 
 protected:
-	bool ellipse_event(GdkEvent* event);
-	
 	bool is_within(const Gnome::Canvas::Rect& rect);
 
-	virtual void on_double_click(GdkEventButton*) {}
-	virtual void on_middle_click(GdkEventButton*) {}
-	virtual void on_right_click(GdkEventButton*)  {}
+	/*virtual void on_double_click(GdkEventButton&) {}
+	virtual void on_middle_click(GdkEventButton&) {}
+	virtual void on_right_click(GdkEventButton&)  {}*/
 
 	double _border_width;
 	bool   _title_visible;
 
 	Gnome::Canvas::Ellipse _ellipse;
 	Gnome::Canvas::Text    _label;
-
-private:
-	friend class Port;
-	friend class FlowCanvas;
-	friend class Connection;
-	
-	// For connection drawing
-	//double port_connection_point_offset(boost::shared_ptr<Port> port);
-	//double port_connection_points_range();
-	
-
-	/*struct PortComparator {
-		PortComparator(const string& name) : _name(name) {}
-		inline bool operator()(const boost::shared_ptr<Port> port)
-			{ return (port && port->name() == _name); }
-		const string& _name;
-	};*/
 };
 
 

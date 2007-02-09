@@ -54,7 +54,8 @@ public:
 	
 	void disconnect_all();
 	
-	virtual Gnome::Art::Point connection_point();
+	virtual Gnome::Art::Point src_connection_point();
+	virtual Gnome::Art::Point dst_connection_point(const Gnome::Art::Point& src);
 
 	boost::weak_ptr<Module>                  module() const { return _module; }
 	std::list<boost::weak_ptr<Connection> >& connections()  { return _connections; }
@@ -97,8 +98,6 @@ protected:
 	double                  _height;
 	double                  _border_width;
 	uint32_t                _color;
-	
-	
 	
 	Gnome::Canvas::Text _label;
 	Gnome::Canvas::Rect _rect;

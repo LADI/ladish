@@ -11,10 +11,14 @@ project.
 listing of all configure options which you can pass to the top level
 configure script to build everything however you like.
 
-NOTE: if you use the top-level configure/make, everything will be built
+NOTE: if you use the top-level configure/make, everything should be built
 against the local copies in this tree, but if you compile the packages
-yourself, they will build against the libraries installed on your system.
+yourself in their own directories, they will build against the libraries
+installed on your system.
 
-Enjoy,
+Most of this code is in active development.  Please reports any bugs or
+requests at http://dev.drobilla.net/
 
--Dave
+Share and Enjoy,
+
+ - Dave
