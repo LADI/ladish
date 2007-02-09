@@ -1,8 +1,9 @@
-#include "../List.h"
 #include <iostream>
 #include <cstddef>
+#include <raul/List.h>
 
-using std::cout; using std::endl;
+using namespace std;
+using namespace Raul;
 
 
 int main()

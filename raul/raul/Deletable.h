@@ -1,12 +1,12 @@
-/* This file is part of Ingen.
+/* This file is part of Raul.
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
  * 
- * Ingen is free software; you can redistribute it and/or modify it under the
+ * Raul is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 2 of the License, or (at your option) any later
  * version.
  * 
- * Ingen is distributed in the hope that it will be useful, but WITHOUT ANY
+ * Raul is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for details.
  * 
@@ -15,22 +15,24 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef MAIDOBJECT_H
-#define MAIDOBJECT_H
+#ifndef RAUL_DELETABLE_H
+#define RAUL_DELETABLE_H
 
-#include <boost/utility.hpp>
-	
+namespace Raul {
 
-/** An object that can be passed to the maid for deletion.
+
+/** Something with a virtual destructor.
  *
- * \ingroup engine
+ * \ingroup raul
  */
-class MaidObject : boost::noncopyable
+class Deletable
 {
 public:
-	MaidObject()          {}
-	virtual ~MaidObject() {}
+	Deletable()          {}
+	virtual ~Deletable() {}
 };
 
 
-#endif // MAIDOBJECT_H
+} // namespace Raul
+
+#endif // RAUL_DELETABLE_H

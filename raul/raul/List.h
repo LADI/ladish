@@ -1,12 +1,12 @@
-/* This file is part of Ingen.
+/* This file is part of Raul.
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
  * 
- * Ingen is free software; you can redistribute it and/or modify it under the
+ * Raul is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 2 of the License, or (at your option) any later
  * version.
  * 
- * Ingen is distributed in the hope that it will be useful, but WITHOUT ANY
+ * Raul is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for details.
  * 
@@ -15,22 +15,24 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef LIST_H
-#define LIST_H
+#ifndef RAUL_LIST_H
+#define RAUL_LIST_H
 
+#include <cstddef>
 #include <cassert>
-#include "types.h"
-#include "MaidObject.h"
+#include "Deletable.h"
+
+namespace Raul {
 
 
 /** A node in a List.
  *
- * This class is (unusually) exposed to the user to allow list operations
- * to be realtime safe (ie so events can allocate list nodes in other threads
- * and then insert them in the realtime thread.
+ * This is exposed so the user can allocate ListNodes in different thread
+ * than the list reader, and insert (e.g. via an Event) it later in the
+ * reader thread.
  */
 template <typename T>
-class ListNode : public MaidObject
+class ListNode : public Raul::Deletable
 {
 public:
 	ListNode(T elem) : _elem(elem), _next(NULL), _prev(NULL) {}
@@ -57,7 +59,7 @@ private:
  * documentation for specific functions for realtime/thread safeness.
  */
 template <typename T>
-class List : public MaidObject
+class List : public Raul::Deletable
 {
 public:
 	List() : _head(NULL), _tail(NULL), _size(0), _end_iter(this), _const_end_iter(this)
@@ -154,17 +156,20 @@ template <typename T>
 void
 List<T>::clear()
 {
-	if (_head == NULL) return;
+	if (!_head)
+		return;
 	
 	ListNode<T>* node = _head;
 	ListNode<T>* next = NULL;
 	
-	while (node != NULL) {
+	while (node) {
 		next = node->next();
 		delete node;
 		node = next;
 	}
-	_tail = _head = NULL;
+
+	_head = 0;
+	_tail = 0;
 	_size = 0;
 }
 
@@ -178,11 +183,11 @@ template <typename T>
 void
 List<T>::push_back(ListNode<T>* const ln)
 {
-	assert(ln != NULL);
+	assert(ln);
 
 	ln->next(NULL);
 	// FIXME: atomicity?  relevant?
-	if (_head == NULL) {
+	if (_head) {
 		ln->prev(NULL);
 		_head = _tail = ln;
 	} else {
@@ -205,20 +210,23 @@ List<T>::remove(const T elem)
 {
 	// FIXME: atomicity?
 	ListNode<T>* n = _head;
-	while (n != NULL) {
+	while (n) {
 		if (n->elem() == elem)
 			break;
 		n = n->next();
 	}
-	if (n != NULL) {
+	if (n) {
 		if (n == _head) _head = _head->next();
 		if (n == _tail) _tail = _tail->prev();
-		if (n->prev() != NULL)
+		if (n->prev())
 			n->prev()->next(n->next());
-		if (n->next() != NULL)
+		if (n->next())
 			n->next()->prev(n->prev());
 		--_size;
-		if (_size == 0) _head = _tail = NULL; // FIXME: Shouldn't be necessary
+		
+		if (_size == 0)
+			_head = _tail = NULL; // FIXME: Shouldn't be necessary
+		
 		return n;
 	}
 	return NULL;
@@ -235,15 +243,16 @@ ListNode<T>*
 List<T>::remove(const iterator iter)
 {
 	ListNode<T>* n = iter._listnode;
-	if (n != NULL) {
+	if (n) {
 		if (n == _head) _head = _head->next();
 		if (n == _tail) _tail = _tail->prev();
-		if (n->prev() != NULL)
+		if (n->prev())
 			n->prev()->next(n->next());
-		if (n->next() != NULL)
+		if (n->next())
 			n->next()->prev(n->prev());
 		--_size;
-		if (_size == 0) _head = _tail = NULL; // FIXME: Shouldn't be necessary
+		if (_size == 0)
+			_head = _tail = NULL; // FIXME: Shouldn't be necessary
 		return n;
 	}
 	return NULL;
@@ -265,7 +274,7 @@ template <typename T>
 T&
 List<T>::iterator::operator*()
 {
-	assert(_listnode != NULL);
+	assert(_listnode);
 	return _listnode->elem();
 }
 
@@ -274,9 +283,9 @@ template <typename T>
 inline typename List<T>::iterator&
 List<T>::iterator::operator++()
 {
-	assert(_listnode != NULL);
+	assert(_listnode);
 	_listnode = _next;
-	if (_next != NULL)
+	if (_next)
 		_next = _next->next();
 	else
 		_next = NULL;
@@ -307,7 +316,7 @@ List<T>::begin()
 {
 	typename List<T>::iterator iter(this);
 	iter._listnode = _head;
-	if (_head != NULL)
+	if (_head)
 		iter._next = _head->next();
 	else
 		iter._next = NULL;
@@ -344,7 +353,7 @@ template <typename T>
 const T&
 List<T>::const_iterator::operator*() 
 {
-	assert(_listnode != NULL);
+	assert(_listnode);
 	return _listnode->elem();
 }
 
@@ -353,9 +362,9 @@ template <typename T>
 inline typename List<T>::const_iterator&
 List<T>::const_iterator::operator++()
 {
-	assert(_listnode != NULL);
+	assert(_listnode);
 	_listnode = _next;
-	if (_next != NULL)
+	if (_next)
 		_next = _next->next();
 	else
 		_next = NULL;
@@ -386,7 +395,7 @@ List<T>::begin() const
 {
 	typename List<T>::const_iterator iter(this);
 	iter._listnode = _head;
-	if (_head != NULL)
+	if (_head)
 		iter._next = _head->next();
 	else
 		iter._next = NULL;
@@ -406,4 +415,7 @@ List<T>::end() const
 }
 #endif
 
-#endif // LIST_H
+
+} // namespace Raul
+
+#endif // RAUL_LIST_H

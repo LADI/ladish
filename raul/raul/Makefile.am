@@ -16,7 +16,10 @@ raulinclude_HEADERS = \
 	JackDriver.h \
 	RDFQuery.h \
 	Namespaces.h \
-	AtomicInt.h
+	AtomicInt.h \
+	Deletable.h \
+	List.h \
+	Array.h
 
 if WITH_LIBLO
 raulinclude_HEADERS += AtomLiblo.h

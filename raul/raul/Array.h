@@ -1,12 +1,12 @@
-/* This file is part of Ingen.
+/* This file is part of Raul.
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
  * 
- * Ingen is free software; you can redistribute it and/or modify it under the
+ * Raul is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 2 of the License, or (at your option) any later
  * version.
  * 
- * Ingen is distributed in the hope that it will be useful, but WITHOUT ANY
+ * Raul is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for details.
  * 
@@ -15,13 +15,15 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef ARRAY_H
-#define ARRAY_H
+#ifndef RAUL_ARRAY_H
+#define RAUL_ARRAY_H
 
-#include "MaidObject.h"
 #include <cassert>
 #include <cstdlib>
 #include "types.h"
+#include "Deletable.h"
+
+namespace Raul {
 
 
 /** An array.
@@ -29,7 +31,7 @@
  * Has a stack-like push_back() too, for find_process_order...
  */
 template <class T>
-class Array : public MaidObject
+class Array : public Deletable
 {
 public:
 	Array(size_t size = 0) : _size(size), _top(0), _elems(NULL) {
@@ -103,4 +105,6 @@ private:
 };
 
 
-#endif // ARRAY_H
+} // namespace Raul
+
+#endif // RAUL_ARRAY_H
