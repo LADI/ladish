@@ -33,7 +33,7 @@ JackDriver::JackDriver()
 void
 JackDriver::attach(const std::string& client_name)
 {
-	Raul::JackDriver::attach(client_name);
+	Raul::JackDriver::attach(client_name, "debug");
 
 	if (jack_client()) {
 		_output_port = jack_port_register(jack_client(),
@@ -57,6 +57,8 @@ JackDriver::detach()
 Timestamp
 JackDriver::stamp_to_offset(Timestamp stamp)
 {
+	assert(stamp >= _current_cycle_start);
+
 	Timestamp ret = stamp - _current_cycle_start + _current_cycle_offset;
 	assert(ret < _current_cycle_offset + _current_cycle_nframes);
 	return ret;
@@ -76,6 +78,11 @@ JackDriver::on_process(jack_nframes_t nframes)
 	while (true) {
 	
 		bool machine_done = ! _machine->run(_current_cycle_nframes);
+
+		if (machine_done && _machine->time() == 0) {
+			_machine->reset();
+			return;
+		}
 
 		if (!machine_done) {
 			_current_cycle_start += _current_cycle_nframes;

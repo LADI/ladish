@@ -35,7 +35,8 @@ public:
 	MachinaGUI(SharedPtr<Machina::Machine> machine/*int argc, char** argv*/);
 	~MachinaGUI();
 
-	boost::shared_ptr<MachinaCanvas> canvas() { return _canvas; }
+	boost::shared_ptr<MachinaCanvas>    canvas()  { return _canvas; }
+	boost::shared_ptr<Machina::Machine> machine() { return _machine; }
 	
 	Gtk::Window* window() { return _main_window; }
 	
@@ -68,8 +69,8 @@ protected:
 	
 	bool   _refresh;
 
-	boost::shared_ptr<MachinaCanvas> _canvas;
-	boost::shared_ptr<Machina::Machine>       _machine;
+	boost::shared_ptr<MachinaCanvas>    _canvas;
+	boost::shared_ptr<Machina::Machine> _machine;
 
 	Gtk::Main* _gtk_main;
 	

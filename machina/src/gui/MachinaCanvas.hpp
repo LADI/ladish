@@ -26,30 +26,31 @@
 using namespace LibFlowCanvas;
 
 class MachinaGUI;
+class NodeView;
+
 
 class MachinaCanvas : public FlowCanvas
 {
 public:
-	MachinaCanvas(MachinaGUI* _app, int width, int height);
+	MachinaCanvas(MachinaGUI* app, int width, int height);
 	
-	void connect(boost::shared_ptr<Connectable> port1,
-	             boost::shared_ptr<Connectable> port2);
+	void connect(SharedPtr<NodeView> port1,
+	             SharedPtr<NodeView> port2);
 
-	void disconnect(boost::shared_ptr<Connectable> port1,
-	                boost::shared_ptr<Connectable> port2);
+	void disconnect(SharedPtr<NodeView> port1,
+	                SharedPtr<NodeView> port2);
 
 	void status_message(const string& msg);
 
 protected:
 	bool canvas_event(GdkEvent* event);
 
-	void item_selected(SharedPtr<Item> item);
-	void item_clicked(SharedPtr<Item> item, GdkEventButton* ev);
+	void node_clicked(SharedPtr<NodeView> item, GdkEventButton* ev);
 
 private:
 	MachinaGUI* _app;
 
-	WeakPtr<Connectable> _last_selected;
+	WeakPtr<NodeView> _last_clicked;
 };
 
 

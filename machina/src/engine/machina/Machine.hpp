@@ -36,6 +36,8 @@ public:
 	void activate()   { _is_activated = true; }
 	void deactivate() { _is_activated = false; }
 	
+	bool is_finished() { return _is_finished; }
+
 	void add_node(SharedPtr<Node> node);
 
 	// Audio context

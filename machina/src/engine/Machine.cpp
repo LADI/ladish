@@ -39,8 +39,6 @@ Machine::~Machine()
 void
 Machine::add_node(SharedPtr<Node> node)
 {
-	assert(!_is_activated);
-
 	_nodes.push_back(node);
 }
 
@@ -118,9 +116,6 @@ Machine::run(FrameCount nframes)
 	if (_is_finished)
 		return false;
 
-	if (_nodes.size() == 0)
-		return true;
-
 	const FrameCount cycle_end = _time + nframes;
 
 	assert(_is_activated);
@@ -128,10 +123,19 @@ Machine::run(FrameCount nframes)
 	//std::cerr << "--------- " << _time << " - " << _time + nframes << std::endl;
 
 	// Initial run, enter all initial states
-	if (_time == 0)
-		for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n)
-			if ((*n)->is_initial())
+	if (_time == 0) {
+		bool entered = false;
+		for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n) {
+			if ((*n)->is_initial()) {
 				(*n)->enter(0);
+				entered = true;
+			}
+		}
+		if (!entered) {
+			_is_finished = true;
+			return false;
+		}
+	}
 	
 	while (true) {
 

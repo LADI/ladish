@@ -17,9 +17,16 @@
 
 //#include "config.h"
 #include <raul/SharedPtr.h>
-#include <flowcanvas/Ellipse.h>
+#include "machina/Node.hpp"
+#include "machina/Machine.hpp"
+#include "machina/Action.hpp"
+#include "machina/Edge.hpp"
+#include "NodeView.hpp"
 #include "MachinaCanvas.hpp"
 #include "MachinaGUI.hpp"
+
+using namespace LibFlowCanvas;
+
 
 MachinaCanvas::MachinaCanvas(MachinaGUI* app, int width, int height)
 : FlowCanvas(width, height),
@@ -30,31 +37,86 @@ MachinaCanvas::MachinaCanvas(MachinaGUI* app, int width, int height)
 
 
 void
-MachinaCanvas::connect(boost::shared_ptr<Connectable>, //item1,
-                       boost::shared_ptr<Connectable>) //item2)
+MachinaCanvas::status_message(const string& msg)
 {
-#if 0
-	boost::shared_ptr<MachinaPort> p1 = boost::dynamic_pointer_cast<MachinaPort>(port1);
-	boost::shared_ptr<MachinaPort> p2 = boost::dynamic_pointer_cast<MachinaPort>(port2);
-	if (!p1 || !p2)
-		return;
-
-	if (p1->type() == JACK_AUDIO && p2->type() == JACK_AUDIO
-			|| (p1->type() == JACK_MIDI && p2->type() == JACK_MIDI))
-		_app->jack_driver()->connect(p1, p2);
-#ifdef HAVE_ALSA
-	else if (p1->type() == ALSA_MIDI && p2->type() == ALSA_MIDI)
-		_app->alsa_driver()->connect(p1, p2);
-#endif
-	else
-		status_message("WARNING: Cannot make connection, incompatible port types.");
-#endif
+	_app->status_message(string("[Canvas] ").append(msg));
 }
 
 
 void
-MachinaCanvas::disconnect(boost::shared_ptr<Connectable>,// item1,
-                          boost::shared_ptr<Connectable>)// item2)
+MachinaCanvas::node_clicked(SharedPtr<NodeView> item, GdkEventButton* event)
+{
+	cerr << "CLICKED: " << item->name() << endl;
+	
+	SharedPtr<NodeView> node = PtrCast<NodeView>(item);
+	if (!node)
+		return;
+	
+	SharedPtr<NodeView> last = _last_clicked.lock();
+
+	if (last) {
+		connect(last, node);
+		_last_clicked.reset();
+	} else {
+		_last_clicked = node;
+	}
+}
+
+
+bool
+MachinaCanvas::canvas_event(GdkEvent* event)
+{
+	static int last = 0;
+	
+	assert(event);
+	
+	if (event->type == GDK_BUTTON_PRESS) {
+	
+		const double x = event->button.x;
+		const double y = event->button.y;
+
+		if (event->button.button == 1) {
+			string name = string("Note")+(char)(last++ +'0');
+
+			SharedPtr<Machina::Node> node(new Machina::Node(1024*10, false));
+			node->add_enter_action(new Machina::PrintAction(name));
+			SharedPtr<NodeView> view(new NodeView(node, shared_from_this(),
+				name, x, y));
+
+			//view->signal_clicked.connect(sigc::bind(sigc::mem_fun(this,
+			//	&MachinaCanvas::node_clicked), view));
+			view->signal_clicked.connect(sigc::bind<0>(sigc::mem_fun(this,
+				&MachinaCanvas::node_clicked), view));
+			add_item(view);
+			view->resize();
+			view->raise_to_top();
+			
+			_app->machine()->add_node(node);
+		}
+	}
+
+	return FlowCanvas::canvas_event(event);
+}
+
+
+void
+MachinaCanvas::connect(boost::shared_ptr<NodeView> src,
+                       boost::shared_ptr<NodeView> dst)
+{
+	boost::shared_ptr<Connection> c(new Connection(shared_from_this(),
+				src, dst, 0x9999AAFF, true));
+	src->add_connection(c);
+	dst->add_connection(c);
+	add_connection(c);
+
+	src->node()->add_outgoing_edge(SharedPtr<Machina::Edge>(
+		new Machina::Edge(src->node(), dst->node())));
+}
+
+
+void
+MachinaCanvas::disconnect(boost::shared_ptr<NodeView>,// item1,
+                          boost::shared_ptr<NodeView>)// item2)
 {
 #if 0
 	boost::shared_ptr<MachinaPort> input
@@ -90,79 +152,3 @@ MachinaCanvas::disconnect(boost::shared_ptr<Connectable>,// item1,
 }
 
 
-void
-MachinaCanvas::status_message(const string& msg)
-{
-	_app->status_message(string("[Canvas] ").append(msg));
-}
-
-
-void
-MachinaCanvas::item_selected(SharedPtr<Item> i)
-{
-	cerr << "SELECTED: " << i->name() << endl;
-	
-	SharedPtr<Connectable> item = PtrCast<Connectable>(i);
-	if (!item)
-		return;
-	
-	SharedPtr<Connectable> last = _last_selected.lock();
-
-	if (last) {
-		boost::shared_ptr<Connection> c(new Connection(shared_from_this(),
-			last, item, 0x9999AAFF, true));
-		last->add_connection(c);
-		item->add_connection(c);
-		add_connection(c);
-		i->raise_to_top();
-		_last_selected.reset();
-	} else {
-		_last_selected = item;
-	}
-}
-
-
-void
-MachinaCanvas::item_clicked(SharedPtr<Item> i, GdkEventButton* event)
-{
-	cerr << "CLICKED " << event->button << ": " <<  i->name() << endl;
-
-	//return false;
-}
-
-
-bool
-MachinaCanvas::canvas_event(GdkEvent* event)
-{
-	static int last = 0;
-	
-	assert(event);
-	
-	if (event->type == GDK_BUTTON_PRESS) {
-	
-		const double x = event->button.x;
-		const double y = event->button.y;
-
-		SharedPtr<Item> item;
-
-		if (event->button.button == 1) {
-			item = SharedPtr<Item>(new Ellipse(shared_from_this(),
-				string("Note")+(char)(last++ +'0'), x, y, 30, 30, true));
-		} else if (event->button.button == 2) {
-			item = SharedPtr<Item>(new Module(shared_from_this(),
-				string("Note")+(char)(last++ +'0'), x, y, true));
-		}
-
-		if (item) {
-			item->signal_selected.connect(sigc::bind(sigc::mem_fun(this,
-				&MachinaCanvas::item_selected), item));
-			item->signal_clicked.connect(sigc::bind<0>(sigc::mem_fun(this,
-				&MachinaCanvas::item_clicked), item));
-			add_item(item);
-			item->resize();
-			item->raise_to_top();
-		}
-	}
-
-	return FlowCanvas::canvas_event(event);
-}

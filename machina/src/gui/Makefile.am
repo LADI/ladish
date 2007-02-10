@@ -17,6 +17,8 @@ machina_gui_SOURCES = \
 	MachinaGUI.hpp \
 	MachinaGUI.cpp \
 	MachinaCanvas.hpp \
-	MachinaCanvas.cpp
+	MachinaCanvas.cpp \
+	NodeView.hpp \
+	NodeView.cpp
 
 endif

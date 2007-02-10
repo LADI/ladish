@@ -43,7 +43,7 @@ class Ellipse : public LibFlowCanvas::Item, public Connectable
 public:
 	Ellipse(boost::shared_ptr<FlowCanvas> canvas,
 	        const std::string&            name,
-			double                        x,
+	        double                        x,
 	        double                        y,
 	        double                        x_radius,
 	        double                        y_radius,

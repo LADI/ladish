@@ -39,7 +39,7 @@ public:
 	JackDriver();
 	virtual ~JackDriver();
 	
-	void attach(const string& client_name);
+	void attach(const string& client_name, string server_name="default");
 	void detach();
 
 	bool is_attached() const { return (_client != NULL); }
