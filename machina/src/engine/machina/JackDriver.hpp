@@ -23,8 +23,12 @@
 #include <jack/midiport.h>
 #include "Machine.hpp"
 #include "MidiDriver.hpp"
+#include <boost/enable_shared_from_this.hpp>
 
 namespace Machina {
+
+class MidiAction;
+class Node;
 
 
 /** Realtime JACK Driver.
@@ -32,7 +36,8 @@ namespace Machina {
  * "Ticks" are individual frames when running under this driver, and all code
  * in the processing context must be realtime safe (non-blocking).
  */
-class JackDriver : public Raul::JackDriver, public Machina::MidiDriver {
+class JackDriver : public Raul::JackDriver, public Machina::MidiDriver,
+                   public boost::enable_shared_from_this<JackDriver> {
 public:
 	JackDriver();
 
@@ -45,18 +50,31 @@ public:
 	Timestamp    cycle_start()  { return _current_cycle_start; }
 	FrameCount   cycle_length() { return _current_cycle_nframes; }
 	
+	void learn(SharedPtr<Node> node);
+	
+	void write_event(Timestamp            time,
+	                 size_t               size,
+	                 const unsigned char* event);
+	
 private:
 	// Audio context
-	Timestamp    subcycle_offset()  { return _current_cycle_offset; }
-	jack_port_t* output_port() { return _output_port; }
-	virtual void on_process(jack_nframes_t nframes);
+	Timestamp    subcycle_offset() { return _current_cycle_offset; }
 	Timestamp    stamp_to_offset(Timestamp stamp);
+
+	void         process_input(jack_nframes_t nframes);
+	virtual void on_process(jack_nframes_t nframes);
+
 	SharedPtr<Machine> _machine;
 
-	jack_port_t*       _output_port;
-	Timestamp          _current_cycle_start;
-	Timestamp          _current_cycle_offset; ///< for split cycles
-	FrameCount         _current_cycle_nframes;
+	SharedPtr<Node>       _learn_node;
+	SharedPtr<MidiAction> _learn_enter_action;
+	SharedPtr<MidiAction> _learn_exit_action;
+
+	jack_port_t* _input_port;
+	jack_port_t* _output_port;
+	Timestamp    _current_cycle_start;
+	Timestamp    _current_cycle_offset; ///< for split cycles
+	FrameCount   _current_cycle_nframes;
 };
 
 

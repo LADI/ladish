@@ -125,15 +125,19 @@ Machine::run(FrameCount nframes)
 	// Initial run, enter all initial states
 	if (_time == 0) {
 		bool entered = false;
-		for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n) {
-			if ((*n)->is_initial()) {
-				(*n)->enter(0);
-				entered = true;
+		if ( ! _nodes.empty()) {
+			for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n) {
+				if ((*n)->is_initial()) {
+					(*n)->enter(0);
+					entered = true;
+				} else {
+					(*n)->exit(0);
+				}
 			}
 		}
 		if (!entered) {
-			_is_finished = true;
-			return false;
+			_is_finished = false; // run next time
+			return false; // but done this cycle
 		}
 	}
 	

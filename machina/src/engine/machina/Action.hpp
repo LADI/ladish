@@ -25,6 +25,10 @@
 namespace Machina {
 
 
+/** An Action, executed on entering or exiting of a state.
+ *
+ * Actions do not have time as a property.
+ */
 struct Action {
 	virtual ~Action() {}
 

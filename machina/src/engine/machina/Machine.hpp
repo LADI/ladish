@@ -20,7 +20,8 @@
 
 #include <vector>
 #include <map>
-#include "raul/SharedPtr.h"
+#include <raul/SharedPtr.h>
+#include <raul/List.h>
 #include "types.hpp"
 #include "Node.hpp"
 
@@ -48,7 +49,7 @@ public:
 	FrameCount time() { return _time; }
 
 private:
-	typedef std::vector<SharedPtr<Node> > Nodes;
+	typedef Raul::List<SharedPtr<Node> > Nodes;
 	
 	// Audio context
 	SharedPtr<Node> earliest_node() const;

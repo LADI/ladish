@@ -19,6 +19,7 @@
 #define MACHINA_MIDIACTION_HPP
 
 #include <raul/WeakPtr.h>
+#include <raul/AtomicPtr.h>
 #include "types.hpp"
 #include "Action.hpp"
 
@@ -29,16 +30,21 @@ class MidiDriver;
 
 class MidiAction : public Action {
 public:
-	JackNoteOnAction(WeakPtr<MidiDriver> driver,
-	                 size_t              size,
-	                 unsigned char*      event);
+	MidiAction(WeakPtr<MidiDriver>       driver,
+	           size_t                    size,
+	           const unsigned char*      event);
+
+	~MidiAction();
+
+	bool set_event(size_t size, const byte* event);
 
 	void execute(Timestamp time);
 
 private:
-	WeakPtr<MidiDriver> _driver;
-	size_t              _size;
-	unsigned char*      _event;
+	WeakPtr<MidiDriver>    _driver;
+	size_t                 _size;
+	const size_t           _max_size;
+	Raul::AtomicPtr<byte>  _event;
 };
 
 

@@ -16,20 +16,27 @@
  */
 
 #include "machina/JackNodeFactory.hpp"
-#include "machina/JackActions.hpp"
+#include "machina/MidiAction.hpp"
 #include "machina/Node.hpp"
+#include "machina/JackDriver.hpp"
 
 namespace Machina {
 
 
 SharedPtr<Node>
-JackNodeFactory::create_node(Node::ID, unsigned char note, FrameCount duration)
+JackNodeFactory::create_node(Node::ID, byte note, FrameCount duration)
 {
-	// FIXME: leaks like a sieve, obviously
+	// FIXME: obviously leaks like a sieve
+
+	size_t event_size = 3;
+	static const byte note_on[3] = { 0x80, note, 0x40 };
 	
 	Node* n = new Node(duration);
-	JackNoteOnAction* a_enter = new JackNoteOnAction(_driver, note);
-	JackNoteOffAction* a_exit = new JackNoteOffAction(_driver, note);
+	MidiAction* a_enter = new MidiAction(_driver, event_size, note_on);
+	
+	
+	static const byte note_off[3] = { 0x90, note, 0x40 };
+	MidiAction* a_exit = new MidiAction(_driver, event_size, note_off);
 
 	n->add_enter_action(a_enter);
 	n->add_exit_action(a_exit);

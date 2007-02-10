@@ -26,6 +26,7 @@ namespace Machina {
 typedef jack_nframes_t FrameCount;
 typedef jack_nframes_t Timestamp;
 
+typedef unsigned char byte;
 
 } // namespace Machina
 
