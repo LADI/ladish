@@ -81,7 +81,7 @@ public:
 	unsigned size() const { return (unsigned)_size.get(); }
 
 	/// Valid for any thread
-	bool empty() { return (_head.get() != NULL); }
+	bool empty() { return (_head.get() == NULL); }
 
 	class iterator;
 
