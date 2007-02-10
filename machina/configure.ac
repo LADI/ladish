@@ -2,6 +2,8 @@
 
 AC_INIT(machina, 0.0.1, dave@drobilla.net)
 AC_CONFIG_SRCDIR([src/main.cpp])
+AC_CONFIG_SRCDIR([src/engine/Machine.cpp])
+AC_CONFIG_SRCDIR([src/engine/machina/Machine.hpp])
 AC_CONFIG_SRCDIR([src/gui/main.cpp])
 #AC_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE
@@ -71,6 +73,8 @@ CFLAGS="$CFLAGS -pipe -Wall -fmessage-length=139 -fdiagnostics-show-location=eve
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
+AC_CONFIG_FILES([src/engine/Makefile])
+AC_CONFIG_FILES([src/engine/machina/Makefile])
 AC_CONFIG_FILES([src/gui/Makefile])
 AC_CONFIG_FILES([machina.desktop])
 

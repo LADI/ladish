@@ -21,6 +21,8 @@
 #include <cstddef>
 #include <cassert>
 #include "Deletable.h"
+#include "AtomicPtr.h"
+#include "AtomicInt.h"
 
 namespace Raul {
 
@@ -35,44 +37,43 @@ template <typename T>
 class ListNode : public Raul::Deletable
 {
 public:
-	ListNode(T elem) : _elem(elem), _next(NULL), _prev(NULL) {}
+	ListNode(T elem) : _elem(elem) {}
 	virtual ~ListNode() {}
 
-	ListNode* next() const       { return _next; }
+	ListNode* next() const       { return _next.get(); }
 	void      next(ListNode* ln) { _next = ln; }
-	ListNode* prev() const       { return _prev; }
+	ListNode* prev() const       { return _prev.get(); }
 	void      prev(ListNode* ln) { _prev = ln; }
 	T&        elem()             { return _elem;}
 	const T&  elem() const       { return _elem; }
 	
 private:
-	T         _elem;
-	ListNode* _next;
-	ListNode* _prev;
+	T                   _elem;
+	AtomicPtr<ListNode> _next;
+	AtomicPtr<ListNode> _prev;
 };
 
 
 
 /** A realtime safe, (partially) thread safe doubly linked list.
  * 
- * Elements can be added safely while another thread is reading the list.  See
- * documentation for specific functions for realtime/thread safeness.
+ * Elements can be added safely while another thread is reading the list.
+ * Like a typical ringbuffer, this is single-reader single-writer threadsafe
+ * only.  See documentation for specific functions for specifics.
  */
 template <typename T>
 class List : public Raul::Deletable
 {
 public:
-	List() : _head(NULL), _tail(NULL), _size(0), _end_iter(this), _const_end_iter(this)
+	List() : _size(0), _end_iter(this), _const_end_iter(this)
 	{
 		_end_iter._listnode = NULL;
-		_end_iter._next = NULL;
 		_const_end_iter._listnode = NULL;
-		_const_end_iter._next = NULL;
 	}
 	~List();
 
-	void          push_back(ListNode<T>* elem);
-	ListNode<T>*  remove(const T elem);
+	void push_back(ListNode<T>* elem); // realtime safe
+	void push_back(T& elem);           // NOT realtime safe
 
 	void clear();
 	size_t size() const { return _size; }
@@ -85,7 +86,7 @@ public:
 	public:
 		const_iterator(const List<T>* const list);
 		const_iterator(const iterator& i)
-		: _list(i._list), _listnode(i._listnode), _next(i._next) {}
+		: _list(i._list), _listnode(i._listnode) {}
 	
 		inline const T&        operator*();
 		inline const_iterator& operator++();
@@ -97,7 +98,6 @@ public:
 	private:
 		const List<T>* const _list;
 		const ListNode<T>*   _listnode;
-		const ListNode<T>*   _next;  // use this instead of _listnode->next() to allow deleting
 	};
 
 
@@ -113,16 +113,17 @@ public:
 		inline bool      operator!=(const const_iterator& iter) const;
 	
 		friend class List<T>;
-		friend class List<T>::const_iterator;
+		//friend class List<T>::const_iterator;
 
 	private:
 		const List<T>* _list;
 		ListNode<T>*   _listnode;
-		ListNode<T>*   _next;  // use this instead of _listnode->next() to allow deleting
 	};
 
 	
-	ListNode<T>* remove(const iterator iter);
+	ListNode<T>* erase(const iterator iter);
+
+	iterator find(const T& val);
 
 	iterator begin();
 	const iterator end() const;
@@ -131,11 +132,11 @@ public:
 	//const_iterator end()   const;
 
 private:
-	ListNode<T>*   _head;
-	ListNode<T>*   _tail;
-	size_t         _size;
-	iterator       _end_iter;
-	const_iterator _const_end_iter;
+	AtomicPtr<ListNode<T> > _head;
+	AtomicPtr<ListNode<T> > _tail; ///< writer only
+	AtomicInt               _size;
+	iterator                _end_iter;
+	const_iterator          _const_end_iter;
 };
 
 
@@ -156,12 +157,9 @@ template <typename T>
 void
 List<T>::clear()
 {
-	if (!_head)
-		return;
-	
-	ListNode<T>* node = _head;
+	ListNode<T>* node = _head.get();
 	ListNode<T>* next = NULL;
-	
+
 	while (node) {
 		next = node->next();
 		delete node;
@@ -176,7 +174,7 @@ List<T>::clear()
 
 /** Add an element to the list.
  *
- * This method can be called while another thread is reading the list.
+ * Thread safe (may be called while another thread is reading the list).
  * Realtime safe.
  */
 template <typename T>
@@ -186,27 +184,57 @@ List<T>::push_back(ListNode<T>* const ln)
 	assert(ln);
 
 	ln->next(NULL);
-	// FIXME: atomicity?  relevant?
-	if (_head) {
+	
+	if ( ! _head.get()) { // empty
 		ln->prev(NULL);
-		_head = _tail = ln;
+		_tail = ln;
+		_head = ln;
 	} else {
-		ln->prev(_tail);
-		_tail->next(ln);
+		ln->prev(_tail.get());
+		_tail.get()->next(ln);
 		_tail = ln;
 	}
 	++_size;
 }
 
 
-/** Remove an element from the list.
+/** Add an element to the list.
+ *
+ * Thread safe (may be called while another thread is reading the list).
+ * NOT realtime safe (a ListNode is allocated).
+ */
+template <typename T>
+void
+List<T>::push_back(T& elem)
+{
+	ListNode<T>* const ln = new ListNode<T>(elem);
+
+	assert(ln);
+
+	ln->next(NULL);
+	
+	if ( ! _head.get()) { // empty
+		ln->prev(NULL);
+		_tail = ln;
+		_head = ln;
+	} else {
+		ln->prev(_tail.get());
+		_tail.get()->next(ln);
+		_tail = ln;
+	}
+	++_size;
+}
+
+
+/** Remove all elements equal to @val from the list.
  *
  * This function is realtime safe - it is the caller's responsibility to
  * delete the returned ListNode, or there will be a leak.
  */
+#if 0
 template <typename T>
 ListNode<T>*
-List<T>::remove(const T elem)
+List<T>::remove(const T val)
 {
 	// FIXME: atomicity?
 	ListNode<T>* n = _head;
@@ -231,31 +259,62 @@ List<T>::remove(const T elem)
 	}
 	return NULL;
 }
+#endif
+
+
+/** Find an element in the list.
+ *
+ * This will only return the first element found.  If there are duplicated,
+ * another call to find() will return the next, etc.
+ */
+template <typename T>
+typename List<T>::iterator
+List<T>::find(const T& val)
+{
+	for (iterator i = begin(); i != end(); ++i)
+		if (*i == val)
+			return i;
+
+	return end();
+}
 
 
 /** Remove an element from the list using an iterator.
  * 
  * This function is realtime safe - it is the caller's responsibility to
  * delete the returned ListNode, or there will be a leak.
+ * Thread safe (safe to call while another thread reads the list).
+ * @iter is invalid immediately following this call.
  */
 template <typename T>
 ListNode<T>*
-List<T>::remove(const iterator iter)
+List<T>::erase(const iterator iter)
 {
-	ListNode<T>* n = iter._listnode;
+	ListNode<T>* const n = iter._listnode;
+	
 	if (n) {
-		if (n == _head) _head = _head->next();
-		if (n == _tail) _tail = _tail->prev();
-		if (n->prev())
-			n->prev()->next(n->next());
-		if (n->next())
-			n->next()->prev(n->prev());
+	
+		ListNode<T>* const prev = n->prev();
+		ListNode<T>* const next = n->next();
+
+		// Removing the head (or the only element)
+		if (n == _head.get())
+			_head = next;
+
+		// Removing the tail (or the only element)
+		if (n == _tail.get())
+			_tail = _tail.get()->prev();
+
+		if (prev)
+			n->prev()->next(next);
+
+		if (next)
+			n->next()->prev(prev);
+	
 		--_size;
-		if (_size == 0)
-			_head = _tail = NULL; // FIXME: Shouldn't be necessary
-		return n;
 	}
-	return NULL;
+
+	return n;
 }
 
 
@@ -264,8 +323,7 @@ List<T>::remove(const iterator iter)
 template <typename T>
 List<T>::iterator::iterator(List<T>* list)
 : _list(list),
-  _listnode(NULL),
-  _next(NULL)
+  _listnode(NULL)
 {
 }
 
@@ -284,11 +342,7 @@ inline typename List<T>::iterator&
 List<T>::iterator::operator++()
 {
 	assert(_listnode);
-	_listnode = _next;
-	if (_next)
-		_next = _next->next();
-	else
-		_next = NULL;
+	_listnode = _listnode->next();
 
 	return *this;
 }
@@ -315,11 +369,9 @@ inline typename List<T>::iterator
 List<T>::begin()
 {
 	typename List<T>::iterator iter(this);
-	iter._listnode = _head;
-	if (_head)
-		iter._next = _head->next();
-	else
-		iter._next = NULL;
+
+	iter._listnode = _head.get();
+	
 	return iter;
 }
 
@@ -328,10 +380,6 @@ template <typename T>
 inline const typename List<T>::iterator
 List<T>::end() const
 {
-	/*typename List<T>::iterator iter(this);
-	iter._listnode = NULL;
-	iter._next = NULL;
-	return iter;*/
 	return _end_iter;
 }
 
@@ -343,8 +391,7 @@ List<T>::end() const
 template <typename T>
 List<T>::const_iterator::const_iterator(const List<T>* const list)
 : _list(list),
-  _listnode(NULL),
-  _next(NULL)
+  _listnode(NULL)
 {
 }
 
@@ -363,11 +410,7 @@ inline typename List<T>::const_iterator&
 List<T>::const_iterator::operator++()
 {
 	assert(_listnode);
-	_listnode = _next;
-	if (_next)
-		_next = _next->next();
-	else
-		_next = NULL;
+	_listnode = _listnode->next();
 
 	return *this;
 }
@@ -394,11 +437,7 @@ inline typename List<T>::const_iterator
 List<T>::begin() const
 {
 	typename List<T>::const_iterator iter(this);
-	iter._listnode = _head;
-	if (_head)
-		iter._next = _head->next();
-	else
-		iter._next = NULL;
+	iter._listnode = _head.get();
 	return iter;
 }
 

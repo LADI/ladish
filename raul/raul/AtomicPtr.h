@@ -27,6 +27,9 @@ template<typename T>
 class AtomicPtr {
 public:
 
+	inline AtomicPtr()
+		{ g_atomic_pointer_set(&_val, NULL); }
+
 	inline AtomicPtr(const AtomicPtr& copy)
 		{ g_atomic_pointer_set(&_val, copy.get()); }
 

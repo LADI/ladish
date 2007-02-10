@@ -20,23 +20,24 @@
 
 //#include "config.h"
 #include <string>
-#include <boost/shared_ptr.hpp>
+#include <raul/SharedPtr.h>
 #include <libgnomecanvasmm.h>
 
 using namespace std;
 
-class MachinaCanvas;
+namespace Machina { class Machine; }
 
+class MachinaCanvas;
 
 class MachinaGUI
 {
 public:
-	MachinaGUI(/*int argc, char** argv*/);
+	MachinaGUI(SharedPtr<Machina::Machine> machine/*int argc, char** argv*/);
 	~MachinaGUI();
 
 	boost::shared_ptr<MachinaCanvas> canvas() { return _canvas; }
 	
-	Gtk::Window*  window()        { return _main_window; }
+	Gtk::Window* window() { return _main_window; }
 	
 	void attach();
 	void quit() { _main_window->hide(); }
@@ -64,12 +65,13 @@ protected:
 	bool _pane_closed;
 	bool _update_pane_position;
 	int  _user_pane_position;
+	
+	bool   _refresh;
 
 	boost::shared_ptr<MachinaCanvas> _canvas;
+	boost::shared_ptr<Machina::Machine>       _machine;
 
 	Gtk::Main* _gtk_main;
-
-	bool   _refresh;
 	
 	Gtk::Window*         _main_window;
 	Gtk::AboutDialog*    _about_window;
@@ -81,8 +83,8 @@ protected:
 	Gtk::TextView*       _status_text;
 	Gtk::Paned*          _main_paned;
 	Gtk::Expander*       _messages_expander;
-	Gtk::ToolButton*         _zoom_normal_button;
-	Gtk::ToolButton*         _zoom_full_button;
+	Gtk::ToolButton*     _zoom_normal_button;
+	Gtk::ToolButton*     _zoom_full_button;
 };
 
 #endif // MACHINA_GUI_H

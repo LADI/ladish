@@ -65,11 +65,12 @@ gtkmm_set_width_for_given_text (Gtk::Widget &w, const gchar *text,
 
 
 
-MachinaGUI::MachinaGUI(/*int argc, char** argv*/)
+MachinaGUI::MachinaGUI(SharedPtr<Machina::Machine> m/*int argc, char** argv*/)
 : _pane_closed(false),
   _update_pane_position(true),
   _user_pane_position(0),
-  _refresh(false)
+  _refresh(false),
+  _machine(m)
 {
 	/*_settings_filename = getenv("HOME");
 	_settings_filename += "/.machinarc";*/

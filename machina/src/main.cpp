@@ -17,13 +17,13 @@
 
 #include <iostream>
 #include <signal.h>
-#include "Machine.hpp"
-#include "Node.hpp"
-#include "Action.hpp"
-#include "Edge.hpp"
-#include "Loader.hpp"
-#include "JackDriver.hpp"
-#include "JackNodeFactory.hpp"
+#include "machina/Machine.hpp"
+#include "machina/Node.hpp"
+#include "machina/Action.hpp"
+#include "machina/Edge.hpp"
+#include "machina/Loader.hpp"
+#include "machina/JackDriver.hpp"
+#include "machina/JackNodeFactory.hpp"
 
 using namespace std;
 using namespace Machina;
