@@ -11,7 +11,7 @@ libmachina_la_SOURCES = \
 	Machine.cpp \
 	Loader.h \
 	Loader.cpp \
+	MidiActions.cpp \
 	JackDriver.h \
 	JackDriver.cpp \
-	JackActions.cpp \
 	JackNodeFactory.cpp

@@ -26,6 +26,7 @@ namespace Machina {
 typedef jack_nframes_t FrameCount;
 typedef jack_nframes_t Timestamp;
 
+
 } // namespace Machina
 
 #endif // MACHINA_TYPES_HPP

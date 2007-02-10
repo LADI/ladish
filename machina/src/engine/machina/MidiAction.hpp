@@ -15,8 +15,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef MACHINA_JACKACTIONS_HPP
-#define MACHINA_JACKACTIONS_HPP
+#ifndef MACHINA_MIDIACTION_HPP
+#define MACHINA_MIDIACTION_HPP
 
 #include <raul/WeakPtr.h>
 #include "types.hpp"
@@ -24,34 +24,24 @@
 
 namespace Machina {
 
-class Node;
-class JackDriver;
+class MidiDriver;
 
 
-class JackNoteOnAction : public Action {
+class MidiAction : public Action {
 public:
-	JackNoteOnAction(WeakPtr<JackDriver> driver, unsigned char note_num);
+	JackNoteOnAction(WeakPtr<MidiDriver> driver,
+	                 size_t              size,
+	                 unsigned char*      event);
 
 	void execute(Timestamp time);
 
 private:
-	WeakPtr<JackDriver> _driver;
-	unsigned char       _note_num;
-};
-
-
-class JackNoteOffAction : public Action {
-public:
-	JackNoteOffAction(WeakPtr<JackDriver> driver, unsigned char note_num);
-
-	void execute(Timestamp time);
-
-private:
-	WeakPtr<JackDriver> _driver;
-	unsigned char       _note_num;
+	WeakPtr<MidiDriver> _driver;
+	size_t              _size;
+	unsigned char*      _event;
 };
 
 
 } // namespace Machina
 
-#endif // MACHINA_JACKACTIONS_HPP
+#endif // MACHINA_MIDIACTION_HPP

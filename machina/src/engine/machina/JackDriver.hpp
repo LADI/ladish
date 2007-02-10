@@ -22,11 +22,17 @@
 #include <raul/SharedPtr.h>
 #include <jack/midiport.h>
 #include "Machine.hpp"
+#include "MidiDriver.hpp"
 
 namespace Machina {
 
 
-class JackDriver : public Raul::JackDriver {
+/** Realtime JACK Driver.
+ *
+ * "Ticks" are individual frames when running under this driver, and all code
+ * in the processing context must be realtime safe (non-blocking).
+ */
+class JackDriver : public Raul::JackDriver, public Machina::MidiDriver {
 public:
 	JackDriver();
 
@@ -36,18 +42,17 @@ public:
 	void set_machine(SharedPtr<Machine> machine) { _machine = machine; }
 	
 	// Audio context
-	Timestamp    stamp_to_offset(Timestamp stamp);
-	jack_port_t* output_port()           { return _output_port; }
-	//Timestamp    current_cycle_start()   { return _current_cycle_start; }
-	//Timestamp    current_cycle_offset()  { return _current_cycle_offset; }
-	FrameCount   current_cycle_nframes() { return _current_cycle_nframes; }
+	Timestamp    cycle_start()  { return _current_cycle_start; }
+	FrameCount   cycle_length() { return _current_cycle_nframes; }
 	
-
-protected:
-	virtual void on_process(jack_nframes_t nframes);
-
 private:
+	// Audio context
+	Timestamp    subcycle_offset()  { return _current_cycle_offset; }
+	jack_port_t* output_port() { return _output_port; }
+	virtual void on_process(jack_nframes_t nframes);
+	Timestamp    stamp_to_offset(Timestamp stamp);
 	SharedPtr<Machine> _machine;
+
 	jack_port_t*       _output_port;
 	Timestamp          _current_cycle_start;
 	Timestamp          _current_cycle_offset; ///< for split cycles

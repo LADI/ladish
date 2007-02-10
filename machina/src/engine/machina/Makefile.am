@@ -7,6 +7,7 @@ libmachinainclude_HEADERS = \
 	Machine.hpp \
 	Loader.hpp \
 	JackDriver.hpp \
-	JackActions.hpp \
 	NodeFactory.hpp \
-	JackNodeFactory.hpp
+	JackNodeFactory.hpp \
+	MidiAction.hpp \
+	MidiDriver.hpp
