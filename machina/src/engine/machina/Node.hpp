@@ -18,9 +18,9 @@
 #ifndef MACHINA_NODE_HPP
 #define MACHINA_NODE_HPP
 
-#include <list>
 #include <boost/utility.hpp>
 #include <raul/SharedPtr.h>
+#include <raul/List.h>
 #include "types.hpp"
 #include "Action.hpp"
 
@@ -63,7 +63,7 @@ public:
 	FrameCount duration()                 { return _duration; }
 	void       set_duration(FrameCount d) { _duration = d; }
 	
-	typedef std::list<SharedPtr<Edge> > EdgeList;
+	typedef Raul::List<SharedPtr<Edge> > EdgeList;
 	const EdgeList& outgoing_edges() const { return _outgoing_edges; }
 	
 private:

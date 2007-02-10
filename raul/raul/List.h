@@ -76,7 +76,12 @@ public:
 	void push_back(T& elem);           // NOT realtime safe
 
 	void clear();
-	size_t size() const { return _size; }
+
+	/// Valid only in the write thread
+	unsigned size() const { return (unsigned)_size.get(); }
+
+	/// Valid for any thread
+	bool empty() { return (_head.get() != NULL); }
 
 	class iterator;
 
