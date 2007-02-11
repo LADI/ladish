@@ -28,19 +28,19 @@ JackNodeFactory::create_node(Node::ID, byte note, FrameCount duration)
 {
 	// FIXME: obviously leaks like a sieve
 
-	size_t event_size = 3;
-	static const byte note_on[3] = { 0x80, note, 0x40 };
+	//size_t event_size = 3;
+	//static const byte note_on[3] = { 0x80, note, 0x40 };
 	
 	Node* n = new Node(duration);
-	MidiAction* a_enter = new MidiAction(_driver, event_size, note_on);
+	/*SharedPtr<MidiAction> a_enter = MidiAction::create(event_size, note_on);
 	
 	
 	static const byte note_off[3] = { 0x90, note, 0x40 };
-	MidiAction* a_exit = new MidiAction(_driver, event_size, note_off);
+	SharedPtr<MidiAction> a_exit = MidiAction::create(event_size, note_off);
 
 	n->add_enter_action(a_enter);
 	n->add_exit_action(a_exit);
-
+*/
 	return SharedPtr<Node>(n);
 }
 

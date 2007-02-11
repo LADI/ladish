@@ -27,46 +27,44 @@ Node::Node(FrameCount duration, bool initial)
 	, _is_active(false)
 	, _enter_time(0)
 	, _duration(duration)
-	, _enter_action(NULL)
-	, _exit_action(NULL)
 {
 }
 
 
 void
-Node::add_enter_action(Action* action)
+Node::add_enter_action(SharedPtr<Action> action)
 {
-	assert(!_enter_action);
 	_enter_action = action;
 }
 
 
 void
-Node::remove_enter_action(Action* /*action*/)
+Node::remove_enter_action(SharedPtr<Action> /*action*/)
 {
-	_enter_action = NULL;
+	_enter_action.reset();
 }
 
 
 
 void
-Node::add_exit_action(Action* action)
+Node::add_exit_action(SharedPtr<Action> action)
 {
-	assert(!_exit_action);
 	_exit_action = action;
 }
 
 
 void
-Node::remove_exit_action(Action* /*action*/)
+Node::remove_exit_action(SharedPtr<Action> /*action*/)
 {
-	_exit_action = NULL;
+	_exit_action.reset();
 }
 
+//using namespace std;
 
 void
 Node::enter(Timestamp time)
 {
+	//cerr << "ENTER " << time << endl;
 	_is_active = true;
 	_enter_time = time;
 	if (_enter_action)
@@ -77,6 +75,7 @@ Node::enter(Timestamp time)
 void
 Node::exit(Timestamp time)
 {
+	//cerr << "EXIT " << time << endl;
 	if (_exit_action)
 		_exit_action->execute(time);
 	_is_active = false;

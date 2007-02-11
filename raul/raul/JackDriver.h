@@ -86,6 +86,9 @@ protected:
 	virtual void on_shutdown() {}
 	virtual void on_error()    {}
 
+protected:
+	jack_client_t* _client;
+
 private:
 
 	static void error_cb(const char* msg);
@@ -101,8 +104,6 @@ private:
 	static int  jack_process_cb(jack_nframes_t nframes, void* me);
 
 	static void jack_shutdown_cb(void* me);
-
-	jack_client_t* _client;
 
 	bool            _is_activated;
 	jack_position_t _last_pos;

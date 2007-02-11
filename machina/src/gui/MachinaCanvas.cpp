@@ -21,6 +21,7 @@
 #include "machina/Machine.hpp"
 #include "machina/Action.hpp"
 #include "machina/Edge.hpp"
+#include "machina/LearnRequest.hpp"
 #include "NodeView.hpp"
 #include "MachinaCanvas.hpp"
 #include "MachinaGUI.hpp"
@@ -47,15 +48,21 @@ void
 MachinaCanvas::node_clicked(SharedPtr<NodeView> item, GdkEventButton* event)
 {
 	cerr << "CLICKED: " << item->name() << endl;
-	
+
 	SharedPtr<NodeView> node = PtrCast<NodeView>(item);
 	if (!node)
 		return;
 	
+	// Middle click, learn
+	if (event->button == 2) {
+		_app->machine()->learn(Machina::LearnRequest::create(_app->maid(), node->node()));
+		return;
+	} 
+
 	SharedPtr<NodeView> last = _last_clicked.lock();
 
 	if (last) {
-		connect(last, node);
+		connect_node(last, node);
 		_last_clicked.reset();
 	} else {
 		_last_clicked = node;
@@ -79,7 +86,7 @@ MachinaCanvas::canvas_event(GdkEvent* event)
 			string name = string("Note")+(char)(last++ +'0');
 
 			SharedPtr<Machina::Node> node(new Machina::Node(1024*10, false));
-			node->add_enter_action(new Machina::PrintAction(name));
+			//node->add_enter_action(SharedPtr<Machina::Action>(new Machina::PrintAction(name)));
 			SharedPtr<NodeView> view(new NodeView(node, shared_from_this(),
 				name, x, y));
 
@@ -100,8 +107,8 @@ MachinaCanvas::canvas_event(GdkEvent* event)
 
 
 void
-MachinaCanvas::connect(boost::shared_ptr<NodeView> src,
-                       boost::shared_ptr<NodeView> dst)
+MachinaCanvas::connect_node(boost::shared_ptr<NodeView> src,
+                            boost::shared_ptr<NodeView> dst)
 {
 	boost::shared_ptr<Connection> c(new Connection(shared_from_this(),
 				src, dst, 0x9999AAFF, true));
@@ -115,8 +122,8 @@ MachinaCanvas::connect(boost::shared_ptr<NodeView> src,
 
 
 void
-MachinaCanvas::disconnect(boost::shared_ptr<NodeView>,// item1,
-                          boost::shared_ptr<NodeView>)// item2)
+MachinaCanvas::disconnect_node(boost::shared_ptr<NodeView>,// item1,
+                               boost::shared_ptr<NodeView>)// item2)
 {
 #if 0
 	boost::shared_ptr<MachinaPort> input

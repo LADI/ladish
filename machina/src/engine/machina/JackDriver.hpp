@@ -50,8 +50,6 @@ public:
 	Timestamp    cycle_start()  { return _current_cycle_start; }
 	FrameCount   cycle_length() { return _current_cycle_nframes; }
 	
-	void learn(SharedPtr<Node> node);
-	
 	void write_event(Timestamp            time,
 	                 size_t               size,
 	                 const unsigned char* event);
@@ -66,13 +64,9 @@ private:
 
 	SharedPtr<Machine> _machine;
 
-	SharedPtr<Node>       _learn_node;
-	SharedPtr<MidiAction> _learn_enter_action;
-	SharedPtr<MidiAction> _learn_exit_action;
-
 	jack_port_t* _input_port;
 	jack_port_t* _output_port;
-	Timestamp    _current_cycle_start;
+	Timestamp    _current_cycle_start; ///< in machine relative time
 	Timestamp    _current_cycle_offset; ///< for split cycles
 	FrameCount   _current_cycle_nframes;
 };

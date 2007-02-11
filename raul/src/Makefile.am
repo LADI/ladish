@@ -6,7 +6,8 @@ lib_LTLIBRARIES = libraul.la
 libraul_la_SOURCES = \
 	Thread.cpp \
 	Path.cpp \
-	Namespaces.cpp
+	Namespaces.cpp \
+	Maid.cpp
 
 if WITH_RAPTOR
 libraul_la_SOURCES += RDFWriter.cpp

@@ -65,12 +65,13 @@ gtkmm_set_width_for_given_text (Gtk::Widget &w, const gchar *text,
 
 
 
-MachinaGUI::MachinaGUI(SharedPtr<Machina::Machine> m/*int argc, char** argv*/)
+MachinaGUI::MachinaGUI(SharedPtr<Machina::Machine> machine)
 : _pane_closed(false),
   _update_pane_position(true),
   _user_pane_position(0),
   _refresh(false),
-  _machine(m)
+  _machine(machine),
+  _maid(new Raul::Maid(32))
 {
 	/*_settings_filename = getenv("HOME");
 	_settings_filename += "/.machinarc";*/
@@ -154,8 +155,8 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Machine> m/*int argc, char** argv*/)
 	_update_pane_position = true;
 	_pane_closed = true;
 
-	// Idle callback, check if we need to refresh
-	Glib::signal_timeout().connect(sigc::mem_fun(this, &MachinaGUI::idle_callback), 100);
+	// Idle callback to drive the maid (collect garbage)
+	Glib::signal_timeout().connect(sigc::mem_fun(this, &MachinaGUI::idle_callback), 1000);
 	
 	// Faster idle callback to update DSP load progress bar
 	//Glib::signal_timeout().connect(sigc::mem_fun(this, &MachinaGUI::update_load), 50);
@@ -185,34 +186,7 @@ MachinaGUI::attach()
 bool
 MachinaGUI::idle_callback() 
 {
-#if 0
-	if (_jack_driver) {
-		while (!_jack_driver->events().empty()) {
-			MachinaEvent& ev = _jack_driver->events().front();
-			_jack_driver->events().pop();
-			ev.execute();
-		}
-	}
-
-	
-	bool refresh = _refresh;
-
-	refresh = refresh || (_jack_driver && _jack_driver->is_dirty());
-
-	if (refresh) {
-		
-		_canvas->flag_all_connections();
-
-		_jack_driver->refresh();
-	}
-
-	if (refresh) {
-		_canvas->destroy_all_flagged_connections();
-		_refresh = false;
-	}
-
-	update_load();
-#endif
+	_maid->cleanup();
 	return true;
 }
 

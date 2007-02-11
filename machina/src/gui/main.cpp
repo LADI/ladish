@@ -40,10 +40,11 @@ main(int argc, char** argv)
 	SharedPtr<Machina::Machine> m(new Machine());
 
 	m->activate();
+	
+	MidiAction::set_driver(driver);
 
 	driver->set_machine(m);
 	driver->attach("machina");
-
 
 
 	// Launch GUI

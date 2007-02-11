@@ -24,6 +24,7 @@
 #include "machina/Loader.hpp"
 #include "machina/JackDriver.hpp"
 #include "machina/JackNodeFactory.hpp"
+#include "machina/MidiAction.hpp"
 
 using namespace std;
 using namespace Machina;
@@ -55,6 +56,8 @@ main(int argc, char** argv)
 	SharedPtr<JackDriver>  driver(new JackDriver());
 	SharedPtr<NodeFactory> factory(new JackNodeFactory(driver));
 
+	MidiAction::set_driver(driver);
+
 	Loader l(factory);
 
 	SharedPtr<Machine> m = l.load(argv[1]);
@@ -74,25 +77,4 @@ main(int argc, char** argv)
 
 	return 0;
 }
-
-
-	/*
-	Machine m(1);
-
-	Node* n1 = create_debug_node("1", 1);
-	Node* n2 = create_debug_node("2", 10);
-
-	m.initial_node()->add_outgoing_edge(new Edge(n1));
-	n1->add_outgoing_edge(new Edge(n2));
-	n2->add_outgoing_edge(new Edge(m.initial_node()));
-	*/
-
-	/*
-	Timestamp t = 0;
-
-	while (t < 4000) {
-		m->run(1000);
-		t += 1000;
-	}
-	*/
 

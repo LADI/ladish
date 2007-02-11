@@ -1,12 +1,12 @@
-/* This file is part of Ingen.
+/* This file is part of Raul.
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
  * 
- * Ingen is free software; you can redistribute it and/or modify it under the
+ * Raul is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 2 of the License, or (at your option) any later
  * version.
  * 
- * Ingen is distributed in the hope that it will be useful, but WITHOUT ANY
+ * Raul is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for details.
  * 
@@ -15,8 +15,10 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "Maid.h"
-#include <raul/Deletable.h>
+#include "raul/Maid.h"
+#include "raul/Deletable.h"
+
+namespace Raul {
 
 
 Maid::Maid(size_t size)
@@ -28,6 +30,18 @@ Maid::Maid(size_t size)
 Maid::~Maid()
 {
 	cleanup();
+}
+
+/** Manage a SharedPtr.
+ * NOT realtime safe.
+ *
+ * @ptr is guaranteed to be deleted in the context that calls cleanup()
+ */
+void
+Maid::manage(SharedPtr<Raul::Deletable> ptr)
+{
+	if (ptr)
+		_managed.push_back(new Raul::ListNode<SharedPtr<Raul::Deletable> >(ptr));
 }
 
 
@@ -43,6 +57,18 @@ Maid::cleanup()
 		_objects.pop();
 		delete obj;
 	}
+
+	for (Managed::iterator i = _managed.begin(); i != _managed.end() ; ) {
+		Managed::iterator next = i;
+		++next;
+
+		if ((*i).unique())
+			_managed.erase(i);
+
+		i = next;
+	}
+
 }
 
 
+} // namespace Raul

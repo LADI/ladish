@@ -20,6 +20,7 @@
 
 #include <string>
 #include <iostream>
+#include <raul/Deletable.h>
 #include "types.hpp"
 
 namespace Machina {
@@ -29,9 +30,7 @@ namespace Machina {
  *
  * Actions do not have time as a property.
  */
-struct Action {
-	virtual ~Action() {}
-
+struct Action : public Raul::Deletable {
 	virtual void execute(Timestamp /*time*/) {}
 };
 

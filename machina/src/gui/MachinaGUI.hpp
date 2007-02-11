@@ -21,6 +21,7 @@
 //#include "config.h"
 #include <string>
 #include <raul/SharedPtr.h>
+#include <raul/Maid.h>
 #include <libgnomecanvasmm.h>
 
 using namespace std;
@@ -32,11 +33,13 @@ class MachinaCanvas;
 class MachinaGUI
 {
 public:
-	MachinaGUI(SharedPtr<Machina::Machine> machine/*int argc, char** argv*/);
+	MachinaGUI(SharedPtr<Machina::Machine> machine);
 	~MachinaGUI();
 
 	boost::shared_ptr<MachinaCanvas>    canvas()  { return _canvas; }
 	boost::shared_ptr<Machina::Machine> machine() { return _machine; }
+	
+	SharedPtr<Raul::Maid> maid() { return _maid; }
 	
 	Gtk::Window* window() { return _main_window; }
 	
@@ -71,6 +74,8 @@ protected:
 
 	boost::shared_ptr<MachinaCanvas>    _canvas;
 	boost::shared_ptr<Machina::Machine> _machine;
+	
+	SharedPtr<Raul::Maid> _maid;
 
 	Gtk::Main* _gtk_main;
 	

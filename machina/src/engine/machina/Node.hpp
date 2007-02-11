@@ -43,11 +43,11 @@ public:
 
 	Node(FrameCount duration=0, bool initial=false);
 
-	void add_enter_action(Action* action);
-	void remove_enter_action(Action* action);
+	void add_enter_action(SharedPtr<Action> action);
+	void remove_enter_action(SharedPtr<Action> action);
 	
-	void add_exit_action(Action* action);
-	void remove_exit_action(Action* action);
+	void add_exit_action(SharedPtr<Action> action);
+	void remove_exit_action(SharedPtr<Action> action);
 
 	void enter(Timestamp time);
 	void exit(Timestamp time);
@@ -67,13 +67,13 @@ public:
 	const EdgeList& outgoing_edges() const { return _outgoing_edges; }
 	
 private:
-	bool       _is_initial;
-	bool       _is_active;
-	Timestamp  _enter_time; ///< valid iff _is_active
-	FrameCount _duration;
-	Action*    _enter_action;
-	Action*    _exit_action;
-	EdgeList   _outgoing_edges;
+	bool              _is_initial;
+	bool              _is_active;
+	Timestamp         _enter_time; ///< valid iff _is_active
+	FrameCount        _duration;
+	SharedPtr<Action> _enter_action;
+	SharedPtr<Action> _exit_action;
+	EdgeList          _outgoing_edges;
 };
 
 

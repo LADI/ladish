@@ -34,11 +34,11 @@ class MachinaCanvas : public FlowCanvas
 public:
 	MachinaCanvas(MachinaGUI* app, int width, int height);
 	
-	void connect(SharedPtr<NodeView> port1,
-	             SharedPtr<NodeView> port2);
+	void connect_node(SharedPtr<NodeView> port1,
+	                  SharedPtr<NodeView> port2);
 
-	void disconnect(SharedPtr<NodeView> port1,
-	                SharedPtr<NodeView> port2);
+	void disconnect_node(SharedPtr<NodeView> port1,
+	                     SharedPtr<NodeView> port2);
 
 	void status_message(const string& msg);
 

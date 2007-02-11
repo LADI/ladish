@@ -18,6 +18,7 @@
 #ifndef MACHINA_MIDIACTION_HPP
 #define MACHINA_MIDIACTION_HPP
 
+#include <raul/Maid.h>
 #include <raul/WeakPtr.h>
 #include <raul/AtomicPtr.h>
 #include "types.hpp"
@@ -30,18 +31,29 @@ class MidiDriver;
 
 class MidiAction : public Action {
 public:
-	MidiAction(WeakPtr<MidiDriver>       driver,
-	           size_t                    size,
-	           const unsigned char*      event);
-
 	~MidiAction();
+	
+	static SharedPtr<MidiAction>
+	create(SharedPtr<Raul::Maid> maid,
+	       size_t size, const unsigned char* event)
+	{
+		SharedPtr<MidiAction> ret(new MidiAction(size, event));
+		maid->manage(ret);
+		return ret;
+	}
+
+	static void set_driver(SharedPtr<MidiDriver> driver);
 
 	bool set_event(size_t size, const byte* event);
 
 	void execute(Timestamp time);
 
 private:
-	WeakPtr<MidiDriver>    _driver;
+	MidiAction(size_t               size,
+	           const unsigned char* event);
+
+	static WeakPtr<MidiDriver> _driver;
+
 	size_t                 _size;
 	const size_t           _max_size;
 	Raul::AtomicPtr<byte>  _event;

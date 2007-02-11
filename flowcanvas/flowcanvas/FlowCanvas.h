@@ -116,12 +116,12 @@ public:
 	ArtVpathDash* const select_dash() { return _select_dash; }
 	
 	/** Make a connection.  Should be overridden by an implementation to do something. */
-	virtual void connect(boost::shared_ptr<Connectable> src,
-	                     boost::shared_ptr<Connectable> dst) {}
+	virtual void connect(boost::shared_ptr<Connectable> /*src*/,
+	                     boost::shared_ptr<Connectable> /*dst*/) {}
 	
 	/** Disconnect two ports.  Should be overridden by an implementation to do something */
-	virtual void disconnect(boost::shared_ptr<Connectable> src,
-	                        boost::shared_ptr<Connectable> dst) {}
+	virtual void disconnect(boost::shared_ptr<Connectable> /*src*/,
+	                        boost::shared_ptr<Connectable> /*dst*/) {}
 
 protected:
 	ItemMap                              _items;  ///< All modules on this canvas

@@ -18,11 +18,10 @@
 #ifndef MACHINA_MACHINE_HPP
 #define MACHINA_MACHINE_HPP
 
-#include <vector>
-#include <map>
 #include <raul/SharedPtr.h>
 #include <raul/List.h>
 #include "types.hpp"
+#include "LearnRequest.hpp"
 #include "Node.hpp"
 
 namespace Machina {
@@ -37,16 +36,24 @@ public:
 	void activate()   { _is_activated = true; }
 	void deactivate() { _is_activated = false; }
 	
+	bool is_empty()    { return _nodes.empty(); }
 	bool is_finished() { return _is_finished; }
 
 	void add_node(SharedPtr<Node> node);
+	void learn(SharedPtr<LearnRequest> learn);
 
 	// Audio context
 	void            reset();
-	bool            run(FrameCount nframes);
+	FrameCount      run(FrameCount nframes);
 	
 	// Any context
 	FrameCount time() { return _time; }
+	
+
+	//LearnRequest pop_learn()     { return _pending_learns.pop_front(); }
+	//SharedPtr<LearnRequest> first_learn() { return *_pending_learns.begin(); }
+	SharedPtr<LearnRequest> pending_learn()   { return _pending_learn; }
+	void clear_pending_learn() { _pending_learn.reset(); }
 
 private:
 	typedef Raul::List<SharedPtr<Node> > Nodes;
@@ -59,6 +66,9 @@ private:
 	bool       _is_finished;
 	FrameCount _time;
 	Nodes      _nodes;
+
+	//Raul::List<SharedPtr<LearnRequest> > _pending_learns;
+	SharedPtr<LearnRequest> _pending_learn;
 };
 
 

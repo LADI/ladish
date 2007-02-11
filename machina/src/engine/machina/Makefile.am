@@ -10,4 +10,5 @@ libmachinainclude_HEADERS = \
 	NodeFactory.hpp \
 	JackNodeFactory.hpp \
 	MidiAction.hpp \
-	MidiDriver.hpp
+	MidiDriver.hpp \
+	LearnRequest.hpp

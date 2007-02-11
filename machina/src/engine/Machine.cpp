@@ -15,10 +15,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <algorithm>
+#include "raul/SharedPtr.h"
 #include "machina/Machine.hpp"
 #include "machina/Node.hpp"
 #include "machina/Edge.hpp"
+#include "machina/MidiAction.hpp"
 
 namespace Machina {
 
@@ -103,24 +104,26 @@ Machine::exit_node(const SharedPtr<Node> node)
 
 /** Run the machine for @a nframes frames.
  *
- * Returns false when the machine has finished running (i.e. there are
- * no currently active states).
- *
- * If this returns false, time() will return the exact time stamp the
+ * Returns the duration of time the machine actually ran (from 0 to nframes).
+ * Caller can check is_finished() to determine if the machine still has any
+ * active states.  If not, time() will return the exact time stamp the
  * machine actually finished on (so it can be restarted immediately
  * with sample accuracy if necessary).
  */
-bool
+FrameCount
 Machine::run(FrameCount nframes)
 {
-	if (_is_finished)
-		return false;
+	using namespace std;
+	if (_is_finished) {
+		cerr << "FINISHED\n";
+		return 0;
+	}
 
 	const FrameCount cycle_end = _time + nframes;
 
+	//std::cerr << "Start: " << _time << std::endl;
+	
 	assert(_is_activated);
-
-	//std::cerr << "--------- " << _time << " - " << _time + nframes << std::endl;
 
 	// Initial run, enter all initial states
 	if (_time == 0) {
@@ -131,16 +134,19 @@ Machine::run(FrameCount nframes)
 					(*n)->enter(0);
 					entered = true;
 				} else {
-					(*n)->exit(0);
+					if ((*n)->is_active())
+						(*n)->exit(0);
 				}
 			}
 		}
 		if (!entered) {
-			_is_finished = false; // run next time
-			return false; // but done this cycle
+			_is_finished = true;
+			return 0;
 		}
 	}
 	
+	FrameCount this_time = 0;
+
 	while (true) {
 
 		SharedPtr<Node> earliest = earliest_node();
@@ -148,83 +154,45 @@ Machine::run(FrameCount nframes)
 		// No more active states, machine is finished
 		if (!earliest) {
 			_is_finished = true;
-			return false;
+			break;
 
 		// Earliest active state ends this cycle
 		} else if (earliest->exit_time() < cycle_end) {
+			this_time += earliest->exit_time() - _time;
 			_time = earliest->exit_time();
 			exit_node(earliest);
 
 		// Earliest active state ends in the future, done this cycle
 		} else {
 			_time = cycle_end;
-			return true;
+			this_time = nframes; // ran the entire cycle
+			break;
 		}
 
 	}
 
-#if 0
-	while (!done) {
+	//std::cerr << "Done: " << this_time << std::endl;
 
-		done = true;
+	assert(this_time <= nframes);
+	return this_time;
+}
 
-		for (std::vector<Node*>::iterator i = _voices.begin();
-				i != _voices.end(); ++i) {
-			
-			Node* const n = *i;
 
-			// Active voice which ends within this cycle, transition
-			if (n && n->is_active() && n->end_time() < cycle_end) {
-				// Guaranteed to be within this cycle
-				const FrameCount end_time = std::max(_time, n->end_time());
-				n->exit(std::max(_time, n->end_time()));
-				done = false;
+/** Push a node onto the learn stack.
+ *
+ * NOT realtime (actions are allocated here).
+ */
+void
+Machine::learn(SharedPtr<LearnRequest> learn)
+{
+	std::cerr << "LEARN\n";
 
-				// Greedily grab one of the successors with the voice already
-				// on this node so voices follow paths nicely
-				for (Node::EdgeList::const_iterator s = n->outgoing_edges().begin();
-						s != n->outgoing_edges().end(); ++s) {
-					Node* dst = (*s)->dst();
-					if (!dst->is_active()) {
-						dst->enter(end_time);
-						*i = dst;
-						break;
-					}
-				}
+	/*LearnRequest request(node,
+		SharedPtr<MidiAction>(new MidiAction(4, NULL)),
+		SharedPtr<MidiAction>(new MidiAction(4, NULL)));*/
 
-				latest_event = end_time;
-			}
-
-		}
-
-		// FIXME: use free voices to claim any 'free successors'
-		// (when nodes have multiple successors and one gets chosen in the
-		// greedy bit above)
-
-		// If every voice is on the initial node...
-		bool is_reset = true;
-		for (std::vector<Node*>::iterator i = _voices.begin();
-				i != _voices.end(); ++i)
-			if ((*i) != NULL && (*i)->is_active())
-				is_reset = false;
-
-		// ... then start
-		if (is_reset) {
-
-			std::vector<Node*>::iterator n = _voices.begin();
-			for (Node::EdgeList::const_iterator s = _initial_node->outgoing_edges().begin();
-					s != _initial_node->outgoing_edges().end() && n != _voices.end();
-					++s, ++n) {
-				(*s)->dst()->enter(latest_event);
-				done = false;
-				*n = (*s)->dst();
-			}
-		}
-	}
-	_time += nframes;
-
-	return false;
-#endif
+	//_pending_learns.push_back(learn);
+	_pending_learn = learn;
 }
 
 

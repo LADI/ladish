@@ -22,6 +22,8 @@
 
 namespace Machina {
 
+WeakPtr<MidiDriver> MidiAction::_driver;
+
 
 /** Create a MIDI action.
  *
@@ -31,11 +33,9 @@ namespace Machina {
  * Memory management of @event is the caller's responsibility
  * (ownership is not taken).
  */
-MidiAction::MidiAction(WeakPtr<MidiDriver>  driver,
-                       size_t               size,
-                       const byte*          event)
-	: _driver(driver)
-	, _size(0)
+MidiAction::MidiAction(size_t      size,
+                       const byte* event)
+	: _size(0)
 	, _max_size(size)
 {
 	_event = new byte[_max_size];
@@ -47,6 +47,18 @@ MidiAction::~MidiAction()
 {
 	if (_event.get())
 		delete _event.get();
+}
+
+
+/** Set the MIDI driver to be used for executing MIDI actions.
+ *
+ * MIDI actions will silently do nothing unless this call is passed an
+ * existing MidiDriver.
+ */
+void
+MidiAction::set_driver(SharedPtr<MidiDriver> driver)
+{
+	_driver = driver;
 }
 
 
@@ -63,7 +75,7 @@ MidiAction::set_event(size_t size, const byte* new_event)
 	byte* const event = _event.get();
 	if (size <= _max_size) {
 		_event = NULL;
-		if (size > 0)
+		if (size > 0 && new_event)
 			memcpy(event, new_event, size);
 		_size = size;
 		_event = event;
@@ -86,7 +98,6 @@ MidiAction::execute(Timestamp time)
 	using namespace std;
 	
 	if (event) {
-		cerr << "MIDI FIRING";
 		SharedPtr<MidiDriver> driver = _driver.lock();
 		if (driver)
 			driver->write_event(time, _size, event);
@@ -98,4 +109,4 @@ MidiAction::execute(Timestamp time)
 
 } // namespace Machina
 
-	
+

@@ -16,6 +16,7 @@
  */
 
 #include <iostream>
+#include <iomanip>
 #include "machina/JackDriver.hpp"
 #include "machina/MidiAction.hpp"
 
@@ -34,18 +35,24 @@ JackDriver::JackDriver()
 void
 JackDriver::attach(const std::string& client_name)
 {
-	Raul::JackDriver::attach(client_name, "debug");
+	Raul::JackDriver::attach(client_name);
 
 	if (jack_client()) {
 		_input_port = jack_port_register(jack_client(),
-			"out",
+			"in",
 			JACK_DEFAULT_MIDI_TYPE, JackPortIsInput,
 			0);
+		
+		if (!_input_port)
+			std:: cerr << "WARNING: Failed to create MIDI input port." << std::endl;
 
 		_output_port = jack_port_register(jack_client(),
 			"out",
 			JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput,
 			0);
+		
+		if (!_output_port)
+			std::cerr << "WARNING: Failed to create MIDI output port." << std::endl;
 	}
 }
 
@@ -74,17 +81,10 @@ JackDriver::stamp_to_offset(Timestamp stamp)
 
 
 void
-JackDriver::learn(SharedPtr<Node> node)
-{
-	_learn_enter_action = SharedPtr<MidiAction>(new MidiAction(shared_from_this(), 4, NULL));
-	_learn_exit_action = SharedPtr<MidiAction>(new MidiAction(shared_from_this(), 4, NULL));
-	_learn_node = node;
-}
-
-
-void
 JackDriver::process_input(jack_nframes_t nframes)
 {
+	using namespace std;
+
 	//if (_learn_node) {
 		void*                jack_buffer = jack_port_get_buffer(_input_port, nframes);
 		const jack_nframes_t event_count = jack_midi_get_event_count(jack_buffer, nframes);
@@ -93,7 +93,33 @@ JackDriver::process_input(jack_nframes_t nframes)
 			jack_midi_event_t ev;
 			jack_midi_event_get(&ev, jack_buffer, i, nframes);
 
-			std::cerr << "EVENT: " << (char)ev.buffer[0] << "\n";
+			if (ev.buffer[0] == 0x90) {
+				cerr << "NOTE ON\n";
+
+				const SharedPtr<LearnRequest> learn = _machine->pending_learn();
+				if (learn) {
+					learn->enter_action()->set_event(ev.size, ev.buffer);
+					cerr << "LEARN START\n";
+					learn->start(jack_last_frame_time(_client) +  ev.time);
+					//LearnRecord learn = _machine->pop_learn();
+				}
+
+			} else if (ev.buffer[0] == 0x80) {
+				cerr << "NOTE OFF\n";
+				
+				const SharedPtr<LearnRequest> learn = _machine->pending_learn();
+				
+				if (learn) {
+					if (learn->started()) {
+						learn->exit_action()->set_event(ev.size, ev.buffer);
+						learn->finish(jack_last_frame_time(_client) + ev.time);
+						_machine->clear_pending_learn();
+						cerr << "LEARNED!\n";
+					}
+				}
+			}
+
+			//std::cerr << "EVENT: " << std::hex << (int)ev.buffer[0] << "\n";
 
 		}
 	//}
@@ -108,6 +134,7 @@ JackDriver::write_event(Timestamp   time,
 	const FrameCount nframes = _current_cycle_nframes;
 	const FrameCount offset  = stamp_to_offset(time);
 
+	assert(_output_port);
 	jack_midi_event_write(
 		jack_port_get_buffer(_output_port, nframes), offset,
 		event, size, nframes);
@@ -117,25 +144,35 @@ JackDriver::write_event(Timestamp   time,
 void
 JackDriver::on_process(jack_nframes_t nframes)
 {
-	//std::cerr << "======================================================\n";
+	using namespace std;
+	//std::cerr << "> ======================================================\n";
 
 	_current_cycle_offset  = 0;
 	_current_cycle_nframes = nframes;
 
+	assert(_output_port);
 	jack_midi_clear_buffer(jack_port_get_buffer(_output_port, nframes), nframes);
+
+	process_input(nframes);
+
+	if (_machine->is_empty()) {
+		//cerr << "EMPTY\n";
+		return;
+	}
 
 	while (true) {
 	
-		bool machine_done = ! _machine->run(_current_cycle_nframes);
+		const FrameCount run_duration = _machine->run(_current_cycle_nframes);
 
-		if (machine_done && _machine->is_finished())
+		// Machine didn't run at all (empty, or no initial states)
+		if (run_duration == 0) {
+			_machine->reset(); // Try again next cycle
+			_current_cycle_start = 0;
 			return;
+		}
 
-		if (!machine_done) {
-			_current_cycle_start += _current_cycle_nframes;
-			break;
-
-		} else {
+		// Machine ran for portion of cycle
+		else if (run_duration < _current_cycle_nframes) {
 			const Timestamp  finish_time   = _machine->time();
 			const FrameCount finish_offset = stamp_to_offset(finish_time);
 			
@@ -146,10 +183,18 @@ JackDriver::on_process(jack_nframes_t nframes)
 			_current_cycle_nframes -= _current_cycle_offset;
 			_current_cycle_start = 0;
 			_machine->reset();
+		
+		// Machine ran for entire cycle
+		} else {
+			if (_machine->is_finished())
+				_machine->reset();
+
+			_current_cycle_start += _current_cycle_nframes;
+			break;
 		}
 	}
 	
-	//std::cerr << "======================================================\n";
+	//std::cerr << "< ======================================================\n";
 }
 
 
