@@ -76,6 +76,8 @@ public:
 	void set_selected(bool b);
 	
 	void set_highlighted(bool b);
+	void set_base_color(uint32_t c);
+	void set_default_base_color();
 
 	int num_ports() const { return _ports.size(); }
 

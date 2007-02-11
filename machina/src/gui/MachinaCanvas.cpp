@@ -57,15 +57,21 @@ MachinaCanvas::node_clicked(SharedPtr<NodeView> item, GdkEventButton* event)
 	if (event->button == 2) {
 		_app->machine()->learn(Machina::LearnRequest::create(_app->maid(), node->node()));
 		return;
-	} 
+	} else if (event->button == 3) {
 
-	SharedPtr<NodeView> last = _last_clicked.lock();
+		SharedPtr<NodeView> last = _last_clicked.lock();
 
-	if (last) {
-		connect_node(last, node);
-		_last_clicked.reset();
-	} else {
-		_last_clicked = node;
+		if (last) {
+			if (node != last)
+				connect_node(last, node);
+
+			last->set_default_base_color();
+			_last_clicked.reset();
+
+		} else {
+			_last_clicked = node;
+			node->set_base_color(0xFF0000FF);
+		}
 	}
 }
 
@@ -77,7 +83,7 @@ MachinaCanvas::canvas_event(GdkEvent* event)
 	
 	assert(event);
 	
-	if (event->type == GDK_BUTTON_PRESS) {
+	if (event->type == GDK_BUTTON_RELEASE) {
 	
 		const double x = event->button.x;
 		const double y = event->button.y;

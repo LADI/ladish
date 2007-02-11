@@ -23,6 +23,7 @@
 #include <pthread.h>
 #include "MachinaGUI.hpp"
 #include "MachinaCanvas.hpp"
+#include "NodeView.hpp"
 
 //#include "config.h"
 
@@ -105,10 +106,12 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Machine> machine)
 
 	xml->get_widget("machina_win", _main_window);
 	xml->get_widget("about_win", _about_window);
+	xml->get_widget("help_dialog", _help_dialog);
 	xml->get_widget("file_quit_menuitem", _menu_file_quit);
 	xml->get_widget("view_refresh_menuitem", _menu_view_refresh);
 	xml->get_widget("view_messages_menuitem", _menu_view_messages);
 	xml->get_widget("help_about_menuitem", _menu_help_about);
+	xml->get_widget("help_help_menuitem", _menu_help_help);
 	xml->get_widget("canvas_scrolledwindow", _canvas_scrolledwindow);
 	xml->get_widget("status_text", _status_text);
 	xml->get_widget("main_paned", _main_paned);
@@ -132,6 +135,7 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Machine> machine)
 	_menu_view_refresh->signal_activate().connect(   sigc::mem_fun(this, &MachinaGUI::menu_view_refresh));
 	_menu_view_messages->signal_toggled().connect(   sigc::mem_fun(this, &MachinaGUI::show_messages_toggled));
 	_menu_help_about->signal_activate().connect(     sigc::mem_fun(this, &MachinaGUI::menu_help_about));
+	_menu_help_help->signal_activate().connect(     sigc::mem_fun(this, &MachinaGUI::menu_help_help));
 
 	connect_widgets();
 	
@@ -156,7 +160,14 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Machine> machine)
 	_pane_closed = true;
 
 	// Idle callback to drive the maid (collect garbage)
-	Glib::signal_timeout().connect(sigc::mem_fun(this, &MachinaGUI::idle_callback), 1000);
+	Glib::signal_timeout().connect(
+		sigc::bind_return(
+			sigc::mem_fun(_maid.get(), &Raul::Maid::cleanup),
+			true),
+		1000);
+	
+	// Idle callback to update node states
+	Glib::signal_timeout().connect(sigc::mem_fun(this, &MachinaGUI::idle_callback), 100);
 	
 	// Faster idle callback to update DSP load progress bar
 	//Glib::signal_timeout().connect(sigc::mem_fun(this, &MachinaGUI::update_load), 50);
@@ -186,7 +197,12 @@ MachinaGUI::attach()
 bool
 MachinaGUI::idle_callback() 
 {
-	_maid->cleanup();
+	for (ItemMap::iterator i = _canvas->items().begin(); i != _canvas->items().end(); ++i) {
+		SharedPtr<NodeView> nv = PtrCast<NodeView>(i->second);
+		if (nv)
+			nv->update_state();
+	}
+
 	return true;
 }
 
@@ -343,3 +359,9 @@ MachinaGUI::menu_help_about()
 }
 
 
+void
+MachinaGUI::menu_help_help() 
+{
+	_help_dialog->run();
+	_help_dialog->hide();
+}

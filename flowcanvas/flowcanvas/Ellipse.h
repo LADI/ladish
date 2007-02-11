@@ -72,9 +72,9 @@ public:
 	
 	virtual void  set_name(const string& n);
 
-	void   set_width(double w);
+	void set_width(double w);
 	
-	void   set_height(double h);
+	void set_height(double h);
 
 	double border_width() const { return _border_width; }
 	void   set_border_width(double w);
@@ -83,15 +83,11 @@ public:
 	void set_selected(bool b);
 	
 	void set_highlighted(bool b);
-
-	uint32_t base_color() const { return 0x1F2A3CFF; }
+	void set_base_color(uint32_t c);
+	void set_default_base_color();
 
 protected:
 	bool is_within(const Gnome::Canvas::Rect& rect);
-
-	/*virtual void on_double_click(GdkEventButton&) {}
-	virtual void on_middle_click(GdkEventButton&) {}
-	virtual void on_right_click(GdkEventButton&)  {}*/
 
 	double _border_width;
 	bool   _title_visible;

@@ -73,6 +73,7 @@ public:
 
 	uint32_t     base_color() const         { return _color; }
 	virtual void set_base_color(uint32_t c) { _color = c; }
+	virtual void set_default_base_color() = 0;
 
 	sigc::signal<void> signal_pointer_entered;
 	sigc::signal<void> signal_pointer_exited;

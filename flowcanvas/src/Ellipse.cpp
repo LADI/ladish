@@ -140,7 +140,7 @@ Ellipse::set_highlighted(bool b)
 		_ellipse.property_fill_color_rgba() = ELLIPSE_HILITE_FILL_COLOUR;
 		_ellipse.property_outline_color_rgba() = ELLIPSE_HILITE_OUTLINE_COLOUR;
 	} else {
-		_ellipse.property_fill_color_rgba() = ELLIPSE_FILL_COLOUR;
+		_ellipse.property_fill_color_rgba() = _color;
 		_ellipse.property_outline_color_rgba() = ELLIPSE_OUTLINE_COLOUR;
 	}
 }
@@ -161,7 +161,7 @@ Ellipse::set_selected(bool selected)
 		_ellipse.property_outline_color_rgba() = ELLIPSE_HILITE_OUTLINE_COLOUR;
 		_ellipse.property_dash() = canvas->select_dash();
 	} else {
-		_ellipse.property_fill_color_rgba() = ELLIPSE_FILL_COLOUR;
+		_ellipse.property_fill_color_rgba() = _color;
 		_ellipse.property_outline_color_rgba() = ELLIPSE_OUTLINE_COLOUR;
 		_ellipse.property_dash() = NULL;
 	}
@@ -394,6 +394,21 @@ Ellipse::add_connection(boost::shared_ptr<Connection> c)
 {
 	Connectable::add_connection(c);
 	raise_to_top();
+}
+
+
+void
+Ellipse::set_default_base_color()
+{
+	_color = ELLIPSE_FILL_COLOUR;
+	_ellipse.property_fill_color_rgba() = _color;
+}
+
+void
+Ellipse::set_base_color(uint32_t c)
+{
+	_color = c;
+	_ellipse.property_fill_color_rgba() = _color;
 }
 
 

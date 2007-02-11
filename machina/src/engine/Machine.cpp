@@ -130,13 +130,14 @@ Machine::run(FrameCount nframes)
 		bool entered = false;
 		if ( ! _nodes.empty()) {
 			for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n) {
+				
+				assert( ! (*n)->is_active());
+				
 				if ((*n)->is_initial()) {
 					(*n)->enter(0);
 					entered = true;
-				} else {
-					if ((*n)->is_active())
-						(*n)->exit(0);
 				}
+
 			}
 		}
 		if (!entered) {

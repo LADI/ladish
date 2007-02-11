@@ -59,6 +59,7 @@ protected:
 	void show_messages_toggled();
 	void menu_view_refresh();
 	void menu_help_about();
+	void menu_help_help();
 	void zoom(double z);
 	void zoom_changed();
 	bool idle_callback();
@@ -80,11 +81,13 @@ protected:
 	Gtk::Main* _gtk_main;
 	
 	Gtk::Window*         _main_window;
+	Gtk::Dialog*         _help_dialog;
 	Gtk::AboutDialog*    _about_window;
 	Gtk::MenuItem*       _menu_file_quit;
+	Gtk::MenuItem*       _menu_help_about;
 	Gtk::CheckMenuItem*  _menu_view_messages;
 	Gtk::MenuItem*       _menu_view_refresh;
-	Gtk::MenuItem*       _menu_help_about;
+	Gtk::MenuItem*       _menu_help_help;
 	Gtk::ScrolledWindow* _canvas_scrolledwindow;
 	Gtk::TextView*       _status_text;
 	Gtk::Paned*          _main_paned;

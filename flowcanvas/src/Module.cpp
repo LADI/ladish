@@ -121,7 +121,7 @@ Module::set_highlighted(bool b)
 		_module_box.property_fill_color_rgba() = MODULE_HILITE_FILL_COLOUR;
 		_module_box.property_outline_color_rgba() = MODULE_HILITE_OUTLINE_COLOUR;
 	} else {
-		_module_box.property_fill_color_rgba() = MODULE_FILL_COLOUR;
+		_module_box.property_fill_color_rgba() = _color;
 		_module_box.property_outline_color_rgba() = MODULE_OUTLINE_COLOUR;
 	}
 }
@@ -142,7 +142,7 @@ Module::set_selected(bool selected)
 		_module_box.property_outline_color_rgba() = MODULE_HILITE_OUTLINE_COLOUR;
 		_module_box.property_dash() = canvas->select_dash();
 	} else {
-		_module_box.property_fill_color_rgba() = MODULE_FILL_COLOUR;
+		_module_box.property_fill_color_rgba() = _color;
 		_module_box.property_outline_color_rgba() = MODULE_OUTLINE_COLOUR;
 		_module_box.property_dash() = NULL;
 	}
@@ -402,6 +402,22 @@ void
 Module::select_tick()
 {
 	_module_box.property_dash() = _canvas.lock()->select_dash();
+}
+
+
+void
+Module::set_default_base_color()
+{
+	_color = MODULE_FILL_COLOUR;
+	_module_box.property_fill_color_rgba() = _color;
+}
+
+
+void
+Module::set_base_color(uint32_t c)
+{
+	_color = c;
+	_module_box.property_fill_color_rgba() = _color;
 }
 
 
