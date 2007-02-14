@@ -18,7 +18,6 @@
 #ifndef MACHINA_GUI_H
 #define MACHINA_GUI_H
 
-//#include "config.h"
 #include <string>
 #include <raul/SharedPtr.h>
 #include <raul/Maid.h>
@@ -56,6 +55,9 @@ protected:
 	void connect_widgets();
 
 	void menu_file_quit();
+	void menu_file_open();
+	void menu_file_save();
+	void menu_file_save_as();
 	void show_messages_toggled();
 	void menu_view_refresh();
 	void menu_help_about();
@@ -71,7 +73,7 @@ protected:
 	bool _update_pane_position;
 	int  _user_pane_position;
 	
-	bool   _refresh;
+	bool _refresh;
 
 	boost::shared_ptr<MachinaCanvas>    _canvas;
 	boost::shared_ptr<Machina::Machine> _machine;
@@ -83,6 +85,9 @@ protected:
 	Gtk::Window*         _main_window;
 	Gtk::Dialog*         _help_dialog;
 	Gtk::AboutDialog*    _about_window;
+	Gtk::MenuItem*       _menu_file_open;
+	Gtk::MenuItem*       _menu_file_save;
+	Gtk::MenuItem*       _menu_file_save_as;
 	Gtk::MenuItem*       _menu_file_quit;
 	Gtk::MenuItem*       _menu_help_about;
 	Gtk::CheckMenuItem*  _menu_view_messages;

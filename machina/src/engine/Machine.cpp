@@ -197,5 +197,29 @@ Machine::learn(SharedPtr<LearnRequest> learn)
 }
 
 
+void
+Machine::write_state(Raul::RDFWriter& writer)
+{
+	using Raul::RdfId;
+
+	writer.add_prefix("machina", "http://drobilla.net/ns/machina");
+
+	writer.write(RdfId(RdfId::RESOURCE, ""),
+			RdfId(RdfId::RESOURCE, "rdf:type"),
+			RdfId(RdfId::RESOURCE, "machina:Machine"));
+
+	for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n) {
+		if ( ! (*n)->id() )
+			(*n)->set_id(writer.blank_id());
+
+		(*n)->write_state(writer);
+
+		writer.write(RdfId(RdfId::RESOURCE, ""),
+				RdfId(RdfId::RESOURCE, "machina:node"),
+				(*n)->id());
+	}
+} 
+
+
 } // namespace Machina
 

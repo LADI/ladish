@@ -15,6 +15,7 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <sstream>
 #include "raul/RDFWriter.h"
 #include "raul/AtomRaptor.h"
 
@@ -30,7 +31,8 @@ static const char* const RDF_LANG = "turtle";
 RDFWriter::RDFWriter()
 	: _serializer(NULL)
 	, _string_output(NULL)
-{
+	, _next_blank_id(0)
+{ 
 	add_prefix("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
 	//add_prefix("rdfs", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
 }
@@ -40,6 +42,9 @@ void
 RDFWriter::add_prefix(const string& prefix, const string& uri)
 {
 	_prefixes[prefix] = uri;
+	if (_serializer)
+		raptor_serialize_set_namespace(_serializer,
+			raptor_new_uri(U(uri.c_str())), U(prefix.c_str()));
 }
 
 
@@ -67,6 +72,14 @@ RDFWriter::expand_uri(const string& uri)
 	return uri;
 }
 
+
+RdfId
+RDFWriter::blank_id()
+{
+	std::ostringstream ss;
+	ss << "n" << _next_blank_id++;
+	return RdfId(RdfId::ANONYMOUS, ss.str());
+}
 
 
 /** Begin a serialization to a file.

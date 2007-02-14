@@ -20,7 +20,8 @@ raulinclude_HEADERS = \
 	Deletable.h \
 	List.h \
 	Array.h \
-	Maid.h
+	Maid.h\
+	Stateful.h
 
 if WITH_LIBLO
 raulinclude_HEADERS += AtomLiblo.h

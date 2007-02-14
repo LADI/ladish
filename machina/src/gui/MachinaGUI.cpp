@@ -21,6 +21,8 @@
 #include <libglademm/xml.h>
 #include <fstream>
 #include <pthread.h>
+#include <raul/RDFWriter.h>
+#include <machina/Machine.hpp>
 #include "MachinaGUI.hpp"
 #include "MachinaCanvas.hpp"
 #include "NodeView.hpp"
@@ -107,7 +109,10 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Machine> machine)
 	xml->get_widget("machina_win", _main_window);
 	xml->get_widget("about_win", _about_window);
 	xml->get_widget("help_dialog", _help_dialog);
-	xml->get_widget("file_quit_menuitem", _menu_file_quit);
+	xml->get_widget("open_menuitem", _menu_file_open);
+	xml->get_widget("save_menuitem", _menu_file_save);
+	xml->get_widget("save_as_menuitem", _menu_file_save_as);
+	xml->get_widget("quit_menuitem", _menu_file_quit);
 	xml->get_widget("view_refresh_menuitem", _menu_view_refresh);
 	xml->get_widget("view_messages_menuitem", _menu_view_messages);
 	xml->get_widget("help_about_menuitem", _menu_help_about);
@@ -131,14 +136,17 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Machine> machine)
 	
 	_zoom_full_button->signal_clicked().connect(sigc::mem_fun(_canvas.get(), &MachinaCanvas::zoom_full));
 
+	_menu_file_open->signal_activate().connect(      sigc::mem_fun(this, &MachinaGUI::menu_file_open));
+	_menu_file_save->signal_activate().connect(      sigc::mem_fun(this, &MachinaGUI::menu_file_save));
+	_menu_file_save_as->signal_activate().connect(   sigc::mem_fun(this, &MachinaGUI::menu_file_save_as));
 	_menu_file_quit->signal_activate().connect(      sigc::mem_fun(this, &MachinaGUI::menu_file_quit));
 	_menu_view_refresh->signal_activate().connect(   sigc::mem_fun(this, &MachinaGUI::menu_view_refresh));
 	_menu_view_messages->signal_toggled().connect(   sigc::mem_fun(this, &MachinaGUI::show_messages_toggled));
 	_menu_help_about->signal_activate().connect(     sigc::mem_fun(this, &MachinaGUI::menu_help_about));
-	_menu_help_help->signal_activate().connect(     sigc::mem_fun(this, &MachinaGUI::menu_help_help));
+	_menu_help_help->signal_activate().connect(      sigc::mem_fun(this, &MachinaGUI::menu_help_help));
 
 	connect_widgets();
-	
+		
 	//update_state();
 
 	_canvas->show();
@@ -275,11 +283,38 @@ MachinaGUI::connect_widgets()
 
 }
 
+using namespace std;
+
 
 void
 MachinaGUI::menu_file_quit() 
 {
 	_main_window->hide();
+}
+
+
+void
+MachinaGUI::menu_file_open() 
+{
+	cerr << "open\n";
+
+}
+
+
+void
+MachinaGUI::menu_file_save() 
+{
+	cerr << "save\n";
+
+	Raul::RDFWriter writer;
+	writer.start_to_filename("test.machina.ttl");
+	_machine->write_state(writer);
+	writer.finish();}
+
+
+void
+MachinaGUI::menu_file_save_as() 
+{
 }
 
 
@@ -365,3 +400,4 @@ MachinaGUI::menu_help_help()
 	_help_dialog->run();
 	_help_dialog->hide();
 }
+

@@ -16,6 +16,7 @@
  */
 
 #include <cassert>
+#include <raul/RDFWriter.h>
 #include "machina/Node.hpp"
 #include "machina/Edge.hpp"
 
@@ -97,6 +98,22 @@ Node::remove_outgoing_edge(SharedPtr<Edge> edge)
 {
 	_outgoing_edges.erase(_outgoing_edges.find(edge));
 }
+
+
+void
+Node::write_state(Raul::RDFWriter& writer)
+{
+	using Raul::RdfId;
+	
+	writer.write(_id,
+			RdfId(RdfId::RESOURCE, "rdf:type"),
+			RdfId(RdfId::RESOURCE, "machina:Node"));
+
+	writer.write(_id,
+	             RdfId(RdfId::RESOURCE, "machina:duration"),
+				 Raul::Atom((int)_duration));
+}
+
 
 
 } // namespace Machina

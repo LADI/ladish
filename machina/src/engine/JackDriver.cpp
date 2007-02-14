@@ -60,11 +60,15 @@ JackDriver::attach(const std::string& client_name)
 void
 JackDriver::detach()
 {
-	jack_port_unregister(jack_client(), _input_port);
-	jack_port_unregister(jack_client(), _output_port);
-	_input_port = NULL;
-	_output_port = NULL;
-
+	if (_input_port) {
+		jack_port_unregister(jack_client(), _input_port);
+		_input_port = NULL;
+	}
+	
+	if (_output_port) {
+		jack_port_unregister(jack_client(), _output_port);
+		_output_port = NULL;
+	}
 	Raul::JackDriver::detach();
 }
 

@@ -21,6 +21,7 @@
 #include <boost/utility.hpp>
 #include <raul/SharedPtr.h>
 #include <raul/List.h>
+#include <raul/Stateful.h>
 #include "types.hpp"
 #include "Action.hpp"
 
@@ -37,7 +38,7 @@ class Edge;
  * Initial nodes do not have enter actions (since they are entered at
  * an undefined point in time <= 0).
  */
-class Node : public boost::noncopyable {
+class Node : public Raul::Stateful, public boost::noncopyable {
 public:
 	typedef std::string ID;
 
@@ -54,6 +55,8 @@ public:
 
 	void add_outgoing_edge(SharedPtr<Edge> edge);
 	void remove_outgoing_edge(SharedPtr<Edge> edge);
+
+	void write_state(Raul::RDFWriter& writer);
 
 	bool       is_initial() const         { return _is_initial; }
 	void       set_initial(bool i)        { _is_initial = i; }

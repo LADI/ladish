@@ -44,7 +44,7 @@
 		<widget class="GtkMenu" id="file_menu_menu">
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="open_session_menuitem">
+		    <widget class="GtkImageMenuItem" id="open_menuitem">
 		      <property name="visible">True</property>
 		      <property name="label">gtk-open</property>
 		      <property name="use_stock">True</property>
@@ -53,7 +53,7 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="save_session_menuitem">
+		    <widget class="GtkImageMenuItem" id="save_menuitem">
 		      <property name="visible">True</property>
 		      <property name="label">gtk-save</property>
 		      <property name="use_stock">True</property>
@@ -62,7 +62,7 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="save_session_as_menuitem">
+		    <widget class="GtkImageMenuItem" id="save_as_menuitem">
 		      <property name="visible">True</property>
 		      <property name="label">gtk-save-as</property>
 		      <property name="use_stock">True</property>
@@ -77,7 +77,7 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="file_quit_menuitem">
+		    <widget class="GtkImageMenuItem" id="quit_menuitem">
 		      <property name="visible">True</property>
 		      <property name="label">gtk-quit</property>
 		      <property name="use_stock">True</property>

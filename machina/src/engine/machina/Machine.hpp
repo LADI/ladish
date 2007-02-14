@@ -20,6 +20,7 @@
 
 #include <raul/SharedPtr.h>
 #include <raul/List.h>
+#include <raul/RDFWriter.h> 
 #include "types.hpp"
 #include "LearnRequest.hpp"
 #include "Node.hpp"
@@ -27,7 +28,7 @@
 namespace Machina {
 
 
-class Machine {
+class Machine : public Raul::Stateful {
 public:
 	Machine();
 	~Machine();
@@ -41,6 +42,8 @@ public:
 
 	void add_node(SharedPtr<Node> node);
 	void learn(SharedPtr<LearnRequest> learn);
+
+	void write_state(Raul::RDFWriter& writer);
 
 	// Audio context
 	void            reset();

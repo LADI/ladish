@@ -29,12 +29,15 @@ namespace Raul {
 
 class RdfId {
 public:
-	enum Type { ANONYMOUS, RESOURCE };
+	enum Type { NULL_ID, ANONYMOUS, RESOURCE };
 
 	RdfId(Type t, const std::string& s) : _type(t), _string(s) {}
+	RdfId() : _type(NULL_ID) {}
 
 	Type               type() const      { return _type; }
 	const std::string& to_string() const { return _string; }
+
+	operator bool() { return (_type != NULL_ID); }
 
 private:
 	Type        _type;
@@ -53,6 +56,8 @@ public:
 	void start_to_string()                              throw (std::logic_error);
 	std::string finish()                                throw (std::logic_error);
 	
+	RdfId blank_id();
+	
 	bool serialization_in_progress() { return (_serializer != NULL); }
 
 	void write(const RdfId& subject,
@@ -69,6 +74,8 @@ private:
 	raptor_serializer* _serializer;
 	unsigned char*     _string_output;
 	Namespaces         _prefixes;
+
+	size_t _next_blank_id;
 };
 
 
