@@ -71,6 +71,7 @@ protected:
 	void menu_store_positions();
 	void menu_file_quit();
 	void show_messages_toggled();
+	void view_jack_toolbar_toggled();
 	void menu_view_refresh();
 	void menu_help_about();
 	void zoom(double z);
@@ -134,9 +135,11 @@ protected:
 	Gtk::MenuItem*       _menu_jack_disconnect;
 	Gtk::MenuItem*       _menu_store_positions;
 	Gtk::MenuItem*       _menu_file_quit;
+	Gtk::CheckMenuItem*  _menu_view_jack_toolbar;
 	Gtk::CheckMenuItem*  _menu_view_messages;
 	Gtk::MenuItem*       _menu_view_refresh;
 	Gtk::MenuItem*       _menu_help_about;
+	Gtk::Toolbar*        _jack_toolbar;
 	Gtk::ScrolledWindow* _canvas_scrolledwindow;
 	Gtk::HScale*         _zoom_slider;
 	Gtk::TextView*       _status_text;
