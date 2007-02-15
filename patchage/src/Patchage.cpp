@@ -153,7 +153,9 @@ Patchage::Patchage(int argc, char** argv)
 	xml->get_widget("file_quit_menuitem", _menu_file_quit);
 	xml->get_widget("view_refresh_menuitem", _menu_view_refresh);
 	xml->get_widget("view_messages_menuitem", _menu_view_messages);
+	xml->get_widget("view_jack_toolbar_menuitem", _menu_view_jack_toolbar);
 	xml->get_widget("help_about_menuitem", _menu_help_about);
+	xml->get_widget("jack_toolbar", _jack_toolbar);
 	xml->get_widget("canvas_scrolledwindow", _canvas_scrolledwindow);
 	xml->get_widget("zoom_scale", _zoom_slider);
 	xml->get_widget("status_text", _status_text);
@@ -227,6 +229,7 @@ Patchage::Patchage(int argc, char** argv)
 	_menu_store_positions->signal_activate().connect(sigc::mem_fun(this, &Patchage::menu_store_positions));
 	_menu_file_quit->signal_activate().connect(      sigc::mem_fun(this, &Patchage::menu_file_quit));
 	_menu_view_refresh->signal_activate().connect(   sigc::mem_fun(this, &Patchage::menu_view_refresh));
+	_menu_view_jack_toolbar->signal_activate().connect(sigc::mem_fun(this, &Patchage::view_jack_toolbar_toggled));
 	_menu_view_messages->signal_toggled().connect(   sigc::mem_fun(this, &Patchage::show_messages_toggled));
 	_menu_help_about->signal_activate().connect(     sigc::mem_fun(this, &Patchage::menu_help_about));
 
@@ -670,6 +673,16 @@ Patchage::menu_view_refresh()
 	if (_alsa_driver)
 		_alsa_driver->refresh();
 #endif
+}
+
+
+void
+Patchage::view_jack_toolbar_toggled() 
+{
+	if (_menu_view_jack_toolbar->get_active())
+		_jack_toolbar->show();
+	else
+		_jack_toolbar->hide();
 }
 
 
