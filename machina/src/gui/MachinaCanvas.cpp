@@ -120,6 +120,7 @@ MachinaCanvas::connect_node(boost::shared_ptr<NodeView> src,
 				src, dst, 0x9999AAFF, true));
 	src->add_connection(c);
 	dst->add_connection(c);
+	c->set_label("1.0");
 	add_connection(c);
 
 	src->node()->add_outgoing_edge(SharedPtr<Machina::Edge>(

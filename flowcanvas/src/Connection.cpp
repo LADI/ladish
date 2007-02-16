@@ -32,7 +32,7 @@ Connection::Connection(boost::shared_ptr<FlowCanvas>  canvas,
 	                   boost::shared_ptr<Connectable> dest,
                        uint32_t                       color,
                        bool                           show_arrowhead)
-: Gnome::Canvas::Bpath(*canvas->root()),
+: Gnome::Canvas::Group(*canvas->root()),
   _canvas(canvas),
   _source(source),
   _dest(dest),
@@ -40,15 +40,17 @@ Connection::Connection(boost::shared_ptr<FlowCanvas>  canvas,
   _selected(false),
   _flag(false),
   _show_arrowhead(show_arrowhead),
-  _path(gnome_canvas_path_def_new())
+  _bpath(*this),
+  _path(gnome_canvas_path_def_new()),
+  _label(NULL)
 {
 	if (canvas->property_aa())
-		property_width_units() = 0.75;
+		_bpath.property_width_units() = 0.75;
 	else
-		property_width_units() = 1.0;
+		_bpath.property_width_units() = 1.0;
 
-	property_outline_color_rgba() = _color;
-	property_cap_style() = (Gdk::CapStyle)GDK_CAP_ROUND;
+	_bpath.property_outline_color_rgba() = _color;
+	_bpath.property_cap_style() = (Gdk::CapStyle)GDK_CAP_ROUND;
 
 	update_location();	
 }
@@ -81,24 +83,30 @@ Connection::update_location()
 		gnome_canvas_path_def_reset(_path);
 		gnome_canvas_path_def_moveto(_path, src_x, src_y);
 		gnome_canvas_path_def_lineto(_path, dst_x, dst_y);
-
+		double dx = src_x - dst_x;
+		double dy = src_y - dst_y;	
+		
+		if (_label) {
+			_label->property_x() = src_x - dx/2.0;
+			_label->property_y() = src_y - dy/2.0;
+		}
+		
 		if (_show_arrowhead) {
-			double       dx = src_x - dst_x;
-			double       dy = src_y - dst_y;
+
 			const double h  = sqrt(dx*dx + dy*dy);
 
 			dx = dx / h * 10;
 			dy = dy / h * 10;
 
 			gnome_canvas_path_def_lineto(_path,
-				dst_x + dx - dy/1.5,
-				dst_y + dy + dx/1.5);
-			
+					dst_x + dx - dy/1.5,
+					dst_y + dy + dx/1.5);
+
 			gnome_canvas_path_def_moveto(_path, dst_x, dst_y);
-			
+
 			gnome_canvas_path_def_lineto(_path,
-				dst_x + dx + dy/1.5,
-				dst_y + dy - dx/1.5);
+					dst_x + dx + dy/1.5,
+					dst_y + dy - dx/1.5);
 		}
 
 	} else {
@@ -143,8 +151,35 @@ Connection::update_location()
 		*/
 	}
 
-	GnomeCanvasBpath* c_obj = gobj();
+	GnomeCanvasBpath* c_obj = _bpath.gobj();
 	gnome_canvas_item_set(GNOME_CANVAS_ITEM(c_obj), "bpath", _path, NULL);
+}
+
+
+/** Set label text displayed next to the edge.
+ *
+ * Passing the empty string will remove the label.
+ */
+void
+Connection::set_label(const string& str)
+{
+	if (str != "") {
+		if (!_label) {
+			_label = new Gnome::Canvas::Text(*this, 50, 50, str);
+			_label->property_size_set() = true;
+			_label->property_size() = 9000;
+			_label->property_weight_set() = true;
+			_label->property_weight() = 200;
+			_label->property_fill_color_rgba() = _color;
+		} else {
+			_label->property_text() = str;
+		}
+		_label->show();
+		update_location();
+	} else {
+		delete _label;
+		_label = NULL;
+	}
 }
 
 
@@ -152,9 +187,9 @@ void
 Connection::set_highlighted(bool b)
 {
 	if (b)
-		property_outline_color_rgba() = 0xFF0000FF;
+		_bpath.property_outline_color_rgba() = 0xFF0000FF;
 	else
-		property_outline_color_rgba() = _color;
+		_bpath.property_outline_color_rgba() = _color;
 }
 
 
@@ -164,9 +199,9 @@ Connection::set_selected(bool selected)
 	_selected = selected;
 
 	if (selected) {
-		property_dash() = _canvas.lock()->select_dash();
+		_bpath.property_dash() = _canvas.lock()->select_dash();
 	} else {
-		property_dash() = NULL;
+		_bpath.property_dash() = NULL;
 	}
 }
 
@@ -194,6 +229,13 @@ Connection::raise_to_top()
 	        |
 	       / \ 
 	*/
+}
+
+
+void
+Connection::select_tick()
+{
+	_bpath.property_dash() = _canvas.lock()->select_dash();
 }
 
 

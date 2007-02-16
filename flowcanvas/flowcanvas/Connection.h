@@ -36,7 +36,7 @@ class Connectable;
  *
  * \ingroup FlowCanvas
  */
-class Connection : public Gnome::Canvas::Bpath
+class Connection : public Gnome::Canvas::Group
 {
 public:
 	Connection(boost::shared_ptr<FlowCanvas>  canvas,
@@ -55,9 +55,13 @@ public:
 	
 	bool selected() const { return _selected; }
 	void set_selected(bool b);
+
+	void set_label(const std::string& str);
 	
 	void set_highlighted(bool b);
 	void raise_to_top();
+
+	void select_tick();
 
 	const boost::weak_ptr<Connectable> source() const { return _source; }
 	const boost::weak_ptr<Connectable> dest() const   { return _dest; }
@@ -76,8 +80,11 @@ private:
 	bool                               _flag;
 	bool                               _show_arrowhead;
 
+	Gnome::Canvas::Bpath _bpath;
 	//Glib::RefPtr<Gnome::Canvas::PathDef> _path;
 	GnomeCanvasPathDef* _path;
+
+	Gnome::Canvas::Text* _label;
 };
 
 typedef list<boost::shared_ptr<Connection> > ConnectionList;

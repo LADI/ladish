@@ -8,6 +8,7 @@ AC_CONFIG_SUBDIRS([patchage])
 AC_CONFIG_SUBDIRS([slv2])
 AC_CONFIG_SUBDIRS([omins])
 AC_CONFIG_SUBDIRS([ingen])
+AC_CONFIG_SUBDIRS([machina])
 
 AC_CONFIG_FILES([Makefile])
 

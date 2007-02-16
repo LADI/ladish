@@ -838,7 +838,7 @@ FlowCanvas::animate_selected()
 		(*m)->select_tick();
 	
 	for (list<boost::shared_ptr<Connection> >::iterator c = _selected_connections.begin(); c != _selected_connections.end(); ++c)
-		(*c)->property_dash() = _select_dash;
+		(*c)->select_tick();
 	
 	return true;
 }

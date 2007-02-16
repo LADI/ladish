@@ -36,6 +36,11 @@ cd ingen
 ./autogen.sh
 cd $top
 
+echo -ne "* machina * \t"
+cd machina
+./autogen.sh
+cd $top
+
 automake --foreign --add-missing
 autoconf
 

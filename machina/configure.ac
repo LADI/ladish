@@ -80,12 +80,11 @@ AC_CONFIG_FILES([machina.desktop])
 
 AC_OUTPUT
 
-#AC_MSG_RESULT([])
-#AC_MSG_RESULT([**********************************************************************])
-#AC_MSG_RESULT([Patchage build configuration:])
-#AC_MSG_RESULT([])
-#AC_MSG_RESULT([Alsa support: $build_alsa])
-#AC_MSG_RESULT([Lash support: $have_lash])
-#AC_MSG_RESULT([**********************************************************************])
-#AC_MSG_RESULT([])
+AC_MSG_RESULT([])
+AC_MSG_RESULT([**********************************************************************])
+AC_MSG_RESULT([Machina build configuration:])
+AC_MSG_RESULT([])
+AC_MSG_RESULT([Super whiz-bang 2.0 Plus:  oh yes])
+AC_MSG_RESULT([**********************************************************************])
+AC_MSG_RESULT([])
 
