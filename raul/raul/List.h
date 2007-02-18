@@ -118,7 +118,7 @@ public:
 		inline bool      operator!=(const const_iterator& iter) const;
 	
 		friend class List<T>;
-		//friend class List<T>::const_iterator;
+		friend class List<T>::const_iterator;
 
 	private:
 		const List<T>* _list;
