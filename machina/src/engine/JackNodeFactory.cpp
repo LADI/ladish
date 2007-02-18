@@ -24,7 +24,7 @@ namespace Machina {
 
 
 SharedPtr<Node>
-JackNodeFactory::create_node(Node::ID, byte note, FrameCount duration)
+JackNodeFactory::create_node(Node::ID, byte /*note*/, FrameCount duration)
 {
 	// FIXME: obviously leaks like a sieve
 

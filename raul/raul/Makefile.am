@@ -1,28 +1,31 @@
 raulincludedir = $(includedir)/raul
 
 raulinclude_HEADERS = \
-	SharedPtr.h \
-	WeakPtr.h \
-	Path.h \
-	SRSWQueue.h \
-	SRMWQueue.h \
-	Semaphore.h \
-	Mutex.h \
-	Condition.h \
-	Process.h \
-	Thread.h \
-	Slave.h \
+	Array.h \
 	Atom.h \
-	JackDriver.h \
-	RDFQuery.h \
-	Namespaces.h \
+	AtomLiblo.h \
+	AtomRaptor.h \
 	AtomicInt.h \
 	AtomicPtr.h \
+	Condition.h \
 	Deletable.h \
+	JackDriver.h \
 	List.h \
-	Array.h \
-	Maid.h\
-	Stateful.h
+	Maid.h \
+	Mutex.h \
+	Namespaces.h \
+	Path.h \
+	Process.h \
+	RDFQuery.h \
+	RDFWriter.h \
+	SRMWQueue.h \
+	SRSWQueue.h \
+	Semaphore.h \
+	SharedPtr.h \
+	Slave.h \
+	Stateful.h \
+	Thread.h \
+	WeakPtr.h
 
 if WITH_LIBLO
 raulinclude_HEADERS += AtomLiblo.h
@@ -31,3 +34,4 @@ endif
 if WITH_RAPTOR
 raulinclude_HEADERS += AtomRaptor.h
 endif
+
