@@ -17,6 +17,7 @@ raulinclude_HEADERS = \
 	RDFQuery.h \
 	Namespaces.h \
 	AtomicInt.h \
+	AtomicPtr.h \
 	Deletable.h \
 	List.h \
 	Array.h \
