@@ -1,5 +1,5 @@
 AC_PREREQ(2.59)
-AC_INIT([codesonnet],[svn],[drobilla@connect.carleton.ca])
+AC_INIT([svn.drobilla.net/lad],[svn],[dave@drobilla.net])
 AM_INIT_AUTOMAKE
 
 AC_CONFIG_SUBDIRS([raul])

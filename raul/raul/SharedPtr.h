@@ -53,7 +53,7 @@ namespace boost {
 
 #ifdef BOOST_AC_USE_PTHREADS
 #error "Boost is using mutex locking for pointer reference counting."
-#error "This is VERY slow.  Please report your platform to dave@codeson.net"
+#error "This is VERY slow.  Please report your platform to dave@drobilla.net"
 #endif
 
 #define SharedPtr boost::shared_ptr
