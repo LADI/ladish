@@ -400,7 +400,7 @@ along with Machina; if not, write to the Free Software Foundation, Inc.,
 	  <property name="visible">True</property>
 	  <property name="label" translatable="yes">Interface is a bit sketchy still:
 
-- Left click the canvas to create a new node
+- Ctrl+Left click the canvas to create a new node
 - Middle click nodes to learn a MIDI note for that node
 - Right click two nodes in succession to connect nodes
 - Double click a node to make it an initial node

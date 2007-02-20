@@ -22,9 +22,10 @@
 #include "machina/Action.hpp"
 #include "machina/Edge.hpp"
 #include "machina/LearnRequest.hpp"
-#include "NodeView.hpp"
-#include "MachinaCanvas.hpp"
 #include "MachinaGUI.hpp"
+#include "MachinaCanvas.hpp"
+#include "NodeView.hpp"
+#include "EdgeView.hpp"
 
 using namespace LibFlowCanvas;
 
@@ -83,7 +84,8 @@ MachinaCanvas::canvas_event(GdkEvent* event)
 	
 	assert(event);
 	
-	if (event->type == GDK_BUTTON_RELEASE) {
+	if (event->type == GDK_BUTTON_RELEASE
+			&& event->button.state & GDK_CONTROL_MASK) {
 	
 		const double x = event->button.x;
 		const double y = event->button.y;
@@ -116,15 +118,14 @@ void
 MachinaCanvas::connect_node(boost::shared_ptr<NodeView> src,
                             boost::shared_ptr<NodeView> dst)
 {
-	boost::shared_ptr<Connection> c(new Connection(shared_from_this(),
-				src, dst, 0x9999AAFF, true));
+	SharedPtr<Machina::Edge> edge(new Machina::Edge(src->node(), dst->node()));
+	src->node()->add_outgoing_edge(edge);
+	
+	boost::shared_ptr<Connection> c(new EdgeView(shared_from_this(),
+			src, dst, edge));
 	src->add_connection(c);
 	dst->add_connection(c);
-	c->set_label("1.0");
 	add_connection(c);
-
-	src->node()->add_outgoing_edge(SharedPtr<Machina::Edge>(
-		new Machina::Edge(src->node(), dst->node())));
 }
 
 

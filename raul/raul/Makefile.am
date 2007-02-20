@@ -7,6 +7,7 @@ raulinclude_HEADERS = \
 	AtomRaptor.h \
 	AtomicInt.h \
 	AtomicPtr.h \
+	DoubleBuffer.h \
 	Condition.h \
 	Deletable.h \
 	JackDriver.h \

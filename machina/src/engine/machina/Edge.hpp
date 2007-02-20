@@ -22,6 +22,7 @@
 #include <boost/utility.hpp>
 #include <raul/WeakPtr.h>
 #include <raul/SharedPtr.h>
+#include <raul/DoubleBuffer.h>
 #include "types.hpp"
 #include "Action.hpp"
 
@@ -32,7 +33,11 @@ class Node;
 class Edge : boost::noncopyable {
 public:
 
-	Edge(WeakPtr<Node> src, SharedPtr<Node> dst) : _src(src) , _dst(dst) {}
+	Edge(WeakPtr<Node> src, SharedPtr<Node> dst)
+		: _probability(1.0f)
+		, _src(src)
+		, _dst(dst)
+	{}
 
 	WeakPtr<Node>   src() { return _src; }
 	SharedPtr<Node> dst() { return _dst; }
@@ -40,7 +45,12 @@ public:
 	void set_src(WeakPtr<Node> src)   { _src = src; }
 	void set_dst(SharedPtr<Node> dst) { _dst = dst; }
 
+	inline float probability()            { return _probability.get(); }
+	inline void  set_probability(float p) { _probability.set(p); }
+
 private:
+	Raul::DoubleBuffer<float> _probability;
+	
 	WeakPtr<Node>   _src;
 	SharedPtr<Node> _dst;
 };
