@@ -110,8 +110,8 @@ Machine::exit_node(const SharedPtr<Node> node)
  * machine actually finished on (so it can be restarted immediately
  * with sample accuracy if necessary).
  */
-FrameCount
-Machine::run(FrameCount nframes)
+BeatCount
+Machine::run(const Raul::TimeSlice& time)
 {
 	using namespace std;
 	if (_is_finished) {
@@ -119,7 +119,7 @@ Machine::run(FrameCount nframes)
 		return 0;
 	}
 
-	const FrameCount cycle_end = _time + nframes;
+	const BeatCount cycle_end = _time + time.length_beats();
 
 	//std::cerr << "Start: " << _time << std::endl;
 	
@@ -146,7 +146,7 @@ Machine::run(FrameCount nframes)
 		}
 	}
 	
-	FrameCount this_time = 0;
+	BeatCount this_time = 0;
 
 	while (true) {
 
@@ -166,7 +166,7 @@ Machine::run(FrameCount nframes)
 		// Earliest active state ends in the future, done this cycle
 		} else {
 			_time = cycle_end;
-			this_time = nframes; // ran the entire cycle
+			this_time = time.length_beats(); // ran the entire cycle
 			break;
 		}
 
@@ -174,7 +174,7 @@ Machine::run(FrameCount nframes)
 
 	//std::cerr << "Done: " << this_time << std::endl;
 
-	assert(this_time <= nframes);
+	assert(this_time <= time.length_beats());
 	return this_time;
 }
 

@@ -15,14 +15,37 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <list>
+#ifndef MACHINA_ENGINE_HPP
+#define MACHINA_ENGINE_HPP
+
+#include <raul/SharedPtr.h>
 
 namespace Machina {
 
-class Machina {
+class Machine;
+class JackDriver;
+
+
+class Engine {
+public:
+	Engine(SharedPtr<JackDriver> driver, SharedPtr<Machine> machine)
+		: _driver(driver)
+		, _machine(machine)
+	{}
+	
+	SharedPtr<JackDriver> driver()  { return _driver; }
+	SharedPtr<Machine>    machine() { return _machine; }
+
+	void set_bpm(double bpm);
+	
+	void set_quantization(double beat_fraction);
+
 private:
-	std::list<Node> _nodes;
+	SharedPtr<JackDriver> _driver;
+	SharedPtr<Machine>    _machine;
 };
 
 
 } // namespace Machina
+
+#endif // MACHINA_ENGINE_HPP

@@ -21,6 +21,7 @@
 #include <raul/Maid.h>
 #include <raul/WeakPtr.h>
 #include <raul/AtomicPtr.h>
+#include <raul/TimeSlice.h>
 #include "types.hpp"
 #include "Action.hpp"
 
@@ -46,7 +47,7 @@ public:
 
 	bool set_event(size_t size, const byte* event);
 
-	void execute(Timestamp time);
+	void execute(Raul::BeatTime time);
 
 private:
 	MidiAction(size_t               size,

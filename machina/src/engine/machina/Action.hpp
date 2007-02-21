@@ -21,17 +21,16 @@
 #include <string>
 #include <iostream>
 #include <raul/Deletable.h>
+#include <raul/TimeSlice.h>
 #include "types.hpp"
 
 namespace Machina {
 
 
 /** An Action, executed on entering or exiting of a state.
- *
- * Actions do not have time as a property.
  */
 struct Action : public Raul::Deletable {
-	virtual void execute(Timestamp /*time*/) {}
+	virtual void execute(Raul::BeatTime /*time*/) {}
 };
 
 
@@ -39,7 +38,8 @@ class PrintAction : public Action {
 public:
 	PrintAction(const std::string& msg) : _msg(msg) {}
 
-	void execute(Timestamp time) { std::cout << "t=" << time << ": " << _msg << std::endl; }
+	void execute(Raul::BeatTime time)
+	{ std::cout << "t=" << time << ": " << _msg << std::endl; }
 
 private:
 	std::string _msg;

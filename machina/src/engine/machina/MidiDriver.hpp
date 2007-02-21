@@ -30,20 +30,20 @@ public:
 	virtual ~MidiDriver() {}
 
 	/** Emit a MIDI event at the given time */
-	virtual void write_event(Timestamp            time,
+	virtual void write_event(Raul::BeatTime       time,
 	                         size_t               size,
 	                         const unsigned char* event) = 0;
 
 	/** Beginning of current cycle in absolute time.
 	 */
-	virtual Timestamp cycle_start() = 0;
+	//virtual Raul::TickTime cycle_start() = 0;
 
 	/** Length of current cycle in ticks.
 	 *
 	 * A "tick" is the smallest recognizable unit of (discrete) time.
 	 * Ticks could be single audio frames, MIDI clock at a certain ppqn, etc.
 	 */
-	virtual FrameCount cycle_length() = 0;
+	//virtual Raul::TickCount cycle_length() = 0;
 
 };
 

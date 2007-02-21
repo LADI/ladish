@@ -21,6 +21,7 @@
 #include <raul/SharedPtr.h>
 #include <raul/List.h>
 #include <raul/RDFWriter.h> 
+#include <raul/TimeSlice.h>
 #include "types.hpp"
 #include "LearnRequest.hpp"
 #include "Node.hpp"
@@ -46,12 +47,11 @@ public:
 	void write_state(Raul::RDFWriter& writer);
 
 	// Audio context
-	void            reset();
-	FrameCount      run(FrameCount nframes);
+	void      reset();
+	BeatCount run(const Raul::TimeSlice& time);
 	
 	// Any context
-	FrameCount time() { return _time; }
-	
+	Raul::BeatTime time() { return _time; }
 
 	//LearnRequest pop_learn()     { return _pending_learns.pop_front(); }
 	//SharedPtr<LearnRequest> first_learn() { return *_pending_learns.begin(); }
@@ -65,10 +65,10 @@ private:
 	SharedPtr<Node> earliest_node() const;
 	void            exit_node(const SharedPtr<Node>);
 
-	bool       _is_activated;
-	bool       _is_finished;
-	FrameCount _time;
-	Nodes      _nodes;
+	bool           _is_activated;
+	bool           _is_finished;
+	Raul::BeatTime _time;
+	Nodes          _nodes;
 
 	//Raul::List<SharedPtr<LearnRequest> > _pending_learns;
 	SharedPtr<LearnRequest> _pending_learn;

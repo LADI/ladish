@@ -68,12 +68,12 @@ gtkmm_set_width_for_given_text (Gtk::Widget &w, const gchar *text,
 
 
 
-MachinaGUI::MachinaGUI(SharedPtr<Machina::Machine> machine)
+MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 : _pane_closed(false),
   _update_pane_position(true),
   _user_pane_position(0),
   _refresh(false),
-  _machine(machine),
+  _engine(engine),
   _maid(new Raul::Maid(32))
 {
 	/*_settings_filename = getenv("HOME");
@@ -109,10 +109,12 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Machine> machine)
 	xml->get_widget("machina_win", _main_window);
 	xml->get_widget("about_win", _about_window);
 	xml->get_widget("help_dialog", _help_dialog);
+	xml->get_widget("toolbar", _toolbar);
 	xml->get_widget("open_menuitem", _menu_file_open);
 	xml->get_widget("save_menuitem", _menu_file_save);
 	xml->get_widget("save_as_menuitem", _menu_file_save_as);
 	xml->get_widget("quit_menuitem", _menu_file_quit);
+	xml->get_widget("view_toolbar_menuitem", _menu_view_toolbar);
 	xml->get_widget("view_refresh_menuitem", _menu_view_refresh);
 	xml->get_widget("view_messages_menuitem", _menu_view_messages);
 	xml->get_widget("help_about_menuitem", _menu_help_about);
@@ -121,6 +123,11 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Machine> machine)
 	xml->get_widget("status_text", _status_text);
 	xml->get_widget("main_paned", _main_paned);
 	xml->get_widget("messages_expander", _messages_expander);
+	xml->get_widget("slave_radiobutton", _slave_radiobutton);
+	xml->get_widget("bpm_radiobutton", _bpm_radiobutton);
+	xml->get_widget("bpm_spinbutton", _bpm_spinbutton);
+	xml->get_widget("quantize_checkbutton", _quantize_checkbutton);
+	xml->get_widget("quantize_spinbutton", _quantize_spinbutton);
 	xml->get_widget("zoom_full_but", _zoom_full_button);
 	xml->get_widget("zoom_normal_but", _zoom_normal_button);
 	
@@ -136,14 +143,32 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Machine> machine)
 	
 	_zoom_full_button->signal_clicked().connect(sigc::mem_fun(_canvas.get(), &MachinaCanvas::zoom_full));
 
-	_menu_file_open->signal_activate().connect(      sigc::mem_fun(this, &MachinaGUI::menu_file_open));
-	_menu_file_save->signal_activate().connect(      sigc::mem_fun(this, &MachinaGUI::menu_file_save));
-	_menu_file_save_as->signal_activate().connect(   sigc::mem_fun(this, &MachinaGUI::menu_file_save_as));
-	_menu_file_quit->signal_activate().connect(      sigc::mem_fun(this, &MachinaGUI::menu_file_quit));
-	_menu_view_refresh->signal_activate().connect(   sigc::mem_fun(this, &MachinaGUI::menu_view_refresh));
-	_menu_view_messages->signal_toggled().connect(   sigc::mem_fun(this, &MachinaGUI::show_messages_toggled));
-	_menu_help_about->signal_activate().connect(     sigc::mem_fun(this, &MachinaGUI::menu_help_about));
-	_menu_help_help->signal_activate().connect(      sigc::mem_fun(this, &MachinaGUI::menu_help_help));
+	_menu_file_open->signal_activate().connect(
+		sigc::mem_fun(this, &MachinaGUI::menu_file_open));
+	_menu_file_save->signal_activate().connect(
+		sigc::mem_fun(this, &MachinaGUI::menu_file_save));
+	_menu_file_save_as->signal_activate().connect(
+		sigc::mem_fun(this, &MachinaGUI::menu_file_save_as));
+	_menu_file_quit->signal_activate().connect(
+		sigc::mem_fun(this, &MachinaGUI::menu_file_quit));
+	_menu_view_refresh->signal_activate().connect(
+		sigc::mem_fun(this, &MachinaGUI::menu_view_refresh));
+	_menu_view_toolbar->signal_toggled().connect(
+		sigc::mem_fun(this, &MachinaGUI::show_toolbar_toggled));
+	_menu_view_messages->signal_toggled().connect(
+		sigc::mem_fun(this, &MachinaGUI::show_messages_toggled));
+	_menu_help_about->signal_activate().connect(
+		sigc::mem_fun(this, &MachinaGUI::menu_help_about));
+	_menu_help_help->signal_activate().connect(
+		sigc::mem_fun(this, &MachinaGUI::menu_help_help));
+	_slave_radiobutton->signal_toggled().connect(
+		sigc::mem_fun(this, &MachinaGUI::tempo_changed));
+	_bpm_radiobutton->signal_toggled().connect(
+		sigc::mem_fun(this, &MachinaGUI::tempo_changed));
+	_bpm_spinbutton->signal_changed().connect(
+		sigc::mem_fun(this, &MachinaGUI::tempo_changed));
+	_quantize_checkbutton->signal_toggled().connect(
+		sigc::mem_fun(this, &MachinaGUI::quantize_changed));
 
 	connect_widgets();
 		
@@ -166,6 +191,8 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Machine> machine)
 	_user_pane_position = max_pane_position() - _main_window->get_height()/8;
 	_update_pane_position = true;
 	_pane_closed = true;
+
+	_bpm_radiobutton->set_active(true);
 
 	// Idle callback to drive the maid (collect garbage)
 	Glib::signal_timeout().connect(
@@ -212,6 +239,28 @@ MachinaGUI::idle_callback()
 	}
 
 	return true;
+}
+
+
+void
+MachinaGUI::update_toolbar()
+{
+	_bpm_spinbutton->set_sensitive(_bpm_radiobutton->get_active());
+	_quantize_spinbutton->set_sensitive(_quantize_checkbutton->get_active());
+}
+
+
+void
+MachinaGUI::quantize_changed()
+{
+	_engine->set_quantization(1.0/(double)_quantize_spinbutton->get_value_as_int());
+}
+
+
+void
+MachinaGUI::tempo_changed()
+{
+	_engine->set_bpm(_bpm_spinbutton->get_value_as_int());
 }
 
 
@@ -308,7 +357,7 @@ MachinaGUI::menu_file_save()
 
 	Raul::RDFWriter writer;
 	writer.start_to_filename("test.machina.ttl");
-	_machine->write_state(writer);
+	machine()->write_state(writer);
 	writer.finish();}
 
 
@@ -375,6 +424,16 @@ MachinaGUI::show_messages_toggled()
 {
 	if (_update_pane_position)
 		_messages_expander->set_expanded(_menu_view_messages->get_active());
+}
+
+
+void
+MachinaGUI::show_toolbar_toggled()
+{
+	if (_menu_view_toolbar->get_active())
+		_toolbar->show();
+	else
+		_toolbar->hide();
 }
 
 

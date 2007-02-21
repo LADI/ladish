@@ -91,18 +91,16 @@ MidiAction::set_event(size_t size, const byte* new_event)
  * Safe to call concurrently with set_event.
  */
 void
-MidiAction::execute(Timestamp time)
+MidiAction::execute(Raul::BeatTime time)
 {
 	const byte* const event = _event.get();
 
-	using namespace std;
-	
 	if (event) {
 		SharedPtr<MidiDriver> driver = _driver.lock();
 		if (driver)
 			driver->write_event(time, _size, event);
 	} else {
-		cerr << "NULL MIDI ACTION";
+		std::cerr << "NULL MIDI ACTION";
 	}
 }
 

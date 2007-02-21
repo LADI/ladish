@@ -28,18 +28,15 @@ using Raul::Namespaces;
 namespace Machina {
 
 class Machine;
-class NodeFactory;
 
 
 class Loader {
 public:
-	Loader(SharedPtr<NodeFactory> node_factory,
-	       SharedPtr<Namespaces> = SharedPtr<Namespaces>());
+	Loader(SharedPtr<Namespaces> = SharedPtr<Namespaces>());
 
 	SharedPtr<Machine> load(const Glib::ustring& filename);
 
 private:
-	SharedPtr<NodeFactory> _node_factory;
 	SharedPtr<Namespaces>  _namespaces;
 };
 

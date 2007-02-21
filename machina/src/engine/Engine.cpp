@@ -12,32 +12,28 @@
  * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef MACHINA_JACKNODEFACTORY_HPP
-#define MACHINA_JACKNODEFACTORY_HPP
-
-#include <raul/WeakPtr.h>
-#include "NodeFactory.hpp"
+#include "machina/Engine.hpp"
+#include "machina/JackDriver.hpp"
 
 namespace Machina {
 
-class JackDriver;
+
+void
+Engine::set_bpm(double bpm)
+{
+	_driver->set_bpm(bpm);
+}
 
 
-class JackNodeFactory : public NodeFactory {
-public:
-	JackNodeFactory(WeakPtr<JackDriver> driver) : _driver(driver) {}
-
-	SharedPtr<Node> create_node(Node::ID      id,
-	                            unsigned char note,
-	                            FrameCount    duration);
-private:
-	WeakPtr<JackDriver> _driver;
-};
+void
+Engine::set_quantization(double)
+{
+}
 
 
 } // namespace Machina
 
-#endif // MACHINA_JACKNODEFACTORY_HPP
+

@@ -22,12 +22,14 @@
 #include <raul/SharedPtr.h>
 #include <raul/List.h>
 #include <raul/Stateful.h>
-#include "types.hpp"
+#include <raul/TimeSlice.h>
 #include "Action.hpp"
 
 namespace Machina {
 
 class Edge;
+using Raul::BeatCount;
+using Raul::BeatTime;
 
 
 /** A node is a state (as in a FSM diagram), or "note".
@@ -42,7 +44,7 @@ class Node : public Raul::Stateful, public boost::noncopyable {
 public:
 	typedef std::string ID;
 
-	Node(FrameCount duration=0, bool initial=false);
+	Node(BeatCount duration=0, bool initial=false);
 
 	void add_enter_action(SharedPtr<Action> action);
 	void remove_enter_action(SharedPtr<Action> action);
@@ -50,21 +52,21 @@ public:
 	void add_exit_action(SharedPtr<Action> action);
 	void remove_exit_action(SharedPtr<Action> action);
 
-	void enter(Timestamp time);
-	void exit(Timestamp time);
+	void enter(BeatTime time);
+	void exit(BeatTime time);
 
 	void add_outgoing_edge(SharedPtr<Edge> edge);
 	void remove_outgoing_edge(SharedPtr<Edge> edge);
 
 	void write_state(Raul::RDFWriter& writer);
 
-	bool       is_initial() const         { return _is_initial; }
-	void       set_initial(bool i)        { _is_initial = i; }
-	bool       is_active() const          { return _is_active; }
-	Timestamp  enter_time() const         { return _enter_time; }
-	Timestamp  exit_time() const          { return _enter_time + _duration; }
-	FrameCount duration()                 { return _duration; }
-	void       set_duration(FrameCount d) { _duration = d; }
+	bool      is_initial() const        { return _is_initial; }
+	void      set_initial(bool i)       { _is_initial = i; }
+	bool      is_active() const         { return _is_active; }
+	BeatTime  enter_time() const        { return _enter_time; }
+	BeatTime  exit_time() const         { return _enter_time + _duration; }
+	BeatCount duration()                { return _duration; }
+	void      set_duration(BeatCount d) { _duration = d; }
 	
 	typedef Raul::List<SharedPtr<Edge> > EdgeList;
 	const EdgeList& outgoing_edges() const { return _outgoing_edges; }
@@ -72,8 +74,8 @@ public:
 private:
 	bool              _is_initial;
 	bool              _is_active;
-	Timestamp         _enter_time; ///< valid iff _is_active
-	FrameCount        _duration;
+	BeatTime          _enter_time; ///< valid iff _is_active
+	BeatCount         _duration;
 	SharedPtr<Action> _enter_action;
 	SharedPtr<Action> _exit_action;
 	EdgeList          _outgoing_edges;

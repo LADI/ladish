@@ -93,7 +93,7 @@ MachinaCanvas::canvas_event(GdkEvent* event)
 		if (event->button.button == 1) {
 			string name = string("Note")+(char)(last++ +'0');
 
-			SharedPtr<Machina::Node> node(new Machina::Node(1024*10, false));
+			SharedPtr<Machina::Node> node(new Machina::Node(1.0, false));
 			//node->add_enter_action(SharedPtr<Machina::Action>(new Machina::PrintAction(name)));
 			SharedPtr<NodeView> view(new NodeView(node, shared_from_this(),
 				name, x, y));

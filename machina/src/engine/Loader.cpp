@@ -25,7 +25,6 @@
 #include "machina/Node.hpp"
 #include "machina/Edge.hpp"
 #include "machina/Machine.hpp"
-#include "machina/NodeFactory.hpp"
 
 using namespace Raul;
 using std::cerr; using std::cout; using std::endl;
@@ -33,29 +32,8 @@ using std::cerr; using std::cout; using std::endl;
 namespace Machina {
 
 
-/*
-// FIXME: remove
-Node* create_debug_node(const Node::ID& id, FrameCount duration)
-{
-	// leaks like a sieve, obviously
-	
-	Node* n = new Node(duration);
-	PrintAction* a_enter = new PrintAction(string("\t> ") + id);
-	PrintAction* a_exit = new PrintAction(string("\t< ") + id);
-
-	n->add_enter_action(a_enter);
-	n->add_exit_action(a_exit);
-
-	cerr << "dur: " << duration  << endl;
-
-	return n;
-}
-*/
-	
-Loader::Loader(SharedPtr<NodeFactory> node_factory,
-               SharedPtr<Namespaces>  namespaces)
-	: _node_factory(node_factory)
-	, _namespaces(namespaces)
+Loader::Loader(SharedPtr<Namespaces>  namespaces)
+	: _namespaces(namespaces)
 {
 	if (!_namespaces)
 		_namespaces = SharedPtr<Namespaces>(new Namespaces());
@@ -123,16 +101,19 @@ Loader::load(const Glib::ustring& filename)
 
 		//cout << "Initial: " << node_name << ": " << midi_note << " - " << duration << endl;
 
+		cerr << "FIXME: load\n";
+/*
 		SharedPtr<Node> node = SharedPtr<Node>(_node_factory->create_node(
 			node_name,
 			strtol(midi_note.c_str(), NULL, 10),
 			strtol(duration.c_str(), NULL, 10)));
-		
+
 		node->set_initial(true);	
 		//machine->add_node(string(node_name).substr(1), node); // (chop leading "#")
 		machine->add_node(node);
 	
 		created.insert(std::make_pair(node_uri.collate_key(), node));
+		*/
 
 		raptor_free_uri(node_raptor_uri);
 		free(node_name);
@@ -163,10 +144,13 @@ Loader::load(const Glib::ustring& filename)
 			raptor_uri_to_relative_uri_string(document_raptor_uri, node_raptor_uri);
 
 
+		cerr << "FIXME: load (2)\n";
+		/*
 		SharedPtr<Node> node = SharedPtr<Node>(_node_factory->create_node(
 			node_name,
 			strtol(midi_note.c_str(), NULL, 10),
 			strtol(duration.c_str(), NULL, 10)));
+		
 		
 		if (created.find(node_uri) == created.end()) {
 			//cout << "Node: " << node_name << ": " << midi_note << " - " << duration << endl;
@@ -174,7 +158,7 @@ Loader::load(const Glib::ustring& filename)
 			machine->add_node(node);
 			created.insert(std::make_pair(node_uri.collate_key(), node));
 		}
-
+		*/
 		raptor_free_uri(node_raptor_uri);
 		free(node_name);
 	}

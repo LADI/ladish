@@ -22,21 +22,22 @@
 #include <raul/SharedPtr.h>
 #include <raul/Maid.h>
 #include <libgnomecanvasmm.h>
+#include <machina/Engine.hpp>
 
 using namespace std;
 
-namespace Machina { class Machine; }
+namespace Machina { class Machine; class Engine; }
 
 class MachinaCanvas;
 
 class MachinaGUI
 {
 public:
-	MachinaGUI(SharedPtr<Machina::Machine> machine);
+	MachinaGUI(SharedPtr<Machina::Engine> engine);
 	~MachinaGUI();
 
 	boost::shared_ptr<MachinaCanvas>    canvas()  { return _canvas; }
-	boost::shared_ptr<Machina::Machine> machine() { return _machine; }
+	boost::shared_ptr<Machina::Machine> machine() { return _engine->machine(); }
 	
 	SharedPtr<Raul::Maid> maid() { return _maid; }
 	
@@ -59,15 +60,20 @@ protected:
 	void menu_file_save();
 	void menu_file_save_as();
 	void show_messages_toggled();
+	void show_toolbar_toggled();
 	void menu_view_refresh();
 	void menu_help_about();
 	void menu_help_help();
 	void zoom(double z);
 	void zoom_changed();
 	bool idle_callback();
+	void update_toolbar();
 
 	void on_pane_position_changed();
 	void on_messages_expander_changed();
+	
+	void quantize_changed();
+	void tempo_changed();
 
 	bool _pane_closed;
 	bool _update_pane_position;
@@ -75,8 +81,8 @@ protected:
 	
 	bool _refresh;
 
-	boost::shared_ptr<MachinaCanvas>    _canvas;
-	boost::shared_ptr<Machina::Machine> _machine;
+	boost::shared_ptr<MachinaCanvas>   _canvas;
+	boost::shared_ptr<Machina::Engine> _engine;
 	
 	SharedPtr<Raul::Maid> _maid;
 
@@ -85,11 +91,13 @@ protected:
 	Gtk::Window*         _main_window;
 	Gtk::Dialog*         _help_dialog;
 	Gtk::AboutDialog*    _about_window;
+	Gtk::Toolbar*        _toolbar;
 	Gtk::MenuItem*       _menu_file_open;
 	Gtk::MenuItem*       _menu_file_save;
 	Gtk::MenuItem*       _menu_file_save_as;
 	Gtk::MenuItem*       _menu_file_quit;
 	Gtk::MenuItem*       _menu_help_about;
+	Gtk::CheckMenuItem*  _menu_view_toolbar;
 	Gtk::CheckMenuItem*  _menu_view_messages;
 	Gtk::MenuItem*       _menu_view_refresh;
 	Gtk::MenuItem*       _menu_help_help;
@@ -97,6 +105,11 @@ protected:
 	Gtk::TextView*       _status_text;
 	Gtk::Paned*          _main_paned;
 	Gtk::Expander*       _messages_expander;
+	Gtk::RadioButton*    _slave_radiobutton;
+	Gtk::RadioButton*    _bpm_radiobutton;
+	Gtk::SpinButton*     _bpm_spinbutton;
+	Gtk::CheckButton*    _quantize_checkbutton;
+	Gtk::SpinButton*     _quantize_spinbutton;
 	Gtk::ToolButton*     _zoom_normal_button;
 	Gtk::ToolButton*     _zoom_full_button;
 };

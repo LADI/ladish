@@ -20,6 +20,7 @@
 
 #include <raul/JackDriver.h>
 #include <raul/SharedPtr.h>
+#include <raul/DoubleBuffer.h>
 #include <jack/midiport.h>
 #include "Machine.hpp"
 #include "MidiDriver.hpp"
@@ -46,19 +47,13 @@ public:
 
 	void set_machine(SharedPtr<Machine> machine) { _machine = machine; }
 	
-	// Audio context
-	Timestamp    cycle_start()  { return _current_cycle_start; }
-	FrameCount   cycle_length() { return _current_cycle_nframes; }
-	
-	void write_event(Timestamp            time,
+	void write_event(Raul::BeatTime       time,
 	                 size_t               size,
 	                 const unsigned char* event);
 	
-private:
-	// Audio context
-	Timestamp    subcycle_offset() { return _current_cycle_offset; }
-	Timestamp    stamp_to_offset(Timestamp stamp);
+	void set_bpm(double bpm) { _bpm.set(bpm); }
 
+private:
 	void         process_input(jack_nframes_t nframes);
 	virtual void on_process(jack_nframes_t nframes);
 
@@ -66,9 +61,10 @@ private:
 
 	jack_port_t* _input_port;
 	jack_port_t* _output_port;
-	Timestamp    _current_cycle_start; ///< in machine relative time
-	Timestamp    _current_cycle_offset; ///< for split cycles
-	FrameCount   _current_cycle_nframes;
+	
+	Raul::TimeSlice _cycle_time;
+
+	Raul::DoubleBuffer<double> _bpm;
 };
 
 

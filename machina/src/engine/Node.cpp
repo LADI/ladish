@@ -23,7 +23,7 @@
 namespace Machina {
 
 
-Node::Node(FrameCount duration, bool initial)
+Node::Node(BeatCount duration, bool initial)
 	: _is_initial(initial)
 	, _is_active(false)
 	, _enter_time(0)
@@ -63,7 +63,7 @@ Node::remove_exit_action(SharedPtr<Action> /*action*/)
 //using namespace std;
 
 void
-Node::enter(Timestamp time)
+Node::enter(BeatTime time)
 {
 	//cerr << "ENTER " << time << endl;
 	_is_active = true;
@@ -74,7 +74,7 @@ Node::enter(Timestamp time)
 
 
 void
-Node::exit(Timestamp time)
+Node::exit(BeatTime time)
 {
 	//cerr << "EXIT " << time << endl;
 	if (_exit_action)
@@ -111,7 +111,7 @@ Node::write_state(Raul::RDFWriter& writer)
 
 	writer.write(_id,
 	             RdfId(RdfId::RESOURCE, "machina:duration"),
-				 Raul::Atom((int)_duration));
+				 Raul::Atom((float)_duration));
 }
 
 

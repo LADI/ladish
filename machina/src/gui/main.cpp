@@ -15,15 +15,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-//#include "../../config.h"
-
 #include <signal.h>
 #include <iostream>
 #include <libgnomecanvasmm.h>
 
 #include "machina/Loader.hpp"
 #include "machina/JackDriver.hpp"
-#include "machina/JackNodeFactory.hpp"
 
 #include "MachinaGUI.hpp"
 
@@ -46,6 +43,7 @@ main(int argc, char** argv)
 	driver->set_machine(m);
 	driver->attach("machina");
 
+	SharedPtr<Engine> engine(new Engine(driver, m));
 
 	// Launch GUI
 	try {
@@ -53,7 +51,7 @@ main(int argc, char** argv)
 	Gnome::Canvas::init();
 	Gtk::Main app(argc, argv);
 	
-	MachinaGUI gui(m);
+	MachinaGUI gui(engine);
 	app.run(*gui.window());
 	
 	} catch (std::string msg) {

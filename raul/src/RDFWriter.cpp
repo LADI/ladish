@@ -21,6 +21,8 @@
 
 #define U(x) ((const unsigned char*)(x))
 
+using namespace std;
+
 namespace Raul {
 
 

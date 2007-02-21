@@ -62,6 +62,5 @@ EdgeView::on_event(GdkEvent* ev)
 		}
 	}
 
-	cerr << "NO BUTTON\n";
 	return false;
 }

@@ -17,13 +17,13 @@
 
 #include <iostream>
 #include <signal.h>
+#include "machina/Engine.hpp"
 #include "machina/Machine.hpp"
 #include "machina/Node.hpp"
 #include "machina/Action.hpp"
 #include "machina/Edge.hpp"
 #include "machina/Loader.hpp"
 #include "machina/JackDriver.hpp"
-#include "machina/JackNodeFactory.hpp"
 #include "machina/MidiAction.hpp"
 
 using namespace std;
@@ -54,15 +54,15 @@ main(int argc, char** argv)
 	}
 	
 	SharedPtr<JackDriver>  driver(new JackDriver());
-	SharedPtr<NodeFactory> factory(new JackNodeFactory(driver));
-
 	MidiAction::set_driver(driver);
 
-	Loader l(factory);
+	Loader l;
 
 	SharedPtr<Machine> m = l.load(argv[1]);
 
 	m->activate();
+
+	Engine engine(driver, m);
 
 	driver->set_machine(m);
 	driver->attach("machina");

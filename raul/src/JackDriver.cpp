@@ -58,7 +58,12 @@ JackDriver::attach(const string& client_name, string server_name)
 	
 	jack_set_error_function(error_cb);
 
-	_client = jack_client_open(client_name.c_str(), JackServerName, NULL, server_name.c_str(), NULL);
+	if (server_name.length() > 0)
+		_client = jack_client_open(client_name.c_str(), JackServerName, NULL,
+			server_name.c_str(), NULL);
+	else
+		_client = jack_client_open(client_name.c_str(), JackNullOption, NULL, NULL);
+
 	if (_client == NULL) {
 		//_app->status_message("[JACK] Unable to create client");
 		_is_activated = false;
