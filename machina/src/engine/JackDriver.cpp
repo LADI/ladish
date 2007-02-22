@@ -30,6 +30,7 @@ JackDriver::JackDriver()
 	, _output_port(NULL)
 	, _cycle_time(1/48000.0, 120.0)
 	, _bpm(120.0)
+	, _quantization(120.0)
 {
 }
 
@@ -79,11 +80,15 @@ JackDriver::detach()
 
 
 void
-JackDriver::process_input(jack_nframes_t nframes)
+JackDriver::process_input(const TimeSlice& time)
 {
+	// We only actually read Jack input at the beginning of a cycle
+	assert(time.offset_ticks() == 0);
+
 	using namespace std;
 
 	//if (_learn_node) {
+		const jack_nframes_t nframes     = time.length_ticks();
 		void*                jack_buffer = jack_port_get_buffer(_input_port, nframes);
 		const jack_nframes_t event_count = jack_midi_get_event_count(jack_buffer, nframes);
 
@@ -92,25 +97,25 @@ JackDriver::process_input(jack_nframes_t nframes)
 			jack_midi_event_get(&ev, jack_buffer, i, nframes);
 
 			if (ev.buffer[0] == 0x90) {
-				cerr << "NOTE ON\n";
 
 				const SharedPtr<LearnRequest> learn = _machine->pending_learn();
 				if (learn) {
 					learn->enter_action()->set_event(ev.size, ev.buffer);
 					cerr << "LEARN START\n";
-					learn->start(jack_last_frame_time(_client) +  ev.time);
+					learn->start(_quantization.get(),
+						time.ticks_to_beats(jack_last_frame_time(_client) + ev.time));
 					//LearnRecord learn = _machine->pop_learn();
 				}
 
 			} else if (ev.buffer[0] == 0x80) {
-				cerr << "NOTE OFF\n";
 				
 				const SharedPtr<LearnRequest> learn = _machine->pending_learn();
 				
 				if (learn) {
 					if (learn->started()) {
 						learn->exit_action()->set_event(ev.size, ev.buffer);
-						learn->finish(jack_last_frame_time(_client) + ev.time);
+						learn->finish(
+							time.ticks_to_beats(jack_last_frame_time(_client) + ev.time));
 						_machine->clear_pending_learn();
 						cerr << "LEARNED!\n";
 					}
@@ -130,15 +135,23 @@ JackDriver::write_event(Raul::BeatTime time,
                         const byte*    event)
 {
 	const TickCount nframes = _cycle_time.length_ticks();
-	const TickCount offset  = _cycle_time.offset_ticks()
-	                        + _cycle_time.beats_to_ticks(time);
+	const TickCount offset  = _cycle_time.beats_to_ticks(time)
+		+ _cycle_time.offset_ticks() - _cycle_time.start_ticks();
 
 	assert(_output_port);
-	assert(offset < nframes);
-
-	jack_midi_event_write(
-		jack_port_get_buffer(_output_port, nframes), offset,
-		event, size, nframes);
+	
+	if ( ! (offset < _cycle_time.offset_ticks() + nframes)) {
+		std::cerr << "ERROR: Event offset " << offset << " outside cycle "
+			<< "\n\tbpm: " << _cycle_time.bpm()
+			<< "\n\tev time: " << _cycle_time.beats_to_ticks(time)
+			<< "\n\tcycle_start: " << _cycle_time.start_ticks()
+			<< "\n\tcycle_end: " << _cycle_time.start_ticks() + _cycle_time.length_ticks()
+			<< "\n\tcycle_length: " << _cycle_time.length_ticks() << std::endl;
+	} else {
+		jack_midi_event_write(
+				jack_port_get_buffer(_output_port, nframes), offset,
+				event, size, nframes);
+	}
 }
 
 
@@ -157,7 +170,7 @@ JackDriver::on_process(jack_nframes_t nframes)
 	assert(_output_port);
 	jack_midi_clear_buffer(jack_port_get_buffer(_output_port, nframes), nframes);
 
-	process_input(nframes);
+	process_input(_cycle_time);
 
 	if (_machine->is_empty()) {
 		//cerr << "EMPTY\n";
@@ -179,12 +192,12 @@ JackDriver::on_process(jack_nframes_t nframes)
 		} else if (run_dur_ticks < _cycle_time.length_ticks()) {
 			const TickCount finish_offset = _cycle_time.offset_ticks() + run_dur_ticks;
 			assert(finish_offset < nframes);
+			
+			_machine->reset();
 
 			_cycle_time.set_start(0);
 			_cycle_time.set_length(nframes - finish_offset);
 			_cycle_time.set_offset(finish_offset);
-
-			_machine->reset();
 		
 		// Machine ran for entire cycle
 		} else {

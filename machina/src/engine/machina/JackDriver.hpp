@@ -51,10 +51,11 @@ public:
 	                 size_t               size,
 	                 const unsigned char* event);
 	
-	void set_bpm(double bpm) { _bpm.set(bpm); }
+	void set_bpm(double bpm)                   { _bpm.set(bpm); }
+	void set_quantization(double quantization) { _quantization.set(quantization); }
 
 private:
-	void         process_input(jack_nframes_t nframes);
+	void         process_input(const Raul::TimeSlice& time);
 	virtual void on_process(jack_nframes_t nframes);
 
 	SharedPtr<Machine> _machine;
@@ -65,6 +66,7 @@ private:
 	Raul::TimeSlice _cycle_time;
 
 	Raul::DoubleBuffer<double> _bpm;
+	Raul::DoubleBuffer<double> _quantization;
 };
 
 

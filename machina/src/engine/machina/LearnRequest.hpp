@@ -43,16 +43,9 @@ public:
 		return ret;
 	}
 
-	// Add the learned actions to the node
-	void finish(BeatTime time)
-	{
-		_node->add_enter_action(_enter_action);
-		_node->add_exit_action(_exit_action);
-		_node->set_duration(time - _start_time);
-		std::cerr << "LEARN DURATION: " << _node->duration() << std::endl;
-	}
+	void finish(BeatTime time);
 
-	void start(BeatTime time) { _started = true; _start_time = time; }
+	void start(double q, BeatTime time) { _started = true; _start_time = time; _quantization = q; }
 	bool started()            { return _started; }
 
 	const SharedPtr<Node>&       node()         { return _node; }
@@ -70,6 +63,7 @@ private:
 
 	bool                  _started;
 	BeatTime              _start_time;
+	double                _quantization;
 	SharedPtr<Node>       _node;
 	SharedPtr<MidiAction> _enter_action;
 	SharedPtr<MidiAction> _exit_action;

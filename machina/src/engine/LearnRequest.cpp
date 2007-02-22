@@ -15,26 +15,26 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include "machina/Engine.hpp"
-#include "machina/JackDriver.hpp"
+#include <raul/Quantizer.h>
+#include <machina/LearnRequest.hpp>
 
 namespace Machina {
 
 
+/** Add the learned actions to the node */
 void
-Engine::set_bpm(double bpm)
+LearnRequest::finish(BeatTime time)
 {
-	_driver->set_bpm(bpm);
+	_node->add_enter_action(_enter_action);
+	_node->add_exit_action(_exit_action);
+
+	double duration = Raul::Quantizer::quantize(_quantization, time - _start_time);
+	
+	_node->set_duration(duration);
+	using namespace std;
+	cerr << "Q=" << _quantization << ", T=" << time << ", ST=" << _start_time << endl;
+	std::cerr << "LEARN DURATION: " << duration << std::endl;
 }
 
 
-void
-Engine::set_quantization(double q)
-{
-	_driver->set_quantization(q);
 }
-
-
-} // namespace Machina
-
-

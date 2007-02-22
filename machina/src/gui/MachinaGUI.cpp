@@ -193,6 +193,7 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	_pane_closed = true;
 
 	_bpm_radiobutton->set_active(true);
+	_quantize_checkbutton->set_active(false);
 
 	// Idle callback to drive the maid (collect garbage)
 	Glib::signal_timeout().connect(
@@ -253,7 +254,12 @@ MachinaGUI::update_toolbar()
 void
 MachinaGUI::quantize_changed()
 {
-	_engine->set_quantization(1.0/(double)_quantize_spinbutton->get_value_as_int());
+	if (_quantize_checkbutton->get_active()) {
+		_engine->set_quantization(1/(double)_quantize_spinbutton->get_value_as_int());
+	} else {
+		_engine->set_quantization(0.0);
+	}
+	update_toolbar();
 }
 
 

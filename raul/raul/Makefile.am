@@ -27,7 +27,8 @@ raulinclude_HEADERS = \
 	Stateful.h \
 	Thread.h \
 	WeakPtr.h \
-	TimeSlice.h
+	TimeSlice.h \
+	Quantizer.h
 
 if WITH_LIBLO
 raulinclude_HEADERS += AtomLiblo.h

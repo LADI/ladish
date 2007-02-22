@@ -10,7 +10,6 @@ main()
 {
 	TimeSlice ts(1/48000.0, 120);
 
-	string in_string;
 	double in_double = 0;
 
 	cout << "Beats: ";

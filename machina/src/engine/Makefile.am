@@ -14,4 +14,5 @@ libmachina_la_SOURCES = \
 	MidiAction.cpp \
 	JackDriver.h \
 	JackDriver.cpp \
-	Engine.cpp
+	Engine.cpp \
+	LearnRequest.cpp
