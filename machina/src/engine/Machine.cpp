@@ -15,6 +15,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include <cstdlib>
 #include "raul/SharedPtr.h"
 #include "machina/Machine.hpp"
 #include "machina/Node.hpp"
@@ -93,10 +94,15 @@ Machine::exit_node(const SharedPtr<Node> node)
 	// (that aren't aready active right now)
 	for (Node::EdgeList::const_iterator s = node->outgoing_edges().begin();
 			s != node->outgoing_edges().end(); ++s) {
-		SharedPtr<Node> dst = (*s)->dst();
+		
+		const double rand_normal = rand() / (double)RAND_MAX; // [0, 1]
+		
+		if (rand_normal <= (*s)->probability()) {
+			SharedPtr<Node> dst = (*s)->dst();
 
-		if (!dst->is_active())
-			dst->enter(_time);
+			if (!dst->is_active())
+				dst->enter(_time);
+		}
 
 	}
 }
