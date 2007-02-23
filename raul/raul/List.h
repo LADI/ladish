@@ -289,7 +289,7 @@ List<T>::find(const T& val)
  * This function is realtime safe - it is the caller's responsibility to
  * delete the returned ListNode, or there will be a leak.
  * Thread safe (safe to call while another thread reads the list).
- * @iter is invalid immediately following this call.
+ * @a iter is invalid immediately following this call.
  */
 template <typename T>
 ListNode<T>*
