@@ -64,7 +64,10 @@ MachinaCanvas::node_clicked(SharedPtr<NodeView> item, GdkEventButton* event)
 
 		if (last) {
 			if (node != last)
-				connect_node(last, node);
+				if (get_connection(last, node))
+					disconnect_node(last, node);
+				else
+					connect_node(last, node);
 
 			last->set_default_base_color();
 			_last_clicked.reset();
@@ -130,9 +133,12 @@ MachinaCanvas::connect_node(boost::shared_ptr<NodeView> src,
 
 
 void
-MachinaCanvas::disconnect_node(boost::shared_ptr<NodeView>,// item1,
-                               boost::shared_ptr<NodeView>)// item2)
+MachinaCanvas::disconnect_node(boost::shared_ptr<NodeView> src,
+                               boost::shared_ptr<NodeView> dst)
 {
+	src->node()->remove_outgoing_edges_to(dst->node());
+	remove_connection(src, dst);
+
 #if 0
 	boost::shared_ptr<MachinaPort> input
 		= boost::dynamic_pointer_cast<MachinaPort>(port1);

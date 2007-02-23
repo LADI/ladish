@@ -57,6 +57,7 @@ public:
 
 	void add_outgoing_edge(SharedPtr<Edge> edge);
 	void remove_outgoing_edge(SharedPtr<Edge> edge);
+	void remove_outgoing_edges_to(SharedPtr<Node> node);
 
 	void write_state(Raul::RDFWriter& writer);
 

@@ -108,40 +108,6 @@
 		      <accelerator key="T" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 		    </widget>
 		  </child>
-
-		  <child>
-		    <widget class="GtkCheckMenuItem" id="view_messages_menuitem">
-		      <property name="visible">True</property>
-		      <property name="tooltip" translatable="yes">View &quot;console&quot; messages</property>
-		      <property name="label" translatable="yes">_Messages</property>
-		      <property name="use_underline">True</property>
-		      <property name="active">False</property>
-		      <signal name="activate" handler="on_messages1_activate" last_modification_time="Sat, 14 Oct 2006 15:43:59 GMT"/>
-		      <accelerator key="M" modifiers="GDK_CONTROL_MASK" signal="activate"/>
-		    </widget>
-		  </child>
-
-		  <child>
-		    <widget class="GtkImageMenuItem" id="view_refresh_menuitem">
-		      <property name="visible">True</property>
-		      <property name="label" translatable="yes">_Refresh</property>
-		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="on_refresh2_activate" last_modification_time="Sat, 11 Sep 2004 20:05:50 GMT"/>
-		      <accelerator key="R" modifiers="GDK_CONTROL_MASK" signal="activate"/>
-
-		      <child internal-child="image">
-			<widget class="GtkImage" id="image677">
-			  <property name="visible">True</property>
-			  <property name="stock">gtk-refresh</property>
-			  <property name="icon_size">1</property>
-			  <property name="xalign">0.5</property>
-			  <property name="yalign">0.5</property>
-			  <property name="xpad">0</property>
-			  <property name="ypad">0</property>
-			</widget>
-		      </child>
-		    </widget>
-		  </child>
 		</widget>
 	      </child>
 	    </widget>
@@ -532,10 +498,11 @@ along with Machina; if not, write to the Free Software Foundation, Inc.,
   <property name="border_width">8</property>
   <property name="title" translatable="yes">Machina Help</property>
   <property name="type">GTK_WINDOW_TOPLEVEL</property>
-  <property name="window_position">GTK_WIN_POS_NONE</property>
+  <property name="window_position">GTK_WIN_POS_CENTER_ON_PARENT</property>
   <property name="modal">False</property>
-  <property name="resizable">True</property>
+  <property name="resizable">False</property>
   <property name="destroy_with_parent">False</property>
+  <property name="icon_name">gtk-help</property>
   <property name="decorated">True</property>
   <property name="skip_taskbar_hint">False</property>
   <property name="skip_pager_hint">False</property>

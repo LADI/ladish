@@ -101,6 +101,21 @@ Node::remove_outgoing_edge(SharedPtr<Edge> edge)
 
 
 void
+Node::remove_outgoing_edges_to(SharedPtr<Node> node)
+{
+	for (EdgeList::iterator i = _outgoing_edges.begin(); i != _outgoing_edges.end() ; ) {
+		EdgeList::iterator next = i;
+		++next;
+
+		if ((*i)->dst() == node)
+			_outgoing_edges.erase(i);
+
+		i = next;
+	}
+}
+
+
+void
 Node::write_state(Raul::RDFWriter& writer)
 {
 	using Raul::RdfId;

@@ -59,9 +59,9 @@ protected:
 	void menu_file_open();
 	void menu_file_save();
 	void menu_file_save_as();
-	void show_messages_toggled();
+	//void show_messages_toggled();
 	void show_toolbar_toggled();
-	void menu_view_refresh();
+	//void menu_view_refresh();
 	void menu_help_about();
 	void menu_help_help();
 	void zoom(double z);
@@ -98,7 +98,7 @@ protected:
 	Gtk::MenuItem*       _menu_file_quit;
 	Gtk::MenuItem*       _menu_help_about;
 	Gtk::CheckMenuItem*  _menu_view_toolbar;
-	Gtk::CheckMenuItem*  _menu_view_messages;
+	//Gtk::CheckMenuItem*  _menu_view_messages;
 	Gtk::MenuItem*       _menu_view_refresh;
 	Gtk::MenuItem*       _menu_help_help;
 	Gtk::ScrolledWindow* _canvas_scrolledwindow;

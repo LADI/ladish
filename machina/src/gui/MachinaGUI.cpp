@@ -115,8 +115,8 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	xml->get_widget("save_as_menuitem", _menu_file_save_as);
 	xml->get_widget("quit_menuitem", _menu_file_quit);
 	xml->get_widget("view_toolbar_menuitem", _menu_view_toolbar);
-	xml->get_widget("view_refresh_menuitem", _menu_view_refresh);
-	xml->get_widget("view_messages_menuitem", _menu_view_messages);
+	//xml->get_widget("view_refresh_menuitem", _menu_view_refresh);
+	//xml->get_widget("view_messages_menuitem", _menu_view_messages);
 	xml->get_widget("help_about_menuitem", _menu_help_about);
 	xml->get_widget("help_help_menuitem", _menu_help_help);
 	xml->get_widget("canvas_scrolledwindow", _canvas_scrolledwindow);
@@ -151,12 +151,12 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 		sigc::mem_fun(this, &MachinaGUI::menu_file_save_as));
 	_menu_file_quit->signal_activate().connect(
 		sigc::mem_fun(this, &MachinaGUI::menu_file_quit));
-	_menu_view_refresh->signal_activate().connect(
-		sigc::mem_fun(this, &MachinaGUI::menu_view_refresh));
+	//_menu_view_refresh->signal_activate().connect(
+	//	sigc::mem_fun(this, &MachinaGUI::menu_view_refresh));
 	_menu_view_toolbar->signal_toggled().connect(
 		sigc::mem_fun(this, &MachinaGUI::show_toolbar_toggled));
-	_menu_view_messages->signal_toggled().connect(
-		sigc::mem_fun(this, &MachinaGUI::show_messages_toggled));
+	//_menu_view_messages->signal_toggled().connect(
+	//	sigc::mem_fun(this, &MachinaGUI::show_messages_toggled));
 	_menu_help_about->signal_activate().connect(
 		sigc::mem_fun(this, &MachinaGUI::menu_help_about));
 	_menu_help_help->signal_activate().connect(
@@ -389,7 +389,7 @@ MachinaGUI::on_pane_position_changed()
 		_user_pane_position = new_position;
 		_messages_expander->set_expanded(true);
 		_pane_closed = false;
-		_menu_view_messages->set_active(true);
+		//_menu_view_messages->set_active(true);
 	} else if (new_position >= max_pane_position()) {
 		// Auto close
 		_pane_closed = true;
@@ -397,7 +397,7 @@ MachinaGUI::on_pane_position_changed()
 		_messages_expander->set_expanded(false);
 		if (new_position > max_pane_position())
 			_main_paned->set_position(max_pane_position()); // ... here
-		_menu_view_messages->set_active(false);
+		//_menu_view_messages->set_active(false);
 		
 		_user_pane_position = max_pane_position() - _main_window->get_height()/8;
 	}
@@ -424,14 +424,14 @@ MachinaGUI::on_messages_expander_changed()
 	}
 }
 
-
+/*
 void
 MachinaGUI::show_messages_toggled()
 {
 	if (_update_pane_position)
-		_messages_expander->set_expanded(_menu_view_messages->get_active());
+		//_messages_expander->set_expanded(_menu_view_messages->get_active());
 }
-
+*/
 
 void
 MachinaGUI::show_toolbar_toggled()
@@ -442,7 +442,7 @@ MachinaGUI::show_toolbar_toggled()
 		_toolbar->hide();
 }
 
-
+/*
 void
 MachinaGUI::menu_view_refresh() 
 {
@@ -450,11 +450,12 @@ MachinaGUI::menu_view_refresh()
 	
 	//_canvas->destroy();
 }
-
+*/
 
 void
 MachinaGUI::menu_help_about() 
 {
+	_about_window->set_transient_for(*_main_window);
 	_about_window->show();
 }
 
@@ -462,6 +463,7 @@ MachinaGUI::menu_help_about()
 void
 MachinaGUI::menu_help_help() 
 {
+	_help_dialog->set_transient_for(*_main_window);
 	_help_dialog->run();
 	_help_dialog->hide();
 }
