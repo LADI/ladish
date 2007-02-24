@@ -125,8 +125,13 @@ Node::write_state(Raul::RDFWriter& writer)
 			RdfId(RdfId::RESOURCE, "machina:Node"));
 
 	writer.write(_id,
-	             RdfId(RdfId::RESOURCE, "machina:duration"),
-				 Raul::Atom((float)_duration));
+			RdfId(RdfId::RESOURCE, "machina:duration"),
+			Raul::Atom((float)_duration));
+	
+	for (Node::EdgeList::const_iterator e = _outgoing_edges.begin();
+			e != _outgoing_edges.end(); ++e)
+		std::cerr << "FIXME: write edge\n";
+
 }
 
 

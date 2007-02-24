@@ -227,7 +227,7 @@ Machine::write_state(Raul::RDFWriter& writer)
 				RdfId(RdfId::RESOURCE, "machina:node"),
 				(*n)->id());
 	}
-} 
+}
 
 
 } // namespace Machina

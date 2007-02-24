@@ -51,7 +51,9 @@ main(int argc, char** argv)
 	Gnome::Canvas::init();
 	Gtk::Main app(argc, argv);
 	
+	driver->activate();
 	MachinaGUI gui(engine);
+
 	app.run(*gui.window());
 	
 	} catch (std::string msg) {

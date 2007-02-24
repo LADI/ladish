@@ -360,11 +360,63 @@ void
 MachinaGUI::menu_file_save() 
 {
 	cerr << "save\n";
-
-	Raul::RDFWriter writer;
-	writer.start_to_filename("test.machina.ttl");
-	machine()->write_state(writer);
-	writer.finish();}
+	
+	Gtk::FileChooserDialog dialog(*_main_window, "Save Machine", Gtk::FILE_CHOOSER_ACTION_SAVE);
+	
+	/*Gtk::VBox* box = dialog.get_vbox();
+	Gtk::Label warning("Warning:  Recursively saving will overwrite any subpatch files \
+		without confirmation.");
+	box->pack_start(warning, false, false, 2);
+	Gtk::CheckButton recursive_checkbutton("Recursively save all subpatches");
+	box->pack_start(recursive_checkbutton, false, false, 0);
+	recursive_checkbutton.show();
+	*/		
+	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+	dialog.add_button(Gtk::Stock::SAVE, Gtk::RESPONSE_OK);	
+	
+	// Set current folder to most sensible default
+	/*const string& current_filename = _patch->filename();
+	if (current_filename.length() > 0)
+		dialog.set_filename(current_filename);
+	else if (App::instance().configuration()->patch_folder().length() > 0)
+		dialog.set_current_folder(App::instance().configuration()->patch_folder());
+	*/
+	
+	int result = dialog.run();
+	//bool recursive = recursive_checkbutton.get_active();
+	
+	assert(result == Gtk::RESPONSE_OK || result == Gtk::RESPONSE_CANCEL || result == Gtk::RESPONSE_NONE);
+	
+	if (result == Gtk::RESPONSE_OK) {	
+		string filename = dialog.get_filename();
+		if (filename.length() < 12 || filename.substr(filename.length()-12) != ".machina.ttl")
+			filename += ".machina.ttl";
+			
+		bool confirm = false;
+		std::fstream fin;
+		fin.open(filename.c_str(), std::ios::in);
+		if (fin.is_open()) {  // File exists
+			string msg = "A file named \"";
+			msg += filename + "\" already exists.\n\nDo you want to replace it?";
+			Gtk::MessageDialog confirm_dialog(dialog,
+				msg, false, Gtk::MESSAGE_WARNING, Gtk::BUTTONS_YES_NO, true);
+			if (confirm_dialog.run() == Gtk::RESPONSE_YES)
+				confirm = true;
+			else
+				confirm = false;
+		} else {  // File doesn't exist
+			confirm = true;
+		}
+		fin.close();
+		
+		if (confirm) {
+			Raul::RDFWriter writer;
+			writer.start_to_filename(filename);
+			machine()->write_state(writer);
+			writer.finish();
+		}
+	}
+}
 
 
 void
