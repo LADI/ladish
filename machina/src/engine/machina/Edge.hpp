@@ -23,6 +23,7 @@
 #include <raul/WeakPtr.h>
 #include <raul/SharedPtr.h>
 #include <raul/DoubleBuffer.h>
+#include <raul/Stateful.h>
 #include "types.hpp"
 #include "Action.hpp"
 
@@ -30,7 +31,7 @@ namespace Machina {
 
 class Node;
 
-class Edge : boost::noncopyable {
+class Edge : public Raul::Stateful, public boost::noncopyable {
 public:
 
 	Edge(WeakPtr<Node> src, SharedPtr<Node> dst)
@@ -38,6 +39,8 @@ public:
 		, _src(src)
 		, _dst(dst)
 	{}
+
+	void write_state(Raul::RDFWriter& writer);
 
 	WeakPtr<Node>   src() { return _src; }
 	SharedPtr<Node> dst() { return _dst; }

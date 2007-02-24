@@ -120,6 +120,9 @@ Node::write_state(Raul::RDFWriter& writer)
 {
 	using Raul::RdfId;
 	
+	if (!_id)
+		set_id(writer.blank_id());
+
 	writer.write(_id,
 			RdfId(RdfId::RESOURCE, "rdf:type"),
 			RdfId(RdfId::RESOURCE, "machina:Node"));
@@ -130,8 +133,7 @@ Node::write_state(Raul::RDFWriter& writer)
 	
 	for (Node::EdgeList::const_iterator e = _outgoing_edges.begin();
 			e != _outgoing_edges.end(); ++e)
-		std::cerr << "FIXME: write edge\n";
-
+		(*e)->write_state(writer);
 }
 
 

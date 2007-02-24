@@ -8,6 +8,7 @@ libmachina_la_LIBADD   = @RAUL_LIBS@   @JACK_LIBS@   @GLIBMM_LIBS@
 
 libmachina_la_SOURCES = \
 	Node.cpp \
+	Edge.cpp \
 	Machine.cpp \
 	Loader.h \
 	Loader.cpp \

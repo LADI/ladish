@@ -218,14 +218,23 @@ Machine::write_state(Raul::RDFWriter& writer)
 			RdfId(RdfId::RESOURCE, "machina:Machine"));
 
 	for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n) {
-		if ( ! (*n)->id() )
-			(*n)->set_id(writer.blank_id());
-
+		
 		(*n)->write_state(writer);
 
 		writer.write(RdfId(RdfId::RESOURCE, ""),
 				RdfId(RdfId::RESOURCE, "machina:node"),
 				(*n)->id());
+	
+		for (Node::EdgeList::const_iterator e = (*n)->outgoing_edges().begin();
+			e != (*n)->outgoing_edges().end(); ++e) {
+			
+			(*e)->write_state(writer);
+		
+			writer.write(RdfId(RdfId::RESOURCE, ""),
+				RdfId(RdfId::RESOURCE, "machina:edge"),
+				(*e)->id());
+		}
+
 	}
 }
 
