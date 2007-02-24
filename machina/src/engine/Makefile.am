@@ -10,10 +10,8 @@ libmachina_la_SOURCES = \
 	Node.cpp \
 	Edge.cpp \
 	Machine.cpp \
-	Loader.h \
 	Loader.cpp \
 	MidiAction.cpp \
-	JackDriver.h \
 	JackDriver.cpp \
 	Engine.cpp \
 	LearnRequest.cpp

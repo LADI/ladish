@@ -17,8 +17,8 @@
 
 #include <cassert>
 #include <raul/RDFWriter.h>
-#include "machina/Node.hpp"
-#include "machina/Edge.hpp"
+#include <machina/Node.hpp>
+#include <machina/Edge.hpp>
 
 namespace Machina {
 

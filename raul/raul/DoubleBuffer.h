@@ -18,6 +18,7 @@
 #ifndef RAUL_DOUBLE_BUFFER_H
 #define RAUL_DOUBLE_BUFFER_H
 
+#include <boost/utility.hpp>
 #include <raul/AtomicInt.h>
 #include <raul/AtomicPtr.h>
 
@@ -33,7 +34,7 @@ namespace Raul {
  * Space:  2*sizeof(T) + sizeof(int) + sizeof(void*)
  */
 template<typename T>
-class DoubleBuffer {
+class DoubleBuffer : public boost::noncopyable {
 public:
 	
 	inline DoubleBuffer(T val)
