@@ -78,16 +78,7 @@ JackDriver::attach(const string& client_name, string server_name)
 	
 		//_is_dirty = true;
 		_buffer_size = jack_get_buffer_size(_client);
-
-		if (!jack_activate(_client)) {
-			_is_activated = true;
-			//signal_attached.emit();
-			//_app->status_message("[JACK] Attached");
-		} else {
-			//_app->status_message("[JACK] ERROR: Failed to attach");
-			_is_activated = false;
 		}
-	}
 }
 
 
@@ -95,12 +86,36 @@ void
 JackDriver::detach() 
 {
 	if (_client) {
-		jack_deactivate(_client);
+		deactivate();
 		jack_client_close(_client);
 		_client = NULL;
 		_is_activated = false;
 		//signal_detached.emit();
 	}
+}
+
+
+void
+JackDriver::activate()
+{
+	if (!jack_activate(_client)) {
+		_is_activated = true;
+		//signal_attached.emit();
+		//_app->status_message("[JACK] Attached");
+	} else {
+		//_app->status_message("[JACK] ERROR: Failed to attach");
+		_is_activated = false;
+	}
+}
+
+
+void
+JackDriver::deactivate()
+{
+	if (_client)
+		jack_deactivate(_client);
+
+	_is_activated = false;
 }
 
 
