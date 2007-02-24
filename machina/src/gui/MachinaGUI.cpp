@@ -359,31 +359,29 @@ MachinaGUI::menu_file_open()
 void
 MachinaGUI::menu_file_save() 
 {
-	cerr << "save\n";
-	
+	if (_save_filename == "") {
+		menu_file_save_as();
+	} else {
+		Raul::RDFWriter writer;
+		writer.start_to_filename(_save_filename);
+		machine()->write_state(writer);
+		writer.finish();
+	}
+}
+
+
+void
+MachinaGUI::menu_file_save_as() 
+{
 	Gtk::FileChooserDialog dialog(*_main_window, "Save Machine", Gtk::FILE_CHOOSER_ACTION_SAVE);
 	
-	/*Gtk::VBox* box = dialog.get_vbox();
-	Gtk::Label warning("Warning:  Recursively saving will overwrite any subpatch files \
-		without confirmation.");
-	box->pack_start(warning, false, false, 2);
-	Gtk::CheckButton recursive_checkbutton("Recursively save all subpatches");
-	box->pack_start(recursive_checkbutton, false, false, 0);
-	recursive_checkbutton.show();
-	*/		
 	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
 	dialog.add_button(Gtk::Stock::SAVE, Gtk::RESPONSE_OK);	
 	
-	// Set current folder to most sensible default
-	/*const string& current_filename = _patch->filename();
-	if (current_filename.length() > 0)
-		dialog.set_filename(current_filename);
-	else if (App::instance().configuration()->patch_folder().length() > 0)
-		dialog.set_current_folder(App::instance().configuration()->patch_folder());
-	*/
+	if (_save_filename.length() > 0)
+		dialog.set_filename(_save_filename);
 	
-	int result = dialog.run();
-	//bool recursive = recursive_checkbutton.get_active();
+	const int result = dialog.run();
 	
 	assert(result == Gtk::RESPONSE_OK || result == Gtk::RESPONSE_CANCEL || result == Gtk::RESPONSE_NONE);
 	
@@ -414,14 +412,9 @@ MachinaGUI::menu_file_save()
 			writer.start_to_filename(filename);
 			machine()->write_state(writer);
 			writer.finish();
+			_save_filename = filename;
 		}
 	}
-}
-
-
-void
-MachinaGUI::menu_file_save_as() 
-{
 }
 
 
