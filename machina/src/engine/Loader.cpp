@@ -17,6 +17,7 @@
 
 #include <iostream>
 #include <map>
+#include <cmath>
 #include <raptor.h>
 #include <rasqal.h>
 #include <glibmm/ustring.h>
@@ -45,30 +46,33 @@ Loader::Loader(SharedPtr<Namespaces>  namespaces)
 
 /** Load (create) all objects from an RDF into the engine.
  *
- * @param filename Filename to load objects from.
- * @param parent Path of parent under which to load objects.
- * @return whether or not load was successful.
+ * @param uri URI of machine (e.g. resolvable URI to an RDF document).
+ * @return Loaded Machine.
  */
 SharedPtr<Machine>
-Loader::load(const Glib::ustring& filename)
+Loader::load(const Glib::ustring& uri)
 {
 	using Raul::RDFQuery;
 	SharedPtr<Machine> machine;
 
 	rasqal_init();
 
-	unsigned char* document_uri_str = raptor_uri_filename_to_uri_string(filename.c_str());
-	assert(document_uri_str);
-	raptor_uri* document_raptor_uri = raptor_new_uri(document_uri_str);
+	//unsigned char* document_uri_str = raptor_uri_filename_to_uri_string(filename.c_str());
+	//assert(document_uri_str);
+	//raptor_uri* document_raptor_uri = raptor_new_uri(document_uri_str);
+	raptor_uri* document_raptor_uri = raptor_new_uri((const unsigned char*)uri.c_str());
 
-	if (!document_uri_str)
-		return machine;
+	if (!document_raptor_uri) 
+		return machine; // NULL
 
 	machine = SharedPtr<Machine>(new Machine());
 
-	Glib::ustring document_uri = (const char*)document_uri_str;
+	//Glib::ustring document_uri = (const char*)document_uri_str;
+	const Glib::ustring& document_uri = uri;
 
-	string machine_uri = "<> ";
+	//string machine_uri = "<> ";
+	//string machine_uri = string("<") + document_uri + "> ";
+	string machine_uri = "?foo ";
 
 	cout << "[Loader] Loading " << machine_uri << " from " << document_uri << endl;
 
@@ -79,18 +83,16 @@ Loader::load(const Glib::ustring& filename)
 	/* Get initial nodes */
 	
 	Raul::RDFQuery query = Raul::RDFQuery(*_namespaces, Glib::ustring(
-		"SELECT DISTINCT ?initialNode ?midiNote ?duration FROM <")
+		"SELECT DISTINCT ?initialNode ?duration FROM <")
 		+ document_uri + "> WHERE {\n" +
 		machine_uri + " :initialNode ?initialNode .\n"
-		"?initialNode   :midiNote    ?midiNote ;\n"
-		"               :duration    ?duration .\n"
+		"?initialNode   :duration    ?duration .\n"
 		"}\n");
 
 	RDFQuery::Results results = query.run(document_uri);
 
 	for (RDFQuery::Results::iterator i = results.begin(); i != results.end(); ++i) {
 		const Glib::ustring& node_uri  = (*i)["initialNode"];
-		const Glib::ustring& midi_note = (*i)["midiNote"];
 		const Glib::ustring& duration  = (*i)["duration"];
 		
 		raptor_uri* node_raptor_uri
@@ -99,7 +101,7 @@ Loader::load(const Glib::ustring& filename)
 		char* node_name = (char*)
 			raptor_uri_to_relative_uri_string(document_raptor_uri, node_raptor_uri);
 
-		//cout << "Initial: " << node_name << ": " << midi_note << " - " << duration << endl;
+		cout << "Initial: " << node_name << " - " << duration << endl;
 
 		cerr << "FIXME: load\n";
 /*
@@ -114,6 +116,10 @@ Loader::load(const Glib::ustring& filename)
 	
 		created.insert(std::make_pair(node_uri.collate_key(), node));
 		*/
+ 
+		SharedPtr<Node> node(new Node(strtod(duration.c_str(), NULL), true));
+		machine->add_node(node);
+		created.insert(std::make_pair(node_uri.collate_key(), node));
 
 		raptor_free_uri(node_raptor_uri);
 		free(node_name);
@@ -123,18 +129,16 @@ Loader::load(const Glib::ustring& filename)
 	/* Get remaining nodes */
 	
 	query = Raul::RDFQuery(*_namespaces, Glib::ustring(
-		"SELECT DISTINCT ?node ?midiNote ?duration FROM <")
+		"SELECT DISTINCT ?node ?duration FROM <")
 		+ document_uri + "> WHERE {\n" +
 		machine_uri + " :node     ?node .\n"
-		"?node          :midiNote ?midiNote ;\n"
-		"               :duration ?duration .\n"
+		"?node          :duration ?duration .\n"
 		"}\n");
 
 	results = query.run(document_uri);
 
 	for (RDFQuery::Results::iterator i = results.begin(); i != results.end(); ++i) {
 		const Glib::ustring& node_uri  = (*i)["node"];
-		const Glib::ustring& midi_note = (*i)["midiNote"];
 		const Glib::ustring& duration  = (*i)["duration"];
 		
 		raptor_uri* node_raptor_uri
@@ -143,6 +147,7 @@ Loader::load(const Glib::ustring& filename)
 		char* node_name = (char*)
 			raptor_uri_to_relative_uri_string(document_raptor_uri, node_raptor_uri);
 
+		cout << "Node: " << node_name << " - " << duration << endl;
 
 		cerr << "FIXME: load (2)\n";
 		/*
@@ -159,6 +164,10 @@ Loader::load(const Glib::ustring& filename)
 			created.insert(std::make_pair(node_uri.collate_key(), node));
 		}
 		*/
+		SharedPtr<Node> node(new Node(strtod(duration.c_str(), NULL), true));
+		machine->add_node(node); 
+		created.insert(std::make_pair(node_uri.collate_key(), node));
+
 		raptor_free_uri(node_raptor_uri);
 		free(node_name);
 	}
@@ -167,16 +176,19 @@ Loader::load(const Glib::ustring& filename)
 	/* Get edges */
 
 	query = Raul::RDFQuery(*_namespaces, Glib::ustring(
-		"SELECT DISTINCT ?src ?edge ?dst FROM <")
+		"SELECT DISTINCT ?edge ?src ?dst ?prob FROM <")
 		+ document_uri + "> WHERE {\n" +
 		machine_uri + " :edge ?edge .\n"
-		"?edge :tail ?src ;\n"
-		"      :head ?dst .\n }");
+		"?edge :tail        ?src ;\n"
+		"      :head        ?dst ;\n"
+		"      :probability ?prob .\n }");
+	
 	results = query.run(document_uri);
 
 	for (RDFQuery::Results::iterator i = results.begin(); i != results.end(); ++i) {
 		const Glib::ustring& src_uri = (*i)["src"];
-		const Glib::ustring& dst_uri = (*i)["dst"];
+		const Glib::ustring& dst_uri = (*i)["dst"]; 
+		double               prob    = strtod((*i)["prob"].c_str(), NULL);
 
 		Created::iterator src_i = created.find(src_uri.collate_key());
 		Created::iterator dst_i = created.find(dst_uri.collate_key());
@@ -185,7 +197,9 @@ Loader::load(const Glib::ustring& filename)
 			const SharedPtr<Node> src = src_i->second;
 			const SharedPtr<Node> dst = dst_i->second;
 		
-			src->add_outgoing_edge(SharedPtr<Edge>(new Edge(src, dst)));
+			SharedPtr<Edge> edge(new Edge(src, dst));
+			edge->set_probability(prob);
+			src->add_outgoing_edge(edge);
 
 		} else {
 			cerr << "[Loader] WARNING: Ignored edge between unknown nodes "
@@ -194,7 +208,7 @@ Loader::load(const Glib::ustring& filename)
 
 	}
 		
-	free(document_uri_str);
+	//free(document_uri_str);
 	raptor_free_uri(document_raptor_uri);
 
 	return machine;

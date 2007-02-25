@@ -15,10 +15,24 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include "machina/Loader.hpp"
 #include "machina/Engine.hpp"
 #include "machina/JackDriver.hpp"
 
 namespace Machina {
+
+
+/** Load the machine at @a uri, and run it (replacing current machine).
+ * Safe to call while engine is processing.
+ */
+SharedPtr<Machine>
+Engine::load_machine(const Glib::ustring& uri)
+{
+	Loader l; // FIXME: namespaces?
+	SharedPtr<Machine> m = l.load(uri);
+	_machine = m;
+	return m;
+}
 
 
 void

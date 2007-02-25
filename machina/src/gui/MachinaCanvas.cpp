@@ -46,11 +46,9 @@ MachinaCanvas::status_message(const string& msg)
 
 
 void
-MachinaCanvas::node_clicked(SharedPtr<NodeView> item, GdkEventButton* event)
+MachinaCanvas::node_clicked(WeakPtr<NodeView> item, GdkEventButton* event)
 {
-	cerr << "CLICKED: " << item->name() << endl;
-
-	SharedPtr<NodeView> node = PtrCast<NodeView>(item);
+	SharedPtr<NodeView> node = PtrCast<NodeView>(item.lock());
 	if (!node)
 		return;
 	
@@ -101,10 +99,8 @@ MachinaCanvas::canvas_event(GdkEvent* event)
 			SharedPtr<NodeView> view(new NodeView(node, shared_from_this(),
 				name, x, y));
 
-			//view->signal_clicked.connect(sigc::bind(sigc::mem_fun(this,
-			//	&MachinaCanvas::node_clicked), view));
 			view->signal_clicked.connect(sigc::bind<0>(sigc::mem_fun(this,
-				&MachinaCanvas::node_clicked), view));
+				&MachinaCanvas::node_clicked), WeakPtr<NodeView>(view)));
 			add_item(view);
 			view->resize();
 			view->raise_to_top();
@@ -170,6 +166,59 @@ MachinaCanvas::disconnect_node(boost::shared_ptr<NodeView> src,
 	else
 		status_message("ERROR: Attempt to disconnect ports with mismatched types");
 #endif
+}
+
+
+void
+MachinaCanvas::build(SharedPtr<Machina::Machine> machine)
+{
+	destroy();
+
+	for (Machina::Machine::Nodes::const_iterator i = machine->nodes().begin();
+			i != machine->nodes().end(); ++i) {
+	
+		const double x = 1600 + rand() % 300;
+		const double y = 1200 + rand() % 300;
+
+		SharedPtr<NodeView> view(new NodeView((*i), shared_from_this(),
+			"", x, y));
+		
+		view->signal_clicked.connect(sigc::bind<0>(sigc::mem_fun(this,
+				&MachinaCanvas::node_clicked), WeakPtr<NodeView>(view)));
+		
+		add_item(view);
+		view->resize();
+	}
+	
+	for (ItemMap::iterator n = _items.begin(); n != _items.end(); ++n) {
+	
+		SharedPtr<NodeView> src = PtrCast<NodeView>(n->second);
+		if (!src)
+			continue;
+
+		for (Machina::Node::Edges::const_iterator e = src->node()->outgoing_edges().begin();
+				e != src->node()->outgoing_edges().end(); ++e) {
+			
+			SharedPtr<NodeView> dst;
+			for (ItemMap::iterator m = _items.begin(); m != _items.end(); ++m) {
+				SharedPtr<NodeView> nv = PtrCast<NodeView>((*m).second);
+				if (nv && nv->node() == (*e)->dst()) {
+					dst = nv;
+					break;
+				}
+			}
+
+			if (dst) {
+				boost::shared_ptr<Connection> c(new EdgeView(shared_from_this(),
+							src, dst, (*e)));
+				src->add_connection(c);
+				dst->add_connection(c);
+				add_connection(c);
+			}
+
+		}
+	}
+
 }
 
 

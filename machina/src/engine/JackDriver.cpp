@@ -80,7 +80,7 @@ JackDriver::detach()
 
 
 void
-JackDriver::process_input(const TimeSlice& time)
+JackDriver::process_input(SharedPtr<Machine> machine, const TimeSlice& time)
 {
 	// We only actually read Jack input at the beginning of a cycle
 	assert(time.offset_ticks() == 0);
@@ -98,25 +98,25 @@ JackDriver::process_input(const TimeSlice& time)
 
 			if (ev.buffer[0] == 0x90) {
 
-				const SharedPtr<LearnRequest> learn = _machine->pending_learn();
+				const SharedPtr<LearnRequest> learn = machine->pending_learn();
 				if (learn) {
 					learn->enter_action()->set_event(ev.size, ev.buffer);
 					cerr << "LEARN START\n";
 					learn->start(_quantization.get(),
 						time.ticks_to_beats(jack_last_frame_time(_client) + ev.time));
-					//LearnRecord learn = _machine->pop_learn();
+					//LearnRecord learn = machine->pop_learn();
 				}
 
 			} else if (ev.buffer[0] == 0x80) {
 				
-				const SharedPtr<LearnRequest> learn = _machine->pending_learn();
+				const SharedPtr<LearnRequest> learn = machine->pending_learn();
 				
 				if (learn) {
 					if (learn->started()) {
 						learn->exit_action()->set_event(ev.size, ev.buffer);
 						learn->finish(
 							time.ticks_to_beats(jack_last_frame_time(_client) + ev.time));
-						_machine->clear_pending_learn();
+						machine->clear_pending_learn();
 						cerr << "LEARNED!\n";
 					}
 				}
@@ -158,33 +158,44 @@ JackDriver::write_event(Raul::BeatTime time,
 void
 JackDriver::on_process(jack_nframes_t nframes)
 {
-	using namespace std;
+	//using namespace std;
 	//std::cerr << "> ======================================================\n";
-
+	
 	_cycle_time.set_bpm(_bpm.get());
 
-	// Start time set at end of previous cycle
+	// (start time set at end of previous cycle)
 	_cycle_time.set_offset(0);
 	_cycle_time.set_length(nframes);
 
 	assert(_output_port);
 	jack_midi_clear_buffer(jack_port_get_buffer(_output_port, nframes), nframes);
+	
+	/* Take a reference to machine here and use only it during the process
+	 * cycle so _machine can be switched with set_machine during a cycle. */
+	SharedPtr<Machine> machine = _machine;
+	
+	// Machine was switched since last cycle, finalize old machine.
+	if (_last_machine && machine != _last_machine) {
+		_last_machine->reset(); // Exit all active states
+		assert(_last_machine.use_count() > 1); // Realtime, can't delete
+		_last_machine.reset(); // Cut our reference
+	}
 
-	process_input(_cycle_time);
+	process_input(machine, _cycle_time);
 
-	if (_machine->is_empty()) {
+	if (machine->is_empty()) {
 		//cerr << "EMPTY\n";
 		return;
 	}
 
 	while (true) {
 	
-		const BeatCount run_dur_beats = _machine->run(_cycle_time);
+		const BeatCount run_dur_beats = machine->run(_cycle_time);
 		const TickCount run_dur_ticks = _cycle_time.beats_to_ticks(run_dur_beats);
 
 		// Machine didn't run at all (empty, or no initial states)
 		if (run_dur_ticks == 0) {
-			_machine->reset(); // Try again next cycle
+			machine->reset(); // Try again next cycle
 			_cycle_time.set_start(0);
 			return;
 
@@ -193,7 +204,7 @@ JackDriver::on_process(jack_nframes_t nframes)
 			const TickCount finish_offset = _cycle_time.offset_ticks() + run_dur_ticks;
 			assert(finish_offset < nframes);
 			
-			_machine->reset();
+			machine->reset();
 
 			_cycle_time.set_start(0);
 			_cycle_time.set_length(nframes - finish_offset);
@@ -201,8 +212,8 @@ JackDriver::on_process(jack_nframes_t nframes)
 		
 		// Machine ran for entire cycle
 		} else {
-			if (_machine->is_finished()) {
-				_machine->reset();
+			if (machine->is_finished()) {
+				machine->reset();
 				_cycle_time.set_start(0);
 			} else {
 				_cycle_time.set_start(
@@ -212,6 +223,10 @@ JackDriver::on_process(jack_nframes_t nframes)
 			break;
 		}
 	}
+
+	/* Remember the last machine run, in case a switch happens and
+	 * we need to finalize it next cycle. */
+	_last_machine = machine;
 	
 	//std::cerr << "< ======================================================\n";
 }

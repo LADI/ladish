@@ -42,10 +42,12 @@ public:
 
 	void status_message(const string& msg);
 
+	void build(SharedPtr<Machina::Machine> machine);
+
 protected:
 	bool canvas_event(GdkEvent* event);
 
-	void node_clicked(SharedPtr<NodeView> item, GdkEventButton* ev);
+	void node_clicked(WeakPtr<NodeView> item, GdkEventButton* ev);
 
 private:
 	MachinaGUI* _app;

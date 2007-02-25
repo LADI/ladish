@@ -55,10 +55,12 @@ public:
 	void set_quantization(double quantization) { _quantization.set(quantization); }
 
 private:
-	void         process_input(const Raul::TimeSlice& time);
+	void         process_input(SharedPtr<Machine> machine,
+	                           const Raul::TimeSlice& time);
 	virtual void on_process(jack_nframes_t nframes);
 
 	SharedPtr<Machine> _machine;
+	SharedPtr<Machine> _last_machine;
 
 	jack_port_t* _input_port;
 	jack_port_t* _output_port;

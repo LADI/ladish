@@ -69,8 +69,8 @@ public:
 	BeatCount duration()                { return _duration; }
 	void      set_duration(BeatCount d) { _duration = d; }
 	
-	typedef Raul::List<SharedPtr<Edge> > EdgeList;
-	const EdgeList& outgoing_edges() const { return _outgoing_edges; }
+	typedef Raul::List<SharedPtr<Edge> > Edges;
+	const Edges& outgoing_edges() const { return _outgoing_edges; }
 	
 private:
 	bool              _is_initial;
@@ -79,7 +79,7 @@ private:
 	BeatCount         _duration;
 	SharedPtr<Action> _enter_action;
 	SharedPtr<Action> _exit_action;
-	EdgeList          _outgoing_edges;
+	Edges             _outgoing_edges;
 };
 
 

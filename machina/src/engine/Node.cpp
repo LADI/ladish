@@ -103,8 +103,8 @@ Node::remove_outgoing_edge(SharedPtr<Edge> edge)
 void
 Node::remove_outgoing_edges_to(SharedPtr<Node> node)
 {
-	for (EdgeList::iterator i = _outgoing_edges.begin(); i != _outgoing_edges.end() ; ) {
-		EdgeList::iterator next = i;
+	for (Edges::iterator i = _outgoing_edges.begin(); i != _outgoing_edges.end() ; ) {
+		Edges::iterator next = i;
 		++next;
 
 		if ((*i)->dst() == node)
@@ -131,7 +131,7 @@ Node::write_state(Raul::RDFWriter& writer)
 			RdfId(RdfId::RESOURCE, "machina:duration"),
 			Raul::Atom((float)_duration));
 	
-	for (Node::EdgeList::const_iterator e = _outgoing_edges.begin();
+	for (Node::Edges::const_iterator e = _outgoing_edges.begin();
 			e != _outgoing_edges.end(); ++e)
 		(*e)->write_state(writer);
 }

@@ -265,10 +265,11 @@ FlowCanvas::destroy()
 	clear_selection();
 
 	_connections.clear();
-	_items.clear();
 
 	_selected_port.reset();
 	_connect_port.reset();
+	
+	_items.clear();
 
 	_remove_objects = true;
 }

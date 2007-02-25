@@ -351,8 +351,21 @@ MachinaGUI::menu_file_quit()
 void
 MachinaGUI::menu_file_open() 
 {
-	cerr << "open\n";
+	Gtk::FileChooserDialog dialog(*_main_window, "Open Machine", Gtk::FILE_CHOOSER_ACTION_OPEN);
+	
+	dialog.set_local_only(false);
 
+	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+	dialog.add_button(Gtk::Stock::OPEN, Gtk::RESPONSE_OK);
+
+	const int result = dialog.run();
+
+	if (result == Gtk::RESPONSE_OK) {
+		SharedPtr<Machina::Machine> new_machine = _engine->load_machine(dialog.get_uri());
+		_canvas->destroy();
+		_canvas->build(new_machine);
+		_save_filename = dialog.get_filename();
+	}
 }
 
 
@@ -387,8 +400,8 @@ MachinaGUI::menu_file_save_as()
 	
 	if (result == Gtk::RESPONSE_OK) {	
 		string filename = dialog.get_filename();
-		if (filename.length() < 12 || filename.substr(filename.length()-12) != ".machina.ttl")
-			filename += ".machina.ttl";
+		if (filename.length() < 8 || filename.substr(filename.length()-8) != ".machina")
+			filename += ".machina";
 			
 		bool confirm = false;
 		std::fstream fin;

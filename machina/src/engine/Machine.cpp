@@ -92,7 +92,7 @@ Machine::exit_node(const SharedPtr<Node> node)
 
 	// Activate all successors to this node
 	// (that aren't aready active right now)
-	for (Node::EdgeList::const_iterator s = node->outgoing_edges().begin();
+	for (Node::Edges::const_iterator s = node->outgoing_edges().begin();
 			s != node->outgoing_edges().end(); ++s) {
 		
 		const double rand_normal = rand() / (double)RAND_MAX; // [0, 1]
@@ -211,7 +211,7 @@ Machine::write_state(Raul::RDFWriter& writer)
 {
 	using Raul::RdfId;
 
-	writer.add_prefix("machina", "http://drobilla.net/ns/machina");
+	writer.add_prefix("machina", "http://drobilla.net/ns/machina#");
 
 	writer.write(RdfId(RdfId::RESOURCE, ""),
 			RdfId(RdfId::RESOURCE, "rdf:type"),
@@ -225,7 +225,7 @@ Machine::write_state(Raul::RDFWriter& writer)
 				RdfId(RdfId::RESOURCE, "machina:node"),
 				(*n)->id());
 	
-		for (Node::EdgeList::const_iterator e = (*n)->outgoing_edges().begin();
+		for (Node::Edges::const_iterator e = (*n)->outgoing_edges().begin();
 			e != (*n)->outgoing_edges().end(); ++e) {
 			
 			(*e)->write_state(writer);

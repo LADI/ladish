@@ -58,8 +58,10 @@ public:
 	SharedPtr<LearnRequest> pending_learn()   { return _pending_learn; }
 	void clear_pending_learn() { _pending_learn.reset(); }
 
-private:
 	typedef Raul::List<SharedPtr<Node> > Nodes;
+	const Nodes& nodes() { return _nodes; }
+
+private:
 	
 	// Audio context
 	SharedPtr<Node> earliest_node() const;

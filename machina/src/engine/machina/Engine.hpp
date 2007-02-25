@@ -18,6 +18,7 @@
 #ifndef MACHINA_ENGINE_HPP
 #define MACHINA_ENGINE_HPP
 
+#include <glibmm/ustring.h>
 #include <raul/SharedPtr.h>
 
 namespace Machina {
@@ -36,8 +37,9 @@ public:
 	SharedPtr<JackDriver> driver()  { return _driver; }
 	SharedPtr<Machine>    machine() { return _machine; }
 
+	SharedPtr<Machine> load_machine(const Glib::ustring& uri);
+
 	void set_bpm(double bpm);
-	
 	void set_quantization(double beat_fraction);
 
 private:
