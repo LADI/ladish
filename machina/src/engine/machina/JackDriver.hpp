@@ -40,11 +40,12 @@ class Node;
 class JackDriver : public Raul::JackDriver, public Machina::MidiDriver,
                    public boost::enable_shared_from_this<JackDriver> {
 public:
-	JackDriver();
+	JackDriver(SharedPtr<Machine> machine = SharedPtr<Machine>());
 
 	void attach(const std::string& client_name);
 	void detach();
 
+	SharedPtr<Machine> machine()                 { return _machine; }
 	void set_machine(SharedPtr<Machine> machine) { _machine = machine; }
 	
 	void write_event(Raul::BeatTime       time,

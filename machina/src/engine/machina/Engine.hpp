@@ -20,6 +20,7 @@
 
 #include <glibmm/ustring.h>
 #include <raul/SharedPtr.h>
+#include "machina/JackDriver.hpp"
 
 namespace Machina {
 
@@ -29,13 +30,12 @@ class JackDriver;
 
 class Engine {
 public:
-	Engine(SharedPtr<JackDriver> driver, SharedPtr<Machine> machine)
+	Engine(SharedPtr<JackDriver> driver)
 		: _driver(driver)
-		, _machine(machine)
-	{}
+	{ }
 	
 	SharedPtr<JackDriver> driver()  { return _driver; }
-	SharedPtr<Machine>    machine() { return _machine; }
+	SharedPtr<Machine>    machine() { return _driver->machine(); }
 
 	SharedPtr<Machine> load_machine(const Glib::ustring& uri);
 
@@ -44,7 +44,6 @@ public:
 
 private:
 	SharedPtr<JackDriver> _driver;
-	SharedPtr<Machine>    _machine;
 };
 
 

@@ -57,12 +57,15 @@ Loader::load(const Glib::ustring& uri)
 
 	rasqal_init();
 
-	//unsigned char* document_uri_str = raptor_uri_filename_to_uri_string(filename.c_str());
-	//assert(document_uri_str);
-	//raptor_uri* document_raptor_uri = raptor_new_uri(document_uri_str);
-	raptor_uri* document_raptor_uri = raptor_new_uri((const unsigned char*)uri.c_str());
+	raptor_uri* base_uri = raptor_new_uri((const unsigned char*)"file:.");
 
-	if (!document_raptor_uri) 
+	raptor_uri* document_raptor_uri = raptor_new_uri_relative_to_base(
+			base_uri, (const unsigned char*)uri.c_str());
+
+	//raptor_uri* document_raptor_uri = raptor_new_uri_for_retrieval(rel_uri);
+	//raptor_free_uri(rel_uri);
+
+	if (!document_raptor_uri)
 		return machine; // NULL
 
 	machine = SharedPtr<Machine>(new Machine());
@@ -210,6 +213,9 @@ Loader::load(const Glib::ustring& uri)
 		
 	//free(document_uri_str);
 	raptor_free_uri(document_raptor_uri);
+	raptor_free_uri(base_uri);
+
+	machine->reset();
 
 	return machine;
 }

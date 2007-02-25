@@ -22,7 +22,6 @@
 #include "machina/Node.hpp"
 #include "machina/Action.hpp"
 #include "machina/Edge.hpp"
-#include "machina/Loader.hpp"
 #include "machina/JackDriver.hpp"
 #include "machina/MidiAction.hpp"
 
@@ -53,18 +52,18 @@ main(int argc, char** argv)
 		return -1;
 	}
 	
-	SharedPtr<JackDriver>  driver(new JackDriver());
+	SharedPtr<JackDriver> driver(new JackDriver());
 	MidiAction::set_driver(driver);
 
-	Loader l;
+	Engine engine(driver);
 
-	SharedPtr<Machine> m = l.load(argv[1]);
+	// FIXME: Would be nice if this could take URIs on the cmd line
+	char* uri = (char*)calloc(6 + strlen(argv[1]), sizeof(char));
+	strcpy(uri, "file:");
+	strcat(uri, argv[1]);
+	engine.load_machine(uri);
+	free(uri);
 
-	m->activate();
-
-	Engine engine(driver, m);
-
-	driver->set_machine(m);
 	driver->attach("machina");
 
 	signal(SIGINT, catch_int);

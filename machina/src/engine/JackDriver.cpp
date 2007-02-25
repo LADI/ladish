@@ -25,13 +25,16 @@ using namespace Raul;
 namespace Machina {
 
 
-JackDriver::JackDriver()
-	: _input_port(NULL)
+JackDriver::JackDriver(SharedPtr<Machine> machine)
+	: _machine(machine)
+	, _input_port(NULL)
 	, _output_port(NULL)
 	, _cycle_time(1/48000.0, 120.0)
 	, _bpm(120.0)
 	, _quantization(120.0)
 {
+	if (!_machine)
+		_machine = SharedPtr<Machine>(new Machine());
 }
 
 
@@ -59,6 +62,8 @@ JackDriver::attach(const std::string& client_name)
 		
 		if (!_output_port)
 			std::cerr << "WARNING: Failed to create MIDI output port." << std::endl;
+
+		_machine->activate();
 	}
 }
 
@@ -66,6 +71,8 @@ JackDriver::attach(const std::string& client_name)
 void
 JackDriver::detach()
 {
+	_machine->deactivate();
+
 	if (_input_port) {
 		jack_port_unregister(jack_client(), _input_port);
 		_input_port = NULL;

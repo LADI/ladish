@@ -34,16 +34,11 @@ main(int argc, char** argv)
 	
 	SharedPtr<JackDriver> driver(new JackDriver());
 
-	SharedPtr<Machina::Machine> m(new Machine());
-
-	m->activate();
-	
 	MidiAction::set_driver(driver);
 
-	driver->set_machine(m);
 	driver->attach("machina");
 
-	SharedPtr<Engine> engine(new Engine(driver, m));
+	SharedPtr<Engine> engine(new Engine(driver));
 
 	// Launch GUI
 	try {

@@ -30,7 +30,8 @@ Engine::load_machine(const Glib::ustring& uri)
 {
 	Loader l; // FIXME: namespaces?
 	SharedPtr<Machine> m = l.load(uri);
-	_machine = m;
+	m->activate();
+	_driver->set_machine(m);
 	return m;
 }
 
