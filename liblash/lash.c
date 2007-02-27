@@ -127,7 +127,7 @@ lash_extract_args(int *argc, char ***argv)
 
 	*argc = valid_count;
 
-	lash_args_set_args(args, *argc, *argv);
+	lash_args_set_args(args, *argc, (const char**)*argv);
 
 	return args;
 }
@@ -201,9 +201,11 @@ lash_init(const lash_args_t * args,
 				
 				/* need to close all open file descriptors except the std ones */
 				struct rlimit max_fds;
+				rlim_t fd;
+
 				getrlimit(RLIMIT_NOFILE, &max_fds);
 				
-				for (rlim_t fd = 3; fd < max_fds.rlim_cur; ++fd)
+				for (fd = 3; fd < max_fds.rlim_cur; ++fd)
 					close(fd);
 
 				switch (fork()) {

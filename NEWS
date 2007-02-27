@@ -1,5 +1,6 @@
 0.5.3:
 * switch LASH_START_SERVER for LASH_NO_START_SERVER with opposite semantics
+  (start server automatically by default)
 
 0.5.2:
 * support for building without ALSA

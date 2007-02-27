@@ -82,7 +82,7 @@ lash_args_duplicate(const lash_args_t *const src)
 	result->argc = 0;
 	result->argv = NULL;
 	if (src->argc > 0 && src->argv)
-		lash_args_set_args(result, src->argc, src->argv);
+		lash_args_set_args(result, src->argc, (const char**)src->argv);
 
 	return result;
 }
