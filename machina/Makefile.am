@@ -1,3 +1,4 @@
+DIST_SUBDIRS = util
 SUBDIRS = src
 
 desktopfilesdir = $(datadir)/applications

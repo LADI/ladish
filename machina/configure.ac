@@ -76,6 +76,7 @@ AC_CONFIG_FILES([src/Makefile])
 AC_CONFIG_FILES([src/engine/Makefile])
 AC_CONFIG_FILES([src/engine/machina/Makefile])
 AC_CONFIG_FILES([src/gui/Makefile])
+AC_CONFIG_FILES([util/Makefile])
 AC_CONFIG_FILES([machina.desktop])
 
 AC_OUTPUT

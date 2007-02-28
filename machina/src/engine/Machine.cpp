@@ -221,9 +221,15 @@ Machine::write_state(Raul::RDFWriter& writer)
 		
 		(*n)->write_state(writer);
 
-		writer.write(RdfId(RdfId::RESOURCE, ""),
-				RdfId(RdfId::RESOURCE, "machina:node"),
-				(*n)->id());
+		if ((*n)->is_initial()) {
+			writer.write(RdfId(RdfId::RESOURCE, ""),
+					RdfId(RdfId::RESOURCE, "machina:initialNode"),
+					(*n)->id());
+		} else {
+			writer.write(RdfId(RdfId::RESOURCE, ""),
+					RdfId(RdfId::RESOURCE, "machina:node"),
+					(*n)->id());
+		}
 	
 		for (Node::Edges::const_iterator e = (*n)->outgoing_edges().begin();
 			e != (*n)->outgoing_edges().end(); ++e) {

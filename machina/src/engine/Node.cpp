@@ -131,9 +131,9 @@ Node::write_state(Raul::RDFWriter& writer)
 			RdfId(RdfId::RESOURCE, "machina:duration"),
 			Raul::Atom((float)_duration));
 	
-	for (Node::Edges::const_iterator e = _outgoing_edges.begin();
+	/*for (Node::Edges::const_iterator e = _outgoing_edges.begin();
 			e != _outgoing_edges.end(); ++e)
-		(*e)->write_state(writer);
+		(*e)->write_state(writer);*/
 }
 
 
