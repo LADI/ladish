@@ -9,6 +9,7 @@ libmachina_la_LIBADD   = @RAUL_LIBS@   @JACK_LIBS@   @GLIBMM_LIBS@
 libmachina_la_SOURCES = \
 	Node.cpp \
 	Edge.cpp \
+	Action.cpp \
 	Machine.cpp \
 	Loader.cpp \
 	MidiAction.cpp \

@@ -130,6 +130,13 @@ Node::write_state(Raul::RDFWriter& writer)
 	writer.write(_id,
 			RdfId(RdfId::RESOURCE, "machina:duration"),
 			Raul::Atom((float)_duration));
+
+	writer.write(_id,
+			RdfId(RdfId::RESOURCE, "machina:enterAction"),
+			_enter_action->id());
+	_enter_action->write_state(writer);
+
+	_exit_action->write_state(writer);
 	
 	/*for (Node::Edges::const_iterator e = _outgoing_edges.begin();
 			e != _outgoing_edges.end(); ++e)

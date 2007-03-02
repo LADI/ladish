@@ -15,40 +15,21 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef MACHINA_ACTION_HPP
-#define MACHINA_ACTION_HPP
-
-#include <string>
-#include <iostream>
-#include <raul/Deletable.h>
-#include <raul/TimeSlice.h>
-#include <raul/Stateful.h>
-#include "types.hpp"
+#include <raul/RDFWriter.h>
+#include "machina/Action.hpp"
 
 namespace Machina {
 
+void
+Action::write_state(Raul::RDFWriter& writer)
+{
+	using Raul::RdfId;
 
-/** An Action, executed on entering or exiting of a state.
- */
-struct Action : public Raul::Deletable, public Raul::Stateful {
-	virtual void execute(Raul::BeatTime /*time*/) {}
-
-	virtual void write_state(Raul::RDFWriter& writer);
-};
-
-
-class PrintAction : public Action {
-public:
-	PrintAction(const std::string& msg) : _msg(msg) {}
-
-	void execute(Raul::BeatTime time)
-	{ std::cout << "t=" << time << ": " << _msg << std::endl; }
-
-private:
-	std::string _msg;
-};
+	writer.write(_id,
+			RdfId(RdfId::RESOURCE, "rdf:type"),
+			RdfId(RdfId::RESOURCE, "machina:Action"));
+}
 
 
 } // namespace Machina
 
-#endif // MACHINA_ACTION_HPP

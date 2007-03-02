@@ -16,56 +16,60 @@ parser.parse_into_model(model, "file:" + sys.argv[1])
 print """
 digraph finite_state_machine {
 	rankdir=LR;
-	size="8,5"
-	node [shape = doublecircle];
+	node [shape = doublecircle, width = 1.25 ];
 """,
 
+node_durations = { }
 
-initial_nodes = RDF.SPARQLQuery("""
+initial_nodes_query = RDF.SPARQLQuery("""
 PREFIX machina: <http://drobilla.net/ns/machina#>
-SELECT ?n ?dur WHERE {
+SELECT DISTINCT ?n ?dur WHERE {
 	?m  machina:initialNode ?n .
 	?n  a                 machina:Node ;
 		machina:duration  ?dur .
 }
-""").execute(model)
+""")
 
-for result in initial_nodes:
-	print '\t', result['n'].blank_identifier, "[ label = \"",
-	print float(result['dur'].literal_value['string']),
-	print "\"]; "
+for result in initial_nodes_query.execute(model):
+	node_id  = result['n'].blank_identifier
+	duration = float(result['dur'].literal_value['string'])
+	node_durations[node_id] = duration
+	print '\t', node_id, "[ label = \"d:", duration, "\"];"
 
-print "\tnode [shape = circle];"
+
+print "\tnode [shape = circle, width = 1.25 ];"
 
 
-nodes = RDF.SPARQLQuery("""
+nodes_query = RDF.SPARQLQuery("""
 PREFIX machina: <http://drobilla.net/ns/machina#>
-SELECT ?n ?dur WHERE {
+SELECT DISTINCT ?n ?dur WHERE {
 	?m  machina:node      ?n .
 	?n  a                 machina:Node ;
 		machina:duration  ?dur .
 }
-""").execute(model)
+""")
 
-for result in nodes:
-	print '\t', result['n'].blank_identifier, "[ label = \"",
-	print float(result['dur'].literal_value['string']),
-	print "\"]; "
+for result in nodes_query.execute(model):
+	node_id  = result['n'].blank_identifier
+	duration = float(result['dur'].literal_value['string'])
+	node_durations[node_id] = duration
+	print '\t', node_id, "[ label = \"d:", duration, "\"]; "
 
-
-edges = RDF.SPARQLQuery("""
+	
+edge_query = RDF.SPARQLQuery("""
 PREFIX machina: <http://drobilla.net/ns/machina#>
-SELECT ?tail ?head ?prob WHERE {
+SELECT DISTINCT ?tail ?head ?prob WHERE {
 	?e  a                   machina:Edge ;
-	    machina:tail        ?tail ;
+		machina:tail        ?tail ;
 		machina:head        ?head ;
 		machina:probability ?prob .
 }
-""").execute(model);
+""")
+	
+for edge in edge_query.execute(model):
+	print '\t', edge['tail'].blank_identifier, ' -> ',
+	print edge['head'].blank_identifier, ' ',
+	print "[ label = \"", edge['prob'].literal_value['string'], "\" ",
+	print "minlen = ", node_durations[edge['tail'].blank_identifier] * 7.5, " ];"
 
-for result in edges:
-	print '\t', result['tail'].blank_identifier, ' -> ',
-	print result['head'].blank_identifier, ' ',
-	print "[ label = \"", result['prob'].literal_value['string'], "\" ];"
-
-print "\n}"
+print "}"
