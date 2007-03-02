@@ -105,6 +105,19 @@ MidiAction::execute(Raul::BeatTime time)
 }
 
 
+void
+MidiAction::write_state(Raul::RDFWriter& writer)
+{
+	using Raul::RdfId;
+
+	Action::write_state(writer);
+
+	writer.write(_id,
+			RdfId(RdfId::RESOURCE, "rdf:type"),
+			RdfId(RdfId::RESOURCE, "machina:MidiAction"));
+}
+
+
 } // namespace Machina
 
 

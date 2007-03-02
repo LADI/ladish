@@ -243,23 +243,25 @@ Patchage::Patchage(int argc, char** argv)
 
 	_update_pane_position = false;
 	_main_paned->set_position(max_pane_position());
+	
+	_user_pane_position = max_pane_position() - _main_window->get_height()/8;
 
+	_messages_expander->set_expanded(false);
+	_pane_closed = true;
+	
 	_main_paned->property_position().signal_changed().connect(
 		sigc::mem_fun(*this, &Patchage::on_pane_position_changed));
 	
 	_messages_expander->property_expanded().signal_changed().connect(
 		sigc::mem_fun(*this, &Patchage::on_messages_expander_changed));
-	
-	_main_paned->set_position(max_pane_position());
-	_user_pane_position = max_pane_position() - _main_window->get_height()/8;
-	_update_pane_position = true;
-	_pane_closed = true;
 
 	// Idle callback, check if we need to refresh
 	Glib::signal_timeout().connect(sigc::mem_fun(this, &Patchage::idle_callback), 100);
 	
 	// Faster idle callback to update DSP load progress bar
 	//Glib::signal_timeout().connect(sigc::mem_fun(this, &Patchage::update_load), 50);
+	
+	_update_pane_position = true;
 }
 
 
@@ -613,6 +615,7 @@ Patchage::on_pane_position_changed()
 	if (_pane_closed && new_position < max_pane_position()) {
 		// Auto open
 		_user_pane_position = new_position;
+		cerr << "FOO\n";
 		_messages_expander->set_expanded(true);
 		_pane_closed = false;
 		_menu_view_messages->set_active(true);

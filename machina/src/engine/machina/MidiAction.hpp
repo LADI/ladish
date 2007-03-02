@@ -48,6 +48,8 @@ public:
 	bool set_event(size_t size, const byte* event);
 
 	void execute(Raul::BeatTime time);
+	
+	virtual void write_state(Raul::RDFWriter& writer);
 
 private:
 	MidiAction(size_t               size,

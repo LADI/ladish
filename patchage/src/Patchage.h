@@ -63,7 +63,8 @@ public:
 	inline void queue_refresh() { _refresh = true; }
 
 	int max_pane_position()
-	{ return _main_paned->property_max_position() - _messages_expander->get_label_widget()->get_height() - 8; }
+	{ return _main_paned->property_max_position()
+		- _messages_expander->get_label_widget()->get_height() - 10; }
 
 protected:
 	void connect_widgets();
