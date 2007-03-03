@@ -15,7 +15,8 @@ parser.parse_into_model(model, "file:" + sys.argv[1])
 
 print """
 digraph finite_state_machine {
-	rankdir=LR;
+	rankdir=TD;
+	size="20,20"
 	node [shape = doublecircle, width = 1.25 ];
 """,
 

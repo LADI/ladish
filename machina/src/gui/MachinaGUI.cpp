@@ -17,12 +17,13 @@
 
 #include <cmath>
 #include <sstream>
-#include <libgnomecanvasmm.h>
-#include <libglademm/xml.h>
 #include <fstream>
 #include <pthread.h>
+#include <libgnomecanvasmm.h>
+#include <libglademm/xml.h>
 #include <raul/RDFWriter.h>
 #include <machina/Machine.hpp>
+#include <machina/SMFDriver.hpp>
 #include "MachinaGUI.hpp"
 #include "MachinaCanvas.hpp"
 #include "NodeView.hpp"
@@ -114,6 +115,8 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	xml->get_widget("save_menuitem", _menu_file_save);
 	xml->get_widget("save_as_menuitem", _menu_file_save_as);
 	xml->get_widget("quit_menuitem", _menu_file_quit);
+	xml->get_widget("learn_midi_menuitem", _menu_learn_midi);
+	xml->get_widget("export_midi_menuitem", _menu_export_midi);
 	xml->get_widget("view_toolbar_menuitem", _menu_view_toolbar);
 	//xml->get_widget("view_refresh_menuitem", _menu_view_refresh);
 	//xml->get_widget("view_messages_menuitem", _menu_view_messages);
@@ -151,6 +154,10 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 		sigc::mem_fun(this, &MachinaGUI::menu_file_save_as));
 	_menu_file_quit->signal_activate().connect(
 		sigc::mem_fun(this, &MachinaGUI::menu_file_quit));
+	_menu_learn_midi->signal_activate().connect(
+		sigc::mem_fun(this, &MachinaGUI::menu_learn_midi));
+	_menu_export_midi->signal_activate().connect(
+		sigc::mem_fun(this, &MachinaGUI::menu_export_midi));
 	//_menu_view_refresh->signal_activate().connect(
 	//	sigc::mem_fun(this, &MachinaGUI::menu_view_refresh));
 	_menu_view_toolbar->signal_toggled().connect(
@@ -352,9 +359,7 @@ void
 MachinaGUI::menu_file_open() 
 {
 	Gtk::FileChooserDialog dialog(*_main_window, "Open Machine", Gtk::FILE_CHOOSER_ACTION_OPEN);
-	
 	dialog.set_local_only(false);
-
 	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
 	dialog.add_button(Gtk::Stock::OPEN, Gtk::RESPONSE_OK);
 
@@ -427,6 +432,45 @@ MachinaGUI::menu_file_save_as()
 			writer.finish();
 			_save_filename = filename;
 		}
+	}
+}
+
+
+void
+MachinaGUI::menu_learn_midi()
+{
+	Gtk::FileChooserDialog dialog(*_main_window, "Learn from MIDI file", Gtk::FILE_CHOOSER_ACTION_OPEN);
+	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+	dialog.add_button(Gtk::Stock::OPEN, Gtk::RESPONSE_OK);
+
+	const int result = dialog.run();
+
+	if (result == Gtk::RESPONSE_OK) {
+		SharedPtr<Machina::SMFDriver> file_driver(new Machina::SMFDriver());
+		SharedPtr<Machina::Machine> machine = file_driver->learn(dialog.get_uri());
+	}
+}
+
+
+void
+MachinaGUI::menu_export_midi()
+{
+	Gtk::FileChooserDialog dialog(*_main_window, "Export to a MIDI file", Gtk::FILE_CHOOSER_ACTION_SAVE);
+	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+	dialog.add_button(Gtk::Stock::SAVE, Gtk::RESPONSE_OK);
+
+	const int result = dialog.run();
+
+	if (result == Gtk::RESPONSE_OK) {
+		SharedPtr<Machina::SMFDriver> file_driver(new Machina::SMFDriver());
+		_engine->driver()->deactivate();
+		const SharedPtr<Machina::Machine> m = _engine->machine();
+		m->set_sink(file_driver);
+		file_driver->start(dialog.get_filename());
+		file_driver->run(m, 32); // FIXME: hardcoded max length.  TODO: solve halting problem
+		m->set_sink(_engine->driver());
+		m->reset();
+		_engine->driver()->activate();
 	}
 }
 

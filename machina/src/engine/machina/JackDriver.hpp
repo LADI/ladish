@@ -21,6 +21,7 @@
 #include <raul/JackDriver.h>
 #include <raul/SharedPtr.h>
 #include <raul/DoubleBuffer.h>
+#include <raul/Semaphore.h>
 #include <jack/midiport.h>
 #include "Machine.hpp"
 #include "MidiDriver.hpp"
@@ -45,12 +46,12 @@ public:
 	void attach(const std::string& client_name);
 	void detach();
 
-	SharedPtr<Machine> machine()                 { return _machine; }
-	void set_machine(SharedPtr<Machine> machine) { _machine = machine; }
+	SharedPtr<Machine> machine() { return _machine; }
+	void set_machine(SharedPtr<Machine> machine);
 	
 	void write_event(Raul::BeatTime       time,
 	                 size_t               size,
-	                 const unsigned char* event);
+	                 const unsigned char* event) throw (std::logic_error);
 	
 	void set_bpm(double bpm)                   { _bpm.set(bpm); }
 	void set_quantization(double quantization) { _quantization.set(quantization); }
@@ -60,6 +61,7 @@ private:
 	                           const Raul::TimeSlice& time);
 	virtual void on_process(jack_nframes_t nframes);
 
+	Raul::Semaphore    _machine_changed;
 	SharedPtr<Machine> _machine;
 	SharedPtr<Machine> _last_machine;
 

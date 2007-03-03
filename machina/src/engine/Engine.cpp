@@ -15,9 +15,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include <glibmm/ustring.h>
 #include "machina/Loader.hpp"
 #include "machina/Engine.hpp"
 #include "machina/JackDriver.hpp"
+#include "machina/SMFDriver.hpp"
 
 namespace Machina {
 
@@ -30,6 +32,21 @@ Engine::load_machine(const Glib::ustring& uri)
 {
 	Loader l; // FIXME: namespaces?
 	SharedPtr<Machine> m = l.load(uri);
+	m->activate();
+	_driver->set_machine(m);
+	return m;
+}
+
+
+/** Learn the SMF (MIDI) file at @a uri, and run the resulting machine
+ * (replacing current machine).
+ * Safe to call while engine is processing.
+ */
+SharedPtr<Machine>
+Engine::learn_midi(const Glib::ustring& uri)
+{
+	SharedPtr<SMFDriver> file_driver(new SMFDriver());
+	SharedPtr<Machine> m = file_driver->learn(uri);
 	m->activate();
 	_driver->set_machine(m);
 	return m;

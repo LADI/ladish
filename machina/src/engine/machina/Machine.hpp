@@ -61,16 +61,19 @@ public:
 	typedef Raul::List<SharedPtr<Node> > Nodes;
 	const Nodes& nodes() { return _nodes; }
 
+	void set_sink(SharedPtr<Raul::MIDISink> sink);
+	
 private:
 	
 	// Audio context
 	SharedPtr<Node> earliest_node() const;
-	void            exit_node(const SharedPtr<Node>);
+	void            exit_node(const SharedPtr<Raul::MIDISink> sink, const SharedPtr<Node>);
 
-	bool           _is_activated;
-	bool           _is_finished;
-	Raul::BeatTime _time;
-	Nodes          _nodes;
+	WeakPtr<Raul::MIDISink> _sink;
+	bool                    _is_activated;
+	bool                    _is_finished;
+	Raul::BeatTime          _time;
+	Nodes                   _nodes;
 
 	//Raul::List<SharedPtr<LearnRequest> > _pending_learns;
 	SharedPtr<LearnRequest> _pending_learn;

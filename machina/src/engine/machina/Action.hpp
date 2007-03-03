@@ -20,18 +20,21 @@
 
 #include <string>
 #include <iostream>
-#include <raul/Deletable.h>
+#include <raul/MIDISink.h>
 #include <raul/TimeSlice.h>
 #include <raul/Stateful.h>
+#include <raul/SharedPtr.h>
 #include "types.hpp"
 
 namespace Machina {
+
+class MidiDriver;
 
 
 /** An Action, executed on entering or exiting of a state.
  */
 struct Action : public Raul::Deletable, public Raul::Stateful {
-	virtual void execute(Raul::BeatTime /*time*/) {}
+	virtual void execute(SharedPtr<Raul::MIDISink> sink, Raul::BeatTime time) = 0;
 
 	virtual void write_state(Raul::RDFWriter& writer);
 };
@@ -41,7 +44,7 @@ class PrintAction : public Action {
 public:
 	PrintAction(const std::string& msg) : _msg(msg) {}
 
-	void execute(Raul::BeatTime time)
+	void execute(SharedPtr<Raul::MIDISink>, Raul::BeatTime time)
 	{ std::cout << "t=" << time << ": " << _msg << std::endl; }
 
 private:

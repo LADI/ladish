@@ -38,6 +38,18 @@ Machine::~Machine()
 }
 
 
+/** Set the MIDI sink to be used for executing MIDI actions.
+ *
+ * MIDI actions will silently do nothing unless this call is passed an
+ * existing Raul::MIDISink before running.
+ */
+void
+Machine::set_sink(SharedPtr<Raul::MIDISink> sink)
+{
+	_sink = sink;
+}
+
+
 void
 Machine::add_node(SharedPtr<Node> node)
 {
@@ -55,7 +67,7 @@ Machine::reset()
 			const SharedPtr<Node> node = (*n);
 
 			if (node->is_active())
-				node->exit(_time);
+				node->exit(_sink.lock(), _time);
 		}
 	}
 
@@ -86,9 +98,9 @@ Machine::earliest_node() const
 /** Exit an active node at the current _time.
  */
 void
-Machine::exit_node(const SharedPtr<Node> node)
+Machine::exit_node(SharedPtr<Raul::MIDISink> sink, const SharedPtr<Node> node)
 {
-	node->exit(_time);
+	node->exit(sink, _time);
 
 	// Activate all successors to this node
 	// (that aren't aready active right now)
@@ -101,7 +113,7 @@ Machine::exit_node(const SharedPtr<Node> node)
 			SharedPtr<Node> dst = (*s)->dst();
 
 			if (!dst->is_active())
-				dst->enter(_time);
+				dst->enter(sink, _time);
 		}
 
 	}
@@ -125,6 +137,8 @@ Machine::run(const Raul::TimeSlice& time)
 		return 0;
 	}
 
+	const SharedPtr<Raul::MIDISink> sink = _sink.lock();
+
 	const BeatCount cycle_end = _time + time.length_beats();
 
 	//std::cerr << "Start: " << _time << std::endl;
@@ -140,7 +154,7 @@ Machine::run(const Raul::TimeSlice& time)
 				assert( ! (*n)->is_active());
 				
 				if ((*n)->is_initial()) {
-					(*n)->enter(0);
+					(*n)->enter(sink, 0);
 					entered = true;
 				}
 
@@ -170,7 +184,7 @@ Machine::run(const Raul::TimeSlice& time)
 				< time.beats_to_ticks(cycle_end)) {
 			this_time += earliest->exit_time() - _time;
 			_time = earliest->exit_time();
-			exit_node(earliest);
+			exit_node(sink, earliest);
 
 		// Earliest active state ends in the future, done this cycle
 		} else {

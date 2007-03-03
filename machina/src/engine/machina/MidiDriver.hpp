@@ -18,6 +18,7 @@
 #ifndef MACHINA_MIDIDRIVER_HPP
 #define MACHINA_MIDIDRIVER_HPP
 
+#include <raul/TimeSlice.h>
 #include "machina/types.hpp"
 
 namespace Machina {
@@ -25,14 +26,15 @@ namespace Machina {
 class Node;
 
 
-class MidiDriver {
+class MidiDriver : public Raul::MIDISink {
 public:
 	virtual ~MidiDriver() {}
 
 	/** Emit a MIDI event at the given time */
-	virtual void write_event(Raul::BeatTime       time,
+	/*virtual void write_event(Raul::BeatTime       time,
 	                         size_t               size,
 	                         const unsigned char* event) = 0;
+	*/
 
 	/** Beginning of current cycle in absolute time.
 	 */

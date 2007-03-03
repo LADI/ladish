@@ -14,5 +14,6 @@ libmachina_la_SOURCES = \
 	Loader.cpp \
 	MidiAction.cpp \
 	JackDriver.cpp \
+	SMFDriver.cpp \
 	Engine.cpp \
 	LearnRequest.cpp

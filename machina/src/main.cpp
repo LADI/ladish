@@ -53,7 +53,6 @@ main(int argc, char** argv)
 	}
 	
 	SharedPtr<JackDriver> driver(new JackDriver());
-	MidiAction::set_driver(driver);
 
 	Engine engine(driver);
 

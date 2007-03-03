@@ -26,7 +26,8 @@ namespace Machina {
 
 
 JackDriver::JackDriver(SharedPtr<Machine> machine)
-	: _machine(machine)
+	: _machine_changed(0)
+	, _machine(machine)
 	, _input_port(NULL)
 	, _output_port(NULL)
 	, _cycle_time(1/48000.0, 120.0)
@@ -87,6 +88,15 @@ JackDriver::detach()
 
 
 void
+JackDriver::set_machine(SharedPtr<Machine> machine)
+{ 
+	_machine = machine;
+	if (is_activated())
+		_machine_changed.wait();
+}
+
+
+void
 JackDriver::process_input(SharedPtr<Machine> machine, const TimeSlice& time)
 {
 	// We only actually read Jack input at the beginning of a cycle
@@ -139,7 +149,7 @@ JackDriver::process_input(SharedPtr<Machine> machine, const TimeSlice& time)
 void
 JackDriver::write_event(Raul::BeatTime time,
                         size_t         size,
-                        const byte*    event)
+                        const byte*    event) throw (std::logic_error)
 {
 	const TickCount nframes = _cycle_time.length_ticks();
 	const TickCount offset  = _cycle_time.beats_to_ticks(time)
@@ -180,20 +190,23 @@ JackDriver::on_process(jack_nframes_t nframes)
 	/* Take a reference to machine here and use only it during the process
 	 * cycle so _machine can be switched with set_machine during a cycle. */
 	SharedPtr<Machine> machine = _machine;
-	
+	machine->set_sink(shared_from_this());
+
 	// Machine was switched since last cycle, finalize old machine.
 	if (_last_machine && machine != _last_machine) {
 		_last_machine->reset(); // Exit all active states
 		assert(_last_machine.use_count() > 1); // Realtime, can't delete
 		_last_machine.reset(); // Cut our reference
+		_machine_changed.post(); // Signal we're done with it
 	}
+
+	if (!machine)
+		return;
 
 	process_input(machine, _cycle_time);
 
-	if (machine->is_empty()) {
-		//cerr << "EMPTY\n";
+	if (machine->is_empty())
 		return;
-	}
 
 	while (true) {
 	

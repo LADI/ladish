@@ -7,7 +7,8 @@ libraul_la_SOURCES = \
 	Thread.cpp \
 	Path.cpp \
 	Namespaces.cpp \
-	Maid.cpp
+	Maid.cpp \
+	SMFWriter.cpp
 
 if WITH_RAPTOR
 libraul_la_SOURCES += RDFWriter.cpp

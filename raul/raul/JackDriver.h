@@ -45,8 +45,9 @@ public:
 	void activate();
 	void deactivate();
 
-	bool is_attached() const { return (_client != NULL); }
-	bool is_realtime() const { return _client && jack_is_realtime(_client); }
+	bool is_activated() const { return _is_activated; }
+	bool is_attached()  const { return (_client != NULL); }
+	bool is_realtime()  const { return _client && jack_is_realtime(_client); }
 	
 	void start_transport() { jack_transport_start(_client); }
 	void stop_transport()  { jack_transport_stop(_client); }

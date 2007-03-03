@@ -22,7 +22,7 @@
 #include <raul/SharedPtr.h>
 #include <raul/List.h>
 #include <raul/Stateful.h>
-#include <raul/TimeSlice.h>
+#include <raul/MIDISink.h>
 #include "Action.hpp"
 
 namespace Machina {
@@ -52,8 +52,8 @@ public:
 	void add_exit_action(SharedPtr<Action> action);
 	void remove_exit_action(SharedPtr<Action> action);
 
-	void enter(BeatTime time);
-	void exit(BeatTime time);
+	void enter(SharedPtr<Raul::MIDISink> driver, BeatTime time);
+	void exit(SharedPtr<Raul::MIDISink> driver, BeatTime time);
 
 	void add_outgoing_edge(SharedPtr<Edge> edge);
 	void remove_outgoing_edge(SharedPtr<Edge> edge);

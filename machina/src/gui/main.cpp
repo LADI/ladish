@@ -34,8 +34,6 @@ main(int argc, char** argv)
 	
 	SharedPtr<JackDriver> driver(new JackDriver());
 
-	MidiAction::set_driver(driver);
-
 	driver->attach("machina");
 
 	SharedPtr<Engine> engine(new Engine(driver));

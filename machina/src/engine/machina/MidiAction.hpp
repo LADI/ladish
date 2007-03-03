@@ -25,9 +25,9 @@
 #include "types.hpp"
 #include "Action.hpp"
 
-namespace Machina {
+namespace Raul { class MIDISink; }
 
-class MidiDriver;
+namespace Machina {
 
 
 class MidiAction : public Action {
@@ -43,19 +43,15 @@ public:
 		return ret;
 	}
 
-	static void set_driver(SharedPtr<MidiDriver> driver);
-
 	bool set_event(size_t size, const byte* event);
 
-	void execute(Raul::BeatTime time);
+	void execute(SharedPtr<Raul::MIDISink> driver, Raul::BeatTime time);
 	
 	virtual void write_state(Raul::RDFWriter& writer);
 
 private:
 	MidiAction(size_t               size,
 	           const unsigned char* event);
-
-	static WeakPtr<MidiDriver> _driver;
 
 	size_t                 _size;
 	const size_t           _max_size;

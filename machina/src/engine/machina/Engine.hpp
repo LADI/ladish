@@ -38,6 +38,7 @@ public:
 	SharedPtr<Machine>    machine() { return _driver->machine(); }
 
 	SharedPtr<Machine> load_machine(const Glib::ustring& uri);
+	SharedPtr<Machine> learn_midi(const Glib::ustring& uri);
 
 	void set_bpm(double bpm);
 	void set_quantization(double beat_fraction);

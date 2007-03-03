@@ -17,12 +17,10 @@
 
 #include <iostream>
 #include <raul/SharedPtr.h>
+#include <raul/MIDISink.h>
 #include "machina/MidiAction.hpp"
-#include "machina/MidiDriver.hpp"
 
 namespace Machina {
-
-WeakPtr<MidiDriver> MidiAction::_driver;
 
 
 /** Create a MIDI action.
@@ -47,18 +45,6 @@ MidiAction::~MidiAction()
 {
 	if (_event.get())
 		delete _event.get();
-}
-
-
-/** Set the MIDI driver to be used for executing MIDI actions.
- *
- * MIDI actions will silently do nothing unless this call is passed an
- * existing MidiDriver.
- */
-void
-MidiAction::set_driver(SharedPtr<MidiDriver> driver)
-{
-	_driver = driver;
 }
 
 
@@ -91,14 +77,13 @@ MidiAction::set_event(size_t size, const byte* new_event)
  * Safe to call concurrently with set_event.
  */
 void
-MidiAction::execute(Raul::BeatTime time)
+MidiAction::execute(SharedPtr<Raul::MIDISink> sink, Raul::BeatTime time)
 {
 	const byte* const event = _event.get();
 
 	if (event) {
-		SharedPtr<MidiDriver> driver = _driver.lock();
-		if (driver)
-			driver->write_event(time, _size, event);
+		if (sink)
+			sink->write_event(time, _size, event);
 	} else {
 		std::cerr << "NULL MIDI ACTION";
 	}
@@ -115,6 +100,11 @@ MidiAction::write_state(Raul::RDFWriter& writer)
 	writer.write(_id,
 			RdfId(RdfId::RESOURCE, "rdf:type"),
 			RdfId(RdfId::RESOURCE, "machina:MidiAction"));
+	
+	// FIXME: Assumes note on/note off
+	writer.write(_id,
+			RdfId(RdfId::RESOURCE, "machina:midiNote"),
+			(int)(_event.get()[1]));
 }
 
 

@@ -63,22 +63,22 @@ Node::remove_exit_action(SharedPtr<Action> /*action*/)
 //using namespace std;
 
 void
-Node::enter(BeatTime time)
+Node::enter(SharedPtr<Raul::MIDISink> sink, BeatTime time)
 {
 	//cerr << "ENTER " << time << endl;
 	_is_active = true;
 	_enter_time = time;
 	if (_enter_action)
-		_enter_action->execute(time);
+		_enter_action->execute(sink, time);
 }
 
 
 void
-Node::exit(BeatTime time)
+Node::exit(SharedPtr<Raul::MIDISink> sink, BeatTime time)
 {
 	//cerr << "EXIT " << time << endl;
 	if (_exit_action)
-		_exit_action->execute(time);
+		_exit_action->execute(sink, time);
 	_is_active = false;
 	_enter_time = 0;
 }
