@@ -67,7 +67,7 @@ main(int argc, char **argv)
 	 * jack ports
 	 */
 	printf("%s: connecting to jack server\n", __FUNCTION__);
-	jack_client = jack_client_new(client_name);
+	jack_client = jack_client_open(client_name, JackNullOption, NULL);
 	if (!jack_client) {
 		printf("%s: could not connect to jack server", __FUNCTION__);
 		exit(1);

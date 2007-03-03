@@ -191,7 +191,7 @@ jack_mgr_init_jack(jack_mgr_t * jack_mgr)
 
 	jack_set_error_function(jack_mgr_jack_error);
 
-	jack_mgr->jack_client = jack_client_new(client_name);
+	jack_mgr->jack_client = jack_client_open(client_name, JackNullOption, NULL);
 	if (!jack_mgr->jack_client) {
 		fprintf(stderr, "%s: could not connect to jackd, exiting\n",
 				__FUNCTION__);

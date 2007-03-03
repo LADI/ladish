@@ -73,7 +73,7 @@ open_jack()
 {
 	lash_event_t *event;
 
-	jack_client = jack_client_new(jack_client_name);
+	jack_client = jack_client_open(jack_client_name, JackNullOption, NULL);
 	if (!jack_client) {
 		fprintf(stderr, "%s: could not connect to jack server, exiting\n",
 				__FUNCTION__);
