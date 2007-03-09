@@ -8,6 +8,7 @@ libraul_la_SOURCES = \
 	Path.cpp \
 	Namespaces.cpp \
 	Maid.cpp \
+	SMFReader.cpp \
 	SMFWriter.cpp
 
 if WITH_RAPTOR

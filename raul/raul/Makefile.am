@@ -1,6 +1,7 @@
 raulincludedir = $(includedir)/raul
 
 raulinclude_HEADERS = \
+	midi_events.h \
 	Array.h \
 	Atom.h \
 	AtomLiblo.h \
@@ -30,6 +31,7 @@ raulinclude_HEADERS = \
 	TimeSlice.h \
 	Quantizer.h \
 	MIDISink.h \
+	SMFReader.h \
 	SMFWriter.h 
 
 if WITH_LIBLO

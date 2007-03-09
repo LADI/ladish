@@ -49,37 +49,23 @@ SMFWriter::~SMFWriter()
  *    to write_event will have this value subtracted before writing).
  */
 bool
-SMFWriter::start(const string& filename,
-                 Raul::BeatTime     start_time) throw (logic_error)
+SMFWriter::start(const string&  filename,
+                 Raul::BeatTime start_time) throw (logic_error)
 {
 	if (_fd)
 		throw logic_error("Attempt to start new write while write in progress.");
 
-	cerr << "Opening SMF file " << filename << endl;
+	cerr << "Opening SMF file " << filename << " for writing." << endl;
 
-	_fd = fopen(filename.c_str(), "r+");
+	_fd = fopen(filename.c_str(), "w+");
 
-	// File already exists
-	if (_fd) {
-		return false;
-		/*fseek(_fd, _header_size - 4, 0);
-		uint32_t track_size_be = 0;
-		fread(&track_size_be, 4, 1, _fd);
-		_track_size = GUINT32_FROM_BE(track_size_be);
-		cerr << "SMF - read track size " << _track_size;*/
-
-	// Make a new file
-	} else {
-		_fd = fopen(filename.c_str(), "w+");
-
-		if (_fd) { 
-			_track_size = 0;
-			_filename = filename;
-			_start_time = start_time;
-			_last_ev_time = 0;
-			// write a tentative header to pad file out so writing starts at the right offset
-			write_header();
-		}
+	if (_fd) { 
+		_track_size = 0;
+		_filename = filename;
+		_start_time = start_time;
+		_last_ev_time = 0;
+		// write a tentative header to pad file out so writing starts at the right offset
+		write_header();
 	}
 
 	return (_fd == 0) ? -1 : 0;
@@ -192,7 +178,7 @@ SMFWriter::finish() throw (logic_error)
 
 
 void
-SMFWriter::write_header ()
+SMFWriter::write_header()
 {
 	cerr << "SMF Flushing header\n";
 
@@ -200,12 +186,14 @@ SMFWriter::write_header ()
 
 	const uint16_t type     = GUINT16_TO_BE(0);    // SMF Type 0 (single track)
 	const uint16_t ntracks  = GUINT16_TO_BE(1);    // Number of tracks (always 1 for Type 0)
-	const uint16_t division = GUINT16_TO_BE(1920); // FIXME FIXME FIXME PPQN
+	const uint16_t division = GUINT16_TO_BE(_ppqn);    // Number of tracks (always 1 for Type 0)
 
 	char data[6];
 	memcpy(data, &type, 2);
 	memcpy(data+2, &ntracks, 2);
 	memcpy(data+4, &division, 2);
+	//data[4] = _ppqn & 0xF0;
+	//data[5] = _ppqn & 0x0F;
 
 	_fd = freopen(_filename.c_str(), "r+", _fd);
 	assert(_fd);

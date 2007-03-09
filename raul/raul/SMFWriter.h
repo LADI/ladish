@@ -34,6 +34,8 @@ public:
 	bool start(const std::string& filename,
 	           BeatTime           start_time=0) throw (std::logic_error);
 
+	uint16_t ppqn() const { return _ppqn; }
+
 	void write_event(BeatTime             time,
 	                 size_t               ev_size,
 	                 const unsigned char* ev) throw (std::logic_error);
