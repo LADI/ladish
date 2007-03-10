@@ -90,7 +90,6 @@
 #define MIDI_CTL_SUSTAIN                0x40 /**< Sustain pedal */
 #define MIDI_CTL_PORTAMENTO             0x41 /**< Portamento */
 #define MIDI_CTL_SOSTENUTO              0x42 /**< Sostenuto */
-#define MIDI_CTL_SUSTENUTO              0x42 /**< Sostenuto (a typo in the older version) */
 #define MIDI_CTL_SOFT_PEDAL             0x43 /**< Soft pedal */
 #define MIDI_CTL_LEGATO_FOOTSWITCH      0x44 /**< Legato foot switch */
 #define MIDI_CTL_HOLD2                  0x45 /**< Hold2 */

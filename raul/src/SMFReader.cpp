@@ -87,7 +87,7 @@ SMFReader::~SMFReader()
 
 
 bool
-SMFReader::open(const string&  filename)
+SMFReader::open(const string& filename)
 {
 	if (_fd)
 		throw logic_error("Attempt to start new read while write in progress.");
@@ -97,14 +97,25 @@ SMFReader::open(const string&  filename)
 	_fd = fopen(filename.c_str(), "r+");
 
 	if (_fd) {
-		// Read PPQN
+		// Read type (bytes 8..9)
+		fseek(_fd, 8, SEEK_SET);
+		uint16_t type_be = 0;
+		fread(&type_be, 2, 1, _fd);
+		_type = GUINT16_FROM_BE(type_be);
+
+		// Read number of tracks (bytes 10..11)
+		uint16_t num_tracks_be = 0;
+		fread(&num_tracks_be, 2, 1, _fd);
+		_num_tracks = GUINT16_FROM_BE(num_tracks_be);
+
+		// Read PPQN (bytes 12..13)
 		// FIXME: broken for time-based divisions
-		fseek(_fd, 12, SEEK_SET);
 		uint16_t ppqn_be = 0;
 		fread(&ppqn_be, 2, 1, _fd);
 		_ppqn = GUINT16_FROM_BE(ppqn_be);
 
-		// Read Track size
+		// Read Track size (skip bytes 14..17 'Mtrk')
+		// FIXME: first track read only
 		fseek(_fd, 18, SEEK_SET);
 		uint32_t track_size_be = 0;
 		fread(&track_size_be, 4, 1, _fd);
@@ -119,16 +130,6 @@ SMFReader::open(const string&  filename)
 }
 
 	
-size_t
-SMFReader::num_tracks() throw (logic_error)
-{
-	if (!_fd)
-		throw logic_error("num_tracks called without an open SMF file.");
-
-	return 1;
-}
-
-
 /** Read an event from the current position in file.
  *
  * File position MUST be at the beginning of a delta time, or this will die very messily.
@@ -143,7 +144,7 @@ SMFReader::num_tracks() throw (logic_error)
  * set to the actual size of the event.
  */
 int
-SMFReader::read_event(size_t buf_len, char* buf, size_t* ev_size, uint64_t* ev_time)
+SMFReader::read_event(size_t buf_len, unsigned char* buf, uint32_t* ev_size, uint64_t* ev_time)
 {
 	// - 4 is for the EOT event, which we don't actually want to read
 	//if (feof(_fd) || ftell(_fd) >= HEADER_SIZE + _track_size - 4) {
@@ -156,39 +157,66 @@ SMFReader::read_event(size_t buf_len, char* buf, size_t* ev_size, uint64_t* ev_t
 	assert(ev_size);
 	assert(ev_time);
 
+	cerr.flags(ios::hex);
+	cerr << "SMF - Reading event at offset 0x" << ftell(_fd) << endl;
+	cerr.flags(ios::dec);
+
+	// Running status state
+	static unsigned char last_status = 0;
+	static uint32_t      last_size   = 1234567;
+
 	uint32_t delta_time = read_var_len();
 	int status = fgetc(_fd);
 	assert(status != EOF); // FIXME die gracefully
+	assert(status <= 0xFF);
+
+	if (status < 0x80) {
+		status = last_status;
+		*ev_size = last_size;
+		fseek(_fd, -1, SEEK_CUR);
+		cerr << "RUNNING STATUS, size = " << *ev_size << endl;
+	} else {
+		last_status = status;
+		*ev_size = midi_event_size(status) + 1;
+		last_size = *ev_size;
+		cerr << "NORMAL STATUS, size = " << *ev_size << endl;
+	}
+
+	buf[0] = (unsigned char)status;
+
 	if (status == 0xFF) {
+		*ev_size = 0;
 		assert(!feof(_fd));
-		int type = fgetc(_fd);
+		unsigned char type = fgetc(_fd);
+		const uint32_t size = read_var_len();
+		cerr.flags(ios::hex);
+		cerr << "SMF - meta 0x" << (int)type << ", size = ";
+		cerr.flags(ios::dec);
+		cerr << size << endl;
+
 		if ((unsigned char)type == 0x2F) {
-			//cerr << "SMF - hit EOT" << endl;
+			cerr << "SMF - hit EOT" << endl;
 			return -1; // we hit the logical EOF anyway...
 		} else {
-			ev_size = 0;
+			fseek(_fd, size, SEEK_CUR);
 			*ev_time = _last_ev_time + delta_time; // this is needed regardless
 			_last_ev_time = *ev_time;
 			return 0;
 		}
 	}
 
-	buf[0] = (unsigned char)status;
-	*ev_size = midi_event_size(buf[0]) + 1;
-	if (*ev_size > buf_len)
+	if (*ev_size > buf_len) {
+		cerr << "Skipping event" << endl;
+		// Skip event, return 0
+		fseek(_fd, *ev_size - 1, SEEK_CUR);
 		return 0;
-	fread(buf+1, 1, *ev_size - 1, _fd);
-	*ev_time = _last_ev_time + delta_time;
-	_last_ev_time = *ev_time;
-
-	/*printf("SMF - read event, delta = %u, size = %zu, data = ",
-		delta_time, ev.size);
-	for (size_t i=0; i < ev.size; ++i) {
-		printf("%X ", ev.buffer[i]);
+	} else {
+		// Read event, return size
+		fread(buf+1, 1, *ev_size - 1, _fd);
+		*ev_time = _last_ev_time + delta_time;
+		_last_ev_time = *ev_time;
+		return *ev_size;
 	}
-	printf("\n");*/
-	
-	return *ev_size;
 }
 
 
