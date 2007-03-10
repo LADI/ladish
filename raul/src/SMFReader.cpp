@@ -157,9 +157,9 @@ SMFReader::read_event(size_t buf_len, unsigned char* buf, uint32_t* ev_size, uin
 	assert(ev_size);
 	assert(ev_time);
 
-	cerr.flags(ios::hex);
-	cerr << "SMF - Reading event at offset 0x" << ftell(_fd) << endl;
-	cerr.flags(ios::dec);
+	//cerr.flags(ios::hex);
+	//cerr << "SMF - Reading event at offset 0x" << ftell(_fd) << endl;
+	//cerr.flags(ios::dec);
 
 	// Running status state
 	static unsigned char last_status = 0;
@@ -174,12 +174,12 @@ SMFReader::read_event(size_t buf_len, unsigned char* buf, uint32_t* ev_size, uin
 		status = last_status;
 		*ev_size = last_size;
 		fseek(_fd, -1, SEEK_CUR);
-		cerr << "RUNNING STATUS, size = " << *ev_size << endl;
+		//cerr << "RUNNING STATUS, size = " << *ev_size << endl;
 	} else {
 		last_status = status;
 		*ev_size = midi_event_size(status) + 1;
 		last_size = *ev_size;
-		cerr << "NORMAL STATUS, size = " << *ev_size << endl;
+		//cerr << "NORMAL STATUS, size = " << *ev_size << endl;
 	}
 
 	buf[0] = (unsigned char)status;
@@ -189,13 +189,13 @@ SMFReader::read_event(size_t buf_len, unsigned char* buf, uint32_t* ev_size, uin
 		assert(!feof(_fd));
 		unsigned char type = fgetc(_fd);
 		const uint32_t size = read_var_len();
-		cerr.flags(ios::hex);
+		/*cerr.flags(ios::hex);
 		cerr << "SMF - meta 0x" << (int)type << ", size = ";
 		cerr.flags(ios::dec);
-		cerr << size << endl;
+		cerr << size << endl;*/
 
 		if ((unsigned char)type == 0x2F) {
-			cerr << "SMF - hit EOT" << endl;
+			//cerr << "SMF - hit EOT" << endl;
 			return -1; // we hit the logical EOF anyway...
 		} else {
 			fseek(_fd, size, SEEK_CUR);
@@ -206,7 +206,7 @@ SMFReader::read_event(size_t buf_len, unsigned char* buf, uint32_t* ev_size, uin
 	}
 
 	if (*ev_size > buf_len) {
-		cerr << "Skipping event" << endl;
+		//cerr << "Skipping event" << endl;
 		// Skip event, return 0
 		fseek(_fd, *ev_size - 1, SEEK_CUR);
 		return 0;
@@ -215,6 +215,12 @@ SMFReader::read_event(size_t buf_len, unsigned char* buf, uint32_t* ev_size, uin
 		fread(buf+1, 1, *ev_size - 1, _fd);
 		*ev_time = _last_ev_time + delta_time;
 		_last_ev_time = *ev_time;
+	
+		if (buf[0] == 0x90 && buf[2] == 0) {
+			buf[0] = 0x80;
+			buf[2] = 0x40;
+		}
+		
 		return *ev_size;
 	}
 }
