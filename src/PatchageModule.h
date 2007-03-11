@@ -51,6 +51,8 @@ public:
 		}
 		items.push_back(Gtk::Menu_Helpers::MenuElem("Disconnect All",
 			sigc::mem_fun(this, &PatchageModule::menu_disconnect_all)));
+
+		signal_clicked.connect(sigc::mem_fun(this, &PatchageModule::on_click));
 	}
 
 	virtual ~PatchageModule() { }
@@ -107,7 +109,7 @@ public:
 	}
 	
 	virtual void show_dialog() {}
-	virtual void on_right_click(GdkEventButton* ev) { _menu.popup(ev->button, ev->time); }
+	virtual void on_click(GdkEventButton* ev) { if (ev->button == 3) _menu.popup(ev->button, ev->time); }
 	virtual void menu_disconnect_all() {
 		for (PortVector::iterator p = _ports.begin(); p != _ports.end(); ++p)
 			(*p)->disconnect_all();
