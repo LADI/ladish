@@ -38,7 +38,7 @@ public:
 	uint16_t ppqn() const { return _ppqn; }
 	size_t   num_tracks() { return _num_tracks; }
 
-	int read_event(size_t buf_len, unsigned char* buf, uint32_t* ev_size, uint64_t* ev_time);
+	int read_event(size_t buf_len, unsigned char* buf, uint32_t* ev_size, uint32_t* ev_delta_time);
 	
 	void close();
 
@@ -55,7 +55,6 @@ protected:
 	uint16_t       _type;
 	uint16_t       _num_tracks;
 	uint16_t       _ppqn;
-	uint64_t       _last_ev_time;
 	uint32_t       _track_size;
 /*	Raul::BeatTime _start_time;
 	Raul::BeatTime _last_ev_time; ///< Time last event was written relative to _start_time

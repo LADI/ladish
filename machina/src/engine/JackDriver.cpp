@@ -193,10 +193,12 @@ JackDriver::on_process(jack_nframes_t nframes)
 	machine->set_sink(shared_from_this());
 
 	// Machine was switched since last cycle, finalize old machine.
-	if (_last_machine && machine != _last_machine) {
-		_last_machine->reset(); // Exit all active states
-		assert(_last_machine.use_count() > 1); // Realtime, can't delete
-		_last_machine.reset(); // Cut our reference
+	if (machine != _last_machine) {
+		if (_last_machine) {
+			_last_machine->reset(); // Exit all active states
+			assert(_last_machine.use_count() > 1); // Realtime, can't delete
+			_last_machine.reset(); // Cut our reference
+		}
 		_machine_changed.post(); // Signal we're done with it
 	}
 

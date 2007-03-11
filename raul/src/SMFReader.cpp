@@ -73,7 +73,6 @@ midi_event_size(unsigned char status)
 SMFReader::SMFReader()
 	: _fd(NULL)
 	, _ppqn(0)
-	, _last_ev_time(0)
 	, _track_size(0)
 {
 }
@@ -122,7 +121,6 @@ SMFReader::open(const string& filename)
 		_track_size = GUINT32_FROM_BE(track_size_be);
 		std::cerr << "SMF - read track size " << _track_size << std::endl;
 
-		_last_ev_time = 0;
 		return true;
 	} else {
 		return false;
@@ -135,7 +133,7 @@ SMFReader::open(const string& filename)
  * File position MUST be at the beginning of a delta time, or this will die very messily.
  * ev.buffer must be of size ev.size, and large enough for the event.  The returned event
  * will have it's time field set to it's delta time (so it's the caller's responsibility
- * to calculate a real time for the event).
+ * to keep track of delta time, even for ignored events).
  *
  * Returns event length (including status byte) on success, 0 if event was
  * skipped (eg a meta event), or -1 on EOF (or end of track).
@@ -144,7 +142,7 @@ SMFReader::open(const string& filename)
  * set to the actual size of the event.
  */
 int
-SMFReader::read_event(size_t buf_len, unsigned char* buf, uint32_t* ev_size, uint64_t* ev_time)
+SMFReader::read_event(size_t buf_len, unsigned char* buf, uint32_t* ev_size, uint32_t* delta_time)
 {
 	// - 4 is for the EOT event, which we don't actually want to read
 	//if (feof(_fd) || ftell(_fd) >= HEADER_SIZE + _track_size - 4) {
@@ -155,7 +153,7 @@ SMFReader::read_event(size_t buf_len, unsigned char* buf, uint32_t* ev_size, uin
 	assert(buf_len > 0);
 	assert(buf);
 	assert(ev_size);
-	assert(ev_time);
+	assert(delta_time);
 
 	//cerr.flags(ios::hex);
 	//cerr << "SMF - Reading event at offset 0x" << ftell(_fd) << endl;
@@ -165,7 +163,7 @@ SMFReader::read_event(size_t buf_len, unsigned char* buf, uint32_t* ev_size, uin
 	static unsigned char last_status = 0;
 	static uint32_t      last_size   = 1234567;
 
-	uint32_t delta_time = read_var_len();
+	*delta_time = read_var_len();
 	int status = fgetc(_fd);
 	assert(status != EOF); // FIXME die gracefully
 	assert(status <= 0xFF);
@@ -199,8 +197,6 @@ SMFReader::read_event(size_t buf_len, unsigned char* buf, uint32_t* ev_size, uin
 			return -1; // we hit the logical EOF anyway...
 		} else {
 			fseek(_fd, size, SEEK_CUR);
-			*ev_time = _last_ev_time + delta_time; // this is needed regardless
-			_last_ev_time = *ev_time;
 			return 0;
 		}
 	}
@@ -213,8 +209,6 @@ SMFReader::read_event(size_t buf_len, unsigned char* buf, uint32_t* ev_size, uin
 	} else {
 		// Read event, return size
 		fread(buf+1, 1, *ev_size - 1, _fd);
-		*ev_time = _last_ev_time + delta_time;
-		_last_ev_time = *ev_time;
 	
 		if (buf[0] == 0x90 && buf[2] == 0) {
 			buf[0] = 0x80;

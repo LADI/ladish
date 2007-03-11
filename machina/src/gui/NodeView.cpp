@@ -34,9 +34,10 @@ void
 NodeView::on_double_click(GdkEventButton*)
 {
 	bool is_initial = _node->is_initial();
-	std::cerr << "INITIAL " << is_initial;
+	std::cerr << "Initial: " << is_initial << std::endl;
 	_node->set_initial( ! is_initial );
 }
+
 
 void
 NodeView::update_state()
@@ -52,3 +53,4 @@ NodeView::update_state()
 		set_base_color(_old_color);
 	}
 }
+

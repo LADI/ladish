@@ -15,10 +15,14 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <list>
 #include <iostream>
 #include <glibmm/convert.h>
+#include <raul/midi_events.h>
 #include <raul/SMFWriter.h>
+#include <raul/SMFReader.h>
 #include "machina/Machine.hpp"
+#include "machina/Edge.hpp"
 #include "machina/SMFDriver.hpp"
 
 using namespace std;
@@ -37,8 +41,64 @@ SMFDriver::learn(const Glib::ustring& uri)
 	const string filename = Glib::filename_from_uri(uri);
 
 	std::cerr << "Learn MIDI: " << filename << std::endl;
+	
 	SharedPtr<Machine> m(new Machine());
 
+	list<SharedPtr<Node> > active_nodes;
+	SharedPtr<Node>        connect_node(new Node());
+	connect_node->set_initial(true);
+	m->add_node(connect_node);
+
+	Raul::SMFReader reader;
+	reader.open(filename);
+	Raul::BeatTime t = 0;
+	unsigned char  buf[4];
+	uint32_t       ev_size;
+	uint32_t       ev_time;
+	while (reader.read_event(4, buf, &ev_size, &ev_time) >= 0) {
+		t += ev_time / (double)reader.ppqn();
+		cerr << "t = " << t << endl;
+		if (ev_size > 0) {
+			if ((buf[0] & 0xF0) == MIDI_CMD_NOTE_ON) {
+				cerr << "NOTE ON: " << (int)buf[1] << endl;
+				SharedPtr<Node> node(new Node());
+				node->add_enter_action(SharedPtr<Action>(new MidiAction(ev_size, buf)));
+				connect_node->add_outgoing_edge(SharedPtr<Edge>(new Edge(connect_node, node)));
+				node->enter(SharedPtr<Raul::MIDISink>(), t);
+				active_nodes.push_back(node);
+			} else if ((buf[0] & 0xF0) == MIDI_CMD_NOTE_OFF) {
+				cerr << "NOTE OFF: " << (int)buf[1] << endl;
+				for (list<SharedPtr<Node> >::iterator i = active_nodes.begin();
+						i != active_nodes.end(); ++i) {
+					SharedPtr<MidiAction> action = PtrCast<MidiAction>((*i)->enter_action());
+					if (!action)
+						continue;
+
+					const size_t         ev_size = action->event_size();
+					const unsigned char* ev      = action->event();
+					if (ev_size == 3 && (ev[0] & 0xF0) == MIDI_CMD_NOTE_ON
+							&& ev[1] == buf[1]) {
+						cerr << "FOUND MATCHING NOTE ON!\n";
+						(*i)->add_exit_action(SharedPtr<Action>(new MidiAction(ev_size, buf)));
+						(*i)->set_duration(t - (*i)->enter_time());
+						(*i)->exit(SharedPtr<Raul::MIDISink>(), t);
+						m->add_node((*i));
+						if (active_nodes.size() == 1)
+							connect_node = (*i);
+						active_nodes.erase(i);
+						break;
+					}
+				}
+			}
+		}
+		/*std::cerr << "Event, size = " << ev_size << ", time = " << ev_time << std::endl;
+		cerr.flags(ios::hex);
+		for (uint32_t i=0; i < ev_size; ++i) {
+			cerr << "0x" << (int)buf[i] << " ";
+		}
+		cerr.flags(ios::dec);
+		cerr << endl;*/
+	}
 	return m;
 }
 

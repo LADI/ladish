@@ -115,7 +115,7 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	xml->get_widget("save_menuitem", _menu_file_save);
 	xml->get_widget("save_as_menuitem", _menu_file_save_as);
 	xml->get_widget("quit_menuitem", _menu_file_quit);
-	xml->get_widget("learn_midi_menuitem", _menu_learn_midi);
+	xml->get_widget("import_midi_menuitem", _menu_import_midi);
 	xml->get_widget("export_midi_menuitem", _menu_export_midi);
 	xml->get_widget("view_toolbar_menuitem", _menu_view_toolbar);
 	//xml->get_widget("view_refresh_menuitem", _menu_view_refresh);
@@ -154,8 +154,8 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 		sigc::mem_fun(this, &MachinaGUI::menu_file_save_as));
 	_menu_file_quit->signal_activate().connect(
 		sigc::mem_fun(this, &MachinaGUI::menu_file_quit));
-	_menu_learn_midi->signal_activate().connect(
-		sigc::mem_fun(this, &MachinaGUI::menu_learn_midi));
+	_menu_import_midi->signal_activate().connect(
+		sigc::mem_fun(this, &MachinaGUI::menu_import_midi));
 	_menu_export_midi->signal_activate().connect(
 		sigc::mem_fun(this, &MachinaGUI::menu_export_midi));
 	//_menu_view_refresh->signal_activate().connect(
@@ -437,7 +437,7 @@ MachinaGUI::menu_file_save_as()
 
 
 void
-MachinaGUI::menu_learn_midi()
+MachinaGUI::menu_import_midi()
 {
 	Gtk::FileChooserDialog dialog(*_main_window, "Learn from MIDI file", Gtk::FILE_CHOOSER_ACTION_OPEN);
 	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
@@ -448,6 +448,10 @@ MachinaGUI::menu_learn_midi()
 	if (result == Gtk::RESPONSE_OK) {
 		SharedPtr<Machina::SMFDriver> file_driver(new Machina::SMFDriver());
 		SharedPtr<Machina::Machine> machine = file_driver->learn(dialog.get_uri());
+		machine->activate();
+		machine->reset();
+		_engine->driver()->set_machine(machine);
+		_canvas->build(machine);
 	}
 }
 

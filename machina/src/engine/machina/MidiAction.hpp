@@ -34,6 +34,9 @@ class MidiAction : public Action {
 public:
 	~MidiAction();
 	
+	MidiAction(size_t               size,
+	           const unsigned char* event);
+
 	static SharedPtr<MidiAction>
 	create(SharedPtr<Raul::Maid> maid,
 	       size_t size, const unsigned char* event)
@@ -43,6 +46,9 @@ public:
 		return ret;
 	}
 
+	size_t event_size() { return _size; }
+	byte*  event()      { return _event.get(); }
+
 	bool set_event(size_t size, const byte* event);
 
 	void execute(SharedPtr<Raul::MIDISink> driver, Raul::BeatTime time);
@@ -50,8 +56,7 @@ public:
 	virtual void write_state(Raul::RDFWriter& writer);
 
 private:
-	MidiAction(size_t               size,
-	           const unsigned char* event);
+
 
 	size_t                 _size;
 	const size_t           _max_size;

@@ -68,7 +68,7 @@ Node::enter(SharedPtr<Raul::MIDISink> sink, BeatTime time)
 	//cerr << "ENTER " << time << endl;
 	_is_active = true;
 	_enter_time = time;
-	if (_enter_action)
+	if (sink && _enter_action)
 		_enter_action->execute(sink, time);
 }
 
@@ -77,7 +77,7 @@ void
 Node::exit(SharedPtr<Raul::MIDISink> sink, BeatTime time)
 {
 	//cerr << "EXIT " << time << endl;
-	if (_exit_action)
+	if (sink && _exit_action)
 		_exit_action->execute(sink, time);
 	_is_active = false;
 	_enter_time = 0;
@@ -131,13 +131,22 @@ Node::write_state(Raul::RDFWriter& writer)
 			RdfId(RdfId::RESOURCE, "machina:duration"),
 			Raul::Atom((float)_duration));
 
-	writer.write(_id,
-			RdfId(RdfId::RESOURCE, "machina:enterAction"),
-			_enter_action->id());
-	_enter_action->write_state(writer);
+	if (_enter_action) {
+		_enter_action->write_state(writer);
+		
+		writer.write(_id,
+				RdfId(RdfId::RESOURCE, "machina:enterAction"),
+				_enter_action->id());
+	}
 
-	_exit_action->write_state(writer);
-	
+	if (_exit_action) {
+		_exit_action->write_state(writer);
+
+		writer.write(_id,
+				RdfId(RdfId::RESOURCE, "machina:exitAction"),
+				_exit_action->id());
+	}
+
 	/*for (Node::Edges::const_iterator e = _outgoing_edges.begin();
 			e != _outgoing_edges.end(); ++e)
 		(*e)->write_state(writer);*/

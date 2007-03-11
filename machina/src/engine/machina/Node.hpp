@@ -48,9 +48,12 @@ public:
 
 	void add_enter_action(SharedPtr<Action> action);
 	void remove_enter_action(SharedPtr<Action> action);
-	
+
 	void add_exit_action(SharedPtr<Action> action);
 	void remove_exit_action(SharedPtr<Action> action);
+
+	SharedPtr<Action> enter_action() { return _enter_action; }
+	SharedPtr<Action> exit_action()  { return _exit_action; }
 
 	void enter(SharedPtr<Raul::MIDISink> driver, BeatTime time);
 	void exit(SharedPtr<Raul::MIDISink> driver, BeatTime time);

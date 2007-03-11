@@ -24,6 +24,9 @@ void
 Action::write_state(Raul::RDFWriter& writer)
 {
 	using Raul::RdfId;
+	
+	if (!_id)
+		set_id(writer.blank_id());
 
 	writer.write(_id,
 			RdfId(RdfId::RESOURCE, "rdf:type"),
