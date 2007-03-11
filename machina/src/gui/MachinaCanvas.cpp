@@ -219,6 +219,7 @@ MachinaCanvas::build(SharedPtr<Machina::Machine> machine)
 		}
 	}
 
+	arrange();
 }
 
 

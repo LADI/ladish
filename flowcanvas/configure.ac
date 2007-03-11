@@ -1,5 +1,5 @@
 AC_PREREQ(2.59)
-AC_INIT([flowcanvas],[0.1.0],[drobilla@connect.carleton.ca])
+AC_INIT([flowcanvas],[0.1.0],[dave@drobilla.net])
 AC_CONFIG_SRCDIR([src/FlowCanvas.cpp])
 AC_CONFIG_SRCDIR([flowcanvas/FlowCanvas.h])
 AC_CONFIG_HEADER([src/config.h])
@@ -73,6 +73,14 @@ else
 		[sed 's/\(\/\*CANVASBASE\*\/\).*/\1Gnome::Canvas::Canvas/' -i flowcanvas/FlowCanvas.h])
 fi
 
+# Check for the graphviz library for auto-layout support
+PKG_CHECK_MODULES(AGRAPH, libgvc >= 2.8, graphviz="yes", graphviz="no")
+if test "$graphviz" = "yes"; then
+	AC_DEFINE(HAVE_AGRAPH, 1, [Has the graphviz library])
+else
+	AC_MSG_WARN([Warning: Graphviz 'agraph' library (graphviz-dev) not found, no auto-arrange support
+				 will be built])
+fi
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
@@ -87,6 +95,7 @@ AC_MSG_RESULT([*****************************************************************
 AC_MSG_RESULT([FlowCanvas build configuration:])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([Anti-Aliasing: $anti_alias])
+AC_MSG_RESULT([Auto-Arrange:  $graphviz])
 AC_MSG_RESULT([**********************************************************************])
 AC_MSG_RESULT([])
 

@@ -131,8 +131,9 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	xml->get_widget("bpm_spinbutton", _bpm_spinbutton);
 	xml->get_widget("quantize_checkbutton", _quantize_checkbutton);
 	xml->get_widget("quantize_spinbutton", _quantize_spinbutton);
-	xml->get_widget("zoom_full_but", _zoom_full_button);
 	xml->get_widget("zoom_normal_but", _zoom_normal_button);
+	xml->get_widget("zoom_full_but", _zoom_full_button);
+	xml->get_widget("arrange_but", _arrange_button);
 	
 	_canvas_scrolledwindow->add(*_canvas);
 	//m_canvas_scrolledwindow->signal_event().connect(sigc::mem_fun(_canvas, &FlowCanvas::scroll_event_handler));
@@ -145,6 +146,7 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 		sigc::mem_fun(this, &MachinaGUI::zoom), 1.0));
 	
 	_zoom_full_button->signal_clicked().connect(sigc::mem_fun(_canvas.get(), &MachinaCanvas::zoom_full));
+	_arrange_button->signal_clicked().connect(sigc::mem_fun(_canvas.get(), &MachinaCanvas::arrange));
 
 	_menu_file_open->signal_activate().connect(
 		sigc::mem_fun(this, &MachinaGUI::menu_file_open));

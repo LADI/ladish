@@ -108,6 +108,8 @@ public:
 	void   set_zoom(double pix_per_unit);
 	void   zoom_full();
 
+	void arrange();
+
 	double width() const  { return _width; }
 	double height() const { return _height; }
 

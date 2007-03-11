@@ -118,6 +118,7 @@ protected:
 	Gtk::SpinButton*     _quantize_spinbutton;
 	Gtk::ToolButton*     _zoom_normal_button;
 	Gtk::ToolButton*     _zoom_full_button;
+	Gtk::ToolButton*     _arrange_button;
 };
 
 #endif // MACHINA_GUI_H

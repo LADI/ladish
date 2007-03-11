@@ -15,8 +15,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include "config.h"
 #include "FlowCanvas.h"
 #include <algorithm>
+#include <sstream>
 #include <cassert>
 #include <cmath>
 #include <map>
@@ -25,6 +27,12 @@
 #include <boost/enable_shared_from_this.hpp>
 #include "Port.h"
 #include "Module.h"
+
+#ifdef HAVE_AGRAPH
+#include <graphviz/gvc.h>
+//#include <graphviz/agraph.h>
+
+#endif
 
 using std::cerr; using std::cout; using std::endl;
 
@@ -1052,6 +1060,82 @@ FlowCanvas::get_port_at(double x, double y)
 
 	}
 	return boost::shared_ptr<Port>();
+}
+
+	
+void
+FlowCanvas::arrange()
+{
+#ifdef HAVE_AGRAPH
+	std::map<boost::shared_ptr<Item>, Agnode_t*> nodes;
+
+	GVC_t* gvc = gvContext();
+	Agraph_t* G = agopen("g", AGDIGRAPH);
+
+	agraphattr(G, "rankdir", "LR");
+
+	unsigned id = 0;
+	for (ItemMap::const_iterator i = _items.begin(); i != _items.end(); ++i) {
+		std::ostringstream id_ss;
+		id_ss << "n" << id++;
+		nodes.insert(std::make_pair(i->second, agnode(G, strdup(id_ss.str().c_str()))));
+	}
+	
+	for (ConnectionList::iterator i = _connections.begin(); i != _connections.end(); ++i) {
+		const boost::shared_ptr<Connection> c = *i;
+		const boost::shared_ptr<Item> src = boost::dynamic_pointer_cast<Item>(c->source().lock());
+		const boost::shared_ptr<Item> dst = boost::dynamic_pointer_cast<Item>(c->dest().lock());
+		if (!src || !dst)
+			continue;
+
+		Agnode_t* src_node = nodes[src];
+		Agnode_t* dst_node = nodes[dst];
+
+		assert(src_node && dst_node);
+
+		agedge(G, src_node, dst_node);
+	}
+
+	gvLayout (gvc, G, "dot");
+	gvRender (gvc, G, "dot", stdout);
+
+	FILE* out = fopen("/home/dave/test.svg", "w+");
+	gvRender (gvc, G, "svg", out);
+	fclose(out);
+
+	double least_x=HUGE_VAL, least_y=HUGE_VAL, most_x=0, most_y=0;
+
+	// Arrange to graphviz coordinates
+	for (std::map<boost::shared_ptr<Item>, Agnode_t*>::iterator i = nodes.begin();
+			i != nodes.end(); ++i) {
+		string pos(agget(i->second, "pos"));
+		const string x_str = pos.substr(0, pos.find(","));
+		const string y_str = pos.substr(pos.find(",")+1);
+		double x = strtod(x_str.c_str(), NULL);
+		double y = strtod(y_str.c_str(), NULL);
+		i->first->property_x() = x;
+		i->first->property_y() = y;
+		least_x = std::min(least_x, x);
+		least_y = std::min(least_y, y);
+		most_x = std::max(most_x, x);
+		most_y = std::max(most_y, y);
+	}
+
+	const double graph_width  = most_x - least_x;
+	const double graph_height = most_y - least_y;
+
+	cerr << "CWH: " << _width << ", " << _height << endl;
+	cerr << "GWH: " << graph_width << ", " << graph_height << endl;
+
+	// Center on canvas
+	for (std::map<boost::shared_ptr<Item>, Agnode_t*>::iterator i = nodes.begin();
+			i != nodes.end(); ++i) {
+		i->first->move((_width - graph_width)/2.0, (_height - graph_height)/2.0);
+	}
+
+	gvFreeLayout(gvc, G);
+	agclose (G);
+#endif
 }
 
 
