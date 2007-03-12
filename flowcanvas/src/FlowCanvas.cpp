@@ -619,9 +619,13 @@ FlowCanvas::port_event(GdkEvent* event, boost::weak_ptr<Port> weak_port)
 bool
 FlowCanvas::canvas_event(GdkEvent* event)
 {
-	// Hack around bug I can't nail down :)
-	if (event->type == GDK_BUTTON_RELEASE) {
+	/*if (event->type == GDK_BUTTON_RELEASE) {
 		_base_rect.ungrab(event->button.time);
+	} else */if (event->type == GDK_BUTTON_PRESS) {
+		if (event->button.state & GDK_CONTROL_MASK && event->button.button == 3)
+			set_zoom(_zoom + 0.1);
+		else if (event->button.state & GDK_CONTROL_MASK && event->button.button == 1)
+			set_zoom(_zoom - 0.1);
 	}
 
 	return false;
