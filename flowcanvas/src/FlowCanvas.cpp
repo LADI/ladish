@@ -30,8 +30,6 @@
 
 #ifdef HAVE_AGRAPH
 #include <graphviz/gvc.h>
-//#include <graphviz/agraph.h>
-
 #endif
 
 using std::cerr; using std::cout; using std::endl;
@@ -90,6 +88,9 @@ FlowCanvas::set_zoom(double pix_per_unit)
 
 	for (ItemMap::iterator m = _items.begin(); m != _items.end(); ++m)
 		(*m).second->zoom(_zoom);
+	
+	for (list<boost::shared_ptr<Connection> >::iterator c = _connections.begin(); c != _connections.end(); ++c)
+		(*c)->zoom(_zoom);
 }
 
 
@@ -133,7 +134,6 @@ FlowCanvas::zoom_full()
 	w2c(lrintf(left - pad), lrintf(bottom - pad), scroll_x, scroll_y);
 
 	scroll_to(scroll_x, scroll_y);
-
 }
 
 

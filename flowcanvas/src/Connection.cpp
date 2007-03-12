@@ -238,6 +238,15 @@ Connection::select_tick()
 	_bpath.property_dash() = _canvas.lock()->select_dash();
 }
 
+	
+void
+Connection::zoom(double z)
+{
+	if (_label) {
+		_label->property_size() = static_cast<int>(floor((double)9000.0f * z));
+	}
+}
+
 
 } // namespace LibFlowCanvas
 

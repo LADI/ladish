@@ -177,17 +177,17 @@ MachinaCanvas::build(SharedPtr<Machina::Machine> machine)
 	for (Machina::Machine::Nodes::const_iterator i = machine->nodes().begin();
 			i != machine->nodes().end(); ++i) {
 	
-		const double x = 1600 + rand() % 300;
-		const double y = 1200 + rand() % 300;
+		//const double x = 1600 + rand() % 300;
+		//const double y = 1200 + rand() % 300;
 
 		SharedPtr<NodeView> view(new NodeView((*i), shared_from_this(),
-			"", x, y));
+			"", 10, 10));
 		
 		view->signal_clicked.connect(sigc::bind<0>(sigc::mem_fun(this,
 				&MachinaCanvas::node_clicked), WeakPtr<NodeView>(view)));
 		
 		add_item(view);
-		view->resize();
+		//view->resize();
 	}
 	
 	for (ItemMap::iterator n = _items.begin(); n != _items.end(); ++n) {

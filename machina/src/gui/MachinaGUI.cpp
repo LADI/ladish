@@ -445,7 +445,7 @@ MachinaGUI::menu_import_midi()
 	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
 	dialog.add_button(Gtk::Stock::OPEN, Gtk::RESPONSE_OK);
 
-	Gtk::HBox* extra_widget = Gtk::manage(new Gtk::HBox());
+	/*Gtk::HBox* extra_widget = Gtk::manage(new Gtk::HBox());
 	Gtk::SpinButton* track_sb = Gtk::manage(new Gtk::SpinButton());
 	track_sb->set_increments(1, 10);
 	track_sb->set_range(1, 256);
@@ -454,13 +454,15 @@ MachinaGUI::menu_import_midi()
 	extra_widget->pack_start(*track_sb, false, false); 
 	dialog.set_extra_widget(*extra_widget);
 	extra_widget->show_all();
+	*/
 
 	const int result = dialog.run();
 
 	if (result == Gtk::RESPONSE_OK) {
 		SharedPtr<Machina::SMFDriver> file_driver(new Machina::SMFDriver());
-		SharedPtr<Machina::Machine> machine = file_driver->learn(dialog.get_uri(),
-				track_sb->get_value_as_int());
+		//SharedPtr<Machina::Machine> machine = file_driver->learn(dialog.get_uri(),
+		//		track_sb->get_value_as_int());
+		SharedPtr<Machina::Machine> machine = file_driver->learn(dialog.get_uri());
 		
 		if (machine) {
 			machine->activate();

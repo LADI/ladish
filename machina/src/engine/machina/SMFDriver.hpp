@@ -22,6 +22,7 @@
 #include <glibmm/ustring.h>
 #include <raul/SharedPtr.h>
 #include <raul/SMFWriter.h>
+#include <raul/SMFReader.h>
 #include "machina/types.hpp"
 #include "machina/MidiDriver.hpp"
 
@@ -34,9 +35,15 @@ class Machine;
 class SMFDriver : public Raul::SMFWriter,
                   public boost::enable_shared_from_this<SMFDriver> {
 public:
-	SharedPtr<Machine> learn(const Glib::ustring& uri, unsigned track=1);
+	SharedPtr<Machine> learn(const Glib::ustring& uri);
+	SharedPtr<Machine> learn(const Glib::ustring& uri, unsigned track);
 
 	void run(SharedPtr<Machine> machine, Raul::BeatTime max_time);
+
+private:
+	void learn_track(SharedPtr<Machine> machine,
+	                 Raul::SMFReader&   reader,
+	                 unsigned           track);
 };
 
 

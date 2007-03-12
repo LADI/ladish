@@ -49,6 +49,8 @@ public:
 	
 	virtual void move(double /*dx*/, double /*dy*/)
 	{ /* ignore, src/dst take care of it */ }
+	
+	virtual void zoom(double);
 
 	bool flagged() const     { return _flag; }
 	void set_flagged(bool b) { _flag = b; }

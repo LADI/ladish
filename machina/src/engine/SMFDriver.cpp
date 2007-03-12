@@ -30,7 +30,9 @@ using namespace std;
 namespace Machina {
 
 
-/** Learn the MIDI file at @a uri
+/** Learn a single track from the MIDI file at @a uri
+ *
+ * @track selects which track of the MIDI file to import, starting from 1.
  *
  * Currently only file:// URIs are supported.
  * @return the resulting machine.
@@ -40,20 +42,62 @@ SMFDriver::learn(const Glib::ustring& uri, unsigned track)
 {
 	const string filename = Glib::filename_from_uri(uri);
 
-	std::cerr << "Learn MIDI: " << filename << std::endl;
-	
 	SharedPtr<Machine> m(new Machine());
-
-	list<SharedPtr<Node> > active_nodes;
-	SharedPtr<Node>        connect_node(new Node());
-	connect_node->set_initial(true);
-	m->add_node(connect_node);
-
+	
 	Raul::SMFReader reader;
 	reader.open(filename);
 
-	if ( ! reader.seek_to_track(track) )
+	if (track > reader.num_tracks())
 		return SharedPtr<Machine>();
+	else
+		learn_track(m, reader, track);
+
+	if (m->nodes().size() > 1)
+		return m;
+	else
+		return SharedPtr<Machine>();
+}
+
+
+/** Learn all tracks from a MIDI file into a single machine.
+ *
+ * This will result in a disjoint subgraph in the machine, one for each track.
+ */
+SharedPtr<Machine>
+SMFDriver::learn(const Glib::ustring& uri)
+{
+	const string filename = Glib::filename_from_uri(uri);
+
+	SharedPtr<Machine> m(new Machine());
+	
+	Raul::SMFReader reader;
+	reader.open(filename);
+
+	for (unsigned t=1; t <= reader.num_tracks(); ++t) {
+		learn_track(m, reader, t);
+	}
+
+	if (m->nodes().size() > 1)
+		return m;
+	else
+		return SharedPtr<Machine>();
+}
+
+
+void
+SMFDriver::learn_track(SharedPtr<Machine> m,
+	                   Raul::SMFReader&   reader,
+	                   unsigned           track)
+{
+	const bool found_track = reader.seek_to_track(track);
+	assert(found_track);
+
+	list<SharedPtr<Node> > active_nodes;
+	
+	SharedPtr<Node> initial_node(new Node());
+	m->add_node(initial_node);
+
+	SharedPtr<Node> connect_node = initial_node;
 
 	Raul::BeatTime t = 0;
 	unsigned char  buf[4];
@@ -95,15 +139,9 @@ SMFDriver::learn(const Glib::ustring& uri, unsigned track)
 				}
 			}
 		}
-		/*std::cerr << "Event, size = " << ev_size << ", time = " << ev_time << std::endl;
-		cerr.flags(ios::hex);
-		for (uint32_t i=0; i < ev_size; ++i) {
-			cerr << "0x" << (int)buf[i] << " ";
-		}
-		cerr.flags(ios::dec);
-		cerr << endl;*/
 	}
-	return m;
+	
+	initial_node->set_initial(true);
 }
 
 
