@@ -113,6 +113,8 @@ public:
 	double width() const  { return _width; }
 	double height() const { return _height; }
 
+	void resize(double width, double height);
+
 	/** Dash applied to selected items.
 	 * Set an object's property_dash() to this for the "rubber band" effect */
 	ArtVpathDash* const select_dash() { return _select_dash; }

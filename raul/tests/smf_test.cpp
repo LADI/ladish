@@ -38,19 +38,24 @@ main(int argc, char** argv)
 	cout << "Num tracks: " << reader.num_tracks() << endl;
 	cout << "PPQN: " << reader.ppqn() << endl;
 
-	unsigned char buf[4];
-	uint32_t      ev_size;
-	uint32_t      ev_delta_time;
-	while (reader.read_event(4, buf, &ev_size, &ev_delta_time) >= 0) {
+	for (unsigned t=1; t <= reader.num_tracks(); ++t) {
+		cout << "******** Track " << t << " ********" << endl;
+		reader.seek_to_track(t);
 
-		cerr << "\n\nEvent, size = " << ev_size << ", time = " << ev_delta_time << endl;
-		cerr << "Data: ";
-		cerr.flags(ios::hex);
-		for (uint32_t i=0; i < ev_size; ++i) {
-			cerr << "0x" << (int)buf[i] << " ";
+		unsigned char buf[4];
+		uint32_t      ev_size;
+		uint32_t      ev_delta_time;
+		while (reader.read_event(4, buf, &ev_size, &ev_delta_time) >= 0) {
+
+			cout << "\n\nEvent, size = " << ev_size << ", time = " << ev_delta_time;
+			cout << ", data = ";
+			cout.flags(ios::hex);
+			for (uint32_t i=0; i < ev_size; ++i) {
+				cout << "0x" << (int)buf[i] << " ";
+			}
+			cout.flags(ios::dec);
+			cout << endl;
 		}
-		cerr.flags(ios::dec);
-		cerr << endl;
 	}
 
 	return 0;

@@ -1097,11 +1097,7 @@ FlowCanvas::arrange()
 	}
 
 	gvLayout (gvc, G, "dot");
-	gvRender (gvc, G, "dot", stdout);
-
-	FILE* out = fopen("/home/dave/test.svg", "w+");
-	gvRender (gvc, G, "svg", out);
-	fclose(out);
+	gvRender (gvc, G, "dot", NULL);
 
 	double least_x=HUGE_VAL, least_y=HUGE_VAL, most_x=0, most_y=0;
 
@@ -1127,6 +1123,12 @@ FlowCanvas::arrange()
 	cerr << "CWH: " << _width << ", " << _height << endl;
 	cerr << "GWH: " << graph_width << ", " << graph_height << endl;
 
+	if (graph_width + 10 > _width)
+		resize(graph_width + 10, _height);
+	
+	if (graph_height + 10 > _height)
+		resize(_width, graph_height + 10);
+
 	// Center on canvas
 	for (std::map<boost::shared_ptr<Item>, Agnode_t*>::iterator i = nodes.begin();
 			i != nodes.end(); ++i) {
@@ -1137,6 +1139,18 @@ FlowCanvas::arrange()
 	agclose (G);
 #endif
 }
+
+
+void
+FlowCanvas::resize(double width, double height)
+{
+	_base_rect.property_x2() = _base_rect.property_x1() + width;
+	_base_rect.property_y2() = _base_rect.property_y1() + height;
+	_width = width;
+	_height = height;
+	set_scroll_region(0.0, 0.0, width, height);
+}
+
 
 
 } // namespace LibFlowCanvas

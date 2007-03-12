@@ -113,14 +113,64 @@ SMFReader::open(const string& filename)
 		fread(&ppqn_be, 2, 1, _fd);
 		_ppqn = GUINT16_FROM_BE(ppqn_be);
 
+		seek_to_track(1);
 		// Read Track size (skip bytes 14..17 'Mtrk')
 		// FIXME: first track read only
-		fseek(_fd, 18, SEEK_SET);
+		/*fseek(_fd, 18, SEEK_SET);
 		uint32_t track_size_be = 0;
 		fread(&track_size_be, 4, 1, _fd);
 		_track_size = GUINT32_FROM_BE(track_size_be);
 		std::cerr << "SMF - read track size " << _track_size << std::endl;
+		*/
+		
+		return true;
+	} else {
+		return false;
+	}
+}
 
+	
+/** Seek to the start of a given track, starting from 1.
+ * Returns true if specified track was found.
+ */
+bool
+SMFReader::seek_to_track(unsigned track)
+{
+	assert(track > 0);
+
+	if (!_fd)
+		throw logic_error("Attempt to seek to track on unopen SMF file.");
+
+	unsigned track_pos = 0;
+
+	fseek(_fd, 14, SEEK_SET);
+	char     id[5];
+	id[4] = '\0';
+	uint32_t chunk_size = 0;
+
+	while (!feof(_fd)) {
+		fread(id, 1, 4, _fd);
+
+		if (!strcmp(id, "MTrk")) {
+			++track_pos;
+			std::cerr << "Found track " << track_pos << endl;
+		} else {
+			std::cerr << "Unknown chunk ID " << id << endl;
+		}
+
+		uint32_t chunk_size_be;
+		fread(&chunk_size_be, 4, 1, _fd);
+		chunk_size = GUINT32_FROM_BE(chunk_size_be);
+
+		if (track_pos == track)
+			break;
+
+		fseek(_fd, chunk_size, SEEK_CUR);
+	}
+
+	if (!feof(_fd) && track_pos == track) {
+		//_track = track;
+		_track_size = chunk_size;
 		return true;
 	} else {
 		return false;

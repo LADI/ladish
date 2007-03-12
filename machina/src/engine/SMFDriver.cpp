@@ -36,7 +36,7 @@ namespace Machina {
  * @return the resulting machine.
  */
 SharedPtr<Machine>
-SMFDriver::learn(const Glib::ustring& uri)
+SMFDriver::learn(const Glib::ustring& uri, unsigned track)
 {
 	const string filename = Glib::filename_from_uri(uri);
 
@@ -51,6 +51,10 @@ SMFDriver::learn(const Glib::ustring& uri)
 
 	Raul::SMFReader reader;
 	reader.open(filename);
+
+	if ( ! reader.seek_to_track(track) )
+		return SharedPtr<Machine>();
+
 	Raul::BeatTime t = 0;
 	unsigned char  buf[4];
 	uint32_t       ev_size;
