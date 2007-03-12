@@ -622,10 +622,13 @@ FlowCanvas::canvas_event(GdkEvent* event)
 	/*if (event->type == GDK_BUTTON_RELEASE) {
 		_base_rect.ungrab(event->button.time);
 	} else */if (event->type == GDK_BUTTON_PRESS) {
-		if (event->button.state & GDK_CONTROL_MASK && event->button.button == 3)
-			set_zoom(_zoom + 0.1);
-		else if (event->button.state & GDK_CONTROL_MASK && event->button.button == 1)
-			set_zoom(_zoom - 0.1);
+		if (event->button.state & GDK_CONTROL_MASK && event->button.button == 3) {
+			set_zoom(_zoom + 0.5);
+			return true;
+		} else if (event->button.state & GDK_CONTROL_MASK && event->button.button == 1) {
+			set_zoom(_zoom - 0.5);
+			return true;
+		}
 	}
 
 	return false;
@@ -992,7 +995,51 @@ FlowCanvas::get_port_at(double x, double y)
 	return boost::shared_ptr<Port>();
 }
 
+
+void
+FlowCanvas::render_to_dot(const string& dot_output_filename)
+{
+#ifdef HAVE_AGRAPH
+	std::map<boost::shared_ptr<Item>, Agnode_t*> nodes;
+
+	GVC_t* gvc = gvContext();
+	Agraph_t* G = agopen("g", AGDIGRAPH);
+
+	agraphattr(G, "rankdir", "LR");
+
+	unsigned id = 0;
+	for (ItemList::const_iterator i = _items.begin(); i != _items.end(); ++i) {
+		std::ostringstream id_ss;
+		id_ss << "n" << id++;
+		nodes.insert(std::make_pair(*i, agnode(G, strdup(id_ss.str().c_str()))));
+	}
 	
+	for (ConnectionList::iterator i = _connections.begin(); i != _connections.end(); ++i) {
+		const boost::shared_ptr<Connection> c = *i;
+		const boost::shared_ptr<Item> src = boost::dynamic_pointer_cast<Item>(c->source().lock());
+		const boost::shared_ptr<Item> dst = boost::dynamic_pointer_cast<Item>(c->dest().lock());
+		if (!src || !dst)
+			continue;
+
+		Agnode_t* src_node = nodes[src];
+		Agnode_t* dst_node = nodes[dst];
+
+		assert(src_node && dst_node);
+
+		agedge(G, src_node, dst_node);
+	}
+
+	gvLayout (gvc, G, "dot");
+		
+	FILE* out_fd = fopen(dot_output_filename.c_str(), "w+");
+	if (out_fd) {
+		gvRender (gvc, G, "dot", out_fd);
+		fclose(out_fd);
+	}
+#endif
+}
+	
+
 void
 FlowCanvas::arrange()
 {

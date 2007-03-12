@@ -46,7 +46,7 @@ SharedPtr<Machine>
 Engine::learn_midi(const Glib::ustring& uri)
 {
 	SharedPtr<SMFDriver> file_driver(new SMFDriver());
-	SharedPtr<Machine> m = file_driver->learn(uri);
+	SharedPtr<Machine> m = file_driver->learn(uri, 32.0);
 	m->activate();
 	_driver->set_machine(m);
 	return m;

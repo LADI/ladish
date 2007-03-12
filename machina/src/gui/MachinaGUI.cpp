@@ -28,46 +28,6 @@
 #include "MachinaCanvas.hpp"
 #include "NodeView.hpp"
 
-//#include "config.h"
-
-// FIXME: include to avoid undefined reference to boost SP debug hooks stuff
-#include <raul/SharedPtr.h>
-
-
-
-/* Gtk helpers (resize combo boxes) */
-
-#if 0
-static void
-gtkmm_get_ink_pixel_size (Glib::RefPtr<Pango::Layout> layout,
-			       int& width,
-			       int& height)
-{
-	Pango::Rectangle ink_rect = layout->get_ink_extents ();
-	
-	width = (ink_rect.get_width() + PANGO_SCALE / 2) / PANGO_SCALE;
-	height = (ink_rect.get_height() + PANGO_SCALE / 2) / PANGO_SCALE;
-}
-
-
-static void
-gtkmm_set_width_for_given_text (Gtk::Widget &w, const gchar *text,
-						   gint hpadding/*, gint vpadding*/)
-	
-{
-	int old_width, old_height;
-	w.get_size_request(old_width, old_height);
-
-	int width, height;
-	w.ensure_style ();
-	
-	gtkmm_get_ink_pixel_size (w.create_pango_layout (text), width, height);
-	w.set_size_request(width + hpadding, old_height);//height + vpadding);
-}
-#endif
-/* end Gtk helpers */
-
-
 
 MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 : _pane_closed(false),
@@ -117,6 +77,7 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	xml->get_widget("quit_menuitem", _menu_file_quit);
 	xml->get_widget("import_midi_menuitem", _menu_import_midi);
 	xml->get_widget("export_midi_menuitem", _menu_export_midi);
+	xml->get_widget("export_graphviz_menuitem", _menu_export_graphviz);
 	xml->get_widget("view_toolbar_menuitem", _menu_view_toolbar);
 	//xml->get_widget("view_refresh_menuitem", _menu_view_refresh);
 	//xml->get_widget("view_messages_menuitem", _menu_view_messages);
@@ -160,6 +121,8 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 		sigc::mem_fun(this, &MachinaGUI::menu_import_midi));
 	_menu_export_midi->signal_activate().connect(
 		sigc::mem_fun(this, &MachinaGUI::menu_export_midi));
+	_menu_export_graphviz->signal_activate().connect(
+		sigc::mem_fun(this, &MachinaGUI::menu_export_graphviz));
 	//_menu_view_refresh->signal_activate().connect(
 	//	sigc::mem_fun(this, &MachinaGUI::menu_view_refresh));
 	_menu_view_toolbar->signal_toggled().connect(
@@ -216,6 +179,8 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	
 	// Faster idle callback to update DSP load progress bar
 	//Glib::signal_timeout().connect(sigc::mem_fun(this, &MachinaGUI::update_load), 50);
+	
+	_canvas->build(engine->machine());
 }
 
 
@@ -462,7 +427,7 @@ MachinaGUI::menu_import_midi()
 		SharedPtr<Machina::SMFDriver> file_driver(new Machina::SMFDriver());
 		//SharedPtr<Machina::Machine> machine = file_driver->learn(dialog.get_uri(),
 		//		track_sb->get_value_as_int());
-		SharedPtr<Machina::Machine> machine = file_driver->learn(dialog.get_uri());
+		SharedPtr<Machina::Machine> machine = file_driver->learn(dialog.get_uri(), 16.0);
 		
 		if (machine) {
 			dialog.hide();
@@ -499,6 +464,20 @@ MachinaGUI::menu_export_midi()
 		m->reset();
 		_engine->driver()->activate();
 	}
+}
+
+
+void
+MachinaGUI::menu_export_graphviz()
+{
+	Gtk::FileChooserDialog dialog(*_main_window, "Export to a GraphViz DOT file", Gtk::FILE_CHOOSER_ACTION_SAVE);
+	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+	dialog.add_button(Gtk::Stock::SAVE, Gtk::RESPONSE_OK);
+
+	const int result = dialog.run();
+
+	if (result == Gtk::RESPONSE_OK)
+		_canvas->render_to_dot(dialog.get_filename());
 }
 
 

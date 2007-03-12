@@ -17,40 +17,48 @@
 
 #include <signal.h>
 #include <iostream>
+#include <string>
 #include <libgnomecanvasmm.h>
-
 #include "machina/Loader.hpp"
 #include "machina/JackDriver.hpp"
-
+#include "machina/SMFDriver.hpp"
 #include "MachinaGUI.hpp"
 
+using namespace std;
 using namespace Machina;
 
 
 int
 main(int argc, char** argv)
 {
-	// Build engine
+	SharedPtr<Machina::Machine> machine;
 	
-	SharedPtr<JackDriver> driver(new JackDriver());
+	// Load machine, if given
+	if (argc == 2) {
+		string filename = argv[1];
+		cout << "Building machine from MIDI file " << filename << endl;
+		SharedPtr<Machina::SMFDriver> file_driver(new Machina::SMFDriver());
+		machine = file_driver->learn(string("file://") + filename, 16.0);
+	}
 
+	// Build engine
+	SharedPtr<JackDriver> driver(new JackDriver(machine));
 	driver->attach("machina");
-
 	SharedPtr<Engine> engine(new Engine(driver));
 
 	// Launch GUI
 	try {
-	
-	Gnome::Canvas::init();
-	Gtk::Main app(argc, argv);
-	
-	driver->activate();
-	MachinaGUI gui(engine);
 
-	app.run(*gui.window());
-	
-	} catch (std::string msg) {
-		std::cerr << "Caught exception, aborting.  Error message was: " << msg << std::endl;
+		Gnome::Canvas::init();
+		Gtk::Main app(argc, argv);
+
+		driver->activate();
+		MachinaGUI gui(engine);
+
+		app.run(*gui.window());
+
+	} catch (string msg) {
+		cerr << "Caught exception, aborting.  Error message was: " << msg << endl;
 		return 1;
 	}
 	

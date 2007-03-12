@@ -100,6 +100,7 @@ public:
 	void   set_zoom(double pix_per_unit);
 	void   zoom_full();
 
+	void render_to_dot(const string& filename);
 	void arrange();
 
 	double width() const  { return _width; }

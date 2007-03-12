@@ -61,6 +61,7 @@ protected:
 	void menu_file_save_as();
 	void menu_import_midi();
 	void menu_export_midi();
+	void menu_export_graphviz();
 	//void show_messages_toggled();
 	void show_toolbar_toggled();
 	//void menu_view_refresh();
@@ -102,6 +103,7 @@ protected:
 	Gtk::MenuItem*       _menu_file_quit;
 	Gtk::MenuItem*       _menu_import_midi;
 	Gtk::MenuItem*       _menu_export_midi;
+	Gtk::MenuItem*       _menu_export_graphviz;
 	Gtk::MenuItem*       _menu_help_about;
 	Gtk::CheckMenuItem*  _menu_view_toolbar;
 	//Gtk::CheckMenuItem*  _menu_view_messages;

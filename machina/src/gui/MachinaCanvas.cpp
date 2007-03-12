@@ -176,6 +176,9 @@ MachinaCanvas::create_node_view(SharedPtr<Machina::Node> node)
 	SharedPtr<NodeView> view(new NodeView(node, shared_from_this(),
 				"", 10, 10));
 
+	if ( ! node->enter_action() && ! node->exit_action() )
+		view->set_base_color(0x101010FF);
+
 	view->signal_clicked.connect(sigc::bind<0>(sigc::mem_fun(this,
 					&MachinaCanvas::node_clicked), WeakPtr<NodeView>(view)));
 
@@ -209,7 +212,10 @@ MachinaCanvas::build(SharedPtr<Machina::Machine> machine)
 				e != view->node()->outgoing_edges().end(); ++e) {
 
 			SharedPtr<NodeView> dst_view = views[(*e)->dst()];
-			assert(dst_view);
+			if (!dst_view) {
+				cerr << "WARNING: Edge to node with no view" << endl;
+				continue;
+			}
 				
 			boost::shared_ptr<Connection> c(new EdgeView(shared_from_this(),
 					view, dst_view, (*e)));
