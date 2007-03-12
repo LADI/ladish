@@ -111,7 +111,7 @@ SMFDriver::learn_track(SharedPtr<Machine> m,
 	while (reader.read_event(4, buf, &ev_size, &ev_time) >= 0) {
 		t += ev_time / (double)reader.ppqn();
 
-		if (t > max_duration)
+		if (max_duration != 0 && t > max_duration)
 			break;
 
 		//cerr << "t = " << t << endl;

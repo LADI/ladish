@@ -35,8 +35,8 @@ class Machine;
 class SMFDriver : public Raul::SMFWriter,
                   public boost::enable_shared_from_this<SMFDriver> {
 public:
-	SharedPtr<Machine> learn(const Glib::ustring& uri, Raul::BeatTime max_duration);
-	SharedPtr<Machine> learn(const Glib::ustring& uri, unsigned track, Raul::BeatTime max_duration);
+	SharedPtr<Machine> learn(const Glib::ustring& uri, Raul::BeatTime max_duration=0);
+	SharedPtr<Machine> learn(const Glib::ustring& uri, unsigned track, Raul::BeatTime max_duration=0);
 
 	void run(SharedPtr<Machine> machine, Raul::BeatTime max_time);
 
@@ -44,7 +44,7 @@ private:
 	void learn_track(SharedPtr<Machine> machine,
 	                 Raul::SMFReader&   reader,
 	                 unsigned           track,
-	                 Raul::BeatTime     max_duration);
+	                 Raul::BeatTime     max_duration=0);
 };
 
 
