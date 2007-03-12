@@ -47,8 +47,8 @@ main(int argc, char** argv)
 		uint32_t      ev_delta_time;
 		while (reader.read_event(4, buf, &ev_size, &ev_delta_time) >= 0) {
 
-			cout << "\n\nEvent, size = " << ev_size << ", time = " << ev_delta_time;
-			cout << ", data = ";
+			cout << "Event, size = " << ev_size << ", time = " << ev_delta_time;
+			cout << ":\t";
 			cout.flags(ios::hex);
 			for (uint32_t i=0; i < ev_size; ++i) {
 				cout << "0x" << (int)buf[i] << " ";

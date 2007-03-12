@@ -260,8 +260,8 @@ SMFReader::read_event(size_t buf_len, unsigned char* buf, uint32_t* ev_size, uin
 		// Read event, return size
 		fread(buf+1, 1, *ev_size - 1, _fd);
 	
-		if (buf[0] == 0x90 && buf[2] == 0) {
-			buf[0] = 0x80;
+		if ((buf[0] & 0xF0) == 0x90 && buf[2] == 0) {
+			buf[0] = (0x80 | (buf[0] & 0x0F));
 			buf[2] = 0x40;
 		}
 		
