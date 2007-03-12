@@ -50,6 +50,8 @@ protected:
 	void node_clicked(WeakPtr<NodeView> item, GdkEventButton* ev);
 
 private:
+	SharedPtr<NodeView> create_node_view(SharedPtr<Machina::Node> node);
+
 	MachinaGUI* _app;
 
 	WeakPtr<NodeView> _last_clicked;

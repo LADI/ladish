@@ -114,9 +114,9 @@ JackDriver::detach()
 void
 JackDriver::destroy_all_ports()
 {
-	ItemMap modules = _app->canvas()->items(); // copy
-	for (ItemMap::iterator m = modules.begin(); m != modules.end(); ++m) {
-		SharedPtr<Module> module = PtrCast<Module>(m->second);
+	ItemList modules = _app->canvas()->items(); // copy
+	for (ItemList::iterator m = modules.begin(); m != modules.end(); ++m) {
+		SharedPtr<Module> module = PtrCast<Module>(*m);
 		if (!module)
 			continue;
 		PortVector ports = module->ports(); // copy
@@ -128,7 +128,7 @@ JackDriver::destroy_all_ports()
 		}
 
 		if (module->ports().empty())
-			_app->canvas()->remove_item(module->name());
+			_app->canvas()->remove_item(module);
 	}
 }
 

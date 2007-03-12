@@ -242,8 +242,8 @@ MachinaGUI::attach()
 bool
 MachinaGUI::idle_callback() 
 {
-	for (ItemMap::iterator i = _canvas->items().begin(); i != _canvas->items().end(); ++i) {
-		SharedPtr<NodeView> nv = PtrCast<NodeView>(i->second);
+	for (ItemList::iterator i = _canvas->items().begin(); i != _canvas->items().end(); ++i) {
+		const SharedPtr<NodeView> nv = PtrCast<NodeView>(*i);
 		if (nv)
 			nv->update_state();
 	}
@@ -465,12 +465,13 @@ MachinaGUI::menu_import_midi()
 		SharedPtr<Machina::Machine> machine = file_driver->learn(dialog.get_uri());
 		
 		if (machine) {
+			dialog.hide();
 			machine->activate();
 			machine->reset();
-			_engine->driver()->set_machine(machine);
 			_canvas->build(machine);
+			_engine->driver()->set_machine(machine);
 		} else {
-			Gtk::MessageDialog msg_dialog(*_main_window, "Error loading MIDI file",
+			Gtk::MessageDialog msg_dialog(dialog, "Error loading MIDI file",
 					false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
 			msg_dialog.run();
 		} 

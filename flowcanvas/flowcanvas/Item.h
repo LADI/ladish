@@ -22,6 +22,7 @@
 #include <map>
 #include <algorithm>
 #include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 #include <libgnomecanvasmm.h>
 #include "Port.h"
 
@@ -37,6 +38,7 @@ class FlowCanvas;
  * \ingroup FlowCanvas
  */
 class Item : public Gnome::Canvas::Group
+           , public boost::enable_shared_from_this<Item>
 {
 public:
 	Item(boost::shared_ptr<FlowCanvas> canvas,
@@ -104,7 +106,7 @@ protected:
 };
 
 
-typedef std::multimap<std::string, boost::shared_ptr<Item> > ItemMap;
+typedef std::list<boost::shared_ptr<Item> > ItemList;
 
 
 /** Returns whether or not the point @a x, @a y (world units) is within the item.

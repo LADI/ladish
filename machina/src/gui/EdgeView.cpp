@@ -31,17 +31,15 @@ EdgeView::EdgeView(SharedPtr<FlowCanvas>    canvas,
 	: LibFlowCanvas::Connection(canvas, src, dst, 0x9999AAff, true)
 	, _edge(edge)
 {
-	update_label();
 }
 
 
 void
 EdgeView::update_label()
 {
-	std::ostringstream label;
-	label << std::setw(4);
-	label << _edge->probability();
-	set_label(label.str());
+	char label[4];
+	snprintf(label, 4, "%3f", _edge->probability());
+	set_label(label);
 }
 
 
@@ -64,3 +62,5 @@ EdgeView::on_event(GdkEvent* ev)
 
 	return false;
 }
+
+

@@ -287,10 +287,6 @@ Module::set_name(const string& n)
 		_canvas_title.property_text() = _name;
 		if (_title_visible)
 			resize();
-
-		boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
-		if (canvas)
-			canvas->rename_item(old_name, _name);
 	}
 }
 

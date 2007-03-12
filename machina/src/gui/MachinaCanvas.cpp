@@ -16,6 +16,7 @@
  */
 
 //#include "config.h"
+#include <map>
 #include <raul/SharedPtr.h>
 #include "machina/Node.hpp"
 #include "machina/Machine.hpp"
@@ -169,57 +170,73 @@ MachinaCanvas::disconnect_node(boost::shared_ptr<NodeView> src,
 }
 
 
+SharedPtr<NodeView>
+MachinaCanvas::create_node_view(SharedPtr<Machina::Node> node)
+{
+	SharedPtr<NodeView> view(new NodeView(node, shared_from_this(),
+				"", 10, 10));
+
+	view->signal_clicked.connect(sigc::bind<0>(sigc::mem_fun(this,
+					&MachinaCanvas::node_clicked), WeakPtr<NodeView>(view)));
+
+	add_item(view);
+	//view->resize();
+
+	return view;
+}
+
+
 void
 MachinaCanvas::build(SharedPtr<Machina::Machine> machine)
 {
 	destroy();
 
+	std::map<SharedPtr<Machina::Node>, SharedPtr<NodeView> > views;
+
 	for (Machina::Machine::Nodes::const_iterator i = machine->nodes().begin();
 			i != machine->nodes().end(); ++i) {
 	
-		//const double x = 1600 + rand() % 300;
-		//const double y = 1200 + rand() % 300;
-
-		SharedPtr<NodeView> view(new NodeView((*i), shared_from_this(),
-			"", 10, 10));
-		
-		view->signal_clicked.connect(sigc::bind<0>(sigc::mem_fun(this,
-				&MachinaCanvas::node_clicked), WeakPtr<NodeView>(view)));
-		
-		add_item(view);
-		//view->resize();
+		const SharedPtr<NodeView> view = create_node_view(*i);
+		views.insert(std::make_pair((*i), view));
 	}
-	
-	for (ItemMap::iterator n = _items.begin(); n != _items.end(); ++n) {
-	
-		SharedPtr<NodeView> src = PtrCast<NodeView>(n->second);
-		if (!src)
+
+	for (ItemList::iterator i = _items.begin(); i != _items.end(); ++i) {
+		const SharedPtr<NodeView> view = PtrCast<NodeView>(*i);
+		if (!view)
 			continue;
 
-		for (Machina::Node::Edges::const_iterator e = src->node()->outgoing_edges().begin();
-				e != src->node()->outgoing_edges().end(); ++e) {
-			
-			SharedPtr<NodeView> dst;
-			for (ItemMap::iterator m = _items.begin(); m != _items.end(); ++m) {
-				SharedPtr<NodeView> nv = PtrCast<NodeView>((*m).second);
-				if (nv && nv->node() == (*e)->dst()) {
-					dst = nv;
-					break;
-				}
-			}
+		for (Machina::Node::Edges::const_iterator e = view->node()->outgoing_edges().begin();
+				e != view->node()->outgoing_edges().end(); ++e) {
 
-			if (dst) {
-				boost::shared_ptr<Connection> c(new EdgeView(shared_from_this(),
-							src, dst, (*e)));
-				src->add_connection(c);
-				dst->add_connection(c);
-				add_connection(c);
-			}
-
+			SharedPtr<NodeView> dst_view = views[(*e)->dst()];
+			assert(dst_view);
+				
+			boost::shared_ptr<Connection> c(new EdgeView(shared_from_this(),
+					view, dst_view, (*e)));
+			view->add_connection(c);
+			dst_view->add_connection(c);
+			add_connection(c);
 		}
+	
+		while (Gtk::Main::events_pending())
+			Gtk::Main::iteration(false);
 	}
-
+	
 	arrange();
+	/*	
+	while (Gtk::Main::events_pending())
+		Gtk::Main::iteration(false);
+
+	for (list<boost::shared_ptr<Connection> >::iterator c = _connections.begin(); c != _connections.end(); ++c) {
+		const SharedPtr<EdgeView> view = PtrCast<EdgeView>(*c);
+		if (view)
+			view->update_label(); // very, very slow
+	
+		while (Gtk::Main::events_pending())
+			Gtk::Main::iteration(false);
+
+	}
+	*/
 }
 
 

@@ -157,12 +157,12 @@ void
 Item::on_click(GdkEventButton* event)
 {
 	if (_selected) {
-		_canvas.lock()->unselect_item(_name);
+		_canvas.lock()->unselect_item(shared_from_this());
 		assert(!_selected);
 	} else {
 		if ( !(event->state & GDK_CONTROL_MASK))
 			_canvas.lock()->clear_selection();
-		_canvas.lock()->select_item(_name); // FIXME: by name?  ew
+		_canvas.lock()->select_item(shared_from_this());
 	}
 }
 

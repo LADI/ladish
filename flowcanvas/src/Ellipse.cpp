@@ -59,8 +59,11 @@ Ellipse::Ellipse(boost::shared_ptr<FlowCanvas> canvas,
 	: LibFlowCanvas::Item(canvas, name, x, y, ELLIPSE_FILL_COLOUR)
 	, _title_visible(show_title)
 	, _ellipse(*this, -x_radius, -y_radius, x_radius, y_radius)
-	, _label(*this, 0, 0, name) // x set later
+	, _label(NULL)
 {
+	if (name != "")
+		_label = Gtk::manage(new Gnome::Canvas::Text(*this, 0, 0, name));
+
 	_ellipse.property_fill_color_rgba() = ELLIPSE_FILL_COLOUR;
 
 	_ellipse.property_outline_color_rgba() = ELLIPSE_OUTLINE_COLOUR;
@@ -70,14 +73,16 @@ Ellipse::Ellipse(boost::shared_ptr<FlowCanvas> canvas,
 	else
 		set_border_width(1.0);
 
-	if (show_title) {
-		_label.property_size_set() = true;
-		_label.property_size() = 9000;
-		_label.property_weight_set() = true;
-		_label.property_weight() = 400;
-		_label.property_fill_color_rgba() = ELLIPSE_TITLE_COLOUR;
-	} else {
-		_label.hide();
+	if (_label) {
+		if (show_title) {
+			_label->property_size_set() = true;
+			_label->property_size() = 9000;
+			_label->property_weight_set() = true;
+			_label->property_weight() = 400;
+			_label->property_fill_color_rgba() = ELLIPSE_TITLE_COLOUR;
+		} else {
+			_label->hide();
+		}
 	}
 
 	set_width(x_radius * 2.0);
@@ -102,7 +107,7 @@ Ellipse::dst_connection_point(const Gnome::Art::Point& src)
 	const double dy = src.get_y() - c_y;
 	const double h  = sqrt(dx*dx + dy*dy);
 
-	const double theta = asin(dx/h);
+	const double theta = asin(dx/(h + DBL_EPSILON));
 
 	const double y_mod = (c_y < src_y) ? 1 : -1;
 
@@ -129,7 +134,8 @@ Ellipse::set_border_width(double w)
 void
 Ellipse::zoom(double z)
 {
-	_label.property_size() = static_cast<int>(floor((double)9000.0f * z));
+	if (_label)
+		_label->property_size() = static_cast<int>(floor((double)9000.0f * z));
 }
 
 

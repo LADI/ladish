@@ -274,9 +274,9 @@ AlsaDriver::refresh_connections()
 	boost::shared_ptr<PatchageModule> m;
 	boost::shared_ptr<PatchagePort>   p;
 	
-	for (ItemMap::iterator i = _app->canvas()->items().begin();
+	for (ItemList::iterator i = _app->canvas()->items().begin();
 			i != _app->canvas()->items().end(); ++i) {
-		m = boost::dynamic_pointer_cast<PatchageModule>((*i).second);
+		m = boost::dynamic_pointer_cast<PatchageModule>(*i);
 		if (m) {
 			for (PortVector::const_iterator j = m->ports().begin(); j != m->ports().end(); ++j) {
 				p = boost::dynamic_pointer_cast<PatchagePort>(*j);

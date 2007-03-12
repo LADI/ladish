@@ -86,8 +86,8 @@ FlowCanvas::set_zoom(double pix_per_unit)
 	_zoom = pix_per_unit;
 	set_pixels_per_unit(_zoom);
 
-	for (ItemMap::iterator m = _items.begin(); m != _items.end(); ++m)
-		(*m).second->zoom(_zoom);
+	for (ItemList::iterator m = _items.begin(); m != _items.end(); ++m)
+		(*m)->zoom(_zoom);
 	
 	for (list<boost::shared_ptr<Connection> >::iterator c = _connections.begin(); c != _connections.end(); ++c)
 		(*c)->zoom(_zoom);
@@ -107,8 +107,8 @@ FlowCanvas::zoom_full()
 	double top    = DBL_MIN;
 	double bottom = DBL_MAX;
 
-	for (ItemMap::iterator m = _items.begin(); m != _items.end(); ++m) {
-		boost::shared_ptr<Item> mod = (*m).second;
+	for (ItemList::iterator m = _items.begin(); m != _items.end(); ++m) {
+		const boost::shared_ptr<Item> mod = (*m);
 		if (!mod)
 			continue;
 		
@@ -165,15 +165,6 @@ FlowCanvas::unselect_connection(Connection* connection)
 	}
 
 	connection->set_selected(false);
-}
-
-
-void
-FlowCanvas::select_item(const string& name)
-{
-	boost::shared_ptr<Item> m = get_item(name);
-	if (m)
-		select_item(m);
 }
 
 
@@ -254,15 +245,6 @@ FlowCanvas::unselect_item(boost::shared_ptr<Item> m)
 }
 
 
-void
-FlowCanvas::unselect_item(const string& name)
-{
-	boost::shared_ptr<Item> m = get_item(name);
-	if (m)
-		unselect_item(m);
-}
-
-
 /** Removes all ports and connections and modules.
  */
 void
@@ -305,15 +287,6 @@ FlowCanvas::selected_port(boost::shared_ptr<Port> p)
 }
 
 
-boost::shared_ptr<Item>
-FlowCanvas::get_item(const string& name)
-{
-	ItemMap::iterator m = _items.find(name);
-
-	return (m == _items.end()) ? boost::shared_ptr<Item>() : (*m).second;
-}
-
-
 /** Sets the passed module's location to a reasonable default.
  */
 void
@@ -332,67 +305,20 @@ FlowCanvas::set_default_placement(boost::shared_ptr<Module> m)
 void
 FlowCanvas::add_item(boost::shared_ptr<Item> m)
 {
-	assert(m);
-	std::pair<string, boost::shared_ptr<Item> > p(m->name(), m);
-	_items.insert(p);
-	//m->show();
+	if (m)
+		_items.push_back(m);
 }
 
 
 /** Remove an item from the canvas, cutting all references.
- *
- * The removed Item is returned, or NULL if not found.
+ * Returns true if item was found (and removed).
  */
-boost::shared_ptr<Item>
-FlowCanvas::remove_item(const string& name)
-{
-	boost::shared_ptr<Item> ret;
-
-	if (!_remove_objects)
-		return ret;
-
-	ItemMap::iterator m = _items.find(name);
-	if (m != _items.end()) {
-		ret = m->second;
-		_items.erase(m);
-	}
-	
-	return ret;
-}
-
-
-boost::shared_ptr<Port>
-FlowCanvas::get_port(const string& node_name, const string& port_name)
-{
-	for (ItemMap::iterator i = _items.begin(); i != _items.end(); ++i) {
-		const boost::shared_ptr<Item> item = (*i).second;
-		const boost::shared_ptr<Module> module
-			= boost::dynamic_pointer_cast<Module>(item);
-		if (!module)
-			continue;
-		const boost::shared_ptr<Port> port = module->get_port(port_name);
-		if (module->name() == node_name && port)
-			return port;
-	}
-	
-	return boost::shared_ptr<Port>();
-}
-
-
 bool
-FlowCanvas::rename_item(const string& old_name, const string& current_name)
+FlowCanvas::remove_item(boost::shared_ptr<Item> item)
 {
-	for (ItemMap::iterator i = _items.begin(); i != _items.end(); ++i) {
-		const boost::shared_ptr<Item> item = (*i).second;
-		if (!item)
-			continue;
-		
-		assert(item->name() != old_name);
-		
-		if ((*i).first == old_name) {
-			assert(item->name() == current_name);
+	for (ItemList::iterator i = _items.begin(); i != _items.end(); ++i) {
+		if (*i == item) {
 			_items.erase(i);
-			add_item(item);
 			return true;
 		}
 	}
@@ -810,8 +736,8 @@ FlowCanvas::select_drag_handler(GdkEvent* event)
 		return true;
 	} else if (event->type == GDK_BUTTON_RELEASE && _drag_state == SELECT) {
 		// Select all modules within rect
-		for (ItemMap::iterator i = _items.begin(); i != _items.end(); ++i) {
-			module = (*i).second;
+		for (ItemList::iterator i = _items.begin(); i != _items.end(); ++i) {
+			module = (*i);
 			if (module->is_within(*_select_rect)) {
 				if (module->selected())
 					unselect_item(module);
@@ -1051,9 +977,9 @@ FlowCanvas::get_port_at(double x, double y)
 {
 	// Loop through every port and see if the item at these coordinates is that port
 	// (if you're thinking this is slow, stupid, and disgusting, you're right)
-	for (ItemMap::const_iterator i = _items.begin(); i != _items.end(); ++i) {
+	for (ItemList::const_iterator i = _items.begin(); i != _items.end(); ++i) {
 		const boost::shared_ptr<Module> m
-			= boost::dynamic_pointer_cast<Module>((*i).second);
+			= boost::dynamic_pointer_cast<Module>(*i);
 		
 		if (m && m->point_is_within(x, y))
 			return m->port_at(x, y);
@@ -1075,10 +1001,10 @@ FlowCanvas::arrange()
 	agraphattr(G, "rankdir", "LR");
 
 	unsigned id = 0;
-	for (ItemMap::const_iterator i = _items.begin(); i != _items.end(); ++i) {
+	for (ItemList::const_iterator i = _items.begin(); i != _items.end(); ++i) {
 		std::ostringstream id_ss;
 		id_ss << "n" << id++;
-		nodes.insert(std::make_pair(i->second, agnode(G, strdup(id_ss.str().c_str()))));
+		nodes.insert(std::make_pair(*i, agnode(G, strdup(id_ss.str().c_str()))));
 	}
 	
 	for (ConnectionList::iterator i = _connections.begin(); i != _connections.end(); ++i) {
@@ -1120,8 +1046,8 @@ FlowCanvas::arrange()
 	const double graph_width  = most_x - least_x;
 	const double graph_height = most_y - least_y;
 
-	cerr << "CWH: " << _width << ", " << _height << endl;
-	cerr << "GWH: " << graph_width << ", " << graph_height << endl;
+	//cerr << "CWH: " << _width << ", " << _height << endl;
+	//cerr << "GWH: " << graph_width << ", " << graph_height << endl;
 
 	if (graph_width + 10 > _width)
 		resize(graph_width + 10, _height);

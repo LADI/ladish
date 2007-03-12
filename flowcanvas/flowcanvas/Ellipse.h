@@ -93,7 +93,7 @@ protected:
 	bool   _title_visible;
 
 	Gnome::Canvas::Ellipse _ellipse;
-	Gnome::Canvas::Text    _label;
+	Gnome::Canvas::Text*   _label;
 };
 
 

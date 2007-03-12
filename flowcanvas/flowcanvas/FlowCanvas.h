@@ -18,7 +18,6 @@
 #ifndef FLOWCANVAS_FLOWCANVAS_H
 #define FLOWCANVAS_FLOWCANVAS_H
 
-#include <string>
 #include <list>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/utility.hpp>
@@ -27,7 +26,6 @@
 #include "Module.h"
 #include "Item.h"
 
-using std::string;
 using std::list;
 
 
@@ -65,12 +63,8 @@ public:
 
 	void destroy();
 		
-	void                    add_item(boost::shared_ptr<Item> i);
-	boost::shared_ptr<Item> remove_item(const string& name);
-	boost::shared_ptr<Item> get_item(const string& name);
-	
-	boost::shared_ptr<Port> get_port(const string& module_name,
-                                     const string& port_name);
+	void add_item(boost::shared_ptr<Item> i);
+	bool remove_item(boost::shared_ptr<Item> i);
 
 	boost::shared_ptr<Connection>
 	get_connection(boost::shared_ptr<Connectable> src,
@@ -93,14 +87,12 @@ public:
 	void set_default_placement(boost::shared_ptr<Module> m);
 	
 	void clear_selection();
-	void select_item(const string& name);
 	void select_item(boost::shared_ptr<Item> item);
 	void unselect_ports();
-	void unselect_item(const string& name);
 	void unselect_item(boost::shared_ptr<Item> item);
 	void unselect_connection(Connection* c);
 	
-	ItemMap&                              items()              { return _items; }
+	ItemList&                             items()              { return _items; }
 	list<boost::shared_ptr<Item> >&       selected_items()     { return _selected_items; }
 	list<boost::shared_ptr<Connection> >& selected_connections() { return _selected_connections; }
 
@@ -128,7 +120,7 @@ public:
 	                        boost::shared_ptr<Connectable> /*dst*/) {}
 
 protected:
-	ItemMap                              _items;  ///< All modules on this canvas
+	ItemList                             _items;  ///< All items on this canvas
 	ConnectionList                       _connections;  ///< All connections on this canvas
 	list<boost::shared_ptr<Item> >       _selected_items;  ///< All currently selected modules
 	list<boost::shared_ptr<Connection> > _selected_connections;  ///< All currently selected connections
@@ -138,7 +130,6 @@ protected:
 private:
 	friend class Module;
 	friend class Item;
-	bool rename_item(const string& old_name, const string& new_name);
 
 	friend class Connection;
 	void        remove_connection(boost::shared_ptr<Connection> c);
