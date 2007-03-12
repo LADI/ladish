@@ -33,11 +33,24 @@ PatchageFlowCanvas::PatchageFlowCanvas(Patchage* app, int width, int height)
 }
 
 
+boost::shared_ptr<Item>
+PatchageFlowCanvas::get_item(const string& name)
+{
+	ItemList::iterator m = _items.begin();
+
+	for ( ; m != _items.end(); ++m)
+		if ((*m)->name() == name)
+			break;
+
+	return (m == _items.end()) ? boost::shared_ptr<Item>() : *m;
+}
+
+
 boost::shared_ptr<PatchageModule>
 PatchageFlowCanvas::find_module(const string& name, ModuleType type)
 {
-	for (ItemMap::iterator m = _items.begin(); m != _items.end(); ++m) {
-		boost::shared_ptr<PatchageModule> pm = boost::dynamic_pointer_cast<PatchageModule>((*m).second);
+	for (ItemList::iterator m = _items.begin(); m != _items.end(); ++m) {
+		boost::shared_ptr<PatchageModule> pm = boost::dynamic_pointer_cast<PatchageModule>(*m);
 		if (pm && pm->name() == name && pm->type() == type) {
 			return pm;
 		}
@@ -52,8 +65,8 @@ boost::shared_ptr<PatchagePort>
 PatchageFlowCanvas::find_port(const snd_seq_addr_t* alsa_addr)
 {
 	boost::shared_ptr<PatchagePort> pp;
-	for (ItemMap::iterator m = _items.begin(); m != _items.end(); ++m) {
-		SharedPtr<Module> module = PtrCast<Module>(m->second);
+	for (ItemList::iterator m = _items.begin(); m != _items.end(); ++m) {
+		SharedPtr<Module> module = PtrCast<Module>(*m);
 		if (!module)
 			continue;
 		for (PortVector::const_iterator p = module->ports().begin(); p != module->ports().end(); ++p) {
@@ -128,5 +141,23 @@ void
 PatchageFlowCanvas::status_message(const string& msg)
 {
 	_app->status_message(string("[Canvas] ").append(msg));
+}
+
+
+boost::shared_ptr<Port>
+PatchageFlowCanvas::get_port(const string& node_name, const string& port_name)
+{
+	for (ItemList::iterator i = _items.begin(); i != _items.end(); ++i) {
+		const boost::shared_ptr<Item> item = *i;
+		const boost::shared_ptr<Module> module
+			= boost::dynamic_pointer_cast<Module>(item);
+		if (!module)
+			continue;
+		const boost::shared_ptr<Port> port = module->get_port(port_name);
+		if (module->name() == node_name && port)
+			return port;
+	}
+	
+	return boost::shared_ptr<Port>();
 }
 

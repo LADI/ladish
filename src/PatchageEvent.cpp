@@ -75,7 +75,7 @@ PatchageEvent::execute()
 	}
 
 	if (module->num_ports() == 0) {
-		_patchage->canvas()->remove_item(module->name()); // FIXME: slow
+		_patchage->canvas()->remove_item(module);
 		module->hide();
 		module.reset();
 	}
