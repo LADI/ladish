@@ -244,6 +244,9 @@ Machine::write_state(Raul::RDFWriter& writer)
 					RdfId(RdfId::RESOURCE, "machina:node"),
 					(*n)->id());
 		}
+	}
+
+	for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n) {
 	
 		for (Node::Edges::const_iterator e = (*n)->outgoing_edges().begin();
 			e != (*n)->outgoing_edges().end(); ++e) {

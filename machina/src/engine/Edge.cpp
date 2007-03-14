@@ -40,11 +40,7 @@ Edge::write_state(Raul::RDFWriter& writer)
 	if (!src || !dst)
 		return;
 
-	if (!src->id())
-		src->set_id(writer.blank_id());
-
-	if (!dst->id())
-		dst->set_id(writer.blank_id());
+	assert(src->id() && dst->id());
 
 	writer.write(_id,
 			RdfId(RdfId::RESOURCE, "machina:tail"),
