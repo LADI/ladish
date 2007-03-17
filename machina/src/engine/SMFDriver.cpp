@@ -38,10 +38,8 @@ namespace Machina {
  * @return the resulting machine.
  */
 SharedPtr<Machine>
-SMFDriver::learn(const Glib::ustring& uri, unsigned track, Raul::BeatTime max_duration)
+SMFDriver::learn(const string& filename, unsigned track, Raul::BeatTime max_duration)
 {
-	const string filename = Glib::filename_from_uri(uri);
-
 	SharedPtr<Machine> m(new Machine());
 	
 	Raul::SMFReader reader;
@@ -64,10 +62,8 @@ SMFDriver::learn(const Glib::ustring& uri, unsigned track, Raul::BeatTime max_du
  * This will result in a disjoint subgraph in the machine, one for each track.
  */
 SharedPtr<Machine>
-SMFDriver::learn(const Glib::ustring& uri, Raul::BeatTime max_duration)
+SMFDriver::learn(const string& filename, Raul::BeatTime max_duration)
 {
-	const string filename = Glib::filename_from_uri(uri);
-
 	SharedPtr<Machine> m(new Machine());
 	
 	Raul::SMFReader reader;

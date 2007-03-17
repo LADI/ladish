@@ -16,7 +16,7 @@ parser.parse_into_model(model, "file:" + sys.argv[1])
 print """
 digraph finite_state_machine {
 	rankdir=LR;
-	node [shape = doublecircle ];
+	node [ shape = circle ];
 """,
 
 node_durations = { }
@@ -30,14 +30,17 @@ SELECT DISTINCT ?n ?dur WHERE {
 }
 """)
 
+invis_id = 0;
+
 for result in initial_nodes_query.execute(model):
 	node_id  = result['n'].blank_identifier
 	duration = float(result['dur'].literal_value['string'])
 	node_durations[node_id] = duration
+	print "\t{ node [ style = invis ] ",
+	print "invis%d" % invis_id, " }"
 	print '\t', node_id, "[ label = \"d =", duration, "\"];"
-
-
-print "\tnode [shape = circle ];"
+	print '\t', "invis%d" % invis_id, " -> ", node_id
+	invis_id += 1
 
 
 nodes_query = RDF.SPARQLQuery("""
@@ -53,7 +56,7 @@ for result in nodes_query.execute(model):
 	node_id  = result['n'].blank_identifier
 	duration = float(result['dur'].literal_value['string'])
 	node_durations[node_id] = duration
-	print '\t', node_id, "[ label = \"d =", duration, "\"]; "
+	print '\t', node_id, "[ label = \"d =", "%.2f" % duration, "\"]; "
 
 	
 edge_query = RDF.SPARQLQuery("""
@@ -69,7 +72,7 @@ SELECT DISTINCT ?tail ?head ?prob WHERE {
 for edge in edge_query.execute(model):
 	print '\t', edge['tail'].blank_identifier, ' -> ',
 	print edge['head'].blank_identifier, ' ',
-	print "[ label = \"", edge['prob'].literal_value['string'], "\" ",
+	print "[ label = \"", "%1.2f" % float(edge['prob'].literal_value['string']), "\" ",
 	print "minlen = ", node_durations[edge['tail'].blank_identifier] * 2, " ];"
 
 print "}"
