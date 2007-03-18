@@ -5,7 +5,7 @@ AC_CONFIG_SRCDIR([src/main.cpp])
 AC_CONFIG_SRCDIR([src/engine/Machine.cpp])
 AC_CONFIG_SRCDIR([src/engine/machina/Machine.hpp])
 AC_CONFIG_SRCDIR([src/gui/main.cpp])
-#AC_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADER([src/config.h])
 AM_INIT_AUTOMAKE
 
 AC_LANG([C++])
@@ -15,9 +15,21 @@ AC_PROG_LIBTOOL
 
 AC_TYPE_SIZE_T
 
-PKG_CHECK_MODULES(JACK, jack >= 0.102.20)
 PKG_CHECK_MODULES(RAUL, raul >= 0.0.0)
 PKG_CHECK_MODULES(GLIBMM, glibmm-2.4)
+
+# Jack support
+with_jack="yes"
+AC_ARG_ENABLE(jack,
+	[AS_HELP_STRING(--enable-jack, [Enable Jack realtime processing (yes)])],
+	[ if test x$enable_jack = xno ; then with_jack=no ; fi ])
+if test "$with_jack" = "yes"; then
+  PKG_CHECK_MODULES(JACK, jack >= 0.102.20, with_jack="yes", with_jack="no")
+  if test "$with_jack" = "yes"; then
+    AC_DEFINE(WITH_JACK, 1, [Has JACK])
+  fi
+fi
+AM_CONDITIONAL(WITH_JACK, [test "$with_jack" = "yes"])
 
 # Check for debugging flag
 debug="no"
@@ -85,7 +97,8 @@ AC_MSG_RESULT([])
 AC_MSG_RESULT([**********************************************************************])
 AC_MSG_RESULT([Machina build configuration:])
 AC_MSG_RESULT([])
-AC_MSG_RESULT([Super whiz-bang 2.0 Plus:  oh yes])
+AC_MSG_RESULT([JACK supprt: $with_jack])
+AC_MSG_RESULT([GUI:         $build_gui])
 AC_MSG_RESULT([**********************************************************************])
 AC_MSG_RESULT([])
 

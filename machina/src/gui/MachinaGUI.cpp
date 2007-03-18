@@ -303,13 +303,10 @@ MachinaGUI::status_message(const string& msg)
 
 
 /** Update the sensitivity status of menus to reflect the present.
- *
- * (eg. disable "Connect to Jack" when Machina is already connected to Jack)
  */
 void
 MachinaGUI::connect_widgets()
 {
-
 }
 
 using namespace std;
@@ -427,7 +424,7 @@ MachinaGUI::menu_import_midi()
 		SharedPtr<Machina::SMFDriver> file_driver(new Machina::SMFDriver());
 		//SharedPtr<Machina::Machine> machine = file_driver->learn(dialog.get_uri(),
 		//		track_sb->get_value_as_int());
-		SharedPtr<Machina::Machine> machine = file_driver->learn(dialog.get_uri(), 16.0);
+		SharedPtr<Machina::Machine> machine = file_driver->learn(dialog.get_filename(), 16.0);
 		
 		if (machine) {
 			dialog.hide();
@@ -457,11 +454,12 @@ MachinaGUI::menu_export_midi()
 		SharedPtr<Machina::SMFDriver> file_driver(new Machina::SMFDriver());
 		_engine->driver()->deactivate();
 		const SharedPtr<Machina::Machine> m = _engine->machine();
-		m->set_sink(file_driver);
-		file_driver->start(dialog.get_filename());
+		m->set_sink(file_driver->writer());
+		file_driver->writer()->start(dialog.get_filename());
 		file_driver->run(m, 32); // FIXME: hardcoded max length.  TODO: solve halting problem
 		m->set_sink(_engine->driver());
 		m->reset();
+		file_driver->writer()->finish();
 		_engine->driver()->activate();
 	}
 }

@@ -18,14 +18,15 @@
 #ifndef MACHINA_JACKDRIVER_HPP
 #define MACHINA_JACKDRIVER_HPP
 
+#include <boost/enable_shared_from_this.hpp>
 #include <raul/JackDriver.h>
 #include <raul/SharedPtr.h>
 #include <raul/DoubleBuffer.h>
 #include <raul/Semaphore.h>
 #include <jack/midiport.h>
 #include "Machine.hpp"
-#include "MidiDriver.hpp"
-#include <boost/enable_shared_from_this.hpp>
+#include "Driver.hpp"
+
 
 namespace Machina {
 
@@ -38,15 +39,18 @@ class Node;
  * "Ticks" are individual frames when running under this driver, and all code
  * in the processing context must be realtime safe (non-blocking).
  */
-class JackDriver : public Raul::JackDriver, public Machina::MidiDriver,
+class JackDriver : public Raul::JackDriver,
+                   public Machina::Driver,
                    public boost::enable_shared_from_this<JackDriver> {
 public:
 	JackDriver(SharedPtr<Machine> machine = SharedPtr<Machine>());
 
 	void attach(const std::string& client_name);
 	void detach();
+	
+	void activate()   { Raul::JackDriver::activate(); }
+	void deactivate() { Raul::JackDriver::deactivate(); }
 
-	SharedPtr<Machine> machine() { return _machine; }
 	void set_machine(SharedPtr<Machine> machine);
 	
 	void write_event(Raul::BeatTime       time,

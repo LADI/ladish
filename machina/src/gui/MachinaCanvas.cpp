@@ -194,6 +194,9 @@ MachinaCanvas::build(SharedPtr<Machina::Machine> machine)
 {
 	destroy();
 
+	if (!machine)
+		return;
+
 	std::map<SharedPtr<Machina::Node>, SharedPtr<NodeView> > views;
 
 	for (Machina::Machine::Nodes::const_iterator i = machine->nodes().begin();

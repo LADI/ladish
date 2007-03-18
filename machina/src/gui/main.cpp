@@ -19,10 +19,14 @@
 #include <iostream>
 #include <string>
 #include <libgnomecanvasmm.h>
+#include "../config.h"
 #include "machina/Loader.hpp"
-#include "machina/JackDriver.hpp"
 #include "machina/SMFDriver.hpp"
 #include "MachinaGUI.hpp"
+
+#ifdef WITH_JACK
+#include "machina/JackDriver.hpp"
+#endif
 
 using namespace std;
 using namespace Machina;
@@ -42,8 +46,14 @@ main(int argc, char** argv)
 	}
 
 	// Build engine
-	SharedPtr<JackDriver> driver(new JackDriver(machine));
+	SharedPtr<Driver> driver;
+#ifdef WITH_JACK
+	driver = SharedPtr<Driver>(new JackDriver(machine));
 	driver->attach("machina");
+#endif
+	if (!driver)
+		driver = SharedPtr<Driver>(new SMFDriver(machine));
+
 	SharedPtr<Engine> engine(new Engine(driver));
 
 	// Launch GUI
@@ -62,8 +72,6 @@ main(int argc, char** argv)
 		return 1;
 	}
 	
-	driver->detach();
-
 	return 0;
 }
 

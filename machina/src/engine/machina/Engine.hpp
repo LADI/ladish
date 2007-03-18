@@ -20,22 +20,21 @@
 
 #include <glibmm/ustring.h>
 #include <raul/SharedPtr.h>
-#include "machina/JackDriver.hpp"
+#include "machina/Driver.hpp" 
 
 namespace Machina {
 
 class Machine;
-class JackDriver;
 
 
 class Engine {
 public:
-	Engine(SharedPtr<JackDriver> driver)
+	Engine(SharedPtr<Driver> driver)
 		: _driver(driver)
 	{ }
 	
-	SharedPtr<JackDriver> driver()  { return _driver; }
-	SharedPtr<Machine>    machine() { return _driver->machine(); }
+	SharedPtr<Driver>  driver()  { return _driver; }
+	SharedPtr<Machine> machine() { return _driver->machine(); }
 
 	SharedPtr<Machine> load_machine(const Glib::ustring& uri);
 	SharedPtr<Machine> learn_midi(const Glib::ustring& uri);
@@ -44,7 +43,7 @@ public:
 	void set_quantization(double beat_fraction);
 
 private:
-	SharedPtr<JackDriver> _driver;
+	SharedPtr<Driver> _driver;
 };
 
 

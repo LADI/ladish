@@ -22,6 +22,8 @@
 #include "machina/Edge.hpp"
 #include "machina/MidiAction.hpp"
 
+using namespace std;
+
 namespace Machina {
 
 
@@ -231,8 +233,12 @@ Machine::write_state(Raul::RDFWriter& writer)
 			RdfId(RdfId::RESOURCE, "rdf:type"),
 			RdfId(RdfId::RESOURCE, "machina:Machine"));
 
+	size_t count = 0;
+
 	for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n) {
-		
+	
+		cerr << "Writing node " << count++ << " state." << endl;
+
 		(*n)->write_state(writer);
 
 		if ((*n)->is_initial()) {
@@ -246,10 +252,16 @@ Machine::write_state(Raul::RDFWriter& writer)
 		}
 	}
 
+	count = 0;
+
 	for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n) {
+		
+		cerr << "Writing node " << count++ << " edges: ";
 	
 		for (Node::Edges::const_iterator e = (*n)->outgoing_edges().begin();
 			e != (*n)->outgoing_edges().end(); ++e) {
+			
+			cerr << ".";
 			
 			(*e)->write_state(writer);
 		
@@ -257,6 +269,8 @@ Machine::write_state(Raul::RDFWriter& writer)
 				RdfId(RdfId::RESOURCE, "machina:edge"),
 				(*e)->id());
 		}
+
+		cerr << endl;
 
 	}
 }

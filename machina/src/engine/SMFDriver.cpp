@@ -18,6 +18,7 @@
 #include <list>
 #include <iostream>
 #include <glibmm/convert.h>
+#include <raul/SharedPtr.h>
 #include <raul/midi_events.h>
 #include <raul/SMFWriter.h>
 #include <raul/SMFReader.h>
@@ -28,6 +29,13 @@
 using namespace std;
 
 namespace Machina {
+
+
+SMFDriver::SMFDriver(SharedPtr<Machine> machine)
+	: Driver(machine)
+{
+	_writer = SharedPtr<Raul::SMFWriter>(new Raul::SMFWriter());
+}
 
 
 /** Learn a single track from the MIDI file at @a uri
@@ -43,7 +51,11 @@ SMFDriver::learn(const string& filename, unsigned track, Raul::BeatTime max_dura
 	SharedPtr<Machine> m(new Machine());
 	
 	Raul::SMFReader reader;
-	reader.open(filename);
+	
+	if (!reader.open(filename)) {
+		cerr << "Unable to open MIDI file " << filename << endl;
+		return SharedPtr<Machine>();
+	}
 
 	if (track > reader.num_tracks())
 		return SharedPtr<Machine>();
@@ -67,7 +79,10 @@ SMFDriver::learn(const string& filename, Raul::BeatTime max_duration)
 	SharedPtr<Machine> m(new Machine());
 	
 	Raul::SMFReader reader;
-	reader.open(filename);
+	if (!reader.open(filename)) {
+		cerr << "Unable to open MIDI file " << filename << endl;
+		return SharedPtr<Machine>();
+	}
 
 	for (unsigned t=1; t <= reader.num_tracks(); ++t) {
 		learn_track(m, reader, t, max_duration);
@@ -87,7 +102,8 @@ SMFDriver::learn_track(SharedPtr<Machine> m,
                        Raul::BeatTime     max_duration)
 {
 	const bool found_track = reader.seek_to_track(track);
-	assert(found_track);
+	if (!found_track)
+		return;
 
 	list<SharedPtr<Node> > active_nodes;
 	
@@ -113,7 +129,7 @@ SMFDriver::learn_track(SharedPtr<Machine> m,
 		//cerr << "t = " << t << endl;
 		if (ev_size > 0) {
 			if ((buf[0] & 0xF0) == MIDI_CMD_NOTE_ON) {
-				cerr << "NOTE ON: " << (int)buf[1] << ", channel = " << (int)(buf[0] & 0x0F) << endl;
+				//cerr << "NOTE ON: " << (int)buf[1] << ", channel = " << (int)(buf[0] & 0x0F) << endl;
 				SharedPtr<Node> node(new Node());
 				node->add_enter_action(SharedPtr<Action>(new MidiAction(ev_size, buf)));
 				assert(connect_node_end_time <= t);
@@ -195,7 +211,7 @@ SMFDriver::learn_track(SharedPtr<Machine> m,
 void
 SMFDriver::run(SharedPtr<Machine> machine, Raul::BeatTime max_time)
 {
-	Raul::TimeSlice time(1.0/(double)_ppqn, 120);
+	Raul::TimeSlice time(1.0/(double)_writer->ppqn(), 120);
 	time.set_length(time.beats_to_ticks(max_time));
 	machine->set_sink(shared_from_this());
 	machine->run(time);

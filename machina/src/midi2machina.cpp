@@ -62,6 +62,7 @@ main(int argc, char** argv)
 		return -1;
 	}
 	
+	/*
 	string out_filename = argv[1];
 	if (out_filename.find_last_of("/") != string::npos)
 		out_filename = out_filename.substr(out_filename.find_last_of("/")+1);
@@ -72,9 +73,11 @@ main(int argc, char** argv)
 	out_filename += ".machina";
 
 	cout << "Writing output to " << out_filename << endl;
-	
+	*/
+
 	Raul::RDFWriter writer;
-	writer.start_to_filename(out_filename);
+	//writer.start_to_filename(out_filename);
+	writer.start_to_file_handle(stdout);
 	machine->write_state(writer);
 	writer.finish();
 	

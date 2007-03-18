@@ -39,6 +39,12 @@ JackDriver::JackDriver(SharedPtr<Machine> machine)
 }
 
 
+JackDriver::~JackDriver()
+{
+	detach();
+}
+
+
 void
 JackDriver::attach(const std::string& client_name)
 {

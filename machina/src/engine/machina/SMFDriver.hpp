@@ -24,7 +24,7 @@
 #include <raul/SMFWriter.h>
 #include <raul/SMFReader.h>
 #include "machina/types.hpp"
-#include "machina/MidiDriver.hpp"
+#include "machina/Driver.hpp"
 
 namespace Machina {
 
@@ -32,15 +32,29 @@ class Node;
 class Machine;
 
 
-class SMFDriver : public Raul::SMFWriter,
+class SMFDriver : public Driver,
                   public boost::enable_shared_from_this<SMFDriver> {
 public:
+	SMFDriver(SharedPtr<Machine> machine = SharedPtr<Machine>());
+
 	SharedPtr<Machine> learn(const std::string& filename, Raul::BeatTime max_duration=0);
 	SharedPtr<Machine> learn(const std::string& filename, unsigned track, Raul::BeatTime max_duration=0);
 
 	void run(SharedPtr<Machine> machine, Raul::BeatTime max_time);
+	
+	void write_event(Raul::BeatTime       time,
+	                 size_t               ev_size,
+	                 const unsigned char* ev) throw (std::logic_error)
+	{ _writer->write_event(time, ev_size, ev); }
+	
+	void set_bpm(double /*bpm*/)                   { }
+	void set_quantization(double /*quantization*/) { }
+
+	SharedPtr<Raul::SMFWriter> writer() { return _writer; }
 
 private:
+	SharedPtr<Raul::SMFWriter> _writer;
+
 	void learn_track(SharedPtr<Machine> machine,
 	                 Raul::SMFReader&   reader,
 	                 unsigned           track,

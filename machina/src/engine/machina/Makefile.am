@@ -7,8 +7,11 @@ libmachinainclude_HEADERS = \
 	Edge.hpp \
 	Machine.hpp \
 	Loader.hpp \
-	JackDriver.hpp \
 	MidiAction.hpp \
-	MidiDriver.hpp \
+	Driver.hpp \
 	LearnRequest.hpp \
 	Engine.hpp
+	
+if WITH_JACK	
+	JackDriver.hpp
+endif

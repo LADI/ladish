@@ -15,22 +15,29 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef MACHINA_JACKDRIVER_HPP
-#define MACHINA_JACKDRIVER_HPP
+#ifndef MACHINA_DRIVER_HPP
+#define MACHINA_DRIVER_HPP
 
-#include <raul/JackDriver.h>
+#include <raul/MIDISink.h>
 
-namespace Machine {
+namespace Machina {
+
+class Machine;
 
 
-class JackDriver : public Raul::JackDriver {
+class Driver : public Raul::MIDISink {
 public:
-	JackDriver(SharedPtr<Machine> machine);
+	Driver(SharedPtr<Machine> machine) : _machine(machine) {}
+	virtual ~Driver() {}
 
-	virtual void set_machine(SharedPtr<Machine> machine);
+	SharedPtr<Machine> machine() { return _machine; }
+	virtual void set_machine(SharedPtr<Machine> machine) { _machine = machine; }
 	
-protected:
-	virtual void on_process(jack_nframes_t nframes);
+	virtual void set_bpm(double bpm) = 0;
+	virtual void set_quantization(double quantization) = 0;
+	
+	virtual void activate() {}
+	virtual void deactivate() {}
 
 private:
 	SharedPtr<Machine> _machine;

@@ -12,7 +12,6 @@ if len(sys.argv) != 2:
 
 parser.parse_into_model(model, "file:" + sys.argv[1])
 
-
 print """
 digraph finite_state_machine {
 	rankdir=LR;
@@ -23,10 +22,12 @@ node_durations = { }
 
 initial_nodes_query = RDF.SPARQLQuery("""
 PREFIX machina: <http://drobilla.net/ns/machina#>
-SELECT DISTINCT ?n ?dur WHERE {
+SELECT DISTINCT ?n ?dur ?note WHERE {
 	?m  machina:initialNode ?n .
 	?n  a                 machina:Node ;
 		machina:duration  ?dur .
+	OPTIONAL { ?n machina:enterAction ?a .
+			   ?a machina:midiNote    ?note }   
 }
 """)
 
@@ -45,10 +46,12 @@ for result in initial_nodes_query.execute(model):
 
 nodes_query = RDF.SPARQLQuery("""
 PREFIX machina: <http://drobilla.net/ns/machina#>
-SELECT DISTINCT ?n ?dur WHERE {
+SELECT DISTINCT ?n ?dur ?note WHERE {
 	?m  machina:node      ?n .
 	?n  a                 machina:Node ;
 		machina:duration  ?dur .
+	OPTIONAL { ?n machina:enterAction ?a .
+			   ?a machina:midiNote    ?note }   
 }
 """)
 
@@ -56,7 +59,10 @@ for result in nodes_query.execute(model):
 	node_id  = result['n'].blank_identifier
 	duration = float(result['dur'].literal_value['string'])
 	node_durations[node_id] = duration
-	print '\t', node_id, "[ label = \"d =", "%.2f" % duration, "\"]; "
+	label = "d=%.2f" % duration
+	if result['note']:
+		label += "\\nn=%s" % result['note'].literal_value['string']
+	print '\t', node_id, "[ label=\"%s\" ]" % label
 
 	
 edge_query = RDF.SPARQLQuery("""
@@ -72,7 +78,7 @@ SELECT DISTINCT ?tail ?head ?prob WHERE {
 for edge in edge_query.execute(model):
 	print '\t', edge['tail'].blank_identifier, ' -> ',
 	print edge['head'].blank_identifier, ' ',
-	print "[ label = \"", "%1.2f" % float(edge['prob'].literal_value['string']), "\" ",
+	print "[ label = \"%1.2f\"" % float(edge['prob'].literal_value['string']),
 	print "minlen = ", node_durations[edge['tail'].blank_identifier] * 2, " ];"
 
 print "}"
