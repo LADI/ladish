@@ -84,6 +84,23 @@ RDFWriter::blank_id()
 }
 
 
+/** Begin a serialization to a C file handle.
+ *
+ * This must be called before any write methods.
+ */
+void
+RDFWriter::start_to_file_handle(FILE* fd) throw (std::logic_error)
+{
+	if (_serializer)
+		throw std::logic_error("start_to_string called with serialization in progress");
+
+	raptor_init();
+	_serializer = raptor_new_serializer(RDF_LANG);
+	raptor_serialize_start_to_file_handle(_serializer, NULL, fd);
+	setup_prefixes();
+}
+
+
 /** Begin a serialization to a file.
  *
  * This must be called before any write methods.

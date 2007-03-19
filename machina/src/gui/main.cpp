@@ -42,7 +42,7 @@ main(int argc, char** argv)
 		string filename = argv[1];
 		cout << "Building machine from MIDI file " << filename << endl;
 		SharedPtr<Machina::SMFDriver> file_driver(new Machina::SMFDriver());
-		machine = file_driver->learn(filename, 0.0);
+		machine = file_driver->learn(filename);
 	}
 
 	// Build engine

@@ -424,7 +424,7 @@ MachinaGUI::menu_import_midi()
 		SharedPtr<Machina::SMFDriver> file_driver(new Machina::SMFDriver());
 		//SharedPtr<Machina::Machine> machine = file_driver->learn(dialog.get_uri(),
 		//		track_sb->get_value_as_int());
-		SharedPtr<Machina::Machine> machine = file_driver->learn(dialog.get_filename(), 16.0);
+		SharedPtr<Machina::Machine> machine = file_driver->learn(dialog.get_filename(), 0.0, 16.0);
 		
 		if (machine) {
 			dialog.hide();

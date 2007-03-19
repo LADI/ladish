@@ -37,8 +37,8 @@ class SMFDriver : public Driver,
 public:
 	SMFDriver(SharedPtr<Machine> machine = SharedPtr<Machine>());
 
-	SharedPtr<Machine> learn(const std::string& filename, Raul::BeatTime max_duration=0);
-	SharedPtr<Machine> learn(const std::string& filename, unsigned track, Raul::BeatTime max_duration=0);
+	SharedPtr<Machine> learn(const std::string& filename, double q=0.0, Raul::BeatTime max_duration=0);
+	SharedPtr<Machine> learn(const std::string& filename, unsigned track, double q=0.0, Raul::BeatTime max_duration=0);
 
 	void run(SharedPtr<Machine> machine, Raul::BeatTime max_time);
 	
@@ -58,6 +58,7 @@ private:
 	void learn_track(SharedPtr<Machine> machine,
 	                 Raul::SMFReader&   reader,
 	                 unsigned           track,
+	                 double             q,
 	                 Raul::BeatTime     max_duration=0);
 };
 

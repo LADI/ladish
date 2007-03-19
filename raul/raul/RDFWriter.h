@@ -52,6 +52,7 @@ public:
 	void add_prefix(const std::string& prefix, const std::string& uri);
 	std::string expand_uri(const std::string& uri);
 
+	void start_to_file_handle(FILE* fd)                 throw (std::logic_error);
 	void start_to_filename(const std::string& filename) throw (std::logic_error);
 	void start_to_string()                              throw (std::logic_error);
 	std::string finish()                                throw (std::logic_error);

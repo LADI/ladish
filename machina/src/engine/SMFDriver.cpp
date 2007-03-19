@@ -18,6 +18,7 @@
 #include <list>
 #include <iostream>
 #include <glibmm/convert.h>
+#include <raul/Quantizer.h>
 #include <raul/SharedPtr.h>
 #include <raul/midi_events.h>
 #include <raul/SMFWriter.h>
@@ -46,7 +47,7 @@ SMFDriver::SMFDriver(SharedPtr<Machine> machine)
  * @return the resulting machine.
  */
 SharedPtr<Machine>
-SMFDriver::learn(const string& filename, unsigned track, Raul::BeatTime max_duration)
+SMFDriver::learn(const string& filename, unsigned track, double q, Raul::BeatTime max_duration)
 {
 	SharedPtr<Machine> m(new Machine());
 	
@@ -60,7 +61,7 @@ SMFDriver::learn(const string& filename, unsigned track, Raul::BeatTime max_dura
 	if (track > reader.num_tracks())
 		return SharedPtr<Machine>();
 	else
-		learn_track(m, reader, track, max_duration);
+		learn_track(m, reader, track, q, max_duration);
 
 	if (m->nodes().size() > 1)
 		return m;
@@ -74,7 +75,7 @@ SMFDriver::learn(const string& filename, unsigned track, Raul::BeatTime max_dura
  * This will result in a disjoint subgraph in the machine, one for each track.
  */
 SharedPtr<Machine>
-SMFDriver::learn(const string& filename, Raul::BeatTime max_duration)
+SMFDriver::learn(const string& filename, double q, Raul::BeatTime max_duration)
 {
 	SharedPtr<Machine> m(new Machine());
 	
@@ -85,7 +86,7 @@ SMFDriver::learn(const string& filename, Raul::BeatTime max_duration)
 	}
 
 	for (unsigned t=1; t <= reader.num_tracks(); ++t) {
-		learn_track(m, reader, t, max_duration);
+		learn_track(m, reader, t, q, max_duration);
 	}
 
 	if (m->nodes().size() > 1)
@@ -97,8 +98,9 @@ SMFDriver::learn(const string& filename, Raul::BeatTime max_duration)
 
 void
 SMFDriver::learn_track(SharedPtr<Machine> m,
-	                   Raul::SMFReader&   reader,
-	                   unsigned           track,
+                       Raul::SMFReader&   reader,
+                       unsigned           track,
+                       double             q,
                        Raul::BeatTime     max_duration)
 {
 	const bool found_track = reader.seek_to_track(track);
@@ -116,12 +118,14 @@ SMFDriver::learn_track(SharedPtr<Machine> m,
 
 	unsigned added_nodes = 0;
 
+	Raul::BeatTime unquantized_t = 0;
 	Raul::BeatTime t = 0;
 	unsigned char  buf[4];
 	uint32_t       ev_size;
 	uint32_t       ev_time;
 	while (reader.read_event(4, buf, &ev_size, &ev_time) >= 0) {
-		t += ev_time / (double)reader.ppqn();
+		unquantized_t += ev_time / (double)reader.ppqn();
+		t = Raul::Quantizer::quantize(q, unquantized_t);
 
 		if (max_duration != 0 && t > max_duration)
 			break;
@@ -204,7 +208,10 @@ SMFDriver::learn_track(SharedPtr<Machine> m,
 	}
 	
 	if (added_nodes > 0)
-		m->add_node(initial_node);
+		if (initial_node->outgoing_edges().size() == 1)
+			(*initial_node->outgoing_edges().begin())->dst()->set_initial(true);
+		else
+			m->add_node(initial_node);
 }
 
 

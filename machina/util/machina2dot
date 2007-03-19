@@ -39,7 +39,12 @@ for result in initial_nodes_query.execute(model):
 	node_durations[node_id] = duration
 	print "\t{ node [ style = invis ] ",
 	print "invis%d" % invis_id, " }"
-	print '\t', node_id, "[ label = \"d =", duration, "\"];"
+	
+	label = "d=%.1f" % duration
+	if result['note']:
+		label += "\\nn=%s" % result['note'].literal_value['string']
+	
+	print '\t', node_id, "[ label=\"%s\" ]" % label
 	print '\t', "invis%d" % invis_id, " -> ", node_id
 	invis_id += 1
 
@@ -59,9 +64,11 @@ for result in nodes_query.execute(model):
 	node_id  = result['n'].blank_identifier
 	duration = float(result['dur'].literal_value['string'])
 	node_durations[node_id] = duration
-	label = "d=%.2f" % duration
+	
+	label = "d=%.1f" % duration
 	if result['note']:
 		label += "\\nn=%s" % result['note'].literal_value['string']
+	
 	print '\t', node_id, "[ label=\"%s\" ]" % label
 
 	
@@ -79,6 +86,6 @@ for edge in edge_query.execute(model):
 	print '\t', edge['tail'].blank_identifier, ' -> ',
 	print edge['head'].blank_identifier, ' ',
 	print "[ label = \"%1.2f\"" % float(edge['prob'].literal_value['string']),
-	print "minlen = ", node_durations[edge['tail'].blank_identifier] * 2, " ];"
+	print "minlen = ", node_durations[edge['tail'].blank_identifier], " ];"
 
 print "}"

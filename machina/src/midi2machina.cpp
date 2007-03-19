@@ -48,14 +48,15 @@ catch_int(int)
 int
 main(int argc, char** argv)
 {
-	if (argc != 2) {
-		cout << "Usage: " << argv[0] << " FILE" << endl;
+	if (argc != 3) {
+		cout << "Usage: midi2machina QUANTIZATION FILE" << endl;
+		cout << "Specify quantization in beats, e.g. 1.0, or 0 for none" << endl;
 		return -1;
 	}
 
 	SharedPtr<SMFDriver> driver(new SMFDriver());
 
-	SharedPtr<Machine> machine = driver->learn(argv[1]);
+	SharedPtr<Machine> machine = driver->learn(argv[2], strtof(argv[1], NULL));
 
 	if (!machine) {
 		cout << "Failed to load MIDI file." << endl;
