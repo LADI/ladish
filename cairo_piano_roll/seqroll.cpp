@@ -720,7 +720,7 @@ seqroll::draw_selection_on(cairo_t * cairo)
 		y -= m_scroll_offset_y;
 
 		cairo_set_source_rgb(cairo, 0.0, 0.0, 0.0);
-		cairo_rectangle(cairo, x+0.5, y+0.5, width, m_selected.height);
+		cairo_rectangle(cairo, x, y, width, m_selected.height);
 		cairo_stroke(cairo);
 
 		m_old.x = x;
