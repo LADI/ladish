@@ -39,7 +39,7 @@ public:
 	virtual void activate() {}
 	virtual void deactivate() {}
 
-private:
+protected:
 	SharedPtr<Machine> _machine;
 };
 

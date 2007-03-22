@@ -331,11 +331,11 @@ MachinaGUI::menu_file_open()
 	const int result = dialog.run();
 
 	if (result == Gtk::RESPONSE_OK) {
-		_save_uri = dialog.get_uri();
-		SharedPtr<Machina::Machine> new_machine = _engine->load_machine(_save_uri);
+		SharedPtr<Machina::Machine> new_machine = _engine->load_machine(dialog.get_uri());
 		if (new_machine) {
 			_canvas->destroy();
 			_canvas->build(new_machine);
+			_save_uri = dialog.get_uri();
 		}
 	}
 }
@@ -407,7 +407,7 @@ MachinaGUI::menu_file_save_as()
 		if (confirm) {
 			Raul::RDFWriter writer;
 			writer.start_to_filename(filename);
-			machine()->write_state(writer);
+			_engine->machine()->write_state(writer);
 			writer.finish();
 			_save_uri = dialog.get_uri();
 		}

@@ -26,6 +26,7 @@
 #include "machina/Node.hpp"
 #include "machina/Edge.hpp"
 #include "machina/Machine.hpp"
+#include "machina/ActionFactory.hpp"
 
 using namespace Raul;
 using std::cerr; using std::cout; using std::endl;
@@ -75,6 +76,8 @@ Loader::load(const Glib::ustring& uri)
 	}
 
 	const Glib::ustring machine_uri = "<>";
+
+	cout << "USER URI: " << uri << endl;
 
 	cout << "[Loader] Loading " << machine_uri << " from " << document_uri << endl;
 
@@ -134,24 +137,34 @@ Loader::load(const Glib::ustring& uri)
 	}
 
 
-	/* Get actions */
+	/* Get note actions */
 
 	query = Raul::RDFQuery(*_namespaces, Glib::ustring(
-			"SELECT DISTINCT ?node ?enter_action ?exit_action FROM <")
+			"SELECT DISTINCT ?node ?note FROM <")
 			+ document_uri + "> WHERE {\n" +
-			"?node :enterAction ?enter_action ;\n"
-			"      :exitAction  ?exit_action .\n"
+			"?node :enterAction [ a :MidiAction; :midiNote ?note ] ;\n"
+			"      :exitAction  [ a :MidiAction; :midiNote ?note ] .\n"
 			"}\n");
 
 	results = query.run(document_uri);
 
 	for (RDFQuery::Results::iterator i = results.begin(); i != results.end(); ++i) {
-		const Glib::ustring& node         = (*i)["node"];
-		const Glib::ustring& enter_action = (*i)["enter_action"];
-		const Glib::ustring& exit_action  = (*i)["exit_action"];
+		const Glib::ustring& node_id = (*i)["node"];
+		const Glib::ustring& note    = (*i)["note"];
 
-		cout << "Node: " << node << ", Action: " << enter_action << " .. " << exit_action <<endl;
-
+		Created::iterator node_i = created.find(node_id);
+		if (node_i != created.end()) {
+			SharedPtr<Node> node = node_i->second;
+			const long note_num = strtol(note.c_str(), NULL, 10);
+			if (note_num >= 0 && note_num <= 127) {
+				node->add_enter_action(ActionFactory::note_on((unsigned char)note_num));
+				node->add_exit_action(ActionFactory::note_off((unsigned char)note_num));
+			} else {
+				cerr << "WARNING:  MIDI note number out of range, ignoring." << endl;
+			}
+		} else {
+			cerr << "WARNING:  Found note for unknown states.  Ignoring." << endl;
+		}
 	}
 
 
@@ -190,10 +203,12 @@ Loader::load(const Glib::ustring& uri)
 
 	}
 
-	if (machine)
+	if (machine && machine->nodes().size() > 0) {
 		machine->reset();
-
-	return machine;
+		return machine;
+	} else {
+		return SharedPtr<Machine>();
+	}
 }
 
 

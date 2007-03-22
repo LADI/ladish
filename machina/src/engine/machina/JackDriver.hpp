@@ -67,7 +67,6 @@ private:
 	virtual void on_process(jack_nframes_t nframes);
 
 	Raul::Semaphore    _machine_changed;
-	SharedPtr<Machine> _machine;
 	SharedPtr<Machine> _last_machine;
 
 	jack_port_t* _input_port;

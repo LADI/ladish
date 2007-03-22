@@ -8,6 +8,7 @@ libmachinainclude_HEADERS = \
 	Machine.hpp \
 	Loader.hpp \
 	MidiAction.hpp \
+	ActionFactory.hpp \
 	Driver.hpp \
 	LearnRequest.hpp \
 	Engine.hpp

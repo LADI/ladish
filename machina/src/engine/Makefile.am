@@ -12,6 +12,7 @@ libmachina_la_SOURCES = \
 	Machine.cpp \
 	Loader.cpp \
 	MidiAction.cpp \
+	ActionFactory.cpp \
 	SMFDriver.cpp \
 	Engine.cpp \
 	LearnRequest.cpp

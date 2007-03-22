@@ -28,7 +28,6 @@ namespace Machina {
 JackDriver::JackDriver(SharedPtr<Machine> machine)
 	: Driver(machine)
 	, _machine_changed(0)
-	, _machine(machine)
 	, _input_port(NULL)
 	, _output_port(NULL)
 	, _cycle_time(1/48000.0, 120.0)
@@ -100,6 +99,7 @@ JackDriver::set_machine(SharedPtr<Machine> machine)
 	_machine = machine;
 	if (is_activated())
 		_machine_changed.wait();
+	assert(_machine == machine);
 }
 
 

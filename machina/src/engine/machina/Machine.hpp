@@ -18,6 +18,7 @@
 #ifndef MACHINA_MACHINE_HPP
 #define MACHINA_MACHINE_HPP
 
+#include <boost/utility.hpp>
 #include <raul/SharedPtr.h>
 #include <raul/List.h>
 #include <raul/RDFWriter.h> 
@@ -29,7 +30,7 @@
 namespace Machina {
 
 
-class Machine : public Raul::Stateful {
+class Machine : public Raul::Stateful, public boost::noncopyable {
 public:
 	Machine();
 	~Machine();
