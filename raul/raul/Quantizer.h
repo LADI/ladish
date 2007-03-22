@@ -26,7 +26,7 @@ namespace Raul {
 class Quantizer {
 public:
 	inline static double quantize(double q, double value) {
-		return lrint(value / q) * q; 
+		return (q > 0) ? lrint(value / q) * q : value;
 	}
 };
 
