@@ -51,10 +51,15 @@ Engine::load_machine(const Glib::ustring& uri)
 SharedPtr<Machine>
 Engine::learn_midi(const Glib::ustring& uri)
 {
+	SharedPtr<Machine> old_machine = _driver->machine(); // Hold a reference to current machine..
+
 	SharedPtr<SMFDriver> file_driver(new SMFDriver());
-	SharedPtr<Machine> m = file_driver->learn(uri, 32.0);
+	SharedPtr<Machine> m = file_driver->learn(uri, 32.0); // FIXME: hardcoded
 	m->activate();
 	_driver->set_machine(m);
+	
+	// .. and drop it in this thread (to prevent deallocation in the RT thread)
+	
 	return m;
 }
 
