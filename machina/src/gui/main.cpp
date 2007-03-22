@@ -45,11 +45,14 @@ main(int argc, char** argv)
 		machine = file_driver->learn(filename);
 	}
 
+	if (!machine)
+		machine = SharedPtr<Machine>(new Machine());
+
 	// Build engine
 	SharedPtr<Driver> driver;
 #ifdef WITH_JACK
 	driver = SharedPtr<Driver>(new JackDriver(machine));
-	driver->attach("machina");
+	((JackDriver*)driver.get())->attach("machina");
 #endif
 	if (!driver)
 		driver = SharedPtr<Driver>(new SMFDriver(machine));

@@ -30,10 +30,11 @@ namespace Machina {
 SharedPtr<Machine>
 Engine::load_machine(const Glib::ustring& uri)
 {
-	Loader l; // FIXME: namespaces?
-	SharedPtr<Machine> m = l.load(uri);
-	m->activate();
-	_driver->set_machine(m);
+	SharedPtr<Machine> m = Loader().load(uri);
+	if (m) {
+		m->activate();
+		_driver->set_machine(m);
+	}
 	return m;
 }
 

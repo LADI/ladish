@@ -44,9 +44,9 @@ Loader::Loader(SharedPtr<Namespaces>  namespaces)
 }
 
 
-/** Load (create) all objects from an RDF into the engine.
+/** Load (create) all objects from RDF into the engine.
  *
- * @param uri URI of machine (e.g. resolvable URI to an RDF document).
+ * @param uri URI of machine (resolvable URI to an RDF document).
  * @return Loaded Machine.
  */
 SharedPtr<Machine>
@@ -57,135 +57,114 @@ Loader::load(const Glib::ustring& uri)
 
 	rasqal_init();
 
-	raptor_uri* base_uri = raptor_new_uri((const unsigned char*)"file:.");
+	Glib::ustring document_uri = uri;
 
-	raptor_uri* document_raptor_uri = raptor_new_uri_relative_to_base(
-			base_uri, (const unsigned char*)uri.c_str());
+	// If "URI" doesn't contain a colon, try to resolve as a filename
+	if (uri.find(":") == Glib::ustring::npos) {
+		raptor_uri* base_uri = raptor_new_uri((const unsigned char*)"file:.");
+		raptor_uri* document_raptor_uri = raptor_new_uri_relative_to_base(
+				base_uri, (const unsigned char*)uri.c_str());
+		if (document_raptor_uri) {
+			document_uri = (char*)raptor_uri_as_string(document_raptor_uri);
+			raptor_free_uri(document_raptor_uri);
+			raptor_free_uri(base_uri);
+		} else {
+			raptor_free_uri(base_uri);
+			return machine; // NULL
+		}
+	}
 
-	//raptor_uri* document_raptor_uri = raptor_new_uri_for_retrieval(rel_uri);
-	//raptor_free_uri(rel_uri);
-
-	if (!document_raptor_uri)
-		return machine; // NULL
-
-	machine = SharedPtr<Machine>(new Machine());
-
-	//Glib::ustring document_uri = (const char*)document_uri_str;
-	const Glib::ustring& document_uri = uri;
-
-	//string machine_uri = "<> ";
-	//string machine_uri = string("<") + document_uri + "> ";
-	string machine_uri = "?foo ";
+	const Glib::ustring machine_uri = "<>";
 
 	cout << "[Loader] Loading " << machine_uri << " from " << document_uri << endl;
 
+	machine = SharedPtr<Machine>(new Machine());
+	
 	typedef std::map<string, SharedPtr<Node> > Created;
 	Created created;
 
 
 	/* Get initial nodes */
-	
+
 	Raul::RDFQuery query = Raul::RDFQuery(*_namespaces, Glib::ustring(
-		"SELECT DISTINCT ?initialNode ?duration FROM <")
-		+ document_uri + "> WHERE {\n" +
-		machine_uri + " :initialNode ?initialNode .\n"
-		"?initialNode   :duration    ?duration .\n"
-		"}\n");
+			"SELECT DISTINCT ?initialNode ?duration FROM <")
+			+ document_uri + "> WHERE {\n" +
+			machine_uri + " :initialNode ?initialNode .\n"
+			"?initialNode   :duration    ?duration .\n"
+			"}\n");
 
 	RDFQuery::Results results = query.run(document_uri);
 
 	for (RDFQuery::Results::iterator i = results.begin(); i != results.end(); ++i) {
-		const Glib::ustring& node_uri  = (*i)["initialNode"];
-		const Glib::ustring& duration  = (*i)["duration"];
-		
-		raptor_uri* node_raptor_uri
-			= raptor_new_uri((const unsigned char*)node_uri.c_str());
+		const Glib::ustring& node_id  = (*i)["initialNode"];
+		const Glib::ustring& duration = (*i)["duration"];
 
-		char* node_name = (char*)
-			raptor_uri_to_relative_uri_string(document_raptor_uri, node_raptor_uri);
+		cout << "Initial: " << node_id << " - " << duration << endl;
 
-		cout << "Initial: " << node_name << " - " << duration << endl;
-
-		cerr << "FIXME: load\n";
-/*
-		SharedPtr<Node> node = SharedPtr<Node>(_node_factory->create_node(
-			node_name,
-			strtol(midi_note.c_str(), NULL, 10),
-			strtol(duration.c_str(), NULL, 10)));
-
-		node->set_initial(true);	
-		//machine->add_node(string(node_name).substr(1), node); // (chop leading "#")
-		machine->add_node(node);
-	
-		created.insert(std::make_pair(node_uri.collate_key(), node));
-		*/
- 
 		SharedPtr<Node> node(new Node(strtod(duration.c_str(), NULL), true));
 		machine->add_node(node);
-		created.insert(std::make_pair(node_uri.collate_key(), node));
-
-		raptor_free_uri(node_raptor_uri);
-		free(node_name);
+		created.insert(std::make_pair(node_id.collate_key(), node));
 	}
-	
-	
-	/* Get remaining nodes */
-	
+
+
+	/* Get remaining (non-initial) nodes */
+
 	query = Raul::RDFQuery(*_namespaces, Glib::ustring(
-		"SELECT DISTINCT ?node ?duration FROM <")
-		+ document_uri + "> WHERE {\n" +
-		machine_uri + " :node     ?node .\n"
-		"?node          :duration ?duration .\n"
-		"}\n");
+			"SELECT DISTINCT ?node ?duration FROM <")
+			+ document_uri + "> WHERE {\n" +
+			machine_uri + " :node     ?node .\n"
+			"?node          :duration ?duration .\n"
+			"}\n");
 
 	results = query.run(document_uri);
 
 	for (RDFQuery::Results::iterator i = results.begin(); i != results.end(); ++i) {
-		const Glib::ustring& node_uri  = (*i)["node"];
-		const Glib::ustring& duration  = (*i)["duration"];
-		
-		raptor_uri* node_raptor_uri
-			= raptor_new_uri((const unsigned char*)node_uri.c_str());
+		const Glib::ustring& node_id  = (*i)["node"];
+		const Glib::ustring& duration = (*i)["duration"];
 
-		char* node_name = (char*)
-			raptor_uri_to_relative_uri_string(document_raptor_uri, node_raptor_uri);
+		cout << "Node: " << node_id << " - " << duration << endl;
 
-		cout << "Node: " << node_name << " - " << duration << endl;
-
-		cerr << "FIXME: load (2)\n";
-		/*
-		SharedPtr<Node> node = SharedPtr<Node>(_node_factory->create_node(
-			node_name,
-			strtol(midi_note.c_str(), NULL, 10),
-			strtol(duration.c_str(), NULL, 10)));
-		
-		
-		if (created.find(node_uri) == created.end()) {
-			//cout << "Node: " << node_name << ": " << midi_note << " - " << duration << endl;
-			//machine->add_node(string(node_name).substr(1), node); // (chop leading "#")
-			machine->add_node(node);
-			created.insert(std::make_pair(node_uri.collate_key(), node));
+		if (created.find(node_id.collate_key()) == created.end()) {
+			SharedPtr<Node> node(new Node(strtod(duration.c_str(), NULL), true));
+			machine->add_node(node); 
+			created.insert(std::make_pair(node_id.collate_key(), node));
+		} else {
+			cout << "Already created, skipping." << endl;
 		}
-		*/
-		SharedPtr<Node> node(new Node(strtod(duration.c_str(), NULL), true));
-		machine->add_node(node); 
-		created.insert(std::make_pair(node_uri.collate_key(), node));
+	}
 
-		raptor_free_uri(node_raptor_uri);
-		free(node_name);
+
+	/* Get actions */
+
+	query = Raul::RDFQuery(*_namespaces, Glib::ustring(
+			"SELECT DISTINCT ?node ?enter_action ?exit_action FROM <")
+			+ document_uri + "> WHERE {\n" +
+			"?node :enterAction ?enter_action ;\n"
+			"      :exitAction  ?exit_action .\n"
+			"}\n");
+
+	results = query.run(document_uri);
+
+	for (RDFQuery::Results::iterator i = results.begin(); i != results.end(); ++i) {
+		const Glib::ustring& node         = (*i)["node"];
+		const Glib::ustring& enter_action = (*i)["enter_action"];
+		const Glib::ustring& exit_action  = (*i)["exit_action"];
+
+		cout << "Node: " << node << ", Action: " << enter_action << " .. " << exit_action <<endl;
+
 	}
 
 
 	/* Get edges */
 
 	query = Raul::RDFQuery(*_namespaces, Glib::ustring(
-		"SELECT DISTINCT ?edge ?src ?dst ?prob FROM <")
-		+ document_uri + "> WHERE {\n" +
-		machine_uri + " :edge ?edge .\n"
-		"?edge :tail        ?src ;\n"
-		"      :head        ?dst ;\n"
-		"      :probability ?prob .\n }");
-	
+			"SELECT DISTINCT ?edge ?src ?dst ?prob FROM <")
+			+ document_uri + "> WHERE {\n" +
+			machine_uri + " :edge ?edge .\n"
+			"?edge :tail        ?src ;\n"
+			"      :head        ?dst ;\n"
+			"      :probability ?prob .\n }");
+
 	results = query.run(document_uri);
 
 	for (RDFQuery::Results::iterator i = results.begin(); i != results.end(); ++i) {
@@ -199,7 +178,7 @@ Loader::load(const Glib::ustring& uri)
 		if (src_i != created.end() && dst_i != created.end()) {
 			const SharedPtr<Node> src = src_i->second;
 			const SharedPtr<Node> dst = dst_i->second;
-		
+
 			SharedPtr<Edge> edge(new Edge(src, dst));
 			edge->set_probability(prob);
 			src->add_outgoing_edge(edge);
@@ -210,12 +189,9 @@ Loader::load(const Glib::ustring& uri)
 		}
 
 	}
-		
-	//free(document_uri_str);
-	raptor_free_uri(document_raptor_uri);
-	raptor_free_uri(base_uri);
 
-	machine->reset();
+	if (machine)
+		machine->reset();
 
 	return machine;
 }

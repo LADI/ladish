@@ -17,5 +17,5 @@ libmachina_la_SOURCES = \
 	LearnRequest.cpp
 	
 if WITH_JACK
-	JackDriver.cpp
+libmachina_la_SOURCES += JackDriver.cpp
 endif

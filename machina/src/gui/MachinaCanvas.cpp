@@ -84,8 +84,10 @@ MachinaCanvas::canvas_event(GdkEvent* event)
 {
 	static int last = 0;
 	
-	assert(event);
-	
+	SharedPtr<Machina::Machine> machine = _app->machine();
+	if (!machine)
+		return false;
+
 	if (event->type == GDK_BUTTON_RELEASE
 			&& event->button.state & GDK_CONTROL_MASK) {
 	
@@ -106,7 +108,7 @@ MachinaCanvas::canvas_event(GdkEvent* event)
 			view->resize();
 			view->raise_to_top();
 			
-			_app->machine()->add_node(node);
+			machine->add_node(node);
 		}
 	}
 

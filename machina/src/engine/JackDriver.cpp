@@ -26,7 +26,8 @@ namespace Machina {
 
 
 JackDriver::JackDriver(SharedPtr<Machine> machine)
-	: _machine_changed(0)
+	: Driver(machine)
+	, _machine_changed(0)
 	, _machine(machine)
 	, _input_port(NULL)
 	, _output_port(NULL)

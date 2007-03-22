@@ -44,6 +44,7 @@ class JackDriver : public Raul::JackDriver,
                    public boost::enable_shared_from_this<JackDriver> {
 public:
 	JackDriver(SharedPtr<Machine> machine = SharedPtr<Machine>());
+	~JackDriver();
 
 	void attach(const std::string& client_name);
 	void detach();

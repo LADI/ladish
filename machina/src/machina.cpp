@@ -56,12 +56,14 @@ main(int argc, char** argv)
 
 	Engine engine(driver);
 
-	// FIXME: Would be nice if this could take URIs on the cmd line
+	/*// FIXME: Would be nice if this could take URIs on the cmd line
 	char* uri = (char*)calloc(6 + strlen(argv[1]), sizeof(char));
 	strcpy(uri, "file:");
 	strcat(uri, argv[1]);
 	engine.load_machine(uri);
 	free(uri);
+*/
+	engine.load_machine(argv[1]);
 
 	driver->attach("machina");
 

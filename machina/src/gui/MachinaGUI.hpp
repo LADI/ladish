@@ -84,7 +84,7 @@ protected:
 	
 	bool _refresh;
 
-	string _save_filename;
+	string _save_uri;
 
 	boost::shared_ptr<MachinaCanvas>   _canvas;
 	boost::shared_ptr<Machina::Engine> _engine;

@@ -54,7 +54,8 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	
 		fs.open(glade_filename.c_str());
 		if (fs.fail()) {
-			cerr << "Unable to find machina.glade in current directory or " << PKGDATADIR << "." << endl;
+			cerr << "Unable to find machina.glade in current directory or "
+				<< PKGDATADIR << "." << endl;
 			exit(EXIT_FAILURE);
 		}
 		fs.close();
@@ -330,10 +331,12 @@ MachinaGUI::menu_file_open()
 	const int result = dialog.run();
 
 	if (result == Gtk::RESPONSE_OK) {
-		SharedPtr<Machina::Machine> new_machine = _engine->load_machine(dialog.get_uri());
-		_canvas->destroy();
-		_canvas->build(new_machine);
-		_save_filename = dialog.get_filename();
+		_save_uri = dialog.get_uri();
+		SharedPtr<Machina::Machine> new_machine = _engine->load_machine(_save_uri);
+		if (new_machine) {
+			_canvas->destroy();
+			_canvas->build(new_machine);
+		}
 	}
 }
 
@@ -341,13 +344,21 @@ MachinaGUI::menu_file_open()
 void
 MachinaGUI::menu_file_save() 
 {
-	if (_save_filename == "") {
+	if (_save_uri == "" || _save_uri.substr(0, 5) != "file:") {
 		menu_file_save_as();
 	} else {
+		char* save_filename = raptor_uri_uri_string_to_filename(
+				(const unsigned char*)_save_uri.c_str());
+		if (!save_filename) {
+			cerr << "ERROR: Unable to create filename from \"" << _save_uri << "\"" << endl;
+			menu_file_save_as();
+		}
 		Raul::RDFWriter writer;
-		writer.start_to_filename(_save_filename);
+		cout << "Writing machine to " << save_filename << endl;
+		writer.start_to_filename(save_filename);
 		machine()->write_state(writer);
 		writer.finish();
+		free(save_filename);
 	}
 }
 
@@ -355,20 +366,24 @@ MachinaGUI::menu_file_save()
 void
 MachinaGUI::menu_file_save_as() 
 {
-	Gtk::FileChooserDialog dialog(*_main_window, "Save Machine", Gtk::FILE_CHOOSER_ACTION_SAVE);
+	Gtk::FileChooserDialog dialog(*_main_window, "Save Machine",
+			Gtk::FILE_CHOOSER_ACTION_SAVE);
 	
 	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
 	dialog.add_button(Gtk::Stock::SAVE, Gtk::RESPONSE_OK);	
 	
-	if (_save_filename.length() > 0)
-		dialog.set_filename(_save_filename);
+	if (_save_uri.length() > 0)
+		dialog.set_uri(_save_uri);
 	
 	const int result = dialog.run();
 	
-	assert(result == Gtk::RESPONSE_OK || result == Gtk::RESPONSE_CANCEL || result == Gtk::RESPONSE_NONE);
+	assert(result == Gtk::RESPONSE_OK
+			|| result == Gtk::RESPONSE_CANCEL
+			|| result == Gtk::RESPONSE_NONE);
 	
 	if (result == Gtk::RESPONSE_OK) {	
 		string filename = dialog.get_filename();
+
 		if (filename.length() < 8 || filename.substr(filename.length()-8) != ".machina")
 			filename += ".machina";
 			
@@ -394,7 +409,7 @@ MachinaGUI::menu_file_save_as()
 			writer.start_to_filename(filename);
 			machine()->write_state(writer);
 			writer.finish();
-			_save_filename = filename;
+			_save_uri = dialog.get_uri();
 		}
 	}
 }
@@ -403,7 +418,8 @@ MachinaGUI::menu_file_save_as()
 void
 MachinaGUI::menu_import_midi()
 {
-	Gtk::FileChooserDialog dialog(*_main_window, "Learn from MIDI file", Gtk::FILE_CHOOSER_ACTION_OPEN);
+	Gtk::FileChooserDialog dialog(*_main_window, "Learn from MIDI file",
+			Gtk::FILE_CHOOSER_ACTION_OPEN);
 	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
 	dialog.add_button(Gtk::Stock::OPEN, Gtk::RESPONSE_OK);
 
@@ -444,7 +460,8 @@ MachinaGUI::menu_import_midi()
 void
 MachinaGUI::menu_export_midi()
 {
-	Gtk::FileChooserDialog dialog(*_main_window, "Export to a MIDI file", Gtk::FILE_CHOOSER_ACTION_SAVE);
+	Gtk::FileChooserDialog dialog(*_main_window, "Export to a MIDI file",
+			Gtk::FILE_CHOOSER_ACTION_SAVE);
 	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
 	dialog.add_button(Gtk::Stock::SAVE, Gtk::RESPONSE_OK);
 
@@ -468,7 +485,8 @@ MachinaGUI::menu_export_midi()
 void
 MachinaGUI::menu_export_graphviz()
 {
-	Gtk::FileChooserDialog dialog(*_main_window, "Export to a GraphViz DOT file", Gtk::FILE_CHOOSER_ACTION_SAVE);
+	Gtk::FileChooserDialog dialog(*_main_window, "Export to a GraphViz DOT file",
+			Gtk::FILE_CHOOSER_ACTION_SAVE);
 	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
 	dialog.add_button(Gtk::Stock::SAVE, Gtk::RESPONSE_OK);
 
