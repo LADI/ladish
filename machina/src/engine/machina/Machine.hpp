@@ -68,7 +68,11 @@ private:
 	
 	// Audio context
 	SharedPtr<Node> earliest_node() const;
-	void            exit_node(const SharedPtr<Raul::MIDISink> sink, const SharedPtr<Node>);
+	bool enter_node(const SharedPtr<Raul::MIDISink> sink, const SharedPtr<Node> node);
+	void exit_node(const SharedPtr<Raul::MIDISink> sink, const SharedPtr<Node>);
+
+	static const size_t MAX_ACTIVE_NODES = 128;
+	SharedPtr<Node> _active_nodes[MAX_ACTIVE_NODES];
 
 	WeakPtr<Raul::MIDISink> _sink;
 	bool                    _is_activated;
@@ -76,7 +80,6 @@ private:
 	Raul::BeatTime          _time;
 	Nodes                   _nodes;
 
-	//Raul::List<SharedPtr<LearnRequest> > _pending_learns;
 	SharedPtr<LearnRequest> _pending_learn;
 };
 

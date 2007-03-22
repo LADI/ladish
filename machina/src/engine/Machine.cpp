@@ -85,16 +85,54 @@ Machine::earliest_node() const
 {	
 	SharedPtr<Node> earliest;
 	
-	for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n) {
+	for (size_t i=0; i < MAX_ACTIVE_NODES; ++i) {
+		const SharedPtr<Node> node = _active_nodes[i];
+		
+		if (node) {
+			assert(node->is_active());
+			if (!earliest || node->exit_time() < earliest->exit_time()) {
+				earliest = node;
+			}
+		}
+	}
+	/*for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n) {
 		const SharedPtr<Node> node = (*n);
 		
 		if (node->is_active())
 			if (!earliest || node->exit_time() < earliest->exit_time())
 				earliest = node;
-	}
+	}*/
 
 	return earliest;
 }
+
+
+/** Enter a state at the current _time.
+ * 
+ * Returns true if node was entered, or false if the maximum active nodes has been reached.
+ */
+bool
+Machine::enter_node(const SharedPtr<Raul::MIDISink> sink, const SharedPtr<Node> node)
+{
+	assert(!node->is_active());
+
+	/* FIXME: Would be best to use the MIDI note here as a hash key, at least
+	 * while all actions are still MIDI notes... */
+	size_t index = (rand() % MAX_ACTIVE_NODES);
+	for (size_t i=0; i < MAX_ACTIVE_NODES; ++i) {
+		if (_active_nodes[index] == NULL) {
+			node->enter(sink, _time);
+			assert(node->is_active());
+			_active_nodes[index] = node;
+			return true;
+		}
+		index = (index + 1) % MAX_ACTIVE_NODES;
+	}
+
+	// If we get here, ran out of active node spots.  Don't enter node
+	return false;
+}
+
 
 
 /** Exit an active node at the current _time.
@@ -103,6 +141,12 @@ void
 Machine::exit_node(SharedPtr<Raul::MIDISink> sink, const SharedPtr<Node> node)
 {
 	node->exit(sink, _time);
+	assert(!node->is_active());
+	for (size_t i=0; i < MAX_ACTIVE_NODES; ++i) {
+		if (_active_nodes[i] == node) {
+			_active_nodes[i].reset();
+		}
+	}
 
 	// Activate all successors to this node
 	// (that aren't aready active right now)
@@ -115,9 +159,8 @@ Machine::exit_node(SharedPtr<Raul::MIDISink> sink, const SharedPtr<Node> node)
 			SharedPtr<Node> dst = (*s)->dst();
 
 			if (!dst->is_active())
-				dst->enter(sink, _time);
+				enter_node(sink, dst);
 		}
-
 	}
 }
 
@@ -125,6 +168,7 @@ Machine::exit_node(SharedPtr<Raul::MIDISink> sink, const SharedPtr<Node> node)
 /** Run the machine for @a nframes frames.
  *
  * Returns the duration of time the machine actually ran (from 0 to nframes).
+ * 
  * Caller can check is_finished() to determine if the machine still has any
  * active states.  If not, time() will return the exact time stamp the
  * machine actually finished on (so it can be restarted immediately
@@ -156,8 +200,8 @@ Machine::run(const Raul::TimeSlice& time)
 				assert( ! (*n)->is_active());
 				
 				if ((*n)->is_initial()) {
-					(*n)->enter(sink, 0);
-					entered = true;
+					if (enter_node(sink, (*n)))
+						entered = true;
 				}
 
 			}

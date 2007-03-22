@@ -30,11 +30,16 @@ namespace Machina {
 SharedPtr<Machine>
 Engine::load_machine(const Glib::ustring& uri)
 {
+	SharedPtr<Machine> old_machine = _driver->machine(); // Hold a reference to current machine..
+
 	SharedPtr<Machine> m = Loader().load(uri);
 	if (m) {
 		m->activate();
 		_driver->set_machine(m);
 	}
+	
+	// .. and drop it in this thread (to prevent deallocation in the RT thread)
+	
 	return m;
 }
 
