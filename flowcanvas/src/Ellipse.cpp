@@ -127,7 +127,7 @@ void
 Ellipse::set_border_width(double w)
 {
 	_border_width = w;
-	//_ellipse.property_width_units() = w;
+	_ellipse.property_width_units() = w;
 }
 
 
