@@ -89,27 +89,25 @@ MachinaCanvas::canvas_event(GdkEvent* event)
 		return false;
 
 	if (event->type == GDK_BUTTON_RELEASE
-			&& event->button.state & GDK_CONTROL_MASK) {
-	
+			&& event->button.button == 2) {
+
 		const double x = event->button.x;
 		const double y = event->button.y;
 
-		if (event->button.button == 1) {
-			string name = string("Note")+(char)(last++ +'0');
+		string name = string("Note")+(char)(last++ +'0');
 
-			SharedPtr<Machina::Node> node(new Machina::Node(1.0, false));
-			//node->add_enter_action(SharedPtr<Machina::Action>(new Machina::PrintAction(name)));
-			SharedPtr<NodeView> view(new NodeView(node, shared_from_this(),
-				name, x, y));
+		SharedPtr<Machina::Node> node(new Machina::Node(1.0, false));
+		//node->add_enter_action(SharedPtr<Machina::Action>(new Machina::PrintAction(name)));
+		SharedPtr<NodeView> view(new NodeView(node, shared_from_this(),
+					name, x, y));
 
-			view->signal_clicked.connect(sigc::bind<0>(sigc::mem_fun(this,
-				&MachinaCanvas::node_clicked), WeakPtr<NodeView>(view)));
-			add_item(view);
-			view->resize();
-			view->raise_to_top();
-			
-			machine->add_node(node);
-		}
+		view->signal_clicked.connect(sigc::bind<0>(sigc::mem_fun(this,
+						&MachinaCanvas::node_clicked), WeakPtr<NodeView>(view)));
+		add_item(view);
+		view->resize();
+		view->raise_to_top();
+
+		machine->add_node(node);
 	}
 
 	return FlowCanvas::canvas_event(event);

@@ -34,8 +34,8 @@ void
 NodeView::on_double_click(GdkEventButton*)
 {
 	bool is_initial = _node->is_initial();
-	std::cerr << "Initial: " << is_initial << std::endl;
 	_node->set_initial( ! is_initial );
+	set_border_width(is_initial ? 1.0 : 2.0);
 }
 
 

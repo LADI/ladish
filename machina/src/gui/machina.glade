@@ -85,7 +85,7 @@
 		      <accelerator key="I" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image16">
+			<widget class="GtkImage" id="image18">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-media-record</property>
 			  <property name="icon_size">1</property>
@@ -107,7 +107,7 @@
 		      <accelerator key="E" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image17">
+			<widget class="GtkImage" id="image19">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-convert</property>
 			  <property name="icon_size">1</property>
@@ -135,7 +135,7 @@
 		      <accelerator key="G" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image18">
+			<widget class="GtkImage" id="image20">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-convert</property>
 			  <property name="icon_size">1</property>
@@ -640,9 +640,9 @@ along with Machina; if not, write to the Free Software Foundation, Inc.,
       <child>
 	<widget class="GtkLabel" id="label5">
 	  <property name="visible">True</property>
-	  <property name="label" translatable="yes">Interface is a bit sketchy still:
+	  <property name="label" translatable="yes">Interface is still a bit arbitrary:
 
-- Ctrl+Left click the canvas to create a new node
+- Middle click canvas to create a new node
 - Middle click nodes to learn a MIDI note for that node
 - Right click two nodes in succession to connect nodes
 - Double click a node to make it an initial node
