@@ -72,7 +72,7 @@ SMFDriver::learn(const string& filename, unsigned track, double q, Raul::BeatTim
 
 /** Learn all tracks from a MIDI file into a single machine.
  *
- * This will result in a disjoint subgraph in the machine, one for each track.
+ * This will result in one disjoint subgraph in the machine for each track.
  */
 SharedPtr<Machine>
 SMFDriver::learn(const string& filename, double q, Raul::BeatTime max_duration)
