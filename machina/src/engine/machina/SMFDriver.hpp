@@ -55,6 +55,13 @@ public:
 private:
 	SharedPtr<Raul::SMFWriter> _writer;
 
+	bool is_delay_node(SharedPtr<Node> node) const;
+
+	SharedPtr<Node>
+	connect_nodes(SharedPtr<Machine> m,
+                  SharedPtr<Node>    tail, Raul::BeatTime tail_end_time,
+     	          SharedPtr<Node>    head, Raul::BeatTime head_start_time);
+	
 	void learn_track(SharedPtr<Machine> machine,
 	                 Raul::SMFReader&   reader,
 	                 unsigned           track,

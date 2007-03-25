@@ -46,11 +46,11 @@ public:
 
 	Node(BeatCount duration=0, bool initial=false);
 
-	void add_enter_action(SharedPtr<Action> action);
-	void remove_enter_action(SharedPtr<Action> action);
+	void set_enter_action(SharedPtr<Action> action);
+	void remove_enter_action();
 
-	void add_exit_action(SharedPtr<Action> action);
-	void remove_exit_action(SharedPtr<Action> action);
+	void set_exit_action(SharedPtr<Action> action);
+	void remove_exit_action();
 
 	SharedPtr<Action> enter_action() { return _enter_action; }
 	SharedPtr<Action> exit_action()  { return _exit_action; }
@@ -67,13 +67,13 @@ public:
 	bool      is_initial() const        { return _is_initial; }
 	void      set_initial(bool i)       { _is_initial = i; }
 	bool      is_active() const         { return _is_active; }
-	BeatTime  enter_time() const        { return _enter_time; }
-	BeatTime  exit_time() const         { return _enter_time + _duration; }
+	BeatTime  enter_time() const        { assert(_is_active); return _enter_time; }
+	BeatTime  exit_time() const         { assert(_is_active); return _enter_time + _duration; }
 	BeatCount duration()                { return _duration; }
 	void      set_duration(BeatCount d) { _duration = d; }
 	
 	typedef Raul::List<SharedPtr<Edge> > Edges;
-	const Edges& outgoing_edges() const { return _outgoing_edges; }
+	Edges& outgoing_edges() { return _outgoing_edges; }
 	
 private:
 	bool              _is_initial;

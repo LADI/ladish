@@ -24,6 +24,7 @@
 #include <raul/RDFWriter.h>
 #include <machina/Machine.hpp>
 #include <machina/SMFDriver.hpp>
+#include "GladeXml.hpp"
 #include "MachinaGUI.hpp"
 #include "MachinaCanvas.hpp"
 #include "NodeView.hpp"
@@ -42,31 +43,7 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 
 	_canvas = boost::shared_ptr<MachinaCanvas>(new MachinaCanvas(this, 1600*2, 1200*2));
 
-	Glib::RefPtr<Gnome::Glade::Xml> xml;
-
-	// Check for the .glade file in current directory
-	string glade_filename = "./machina.glade";
-	ifstream fs(glade_filename.c_str());
-	if (fs.fail()) { // didn't find it, check PKGDATADIR
-		fs.clear();
-		glade_filename = PKGDATADIR;
-		glade_filename += "/machina.glade";
-	
-		fs.open(glade_filename.c_str());
-		if (fs.fail()) {
-			cerr << "Unable to find machina.glade in current directory or "
-				<< PKGDATADIR << "." << endl;
-			exit(EXIT_FAILURE);
-		}
-		fs.close();
-	}
-	
-	try {
-		xml = Gnome::Glade::Xml::create(glade_filename);
-	} catch(const Gnome::Glade::XmlError& ex) {
-		std::cerr << ex.what() << std::endl;
-		throw;
-	}
+	Glib::RefPtr<Gnome::Glade::Xml> xml = GladeXml::create();
 
 	xml->get_widget("machina_win", _main_window);
 	xml->get_widget("about_win", _about_window);

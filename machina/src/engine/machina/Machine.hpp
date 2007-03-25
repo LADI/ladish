@@ -43,6 +43,7 @@ public:
 	bool is_finished() { return _is_finished; }
 
 	void add_node(SharedPtr<Node> node);
+	void remove_node(SharedPtr<Node> node);
 	void learn(SharedPtr<LearnRequest> learn);
 
 	void write_state(Raul::RDFWriter& writer);

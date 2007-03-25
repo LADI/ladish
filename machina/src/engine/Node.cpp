@@ -33,14 +33,14 @@ Node::Node(BeatCount duration, bool initial)
 
 
 void
-Node::add_enter_action(SharedPtr<Action> action)
+Node::set_enter_action(SharedPtr<Action> action)
 {
 	_enter_action = action;
 }
 
 
 void
-Node::remove_enter_action(SharedPtr<Action> /*action*/)
+Node::remove_enter_action()
 {
 	_enter_action.reset();
 }
@@ -48,14 +48,14 @@ Node::remove_enter_action(SharedPtr<Action> /*action*/)
 
 
 void
-Node::add_exit_action(SharedPtr<Action> action)
+Node::set_exit_action(SharedPtr<Action> action)
 {
 	_exit_action = action;
 }
 
 
 void
-Node::remove_exit_action(SharedPtr<Action> /*action*/)
+Node::remove_exit_action()
 {
 	_exit_action.reset();
 }
@@ -65,7 +65,9 @@ Node::remove_exit_action(SharedPtr<Action> /*action*/)
 void
 Node::enter(SharedPtr<Raul::MIDISink> sink, BeatTime time)
 {
-	//cerr << "ENTER " << time << endl;
+	assert(!_is_active);
+	//std::cerr << "ENTER " << time << std::endl;
+	
 	_is_active = true;
 	_enter_time = time;
 	if (sink && _enter_action)
@@ -76,7 +78,9 @@ Node::enter(SharedPtr<Raul::MIDISink> sink, BeatTime time)
 void
 Node::exit(SharedPtr<Raul::MIDISink> sink, BeatTime time)
 {
-	//cerr << "EXIT " << time << endl;
+	assert(_is_active);
+	//std::cerr << "EXIT " << time << std::endl;
+	
 	if (sink && _exit_action)
 		_exit_action->execute(sink, time);
 	_is_active = false;

@@ -38,11 +38,19 @@ main(int argc, char** argv)
 	SharedPtr<Machina::Machine> machine;
 	
 	// Load machine, if given
-	if (argc == 2) {
-		string filename = argv[1];
+	if (argc >= 2) {
+		const string filename = argv[1];
 		cout << "Building machine from MIDI file " << filename << endl;
 		SharedPtr<Machina::SMFDriver> file_driver(new Machina::SMFDriver());
-		machine = file_driver->learn(filename);
+
+		if (argc >= 3) {
+			float q = strtof(argv[2], NULL);
+			cout << "Quantization: " << q << endl;
+			machine = file_driver->learn(filename, q);
+		} else {
+			cout << "No quantization." << endl;
+			machine = file_driver->learn(filename);
+		}
 	}
 
 	if (!machine)

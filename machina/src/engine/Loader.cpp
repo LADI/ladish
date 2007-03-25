@@ -157,8 +157,8 @@ Loader::load(const Glib::ustring& uri)
 			SharedPtr<Node> node = node_i->second;
 			const long note_num = strtol(note.c_str(), NULL, 10);
 			if (note_num >= 0 && note_num <= 127) {
-				node->add_enter_action(ActionFactory::note_on((unsigned char)note_num));
-				node->add_exit_action(ActionFactory::note_off((unsigned char)note_num));
+				node->set_enter_action(ActionFactory::note_on((unsigned char)note_num));
+				node->set_exit_action(ActionFactory::note_off((unsigned char)note_num));
 			} else {
 				cerr << "WARNING:  MIDI note number out of range, ignoring." << endl;
 			}

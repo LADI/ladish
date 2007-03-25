@@ -25,8 +25,8 @@ namespace Machina {
 void
 LearnRequest::finish(BeatTime time)
 {
-	_node->add_enter_action(_enter_action);
-	_node->add_exit_action(_exit_action);
+	_node->set_enter_action(_enter_action);
+	_node->set_exit_action(_exit_action);
 
 	double duration = Raul::Quantizer::quantize(_quantization, time - _start_time);
 	

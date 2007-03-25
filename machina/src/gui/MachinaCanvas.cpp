@@ -98,7 +98,7 @@ MachinaCanvas::canvas_event(GdkEvent* event)
 
 		SharedPtr<Machina::Node> node(new Machina::Node(1.0, false));
 		//node->add_enter_action(SharedPtr<Machina::Action>(new Machina::PrintAction(name)));
-		SharedPtr<NodeView> view(new NodeView(node, shared_from_this(),
+		SharedPtr<NodeView> view(new NodeView(_app->window(), shared_from_this(), node,
 					name, x, y));
 
 		view->signal_clicked.connect(sigc::bind<0>(sigc::mem_fun(this,
@@ -173,7 +173,7 @@ MachinaCanvas::disconnect_node(boost::shared_ptr<NodeView> src,
 SharedPtr<NodeView>
 MachinaCanvas::create_node_view(SharedPtr<Machina::Node> node)
 {
-	SharedPtr<NodeView> view(new NodeView(node, shared_from_this(),
+	SharedPtr<NodeView> view(new NodeView(_app->window(), shared_from_this(), node,
 				"", 10, 10));
 
 	if ( ! node->enter_action() && ! node->exit_action() )

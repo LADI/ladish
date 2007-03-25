@@ -16,14 +16,17 @@
  */
 
 #include "NodeView.hpp"
-#include <iostream>
+#include "NodePropertiesWindow.hpp"
 
-NodeView::NodeView(SharedPtr<Machina::Node>             node,
+
+NodeView::NodeView(Gtk::Window*                         window,
                    SharedPtr<LibFlowCanvas::FlowCanvas> canvas,
+                   SharedPtr<Machina::Node>             node,
                    const std::string&                   name,
                    double                               x,
                    double                               y)
 	: LibFlowCanvas::Ellipse(canvas, name, x, y, 20, 20, false)
+	, _window(window)
 	, _node(node)
 {
 	//signal_double_clicked.connect(sigc::mem_fun(this, &NodeView::on_double_click));
@@ -33,9 +36,18 @@ NodeView::NodeView(SharedPtr<Machina::Node>             node,
 void
 NodeView::on_double_click(GdkEventButton*)
 {
-	bool is_initial = _node->is_initial();
-	_node->set_initial( ! is_initial );
-	set_border_width(is_initial ? 1.0 : 2.0);
+	NodePropertiesWindow::present(_window, _node);
+}
+
+
+void
+NodeView::on_click(GdkEventButton* event)
+{
+	if (event->button == 3) {
+		bool is_initial = _node->is_initial();
+		_node->set_initial( ! is_initial );
+		set_border_width(is_initial ? 1.0 : 2.0);
+	}
 }
 
 

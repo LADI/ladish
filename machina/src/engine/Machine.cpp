@@ -55,7 +55,15 @@ Machine::set_sink(SharedPtr<Raul::MIDISink> sink)
 void
 Machine::add_node(SharedPtr<Node> node)
 {
+	cerr << "ADDING NODE " << node.get() << endl;
 	_nodes.push_back(node);
+}
+
+
+void
+Machine::remove_node(SharedPtr<Node> node)
+{
+	_nodes.erase(_nodes.find(node));
 }
 
 

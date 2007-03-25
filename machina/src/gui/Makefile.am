@@ -15,6 +15,7 @@ machina_gui_LDADD = @FLOWCANVAS_LIBS@ @LIBGLADEMM_LIBS@ @GNOMECANVASMM_LIBS@ @JA
 bin_PROGRAMS = machina_gui
 machina_gui_SOURCES = \
 	main.cpp \
+	GladeXml.hpp \
 	MachinaGUI.hpp \
 	MachinaGUI.cpp \
 	MachinaCanvas.hpp \
@@ -22,6 +23,8 @@ machina_gui_SOURCES = \
 	NodeView.hpp \
 	NodeView.cpp \
 	EdgeView.hpp \
-	EdgeView.cpp
+	EdgeView.cpp \
+	NodePropertiesWindow.hpp \
+	NodePropertiesWindow.cpp
 
 endif
