@@ -55,7 +55,7 @@ Machine::set_sink(SharedPtr<Raul::MIDISink> sink)
 void
 Machine::add_node(SharedPtr<Node> node)
 {
-	cerr << "ADDING NODE " << node.get() << endl;
+	//cerr << "ADDING NODE " << node.get() << endl;
 	_nodes.push_back(node);
 }
 
@@ -289,7 +289,7 @@ Machine::write_state(Raul::RDFWriter& writer)
 
 	for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n) {
 	
-		cerr << "Writing node " << count++ << " state." << endl;
+		//cerr << "Writing node " << count++ << " state." << endl;
 
 		(*n)->write_state(writer);
 
@@ -308,12 +308,12 @@ Machine::write_state(Raul::RDFWriter& writer)
 
 	for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n) {
 		
-		cerr << "Writing node " << count++ << " edges: ";
+		//cerr << "Writing node " << count++ << " edges: ";
 	
 		for (Node::Edges::const_iterator e = (*n)->outgoing_edges().begin();
 			e != (*n)->outgoing_edges().end(); ++e) {
 			
-			cerr << ".";
+			//cerr << ".";
 			
 			(*e)->write_state(writer);
 		
@@ -322,7 +322,7 @@ Machine::write_state(Raul::RDFWriter& writer)
 				(*e)->id());
 		}
 
-		cerr << endl;
+		//cerr << endl;
 
 	}
 }

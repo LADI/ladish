@@ -97,6 +97,8 @@ public:
 		inline const_iterator& operator++();
 		inline bool            operator!=(const const_iterator& iter) const;
 		inline bool            operator!=(const iterator& iter) const;
+		inline bool            operator==(const const_iterator& iter) const;
+		inline bool            operator==(const iterator& iter) const;
 	
 		friend class List<T>;
 		
@@ -116,6 +118,8 @@ public:
 		inline iterator& operator++();
 		inline bool      operator!=(const iterator& iter) const;
 		inline bool      operator!=(const const_iterator& iter) const;
+		inline bool      operator==(const iterator& iter) const;
+		inline bool      operator==(const const_iterator& iter) const;
 	
 		friend class List<T>;
 		friend class List<T>::const_iterator;
@@ -370,6 +374,22 @@ List<T>::iterator::operator!=(const const_iterator& iter) const
 
 
 template <typename T>
+inline bool
+List<T>::iterator::operator==(const iterator& iter) const
+{
+	return (_listnode == iter._listnode);
+}
+
+
+template <typename T>
+inline bool
+List<T>::iterator::operator==(const const_iterator& iter) const
+{
+	return (_listnode == iter._listnode);
+}
+
+
+template <typename T>
 inline typename List<T>::iterator
 List<T>::begin()
 {
@@ -436,6 +456,21 @@ List<T>::const_iterator::operator!=(const iterator& iter) const
 	return (_listnode != iter._listnode);
 }
 
+
+template <typename T>
+inline bool
+List<T>::const_iterator::operator==(const const_iterator& iter) const
+{
+	return (_listnode == iter._listnode);
+}
+
+
+template <typename T>
+inline bool
+List<T>::const_iterator::operator==(const iterator& iter) const
+{
+	return (_listnode == iter._listnode);
+}
 
 template <typename T>
 inline typename List<T>::const_iterator

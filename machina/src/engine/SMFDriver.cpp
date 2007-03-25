@@ -120,8 +120,8 @@ SMFDriver::connect_nodes(SharedPtr<Machine> m,
 
 	SharedPtr<Node> delay_node;
 
-	cout << "Connect nodes durations: " << tail->duration() << " .. " << head->duration() << endl;
-	cout << "Connect nodes times: " << tail_end_time << " .. " << head_start_time << endl;
+	//cerr << "Connect nodes durations: " << tail->duration() << " .. " << head->duration() << endl;
+	//cerr << "Connect nodes times: " << tail_end_time << " .. " << head_start_time << endl;
 
 	if (head_start_time == tail_end_time) {
 		// Connect directly
@@ -132,7 +132,7 @@ SMFDriver::connect_nodes(SharedPtr<Machine> m,
 		tail->add_outgoing_edge(SharedPtr<Edge>(new Edge(tail, head)));
 	} else {
 		// Need to actually create a delay node
-		cerr << "Adding delay node for " << tail_end_time << " .. " << head_start_time << endl;
+		//cerr << "Adding delay node for " << tail_end_time << " .. " << head_start_time << endl;
 		delay_node = SharedPtr<Node>(new Node());
 		delay_node->set_duration(head_start_time - tail_end_time);
 		tail->add_outgoing_edge(SharedPtr<Edge>(new Edge(tail, delay_node)));
@@ -255,6 +255,8 @@ SMFDriver::learn_track(SharedPtr<Machine> m,
 									resolved->remove_exit_action();
 									connect_node->set_duration(resolved->duration());
 									resolved = connect_node;
+									if (m->nodes().find(connect_node) == m->nodes().end())
+										m->add_node(connect_node);
 								} else {
 									connect_node = resolved;
 									m->add_node(resolved);
@@ -300,9 +302,9 @@ SMFDriver::learn_track(SharedPtr<Machine> m,
 	}
 	
 	if (added_nodes > 0)
-		if (initial_node->outgoing_edges().size() == 1)
+		/*if (initial_node->outgoing_edges().size() == 1)
 			(*initial_node->outgoing_edges().begin())->dst()->set_initial(true);
-		else
+		else*/
 			m->add_node(initial_node);
 }
 

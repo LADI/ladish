@@ -61,7 +61,7 @@ public:
 	void clear_pending_learn() { _pending_learn.reset(); }
 
 	typedef Raul::List<SharedPtr<Node> > Nodes;
-	const Nodes& nodes() { return _nodes; }
+	Nodes& nodes() { return _nodes; }
 
 	void set_sink(SharedPtr<Raul::MIDISink> sink);
 	
