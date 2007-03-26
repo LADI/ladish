@@ -75,7 +75,8 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	xml->get_widget("arrange_but", _arrange_button);
 	
 	_canvas_scrolledwindow->add(*_canvas);
-	//m_canvas_scrolledwindow->signal_event().connect(sigc::mem_fun(_canvas, &FlowCanvas::scroll_event_handler));
+	_canvas_scrolledwindow->signal_event().connect(sigc::mem_fun(this,
+				&MachinaGUI::scrolled_window_event));
 	_canvas->scroll_to(static_cast<int>(_canvas->width()/2 - 320),
 	                       static_cast<int>(_canvas->height()/2 - 240)); // FIXME: hardcoded
 
@@ -192,6 +193,32 @@ MachinaGUI::idle_callback()
 	}
 
 	return true;
+}
+
+
+bool
+MachinaGUI::scrolled_window_event(GdkEvent* event)
+{
+	if (event->type == GDK_KEY_PRESS) {
+		if (event->key.keyval == GDK_Delete) {
+			
+			ItemList selection = _canvas->selected_items();
+			_canvas->clear_selection();
+
+			for (ItemList::iterator i = selection.begin();
+					i != selection.end(); ++i) {
+				SharedPtr<NodeView> view = PtrCast<NodeView>(*i);
+				if (view) {
+					machine()->remove_node(view->node());
+					_canvas->remove_item(view);
+				}
+			}
+
+			return true;
+		}
+	}
+	
+	return false;
 }
 
 

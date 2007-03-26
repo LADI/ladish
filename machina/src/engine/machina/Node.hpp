@@ -66,6 +66,8 @@ public:
 
 	bool      is_initial() const        { return _is_initial; }
 	void      set_initial(bool i)       { _is_initial = i; }
+	bool      is_selector() const       { return _is_selector; }
+	void      set_selector(bool i)      { _is_selector = i; }
 	bool      is_active() const         { return _is_active; }
 	BeatTime  enter_time() const        { assert(_is_active); return _enter_time; }
 	BeatTime  exit_time() const         { assert(_is_active); return _enter_time + _duration; }
@@ -77,6 +79,7 @@ public:
 	
 private:
 	bool              _is_initial;
+	bool              _is_selector;
 	bool              _is_active;
 	BeatTime          _enter_time; ///< valid iff _is_active
 	BeatCount         _duration;

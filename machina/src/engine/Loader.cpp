@@ -128,7 +128,7 @@ Loader::load(const Glib::ustring& uri)
 		cout << "Node: " << node_id << " - " << duration << endl;
 
 		if (created.find(node_id.collate_key()) == created.end()) {
-			SharedPtr<Node> node(new Node(strtod(duration.c_str(), NULL), true));
+			SharedPtr<Node> node(new Node(strtod(duration.c_str(), NULL), false));
 			machine->add_node(node); 
 			created.insert(std::make_pair(node_id.collate_key(), node));
 		} else {

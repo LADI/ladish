@@ -43,10 +43,16 @@ NodeView::on_double_click(GdkEventButton*)
 void
 NodeView::on_click(GdkEventButton* event)
 {
-	if (event->button == 3) {
-		bool is_initial = _node->is_initial();
-		_node->set_initial( ! is_initial );
-		set_border_width(is_initial ? 1.0 : 2.0);
+	if (event->state & GDK_CONTROL_MASK) {
+		if (event->button == 1) {
+			bool is_initial = _node->is_initial();
+			_node->set_initial( ! is_initial );
+			set_border_width(is_initial ? 1.0 : 6.0);
+		} else if (event->button == 3) {
+			bool is_selector = _node->is_selector();
+			_node->set_selector( ! is_selector );
+			set_border_width(is_selector ? 1.0 : 3.0);
+		}
 	}
 }
 

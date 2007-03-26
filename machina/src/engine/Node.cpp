@@ -25,6 +25,7 @@ namespace Machina {
 
 Node::Node(BeatCount duration, bool initial)
 	: _is_initial(initial)
+	, _is_selector(false)
 	, _is_active(false)
 	, _enter_time(0)
 	, _duration(duration)
@@ -127,9 +128,14 @@ Node::write_state(Raul::RDFWriter& writer)
 	if (!_id)
 		set_id(writer.blank_id());
 
-	writer.write(_id,
-			RdfId(RdfId::RESOURCE, "rdf:type"),
-			RdfId(RdfId::RESOURCE, "machina:Node"));
+	if (_is_selector)
+		writer.write(_id,
+				RdfId(RdfId::RESOURCE, "rdf:type"),
+				RdfId(RdfId::RESOURCE, "machina:SelectorNode"));
+	else
+		writer.write(_id,
+				RdfId(RdfId::RESOURCE, "rdf:type"),
+				RdfId(RdfId::RESOURCE, "machina:Node"));
 
 	writer.write(_id,
 			RdfId(RdfId::RESOURCE, "machina:duration"),

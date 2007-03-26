@@ -71,6 +71,7 @@ protected:
 	void zoom_changed();
 	bool idle_callback();
 	void update_toolbar();
+	bool scrolled_window_event(GdkEvent* ev);
 
 	void on_pane_position_changed();
 	void on_messages_expander_changed();

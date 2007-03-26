@@ -15,7 +15,6 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-//#include "config.h"
 #include <map>
 #include <raul/SharedPtr.h>
 #include "machina/Node.hpp"
