@@ -1043,6 +1043,9 @@ FlowCanvas::render_to_dot(const string& dot_output_filename)
 void
 FlowCanvas::arrange()
 {
+	/* FIXME: Are the strdup's here a leak?
+	 * GraphViz documentation disagrees with function prototypes.
+	 */
 #ifdef HAVE_AGRAPH
 	std::map<boost::shared_ptr<Item>, Agnode_t*> nodes;
 
@@ -1070,11 +1073,17 @@ FlowCanvas::arrange()
 
 		assert(src_node && dst_node);
 
-		agedge(G, src_node, dst_node);
+		Agedge_t* edge = agedge(G, src_node, dst_node);
+
+		if (c->length_hint() != 0) {
+			std::ostringstream len_ss;
+			len_ss << c->length_hint();
+			agsafeset(edge, "minlen", strdup(len_ss.str().c_str()), "1.0");
+		}
 	}
 
 	gvLayout (gvc, G, "dot");
-	gvRender (gvc, G, "dot", NULL);
+	gvRender (gvc, G, "dot", fopen("/dev/null", "w"));
 
 	double least_x=HUGE_VAL, least_y=HUGE_VAL, most_x=0, most_y=0;
 

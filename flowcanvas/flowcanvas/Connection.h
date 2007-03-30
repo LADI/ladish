@@ -57,6 +57,8 @@ public:
 	
 	bool selected() const { return _selected; }
 	void set_selected(bool b);
+	
+	virtual double length_hint() const { return 0.0; }
 
 	void set_label(const std::string& str);
 	
@@ -77,7 +79,7 @@ private:
 	const boost::weak_ptr<FlowCanvas>  _canvas;
 	const boost::weak_ptr<Connectable> _source;
 	const boost::weak_ptr<Connectable> _dest;
-	int                                _color;
+	uint32_t                           _color;
 	bool                               _selected;
 	bool                               _flag;
 	bool                               _show_arrowhead;
