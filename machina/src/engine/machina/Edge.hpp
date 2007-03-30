@@ -34,19 +34,19 @@ class Node;
 class Edge : public Raul::Stateful, public boost::noncopyable {
 public:
 
-	Edge(WeakPtr<Node> src, SharedPtr<Node> dst)
+	Edge(WeakPtr<Node> tail, SharedPtr<Node> head)
 		: _probability(1.0f)
-		, _src(src)
-		, _dst(dst)
+		, _tail(tail)
+		, _head(head)
 	{}
 
 	void write_state(Raul::RDFWriter& writer);
 
-	WeakPtr<Node>   src() { return _src; }
-	SharedPtr<Node> dst() { return _dst; }
+	WeakPtr<Node>   tail() { return _tail; }
+	SharedPtr<Node> head() { return _head; }
 
-	void set_src(WeakPtr<Node> src)   { _src = src; }
-	void set_dst(SharedPtr<Node> dst) { _dst = dst; }
+	void set_tail(WeakPtr<Node> tail)   { _tail = tail; }
+	void set_head(SharedPtr<Node> head) { _head = head; }
 
 	inline float probability()            { return _probability.get(); }
 	inline void  set_probability(float p) { _probability.set(p); }
@@ -54,8 +54,8 @@ public:
 private:
 	Raul::DoubleBuffer<float> _probability;
 	
-	WeakPtr<Node>   _src;
-	SharedPtr<Node> _dst;
+	WeakPtr<Node>   _tail;
+	SharedPtr<Node> _head;
 };
 
 

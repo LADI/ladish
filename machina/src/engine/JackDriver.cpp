@@ -182,12 +182,9 @@ JackDriver::write_event(Raul::BeatTime time,
 void
 JackDriver::on_process(jack_nframes_t nframes)
 {
-	//using namespace std;
-	//std::cerr << "> ======================================================\n";
-	
 	_cycle_time.set_bpm(_bpm.get());
 
-	// (start time set at end of previous cycle)
+	// (N.B. start time set at end of previous cycle)
 	_cycle_time.set_offset(0);
 	_cycle_time.set_length(nframes);
 
@@ -256,8 +253,6 @@ JackDriver::on_process(jack_nframes_t nframes)
 	/* Remember the last machine run, in case a switch happens and
 	 * we need to finalize it next cycle. */
 	_last_machine = machine;
-	
-	//std::cerr << "< ======================================================\n";
 }
 
 

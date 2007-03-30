@@ -115,25 +115,25 @@ MachinaCanvas::canvas_event(GdkEvent* event)
 
 void
 MachinaCanvas::connect_node(boost::shared_ptr<NodeView> src,
-                            boost::shared_ptr<NodeView> dst)
+                            boost::shared_ptr<NodeView> head)
 {
-	SharedPtr<Machina::Edge> edge(new Machina::Edge(src->node(), dst->node()));
+	SharedPtr<Machina::Edge> edge(new Machina::Edge(src->node(), head->node()));
 	src->node()->add_outgoing_edge(edge);
 	
 	boost::shared_ptr<Connection> c(new EdgeView(shared_from_this(),
-			src, dst, edge));
+			src, head, edge));
 	src->add_connection(c);
-	dst->add_connection(c);
+	head->add_connection(c);
 	add_connection(c);
 }
 
 
 void
 MachinaCanvas::disconnect_node(boost::shared_ptr<NodeView> src,
-                               boost::shared_ptr<NodeView> dst)
+                               boost::shared_ptr<NodeView> head)
 {
-	src->node()->remove_outgoing_edges_to(dst->node());
-	remove_connection(src, dst);
+	src->node()->remove_outgoing_edges_to(head->node());
+	remove_connection(src, head);
 
 #if 0
 	boost::shared_ptr<MachinaPort> input
@@ -213,16 +213,16 @@ MachinaCanvas::build(SharedPtr<Machina::Machine> machine)
 		for (Machina::Node::Edges::const_iterator e = view->node()->outgoing_edges().begin();
 				e != view->node()->outgoing_edges().end(); ++e) {
 
-			SharedPtr<NodeView> dst_view = views[(*e)->dst()];
-			if (!dst_view) {
+			SharedPtr<NodeView> head_view = views[(*e)->head()];
+			if (!head_view) {
 				cerr << "WARNING: Edge to node with no view" << endl;
 				continue;
 			}
 				
 			boost::shared_ptr<Connection> c(new EdgeView(shared_from_this(),
-					view, dst_view, (*e)));
+					view, head_view, (*e)));
 			view->add_connection(c);
-			dst_view->add_connection(c);
+			head_view->add_connection(c);
 			add_connection(c);
 		}
 	

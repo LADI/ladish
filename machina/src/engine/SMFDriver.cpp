@@ -63,6 +63,8 @@ SMFDriver::learn(const string& filename, unsigned track, double q, Raul::BeatTim
 	else
 		learn_track(m, reader, track, q, max_duration);
 
+	m->reset();
+
 	if (m->nodes().size() > 1)
 		return m;
 	else
@@ -88,6 +90,8 @@ SMFDriver::learn(const string& filename, double q, Raul::BeatTime max_duration)
 	for (unsigned t=1; t <= reader.num_tracks(); ++t) {
 		learn_track(m, reader, t, q, max_duration);
 	}
+
+	m->reset();
 
 	if (m->nodes().size() > 1)
 		return m;
@@ -246,7 +250,7 @@ SMFDriver::learn_track(SharedPtr<Machine> m,
 								// (these happen after polyphonic sections)
 								if (is_delay_node(connect_node) && connect_node->duration() == 0
 										&& connect_node->outgoing_edges().size() == 1
-										&& (*connect_node->outgoing_edges().begin())->dst() == resolved) {
+										&& (*connect_node->outgoing_edges().begin())->head() == resolved) {
 									connect_node->outgoing_edges().clear();
 									assert(connect_node->outgoing_edges().empty());
 									connect_node->set_enter_action(resolved->enter_action());
@@ -301,11 +305,8 @@ SMFDriver::learn_track(SharedPtr<Machine> m,
 		active_nodes.clear();
 	}
 	
-	if (added_nodes > 0)
-		/*if (initial_node->outgoing_edges().size() == 1)
-			(*initial_node->outgoing_edges().begin())->dst()->set_initial(true);
-		else*/
-			m->add_node(initial_node);
+	if (m->nodes().find(initial_node) == m->nodes().end())
+		m->add_node(initial_node);
 }
 
 

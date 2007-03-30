@@ -34,21 +34,21 @@ Edge::write_state(Raul::RDFWriter& writer)
 			RdfId(RdfId::RESOURCE, "rdf:type"),
 			RdfId(RdfId::RESOURCE, "machina:Edge"));
 
-	SharedPtr<Node> src = _src.lock();
-	SharedPtr<Node> dst = _dst;
+	SharedPtr<Node> tail = _tail.lock();
+	SharedPtr<Node> head = _head;
 
-	if (!src || !dst)
+	if (!tail || !head)
 		return;
 
-	assert(src->id() && dst->id());
+	assert(tail->id() && head->id());
 
 	writer.write(_id,
 			RdfId(RdfId::RESOURCE, "machina:tail"),
-			src->id());
+			tail->id());
 
 	writer.write(_id,
 			RdfId(RdfId::RESOURCE, "machina:head"),
-			dst->id());
+			head->id());
 	
 	writer.write(_id,
 			RdfId(RdfId::RESOURCE, "machina:probability"),

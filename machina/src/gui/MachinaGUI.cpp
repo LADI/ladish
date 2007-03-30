@@ -18,6 +18,7 @@
 #include <cmath>
 #include <sstream>
 #include <fstream>
+#include <limits.h>
 #include <pthread.h>
 #include <libgnomecanvasmm.h>
 #include <libglademm/xml.h>
@@ -426,6 +427,18 @@ MachinaGUI::menu_import_midi()
 			Gtk::FILE_CHOOSER_ACTION_OPEN);
 	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
 	dialog.add_button(Gtk::Stock::OPEN, Gtk::RESPONSE_OK);
+	
+	Gtk::HBox* extra_widget = Gtk::manage(new Gtk::HBox());
+	Gtk::SpinButton* length_sb = Gtk::manage(new Gtk::SpinButton());
+	length_sb->set_increments(1, 10);
+	length_sb->set_range(0, INT_MAX);
+	length_sb->set_value(0);
+	extra_widget->pack_start(*Gtk::manage(new Gtk::Label("")), true, true);
+	extra_widget->pack_start(*Gtk::manage(new Gtk::Label("Maximum Length (0 = unlimited): ")), false, false);
+	extra_widget->pack_start(*length_sb, false, false); 
+	dialog.set_extra_widget(*extra_widget);
+	extra_widget->show_all();
+	
 
 	/*Gtk::HBox* extra_widget = Gtk::manage(new Gtk::HBox());
 	Gtk::SpinButton* track_sb = Gtk::manage(new Gtk::SpinButton());
@@ -444,7 +457,10 @@ MachinaGUI::menu_import_midi()
 		SharedPtr<Machina::SMFDriver> file_driver(new Machina::SMFDriver());
 		//SharedPtr<Machina::Machine> machine = file_driver->learn(dialog.get_uri(),
 		//		track_sb->get_value_as_int());
-		SharedPtr<Machina::Machine> machine = file_driver->learn(dialog.get_filename(), 0.0, 16.0);
+		
+		double length = length_sb->get_value_as_int();
+
+		SharedPtr<Machina::Machine> machine = file_driver->learn(dialog.get_filename(), 0.0, length);
 		
 		if (machine) {
 			dialog.hide();

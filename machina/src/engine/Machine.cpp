@@ -56,6 +56,7 @@ void
 Machine::add_node(SharedPtr<Node> node)
 {
 	//cerr << "ADDING NODE " << node.get() << endl;
+	assert(_nodes.find(node) == _nodes.end());
 	_nodes.push_back(node);
 }
 
@@ -78,6 +79,8 @@ Machine::reset()
 
 			if (node->is_active())
 				node->exit(_sink.lock(), _time);
+
+			assert(! node->is_active());
 		}
 	}
 
@@ -150,6 +153,7 @@ Machine::exit_node(SharedPtr<Raul::MIDISink> sink, const SharedPtr<Node> node)
 {
 	node->exit(sink, _time);
 	assert(!node->is_active());
+
 	for (size_t i=0; i < MAX_ACTIVE_NODES; ++i) {
 		if (_active_nodes[i] == node) {
 			_active_nodes[i].reset();
@@ -161,13 +165,15 @@ Machine::exit_node(SharedPtr<Raul::MIDISink> sink, const SharedPtr<Node> node)
 	for (Node::Edges::const_iterator s = node->outgoing_edges().begin();
 			s != node->outgoing_edges().end(); ++s) {
 		
+		assert((*s)->head() != node); // no loops
+
 		const double rand_normal = rand() / (double)RAND_MAX; // [0, 1]
 		
 		if (rand_normal <= (*s)->probability()) {
-			SharedPtr<Node> dst = (*s)->dst();
+			SharedPtr<Node> head = (*s)->head();
 
-			if (!dst->is_active())
-				enter_node(sink, dst);
+			if (!head->is_active())
+				enter_node(sink, head);
 		}
 	}
 }
@@ -187,7 +193,6 @@ Machine::run(const Raul::TimeSlice& time)
 {
 	using namespace std;
 	if (_is_finished) {
-		cerr << "FINISHED\n";
 		return 0;
 	}
 
@@ -195,8 +200,6 @@ Machine::run(const Raul::TimeSlice& time)
 
 	const BeatCount cycle_end = _time + time.length_beats();
 
-	//std::cerr << "Start: " << _time << std::endl;
-	
 	assert(_is_activated);
 
 	// Initial run, enter all initial states
@@ -249,8 +252,6 @@ Machine::run(const Raul::TimeSlice& time)
 
 	}
 
-	//std::cerr << "Done: " << this_time << std::endl;
-
 	assert(this_time <= time.length_beats());
 	return this_time;
 }
@@ -263,7 +264,7 @@ Machine::run(const Raul::TimeSlice& time)
 void
 Machine::learn(SharedPtr<LearnRequest> learn)
 {
-	std::cerr << "LEARN\n";
+	std::cerr << "Learn" << std::endl;
 
 	/*LearnRequest request(node,
 		SharedPtr<MidiAction>(new MidiAction(4, NULL)),

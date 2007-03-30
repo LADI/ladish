@@ -92,7 +92,7 @@ Node::exit(SharedPtr<Raul::MIDISink> sink, BeatTime time)
 void
 Node::add_outgoing_edge(SharedPtr<Edge> edge)
 {
-	assert(edge->src().lock().get() == this);
+	assert(edge->tail().lock().get() == this);
 	
 	_outgoing_edges.push_back(edge);
 }
@@ -112,7 +112,7 @@ Node::remove_outgoing_edges_to(SharedPtr<Node> node)
 		Edges::iterator next = i;
 		++next;
 
-		if ((*i)->dst() == node)
+		if ((*i)->head() == node)
 			_outgoing_edges.erase(i);
 
 		i = next;

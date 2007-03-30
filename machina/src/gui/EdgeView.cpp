@@ -33,6 +33,13 @@ EdgeView::EdgeView(SharedPtr<FlowCanvas>    canvas,
 {
 }
 
+	
+double
+EdgeView::length_hint() const
+{
+	return _edge->tail().lock()->duration() * 10;
+}
+
 
 void
 EdgeView::update_label()
