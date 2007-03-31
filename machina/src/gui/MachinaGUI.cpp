@@ -235,7 +235,7 @@ void
 MachinaGUI::update_toolbar()
 {
 	_record_button->set_active(_engine->driver()->recording());
-	_play_button->set_active(true);
+	_play_button->set_active(_engine->machine()->is_activated());
 	_bpm_spinbutton->set_sensitive(_bpm_radiobutton->get_active());
 	_quantize_spinbutton->set_sensitive(_quantize_checkbutton->get_active());
 }
@@ -631,6 +631,7 @@ MachinaGUI::record_toggled()
 	} else if (_engine->driver()->recording()) {
 		_engine->driver()->finish_record();
 		_canvas->build(_engine->machine());
+		update_toolbar();
 	}
 }
 
@@ -638,8 +639,12 @@ MachinaGUI::record_toggled()
 void
 MachinaGUI::stop_clicked()
 {
-	if (_engine->driver()->recording())
+	if (_engine->driver()->recording()) {
 		_engine->driver()->finish_record();
+	} else {
+		_engine->machine()->deactivate();
+		_engine->machine()->reset();
+	}
 
 	update_toolbar();
 }
@@ -648,6 +653,10 @@ MachinaGUI::stop_clicked()
 void
 MachinaGUI::play_toggled()
 {
+	if (_play_button->get_active())
+		_engine->machine()->activate();
+	else
+		_engine->machine()->deactivate();
 }
 
 

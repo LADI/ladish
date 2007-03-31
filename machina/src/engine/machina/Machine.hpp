@@ -39,8 +39,9 @@ public:
 	void activate()   { _is_activated = true; }
 	void deactivate() { _is_activated = false; }
 	
-	bool is_empty()    { return _nodes.empty(); }
-	bool is_finished() { return _is_finished; }
+	bool is_empty()     { return _nodes.empty(); }
+	bool is_finished()  { return _is_finished; }
+	bool is_activated() { return _is_activated; }
 
 	void add_node(SharedPtr<Node> node);
 	void remove_node(SharedPtr<Node> node);

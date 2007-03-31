@@ -230,7 +230,7 @@ MachinaCanvas::build(SharedPtr<Machina::Machine> machine)
 			Gtk::Main::iteration(false);
 	}
 	
-	//arrange();
+	arrange();
 	/*	
 	while (Gtk::Main::events_pending())
 		Gtk::Main::iteration(false);

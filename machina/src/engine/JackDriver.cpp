@@ -235,7 +235,7 @@ JackDriver::on_process(jack_nframes_t nframes)
 
 	process_input(machine, _cycle_time);
 
-	if (machine->is_empty())
+	if (machine->is_empty() || !machine->is_activated())
 		return;
 
 	while (true) {
@@ -285,7 +285,7 @@ JackDriver::start_record()
 {
 	std::cerr << "START RECORD" << std::endl;
 	// FIXME: hardcoded size
-	_recorder = SharedPtr<Recorder>(new Recorder(1024, 1.0/(double)sample_rate()));
+	_recorder = SharedPtr<Recorder>(new Recorder(1024, (1.0/(double)sample_rate()) * (_bpm.get() / 60.0)));
 	_recorder->start();
 	_record_time = 0;
 	_recording = 1;

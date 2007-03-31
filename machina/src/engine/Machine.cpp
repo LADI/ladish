@@ -83,6 +83,10 @@ Machine::reset()
 			assert(! node->is_active());
 		}
 	}
+	
+	for (size_t i=0; i < MAX_ACTIVE_NODES; ++i) {
+		_active_nodes[i].reset();
+	}
 
 	_time = 0;
 	_is_finished = false;
