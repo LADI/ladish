@@ -19,6 +19,7 @@
 
 #include <iostream>
 #include <libgnomecanvasmm.h>
+#include <glibmm/exception.h>
 
 #include "Patchage.h"
 #include "JackDriver.h"
@@ -39,8 +40,14 @@ int main(int argc, char** argv)
 
 	app.run(*patchage.window());
 	
-	} catch (std::string msg) {
-		std::cerr << "Caught exception, aborting.  Error message was: " << msg << std::endl;
+	} catch (std::exception& e) {
+		std::cerr << "Caught exception, aborting.  Error message was: "
+				<< e.what() << std::endl;
+		return 1;
+	
+	} catch (Glib::Exception& e) {
+		std::cerr << "Caught exception, aborting.  Error message was: "
+				<< e.what() << std::endl;
 		return 1;
 	}
 
