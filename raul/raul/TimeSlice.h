@@ -20,15 +20,9 @@
 
 #include <cassert>
 #include <boost/utility.hpp>
+#include <raul/types.h>
 
 namespace Raul {
-
-
-typedef uint32_t TickTime;  ///< absolute time in ticks
-typedef uint32_t TickCount; ///< offset in ticks
-typedef double   BeatTime;
-typedef double   BeatCount;
-typedef double   Seconds;
 
 
 /** A duration of time, with conversion between tick time and beat time.
