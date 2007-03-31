@@ -1,1 +1,1 @@
-EXTRA_DIST = machina2dot.py
+EXTRA_DIST = machina2dot

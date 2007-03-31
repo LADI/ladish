@@ -8,11 +8,6 @@ dist_sharefiles_DATA = machina.glade
 #globalpixmapsdir = $(datadir)/pixmaps
 #dist_globalpixmaps_DATA = machina-icon.svg
 
-if WITH_GUI
-
-machina_gui_LDADD = @FLOWCANVAS_LIBS@ @LIBGLADEMM_LIBS@ @GNOMECANVASMM_LIBS@ @JACK_LIBS@ @RAUL_CFLAGS@ ../engine/libmachina.la
-
-bin_PROGRAMS = machina_gui
 machina_gui_SOURCES = \
 	main.cpp \
 	GladeXml.hpp \
@@ -26,5 +21,11 @@ machina_gui_SOURCES = \
 	EdgeView.cpp \
 	NodePropertiesWindow.hpp \
 	NodePropertiesWindow.cpp
+
+if WITH_GUI
+
+machina_gui_LDADD = @FLOWCANVAS_LIBS@ @LIBGLADEMM_LIBS@ @GNOMECANVASMM_LIBS@ @JACK_LIBS@ @RAUL_CFLAGS@ ../engine/libmachina.la
+
+bin_PROGRAMS = machina_gui
 
 endif

@@ -28,8 +28,6 @@
 
 namespace Machina {
 
-class MidiDriver;
-
 
 /** An Action, executed on entering or exiting of a state.
  */

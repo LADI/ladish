@@ -13,7 +13,9 @@ libmachinainclude_HEADERS = \
 	LearnRequest.hpp \
 	Engine.hpp \
 	Recorder.hpp \
-	MachineBuilder.hpp
+	MachineBuilder.hpp \
+	SMFDriver.hpp \
+	JackDriver.hpp
 	
 if WITH_JACK	
 	JackDriver.hpp

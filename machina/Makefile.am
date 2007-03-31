@@ -1,5 +1,4 @@
-DIST_SUBDIRS = util
-SUBDIRS = src
+SUBDIRS = src util
 
 desktopfilesdir = $(datadir)/applications
 dist_desktopfiles_DATA = machina.desktop
