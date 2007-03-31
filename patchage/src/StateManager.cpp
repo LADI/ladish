@@ -16,6 +16,7 @@
  */
 
 #include "StateManager.h"
+#include <stdexcept>
 #include <stdlib.h>
 #include <iostream>
 #include <fstream>
@@ -106,21 +107,21 @@ StateManager::load(const string& filename)
 	string s;
 
 	is >> s;
-	if (s != "window_location") throw "Corrupt settings file.";
+	if (s != "window_location") throw std::runtime_error("Corrupt settings file.");
 	is >> s;
 	_window_location.x = atoi(s.c_str());
 	is >> s;
 	_window_location.y = atoi(s.c_str());
 
 	is >> s;
-	if (s != "window_size") throw "Corrupt settings file.";
+	if (s != "window_size") throw std::runtime_error("Corrupt settings file.");
 	is >> s;
 	_window_size.x = atoi(s.c_str());
 	is >> s;
 	_window_size.y = atoi(s.c_str());
 
 	is >> s;
-	if (s != "zoom_level") throw "Corrupt settings file.";
+	if (s != "zoom_level") throw std::runtime_error("Corrupt settings file.");
 	is >> s;
 	_zoom = atof(s.c_str());
 
@@ -150,7 +151,7 @@ StateManager::load(const string& filename)
 		if (s == "input") ml.type = Input;
 		else if (s == "output") ml.type = Output;
 		else if (s == "inputoutput") ml.type = InputOutput;
-		else throw "Corrupt settings file.";
+		else throw std::runtime_error("Corrupt settings file.");
 
 		is >> s;
 		ml.loc.x = atoi(s.c_str());
@@ -182,7 +183,7 @@ StateManager::save(const string& filename)
 		if (ml.type == Input) os << " input ";
 		else if (ml.type == Output) os << " output ";
 		else if (ml.type == InputOutput) os << " inputoutput ";
-		else throw;
+		else throw std::runtime_error("Invalid module type");
 
 		os << ml.loc.x << " " << ml.loc.y << std::endl;
 	}

@@ -123,12 +123,7 @@ Patchage::Patchage(int argc, char** argv)
 		fs.close();
 	}
 	
-	try {
-		xml = Gnome::Glade::Xml::create(glade_filename);
-	} catch(const Gnome::Glade::XmlError& ex) {
-		std::cerr << ex.what() << std::endl;
-		throw;
-	}
+	xml = Gnome::Glade::Xml::create(glade_filename);
 
 	xml->get_widget("patchage_win", _main_window);
 	xml->get_widget_derived("jack_settings_win", _jack_settings_dialog);
