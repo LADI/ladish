@@ -238,6 +238,63 @@
 	  <property name="show_arrow">True</property>
 
 	  <child>
+	    <widget class="GtkToggleToolButton" id="record_but">
+	      <property name="visible">True</property>
+	      <property name="stock_id">gtk-media-record</property>
+	      <property name="visible_horizontal">True</property>
+	      <property name="visible_vertical">True</property>
+	      <property name="is_important">False</property>
+	      <property name="active">False</property>
+	    </widget>
+	    <packing>
+	      <property name="expand">False</property>
+	      <property name="homogeneous">True</property>
+	    </packing>
+	  </child>
+
+	  <child>
+	    <widget class="GtkToolButton" id="stop_but">
+	      <property name="visible">True</property>
+	      <property name="stock_id">gtk-media-stop</property>
+	      <property name="visible_horizontal">True</property>
+	      <property name="visible_vertical">True</property>
+	      <property name="is_important">False</property>
+	    </widget>
+	    <packing>
+	      <property name="expand">False</property>
+	      <property name="homogeneous">True</property>
+	    </packing>
+	  </child>
+
+	  <child>
+	    <widget class="GtkToggleToolButton" id="play_but">
+	      <property name="visible">True</property>
+	      <property name="stock_id">gtk-media-play</property>
+	      <property name="visible_horizontal">True</property>
+	      <property name="visible_vertical">True</property>
+	      <property name="is_important">False</property>
+	      <property name="active">False</property>
+	    </widget>
+	    <packing>
+	      <property name="expand">False</property>
+	      <property name="homogeneous">True</property>
+	    </packing>
+	  </child>
+
+	  <child>
+	    <widget class="GtkSeparatorToolItem" id="separatortoolitem4">
+	      <property name="visible">True</property>
+	      <property name="draw">True</property>
+	      <property name="visible_horizontal">True</property>
+	      <property name="visible_vertical">True</property>
+	    </widget>
+	    <packing>
+	      <property name="expand">False</property>
+	      <property name="homogeneous">False</property>
+	    </packing>
+	  </child>
+
+	  <child>
 	    <widget class="GtkToolItem" id="toolitem1">
 	      <property name="visible">True</property>
 	      <property name="visible_horizontal">True</property>

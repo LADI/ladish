@@ -15,39 +15,39 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef MACHINA_DRIVER_HPP
-#define MACHINA_DRIVER_HPP
+#ifndef MACHINA_RECORDER_HPP
+#define MACHINA_RECORDER_HPP
 
-#include <raul/MIDISink.h>
+#include <raul/types.h>
+#include <raul/Slave.h>
+#include <raul/SharedPtr.h>
+#include <raul/MIDIRingBuffer.h>
+#include "Machine.hpp"
 
 namespace Machina {
 
-class Machine;
+class MachineBuilder;
 
 
-class Driver : public Raul::MIDISink {
+class Recorder : public Raul::Slave {
 public:
-	Driver(SharedPtr<Machine> machine) : _machine(machine) {}
-	virtual ~Driver() {}
+	Recorder(size_t buffer_size, double tick_rate);
 
-	SharedPtr<Machine> machine() { return _machine; }
-	virtual void set_machine(SharedPtr<Machine> machine) { _machine = machine; }
+	inline void write(Raul::TickTime time, size_t size, const unsigned char* buf) {
+		_record_buffer.write(time, size, buf);
+	}
+
+	SharedPtr<Machine> finish();
+
+private:
+	virtual void _whipped();
 	
-	virtual void set_bpm(double bpm) = 0;
-	virtual void set_quantization(double quantization) = 0;
-	
-	virtual void activate() {}
-	virtual void deactivate() {}
-
-	virtual bool recording() { return false; }
-	virtual void start_record() {}
-	virtual void finish_record() {}
-
-protected:
-	SharedPtr<Machine> _machine;
+	double                    _tick_rate;
+	Raul::MIDIRingBuffer      _record_buffer;
+	SharedPtr<MachineBuilder> _builder;
 };
 
 
 } // namespace Machina
 
-#endif // MACHINA_JACKDRIVER_HPP
+#endif // MACHINA_RECORDER_HPP

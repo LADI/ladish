@@ -73,6 +73,10 @@ protected:
 	void update_toolbar();
 	bool scrolled_window_event(GdkEvent* ev);
 
+	void record_toggled();
+	void stop_clicked();
+	void play_toggled();
+
 	void on_pane_position_changed();
 	void on_messages_expander_changed();
 	
@@ -94,34 +98,37 @@ protected:
 
 	Gtk::Main* _gtk_main;
 	
-	Gtk::Window*         _main_window;
-	Gtk::Dialog*         _help_dialog;
-	Gtk::AboutDialog*    _about_window;
-	Gtk::Toolbar*        _toolbar;
-	Gtk::MenuItem*       _menu_file_open;
-	Gtk::MenuItem*       _menu_file_save;
-	Gtk::MenuItem*       _menu_file_save_as;
-	Gtk::MenuItem*       _menu_file_quit;
-	Gtk::MenuItem*       _menu_import_midi;
-	Gtk::MenuItem*       _menu_export_midi;
-	Gtk::MenuItem*       _menu_export_graphviz;
-	Gtk::MenuItem*       _menu_help_about;
-	Gtk::CheckMenuItem*  _menu_view_toolbar;
-	//Gtk::CheckMenuItem*  _menu_view_messages;
-	Gtk::MenuItem*       _menu_view_refresh;
-	Gtk::MenuItem*       _menu_help_help;
-	Gtk::ScrolledWindow* _canvas_scrolledwindow;
-	Gtk::TextView*       _status_text;
-	Gtk::Paned*          _main_paned;
-	Gtk::Expander*       _messages_expander;
-	Gtk::RadioButton*    _slave_radiobutton;
-	Gtk::RadioButton*    _bpm_radiobutton;
-	Gtk::SpinButton*     _bpm_spinbutton;
-	Gtk::CheckButton*    _quantize_checkbutton;
-	Gtk::SpinButton*     _quantize_spinbutton;
-	Gtk::ToolButton*     _zoom_normal_button;
-	Gtk::ToolButton*     _zoom_full_button;
-	Gtk::ToolButton*     _arrange_button;
+	Gtk::Window*           _main_window;
+	Gtk::Dialog*           _help_dialog;
+	Gtk::AboutDialog*      _about_window;
+	Gtk::Toolbar*          _toolbar;
+	Gtk::MenuItem*         _menu_file_open;
+	Gtk::MenuItem*         _menu_file_save;
+	Gtk::MenuItem*         _menu_file_save_as;
+	Gtk::MenuItem*         _menu_file_quit;
+	Gtk::MenuItem*         _menu_import_midi;
+	Gtk::MenuItem*         _menu_export_midi;
+	Gtk::MenuItem*         _menu_export_graphviz;
+	Gtk::MenuItem*         _menu_help_about;
+	Gtk::CheckMenuItem*    _menu_view_toolbar;
+	//Gtk::CheckMenuItem*    _menu_view_messages;
+	Gtk::MenuItem*         _menu_view_refresh;
+	Gtk::MenuItem*         _menu_help_help;
+	Gtk::ScrolledWindow*   _canvas_scrolledwindow;
+	Gtk::TextView*         _status_text;
+	Gtk::Paned*            _main_paned;
+	Gtk::Expander*         _messages_expander;
+	Gtk::RadioButton*      _slave_radiobutton;
+	Gtk::RadioButton*      _bpm_radiobutton;
+	Gtk::SpinButton*       _bpm_spinbutton;
+	Gtk::CheckButton*      _quantize_checkbutton;
+	Gtk::SpinButton*       _quantize_spinbutton;
+	Gtk::ToggleToolButton* _record_button;
+	Gtk::ToolButton*       _stop_button;
+	Gtk::ToggleToolButton* _play_button;
+	Gtk::ToolButton*       _zoom_normal_button;
+	Gtk::ToolButton*       _zoom_full_button;
+	Gtk::ToolButton*       _arrange_button;
 };
 
 #endif // MACHINA_GUI_H

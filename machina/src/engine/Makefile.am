@@ -15,7 +15,9 @@ libmachina_la_SOURCES = \
 	ActionFactory.cpp \
 	SMFDriver.cpp \
 	Engine.cpp \
-	LearnRequest.cpp
+	LearnRequest.cpp \
+	Recorder.cpp \
+	MachineBuilder.cpp
 	
 if WITH_JACK
 libmachina_la_SOURCES += JackDriver.cpp

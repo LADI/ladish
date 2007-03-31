@@ -33,6 +33,7 @@ JackDriver::JackDriver(SharedPtr<Machine> machine)
 	, _cycle_time(1/48000.0, 120.0)
 	, _bpm(120.0)
 	, _quantization(120.0)
+	, _recording(0)
 {
 	if (!_machine)
 		_machine = SharedPtr<Machine>(new Machine());
@@ -95,11 +96,15 @@ JackDriver::detach()
 
 void
 JackDriver::set_machine(SharedPtr<Machine> machine)
-{ 
+{
+	SharedPtr<Machine> last_machine = _last_machine; // Keep a reference 
+	_machine_changed.reset(0);
+	assert(!last_machine.unique());
 	_machine = machine;
 	if (is_activated())
 		_machine_changed.wait();
 	assert(_machine == machine);
+	last_machine.reset();
 }
 
 
@@ -108,10 +113,26 @@ JackDriver::process_input(SharedPtr<Machine> machine, const TimeSlice& time)
 {
 	// We only actually read Jack input at the beginning of a cycle
 	assert(time.offset_ticks() == 0);
+	assert(_input_port);
 
 	using namespace std;
 
-	//if (_learn_node) {
+	if (_recording.get()) {
+		const jack_nframes_t nframes     = time.length_ticks();
+		void*                jack_buffer = jack_port_get_buffer(_input_port, nframes);
+		const jack_nframes_t event_count = jack_midi_get_event_count(jack_buffer, nframes);
+
+		for (jack_nframes_t i=0; i < event_count; ++i) {
+			jack_midi_event_t ev;
+			jack_midi_event_get(&ev, jack_buffer, i, nframes);
+		
+			_recorder->write(_record_time + ev.time, ev.size, ev.buffer);
+		}
+
+		if (event_count > 0)
+			_recorder->whip();
+
+	} else {
 		const jack_nframes_t nframes     = time.length_ticks();
 		void*                jack_buffer = jack_port_get_buffer(_input_port, nframes);
 		const jack_nframes_t event_count = jack_midi_get_event_count(jack_buffer, nframes);
@@ -149,7 +170,7 @@ JackDriver::process_input(SharedPtr<Machine> machine, const TimeSlice& time)
 			//std::cerr << "EVENT: " << std::hex << (int)ev.buffer[0] << "\n";
 
 		}
-	//}
+	}
 }
 
 
@@ -199,12 +220,15 @@ JackDriver::on_process(jack_nframes_t nframes)
 	// Machine was switched since last cycle, finalize old machine.
 	if (machine != _last_machine) {
 		if (_last_machine) {
+			assert(!_last_machine.unique()); // Realtime, can't delete
 			_last_machine->reset(); // Exit all active states
-			assert(_last_machine.use_count() > 1); // Realtime, can't delete
 			_last_machine.reset(); // Cut our reference
 		}
 		_machine_changed.post(); // Signal we're done with it
 	}
+
+	if (_recording.get())
+		_record_time += nframes;
 
 	if (!machine)
 		return;
@@ -253,6 +277,30 @@ JackDriver::on_process(jack_nframes_t nframes)
 	/* Remember the last machine run, in case a switch happens and
 	 * we need to finalize it next cycle. */
 	_last_machine = machine;
+}
+
+
+void
+JackDriver::start_record()
+{
+	std::cerr << "START RECORD" << std::endl;
+	// FIXME: hardcoded size
+	_recorder = SharedPtr<Recorder>(new Recorder(1024, 1.0/(double)sample_rate()));
+	_recorder->start();
+	_record_time = 0;
+	_recording = 1;
+}
+
+
+void
+JackDriver::finish_record()
+{
+	_recording = 0;
+	SharedPtr<Machine> machine = _recorder->finish();
+	std::cout << "Learned machine!  " << machine->nodes().size() << " nodes." << std::endl;
+	_recorder.reset();
+	machine->activate();
+	set_machine(machine);
 }
 
 

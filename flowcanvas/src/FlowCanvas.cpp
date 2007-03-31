@@ -1036,6 +1036,11 @@ FlowCanvas::render_to_dot(const string& dot_output_filename)
 		gvRender (gvc, G, "dot", out_fd);
 		fclose(out_fd);
 	}
+	
+	gvFreeLayout(gvc, G);
+	agclose(G);
+	gvFreeContext(gvc);
+
 #endif
 }
 	

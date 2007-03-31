@@ -71,6 +71,9 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	xml->get_widget("bpm_spinbutton", _bpm_spinbutton);
 	xml->get_widget("quantize_checkbutton", _quantize_checkbutton);
 	xml->get_widget("quantize_spinbutton", _quantize_spinbutton);
+	xml->get_widget("record_but", _record_button);
+	xml->get_widget("stop_but", _stop_button);
+	xml->get_widget("play_but", _play_button);
 	xml->get_widget("zoom_normal_but", _zoom_normal_button);
 	xml->get_widget("zoom_full_but", _zoom_full_button);
 	xml->get_widget("arrange_but", _arrange_button);
@@ -83,11 +86,16 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 
 	//_zoom_slider->signal_value_changed().connect(sigc::mem_fun(this, &MachinaGUI::zoom_changed));
 	
+	_record_button->signal_toggled().connect(sigc::mem_fun(this, &MachinaGUI::record_toggled));
+	_stop_button->signal_clicked().connect(sigc::mem_fun(this, &MachinaGUI::stop_clicked));
+	_play_button->signal_toggled().connect(sigc::mem_fun(this, &MachinaGUI::play_toggled));
+
 	_zoom_normal_button->signal_clicked().connect(sigc::bind(
 		sigc::mem_fun(this, &MachinaGUI::zoom), 1.0));
 	
 	_zoom_full_button->signal_clicked().connect(sigc::mem_fun(_canvas.get(), &MachinaCanvas::zoom_full));
 	_arrange_button->signal_clicked().connect(sigc::mem_fun(_canvas.get(), &MachinaCanvas::arrange));
+	
 
 	_menu_file_open->signal_activate().connect(
 		sigc::mem_fun(this, &MachinaGUI::menu_file_open));
@@ -226,6 +234,8 @@ MachinaGUI::scrolled_window_event(GdkEvent* event)
 void
 MachinaGUI::update_toolbar()
 {
+	_record_button->set_active(_engine->driver()->recording());
+	_play_button->set_active(true);
 	_bpm_spinbutton->set_sensitive(_bpm_radiobutton->get_active());
 	_quantize_spinbutton->set_sensitive(_quantize_checkbutton->get_active());
 }
@@ -611,4 +621,33 @@ MachinaGUI::menu_help_help()
 	_help_dialog->run();
 	_help_dialog->hide();
 }
+
+
+void
+MachinaGUI::record_toggled()
+{
+	if (_record_button->get_active() && ! _engine->driver()->recording()) {
+		_engine->driver()->start_record();
+	} else if (_engine->driver()->recording()) {
+		_engine->driver()->finish_record();
+		_canvas->build(_engine->machine());
+	}
+}
+
+
+void
+MachinaGUI::stop_clicked()
+{
+	if (_engine->driver()->recording())
+		_engine->driver()->finish_record();
+
+	update_toolbar();
+}
+
+
+void
+MachinaGUI::play_toggled()
+{
+}
+
 

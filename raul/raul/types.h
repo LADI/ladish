@@ -18,6 +18,8 @@
 #ifndef RAUL_TYPES_H
 #define RAUL_TYPES_H
 
+#include <stdint.h>
+
 namespace Raul {
 
 typedef uint32_t TickTime;  ///< absolute time in ticks
@@ -25,6 +27,8 @@ typedef uint32_t TickCount; ///< offset in ticks
 typedef double   BeatTime;
 typedef double   BeatCount;
 typedef double   Seconds;
+
+typedef unsigned char Byte;
 
 }
 

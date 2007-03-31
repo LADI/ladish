@@ -7,12 +7,12 @@ using namespace Raul;
 void
 read_write_test(MIDIRingBuffer& rb, unsigned offset)
 {
-	TickTime t;
-	size_t   size;
-	char     buf[5];
+	TickTime      t;
+	size_t        size;
+	unsigned char buf[5];
 
-	snprintf(buf, 5, "%d", offset);
-	size = strlen(buf);
+	snprintf((char*)buf, 5, "%d", offset);
+	size = strlen((char*)buf);
 
 	size_t written = rb.write(offset, size, buf);
 	assert(written == size);

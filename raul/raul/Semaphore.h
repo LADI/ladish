@@ -41,6 +41,9 @@ public:
 	
 	inline ~Semaphore() { sem_destroy(&_sem); }
 
+	inline void reset(unsigned int initial)
+	{ sem_destroy(&_sem); sem_init(&_sem, 0, initial); }
+
 	/** Increment (and signal any waiters).
 	 * 
 	 * Realtime safe.
@@ -61,6 +64,7 @@ public:
 	 * Realtime safe?
 	 */
 	inline int  try_wait() { return sem_trywait(&_sem); }
+
 private:
 	sem_t _sem;
 };

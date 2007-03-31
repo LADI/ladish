@@ -22,11 +22,12 @@
 #include <raul/JackDriver.h>
 #include <raul/SharedPtr.h>
 #include <raul/DoubleBuffer.h>
+#include <raul/MIDIRingBuffer.h>
 #include <raul/Semaphore.h>
 #include <jack/midiport.h>
 #include "Machine.hpp"
 #include "Driver.hpp"
-
+#include "Recorder.hpp"
 
 namespace Machina {
 
@@ -61,6 +62,10 @@ public:
 	void set_bpm(double bpm)                   { _bpm.set(bpm); }
 	void set_quantization(double quantization) { _quantization.set(quantization); }
 
+	bool recording() { return _recording.get(); }
+	void start_record();
+	void finish_record();
+
 private:
 	void         process_input(SharedPtr<Machine> machine,
 	                           const Raul::TimeSlice& time);
@@ -76,6 +81,10 @@ private:
 
 	Raul::DoubleBuffer<double> _bpm;
 	Raul::DoubleBuffer<double> _quantization;
+
+	Raul::TickTime      _record_time;
+	Raul::AtomicInt     _recording;
+	SharedPtr<Recorder> _recorder;
 };
 
 

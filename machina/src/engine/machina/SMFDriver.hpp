@@ -25,6 +25,7 @@
 #include <raul/SMFReader.h>
 #include "machina/types.hpp"
 #include "machina/Driver.hpp"
+#include "machina/MachineBuilder.hpp"
 
 namespace Machina {
 
@@ -37,8 +38,14 @@ class SMFDriver : public Driver,
 public:
 	SMFDriver(SharedPtr<Machine> machine = SharedPtr<Machine>());
 
-	SharedPtr<Machine> learn(const std::string& filename, double q=0.0, Raul::BeatTime max_duration=0);
-	SharedPtr<Machine> learn(const std::string& filename, unsigned track, double q=0.0, Raul::BeatTime max_duration=0);
+	SharedPtr<Machine> learn(const std::string& filename,
+	                         double             q=0.0,
+	                         Raul::BeatTime     max_duration=0);
+
+	SharedPtr<Machine> learn(const std::string& filename,
+	                         unsigned           track,
+	                         double             q=0.0,
+	                         Raul::BeatTime     max_duration=0);
 
 	void run(SharedPtr<Machine> machine, Raul::BeatTime max_time);
 	
@@ -54,19 +61,12 @@ public:
 
 private:
 	SharedPtr<Raul::SMFWriter> _writer;
-
-	bool is_delay_node(SharedPtr<Node> node) const;
-
-	SharedPtr<Node>
-	connect_nodes(SharedPtr<Machine> m,
-                  SharedPtr<Node>    tail, Raul::BeatTime tail_end_time,
-     	          SharedPtr<Node>    head, Raul::BeatTime head_start_time);
 	
-	void learn_track(SharedPtr<Machine> machine,
-	                 Raul::SMFReader&   reader,
-	                 unsigned           track,
-	                 double             q,
-	                 Raul::BeatTime     max_duration=0);
+	void learn_track(SharedPtr<MachineBuilder> builder,
+	                 Raul::SMFReader&          reader,
+	                 unsigned                  track,
+	                 double                    q,
+	                 Raul::BeatTime            max_duration=0);
 };
 
 

@@ -62,7 +62,7 @@ public:
 	jack_nframes_t buffer_size();
 	bool           set_buffer_size(jack_nframes_t size);
 
-	inline float sample_rate() { return jack_get_sample_rate(_client); }
+	inline jack_nframes_t sample_rate() { return jack_get_sample_rate(_client); }
 
 	inline size_t xruns() { return _xruns; }
 	void reset_xruns();

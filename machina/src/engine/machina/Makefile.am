@@ -11,7 +11,9 @@ libmachinainclude_HEADERS = \
 	ActionFactory.hpp \
 	Driver.hpp \
 	LearnRequest.hpp \
-	Engine.hpp
+	Engine.hpp \
+	Recorder.hpp \
+	MachineBuilder.hpp
 	
 if WITH_JACK	
 	JackDriver.hpp
