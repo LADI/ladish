@@ -36,7 +36,7 @@ int
 main(int argc, char** argv)
 {
 	SharedPtr<Machina::Machine> machine;
-	
+
 	// Load machine, if given
 	if (argc >= 2) {
 		const string filename = argv[1];
@@ -67,22 +67,14 @@ main(int argc, char** argv)
 
 	SharedPtr<Engine> engine(new Engine(driver));
 
-	// Launch GUI
-	try {
+	Gnome::Canvas::init();
+	Gtk::Main app(argc, argv);
 
-		Gnome::Canvas::init();
-		Gtk::Main app(argc, argv);
+	driver->activate();
+	MachinaGUI gui(engine);
 
-		driver->activate();
-		MachinaGUI gui(engine);
+	app.run(*gui.window());
 
-		app.run(*gui.window());
-
-	} catch (string msg) {
-		cerr << "Caught exception, aborting.  Error message was: " << msg << endl;
-		return 1;
-	}
-	
 	return 0;
 }
 

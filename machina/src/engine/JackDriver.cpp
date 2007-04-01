@@ -179,6 +179,13 @@ JackDriver::write_event(Raul::BeatTime time,
                         size_t         size,
                         const byte*    event) throw (std::logic_error)
 {
+	if (_cycle_time.beats_to_ticks(time) + _cycle_time.offset_ticks() < _cycle_time.start_ticks()) {
+		std::cerr << "ERROR: Missed event by " 
+			<< _cycle_time.start_ticks() - (_cycle_time.beats_to_ticks(time) + _cycle_time.offset_ticks())
+			<< "ticks." << std::endl;
+		return;
+	}
+
 	const TickCount nframes = _cycle_time.length_ticks();
 	const TickCount offset  = _cycle_time.beats_to_ticks(time)
 		+ _cycle_time.offset_ticks() - _cycle_time.start_ticks();
@@ -221,9 +228,11 @@ JackDriver::on_process(jack_nframes_t nframes)
 	if (machine != _last_machine) {
 		if (_last_machine) {
 			assert(!_last_machine.unique()); // Realtime, can't delete
+			_last_machine->set_sink(shared_from_this());
 			_last_machine->reset(); // Exit all active states
 			_last_machine.reset(); // Cut our reference
 		}
+		_cycle_time.set_start(0);
 		_machine_changed.post(); // Signal we're done with it
 	}
 
