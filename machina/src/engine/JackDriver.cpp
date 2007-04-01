@@ -182,7 +182,12 @@ JackDriver::write_event(Raul::BeatTime time,
 	if (_cycle_time.beats_to_ticks(time) + _cycle_time.offset_ticks() < _cycle_time.start_ticks()) {
 		std::cerr << "ERROR: Missed event by " 
 			<< _cycle_time.start_ticks() - (_cycle_time.beats_to_ticks(time) + _cycle_time.offset_ticks())
-			<< "ticks." << std::endl;
+			<< " ticks"
+			<< "\n\tbpm: " << _cycle_time.bpm()
+			<< "\n\tev time: " << _cycle_time.beats_to_ticks(time)
+			<< "\n\tcycle_start: " << _cycle_time.start_ticks()
+			<< "\n\tcycle_end: " << _cycle_time.start_ticks() + _cycle_time.length_ticks()
+			<< "\n\tcycle_length: " << _cycle_time.length_ticks() << std::endl << std::endl;
 		return;
 	}
 

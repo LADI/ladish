@@ -85,7 +85,7 @@
 		      <accelerator key="I" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image18">
+			<widget class="GtkImage" id="image26">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-media-record</property>
 			  <property name="icon_size">1</property>
@@ -107,7 +107,7 @@
 		      <accelerator key="E" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image19">
+			<widget class="GtkImage" id="image27">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-convert</property>
 			  <property name="icon_size">1</property>
@@ -129,13 +129,14 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="export_graphviz_menuitem">
 		      <property name="visible">True</property>
-		      <property name="label" translatable="yes">Export _Graphviz...</property>
+		      <property name="tooltip" translatable="yes">Export a DOT file for rendering diagram with the GraphViz suite of tools</property>
+		      <property name="label" translatable="yes">Export _GraphViz...</property>
 		      <property name="use_underline">True</property>
 		      <signal name="activate" handler="on_export_graphviz_menuitem_activate" last_modification_time="Mon, 12 Mar 2007 19:47:58 GMT"/>
 		      <accelerator key="G" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image20">
+			<widget class="GtkImage" id="image28">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-convert</property>
 			  <property name="icon_size">1</property>
@@ -177,11 +178,23 @@
 		<widget class="GtkMenu" id="view_menu_menu">
 
 		  <child>
+		    <widget class="GtkCheckMenuItem" id="view_labels_menuitem">
+		      <property name="visible">True</property>
+		      <property name="tooltip" translatable="yes">Show labels on canvas</property>
+		      <property name="label" translatable="yes">_Labels</property>
+		      <property name="use_underline">True</property>
+		      <property name="active">False</property>
+		      <signal name="activate" handler="on_view_edge_labels_menuitem_activate" last_modification_time="Sun, 01 Apr 2007 17:20:03 GMT"/>
+		      <accelerator key="L" modifiers="GDK_CONTROL_MASK" signal="activate"/>
+		    </widget>
+		  </child>
+
+		  <child>
 		    <widget class="GtkCheckMenuItem" id="view_toolbar_menuitem">
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">_Toolbar</property>
 		      <property name="use_underline">True</property>
-		      <property name="active">False</property>
+		      <property name="active">True</property>
 		      <signal name="activate" handler="on_toolbar2_activate" last_modification_time="Tue, 20 Feb 2007 22:56:06 GMT"/>
 		      <accelerator key="T" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 		    </widget>
@@ -240,6 +253,7 @@
 	  <child>
 	    <widget class="GtkToggleToolButton" id="record_but">
 	      <property name="visible">True</property>
+	      <property name="tooltip" translatable="yes">Record</property>
 	      <property name="stock_id">gtk-media-record</property>
 	      <property name="visible_horizontal">True</property>
 	      <property name="visible_vertical">True</property>
@@ -255,6 +269,7 @@
 	  <child>
 	    <widget class="GtkToolButton" id="stop_but">
 	      <property name="visible">True</property>
+	      <property name="tooltip" translatable="yes">Stop playback or recording</property>
 	      <property name="stock_id">gtk-media-stop</property>
 	      <property name="visible_horizontal">True</property>
 	      <property name="visible_vertical">True</property>
@@ -269,11 +284,12 @@
 	  <child>
 	    <widget class="GtkToggleToolButton" id="play_but">
 	      <property name="visible">True</property>
+	      <property name="tooltip" translatable="yes">Play</property>
 	      <property name="stock_id">gtk-media-play</property>
 	      <property name="visible_horizontal">True</property>
 	      <property name="visible_vertical">True</property>
 	      <property name="is_important">False</property>
-	      <property name="active">False</property>
+	      <property name="active">True</property>
 	    </widget>
 	    <packing>
 	      <property name="expand">False</property>
@@ -283,6 +299,51 @@
 
 	  <child>
 	    <widget class="GtkSeparatorToolItem" id="separatortoolitem4">
+	      <property name="visible">True</property>
+	      <property name="draw">True</property>
+	      <property name="visible_horizontal">True</property>
+	      <property name="visible_vertical">True</property>
+	    </widget>
+	    <packing>
+	      <property name="expand">False</property>
+	      <property name="homogeneous">False</property>
+	    </packing>
+	  </child>
+
+	  <child>
+	    <widget class="GtkToolButton" id="add_button">
+	      <property name="visible">True</property>
+	      <property name="tooltip" translatable="yes">Add selected states</property>
+	      <property name="stock_id">gtk-add</property>
+	      <property name="visible_horizontal">True</property>
+	      <property name="visible_vertical">True</property>
+	      <property name="is_important">False</property>
+	    </widget>
+	    <packing>
+	      <property name="expand">False</property>
+	      <property name="homogeneous">True</property>
+	    </packing>
+	  </child>
+
+	  <child>
+	    <widget class="GtkToolButton" id="multiply_button">
+	      <property name="visible">True</property>
+	      <property name="tooltip" translatable="yes">Multiply (merge) selected states</property>
+	      <property name="label" translatable="yes"></property>
+	      <property name="use_underline">True</property>
+	      <property name="stock_id">gtk-convert</property>
+	      <property name="visible_horizontal">True</property>
+	      <property name="visible_vertical">True</property>
+	      <property name="is_important">False</property>
+	    </widget>
+	    <packing>
+	      <property name="expand">False</property>
+	      <property name="homogeneous">True</property>
+	    </packing>
+	  </child>
+
+	  <child>
+	    <widget class="GtkSeparatorToolItem" id="separatortoolitem5">
 	      <property name="visible">True</property>
 	      <property name="draw">True</property>
 	      <property name="visible_horizontal">True</property>
@@ -312,6 +373,7 @@
 		    <widget class="GtkRadioButton" id="slave_radiobutton">
 		      <property name="visible">True</property>
 		      <property name="sensitive">False</property>
+		      <property name="tooltip" translatable="yes">Slave to JACK transport</property>
 		      <property name="can_focus">True</property>
 		      <property name="label" translatable="yes">Slave</property>
 		      <property name="use_underline">True</property>
@@ -337,8 +399,9 @@
 		      <child>
 			<widget class="GtkRadioButton" id="bpm_radiobutton">
 			  <property name="visible">True</property>
+			  <property name="tooltip" translatable="yes">Use internal tempo</property>
 			  <property name="can_focus">True</property>
-			  <property name="label" translatable="yes">BPM:</property>
+			  <property name="label" translatable="yes"></property>
 			  <property name="use_underline">True</property>
 			  <property name="relief">GTK_RELIEF_NORMAL</property>
 			  <property name="focus_on_click">True</property>
@@ -371,6 +434,31 @@
 			  <property name="padding">0</property>
 			  <property name="expand">True</property>
 			  <property name="fill">True</property>
+			</packing>
+		      </child>
+
+		      <child>
+			<widget class="GtkLabel" id="label8">
+			  <property name="visible">True</property>
+			  <property name="label" translatable="yes"> BPM</property>
+			  <property name="use_underline">False</property>
+			  <property name="use_markup">False</property>
+			  <property name="justify">GTK_JUSTIFY_LEFT</property>
+			  <property name="wrap">False</property>
+			  <property name="selectable">False</property>
+			  <property name="xalign">0.5</property>
+			  <property name="yalign">0.5</property>
+			  <property name="xpad">0</property>
+			  <property name="ypad">0</property>
+			  <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
+			  <property name="width_chars">-1</property>
+			  <property name="single_line_mode">False</property>
+			  <property name="angle">0</property>
+			</widget>
+			<packing>
+			  <property name="padding">0</property>
+			  <property name="expand">False</property>
+			  <property name="fill">False</property>
 			</packing>
 		      </child>
 		    </widget>
@@ -419,6 +507,7 @@
 		  <child>
 		    <widget class="GtkCheckButton" id="quantize_checkbutton">
 		      <property name="visible">True</property>
+		      <property name="tooltip" translatable="yes">Quantize recording</property>
 		      <property name="can_focus">True</property>
 		      <property name="label" translatable="yes">Quantize: 1/</property>
 		      <property name="use_underline">True</property>
