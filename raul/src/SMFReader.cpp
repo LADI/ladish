@@ -97,6 +97,19 @@ SMFReader::open(const string& filename)
 
 	if (_fd) {
 		// Read type (bytes 8..9)
+		fseek(_fd, 0, SEEK_SET);
+		char mthd[5];
+		mthd[4] = '\0';
+		fread(mthd, 1, 4, _fd);
+		if (strcmp(mthd, "MThd")) {
+			cerr << "File is not an SMF file, aborting." << endl;
+			fclose(_fd);
+			_fd = NULL;
+			return false;
+		}
+
+		
+		// Read type (bytes 8..9)
 		fseek(_fd, 8, SEEK_SET);
 		uint16_t type_be = 0;
 		fread(&type_be, 2, 1, _fd);
@@ -153,7 +166,7 @@ SMFReader::seek_to_track(unsigned track)
 
 		if (!strcmp(id, "MTrk")) {
 			++track_pos;
-			std::cerr << "Found track " << track_pos << endl;
+			//std::cerr << "Found track " << track_pos << endl;
 		} else {
 			std::cerr << "Unknown chunk ID " << id << endl;
 		}

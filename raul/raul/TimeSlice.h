@@ -86,7 +86,7 @@ public:
 
 	void set_bpm(double bpm) {
 		_beat_rate = 60.0/bpm;
-		//update_beat_time();
+		update_beat_time();
 	}
 	
 	inline Seconds beats_to_seconds(BeatTime beats) const {

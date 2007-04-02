@@ -55,7 +55,7 @@ private:
 
 
 
-/** A realtime safe, (partially) thread safe doubly linked list.
+/** A realtime safe, (partially) thread safe doubly-linked list.
  * 
  * Elements can be added safely while another thread is reading the list.
  * Like a typical ringbuffer, this is single-reader single-writer threadsafe
@@ -74,6 +74,8 @@ public:
 
 	void push_back(ListNode<T>* elem); // realtime safe
 	void push_back(T& elem);           // NOT realtime safe
+
+	void append(List<T>& list);
 
 	void clear();
 
@@ -232,6 +234,48 @@ List<T>::push_back(T& elem)
 		_tail = ln;
 	}
 	++_size;
+}
+
+
+/** Append a list to this list.
+ *
+ * This operation is fast ( O(1) ).
+ * The appended list is not safe to use concurrently with this call.
+ *
+ * The appended list will be empty after this call.
+ *
+ * Thread safe (may be called while another thread is reading the list).
+ * Realtime safe.
+ */
+template <typename T>
+void
+List<T>::append(List<T>& list)
+{
+	ListNode<T>* const my_head    = _head.get();
+	ListNode<T>* const my_tail    = _tail.get();
+	ListNode<T>* const other_head = list._head.get();
+	ListNode<T>* const other_tail = list._tail.get();
+
+	// Appending to an empty list
+	if (my_head == NULL && my_tail == NULL) {
+		_head = other_head;
+		_tail = other_tail;
+		_size = list._size;
+	} else if (other_head != NULL && other_tail != NULL) {
+	
+		other_head->prev(my_tail);
+
+		// FIXME: atomicity an issue? _size < true size is probably fine...
+		// no gurantee an iteration runs exactly size times though.  verify/document this.
+		// assuming comment above that says tail is writer only, this is fine
+		my_tail->next(other_head);
+		_tail = other_tail;
+		_size += list.size();
+	}
+
+	list._head = NULL;
+	list._tail = NULL;
+	list._size = 0;
 }
 
 
