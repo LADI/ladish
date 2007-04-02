@@ -34,11 +34,13 @@ NodePropertiesWindow::NodePropertiesWindow(BaseObjectType* cobject, const Glib::
 
 	xml->get_widget("node_properties_note_spinbutton", _note_spinbutton);
 	xml->get_widget("node_properties_duration_spinbutton", _duration_spinbutton);
+	xml->get_widget("node_properties_apply_button", _apply_button);
 	xml->get_widget("node_properties_cancel_button", _cancel_button);
 	xml->get_widget("node_properties_ok_button", _ok_button);
 
-	_ok_button->signal_clicked().connect(sigc::mem_fun(this, &NodePropertiesWindow::ok_clicked));
+	_apply_button->signal_clicked().connect(sigc::mem_fun(this, &NodePropertiesWindow::apply_clicked));
 	_cancel_button->signal_clicked().connect(sigc::mem_fun(this, &NodePropertiesWindow::cancel_clicked));
+	_ok_button->signal_clicked().connect(sigc::mem_fun(this, &NodePropertiesWindow::ok_clicked));
 }
 
 
@@ -48,11 +50,10 @@ NodePropertiesWindow::~NodePropertiesWindow()
 
 
 void
-NodePropertiesWindow::ok_clicked()
+NodePropertiesWindow::apply_clicked()
 {
-	assert(this == _instance);
-	delete _instance;
-	_instance = NULL;
+	double duration = _duration_spinbutton->get_value();
+	_node->set_duration(duration);
 }
 
 	
@@ -62,6 +63,14 @@ NodePropertiesWindow::cancel_clicked()
 	assert(this == _instance);
 	delete _instance;
 	_instance = NULL;
+}
+
+	
+void
+NodePropertiesWindow::ok_clicked()
+{
+	apply_clicked();
+	cancel_clicked();
 }
 
 

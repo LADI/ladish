@@ -137,6 +137,11 @@ Loader::load(const Glib::ustring& uri)
 	}
 
 
+	for (Created::iterator n = created.begin(); n != created.end(); ++n) {
+		cout << "NODE: " << n->first << endl;
+	}
+
+
 	/* Get note actions */
 
 	query = Raul::RDFQuery(*_namespaces, Glib::ustring(
@@ -151,6 +156,8 @@ Loader::load(const Glib::ustring& uri)
 	for (RDFQuery::Results::iterator i = results.begin(); i != results.end(); ++i) {
 		const Glib::ustring& node_id = (*i)["node"];
 		const Glib::ustring& note    = (*i)["note"];
+
+		cerr << "NOTE: " << node_id << " = " << note << endl;
 
 		Created::iterator node_i = created.find(node_id);
 		if (node_i != created.end()) {

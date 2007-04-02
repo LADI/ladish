@@ -92,9 +92,10 @@ public:
 	void unselect_item(boost::shared_ptr<Item> item);
 	void unselect_connection(Connection* c);
 	
-	ItemList&                             items()              { return _items; }
-	list<boost::shared_ptr<Item> >&       selected_items()     { return _selected_items; }
-	list<boost::shared_ptr<Connection> >& selected_connections() { return _selected_connections; }
+	ItemList&       items()                { return _items; }
+	ItemList&       selected_items()       { return _selected_items; }
+	ConnectionList& connections()          { return _connections; }
+	ConnectionList& selected_connections() { return _selected_connections; }
 
 	double get_zoom() { return _zoom; }
 	void   set_zoom(double pix_per_unit);

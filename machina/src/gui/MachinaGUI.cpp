@@ -29,6 +29,7 @@
 #include "MachinaGUI.hpp"
 #include "MachinaCanvas.hpp"
 #include "NodeView.hpp"
+#include "EdgeView.hpp"
 
 
 MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
@@ -58,6 +59,7 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	xml->get_widget("export_midi_menuitem", _menu_export_midi);
 	xml->get_widget("export_graphviz_menuitem", _menu_export_graphviz);
 	xml->get_widget("view_toolbar_menuitem", _menu_view_toolbar);
+	xml->get_widget("view_labels_menuitem", _menu_view_labels);
 	//xml->get_widget("view_refresh_menuitem", _menu_view_refresh);
 	//xml->get_widget("view_messages_menuitem", _menu_view_messages);
 	xml->get_widget("help_about_menuitem", _menu_help_about);
@@ -115,6 +117,8 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	//	sigc::mem_fun(this, &MachinaGUI::menu_view_refresh));
 	_menu_view_toolbar->signal_toggled().connect(
 		sigc::mem_fun(this, &MachinaGUI::show_toolbar_toggled));
+	_menu_view_labels->signal_toggled().connect(
+		sigc::mem_fun(this, &MachinaGUI::show_labels_toggled));
 	//_menu_view_messages->signal_toggled().connect(
 	//	sigc::mem_fun(this, &MachinaGUI::show_messages_toggled));
 	_menu_help_about->signal_activate().connect(
@@ -346,7 +350,8 @@ MachinaGUI::menu_file_open()
 	const int result = dialog.run();
 
 	if (result == Gtk::RESPONSE_OK) {
-		SharedPtr<Machina::Machine> new_machine = _engine->load_machine(dialog.get_uri());
+		//SharedPtr<Machina::Machine> new_machine = _engine->load_machine(dialog.get_uri());
+		SharedPtr<Machina::Machine> new_machine = _engine->import_machine(dialog.get_uri());
 		if (new_machine) {
 			_canvas->destroy();
 			_canvas->build(new_machine);
@@ -596,6 +601,21 @@ MachinaGUI::show_toolbar_toggled()
 		_toolbar->hide();
 }
 
+
+void
+MachinaGUI::show_labels_toggled()
+{
+	const bool show = _menu_view_labels->get_active();
+
+	for (ConnectionList::iterator c = _canvas->connections().begin();
+			c != _canvas->connections().end(); ++c) {
+		const SharedPtr<EdgeView> ev = PtrCast<EdgeView>(*c);
+		if (ev)
+			ev->show_label(show);
+	}
+}
+
+
 /*
 void
 MachinaGUI::menu_view_refresh() 
@@ -643,7 +663,7 @@ MachinaGUI::stop_clicked()
 		_engine->driver()->finish_record();
 	} else {
 		_engine->machine()->deactivate();
-		_engine->machine()->reset();
+		_engine->driver()->reset();
 	}
 
 	update_toolbar();

@@ -1,4 +1,5 @@
 /* This file is part of Machina.
+ * _engine->driver()->reset_time();
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
  * 
  * Machina is free software; you can redistribute it and/or modify it under the
@@ -38,6 +39,8 @@ public:
 	
 	virtual void activate() {}
 	virtual void deactivate() {}
+
+	virtual void reset() {}
 
 	virtual bool recording() { return false; }
 	virtual void start_record() {}

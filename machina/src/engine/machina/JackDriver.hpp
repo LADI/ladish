@@ -62,6 +62,8 @@ public:
 	void set_bpm(double bpm)                   { _bpm.set(bpm); }
 	void set_quantization(double quantization) { _quantization.set(quantization); }
 
+	void reset();
+
 	bool recording() { return _recording.get(); }
 	void start_record();
 	void finish_record();

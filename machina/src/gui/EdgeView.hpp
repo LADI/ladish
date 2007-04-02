@@ -33,11 +33,12 @@ public:
 
 	SharedPtr<Machina::Edge> edge() { return _edge; }
 
-	void update_label();
+	void show_label(bool show);
 	
 	virtual double length_hint() const;
 
 private:
+	void update_label();
 	bool on_event(GdkEvent* ev);
 
 	SharedPtr<Machina::Edge> _edge;

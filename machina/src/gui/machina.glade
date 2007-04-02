@@ -46,6 +46,7 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="open_menuitem">
 		      <property name="visible">True</property>
+		      <property name="tooltip" translatable="yes">Open a saved machine</property>
 		      <property name="label">gtk-open</property>
 		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="on_open_session_menuitem_activate" last_modification_time="Sun, 01 Oct 2006 07:00:37 GMT"/>
@@ -55,6 +56,7 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="save_menuitem">
 		      <property name="visible">True</property>
+		      <property name="tooltip" translatable="yes">Save machine</property>
 		      <property name="label">gtk-save</property>
 		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="on_save_session_menuitem_activate" last_modification_time="Sun, 01 Oct 2006 07:01:40 GMT"/>
@@ -64,6 +66,7 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="save_as_menuitem">
 		      <property name="visible">True</property>
+		      <property name="tooltip" translatable="yes">Save machine to file</property>
 		      <property name="label">gtk-save-as</property>
 		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="on_save_session_as_menuitem_activate" last_modification_time="Sun, 01 Oct 2006 07:01:40 GMT"/>
@@ -79,6 +82,7 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="import_midi_menuitem">
 		      <property name="visible">True</property>
+		      <property name="tooltip" translatable="yes">Import a MIDI file</property>
 		      <property name="label" translatable="yes">_Import MIDI...</property>
 		      <property name="use_underline">True</property>
 		      <signal name="activate" handler="on_learn_midi_menuitem_activate" last_modification_time="Fri, 02 Mar 2007 21:00:16 GMT"/>
@@ -101,6 +105,7 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="export_midi_menuitem">
 		      <property name="visible">True</property>
+		      <property name="tooltip" translatable="yes">Export a MIDI file</property>
 		      <property name="label" translatable="yes">_Export MIDI...</property>
 		      <property name="use_underline">True</property>
 		      <signal name="activate" handler="on_export_midi_menuitem_activate" last_modification_time="Fri, 02 Mar 2007 20:59:46 GMT"/>
@@ -129,7 +134,7 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="export_graphviz_menuitem">
 		      <property name="visible">True</property>
-		      <property name="tooltip" translatable="yes">Export a DOT file for rendering diagram with the GraphViz suite of tools</property>
+		      <property name="tooltip" translatable="yes">Export a DOT file for rendering with GraphViz</property>
 		      <property name="label" translatable="yes">Export _GraphViz...</property>
 		      <property name="use_underline">True</property>
 		      <signal name="activate" handler="on_export_graphviz_menuitem_activate" last_modification_time="Mon, 12 Mar 2007 19:47:58 GMT"/>
@@ -158,6 +163,7 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="quit_menuitem">
 		      <property name="visible">True</property>
+		      <property name="tooltip" translatable="yes">Exit Machina</property>
 		      <property name="label">gtk-quit</property>
 		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="on_quit1_activate" last_modification_time="Sat, 11 Sep 2004 20:05:11 GMT"/>
@@ -836,12 +842,12 @@ Connect some nodes up and double click one.  You'll get it.</property>
 
 <widget class="GtkDialog" id="node_properties_dialog">
   <property name="border_width">8</property>
-  <property name="title" translatable="yes">Node Properties</property>
+  <property name="title" translatable="yes">dialog1</property>
   <property name="type">GTK_WINDOW_TOPLEVEL</property>
   <property name="window_position">GTK_WIN_POS_NONE</property>
   <property name="modal">False</property>
   <property name="resizable">False</property>
-  <property name="destroy_with_parent">True</property>
+  <property name="destroy_with_parent">False</property>
   <property name="decorated">True</property>
   <property name="skip_taskbar_hint">True</property>
   <property name="skip_pager_hint">True</property>
@@ -852,15 +858,28 @@ Connect some nodes up and double click one.  You'll get it.</property>
   <property name="has_separator">True</property>
 
   <child internal-child="vbox">
-    <widget class="GtkVBox" id="dialog-vbox2">
+    <widget class="GtkVBox" id="dialog-vbox3">
       <property name="visible">True</property>
       <property name="homogeneous">False</property>
       <property name="spacing">8</property>
 
       <child internal-child="action_area">
-	<widget class="GtkHButtonBox" id="dialog-action_area2">
+	<widget class="GtkHButtonBox" id="dialog-action_area3">
 	  <property name="visible">True</property>
 	  <property name="layout_style">GTK_BUTTONBOX_END</property>
+
+	  <child>
+	    <widget class="GtkButton" id="node_properties_apply_button">
+	      <property name="visible">True</property>
+	      <property name="can_default">True</property>
+	      <property name="can_focus">True</property>
+	      <property name="label">gtk-apply</property>
+	      <property name="use_stock">True</property>
+	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
+	      <property name="response_id">-10</property>
+	    </widget>
+	  </child>
 
 	  <child>
 	    <widget class="GtkButton" id="node_properties_cancel_button">
@@ -879,6 +898,7 @@ Connect some nodes up and double click one.  You'll get it.</property>
 	    <widget class="GtkButton" id="node_properties_ok_button">
 	      <property name="visible">True</property>
 	      <property name="can_default">True</property>
+	      <property name="has_default">True</property>
 	      <property name="can_focus">True</property>
 	      <property name="label">gtk-ok</property>
 	      <property name="use_stock">True</property>
@@ -908,7 +928,6 @@ Connect some nodes up and double click one.  You'll get it.</property>
 	  <child>
 	    <widget class="GtkSpinButton" id="node_properties_note_spinbutton">
 	      <property name="visible">True</property>
-	      <property name="sensitive">False</property>
 	      <property name="can_focus">True</property>
 	      <property name="climb_rate">1</property>
 	      <property name="digits">0</property>
@@ -986,8 +1005,8 @@ Connect some nodes up and double click one.  You'll get it.</property>
 	  <child>
 	    <widget class="GtkSpinButton" id="node_properties_duration_spinbutton">
 	      <property name="visible">True</property>
-	      <property name="sensitive">False</property>
 	      <property name="can_focus">True</property>
+	      <property name="has_focus">True</property>
 	      <property name="climb_rate">1</property>
 	      <property name="digits">2</property>
 	      <property name="numeric">True</property>

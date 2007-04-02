@@ -34,8 +34,9 @@ private:
 
 	void set_node(SharedPtr<Machina::Node> node);
 
-	void ok_clicked();
+	void apply_clicked();
 	void cancel_clicked();
+	void ok_clicked();
 	
 	static NodePropertiesWindow* _instance;
 
@@ -43,6 +44,7 @@ private:
 
 	Gtk::SpinButton* _note_spinbutton;
 	Gtk::SpinButton* _duration_spinbutton;
+	Gtk::Button*     _apply_button;
 	Gtk::Button*     _cancel_button;
 	Gtk::Button*     _ok_button;
 };

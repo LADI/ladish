@@ -295,6 +295,16 @@ JackDriver::on_process(jack_nframes_t nframes)
 
 
 void
+JackDriver::reset()
+{
+	// FIXME: Flag audio thread and end active notes, etc
+	_machine->deactivate();
+	_machine->reset();
+	_cycle_time.set_start(0);
+}
+
+
+void
 JackDriver::start_record()
 {
 	std::cerr << "START RECORD" << std::endl;
@@ -314,7 +324,8 @@ JackDriver::finish_record()
 	std::cout << "Learned machine!  " << machine->nodes().size() << " nodes." << std::endl;
 	_recorder.reset();
 	machine->activate();
-	set_machine(machine);
+	//set_machine(machine);
+	_machine->nodes().append(machine->nodes());
 }
 
 

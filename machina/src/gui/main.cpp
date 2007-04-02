@@ -51,6 +51,11 @@ main(int argc, char** argv)
 			cout << "No quantization." << endl;
 			machine = file_driver->learn(filename);
 		}
+
+		if (!machine) {
+			cout << "Not a MIDI file.  Attempting to load as Machina file." << endl;
+			machine = Loader().load(filename);
+		}
 	}
 
 	if (!machine)

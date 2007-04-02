@@ -70,7 +70,7 @@ public:
 	const boost::weak_ptr<Connectable> source() const { return _source; }
 	const boost::weak_ptr<Connectable> dest() const   { return _dest; }
 
-private:
+protected:
 	friend class FlowCanvas;
 
 	friend class Connectable;

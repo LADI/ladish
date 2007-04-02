@@ -73,22 +73,22 @@ MachineBuilder::connect_nodes(SharedPtr<Machine> m,
 
 	SharedPtr<Node> delay_node;
 
-	cerr << "******" << endl;
+	/*cerr << "******" << endl;
 	cerr << "Connect nodes durations: " << tail->duration() << " .. " << head->duration() << endl;
-	cerr << "Connect nodes times: " << tail_end_time << " .. " << head_start_time << endl;
+	cerr << "Connect nodes times: " << tail_end_time << " .. " << head_start_time << endl;*/
 
 	if (is_delay_node(tail) && tail->outgoing_edges().size() == 0) {
 		// Tail is a delay node, just accumulate the time difference into it
-		cerr << "Accumulating delay " << tail_end_time << " .. " << head_start_time << endl;
+		//cerr << "Accumulating delay " << tail_end_time << " .. " << head_start_time << endl;
 		tail->set_duration(tail->duration() + head_start_time - tail_end_time);
 		tail->add_outgoing_edge(SharedPtr<Edge>(new Edge(tail, head)));
 	} else if (head_start_time == tail_end_time) {
 		// Connect directly
-		cerr << "Connnecting directly " << tail_end_time << " .. " << head_start_time << endl;
+		//cerr << "Connnecting directly " << tail_end_time << " .. " << head_start_time << endl;
 		tail->add_outgoing_edge(SharedPtr<Edge>(new Edge(tail, head)));
 	} else {
 		// Need to actually create a delay node
-		cerr << "Adding delay node for " << tail_end_time << " .. " << head_start_time << endl;
+		//cerr << "Adding delay node for " << tail_end_time << " .. " << head_start_time << endl;
 		delay_node = SharedPtr<Node>(new Node());
 		delay_node->set_duration(head_start_time - tail_end_time);
 		tail->add_outgoing_edge(SharedPtr<Edge>(new Edge(tail, delay_node)));
@@ -96,7 +96,7 @@ MachineBuilder::connect_nodes(SharedPtr<Machine> m,
 		m->add_node(delay_node);
 	}
 	
-	cerr << "******" << endl << endl;
+	/*cerr << "******" << endl << endl;*/
 
 	return delay_node;
 }
@@ -109,7 +109,7 @@ MachineBuilder::event(Raul::BeatTime time_offset,
 {
 	Raul::BeatTime t = _time + time_offset;
 
-	cerr << "t = " << t << endl;
+	//cerr << "t = " << t << endl;
 	
 	if (ev_size > 0) {
 		if ((buf[0] & 0xF0) == MIDI_CMD_NOTE_ON) {
@@ -150,6 +150,8 @@ MachineBuilder::event(Raul::BeatTime time_offset,
 					resolved->set_duration(t - resolved->enter_time());
 
 					if (_active_nodes.size() == 1) {
+								
+						//cerr << "{ RESOLVING, t= " << t << "\n";
 					
 						_connect_node_end_time = t;
 						
@@ -176,7 +178,7 @@ MachineBuilder::event(Raul::BeatTime time_offset,
 							if (is_delay_node(_connect_node) && _connect_node->duration() == 0
 									&& _connect_node->outgoing_edges().size() == 1
 									&& (*_connect_node->outgoing_edges().begin())->head() == resolved) {
-								cerr << "TRIMMING\n";
+								//cerr << "TRIMMING\n";
 								_connect_node->outgoing_edges().clear();
 								assert(_connect_node->outgoing_edges().empty());
 								_connect_node->set_enter_action(resolved->enter_action());
@@ -188,12 +190,16 @@ MachineBuilder::event(Raul::BeatTime time_offset,
 								if (_machine->nodes().find(_connect_node) == _machine->nodes().end())
 									_machine->add_node(_connect_node);
 							} else {
+								//cerr << "RESOLVED\n";
 								_connect_node = resolved;
 								_machine->add_node(resolved);
 							}
 						} 
 
+						//cerr << "}";
+
 					} else {
+						//cerr << "ADDING POLY\n";
 						_poly_nodes.push_back(make_pair(resolved->enter_time(), resolved));
 					}
 
@@ -217,7 +223,7 @@ MachineBuilder::resolve()
 {
 	if ( ! _active_nodes.empty()) {
 		for (list<SharedPtr<Node> >::iterator i = _active_nodes.begin(); i != _active_nodes.end(); ++i) {
-			cerr << "WARNING:  Resolving stuck note from MIDI file." << endl;
+			cerr << "WARNING:  Resolving stuck note." << endl;
 			SharedPtr<MidiAction> action = PtrCast<MidiAction>((*i)->enter_action());
 			if (!action)
 				continue;

@@ -36,11 +36,32 @@ Engine::load_machine(const Glib::ustring& uri)
 	if (m) {
 		m->activate();
 		_driver->set_machine(m);
+		//_driver->machine()->nodes().append(m->nodes());
 	}
 	
 	// .. and drop it in this thread (to prevent deallocation in the RT thread)
 	
 	return m;
+}
+
+
+/** Load the machine at @a uri, and insert it into the current machine..
+ * Safe to call while engine is processing.
+ */
+SharedPtr<Machine>
+Engine::import_machine(const Glib::ustring& uri)
+{
+	SharedPtr<Machine> old_machine = _driver->machine(); // Hold a reference to current machine..
+
+	SharedPtr<Machine> m = Loader().load(uri);
+	if (m) {
+		m->activate();
+		_driver->machine()->nodes().append(m->nodes());
+	}
+	
+	// .. and drop it in this thread (to prevent deallocation in the RT thread)
+	
+	return _driver->machine();
 }
 
 
@@ -56,7 +77,8 @@ Engine::learn_midi(const Glib::ustring& uri)
 	SharedPtr<SMFDriver> file_driver(new SMFDriver());
 	SharedPtr<Machine> m = file_driver->learn(uri, 32.0); // FIXME: hardcoded
 	m->activate();
-	_driver->set_machine(m);
+	//_driver->set_machine(m);
+	_driver->machine()->nodes().append(m->nodes());
 	
 	// .. and drop it in this thread (to prevent deallocation in the RT thread)
 	

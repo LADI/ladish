@@ -42,11 +42,26 @@ EdgeView::length_hint() const
 
 
 void
+EdgeView::show_label(bool show)
+{
+	if (show) {
+		char label[4];
+		snprintf(label, 4, "%3f", _edge->probability());
+		set_label(label);
+	} else {
+		set_label("");
+	}
+}
+
+
+void
 EdgeView::update_label()
 {
-	char label[4];
-	snprintf(label, 4, "%3f", _edge->probability());
-	set_label(label);
+	if (_label) {
+		char label[4];
+		snprintf(label, 4, "%3f", _edge->probability());
+		set_label(label);
+	}
 }
 
 
