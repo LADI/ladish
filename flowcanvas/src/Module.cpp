@@ -341,17 +341,20 @@ Module::resize()
 			widest_out = p->width();
 	}
 	
-	// Make sure module is wide enough for title
-	if (_title_visible && _canvas_title.property_text_width() + 8.0 > _width)
-		set_width(_canvas_title.property_text_width() + 8.0);
-	
-	// Fit ports to module (or vice-versa)
-	if (widest_in < _width - hor_pad)
-		widest_in = _width - hor_pad;
-	if (widest_out < _width - hor_pad)
-		widest_out = _width - hor_pad;
+	double width = _canvas_title.property_text_width() + 8.0;
 
-	set_width(std::max(widest_in, widest_out) + hor_pad + border_width()*2.0);
+	// Fit ports to module (or vice-versa)
+	if (widest_in < width - hor_pad)
+		widest_in = width - hor_pad;
+	if (widest_out < width - hor_pad)
+		widest_out = width - hor_pad;
+
+	width = std::max(width,
+	                 (std::max(widest_in, widest_out) + hor_pad));
+	               
+	width += border_width() * 2.0;
+
+	set_width(width);
 
 	// Set height to contain ports and title
 	double height_base = 2;
