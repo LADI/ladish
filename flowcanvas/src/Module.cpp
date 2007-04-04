@@ -325,9 +325,9 @@ Module::resize()
 	
 	// The amount of space between a port edge and the module edge (on the
 	// side that the port isn't right on the edge).
-	double hor_pad = 5.0;
+	double hor_pad = 8.0;
 	if (!_title_visible)
-		hor_pad = 15.0; // leave more room for something to grab for dragging
+		hor_pad = 16.0; // leave more room for something to grab for dragging
 
 	boost::shared_ptr<Port> p;
 	
@@ -341,12 +341,17 @@ Module::resize()
 			widest_out = p->width();
 	}
 	
-	// Make sure module is wide enough for ports
-	set_width(std::max(widest_in, widest_out) + hor_pad + border_width()*2.0);
-	
 	// Make sure module is wide enough for title
 	if (_title_visible && _canvas_title.property_text_width() + 8.0 > _width)
 		set_width(_canvas_title.property_text_width() + 8.0);
+	
+	// Fit ports to module (or vice-versa)
+	if (widest_in < _width - hor_pad)
+		widest_in = _width - hor_pad;
+	if (widest_out < _width - hor_pad)
+		widest_out = _width - hor_pad;
+
+	set_width(std::max(widest_in, widest_out) + hor_pad + border_width()*2.0);
 
 	// Set height to contain ports and title
 	double height_base = 2;
