@@ -26,11 +26,12 @@ using namespace Raul;
 namespace Machina {
 
 
-Recorder::Recorder(size_t buffer_size, double tick_rate)
+Recorder::Recorder(size_t buffer_size, double tick_rate, double q)
 	: _tick_rate(tick_rate)
 	, _record_buffer(buffer_size)
-	, _builder(new MachineBuilder(SharedPtr<Machine>(new Machine())))
+	, _builder(new MachineBuilder(SharedPtr<Machine>(new Machine()), q))
 {
+	cerr << "XXXXXXXXXXXX new recorder, q=" << q << endl;
 }
 
 

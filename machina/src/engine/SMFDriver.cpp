@@ -49,7 +49,7 @@ SharedPtr<Machine>
 SMFDriver::learn(const string& filename, unsigned track, double q, Raul::BeatTime max_duration)
 {
 	SharedPtr<Machine> m(new Machine());
-	SharedPtr<MachineBuilder> builder = SharedPtr<MachineBuilder>(new MachineBuilder(m));
+	SharedPtr<MachineBuilder> builder = SharedPtr<MachineBuilder>(new MachineBuilder(m, q));
 	Raul::SMFReader reader;
 	
 	if (!reader.open(filename)) {
@@ -79,7 +79,7 @@ SharedPtr<Machine>
 SMFDriver::learn(const string& filename, double q, Raul::BeatTime max_duration)
 {
 	SharedPtr<Machine> m(new Machine());
-	SharedPtr<MachineBuilder> builder = SharedPtr<MachineBuilder>(new MachineBuilder(m));
+	SharedPtr<MachineBuilder> builder = SharedPtr<MachineBuilder>(new MachineBuilder(m, q));
 	Raul::SMFReader reader;
 	
 	if (!reader.open(filename)) {

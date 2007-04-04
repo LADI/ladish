@@ -30,7 +30,8 @@ class Node;
 
 class MachineBuilder {
 public:
-	MachineBuilder(SharedPtr<Machine> machine);
+	MachineBuilder(SharedPtr<Machine> machine,
+	               Raul::BeatTime     quantization);
 
 	void set_time(Raul::BeatTime time) { _time = time; }
 
@@ -54,7 +55,8 @@ private:
 	
 	typedef std::list<std::pair<Raul::BeatTime, SharedPtr<Node> > > PolyList;
 	PolyList _poly_nodes;
-	
+
+	Raul::BeatTime     _quantization;
 	Raul::BeatTime     _time;
 
 	SharedPtr<Machine> _machine;

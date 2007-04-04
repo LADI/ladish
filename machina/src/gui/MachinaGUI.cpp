@@ -133,6 +133,8 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 		sigc::mem_fun(this, &MachinaGUI::tempo_changed));
 	_quantize_checkbutton->signal_toggled().connect(
 		sigc::mem_fun(this, &MachinaGUI::quantize_changed));
+	_quantize_spinbutton->signal_changed().connect(
+		sigc::mem_fun(this, &MachinaGUI::quantize_changed));
 
 	connect_widgets();
 		

@@ -125,7 +125,7 @@ Loader::load(const Glib::ustring& uri)
 		const Glib::ustring& node_id  = (*i)["node"];
 		const Glib::ustring& duration = (*i)["duration"];
 
-		cout << "Node: " << node_id << " - " << duration << endl;
+		//cout << "Node: " << node_id << " - " << duration << endl;
 
 		if (created.find(node_id.collate_key()) == created.end()) {
 			SharedPtr<Node> node(new Node(strtod(duration.c_str(), NULL), false));
@@ -137,9 +137,9 @@ Loader::load(const Glib::ustring& uri)
 	}
 
 
-	for (Created::iterator n = created.begin(); n != created.end(); ++n) {
+	/*for (Created::iterator n = created.begin(); n != created.end(); ++n) {
 		cout << "NODE: " << n->first << endl;
-	}
+	}*/
 
 
 	/* Get note actions */
@@ -157,7 +157,7 @@ Loader::load(const Glib::ustring& uri)
 		const Glib::ustring& node_id = (*i)["node"];
 		const Glib::ustring& note    = (*i)["note"];
 
-		cerr << "NOTE: " << node_id << " = " << note << endl;
+		//cerr << "NOTE: " << node_id << " = " << note << endl;
 
 		Created::iterator node_i = created.find(node_id);
 		if (node_i != created.end()) {

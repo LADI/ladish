@@ -17,18 +17,21 @@
 
 #include <algorithm>
 #include <raul/midi_events.h>
+#include <raul/Quantizer.h>
 #include "machina/MachineBuilder.hpp"
 #include "machina/Machine.hpp"
 #include "machina/Node.hpp"
 #include "machina/Edge.hpp"
 
 using namespace std;
+using namespace Raul;
 
 namespace Machina {
 
 
-MachineBuilder::MachineBuilder(SharedPtr<Machine> machine)
-	: _time(0)
+MachineBuilder::MachineBuilder(SharedPtr<Machine> machine, Raul::BeatTime q)
+	: _quantization(q)
+	, _time(0)
 	, _machine(machine)
 	, _initial_node(new Node())
 	, _connect_node(_initial_node)
@@ -109,118 +112,163 @@ MachineBuilder::event(Raul::BeatTime time_offset,
 {
 	Raul::BeatTime t = _time + time_offset;
 
+	if (ev_size == 0)
+		return;
+
 	//cerr << "t = " << t << endl;
-	
-	if (ev_size > 0) {
-		if ((buf[0] & 0xF0) == MIDI_CMD_NOTE_ON) {
-			//cerr << "NOTE ON: " << (int)buf[1] << ", channel = " << (int)(buf[0] & 0x0F) << endl;
-			SharedPtr<Node> node(new Node());
 
-			node->set_enter_action(SharedPtr<Action>(new MidiAction(ev_size, buf)));
+	if ((buf[0] & 0xF0) == MIDI_CMD_NOTE_ON) {
+		//cerr << "NOTE ON: " << (int)buf[1] << ", channel = " << (int)(buf[0] & 0x0F) << endl;
+		
+		SharedPtr<Node> node(new Node());
+		node->set_enter_action(SharedPtr<Action>(new MidiAction(ev_size, buf)));
 
-			SharedPtr<Node> delay_node = connect_nodes(_machine,
-					_connect_node, _connect_node_end_time, node, t);
+		SharedPtr<Node> this_connect_node;
+		Raul::BeatTime  this_connect_node_end_time;
 
-			/*if (delay_node) {
-				_connect_node = delay_node;
-				_connect_node_end_time = t;
-			}*/
-
-			node->enter(SharedPtr<Raul::MIDISink>(), t);
-			_active_nodes.push_back(node);
-
-		} else if ((buf[0] & 0xF0) == MIDI_CMD_NOTE_OFF) {
-			//cerr << "NOTE OFF: " << (int)buf[1] << endl;
-			for (ActiveList::iterator i = _active_nodes.begin(); i != _active_nodes.end(); ++i) {
-				SharedPtr<MidiAction> action = PtrCast<MidiAction>((*i)->enter_action());
-				if (!action)
-					continue;
-
-				const size_t         ev_size = action->event_size();
-				const unsigned char* ev      = action->event();
-				if (ev_size == 3 && (ev[0] & 0xF0) == MIDI_CMD_NOTE_ON
-						&& (ev[0] & 0x0F) == (buf[0] & 0x0F) // same channel
-						&& ev[1] == buf[1]) // same note
-				{
-					//cerr << "FOUND MATCHING NOTE OFF!\n";
-
-					SharedPtr<Node> resolved = *i;
-
-					resolved->set_exit_action(SharedPtr<Action>(new MidiAction(ev_size, buf)));
-					resolved->set_duration(t - resolved->enter_time());
-
-					if (_active_nodes.size() == 1) {
-								
-						//cerr << "{ RESOLVING, t= " << t << "\n";
-					
-						_connect_node_end_time = t;
-						
-						if (_poly_nodes.size() > 0) {
-
-							_connect_node = SharedPtr<Node>(new Node());
-							_machine->add_node(_connect_node);
-
-							connect_nodes(_machine, resolved, t, _connect_node, t);
-
-							for (PolyList::iterator j = _poly_nodes.begin();
-									j != _poly_nodes.end(); ++j) {
-								_machine->add_node(j->second);
-								connect_nodes(_machine, j->second, j->first + j->second->duration(),
-										_connect_node, t);
-							}
-							_poly_nodes.clear();
-
-							_machine->add_node(resolved);
-
-						} else {
-							// Trim useless delay node, if possible
-							// (these happen after polyphonic sections)
-							if (is_delay_node(_connect_node) && _connect_node->duration() == 0
-									&& _connect_node->outgoing_edges().size() == 1
-									&& (*_connect_node->outgoing_edges().begin())->head() == resolved) {
-								//cerr << "TRIMMING\n";
-								_connect_node->outgoing_edges().clear();
-								assert(_connect_node->outgoing_edges().empty());
-								_connect_node->set_enter_action(resolved->enter_action());
-								_connect_node->set_exit_action(resolved->exit_action());
-								resolved->remove_enter_action();
-								resolved->remove_exit_action();
-								_connect_node->set_duration(resolved->duration());
-								resolved = _connect_node;
-								if (_machine->nodes().find(_connect_node) == _machine->nodes().end())
-									_machine->add_node(_connect_node);
-							} else {
-								//cerr << "RESOLVED\n";
-								_connect_node = resolved;
-								_machine->add_node(resolved);
-							}
-						} 
-
-						//cerr << "}";
-
-					} else {
-						//cerr << "ADDING POLY\n";
-						_poly_nodes.push_back(make_pair(resolved->enter_time(), resolved));
-					}
-
-					if (resolved->is_active())
-						resolved->exit(SharedPtr<Raul::MIDISink>(), t);
-
-					_active_nodes.erase(i);
-
+		// If currently polyphonic, use a poly node with no successors as connect node
+		// Results in patterns closes to what a human would choose
+		if ( ! _poly_nodes.empty()) {
+			for (PolyList::iterator j = _poly_nodes.begin(); j != _poly_nodes.end(); ++j) {
+				if (j->second->outgoing_edges().empty()) {
+					this_connect_node = j->second;
+					this_connect_node_end_time = j->first + j->second->duration();
+					cerr << "POLY CONNECT!\n";
 					break;
 				}
+			}
+		}
+
+		// Currently monophonic, or didn't find a poly node, so use _connect_node
+		// which is maintained below on note off events.
+		if ( ! this_connect_node) {
+			cerr << "NO POLY CONNECT\n";
+			this_connect_node          = _connect_node;
+			this_connect_node_end_time = _connect_node_end_time;
+		}
+
+
+		SharedPtr<Node> delay_node = connect_nodes(_machine,
+				this_connect_node, this_connect_node_end_time, node, t);
+
+		if (delay_node)
+			cerr << "XXXXXXXXXXXXXX NOTE ON DELAY NODE\n";
+
+		if (delay_node) {
+		  _connect_node = delay_node;
+		  _connect_node_end_time = t;
+		}
+
+		node->enter(SharedPtr<Raul::MIDISink>(), t);
+		_active_nodes.push_back(node);
+
+	} else if ((buf[0] & 0xF0) == MIDI_CMD_NOTE_OFF) {
+		//cerr << "NOTE OFF: " << (int)buf[1] << endl;
+		for (ActiveList::iterator i = _active_nodes.begin(); i != _active_nodes.end(); ++i) {
+			SharedPtr<MidiAction> action = PtrCast<MidiAction>((*i)->enter_action());
+			if (!action)
+				continue;
+
+			const size_t         ev_size = action->event_size();
+			const unsigned char* ev      = action->event();
+
+			if (ev_size == 3 && (ev[0] & 0xF0) == MIDI_CMD_NOTE_ON
+					&& (ev[0] & 0x0F) == (buf[0] & 0x0F) // same channel
+					&& ev[1] == buf[1]) // same note
+			{
+				//cerr << "FOUND MATCHING NOTE OFF!\n";
+
+				SharedPtr<Node> resolved = *i;
+
+				resolved->set_exit_action(SharedPtr<Action>(new MidiAction(ev_size, buf)));
+				resolved->set_duration(t - resolved->enter_time());
+
+				// Last active note
+				if (_active_nodes.size() == 1) {
+
+					cerr << "{ RESOLVING, t= " << t << "\n";
+
+					_connect_node_end_time = t;
+
+					// Finish a polyphonic section
+					if (_poly_nodes.size() > 0) {
+
+						cerr << "POLY\n";
+
+						_connect_node = SharedPtr<Node>(new Node());
+						_machine->add_node(_connect_node);
+
+						connect_nodes(_machine, resolved, t, _connect_node, t);
+
+						for (PolyList::iterator j = _poly_nodes.begin(); j != _poly_nodes.end(); ++j) {
+							_machine->add_node(j->second);
+							if (j->second->outgoing_edges().size() == 0)
+								connect_nodes(_machine, j->second, j->first + j->second->duration(),
+										_connect_node, t);
+						}
+						_poly_nodes.clear();
+
+						_machine->add_node(resolved);
+
+					// Just monophonic
+					} else {
+						
+						cerr << "NO POLY\n";
+						
+						// Trim useless delay node if possible (these appear after poly sections)
+						if (is_delay_node(_connect_node) && _connect_node->duration() == 0
+								&& _connect_node->outgoing_edges().size() == 1
+								&& (*_connect_node->outgoing_edges().begin())->head() == resolved) {
+
+							cerr << "TRIMMING\n";
+							_connect_node->outgoing_edges().clear();
+							assert(_connect_node->outgoing_edges().empty());
+							_connect_node->set_enter_action(resolved->enter_action());
+							_connect_node->set_exit_action(resolved->exit_action());
+							resolved->remove_enter_action();
+							resolved->remove_exit_action();
+							_connect_node->set_duration(resolved->duration());
+							resolved = _connect_node;
+							if (_machine->nodes().find(_connect_node) == _machine->nodes().end())
+								_machine->add_node(_connect_node);
+
+						} else {
+
+							cerr << "RESOLVED\n";
+							_connect_node = resolved;
+							_machine->add_node(resolved);
+						}
+					} 
+
+					cerr << "}";
+
+				// Polyphonic, add this state to poly list
+				} else {
+					cerr << "ADDING POLY\n";
+					_poly_nodes.push_back(make_pair(resolved->enter_time(), resolved));
+					_connect_node = resolved;
+					_connect_node_end_time = t;
+				}
+					
+				if (resolved->is_active())
+					resolved->exit(SharedPtr<Raul::MIDISink>(), t);
+
+				_active_nodes.erase(i);
+
+				break;
 			}
 		}
 	}
 }
 
 
-/** Resolve any stuck notes.
+/** Finish the constructed machine and prepare it for use.
+ * Resolve any stuck notes, quantize, etc.
  */
 void
 MachineBuilder::resolve()
 {
+	// Resolve stuck notes
 	if ( ! _active_nodes.empty()) {
 		for (list<SharedPtr<Node> >::iterator i = _active_nodes.begin(); i != _active_nodes.end(); ++i) {
 			cerr << "WARNING:  Resolving stuck note." << endl;
@@ -241,9 +289,22 @@ MachineBuilder::resolve()
 		_active_nodes.clear();
 	}
 	
+	// Add initial note if necessary
 	if (_machine->nodes().size() > 0 
 			&& _machine->nodes().find(_initial_node) == _machine->nodes().end())
 		_machine->add_node(_initial_node);
+	
+	// Quantize
+	if (_quantization > 0) {
+		for (Machine::Nodes::iterator i = _machine->nodes().begin();
+				i != _machine->nodes().end(); ++i) {
+			Raul::BeatTime q_dur = Quantizer::quantize(_quantization, (*i)->duration());
+
+			// Never quantize a note to duration 0
+			if (q_dur > 0 || ( !(*i)->enter_action() && !(*i)->exit_action() ))
+				(*i)->set_duration(q_dur);
+		}
+	}
 }
 
 

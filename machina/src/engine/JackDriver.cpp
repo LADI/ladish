@@ -32,7 +32,7 @@ JackDriver::JackDriver(SharedPtr<Machine> machine)
 	, _output_port(NULL)
 	, _cycle_time(1/48000.0, 120.0)
 	, _bpm(120.0)
-	, _quantization(120.0)
+	, _quantization(0.0)
 	, _recording(0)
 {
 	if (!_machine)
@@ -309,7 +309,7 @@ JackDriver::start_record()
 {
 	std::cerr << "START RECORD" << std::endl;
 	// FIXME: hardcoded size
-	_recorder = SharedPtr<Recorder>(new Recorder(1024, (1.0/(double)sample_rate()) * (_bpm.get() / 60.0)));
+	_recorder = SharedPtr<Recorder>(new Recorder(1024, (1.0/(double)sample_rate()) * (_bpm.get() / 60.0), _quantization.get()));
 	_recorder->start();
 	_record_time = 0;
 	_recording = 1;
