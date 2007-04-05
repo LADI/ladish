@@ -52,6 +52,9 @@ MachinaCanvas::node_clicked(WeakPtr<NodeView> item, GdkEventButton* event)
 	if (!node)
 		return;
 	
+	if (event->state & GDK_CONTROL_MASK)
+		return;
+	
 	// Middle click, learn
 	if (event->button == 2) {
 		_app->machine()->learn(Machina::LearnRequest::create(_app->maid(), node->node()));
@@ -192,6 +195,7 @@ void
 MachinaCanvas::build(SharedPtr<Machina::Machine> machine)
 {
 	destroy();
+	_last_clicked.reset();
 
 	if (!machine)
 		return;

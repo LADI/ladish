@@ -34,6 +34,22 @@ Node::Node(BeatCount duration, bool initial)
 
 
 void
+Node::set_selector(bool yn)
+{
+	_is_selector = yn;
+
+	if (yn) {
+		double prob_sum = 0;
+		for (Edges::iterator i = _outgoing_edges.begin(); i != _outgoing_edges.end(); ++i)
+			prob_sum += (*i)->probability();
+	
+		for (Edges::iterator i = _outgoing_edges.begin(); i != _outgoing_edges.end(); ++i)
+			(*i)->set_probability((*i)->probability() / prob_sum);
+	}
+}
+
+
+void
 Node::set_enter_action(SharedPtr<Action> action)
 {
 	_enter_action = action;

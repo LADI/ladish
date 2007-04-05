@@ -608,6 +608,12 @@ void
 MachinaGUI::show_labels_toggled()
 {
 	const bool show = _menu_view_labels->get_active();
+	
+	for (ItemList::iterator i = _canvas->items().begin(); i != _canvas->items().end(); ++i) {
+		const SharedPtr<NodeView> nv = PtrCast<NodeView>(*i);
+		if (nv)
+			nv->show_label(show);
+	}
 
 	for (ConnectionList::iterator c = _canvas->connections().begin();
 			c != _canvas->connections().end(); ++c) {

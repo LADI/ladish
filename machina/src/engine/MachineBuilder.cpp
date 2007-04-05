@@ -62,6 +62,21 @@ MachineBuilder::is_delay_node(SharedPtr<Node> node) const
 }
 
 
+/** Set the duration of a node, with quantization.
+ */
+void
+MachineBuilder::set_node_duration(SharedPtr<Node> node, Raul::BeatTime d) const
+{
+	Raul::BeatTime q_dur = Quantizer::quantize(_quantization, d);
+
+	// Never quantize a note to duration 0
+	if (q_dur == 0 && ( node->enter_action() || node->exit_action() ))
+		q_dur = _quantization; // Round up
+
+	node->set_duration(q_dur);
+}
+
+
 /** Connect two nodes, inserting a delay node between them if necessary.
  *
  * If a delay node is added to the machine, it is returned.
@@ -83,7 +98,7 @@ MachineBuilder::connect_nodes(SharedPtr<Machine> m,
 	if (is_delay_node(tail) && tail->outgoing_edges().size() == 0) {
 		// Tail is a delay node, just accumulate the time difference into it
 		//cerr << "Accumulating delay " << tail_end_time << " .. " << head_start_time << endl;
-		tail->set_duration(tail->duration() + head_start_time - tail_end_time);
+		set_node_duration(tail, tail->duration() + head_start_time - tail_end_time);
 		tail->add_outgoing_edge(SharedPtr<Edge>(new Edge(tail, head)));
 	} else if (head_start_time == tail_end_time) {
 		// Connect directly
@@ -93,7 +108,7 @@ MachineBuilder::connect_nodes(SharedPtr<Machine> m,
 		// Need to actually create a delay node
 		//cerr << "Adding delay node for " << tail_end_time << " .. " << head_start_time << endl;
 		delay_node = SharedPtr<Node>(new Node());
-		delay_node->set_duration(head_start_time - tail_end_time);
+		set_node_duration(delay_node, head_start_time - tail_end_time);
 		tail->add_outgoing_edge(SharedPtr<Edge>(new Edge(tail, delay_node)));
 		delay_node->add_outgoing_edge(SharedPtr<Edge>(new Edge(delay_node, head)));
 		m->add_node(delay_node);
@@ -181,7 +196,7 @@ MachineBuilder::event(Raul::BeatTime time_offset,
 				SharedPtr<Node> resolved = *i;
 
 				resolved->set_exit_action(SharedPtr<Action>(new MidiAction(ev_size, buf)));
-				resolved->set_duration(t - resolved->enter_time());
+				set_node_duration(resolved, t - resolved->enter_time());
 
 				// Last active note
 				if (_active_nodes.size() == 1) {
@@ -227,7 +242,7 @@ MachineBuilder::event(Raul::BeatTime time_offset,
 							_connect_node->set_exit_action(resolved->exit_action());
 							resolved->remove_enter_action();
 							resolved->remove_exit_action();
-							_connect_node->set_duration(resolved->duration());
+							set_node_duration(_connect_node, resolved->duration());
 							resolved = _connect_node;
 							if (_machine->nodes().find(_connect_node) == _machine->nodes().end())
 								_machine->add_node(_connect_node);
@@ -281,19 +296,20 @@ MachineBuilder::resolve()
 			if (ev_size == 3 && (ev[0] & 0xF0) == MIDI_CMD_NOTE_ON) {
 				unsigned char note_off[3] = { ((MIDI_CMD_NOTE_OFF & 0xF0) | (ev[0] & 0x0F)), ev[1], 0x40 };
 				(*i)->set_exit_action(SharedPtr<Action>(new MidiAction(3, note_off)));
-				(*i)->set_duration(_time - (*i)->enter_time());
+				set_node_duration((*i), _time - (*i)->enter_time());
 				(*i)->exit(SharedPtr<Raul::MIDISink>(), _time);
 				_machine->add_node((*i));
 			}
 		}
 		_active_nodes.clear();
 	}
-	
+
 	// Add initial note if necessary
 	if (_machine->nodes().size() > 0 
 			&& _machine->nodes().find(_initial_node) == _machine->nodes().end())
 		_machine->add_node(_initial_node);
-	
+
+#if 0
 	// Quantize
 	if (_quantization > 0) {
 		for (Machine::Nodes::iterator i = _machine->nodes().begin();
@@ -305,6 +321,31 @@ MachineBuilder::resolve()
 				(*i)->set_duration(q_dur);
 		}
 	}
+
+	// Remove any useless states
+	for (Machine::Nodes::iterator i = _machine->nodes().begin();
+			i != _machine->nodes().end() ; ) {
+
+		if (!(*i)->enter_action() && !(*i)->exit_action() && (*i)->duration() == 0
+				&& (*i)->outgoing_edges().size() <= 1) {
+
+			// Connect any predecessors to the successor
+			if ((*i)->outgoing_edges().size() == 1) {
+				SharedPtr<Node> successor = *((*i)->outgoing_edges().begin())->head();
+			
+				for (Machine::Nodes::iterator i = _machine->nodes().begin();
+					i != _machine->nodes().end() ; ) {
+
+
+			Machine::Nodes::iterator next = i;
+			++next;
+
+			_machine->remove_node(*i);
+
+			i = next;
+		}
+	}
+#endif
 }
 
 

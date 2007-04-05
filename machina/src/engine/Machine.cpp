@@ -65,6 +65,9 @@ void
 Machine::remove_node(SharedPtr<Node> node)
 {
 	_nodes.erase(_nodes.find(node));
+	
+	for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n)
+		(*n)->remove_outgoing_edges_to(node);
 }
 
 
@@ -164,21 +167,44 @@ Machine::exit_node(SharedPtr<Raul::MIDISink> sink, const SharedPtr<Node> node)
 		}
 	}
 
-	// Activate all successors to this node
+	// Activate successors to this node
 	// (that aren't aready active right now)
-	for (Node::Edges::const_iterator s = node->outgoing_edges().begin();
-			s != node->outgoing_edges().end(); ++s) {
-		
-		assert((*s)->head() != node); // no loops
+	
+	if (node->is_selector()) {
 
 		const double rand_normal = rand() / (double)RAND_MAX; // [0, 1]
-		
-		if (rand_normal <= (*s)->probability()) {
-			SharedPtr<Node> head = (*s)->head();
+		double range_min = 0;
 
-			if (!head->is_active())
-				enter_node(sink, head);
+		for (Node::Edges::const_iterator s = node->outgoing_edges().begin();
+				s != node->outgoing_edges().end(); ++s) {
+			
+			if (!(*s)->head()->is_active()
+					&& rand_normal > range_min
+					&& rand_normal < range_min + (*s)->probability()) {
+
+				enter_node(sink, (*s)->head());
+				break;
+
+			} else {
+				range_min += (*s)->probability();
+			}
 		}
+
+	} else {
+
+		for (Node::Edges::const_iterator s = node->outgoing_edges().begin();
+				s != node->outgoing_edges().end(); ++s) {
+
+			const double rand_normal = rand() / (double)RAND_MAX; // [0, 1]
+
+			if (rand_normal <= (*s)->probability()) {
+				SharedPtr<Node> head = (*s)->head();
+
+				if ( ! head->is_active())
+					enter_node(sink, head);
+			}
+		}
+
 	}
 }
 

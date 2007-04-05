@@ -66,13 +66,13 @@ public:
 
 	bool      is_initial() const        { return _is_initial; }
 	void      set_initial(bool i)       { _is_initial = i; }
-	bool      is_selector() const       { return _is_selector; }
-	void      set_selector(bool i)      { _is_selector = i; }
 	bool      is_active() const         { return _is_active; }
 	BeatTime  enter_time() const        { assert(_is_active); return _enter_time; }
 	BeatTime  exit_time() const         { assert(_is_active); return _enter_time + _duration; }
 	BeatCount duration()                { return _duration; }
 	void      set_duration(BeatCount d) { _duration = d; }
+	bool      is_selector() const       { return _is_selector; }
+	void      set_selector(bool i);
 	
 	typedef Raul::List<SharedPtr<Edge> > Edges;
 	Edges& outgoing_edges() { return _outgoing_edges; }

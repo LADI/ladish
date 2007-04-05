@@ -15,6 +15,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include <machina/MidiAction.hpp>
 #include "NodeView.hpp"
 #include "NodePropertiesWindow.hpp"
 
@@ -29,7 +30,8 @@ NodeView::NodeView(Gtk::Window*                         window,
 	, _window(window)
 	, _node(node)
 {
-	//signal_double_clicked.connect(sigc::mem_fun(this, &NodeView::on_double_click));
+	signal_clicked.connect(sigc::mem_fun(this, &NodeView::handle_click));
+	update_state();
 }
 
 
@@ -41,18 +43,41 @@ NodeView::on_double_click(GdkEventButton*)
 
 
 void
-NodeView::on_click(GdkEventButton* event)
+NodeView::handle_click(GdkEventButton* event)
 {
 	if (event->state & GDK_CONTROL_MASK) {
 		if (event->button == 1) {
 			bool is_initial = _node->is_initial();
 			_node->set_initial( ! is_initial );
-			set_border_width(is_initial ? 1.0 : 6.0);
+			update_state();
 		} else if (event->button == 3) {
 			bool is_selector = _node->is_selector();
 			_node->set_selector( ! is_selector );
-			set_border_width(is_selector ? 1.0 : 3.0);
+			update_state();
 		}
+	}
+}
+
+
+void
+NodeView::show_label(bool show)
+{
+	char str[4];
+
+	SharedPtr<Machina::MidiAction> action
+		= PtrCast<Machina::MidiAction>(_node->enter_action());
+
+	if (show) {
+		if (action && action->event_size() >= 2
+				&& (action->event()[0] & 0xF0) == 0x90) {
+
+			unsigned char note = action->event()[1];
+			snprintf(str, 4, "%d", (int)note);
+
+			set_name(str);
+		}
+	} else {
+		set_name("");
 	}
 }
 
@@ -60,8 +85,8 @@ NodeView::on_click(GdkEventButton* event)
 void
 NodeView::update_state()
 {
-	static const uint32_t active_color = 0x80808AFF;
-
+	static const uint32_t active_color = 0xA0A0AAFF;
+	
 	if (_node->is_active()) {
 		if (_color != active_color) {
 			_old_color = _color;
@@ -70,5 +95,13 @@ NodeView::update_state()
 	} else if (_color == active_color) {
 		set_base_color(_old_color);
 	}
+		
+	if (_node->is_selector())
+		if (_node->is_active())
+			set_base_color(0x00FF00FF);
+		else	
+			set_base_color(0x00A000FF);
+	
+	set_border_width(_node->is_initial() ? 4.0 : 1.0);
 }
 

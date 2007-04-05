@@ -57,7 +57,6 @@ public:
 
 private:
 
-
 	size_t                 _size;
 	const size_t           _max_size;
 	Raul::AtomicPtr<byte>  _event;

@@ -32,11 +32,13 @@ public:
 	         double                               y);
 
 	SharedPtr<Machina::Node> node() { return _node; }
+	
+	void show_label(bool show);
 
 	void update_state();
 
 private:
-	void on_click(GdkEventButton* ev);
+	void handle_click(GdkEventButton* ev);
 	void on_double_click(GdkEventButton* ev);
 
 	Gtk::Window*             _window;

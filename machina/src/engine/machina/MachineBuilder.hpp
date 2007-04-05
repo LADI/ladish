@@ -44,6 +44,7 @@ public:
 
 private:
 	bool is_delay_node(SharedPtr<Node> node) const;
+	void set_node_duration(SharedPtr<Node> node, Raul::BeatTime d) const;
 
 	SharedPtr<Node>
 	connect_nodes(SharedPtr<Machine> m,
