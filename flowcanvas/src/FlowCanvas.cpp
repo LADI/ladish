@@ -327,14 +327,47 @@ FlowCanvas::add_item(boost::shared_ptr<Item> m)
 bool
 FlowCanvas::remove_item(boost::shared_ptr<Item> item)
 {
-	for (ItemList::iterator i = _items.begin(); i != _items.end(); ++i) {
-		if (*i == item) {
-			_items.erase(i);
-			return true;
+	bool ret = false;
+
+	// Remove the module
+	for (list<boost::shared_ptr<Item> >::iterator i = _selected_items.begin(); i != _selected_items.end(); ++i) {
+		if ((*i) == item) {
+			_selected_items.erase(i);
+			break;
 		}
 	}
+	
+	item->set_selected(false);
+	for (ItemList::iterator i = _items.begin(); i != _items.end(); ++i) {
+		if (*i == item) {
+			ret = true;
+			_items.erase(i);
+			break;
+		}
+	}
+	
+	// Remove any connections adjacent to this item
+	boost::shared_ptr<Connection> c;
+	for (ConnectionList::iterator i = _connections.begin(); i != _connections.end() ; ) {
+		c = (*i);
+		ConnectionList::iterator next = i;
+		++next;
+		
+		const boost::shared_ptr<Port> src_port
+			= boost::dynamic_pointer_cast<Port>(c->source().lock());
+		const boost::shared_ptr<Port> dst_port
+			= boost::dynamic_pointer_cast<Port>(c->dest().lock());
 
-	return false;
+		if (boost::dynamic_pointer_cast<Item>(c->source().lock()) == item
+				|| boost::dynamic_pointer_cast<Item>(c->dest().lock()) == item
+				|| src_port && src_port->module().lock() == item
+				|| dst_port && dst_port->module().lock() == item)
+			remove_connection(c);
+
+		i = next;
+	}
+
+	return ret;
 }
 
 
@@ -446,6 +479,8 @@ FlowCanvas::remove_connection(boost::shared_ptr<Connection> connection)
 {
 	if (!_remove_objects)
 		return;
+
+	unselect_connection(connection.get());
 
 	ConnectionList::iterator i = find(_connections.begin(), _connections.end(), connection);
 
