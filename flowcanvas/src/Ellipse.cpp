@@ -289,21 +289,25 @@ Ellipse::move_to(double x, double y)
 
 
 void
-Ellipse::set_name(const string& n)
+Ellipse::set_name(const string& str)
 {
-	std::cerr << "FIXME: rename ellipse\n";
-	/*
-	if (_name != n) {
-		string old_name = _name;
-		_name = n;
-		_label.property_text() = _name;
-		if (_title_visible)
-			resize();
-
-		boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
-		if (canvas)
-			canvas->rename_item(old_name, _name);
-	}*/
+	if (str != "") {
+		if (!_label) {
+			_label = new Gnome::Canvas::Text(*this,
+					0, 0, str);
+			_label->property_size_set() = true;
+			_label->property_size() = 9000;
+			_label->property_weight_set() = true;
+			_label->property_weight() = 200;
+			_label->property_fill_color_rgba() = ELLIPSE_TITLE_COLOUR;
+		} else {
+			_label->property_text() = str;
+		}
+		_label->show();
+	} else {
+		delete _label;
+		_label = NULL;
+	}
 }
 
 
