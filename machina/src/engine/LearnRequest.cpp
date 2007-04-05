@@ -31,9 +31,6 @@ LearnRequest::finish(BeatTime time)
 	double duration = Raul::Quantizer::quantize(_quantization, time - _start_time);
 	
 	_node->set_duration(duration);
-	using namespace std;
-	cerr << "Q=" << _quantization << ", T=" << time << ", ST=" << _start_time << endl;
-	std::cerr << "LEARN DURATION: " << duration << std::endl;
 }
 
 

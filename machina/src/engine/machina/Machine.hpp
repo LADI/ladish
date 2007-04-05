@@ -56,10 +56,8 @@ public:
 	// Any context
 	Raul::BeatTime time() { return _time; }
 
-	//LearnRequest pop_learn()     { return _pending_learns.pop_front(); }
-	//SharedPtr<LearnRequest> first_learn() { return *_pending_learns.begin(); }
-	SharedPtr<LearnRequest> pending_learn()   { return _pending_learn; }
-	void clear_pending_learn() { _pending_learn.reset(); }
+	SharedPtr<LearnRequest> pending_learn() { return _pending_learn; }
+	void clear_pending_learn()              { _pending_learn.reset(); }
 
 	typedef Raul::List<SharedPtr<Node> > Nodes;
 	Nodes& nodes() { return _nodes; }

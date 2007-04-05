@@ -1,5 +1,5 @@
 AC_PREREQ(2.59)
-AC_INIT(raul, 0.0.0, [drobilla@connect.carleton.ca])
+AC_INIT(raul, 0.1.0, [dave@drobilla.net])
 #AC_CONFIG_HEADER([config.h])
 AC_CONFIG_SRCDIR([raul/Mutex.h])
 AM_INIT_AUTOMAKE

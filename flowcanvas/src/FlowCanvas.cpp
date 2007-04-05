@@ -394,22 +394,20 @@ FlowCanvas::remove_connection(boost::shared_ptr<Connectable> item1,
 }
 
 
+/** Return whether there is a connection between item1 and item2.
+ *
+ * Note that connections are directed, so this may return false when there
+ * is a connection between the two items (in the opposite direction).
+ */
 bool
-FlowCanvas::are_connected(boost::shared_ptr<const Connectable> item1,
-                          boost::shared_ptr<const Connectable> item2)
+FlowCanvas::are_connected(boost::shared_ptr<const Connectable> tail,
+                          boost::shared_ptr<const Connectable> head)
 {
-	assert(item1);
-	assert(item2);
-	
-	ConnectionList::const_iterator c;
-
-	for (c = _connections.begin(); c != _connections.end(); ++c) {
+	for (ConnectionList::const_iterator c = _connections.begin(); c != _connections.end(); ++c) {
 		const boost::shared_ptr<Connectable> src = (*c)->source().lock();
 		const boost::shared_ptr<Connectable> dst = (*c)->dest().lock();
-		if (!src || !dst)
-			continue;
 
-		if ( (src == item1 && dst == item2) || (dst == item1 && src == item2) )
+		if (src == tail && dst == head)
 			return true;
 	}
 
@@ -417,20 +415,20 @@ FlowCanvas::are_connected(boost::shared_ptr<const Connectable> item1,
 }
 
 
+/** Get the connection between two items.
+ *
+ * Note that connections are directed.
+ * This will only return a connection from @a tail to @a head.
+ */
 boost::shared_ptr<Connection>
-FlowCanvas::get_connection(boost::shared_ptr<Connectable> item1,
-                           boost::shared_ptr<Connectable> item2) const
+FlowCanvas::get_connection(boost::shared_ptr<Connectable> tail,
+                           boost::shared_ptr<Connectable> head) const
 {
-	assert(item1);
-	assert(item2);
-	
 	for (ConnectionList::const_iterator i = _connections.begin(); i != _connections.end(); ++i) {
 		const boost::shared_ptr<Connectable> src = (*i)->source().lock();
 		const boost::shared_ptr<Connectable> dst = (*i)->dest().lock();
-		if (!src || !dst)
-			continue;
 
-		if ( (src == item1 && dst == item2) || (dst == item1 && src == item2) )
+		if (src == tail && dst == head)
 			return *i;
 	}
 	

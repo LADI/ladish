@@ -77,13 +77,11 @@ Node::remove_exit_action()
 	_exit_action.reset();
 }
 
-//using namespace std;
 
 void
 Node::enter(SharedPtr<Raul::MIDISink> sink, BeatTime time)
 {
 	assert(!_is_active);
-	//std::cerr << "ENTER " << time << std::endl;
 	
 	_is_active = true;
 	_enter_time = time;
@@ -96,7 +94,6 @@ void
 Node::exit(SharedPtr<Raul::MIDISink> sink, BeatTime time)
 {
 	assert(_is_active);
-	//std::cerr << "EXIT " << time << std::endl;
 	
 	if (sink && _exit_action)
 		_exit_action->execute(sink, time);
@@ -172,12 +169,7 @@ Node::write_state(Raul::RDFWriter& writer)
 				RdfId(RdfId::RESOURCE, "machina:exitAction"),
 				_exit_action->id());
 	}
-
-	/*for (Node::Edges::const_iterator e = _outgoing_edges.begin();
-			e != _outgoing_edges.end(); ++e)
-		(*e)->write_state(writer);*/
 }
-
 
 
 } // namespace Machina

@@ -43,10 +43,12 @@ public:
 		return ret;
 	}
 
+	void start(double q, BeatTime time)
+		{ _started = true; _start_time = time; _quantization = q; }
+	
 	void finish(BeatTime time);
-
-	void start(double q, BeatTime time) { _started = true; _start_time = time; _quantization = q; }
-	bool started()            { return _started; }
+	
+	bool started() { return _started; }
 
 	const SharedPtr<Node>&       node()         { return _node; }
 	const SharedPtr<MidiAction>& enter_action() { return _enter_action; }

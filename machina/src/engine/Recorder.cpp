@@ -12,7 +12,7 @@
  * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #include <iostream>
@@ -31,23 +31,17 @@ Recorder::Recorder(size_t buffer_size, double tick_rate, double q)
 	, _record_buffer(buffer_size)
 	, _builder(new MachineBuilder(SharedPtr<Machine>(new Machine()), q))
 {
-	cerr << "XXXXXXXXXXXX new recorder, q=" << q << endl;
 }
 
 
 void
 Recorder::_whipped()
 {
-	cerr << "Whipped" << endl;
-
 	TickTime      t;
 	size_t        size;
 	unsigned char buf[4];
 
 	while (_record_buffer.read(&t, &size, buf)) {
-		//cout << "RECORD EVENT: t=" << t * _tick_rate << ", size=" << size << ", buf=0x"
-		//	<< std::hex << (int)((unsigned char)buf[0]) << std::dec << endl;
-
 		_builder->set_time(t * _tick_rate);
 		_builder->event(0, size, buf);
 	}

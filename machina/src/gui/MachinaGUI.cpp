@@ -33,16 +33,10 @@
 
 
 MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
-: _pane_closed(false),
-  _update_pane_position(true),
-  _user_pane_position(0),
-  _refresh(false),
+: _refresh(false),
   _engine(engine),
   _maid(new Raul::Maid(32))
 {
-	/*_settings_filename = getenv("HOME");
-	_settings_filename += "/.machinarc";*/
-
 	_canvas = boost::shared_ptr<MachinaCanvas>(new MachinaCanvas(this, 1600*2, 1200*2));
 
 	Glib::RefPtr<Gnome::Glade::Xml> xml = GladeXml::create();
@@ -60,14 +54,10 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	xml->get_widget("export_graphviz_menuitem", _menu_export_graphviz);
 	xml->get_widget("view_toolbar_menuitem", _menu_view_toolbar);
 	xml->get_widget("view_labels_menuitem", _menu_view_labels);
-	//xml->get_widget("view_refresh_menuitem", _menu_view_refresh);
-	//xml->get_widget("view_messages_menuitem", _menu_view_messages);
 	xml->get_widget("help_about_menuitem", _menu_help_about);
 	xml->get_widget("help_help_menuitem", _menu_help_help);
 	xml->get_widget("canvas_scrolledwindow", _canvas_scrolledwindow);
 	xml->get_widget("status_text", _status_text);
-	xml->get_widget("main_paned", _main_paned);
-	xml->get_widget("messages_expander", _messages_expander);
 	xml->get_widget("slave_radiobutton", _slave_radiobutton);
 	xml->get_widget("bpm_radiobutton", _bpm_radiobutton);
 	xml->get_widget("bpm_spinbutton", _bpm_spinbutton);
@@ -86,8 +76,6 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	_canvas->scroll_to(static_cast<int>(_canvas->width()/2 - 320),
 	                       static_cast<int>(_canvas->height()/2 - 240)); // FIXME: hardcoded
 
-	//_zoom_slider->signal_value_changed().connect(sigc::mem_fun(this, &MachinaGUI::zoom_changed));
-	
 	_record_button->signal_toggled().connect(sigc::mem_fun(this, &MachinaGUI::record_toggled));
 	_stop_button->signal_clicked().connect(sigc::mem_fun(this, &MachinaGUI::stop_clicked));
 	_play_button->signal_toggled().connect(sigc::mem_fun(this, &MachinaGUI::play_toggled));
@@ -113,14 +101,10 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 		sigc::mem_fun(this, &MachinaGUI::menu_export_midi));
 	_menu_export_graphviz->signal_activate().connect(
 		sigc::mem_fun(this, &MachinaGUI::menu_export_graphviz));
-	//_menu_view_refresh->signal_activate().connect(
-	//	sigc::mem_fun(this, &MachinaGUI::menu_view_refresh));
 	_menu_view_toolbar->signal_toggled().connect(
 		sigc::mem_fun(this, &MachinaGUI::show_toolbar_toggled));
 	_menu_view_labels->signal_toggled().connect(
 		sigc::mem_fun(this, &MachinaGUI::show_labels_toggled));
-	//_menu_view_messages->signal_toggled().connect(
-	//	sigc::mem_fun(this, &MachinaGUI::show_messages_toggled));
 	_menu_help_about->signal_activate().connect(
 		sigc::mem_fun(this, &MachinaGUI::menu_help_about));
 	_menu_help_help->signal_activate().connect(
@@ -138,25 +122,9 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 
 	connect_widgets();
 		
-	//update_state();
-
 	_canvas->show();
 
 	_main_window->present();
-
-	_update_pane_position = false;
-	_main_paned->set_position(max_pane_position());
-
-	_main_paned->property_position().signal_changed().connect(
-		sigc::mem_fun(*this, &MachinaGUI::on_pane_position_changed));
-	
-	_messages_expander->property_expanded().signal_changed().connect(
-		sigc::mem_fun(*this, &MachinaGUI::on_messages_expander_changed));
-	
-	_main_paned->set_position(max_pane_position());
-	_user_pane_position = max_pane_position() - _main_window->get_height()/8;
-	_update_pane_position = true;
-	_pane_closed = true;
 
 	_bpm_radiobutton->set_active(true);
 	_quantize_checkbutton->set_active(false);
@@ -171,9 +139,6 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	// Idle callback to update node states
 	Glib::signal_timeout().connect(sigc::mem_fun(this, &MachinaGUI::idle_callback), 100);
 	
-	// Faster idle callback to update DSP load progress bar
-	//Glib::signal_timeout().connect(sigc::mem_fun(this, &MachinaGUI::update_load), 50);
-	
 	_canvas->build(engine->machine());
 }
 
@@ -182,21 +147,6 @@ MachinaGUI::~MachinaGUI()
 {
 }
 
-
-void
-MachinaGUI::attach()
-{
-#if 0
-	_jack_driver->attach(true);
-
-	menu_view_refresh();
-
-	update_toolbar();
-
-	//m_status_bar->push("Connected to JACK server");
-#endif
-}
-	
 
 bool
 MachinaGUI::idle_callback() 
@@ -274,46 +224,6 @@ MachinaGUI::zoom(double z)
 
 
 void
-MachinaGUI::zoom_changed() 
-{
-/*
-	static bool enable_signal = true;
-	if (enable_signal) {
-		enable_signal = false;
-		zoom(_zoom_slider->get_value());
-		enable_signal = true;
-	}
-	*/
-}
-
-
-#if 0
-void
-MachinaGUI::update_state()
-{
-	for (ModuleMap::iterator i = _canvas->modules().begin(); i != _canvas->modules().end(); ++i)
-		(*i).second->load_location();
-
-	//cerr << "[Machina] Resizing window: (" << _state_manager->get_window_size().x
-	//	<< "," << _state_manager->get_window_size().y << ")" << endl;
-
-	_main_window->resize(
-		static_cast<int>(_state_manager->get_window_size().x),
-		static_cast<int>(_state_manager->get_window_size().y));
-	
-	//cerr << "[Machina] Moving window: (" << _state_manager->get_window_location().x
-	//	<< "," << _state_manager->get_window_location().y << ")" << endl;
-	
-	_main_window->move(
-		static_cast<int>(_state_manager->get_window_location().x),
-		static_cast<int>(_state_manager->get_window_location().y));
-
-}
-
-#endif
-
-
-void
 MachinaGUI::status_message(const string& msg) 
 {
 	if (_status_text->get_buffer()->size() > 0)
@@ -352,7 +262,6 @@ MachinaGUI::menu_file_open()
 	const int result = dialog.run();
 
 	if (result == Gtk::RESPONSE_OK) {
-		//SharedPtr<Machina::Machine> new_machine = _engine->load_machine(dialog.get_uri());
 		SharedPtr<Machina::Machine> new_machine = _engine->import_machine(dialog.get_uri());
 		if (new_machine) {
 			_canvas->destroy();
@@ -457,23 +366,10 @@ MachinaGUI::menu_import_midi()
 	extra_widget->show_all();
 	
 
-	/*Gtk::HBox* extra_widget = Gtk::manage(new Gtk::HBox());
-	Gtk::SpinButton* track_sb = Gtk::manage(new Gtk::SpinButton());
-	track_sb->set_increments(1, 10);
-	track_sb->set_range(1, 256);
-	extra_widget->pack_start(*Gtk::manage(new Gtk::Label("")), true, true);
-	extra_widget->pack_start(*Gtk::manage(new Gtk::Label("Track: ")), false, false);
-	extra_widget->pack_start(*track_sb, false, false); 
-	dialog.set_extra_widget(*extra_widget);
-	extra_widget->show_all();
-	*/
-
 	const int result = dialog.run();
 
 	if (result == Gtk::RESPONSE_OK) {
 		SharedPtr<Machina::SMFDriver> file_driver(new Machina::SMFDriver());
-		//SharedPtr<Machina::Machine> machine = file_driver->learn(dialog.get_uri(),
-		//		track_sb->get_value_as_int());
 		
 		double length = length_sb->get_value_as_int();
 
@@ -510,7 +406,7 @@ MachinaGUI::menu_export_midi()
 		const SharedPtr<Machina::Machine> m = _engine->machine();
 		m->set_sink(file_driver->writer());
 		file_driver->writer()->start(dialog.get_filename());
-		file_driver->run(m, 32); // FIXME: hardcoded max length.  TODO: solve halting problem
+		file_driver->run(m, 32); // TODO: solve halting problem
 		m->set_sink(_engine->driver());
 		m->reset();
 		file_driver->writer()->finish();
@@ -533,66 +429,6 @@ MachinaGUI::menu_export_graphviz()
 		_canvas->render_to_dot(dialog.get_filename());
 }
 
-
-void
-MachinaGUI::on_pane_position_changed()
-{
-	// avoid infinite recursion...
-	if (!_update_pane_position)
-		return;
-
-	_update_pane_position = false;
-
-	int new_position = _main_paned->get_position();
-
-	if (_pane_closed && new_position < max_pane_position()) {
-		// Auto open
-		_user_pane_position = new_position;
-		_messages_expander->set_expanded(true);
-		_pane_closed = false;
-		//_menu_view_messages->set_active(true);
-	} else if (new_position >= max_pane_position()) {
-		// Auto close
-		_pane_closed = true;
-
-		_messages_expander->set_expanded(false);
-		if (new_position > max_pane_position())
-			_main_paned->set_position(max_pane_position()); // ... here
-		//_menu_view_messages->set_active(false);
-		
-		_user_pane_position = max_pane_position() - _main_window->get_height()/8;
-	}
-
-	_update_pane_position = true;
-}
-
-
-void
-MachinaGUI::on_messages_expander_changed()
-{
-	if (!_pane_closed) {
-		// Store pane position for restoring
-		_user_pane_position = _main_paned->get_position();
-		if (_update_pane_position) {
-			_update_pane_position = false;
-			_main_paned->set_position(max_pane_position());
-			_update_pane_position = true;
-		}
-		_pane_closed = true;
-	} else {
-		_main_paned->set_position(_user_pane_position);
-		_pane_closed = false;
-	}
-}
-
-/*
-void
-MachinaGUI::show_messages_toggled()
-{
-	if (_update_pane_position)
-		//_messages_expander->set_expanded(_menu_view_messages->get_active());
-}
-*/
 
 void
 MachinaGUI::show_toolbar_toggled()
@@ -623,16 +459,6 @@ MachinaGUI::show_labels_toggled()
 	}
 }
 
-
-/*
-void
-MachinaGUI::menu_view_refresh() 
-{
-	assert(_canvas);
-	
-	//_canvas->destroy();
-}
-*/
 
 void
 MachinaGUI::menu_help_about() 

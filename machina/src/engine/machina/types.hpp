@@ -18,13 +18,7 @@
 #ifndef MACHINA_TYPES_HPP
 #define MACHINA_TYPES_HPP
 
-#include <jack/types.h>
-
 namespace Machina {
-
-
-//typedef jack_nframes_t FrameCount;
-//typedef jack_nframes_t Timestamp;
 
 typedef unsigned char byte;
 

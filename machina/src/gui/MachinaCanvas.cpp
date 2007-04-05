@@ -99,7 +99,6 @@ MachinaCanvas::canvas_event(GdkEvent* event)
 		string name = string("Note")+(char)(last++ +'0');
 
 		SharedPtr<Machina::Node> node(new Machina::Node(1.0, false));
-		//node->add_enter_action(SharedPtr<Machina::Action>(new Machina::PrintAction(name)));
 		SharedPtr<NodeView> view(new NodeView(_app->window(), shared_from_this(), node,
 					name, x, y));
 
@@ -137,38 +136,6 @@ MachinaCanvas::disconnect_node(boost::shared_ptr<NodeView> src,
 {
 	src->node()->remove_outgoing_edges_to(head->node());
 	remove_connection(src, head);
-
-#if 0
-	boost::shared_ptr<MachinaPort> input
-		= boost::dynamic_pointer_cast<MachinaPort>(port1);
-	boost::shared_ptr<MachinaPort> output
-		= boost::dynamic_pointer_cast<MachinaPort>(port2);
-
-	if (!input || !output)
-		return;
-
-	if (input->is_output() && output->is_input()) {
-		// Damn, guessed wrong
-		boost::shared_ptr<MachinaPort> swap = input;
-		input = output;
-		output = swap;
-	}
-
-	if (!input || !output || input->is_output() || output->is_input()) {
-		status_message("ERROR: Attempt to disconnect mismatched/unknown ports");
-		return;
-	}
-	
-	if (input->type() == JACK_AUDIO && output->type() == JACK_AUDIO
-			|| input->type() == JACK_MIDI && output->type() == JACK_MIDI)
-		_app->jack_driver()->disconnect(output, input);
-#ifdef HAVE_ALSA
-	else if (input->type() == ALSA_MIDI && output->type() == ALSA_MIDI)
-		_app->alsa_driver()->disconnect(output, input);
-#endif
-	else
-		status_message("ERROR: Attempt to disconnect ports with mismatched types");
-#endif
 }
 
 
@@ -185,7 +152,6 @@ MachinaCanvas::create_node_view(SharedPtr<Machina::Node> node)
 					&MachinaCanvas::node_clicked), WeakPtr<NodeView>(view)));
 
 	add_item(view);
-	//view->resize();
 
 	return view;
 }
@@ -235,20 +201,6 @@ MachinaCanvas::build(SharedPtr<Machina::Machine> machine)
 	}
 	
 	arrange();
-	/*	
-	while (Gtk::Main::events_pending())
-		Gtk::Main::iteration(false);
-
-	for (list<boost::shared_ptr<Connection> >::iterator c = _connections.begin(); c != _connections.end(); ++c) {
-		const SharedPtr<EdgeView> view = PtrCast<EdgeView>(*c);
-		if (view)
-			view->update_label(); // very, very slow
-	
-		while (Gtk::Main::events_pending())
-			Gtk::Main::iteration(false);
-
-	}
-	*/
 }
 
 

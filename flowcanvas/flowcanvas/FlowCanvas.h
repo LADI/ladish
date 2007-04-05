@@ -67,17 +67,17 @@ public:
 	bool remove_item(boost::shared_ptr<Item> i);
 
 	boost::shared_ptr<Connection>
-	get_connection(boost::shared_ptr<Connectable> src,
-	               boost::shared_ptr<Connectable> dst) const;
+	get_connection(boost::shared_ptr<Connectable> tail,
+	               boost::shared_ptr<Connectable> head) const;
 	
-	bool add_connection(boost::shared_ptr<Connectable> src,
-	                    boost::shared_ptr<Connectable> dst,
+	bool add_connection(boost::shared_ptr<Connectable> tail,
+	                    boost::shared_ptr<Connectable> head,
 	                    uint32_t                       color);
 	
 	bool add_connection(boost::shared_ptr<Connection> connection);
 	
-	boost::shared_ptr<Connection> remove_connection(boost::shared_ptr<Connectable> src,
-	                                                boost::shared_ptr<Connectable> dst);
+	boost::shared_ptr<Connection> remove_connection(boost::shared_ptr<Connectable> tail,
+	                                                boost::shared_ptr<Connectable> head);
 	
 	void destroy_all_connections();
 	
@@ -114,12 +114,12 @@ public:
 	ArtVpathDash* const select_dash() { return _select_dash; }
 	
 	/** Make a connection.  Should be overridden by an implementation to do something. */
-	virtual void connect(boost::shared_ptr<Connectable> /*src*/,
-	                     boost::shared_ptr<Connectable> /*dst*/) {}
+	virtual void connect(boost::shared_ptr<Connectable> /*tail*/,
+	                     boost::shared_ptr<Connectable> /*head*/) {}
 	
 	/** Disconnect two ports.  Should be overridden by an implementation to do something */
-	virtual void disconnect(boost::shared_ptr<Connectable> /*src*/,
-	                        boost::shared_ptr<Connectable> /*dst*/) {}
+	virtual void disconnect(boost::shared_ptr<Connectable> /*tail*/,
+	                        boost::shared_ptr<Connectable> /*head*/) {}
 
 protected:
 	ItemList                             _items;  ///< All items on this canvas
@@ -139,8 +139,8 @@ private:
 	friend class Port;
 	virtual bool port_event(GdkEvent* event, boost::weak_ptr<Port> port);
 
-	bool are_connected(boost::shared_ptr<const Connectable> port1,
-	                   boost::shared_ptr<const Connectable> port2);
+	bool are_connected(boost::shared_ptr<const Connectable> tail,
+	                   boost::shared_ptr<const Connectable> head);
 	
 	void selected_port(boost::shared_ptr<Port> p);
 	boost::shared_ptr<Port> selected_port() { return _selected_port; }

@@ -12,7 +12,7 @@
  * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #include <iostream>
@@ -118,6 +118,7 @@ JackDriver::process_input(SharedPtr<Machine> machine, const TimeSlice& time)
 	using namespace std;
 
 	if (_recording.get()) {
+
 		const jack_nframes_t nframes     = time.length_ticks();
 		void*                jack_buffer = jack_port_get_buffer(_input_port, nframes);
 		const jack_nframes_t event_count = jack_midi_get_event_count(jack_buffer, nframes);
@@ -133,6 +134,7 @@ JackDriver::process_input(SharedPtr<Machine> machine, const TimeSlice& time)
 			_recorder->whip();
 
 	} else {
+
 		const jack_nframes_t nframes     = time.length_ticks();
 		void*                jack_buffer = jack_port_get_buffer(_input_port, nframes);
 		const jack_nframes_t event_count = jack_midi_get_event_count(jack_buffer, nframes);
@@ -146,10 +148,8 @@ JackDriver::process_input(SharedPtr<Machine> machine, const TimeSlice& time)
 				const SharedPtr<LearnRequest> learn = machine->pending_learn();
 				if (learn) {
 					learn->enter_action()->set_event(ev.size, ev.buffer);
-					cerr << "LEARN START\n";
 					learn->start(_quantization.get(),
 						time.ticks_to_beats(jack_last_frame_time(_client) + ev.time));
-					//LearnRecord learn = machine->pop_learn();
 				}
 
 			} else if (ev.buffer[0] == 0x80) {
@@ -162,14 +162,11 @@ JackDriver::process_input(SharedPtr<Machine> machine, const TimeSlice& time)
 						learn->finish(
 							time.ticks_to_beats(jack_last_frame_time(_client) + ev.time));
 						machine->clear_pending_learn();
-						cerr << "LEARNED!\n";
 					}
 				}
 			}
-
-			//std::cerr << "EVENT: " << std::hex << (int)ev.buffer[0] << "\n";
-
 		}
+
 	}
 }
 
@@ -179,9 +176,13 @@ JackDriver::write_event(Raul::BeatTime time,
                         size_t         size,
                         const byte*    event) throw (std::logic_error)
 {
+	if (!_output_port)
+		return;
+
 	if (_cycle_time.beats_to_ticks(time) + _cycle_time.offset_ticks() < _cycle_time.start_ticks()) {
 		std::cerr << "ERROR: Missed event by " 
-			<< _cycle_time.start_ticks() - (_cycle_time.beats_to_ticks(time) + _cycle_time.offset_ticks())
+			<< _cycle_time.start_ticks()
+				- (_cycle_time.beats_to_ticks(time) + _cycle_time.offset_ticks())
 			<< " ticks"
 			<< "\n\tbpm: " << _cycle_time.bpm()
 			<< "\n\tev time: " << _cycle_time.beats_to_ticks(time)
@@ -195,8 +196,6 @@ JackDriver::write_event(Raul::BeatTime time,
 	const TickCount offset  = _cycle_time.beats_to_ticks(time)
 		+ _cycle_time.offset_ticks() - _cycle_time.start_ticks();
 
-	assert(_output_port);
-	
 	if ( ! (offset < _cycle_time.offset_ticks() + nframes)) {
 		std::cerr << "ERROR: Event offset " << offset << " outside cycle "
 			<< "\n\tbpm: " << _cycle_time.bpm()
@@ -297,7 +296,8 @@ JackDriver::on_process(jack_nframes_t nframes)
 void
 JackDriver::reset()
 {
-	// FIXME: Flag audio thread and end active notes, etc
+	/* FIXME: This should signal the audio thread and wait for it 
+	 * to exit all active states to resolve stuck notes, then reset. */
 	_machine->deactivate();
 	_machine->reset();
 	_cycle_time.set_start(0);
@@ -307,9 +307,9 @@ JackDriver::reset()
 void
 JackDriver::start_record()
 {
-	std::cerr << "START RECORD" << std::endl;
-	// FIXME: hardcoded size
-	_recorder = SharedPtr<Recorder>(new Recorder(1024, (1.0/(double)sample_rate()) * (_bpm.get() / 60.0), _quantization.get()));
+	// FIXME: Choose an appropriate maximum ringbuffer size
+	_recorder = SharedPtr<Recorder>(new Recorder(
+				1024, (1.0/(double)sample_rate()) * (_bpm.get() / 60.0), _quantization.get()));
 	_recorder->start();
 	_record_time = 0;
 	_recording = 1;
@@ -321,10 +321,8 @@ JackDriver::finish_record()
 {
 	_recording = 0;
 	SharedPtr<Machine> machine = _recorder->finish();
-	std::cout << "Learned machine!  " << machine->nodes().size() << " nodes." << std::endl;
 	_recorder.reset();
 	machine->activate();
-	//set_machine(machine);
 	_machine->nodes().append(machine->nodes());
 }
 

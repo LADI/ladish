@@ -49,9 +49,6 @@ public:
 	void status_message(const string& msg);
 	inline void queue_refresh() { _refresh = true; }
 
-	int max_pane_position()
-	{ return _main_paned->property_max_position() - _messages_expander->get_label_widget()->get_height() - 8; }
-
 protected:
 	void connect_widgets();
 
@@ -62,14 +59,11 @@ protected:
 	void menu_import_midi();
 	void menu_export_midi();
 	void menu_export_graphviz();
-	//void show_messages_toggled();
 	void show_toolbar_toggled();
 	void show_labels_toggled();
-	//void menu_view_refresh();
 	void menu_help_about();
 	void menu_help_help();
 	void zoom(double z);
-	void zoom_changed();
 	bool idle_callback();
 	void update_toolbar();
 	bool scrolled_window_event(GdkEvent* ev);
@@ -78,16 +72,9 @@ protected:
 	void stop_clicked();
 	void play_toggled();
 
-	void on_pane_position_changed();
-	void on_messages_expander_changed();
-	
 	void quantize_changed();
 	void tempo_changed();
 
-	bool _pane_closed;
-	bool _update_pane_position;
-	int  _user_pane_position;
-	
 	bool _refresh;
 
 	string _save_uri;
@@ -113,12 +100,9 @@ protected:
 	Gtk::MenuItem*         _menu_help_about;
 	Gtk::CheckMenuItem*    _menu_view_labels;
 	Gtk::CheckMenuItem*    _menu_view_toolbar;
-	//Gtk::CheckMenuItem*    _menu_view_messages;
-	//Gtk::MenuItem*         _menu_view_refresh;
 	Gtk::MenuItem*         _menu_help_help;
 	Gtk::ScrolledWindow*   _canvas_scrolledwindow;
 	Gtk::TextView*         _status_text;
-	Gtk::Paned*            _main_paned;
 	Gtk::Expander*         _messages_expander;
 	Gtk::RadioButton*      _slave_radiobutton;
 	Gtk::RadioButton*      _bpm_radiobutton;

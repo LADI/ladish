@@ -55,7 +55,6 @@ Machine::set_sink(SharedPtr<Raul::MIDISink> sink)
 void
 Machine::add_node(SharedPtr<Node> node)
 {
-	//cerr << "ADDING NODE " << node.get() << endl;
 	assert(_nodes.find(node) == _nodes.end());
 	_nodes.push_back(node);
 }
@@ -113,13 +112,6 @@ Machine::earliest_node() const
 			}
 		}
 	}
-	/*for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n) {
-		const SharedPtr<Node> node = (*n);
-		
-		if (node->is_active())
-			if (!earliest || node->exit_time() < earliest->exit_time())
-				earliest = node;
-	}*/
 
 	return earliest;
 }
@@ -294,13 +286,6 @@ Machine::run(const Raul::TimeSlice& time)
 void
 Machine::learn(SharedPtr<LearnRequest> learn)
 {
-	std::cerr << "Learn" << std::endl;
-
-	/*LearnRequest request(node,
-		SharedPtr<MidiAction>(new MidiAction(4, NULL)),
-		SharedPtr<MidiAction>(new MidiAction(4, NULL)));*/
-
-	//_pending_learns.push_back(learn);
 	_pending_learn = learn;
 }
 
@@ -320,8 +305,6 @@ Machine::write_state(Raul::RDFWriter& writer)
 
 	for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n) {
 	
-		//cerr << "Writing node " << count++ << " state." << endl;
-
 		(*n)->write_state(writer);
 
 		if ((*n)->is_initial()) {
@@ -339,12 +322,8 @@ Machine::write_state(Raul::RDFWriter& writer)
 
 	for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n) {
 		
-		//cerr << "Writing node " << count++ << " edges: ";
-	
 		for (Node::Edges::const_iterator e = (*n)->outgoing_edges().begin();
 			e != (*n)->outgoing_edges().end(); ++e) {
-			
-			//cerr << ".";
 			
 			(*e)->write_state(writer);
 		
@@ -352,8 +331,6 @@ Machine::write_state(Raul::RDFWriter& writer)
 				RdfId(RdfId::RESOURCE, "machina:edge"),
 				(*e)->id());
 		}
-
-		//cerr << endl;
 
 	}
 }
