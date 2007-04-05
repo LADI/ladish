@@ -37,7 +37,7 @@ Item::Item(boost::shared_ptr<FlowCanvas> canvas,
 {
 	signal_event().connect(sigc::mem_fun(this, &Item::item_event));
 
-	signal_clicked.connect(       sigc::mem_fun(this, &Item::on_click));
+	//signal_clicked.connect(       sigc::mem_fun(this, &Item::on_click));
 	signal_double_clicked.connect(sigc::mem_fun(this, &Item::on_double_click));
 	signal_dragged.connect(       sigc::mem_fun(this, &Item::on_drag));
 }
@@ -124,10 +124,12 @@ Item::item_event(GdkEvent* event)
 		if (dragging) {
 			ungrab(event->button.time);
 			dragging = false;
-			if (click_x != drag_start_x || click_y != drag_start_y)
+			if (click_x != drag_start_x || click_y != drag_start_y) {
 				signal_dropped(click_x, click_y);
-			else if (!double_click)
+			} else if (!double_click) {
+				on_click(&event->button);
 				signal_clicked.emit(&event->button);
+			}
 		}
 		double_click = false;
 		break;
@@ -156,13 +158,15 @@ Item::item_event(GdkEvent* event)
 void
 Item::on_click(GdkEventButton* event)
 {
-	if (_selected) {
-		_canvas.lock()->unselect_item(shared_from_this());
-		assert(!_selected);
-	} else {
-		if ( !(event->state & GDK_CONTROL_MASK))
-			_canvas.lock()->clear_selection();
-		_canvas.lock()->select_item(shared_from_this());
+	if (event->button == 1) {
+		if (_selected) {
+			_canvas.lock()->unselect_item(shared_from_this());
+			assert(!_selected);
+		} else {
+			if ( !(event->state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)))
+				_canvas.lock()->clear_selection();
+			_canvas.lock()->select_item(shared_from_this());
+		}
 	}
 }
 

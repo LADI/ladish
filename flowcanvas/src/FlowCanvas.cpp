@@ -215,24 +215,35 @@ FlowCanvas::select_item(boost::shared_ptr<Item> m)
 void
 FlowCanvas::unselect_item(boost::shared_ptr<Item> m)
 {
-
 	// Remove any connections that aren't selected anymore because this module isn't
-	cerr << "FIXME: remove connection selection\n";
-#if 0
 	boost::shared_ptr<Connection> c;
-	for (ConnectionList::iterator i = _selected_connections.begin(); i != _selected_connections.end();) {
+	for (ConnectionList::iterator i = _selected_connections.begin(); i != _selected_connections.end() ; ) {
 		c = (*i);
-		if (c->selected()
-			&& ((c->source()->module() == m && c->dest()->module()->selected())
-				|| c->dest()->module() == m && c->source()->module()->selected()))
-			{
-				c->selected(false);
-				i = _selected_connections.erase(i);
-		} else {
-			++i;
+
+		if (boost::dynamic_pointer_cast<Item>(c->source().lock()) == m
+				|| boost::dynamic_pointer_cast<Item>(c->dest().lock()) == m) {
+			c->set_selected(false);
+			i = _selected_connections.erase(i);
+			continue;
 		}
+		
+		boost::shared_ptr<Port> src_port = boost::dynamic_pointer_cast<Port>(c->source().lock());
+		if (src_port && src_port->module().lock() == m) {
+			c->set_selected(false);
+			i = _selected_connections.erase(i);
+			continue;
+		}
+		
+		boost::shared_ptr<Port> dst_port = boost::dynamic_pointer_cast<Port>(c->dest().lock());
+		if (dst_port && dst_port->module().lock() == m) {
+			c->set_selected(false);
+			i = _selected_connections.erase(i);
+			continue;
+		}
+
+		++i;
 	}
-#endif
+	
 	// Remove the module
 	for (list<boost::shared_ptr<Item> >::iterator i = _selected_items.begin(); i != _selected_items.end(); ++i) {
 		if ((*i) == m) {
@@ -622,7 +633,7 @@ FlowCanvas::canvas_event(GdkEvent* event)
 	/*if (event->type == GDK_BUTTON_RELEASE) {
 		_base_rect.ungrab(event->button.time);
 	} else */if (event->type == GDK_BUTTON_PRESS) {
-		if (event->button.state & GDK_CONTROL_MASK && event->button.button == 3) {
+		if ((event->button.state & GDK_CONTROL_MASK) && event->button.button == 3) {
 			set_zoom(_zoom + 0.5);
 			return true;
 		} else if (event->button.state & GDK_CONTROL_MASK && event->button.button == 1) {
@@ -716,7 +727,7 @@ FlowCanvas::select_drag_handler(GdkEvent* event)
 	if (event->type == GDK_BUTTON_PRESS && event->button.button == 1) {
 		assert(_select_rect == NULL);
 		_drag_state = SELECT;
-		if ( !(event->button.state & GDK_CONTROL_MASK))
+		if ( !(event->button.state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)) )
 			clear_selection();
 		_select_rect = new Gnome::Canvas::Rect(*root(),
 			event->button.x, event->button.y, event->button.x, event->button.y);
