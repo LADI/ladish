@@ -1,6 +1,6 @@
 # configure.in for omins
 
-AC_INIT([omins],[0.2.1pre],[drobilla@connect.carleton.ca])
+AC_INIT([omins],[0.2.1pre],[dave@drobilla.net])
 AC_CONFIG_SRCDIR([src/hz_voct_4200.c])
 
 AC_CONFIG_HEADER([config.h])

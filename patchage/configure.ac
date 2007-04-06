@@ -1,6 +1,6 @@
 # configure.in for patchage
 
-AC_INIT(patchage, 0.2.4pre, drobilla@connect.carleton.ca)
+AC_INIT(patchage, 0.2.4pre, dave@drobilla.net)
 AC_CONFIG_SRCDIR([src/main.cpp])
 AC_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE
