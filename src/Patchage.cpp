@@ -129,14 +129,13 @@ Patchage::Patchage(int argc, char** argv)
 	xml->get_widget_derived("jack_settings_win", _jack_settings_dialog);
 	xml->get_widget("about_win", _about_window);
 	xml->get_widget("jack_settings_menuitem", _menu_jack_settings);
-	xml->get_widget("launch_jack_menuitem", _menu_jack_launch);
 	xml->get_widget("connect_to_jack_menuitem", _menu_jack_connect);
 	xml->get_widget("disconnect_from_jack_menuitem", _menu_jack_disconnect);
 #ifdef HAVE_LASH
 	xml->get_widget("open_session_menuitem", _menu_open_session);
 	xml->get_widget("save_session_menuitem", _menu_save_session);
 	xml->get_widget("save_session_as_menuitem", _menu_save_session_as);
-	xml->get_widget("launch_lash_menuitem", _menu_lash_launch);
+	xml->get_widget("close_session_menuitem", _menu_close_session);
 	xml->get_widget("connect_to_lash_menuitem", _menu_lash_connect);
 	xml->get_widget("disconnect_from_lash_menuitem", _menu_lash_disconnect);
 #endif
@@ -201,11 +200,8 @@ Patchage::Patchage(int argc, char** argv)
 	_menu_jack_settings->signal_activate().connect(
 		sigc::hide_return(sigc::mem_fun(_jack_settings_dialog, &JackSettingsDialog::run)));
 
-	_menu_jack_launch->signal_activate().connect(sigc::bind(
-		sigc::mem_fun(_jack_driver, &JackDriver::attach), true));
-	
 	_menu_jack_connect->signal_activate().connect(sigc::bind(
-		sigc::mem_fun(_jack_driver, &JackDriver::attach), false));
+		sigc::mem_fun(_jack_driver, &JackDriver::attach), true));
 	
 	_menu_jack_disconnect->signal_activate().connect(sigc::mem_fun(_jack_driver, &JackDriver::detach));
 
@@ -213,7 +209,7 @@ Patchage::Patchage(int argc, char** argv)
 	_menu_open_session->signal_activate().connect(   sigc::mem_fun(this, &Patchage::menu_open_session));
 	_menu_save_session->signal_activate().connect(   sigc::mem_fun(this, &Patchage::menu_save_session));
 	_menu_save_session_as->signal_activate().connect(sigc::mem_fun(this, &Patchage::menu_save_session_as));
-	_menu_lash_launch->signal_activate().connect(    sigc::mem_fun(this, &Patchage::menu_lash_launch));
+	_menu_close_session->signal_activate().connect(sigc::mem_fun(this, &Patchage::menu_close_session));
 	_menu_lash_connect->signal_activate().connect(   sigc::mem_fun(this, &Patchage::menu_lash_connect));
 	_menu_lash_disconnect->signal_activate().connect(sigc::mem_fun(this, &Patchage::menu_lash_disconnect));
 #endif
@@ -474,14 +470,10 @@ Patchage::connect_widgets()
 {
 #ifdef HAVE_LASH
 	_lash_driver->signal_attached.connect(sigc::bind(
-			sigc::mem_fun(_menu_lash_launch, &Gtk::MenuItem::set_sensitive), false));
-	_lash_driver->signal_attached.connect(sigc::bind(
 			sigc::mem_fun(_menu_lash_connect, &Gtk::MenuItem::set_sensitive), false));
 	_lash_driver->signal_attached.connect(sigc::bind(
 			sigc::mem_fun(_menu_lash_disconnect, &Gtk::MenuItem::set_sensitive), true));
 	
-	_lash_driver->signal_detached.connect(sigc::bind(
-			sigc::mem_fun(_menu_lash_launch, &Gtk::MenuItem::set_sensitive), true));
 	_lash_driver->signal_detached.connect(sigc::bind(
 			sigc::mem_fun(_menu_lash_connect, &Gtk::MenuItem::set_sensitive), true));
 	_lash_driver->signal_detached.connect(sigc::bind(
@@ -495,16 +487,12 @@ Patchage::connect_widgets()
 			sigc::mem_fun(_jack_connect_toggle, &Gtk::ToggleButton::set_active), true));
 
 	_jack_driver->signal_attached.connect(sigc::bind(
-			sigc::mem_fun(_menu_jack_launch, &Gtk::MenuItem::set_sensitive), false));
-	_jack_driver->signal_attached.connect(sigc::bind(
 			sigc::mem_fun(_menu_jack_connect, &Gtk::MenuItem::set_sensitive), false));
 	_jack_driver->signal_attached.connect(sigc::bind(
 			sigc::mem_fun(_menu_jack_disconnect, &Gtk::MenuItem::set_sensitive), true));
 	
 	_jack_driver->signal_detached.connect(sigc::bind(
 			sigc::mem_fun(_jack_connect_toggle, &Gtk::ToggleButton::set_active), false));
-	_jack_driver->signal_detached.connect(sigc::bind(
-			sigc::mem_fun(_menu_jack_launch, &Gtk::MenuItem::set_sensitive), true));
 	_jack_driver->signal_detached.connect(sigc::bind(
 			sigc::mem_fun(_menu_jack_connect, &Gtk::MenuItem::set_sensitive), true));
 	_jack_driver->signal_detached.connect(sigc::bind(
@@ -528,29 +516,61 @@ Patchage::connect_widgets()
 void
 Patchage::menu_open_session() 
 {
+	Gtk::FileChooserDialog dialog(*_main_window, "Open LASH Session",
+			Gtk::FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	
+	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+	dialog.add_button(Gtk::Stock::OPEN, Gtk::RESPONSE_OK);
+
+	const int result = dialog.run();
+
+	if (result == Gtk::RESPONSE_OK) {
+		_lash_driver->restore_project(dialog.get_filename());
+	}
 }
+
 
 void
 Patchage::menu_save_session() 
 {
+	if (_lash_driver)
+		_lash_driver->save_project();
 }
+
 
 void
 Patchage::menu_save_session_as() 
 {
+	if (!_lash_driver)
+		return;
+
+	Gtk::FileChooserDialog dialog(*_main_window, "Save LASH Session",
+			Gtk::FILE_CHOOSER_ACTION_SAVE);
+	
+	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+	dialog.add_button(Gtk::Stock::SAVE, Gtk::RESPONSE_OK);	
+	
+	const int result = dialog.run();
+
+	if (result == Gtk::RESPONSE_OK) {
+		_lash_driver->set_project_directory(dialog.get_filename());
+		_lash_driver->save_project();
+	}
 }
 
+	
 void
-Patchage::menu_lash_launch() 
+Patchage::menu_close_session() 
 {
-	_lash_driver->attach(true);
+	cerr << "CLOSE SESSION\n";
+	_lash_driver->close_project();
 }
 
 
 void
 Patchage::menu_lash_connect() 
 {
-	_lash_driver->attach(false);
+	_lash_driver->attach(true);
 }
 
 
@@ -610,7 +630,6 @@ Patchage::on_pane_position_changed()
 	if (_pane_closed && new_position < max_pane_position()) {
 		// Auto open
 		_user_pane_position = new_position;
-		cerr << "FOO\n";
 		_messages_expander->set_expanded(true);
 		_pane_closed = false;
 		_menu_view_messages->set_active(true);

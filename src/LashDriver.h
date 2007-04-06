@@ -19,6 +19,7 @@
 #define LASHDRIVER_H
 
 #include <lash/lash.h>
+#include <raul/LashServerInterface.h>
 #include "Driver.h"
 
 class Patchage;
@@ -32,7 +33,7 @@ public:
 	void attach(bool launch_daemon);
 	void detach();
 
-	bool is_attached() const { return lash_enabled(_client); }
+	bool is_attached() const { return _server_interface->enabled(); }
 	
 	bool connect(boost::shared_ptr<PatchagePort>, boost::shared_ptr<PatchagePort>)
 	{ return false; }
@@ -42,12 +43,24 @@ public:
 
 	void refresh() {}
 
-	void process_events();
+	void process_events() { _server_interface->process_events(); }
+
+	void restore_project(const std::string& directory);
+	void set_project_directory(const std::string& directory);
+	void save_project();
+	void close_project();
 
 private:
-	Patchage*      _app;
-	lash_client_t* _client;
-	lash_args_t*   _args;
+	Patchage*   _app;
+	std::string _project_name;
+
+	lash_args_t*                         _args;
+	SharedPtr<Raul::LashServerInterface> _server_interface;
+
+	void on_project_add(const SharedPtr<Raul::LashProject> project);
+	void on_save_file(const std::string& directory);
+	void on_restore_file(const std::string& directory);
+	void on_quit();
 
 	void handle_event(lash_event_t* conf);
 	void handle_config(lash_config_t* conf);

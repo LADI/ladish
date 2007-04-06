@@ -98,12 +98,14 @@ protected:
 	Gtk::MenuItem* _menu_open_session;
 	Gtk::MenuItem* _menu_save_session;
 	Gtk::MenuItem* _menu_save_session_as;
+	Gtk::MenuItem* _menu_close_session;
 	Gtk::MenuItem* _menu_lash_launch;
 	Gtk::MenuItem* _menu_lash_connect;
 	Gtk::MenuItem* _menu_lash_disconnect;
 	void menu_open_session();
 	void menu_save_session();
 	void menu_save_session_as();
+	void menu_close_session();
 	void menu_lash_launch();
 	void menu_lash_connect();
 	void menu_lash_disconnect();
