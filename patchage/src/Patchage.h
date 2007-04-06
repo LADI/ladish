@@ -72,7 +72,7 @@ protected:
 	void menu_store_positions();
 	void menu_file_quit();
 	void show_messages_toggled();
-	void view_jack_toolbar_toggled();
+	void view_toolbar_toggled();
 	void menu_view_refresh();
 	void menu_help_about();
 	void zoom(double z);
@@ -81,10 +81,10 @@ protected:
 	bool update_load();
 	void update_toolbar();
 
-	void jack_connect_changed();
+	//void jack_connect_changed();
 	void buffer_size_changed();
 	//void sample_rate_changed();
-	void realtime_changed();
+	//void realtime_changed();
 	
 	void on_pane_position_changed();
 	void on_messages_expander_changed();
@@ -138,11 +138,11 @@ protected:
 	Gtk::MenuItem*       _menu_jack_disconnect;
 	Gtk::MenuItem*       _menu_store_positions;
 	Gtk::MenuItem*       _menu_file_quit;
-	Gtk::CheckMenuItem*  _menu_view_jack_toolbar;
+	Gtk::CheckMenuItem*  _menu_view_toolbar;
 	Gtk::CheckMenuItem*  _menu_view_messages;
 	Gtk::MenuItem*       _menu_view_refresh;
 	Gtk::MenuItem*       _menu_help_about;
-	Gtk::Toolbar*        _jack_toolbar;
+	Gtk::Toolbar*        _toolbar;
 	Gtk::ScrolledWindow* _canvas_scrolledwindow;
 	Gtk::HScale*         _zoom_slider;
 	Gtk::TextView*       _status_text;
@@ -151,16 +151,13 @@ protected:
 	Gtk::Button*         _rewind_button;
 	Gtk::Button*         _play_button;
 	Gtk::Button*         _stop_button;
-	Gtk::Button*         _zoom_normal_button;
-	Gtk::Button*         _zoom_full_button;
+	Gtk::ToolButton*     _zoom_normal_button;
+	Gtk::ToolButton*     _zoom_full_button;
 	//Gtk::ProgressBar*    _load_progress_bar;
-	Gtk::ToggleButton*   _jack_connect_toggle;
-	Gtk::ToggleButton*   _jack_realtime_check;
 	Gtk::ComboBox*       _buffer_size_combo;
 	Gtk::Label*          _sample_rate_label;
 	Gtk::ProgressBar*    _xrun_progress_bar;
-	Gtk::Entry*          _xrun_counter;
-	Gtk::Button*         _clear_load_button;
+	Gtk::ToolButton*     _clear_load_button;
 	//Gtk::Statusbar*      _status_bar;
 };
 

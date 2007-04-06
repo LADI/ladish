@@ -147,9 +147,9 @@ Patchage::Patchage(int argc, char** argv)
 	xml->get_widget("file_quit_menuitem", _menu_file_quit);
 	xml->get_widget("view_refresh_menuitem", _menu_view_refresh);
 	xml->get_widget("view_messages_menuitem", _menu_view_messages);
-	xml->get_widget("view_jack_toolbar_menuitem", _menu_view_jack_toolbar);
+	xml->get_widget("view_toolbar_menuitem", _menu_view_toolbar);
 	xml->get_widget("help_about_menuitem", _menu_help_about);
-	xml->get_widget("jack_toolbar", _jack_toolbar);
+	xml->get_widget("toolbar", _toolbar);
 	xml->get_widget("canvas_scrolledwindow", _canvas_scrolledwindow);
 	xml->get_widget("zoom_scale", _zoom_slider);
 	xml->get_widget("status_text", _status_text);
@@ -162,15 +162,14 @@ Patchage::Patchage(int argc, char** argv)
 	xml->get_widget("zoom_normal_but", _zoom_normal_button);
 	//xml->get_widget("main_statusbar", _status_bar);
 	//xml->get_widget("main_load_progress", _load_progress_bar);
-	xml->get_widget("main_jack_connect_toggle", _jack_connect_toggle);
-	xml->get_widget("main_jack_realtime_check", _jack_realtime_check);
+	//xml->get_widget("main_jack_connect_toggle", _jack_connect_toggle);
+	//xml->get_widget("main_jack_realtime_check", _jack_realtime_check);
 	xml->get_widget("main_buffer_size_combo", _buffer_size_combo);
 	xml->get_widget("main_sample_rate_label", _sample_rate_label);
 	xml->get_widget("main_xrun_progress", _xrun_progress_bar);
-	xml->get_widget("main_xrun_counter", _xrun_counter);
 	xml->get_widget("main_clear_load_button", _clear_load_button);
 	
-	gtkmm_set_width_for_given_text(*_buffer_size_combo, "4096", 40);
+	gtkmm_set_width_for_given_text(*_buffer_size_combo, "4096 frames", 40);
 	//gtkmm_set_width_for_given_text(*m_sample_rate_combo, "44.1", 40);
 
 	_canvas_scrolledwindow->add(*_canvas);
@@ -180,11 +179,11 @@ Patchage::Patchage(int argc, char** argv)
 
 	_zoom_slider->signal_value_changed().connect(sigc::mem_fun(this, &Patchage::zoom_changed));
 	
-	_jack_connect_toggle->signal_toggled().connect(sigc::mem_fun(this, &Patchage::jack_connect_changed));
+	//_jack_connect_toggle->signal_toggled().connect(sigc::mem_fun(this, &Patchage::jack_connect_changed));
 
 	_buffer_size_combo->signal_changed().connect(sigc::mem_fun(this, &Patchage::buffer_size_changed));
 	//m_sample_rate_combo->signal_changed().connect(sigc::mem_fun(this, &Patchage::sample_rate_changed));
-	_jack_realtime_check->signal_toggled().connect(sigc::mem_fun(this, &Patchage::realtime_changed));
+	//_jack_realtime_check->signal_toggled().connect(sigc::mem_fun(this, &Patchage::realtime_changed));
 	
 	_rewind_button->signal_clicked().connect(sigc::mem_fun(_jack_driver, &JackDriver::rewind_transport));
 	_play_button->signal_clicked().connect(sigc::mem_fun(_jack_driver, &JackDriver::start_transport));
@@ -220,7 +219,7 @@ Patchage::Patchage(int argc, char** argv)
 	_menu_store_positions->signal_activate().connect(sigc::mem_fun(this, &Patchage::menu_store_positions));
 	_menu_file_quit->signal_activate().connect(      sigc::mem_fun(this, &Patchage::menu_file_quit));
 	_menu_view_refresh->signal_activate().connect(   sigc::mem_fun(this, &Patchage::menu_view_refresh));
-	_menu_view_jack_toolbar->signal_activate().connect(sigc::mem_fun(this, &Patchage::view_jack_toolbar_toggled));
+	_menu_view_toolbar->signal_activate().connect(   sigc::mem_fun(this, &Patchage::view_toolbar_toggled));
 	_menu_view_messages->signal_toggled().connect(   sigc::mem_fun(this, &Patchage::show_messages_toggled));
 	_menu_help_about->signal_activate().connect(     sigc::mem_fun(this, &Patchage::menu_help_about));
 
@@ -337,8 +336,8 @@ Patchage::idle_callback()
 void
 Patchage::update_toolbar()
 {
-	_jack_connect_toggle->set_active(_jack_driver->is_attached());
-	_jack_realtime_check->set_active(_jack_driver->is_realtime());
+	//_jack_connect_toggle->set_active(_jack_driver->is_attached());
+	//_jack_realtime_check->set_active(_jack_driver->is_realtime());
 
 	if (_jack_driver->is_attached()) {
 		_buffer_size_combo->set_active((int)log2f(_jack_driver->buffer_size()) - 5);
@@ -390,8 +389,7 @@ Patchage::update_load()
 		char tmp_buf[8];
 		snprintf(tmp_buf, 8, "%zd", _jack_driver->xruns());
 
-		//m_xrun_progress_bar->set_text(string(tmp_buf) + " XRuns");
-		_xrun_counter->set_text(tmp_buf);
+		_xrun_progress_bar->set_text(string(tmp_buf) + " Dropouts");
 
 		if (max_delay > period) {
 			_xrun_progress_bar->set_fraction(1.0);
@@ -483,16 +481,16 @@ Patchage::connect_widgets()
 	_jack_driver->signal_attached.connect(
 			sigc::mem_fun(this, &Patchage::update_toolbar));
 
-	_jack_driver->signal_attached.connect(sigc::bind(
-			sigc::mem_fun(_jack_connect_toggle, &Gtk::ToggleButton::set_active), true));
+	//_jack_driver->signal_attached.connect(sigc::bind(
+	///		sigc::mem_fun(_jack_connect_toggle, &Gtk::ToggleButton::set_active), true));
 
 	_jack_driver->signal_attached.connect(sigc::bind(
 			sigc::mem_fun(_menu_jack_connect, &Gtk::MenuItem::set_sensitive), false));
 	_jack_driver->signal_attached.connect(sigc::bind(
 			sigc::mem_fun(_menu_jack_disconnect, &Gtk::MenuItem::set_sensitive), true));
 	
-	_jack_driver->signal_detached.connect(sigc::bind(
-			sigc::mem_fun(_jack_connect_toggle, &Gtk::ToggleButton::set_active), false));
+	//_jack_driver->signal_detached.connect(sigc::bind(
+	//		sigc::mem_fun(_jack_connect_toggle, &Gtk::ToggleButton::set_active), false));
 	_jack_driver->signal_detached.connect(sigc::bind(
 			sigc::mem_fun(_menu_jack_connect, &Gtk::MenuItem::set_sensitive), true));
 	_jack_driver->signal_detached.connect(sigc::bind(
@@ -652,6 +650,9 @@ Patchage::on_pane_position_changed()
 void
 Patchage::on_messages_expander_changed()
 {
+	if (!_update_pane_position)
+		return;
+
 	if (!_pane_closed) {
 		// Store pane position for restoring
 		_user_pane_position = _main_paned->get_position();
@@ -694,12 +695,16 @@ Patchage::menu_view_refresh()
 
 
 void
-Patchage::view_jack_toolbar_toggled() 
+Patchage::view_toolbar_toggled() 
 {
-	if (_menu_view_jack_toolbar->get_active())
-		_jack_toolbar->show();
+	_update_pane_position = false;
+
+	if (_menu_view_toolbar->get_active())
+		_toolbar->show();
 	else
-		_jack_toolbar->hide();
+		_toolbar->hide();
+	
+	_update_pane_position = true;
 }
 
 
@@ -776,14 +781,12 @@ Patchage::sample_rate_changed()
 		//m_jack_driver->set_sample_rate(rate);
 	}
 }
-*/
 
 void
 Patchage::realtime_changed()
 {
 	_jack_driver->set_realtime(_jack_realtime_check->get_active());
 }
-
 
 void
 Patchage::jack_connect_changed()
@@ -798,4 +801,4 @@ Patchage::jack_connect_changed()
 		}
 	}
 }
-
+*/
