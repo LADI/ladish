@@ -23,7 +23,8 @@ AM_CONDITIONAL(HAVE_TEXI2HTML, test x$lash_texi2html = xyes)
 ############
 ### JACK ###
 ############
-PKG_CHECK_MODULES(JACK, jack >= 0.50.0, true, AC_MSG_ERROR([you need jack >= 0.50.0.  see http://sf.net/projects/jackit]))
+# 0.99.17 = first version with jack_client_open
+PKG_CHECK_MODULES(JACK, jack >= 0.99.17, true, AC_MSG_ERROR([you need jack >= 0.99.17.  see http://sf.net/projects/jackit]))
 JACK_VERSION=$( pkg-config --modversion jack )
 AC_SUBST(JACK_CFLAGS)
 AC_SUBST(JACK_LIBS)

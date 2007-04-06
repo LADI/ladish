@@ -661,7 +661,7 @@ server_event_client_event(server_t * server, server_event_t * server_event)
 		/* case LASH_Percentage: */
 
 	default:
-		fprintf(stderr, "%s: received unknown cca event of type %d\n",
+		fprintf(stderr, "%s: received unknown event of type %d\n",
 				__FUNCTION__, lash_event_get_type(event));
 		break;
 	}
