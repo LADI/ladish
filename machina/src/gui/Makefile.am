@@ -3,10 +3,10 @@ AM_CXXFLAGS = -DPKGDATADIR=\"$(pkgdatadir)\" @LIBGLADEMM_CFLAGS@ @GNOMECANVASMM_
 EXTRA_DIST = machina.gladep
 
 sharefilesdir = $(pkgdatadir)
-dist_sharefiles_DATA = machina.glade
+dist_sharefiles_DATA = machina.glade machina.svg
 
-#globalpixmapsdir = $(datadir)/pixmaps
-#dist_globalpixmaps_DATA = machina-icon.svg
+globalpixmapsdir = $(datadir)/pixmaps
+dist_globalpixmaps_DATA = machina.svg
 
 machina_gui_SOURCES = \
 	main.cpp \

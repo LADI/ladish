@@ -1,6 +1,3 @@
-#globalpixmapsdir = $(datadir)/pixmaps
-#dist_globalpixmaps_DATA = machina-icon.svg
-
 SUBDIRS = engine gui
 
 bin_PROGRAMS = midi2machina

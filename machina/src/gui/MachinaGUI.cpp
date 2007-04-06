@@ -57,7 +57,6 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	xml->get_widget("help_about_menuitem", _menu_help_about);
 	xml->get_widget("help_help_menuitem", _menu_help_help);
 	xml->get_widget("canvas_scrolledwindow", _canvas_scrolledwindow);
-	xml->get_widget("status_text", _status_text);
 	xml->get_widget("slave_radiobutton", _slave_radiobutton);
 	xml->get_widget("bpm_radiobutton", _bpm_radiobutton);
 	xml->get_widget("bpm_spinbutton", _bpm_spinbutton);
@@ -220,17 +219,6 @@ void
 MachinaGUI::zoom(double z)
 {
 	_canvas->set_zoom(z);
-}
-
-
-void
-MachinaGUI::status_message(const string& msg) 
-{
-	if (_status_text->get_buffer()->size() > 0)
-		_status_text->get_buffer()->insert(_status_text->get_buffer()->end(), "\n");
-
-	_status_text->get_buffer()->insert(_status_text->get_buffer()->end(), msg);
-	_status_text->scroll_to_mark(_status_text->get_buffer()->get_insert(), 0);
 }
 
 

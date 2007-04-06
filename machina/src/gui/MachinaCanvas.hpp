@@ -40,8 +40,6 @@ public:
 	void disconnect_node(SharedPtr<NodeView> port1,
 	                     SharedPtr<NodeView> port2);
 
-	void status_message(const string& msg);
-
 	void build(SharedPtr<Machina::Machine> machine);
 
 protected:

@@ -39,13 +39,6 @@ MachinaCanvas::MachinaCanvas(MachinaGUI* app, int width, int height)
 
 
 void
-MachinaCanvas::status_message(const string& msg)
-{
-	_app->status_message(string("[Canvas] ").append(msg));
-}
-
-
-void
 MachinaCanvas::node_clicked(WeakPtr<NodeView> item, GdkEventButton* event)
 {
 	SharedPtr<NodeView> node = PtrCast<NodeView>(item.lock());

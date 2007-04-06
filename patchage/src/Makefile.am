@@ -4,10 +4,10 @@ patchage_LDADD = @LIBGLADEMM_LIBS@ @GNOMECANVASMM_LIBS@ @JACK_LIBS@ @ALSA_LIBS@ 
 EXTRA_DIST = patchage.gladep
 
 sharefilesdir = $(pkgdatadir)
-dist_sharefiles_DATA = patchage.glade
+dist_sharefiles_DATA = patchage.glade patchage.svg
 
 globalpixmapsdir = $(datadir)/pixmaps
-dist_globalpixmaps_DATA = patchage-icon.svg
+dist_globalpixmaps_DATA = patchage.svg
 
 bin_PROGRAMS = patchage
 patchage_SOURCES = \

@@ -46,7 +46,6 @@ public:
 	void attach();
 	void quit() { _main_window->hide(); }
 
-	void status_message(const string& msg);
 	inline void queue_refresh() { _refresh = true; }
 
 protected:

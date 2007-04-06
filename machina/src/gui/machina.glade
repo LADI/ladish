@@ -13,7 +13,7 @@
   <property name="default_height">480</property>
   <property name="resizable">True</property>
   <property name="destroy_with_parent">False</property>
-  <property name="icon">machina-icon.svg</property>
+  <property name="icon">machina.svg</property>
   <property name="decorated">True</property>
   <property name="skip_taskbar_hint">False</property>
   <property name="skip_pager_hint">False</property>
@@ -629,7 +629,7 @@ along with Machina; if not, write to the Free Software Foundation, Inc.,
   <property name="website_label" translatable="yes">Website:</property>
   <property name="authors">Dave Robillard &lt;dave@drobilla.net&gt;</property>
   <property name="translator_credits" translatable="yes" comments="TRANSLATORS: Replace this string with your names, one name per line.">translator-credits</property>
-  <property name="logo">machina-icon.svg</property>
+  <property name="logo">machina.svg</property>
 </widget>
 
 <widget class="GtkDialog" id="help_dialog">
@@ -640,6 +640,7 @@ along with Machina; if not, write to the Free Software Foundation, Inc.,
   <property name="modal">False</property>
   <property name="resizable">False</property>
   <property name="destroy_with_parent">False</property>
+  <property name="icon">machina.svg</property>
   <property name="icon_name">gtk-help</property>
   <property name="decorated">True</property>
   <property name="skip_taskbar_hint">False</property>
@@ -726,6 +727,7 @@ Selector nodes are shown in green.
   <property name="modal">False</property>
   <property name="resizable">False</property>
   <property name="destroy_with_parent">False</property>
+  <property name="icon">machina.svg</property>
   <property name="decorated">True</property>
   <property name="skip_taskbar_hint">True</property>
   <property name="skip_pager_hint">True</property>
