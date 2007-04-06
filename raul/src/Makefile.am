@@ -1,5 +1,5 @@
-libraul_la_CXXFLAGS = -I$(top_srcdir) @RAPTOR_CFLAGS@ @RASQAL_CFLAGS@ @GLIBMM_CFLAGS@ @JACK_CFLAGS@
-libraul_la_LIBADD = @RAPTOR_LIBS@ @RASQAL_LIBS@ @GLIBMM_LIBS@ @JACK_LIBS@
+libraul_la_CXXFLAGS = -I$(top_srcdir) @RAPTOR_CFLAGS@ @RASQAL_CFLAGS@ @GLIBMM_CFLAGS@ @JACK_CFLAGS@ @LASH_CFLAGS@
+libraul_la_LIBADD = @RAPTOR_LIBS@ @RASQAL_LIBS@ @GLIBMM_LIBS@ @JACK_LIBS@ @LASH_LIBS@
 
 lib_LTLIBRARIES = libraul.la
 
@@ -21,4 +21,8 @@ endif
 
 if WITH_JACK
 libraul_la_SOURCES += JackDriver.cpp
+endif
+
+if WITH_LASH
+libraul_la_SOURCES += LashClient.cpp LashServerInterface.cpp LashProject.cpp
 endif

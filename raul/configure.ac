@@ -112,6 +112,22 @@ if test "$build_liblo" = "yes"; then
 fi
 AM_CONDITIONAL(WITH_LIBLO, [test "$build_liblo" = "yes"])
 
+build_lash="yes"
+AC_ARG_ENABLE(lash,
+	[AS_HELP_STRING(--enable-lash, [Enable LASH session management support (yes)])],
+	[ if test x$enable_lash = xno ; then build_lash=no ; fi ])
+if test "$build_lash" = "yes"; then
+	PKG_CHECK_MODULES(LASH, lash-1.0 >= 0.5.0, have_lash="yes", have_lash="no")
+	if test "$have_lash" = "yes"; then
+		AC_DEFINE(HAVE_LASH, 1, [Has lash.h])
+	else
+		AC_MSG_WARN([LASH not found, session support will not be built.])
+		build_lash="no"
+	fi
+fi
+AM_CONDITIONAL(WITH_LASH, [test "$build_lash" = "yes"])
+
+
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
 AC_CONFIG_FILES([raul/Makefile])
@@ -128,10 +144,11 @@ AC_MSG_RESULT([Raul build configuration:])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([Building unit tests: $build_unit_tests])
 AC_MSG_RESULT([])
+AC_MSG_RESULT([Jack support:                       $build_jack])
+AC_MSG_RESULT([LASH support:                       $build_lash])
 AC_MSG_RESULT([OSC (Liblo) support:                $build_liblo])
 AC_MSG_RESULT([RDF Serialization (Raptor) support: $build_raptor])
 AC_MSG_RESULT([RDF Querying (Rasqal) support:      $build_rasqal])
-AC_MSG_RESULT([Jack support:                       $build_jack])
 AC_MSG_RESULT([Smart Pointers (Boost):             $build_smart_pointers])
 AC_MSG_RESULT([**********************************************************************])
 AC_MSG_RESULT([])

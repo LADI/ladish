@@ -45,3 +45,6 @@ if WITH_RAPTOR
 raulinclude_HEADERS += AtomRaptor.h
 endif
 
+if WITH_LASH
+raulinclude_HEADERS += LashClient.h LashServerInterface.h LashProject.h
+endif

@@ -28,7 +28,6 @@ using std::string;
 
 LashDriver::LashDriver(Patchage* app, int argc, char** argv)
 : _app(app),
-  _client(NULL),
   _args(NULL)
 {
 	_args = lash_extract_args(&argc, &argv);
@@ -46,21 +45,26 @@ void
 LashDriver::attach(bool launch_daemon)
 {
 	// Already connected
-	if (_client)
+	if (_server_interface && _server_interface->enabled())
 		return;
 
 	int lash_flags = LASH_Server_Interface | LASH_Config_File;
 	if (!launch_daemon)
 		lash_flags |= LASH_No_Start_Server;
-	_client = lash_init(_args, PACKAGE_NAME, lash_flags, LASH_PROTOCOL(2, 0));
-	if (!_client) {
-		_app->status_message("[LASH] Unable to attach to server");
-	} else {
-		//lash_event_t* event = lash_event_new_with_type(LASH_Client_Name);
-		//lash_event_set_string(event, "Patchage");
-		//lash_send_event(_client, event);
+	
+	_server_interface = Raul::LashServerInterface::create(
+			_args, PACKAGE_NAME, lash_flags);
+
+	if (_server_interface) {
+		/*_server_interface->signal_save_file.connect(sigc::mem_fun(this, LashDriver::on_save_file));
+		_server_interface->signal_restore_file.connect(sigc::mem_fun(this, LashDriver::on_restore_file));
+		_server_interface->signal_quit.connect(sigc::mem_fun(this, LashDriver::on_quit));*/
+		_server_interface->signal_project_add.connect(sigc::mem_fun(this, &LashDriver::on_project_add));
+
 		signal_attached.emit();
 		_app->status_message("[LASH] Attached");
+	} else {
+		_app->status_message("[LASH] Unable to attach to server");
 	}
 }
 
@@ -68,106 +72,41 @@ LashDriver::attach(bool launch_daemon)
 void
 LashDriver::detach()
 {
-	_client = NULL;
+	_server_interface.reset();
 	_app->status_message("[LASH] Detached");
 	signal_detached.emit();
 }
 
 
 void
-LashDriver::process_events()
+LashDriver::on_project_add(const SharedPtr<Raul::LashProject> project)
 {
-	lash_event_t*  ev = NULL;
-	lash_config_t* conf = NULL;
-
-	// Process events
-	while ((ev = lash_get_event(_client)) != NULL) {
-		handle_event(ev);
-		lash_event_destroy(ev);	
-	}
-
-	// Process configs
-	while ((conf = lash_get_config(_client)) != NULL) {
-		handle_config(conf);
-		lash_config_destroy(conf);	
-	}
+	_project_name = project->name();
 }
 
 
 void
-LashDriver::handle_event(lash_event_t* ev)
+LashDriver::on_save_file(const string& directory)
 {
-	LASH_Event_Type type = lash_event_get_type(ev);
-	const char*     c_str = lash_event_get_string(ev);
-	string          str   = (c_str == NULL) ? "" : c_str;
-	
-	//cout << "[LashDriver] LASH Event.  Type = " << (unsigned int)type << ", string = " << str << "**********" << endl;
-	
-	switch (type) {
-	case LASH_Project_Add:
-		cerr << "LASH project add\n";
-		break;
-	case LASH_Project_Remove:
-		cerr << "LASH remove\n";
-		break;
-	case LASH_Project_Dir:
-		cerr << "LASH project dir\n";
-		break;
-	case LASH_Project_Name:
-		cerr << "LASH project name\n";
-		break;
-	case LASH_Client_Add:
-		cerr << "LASH client add\n";
-		break;
-	case LASH_Client_Name:
-		cerr << "LASH client name\n";
-		break;
-	case LASH_Jack_Client_Name:
-		cerr << "LASH jack client name\n";
-		break;
-	case LASH_Alsa_Client_ID:
-		cerr << "LASH alsa client id\n";
-		break;
-	case LASH_Percentage:
-		cerr << "LASH percentage\n";
-		break;
-	case LASH_Save:
-		cerr << "LASH save\n";
-		break;
-	case LASH_Restore_Data_Set:
-		cerr << "LASH restore data set\n";
-		break;
-	case LASH_Server_Lost:
-		cerr << "LASH server lost\n";
-		break;
-	case LASH_Client_Remove:
-		cerr << "LASH client remove\n";
-		break;
-	case LASH_Save_File:
-		cout << "[LashDriver] LASH Save File - " << str << endl;
-		_app->store_window_location();
-		_app->state_manager()->save(str.append("/locations"));
-		lash_send_event(_client, lash_event_new_with_type(LASH_Save_File));
-		break;
+	cout << "[LashDriver] LASH Save File - " << directory << endl;
+	_app->store_window_location();
+	_app->state_manager()->save(directory + "/locations");
+}
 
-	case LASH_Restore_File:
-		cout << "[LashDriver] LASH Restore File - " << str << endl;
-		_app->state_manager()->load(str.append("/locations"));
-		_app->update_state();
-		lash_send_event(_client, lash_event_new_with_type(LASH_Restore_File));
-		break;
 
-	case LASH_Save_Data_Set:
-		cout << "[LashDriver] LASH Save Data Set - " << endl;
-		lash_send_event(_client, lash_event_new_with_type(LASH_Save_Data_Set));
-		break;
+void
+LashDriver::on_restore_file(const string& directory)
+{
+	cout << "[LashDriver] LASH Restore File - " << directory << endl;
+	_app->state_manager()->load(directory + "/locations");
+	_app->update_state();
+}
 
-	case LASH_Quit:
-		cout << "[LashDriver] Quit" << endl;
-		_client = NULL;
-		_app->quit();
-		break;
-	}
+
+void
+LashDriver::on_quit()
+{
+	cout << "[LashDriver] Quit" << endl;
 }
 
 
@@ -183,6 +122,51 @@ LashDriver::handle_config(lash_config_t* conf)
 	key      = lash_config_get_key(conf);
 	val      = lash_config_get_value(conf);
 	val_size = lash_config_get_value_size(conf);
+}
+	
+
+void
+LashDriver::restore_project(const std::string& directory)
+{
+	_project_name = "";
+	_server_interface->restore_project(directory);
+}
+
+
+void
+LashDriver::set_project_directory(const std::string& directory)
+{
+	SharedPtr<Raul::LashProject> project = _server_interface->project(_project_name);
+	
+	if (project)
+		project->set_directory(directory);
+	else
+		cerr << "[LashDriver] No LASH project to set directory!" << endl;
+}
+
+
+void
+LashDriver::save_project()
+{
+	SharedPtr<Raul::LashProject> project = _server_interface->project(_project_name);
+	
+	if (project)
+		project->save();
+	else
+		cerr << "[LashDriver] No LASH project to save!" << endl;
+}
+
+	
+void
+LashDriver::close_project()
+{
+	cerr << "CLOSE PROJECT\n";
+	SharedPtr<Raul::LashProject> project = _server_interface->project(_project_name);
+	
+	if (project)
+		project->close();
+	else
+		cerr << "[LashDriver] No LASH project to close!" << endl;
 }
 
 
