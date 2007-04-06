@@ -263,7 +263,8 @@ FlowCanvas::destroy()
 {
 	_remove_objects = false;
 
-	clear_selection();
+	_selected_items.clear();
+	_selected_connections.clear();
 
 	_connections.clear();
 
