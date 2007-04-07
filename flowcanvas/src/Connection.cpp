@@ -114,12 +114,12 @@ Connection::update_location()
 		const double join_x = (src_x + dst_x)/2.0;
 		const double join_y = (src_y + dst_y)/2.0;
 
-		const double x_dist = fabs(dst_x - src_x)/4.0;
-		const double y_dist = fabs(dst_y - src_y)/4.0;
+		double dx = fabs(dst_x - src_x);
+		double dy = fabs(dst_y - src_y);
 
 		// Path 1 (src_x, src_y) -> (join_x, join_y)
 		// Control point 1
-		const double src_x1 = src_x + x_dist + y_dist;//std::min(x_dist+y_dist, 40.0);
+		const double src_x1 = src_x + (dx+dy)/5.0;//std::min(x_dist+y_dist, 40.0);
 		const double src_y1 = src_y;
 		// Control point 2
 		const double src_x2 = (join_x + src_x1) / 2.0;
@@ -127,7 +127,7 @@ Connection::update_location()
 
 		// Path 2, (join_x, join_y) -> (dst_x, dst_y)
 		// Control point 1
-		const double dst_x1 = dst_x - (x_dist + y_dist);//std::min(x_dist+y_dist, 40.0);
+		const double dst_x1 = dst_x - (dx + dy)/5.0;//std::min(x_dist+y_dist, 40.0);
 		const double dst_y1 = dst_y;
 		// Control point 2
 		const double dst_x2 = (join_x + dst_x1) / 2.0;
@@ -149,6 +149,24 @@ Connection::update_location()
 		gnome_canvas_path_def_lineto(_path, dst_x1, dst_y1);
 		gnome_canvas_path_def_lineto(_path, dst_x, dst_y);
 		*/
+		
+		if (_show_arrowhead) {
+
+			const double h  = sqrt(dx*dx + dy*dy);
+
+			dx = dx / h * 10;
+			dy = dy / h * 10;
+			
+			gnome_canvas_path_def_lineto(_path,
+					dst_x - 10,
+					dst_y - 5);
+
+			gnome_canvas_path_def_moveto(_path, dst_x, dst_y);
+
+			gnome_canvas_path_def_lineto(_path,
+					dst_x - 10,
+					dst_y + 5);
+		}
 	}
 
 	GnomeCanvasBpath* c_obj = _bpath.gobj();
