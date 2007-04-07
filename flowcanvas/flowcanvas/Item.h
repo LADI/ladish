@@ -66,6 +66,9 @@ public:
 	virtual void set_height(double h) = 0;
 
 	virtual void resize() = 0;
+	
+	virtual void load_location()  {}
+	virtual void store_location() {}
 
 	bool        is_within(const Gnome::Canvas::Rect& rect) const;
 	inline bool point_is_within(double x, double y) const;

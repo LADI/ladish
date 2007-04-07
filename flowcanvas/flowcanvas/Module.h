@@ -63,9 +63,6 @@ public:
 
 	virtual void move(double dx, double dy);
 	virtual void move_to(double x, double y);
-
-	virtual void load_location()  {}
-	virtual void store_location() {}
 	
 	virtual void set_name(const string& n);
 

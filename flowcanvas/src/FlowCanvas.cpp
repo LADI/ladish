@@ -1196,7 +1196,7 @@ FlowCanvas::arrange()
 		const string y_str = pos.substr(pos.find(",")+1);
 		double x = strtod(x_str.c_str(), NULL) * 1.25;
 		double y = -strtod(y_str.c_str(), NULL) * 1.25;
-		cerr << "MOVE: " << x << ", " << y << endl;
+		//cerr << "MOVE: " << x << ", " << y << endl;
 		i->first->property_x() = x - i->first->width()/2.0;
 		i->first->property_y() = y - i->first->height()/2.0;
 		least_x = std::min(least_x, x);
@@ -1208,8 +1208,8 @@ FlowCanvas::arrange()
 	const double graph_width  = most_x - least_x;
 	const double graph_height = most_y - least_y;
 
-	cerr << "CWH: " << _width << ", " << _height << endl;
-	cerr << "GWH: " << graph_width << ", " << graph_height << endl;
+	//cerr << "CWH: " << _width << ", " << _height << endl;
+	//cerr << "GWH: " << graph_width << ", " << graph_height << endl;
 
 	if (graph_width + 10 > _width)
 		resize(graph_width + 10, _height);

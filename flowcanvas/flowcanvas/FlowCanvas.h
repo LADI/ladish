@@ -102,7 +102,7 @@ public:
 	void   zoom_full();
 
 	void render_to_dot(const string& filename);
-	void arrange();
+	virtual void arrange();
 
 	double width() const  { return _width; }
 	double height() const { return _height; }
