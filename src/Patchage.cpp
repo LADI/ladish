@@ -146,6 +146,7 @@ Patchage::Patchage(int argc, char** argv)
 	xml->get_widget("store_positions_menuitem", _menu_store_positions);
 	xml->get_widget("file_quit_menuitem", _menu_file_quit);
 	xml->get_widget("view_refresh_menuitem", _menu_view_refresh);
+	xml->get_widget("view_arrange_menuitem", _menu_view_arrange);
 	xml->get_widget("view_messages_menuitem", _menu_view_messages);
 	xml->get_widget("view_toolbar_menuitem", _menu_view_toolbar);
 	xml->get_widget("help_about_menuitem", _menu_help_about);
@@ -219,6 +220,7 @@ Patchage::Patchage(int argc, char** argv)
 	_menu_store_positions->signal_activate().connect(sigc::mem_fun(this, &Patchage::menu_store_positions));
 	_menu_file_quit->signal_activate().connect(      sigc::mem_fun(this, &Patchage::menu_file_quit));
 	_menu_view_refresh->signal_activate().connect(   sigc::mem_fun(this, &Patchage::menu_view_refresh));
+	_menu_view_arrange->signal_activate().connect(   sigc::mem_fun(this, &Patchage::menu_view_arrange));
 	_menu_view_toolbar->signal_activate().connect(   sigc::mem_fun(this, &Patchage::view_toolbar_toggled));
 	_menu_view_messages->signal_toggled().connect(   sigc::mem_fun(this, &Patchage::show_messages_toggled));
 	_menu_help_about->signal_activate().connect(     sigc::mem_fun(this, &Patchage::menu_help_about));
@@ -691,6 +693,15 @@ Patchage::menu_view_refresh()
 	if (_alsa_driver)
 		_alsa_driver->refresh();
 #endif
+}
+
+
+void
+Patchage::menu_view_arrange() 
+{
+	assert(_canvas);
+	
+	_canvas->arrange();
 }
 
 
