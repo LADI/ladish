@@ -33,7 +33,8 @@ public:
 	void attach(bool launch_daemon);
 	void detach();
 
-	bool is_attached() const { return _server_interface->enabled(); }
+	bool is_attached() const
+	{ return _server_interface && _server_interface->enabled(); }
 	
 	bool connect(boost::shared_ptr<PatchagePort>, boost::shared_ptr<PatchagePort>)
 	{ return false; }
