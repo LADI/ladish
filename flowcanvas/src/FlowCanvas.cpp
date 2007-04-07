@@ -95,6 +95,18 @@ FlowCanvas::set_zoom(double pix_per_unit)
 
 
 void
+FlowCanvas::scroll_to_center()
+{
+	int win_width, win_height;
+	Glib::RefPtr<Gdk::Window> win = get_window();
+	win->get_size(win_width, win_height);
+
+	scroll_to((int)((_width - win_width) / 2.0),
+	          (int)((_height - win_height) / 2.0));
+}
+
+
+void
 FlowCanvas::zoom_full()
 {
 	int win_width, win_height;
@@ -1097,7 +1109,8 @@ FlowCanvas::arrange()
 	 * GraphViz documentation disagrees with function prototypes.
 	 */
 #ifdef HAVE_AGRAPH
-	std::map<boost::shared_ptr<Item>, Agnode_t*> nodes;
+	typedef std::map<boost::shared_ptr<Item>, Agnode_t*> Nodes;
+	Nodes nodes;
 
 	GVC_t* gvc = gvContext();
 	Agraph_t* G = agopen("g", AGDIGRAPH);
@@ -1106,21 +1119,56 @@ FlowCanvas::arrange()
 
 	unsigned id = 0;
 	for (ItemList::const_iterator i = _items.begin(); i != _items.end(); ++i) {
-		std::ostringstream id_ss;
-		id_ss << "n" << id++;
-		nodes.insert(std::make_pair(*i, agnode(G, strdup(id_ss.str().c_str()))));
+		std::ostringstream ss;
+		ss << "n" << id++;
+		Agnode_t* node = agnode(G, strdup(ss.str().c_str()));
+		if (boost::dynamic_pointer_cast<Module>(*i)) {
+			ss.str("");
+			ss << (*i)->width() / 96.0;
+			agsafeset(node, "width", strdup(ss.str().c_str()), "");
+			ss.str("");
+			ss << (*i)->height() / 96.0;
+			agsafeset(node, "height", strdup(ss.str().c_str()), "");
+			agsafeset(node, "shape", agstrdup("box"), "");
+		} else {
+			agsafeset(node, "width", "1.0", "");
+			agsafeset(node, "height", "1.0", "");
+			agsafeset(node, "shape", agstrdup("ellipse"), "");
+		}
+		assert(node);
+		nodes.insert(std::make_pair(*i, node));
 	}
 	
 	for (ConnectionList::iterator i = _connections.begin(); i != _connections.end(); ++i) {
 		const boost::shared_ptr<Connection> c = *i;
-		const boost::shared_ptr<Item> src = boost::dynamic_pointer_cast<Item>(c->source().lock());
-		const boost::shared_ptr<Item> dst = boost::dynamic_pointer_cast<Item>(c->dest().lock());
-		if (!src || !dst)
-			continue;
+		
+		boost::shared_ptr<Port> src_port = boost::dynamic_pointer_cast<Port>(c->source().lock());
+		boost::shared_ptr<Port> dst_port = boost::dynamic_pointer_cast<Port>(c->dest().lock());
+		
+		boost::shared_ptr<Item> src_item = boost::dynamic_pointer_cast<Item>(c->source().lock());
+		boost::shared_ptr<Item> dst_item = boost::dynamic_pointer_cast<Item>(c->dest().lock());
+		
+		Nodes::iterator src_i = nodes.end();
+		Nodes::iterator dst_i = nodes.end();
 
-		Agnode_t* src_node = nodes[src];
-		Agnode_t* dst_node = nodes[dst];
+		Agnode_t* src_node = NULL;
+		Agnode_t* dst_node = NULL;
+		
+		if (src_port)
+			src_i = nodes.find(src_port->module().lock());
+		else
+			src_i = nodes.find(src_item);
+		
+		if (dst_port)
+			dst_i = nodes.find(dst_port->module().lock());
+		else
+			dst_i = nodes.find(dst_item);
 
+		assert(src_i != nodes.end() && dst_i != nodes.end());
+
+		src_node = src_i->second;
+		dst_node = dst_i->second;
+		
 		assert(src_node && dst_node);
 
 		Agedge_t* edge = agedge(G, src_node, dst_node);
@@ -1133,20 +1181,24 @@ FlowCanvas::arrange()
 	}
 
 	gvLayout (gvc, G, "dot");
-	gvRender (gvc, G, "dot", fopen("/dev/null", "w"));
+	//gvRender (gvc, G, "dot", fopen("/dev/null", "w"));
+	gvRender (gvc, G, "dot", fopen("/home/dave/test.dot", "w"));
 
 	double least_x=HUGE_VAL, least_y=HUGE_VAL, most_x=0, most_y=0;
 
 	// Arrange to graphviz coordinates
 	for (std::map<boost::shared_ptr<Item>, Agnode_t*>::iterator i = nodes.begin();
 			i != nodes.end(); ++i) {
-		string pos(agget(i->second, "pos"));
+		char* pos_prop = agget(i->second, "pos");
+		assert(pos_prop);
+		string pos(pos_prop);
 		const string x_str = pos.substr(0, pos.find(","));
 		const string y_str = pos.substr(pos.find(",")+1);
-		double x = strtod(x_str.c_str(), NULL);
-		double y = strtod(y_str.c_str(), NULL);
-		i->first->property_x() = x;
-		i->first->property_y() = y;
+		double x = strtod(x_str.c_str(), NULL) * 1.25;
+		double y = -strtod(y_str.c_str(), NULL) * 1.25;
+		cerr << "MOVE: " << x << ", " << y << endl;
+		i->first->property_x() = x - i->first->width()/2.0;
+		i->first->property_y() = y - i->first->height()/2.0;
 		least_x = std::min(least_x, x);
 		least_y = std::min(least_y, y);
 		most_x = std::max(most_x, x);
@@ -1156,8 +1208,8 @@ FlowCanvas::arrange()
 	const double graph_width  = most_x - least_x;
 	const double graph_height = most_y - least_y;
 
-	//cerr << "CWH: " << _width << ", " << _height << endl;
-	//cerr << "GWH: " << graph_width << ", " << graph_height << endl;
+	cerr << "CWH: " << _width << ", " << _height << endl;
+	cerr << "GWH: " << graph_width << ", " << graph_height << endl;
 
 	if (graph_width + 10 > _width)
 		resize(graph_width + 10, _height);
@@ -1165,11 +1217,16 @@ FlowCanvas::arrange()
 	if (graph_height + 10 > _height)
 		resize(_width, graph_height + 10);
 
+	// This isn't trial and error code.  Honest!
+	
 	// Center on canvas
 	for (std::map<boost::shared_ptr<Item>, Agnode_t*>::iterator i = nodes.begin();
 			i != nodes.end(); ++i) {
-		i->first->move((_width - graph_width)/2.0, (_height - graph_height)/2.0);
+		i->first->move((_width / 2.0) - graph_width/2.0,
+		              ((_height / 2.0) + graph_height/2.0));
 	}
+
+	scroll_to_center();
 
 	gvFreeLayout(gvc, G);
 	agclose (G);

@@ -115,10 +115,11 @@ Connection::update_location()
 		const double join_y = (src_y + dst_y)/2.0;
 
 		const double x_dist = fabs(dst_x - src_x)/4.0;
+		const double y_dist = fabs(dst_y - src_y)/4.0;
 
 		// Path 1 (src_x, src_y) -> (join_x, join_y)
 		// Control point 1
-		const double src_x1 = src_x + std::max(x_dist, 40.0);
+		const double src_x1 = src_x + x_dist + y_dist;//std::min(x_dist+y_dist, 40.0);
 		const double src_y1 = src_y;
 		// Control point 2
 		const double src_x2 = (join_x + src_x1) / 2.0;
@@ -126,7 +127,7 @@ Connection::update_location()
 
 		// Path 2, (join_x, join_y) -> (dst_x, dst_y)
 		// Control point 1
-		const double dst_x1 = dst_x - std::max(x_dist, 40.0);
+		const double dst_x1 = dst_x - (x_dist + y_dist);//std::min(x_dist+y_dist, 40.0);
 		const double dst_y1 = dst_y;
 		// Control point 2
 		const double dst_x2 = (join_x + dst_x1) / 2.0;
@@ -139,8 +140,7 @@ Connection::update_location()
 		gnome_canvas_path_def_curveto(_path, dst_x2, dst_y2, dst_x1, dst_y1, dst_x, dst_y);
 
 		// Uncomment to see control point path as straight lines
-		/*
-		gnome_canvas_path_def_reset(_path);
+		/*gnome_canvas_path_def_reset(_path);
 		gnome_canvas_path_def_moveto(_path, src_x, src_y);
 		gnome_canvas_path_def_lineto(_path, src_x1, src_y1);
 		gnome_canvas_path_def_lineto(_path, src_x2, src_y2);

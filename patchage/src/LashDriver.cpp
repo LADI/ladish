@@ -56,11 +56,8 @@ LashDriver::attach(bool launch_daemon)
 			_args, PACKAGE_NAME, lash_flags);
 
 	if (_server_interface) {
-		/*_server_interface->signal_save_file.connect(sigc::mem_fun(this, LashDriver::on_save_file));
-		_server_interface->signal_restore_file.connect(sigc::mem_fun(this, LashDriver::on_restore_file));
-		_server_interface->signal_quit.connect(sigc::mem_fun(this, LashDriver::on_quit));*/
 		_server_interface->signal_project_add.connect(sigc::mem_fun(this, &LashDriver::on_project_add));
-
+		_server_interface->signal_quit.connect(sigc::mem_fun(this, &LashDriver::on_quit));
 		signal_attached.emit();
 		_app->status_message("[LASH] Attached");
 	} else {
@@ -82,6 +79,8 @@ void
 LashDriver::on_project_add(const SharedPtr<Raul::LashProject> project)
 {
 	_project_name = project->name();
+	project->signal_save_file.connect(sigc::mem_fun(this, &LashDriver::on_save_file));
+	project->signal_restore_file.connect(sigc::mem_fun(this, &LashDriver::on_restore_file));
 }
 
 

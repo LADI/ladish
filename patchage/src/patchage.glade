@@ -52,7 +52,7 @@
 		      <accelerator key="O" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image759">
+			<widget class="GtkImage" id="image823">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-open</property>
 			  <property name="icon_size">1</property>
@@ -74,7 +74,7 @@
 		      <accelerator key="S" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image760">
+			<widget class="GtkImage" id="image824">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-save</property>
 			  <property name="icon_size">1</property>
@@ -96,7 +96,7 @@
 		      <accelerator key="S" modifiers="GDK_CONTROL_MASK | GDK_SHIFT_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image761">
+			<widget class="GtkImage" id="image825">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-save-as</property>
 			  <property name="icon_size">1</property>
@@ -117,7 +117,7 @@
 		      <signal name="activate" handler="on_close_session_menuitem_activate" last_modification_time="Fri, 06 Apr 2007 01:57:05 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image762">
+			<widget class="GtkImage" id="image826">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-close</property>
 			  <property name="icon_size">1</property>
@@ -145,7 +145,7 @@
 		      <signal name="activate" handler="on_save_settings1_activate" last_modification_time="Mon, 13 Sep 2004 02:42:14 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image763">
+			<widget class="GtkImage" id="image827">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-save</property>
 			  <property name="icon_size">1</property>
@@ -195,7 +195,7 @@
 		      <accelerator key="P" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image764">
+			<widget class="GtkImage" id="image828">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-preferences</property>
 			  <property name="icon_size">1</property>
@@ -223,7 +223,7 @@
 		      <accelerator key="J" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image765">
+			<widget class="GtkImage" id="image829">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-connect</property>
 			  <property name="icon_size">1</property>
@@ -246,7 +246,7 @@
 		      <accelerator key="J" modifiers="GDK_CONTROL_MASK | GDK_SHIFT_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image766">
+			<widget class="GtkImage" id="image830">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-disconnect</property>
 			  <property name="icon_size">1</property>
@@ -274,7 +274,7 @@
 		      <accelerator key="A" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image767">
+			<widget class="GtkImage" id="image831">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-connect</property>
 			  <property name="icon_size">1</property>
@@ -297,7 +297,7 @@
 		      <accelerator key="A" modifiers="GDK_CONTROL_MASK | GDK_SHIFT_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image768">
+			<widget class="GtkImage" id="image832">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-disconnect</property>
 			  <property name="icon_size">1</property>
@@ -325,7 +325,7 @@
 		      <accelerator key="L" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image769">
+			<widget class="GtkImage" id="image833">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-connect</property>
 			  <property name="icon_size">1</property>
@@ -348,7 +348,7 @@
 		      <accelerator key="L" modifiers="GDK_CONTROL_MASK | GDK_SHIFT_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image770">
+			<widget class="GtkImage" id="image834">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-disconnect</property>
 			  <property name="icon_size">1</property>
@@ -406,9 +406,32 @@
 		      <accelerator key="R" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image771">
+			<widget class="GtkImage" id="image835">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-refresh</property>
+			  <property name="icon_size">1</property>
+			  <property name="xalign">0.5</property>
+			  <property name="yalign">0.5</property>
+			  <property name="xpad">0</property>
+			  <property name="ypad">0</property>
+			</widget>
+		      </child>
+		    </widget>
+		  </child>
+
+		  <child>
+		    <widget class="GtkImageMenuItem" id="view_arrange_menuitem">
+		      <property name="visible">True</property>
+		      <property name="tooltip" translatable="yes">Automatically organize canvas</property>
+		      <property name="label" translatable="yes">_Arrange</property>
+		      <property name="use_underline">True</property>
+		      <signal name="activate" handler="on_view_arrange_menuitem_activate" last_modification_time="Fri, 06 Apr 2007 20:51:46 GMT"/>
+		      <accelerator key="G" modifiers="GDK_CONTROL_MASK" signal="activate"/>
+
+		      <child internal-child="image">
+			<widget class="GtkImage" id="image836">
+			  <property name="visible">True</property>
+			  <property name="stock">gtk-sort-ascending</property>
 			  <property name="icon_size">1</property>
 			  <property name="xalign">0.5</property>
 			  <property name="yalign">0.5</property>

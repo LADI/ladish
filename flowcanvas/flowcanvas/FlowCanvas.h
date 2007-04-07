@@ -154,6 +154,8 @@ private:
 	void ports_joined(boost::shared_ptr<Port> port1, boost::shared_ptr<Port> port2);
 	bool animate_selected();
 
+	void scroll_to_center();
+
 	boost::shared_ptr<Port> _selected_port; ///< Selected port (hilited red from clicking once)
 	boost::shared_ptr<Port> _connect_port;  ///< Port for which a connection is being made (if applicable)
 	

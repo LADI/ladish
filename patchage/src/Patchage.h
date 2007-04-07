@@ -74,6 +74,7 @@ protected:
 	void show_messages_toggled();
 	void view_toolbar_toggled();
 	void menu_view_refresh();
+	void menu_view_arrange();
 	void menu_help_about();
 	void zoom(double z);
 	void zoom_changed();
@@ -141,6 +142,7 @@ protected:
 	Gtk::CheckMenuItem*  _menu_view_toolbar;
 	Gtk::CheckMenuItem*  _menu_view_messages;
 	Gtk::MenuItem*       _menu_view_refresh;
+	Gtk::MenuItem*       _menu_view_arrange;
 	Gtk::MenuItem*       _menu_help_about;
 	Gtk::Toolbar*        _toolbar;
 	Gtk::ScrolledWindow* _canvas_scrolledwindow;
