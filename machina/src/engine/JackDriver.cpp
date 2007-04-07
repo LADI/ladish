@@ -121,11 +121,11 @@ JackDriver::process_input(SharedPtr<Machine> machine, const TimeSlice& time)
 
 		const jack_nframes_t nframes     = time.length_ticks();
 		void*                jack_buffer = jack_port_get_buffer(_input_port, nframes);
-		const jack_nframes_t event_count = jack_midi_get_event_count(jack_buffer, nframes);
+		const jack_nframes_t event_count = jack_midi_get_event_count(jack_buffer);
 
 		for (jack_nframes_t i=0; i < event_count; ++i) {
 			jack_midi_event_t ev;
-			jack_midi_event_get(&ev, jack_buffer, i, nframes);
+			jack_midi_event_get(&ev, jack_buffer, i);
 		
 			_recorder->write(_record_time + ev.time, ev.size, ev.buffer);
 		}
@@ -137,11 +137,11 @@ JackDriver::process_input(SharedPtr<Machine> machine, const TimeSlice& time)
 
 		const jack_nframes_t nframes     = time.length_ticks();
 		void*                jack_buffer = jack_port_get_buffer(_input_port, nframes);
-		const jack_nframes_t event_count = jack_midi_get_event_count(jack_buffer, nframes);
+		const jack_nframes_t event_count = jack_midi_get_event_count(jack_buffer);
 
 		for (jack_nframes_t i=0; i < event_count; ++i) {
 			jack_midi_event_t ev;
-			jack_midi_event_get(&ev, jack_buffer, i, nframes);
+			jack_midi_event_get(&ev, jack_buffer, i);
 
 			if (ev.buffer[0] == 0x90) {
 
@@ -206,7 +206,7 @@ JackDriver::write_event(Raul::BeatTime time,
 	} else {
 		jack_midi_event_write(
 				jack_port_get_buffer(_output_port, nframes), offset,
-				event, size, nframes);
+				event, size);
 	}
 }
 
@@ -221,7 +221,7 @@ JackDriver::on_process(jack_nframes_t nframes)
 	_cycle_time.set_length(nframes);
 
 	assert(_output_port);
-	jack_midi_clear_buffer(jack_port_get_buffer(_output_port, nframes), nframes);
+	jack_midi_clear_buffer(jack_port_get_buffer(_output_port, nframes));
 	
 	/* Take a reference to machine here and use only it during the process
 	 * cycle so _machine can be switched with set_machine during a cycle. */
