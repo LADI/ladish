@@ -2,20 +2,22 @@
 lashincludedir = $(includedir)/lash-1.0/lash
 
 lashinclude_HEADERS = \
-	lash.h \
 	types.h \
-	xmalloc.h \
+	lash.h \
 	config.h \
 	event.h \
-	list.h \
-	file.h \
 	client_interface.h \
-	protocol.h \
-	loader.h \
-	exec_params.h
+	protocol.h
+
 
 noinst_HEADERS = \
+	types.h \
+	xmalloc.h \
+	list.h \
+	file.h \
 	client.h \
+	loader.h \
+	exec_params.h
 	comm_buffer.h \
 	debug.h \
 	internal.h \

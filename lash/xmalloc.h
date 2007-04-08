@@ -20,7 +20,6 @@
 #ifndef __LASH_XMALLOC_H__
 #define __LASH_XMALLOC_H__
 
-
 #ifdef LASH_BUILD
 #define _GNU_SOURCE
 #include "config.h"
@@ -37,25 +36,23 @@ extern "C" {
 
 #ifdef LASH_DEBUG
 
-#define lash_malloc   malloc
-#define lash_realloc  realloc
-#define lash_strdup   strdup
-
-#else
-
-#define lash_malloc   lash_xmalloc
-#define lash_realloc  lash_xrealloc
-#define lash_strdup   lash_xstrdup
-
-#endif
-
-void * lash_malloc0  (size_t);
-
-
 void * lash_xmalloc  (size_t);
 void * lash_xrealloc (void *, size_t);
 char * lash_xstrdup  (const char *);
 
+inline static void * lash_malloc(size_t s)           { return lash_xmalloc(s); }
+inline static void * lash_realloc(void* a, size_t s) { return lash_xrealloc(a, s); }
+inline static char * lash_strdup(const char* s)      { return lash_xstrdup(s); }
+
+#else
+
+inline static void * lash_malloc(size_t s)           { return malloc(s); }
+inline static void * lash_realloc(void* a, size_t s) { return realloc(a, s); }
+inline static char * lash_strdup(const char* s)      { return strdup(s); }
+
+#endif
+
+void * lash_malloc0  (size_t);
 
 
 #ifdef __cplusplus

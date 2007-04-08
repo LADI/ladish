@@ -23,9 +23,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "config.h"
 #include <lash/lash.h>
+#include <lash/xmalloc.h>
 
-#ifndef LASH_DEBUG
+#ifdef LASH_DEBUG
 
 void *
 lash_xmalloc(size_t size)

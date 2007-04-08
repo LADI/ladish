@@ -23,6 +23,7 @@
 #include <lash/lash.h>
 #include <lash/args.h>
 #include <lash/internal.h>
+#include <lash/internal_headers.h>
 
 void
 lash_args_free_argv(lash_args_t * args)

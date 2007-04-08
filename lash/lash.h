@@ -26,10 +26,6 @@
 #include <lash/event.h>
 #include <lash/config.h>
 
-#include <lash/xmalloc.h>
-#include <lash/file.h>
-#include <lash/list.h>
-
 #include <uuid/uuid.h>
 
 #endif /* __LASH_H__ */

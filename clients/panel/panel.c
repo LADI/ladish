@@ -368,7 +368,7 @@ panel_create(lash_client_t * lash_client)
 
 	guint status_context;
 
-	panel = lash_malloc(sizeof(panel_t));
+	panel = malloc(sizeof(panel_t));
 	panel->lash_client = lash_client;
 
 	panel->projects = gtk_list_store_new(PROJECT_NUM_COLUMNS, G_TYPE_POINTER);

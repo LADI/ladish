@@ -26,6 +26,7 @@
 #include <errno.h>
 
 #include <lash/lash.h>
+#include <lash/internal_headers.h>
 
 int
 lash_file_exists(const char *file)

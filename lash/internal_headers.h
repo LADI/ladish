@@ -21,6 +21,9 @@
 #ifndef __LASH_INTERNAL_HEADERS_H__
 #define __LASH_INTERNAL_HEADERS_H__
 
+#include <lash/list.h>
+#include <lash/xmalloc.h>
+#include <lash/file.h>
 #include <lash/internal.h>
 #include <lash/protocol.h>
 #include <lash/connect_params.h>
