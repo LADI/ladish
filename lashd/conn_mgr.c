@@ -95,7 +95,8 @@ conn_mgr_new(server_t * server)
 
 	err = conn_mgr_start(mgr);
 	if (err) {
-		conn_mgr_destroy(mgr);
+		if (mgr)
+			conn_mgr_destroy(mgr);
 		return NULL;
 	}
 
@@ -263,8 +264,10 @@ conn_mgr_stop(conn_mgr_t * conn_mgr)
 {
 	conn_mgr->quit = 1;
 	pthread_cond_signal(&conn_mgr->client_event_cond);
-	pthread_join(conn_mgr->send_thread, NULL);
-	pthread_join(conn_mgr->recv_thread, NULL);
+	if (conn_mgr->send_thread)
+		pthread_join(conn_mgr->send_thread, NULL);
+	if (conn_mgr->recv_thread)
+		pthread_join(conn_mgr->recv_thread, NULL);
 }
 
 void
