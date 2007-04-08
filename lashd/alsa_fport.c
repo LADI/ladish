@@ -19,8 +19,10 @@
  */
 
 #include <lash/lash.h>
+#include <lash/internal_headers.h>
 
 #include "alsa_fport.h"
+
 
 alsa_fport_t *
 alsa_fport_new()
