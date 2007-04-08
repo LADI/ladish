@@ -17,14 +17,13 @@ noinst_HEADERS = \
 	file.h \
 	client.h \
 	loader.h \
-	exec_params.h
+	exec_params.h \
 	comm_buffer.h \
 	debug.h \
 	internal.h \
 	socket.h \
 	comm_event.h \
 	config.h \
-	internal.h \
 	args.h \
 	internal_headers.h \
 	server_client.h \
