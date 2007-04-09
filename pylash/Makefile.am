@@ -28,7 +28,7 @@ INCLUDES = $(PYTHON_INCLUDES)
 _lash_la_LDFLAGS = -module -avoid-version ../liblash/liblash.la
 
 _lash_la_SOURCES = lash.c lash.h
-BUILT_SOURCES = lash_wrap.c
+nodist__lash_la_SOURCES = lash_wrap.c
 
 pkgpyexec_SCRIPTS = lash.py
 
