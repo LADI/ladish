@@ -151,6 +151,22 @@ else
 fi
 AM_CONDITIONAL(HAVE_READLINE, test "x$lash_readline" != "xno")
 
+################
+###  pylash  ###
+################
+
+AM_PATH_PYTHON()
+
+build_pylash=no
+
+AC_MSG_RESULT([$PYTHON])
+
+if test "$PYTHON"; then
+  AC_PROG_SWIG(1.3.31)
+  if test "$SWIG_LIB" ; then
+    build_pylash=yes
+  fi
+fi
 
 ######################
 ### --enable-debug ###
@@ -239,6 +255,7 @@ AC_CONFIG_FILES([clients/synth/Makefile])
 AC_CONFIG_FILES([clients/save_button/Makefile])
 AC_CONFIG_FILES([clients/panel/Makefile])
 AC_CONFIG_FILES([icons/Makefile])
+AC_CONFIG_FILES([pylash/Makefile])
 
 AC_OUTPUT
 
@@ -268,6 +285,7 @@ AC_MSG_RESULT([
   Gtk support:           $lash_gtk2
   Debugging output:      $lash_debug
   Building manual:       $lash_texi2html
+  Building pylash:       $build_pylash
 
   CFLAGS: $CFLAGS
 

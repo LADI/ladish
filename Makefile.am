@@ -1,4 +1,4 @@
-SUBDIRS = m4 docs lash liblash lashd clients icons
+SUBDIRS = m4 docs lash liblash lashd clients icons pylash
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = lash-1.0.pc
