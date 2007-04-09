@@ -19,6 +19,8 @@ include $(top_srcdir)/common.am
 
 pkgpyexecdir = $(pythondir)
 
+if BUILD_PYLASH
+
 pkgpyexec_LTLIBRARIES = _lash.la
 
 INCLUDES = $(PYTHON_INCLUDES)
@@ -35,3 +37,4 @@ EXTRA_DIST = test.py lash.i
 
 lash_wrap.c lash.py: lash.i lash.h
 	$(SWIG) -o lash_wrap.c -I$(top_srcdir) -python $(top_srcdir)/$(subdir)/lash.i
+endif

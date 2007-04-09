@@ -155,16 +155,26 @@ AM_CONDITIONAL(HAVE_READLINE, test "x$lash_readline" != "xno")
 ###  pylash  ###
 ################
 
-AM_PATH_PYTHON(2.3,python_found=yes,python_found=no)
-
 build_pylash=no
 
-if test x$python_found == xyes; then
-  AC_PROG_SWIG(1.3.31)
-  if test "$SWIG_LIB" ; then
-    build_pylash=yes
+AC_ARG_ENABLE(pylash, [AS_HELP_STRING(--disable-pylash, [Force disable pylash building [default=no]])], [ build_pylash="disabled" ])
+
+if test x$build_pylash != xdisabled; then
+  AM_PATH_PYTHON(2.3, python_found=yes, python_found=no)
+
+  if test x$python_found == xyes; then
+    AM_CHECK_PYTHON_HEADERS(, python_found=no)
+
+    if test x$python_found == xyes; then
+      AC_PROG_SWIG(1.3.31)
+      if test "$SWIG_LIB" ; then
+        build_pylash=yes
+      fi
+    fi
   fi
 fi
+
+AM_CONDITIONAL(BUILD_PYLASH, test x$build_pylash = xyes)
 
 ######################
 ### --enable-debug ###
