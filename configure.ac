@@ -155,13 +155,11 @@ AM_CONDITIONAL(HAVE_READLINE, test "x$lash_readline" != "xno")
 ###  pylash  ###
 ################
 
-AM_PATH_PYTHON()
+AM_PATH_PYTHON(2.3,python_found=yes,python_found=no)
 
 build_pylash=no
 
-AC_MSG_RESULT([$PYTHON])
-
-if test "$PYTHON"; then
+if test x$python_found == xyes; then
   AC_PROG_SWIG(1.3.31)
   if test "$SWIG_LIB" ; then
     build_pylash=yes
