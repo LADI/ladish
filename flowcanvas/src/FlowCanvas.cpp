@@ -52,7 +52,7 @@ FlowCanvas::FlowCanvas(double width, double height)
 	
 	_base_rect.property_fill_color_rgba() = 0x000000FF;
 	//_base_rect.show();
-	//_base_rect.signal_event().connect(sigc::mem_fun(this, &FlowCanvas::scroll_drag_handler));
+	_base_rect.signal_event().connect(sigc::mem_fun(this, &FlowCanvas::scroll_drag_handler));
 	_base_rect.signal_event().connect(sigc::mem_fun(this, &FlowCanvas::canvas_event));
 	_base_rect.signal_event().connect(sigc::mem_fun(this, &FlowCanvas::select_drag_handler));
 	_base_rect.signal_event().connect(sigc::mem_fun(this, &FlowCanvas::connection_drag_handler));
@@ -692,20 +692,15 @@ FlowCanvas::canvas_event(GdkEvent* event)
 }
 
 
-/* I can not get this to work for the life of me.
- * Man I hate gnomecanvas.
 bool
 FlowCanvas::scroll_drag_handler(GdkEvent* event)
 {
-	
 	bool handled = true;
 	
 	static int    original_scroll_x = 0;
 	static int    original_scroll_y = 0;
 	static double origin_x = 0;
 	static double origin_y = 0;
-	static double x_offset = 0;
-	static double y_offset = 0;
 	static double scroll_offset_x = 0;
 	static double scroll_offset_y = 0;
 	static double last_x = 0;
@@ -717,52 +712,40 @@ FlowCanvas::scroll_drag_handler(GdkEvent* event)
 		_base_rect.grab(GDK_POINTER_MOTION_MASK | GDK_BUTTON_RELEASE_MASK | GDK_BUTTON_PRESS_MASK,
 			Gdk::Cursor(Gdk::FLEUR), event->button.time);
 		get_scroll_offsets(original_scroll_x, original_scroll_y);
-		scroll_offset_x = original_scroll_x;
-		scroll_offset_y = original_scroll_y;
-		origin_x = event->button.x;
-		origin_y = event->button.y;
+		scroll_offset_x = 0;
+		scroll_offset_y = 0;
+		origin_x = event->button.x_root;
+		origin_y = event->button.y_root;
+		cerr << "Origin: (" << origin_x << "," << origin_y << ")\n";
 		last_x = origin_x;
 		last_y = origin_y;
 		first_motion = true;
-		_scroll_dragging = true;
+		_drag_state = SCROLL;
 		
-	} else if (event->type == GDK_MOTION_NOTIFY && _scroll_dragging) {
-		// These are world-relative coordinates
-		double x = event->motion.x_root;
-		double y = event->motion.y_root;
-		
-		//c2w(x, y, x, y);
-		//world_to_window(x, y, x, y);
-		//window_to_world(event->button.x, event->button.y, x, y);
-		//w2c(x, y, x, y);
-
-		x_offset += last_x - x;//x + original_scroll_x;
-		y_offset += last_y - y;// + original_scroll_y;
+	} else if (event->type == GDK_MOTION_NOTIFY && _drag_state == SCROLL) {
+		const double x        = event->motion.x_root;
+		const double y        = event->motion.y_root;
+		const double x_offset = last_x - x;
+		const double y_offset = last_y - y;
 		
 		//cerr << "Coord: (" << x << "," << y << ")\n";
 		//cerr << "Offset: (" << x_offset << "," << y_offset << ")\n";
 
-		int temp_x;
-		int temp_y;
-		w2c(lrint(x_offset), lrint(y_offset),
-			temp_x, temp_y);
-		scroll_offset_x += temp_x;
-		scroll_offset_y += temp_y;
-		scroll_to(scroll_offset_x,
-		          scroll_offset_y);
+		scroll_offset_x += x_offset;
+		scroll_offset_y += y_offset;
+		scroll_to(lrint(original_scroll_x + scroll_offset_x),
+		          lrint(original_scroll_y + scroll_offset_y));
 		last_x = x;
 		last_y = y;
-	} else if (event->type == GDK_BUTTON_RELEASE && _scroll_dragging) {
+	} else if (event->type == GDK_BUTTON_RELEASE && _drag_state == SCROLL) {
 		_base_rect.ungrab(event->button.time);
-		_scroll_dragging = false;
+		_drag_state = NOT_DRAGGING;
 	} else {
 		handled = false;
 	}
 
 	return handled;
-	return false;
 }
-*/
 
 
 bool

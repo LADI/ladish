@@ -147,7 +147,7 @@ private:
 	
 	boost::shared_ptr<Port> get_port_at(double x, double y);
 
-	//bool scroll_drag_handler(GdkEvent* event);
+	bool scroll_drag_handler(GdkEvent* event);
 	virtual bool select_drag_handler(GdkEvent* event);
 	virtual bool connection_drag_handler(GdkEvent* event);
 	
