@@ -27,7 +27,13 @@ PatchageEvent::execute()
 {
 	//cerr << "{ EXECUTING EVENT" << endl;
 
-	jack_port_t* const jack_port = jack_port_by_id(_patchage->jack_driver()->client(), _port_id);
+	jack_port_t* jack_port = NULL;
+	if (_patchage->jack_driver()->client())
+		jack_port = jack_port_by_id(_patchage->jack_driver()->client(), _port_id);
+
+	if (!jack_port)
+		return;
+
 	const string full_name = jack_port_name(jack_port);
 	const string module_name = full_name.substr(0, full_name.find(":"));
 	const string port_name = full_name.substr(full_name.find(":")+1);
