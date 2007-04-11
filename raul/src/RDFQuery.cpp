@@ -20,6 +20,8 @@
 #include <rasqal.h>
 #include "raul/RDFQuery.h"
 
+using namespace std;
+
 namespace Raul {
 
 
@@ -39,8 +41,10 @@ RDFQuery::run(const Glib::ustring base_uri_str) const
 
 	rasqal_query_results* results = rasqal_query_execute(rq);
 	
-	if (!results)
+	if (!results) {
+		cerr << "Failed Query was:" << endl << _query << endl;
 		return result; /* Return an empty Results */
+	}
 
 	while (!rasqal_query_results_finished(results)) {
 		

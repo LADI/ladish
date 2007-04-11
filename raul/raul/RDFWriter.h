@@ -37,7 +37,7 @@ public:
 	Type               type() const      { return _type; }
 	const std::string& to_string() const { return _string; }
 
-	operator bool() { return (_type != NULL_ID); }
+	operator bool() const { return (_type != NULL_ID); }
 
 private:
 	Type        _type;
