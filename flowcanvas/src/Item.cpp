@@ -37,7 +37,7 @@ Item::Item(boost::shared_ptr<FlowCanvas> canvas,
 {
 	signal_event().connect(sigc::mem_fun(this, &Item::item_event));
 
-	//signal_clicked.connect(       sigc::mem_fun(this, &Item::on_click));
+	signal_clicked.connect(       sigc::mem_fun(this, &Item::on_click));
 	signal_double_clicked.connect(sigc::mem_fun(this, &Item::on_double_click));
 	signal_dragged.connect(       sigc::mem_fun(this, &Item::on_drag));
 }
