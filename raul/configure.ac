@@ -87,8 +87,8 @@ AC_ARG_ENABLE(raptor,
 	[AS_HELP_STRING(--enable-raptor, [Include Raptor (RDF) serialization support (yes)])],
 	[ if test x$enable_raptor = xno ; then build_raptor=no ; fi ])
 if test "$build_raptor" = "yes"; then
-	PKG_CHECK_MODULES(RAPTOR, raptor >= 1.4.0, [],
-		AC_MSG_ERROR([RDF support requires raptor (>= 1.4.0)]))
+	PKG_CHECK_MODULES(RAPTOR, raptor >= 1.4.14, [],
+		AC_MSG_ERROR([RDF support requires raptor (>= 1.4.14)]))
 fi
 AM_CONDITIONAL(WITH_RAPTOR, [test "$build_raptor" = "yes"])
 

@@ -26,8 +26,8 @@ using namespace std;
 namespace Raul {
 
 
-static const char* const RDF_LANG = "rdfxml-abbrev";
-//static const char* const RDF_LANG = "turtle";
+//static const char* const RDF_LANG = "rdfxml-abbrev";
+static const char* const RDF_LANG = "turtle";
 
 
 RDFWriter::RDFWriter()
@@ -36,7 +36,6 @@ RDFWriter::RDFWriter()
 	, _next_blank_id(0)
 { 
 	add_prefix("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
-	//add_prefix("rdfs", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
 }
 
 
