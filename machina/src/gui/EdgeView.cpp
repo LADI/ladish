@@ -68,17 +68,17 @@ EdgeView::update_label()
 bool
 EdgeView::on_event(GdkEvent* ev)
 {
-	using namespace std;
-
 	if (ev->type == GDK_BUTTON_PRESS) {
-		if (ev->button.button == 1) {
-			_edge->set_probability(_edge->probability() - 0.1);
-			update_label();
-			return true;
-		} else if (ev->button.button == 3) {
-			_edge->set_probability(_edge->probability() + 0.1);
-			update_label();
-			return true;
+		if (ev->button.state & GDK_CONTROL_MASK) {
+			if (ev->button.button == 1) {
+				_edge->set_probability(_edge->probability() - 0.1);
+				update_label();
+				return true;
+			} else if (ev->button.button == 3) {
+				_edge->set_probability(_edge->probability() + 0.1);
+				update_label();
+				return true;
+			}
 		}
 	}
 

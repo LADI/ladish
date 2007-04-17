@@ -84,7 +84,8 @@ MachinaCanvas::canvas_event(GdkEvent* event)
 		return false;
 
 	if (event->type == GDK_BUTTON_RELEASE
-			&& event->button.button == 2) {
+			&& event->button.button == 3
+			&& !(event->button.state & (GDK_CONTROL_MASK))) {
 
 		const double x = event->button.x;
 		const double y = event->button.y;
@@ -102,9 +103,12 @@ MachinaCanvas::canvas_event(GdkEvent* event)
 		view->raise_to_top();
 
 		machine->add_node(node);
-	}
 
-	return FlowCanvas::canvas_event(event);
+		return true;
+	
+	} else {
+		return FlowCanvas::canvas_event(event);
+	}
 }
 
 
