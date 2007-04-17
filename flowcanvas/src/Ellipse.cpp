@@ -28,16 +28,11 @@ using std::string;
 
 namespace LibFlowCanvas {
 
-/*static const int ELLIPSE_FILL_COLOUR           = 0x292929C8;
-static const int ELLIPSE_HILITE_FILL_COLOUR    = 0x292929F4;
-static const int ELLIPSE_OUTLINE_COLOUR        = 0x686868E8;
-static const int ELLIPSE_HILITE_OUTLINE_COLOUR = 0x808080F4;
-static const int ELLIPSE_TITLE_COLOUR          = 0xFFFFFFFF;*/
-static const int ELLIPSE_FILL_COLOUR           = 0x292929FF;
-static const int ELLIPSE_HILITE_FILL_COLOUR    = 0x292929FF;
-static const int ELLIPSE_OUTLINE_COLOUR        = 0x686868FF;
-static const int ELLIPSE_HILITE_OUTLINE_COLOUR = 0x808080FF;
-static const int ELLIPSE_TITLE_COLOUR          = 0xFFFFFFFF;
+static const uint32_t ELLIPSE_FILL_COLOUR           = 0x212222C8;
+static const uint32_t ELLIPSE_HILITE_FILL_COLOUR    = 0x212222F4;
+static const uint32_t ELLIPSE_OUTLINE_COLOUR        = 0x676868E8;
+static const uint32_t ELLIPSE_HILITE_OUTLINE_COLOUR = 0x7F8080F4;
+static const uint32_t ELLIPSE_TITLE_COLOUR          = 0xFFFFFFFF;
 
 
 /** Construct a Ellipse
