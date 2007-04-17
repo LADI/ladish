@@ -260,7 +260,7 @@ Machine::run(const Raul::TimeSlice& time)
 		// Must do comparison in ticks here to avoid rounding up and executing
 		// an event outside the current cycle
 		} else if (time.beats_to_ticks(earliest->exit_time())
-				<= time.beats_to_ticks(cycle_end)) {
+				< time.beats_to_ticks(cycle_end)) {
 			this_time += earliest->exit_time() - _time;
 			_time = earliest->exit_time();
 			exit_node(sink, earliest);
