@@ -127,6 +127,7 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 
 	_bpm_radiobutton->set_active(true);
 	_quantize_checkbutton->set_active(false);
+	update_toolbar();
 
 	// Idle callback to drive the maid (collect garbage)
 	Glib::signal_timeout().connect(
