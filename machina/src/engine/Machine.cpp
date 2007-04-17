@@ -23,6 +23,7 @@
 #include "machina/MidiAction.hpp"
 
 using namespace std;
+using namespace Raul;
 
 namespace Machina {
 
@@ -220,7 +221,8 @@ Machine::run(const Raul::TimeSlice& time)
 
 	const SharedPtr<Raul::MIDISink> sink = _sink.lock();
 
-	const BeatCount cycle_end = _time + time.length_beats();
+	const TickTime  cycle_end_ticks = time.start_ticks() + time.length_ticks() - 1;
+	const BeatCount cycle_end_beats = time.ticks_to_beats(cycle_end_ticks);
 
 	assert(_is_activated);
 
@@ -257,17 +259,16 @@ Machine::run(const Raul::TimeSlice& time)
 			break;
 
 		// Earliest active state ends this cycle
-		// Must do comparison in ticks here to avoid rounding up and executing
-		// an event outside the current cycle
 		} else if (time.beats_to_ticks(earliest->exit_time())
-				< time.beats_to_ticks(cycle_end)) {
+				<= cycle_end_ticks) {
 			this_time += earliest->exit_time() - _time;
-			_time = earliest->exit_time();
+			_time = time.ticks_to_beats(
+					time.beats_to_ticks(earliest->exit_time()));
 			exit_node(sink, earliest);
 
 		// Earliest active state ends in the future, done this cycle
 		} else {
-			_time = cycle_end;
+			_time = cycle_end_beats;
 			this_time = time.length_beats(); // ran the entire cycle
 			break;
 		}

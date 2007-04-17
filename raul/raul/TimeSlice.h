@@ -19,6 +19,7 @@
 #define RAUL_TIMESLICE_H
 
 #include <cassert>
+#include <cmath>
 #include <boost/utility.hpp>
 #include <raul/types.h>
 
@@ -94,7 +95,7 @@ public:
 	}
 
 	inline TickTime beats_to_ticks(BeatTime beats) const {
-		return static_cast<TickTime>(beats_to_seconds(beats) / _tick_rate); 
+		return static_cast<TickTime>(floor(beats_to_seconds(beats) / _tick_rate)); 
 	}
 		
 	inline Seconds ticks_to_seconds(TickTime ticks) const {
