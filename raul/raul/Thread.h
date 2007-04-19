@@ -133,6 +133,7 @@ private:
 		pthread_setspecific(_thread_key, me);
 		Thread* myself = (Thread*)me;
 		myself->_run();
+		myself->_pthread_exists = false;
 		return NULL; // and I
 	}
 
