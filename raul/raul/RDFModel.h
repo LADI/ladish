@@ -37,7 +37,7 @@ class World;
 class Model : public boost::noncopyable {
 public:
 	Model(World& world);
-	Model(World& world, const Glib::ustring& uri);
+	Model(World& world, const Glib::ustring& uri, Glib::ustring base_uri="");
 	~Model();
 	
 	void        serialize_to_file_handle(FILE* fd);
