@@ -17,7 +17,7 @@
 
 #include <iostream>
 #include <signal.h>
-#include <raul/RDFWriter.h>
+#include <raul/RDFModel.h>
 #include "machina/Engine.hpp"
 #include "machina/Machine.hpp"
 #include "machina/Node.hpp"
@@ -76,11 +76,10 @@ main(int argc, char** argv)
 	cout << "Writing output to " << out_filename << endl;
 	*/
 
-	Raul::RDFWriter writer;
-	//writer.start_to_filename(out_filename);
-	writer.start_to_file_handle(stdout);
-	machine->write_state(writer);
-	writer.finish();
+	Raul::RDF::World world;
+	Raul::RDF::Model model(world);
+	machine->write_state(model);
+	model.serialize_to_file_handle(stdout);
 	
 	return 0;
 }

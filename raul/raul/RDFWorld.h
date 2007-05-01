@@ -15,29 +15,46 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#ifndef RDFWORLD_H
+#define RDFWORLD_H
+
+#include <stdexcept>
+#include <string>
+#include <librdf.h>
+#include <boost/utility.hpp>
 #include "raul/Namespaces.h"
+#include "raul/RDFNode.h"
 
 namespace Raul {
+namespace RDF {
 
 
-/** Create a prefixed qname from @a uri, if possible.
- *
- * If @a uri can not be qualified with the namespaces currently in this
- * Namespaces, @a uri will be returned unmodified.
- */
-std::string
-Namespaces::qualify(std::string uri) const
-{
-	for (const_iterator i = begin(); i != end(); ++i) {
-		size_t ns_len = i->second.length();
+class World : public boost::noncopyable {
+public:
+	World();
+	~World();
+	
+	Node blank_id();
 
-		if (uri.substr(0, ns_len) == i->second)
-			return i->first + ":" + uri.substr(ns_len);
-	}
+	void        add_prefix(const std::string& prefix, const std::string& uri);
+	std::string expand_uri(const std::string& uri) const;
+	std::string qualify(const std::string& uri) const;
 
-	return uri;
-}
+	const Namespaces& prefixes() const { return _prefixes; }
+
+	librdf_world* world() { return _world; }
+
+private:
+	void setup_prefixes();
+
+	librdf_world* _world;
+	Namespaces    _prefixes;
+
+	size_t _next_blank_id;
+};
 
 
+} // namespace RDF
 } // namespace Raul
 
+#endif // RDFWORLD_H

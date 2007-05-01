@@ -16,7 +16,9 @@
  */
 
 #include <cstdlib>
-#include "raul/SharedPtr.h"
+#include <raul/RDFWorld.h>
+#include <raul/RDFModel.h>
+#include <raul/SharedPtr.h>
 #include "machina/Machine.hpp"
 #include "machina/Node.hpp"
 #include "machina/Edge.hpp"
@@ -292,29 +294,29 @@ Machine::learn(SharedPtr<LearnRequest> learn)
 
 
 void
-Machine::write_state(Raul::RDFWriter& writer)
+Machine::write_state(Raul::RDF::Model& model)
 {
-	using Raul::RdfId;
+	using namespace Raul;
 
-	writer.add_prefix("machina", "http://drobilla.net/ns/machina#");
+	model.world().add_prefix("machina", "http://drobilla.net/ns/machina#");
 
-	writer.write(RdfId(RdfId::RESOURCE, ""),
-			RdfId(RdfId::RESOURCE, "rdf:type"),
-			RdfId(RdfId::RESOURCE, "machina:Machine"));
+	model.add_statement(RDF::Node(model.world(), RDF::Node::RESOURCE, ""),
+			RDF::Node(model.world(), RDF::Node::RESOURCE, "rdf:type"),
+			RDF::Node(model.world(), RDF::Node::RESOURCE, "machina:Machine"));
 
 	size_t count = 0;
 
 	for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n) {
 	
-		(*n)->write_state(writer);
+		(*n)->write_state(model);
 
 		if ((*n)->is_initial()) {
-			writer.write(RdfId(RdfId::RESOURCE, ""),
-					RdfId(RdfId::RESOURCE, "machina:initialNode"),
+			model.add_statement(RDF::Node(model.world(), RDF::Node::RESOURCE, ""),
+					RDF::Node(model.world(), RDF::Node::RESOURCE, "machina:initialNode"),
 					(*n)->id());
 		} else {
-			writer.write(RdfId(RdfId::RESOURCE, ""),
-					RdfId(RdfId::RESOURCE, "machina:node"),
+			model.add_statement(RDF::Node(model.world(), RDF::Node::RESOURCE, ""),
+					RDF::Node(model.world(), RDF::Node::RESOURCE, "machina:node"),
 					(*n)->id());
 		}
 	}
@@ -326,10 +328,10 @@ Machine::write_state(Raul::RDFWriter& writer)
 		for (Node::Edges::const_iterator e = (*n)->outgoing_edges().begin();
 			e != (*n)->outgoing_edges().end(); ++e) {
 			
-			(*e)->write_state(writer);
+			(*e)->write_state(model);
 		
-			writer.write(RdfId(RdfId::RESOURCE, ""),
-				RdfId(RdfId::RESOURCE, "machina:edge"),
+			model.add_statement(RDF::Node(model.world(), RDF::Node::RESOURCE, ""),
+				RDF::Node(model.world(), RDF::Node::RESOURCE, "machina:edge"),
 				(*e)->id());
 		}
 

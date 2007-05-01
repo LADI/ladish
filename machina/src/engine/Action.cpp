@@ -15,22 +15,23 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <raul/RDFWriter.h>
+#include <raul/RDFWorld.h>
+#include <raul/RDFModel.h>
 #include "machina/Action.hpp"
 
 namespace Machina {
 
 void
-Action::write_state(Raul::RDFWriter& writer)
+Action::write_state(Raul::RDF::Model& model)
 {
-	using Raul::RdfId;
+	using namespace Raul;
 	
 	if (!_id)
-		set_id(writer.blank_id());
+		set_id(model.world().blank_id());
 
-	writer.write(_id,
-			RdfId(RdfId::RESOURCE, "rdf:type"),
-			RdfId(RdfId::RESOURCE, "machina:Action"));
+	model.add_statement(_id,
+			RDF::Node(model.world(), RDF::Node::RESOURCE, "rdf:type"),
+			RDF::Node(model.world(), RDF::Node::RESOURCE, "machina:Action"));
 }
 
 

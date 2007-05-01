@@ -22,7 +22,7 @@
 #include <pthread.h>
 #include <libgnomecanvasmm.h>
 #include <libglademm/xml.h>
-#include <raul/RDFWriter.h>
+#include <raul/RDFModel.h>
 #include <machina/Machine.hpp>
 #include <machina/SMFDriver.hpp>
 #include "GladeXml.hpp"
@@ -273,11 +273,10 @@ MachinaGUI::menu_file_save()
 			cerr << "ERROR: Unable to create filename from \"" << _save_uri << "\"" << endl;
 			menu_file_save_as();
 		}
-		Raul::RDFWriter writer;
+		Raul::RDF::Model model(_engine->rdf_world());
 		cout << "Writing machine to " << save_filename << endl;
-		writer.start_to_filename(save_filename);
-		machine()->write_state(writer);
-		writer.finish();
+		machine()->write_state(model);
+		model.serialize_to_file(save_filename);
 		free(save_filename);
 	}
 }
@@ -325,10 +324,9 @@ MachinaGUI::menu_file_save_as()
 		fin.close();
 		
 		if (confirm) {
-			Raul::RDFWriter writer;
-			writer.start_to_filename(filename);
-			_engine->machine()->write_state(writer);
-			writer.finish();
+			Raul::RDF::Model model(_engine->rdf_world());
+			_engine->machine()->write_state(model);
+			model.serialize_to_file(filename);
 			_save_uri = dialog.get_uri();
 		}
 	}

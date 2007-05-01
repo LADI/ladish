@@ -18,8 +18,6 @@
 #include <iostream>
 #include <map>
 #include <cmath>
-#include <raptor.h>
-#include <rasqal.h>
 #include <glibmm/ustring.h>
 #include <raul/RDFQuery.h>
 #include "machina/Loader.hpp"
@@ -34,14 +32,11 @@ using std::cerr; using std::cout; using std::endl;
 namespace Machina {
 
 
-Loader::Loader(SharedPtr<Namespaces>  namespaces)
-	: _namespaces(namespaces)
+Loader::Loader(Raul::RDF::World& rdf_world)
+	: _rdf_world(rdf_world)
 {
-	if (!_namespaces)
-		_namespaces = SharedPtr<Namespaces>(new Namespaces());
-
-	(*_namespaces)[""] = "http://drobilla.net/ns/machina#";
-	(*_namespaces)["xsd"] = "http://www.w3.org/2001/XMLSchema#";
+	_rdf_world.add_prefix("xsd", "http://www.w3.org/2001/XMLSchema#");
+	_rdf_world.add_prefix("", "http://drobilla.net/ns/machina#");
 }
 
 
@@ -53,10 +48,8 @@ Loader::Loader(SharedPtr<Namespaces>  namespaces)
 SharedPtr<Machine>
 Loader::load(const Glib::ustring& uri)
 {
-	using Raul::RDFQuery;
+	using Raul::RDF::Query;
 	SharedPtr<Machine> machine;
-
-	rasqal_init();
 
 	Glib::ustring document_uri = uri;
 
@@ -84,23 +77,24 @@ Loader::load(const Glib::ustring& uri)
 	typedef std::map<string, SharedPtr<Node> > Created;
 	Created created;
 
+	Raul::RDF::Model model(_rdf_world, document_uri);
 
 	/* Get initial nodes */
 
-	Raul::RDFQuery query = Raul::RDFQuery(*_namespaces, Glib::ustring(
+	Query query = Query(_rdf_world, Glib::ustring(
 			"SELECT DISTINCT ?initialNode ?duration FROM <")
 			+ document_uri + "> WHERE {\n" +
 			machine_uri + " :initialNode ?initialNode .\n"
 			"?initialNode   :duration    ?duration .\n"
 			"}\n");
 
-	RDFQuery::Results results = query.run(document_uri);
+	Query::Results results = query.run(_rdf_world, model);
 
-	for (RDFQuery::Results::iterator i = results.begin(); i != results.end(); ++i) {
-		const Glib::ustring& node_id  = (*i)["initialNode"];
-		const Glib::ustring& duration = (*i)["duration"];
+	for (Query::Results::iterator i = results.begin(); i != results.end(); ++i) {
+		Glib::ustring node_id  = (*i)["initialNode"].to_string();
+		float         duration = (*i)["duration"].to_float();
 
-		SharedPtr<Node> node(new Node(strtod(duration.c_str(), NULL), true));
+		SharedPtr<Node> node(new Node(duration, true));
 		machine->add_node(node);
 		created.insert(std::make_pair(node_id.collate_key(), node));
 	}
@@ -108,21 +102,21 @@ Loader::load(const Glib::ustring& uri)
 
 	/* Get remaining (non-initial) nodes */
 
-	query = Raul::RDFQuery(*_namespaces, Glib::ustring(
+	query = Query(_rdf_world, Glib::ustring(
 			"SELECT DISTINCT ?node ?duration FROM <")
 			+ document_uri + "> WHERE {\n" +
 			machine_uri + " :node     ?node .\n"
 			"?node          :duration ?duration .\n"
 			"}\n");
 
-	results = query.run(document_uri);
+	results = query.run(_rdf_world, model);
 
-	for (RDFQuery::Results::iterator i = results.begin(); i != results.end(); ++i) {
-		const Glib::ustring& node_id  = (*i)["node"];
-		const Glib::ustring& duration = (*i)["duration"];
+	for (Query::Results::iterator i = results.begin(); i != results.end(); ++i) {
+		Glib::ustring node_id  = (*i)["initialNode"].to_string();
+		float         duration = (*i)["duration"].to_float();
 
 		if (created.find(node_id.collate_key()) == created.end()) {
-			SharedPtr<Node> node(new Node(strtod(duration.c_str(), NULL), false));
+			SharedPtr<Node> node(new Node(duration, false));
 			machine->add_node(node); 
 			created.insert(std::make_pair(node_id.collate_key(), node));
 		} else {
@@ -133,18 +127,18 @@ Loader::load(const Glib::ustring& uri)
 
 	/* Get note actions */
 
-	query = Raul::RDFQuery(*_namespaces, Glib::ustring(
+	query = Query(_rdf_world, Glib::ustring(
 			"SELECT DISTINCT ?node ?note FROM <")
 			+ document_uri + "> WHERE {\n" +
 			"?node :enterAction [ a :MidiAction; :midiNote ?note ] ;\n"
 			"      :exitAction  [ a :MidiAction; :midiNote ?note ] .\n"
 			"}\n");
 
-	results = query.run(document_uri);
+	results = query.run(_rdf_world, model);
 
-	for (RDFQuery::Results::iterator i = results.begin(); i != results.end(); ++i) {
-		const Glib::ustring& node_id = (*i)["node"];
-		const Glib::ustring& note    = (*i)["note"];
+	for (Query::Results::iterator i = results.begin(); i != results.end(); ++i) {
+		Glib::ustring node_id  = (*i)["initialNode"].to_string();
+		Glib::ustring note     = (*i)["note"].to_string();
 
 		Created::iterator node_i = created.find(node_id);
 		if (node_i != created.end()) {
@@ -164,7 +158,7 @@ Loader::load(const Glib::ustring& uri)
 
 	/* Get edges */
 
-	query = Raul::RDFQuery(*_namespaces, Glib::ustring(
+	query = Query(_rdf_world, Glib::ustring(
 			"SELECT DISTINCT ?edge ?src ?dst ?prob FROM <")
 			+ document_uri + "> WHERE {\n" +
 			machine_uri + " :edge ?edge .\n"
@@ -172,12 +166,12 @@ Loader::load(const Glib::ustring& uri)
 			"      :head        ?dst ;\n"
 			"      :probability ?prob .\n }");
 
-	results = query.run(document_uri);
+	results = query.run(_rdf_world, model);
 
-	for (RDFQuery::Results::iterator i = results.begin(); i != results.end(); ++i) {
-		const Glib::ustring& src_uri = (*i)["src"];
-		const Glib::ustring& dst_uri = (*i)["dst"]; 
-		double               prob    = strtod((*i)["prob"].c_str(), NULL);
+	for (Query::Results::iterator i = results.begin(); i != results.end(); ++i) {
+		Glib::ustring src_uri = (*i)["src"].to_string();
+		Glib::ustring dst_uri = (*i)["dst"].to_string(); 
+		float         prob    = (*i)["prob"].to_float();
 
 		Created::iterator src_i = created.find(src_uri.collate_key());
 		Created::iterator dst_i = created.find(dst_uri.collate_key());

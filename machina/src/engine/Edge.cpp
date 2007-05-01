@@ -15,7 +15,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <raul/RDFWriter.h>
+#include <raul/RDFWorld.h>
+#include <raul/RDFModel.h>
 #include "machina/Node.hpp"
 #include "machina/Edge.hpp"
 
@@ -23,16 +24,16 @@ namespace Machina {
 
 
 void
-Edge::write_state(Raul::RDFWriter& writer)
+Edge::write_state(Raul::RDF::Model& model)
 {
-	using Raul::RdfId;
+	using namespace Raul;
 
 	if (!_id)
-		set_id(writer.blank_id());
+		set_id(model.world().blank_id());
 
-	writer.write(_id,
-			RdfId(RdfId::RESOURCE, "rdf:type"),
-			RdfId(RdfId::RESOURCE, "machina:Edge"));
+	model.add_statement(_id,
+			"rdf:type",
+			RDF::Node(model.world(), RDF::Node::RESOURCE, "machina:Edge"));
 
 	SharedPtr<Node> tail = _tail.lock();
 	SharedPtr<Node> head = _head;
@@ -42,16 +43,16 @@ Edge::write_state(Raul::RDFWriter& writer)
 
 	assert(tail->id() && head->id());
 
-	writer.write(_id,
-			RdfId(RdfId::RESOURCE, "machina:tail"),
+	model.add_statement(_id,
+			"machina:tail",
 			tail->id());
 
-	writer.write(_id,
-			RdfId(RdfId::RESOURCE, "machina:head"),
+	model.add_statement(_id,
+			"machina:head",
 			head->id());
 	
-	writer.write(_id,
-			RdfId(RdfId::RESOURCE, "machina:probability"),
+	model.add_statement(_id,
+			"machina:probability",
 			_probability.get());
 }
 

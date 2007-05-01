@@ -19,6 +19,7 @@
 #include <iostream>
 #include <string>
 #include <libgnomecanvasmm.h>
+#include <raul/RDFWorld.h>
 #include "../config.h"
 #include "machina/Loader.hpp"
 #include "machina/SMFDriver.hpp"
@@ -35,6 +36,8 @@ using namespace Machina;
 int
 main(int argc, char** argv)
 {
+	Raul::RDF::World rdf_world;
+
 	SharedPtr<Machina::Machine> machine;
 
 	// Load machine, if given
@@ -54,7 +57,7 @@ main(int argc, char** argv)
 
 		if (!machine) {
 			cout << "Not a MIDI file.  Attempting to load as Machina file." << endl;
-			machine = Loader().load(filename);
+			machine = Loader(rdf_world).load(filename);
 		}
 	}
 
@@ -70,7 +73,7 @@ main(int argc, char** argv)
 	if (!driver)
 		driver = SharedPtr<Driver>(new SMFDriver(machine));
 
-	SharedPtr<Engine> engine(new Engine(driver));
+	SharedPtr<Engine> engine(new Engine(driver, rdf_world));
 
 	Gnome::Canvas::init();
 	Gtk::Main app(argc, argv);

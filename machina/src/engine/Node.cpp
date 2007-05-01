@@ -16,7 +16,8 @@
  */
 
 #include <cassert>
-#include <raul/RDFWriter.h>
+#include <raul/RDFWorld.h>
+#include <raul/RDFModel.h>
 #include <machina/Node.hpp>
 #include <machina/Edge.hpp>
 
@@ -134,39 +135,39 @@ Node::remove_outgoing_edges_to(SharedPtr<Node> node)
 
 
 void
-Node::write_state(Raul::RDFWriter& writer)
+Node::write_state(Raul::RDF::Model& model)
 {
-	using Raul::RdfId;
+	using namespace Raul;
 	
 	if (!_id)
-		set_id(writer.blank_id());
+		set_id(model.world().blank_id());
 
 	if (_is_selector)
-		writer.write(_id,
-				RdfId(RdfId::RESOURCE, "rdf:type"),
-				RdfId(RdfId::RESOURCE, "machina:SelectorNode"));
+		model.add_statement(_id,
+				"rdf:type",
+				RDF::Node(model.world(), RDF::Node::RESOURCE, "machina:SelectorNode"));
 	else
-		writer.write(_id,
-				RdfId(RdfId::RESOURCE, "rdf:type"),
-				RdfId(RdfId::RESOURCE, "machina:Node"));
+		model.add_statement(_id,
+				"rdf:type",
+				RDF::Node(model.world(), RDF::Node::RESOURCE, "machina:Node"));
 
-	writer.write(_id,
-			RdfId(RdfId::RESOURCE, "machina:duration"),
+	model.add_statement(_id,
+			"machina:duration",
 			Raul::Atom((float)_duration));
 
 	if (_enter_action) {
-		_enter_action->write_state(writer);
+		_enter_action->write_state(model);
 		
-		writer.write(_id,
-				RdfId(RdfId::RESOURCE, "machina:enterAction"),
+		model.add_statement(_id,
+				"machina:enterAction",
 				_enter_action->id());
 	}
 
 	if (_exit_action) {
-		_exit_action->write_state(writer);
+		_exit_action->write_state(model);
 
-		writer.write(_id,
-				RdfId(RdfId::RESOURCE, "machina:exitAction"),
+		model.add_statement(_id,
+				"machina:exitAction",
 				_exit_action->id());
 	}
 }

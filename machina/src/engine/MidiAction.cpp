@@ -91,19 +91,19 @@ MidiAction::execute(SharedPtr<Raul::MIDISink> sink, Raul::BeatTime time)
 
 
 void
-MidiAction::write_state(Raul::RDFWriter& writer)
+MidiAction::write_state(Raul::RDF::Model& model)
 {
-	using Raul::RdfId;
+	using namespace Raul;
 
-	Action::write_state(writer);
+	Action::write_state(model);
 
-	writer.write(_id,
-			RdfId(RdfId::RESOURCE, "rdf:type"),
-			RdfId(RdfId::RESOURCE, "machina:MidiAction"));
+	model.add_statement(_id,
+			RDF::Node(model.world(), RDF::Node::RESOURCE, "rdf:type"),
+			RDF::Node(model.world(), RDF::Node::RESOURCE, "machina:MidiAction"));
 	
 	// FIXME: Assumes note on/note off
-	writer.write(_id,
-			RdfId(RdfId::RESOURCE, "machina:midiNote"),
+	model.add_statement(_id,
+			RDF::Node(model.world(), RDF::Node::RESOURCE, "machina:midiNote"),
 			(int)(_event.get()[1]));
 }
 

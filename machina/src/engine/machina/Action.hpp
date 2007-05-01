@@ -34,7 +34,7 @@ namespace Machina {
 struct Action : public Raul::Deletable, public Raul::Stateful {
 	virtual void execute(SharedPtr<Raul::MIDISink> sink, Raul::BeatTime time) = 0;
 
-	virtual void write_state(Raul::RDFWriter& writer);
+	virtual void write_state(Raul::RDF::Model& model);
 };
 
 

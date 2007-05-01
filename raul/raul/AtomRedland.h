@@ -15,13 +15,13 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef RAUL_ATOM_RAPTOR_H
-#define RAUL_ATOM_RAPTOR_H
+#ifndef RAUL_ATOM_REDLAND_H
+#define RAUL_ATOM_REDLAND_H
 
 #include <iostream>
 #include <sstream>
 #include <cstring>
-#include <raptor.h>
+#include <librdf.h>
 #include "raul/Atom.h"
 using std::cerr; using std::endl;
 
@@ -30,51 +30,53 @@ using std::cerr; using std::endl;
 namespace Raul {
 
 
-/** Support for serializing an Atom to/from RDF (via raptor, a part of librdf).
+/** Support for serializing an Atom to/from RDF (via librdf).
  *
- * (Here to prevent a unnecessary raptor dependency for Atom).
+ * (Here to prevent a unnecessary reddland dependency for Atom).
  * 
  * \ingroup raul
  */
-class AtomRaptor {
+class AtomRedland {
 public:
 	/** Set this atom's value to the object (value) portion of an RDF triple.
 	 *
 	 * Caller is responsible for calling free(triple->object).
 	 */
-	static void atom_to_triple_object(raptor_statement* triple, const Atom& atom) {
+	static librdf_node* atom_to_rdf_node(librdf_world* world,
+	                                     const Atom&   atom)
+	{
 		std::ostringstream os;
 
-		triple->object_literal_language = NULL;
+		librdf_uri*  type = NULL;
+		librdf_node* node = NULL;
+		std::string  str;
 
 		switch (atom.type()) {
 		case Atom::INT:
 			os << atom.get_int32();
-			triple->object = (unsigned char*)strdup(os.str().c_str());
-			triple->object_type = RAPTOR_IDENTIFIER_TYPE_LITERAL;
-			triple->object_literal_datatype = raptor_new_uri(
-				U("http://www.w3.org/2001/XMLSchema#integer"));
+			str = os.str();
+			// xsd:integer -> pretty integer literals in Turtle
+			type = librdf_new_uri(world, U("http://www.w3.org/2001/XMLSchema#integer"));
 			break;
 		case Atom::FLOAT:
 			os << atom.get_float();
-			triple->object = (unsigned char*)strdup(os.str().c_str());
-			triple->object_type = RAPTOR_IDENTIFIER_TYPE_LITERAL;
-			/* Use xsd:decimal so turtle abbreviation works */
-			triple->object_literal_datatype = raptor_new_uri(
-				U("http://www.w3.org/2001/XMLSchema#decimal"));
+			str = os.str();
+			// xsd:decimal -> pretty decimal (float) literals in Turtle
+			type = librdf_new_uri(world, U("http://www.w3.org/2001/XMLSchema#decimal"));
 			break;
 		case Atom::STRING:
-			triple->object = strdup(atom.get_string());
-			triple->object_type = RAPTOR_IDENTIFIER_TYPE_LITERAL;
-			triple->object_literal_datatype = NULL;
+			str = atom.get_string();
 			break;
 		case Atom::BLOB:
 		case Atom::NIL:
 		default:
 			cerr << "WARNING: Unserializable Atom!" << endl;
-			triple->object = NULL;
-			triple->object_type = RAPTOR_IDENTIFIER_TYPE_UNKNOWN;
 		}
+		
+		if (str != "")
+			node = librdf_new_node_from_typed_literal(world, U(str.c_str()), NULL, type);
+
+		return node;
 	}
 
 #if 0
@@ -102,4 +104,4 @@ public:
 
 } // namespace Raul
 
-#endif // RAUL_ATOM_RAPTOR_H
+#endif // RAUL_ATOM_REDLAND_H

@@ -1,48 +1,48 @@
 raulincludedir = $(includedir)/raul
 
 raulinclude_HEADERS = \
-	types.h \
-	midi_events.h \
 	Array.h \
 	Atom.h \
-	AtomLiblo.h \
-	AtomRaptor.h \
 	AtomicInt.h \
 	AtomicPtr.h \
-	DoubleBuffer.h \
 	Condition.h \
 	Deletable.h \
+	DoubleBuffer.h \
 	JackDriver.h \
 	List.h \
+	MIDIRingBuffer.h \
+	MIDISink.h \
 	Maid.h \
 	Mutex.h \
 	Namespaces.h \
 	Path.h \
 	Process.h \
+	Quantizer.h \
+	RDFModel.h \
+	RDFNode.h \
 	RDFQuery.h \
-	RDFWriter.h \
+	RDFWorld.h \
+	RingBuffer.h \
+	SMFReader.h \
+	SMFWriter.h \
 	SRMWQueue.h \
 	SRSWQueue.h \
-	RingBuffer.h \
 	Semaphore.h \
 	SharedPtr.h \
 	Slave.h \
 	Stateful.h \
 	Thread.h \
-	WeakPtr.h \
 	TimeSlice.h \
-	Quantizer.h \
-	MIDIRingBuffer.h \
-	MIDISink.h \
-	SMFReader.h \
-	SMFWriter.h
+	WeakPtr.h \
+	midi_events.h \
+	types.h
 
 if WITH_LIBLO
 raulinclude_HEADERS += AtomLiblo.h
 endif
 
-if WITH_RAPTOR
-raulinclude_HEADERS += AtomRaptor.h
+if WITH_REDLAND
+raulinclude_HEADERS += AtomRedland.h
 endif
 
 if WITH_LASH

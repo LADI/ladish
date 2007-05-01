@@ -21,7 +21,8 @@
 #include <glibmm/ustring.h>
 #include <raul/SharedPtr.h>
 #include <raul/types.h>
-#include "machina/Driver.hpp" 
+#include "machina/Driver.hpp"
+#include "machina/Loader.hpp"
 
 namespace Machina {
 
@@ -30,10 +31,14 @@ class Machine;
 
 class Engine {
 public:
-	Engine(SharedPtr<Driver> driver)
+	Engine(SharedPtr<Driver> driver, Raul::RDF::World& rdf_world)
 		: _driver(driver)
+		, _rdf_world(rdf_world)
+		, _loader(_rdf_world)
 	{ }
 	
+	Raul::RDF::World& rdf_world() { return _rdf_world; }
+
 	SharedPtr<Driver>  driver()  { return _driver; }
 	SharedPtr<Machine> machine() { return _driver->machine(); }
 
@@ -46,6 +51,8 @@ public:
 
 private:
 	SharedPtr<Driver> _driver;
+	Raul::RDF::World& _rdf_world;
+	Loader            _loader;
 };
 
 

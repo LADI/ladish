@@ -82,25 +82,21 @@ if test "$build_jack" = "yes"; then
 fi
 AM_CONDITIONAL(WITH_JACK, [test "$build_jack" = "yes"])
 
-build_raptor="yes"
-AC_ARG_ENABLE(raptor,
-	[AS_HELP_STRING(--enable-raptor, [Include Raptor (RDF) serialization support (yes)])],
-	[ if test x$enable_raptor = xno ; then build_raptor=no ; fi ])
-if test "$build_raptor" = "yes"; then
-	PKG_CHECK_MODULES(RAPTOR, raptor >= 1.4.15, [],
-		AC_MSG_ERROR([RDF support requires raptor (>= 1.4.15)]))
+# Check for Redland
+#PKG_CHECK_MODULES(REDLAND, redland >= 1.0.0)
+# No pkg-config?!  Booo!
+build_redland="no"
+AC_CHECK_PROG(REDLAND_CONFIG, redland-config, redland-config)
+if test "X$REDLAND_CONFIG" = X; then
+  AC_MSG_ERROR([SLV2 requires Redland (librdf), but redland-config not found.])
+else
+  build_redland="yes"
+  REDLAND_CFLAGS=`$REDLAND_CONFIG --cflags`
+  REDLAND_LIBS=`$REDLAND_CONFIG --libs`
+  AC_SUBST(REDLAND_CFLAGS)
+  AC_SUBST(REDLAND_LIBS)
 fi
-AM_CONDITIONAL(WITH_RAPTOR, [test "$build_raptor" = "yes"])
-
-build_rasqal="yes"
-AC_ARG_ENABLE(rasqal,
-	[AS_HELP_STRING(--enable-rasqal, [Include Rasqal (RDF Querying) support (yes)])],
-	[ if test x$enable_rasqal = xno ; then build_rasqal=no ; fi ])
-if test "$build_rasqal" = "yes"; then
-	PKG_CHECK_MODULES(RASQAL, rasqal >= 0.9.11, [],
-		AC_MSG_ERROR([RDF query support requires rasqal (>= 0.9.11)]))
-fi
-AM_CONDITIONAL(WITH_RASQAL, [test "$build_rasqal" = "yes"])
+AM_CONDITIONAL(WITH_REDLAND, [test "$build_redland" = "yes"])
 
 build_liblo="yes"
 AC_ARG_ENABLE(liblo,
@@ -147,8 +143,7 @@ AC_MSG_RESULT([])
 AC_MSG_RESULT([Jack support:                       $build_jack])
 AC_MSG_RESULT([LASH support:                       $build_lash])
 AC_MSG_RESULT([OSC (Liblo) support:                $build_liblo])
-AC_MSG_RESULT([RDF Serialization (Raptor) support: $build_raptor])
-AC_MSG_RESULT([RDF Querying (Rasqal) support:      $build_rasqal])
+AC_MSG_RESULT([RDF (Redland) support:              $build_redland])
 AC_MSG_RESULT([Smart Pointers (Boost):             $build_smart_pointers])
 AC_MSG_RESULT([**********************************************************************])
 AC_MSG_RESULT([])

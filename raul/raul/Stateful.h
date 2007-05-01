@@ -18,25 +18,22 @@
 #ifndef STATEFUL_H
 #define STATEFUL_H
 
-#include "raul/RDFWriter.h"
+#include "raul/RDFModel.h"
 
 namespace Raul {
-
-
-class RDFWriter;
 
 
 class Stateful {
 public:
 	virtual ~Stateful() {}
 
-	virtual void write_state(RDFWriter& writer) = 0;
+	virtual void write_state(RDF::Model& model) = 0;
 	
-	RdfId id() const { return _id; }
-	void  set_id(const RdfId& id) { _id = id; }
+	RDF::Node id() const { return _id; }
+	void      set_id(const RDF::Node& id) { _id = id; }
 
 protected:
-	RdfId _id;
+	RDF::Node _id;
 };
 	
 

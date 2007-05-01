@@ -21,25 +21,30 @@
 #include <map>
 #include <list>
 #include <glibmm/ustring.h>
+#include "raul/RDFWorld.h"
 #include "raul/Namespaces.h"
 
 namespace Raul {
+namespace RDF {
+
+class World;
+class Model;
 
 
 /** Pretty wrapper for a SPARQL query.
  *
- * Automatically handles things like prepending prefixes, etc.  Raul specific.
+ * Automatically handles things like prepending prefixes, etc.
  */
-class RDFQuery {
+class Query {
 public:
-	typedef std::map<Glib::ustring, Glib::ustring> Bindings;
-	typedef std::list<Bindings>                    Results;
+	typedef std::map<std::string, Node> Bindings; // FIXME: order?  better to use int
+	typedef std::list<Bindings>         Results;
 
-	RDFQuery(const Namespaces& prefixes, Glib::ustring query)
+	Query(const World& world, Glib::ustring query)
 	{
 		// Prepend prefix header
-		for (Namespaces::const_iterator i = prefixes.begin();
-				i != prefixes.end(); ++i) {
+		for (Namespaces::const_iterator i = world.prefixes().begin();
+				i != world.prefixes().end(); ++i) {
 			_query += "PREFIX ";
 			_query += i->first + ": <" + i->second + ">\n";
 		}
@@ -47,16 +52,16 @@ public:
 		_query += query;
 	}
 
-	Results run(const Glib::ustring base_uri) const;
+	Results run(World& world, Model& model, const Glib::ustring base_uri="") const;
 
 	Glib::ustring string() const { return _query; };
 
 private:
-
 	Glib::ustring _query;
 };
 
 
+} // namespace RDF
 } // namespace Raul
 
 #endif // RAUL_RDFQUERY_H

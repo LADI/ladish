@@ -54,7 +54,8 @@ main(int argc, char** argv)
 	
 	SharedPtr<JackDriver> driver(new JackDriver());
 
-	Engine engine(driver);
+	Raul::RDF::World rdf_world;
+	Engine engine(driver, rdf_world);
 
 	/*// FIXME: Would be nice if this could take URIs on the cmd line
 	char* uri = (char*)calloc(6 + strlen(argv[1]), sizeof(char));

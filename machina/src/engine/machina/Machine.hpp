@@ -21,7 +21,7 @@
 #include <boost/utility.hpp>
 #include <raul/SharedPtr.h>
 #include <raul/List.h>
-#include <raul/RDFWriter.h> 
+#include <raul/RDFModel.h> 
 #include <raul/TimeSlice.h>
 #include "types.hpp"
 #include "LearnRequest.hpp"
@@ -47,7 +47,7 @@ public:
 	void remove_node(SharedPtr<Node> node);
 	void learn(SharedPtr<LearnRequest> learn);
 
-	void write_state(Raul::RDFWriter& writer);
+	void write_state(Raul::RDF::Model& model);
 
 	// Audio context
 	void      reset();

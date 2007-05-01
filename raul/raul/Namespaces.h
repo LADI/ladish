@@ -28,7 +28,7 @@ namespace Raul {
  */
 class Namespaces : public std::map<std::string, std::string> {
 public:
-	std::string qualify(std::string uri);
+	std::string qualify(std::string uri) const;
 };
 
 

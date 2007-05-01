@@ -19,9 +19,9 @@
 #define MACHINA_LOADER_HPP
 
 #include <glibmm/ustring.h>
-#include "raul/SharedPtr.h"
-#include "raul/Path.h"
-#include "raul/Namespaces.h"
+#include <raul/SharedPtr.h>
+#include <raul/Path.h>
+#include <raul/RDFWorld.h>
 
 using Raul::Namespaces;
 
@@ -32,12 +32,12 @@ class Machine;
 
 class Loader {
 public:
-	Loader(SharedPtr<Namespaces> = SharedPtr<Namespaces>());
+	Loader(Raul::RDF::World& rdf_world);
 
 	SharedPtr<Machine> load(const Glib::ustring& filename);
 
 private:
-	SharedPtr<Namespaces>  _namespaces;
+	Raul::RDF::World& _rdf_world;
 };
 
 

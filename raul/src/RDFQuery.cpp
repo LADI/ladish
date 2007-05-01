@@ -19,65 +19,69 @@
 #include <cassert>
 #include <rasqal.h>
 #include "raul/RDFQuery.h"
+#include "raul/RDFModel.h"
 
 using namespace std;
 
 namespace Raul {
+namespace RDF {
 
 
-RDFQuery::Results
-RDFQuery::run(const Glib::ustring base_uri_str) const
+Query::Results
+Query::run(World& world, Model& model, const Glib::ustring base_uri_str) const
 {
+	//cout << "\n**************** QUERY *******************\n";
+	//cout << _query << endl;
+	//cout << "******************************************\n\n";
+
 	Results result;
 
-	rasqal_init();
-
-	rasqal_query *rq = rasqal_new_query("sparql", NULL);
-
-	raptor_uri* base_uri = NULL;
+	librdf_uri* base_uri = NULL;
 	if (base_uri_str != "")
-		base_uri = raptor_new_uri((const unsigned char*)base_uri_str.c_str());
-	rasqal_query_prepare(rq, (unsigned char*)_query.c_str(), base_uri);
+		base_uri = librdf_new_uri(world.world(),
+				(const unsigned char*)base_uri_str.c_str());
 
-	rasqal_query_results* results = rasqal_query_execute(rq);
+	librdf_query* q = librdf_new_query(world.world(), "sparql",
+		NULL, (unsigned char*)_query.c_str(), base_uri);
 	
-	if (!results) {
-		cerr << "Failed Query was:" << endl << _query << endl;
+	if (!q) {
+		cerr << "Unable to create query:" << endl << _query << endl;
 		return result; /* Return an empty Results */
 	}
 
-	while (!rasqal_query_results_finished(results)) {
+	librdf_query_results* results = librdf_query_execute(q, model._model);
+	
+	if (!results) {
+		cerr << "Failed query:" << endl << _query << endl;
+		return result; /* Return an empty Results */
+	}
+
+	while (!librdf_query_results_finished(results)) {
 		
 		Bindings bindings;
 		
-		for (int i=0; i < rasqal_query_results_get_bindings_count(results); i++) {
-			const unsigned char* rname  = rasqal_query_results_get_binding_name(results, i);
-			rasqal_literal*      rvalue = rasqal_query_results_get_binding_value(results, i);
-			Glib::ustring name((const char*)rname);
+		for (int i=0; i < librdf_query_results_get_bindings_count(results); i++) {
+			const char*  name  = (char*)librdf_query_results_get_binding_name(results, i);
+			librdf_node* value = librdf_query_results_get_binding_value(results, i);
 
-			const unsigned char* str = rasqal_literal_as_string(rvalue);
-
-			if (str) {
-				Glib::ustring value((const char*)str);
-				bindings.insert(std::make_pair(name, value));
-			}
+			if (name && value)
+				bindings.insert(std::make_pair(std::string(name), Node(value)));
 		}
 
 		result.push_back(bindings);
-		rasqal_query_results_next(results);
+		librdf_query_results_next(results);
 	}
 
-	rasqal_free_query_results(results);
-	rasqal_free_query(rq);
+	librdf_free_query_results(results);
+	librdf_free_query(q);
 	
 	if (base_uri)
-		raptor_free_uri(base_uri);
-
-	rasqal_finish();
+		librdf_free_uri(base_uri);
 
 	return result;
 }
 
 
+} // namespace RDF
 } // namespace Raul
 

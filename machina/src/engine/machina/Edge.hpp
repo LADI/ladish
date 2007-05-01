@@ -40,7 +40,7 @@ public:
 		, _head(head)
 	{}
 
-	void write_state(Raul::RDFWriter& writer);
+	void write_state(Raul::RDF::Model& model);
 
 	WeakPtr<Node>   tail() { return _tail; }
 	SharedPtr<Node> head() { return _head; }

@@ -1,22 +1,19 @@
-libraul_la_CXXFLAGS = -I$(top_srcdir) @RAPTOR_CFLAGS@ @RASQAL_CFLAGS@ @GLIBMM_CFLAGS@ @JACK_CFLAGS@ @LASH_CFLAGS@
-libraul_la_LIBADD = @RAPTOR_LIBS@ @RASQAL_LIBS@ @GLIBMM_LIBS@ @JACK_LIBS@ @LASH_LIBS@
+libraul_la_CXXFLAGS = -I$(top_srcdir) @REDLAND_CFLAGS@ @GLIBMM_CFLAGS@ @JACK_CFLAGS@ @LASH_CFLAGS@
+libraul_la_LIBADD = @REDLAND_LIBS@ @GLIBMM_LIBS@ @JACK_LIBS@ @LASH_LIBS@
 
 lib_LTLIBRARIES = libraul.la
 
 libraul_la_SOURCES = \
-	Thread.cpp \
-	Path.cpp \
-	Namespaces.cpp \
 	Maid.cpp \
+	Namespaces.cpp \
+	Path.cpp \
+	RDFWorld.cpp \
 	SMFReader.cpp \
-	SMFWriter.cpp
+	SMFWriter.cpp \
+	Thread.cpp
 
-if WITH_RAPTOR
-libraul_la_SOURCES += RDFWriter.cpp
-endif
-
-if WITH_RASQAL
-libraul_la_SOURCES += RDFQuery.cpp
+if WITH_REDLAND
+libraul_la_SOURCES += RDFModel.cpp RDFNode.cpp RDFQuery.cpp
 endif
 
 if WITH_JACK
