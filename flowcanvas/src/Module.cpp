@@ -310,7 +310,7 @@ Module::add_port(boost::shared_ptr<Port> p)
 	boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
 	if (canvas) {
 		p->signal_event().connect(
-			sigc::bind(sigc::mem_fun(_canvas.lock().get(), &FlowCanvas::port_event), p));
+			sigc::bind(sigc::mem_fun(canvas.get(), &FlowCanvas::port_event), p));
 	}
 }
 
@@ -405,7 +405,9 @@ Module::resize()
 void
 Module::select_tick()
 {
-	_module_box.property_dash() = _canvas.lock()->select_dash();
+	boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
+	if (canvas)
+		_module_box.property_dash() = canvas->select_dash();
 }
 
 

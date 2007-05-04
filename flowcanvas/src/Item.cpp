@@ -158,14 +158,18 @@ Item::item_event(GdkEvent* event)
 void
 Item::on_click(GdkEventButton* event)
 {
+	boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
+	if (!canvas)
+		return;
+
 	if (event->button == 1) {
 		if (_selected) {
-			_canvas.lock()->unselect_item(shared_from_this());
+			canvas->unselect_item(shared_from_this());
 			assert(!_selected);
 		} else {
 			if ( !(event->state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)))
-				_canvas.lock()->clear_selection();
-			_canvas.lock()->select_item(shared_from_this());
+				canvas->clear_selection();
+			canvas->select_item(shared_from_this());
 		}
 	}
 }
@@ -174,17 +178,23 @@ Item::on_click(GdkEventButton* event)
 void
 Item::on_double_click(GdkEventButton*)
 {
-	_canvas.lock()->clear_selection();
+	boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
+	if (canvas)
+		canvas->clear_selection();
 }
 
 
 void
 Item::on_drag(double dx, double dy)
 {
+	boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
+	if (!canvas)
+		return;
+
 	// Move any other selected modules if we're selected
 	if (_selected) {
-		for (list<boost::shared_ptr<LibFlowCanvas::Item> >::iterator i = _canvas.lock()->selected_items().begin();
-				i != _canvas.lock()->selected_items().end(); ++i) {
+		for (list<boost::shared_ptr<LibFlowCanvas::Item> >::iterator i = canvas->selected_items().begin();
+				i != canvas->selected_items().end(); ++i) {
 			(*i)->move(dx, dy);
 		}
 	} else {
