@@ -57,11 +57,22 @@ Model::Model(World& world, const Glib::ustring& data_uri, Glib::ustring base_uri
 	librdf_uri* base_uri = NULL;
 	if (base_uri_str != "")
 		base_uri = librdf_new_uri(world.world(), (const unsigned char*)base_uri_str.c_str());
-	librdf_parser* parser = librdf_new_parser(world.world(), "guess", NULL, NULL);
-	librdf_parser_parse_into_model(parser, uri, base_uri, _model);
-	librdf_free_uri(base_uri);
-	librdf_free_uri(uri);
-	librdf_free_parser(parser);
+	
+	if (uri) {
+		librdf_parser* parser = librdf_new_parser(world.world(), "guess", NULL, NULL);
+		librdf_parser_parse_into_model(parser, uri, base_uri, _model);
+		
+
+		librdf_free_parser(parser);
+	} else {
+		cerr << "Unable to create URI " << data_uri << endl;
+	}
+	
+	if (base_uri)
+		librdf_free_uri(base_uri);
+	
+	if (uri)
+		librdf_free_uri(uri);
 
 	/*cout << endl << "Loaded model from " << data_uri << ":" << endl;
 	serialize_to_file_handle(stdout);
