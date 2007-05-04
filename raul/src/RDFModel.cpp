@@ -63,9 +63,9 @@ Model::Model(World& world, const Glib::ustring& data_uri, Glib::ustring base_uri
 	librdf_free_uri(uri);
 	librdf_free_parser(parser);
 
-	cout << endl << "Loaded model from " << data_uri << ":" << endl;
+	/*cout << endl << "Loaded model from " << data_uri << ":" << endl;
 	serialize_to_file_handle(stdout);
-	cout << endl << endl;
+	cout << endl << endl;*/
 }
 
 
