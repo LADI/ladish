@@ -19,6 +19,7 @@
 #include <iomanip>
 #include "machina/JackDriver.hpp"
 #include "machina/MidiAction.hpp"
+#include "jack_compat.h"
 
 using namespace Raul;
 
