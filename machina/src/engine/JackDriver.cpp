@@ -206,9 +206,15 @@ JackDriver::write_event(Raul::BeatTime time,
 			<< "\n\tcycle_end: " << _cycle_time.start_ticks() + _cycle_time.length_ticks()
 			<< "\n\tcycle_length: " << _cycle_time.length_ticks() << std::endl;
 	} else {
+#ifdef JACK_MIDI_NEEDS_NFRAMES
+		jack_midi_event_write(
+				jack_port_get_buffer(_output_port, nframes), offset,
+				event, size, nframes);
+#else
 		jack_midi_event_write(
 				jack_port_get_buffer(_output_port, nframes), offset,
 				event, size);
+#endif
 	}
 }
 
@@ -223,7 +229,11 @@ JackDriver::on_process(jack_nframes_t nframes)
 	_cycle_time.set_length(nframes);
 
 	assert(_output_port);
+#ifdef JACK_MIDI_NEEDS_NFRAMES
+	jack_midi_clear_buffer(jack_port_get_buffer(_output_port, nframes), nframes);
+#else
 	jack_midi_clear_buffer(jack_port_get_buffer(_output_port, nframes));
+#endif
 	
 	/* Take a reference to machine here and use only it during the process
 	 * cycle so _machine can be switched with set_machine during a cycle. */
