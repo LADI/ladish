@@ -1,4 +1,4 @@
-AM_LDFLAGS = -module -avoidversion -Wc,-nostartfiles
+AM_LDFLAGS = -module -avoid-version -Wc,-nostartfiles
 
 plugindir = @ladspadir@
 
@@ -21,20 +21,4 @@ plugin_LTLIBRARIES = \
 	masher_4310.la \
 	sample_and_hold_4430.la \
 	comparison_4440.la
-
-# Stolen from swh-plugins, makes stupid libtool versions go away
-install-pluginLTLIBRARIES: $(plugin_LTLIBRARIES)
-	mkdir -p @ladspadir@
-	list='$(plugin_LTLIBRARIES)'; \
-	for file in $$list; do \
-	  sofile=`basename $$file .la`.so; \
-	  $(INSTALL_PROGRAM) .libs/$$sofile @ladspadir@; \
-	done
-
-uninstall-pluginLTLIBRARIES: $(plugin_LTLIBRARIES)
-	list='$(plugin_LTLIBRARIES)'; \
-	for file in $$list; do \
-	  sofile=`basename $$file .la`.so; \
-	  rm -f @ladspadir@/$$sofile; \
-	done
 

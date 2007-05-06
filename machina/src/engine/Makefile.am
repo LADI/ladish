@@ -20,5 +20,5 @@ libmachina_la_SOURCES = \
 	MachineBuilder.cpp
 	
 if WITH_JACK
-libmachina_la_SOURCES += JackDriver.cpp
+libmachina_la_SOURCES += JackDriver.cpp jack_compat.h
 endif
