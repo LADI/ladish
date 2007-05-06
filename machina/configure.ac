@@ -70,7 +70,7 @@ if test "$with_jack" = "yes"; then
 	AC_DEFINE(HAVE_JACK_MIDI, 1, [Has Jack MIDI])
 	AC_JACK_MIDI_NFRAMES_CHECK()  	   	
 	if test "$jackmidi_nframes" = "yes"; then
-		CFLAGS += "-DJACK_MIDI_NEEDS_NFRAMES"
+		CFLAGS+="-DJACK_MIDI_NEEDS_NFRAMES"
 	fi
 fi
 
