@@ -18,26 +18,6 @@ AC_TYPE_SIZE_T
 PKG_CHECK_MODULES(RAUL, raul >= 0.0.0)
 PKG_CHECK_MODULES(GLIBMM, glibmm-2.4)
 
-# Jack support
-with_jack="yes"
-AC_ARG_ENABLE(jack,
-	[AS_HELP_STRING(--enable-jack, [Enable Jack realtime processing (yes)])],
-	[ if test x$enable_jack = xno ; then with_jack=no ; fi ])
-if test "$with_jack" = "yes"; then
-  PKG_CHECK_MODULES(JACK, jack >= 0.102.20, with_jack="yes", with_jack="no")
-  if test "$with_jack" = "yes"; then
-    AC_DEFINE(WITH_JACK, 1, [Has JACK])
-  fi
-fi
-AM_CONDITIONAL(WITH_JACK, [test "$with_jack" = "yes"])
-if test "$with_jack" = "yes"; then
-	AC_DEFINE(HAVE_JACK_MIDI, 1, [Has Jack MIDI])
-	AC_JACK_MIDI_NFRAMES_CHECK()  	   	
-	if test "$jackmidi_nframes" = "yes"; then
-		CFLAGS += "-DJACK_MIDI_NEEDS_NFRAMES"
-	fi
-fi
-
 # Check for debugging flag
 debug="no"
 AC_ARG_ENABLE(debug,
@@ -72,6 +52,28 @@ if test "$pointer_debug" = "yes"; then
   CFLAGS+=" -DBOOST_SP_ENABLE_DEBUG_HOOKS"
   CXXFLAGS+=" -DBOOST_SP_ENABLE_DEBUG_HOOKS"
 fi
+
+
+# Jack support
+with_jack="yes"
+AC_ARG_ENABLE(jack,
+	[AS_HELP_STRING(--enable-jack, [Enable Jack realtime processing (yes)])],
+	[ if test x$enable_jack = xno ; then with_jack=no ; fi ])
+if test "$with_jack" = "yes"; then
+  PKG_CHECK_MODULES(JACK, jack >= 0.102.20, with_jack="yes", with_jack="no")
+  if test "$with_jack" = "yes"; then
+    AC_DEFINE(WITH_JACK, 1, [Has JACK])
+  fi
+fi
+AM_CONDITIONAL(WITH_JACK, [test "$with_jack" = "yes"])
+if test "$with_jack" = "yes"; then
+	AC_DEFINE(HAVE_JACK_MIDI, 1, [Has Jack MIDI])
+	AC_JACK_MIDI_NFRAMES_CHECK()  	   	
+	if test "$jackmidi_nframes" = "yes"; then
+		CFLAGS += "-DJACK_MIDI_NEEDS_NFRAMES"
+	fi
+fi
+
 
 # Build GUI?
 build_gui="yes"
