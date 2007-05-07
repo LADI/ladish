@@ -78,6 +78,10 @@ Machine::remove_node(SharedPtr<Node> node)
 void
 Machine::reset()
 {
+	for (size_t i=0; i < MAX_ACTIVE_NODES; ++i) {
+		_active_nodes[i].reset();
+	}
+
 	if (!_is_finished) {
 		for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n) {
 			const SharedPtr<Node> node = (*n);
@@ -87,10 +91,6 @@ Machine::reset()
 
 			assert(! node->is_active());
 		}
-	}
-	
-	for (size_t i=0; i < MAX_ACTIVE_NODES; ++i) {
-		_active_nodes[i].reset();
 	}
 
 	_time = 0;
@@ -234,7 +234,8 @@ Machine::run(const Raul::TimeSlice& time)
 		if ( ! _nodes.empty()) {
 			for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n) {
 				
-				assert( ! (*n)->is_active());
+				if ((*n)->is_active())
+					(*n)->exit(sink, 0);
 				
 				if ((*n)->is_initial()) {
 					if (enter_node(sink, (*n)))
@@ -257,6 +258,10 @@ Machine::run(const Raul::TimeSlice& time)
 
 		// No more active states, machine is finished
 		if (!earliest) {
+#ifndef NDEBUG
+			for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n)
+				assert( ! (*n)->is_active());
+#endif
 			_is_finished = true;
 			break;
 

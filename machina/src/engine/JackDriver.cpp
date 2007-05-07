@@ -269,7 +269,7 @@ JackDriver::on_process(jack_nframes_t nframes)
 		const TickCount run_dur_ticks = _cycle_time.beats_to_ticks(run_dur_beats);
 
 		// Machine didn't run at all (empty, or no initial states)
-		if (run_dur_ticks == 0) {
+		if (run_dur_beats == 0) {
 			machine->reset(); // Try again next cycle
 			_cycle_time.set_start(0);
 			return;
