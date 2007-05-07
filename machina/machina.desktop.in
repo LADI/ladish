@@ -5,6 +5,6 @@ Version=@PACKAGE_VERSION@
 Comment=Sequencer influenced by finite automata
 Exec=machina_gui
 Terminal=false
-Icon=machina-icon.svg
+Icon=machina.svg
 Type=Application
 Categories=Application;AudioVideo;Sound;Audio
