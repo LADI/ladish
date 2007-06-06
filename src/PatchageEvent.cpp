@@ -17,7 +17,7 @@
 
 #include "raul/SharedPtr.h"
 #include "Patchage.h"
-#include "PatchageFlowCanvas.h"
+#include "PatchageCanvas.h"
 #include "PatchageModule.h"
 #include "PatchageEvent.h"
 #include "JackDriver.h"

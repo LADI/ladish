@@ -29,7 +29,7 @@
 #include <alsa/asoundlib.h>
 #endif
 
-using namespace LibFlowCanvas;
+using namespace FlowCanvas;
 using std::string; using std::list;
 
 enum PortType { JACK_AUDIO, JACK_MIDI, ALSA_MIDI };
@@ -39,7 +39,7 @@ enum PortType { JACK_AUDIO, JACK_MIDI, ALSA_MIDI };
  *
  * \ingroup OmGtk
  */
-class PatchagePort : public LibFlowCanvas::Port
+class PatchagePort : public FlowCanvas::Port
 {
 public:
 	PatchagePort(boost::shared_ptr<Module> module, PortType type, const string& name, bool is_input, int color)

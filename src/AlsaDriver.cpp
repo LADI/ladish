@@ -18,7 +18,7 @@
 #include <string>
 #include <iostream>
 #include <cassert>
-#include "PatchageFlowCanvas.h"
+#include "PatchageCanvas.h"
 #include "AlsaDriver.h"
 #include "Patchage.h"
 #include "PatchageModule.h"
@@ -27,8 +27,7 @@
 using std::cerr;
 using std::string;
 
-
-using namespace LibFlowCanvas;
+using namespace FlowCanvas;
 
 AlsaDriver::AlsaDriver(Patchage* app)
 : _app(app),
