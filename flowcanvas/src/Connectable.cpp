@@ -22,7 +22,7 @@
 
 using std::list;
 
-namespace LibFlowCanvas {
+namespace FlowCanvas {
 	
 
 /** Update the location of all connections to/from this item if we've moved */
@@ -91,4 +91,4 @@ Connectable::raise_connections()
 }
 
 
-} // namespace LibFlowCanvas
+} // namespace FlowCanvas

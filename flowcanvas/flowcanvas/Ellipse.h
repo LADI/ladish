@@ -26,9 +26,9 @@
 #include "Connectable.h"
 #include "Item.h"
 
-namespace LibFlowCanvas {
+namespace FlowCanvas {
 	
-class FlowCanvas;
+class Canvas;
 
 
 /** A named circle (possibly).
@@ -38,16 +38,16 @@ class FlowCanvas;
  *
  * \ingroup FlowCanvas
  */
-class Ellipse : public LibFlowCanvas::Item, public Connectable
+class Ellipse : public Item, public Connectable
 {
 public:
-	Ellipse(boost::shared_ptr<FlowCanvas> canvas,
-	        const std::string&            name,
-	        double                        x,
-	        double                        y,
-	        double                        x_radius,
-	        double                        y_radius,
-	        bool                          show_title = true);
+	Ellipse(boost::shared_ptr<Canvas> canvas,
+	        const std::string&        name,
+	        double                    x,
+	        double                    y,
+	        double                    x_radius,
+	        double                    y_radius,
+	        bool                      show_title = true);
 
 	virtual ~Ellipse();
 	
@@ -97,6 +97,6 @@ protected:
 };
 
 
-} // namespace LibFlowCanvas
+} // namespace FlowCanvas
 
 #endif // FLOWCANVAS_ELLIPSE_H

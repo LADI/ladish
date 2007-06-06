@@ -19,9 +19,9 @@
 #include <libgnomecanvasmm.h>
 #include "Port.h"
 #include "Module.h"
-#include "FlowCanvas.h"
+#include "Canvas.h"
 
-namespace LibFlowCanvas {
+namespace FlowCanvas {
 	
 
 /** Contruct a Port on an existing module.
@@ -195,4 +195,4 @@ Port::set_width(double w)
 }
 
 
-} // namespace LibFlowCanvas
+} // namespace FlowCanvas

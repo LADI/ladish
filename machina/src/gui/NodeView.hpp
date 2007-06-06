@@ -22,14 +22,14 @@
 #include "machina/Node.hpp"
 
 
-class NodeView : public LibFlowCanvas::Ellipse {
+class NodeView : public FlowCanvas::Ellipse {
 public:
-	NodeView(Gtk::Window*                         window,
-	         SharedPtr<LibFlowCanvas::FlowCanvas> canvas,
-	         SharedPtr<Machina::Node>             node,
-	         const std::string&                   name,
-	         double                               x,
-	         double                               y);
+	NodeView(Gtk::Window*                  window,
+	         SharedPtr<FlowCanvas::Canvas> canvas,
+	         SharedPtr<Machina::Node>      node,
+	         const std::string&            name,
+	         double                        x,
+	         double                        y);
 
 	SharedPtr<Machina::Node> node() { return _node; }
 	

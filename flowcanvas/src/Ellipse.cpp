@@ -23,10 +23,10 @@
 #include <cmath>
 #include "Item.h"
 #include "Ellipse.h"
-#include "FlowCanvas.h"
+#include "Canvas.h"
 using std::string;
 
-namespace LibFlowCanvas {
+namespace FlowCanvas {
 
 static const uint32_t ELLIPSE_FILL_COLOUR           = 0x212222C8;
 static const uint32_t ELLIPSE_HILITE_FILL_COLOUR    = 0x212222F4;
@@ -44,14 +44,14 @@ static const uint32_t ELLIPSE_TITLE_COLOUR          = 0xFFFFFFFF;
  * If @a name is the empty string, the space where the title would usually be
  * is not created (eg the module will be shorter).
  */
-Ellipse::Ellipse(boost::shared_ptr<FlowCanvas> canvas,
-                 const string&                 name,
-                 double                        x,
-                 double                        y,
-                 double                        x_radius,
-                 double                        y_radius,
-                 bool                          show_title)
-	: LibFlowCanvas::Item(canvas, name, x, y, ELLIPSE_FILL_COLOUR)
+Ellipse::Ellipse(boost::shared_ptr<Canvas> canvas,
+                 const string&             name,
+                 double                    x,
+                 double                    y,
+                 double                    x_radius,
+                 double                    y_radius,
+                 bool                      show_title)
+	: Item(canvas, name, x, y, ELLIPSE_FILL_COLOUR)
 	, _title_visible(show_title)
 	, _ellipse(*this, -x_radius, -y_radius, x_radius, y_radius)
 	, _label(NULL)
@@ -153,7 +153,7 @@ Ellipse::set_selected(bool selected)
 	Item::set_selected(selected);
 	assert(_selected == selected);
 
-	boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
+	boost::shared_ptr<Canvas> canvas = _canvas.lock();
 	if (!canvas)
 		return;
 
@@ -227,7 +227,7 @@ Ellipse::set_height(double h)
 void
 Ellipse::move(double dx, double dy)
 {
-	boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
+	boost::shared_ptr<Canvas> canvas = _canvas.lock();
 	if (!canvas)
 		return;
 
@@ -258,7 +258,7 @@ Ellipse::move(double dx, double dy)
 void
 Ellipse::move_to(double x, double y)
 {
-	boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
+	boost::shared_ptr<Canvas> canvas = _canvas.lock();
 	if (!canvas)
 		return;
 
@@ -417,4 +417,4 @@ Ellipse::set_base_color(uint32_t c)
 }
 
 
-} // namespace LibFlowCanvas
+} // namespace FlowCanvas

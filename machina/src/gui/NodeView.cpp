@@ -20,13 +20,13 @@
 #include "NodePropertiesWindow.hpp"
 
 
-NodeView::NodeView(Gtk::Window*                         window,
-                   SharedPtr<LibFlowCanvas::FlowCanvas> canvas,
-                   SharedPtr<Machina::Node>             node,
-                   const std::string&                   name,
-                   double                               x,
-                   double                               y)
-	: LibFlowCanvas::Ellipse(canvas, name, x, y, 20, 20, false)
+NodeView::NodeView(Gtk::Window*                  window,
+                   SharedPtr<FlowCanvas::Canvas> canvas,
+                   SharedPtr<Machina::Node>      node,
+                   const std::string&            name,
+                   double                        x,
+                   double                        y)
+	: FlowCanvas::Ellipse(canvas, name, x, y, 20, 20, false)
 	, _window(window)
 	, _node(node)
 {

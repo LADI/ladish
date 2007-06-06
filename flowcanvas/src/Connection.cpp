@@ -20,14 +20,14 @@
 #include <cmath>
 #include <libgnomecanvasmm.h>
 #include "Connection.h"
-#include "FlowCanvas.h"
+#include "Canvas.h"
 #include "Connectable.h"
 #include "Ellipse.h"
 
-namespace LibFlowCanvas {
+namespace FlowCanvas {
 	
 
-Connection::Connection(boost::shared_ptr<FlowCanvas>  canvas,
+Connection::Connection(boost::shared_ptr<Canvas>      canvas,
 	                   boost::shared_ptr<Connectable> source,
 	                   boost::shared_ptr<Connectable> dest,
                        uint32_t                       color,
@@ -266,5 +266,5 @@ Connection::zoom(double z)
 }
 
 
-} // namespace LibFlowCanvas
+} // namespace FlowCanvas
 

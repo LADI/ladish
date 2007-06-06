@@ -15,8 +15,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef FLOWCANVAS_FLOWCANVAS_H
-#define FLOWCANVAS_FLOWCANVAS_H
+#ifndef FLOWCANVAS_CANVAS_H
+#define FLOWCANVAS_CANVAS_H
 
 #include <list>
 #include <boost/enable_shared_from_this.hpp>
@@ -33,7 +33,7 @@ using std::list;
  *
  * \ingroup FlowCanvas
  */
-namespace LibFlowCanvas {
+namespace FlowCanvas {
 	
 class Port;
 class Module;
@@ -52,14 +52,14 @@ class Module;
  *
  * \ingroup FlowCanvas
  */
-class FlowCanvas : boost::noncopyable
-                 , public boost::enable_shared_from_this<FlowCanvas>
-                 , public /*CANVASBASE*/Gnome::Canvas::CanvasAA
+class Canvas : boost::noncopyable
+             , public boost::enable_shared_from_this<Canvas>
+             , public /*CANVASBASE*/Gnome::Canvas::CanvasAA
 // (CANVASBASE is a hook for a sed script in configure.ac)
 {
 public:
-	FlowCanvas(double width, double height);
-	virtual	~FlowCanvas();
+	Canvas(double width, double height);
+	virtual	~Canvas();
 
 	void destroy();
 		
@@ -174,6 +174,6 @@ private:
 };
 
 
-} // namespace LibFlowCanvas
+} // namespace FlowCanvas
 
-#endif // FLOWCANVAS_FLOWCANVAS_H
+#endif // FLOWCANVAS_CANVAS_H

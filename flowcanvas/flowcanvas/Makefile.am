@@ -1,10 +1,10 @@
 flowcanvasincludedir = $(includedir)/flowcanvas
 
 flowcanvasinclude_HEADERS = \
-	Item.h \
-	FlowCanvas.h \
-	Ellipse.h \
-	Module.h \
-	Port.h \
+	Canvas.h \
+	Connectable.h \
 	Connection.h \
-	Connectable.h
+	Ellipse.h \
+	Item.h \
+	Module.h \
+	Port.h

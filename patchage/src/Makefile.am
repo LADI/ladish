@@ -24,8 +24,8 @@ patchage_SOURCES = \
 	PatchageEvent.cpp \
 	JackDriver.h \
 	JackDriver.cpp \
-	PatchageFlowCanvas.h \
-	PatchageFlowCanvas.cpp
+	PatchageCanvas.h \
+	PatchageCanvas.cpp
 
 if WITH_LASH
 patchage_SOURCES += LashDriver.h LashDriver.cpp

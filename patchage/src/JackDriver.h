@@ -24,6 +24,8 @@
 #include <jack/jack.h>
 #include <jack/statistics.h>
 #include <raul/SRSWQueue.h>
+#include <raul/Mutex.h>
+#include <raul/AtomicPtr.h>
 #include "Driver.h"
 class Patchage;
 class PatchageEvent;
@@ -81,8 +83,6 @@ public:
 
 	inline float sample_rate() { return jack_get_sample_rate(_client); }
 
-	void set_realtime(bool realtime, int priority=80);
-
 	inline size_t xruns() { return _xruns; }
 
 	inline float max_delay() { return jack_get_max_delayed_usecs(_client); }
@@ -95,6 +95,7 @@ private:
 	static void error_cb(const char* msg);
 
 	void destroy_all_ports();
+	void shutdown();
 
 	void update_time();
 
@@ -109,6 +110,8 @@ private:
 
 	Raul::SRSWQueue<PatchageEvent> _events;
 
+	Raul::Mutex _mutex;
+	
 	bool            _is_activated;
 	jack_position_t _last_pos;
 	jack_nframes_t  _buffer_size;

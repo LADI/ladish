@@ -28,9 +28,9 @@
 
 using std::string; using std::multimap;
 
-namespace LibFlowCanvas {
+namespace FlowCanvas {
 	
-class FlowCanvas;
+class Canvas;
 
 
 /** An item on the canvas.
@@ -41,11 +41,11 @@ class Item : public Gnome::Canvas::Group
            , public boost::enable_shared_from_this<Item>
 {
 public:
-	Item(boost::shared_ptr<FlowCanvas> canvas,
-	     const string&                 name,
-	     double                        x,
-	     double                        y,
-	     uint32_t                      color);
+	Item(boost::shared_ptr<Canvas> canvas,
+	     const string&             name,
+	     double                    x,
+	     double                    y,
+	     uint32_t                  color);
 
 	virtual ~Item() {}
 	
@@ -57,7 +57,7 @@ public:
 	virtual void move(double dx, double dy) = 0;
 
 	virtual void zoom(double) {}
-	boost::weak_ptr<FlowCanvas> canvas() const { return _canvas; }
+	boost::weak_ptr<Canvas> canvas() const { return _canvas; }
 	
 	double width() const { return _width; }
 	virtual void set_width(double w) = 0;
@@ -97,7 +97,7 @@ protected:
 	virtual void on_click(GdkEventButton*);
 	virtual void on_double_click(GdkEventButton*);
 
-	const boost::weak_ptr<FlowCanvas> _canvas;
+	const boost::weak_ptr<Canvas> _canvas;
 	
 	bool item_event(GdkEvent* event);
 
@@ -155,7 +155,7 @@ Item::is_within(const Gnome::Canvas::Rect& rect) const
 	}
 }
 
-} // namespace LibFlowCanvas
+} // namespace FlowCanvas
 
 #endif // FLOWCANVAS_ITEM_H
 

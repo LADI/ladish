@@ -25,7 +25,7 @@
 
 using namespace std;
 
-class PatchageFlowCanvas;
+class PatchageCanvas;
 class JackDriver;
 class AlsaDriver;
 class LashDriver;
@@ -39,7 +39,7 @@ public:
 	Patchage(int argc, char** argv);
 	~Patchage();
 
-	boost::shared_ptr<PatchageFlowCanvas> canvas() { return _canvas; }
+	boost::shared_ptr<PatchageCanvas> canvas() { return _canvas; }
 	
 	StateManager* state_manager() { return _state_manager; }
 	Gtk::Window*  window()        { return _main_window; }
@@ -120,7 +120,7 @@ protected:
 	void menu_alsa_disconnect();
 #endif
 
-	boost::shared_ptr<PatchageFlowCanvas> _canvas;
+	boost::shared_ptr<PatchageCanvas> _canvas;
 
 	JackDriver*         _jack_driver;
 	StateManager*       _state_manager;

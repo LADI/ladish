@@ -21,15 +21,15 @@
 #include <string>
 #include <raul/SharedPtr.h>
 #include <raul/WeakPtr.h>
-#include <flowcanvas/FlowCanvas.h>
+#include <flowcanvas/Canvas.h>
 
-using namespace LibFlowCanvas;
+using namespace FlowCanvas;
 
 class MachinaGUI;
 class NodeView;
 
 
-class MachinaCanvas : public FlowCanvas
+class MachinaCanvas : public Canvas
 {
 public:
 	MachinaCanvas(MachinaGUI* app, int width, int height);

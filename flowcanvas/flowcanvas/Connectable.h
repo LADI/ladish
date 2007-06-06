@@ -20,7 +20,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-namespace LibFlowCanvas {
+namespace FlowCanvas {
 
 class Connection;
 
@@ -43,6 +43,6 @@ protected:
 };
 
 
-} // namespace LibFlowCanvas
+} // namespace FlowCanvas
 
 #endif // FLOWCANVAS_CONNECTABLE_H

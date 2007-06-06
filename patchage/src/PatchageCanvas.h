@@ -15,14 +15,14 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef PATCHAGEPATCHBAYAREA_H
-#define PATCHAGEPATCHBAYAREA_H
+#ifndef PATCHAGECANVAS_H
+#define PATCHAGECANVAS_H
 
 #include <string>
 #ifdef HAVE_ALSA
 #include <alsa/asoundlib.h>
 #endif
-#include <flowcanvas/FlowCanvas.h>
+#include <flowcanvas/Canvas.h>
 #include "StateManager.h"
 
 class Patchage;
@@ -30,12 +30,12 @@ class PatchageModule;
 class PatchagePort;
 
 using std::string;
-using namespace LibFlowCanvas;
+using namespace FlowCanvas;
 
-class PatchageFlowCanvas : public FlowCanvas
+class PatchageCanvas : public Canvas
 {
 public:
-	PatchageFlowCanvas(Patchage* _app, int width, int height);
+	PatchageCanvas(Patchage* _app, int width, int height);
 	
 	boost::shared_ptr<PatchageModule> find_module(const string& name, ModuleType type);
 #ifdef HAVE_ALSA
@@ -55,4 +55,4 @@ private:
 };
 
 
-#endif // PATCHAGEPATCHBAYAREA_H
+#endif // PATCHAGECANVAS_H

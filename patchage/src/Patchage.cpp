@@ -25,7 +25,7 @@
 #include <fstream>
 #include <pthread.h>
 #include "StateManager.h"
-#include "PatchageFlowCanvas.h"
+#include "PatchageCanvas.h"
 #include <jack/statistics.h>
 #include "JackDriver.h"
 #include "JackSettingsDialog.h"
@@ -91,7 +91,7 @@ Patchage::Patchage(int argc, char** argv)
 	_settings_filename += "/.patchagerc";
 
 	_state_manager = new StateManager();
-	_canvas = boost::shared_ptr<PatchageFlowCanvas>(new PatchageFlowCanvas(this, 1600*2, 1200*2));
+	_canvas = boost::shared_ptr<PatchageCanvas>(new PatchageCanvas(this, 1600*2, 1200*2));
 	_jack_driver = new JackDriver(this);
 	_jack_driver->signal_detached.connect(sigc::mem_fun(this, &Patchage::queue_refresh));
 
@@ -195,7 +195,7 @@ Patchage::Patchage(int argc, char** argv)
 	_zoom_normal_button->signal_clicked().connect(sigc::bind(
 		sigc::mem_fun(this, &Patchage::zoom), 1.0));
 	
-	_zoom_full_button->signal_clicked().connect(sigc::mem_fun(_canvas.get(), &PatchageFlowCanvas::zoom_full));
+	_zoom_full_button->signal_clicked().connect(sigc::mem_fun(_canvas.get(), &PatchageCanvas::zoom_full));
 
 	_menu_jack_settings->signal_activate().connect(
 		sigc::hide_return(sigc::mem_fun(_jack_settings_dialog, &JackSettingsDialog::run)));

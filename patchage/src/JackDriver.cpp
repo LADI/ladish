@@ -24,7 +24,7 @@
 #include <jack/statistics.h>
 #include <jack/thread.h>
 #include <raul/SharedPtr.h>
-#include "PatchageFlowCanvas.h"
+#include "PatchageCanvas.h"
 #include "PatchageEvent.h"
 #include "JackDriver.h"
 #include "Patchage.h"
@@ -33,7 +33,7 @@
 using std::cerr; using std::endl;
 using std::string;
 
-using namespace LibFlowCanvas;
+using namespace FlowCanvas;
 
 
 JackDriver::JackDriver(Patchage* app)
@@ -72,17 +72,19 @@ JackDriver::attach(bool launch_daemon)
 		_app->status_message("[JACK] Unable to create client");
 		_is_activated = false;
 	} else {
+		jack_client_t* const client = _client;
+
 		jack_set_error_function(error_cb);
-		jack_on_shutdown(_client, jack_shutdown_cb, this);
-		jack_set_port_registration_callback(_client, jack_port_registration_cb, this);
-		jack_set_graph_order_callback(_client, jack_graph_order_cb, this);
-		jack_set_buffer_size_callback(_client, jack_buffer_size_cb, this);
-		jack_set_xrun_callback(_client, jack_xrun_cb, this);
+		jack_on_shutdown(client, jack_shutdown_cb, this);
+		jack_set_port_registration_callback(client, jack_port_registration_cb, this);
+		jack_set_graph_order_callback(client, jack_graph_order_cb, this);
+		jack_set_buffer_size_callback(client, jack_buffer_size_cb, this);
+		jack_set_xrun_callback(client, jack_xrun_cb, this);
 	
 		_is_dirty = true;
-		_buffer_size = jack_get_buffer_size(_client);
+		_buffer_size = jack_get_buffer_size(client);
 
-		if (!jack_activate(_client)) {
+		if (!jack_activate(client)) {
 			_is_activated = true;
 			signal_attached.emit();
 			_app->status_message("[JACK] Attached");
@@ -97,6 +99,8 @@ JackDriver::attach(bool launch_daemon)
 void
 JackDriver::detach() 
 {
+	_mutex.lock();
+
 	if (_client) {
 		jack_deactivate(_client);
 		jack_client_close(_client);
@@ -106,6 +110,8 @@ JackDriver::detach()
 		signal_detached.emit();
 		_app->status_message("[JACK] Detached");
 	}
+
+	_mutex.unlock();
 }
 
 
@@ -161,29 +167,38 @@ JackDriver::create_port(boost::shared_ptr<PatchageModule> parent, jack_port_t* p
 }
 
 
+void
+JackDriver::shutdown()
+{
+	destroy_all_ports();
+	signal_detached.emit();
+	_is_dirty = false;
+}
+
+
 /** Refresh all Jack audio ports/connections.
  * To be called from GTK thread only.
  */
 void
 JackDriver::refresh() 
 {
-	//m_mutex.lock();
-
-	if (_client == NULL) {
-		// Shutdown
-		if (_is_dirty) {
-			destroy_all_ports();
-			signal_detached.emit();
-		}
-		_is_dirty = false;
-		//m_mutex.unlock();
-		return;
-	}
-
 	const char** ports;
 	jack_port_t* port;
 
+	// Jack can take _client away from us at any time throughout here :/
+	// Shortest locks possible is the best solution I can figure out
+	
+	_mutex.lock();
+	
+	if (_client == NULL) {
+		_mutex.unlock();
+		shutdown();
+		return;
+	}
+
 	ports = jack_get_ports(_client, NULL, NULL, 0); // get all existing ports
+	
+	_mutex.unlock();
 
 	string client1_name;
 	string port1_name;
@@ -193,7 +208,15 @@ JackDriver::refresh()
 	// Add all ports
 	if (ports)
 	for (int i=0; ports[i]; ++i) {
+		_mutex.lock();
+		if (!_client) {
+			_mutex.unlock();
+			shutdown();
+			return;
+		}
 		port = jack_port_by_name(_client, ports[i]);
+		_mutex.unlock();
+
 		client1_name = ports[i];
 		client1_name = client1_name.substr(0, client1_name.find(":"));
 
@@ -256,8 +279,17 @@ JackDriver::refresh()
 	// Add all connections
 	if (ports)
 	for (int i=0; ports[i]; ++i) {
+		_mutex.lock();
+		if (!_client) {
+			_mutex.unlock();
+			shutdown();
+			return;
+		}
+
 		port = jack_port_by_name(_client, ports[i]);
 		const char** connected_ports = jack_port_get_all_connections(_client, port);
+			
+		_mutex.unlock();
 
 		if (connected_ports) {
 			for (int j=0; connected_ports[j]; ++j) {
@@ -273,6 +305,9 @@ JackDriver::refresh()
 					= _app->canvas()->get_port(client1_name, port1_name);
 				boost::shared_ptr<Port> port2
 					= _app->canvas()->get_port(client2_name, port2_name);
+
+				if (!port1 || !port2)
+					continue;
 
 				boost::shared_ptr<Port> src;
 				boost::shared_ptr<Port> dst;
@@ -303,8 +338,6 @@ JackDriver::refresh()
 
 	free(ports);
 	undirty();
-
-	//m_mutex.unlock();
 }
 
 
@@ -447,10 +480,10 @@ JackDriver::jack_shutdown_cb(void* jack_driver)
 
 	jack_reset_max_delayed_usecs(me->_client);
 
-	//(me->_mutex).lock();
-	me->_client = NULL;
+	me->_mutex.lock();
 	me->_is_dirty = true;
-	//(me->_mutex).unlock();
+	me->_client = NULL;
+	me->_mutex.unlock();
 }
 
 
@@ -497,22 +530,5 @@ JackDriver::set_buffer_size(jack_nframes_t size)
 	} else {
 		return true;
 	}
-}
-
-void
-JackDriver::set_realtime(bool /*realtime*/, int /*priority*/)
-{
-	/* need a jack_set_realtime, this doesn't make sense
-	pthread_t jack_thread = jack_client_thread_id(_client);
-
-	if (realtime)
-		if (jack_acquire_real_time_scheduling(jack_thread, priority))
-			_app->status_message("[JACK] ERROR: Unable to set real-time priority");
-	else
-		if (jack_drop_real_time_scheduling(jack_thread))
-			_app->status_message("[JACK] ERROR: Unable to drop real-time priority");
-
-	cerr << "Set Jack realtime: " << realtime << endl;
-	*/
 }
 

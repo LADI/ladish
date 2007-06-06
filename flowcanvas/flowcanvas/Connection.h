@@ -26,9 +26,9 @@
 
 using std::list;
 
-namespace LibFlowCanvas {
+namespace FlowCanvas {
 
-class FlowCanvas;
+class Canvas;
 class Connectable;
 
 
@@ -39,7 +39,7 @@ class Connectable;
 class Connection : public Gnome::Canvas::Group
 {
 public:
-	Connection(boost::shared_ptr<FlowCanvas>  canvas,
+	Connection(boost::shared_ptr<Canvas>      canvas,
 	           boost::shared_ptr<Connectable> source,
 	           boost::shared_ptr<Connectable> dest,
 	           uint32_t                       color,
@@ -71,12 +71,12 @@ public:
 	const boost::weak_ptr<Connectable> dest() const   { return _dest; }
 
 protected:
-	friend class FlowCanvas;
+	friend class Canvas;
 
 	friend class Connectable;
 	void update_location();
 	
-	const boost::weak_ptr<FlowCanvas>  _canvas;
+	const boost::weak_ptr<Canvas>      _canvas;
 	const boost::weak_ptr<Connectable> _source;
 	const boost::weak_ptr<Connectable> _dest;
 	uint32_t                           _color;
@@ -94,6 +94,6 @@ protected:
 typedef list<boost::shared_ptr<Connection> > ConnectionList;
 
 
-} // namespace LibFlowCanvas
+} // namespace FlowCanvas
 
 #endif // FLOWCANVAS_CONNECTION_H

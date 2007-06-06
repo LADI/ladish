@@ -25,23 +25,23 @@
 #include "Port.h"
 #include "Item.h"
 
-namespace LibFlowCanvas {
+namespace FlowCanvas {
 	
-class FlowCanvas;
+class Canvas;
 
 
 /** A named block (possibly) containing input and output ports.
  *
  * \ingroup FlowCanvas
  */
-class Module : public LibFlowCanvas::Item
+class Module : public Item
 {
 public:
-	Module(boost::shared_ptr<FlowCanvas> canvas,
-	       const std::string&            name,
-	       double                        x = 0,
-	       double                        y = 0,
-	       bool                          show_title = true);
+	Module(boost::shared_ptr<Canvas> canvas,
+	       const std::string&        name,
+	       double                    x = 0,
+	       double                    y = 0,
+	       bool                      show_title = true);
 
 	virtual ~Module();
 	
@@ -93,7 +93,7 @@ protected:
 
 private:
 	friend class Port;
-	friend class FlowCanvas;
+	friend class Canvas;
 	friend class Connection;
 	
 	struct PortComparator {
@@ -122,6 +122,6 @@ Module::get_port(const std::string& port_name) const
 }
 
 
-} // namespace LibFlowCanvas
+} // namespace FlowCanvas
 
 #endif // FLOWCANVAS_MODULE_H

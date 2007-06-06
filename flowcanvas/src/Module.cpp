@@ -23,10 +23,10 @@
 #include <cmath>
 #include "Item.h"
 #include "Module.h"
-#include "FlowCanvas.h"
+#include "Canvas.h"
 using std::string;
 
-namespace LibFlowCanvas {
+namespace FlowCanvas {
 
 static const uint32_t MODULE_FILL_COLOUR           = 0x212222C8;
 static const uint32_t MODULE_HILITE_FILL_COLOUR    = 0x212222F4;
@@ -44,8 +44,8 @@ static const uint32_t MODULE_TITLE_COLOUR          = 0xFFFFFFFF;
  * If @a name is the empty string, the space where the title would usually be
  * is not created (eg the module will be shorter).
  */
-Module::Module(boost::shared_ptr<FlowCanvas> canvas, const string& name, double x, double y, bool show_title)
-	: LibFlowCanvas::Item(canvas, name, x, y, MODULE_FILL_COLOUR)
+Module::Module(boost::shared_ptr<Canvas> canvas, const string& name, double x, double y, bool show_title)
+	: Item(canvas, name, x, y, MODULE_FILL_COLOUR)
 	, _title_visible(show_title)
 	, _module_box(*this, 0, 0, 0, 0) // w, h set later
 	, _canvas_title(*this, 0, 8, name) // x set later
@@ -133,7 +133,7 @@ Module::set_selected(bool selected)
 	Item::set_selected(selected);
 	assert(_selected == selected);
 
-	boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
+	boost::shared_ptr<Canvas> canvas = _canvas.lock();
 	if (!canvas)
 		return;
 
@@ -219,7 +219,7 @@ Module::set_height(double h)
 void
 Module::move(double dx, double dy)
 {
-	boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
+	boost::shared_ptr<Canvas> canvas = _canvas.lock();
 	if (!canvas)
 		return;
 
@@ -252,7 +252,7 @@ Module::move(double dx, double dy)
 void
 Module::move_to(double x, double y)
 {
-	boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
+	boost::shared_ptr<Canvas> canvas = _canvas.lock();
 	if (!canvas)
 		return;
 
@@ -307,10 +307,10 @@ Module::add_port(boost::shared_ptr<Port> p)
 	
 	_ports.push_back(p);
 	
-	boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
+	boost::shared_ptr<Canvas> canvas = _canvas.lock();
 	if (canvas) {
 		p->signal_event().connect(
-			sigc::bind(sigc::mem_fun(canvas.get(), &FlowCanvas::port_event), p));
+			sigc::bind(sigc::mem_fun(canvas.get(), &Canvas::port_event), p));
 	}
 }
 
@@ -405,7 +405,7 @@ Module::resize()
 void
 Module::select_tick()
 {
-	boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
+	boost::shared_ptr<Canvas> canvas = _canvas.lock();
 	if (canvas)
 		_module_box.property_dash() = canvas->select_dash();
 }
@@ -427,4 +427,4 @@ Module::set_base_color(uint32_t c)
 }
 
 
-} // namespace LibFlowCanvas
+} // namespace FlowCanvas

@@ -5,12 +5,11 @@ lib_LTLIBRARIES = libflowcanvas.la
 libflowcanvas_la_LIBADD = @GNOMECANVASMM_LIBS@ @AGRAPH_LIBS@
 
 libflowcanvas_la_SOURCES = \
+	Canvas.cpp \
 	Connectable.cpp \
 	Connection.cpp \
 	Ellipse.cpp \
-	Module.cpp \
-	Port.cpp \
 	Item.cpp \
-	FlowCanvas.cpp
-
+	Module.cpp \
+	Port.cpp
 

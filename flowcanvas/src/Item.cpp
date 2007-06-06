@@ -17,16 +17,16 @@
 
 #include <boost/shared_ptr.hpp>
 #include "Item.h"
-#include "FlowCanvas.h"
+#include "Canvas.h"
 
-namespace LibFlowCanvas {
+namespace FlowCanvas {
 
 
-Item::Item(boost::shared_ptr<FlowCanvas> canvas,
-     const string&                 name,
-     double                        x,
-     double                        y,
-     uint32_t                      color)
+Item::Item(boost::shared_ptr<Canvas> canvas,
+     const string&                   name,
+     double                          x,
+     double                          y,
+     uint32_t                        color)
 	: Gnome::Canvas::Group(*canvas->root(), x, y)
 	, _canvas(canvas)
 	, _name(name)
@@ -60,7 +60,7 @@ Item::set_selected(bool s)
 bool
 Item::item_event(GdkEvent* event)
 {
-	boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
+	boost::shared_ptr<Canvas> canvas = _canvas.lock();
 	if (!canvas || !event)
 		return false;
 
@@ -158,7 +158,7 @@ Item::item_event(GdkEvent* event)
 void
 Item::on_click(GdkEventButton* event)
 {
-	boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
+	boost::shared_ptr<Canvas> canvas = _canvas.lock();
 	if (!canvas)
 		return;
 
@@ -178,7 +178,7 @@ Item::on_click(GdkEventButton* event)
 void
 Item::on_double_click(GdkEventButton*)
 {
-	boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
+	boost::shared_ptr<Canvas> canvas = _canvas.lock();
 	if (canvas)
 		canvas->clear_selection();
 }
@@ -187,13 +187,13 @@ Item::on_double_click(GdkEventButton*)
 void
 Item::on_drag(double dx, double dy)
 {
-	boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
+	boost::shared_ptr<Canvas> canvas = _canvas.lock();
 	if (!canvas)
 		return;
 
 	// Move any other selected modules if we're selected
 	if (_selected) {
-		for (list<boost::shared_ptr<LibFlowCanvas::Item> >::iterator i = canvas->selected_items().begin();
+		for (list<boost::shared_ptr<Item> >::iterator i = canvas->selected_items().begin();
 				i != canvas->selected_items().end(); ++i) {
 			(*i)->move(dx, dy);
 		}
@@ -203,4 +203,4 @@ Item::on_drag(double dx, double dy)
 }
 
 
-} // namespace LibFlowCanvas
+} // namespace FlowCanvas

@@ -1,7 +1,7 @@
 AC_PREREQ(2.59)
 AC_INIT([flowcanvas],[0.1.0],[dave@drobilla.net])
-AC_CONFIG_SRCDIR([src/FlowCanvas.cpp])
-AC_CONFIG_SRCDIR([flowcanvas/FlowCanvas.h])
+AC_CONFIG_SRCDIR([src/Canvas.cpp])
+AC_CONFIG_SRCDIR([flowcanvas/Canvas.h])
 AC_CONFIG_HEADER([src/config.h])
 AM_INIT_AUTOMAKE
 
@@ -67,10 +67,10 @@ AC_ARG_ENABLE(anti-aliasing,
 # Yes, this is dirty...
 if test "$anti_alias" = "yes"; then
 	AC_CONFIG_COMMANDS([set_aa],
-		[sed 's/\(\/\*CANVASBASE\*\/\).*/\1Gnome::Canvas::CanvasAA/' -i flowcanvas/FlowCanvas.h])
+		[sed 's/\(\/\*CANVASBASE\*\/\).*/\1Gnome::Canvas::CanvasAA/' -i flowcanvas/Canvas.h])
 else
 	AC_CONFIG_COMMANDS([set_no_aa],
-		[sed 's/\(\/\*CANVASBASE\*\/\).*/\1Gnome::Canvas::Canvas/' -i flowcanvas/FlowCanvas.h])
+		[sed 's/\(\/\*CANVASBASE\*\/\).*/\1Gnome::Canvas::Canvas/' -i flowcanvas/Canvas.h])
 fi
 
 # Check for the graphviz library for auto-layout support

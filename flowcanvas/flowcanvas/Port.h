@@ -27,7 +27,7 @@
 #include <boost/weak_ptr.hpp>
 #include "Connectable.h"
 
-namespace LibFlowCanvas {
+namespace FlowCanvas {
 	
 class Connection;
 class Module;
@@ -89,7 +89,7 @@ public:
 	sigc::signal<void, std::string> signal_renamed;
 
 protected:
-	friend class FlowCanvas;
+	friend class Canvas;
 
 	boost::weak_ptr<Module> _module;
 	std::string             _name;
@@ -107,6 +107,6 @@ protected:
 typedef std::vector<boost::shared_ptr<Port> > PortVector;
 
 
-} // namespace LibFlowCanvas
+} // namespace FlowCanvas
 
 #endif // FLOWCANVAS_PORT_H

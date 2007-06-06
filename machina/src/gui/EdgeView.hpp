@@ -24,12 +24,12 @@ namespace Machina { class Edge; }
 class NodeView;
 
 
-class EdgeView : public LibFlowCanvas::Connection {
+class EdgeView : public FlowCanvas::Connection {
 public:
-	EdgeView(SharedPtr<LibFlowCanvas::FlowCanvas> canvas,
-	         SharedPtr<NodeView>                  src,
-	         SharedPtr<NodeView>                  dst,
-	         SharedPtr<Machina::Edge>             edge);
+	EdgeView(SharedPtr<FlowCanvas::Canvas> canvas,
+	         SharedPtr<NodeView>           src,
+	         SharedPtr<NodeView>           dst,
+	         SharedPtr<Machina::Edge>      edge);
 
 	SharedPtr<Machina::Edge> edge() { return _edge; }
 

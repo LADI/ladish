@@ -27,11 +27,11 @@
 #include "NodeView.hpp"
 #include "EdgeView.hpp"
 
-using namespace LibFlowCanvas;
+using namespace FlowCanvas;
 
 
 MachinaCanvas::MachinaCanvas(MachinaGUI* app, int width, int height)
-: FlowCanvas(width, height),
+: Canvas(width, height),
   _app(app)
 {
 
@@ -107,7 +107,7 @@ MachinaCanvas::canvas_event(GdkEvent* event)
 		return true;
 	
 	} else {
-		return FlowCanvas::canvas_event(event);
+		return Canvas::canvas_event(event);
 	}
 }
 

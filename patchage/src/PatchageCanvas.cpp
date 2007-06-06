@@ -17,7 +17,7 @@
 
 #include <raul/SharedPtr.h>
 #include "config.h"
-#include "PatchageFlowCanvas.h"
+#include "PatchageCanvas.h"
 #include "Patchage.h"
 #include "JackDriver.h"
 #include "PatchageModule.h"
@@ -26,15 +26,15 @@
 #include "AlsaDriver.h"
 #endif
 
-PatchageFlowCanvas::PatchageFlowCanvas(Patchage* app, int width, int height)
-: FlowCanvas(width, height),
+PatchageCanvas::PatchageCanvas(Patchage* app, int width, int height)
+: FlowCanvas::Canvas(width, height),
   _app(app)
 {
 }
 
 
 boost::shared_ptr<Item>
-PatchageFlowCanvas::get_item(const string& name)
+PatchageCanvas::get_item(const string& name)
 {
 	ItemList::iterator m = _items.begin();
 
@@ -47,7 +47,7 @@ PatchageFlowCanvas::get_item(const string& name)
 
 
 boost::shared_ptr<PatchageModule>
-PatchageFlowCanvas::find_module(const string& name, ModuleType type)
+PatchageCanvas::find_module(const string& name, ModuleType type)
 {
 	for (ItemList::iterator m = _items.begin(); m != _items.end(); ++m) {
 		boost::shared_ptr<PatchageModule> pm = boost::dynamic_pointer_cast<PatchageModule>(*m);
@@ -62,7 +62,7 @@ PatchageFlowCanvas::find_module(const string& name, ModuleType type)
 
 #ifdef HAVE_ALSA
 boost::shared_ptr<PatchagePort>
-PatchageFlowCanvas::find_port(const snd_seq_addr_t* alsa_addr)
+PatchageCanvas::find_port(const snd_seq_addr_t* alsa_addr)
 {
 	boost::shared_ptr<PatchagePort> pp;
 	for (ItemList::iterator m = _items.begin(); m != _items.end(); ++m) {
@@ -83,7 +83,7 @@ PatchageFlowCanvas::find_port(const snd_seq_addr_t* alsa_addr)
 #endif
 
 void
-PatchageFlowCanvas::connect(boost::shared_ptr<Connectable> port1, boost::shared_ptr<Connectable> port2)
+PatchageCanvas::connect(boost::shared_ptr<Connectable> port1, boost::shared_ptr<Connectable> port2)
 {
 	boost::shared_ptr<PatchagePort> p1 = boost::dynamic_pointer_cast<PatchagePort>(port1);
 	boost::shared_ptr<PatchagePort> p2 = boost::dynamic_pointer_cast<PatchagePort>(port2);
@@ -103,7 +103,7 @@ PatchageFlowCanvas::connect(boost::shared_ptr<Connectable> port1, boost::shared_
 
 
 void
-PatchageFlowCanvas::disconnect(boost::shared_ptr<Connectable> port1, boost::shared_ptr<Connectable> port2)
+PatchageCanvas::disconnect(boost::shared_ptr<Connectable> port1, boost::shared_ptr<Connectable> port2)
 {
 	boost::shared_ptr<PatchagePort> input
 		= boost::dynamic_pointer_cast<PatchagePort>(port1);
@@ -138,14 +138,14 @@ PatchageFlowCanvas::disconnect(boost::shared_ptr<Connectable> port1, boost::shar
 
 
 void
-PatchageFlowCanvas::status_message(const string& msg)
+PatchageCanvas::status_message(const string& msg)
 {
 	_app->status_message(string("[Canvas] ").append(msg));
 }
 
 
 boost::shared_ptr<Port>
-PatchageFlowCanvas::get_port(const string& node_name, const string& port_name)
+PatchageCanvas::get_port(const string& node_name, const string& port_name)
 {
 	for (ItemList::iterator i = _items.begin(); i != _items.end(); ++i) {
 		const boost::shared_ptr<Item> item = *i;

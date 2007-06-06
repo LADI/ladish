@@ -23,15 +23,15 @@
 #ifdef HAVE_ALSA
 #include <alsa/asoundlib.h>
 #endif
-#include <flowcanvas/FlowCanvas.h>
+#include <flowcanvas/Canvas.h>
 #include <flowcanvas/Module.h>
-#include "PatchageFlowCanvas.h"
+#include "PatchageCanvas.h"
 #include "StateManager.h"
 #include "PatchagePort.h"
 
 using std::string; using std::list;
 
-using namespace LibFlowCanvas;
+using namespace FlowCanvas;
 
 class PatchageModule : public Module
 {
@@ -76,7 +76,7 @@ public:
 
 
 	virtual void load_location() {
-		boost::shared_ptr<FlowCanvas> canvas = _canvas.lock();
+		boost::shared_ptr<Canvas> canvas = _canvas.lock();
 		if (!canvas)
 			return;
 
@@ -113,7 +113,7 @@ public:
 	virtual void on_click(GdkEventButton* ev) {
 		if (ev->button == 3)
 			_menu.popup(ev->button, ev->time);
-		LibFlowCanvas::Item::on_click(ev);
+		FlowCanvas::Item::on_click(ev);
 	}
 
 	virtual void menu_disconnect_all() {

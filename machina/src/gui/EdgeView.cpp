@@ -17,18 +17,18 @@
 
 #include <iomanip>
 #include <sstream>
-#include <flowcanvas/FlowCanvas.h>
+#include <flowcanvas/Canvas.h>
 #include <machina/Edge.hpp>
 #include "EdgeView.hpp"
 #include "NodeView.hpp"
 
-using namespace LibFlowCanvas;
+using namespace FlowCanvas;
 
-EdgeView::EdgeView(SharedPtr<FlowCanvas>    canvas,
+EdgeView::EdgeView(SharedPtr<Canvas>        canvas,
                    SharedPtr<NodeView>      src,
                    SharedPtr<NodeView>      dst,
                    SharedPtr<Machina::Edge> edge)
-	: LibFlowCanvas::Connection(canvas, src, dst, 0x9999AAff, true)
+	: FlowCanvas::Connection(canvas, src, dst, 0x9999AAff, true)
 	, _edge(edge)
 {
 }
