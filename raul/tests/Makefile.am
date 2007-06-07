@@ -3,7 +3,7 @@ if BUILD_TESTS
 AM_CXXFLAGS = -I.. -lpthread @REDLAND_CFLAGS@ @GLIBMM_CFLAGS@
 ALL_LIBS = @REDLAND_LIBS@ @GLIBMM_LIBS@ ../src/libraul.la
 
-bin_PROGRAMS = \
+noinst_PROGRAMS = \
 	path_test \
 	thread_test \
 	queue_test \
