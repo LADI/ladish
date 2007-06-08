@@ -23,7 +23,6 @@
 #include <boost/shared_ptr.hpp>
 #include <jack/jack.h>
 #include <jack/statistics.h>
-#include <raul/SRSWQueue.h>
 #include <raul/Mutex.h>
 #include <raul/AtomicPtr.h>
 #include "Driver.h"
@@ -53,8 +52,6 @@ public:
 	bool is_attached() const { return (_client != NULL); }
 	bool is_realtime() const { return _client && jack_is_realtime(_client); }
 	
-	Raul::SRSWQueue<PatchageEvent>& events() { return _events; }
-
 	void refresh();
 
 	bool connect(boost::shared_ptr<PatchagePort> src,
@@ -107,8 +104,6 @@ private:
 
 	Patchage*      _app;
 	jack_client_t* _client;
-
-	Raul::SRSWQueue<PatchageEvent> _events;
 
 	Raul::Mutex _mutex;
 	

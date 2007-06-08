@@ -22,38 +22,68 @@
 #include "PatchageEvent.h"
 #include "JackDriver.h"
 
+	
+SharedPtr<PatchagePort>
+PatchageEvent::find_port(const PortRef& ref)
+{
+	if (ref.type == ALSA_MIDI) {
+		return _patchage->canvas()->find_port(&ref.id.alsa);
+	} else {
+		jack_port_t* jack_port = NULL;
+		if (_patchage->jack_driver()->client())
+			jack_port = jack_port_by_id(_patchage->jack_driver()->client(), ref.id.jack);
+
+		if (!jack_port)
+			return boost::shared_ptr<PatchagePort>();
+
+		const string full_name = jack_port_name(jack_port);
+		const string module_name = full_name.substr(0, full_name.find(":"));
+		const string port_name = full_name.substr(full_name.find(":")+1);
+
+		SharedPtr<PatchageModule> module = PtrCast<PatchageModule>(
+				_patchage->canvas()->get_item(module_name));
+		
+		if (module)
+			return PtrCast<PatchagePort>(module->get_port(port_name));
+		else
+			return boost::shared_ptr<PatchagePort>();
+	}
+			
+	return boost::shared_ptr<PatchagePort>();
+}
+
+
 void
 PatchageEvent::execute()
 {
 	//cerr << "{ EXECUTING EVENT" << endl;
 
-	jack_port_t* jack_port = NULL;
-	if (_patchage->jack_driver()->client())
-		jack_port = jack_port_by_id(_patchage->jack_driver()->client(), _port_id);
-
-	if (!jack_port)
-		return;
-
-	const string full_name = jack_port_name(jack_port);
-	const string module_name = full_name.substr(0, full_name.find(":"));
-	const string port_name = full_name.substr(full_name.find(":")+1);
-
-	SharedPtr<PatchageModule> module = PtrCast<PatchageModule>(
-		_patchage->canvas()->get_item(module_name));
-
 	if (_type == PORT_CREATION) {
+		jack_port_t* jack_port = NULL;
+		if (_patchage->jack_driver()->client())
+			jack_port = jack_port_by_id(_patchage->jack_driver()->client(), _port_1.id.jack);
 
+		if (!jack_port)
+			return;
+
+		const string full_name = jack_port_name(jack_port);
+		const string module_name = full_name.substr(0, full_name.find(":"));
+		const string port_name = full_name.substr(full_name.find(":")+1);
+
+		SharedPtr<PatchageModule> module = _patchage->canvas()->find_module(module_name,
+				(jack_port_flags(jack_port) & JackPortIsInput) ? Input : Output);
+		
 		if (!module) {
-			module = boost::shared_ptr<PatchageModule>(
+			module = SharedPtr<PatchageModule>(
 					new PatchageModule(_patchage, module_name, InputOutput));
 			module->load_location();
 			module->store_location();
 			_patchage->canvas()->add_item(module);
 			module->show();
 		}
-	
+
 		boost::shared_ptr<PatchagePort> port = PtrCast<PatchagePort>(
-			module->get_port(port_name));
+				module->get_port(port_name));
 		if (!port) {
 			port = _patchage->jack_driver()->create_port(module, jack_port);
 			module->add_port(port);
@@ -62,28 +92,42 @@ PatchageEvent::execute()
 
 	} else if (_type == PORT_DESTRUCTION) {
 
-		if (!module) {
-			cerr << "Unable to find module for port " << full_name << endl;
-			return;
+		SharedPtr<PatchagePort> port = find_port(_port_1);
+
+		if (port) {
+			SharedPtr<PatchageModule> module = PtrCast<PatchageModule>(port->module().lock());
+			assert(module);
+
+			//SharedPtr<PatchagePort> removed_port = PtrCast<PatchagePort>(
+					module->remove_port(port);
+			//assert(removed_port == port);
+			if (module->num_ports() == 0) {
+				_patchage->canvas()->remove_item(module);
+				module.reset();
+			}
+		} else {
+			cerr << "Unable to find port to destroy" << endl;
 		}
 
-		boost::shared_ptr<PatchagePort> port = PtrCast<PatchagePort>(
-				module->remove_port(full_name.substr(full_name.find(":")+1)));
+	} else if (_type == CONNECTION) {
+		
+		SharedPtr<PatchagePort> port_1 = find_port(_port_1);
+		SharedPtr<PatchagePort> port_2 = find_port(_port_2);
+		
+		if (port_1 && port_2)
+			_patchage->canvas()->add_connection(port_1, port_2, port_1->color() + 0x22222200);
+		else
+			cerr << "Unable to find port to connect" << endl;
 
-		if (!port)
-			cerr << "Destroy port: Unable to find port " << full_name << endl;
-		else {
-			//cerr << "Destroyed port " << full_name << endl;
-			port->hide(); 
-			port.reset(); // FIXME: leak?
-		}
+	} else if (_type == DISCONNECTION) {
+		
+		SharedPtr<PatchagePort> port_1 = find_port(_port_1);
+		SharedPtr<PatchagePort> port_2 = find_port(_port_2);
 
-	}
-
-	if (module->num_ports() == 0) {
-		_patchage->canvas()->remove_item(module);
-		module->hide();
-		module.reset();
+		if (port_1 && port_2)
+			_patchage->canvas()->remove_connection(port_1, port_2);
+		else
+			cerr << "Unable to find port to disconnect" << endl;
 	}
 
 	//cerr << "}" << endl << endl;

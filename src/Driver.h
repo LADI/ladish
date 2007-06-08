@@ -20,6 +20,8 @@
 
 #include <boost/shared_ptr.hpp>
 #include <sigc++/sigc++.h>
+#include <raul/SRSWQueue.h>
+#include "PatchageEvent.h"
 
 class PatchagePort;
 
@@ -40,6 +42,8 @@ public:
 	virtual bool disconnect(boost::shared_ptr<PatchagePort> src_port,
 	                        boost::shared_ptr<PatchagePort> dst_port) = 0;
 	
+	Raul::SRSWQueue<PatchageEvent>& events() { return _events; }
+
 	/** Returns whether or not a refresh is required (pending). */
 	inline bool is_dirty() const { return _is_dirty; }
 
@@ -50,9 +54,11 @@ public:
 	sigc::signal<void> signal_detached;
 
 protected:
-	Driver() : _is_dirty(false) {}
+	Driver() : _is_dirty(false), _events(1024) /* FIXME: size? */ {}
 	
 	bool _is_dirty;
+	
+	Raul::SRSWQueue<PatchageEvent> _events;
 };
 
 
