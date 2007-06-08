@@ -87,8 +87,6 @@ AlsaDriver::detach()
 void
 AlsaDriver::refresh()
 {
-	cerr << "ALSA REFRESH" << endl;
-
 	if (!is_attached())
 		return;
 
@@ -96,8 +94,6 @@ AlsaDriver::refresh()
 	
 	refresh_ports();
 	refresh_connections();
-
-	undirty();
 }
 
 

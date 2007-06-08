@@ -321,12 +321,6 @@ Patchage::idle_callback()
 		if (_alsa_driver)
 			_alsa_driver->refresh();
 #endif
-	}
-
-	// Jack driver needs refreshing
-	if (_refresh || _jack_driver->is_dirty()) {
-		_canvas->flag_all_connections();
-		_jack_driver->refresh();
 		_canvas->destroy_all_flagged_connections();
 		_refresh = false;
 	}
