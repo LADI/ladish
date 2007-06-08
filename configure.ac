@@ -114,6 +114,7 @@ fi
 CXXFLAGS="$CXXFLAGS -pipe -Wall -fmessage-length=139 -fdiagnostics-show-location=every-line"
 CFLAGS="$CFLAGS -pipe -Wall -fmessage-length=139 -fdiagnostics-show-location=every-line"
 
+PKG_CHECK_MODULES(GTHREAD, gthread-2.0)
 PKG_CHECK_MODULES(GTKMM, gtkmm-2.4)
 PKG_CHECK_MODULES(GNOMECANVASMM, libgnomecanvasmm-2.6)
 PKG_CHECK_MODULES(LIBGLADEMM, libglademm-2.4)
