@@ -32,7 +32,7 @@
 using namespace FlowCanvas;
 using std::string; using std::list;
 
-enum PortType { JACK_ANY, JACK_AUDIO, JACK_MIDI, ALSA_MIDI };
+enum PortType { JACK_AUDIO, JACK_MIDI, ALSA_MIDI };
 
 
 /** A Port on a PatchageModule

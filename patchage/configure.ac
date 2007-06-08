@@ -23,7 +23,7 @@ PKG_CHECK_MODULES(RAUL, raul >= 0.0.0)
 PKG_CHECK_MODULES(FLOWCANVAS, flowcanvas >= 0.1.0)
 
 # Check for Jack
-PKG_CHECK_MODULES(JACK, jack >= 0.100.0)
+PKG_CHECK_MODULES(JACK, jack >= 0.107.0)
 
 # Jack MIDI
 build_jack_midi="yes"

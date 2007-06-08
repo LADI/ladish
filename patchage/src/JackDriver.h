@@ -97,6 +97,7 @@ private:
 	void update_time();
 
 	static void jack_port_registration_cb(jack_port_id_t port_id, int registered, void* me);
+	static void jack_port_connect_cb(jack_port_id_t src, jack_port_id_t dst, int connect, void* me);
 	static int  jack_graph_order_cb(void* me);
 	static int  jack_buffer_size_cb(jack_nframes_t buffer_size, void* me);
 	static int  jack_xrun_cb(void* me);

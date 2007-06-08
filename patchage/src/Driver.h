@@ -44,19 +44,11 @@ public:
 	
 	Raul::SRSWQueue<PatchageEvent>& events() { return _events; }
 
-	/** Returns whether or not a refresh is required (pending). */
-	inline bool is_dirty() const { return _is_dirty; }
-
-	/** Clear 'dirty' status after a refresh. */
-	inline void undirty() { _is_dirty = false; }
-
 	sigc::signal<void> signal_attached;
 	sigc::signal<void> signal_detached;
 
 protected:
-	Driver() : _is_dirty(false), _events(1024) /* FIXME: size? */ {}
-	
-	bool _is_dirty;
+	Driver() : _events(1024) /* FIXME: size? */ {}
 	
 	Raul::SRSWQueue<PatchageEvent> _events;
 };

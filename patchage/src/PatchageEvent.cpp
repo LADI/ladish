@@ -26,12 +26,21 @@
 SharedPtr<PatchagePort>
 PatchageEvent::find_port(const PortRef& ref)
 {
-	if (ref.type == ALSA_MIDI) {
-		return _patchage->canvas()->find_port(&ref.id.alsa);
+	if (ref.type == PortRef::NULL_PORT_REF)
+		return boost::shared_ptr<PatchagePort>();
+
+	if (ref.type == PortRef::ALSA_ADDR) {
+		return _patchage->canvas()->find_port(&ref.id.alsa_addr);
 	} else {
+		if (!_patchage->jack_driver()->client())
+			return boost::shared_ptr<PatchagePort>();
+
 		jack_port_t* jack_port = NULL;
-		if (_patchage->jack_driver()->client())
-			jack_port = jack_port_by_id(_patchage->jack_driver()->client(), ref.id.jack);
+
+		if (ref.type == PortRef::JACK_PORT)
+			jack_port = ref.id.jack_port;
+		else if (ref.type == PortRef::JACK_ID)
+			jack_port = jack_port_by_id(_patchage->jack_driver()->client(), ref.id.jack_id);
 
 		if (!jack_port)
 			return boost::shared_ptr<PatchagePort>();
@@ -40,8 +49,8 @@ PatchageEvent::find_port(const PortRef& ref)
 		const string module_name = full_name.substr(0, full_name.find(":"));
 		const string port_name = full_name.substr(full_name.find(":")+1);
 
-		SharedPtr<PatchageModule> module = PtrCast<PatchageModule>(
-				_patchage->canvas()->get_item(module_name));
+		SharedPtr<PatchageModule> module = _patchage->canvas()->find_module(module_name,
+				(jack_port_flags(jack_port) & JackPortIsInput) ? Input : Output);
 		
 		if (module)
 			return PtrCast<PatchagePort>(module->get_port(port_name));
@@ -61,7 +70,7 @@ PatchageEvent::execute()
 	if (_type == PORT_CREATION) {
 		jack_port_t* jack_port = NULL;
 		if (_patchage->jack_driver()->client())
-			jack_port = jack_port_by_id(_patchage->jack_driver()->client(), _port_1.id.jack);
+			jack_port = jack_port_by_id(_patchage->jack_driver()->client(), _port_1.id.jack_id);
 
 		if (!jack_port)
 			return;

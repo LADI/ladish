@@ -76,11 +76,11 @@ JackDriver::attach(bool launch_daemon)
 		jack_set_error_function(error_cb);
 		jack_on_shutdown(client, jack_shutdown_cb, this);
 		jack_set_port_registration_callback(client, jack_port_registration_cb, this);
+		jack_set_port_connect_callback(client, jack_port_connect_cb, this);
 		jack_set_graph_order_callback(client, jack_graph_order_cb, this);
 		jack_set_buffer_size_callback(client, jack_buffer_size_cb, this);
 		jack_set_xrun_callback(client, jack_xrun_cb, this);
 	
-		_is_dirty = true;
 		_buffer_size = jack_get_buffer_size(client);
 
 		if (!jack_activate(client)) {
@@ -169,7 +169,6 @@ JackDriver::shutdown()
 {
 	destroy_all_ports();
 	signal_detached.emit();
-	_is_dirty = false;
 }
 
 
@@ -179,8 +178,6 @@ JackDriver::shutdown()
 void
 JackDriver::refresh() 
 {
-	cerr << "JACK REFRESH" << endl;
-
 	const char** ports;
 	jack_port_t* port;
 
@@ -336,7 +333,6 @@ JackDriver::refresh()
 	}
 
 	free(ports);
-	undirty();
 }
 
 
@@ -414,6 +410,25 @@ JackDriver::jack_port_registration_cb(jack_port_id_t port_id, int registered, vo
 }
 
 
+void
+JackDriver::jack_port_connect_cb(jack_port_id_t src, jack_port_id_t dst, int connect, void* jack_driver) 
+{
+	assert(jack_driver);
+	JackDriver* me = reinterpret_cast<JackDriver*>(jack_driver);
+	assert(me->_client);
+
+	jack_reset_max_delayed_usecs(me->_client);
+
+	if (connect) {
+		me->_events.push(PatchageEvent(me->_app,
+				PatchageEvent::CONNECTION, src, dst));
+	} else {
+		me->_events.push(PatchageEvent(me->_app,
+				PatchageEvent::DISCONNECTION, src, dst));
+	}
+}
+
+
 int
 JackDriver::jack_graph_order_cb(void* jack_driver) 
 {
@@ -423,8 +438,6 @@ JackDriver::jack_graph_order_cb(void* jack_driver)
 	
 	jack_reset_max_delayed_usecs(me->_client);
 	
-	me->_is_dirty = true;
-
 	return 0;
 }
 
@@ -462,8 +475,6 @@ JackDriver::jack_xrun_cb(void* jack_driver)
 
 	//cerr << "** XRUN Delay = " << me->_xrun_delay << endl;
 
-	me->_is_dirty = true;
-
 	//(me->_mutex).unlock();
 	
 	return 0;
@@ -480,7 +491,6 @@ JackDriver::jack_shutdown_cb(void* jack_driver)
 	jack_reset_max_delayed_usecs(me->_client);
 
 	me->_mutex.lock();
-	me->_is_dirty = true;
 	me->_client = NULL;
 	me->_mutex.unlock();
 }
