@@ -39,7 +39,6 @@ using namespace FlowCanvas;
 JackDriver::JackDriver(Patchage* app)
 : _app(app)
 , _client(NULL)
-, _events(1024) // FIXME: size?
 , _is_activated(false)
 , _xruns(0)
 , _xrun_delay(0)
@@ -99,19 +98,17 @@ JackDriver::attach(bool launch_daemon)
 void
 JackDriver::detach() 
 {
-	_mutex.lock();
-
 	if (_client) {
 		jack_deactivate(_client);
 		jack_client_close(_client);
+		_mutex.lock();
 		_client = NULL;
+		_mutex.unlock();
 		destroy_all_ports();
 		_is_activated = false;
 		signal_detached.emit();
 		_app->status_message("[JACK] Detached");
 	}
-
-	_mutex.unlock();
 }
 
 
@@ -182,6 +179,8 @@ JackDriver::shutdown()
 void
 JackDriver::refresh() 
 {
+	cerr << "JACK REFRESH" << endl;
+
 	const char** ports;
 	jack_port_t* port;
 

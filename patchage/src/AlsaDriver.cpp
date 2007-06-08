@@ -87,6 +87,8 @@ AlsaDriver::detach()
 void
 AlsaDriver::refresh()
 {
+	cerr << "ALSA REFRESH" << endl;
+
 	if (!is_attached())
 		return;
 
@@ -505,6 +507,14 @@ AlsaDriver::_refresh_main()
 					continue;
 
 				switch (ev->type) {
+				case SND_SEQ_EVENT_PORT_SUBSCRIBED:
+					_events.push(PatchageEvent(_app, PatchageEvent::CONNECTION,
+								ev->data.connect.sender, ev->data.connect.dest));
+					break;
+				case SND_SEQ_EVENT_PORT_UNSUBSCRIBED:
+					_events.push(PatchageEvent(_app, PatchageEvent::DISCONNECTION,
+								ev->data.connect.sender, ev->data.connect.dest));
+					break;
 				case SND_SEQ_EVENT_RESET:
 				case SND_SEQ_EVENT_CLIENT_START:
 				case SND_SEQ_EVENT_CLIENT_EXIT:
@@ -512,9 +522,8 @@ AlsaDriver::_refresh_main()
 				case SND_SEQ_EVENT_PORT_START:
 				case SND_SEQ_EVENT_PORT_EXIT:
 				case SND_SEQ_EVENT_PORT_CHANGE:
-				case SND_SEQ_EVENT_PORT_SUBSCRIBED:
-				case SND_SEQ_EVENT_PORT_UNSUBSCRIBED:
-					_is_dirty = true;
+					break;
+
 					break;
 				default:
 					break;

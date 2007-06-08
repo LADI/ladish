@@ -293,6 +293,7 @@ Patchage::attach()
 bool
 Patchage::idle_callback() 
 {
+	// Process any JACK events
 	if (_jack_driver) {
 		while (!_jack_driver->events().empty()) {
 			PatchageEvent& ev = _jack_driver->events().front();
@@ -300,23 +301,34 @@ Patchage::idle_callback()
 			ev.execute();
 		}
 	}
-
 	
-	bool refresh = _refresh;
-
-	refresh = refresh || (_jack_driver && _jack_driver->is_dirty());
+	// Process any ALSA events
 #ifdef HAVE_ALSA
-	refresh = refresh || (_alsa_driver && _alsa_driver->is_dirty());
+	if (_alsa_driver) {
+		while (!_alsa_driver->events().empty()) {
+			PatchageEvent& ev = _alsa_driver->events().front();
+			_alsa_driver->events().pop();
+			ev.execute();
+		}
+	}
 #endif
 
-	if (refresh) {
-		
+	// Do a full refresh (ie user clicked refresh)
+	if (_refresh) {
 		_canvas->flag_all_connections();
-
 		_jack_driver->refresh();
 #ifdef HAVE_ALSA
-		_alsa_driver->refresh();
+		if (_alsa_driver)
+			_alsa_driver->refresh();
 #endif
+	}
+
+	// Jack driver needs refreshing
+	if (_refresh || _jack_driver->is_dirty()) {
+		_canvas->flag_all_connections();
+		_jack_driver->refresh();
+		_canvas->destroy_all_flagged_connections();
+		_refresh = false;
 	}
 
 #ifdef HAVE_LASH
@@ -324,10 +336,8 @@ Patchage::idle_callback()
 		_lash_driver->process_events();
 #endif
 
-	if (refresh) {
-		_canvas->destroy_all_flagged_connections();
+	if (_refresh)
 		_refresh = false;
-	}
 
 	update_load();
 

@@ -20,6 +20,8 @@
 
 #include <string>
 #include <jack/jack.h>
+#include "../config.h"
+#include "PatchagePort.h"
 
 class Patchage;
 
@@ -31,7 +33,9 @@ public:
 	enum Type {
 		NULL_EVENT,
 		PORT_CREATION,
-		PORT_DESTRUCTION
+		PORT_DESTRUCTION,
+		CONNECTION,
+		DISCONNECTION
 	};
 
 	PatchageEvent(Patchage* patchage)
@@ -39,21 +43,50 @@ public:
 		, _type(NULL_EVENT)
 	{}
 
-	PatchageEvent(Patchage* patchage, Type type, jack_port_id_t port_id)
+	PatchageEvent(Patchage* patchage, Type type, jack_port_id_t port)
 		: _patchage(patchage)
 		, _type(type)
-		, _port_id(port_id)
+		, _port_1(port)
+	{}
+	
+	PatchageEvent(Patchage* patchage, Type type,
+			snd_seq_addr_t port_1, snd_seq_addr_t port_2)
+		: _patchage(patchage)
+		, _type(type)
+		, _port_1(port_1)
+		, _port_2(port_2)
 	{}
 
 	void execute();
 
 	Type           type()    { return _type; }
-	jack_port_id_t port_id() { return _port_id; }
 
 private:
 	Patchage*      _patchage;
 	Type           _type;
-	jack_port_id_t _port_id;
+	
+	struct PortRef {
+		PortRef() : type((PortType)0xdeadbeef) { id.jack = 0; }
+
+		PortRef(jack_port_id_t jack_id) : type(JACK_ANY) { id.jack = jack_id; }
+
+#ifdef HAVE_ALSA
+		PortRef(snd_seq_addr_t addr) : type(ALSA_MIDI) { id.alsa = addr; }
+#endif
+
+		PortType type;
+		union {
+			jack_port_id_t jack;
+#ifdef HAVE_ALSA
+			snd_seq_addr_t alsa;
+#endif
+		} id;
+	};
+
+	PortRef _port_1;
+	PortRef _port_2;
+	
+	boost::shared_ptr<PatchagePort> find_port(const PortRef& ref);
 };
 
 
