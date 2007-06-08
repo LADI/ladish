@@ -1,7 +1,7 @@
 AC_PREREQ(2.59)
 AC_INIT(raul, 0.1.0, [dave@drobilla.net])
 #AC_CONFIG_HEADER([config.h])
-AC_CONFIG_SRCDIR([raul/Mutex.h])
+AC_CONFIG_SRCDIR([raul/Semaphore.h])
 AM_INIT_AUTOMAKE
 
 AC_LANG([C++])

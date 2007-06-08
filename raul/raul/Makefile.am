@@ -5,7 +5,6 @@ raulinclude_HEADERS = \
 	Atom.h \
 	AtomicInt.h \
 	AtomicPtr.h \
-	Condition.h \
 	Deletable.h \
 	DoubleBuffer.h \
 	JackDriver.h \
@@ -13,7 +12,6 @@ raulinclude_HEADERS = \
 	MIDIRingBuffer.h \
 	MIDISink.h \
 	Maid.h \
-	Mutex.h \
 	Namespaces.h \
 	Path.h \
 	Process.h \

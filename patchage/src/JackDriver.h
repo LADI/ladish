@@ -23,7 +23,7 @@
 #include <boost/shared_ptr.hpp>
 #include <jack/jack.h>
 #include <jack/statistics.h>
-#include <raul/Mutex.h>
+#include <glibmm/thread.h>
 #include <raul/AtomicPtr.h>
 #include "Driver.h"
 class Patchage;
@@ -105,7 +105,7 @@ private:
 	Patchage*      _app;
 	jack_client_t* _client;
 
-	Raul::Mutex _mutex;
+	Glib::Mutex _mutex;
 	
 	bool            _is_activated;
 	jack_position_t _last_pos;
