@@ -49,79 +49,22 @@ public:
 	static Thread* create_for_this_thread(const std::string& name="")
 		{ return new Thread(pthread_self(), name); }
 	
-	/** Return the calling thread.
-	 * The return value of this should NOT be cached unless the thread is
-	 * explicitly user created with create().
-	 */
-	static Thread& get() {
-		Thread* this_thread = reinterpret_cast<Thread*>(pthread_getspecific(_thread_key));
-		if (!this_thread)
-			this_thread = new Thread(); // sets thread-specific data
+	static Thread& get();
 
-		return *this_thread;
-	}
+	virtual void start();
+	virtual void stop();
 
-	/** Launch and start the thread. */
-	virtual void start() {
-		std::cout << "[" << _name << " Thread] Starting." << std::endl;
-
-		pthread_attr_t attr;
-		pthread_attr_init(&attr);
-		pthread_attr_setstacksize(&attr, 1500000);
-
-		pthread_create(&_pthread, &attr, _static_run, this);
-		_pthread_exists = true;
-	}
-
-	/** Stop and terminate the thread. */
-	virtual void stop() {
-		if (_pthread_exists) {
-			pthread_cancel(_pthread);
-			pthread_join(_pthread, NULL);
-			_pthread_exists = false;
-			std::cout << "[" << _name << " Thread] Exiting." << std::endl;
-		}
-	}
-
-	void set_scheduling(int policy, unsigned int priority) {
-		sched_param sp;
-		sp.sched_priority = priority;
-		int result = pthread_setschedparam(_pthread, SCHED_FIFO, &sp);
-		if (!result) {
-			std::cout << "[" << _name << "] Set scheduling policy to ";
-			switch (policy) {
-				case SCHED_FIFO:  std::cout << "SCHED_FIFO";  break;
-				case SCHED_RR:    std::cout << "SCHED_RR";    break;
-				case SCHED_OTHER: std::cout << "SCHED_OTHER"; break;
-				default:          std::cout << "UNKNOWN";     break;
-			}
-			std::cout << ", priority " << sp.sched_priority << std::endl;
-		} else {
-			std::cout << "[" << _name << "] Unable to set scheduling policy ("
-				<< strerror(result) << ")" << std::endl;
-		}
-	}
+	void set_scheduling(int policy, unsigned int priority);
 	
 	const std::string& name() { return _name; }
 	void set_name(const std::string& name) { _name = name; }
 	
-	const unsigned context()                    { return _context; }
-	void          set_context(unsigned context) { _context = context; }
+	const unsigned context()                     { return _context; }
+	void           set_context(unsigned context) { _context = context; }
 
 protected:
-	Thread(const std::string& name="") : _context(0), _name(name), _pthread_exists(false)
-	{
-		pthread_once(&_thread_key_once, thread_key_alloc);
-		pthread_setspecific(_thread_key, this);
-	}
-	
-	/** Must be called from thread */
-	Thread(pthread_t thread, const std::string& name="")
-	: _context(0), _name(name), _pthread_exists(true), _pthread(thread)
-	{
-		pthread_once(&_thread_key_once, thread_key_alloc);
-		pthread_setspecific(_thread_key, this);
-	}
+	Thread(const std::string& name="");
+	Thread(pthread_t thread, const std::string& name="");
 
 	/** Thread function to execute.
 	 *
