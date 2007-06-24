@@ -38,7 +38,9 @@ namespace Raul {
 class Thread : boost::noncopyable
 {
 public:
-	virtual ~Thread() { stop(); }
+	virtual ~Thread() {
+		stop();
+	}
 
 	static Thread* create(const std::string& name="")
 		{ return new Thread(name); }
@@ -77,6 +79,7 @@ public:
 			pthread_cancel(_pthread);
 			pthread_join(_pthread, NULL);
 			_pthread_exists = false;
+			std::cout << "[" << _name << " Thread] Exiting." << std::endl;
 		}
 	}
 
