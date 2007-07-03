@@ -1,5 +1,6 @@
 #include <iostream>
 #include "raul/MIDIRingBuffer.h"
+#include "raul/midi_names.h"
 
 using namespace std;
 using namespace Raul;
