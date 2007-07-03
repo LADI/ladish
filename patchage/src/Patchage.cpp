@@ -486,6 +486,8 @@ Patchage::connect_widgets()
 
 	_jack_driver->signal_attached.connect(
 			sigc::mem_fun(this, &Patchage::update_toolbar));
+	_jack_driver->signal_attached.connect(
+			sigc::mem_fun(this, &Patchage::menu_view_refresh));
 
 	//_jack_driver->signal_attached.connect(sigc::bind(
 	///		sigc::mem_fun(_jack_connect_toggle, &Gtk::ToggleButton::set_active), true));
