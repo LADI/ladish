@@ -65,7 +65,7 @@ AC_ARG_ENABLE(lash,
 	
 have_lash="no"
 if test "$build_lash" = "yes"; then
-	PKG_CHECK_MODULES(LASH, lash-1.0 >= 0.5.0, have_lash="yes", have_lash="no")
+	PKG_CHECK_MODULES(LASH, lash-1.0 >= 0.5.2, have_lash="yes", have_lash="no")
 fi
 if test "$have_lash" = "yes"; then
 	AC_DEFINE(HAVE_LASH, 1, [Has lash.h])
