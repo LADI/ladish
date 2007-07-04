@@ -119,16 +119,22 @@ Model::serialize_to_file_handle(FILE* fd)
 
 /** Begin a serialization to a file.
  *
+ * \a uri must be a local (file://) URI.
+ *
  * This must be called before any write methods.
  */
 void
-Model::serialize_to_file(const string& filename)
+Model::serialize_to_file(const Glib::ustring& uri_str)
 {
-	_serializer = librdf_new_serializer(_world.world(), RDF_LANG, NULL, NULL);
-	setup_prefixes();
-	librdf_serializer_serialize_model_to_file(_serializer, filename.c_str(), NULL, _model);
-	librdf_free_serializer(_serializer);
-	_serializer = NULL;
+	librdf_uri* uri = librdf_new_uri(_world.world(), (const unsigned char*)uri_str.c_str());
+	if (uri && librdf_uri_is_file_uri(uri)) {
+		_serializer = librdf_new_serializer(_world.world(), RDF_LANG, NULL, NULL);
+		setup_prefixes();
+		librdf_serializer_serialize_model_to_file(_serializer, librdf_uri_to_filename(uri), uri, _model);
+		librdf_free_serializer(_serializer);
+		_serializer = NULL;
+	}
+	librdf_free_uri(uri);
 }
 
 

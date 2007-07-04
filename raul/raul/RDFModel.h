@@ -41,7 +41,7 @@ public:
 	~Model();
 	
 	void        serialize_to_file_handle(FILE* fd);
-	void        serialize_to_file(const std::string& file);
+	void        serialize_to_file(const Glib::ustring& uri);
 	std::string serialize_to_string();
 	
 	void add_statement(const Node& subject,
