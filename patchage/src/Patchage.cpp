@@ -509,6 +509,8 @@ Patchage::connect_widgets()
 			sigc::mem_fun(_menu_alsa_connect, &Gtk::MenuItem::set_sensitive), false));
 	_alsa_driver->signal_attached.connect(sigc::bind(
 			sigc::mem_fun(_menu_alsa_disconnect, &Gtk::MenuItem::set_sensitive), true));
+	_alsa_driver->signal_attached.connect(
+			sigc::mem_fun(this, &Patchage::menu_view_refresh));
 	
 	_alsa_driver->signal_detached.connect(sigc::bind(
 			sigc::mem_fun(_menu_alsa_connect, &Gtk::MenuItem::set_sensitive), true));
