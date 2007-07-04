@@ -31,8 +31,12 @@ class World;
 
 class Node {
 public:
-	// Matches librdf_node_type
-	enum Type { UNKNOWN=0, RESOURCE, LITERAL, BLANK };
+	enum Type {
+		UNKNOWN  = LIBRDF_NODE_TYPE_UNKNOWN,
+		RESOURCE = LIBRDF_NODE_TYPE_RESOURCE,
+		LITERAL  = LIBRDF_NODE_TYPE_LITERAL,
+		BLANK    = LIBRDF_NODE_TYPE_BLANK
+	};
 
 	Node() : _node(NULL) {}
 
