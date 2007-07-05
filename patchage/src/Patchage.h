@@ -39,16 +39,16 @@ public:
 	Patchage(int argc, char** argv);
 	~Patchage();
 
-	boost::shared_ptr<PatchageCanvas> canvas() { return _canvas; }
+	boost::shared_ptr<PatchageCanvas> canvas() const { return _canvas; }
 	
-	StateManager* state_manager() { return _state_manager; }
-	Gtk::Window*  window()        { return _main_window; }
-	JackDriver*   jack_driver()   { return _jack_driver; }
+	StateManager* state_manager() const { return _state_manager; }
+	Gtk::Window*  window()        const { return _main_window; }
+	JackDriver*   jack_driver()   const { return _jack_driver; }
 #ifdef HAVE_ALSA
-	AlsaDriver*   alsa_driver()   { return _alsa_driver; }
+	AlsaDriver*   alsa_driver()   const { return _alsa_driver; }
 #endif
 #ifdef HAVE_LASH
-	LashDriver*   lash_driver()   { return _lash_driver; }
+	LashDriver*   lash_driver()   const { return _lash_driver; }
 #endif
 	
 	void attach();

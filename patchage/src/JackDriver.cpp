@@ -37,11 +37,12 @@ using namespace FlowCanvas;
 
 
 JackDriver::JackDriver(Patchage* app)
-: _app(app)
-, _client(NULL)
-, _is_activated(false)
-, _xruns(0)
-, _xrun_delay(0)
+	: Driver(128)
+	, _app(app)
+	, _client(NULL)
+	, _is_activated(false)
+	, _xruns(0)
+	, _xrun_delay(0)
 {
 	_last_pos.frame = 0;
 	_last_pos.valid = (jack_position_bits_t)0;
@@ -401,11 +402,9 @@ JackDriver::jack_port_registration_cb(jack_port_id_t port_id, int registered, vo
 	jack_reset_max_delayed_usecs(me->_client);
 
 	if (registered) {
-		me->_events.push(PatchageEvent(me->_app,
-				PatchageEvent::PORT_CREATION, port_id));
+		me->_events.push(PatchageEvent(PatchageEvent::PORT_CREATION, port_id));
 	} else {
-		me->_events.push(PatchageEvent(me->_app,
-				PatchageEvent::PORT_DESTRUCTION, port_id));
+		me->_events.push(PatchageEvent(PatchageEvent::PORT_DESTRUCTION, port_id));
 	}
 }
 
@@ -420,11 +419,9 @@ JackDriver::jack_port_connect_cb(jack_port_id_t src, jack_port_id_t dst, int con
 	jack_reset_max_delayed_usecs(me->_client);
 
 	if (connect) {
-		me->_events.push(PatchageEvent(me->_app,
-				PatchageEvent::CONNECTION, src, dst));
+		me->_events.push(PatchageEvent(PatchageEvent::CONNECTION, src, dst));
 	} else {
-		me->_events.push(PatchageEvent(me->_app,
-				PatchageEvent::DISCONNECTION, src, dst));
+		me->_events.push(PatchageEvent(PatchageEvent::DISCONNECTION, src, dst));
 	}
 }
 

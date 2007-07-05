@@ -30,8 +30,9 @@ using std::string;
 using namespace FlowCanvas;
 
 AlsaDriver::AlsaDriver(Patchage* app)
-: _app(app),
-  _seq(NULL)
+	: Driver(128)
+	, _app(app)
+	, _seq(NULL)
 {
 }
 
@@ -504,11 +505,11 @@ AlsaDriver::_refresh_main()
 
 				switch (ev->type) {
 				case SND_SEQ_EVENT_PORT_SUBSCRIBED:
-					_events.push(PatchageEvent(_app, PatchageEvent::CONNECTION,
+					_events.push(PatchageEvent(PatchageEvent::CONNECTION,
 								ev->data.connect.sender, ev->data.connect.dest));
 					break;
 				case SND_SEQ_EVENT_PORT_UNSUBSCRIBED:
-					_events.push(PatchageEvent(_app, PatchageEvent::DISCONNECTION,
+					_events.push(PatchageEvent(PatchageEvent::DISCONNECTION,
 								ev->data.connect.sender, ev->data.connect.dest));
 					break;
 				case SND_SEQ_EVENT_RESET:

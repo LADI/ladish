@@ -298,7 +298,7 @@ Patchage::idle_callback()
 		while (!_jack_driver->events().empty()) {
 			PatchageEvent& ev = _jack_driver->events().front();
 			_jack_driver->events().pop();
-			ev.execute();
+			ev.execute(this);
 		}
 	}
 	
@@ -308,7 +308,7 @@ Patchage::idle_callback()
 		while (!_alsa_driver->events().empty()) {
 			PatchageEvent& ev = _alsa_driver->events().front();
 			_alsa_driver->events().pop();
-			ev.execute();
+			ev.execute(this);
 		}
 	}
 #endif
