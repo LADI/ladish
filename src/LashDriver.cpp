@@ -27,8 +27,9 @@ using std::string;
 
 
 LashDriver::LashDriver(Patchage* app, int argc, char** argv)
-: _app(app),
-  _args(NULL)
+	: Driver(2)
+	, _app(app)
+	, _args(NULL)
 {
 	_args = lash_extract_args(&argc, &argv);
 }

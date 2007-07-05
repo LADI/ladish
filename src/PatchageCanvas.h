@@ -39,7 +39,7 @@ public:
 	
 	boost::shared_ptr<PatchageModule> find_module(const string& name, ModuleType type);
 #ifdef HAVE_ALSA
-	boost::shared_ptr<PatchagePort>   find_port(const snd_seq_addr_t* alsa_addr);
+	boost::shared_ptr<PatchagePort> find_port(const snd_seq_addr_t* alsa_addr);
 #endif
 	void connect(boost::shared_ptr<Connectable> port1, boost::shared_ptr<Connectable> port2);
 	void disconnect(boost::shared_ptr<Connectable> port1, boost::shared_ptr<Connectable> port2);

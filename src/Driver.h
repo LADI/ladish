@@ -48,7 +48,7 @@ public:
 	sigc::signal<void> signal_detached;
 
 protected:
-	Driver() : _events(128) {}
+	Driver(size_t event_queue_size) : _events(event_queue_size) {}
 	
 	Raul::SRSWQueue<PatchageEvent> _events;
 };

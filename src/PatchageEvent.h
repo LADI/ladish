@@ -34,49 +34,42 @@ class Patchage;
 class PatchageEvent {
 public:
 	enum Type {
-		NULL_EVENT,
+		NULL_EVENT = 0,
 		PORT_CREATION,
 		PORT_DESTRUCTION,
 		CONNECTION,
 		DISCONNECTION
 	};
 
-	PatchageEvent(Patchage* patchage)
-		: _patchage(patchage)
-		, _type(NULL_EVENT)
+	PatchageEvent()
+		: _type(NULL_EVENT)
 	{}
 
-	PatchageEvent(Patchage* patchage, Type type, jack_port_id_t port)
-		: _patchage(patchage)
-		, _type(type)
+	PatchageEvent(Type type, jack_port_id_t port)
+		: _type(type)
 		, _port_1(port)
 	{}
 	
-	PatchageEvent(Patchage* patchage, Type type,
-			jack_port_id_t port_1, jack_port_id_t port_2)
-		: _patchage(patchage)
-		, _type(type)
+	PatchageEvent(Type type, jack_port_id_t port_1, jack_port_id_t port_2)
+		: _type(type)
 		, _port_1(port_1)
 		, _port_2(port_2)
 	{}
 	
 #ifdef HAVE_ALSA
-	PatchageEvent(Patchage* patchage, Type type,
-			snd_seq_addr_t port_1, snd_seq_addr_t port_2)
-		: _patchage(patchage)
-		, _type(type)
+	PatchageEvent(Type type, snd_seq_addr_t port_1, snd_seq_addr_t port_2)
+		: _type(type)
 		, _port_1(port_1)
 		, _port_2(port_2)
 	{}
 #endif
 
-	void execute();
+	void execute(Patchage* patchage);
 
-	Type           type()    { return _type; }
+	inline Type type() const { return (Type)_type; }
 
 private:
-	Patchage*      _patchage;
-	Type           _type;
+	uint8_t _type;
 	
 	struct PortRef {
 		PortRef() : type(NULL_PORT_REF) { id.jack_id = 0; }
@@ -102,7 +95,7 @@ private:
 	PortRef _port_1;
 	PortRef _port_2;
 	
-	boost::shared_ptr<PatchagePort> find_port(const PortRef& ref);
+	boost::shared_ptr<PatchagePort> find_port(const Patchage* patchage, const PortRef& ref);
 };
 
 
