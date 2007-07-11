@@ -15,6 +15,7 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include "../config.h"
 #include "raul/SharedPtr.h"
 #include "Patchage.h"
 #include "PatchageCanvas.h"
@@ -29,9 +30,12 @@ PatchageEvent::find_port(const Patchage* patchage, const PortRef& ref)
 	if (ref.type == PortRef::NULL_PORT_REF)
 		return boost::shared_ptr<PatchagePort>();
 
+#ifdef HAVE_ALSA
 	if (ref.type == PortRef::ALSA_ADDR) {
 		return patchage->canvas()->find_port(&ref.id.alsa_addr);
-	} else {
+	} else
+#endif
+	{
 		if (!patchage->jack_driver()->client())
 			return boost::shared_ptr<PatchagePort>();
 
