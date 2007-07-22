@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <glib.h>
 #include "lv2_osc.h"
+#include "lv2_osc_print.h"
 
 #define lv2_osc_swap32(x) \
 ({ \
@@ -128,94 +129,44 @@ lv2_osc_message_swap_byte_order(LV2Message* msg)
 }
 
 
-void
-lv2_osc_argument_print(char type, const LV2Argument* arg)
-{
-	int32_t blob_size;
-
-    switch (type) {
-	case 'c':
-		printf("%c", arg->c); break;
-	case 'i':
-		printf("%d", arg->i); break;
-	case 'f':
-		printf("%f", arg->f); break;
-	case 'h':
-		printf("%ld", arg->h); break;
-	case 'd':
-		printf("%f", arg->d); break;
-	case 's':
-		printf("%s", &arg->s); break;
-	case 'S':
-		printf("%s", &arg->S); break;
-	case 'b':
-		blob_size = *((int32_t*)arg);
-		printf("{ ");
-		for (int32_t i=0; i < blob_size; ++i)
-			printf("%X, ", (&arg->b)[i+4]);
-		printf(" }");
-		break;
-	default:
-		printf("?");
-	}
-}
-
-void
-lv2_osc_message_print(LV2Message* msg)
-{
-	const char* const types = lv2_message_get_types(msg);
-
-	printf("%s (%s) ", lv2_message_get_path(msg), types);
-	for (uint32_t i=0; i < msg->argument_count; ++i) {
-		lv2_osc_argument_print(types[i], lv2_message_get_argument(msg, i));
-		printf(" ");
-	}
-	printf("\n");
-}
-
-
-/** Allocate a new LV2OSCBuffer.
- *
- * This function is NOT realtime safe.
+/** Create a new LV2Message from a raw OSC message.
+ * 
+ * If \a out_buf is NULL, new memory will be allocated.  Otherwise the returned
+ * value will be equal to buf, unless there is insufficient space in which
+ * case NULL is returned.
  */
-LV2OSCBuffer*
-lv2_osc_buffer_new(uint32_t capacity)
-{
-	LV2OSCBuffer* buf = (LV2OSCBuffer*)malloc((sizeof(uint32_t) * 3) + capacity);
-	buf->capacity = capacity;
-	buf->size = 0;
-	buf->message_count = 0;
-	memset(&buf->data, 0, capacity);
-	return buf;
-}
-
-
-int
-lv2_osc_buffer_append_raw_message(LV2OSCBuffer* buf, double time, uint32_t size, void* raw_msg)
+LV2Message*
+lv2_osc_message_from_raw(double time, uint32_t out_buf_size, void* out_buf, uint32_t raw_msg_size, void* raw_msg)
 {
 	const uint32_t message_header_size = sizeof(double) + (sizeof(uint32_t) * 4);
 
-	if (buf->capacity - buf->size < message_header_size + size)
-		return ENOBUFS;
-
-	LV2Message* write_loc = (LV2Message*)(&buf->data + buf->size);
-	write_loc->time = time;
-	write_loc->data_size = size;
 	
-	const uint32_t path_size = lv2_osc_string_size((char*)raw_msg);
-	const uint32_t types_len = strlen((char*)(raw_msg + path_size + 1));
+	const uint32_t path_size  = lv2_osc_string_size((char*)raw_msg);
+	const uint32_t types_len  = strlen((char*)(raw_msg + path_size + 1));
+	uint32_t       index_size = types_len * sizeof(uint32_t);
+	
+	if (out_buf == NULL) {
+		out_buf_size = message_header_size + index_size + raw_msg_size;
+		out_buf = malloc(out_buf_size);
+	} else if (out_buf && out_buf_size < message_header_size + raw_msg_size) {
+		return NULL;
+	}
+
+	LV2Message* write_loc = (LV2Message*)(out_buf);
+	write_loc->time = time;
+	
 	write_loc->argument_count = types_len;
 	
-	uint32_t index_size = write_loc->argument_count * sizeof(uint32_t);
+	write_loc->data_size = index_size + raw_msg_size;
 	
 	// Copy raw message
-	memcpy(&write_loc->data + index_size, raw_msg, size);
+	memcpy(&write_loc->data + index_size, raw_msg, raw_msg_size);
 
-	write_loc->types_index = index_size + path_size + 1;
+	write_loc->types_offset = index_size + path_size + 1;
 	const char* const types = lv2_message_get_types(write_loc);
 	
 	// Calculate/Write index
-	uint32_t args_base_offset = write_loc->types_index + lv2_osc_string_size(types) - 1;
+	uint32_t args_base_offset = write_loc->types_offset + lv2_osc_string_size(types) - 1;
 	uint32_t arg_offset = 0;
 	
 	for (uint32_t i=0; i < write_loc->argument_count; ++i) {
@@ -247,15 +198,53 @@ lv2_osc_buffer_append_raw_message(LV2OSCBuffer* buf, double time, uint32_t size,
 	}
 	printf("\n");*/
 
-	// Swap to host byte order if necessary (must do now so blob size is read correctly)
+	// Swap to host byte order if necessary
 	if (G_BYTE_ORDER == G_LITTLE_ENDIAN)
 		lv2_osc_message_swap_byte_order(write_loc);
 
-	printf("Appended message:\n");
+	printf("Created message:\n");
 	lv2_osc_message_print(write_loc);
 
-	buf->capacity -= message_header_size + size;
+	return write_loc;
+}
 
+
+/** Allocate a new LV2OSCBuffer.
+ *
+ * This function is NOT realtime safe.
+ */
+LV2OSCBuffer*
+lv2_osc_buffer_new(uint32_t capacity)
+{
+	LV2OSCBuffer* buf = (LV2OSCBuffer*)malloc((sizeof(uint32_t) * 3) + capacity);
+	buf->capacity = capacity;
+	buf->size = 0;
+	buf->message_count = 0;
+	memset(&buf->data, 0, capacity);
+	return buf;
+}
+
+
+int
+lv2_osc_buffer_append_message(LV2OSCBuffer* buf, LV2Message* msg)
+{
+	const uint32_t msg_size = lv2_message_get_size(msg);
+
+	if (buf->capacity - buf->size - ((buf->message_count + 1) * sizeof(uint32_t)) < msg_size)
+		return ENOBUFS;
+
+	char* write_loc = &buf->data + buf->size;
+
+	memcpy(write_loc, msg, msg_size);
+
+	// Index is written backwards, starting at end of data
+	uint32_t* index_end = (uint32_t*)(&buf->data + buf->capacity - sizeof(uint32_t));
+	*(index_end - buf->message_count) = buf->size;
+
+	++buf->message_count;
+
+	buf->size += msg_size;
+	
 	return 0;
 }
 
