@@ -1,0 +1,9 @@
+@prefix lv2:  <http://lv2plug.in/ontology#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+
+<http://drobilla.net/lv2_plugins/osc_print/0>
+  a lv2:Plugin, lv2:UtilityPlugin;
+  lv2:binary <osc_print.so>;
+  rdfs:seeAlso <osc_print.ttl>.
+
+
