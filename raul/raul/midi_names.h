@@ -27,12 +27,10 @@ namespace Raul {
 /** \group midi
  */
 
-static const uint8_t X_MIDI_CMD_NOTE_OFF = 0x80;
-
 /** Pass this a symbol defined in midi_events.h (e.g. MIDI_CTL_PAN) to get the
  * short name of a MIDI event/controller according to General MIDI.
  */
-static const char* midi_name(uint8_t status)
+inline static const char* midi_name(uint8_t status)
 {
 	switch (status) {
 	

@@ -21,7 +21,7 @@
 #include <raul/types.h>
 #include <raul/Slave.h>
 #include <raul/SharedPtr.h>
-#include <raul/MIDIRingBuffer.h>
+#include <raul/StampedChunkRingBuffer.h>
 #include "Machine.hpp"
 
 namespace Machina {
@@ -42,9 +42,9 @@ public:
 private:
 	virtual void _whipped();
 	
-	double                    _tick_rate;
-	Raul::MIDIRingBuffer      _record_buffer;
-	SharedPtr<MachineBuilder> _builder;
+	double                       _tick_rate;
+	Raul::StampedChunkRingBuffer _record_buffer;
+	SharedPtr<MachineBuilder>    _builder;
 };
 
 

@@ -9,7 +9,7 @@ raulinclude_HEADERS = \
 	DoubleBuffer.h \
 	JackDriver.h \
 	List.h \
-	MIDIRingBuffer.h \
+	StampedChunkRingBuffer.h \
 	MIDISink.h \
 	Maid.h \
 	Namespaces.h \

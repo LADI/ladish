@@ -1,12 +1,12 @@
 #include <iostream>
-#include "raul/MIDIRingBuffer.h"
+#include "raul/StampedChunkRingBuffer.h"
 #include "raul/midi_names.h"
 
 using namespace std;
 using namespace Raul;
 
 void
-read_write_test(MIDIRingBuffer& rb, unsigned offset)
+read_write_test(StampedChunkRingBuffer& rb, unsigned offset)
 {
 	TickTime      t;
 	size_t        size;
@@ -31,7 +31,7 @@ read_write_test(MIDIRingBuffer& rb, unsigned offset)
 int
 main()
 {
-	MIDIRingBuffer rb(32);
+	StampedChunkRingBuffer rb(32);
 
 	for (size_t i=0; i < 9999; ++i)
 		read_write_test(rb, i);

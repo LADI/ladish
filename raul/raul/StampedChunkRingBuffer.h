@@ -15,8 +15,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef RAUL_MIDI_RING_BUFFER_H
-#define RAUL_MIDI_RING_BUFFER_H
+#ifndef RAUL_STAMPED_CHUNK_RING_BUFFER_H
+#define RAUL_STAMPED_CHUNK_RING_BUFFER_H
 
 #include <cassert>
 #include <algorithm>
@@ -27,14 +27,17 @@
 namespace Raul {
 
 
-/** A MIDI RingBuffer
+/** A RingBuffer of timestamped binary "chunks".
+ *
+ * This packs a timestamp, size, and size bytes of data flat into the buffer.
+ * Useful for MIDI events, OSC messages, etc.
  */
-class MIDIRingBuffer : private Raul::RingBuffer<Byte> {
+class StampedChunkRingBuffer : private Raul::RingBuffer<Byte> {
 public:
 
 	/** @param size Size in bytes.
 	 */
-	MIDIRingBuffer(size_t size)
+	StampedChunkRingBuffer(size_t size)
 		: RingBuffer<Byte>(size)
 	{}
 
@@ -46,7 +49,7 @@ public:
 
 
 inline bool
-MIDIRingBuffer::read(TickTime* time, size_t* size, Byte* buf)
+StampedChunkRingBuffer::read(TickTime* time, size_t* size, Byte* buf)
 {
 	bool success = RingBuffer<Byte>::full_read(sizeof(TickTime), (Byte*)time);
 	if (success)
@@ -59,7 +62,7 @@ MIDIRingBuffer::read(TickTime* time, size_t* size, Byte* buf)
 
 
 inline size_t
-MIDIRingBuffer::write(TickTime time, size_t size, const Byte* buf)
+StampedChunkRingBuffer::write(TickTime time, size_t size, const Byte* buf)
 {
 	assert(size > 0);
 
@@ -76,5 +79,5 @@ MIDIRingBuffer::write(TickTime time, size_t size, const Byte* buf)
 
 } // namespace Raul
 
-#endif // RAUL_MIDI_RING_BUFFER_H
+#endif // RAUL_STAMPED_CHUNK_RING_BUFFER_H
 

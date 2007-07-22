@@ -22,7 +22,7 @@
 #include <raul/JackDriver.h>
 #include <raul/SharedPtr.h>
 #include <raul/DoubleBuffer.h>
-#include <raul/MIDIRingBuffer.h>
+#include <raul/StampedChunkRingBuffer.h>
 #include <raul/Semaphore.h>
 #include <jack/midiport.h>
 #include "Machine.hpp"
