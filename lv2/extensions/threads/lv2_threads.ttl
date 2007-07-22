@@ -33,14 +33,27 @@
 
 <http://drobilla.net/ns/lv2ext/threads> a lv2:Extension .
 
-################################
-## Fundamental Thread Classes ##
-################################
+#########################
+## Thread Base Classes ##
+#########################
 
 :Thread a rdfs:Class ;
 	rdfs:label "Thread" ;
 	rdfs:comment """
 A thread (execution context) of a plugin.
+""" .
+
+
+:RollingThread a rdfs:Class ;
+	rdfs:subClassOf :Thread ;
+	rdfs:comment """
+A thread which is is continually executed in blocks (like the standard LV2
+run callback).  The thread run callback has the signature:
+
+void run(LV2Handle Instance, uint32_t SampleCount)
+
+When run is called, SampleCount frames worth of input/output should be
+read/written to all ports associated with this thread.
 """ .
 
 
@@ -62,31 +75,69 @@ with the signature:
 bool has_data(LV2Handle Instance, uint32_t port)
 
 which is guaranteed to be called only from the thread associated with port,
-and must return true iff the port has pending output data (resulting from the
-preceding run call).
+and must return true iff the port is an output and contains pending data
+(resulting from the preceding call to this thread's run method).
+
+The HostFeatures struct passed by the host to the plugin's instantiate method
+contains a function with the signature:
+
+void request_run(const char* context_uri)
+
+which allows the plugin to specifically request execution of a blockin
+thread's callback from a rolling thread (e.g. the main LV2 run method).  If
+the plugin is hardRtCapable, this method must be realtime safe.
 """ .
 
 
-:RollingThread a rdfs:Class ;
-	rdfs:subClassOf :Thread ;
+##################
+## Thread Hints ##
+##################
+
+:ThreadHint a rdfs:Class ;
+    rdfs:label      "Thread hint" ;
+    rdfs:subClassOf lv2:Hint ;
+    rdfs:comment    "Hint for a plugin thread." .
+
+:pluginHint a rdf:Property ;
+    rdfs:domain  :Thread ;
+    rdfs:range   :ThreadHint ;
+    rdfs:label   "Thread hint" ;
+    rdfs:comment "Relates Threads to ThreadHints." .
+
+:hardRTCapable a :ThreadHint ;
+    rdfs:label   "Hard realtime capable" ;
+    rdfs:comment """
+Indicates that the thread is capable of running in a "hard real-time"
+environment, with identical conditions as lv2:hardRTCapable (see lv2.ttl).
+""" .
+
+
+#######################
+## Thread Priorities ##
+#######################
+
+:ThreadPriority a rdfs:Class ;
+	rdfs:label "Thread priority" ;
 	rdfs:comment """
-A thread which is is continually executed in blocks (like the standard LV2
-run callback).  The thread run callback has the signature:
-
-void run(LV2Handle Instance, uint32_t SampleCount)
-
-When run is called, SampleCount frames worth of input/output should be
-read/written to all ports associated with this thread.
+The scheduling priority of a thread.
 """ .
 
+:AudioPriority a rdfs:Class ;
+	rdfs:subClassOf :ThreadPriority ;
+	rdfs:label "Audio thread priority" ;
+	rdfs:comment """
+Signifies a thread should be run with priority equal to that of the
+standard LV2 run callback.
+""" .
 
-# Specific Thread Classes
-#
-# These are some common types of threads, provided here so plugins use the
-# same thread types for the same basic tasks (so the host only creates a
-# single thread for numerous plugins with the same context).  Possible
-# threads are not limited to these choices, if the types here aren't
-# sufficient a plugin/host/extension can define additional ones.
+:MainPriority a rdfs:;Class ;
+	rdfs:subClassOf :ThreadPriority ;
+	rdfs:label "Main thread priority" ;
+	rdfs:comment """
+Signifies a thread should be run with priority equal to that of the
+main thread of the host (typically non-realtime default system priority).
+""" .
+
 
 :HighPriorityWorker a rdfs:Class ;
 	rdfs:subClassOf :Thread ;
@@ -96,13 +147,10 @@ callback.  If the run callback is run with realtime priority, the host
 should run this thread with (slighly lower) realtime priority as well.
 """ .
 
-
 :LowPriorityWorker a rdfs:Class ;
 	rdfs:subClassOf :Thread ;
 	rdfs:comment """
-A worker thread with a low non-realtime priority, just below that of the main run
-callback.  If the run callback is run with realtime priority, the host
-should run this thread with (slighly lower) realtime priority as well.
+A worker thread with a low non-realtime priority.
 """ .
 
 
