@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "lv2.h"
-#include "../lv2_osc.h"
+#include "../../extensions/osc/lv2_osc.h"
 
 /* Plugin */
 
