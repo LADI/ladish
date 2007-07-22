@@ -1,0 +1,114 @@
+# LV2 Threads Extension
+#
+# Allows for an LV2 plugin to have several independent threads, each with its
+# own run callback and associated ports.
+#
+# Copyright (C) 2007 Dave Robillard
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the "Software"),
+# to deal in the Software without restriction, including without limitation
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,
+# and/or sell copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE.
+
+@prefix :     <http://drobilla.net/ns/lv2ext/threads#> .
+@prefix lv2:  <http://lv2plug.in/ontology#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema> .
+@prefix doap: <http://usefulinc.com/ns/doap#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+
+<http://drobilla.net/ns/lv2ext/threads> a lv2:Extension .
+
+################################
+## Fundamental Thread Classes ##
+################################
+
+:Thread a rdfs:Class ;
+	rdfs:label "Thread" ;
+	rdfs:comment """
+A thread (execution context) of a plugin.
+""" .
+
+
+:BlockingThread a rdfs:Class ;
+	rdfs:subClassOf :Thread ;
+	rdfs:comment """
+A thread which is executed only when there is work to be done
+(e.g. a message is received).  The thread run callback has the signature:
+
+bool run(LV2Handle Instance)
+
+When run is called, any pending input in ports associated with this thread
+should be processed, and true returned iff output was written (meaning
+plugins connected to those output ports should be executed as well).
+
+Any plugin with a BlockingThread context must provide an additional function
+with the signature:
+
+bool has_data(LV2Handle Instance, uint32_t port)
+
+which is guaranteed to be called only from the thread associated with port,
+and must return true iff the port has pending output data (resulting from the
+preceding run call).
+""" .
+
+
+:RollingThread a rdfs:Class ;
+	rdfs:subClassOf :Thread ;
+	rdfs:comment """
+A thread which is is continually executed in blocks (like the standard LV2
+run callback).  The thread run callback has the signature:
+
+void run(LV2Handle Instance, uint32_t SampleCount)
+
+When run is called, SampleCount frames worth of input/output should be
+read/written to all ports associated with this thread.
+""" .
+
+
+# Specific Thread Classes
+#
+# These are some common types of threads, provided here so plugins use the
+# same thread types for the same basic tasks (so the host only creates a
+# single thread for numerous plugins with the same context).  Possible
+# threads are not limited to these choices, if the types here aren't
+# sufficient a plugin/host/extension can define additional ones.
+
+:HighPriorityWorker a rdfs:Class ;
+	rdfs:subClassOf :Thread ;
+	rdfs:comment """
+A worker thread with a high priority, just below that of the main run
+callback.  If the run callback is run with realtime priority, the host
+should run this thread with (slighly lower) realtime priority as well.
+""" .
+
+
+:LowPriorityWorker a rdfs:Class ;
+	rdfs:subClassOf :Thread ;
+	rdfs:comment """
+A worker thread with a low non-realtime priority, just below that of the main run
+callback.  If the run callback is run with realtime priority, the host
+should run this thread with (slighly lower) realtime priority as well.
+""" .
+
+
+:MessageThread a rdfs:Class ;
+	rdfs:subClassOf :BlockingThread ;
+	rdfs:comment """
+A blocking thread for on demand message-based processing.
+""" .
+
