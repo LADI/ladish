@@ -24,7 +24,7 @@ main()
 	void* raw_msg = lo_message_serialise(lo_msg, "/foo/bar", NULL, &raw_msg_size);
 
 	LV2OSCBuffer* buf = lv2_osc_buffer_new(1024);
-	int ret = lv2_osc_buffer_append_message(buf, 0.0, raw_msg_size, raw_msg);
+	int ret = lv2_osc_buffer_append_raw_message(buf, 0.0, raw_msg_size, raw_msg);
 	if (ret)
 		fprintf(stderr, "Message append failed: %s", strerror(ret));
 

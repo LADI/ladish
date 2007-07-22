@@ -47,6 +47,14 @@
 })
 
 
+/** Pad a size to a multiple of 32 bits */
+inline static uint32_t
+lv2_osc_pad_size(uint32_t size)
+{
+	return size + 3 - ((size-1) % 4);
+}
+
+
 inline static uint32_t
 lv2_osc_string_size(const char *s)
 {
@@ -166,6 +174,10 @@ lv2_osc_message_print(LV2Message* msg)
 }
 
 
+/** Allocate a new LV2OSCBuffer.
+ *
+ * This function is NOT realtime safe.
+ */
 LV2OSCBuffer*
 lv2_osc_buffer_new(uint32_t capacity)
 {
@@ -177,7 +189,9 @@ lv2_osc_buffer_new(uint32_t capacity)
 	return buf;
 }
 
-int lv2_osc_buffer_append_message(LV2OSCBuffer* buf, double time, uint32_t size, void* msg)
+
+int
+lv2_osc_buffer_append_raw_message(LV2OSCBuffer* buf, double time, uint32_t size, void* raw_msg)
 {
 	const uint32_t message_header_size = sizeof(double) + (sizeof(uint32_t) * 4);
 
@@ -188,14 +202,14 @@ int lv2_osc_buffer_append_message(LV2OSCBuffer* buf, double time, uint32_t size,
 	write_loc->time = time;
 	write_loc->data_size = size;
 	
-	const uint32_t path_size = lv2_osc_string_size((char*)msg);
-	const uint32_t types_len = strlen((char*)(msg + path_size + 1));
+	const uint32_t path_size = lv2_osc_string_size((char*)raw_msg);
+	const uint32_t types_len = strlen((char*)(raw_msg + path_size + 1));
 	write_loc->argument_count = types_len;
 	
 	uint32_t index_size = write_loc->argument_count * sizeof(uint32_t);
 	
-	// Write raw message
-	memcpy(&write_loc->data + index_size, msg, size);
+	// Copy raw message
+	memcpy(&write_loc->data + index_size, raw_msg, size);
 
 	write_loc->types_index = index_size + path_size + 1;
 	const char* const types = lv2_message_get_types(write_loc);
