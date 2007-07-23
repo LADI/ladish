@@ -19,9 +19,15 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <glib.h>
 #include "lv2_osc.h"
 #include "lv2_osc_print.h"
+
+#ifndef BIG_ENDIAN
+  #ifndef LITTLE_ENDIAN
+    #warning This code requires BIG_ENDIAN or LITTLE_ENDIAN to be defined
+    #warning Assuming little endian.  THIS MAY BREAK HORRIBLY!
+  #endif
+#endif
 
 #define lv2_osc_swap32(x) \
 ({ \
@@ -172,9 +178,12 @@ lv2_osc_message_from_raw(double time, uint32_t out_buf_size, void* out_buf, uint
 	for (uint32_t i=0; i < write_loc->argument_count; ++i) {
 		((uint32_t*)&write_loc->data)[i] = args_base_offset + arg_offset;
 		const LV2Argument* const arg = (LV2Argument*)(&write_loc->data + args_base_offset + arg_offset);
+		// Special case because size is still big-endian
+#ifndef BIG_ENDIAN
 		if (types[i] == 'b') // special case because size is still big-endian
-			arg_offset += GINT32_FROM_BE(*((int32_t*)arg));
+			arg_offset += lv2_osc_swap32(*((int32_t*)arg));
 		else
+#endif
 			arg_offset += lv2_osc_arg_size(types[i], arg);
 	}
 	
@@ -199,8 +208,9 @@ lv2_osc_message_from_raw(double time, uint32_t out_buf_size, void* out_buf, uint
 	printf("\n");*/
 
 	// Swap to host byte order if necessary
-	if (G_BYTE_ORDER == G_LITTLE_ENDIAN)
-		lv2_osc_message_swap_byte_order(write_loc);
+#ifndef BIG_ENDIAN
+	lv2_osc_message_swap_byte_order(write_loc);
+#endif
 
 	printf("Created message:\n");
 	lv2_osc_message_print(write_loc);
@@ -224,6 +234,13 @@ lv2_osc_buffer_new(uint32_t capacity)
 	return buf;
 }
 
+
+void
+lv2_osc_buffer_clear(LV2OSCBuffer* buf)
+{
+	buf->size = 0;
+	buf->message_count = 0;
+}
 
 int
 lv2_osc_buffer_append_message(LV2OSCBuffer* buf, LV2Message* msg)

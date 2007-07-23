@@ -21,6 +21,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** @file
  * This is an LV2 message port specification, which uses (raw) OSC messages
  * and a buffer format which contains a sequence of timestamped messages.
@@ -36,14 +40,14 @@
  * type tag character in LV2Message::types.
  */
 typedef union {
-	int32_t       c; ///< Standard C, 8 bit char, as a 32-bit int.
-	int32_t       i; ///< 32 bit signed integer.
-	float         f; ///< 32 bit IEEE-754 float.
-	int64_t       h; ///< 64 bit signed integer.
-	double        d; ///< 64 bit IEEE-754 double.
-	char          s; ///< Standard C, NULL terminated string.
-	char          S; ///< Standard C, NULL terminated symbol.
-	unsigned char b; ///< Blob (int32 size, then size bytes padded to 32 bits)
+	int32_t       c; /**< Standard C, 8 bit char, as a 32-bit int. */
+	int32_t       i; /**< 32 bit signed integer. */
+	float         f; /**< 32 bit IEEE-754 float. */
+	int64_t       h; /**< 64 bit signed integer. */
+	double        d; /**< 64 bit IEEE-754 double. */
+	char          s; /**< Standard C, NULL terminated string. */
+	char          S; /**< Standard C, NULL terminated symbol. */
+	unsigned char b; /**< Blob (int32 size then size bytes padded to 32 bits) */
 } LV2Argument;
 
 
@@ -54,10 +58,10 @@ typedef union {
  * to allow fast access to parameters.
  */
 typedef struct {
-	double    time;           ///< Time stamp of message, in frames
-	uint32_t  data_size;      ///< Total size of data, in bytes
-	uint32_t  argument_count; ///< Number of arguments in data
-	uint32_t  types_offset;   ///< Offset of types string in data
+	double    time;           /**< Time stamp of message, in frames */
+	uint32_t  data_size;      /**< Total size of data, in bytes */
+	uint32_t  argument_count; /**< Number of arguments in data */
+	uint32_t  types_offset;   /**< Offset of types string in data */
 
 	/** Take the address of this member to get a pointer to the remaining data.
 	 * 
@@ -75,22 +79,22 @@ LV2Message* lv2_osc_message_from_raw(double time,
                                      uint32_t out_buf_size, void* out_buf,
                                      uint32_t raw_msg_size, void* raw_msg);
 
-inline static uint32_t lv2_message_get_size(LV2Message* msg)
+static inline uint32_t lv2_message_get_size(LV2Message* msg)
 	{ return sizeof(double) + (sizeof(uint32_t) * 3) + msg->data_size; }
 
-inline static uint32_t lv2_message_get_osc_message_size(const LV2Message* msg)
+static inline uint32_t lv2_message_get_osc_message_size(const LV2Message* msg)
 	{ return (msg->argument_count * sizeof(char) + 1) + msg->data_size; }
 
-inline static const void* lv2_message_get_osc_message(const LV2Message* msg)
+static inline const void* lv2_message_get_osc_message(const LV2Message* msg)
 	{ return (const void*)(&msg->data + (sizeof(uint32_t) * msg->argument_count)); }
 
-inline static const char* lv2_message_get_path(const LV2Message* msg)
+static inline const char* lv2_message_get_path(const LV2Message* msg)
 	{ return (const char*)(&msg->data + (sizeof(uint32_t) * msg->argument_count)); }
 
-inline static const char* lv2_message_get_types(const LV2Message* msg)
+static inline const char* lv2_message_get_types(const LV2Message* msg)
 	{ return (const char*)(&msg->data + msg->types_offset); }
 
-inline static LV2Argument* lv2_message_get_argument(const LV2Message* msg, uint32_t i)
+static inline LV2Argument* lv2_message_get_argument(const LV2Message* msg, uint32_t i)
 	{ return (LV2Argument*)(&msg->data + ((uint32_t*)&msg->data)[i]); }
 
 
@@ -107,9 +111,9 @@ inline static LV2Argument* lv2_message_get_argument(const LV2Message* msg, uint3
  * To reuse the unclaimed space, use lv2_osc_buffer_compact.
  */
 typedef struct {
-	uint32_t  capacity;      ///< Total allocated size of data
-	uint32_t  size;          ///< Used size of data
-	uint32_t  message_count; ///< Number of messages in data
+	uint32_t  capacity;      /**< Total allocated size of data */
+	uint32_t  size;          /**< Used size of data */
+	uint32_t  message_count; /**< Number of messages in data */
 
 	/** Take the address of this member to get a pointer to the remaining data.
 	 *
@@ -124,10 +128,12 @@ typedef struct {
 
 LV2OSCBuffer* lv2_osc_buffer_new(uint32_t capacity);
 
-inline static uint32_t lv2_osc_buffer_get_size(LV2Message* msg)
+void lv2_osc_buffer_clear(LV2OSCBuffer* buf);
+
+static inline uint32_t lv2_osc_buffer_get_size(LV2Message* msg)
 	{ return sizeof(double) + (sizeof(uint32_t) * 3) + msg->data_size; }
 
-inline static const LV2Message* lv2_osc_buffer_get_message(const LV2OSCBuffer* buf, uint32_t i)
+static inline const LV2Message* lv2_osc_buffer_get_message(const LV2OSCBuffer* buf, uint32_t i)
 {
 	const uint32_t* const index_end = (uint32_t*)(&buf->data + buf->capacity - sizeof(uint32_t));
 	return (const LV2Message*)(&buf->data + *(index_end - i));
@@ -137,5 +143,8 @@ int lv2_osc_buffer_append_message(LV2OSCBuffer* buf, LV2Message* msg);
 
 void lv2_osc_buffer_compact(LV2OSCBuffer* buf);
 
+#ifdef __cplusplus
+}
+#endif
 
-#endif // LV2_OSC_H
+#endif /* LV2_OSC_H */
