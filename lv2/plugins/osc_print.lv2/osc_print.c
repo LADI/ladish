@@ -63,7 +63,7 @@ osc_print_run(LV2_Handle instance, uint32_t sample_count)
 {
 	OSCPrint* plugin = (OSCPrint*)instance;
 
-	if (plugin->input_buffer->message_count > 0)
+	if (plugin->input_buffer && plugin->input_buffer->message_count > 0)
 		printf("OSC Message!\n");
 }
 
@@ -80,7 +80,7 @@ init_descriptor()
 {
 	osc_print_descriptor = (LV2_Descriptor*)malloc(sizeof(LV2_Descriptor));
 
-	osc_print_descriptor->URI = "http://plugin.org.uk/swh-plugins/inv";
+	osc_print_descriptor->URI = "http://drobilla.net/lv2_plugins/osc_print/0";
 	osc_print_descriptor->activate = NULL;
 	osc_print_descriptor->cleanup = osc_print_cleanup;
 	osc_print_descriptor->connect_port = osc_print_connect_port;
