@@ -48,7 +48,7 @@ static void osc_print_connect_port(LV2_Handle instance, uint32_t port, void* dat
 
 static LV2_Handle
 osc_print_instantiate(const LV2_Descriptor*         descriptor,
-                      uint32_t                      rate,
+                      double                        rate,
                       const char*                   bundle_path,
                       const LV2_Host_Feature*const* features)
 {

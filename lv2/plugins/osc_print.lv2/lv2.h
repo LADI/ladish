@@ -196,7 +196,7 @@ typedef struct _LV2_Descriptor {
    * activate() rather than here.  If a host calls instantiate, it MUST
    * call cleanup() at some point in the future. */
   LV2_Handle (*instantiate)(const struct _LV2_Descriptor *  Descriptor,
-                            uint32_t                        SampleRate,
+                            double                          SampleRate,
                             const char *                    BundlePath,
                             const LV2_Host_Feature *const * HostFeatures);
 
