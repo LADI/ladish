@@ -22,12 +22,12 @@
 #include "lv2_osc.h"
 #include "lv2_osc_print.h"
 
-#ifndef BIG_ENDIAN
+/*#ifndef BIG_ENDIAN
   #ifndef LITTLE_ENDIAN
     #warning This code requires BIG_ENDIAN or LITTLE_ENDIAN to be defined
     #warning Assuming little endian.  THIS MAY BREAK HORRIBLY!
   #endif
-#endif
+#endif*/
 
 #define lv2_osc_swap32(x) \
 ({ \
@@ -268,7 +268,24 @@ lv2_osc_buffer_append_message(LV2OSCBuffer* buf, LV2Message* msg)
 int
 lv2_osc_buffer_append(LV2OSCBuffer* buf, double time, const char* path, const char* types, ...)
 {
-	printf("Append message: %s", path);
+	// FIXME: crazy unsafe
+	LV2Message* write_msg = (LV2Message*)(&buf->data + buf->size);
+
+	write_msg->time = time;
+	write_msg->data_size = 0;
+	write_msg->argument_count = 0;
+	write_msg->types_offset = strlen(path) + 1;
+
+	memcpy(&write_msg->data, path, write_msg->types_offset);
+	
+	/*fprintf(stderr, "Append message:\n");
+	lv2_osc_message_print(write_msg);
+	fprintf(stderr, "\n");*/
+
+	uint32_t msg_size = lv2_message_get_size(write_msg);
+	buf->size += msg_size;
+	buf->message_count++;
+
 	return 0;
 }
 

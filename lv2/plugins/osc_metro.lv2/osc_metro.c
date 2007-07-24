@@ -87,7 +87,7 @@ osc_metro_run(LV2_Handle instance, uint32_t sample_count)
 
 	if (plugin->frames_since_last_tick > frames_per_beat) {
 			
-		printf("Bang!\n");
+		//printf("Bang!\n");
 	
 		if (plugin->output_bang) {
 			lv2_osc_buffer_append(plugin->output_bang, 0.0, "/bang", NULL);

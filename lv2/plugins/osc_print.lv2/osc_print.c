@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include "../lv2.h"
 #include "../../extensions/osc/lv2_osc.h"
+#include "../../extensions/osc/lv2_osc_print.h"
 
 /* Plugin */
 
@@ -65,8 +66,11 @@ osc_print_run(LV2_Handle instance, uint32_t sample_count)
 {
 	OSCPrint* plugin = (OSCPrint*)instance;
 
-	if (plugin->input_buffer && plugin->input_buffer->message_count > 0)
-		printf("OSC Message!\n");
+	if (plugin->input_buffer) {
+		for (uint32_t i=0; i < plugin->input_buffer->message_count; ++i) {
+			lv2_osc_message_print(lv2_osc_buffer_get_message(plugin->input_buffer, i));
+		}
+	}
 }
 
 
