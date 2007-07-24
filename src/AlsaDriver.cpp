@@ -252,8 +252,10 @@ AlsaDriver::refresh_ports()
 						m->add_port(create_port(m, port_name, false, addr));
 				}
 			}
-			m->resize();
+			
 			_app->canvas()->add_item(m);
+			
+			m->resize();
 		}
 	}
 }

@@ -111,13 +111,16 @@ PatchageEvent::execute(Patchage* patchage)
 			SharedPtr<PatchageModule> module = PtrCast<PatchageModule>(port->module().lock());
 			assert(module);
 
-			//SharedPtr<PatchagePort> removed_port = PtrCast<PatchagePort>(
-					module->remove_port(port);
-			//assert(removed_port == port);
+			module->remove_port(port);
+			port->hide();
+			
 			if (module->num_ports() == 0) {
 				patchage->canvas()->remove_item(module);
 				module.reset();
+			} else {
+				module->resize();
 			}
+
 		} else {
 			cerr << "Unable to find port to destroy" << endl;
 		}
