@@ -19,9 +19,9 @@
 #define MACHINA_LOADER_HPP
 
 #include <glibmm/ustring.h>
-#include <raul/SharedPtr.h>
-#include <raul/Path.h>
-#include <raul/RDFWorld.h>
+#include <raul/SharedPtr.hpp>
+#include <raul/Path.hpp>
+#include <raul/RDFWorld.hpp>
 
 using Raul::Namespaces;
 

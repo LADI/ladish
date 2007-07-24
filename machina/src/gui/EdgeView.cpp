@@ -17,7 +17,7 @@
 
 #include <iomanip>
 #include <sstream>
-#include <flowcanvas/Canvas.h>
+#include <flowcanvas/Canvas.hpp>
 #include <machina/Edge.hpp>
 #include "EdgeView.hpp"
 #include "NodeView.hpp"

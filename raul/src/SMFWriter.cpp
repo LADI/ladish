@@ -18,7 +18,7 @@
 #include <cstdio>
 #include <iostream>
 #include <glibmm/miscutils.h>
-#include "raul/SMFWriter.h"
+#include "raul/SMFWriter.hpp"
 
 using namespace std;
 

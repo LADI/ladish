@@ -19,7 +19,7 @@
 #include <map>
 #include <cmath>
 #include <glibmm/ustring.h>
-#include <raul/RDFQuery.h>
+#include <raul/RDFQuery.hpp>
 #include "machina/Loader.hpp"
 #include "machina/Node.hpp"
 #include "machina/Edge.hpp"

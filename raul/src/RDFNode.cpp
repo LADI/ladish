@@ -16,8 +16,8 @@
  */
 
 #include <string>
-#include <raul/RDFWorld.h>
-#include <raul/RDFNode.h>
+#include <raul/RDFWorld.hpp>
+#include <raul/RDFNode.hpp>
 
 using namespace std;
 

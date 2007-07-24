@@ -18,8 +18,8 @@
 #include <iostream>
 #include <cassert>
 #include <rasqal.h>
-#include "raul/RDFQuery.h"
-#include "raul/RDFModel.h"
+#include "raul/RDFQuery.hpp"
+#include "raul/RDFModel.hpp"
 
 using namespace std;
 

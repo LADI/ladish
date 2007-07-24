@@ -22,7 +22,7 @@
 #include <pthread.h>
 #include <libgnomecanvasmm.h>
 #include <libglademm/xml.h>
-#include <raul/RDFModel.h>
+#include <raul/RDFModel.hpp>
 #include <machina/Machine.hpp>
 #include <machina/SMFDriver.hpp>
 #include "GladeXml.hpp"

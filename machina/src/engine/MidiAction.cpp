@@ -16,8 +16,8 @@
  */
 
 #include <iostream>
-#include <raul/SharedPtr.h>
-#include <raul/MIDISink.h>
+#include <raul/SharedPtr.hpp>
+#include <raul/MIDISink.hpp>
 #include "machina/MidiAction.hpp"
 
 namespace Machina {

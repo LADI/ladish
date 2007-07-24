@@ -16,10 +16,10 @@
  */
 
 #include <sstream>
-#include "raul/RDFWorld.h"
-#include "raul/RDFModel.h"
-#include "raul/RDFNode.h"
-#include "raul/AtomRedland.h"
+#include "raul/RDFWorld.hpp"
+#include "raul/RDFModel.hpp"
+#include "raul/RDFNode.hpp"
+#include "raul/AtomRedland.hpp"
 
 #define U(x) ((const unsigned char*)(x))
 

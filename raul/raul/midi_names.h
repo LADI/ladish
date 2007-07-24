@@ -17,12 +17,16 @@
  *
  */
 
-#ifndef RAUL_MIDINAMES_H
-#define RAUL_MIDINAMES_H
+#ifndef RAUL_MIDI_NAMES_H
+#define RAUL_MIDI_NAMES_H
 
 #include "midi_events.h"
 
+#ifdef __cplusplus
 namespace Raul {
+extern "C" {
+#endif
+
 
 /** \group midi
  */
@@ -226,6 +230,10 @@ inline static const char* midi_name(uint8_t status)
 }
 
 
+#ifdef __cplusplus
+} // extern "C"
 } // namespace Raul
+#endif
 
-#endif /* RAUL_MIDINAMES_H */
+
+#endif /* RAUL_MIDI_NAMES_H */

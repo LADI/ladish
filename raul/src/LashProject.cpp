@@ -15,7 +15,7 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <raul/LashProject.h>
+#include <raul/LashProject.hpp>
 
 using namespace std;
 

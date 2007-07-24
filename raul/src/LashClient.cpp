@@ -15,7 +15,7 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <raul/LashClient.h>
+#include <raul/LashClient.hpp>
 
 using namespace std;
 

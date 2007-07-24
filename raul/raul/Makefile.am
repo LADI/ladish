@@ -1,48 +1,48 @@
 raulincludedir = $(includedir)/raul
 
 raulinclude_HEADERS = \
-	Array.h \
-	Atom.h \
-	AtomicInt.h \
-	AtomicPtr.h \
-	Deletable.h \
-	DoubleBuffer.h \
-	JackDriver.h \
-	List.h \
-	StampedChunkRingBuffer.h \
-	MIDISink.h \
-	Maid.h \
-	Namespaces.h \
-	Path.h \
-	Process.h \
-	Quantizer.h \
-	RDFModel.h \
-	RDFNode.h \
-	RDFQuery.h \
-	RDFWorld.h \
-	RingBuffer.h \
-	SMFReader.h \
-	SMFWriter.h \
-	SRMWQueue.h \
-	SRSWQueue.h \
-	Semaphore.h \
-	SharedPtr.h \
-	Slave.h \
-	Stateful.h \
-	Thread.h \
-	TimeSlice.h \
-	WeakPtr.h \
+	Array.hpp \
+	Atom.hpp \
+	AtomicInt.hpp \
+	AtomicPtr.hpp \
+	Deletable.hpp \
+	DoubleBuffer.hpp \
+	JackDriver.hpp \
+	List.hpp \
+	MIDISink.hpp \
+	Maid.hpp \
+	Namespaces.hpp \
+	Path.hpp \
+	Process.hpp \
+	Quantizer.hpp \
+	RDFModel.hpp \
+	RDFNode.hpp \
+	RDFQuery.hpp \
+	RDFWorld.hpp \
+	RingBuffer.hpp \
+	SMFReader.hpp \
+	SMFWriter.hpp \
+	SRMWQueue.hpp \
+	SRSWQueue.hpp \
+	Semaphore.hpp \
+	SharedPtr.hpp \
+	Slave.hpp \
+	StampedChunkRingBuffer.hpp \
+	Stateful.hpp \
+	Thread.hpp \
+	TimeSlice.hpp \
+	WeakPtr.hpp \
 	midi_events.h \
-	types.h
+	types.hpp
 
 if WITH_LIBLO
-raulinclude_HEADERS += AtomLiblo.h
+raulinclude_HEADERS += AtomLiblo.hpp
 endif
 
 if WITH_REDLAND
-raulinclude_HEADERS += AtomRedland.h
+raulinclude_HEADERS += AtomRedland.hpp
 endif
 
 if WITH_LASH
-raulinclude_HEADERS += LashClient.h LashServerInterface.h LashProject.h
+raulinclude_HEADERS += LashClient.hpp LashServerInterface.hpp LashProject.hpp
 endif

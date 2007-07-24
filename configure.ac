@@ -512,8 +512,10 @@ AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
 
 AC_MSG_RESULT([])
+AC_MSG_RESULT([])
 AC_MSG_RESULT([**********************************************************************])
-AC_MSG_RESULT([Build configuration:])
+AC_MSG_RESULT([Configuration:])
+AC_MSG_RESULT([])
 AC_MSG_RESULT([Jack support:            $build_jack])
 AC_MSG_RESULT([LV2 Plugin support:      $build_lv2])
 AC_MSG_RESULT([DSSI Plugin support:     $build_dssi])

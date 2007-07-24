@@ -22,7 +22,7 @@
 #include <jack/jack.h>
 #include <jack/statistics.h>
 #include <jack/thread.h>
-#include "raul/JackDriver.h"
+#include "raul/JackDriver.hpp"
 
 using std::cerr; using std::endl;
 using std::string;

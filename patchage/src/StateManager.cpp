@@ -15,15 +15,14 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include "StateManager.h"
 #include <stdexcept>
 #include <stdlib.h>
 #include <iostream>
 #include <fstream>
-#include "Patchage.h"
+#include "StateManager.hpp"
+#include "Patchage.hpp"
 
-using std::map; using std::list;
-using std::cerr; using std::cout; using std::endl;
+using namespace std;
 
 
 StateManager::StateManager()

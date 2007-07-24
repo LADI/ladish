@@ -18,7 +18,7 @@
 #ifndef MACHINA_ACTIONFACTORY_HPP
 #define MACHINA_ACTIONFACTORY_HPP
 
-#include <raul/SharedPtr.h>
+#include <raul/SharedPtr.hpp>
 
 namespace Machina {
 

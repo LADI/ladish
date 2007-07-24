@@ -19,8 +19,8 @@
 #define MACHINA_ENGINE_HPP
 
 #include <glibmm/ustring.h>
-#include <raul/SharedPtr.h>
-#include <raul/types.h>
+#include <raul/SharedPtr.hpp>
+#include <raul/types.hpp>
 #include "machina/Driver.hpp"
 #include "machina/Loader.hpp"
 

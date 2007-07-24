@@ -16,8 +16,8 @@
  */
 
 #include <boost/shared_ptr.hpp>
-#include "flowcanvas/Item.h"
-#include "flowcanvas/Canvas.h"
+#include <flowcanvas/Item.hpp>
+#include <flowcanvas/Canvas.hpp>
 
 namespace FlowCanvas {
 

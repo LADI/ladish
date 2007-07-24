@@ -20,10 +20,10 @@
 
 #include <string>
 #include <iostream>
-#include <raul/MIDISink.h>
-#include <raul/TimeSlice.h>
-#include <raul/Stateful.h>
-#include <raul/SharedPtr.h>
+#include <raul/MIDISink.hpp>
+#include <raul/TimeSlice.hpp>
+#include <raul/Stateful.hpp>
+#include <raul/SharedPtr.hpp>
 #include "types.hpp"
 
 namespace Machina {

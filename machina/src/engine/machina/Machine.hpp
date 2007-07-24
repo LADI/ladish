@@ -19,10 +19,10 @@
 #define MACHINA_MACHINE_HPP
 
 #include <boost/utility.hpp>
-#include <raul/SharedPtr.h>
-#include <raul/List.h>
-#include <raul/RDFModel.h> 
-#include <raul/TimeSlice.h>
+#include <raul/SharedPtr.hpp>
+#include <raul/List.hpp>
+#include <raul/RDFModel.hpp> 
+#include <raul/TimeSlice.hpp>
 #include "types.hpp"
 #include "LearnRequest.hpp"
 #include "Node.hpp"

@@ -19,7 +19,7 @@
 #include <iostream>
 #include <string>
 #include <libgnomecanvasmm.h>
-#include <raul/RDFWorld.h>
+#include <raul/RDFWorld.hpp>
 #include "../config/config.h"
 #include "machina/Machine.hpp"
 #include "machina/Loader.hpp"

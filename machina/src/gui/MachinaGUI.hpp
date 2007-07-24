@@ -19,8 +19,8 @@
 #define MACHINA_GUI_H
 
 #include <string>
-#include <raul/SharedPtr.h>
-#include <raul/Maid.h>
+#include <raul/SharedPtr.hpp>
+#include <raul/Maid.hpp>
 #include <libgnomecanvasmm.h>
 #include <machina/Engine.hpp>
 

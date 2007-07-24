@@ -19,8 +19,8 @@
 #include <cassert>
 #include <iostream>
 #include <glibmm/miscutils.h>
-#include "raul/SMFReader.h"
-#include "raul/midi_events.h"
+#include <raul/SMFReader.hpp>
+#include <raul/midi_events.h>
 
 using namespace std;
 

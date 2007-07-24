@@ -17,7 +17,7 @@
 
 #include <iostream>
 #include <signal.h>
-#include <raul/RDFModel.h>
+#include <raul/RDFModel.hpp>
 #include "machina/Engine.hpp"
 #include "machina/Machine.hpp"
 #include "machina/Node.hpp"

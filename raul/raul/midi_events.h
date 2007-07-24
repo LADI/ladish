@@ -18,8 +18,8 @@
  *
  */
 
-#ifndef RAUL_MIDIEVENTS_H
-#define RAUL_MIDIEVENTS_H
+#ifndef RAUL_MIDI_EVENTS_H
+#define RAUL_MIDI_EVENTS_H
 
 
 /**
@@ -130,4 +130,4 @@
 
 /** \} */
 
-#endif /* RAUL_MIDIEVENTS_H */
+#endif /* RAUL_MIDI_EVENTS_H */

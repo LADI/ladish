@@ -16,9 +16,9 @@
  */
 
 #include <cstdlib>
-#include <raul/RDFWorld.h>
-#include <raul/RDFModel.h>
-#include <raul/SharedPtr.h>
+#include <raul/RDFWorld.hpp>
+#include <raul/RDFModel.hpp>
+#include <raul/SharedPtr.hpp>
 #include "machina/Machine.hpp"
 #include "machina/Node.hpp"
 #include "machina/Edge.hpp"

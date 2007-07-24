@@ -18,15 +18,13 @@
 #include <string>
 #include <iostream>
 #include <cassert>
-#include "PatchageCanvas.h"
-#include "AlsaDriver.h"
-#include "Patchage.h"
-#include "PatchageModule.h"
-#include "PatchagePort.h"
+#include "PatchageCanvas.hpp"
+#include "AlsaDriver.hpp"
+#include "Patchage.hpp"
+#include "PatchageModule.hpp"
+#include "PatchagePort.hpp"
 
-using std::cerr;
-using std::string;
-
+using namespace std;
 using namespace FlowCanvas;
 
 AlsaDriver::AlsaDriver(Patchage* app)

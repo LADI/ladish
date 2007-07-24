@@ -15,8 +15,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <raul/RDFWorld.h>
-#include <raul/RDFModel.h>
+#include <raul/RDFWorld.hpp>
+#include <raul/RDFModel.hpp>
 #include "machina/Action.hpp"
 
 namespace Machina {

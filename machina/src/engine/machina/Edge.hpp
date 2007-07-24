@@ -20,10 +20,10 @@
 
 #include <list>
 #include <boost/utility.hpp>
-#include <raul/WeakPtr.h>
-#include <raul/SharedPtr.h>
-#include <raul/DoubleBuffer.h>
-#include <raul/Stateful.h>
+#include <raul/WeakPtr.hpp>
+#include <raul/SharedPtr.hpp>
+#include <raul/DoubleBuffer.hpp>
+#include <raul/Stateful.hpp>
 #include "types.hpp"
 #include "Action.hpp"
 

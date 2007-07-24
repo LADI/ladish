@@ -19,8 +19,8 @@
 #define MACHINA_MACHINEBUILDER_HPP
 
 #include <list>
-#include <raul/types.h>
-#include <raul/SharedPtr.h>
+#include <raul/types.hpp>
+#include <raul/SharedPtr.hpp>
 
 namespace Machina {
 

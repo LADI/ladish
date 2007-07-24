@@ -19,10 +19,10 @@
 #define MACHINA_NODE_HPP
 
 #include <boost/utility.hpp>
-#include <raul/SharedPtr.h>
-#include <raul/List.h>
-#include <raul/Stateful.h>
-#include <raul/MIDISink.h>
+#include <raul/SharedPtr.hpp>
+#include <raul/List.hpp>
+#include <raul/Stateful.hpp>
+#include <raul/MIDISink.hpp>
 #include "Action.hpp"
 
 namespace Machina {

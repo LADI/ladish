@@ -19,9 +19,9 @@
 #define PATCHAGEPATCHBAYAREA_H
 
 #include <string>
-#include <raul/SharedPtr.h>
-#include <raul/WeakPtr.h>
-#include <flowcanvas/Canvas.h>
+#include <raul/SharedPtr.hpp>
+#include <raul/WeakPtr.hpp>
+#include <flowcanvas/Canvas.hpp>
 
 using namespace FlowCanvas;
 

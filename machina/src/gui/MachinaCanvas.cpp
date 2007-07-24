@@ -16,7 +16,7 @@
  */
 
 #include <map>
-#include <raul/SharedPtr.h>
+#include <raul/SharedPtr.hpp>
 #include "machina/Node.hpp"
 #include "machina/Machine.hpp"
 #include "machina/Action.hpp"

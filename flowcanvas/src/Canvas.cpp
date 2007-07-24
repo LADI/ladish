@@ -24,9 +24,9 @@
 #include <cmath>
 #include <boost/enable_shared_from_this.hpp>
 #include "../../config/config.h"
-#include "flowcanvas/Canvas.h"
-#include "flowcanvas/Port.h"
-#include "flowcanvas/Module.h"
+#include <flowcanvas/Canvas.hpp>
+#include <flowcanvas/Port.hpp>
+#include <flowcanvas/Module.hpp>
 
 #ifdef HAVE_AGRAPH
 #include <graphviz/gvc.h>

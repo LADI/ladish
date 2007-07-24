@@ -18,10 +18,10 @@
 #ifndef MACHINA_RECORDER_HPP
 #define MACHINA_RECORDER_HPP
 
-#include <raul/types.h>
-#include <raul/Slave.h>
-#include <raul/SharedPtr.h>
-#include <raul/StampedChunkRingBuffer.h>
+#include <raul/types.hpp>
+#include <raul/Slave.hpp>
+#include <raul/SharedPtr.hpp>
+#include <raul/StampedChunkRingBuffer.hpp>
 #include "Machine.hpp"
 
 namespace Machina {

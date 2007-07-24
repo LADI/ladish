@@ -19,11 +19,11 @@
 #define MACHINA_JACKDRIVER_HPP
 
 #include <boost/enable_shared_from_this.hpp>
-#include <raul/JackDriver.h>
-#include <raul/SharedPtr.h>
-#include <raul/DoubleBuffer.h>
-#include <raul/StampedChunkRingBuffer.h>
-#include <raul/Semaphore.h>
+#include <raul/JackDriver.hpp>
+#include <raul/SharedPtr.hpp>
+#include <raul/DoubleBuffer.hpp>
+#include <raul/StampedChunkRingBuffer.hpp>
+#include <raul/Semaphore.hpp>
 #include <jack/midiport.h>
 #include "Machine.hpp"
 #include "Driver.hpp"

@@ -20,9 +20,9 @@
 
 #include <boost/enable_shared_from_this.hpp>
 #include <glibmm/ustring.h>
-#include <raul/SharedPtr.h>
-#include <raul/SMFWriter.h>
-#include <raul/SMFReader.h>
+#include <raul/SharedPtr.hpp>
+#include <raul/SMFWriter.hpp>
+#include <raul/SMFReader.hpp>
 #include "machina/types.hpp"
 #include "machina/Driver.hpp"
 #include "machina/MachineBuilder.hpp"

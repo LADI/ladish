@@ -16,7 +16,7 @@
  */
 
 #include <iostream>
-#include <raul/LashServerInterface.h>
+#include <raul/LashServerInterface.hpp>
 
 using namespace std;
 
