@@ -23,10 +23,10 @@
 #include <iostream>
 #include <cmath>
 #include <boost/enable_shared_from_this.hpp>
-#include "config.h"
-#include "Canvas.h"
-#include "Port.h"
-#include "Module.h"
+#include "../../config/config.h"
+#include "flowcanvas/Canvas.h"
+#include "flowcanvas/Port.h"
+#include "flowcanvas/Module.h"
 
 #ifdef HAVE_AGRAPH
 #include <graphviz/gvc.h>

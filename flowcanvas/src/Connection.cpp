@@ -19,10 +19,10 @@
 #include <cassert>
 #include <cmath>
 #include <libgnomecanvasmm.h>
-#include "Connection.h"
-#include "Canvas.h"
-#include "Connectable.h"
-#include "Ellipse.h"
+#include "flowcanvas/Connection.h"
+#include "flowcanvas/Canvas.h"
+#include "flowcanvas/Connectable.h"
+#include "flowcanvas/Ellipse.h"
 
 namespace FlowCanvas {
 	

@@ -24,7 +24,7 @@
 #include <jack/jack.h>
 #include <jack/statistics.h>
 #include <glibmm/thread.h>
-#include <raul/AtomicPtr.h>
+#include "raul/AtomicPtr.h"
 #include "Driver.h"
 class Patchage;
 class PatchageEvent;

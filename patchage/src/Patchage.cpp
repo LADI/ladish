@@ -19,7 +19,7 @@
 #include <sstream>
 #include "Patchage.h"
 #include "PatchageEvent.h"
-#include "../config.h"
+#include "../../config/config.h"
 #include <libgnomecanvasmm.h>
 #include <libglademm/xml.h>
 #include <fstream>

@@ -17,9 +17,9 @@
 
 #include <boost/weak_ptr.hpp>
 #include <libgnomecanvasmm.h>
-#include "Port.h"
-#include "Module.h"
-#include "Canvas.h"
+#include "flowcanvas/Port.h"
+#include "flowcanvas/Module.h"
+#include "flowcanvas/Canvas.h"
 
 namespace FlowCanvas {
 	

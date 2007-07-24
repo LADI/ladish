@@ -1,4 +1,4 @@
-AM_CXXFLAGS = -DPKGDATADIR=\"$(pkgdatadir)\" @LIBGLADEMM_CFLAGS@ @GNOMECANVASMM_CFLAGS@ @JACK_CFLAGS@ @FLOWCANVAS_CFLAGS@ @RAUL_CFLAGS@  -I$(top_srcdir)/src/engine
+AM_CXXFLAGS = -I$(top_srcdir)/flowcanvas -I$(top_srcdir)/raul -I$(top_srcdir)/machina/src/engine -DPKGDATADIR=\"$(pkgdatadir)\" @LIBGLADEMM_CFLAGS@ @GNOMECANVASMM_CFLAGS@ @JACK_CFLAGS@
 
 EXTRA_DIST = machina.gladep
 
@@ -22,9 +22,9 @@ machina_gui_SOURCES = \
 	NodePropertiesWindow.hpp \
 	NodePropertiesWindow.cpp
 
-if WITH_GUI
+if WITH_MACHINA_GUI
 
-machina_gui_LDADD = @FLOWCANVAS_LIBS@ @LIBGLADEMM_LIBS@ @GNOMECANVASMM_LIBS@ @JACK_LIBS@ @RAUL_CFLAGS@ ../engine/libmachina.la
+machina_gui_LDADD = ../engine/libmachina.la @RAUL_LIBS@ @FLOWCANVAS_LIBS@ @LIBGLADEMM_LIBS@ @GNOMECANVASMM_LIBS@ @JACK_LIBS@
 
 bin_PROGRAMS = machina_gui
 

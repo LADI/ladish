@@ -20,7 +20,8 @@
 #include <string>
 #include <libgnomecanvasmm.h>
 #include <raul/RDFWorld.h>
-#include "../config.h"
+#include "../config/config.h"
+#include "machina/Machine.hpp"
 #include "machina/Loader.hpp"
 #include "machina/SMFDriver.hpp"
 #include "MachinaGUI.hpp"

@@ -17,8 +17,8 @@
 
 #include <boost/weak_ptr.hpp>
 #include <libgnomecanvasmm.h>
-#include "Connectable.h"
-#include "Connection.h"
+#include "flowcanvas/Connectable.h"
+#include "flowcanvas/Connection.h"
 
 using std::list;
 

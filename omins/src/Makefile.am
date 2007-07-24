@@ -1,4 +1,5 @@
 AM_LDFLAGS = -module -avoid-version -Wc,-nostartfiles
+EXTRA_DIST = ladspa.h
 
 plugindir = @ladspadir@
 
