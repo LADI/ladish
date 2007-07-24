@@ -17,7 +17,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "lv2.h"
+#include "../lv2.h"
 #include "../../extensions/osc/lv2_osc.h"
 
 /* Plugin */
@@ -53,6 +53,8 @@ osc_print_instantiate(const LV2_Descriptor*         descriptor,
                       const LV2_Host_Feature*const* features)
 {
 	OSCPrint* plugin = (OSCPrint*)malloc(sizeof(OSCPrint));
+	
+	plugin->input_buffer = NULL;
 
 	return (LV2_Handle)plugin;
 }
@@ -80,7 +82,7 @@ init_descriptor()
 {
 	osc_print_descriptor = (LV2_Descriptor*)malloc(sizeof(LV2_Descriptor));
 
-	osc_print_descriptor->URI = "http://drobilla.net/lv2_plugins/osc_print/0";
+	osc_print_descriptor->URI = "http://drobilla.net/lv2_plugins/dev/osc_print";
 	osc_print_descriptor->activate = NULL;
 	osc_print_descriptor->cleanup = osc_print_cleanup;
 	osc_print_descriptor->connect_port = osc_print_connect_port;

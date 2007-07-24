@@ -140,6 +140,7 @@ static inline const LV2Message* lv2_osc_buffer_get_message(const LV2OSCBuffer* b
 }
 
 int lv2_osc_buffer_append_message(LV2OSCBuffer* buf, LV2Message* msg);
+int lv2_osc_buffer_append(LV2OSCBuffer* buf, double time, const char* path, const char* types, ...);
 
 void lv2_osc_buffer_compact(LV2OSCBuffer* buf);
 

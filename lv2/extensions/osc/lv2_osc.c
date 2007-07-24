@@ -65,7 +65,7 @@ lv2_osc_pad_size(uint32_t size)
 inline static uint32_t
 lv2_osc_string_size(const char *s)
 {
-    return lv2_osc_pad_size(strlen(s) + 1);
+    return lv2_osc_pad_size((uint32_t)strlen(s) + 1);
 }
 
 
@@ -153,7 +153,7 @@ lv2_osc_message_from_raw(double time, uint32_t out_buf_size, void* out_buf, uint
 	
 	if (out_buf == NULL) {
 		out_buf_size = message_header_size + index_size + raw_msg_size;
-		out_buf = malloc(out_buf_size);
+		out_buf = malloc((size_t)out_buf_size);
 	} else if (out_buf && out_buf_size < message_header_size + raw_msg_size) {
 		return NULL;
 	}
@@ -262,6 +262,13 @@ lv2_osc_buffer_append_message(LV2OSCBuffer* buf, LV2Message* msg)
 
 	buf->size += msg_size;
 	
+	return 0;
+}
+
+int
+lv2_osc_buffer_append(LV2OSCBuffer* buf, double time, const char* path, const char* types, ...)
+{
+	printf("Append message: %s", path);
 	return 0;
 }
 

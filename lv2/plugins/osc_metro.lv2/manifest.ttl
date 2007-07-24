@@ -2,9 +2,9 @@
 @prefix drobins: <http://drobilla.net/lv2_plugins/dev/> .
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
 
-drobins:osc_print
+drobins:osc_metronome
   a lv2:Plugin, lv2:UtilityPlugin ;
-  lv2:binary <osc_print.so> ;
-  rdfs:seeAlso <osc_print.ttl> .
+  lv2:binary <osc_metro.so> ;
+  rdfs:seeAlso <osc_metro.ttl> .
 
 
