@@ -17,27 +17,27 @@
 
 #include <cmath>
 #include <sstream>
-#include "Patchage.h"
-#include "PatchageEvent.h"
 #include "../../config/config.h"
 #include <libgnomecanvasmm.h>
 #include <libglademm/xml.h>
 #include <fstream>
 #include <pthread.h>
-#include "StateManager.h"
-#include "PatchageCanvas.h"
 #include <jack/statistics.h>
-#include "JackDriver.h"
-#include "JackSettingsDialog.h"
+#include "Patchage.hpp"
+#include "PatchageEvent.hpp"
+#include "StateManager.hpp"
+#include "PatchageCanvas.hpp"
+#include "JackDriver.hpp"
+#include "JackSettingsDialog.hpp"
 #ifdef HAVE_LASH
-#include "LashDriver.h"
+#include "LashDriver.hpp"
 #endif
 #ifdef HAVE_ALSA
-#include "AlsaDriver.h"
+#include "AlsaDriver.hpp"
 #endif
 
 // FIXME: include to avoid undefined reference to boost SP debug hooks stuff
-#include <raul/SharedPtr.h>
+#include <raul/SharedPtr.hpp>
 
 
 

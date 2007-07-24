@@ -15,14 +15,14 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include "config.h"
+#include "../../config/config.h"
 
 #include <iostream>
 #include <libgnomecanvasmm.h>
 #include <glibmm/exception.h>
 
-#include "Patchage.h"
-#include "JackDriver.h"
+#include "Patchage.hpp"
+#include "JackDriver.hpp"
 
 #ifdef HAVE_LASH
 #include <lash/lash.h>

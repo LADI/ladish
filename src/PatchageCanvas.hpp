@@ -23,8 +23,8 @@
 #ifdef HAVE_ALSA
 #include <alsa/asoundlib.h>
 #endif
-#include <flowcanvas/Canvas.h>
-#include "StateManager.h"
+#include <flowcanvas/Canvas.hpp>
+#include "StateManager.hpp"
 
 class Patchage;
 class PatchageModule;

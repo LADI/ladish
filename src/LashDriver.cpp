@@ -15,15 +15,14 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include "LashDriver.h"
-#include "config.h"
 #include <iostream>
 #include <string>
-#include "Patchage.h"
-#include "StateManager.h"
+#include "../../config/config.h"
+#include "LashDriver.hpp"
+#include "Patchage.hpp"
+#include "StateManager.hpp"
 
-using std::cerr; using std::cout; using std::endl;
-using std::string;
+using namespace std;
 
 
 LashDriver::LashDriver(Patchage* app, int argc, char** argv)

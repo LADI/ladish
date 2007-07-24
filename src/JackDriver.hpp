@@ -19,20 +19,17 @@
 #define JACKDRIVER_H
 
 #include <iostream>
-#include <string>
 #include <boost/shared_ptr.hpp>
 #include <jack/jack.h>
 #include <jack/statistics.h>
 #include <glibmm/thread.h>
-#include "raul/AtomicPtr.h"
-#include "Driver.h"
+#include <raul/AtomicPtr.hpp>
+#include "Driver.hpp"
 class Patchage;
 class PatchageEvent;
 class PatchageFlowCanvas;
 class PatchagePort;
 class PatchageModule;
-
-using std::string;
 
 
 /** Handles all externally driven functionality, registering ports etc.

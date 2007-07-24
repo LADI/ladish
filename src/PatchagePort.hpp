@@ -18,12 +18,13 @@
 #ifndef PATCHAGEPORT_H
 #define PATCHAGEPORT_H
 
-#include "config.h"
+#include "../../config/config.h"
 #include <string>
 #include <list>
-#include <flowcanvas/Port.h>
-#include <flowcanvas/Module.h>
 #include <boost/shared_ptr.hpp>
+#include <flowcanvas/Port.hpp>
+#include <flowcanvas/Module.hpp>
+
 
 #ifdef HAVE_ALSA
 #include <alsa/asoundlib.h>

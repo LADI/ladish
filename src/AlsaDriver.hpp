@@ -23,7 +23,7 @@
 #include <pthread.h>
 #include <queue>
 #include <string>
-#include "Driver.h"
+#include "Driver.hpp"
 class Patchage;
 class PatchagePort;
 class PatchageFlowCanvas;

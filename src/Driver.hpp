@@ -20,8 +20,8 @@
 
 #include <boost/shared_ptr.hpp>
 #include <sigc++/sigc++.h>
-#include <raul/SRSWQueue.h>
-#include "PatchageEvent.h"
+#include <raul/SRSWQueue.hpp>
+#include "PatchageEvent.hpp"
 
 class PatchagePort;
 

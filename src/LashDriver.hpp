@@ -19,8 +19,8 @@
 #define LASHDRIVER_H
 
 #include <lash/lash.h>
-#include <raul/LashServerInterface.h>
-#include "Driver.h"
+#include <raul/LashServerInterface.hpp>
+#include "Driver.hpp"
 
 class Patchage;
 

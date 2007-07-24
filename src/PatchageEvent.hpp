@@ -18,13 +18,12 @@
 #ifndef PATCHAGEEVENT_H
 #define PATCHAGEEVENT_H
 
-#include <string>
 #include <jack/jack.h>
 #include "../../config/config.h"
 #ifdef HAVE_ALSA
 #include <alsa/asoundlib.h>
 #endif
-#include "PatchagePort.h"
+#include "PatchagePort.hpp"
 
 class Patchage;
 

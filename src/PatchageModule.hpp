@@ -23,11 +23,11 @@
 #ifdef HAVE_ALSA
 #include <alsa/asoundlib.h>
 #endif
-#include <flowcanvas/Canvas.h>
-#include <flowcanvas/Module.h>
-#include "PatchageCanvas.h"
-#include "StateManager.h"
-#include "PatchagePort.h"
+#include <flowcanvas/Canvas.hpp>
+#include <flowcanvas/Module.hpp>
+#include "PatchageCanvas.hpp"
+#include "StateManager.hpp"
+#include "PatchagePort.hpp"
 
 using std::string; using std::list;
 

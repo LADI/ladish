@@ -15,15 +15,15 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <raul/SharedPtr.h>
-#include "config.h"
-#include "PatchageCanvas.h"
-#include "Patchage.h"
-#include "JackDriver.h"
-#include "PatchageModule.h"
-#include "PatchagePort.h"
+#include <raul/SharedPtr.hpp>
+#include "../../config/config.h"
+#include "PatchageCanvas.hpp"
+#include "Patchage.hpp"
+#include "JackDriver.hpp"
+#include "PatchageModule.hpp"
+#include "PatchagePort.hpp"
 #ifdef HAVE_ALSA
-#include "AlsaDriver.h"
+#include "AlsaDriver.hpp"
 #endif
 
 PatchageCanvas::PatchageCanvas(Patchage* app, int width, int height)

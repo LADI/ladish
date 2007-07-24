@@ -23,16 +23,14 @@
 #include <jack/jack.h>
 #include <jack/statistics.h>
 #include <jack/thread.h>
-#include <raul/SharedPtr.h>
-#include "PatchageCanvas.h"
-#include "PatchageEvent.h"
-#include "JackDriver.h"
-#include "Patchage.h"
-#include "PatchageModule.h"
+#include <raul/SharedPtr.hpp>
+#include "PatchageCanvas.hpp"
+#include "PatchageEvent.hpp"
+#include "JackDriver.hpp"
+#include "Patchage.hpp"
+#include "PatchageModule.hpp"
 
-using std::cerr; using std::endl;
-using std::string;
-
+using namespace std;
 using namespace FlowCanvas;
 
 

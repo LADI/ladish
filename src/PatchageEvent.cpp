@@ -16,12 +16,12 @@
  */
 
 #include "../../config/config.h"
-#include "raul/SharedPtr.h"
-#include "Patchage.h"
-#include "PatchageCanvas.h"
-#include "PatchageModule.h"
-#include "PatchageEvent.h"
-#include "JackDriver.h"
+#include <raul/SharedPtr.hpp>
+#include "Patchage.hpp"
+#include "PatchageCanvas.hpp"
+#include "PatchageModule.hpp"
+#include "PatchageEvent.hpp"
+#include "JackDriver.hpp"
 
 	
 SharedPtr<PatchagePort>
