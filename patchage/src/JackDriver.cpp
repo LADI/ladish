@@ -126,11 +126,14 @@ JackDriver::destroy_all_ports()
 			boost::shared_ptr<PatchagePort> port = boost::dynamic_pointer_cast<PatchagePort>(*p);
 			if (port && port->type() == JACK_AUDIO || port->type() == JACK_MIDI) {
 				module->remove_port(port);
+				port->hide();
 			}
 		}
 
 		if (module->ports().empty())
 			_app->canvas()->remove_item(module);
+		else
+			module->resize();
 	}
 }
 
@@ -258,19 +261,6 @@ JackDriver::refresh()
 		m->resize();
 	}
 	
-	
-	// Remove any since-removed ports
-	/*for (list<string>::iterator i = _removed_ports.begin(); i != _removed_ports.end(); ++i) {
-		const string module_name = (*i).substr(0, i->find(":"));
-		const string port_name = (*i).substr(i->find(":")+1);
-		
-		for (ItemMap::iterator m = _app->canvas()->items().begin(); m != _app->canvas()->items().end(); ++m) {
-			if (m->second->name() == module_name)
-				m->second->remove_port(port_name);
-		}
-	}*/
-
-
 	// Add all connections
 	if (ports)
 	for (int i=0; ports[i]; ++i) {
