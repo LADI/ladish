@@ -20,7 +20,7 @@
 
 #include <string>
 #include <jack/jack.h>
-#include "../config.h"
+#include "../../config/config.h"
 #ifdef HAVE_ALSA
 #include <alsa/asoundlib.h>
 #endif

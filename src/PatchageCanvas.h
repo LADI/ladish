@@ -18,7 +18,7 @@
 #ifndef PATCHAGECANVAS_H
 #define PATCHAGECANVAS_H
 
-#include "../config.h"
+#include "../../config/config.h"
 #include <string>
 #ifdef HAVE_ALSA
 #include <alsa/asoundlib.h>
