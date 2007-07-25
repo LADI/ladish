@@ -52,9 +52,6 @@ AC_CONFIG_HEADER([config/config.h])
 
 AM_INIT_AUTOMAKE
 
-# Configure SLV2 (independent build system)
-AC_CONFIG_SUBDIRS([slv2])
-
 #################### ENVIRONMENT
 
 AC_LANG([C++])
@@ -176,10 +173,8 @@ AC_ARG_ENABLE(lv2,
 	[AS_HELP_STRING(--enable-lv2, [Enable LV2 plugin support through libslv2 (yes) - Requires: libslv2])],
 	[ if test x$enable_lv2 = xno ; then build_lv2=no ; fi ])
 if test "$build_lv2" = "yes"; then
-	build_lv2="no"
-	PKG_CHECK_MODULES(SLV2, libslv2 >= 0.0.1, [build_lv2="yes"], [build_lv2="no"])
-fi
-if test "$build_lv2" = "yes"; then
+	# Configure SLV2 (independent build system)
+	AC_CONFIG_SUBDIRS([slv2])
 	AC_DEFINE(HAVE_SLV2, 1, [Has libslv2])
 fi
 
@@ -299,10 +294,10 @@ AC_ARG_ENABLE([ingen-server],
 	[ if test x$enable_server = xno ; then build_ingen_server=no ; fi ])
 
 # Command-line clients
-build_ingen_ingen_clients="yes"
-AC_ARG_ENABLE([ingen-ingen-clients],
-	AS_HELP_STRING(--enable-ingen-clients, [Build Ingen clients (yes) - Requires: libxml2, raptor, libsigc++]),
-	[ if test x$enable_ingen_clients = xno ; then build_ingen_clients=no ; fi ])
+build_ingen_client_lib="yes"
+AC_ARG_ENABLE([ingen-clients],
+	AS_HELP_STRING(--enable-ingen-clients, [Build Ingen client library (yes) - Requires: libxml2, raptor, libsigc++]),
+	[ if test x$enable_ingen_clients = xno ; then build_ingen_client_lib=no ; fi ])
 
 # Gtk client (Ingenuity)
 build_ingen_gtk_client="yes"
@@ -315,7 +310,7 @@ if test "$build_ingen_gtk_client" = "yes"; then
 fi
 
 # Clients
-if test "$build_ingen_clients" = "yes"; then
+if test "$build_ingen_client_lib" = "yes"; then
 	AC_CHECK_HEADERS([sys/time.h unistd.h])
 
 	# Check for libxml2 # FIXME: deprecated, make optional
@@ -336,7 +331,7 @@ if test "$build_ingen_clients" = "yes"; then
 	# Check for sigc++ (FIXME: make this only necessary where.. uh.. necessary)
 	PKG_CHECK_MODULES(LSIGCPP, sigc++-2.0)
 else
- 	AC_MSG_WARN([Console clients will be built!])
+ 	AC_MSG_WARN([Ingen client library/executable will not be built!])
 fi
 AM_CONDITIONAL(BUILD_INGEN_CLIENTS, [test "$build_ingen_clients" = "yes"])
 
@@ -539,13 +534,16 @@ AC_MSG_RESULT([])
 AC_MSG_RESULT([LADSPA plugin install location: $ladspadir])
 AC_MSG_RESULT([LV2 plugin install location:    $lv2plugindir])
 AC_MSG_RESULT([])
-AC_MSG_RESULT([Ingen:])
-AC_MSG_RESULT([    Building engine server: $build_ingen_server])
-AC_MSG_RESULT([    JACK in-process engine: $build_in_process_engine])
-AC_MSG_RESULT([    Console clients:        $build_ingen_clients])
-AC_MSG_RESULT([    GTK GUI:                $build_ingen_gtk_client])
+AC_MSG_RESULT([FlowCanvas:])
+AC_MSG_RESULT([    Anti-Aliasing: $anti_alias])
 AC_MSG_RESULT([])
-AC_MSG_RESULT([*** INGEN IS WITHOUT LASH SUPPORT AT THIS TIME.  ASK ME AND DIE. ***])
+AC_MSG_RESULT([Ingen:])
+AC_MSG_RESULT([    Engine library/OSC server: $build_ingen_server])
+AC_MSG_RESULT([    JACK in-process engine:    $build_in_process_engine])
+AC_MSG_RESULT([    Client library:            $build_ingen_client_lib])
+AC_MSG_RESULT([    GTK GUI:                   $build_ingen_gtk_client])
+AC_MSG_RESULT([])
+AC_MSG_RESULT([*** INGEN IS WITHOUT LASH SUPPORT AT THIS TIME ***])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([C FLAGS:   $CFLAGS])
 AC_MSG_RESULT([C++ FLAGS: $CXXFLAGS])

@@ -105,7 +105,7 @@ BUILD_UNIT_TESTS_FALSE =
 BUILD_UNIT_TESTS_TRUE = #
 CC = ccache gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -O2 -march=athlon64 -fomit-frame-pointer -DNDEBUG -DNDEBUG -std=c99 -pipe -fmessage-length=999
+CFLAGS = -O0 -g -DDEBUG -Wall -Wextra -Wno-unused-parameter -Winit-self -std=c99 -pipe -fmessage-length=999
 CPP = ccache gcc -E
 CPPFLAGS = 
 CURL_CFLAGS =  
@@ -113,7 +113,7 @@ CURL_LIBS = -lcurl -lgssapi_krb5
 CXX = ccache g++
 CXXCPP = ccache g++ -E
 CXXDEPMODE = depmode=gcc3
-CXXFLAGS = -O2 -march=athlon64 -fomit-frame-pointer -DNDEBUG -DNDEBUG -ansi -pipe -fmessage-length=999
+CXXFLAGS = -O0 -g -DDEBUG -Wall -Wextra -Wno-unused-parameter -Winit-self -Woverloaded-virtual -Wsign-promo -ansi -pipe -fmessage-length=999
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
@@ -195,8 +195,8 @@ WITH_LASH_FALSE = #
 WITH_LASH_TRUE = 
 WITH_LIBLO_FALSE = #
 WITH_LIBLO_TRUE = 
-WITH_LV2_FALSE = 
-WITH_LV2_TRUE = #
+WITH_LV2_FALSE = #
+WITH_LV2_TRUE = 
 WITH_MACHINA_GUI_FALSE = #
 WITH_MACHINA_GUI_TRUE = 
 WITH_REDLAND_FALSE = #
