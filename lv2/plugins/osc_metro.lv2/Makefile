@@ -13,6 +13,8 @@
 # PARTICULAR PURPOSE.
 
 
+
+
 srcdir = .
 top_srcdir = ../../..
 
@@ -44,8 +46,36 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config/config.h
 CONFIG_CLEAN_FILES =
-SOURCES =
-DIST_SOURCES =
+am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
+am__vpath_adj = case $$p in \
+    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+    *) f=$$p;; \
+  esac;
+am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
+am__installdirs = "$(DESTDIR)$(plugindir)" "$(DESTDIR)$(plugindir)"
+pluginLTLIBRARIES_INSTALL = $(INSTALL)
+LTLIBRARIES = $(plugin_LTLIBRARIES)
+osc_metro_la_LIBADD =
+am_osc_metro_la_OBJECTS = $(pluginbasename).lo lv2_osc.lo \
+	lv2_osc_print.lo
+osc_metro_la_OBJECTS = $(am_osc_metro_la_OBJECTS)
+DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)/config
+depcomp = $(SHELL) $(top_srcdir)/config/depcomp
+am__depfiles_maybe = depfiles
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(LIBTOOL) --tag=CC --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+SOURCES = $(osc_metro_la_SOURCES)
+DIST_SOURCES = $(osc_metro_la_SOURCES)
+pluginDATA_INSTALL = $(INSTALL_DATA)
+DATA = $(plugin_DATA)
+ETAGS = etags
+CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = ${SHELL} /home/dave/files/code/lad/config/missing --run aclocal-1.9
 AGRAPH_CFLAGS = -I/usr/include/graphviz  
@@ -209,6 +239,7 @@ libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
 localstatedir = ${prefix}/var
+lv2plugindir = ${exec_prefix}/lib/lv2
 mandir = ${datarootdir}/man
 mkdir_p = mkdir -p --
 oldincludedir = /usr/include
@@ -221,10 +252,19 @@ sharedstatedir = ${prefix}/com
 subdirs =  slv2
 sysconfdir = ${prefix}/etc
 target_alias = 
-EXTRA_DIST = manifest.ttl osc_metro.ttl
+AM_LDFLAGS = -module -avoid-version -Wc,-nostartfiles
+plugindir = ${exec_prefix}/lib/lv2/$(pluginbasename).lv2
+plugin_DATA = manifest.ttl $(pluginbasename).ttl
+pluginbasename = osc_metro
+plugin_LTLIBRARIES = osc_metro.la
+osc_metro_la_SOURCES = $(pluginbasename).c \
+                       ../../extensions/osc/lv2_osc.c \
+                       ../../extensions/osc/lv2_osc_print.c
+
 all: all-am
 
 .SUFFIXES:
+.SUFFIXES: .c .lo .o .obj
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -234,9 +274,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  lv2/plugins/osc_metro.lv2/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  lv2/plugins/osc_metro.lv2/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign  lv2/plugins/osc_metro.lv2/Makefile
+	  $(AUTOMAKE) --gnu  lv2/plugins/osc_metro.lv2/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -254,6 +294,80 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
+install-pluginLTLIBRARIES: $(plugin_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	test -z "$(plugindir)" || $(mkdir_p) "$(DESTDIR)$(plugindir)"
+	@list='$(plugin_LTLIBRARIES)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    f=$(am__strip_dir) \
+	    echo " $(LIBTOOL) --mode=install $(pluginLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) '$$p' '$(DESTDIR)$(plugindir)/$$f'"; \
+	    $(LIBTOOL) --mode=install $(pluginLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) "$$p" "$(DESTDIR)$(plugindir)/$$f"; \
+	  else :; fi; \
+	done
+
+uninstall-pluginLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	@set -x; list='$(plugin_LTLIBRARIES)'; for p in $$list; do \
+	  p=$(am__strip_dir) \
+	  echo " $(LIBTOOL) --mode=uninstall rm -f '$(DESTDIR)$(plugindir)/$$p'"; \
+	  $(LIBTOOL) --mode=uninstall rm -f "$(DESTDIR)$(plugindir)/$$p"; \
+	done
+
+clean-pluginLTLIBRARIES:
+	-test -z "$(plugin_LTLIBRARIES)" || rm -f $(plugin_LTLIBRARIES)
+	@list='$(plugin_LTLIBRARIES)'; for p in $$list; do \
+	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
+	  test "$$dir" != "$$p" || dir=.; \
+	  echo "rm -f \"$${dir}/so_locations\""; \
+	  rm -f "$${dir}/so_locations"; \
+	done
+osc_metro.la: $(osc_metro_la_OBJECTS) $(osc_metro_la_DEPENDENCIES) 
+	$(LINK) -rpath $(plugindir) $(osc_metro_la_LDFLAGS) $(osc_metro_la_OBJECTS) $(osc_metro_la_LIBADD) $(LIBS)
+
+mostlyclean-compile:
+	-rm -f *.$(OBJEXT)
+
+distclean-compile:
+	-rm -f *.tab.c
+
+include ./$(DEPDIR)/$(pluginbasename).Plo
+include ./$(DEPDIR)/lv2_osc.Plo
+include ./$(DEPDIR)/lv2_osc_print.Plo
+
+.c.o:
+	if $(COMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
+	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
+#	source='$<' object='$@' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(COMPILE) -c $<
+
+.c.obj:
+	if $(COMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ `$(CYGPATH_W) '$<'`; \
+	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
+#	source='$<' object='$@' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(COMPILE) -c `$(CYGPATH_W) '$<'`
+
+.c.lo:
+	if $(LTCOMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
+	then mv -f "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Plo"; else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; fi
+#	source='$<' object='$@' libtool=yes \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(LTCOMPILE) -c -o $@ $<
+
+lv2_osc.lo: ../../extensions/osc/lv2_osc.c
+	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT lv2_osc.lo -MD -MP -MF "$(DEPDIR)/lv2_osc.Tpo" -c -o lv2_osc.lo `test -f '../../extensions/osc/lv2_osc.c' || echo '$(srcdir)/'`../../extensions/osc/lv2_osc.c; \
+	then mv -f "$(DEPDIR)/lv2_osc.Tpo" "$(DEPDIR)/lv2_osc.Plo"; else rm -f "$(DEPDIR)/lv2_osc.Tpo"; exit 1; fi
+#	source='../../extensions/osc/lv2_osc.c' object='lv2_osc.lo' libtool=yes \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o lv2_osc.lo `test -f '../../extensions/osc/lv2_osc.c' || echo '$(srcdir)/'`../../extensions/osc/lv2_osc.c
+
+lv2_osc_print.lo: ../../extensions/osc/lv2_osc_print.c
+	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT lv2_osc_print.lo -MD -MP -MF "$(DEPDIR)/lv2_osc_print.Tpo" -c -o lv2_osc_print.lo `test -f '../../extensions/osc/lv2_osc_print.c' || echo '$(srcdir)/'`../../extensions/osc/lv2_osc_print.c; \
+	then mv -f "$(DEPDIR)/lv2_osc_print.Tpo" "$(DEPDIR)/lv2_osc_print.Plo"; else rm -f "$(DEPDIR)/lv2_osc_print.Tpo"; exit 1; fi
+#	source='../../extensions/osc/lv2_osc_print.c' object='lv2_osc_print.lo' libtool=yes \
+#	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) \
+#	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o lv2_osc_print.lo `test -f '../../extensions/osc/lv2_osc_print.c' || echo '$(srcdir)/'`../../extensions/osc/lv2_osc_print.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -264,12 +378,71 @@ clean-libtool:
 distclean-libtool:
 	-rm -f libtool
 uninstall-info-am:
+install-pluginDATA: $(plugin_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(plugindir)" || $(mkdir_p) "$(DESTDIR)$(plugindir)"
+	@list='$(plugin_DATA)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(am__strip_dir) \
+	  echo " $(pluginDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(plugindir)/$$f'"; \
+	  $(pluginDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(plugindir)/$$f"; \
+	done
+
+uninstall-pluginDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(plugin_DATA)'; for p in $$list; do \
+	  f=$(am__strip_dir) \
+	  echo " rm -f '$(DESTDIR)$(plugindir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(plugindir)/$$f"; \
+	done
+
+ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
+	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
+	unique=`for i in $$list; do \
+	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
+	  done | \
+	  $(AWK) '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	mkid -fID $$unique
 tags: TAGS
-TAGS:
 
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
+		$(TAGS_FILES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
+	unique=`for i in $$list; do \
+	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
+	  done | \
+	  $(AWK) '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	if test -z "$(ETAGS_ARGS)$$tags$$unique"; then :; else \
+	  test -n "$$unique" || unique=$$empty_fix; \
+	  $(ETAGS) $(ETAGSFLAGS) $(AM_ETAGSFLAGS) $(ETAGS_ARGS) \
+	    $$tags $$unique; \
+	fi
 ctags: CTAGS
-CTAGS:
+CTAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
+		$(TAGS_FILES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
+	unique=`for i in $$list; do \
+	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
+	  done | \
+	  $(AWK) '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	test -z "$(CTAGS_ARGS)$$tags$$unique" \
+	  || $(CTAGS) $(CTAGSFLAGS) $(AM_CTAGSFLAGS) $(CTAGS_ARGS) \
+	     $$tags $$unique
 
+GTAGS:
+	here=`$(am__cd) $(top_builddir) && pwd` \
+	  && cd $(top_srcdir) \
+	  && gtags -i $(GTAGS_ARGS) $$here
+
+distclean-tags:
+	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 
 distdir: $(DISTFILES)
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
@@ -300,8 +473,11 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile
+all-am: Makefile $(LTLIBRARIES) $(DATA)
 installdirs:
+	for dir in "$(DESTDIR)$(plugindir)" "$(DESTDIR)$(plugindir)"; do \
+	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
+	done
 install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
@@ -328,11 +504,14 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libtool mostlyclean-am
+clean-am: clean-generic clean-libtool clean-pluginLTLIBRARIES \
+	mostlyclean-am
 
 distclean: distclean-am
+	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
-distclean-am: clean-am distclean-generic distclean-libtool
+distclean-am: clean-am distclean-compile distclean-generic \
+	distclean-libtool distclean-tags
 
 dvi: dvi-am
 
@@ -344,7 +523,7 @@ info: info-am
 
 info-am:
 
-install-data-am:
+install-data-am: install-pluginDATA install-pluginLTLIBRARIES
 
 install-exec-am:
 
@@ -355,12 +534,14 @@ install-man:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
+	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
 mostlyclean: mostlyclean-am
 
-mostlyclean-am: mostlyclean-generic mostlyclean-libtool
+mostlyclean-am: mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool
 
 pdf: pdf-am
 
@@ -370,18 +551,27 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-info-am
+uninstall-am: uninstall-info-am uninstall-pluginDATA \
+	uninstall-pluginLTLIBRARIES
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
 
-.PHONY: all all-am check check-am clean clean-generic clean-libtool \
-	distclean distclean-generic distclean-libtool distdir dvi \
-	dvi-am html html-am info info-am install install-am \
-	install-data install-data-am install-exec install-exec-am \
-	install-info install-info-am install-man install-strip \
+.PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
+	clean-libtool clean-pluginLTLIBRARIES ctags distclean \
+	distclean-compile distclean-generic distclean-libtool \
+	distclean-tags distdir dvi dvi-am html html-am info info-am \
+	install install-am install-data install-data-am install-exec \
+	install-exec-am install-info install-info-am install-man \
+	install-pluginDATA install-pluginLTLIBRARIES install-strip \
 	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am uninstall uninstall-am \
-	uninstall-info-am
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags uninstall uninstall-am uninstall-hook uninstall-info-am \
+	uninstall-pluginDATA uninstall-pluginLTLIBRARIES
 
+
+uninstall-hook:
+	rm -r $(plugindir)/
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

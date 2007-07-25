@@ -39,6 +39,15 @@ AC_CONFIG_SRCDIR([machina/src/gui/main.cpp])
 # LV2 stuff
 AC_CONFIG_SRCDIR([lv2/extensions/osc/lv2_osc.h])
 
+# LV2 plugin install
+AC_MSG_CHECKING([where to install LV2 plugins])
+AC_ARG_WITH(lv2-dir,
+	AS_HELP_STRING([--with-lv2-dir=DIR],
+		[directory where LV2 plugins should be installed ($libdir/lv2)]),
+	[lv2plugindir=$withval], [lv2plugindir=$libdir/lv2])
+AC_MSG_RESULT($lv2plugindir)
+AC_SUBST(lv2plugindir)
+
 AC_CONFIG_HEADER([config/config.h])
 
 AM_INIT_AUTOMAKE
@@ -51,6 +60,8 @@ AC_CONFIG_SUBDIRS([slv2])
 AC_LANG([C++])
 
 AC_PROG_CXX
+
+AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
 
 PKG_CHECK_MODULES(GLIBMM, glibmm-2.4)
@@ -395,10 +406,10 @@ AC_ARG_ENABLE(anti-aliasing,
 # Yes, this is dirty...
 if test "$anti_alias" = "yes"; then
 	AC_CONFIG_COMMANDS([set_aa],
-		[sed 's/\(\/\*CANVASBASE\*\/\).*/\1Gnome::Canvas::CanvasAA/' -i flowcanvas/flowcanvas/Canvas.h])
+		[sed 's/\(\/\*CANVASBASE\*\/\).*/\1Gnome::Canvas::CanvasAA/' -i flowcanvas/flowcanvas/Canvas.hpp])
 else
 	AC_CONFIG_COMMANDS([set_no_aa],
-		[sed 's/\(\/\*CANVASBASE\*\/\).*/\1Gnome::Canvas::Canvas/' -i flowcanvas/flowcanvas/Canvas.h])
+		[sed 's/\(\/\*CANVASBASE\*\/\).*/\1Gnome::Canvas::Canvas/' -i flowcanvas/flowcanvas/Canvas.hpp])
 fi
 
 # Check for the graphviz library for auto-layout support
@@ -433,7 +444,7 @@ AM_CONDITIONAL(WITH_MACHINA_GUI, [test "x$build_machina_gui" = "xyes"])
 AC_MSG_CHECKING([where to install LADSPA plugins])
 AC_ARG_WITH(ladspa-dir,
 	AS_HELP_STRING([--with-ladspa-dir=DIR],
-		[directory that LADSPA plugins should be installed in ($libdir/ladspa)]),
+		[directory where LADSPA plugins should be installed ($libdir/ladspa)]),
 	[ladspadir=$withval], [ladspadir=$libdir/ladspa])
 AC_MSG_RESULT($ladspadir)
 AC_SUBST(ladspadir)
@@ -521,6 +532,9 @@ AC_MSG_RESULT([LV2 Plugin support:      $build_lv2])
 AC_MSG_RESULT([DSSI Plugin support:     $build_dssi])
 AC_MSG_RESULT([LADSPA Plugin support:   $build_ladspa])
 AC_MSG_RESULT([LASH support:            $build_lash])
+AC_MSG_RESULT([])
+AC_MSG_RESULT([LADSPA plugin install location: $ladspadir])
+AC_MSG_RESULT([LV2 plugin install location:    $lv2plugindir])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([Ingen:])
 AC_MSG_RESULT([    Building engine server: $build_ingen_server])

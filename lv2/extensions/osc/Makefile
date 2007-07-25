@@ -209,6 +209,7 @@ libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
 localstatedir = ${prefix}/var
+lv2plugindir = ${exec_prefix}/lib/lv2
 mandir = ${datarootdir}/man
 mkdir_p = mkdir -p --
 oldincludedir = /usr/include
@@ -234,9 +235,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  lv2/extensions/osc/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  lv2/extensions/osc/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign  lv2/extensions/osc/Makefile
+	  $(AUTOMAKE) --gnu  lv2/extensions/osc/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
