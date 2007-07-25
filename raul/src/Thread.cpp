@@ -15,7 +15,10 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <iostream>
 #include "raul/Thread.hpp"
+
+using namespace std;
 
 namespace Raul {
 
@@ -24,7 +27,7 @@ pthread_once_t Thread::_thread_key_once = PTHREAD_ONCE_INIT;
 pthread_key_t  Thread::_thread_key;
 
 
-Thread::Thread(const std::string& name)
+Thread::Thread(const string& name)
 	: _context(0)
 	, _name(name)
 	, _pthread_exists(false)
@@ -35,7 +38,7 @@ Thread::Thread(const std::string& name)
 
 
 /** Must be called from thread */
-Thread::Thread(pthread_t thread, const std::string& name)
+Thread::Thread(pthread_t thread, const string& name)
 	: _context(0)
 	, _name(name)
 	, _pthread_exists(true)
@@ -64,14 +67,18 @@ Thread::get()
 void
 Thread::start()
 {
-	std::cout << "[" << _name << " Thread] Starting." << std::endl;
+	if (_pthread_exists) {
+		cout << "[" << _name << " Thread] Already started." << endl;
+	} else {
+		cout << "[" << _name << " Thread] Starting." << endl;
 
-	pthread_attr_t attr;
-	pthread_attr_init(&attr);
-	pthread_attr_setstacksize(&attr, 1500000);
+		pthread_attr_t attr;
+		pthread_attr_init(&attr);
+		pthread_attr_setstacksize(&attr, 1500000);
 
-	pthread_create(&_pthread, &attr, _static_run, this);
-	_pthread_exists = true;
+		pthread_create(&_pthread, &attr, _static_run, this);
+		_pthread_exists = true;
+	}
 }
 
 /** Stop and terminate the thread. */
@@ -82,7 +89,7 @@ Thread::stop()
 		pthread_cancel(_pthread);
 		pthread_join(_pthread, NULL);
 		_pthread_exists = false;
-		std::cout << "[" << _name << " Thread] Exiting." << std::endl;
+		cout << "[" << _name << " Thread] Exiting." << endl;
 	}
 }
 
@@ -93,17 +100,17 @@ Thread::set_scheduling(int policy, unsigned int priority)
 	sp.sched_priority = priority;
 	int result = pthread_setschedparam(_pthread, SCHED_FIFO, &sp);
 	if (!result) {
-		std::cout << "[" << _name << "] Set scheduling policy to ";
+		cout << "[" << _name << "] Set scheduling policy to ";
 		switch (policy) {
-			case SCHED_FIFO:  std::cout << "SCHED_FIFO";  break;
-			case SCHED_RR:    std::cout << "SCHED_RR";    break;
-			case SCHED_OTHER: std::cout << "SCHED_OTHER"; break;
-			default:          std::cout << "UNKNOWN";     break;
+			case SCHED_FIFO:  cout << "SCHED_FIFO";  break;
+			case SCHED_RR:    cout << "SCHED_RR";    break;
+			case SCHED_OTHER: cout << "SCHED_OTHER"; break;
+			default:          cout << "UNKNOWN";     break;
 		}
-		std::cout << ", priority " << sp.sched_priority << std::endl;
+		cout << ", priority " << sp.sched_priority << endl;
 	} else {
-		std::cout << "[" << _name << "] Unable to set scheduling policy ("
-			<< strerror(result) << ")" << std::endl;
+		cout << "[" << _name << "] Unable to set scheduling policy ("
+			<< strerror(result) << ")" << endl;
 	}
 }
 
