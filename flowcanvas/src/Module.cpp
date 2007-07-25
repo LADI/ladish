@@ -30,8 +30,8 @@ namespace FlowCanvas {
 
 static const uint32_t MODULE_FILL_COLOUR           = 0x212222C8;
 static const uint32_t MODULE_HILITE_FILL_COLOUR    = 0x212222F4;
-static const uint32_t MODULE_OUTLINE_COLOUR        = 0x676868E8;
-static const uint32_t MODULE_HILITE_OUTLINE_COLOUR = 0x7F8080F4;
+static const uint32_t MODULE_OUTLINE_COLOUR        = 0xAFA0A0F4;
+static const uint32_t MODULE_HILITE_OUTLINE_COLOUR = 0xDFD0D0F4;
 static const uint32_t MODULE_TITLE_COLOUR          = 0xFFFFFFFF;
 
 
