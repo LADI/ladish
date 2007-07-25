@@ -72,22 +72,25 @@ AC_CHECK_HEADERS([boost/shared_ptr.hpp], [],
 AC_CHECK_HEADERS([boost/weak_ptr.hpp], [],  
 	AC_MSG_ERROR([You need the boost headers package (e.g. libboost-dev)]))
 
-#abs_srcdir=`pwd` # FIXME?
+abs_srcdir=`pwd` # FIXME?
 #
 #export PKG_CONFIG_PATH="$abs_srcdir/flowcanvas:$abs_srcdir/raul:$abs_srcdir/slv2:$PKG_CONFIG_PATH"
 #
 #export RAUL_CFLAGS="-I$abs_srcdir/raul $GLIBMM_CFLAGS"
-export RAUL_LIBS="-L$abs_srcdir/raul/src/.libs -lraul"
+#export RAUL_LIBS="-L$abs_srcdir/raul/src/.libs -lraul"
 #AC_SUBST(RAUL_CFLAGS)
+export RAUL_LIBS="$abs_srcdir/raul/src/.libs/libraul.la"
 AC_SUBST(RAUL_LIBS)
 #
 #export FLOWCANVAS_CFLAGS="-I$abs_srcdir/flowcanvas"
-export FLOWCANVAS_LIBS="-L$abs_srcdir/flowcanvas/src/.libs -lflowcanvas"
+#export FLOWCANVAS_LIBS="-L$abs_srcdir/flowcanvas/src/.libs -lflowcanvas"
+export FLOWCANVAS_LIBS="$abs_srcdir/flowcanvas/src/.libs/libflowcanvas.la"
 #AC_SUBST(FLOWCANVAS_CFLAGS)
 AC_SUBST(FLOWCANVAS_LIBS)
 
 #export SLV2_CFLAGS="-I$abs_srcdir/slv2"
-export SLV2_LIBS="-L$abs_srcdir/slv2/src/.libs -lslv2"
+#export SLV2_LIBS="-L$abs_srcdir/slv2/src/.libs -lslv2"
+export SLV2_LIBS="$abs_srcdir/slv2/src/.libs/libslv2.la"
 AC_SUBST(SLV2_CFLAGS)
 AC_SUBST(SLV2_LIBS)
 
@@ -145,13 +148,13 @@ AC_ARG_ENABLE(strict,
 	[strict="$enableval"])
 if test "$strict" = "yes"; then
   # Stupid Gtkmm won't build with -pedantic
-  CFLAGS="$CFLAGS -std=c99 -Wall -Wextra -Wno-unused-parameter -Winit-self"
-  CXXFLAGS="$CXXFLAGS -ansi -Wall -Wextra -Wno-unused-parameter -Winit-self -Woverloaded-virtual -Wsign-promo"
+  CFLAGS="$CFLAGS -Wall -Wextra -Wno-unused-parameter -Winit-self"
+  CXXFLAGS="$CXXFLAGS -Wall -Wextra -Wno-unused-parameter -Winit-self -Woverloaded-virtual -Wsign-promo"
 fi
 
 # Bolt on a few specific flags to CFLAGS that should always be used
-CXXFLAGS="$CXXFLAGS -pipe -fmessage-length=999"
-CFLAGS="$CFLAGS -pipe -fmessage-length=999"
+CXXFLAGS="$CXXFLAGS -ansi -pipe -fmessage-length=999"
+CFLAGS="$CFLAGS -std=c99 -pipe -fmessage-length=999"
 
 
 #################### GENERIC OPTIONS

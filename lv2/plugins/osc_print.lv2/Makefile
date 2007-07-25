@@ -56,8 +56,7 @@ am__installdirs = "$(DESTDIR)$(plugindir)" "$(DESTDIR)$(plugindir)"
 pluginLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(plugin_LTLIBRARIES)
 osc_print_la_LIBADD =
-am_osc_print_la_OBJECTS = $(pluginbasename).lo lv2_osc.lo \
-	lv2_osc_print.lo
+am_osc_print_la_OBJECTS = osc_print.lo lv2_osc.lo lv2_osc_print.lo
 osc_print_la_OBJECTS = $(am_osc_print_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)/config
 depcomp = $(SHELL) $(top_srcdir)/config/depcomp
@@ -106,7 +105,7 @@ BUILD_UNIT_TESTS_FALSE =
 BUILD_UNIT_TESTS_TRUE = #
 CC = ccache gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -O0 -g -DDEBUG -std=c99 -Wall -Wextra -Wno-unused-parameter -Winit-self -pipe -fmessage-length=999
+CFLAGS = -O2 -march=athlon64 -fomit-frame-pointer -DNDEBUG -DNDEBUG -std=c99 -pipe -fmessage-length=999
 CPP = ccache gcc -E
 CPPFLAGS = 
 CURL_CFLAGS =  
@@ -114,7 +113,7 @@ CURL_LIBS = -lcurl -lgssapi_krb5
 CXX = ccache g++
 CXXCPP = ccache g++ -E
 CXXDEPMODE = depmode=gcc3
-CXXFLAGS = -O0 -g -DDEBUG -ansi -Wall -Wextra -Wno-unused-parameter -Winit-self -Woverloaded-virtual -Wsign-promo -pipe -fmessage-length=999
+CXXFLAGS = -O2 -march=athlon64 -fomit-frame-pointer -DNDEBUG -DNDEBUG -ansi -pipe -fmessage-length=999
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
@@ -126,7 +125,7 @@ EGREP = /bin/grep -E
 EXEEXT = 
 F77 = 
 FFLAGS = 
-FLOWCANVAS_LIBS = -L/flowcanvas/src/.libs -lflowcanvas
+FLOWCANVAS_LIBS = /home/dave/files/code/lad/flowcanvas/src/.libs/libflowcanvas.la
 GLIBMM_CFLAGS = -I/usr/include/glibmm-2.4 -I/usr/lib/glibmm-2.4/include -I/usr/include/sigc++-2.0 -I/usr/lib/sigc++-2.0/include -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include  
 GLIBMM_LIBS = -lglibmm-2.4 -lgobject-2.0 -lsigc-2.0 -lglib-2.0  
 GNOMECANVASMM_CFLAGS = -DPNG_NO_MMX_CODE -I/usr/include/libgnomecanvasmm-2.6 -I/usr/lib/libgnomecanvasmm-2.6/include -I/usr/include/gtkmm-2.4 -I/usr/lib/gtkmm-2.4/include -I/usr/include/libgnomecanvas-2.0 -I/usr/include/glibmm-2.4 -I/usr/lib/glibmm-2.4/include -I/usr/include/gdkmm-2.4 -I/usr/lib/gdkmm-2.4/include -I/usr/include/pangomm-1.4 -I/usr/include/atkmm-1.6 -I/usr/include/gtk-2.0 -I/usr/include/sigc++-2.0 -I/usr/lib/sigc++-2.0/include -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/lib/gtk-2.0/include -I/usr/include/cairomm-1.0 -I/usr/include/pango-1.0 -I/usr/include/cairo -I/usr/include/freetype2 -I/usr/include/libpng12 -I/usr/include/atk-1.0 -I/usr/include/libart-2.0  
@@ -173,15 +172,15 @@ RAPTOR_CFLAGS =
 RAPTOR_LIBS = -lraptor  
 RASQAL_CFLAGS =  
 RASQAL_LIBS = -lrasqal -lraptor  
-RAUL_LIBS = -L/raul/src/.libs -lraul
+RAUL_LIBS = /home/dave/files/code/lad/raul/src/.libs/libraul.la
 REDLAND_CFLAGS = 
 REDLAND_CONFIG = redland-config
 REDLAND_LIBS = -L/usr/lib -lrdf
 SED = /bin/sed
 SET_MAKE = 
 SHELL = /bin/sh
-SLV2_CFLAGS = -I/usr/local/include  
-SLV2_LIBS = -L/slv2/src/.libs -lslv2
+SLV2_CFLAGS = 
+SLV2_LIBS = /home/dave/files/code/lad/slv2/src/.libs/libslv2.la
 STRIP = strip
 VERSION = svn
 WITH_ALSA_FALSE = #
@@ -196,8 +195,8 @@ WITH_LASH_FALSE = #
 WITH_LASH_TRUE = 
 WITH_LIBLO_FALSE = #
 WITH_LIBLO_TRUE = 
-WITH_LV2_FALSE = #
-WITH_LV2_TRUE = 
+WITH_LV2_FALSE = 
+WITH_LV2_TRUE = #
 WITH_MACHINA_GUI_FALSE = #
 WITH_MACHINA_GUI_TRUE = 
 WITH_REDLAND_FALSE = #
@@ -253,11 +252,12 @@ subdirs =  slv2
 sysconfdir = ${prefix}/etc
 target_alias = 
 AM_LDFLAGS = -module -avoid-version -Wc,-nostartfiles
+pluginbasename = osc_print
 plugindir = ${exec_prefix}/lib/lv2/$(pluginbasename).lv2
 plugin_DATA = manifest.ttl $(pluginbasename).ttl
-pluginbasename = osc_print
+EXTRA_DIST = $(plugin_DATA)
 plugin_LTLIBRARIES = osc_print.la
-osc_print_la_SOURCES = $(pluginbasename).c \
+osc_print_la_SOURCES = osc_print.c \
                        ../../extensions/osc/lv2_osc.c \
                        ../../extensions/osc/lv2_osc_print.c
 
@@ -274,9 +274,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  lv2/plugins/osc_print.lv2/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  lv2/plugins/osc_print.lv2/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  lv2/plugins/osc_print.lv2/Makefile
+	  $(AUTOMAKE) --foreign  lv2/plugins/osc_print.lv2/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -330,9 +330,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-include ./$(DEPDIR)/$(pluginbasename).Plo
 include ./$(DEPDIR)/lv2_osc.Plo
 include ./$(DEPDIR)/lv2_osc_print.Plo
+include ./$(DEPDIR)/osc_print.Plo
 
 .c.o:
 	if $(COMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
@@ -571,7 +571,7 @@ uninstall-am: uninstall-info-am uninstall-pluginDATA \
 
 
 uninstall-hook:
-	rm -r $(plugindir)/
+	rm -rf $(plugindir)/
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
