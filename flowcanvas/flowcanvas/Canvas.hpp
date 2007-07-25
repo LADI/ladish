@@ -108,6 +108,7 @@ public:
 	double height() const { return _height; }
 
 	void resize(double width, double height);
+	void resize_all_items();
 
 	/** Dash applied to selected items.
 	 * Set an object's property_dash() to this for the "rubber band" effect */

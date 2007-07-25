@@ -16,8 +16,10 @@
  */
 
 #include <string>
+#include <set>
 #include <iostream>
 #include <cassert>
+#include <raul/SharedPtr.hpp>
 #include "PatchageCanvas.hpp"
 #include "AlsaDriver.hpp"
 #include "Patchage.hpp"
@@ -128,6 +130,8 @@ AlsaDriver::refresh_ports()
 	bool is_input       = false;
 	bool is_duplex      = false;
 	bool is_application = true;
+
+	set<SharedPtr<PatchageModule> > resized_modules;
 	
 	while (snd_seq_query_next_client (_seq, cinfo) >= 0) {
 		snd_seq_port_info_set_client(pinfo, snd_seq_client_info_get_client(cinfo));
@@ -166,11 +170,12 @@ AlsaDriver::refresh_ports()
 			is_application = (type & SND_SEQ_PORT_TYPE_APPLICATION);
 			port_name = snd_seq_port_info_get_name(pinfo);
 			boost::shared_ptr<PatchageModule> m;
+
+			bool split = _app->state_manager()->get_module_split(client_name, !is_application)
+				|| is_duplex;
 			
 			//cout << client_name << " : " << port_name << " is_application = " << is_application
-			//	<< " is_duplex = " << is_duplex << endl;
-
-			bool split =  _app->state_manager()->get_module_split(client_name, !is_application);
+			//	<< " is_duplex = " << is_duplex << ", split = " << split << endl;
 			
 			// Application input/output ports go on the same module
 			if (!split) {
@@ -188,7 +193,9 @@ AlsaDriver::refresh_ports()
 						m->add_port(create_port(m, port_name, true, addr));
 						m->add_port(create_port(m, port_name, false, addr));
 					}
+					resized_modules.insert(m);
 				}
+
 			} else { // non-application input/output ports (hw interface, etc) go on separate modules
 				ModuleType type = InputOutput;
 				
@@ -196,8 +203,8 @@ AlsaDriver::refresh_ports()
 				// is pretty nasty...
 
 				if (!is_duplex) {  // just one port to add
-					if (is_input) type = Input;
-					else type = Output;
+
+					type = ((is_input) ? Input : Output);
 					
 					// See if an InputOutput module exists (maybe with Jack ports on it)
 					m = _app->canvas()->find_module(client_name, InputOutput);
@@ -211,8 +218,12 @@ AlsaDriver::refresh_ports()
 						m->load_location();
 						m->store_location();
 					}
-					if (!m->get_port(port_name))
+					
+					if (!m->get_port(port_name)) {
 						m->add_port(create_port(m, port_name, is_input, addr));
+						resized_modules.insert(m);
+					}
+
 				} else {  // two ports to add
 					type = Input;
 					
@@ -227,12 +238,15 @@ AlsaDriver::refresh_ports()
 							new PatchageModule(_app, client_name, type));
 						m->load_location();
 						m->store_location();
+						_app->canvas()->add_item(m);
 					}
 
 					assert(m);
 
-					if (!m->get_port(port_name))
+					if (!m->get_port(port_name)) {
 						m->add_port(create_port(m, port_name, true, addr));
+						resized_modules.insert(m);
+					}
 
 					type = Output;
 					
@@ -247,17 +261,21 @@ AlsaDriver::refresh_ports()
 							new PatchageModule(_app, client_name, type));
 						m->load_location();
 						m->store_location();
+						_app->canvas()->add_item(m);
 					}
-					if (!m->get_port(port_name))
+
+					if (!m->get_port(port_name)) {
 						m->add_port(create_port(m, port_name, false, addr));
+						resized_modules.insert(m);
+					}
 				}
 			}
-			
-			_app->canvas()->add_item(m);
-			
-			m->resize();
 		}
 	}
+
+	for (set<SharedPtr<PatchageModule> >::const_iterator i = resized_modules.begin();
+			i != resized_modules.end(); ++i)
+		(*i)->resize();
 }
 
 
@@ -307,10 +325,12 @@ AlsaDriver::add_connections(boost::shared_ptr<PatchagePort> port)
 	snd_seq_query_subscribe_set_root(subsinfo, addr);
 	snd_seq_query_subscribe_set_index(subsinfo, 0);
 	
-	while(!snd_seq_query_port_subscribers(_seq, subsinfo)) {
+	while (!snd_seq_query_port_subscribers(_seq, subsinfo)) {
 		const snd_seq_addr_t* connected_addr = snd_seq_query_subscribe_get_addr(subsinfo);
+		if (!connected_addr)
+			continue;
 		
-		connected_port = _app->canvas()->find_port(connected_addr);
+		connected_port = _app->canvas()->find_port(*connected_addr, true);
 
 		if (connected_port) {
 			boost::shared_ptr<Connection> existing = _app->canvas()->get_connection(port, connected_port);
@@ -505,6 +525,12 @@ AlsaDriver::_refresh_main()
 
 				switch (ev->type) {
 				case SND_SEQ_EVENT_PORT_SUBSCRIBED:
+					/*cout << "Subscription: ";
+					print_addr(ev->data.connect.sender);
+					cout << " -> ";
+					print_addr(ev->data.connect.dest);
+					cout << endl;*/
+
 					_events.push(PatchageEvent(PatchageEvent::CONNECTION,
 								ev->data.connect.sender, ev->data.connect.dest));
 					break;
@@ -530,3 +556,9 @@ AlsaDriver::_refresh_main()
 	}
 }
 
+
+void
+AlsaDriver::print_addr(snd_seq_addr_t addr)
+{
+	cout << (int)addr.client << ":" << (int)addr.port << endl;
+}

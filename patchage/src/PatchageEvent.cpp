@@ -32,7 +32,7 @@ PatchageEvent::find_port(const Patchage* patchage, const PortRef& ref)
 
 #ifdef HAVE_ALSA
 	if (ref.type == PortRef::ALSA_ADDR) {
-		return patchage->canvas()->find_port(&ref.id.alsa_addr);
+		return patchage->canvas()->find_port(ref.id.alsa_addr, ref.is_input);
 	} else
 #endif
 	{

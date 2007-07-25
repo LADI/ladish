@@ -62,19 +62,33 @@ PatchageCanvas::find_module(const string& name, ModuleType type)
 
 #ifdef HAVE_ALSA
 boost::shared_ptr<PatchagePort>
-PatchageCanvas::find_port(const snd_seq_addr_t* alsa_addr)
+PatchageCanvas::find_port(snd_seq_addr_t alsa_addr, bool input)
 {
 	boost::shared_ptr<PatchagePort> pp;
 	for (ItemList::iterator m = _items.begin(); m != _items.end(); ++m) {
-		SharedPtr<Module> module = PtrCast<Module>(*m);
+		SharedPtr<PatchageModule> module = PtrCast<PatchageModule>(*m);
 		if (!module)
 			continue;
+
 		for (PortVector::const_iterator p = module->ports().begin(); p != module->ports().end(); ++p) {
 			pp = boost::dynamic_pointer_cast<PatchagePort>(*p);
-			if (pp && pp->type() == ALSA_MIDI && pp->alsa_addr()
-					&& pp->alsa_addr()->client == alsa_addr->client
-					&& pp->alsa_addr()->port == alsa_addr->port)
-					return pp;
+			if (!pp)
+				continue;
+
+			if (pp->type() == ALSA_MIDI) {
+				/*cerr << "ALSA PORT: " << (int)pp->alsa_addr()->client << ":"
+					<< (int)pp->alsa_addr()->port << endl;*/
+
+				if (pp->alsa_addr()
+						&& pp->alsa_addr()->client == alsa_addr.client
+						&& pp->alsa_addr()->port   == alsa_addr.port) {
+					if (!input && module->type() == Input) {
+						//cerr << "WRONG DIRECTION, SKIPPED PORT" << endl;
+					} else {
+						return pp;
+					}
+				}
+			}
 		}
 	}
 

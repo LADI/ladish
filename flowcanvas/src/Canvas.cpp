@@ -1226,7 +1226,14 @@ Canvas::resize(double width, double height)
 	_height = height;
 	set_scroll_region(0.0, 0.0, width, height);
 }
+	
 
+void
+Canvas::resize_all_items()
+{
+	for (ItemList::const_iterator i = _items.begin(); i != _items.end(); ++i)
+		(*i)->resize();
+}
 
 
 } // namespace FlowCanvas
