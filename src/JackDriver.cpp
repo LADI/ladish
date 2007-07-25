@@ -18,6 +18,7 @@
 #include <cassert>
 #include <cstring>
 #include <string>
+#include <set>
 #include <iostream>
 #include "config.h"
 #include <jack/jack.h>
@@ -202,6 +203,8 @@ JackDriver::refresh()
 	string port1_name;
 	string client2_name;
 	string port2_name;
+	
+	set<SharedPtr<PatchageModule> > resized_modules;
 
 	// Add all ports
 	if (ports)
@@ -258,7 +261,7 @@ JackDriver::refresh()
 			m->add_port(create_port(m, port));
 		}
 
-		m->resize();
+		resized_modules.insert(m);
 	}
 	
 	// Add all connections
@@ -320,6 +323,10 @@ JackDriver::refresh()
 			free(connected_ports);
 		}
 	}
+	
+	for (set<SharedPtr<PatchageModule> >::const_iterator i = resized_modules.begin();
+			i != resized_modules.end(); ++i)
+		(*i)->resize();
 
 	free(ports);
 }

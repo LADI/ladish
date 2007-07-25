@@ -51,6 +51,8 @@ public:
 
 	bool disconnect(boost::shared_ptr<PatchagePort> src_port,
 	                boost::shared_ptr<PatchagePort> dst_port);
+
+	void print_addr(snd_seq_addr_t addr);
 	
 private:
 	void refresh_ports();
