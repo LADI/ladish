@@ -1,15 +1,30 @@
 #include <string>
 #include <iostream>
 #include <utility>
+#include <raul/PathTable.hpp>
 #include <raul/Table.hpp>
 #include <raul/TableImpl.hpp>
 
 using namespace Raul;
 using namespace std;
 
+int range_end_val;
+
+bool range_comparator(const int& a, const int& b)
+{
+	bool ret = (b >= a && b <= range_end_val);
+	//cout << "COMP: " << a << " . " << b << " = " << ret << endl;
+	return ret;
+}
+
+
 int
 main()
 {
+	srand(time(NULL));
+
+	range_end_val = rand()%10;
+
 	Table<int, int> t;
 	for (size_t i=0; i < 20; ++i) {
 		int val = rand()%10;
@@ -18,8 +33,20 @@ main()
 
 	t[20] = 20;
 	t[21] = 21;
-
+	
+	cout << "Contents:" << endl;
 	for (Table<int,int>::const_iterator i = t.begin(); i != t.end(); ++i)
+		cout << i->first << " ";
+	cout << endl;
+	
+	std::cout << "Range " << t.begin()->first << " .. " << range_end_val << std::endl;
+
+	Table<int,int>::const_iterator range_begin = t.begin();
+	++range_begin; ++range_begin;
+	
+	Table<int,int>::const_iterator range_end = t.find_range_end(t.begin(), range_comparator);
+
+	for (Table<int,int>::const_iterator i = t.begin(); i != range_end; ++i)
 		cout << i->first << " ";
 	cout << endl;
 
@@ -66,9 +93,40 @@ main()
 	
 	/* **** */
 
-	cout << "Assuming you built with debugging, if this continues to run "
+	PathTable<char> pt;
+	pt.insert(make_pair("/foo", 'a'));
+	pt.insert(make_pair("/bar", 'a'));
+	pt.insert(make_pair("/bar/baz", 'b'));
+	pt.insert(make_pair("/bar/bazz/NO", 'c'));
+	pt.insert(make_pair("/bar/baz/YEEEAH", 'c'));
+	pt.insert(make_pair("/bar/baz/YEEEAH/BOOOEEEEE", 'c'));
+	pt.insert(make_pair("/bar/buzz", 'b'));
+	pt.insert(make_pair("/bar/buzz/WHAT", 'c'));
+	pt.insert(make_pair("/bar/buzz/WHHHhhhhhAT", 'c'));
+	pt.insert(make_pair("/quux", 'a'));
+	
+	cout << "Paths: " << endl;
+	for (PathTable<char>::const_iterator i = pt.begin(); i != pt.end(); ++i)
+		cout << i->first << " ";
+	cout << endl;
+	
+	PathTable<char>::const_iterator descendants_begin = pt.begin();
+	size_t begin_index = rand() % pt.size();
+	for (size_t i=0; i < begin_index; ++i)
+		++descendants_begin;
+
+	cout << "\nDescendants of " << descendants_begin->first << endl;
+	PathTable<char>::const_iterator descendants_end = pt.find_descendants_end(descendants_begin);
+
+	for (PathTable<char>::const_iterator i = pt.begin(); i != descendants_end; ++i)
+		cout << i->first << " ";
+	cout << endl;
+
+	/* **** */
+
+	cout << "\nAssuming you built with debugging, if this continues to run "
 		<< "and chews your CPU without dying, everything's good." << endl;
-	srand(time(NULL));
+	
 
 	Table<string, string> st;
 

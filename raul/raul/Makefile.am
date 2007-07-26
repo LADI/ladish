@@ -13,6 +13,7 @@ raulinclude_HEADERS = \
 	Maid.hpp \
 	Namespaces.hpp \
 	Path.hpp \
+	PathTable.hpp \
 	Process.hpp \
 	Quantizer.hpp \
 	RDFModel.hpp \

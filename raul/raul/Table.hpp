@@ -75,11 +75,15 @@ public:
 
 	void erase(const K& key);
 	void erase(iterator i);
-	void erase(iterator begin, iterator end);
-	void erase(size_t begin, size_t end);
+	void erase(iterator start, iterator end);
+	void erase(size_t start, size_t end);
 	
 	const_iterator find(const K& key) const;
 	iterator find(const K& key);
+
+	const_iterator find_range_end(const_iterator left, bool (*comp)(const K&,const K&)) const;
+	const_iterator find_in_range(const K& key, const_iterator start, const_iterator end,
+			bool (*comp)(const K&,const K&)) const;
 
 	T& operator[](const K& key);
 

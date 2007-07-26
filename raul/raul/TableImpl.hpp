@@ -86,6 +86,107 @@ Table<K,T>::find(const K& key)
 }
 
 
+/** Binary search (O(log(end-begin))) */
+template <typename K, typename T>
+typename Table<K,T>::const_iterator
+Table<K,T>::find_in_range(const K& key, const_iterator start, const_iterator end, bool (*comp)(const K&,const K&)) const
+{
+	if (size() == 0)
+		return this->end();
+
+	size_t lower = start._index;
+	size_t upper = end._index;
+
+	if (lower == upper)
+		if (comp(key, _entries[lower].first))
+			return const_iterator(*this, lower);
+		else
+			return this->end();
+
+	size_t i = lower + ((upper - lower) / 2);
+	
+	while (upper >= lower) {
+
+		const Entry& elem = _entries[i];
+
+		if (comp(key, elem.first))
+			if (i == size()-1 || !comp(elem.first, _entries[i+1].first))
+				return const_iterator(*this, i);
+			else if (comp(_entries[lower].first, elem.first))
+				lower = i;
+		
+		if (comp(_entries[lower].first, _entries[upper].first))
+			upper = i - 1;
+	}
+	
+	assert(comp(start->first, _entries[lower].first));
+	assert(lower == size()-1 || !comp(start->first, _entries[lower+1].first));
+
+	return const_iterator(*this, lower);
+}
+
+
+/** Find the end of a range using a custom comparator.
+ * Two entries a, b are considered in the range if comp(a, b) returns true.
+ *
+ * Returns an iterator exactly one entry past the end of the range (possibly end()).
+ *
+ * WARNING: The restrictions on \a comparator are very strict:  ALL items
+ * considered equal by \a comparator must be stored in the Table consecutively
+ * i.e. there are no 3 values a, b, c S.T. comp(a) && ! comp(b) && comp(c).
+ *
+ * This is useful for very quickly finding all children of a Path, which
+ * obey the above rule with lexicographical order.
+ */
+template <typename K, typename T>
+typename Table<K,T>::const_iterator
+Table<K,T>::find_range_end(const_iterator start, bool (*comp)(const K&,const K&)) const
+{
+	if (size() == 0)
+		return this->end();
+
+	const K& key = start->first;
+
+	size_t lower = start._index;
+	size_t upper = size() - 1;
+
+	if (lower == upper)
+		if (comp(key, _entries[lower].first))
+			return const_iterator(*this, lower);
+		else
+			return this->end();
+
+	size_t i;
+	
+	while (upper > lower) {
+	
+		i = lower + ((upper - lower) / 2);
+
+		const Entry& elem = _entries[i];
+
+		// Hit
+		if (comp(key, elem.first)) {
+			
+			if (i == size()-1 || !comp(key, _entries[i+1].first))
+				return const_iterator(*this, i+1);
+			else 
+				lower = i;
+
+		// Miss
+		} else {
+
+			upper = i;
+			
+		}
+	}
+	
+	assert(comp(start->first, _entries[lower].first));
+	assert(lower == size()-1 || !comp(start->first, _entries[lower+1].first));
+
+	return const_iterator(*this, lower+1);
+}
+
+
 /** Add an item to the table, using \a entry.first as the search key.
  * An iterator to the element where value was set is returned, and a bool which
  * is true if an insertion took place, or false if an existing entry was updated.
@@ -94,7 +195,7 @@ Table<K,T>::find(const K& key)
  * O(log(n)) best case (capacity is large enough)
  */
 template <typename K, typename T>
-std::pair<typename Table<K,T>::iterator,bool>
+std::pair<typename Table<K,T>::iterator, bool>
 Table<K,T>::insert(const std::pair<K, T>& entry)
 {
 	const K& key = entry.first;
