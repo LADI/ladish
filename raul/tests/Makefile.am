@@ -14,7 +14,8 @@ noinst_PROGRAMS = \
 	time_test \
 	quantize_test \
 	smf_test \
-	rdf_test
+	rdf_test \
+	table_test
 
 thread_test_LDADD = $(ALL_LIBS)
 path_test_LDADD = $(ALL_LIBS)
@@ -27,6 +28,7 @@ time_test_LDADD = $(ALL_LIBS)
 quantize_test_LDADD = $(ALL_LIBS)
 smf_test_LDADD = $(ALL_LIBS)
 rdf_test_LDADD = $(ALL_LIBS)
+table_test_LDADD = $(ALL_LIBS)
 
 path_test_SOURCES = path_test.cpp
 thread_test_SOURCES = thread_test.cpp
@@ -39,5 +41,6 @@ time_test_SOURCES = time_test.cpp
 quantize_test_SOURCES = quantize_test.cpp
 smf_test_SOURCES = smf_test.cpp
 rdf_test_SOURCES = rdf_test.cpp
+table_test_SOURCES = table_test.cpp
 
 endif

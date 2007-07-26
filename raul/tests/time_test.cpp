@@ -1,5 +1,5 @@
 #include <iostream>
-#include <raul/TimeSlice.h>
+#include <raul/TimeSlice.hpp>
 
 using namespace std;
 using namespace Raul;

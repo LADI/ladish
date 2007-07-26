@@ -6,10 +6,10 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <termios.h>
-#include "raul/SRSWQueue.h"
-#include "raul/SRMWQueue.h"
-#include "raul/Thread.h"
-#include "raul/AtomicInt.h"
+#include "raul/SRSWQueue.hpp"
+#include "raul/SRMWQueue.hpp"
+#include "raul/Thread.hpp"
+#include "raul/AtomicInt.hpp"
 
 using namespace std;
 using namespace Raul;

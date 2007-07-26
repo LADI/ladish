@@ -1,5 +1,5 @@
 #include <iostream>
-#include "raul/RingBuffer.h"
+#include "raul/RingBuffer.hpp"
 
 using namespace std;
 using namespace Raul;

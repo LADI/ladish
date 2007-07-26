@@ -1,5 +1,5 @@
 #include <iostream>
-#include "raul/StampedChunkRingBuffer.h"
+#include "raul/StampedChunkRingBuffer.hpp"
 #include "raul/midi_names.h"
 
 using namespace std;

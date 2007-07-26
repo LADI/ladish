@@ -1,5 +1,5 @@
 #include <iostream>
-#include <raul/Quantizer.h>
+#include <raul/Quantizer.hpp>
 
 using namespace std;
 using namespace Raul;

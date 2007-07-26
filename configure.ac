@@ -257,6 +257,12 @@ else
 	AC_MSG_WARN([LASH not found, session support will not be built.])
 fi
 
+# Build unit tests
+build_unit_tests="no"
+AC_ARG_ENABLE(unit-tests,
+	[AS_HELP_STRING(--enable-unit-tests, [Build unit tests (no) - Developers only])],
+	[build_unit_tests="$enableval"])
+
 AM_CONDITIONAL(WITH_ALSA, [test "$ALSA_FOUND" = "yes"])
 AM_CONDITIONAL(WITH_LASH, [test "$have_lash" = "yes"])
 AM_CONDITIONAL(WITH_JACK, [test "$build_jack" = "yes"])
@@ -267,12 +273,6 @@ AM_CONDITIONAL(WITH_LADSPA, [test "$build_ladspa" = "yes"])
 AM_CONDITIONAL(WITH_LV2, [test "$build_lv2" = "yes"])
 AM_CONDITIONAL(WITH_DSSI, [test "$build_dssi" = "yes"])
 AM_CONDITIONAL(BUILD_TESTS, [test "$build_unit_tests" = "yes"])
-
-# Build unit tests
-build_unit_tests="no"
-AC_ARG_ENABLE(unit-tests,
-	[AS_HELP_STRING(--enable-unit-tests, [Build unit tests (no) - Developers only])],
-	[build_unit_tests="$enableval"])
 
 
 ################# INGEN OPTIONS
@@ -542,6 +542,8 @@ AC_MSG_RESULT([    Engine library/OSC server: $build_ingen_server])
 AC_MSG_RESULT([    JACK in-process engine:    $build_in_process_engine])
 AC_MSG_RESULT([    Client library:            $build_ingen_client_lib])
 AC_MSG_RESULT([    GTK GUI:                   $build_ingen_gtk_client])
+AC_MSG_RESULT([])
+AC_MSG_RESULT([Build unit tests: $build_unit_tests])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([*** INGEN IS WITHOUT LASH SUPPORT AT THIS TIME ***])
 AC_MSG_RESULT([])

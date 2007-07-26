@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
-#include <raul/SMFReader.h>
-#include <raul/SMFWriter.h>
+#include <raul/SMFReader.hpp>
+#include <raul/SMFWriter.hpp>
 
 using namespace std;
 using namespace Raul;

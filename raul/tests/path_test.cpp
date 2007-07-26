@@ -1,5 +1,5 @@
 #include <iostream>
-#include <raul/Path.h>
+#include <raul/Path.hpp>
 
 using namespace std;
 using namespace Raul;

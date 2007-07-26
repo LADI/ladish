@@ -29,6 +29,8 @@ raulinclude_HEADERS = \
 	Slave.hpp \
 	StampedChunkRingBuffer.hpp \
 	Stateful.hpp \
+	Table.hpp \
+	TableImpl.hpp \
 	Thread.hpp \
 	TimeSlice.hpp \
 	WeakPtr.hpp \
