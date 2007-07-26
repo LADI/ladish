@@ -83,7 +83,7 @@ Item::item_event(GdkEvent* event)
 		break;
 
 	case GDK_BUTTON_PRESS:
-		if (event->button.button == 1) {
+		if (!canvas->locked() && event->button.button == 1) {
 			x = click_x;
 			y = click_y;
 			// Set these so we can tell on a button release if a drag actually

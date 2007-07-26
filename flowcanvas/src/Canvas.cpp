@@ -43,6 +43,7 @@ Canvas::Canvas(double width, double height)
   _height(height),
   _drag_state(NOT_DRAGGING),
   _remove_objects(true),
+  _locked(false),
   _base_rect(*root(), 0, 0, width, height),
   _select_rect(NULL),
   _select_dash(NULL)
@@ -618,7 +619,7 @@ Canvas::port_event(GdkEvent* event, boost::weak_ptr<Port> weak_port)
 	switch (event->type) {
 	
 	case GDK_BUTTON_PRESS:
-		if (event->button.button == 1) {
+		if (!_locked && event->button.button == 1) {
 			port_dragging = true;
 		} else if (event->button.button == 3) {
 			_selected_port = port;
@@ -676,17 +677,17 @@ Canvas::port_event(GdkEvent* event, boost::weak_ptr<Port> weak_port)
 bool
 Canvas::canvas_event(GdkEvent* event)
 {
-	/*if (event->type == GDK_BUTTON_RELEASE) {
-		_base_rect.ungrab(event->button.time);
-	} else */if (event->type == GDK_BUTTON_PRESS) {
-		if ((event->button.state & GDK_CONTROL_MASK) && event->button.button == 3) {
-			set_zoom(_zoom + 0.1);
-			return true;
-		} else if (event->button.state & GDK_CONTROL_MASK && event->button.button == 1) {
-			set_zoom(_zoom - 0.1);
-			return true;
-		}
+#if 0
+	switch (event->type) {
+		case GDK_BUTTON_PRESS:
+		cerr << "FC BUTTON PRESS!\n" << endl;
+		return true;
+
+		case GDK_SCROLL:
+		cerr << "FC SCROLL!\n" << endl;
+		return true;
 	}
+#endif
 
 	return false;
 }
@@ -708,7 +709,7 @@ Canvas::scroll_drag_handler(GdkEvent* event)
 
 	bool first_motion = true;
 	
-	if (event->type == GDK_BUTTON_PRESS && event->button.button == 2) {
+	if (!_locked && event->type == GDK_BUTTON_PRESS && event->button.button == 2) {
 		_base_rect.grab(GDK_POINTER_MOTION_MASK | GDK_BUTTON_RELEASE_MASK | GDK_BUTTON_PRESS_MASK,
 			Gdk::Cursor(Gdk::FLEUR), event->button.time);
 		get_scroll_offsets(original_scroll_x, original_scroll_y);
@@ -716,7 +717,7 @@ Canvas::scroll_drag_handler(GdkEvent* event)
 		scroll_offset_y = 0;
 		origin_x = event->button.x_root;
 		origin_y = event->button.y_root;
-		cerr << "Origin: (" << origin_x << "," << origin_y << ")\n";
+		//cerr << "Origin: (" << origin_x << "," << origin_y << ")\n";
 		last_x = origin_x;
 		last_y = origin_y;
 		first_motion = true;

@@ -34,7 +34,7 @@ MachinaCanvas::MachinaCanvas(MachinaGUI* app, int width, int height)
 : Canvas(width, height),
   _app(app)
 {
-
+	grab_focus();
 }
 
 

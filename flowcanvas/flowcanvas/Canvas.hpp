@@ -97,6 +97,9 @@ public:
 	ConnectionList& connections()          { return _connections; }
 	ConnectionList& selected_connections() { return _selected_connections; }
 
+	void lock(bool l) { _locked = l; }
+	bool locked() const { return _locked; }
+
 	double get_zoom() { return _zoom; }
 	void   set_zoom(double pix_per_unit);
 	void   zoom_full();
@@ -168,6 +171,7 @@ private:
 	DragState      _drag_state;
 	
 	bool _remove_objects; // flag to avoid removing objects from destructors when unnecessary
+	bool _locked;
 
 	Gnome::Canvas::Rect  _base_rect;   ///< Background
 	Gnome::Canvas::Rect* _select_rect; ///< Rectangle for drag selection
