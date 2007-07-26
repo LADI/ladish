@@ -128,7 +128,7 @@ main()
 	PathTable<char>::iterator quux_end = pt.find_descendants_end(quux );
 	assert(quux_end != quux);
 
-	std::vector<std::pair<Path,char> > yanked = pt.yank(quux, quux_end);
+	Table<Path,char> yanked = pt.yank(quux, quux_end);
 	
 	cout << "Yanked " << yank_path << endl;
 	for (PathTable<char>::const_iterator i = pt.begin(); i != pt.end(); ++i)

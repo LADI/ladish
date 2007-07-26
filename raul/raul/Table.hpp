@@ -33,7 +33,8 @@ namespace Raul {
 template <typename K, typename T>
 class Table {
 public:
-	Table<K, T>()  {}
+	Table<K, T>() : _entries() {}
+	Table<K, T>(size_t capacity) : _entries(capacity) {}
 	
 	void clear() { _entries.clear(); }
 	bool empty() const { return _entries.empty(); }
@@ -56,8 +57,8 @@ public:
 	
 	struct iterator {
 		iterator(Table<K,T>& t, size_t i) : _table(t), _index(i) {}
-		inline std::pair<const K, T>& operator*() const { return (std::pair<const K, T>&)_table._entries[_index]; }
-		inline std::pair<const K, T>* operator->() const { return (std::pair<const K, T>*)&_table._entries[_index]; }
+		inline std::pair<K, T>& operator*() const { return (std::pair<K, T>&)_table._entries[_index]; }
+		inline std::pair<K, T>* operator->() const { return (std::pair<K, T>*)&_table._entries[_index]; }
 		inline iterator& operator++() { ++_index; return *this; }
 		inline iterator& operator--() { --_index; return *this; }
 		inline bool operator==(const iterator& i) const { return _index == i._index; }
@@ -79,9 +80,9 @@ public:
 	void erase(iterator start, iterator end);
 	void erase_by_index(size_t start, size_t end);
 	
-	std::vector<std::pair<K, T> > yank(iterator start, iterator end);
+	Table<K, T> yank(iterator start, iterator end);
 
-	std::pair<iterator, bool> cram(const std::vector<std::pair<K, T> >& range);
+	std::pair<iterator, bool> cram(const Table<K, T>& range);
 	
 	const_iterator find(const K& key) const;
 	iterator find(const K& key);

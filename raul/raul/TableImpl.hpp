@@ -127,7 +127,7 @@ template <typename K, typename T>
 typename Table<K,T>::iterator
 Table<K,T>::find_range_end(iterator start, bool (*comp)(const K&,const K&))
 {
-	if (size() == 0)
+	if (size() == 0 || start == end())
 		return this->end();
 
 	const K& key = start->first;
@@ -180,12 +180,12 @@ Table<K,T>::find_range_end(iterator start, bool (*comp)(const K&,const K&))
 
 /** Erase and return a range of entries */
 template <typename K, typename T>
-std::vector<std::pair<K, T> >
+Table<K, T>
 Table<K, T>::yank(iterator start, iterator end)
 {
-	std::vector<std::pair<K, T> > ret(end._index - start._index);
+	Table<K, T> ret(end._index - start._index);
 	for (size_t i=start._index; i < end._index; ++i)
-		ret.at(i - start._index) = _entries[i];
+		ret._entries.at(i - start._index) = _entries[i];
 	erase(start, end);
 	return ret;
 }
@@ -196,7 +196,7 @@ Table<K, T>::yank(iterator start, iterator end)
  * Return type is the same as insert, iterator points to first inserted entry */
 template <typename K, typename T>
 std::pair<typename Table<K,T>::iterator, bool>
-Table<K, T>::cram(const std::vector<std::pair<K, T> >& range)
+Table<K, T>::cram(const Table<K,T>& range)
 {
 	/* FIXME: _way_ too slow */
 	
@@ -205,7 +205,7 @@ Table<K, T>::cram(const std::vector<std::pair<K, T> >& range)
 	if (range.size() == 0)
 		return std::make_pair(end(), false);
 	
-	std::pair<iterator, bool> ret = insert(range.front());
+	std::pair<iterator, bool> ret = insert(range._entries.front());
 	if (range.size() == 1)
 		return ret;
 	
@@ -220,7 +220,7 @@ Table<K, T>::cram(const std::vector<std::pair<K, T> >& range)
 		new_entries.at(new_entries.size() - 1 - i) = _entries.at(size() - 1 - i);
 	
 	for (size_t i=1; i < range.size(); ++i)
-		new_entries.at(insert_index + i) = range.at(i);
+		new_entries.at(insert_index + i) = range._entries.at(i);
 	
 	_entries = new_entries;
 	
