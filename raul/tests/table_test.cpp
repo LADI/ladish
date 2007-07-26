@@ -16,6 +16,9 @@ main()
 		t.insert(make_pair(val, val));
 	}
 
+	t[20] = 20;
+	t[21] = 21;
+
 	for (Table<int,int>::const_iterator i = t.begin(); i != t.end(); ++i)
 		cout << i->first << " ";
 	cout << endl;
@@ -72,8 +75,14 @@ main()
 	st.insert(make_pair("apple", "core"));
 	st.insert(make_pair("candy", "cane"));
 	st.insert(make_pair("banana", "peel"));
+	//st["alpha"] = "zero";
+	//st["zeta"] = "one";
 
-	st.erase("apple");
+	st.erase("banana");
+	
+	for (Table<int,int>::const_iterator i = t.begin(); i != t.end(); ++i)
+		cout << i->first << " ";
+	cout << endl;
 
 	while (true) {
 		Table<int, int> t;

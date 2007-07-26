@@ -140,6 +140,28 @@ Table<K,T>::insert(const std::pair<K, T>& entry)
 	
 	return make_pair(iterator(*this, i), true);
 }
+	
+
+/** Insert an item, and return a reference to it's value.
+ *
+ * This may be used to insert values with pretty syntax:
+ *
+ * table["gorilla"] = "killa";
+ *
+ * T must have a default constructor for this to be possible.
+ */
+template <typename K, typename T>
+T&
+Table<K, T>::operator[](const K& key)
+{
+	iterator i = find(key);
+	if (i != end()) {
+		return i->second;
+	} else {
+		std::pair<iterator,bool> ret = insert(make_pair(key, T()));
+		return ret.first->second;
+	}
+}
 
 
 template <typename K, typename T>

@@ -81,6 +81,8 @@ public:
 	const_iterator find(const K& key) const;
 	iterator find(const K& key);
 
+	T& operator[](const K& key);
+
 	const_iterator begin() const { return const_iterator(*this, 0); }
 	const_iterator end()   const { return const_iterator(*this, size()); }
 	iterator       begin()       { return iterator(*this, 0); }
