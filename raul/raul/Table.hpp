@@ -36,10 +36,11 @@ public:
 	Table<K, T>()  {}
 	
 	void clear() { _entries.clear(); }
+	bool empty() const { return _entries.empty(); }
 
 	struct const_iterator {
 		const_iterator(const Table<K,T>& t, size_t i) : _table(t), _index(i) {}
-		inline const std::pair<const K, T>& operator*() const { return _table._entries[_index]; }
+		inline const std::pair<const K, T> operator*() const { return _table._entries[_index]; }
 		inline const std::pair<const K, T>* operator->() const { return (std::pair<const K, T>*)&_table._entries[_index]; }
 		inline const_iterator& operator++() { ++_index; return *this; }
 		inline const_iterator& operator--() { --_index; return *this; }
@@ -70,7 +71,8 @@ public:
 
 	inline size_t size() const { return _entries.size(); }
 
-	void insert(const K& key, const T& value);
+	std::pair<iterator,bool> insert(const std::pair<K, T>& entry);
+
 	void erase(const K& key);
 	void erase(iterator i);
 	void erase(iterator begin, iterator end);

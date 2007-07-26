@@ -74,17 +74,27 @@ Table<K,T>::find(const K& key)
 }
 
 
+/** Add an item to the table, using \a entry.first as the search key.
+ * An iterator to the element where value was set is returned, and a bool which
+ * is true if an insertion took place, or false if an existing entry was updated.
+ * Matches std::map::insert interface.
+ * O(n) worst case
+ * O(log(n)) best case (capacity is large enough)
+ */
 template <typename K, typename T>
-void
-Table<K,T>::insert(const K& key, const T& value)
+std::pair<typename Table<K,T>::iterator,bool>
+Table<K,T>::insert(const std::pair<K, T>& entry)
 {
+	const K& key = entry.first;
+	const T& value = entry.second;
+	
 	if (size() == 0 || size() == 1 && key > _entries[0].first) {
-		_entries.push_back(make_pair(key, value));
-		return;
+		_entries.push_back(entry);
+		return make_pair(iterator(*this, size()-1), true);
 	} else if (size() == 1) {
 		_entries.push_back(_entries[0]);
-		_entries[0] = make_pair(key, value);
-		return;
+		_entries[0] = entry;
+		return make_pair(begin(), true);
 	}
 
 	size_t lower = 0;
@@ -103,7 +113,8 @@ Table<K,T>::insert(const K& key, const T& value)
 		Entry& elem = _entries[i];
 
 		if (elem.first == key) {
-			break;
+			elem.second = value;
+			return make_pair(iterator(*this, i), false);
 		} else if (elem.first > key) {
 			if (i == 0 || _entries[i-1].first < key)
 				break;
@@ -123,9 +134,11 @@ Table<K,T>::insert(const K& key, const T& value)
 	for (size_t j = size()-1; j > i; --j)
 		_entries[j] = _entries[j-1];
 	
-	_entries[i] = make_pair(key, value);
+	_entries[i] = entry;
 
 	assert(is_sorted());
+	
+	return make_pair(iterator(*this, i), true);
 }
 
 
