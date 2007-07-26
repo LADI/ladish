@@ -312,6 +312,8 @@ Module::add_port(boost::shared_ptr<Port> p)
 		p->signal_event().connect(
 			sigc::bind(sigc::mem_fun(canvas.get(), &Canvas::port_event), p));
 	}
+	
+	p->signal_renamed.connect(sigc::mem_fun(this, &Module::resize));
 }
 
 

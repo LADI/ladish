@@ -26,6 +26,11 @@
 
 namespace Raul {
 
+/* This is all a god awful mess.
+ * Whoever decided you shouldn't be able to get an index from an
+ * std::vector::iterator or vice-versa should be shot and pissed on.
+ */
+
 #ifndef NDEBUG
 template <typename K, typename T>
 bool
@@ -86,46 +91,6 @@ Table<K,T>::find(const K& key)
 }
 
 
-/** Binary search (O(log(end-begin))) */
-template <typename K, typename T>
-typename Table<K,T>::const_iterator
-Table<K,T>::find_in_range(const K& key, const_iterator start, const_iterator end, bool (*comp)(const K&,const K&)) const
-{
-	if (size() == 0)
-		return this->end();
-
-	size_t lower = start._index;
-	size_t upper = end._index;
-
-	if (lower == upper)
-		if (comp(key, _entries[lower].first))
-			return const_iterator(*this, lower);
-		else
-			return this->end();
-
-	size_t i = lower + ((upper - lower) / 2);
-	
-	while (upper >= lower) {
-
-		const Entry& elem = _entries[i];
-
-		if (comp(key, elem.first))
-			if (i == size()-1 || !comp(elem.first, _entries[i+1].first))
-				return const_iterator(*this, i);
-			else if (comp(_entries[lower].first, elem.first))
-				lower = i;
-		
-		if (comp(_entries[lower].first, _entries[upper].first))
-			upper = i - 1;
-	}
-	
-	assert(comp(start->first, _entries[lower].first));
-	assert(lower == size()-1 || !comp(start->first, _entries[lower+1].first));
-
-	return const_iterator(*this, lower);
-}
-
-
 /** Find the end of a range using a custom comparator.
  * Two entries a, b are considered in the range if comp(a, b) returns true.
  *
@@ -142,6 +107,26 @@ template <typename K, typename T>
 typename Table<K,T>::const_iterator
 Table<K,T>::find_range_end(const_iterator start, bool (*comp)(const K&,const K&)) const
 {
+	return ((Table<K, T>*)this)->find_range_end(*((iterator*)&start), comp);
+}
+
+	
+/** Find the end of a range using a custom comparator.
+ * Two entries a, b are considered in the range if comp(a, b) returns true.
+ *
+ * Returns an iterator exactly one entry past the end of the range (possibly end()).
+ *
+ * WARNING: The restrictions on \a comparator are very strict:  ALL items
+ * considered equal by \a comparator must be stored in the Table consecutively
+ * i.e. there are no 3 values a, b, c S.T. comp(a) && ! comp(b) && comp(c).
+ *
+ * This is useful for very quickly finding all children of a Path, which
+ * obey the above rule with lexicographical order.
+ */
+template <typename K, typename T>
+typename Table<K,T>::iterator
+Table<K,T>::find_range_end(iterator start, bool (*comp)(const K&,const K&))
+{
 	if (size() == 0)
 		return this->end();
 
@@ -152,7 +137,7 @@ Table<K,T>::find_range_end(const_iterator start, bool (*comp)(const K&,const K&)
 
 	if (lower == upper)
 		if (comp(key, _entries[lower].first))
-			return const_iterator(*this, lower);
+			return iterator(*this, lower+1);
 		else
 			return this->end();
 
@@ -161,6 +146,12 @@ Table<K,T>::find_range_end(const_iterator start, bool (*comp)(const K&,const K&)
 	while (upper > lower) {
 	
 		i = lower + ((upper - lower) / 2);
+		
+		if (upper - lower == 1)
+			if (comp(key, _entries[upper].first) && upper < size())
+				return iterator(*this, upper+1);
+			else if (lower < size())
+				return iterator(*this, lower+1);
 
 		const Entry& elem = _entries[i];
 
@@ -168,7 +159,7 @@ Table<K,T>::find_range_end(const_iterator start, bool (*comp)(const K&,const K&)
 		if (comp(key, elem.first)) {
 			
 			if (i == size()-1 || !comp(key, _entries[i+1].first))
-				return const_iterator(*this, i+1);
+				return iterator(*this, i+1);
 			else 
 				lower = i;
 
@@ -183,7 +174,66 @@ Table<K,T>::find_range_end(const_iterator start, bool (*comp)(const K&,const K&)
 	assert(comp(start->first, _entries[lower].first));
 	assert(lower == size()-1 || !comp(start->first, _entries[lower+1].first));
 
-	return const_iterator(*this, lower+1);
+	return iterator(*this, lower+1);
+}
+	
+
+/** Erase and return a range of entries */
+template <typename K, typename T>
+std::vector<std::pair<K, T> >
+Table<K, T>::yank(iterator start, iterator end)
+{
+	std::vector<std::pair<K, T> > ret(end._index - start._index);
+	for (size_t i=start._index; i < end._index; ++i)
+		ret.at(i - start._index) = _entries[i];
+	erase(start, end);
+	return ret;
+}
+
+
+/** Cram a range of entries back in.
+ * Range MUST follow the same ordering guidelines as find_range_end.
+ * Return type is the same as insert, iterator points to first inserted entry */
+template <typename K, typename T>
+std::pair<typename Table<K,T>::iterator, bool>
+Table<K, T>::cram(const std::vector<std::pair<K, T> >& range)
+{
+	/* FIXME: _way_ too slow */
+	
+	const size_t orig_size = size();
+
+	if (range.size() == 0)
+		return std::make_pair(end(), false);
+	
+	std::pair<iterator, bool> ret = insert(range.front());
+	if (range.size() == 1)
+		return ret;
+	
+	const size_t insert_index = ret.first._index;
+
+	std::vector<Entry> new_entries(orig_size + range.size());
+
+	for (size_t i=0; i <= insert_index; ++i)
+		new_entries.at(i) = _entries.at(i);
+
+	for (size_t i=0; i < size() - insert_index; ++i)
+		new_entries.at(new_entries.size() - 1 - i) = _entries.at(size() - 1 - i);
+	
+	for (size_t i=1; i < range.size(); ++i)
+		new_entries.at(insert_index + i) = range.at(i);
+	
+	_entries = new_entries;
+	
+	/*std::cerr << "********************************\n";
+	for (size_t i=0; i < size(); ++i) {
+		std::cerr << _entries[i].first << std::endl;
+	}
+	std::cerr << "********************************\n";*/
+	
+	assert(size() == orig_size + range.size());
+	assert(is_sorted());
+
+	return make_pair(iterator(*this, insert_index), true);
 }
 
 
@@ -300,9 +350,7 @@ Table<K,T>::erase(iterator i)
 
 	_entries.pop_back();
 
-#ifndef NDEBUG
 	assert(is_sorted());
-#endif
 }
 
 
@@ -316,7 +364,7 @@ Table<K,T>::erase(iterator first, iterator last)
 	const size_t first_index = first._index;
 	const size_t last_index = last._index;
 
-	erase(first_index, last_index);
+	Table<K,T>::erase_by_index(first_index, last_index);
 }
 
 
@@ -325,7 +373,7 @@ Table<K,T>::erase(iterator first, iterator last)
  */
 template <typename K, typename T>
 void
-Table<K,T>::erase(size_t first_index, size_t last_index)
+Table<K,T>::erase_by_index(size_t first_index, size_t last_index)
 {
 	const size_t num_removed = last_index - first_index;
 
@@ -335,9 +383,7 @@ Table<K,T>::erase(size_t first_index, size_t last_index)
 
 	_entries.resize(size() - num_removed);
 
-#ifndef NDEBUG
 	assert(is_sorted());
-#endif
 }
 
 

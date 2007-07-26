@@ -31,8 +31,14 @@ public:
 	 * descendants of parent.  The return value is never a descendent of
 	 * parent, and may be end().
 	 */
+	typename Table<Path, T>::iterator find_descendants_end(
+			typename Table<Path, T>::iterator parent)
+	{
+		return find_range_end(parent, &Path::descendant_comparator);
+	}
+	
 	typename Table<Path, T>::const_iterator find_descendants_end(
-			typename Table<Path, T>::const_iterator parent) const
+			typename Table<Path, T>::const_iterator parent) const 
 	{
 		return find_range_end(parent, &Path::descendant_comparator);
 	}

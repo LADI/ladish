@@ -88,18 +88,20 @@ Port::set_border_width(double w)
 void
 Port::set_name(const string& n)
 {
-	_name = n;
-	
-	// Reposition label
-	_label.property_text() = _name;
-	_width = _label.property_text_width() + 4.0;
-	_height = _label.property_text_height();
-	_rect.property_x2() = _width;	
-	_rect.property_y2() = _height;
-	_label.property_x() = _label.property_text_width() / 2 + 1;
-	_label.property_y() = _height / 2;
+	if (_name != n) {
+		_name = n;
 
-	//signal_renamed.emit(n);
+		// Reposition label
+		_label.property_text() = _name;
+		_width = _label.property_text_width() + 6.0;
+		_height = _label.property_text_height();
+		_rect.property_x2() = _width;	
+		_rect.property_y2() = _height;
+		_label.property_x() = _label.property_text_width() / 2 + 1;
+		_label.property_y() = _height / 2;
+
+		signal_renamed.emit();
+	}
 }
 
 

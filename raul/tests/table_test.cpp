@@ -44,7 +44,7 @@ main()
 	Table<int,int>::const_iterator range_begin = t.begin();
 	++range_begin; ++range_begin;
 	
-	Table<int,int>::const_iterator range_end = t.find_range_end(t.begin(), range_comparator);
+	Table<int,int>::iterator range_end = t.find_range_end(t.begin(), range_comparator);
 
 	for (Table<int,int>::const_iterator i = t.begin(); i != range_end; ++i)
 		cout << i->first << " ";
@@ -119,6 +119,26 @@ main()
 	PathTable<char>::const_iterator descendants_end = pt.find_descendants_end(descendants_begin);
 
 	for (PathTable<char>::const_iterator i = pt.begin(); i != descendants_end; ++i)
+		cout << i->first << " ";
+	cout << endl;
+
+	const Path yank_path("/bar");
+	PathTable<char>::iterator quux = pt.find(yank_path);
+	assert(quux != pt.end());
+	PathTable<char>::iterator quux_end = pt.find_descendants_end(quux );
+	assert(quux_end != quux);
+
+	std::vector<std::pair<Path,char> > yanked = pt.yank(quux, quux_end);
+	
+	cout << "Yanked " << yank_path << endl;
+	for (PathTable<char>::const_iterator i = pt.begin(); i != pt.end(); ++i)
+		cout << i->first << " ";
+	cout << endl;
+
+	pt.cram(yanked);
+	
+	cout << "Crammed " << yank_path << endl;
+	for (PathTable<char>::const_iterator i = pt.begin(); i != pt.end(); ++i)
 		cout << i->first << " ";
 	cout << endl;
 

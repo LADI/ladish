@@ -44,6 +44,9 @@ namespace Raul {
 class Path : public std::basic_string<char> {
 public:
 
+	/** Contrust an uninitialzed path, because the STL is annoying. */
+	Path() : std::basic_string<char>("/") {}
+
 	/** Construct a Path from an std::string.
 	 *
 	 * It is a fatal error to construct a Path from an invalid string,
@@ -114,7 +117,7 @@ public:
 	 * Returned value is always a valid path, with the single exception that
 	 * the last character is "/".
 	 */
-	inline string base() const
+	inline const string base() const
 	{
 		if ((*this) == "/")
 			return *this;
@@ -125,9 +128,9 @@ public:
 	/** Return true if \a child is equal to, or a descendant of \a parent */
 	static bool descendant_comparator(const Path& parent, const Path& child)
 	{
-		return ( child == parent
-				|| (!strncmp(parent.c_str(), child.c_str(), parent.length())
-						&& child[parent.length()] == '/') );
+		return ( child == parent || (child.length() > parent.length() &&
+				(!strncmp(parent.c_str(), child.c_str(), parent.length())
+						&& child[parent.length()] == '/')) );
 	}
 };
 

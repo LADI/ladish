@@ -37,6 +37,7 @@ public:
 	
 	void clear() { _entries.clear(); }
 	bool empty() const { return _entries.empty(); }
+	void reserve(size_t n) { _entries.reserve(n); }
 
 	struct const_iterator {
 		const_iterator(const Table<K,T>& t, size_t i) : _table(t), _index(i) {}
@@ -76,14 +77,17 @@ public:
 	void erase(const K& key);
 	void erase(iterator i);
 	void erase(iterator start, iterator end);
-	void erase(size_t start, size_t end);
+	void erase_by_index(size_t start, size_t end);
+	
+	std::vector<std::pair<K, T> > yank(iterator start, iterator end);
+
+	std::pair<iterator, bool> cram(const std::vector<std::pair<K, T> >& range);
 	
 	const_iterator find(const K& key) const;
 	iterator find(const K& key);
 
 	const_iterator find_range_end(const_iterator left, bool (*comp)(const K&,const K&)) const;
-	const_iterator find_in_range(const K& key, const_iterator start, const_iterator end,
-			bool (*comp)(const K&,const K&)) const;
+	iterator find_range_end(iterator left, bool (*comp)(const K&,const K&));
 
 	T& operator[](const K& key);
 

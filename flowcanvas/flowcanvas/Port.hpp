@@ -88,7 +88,7 @@ public:
 
 	bool operator==(const std::string& name) { return (_name == name); }
 
-	//sigc::signal<void, std::string> signal_renamed;
+	sigc::signal<void> signal_renamed;
 
 protected:
 	friend class Canvas;
