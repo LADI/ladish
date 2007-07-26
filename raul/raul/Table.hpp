@@ -33,43 +33,48 @@ namespace Raul {
 template <typename K, typename T>
 class Table {
 public:
-	Table<K, T>() : _size(0), _array(NULL) {}
-	~Table<K, T>() { free(_array); }
+	Table<K, T>()  {}
 	
-	void clear() { free(_array); _array = NULL; _size = 0; }
-
-	typedef std::pair<K,T> Entry;
+	void clear() { _entries.clear(); }
 
 	struct const_iterator {
 		const_iterator(const Table<K,T>& t, size_t i) : _table(t), _index(i) {}
-		inline const Entry& operator*() const { return _table._array[_index]; }
-		inline const Entry* operator->() const { return &_table._array[_index]; }
+		inline const std::pair<const K, T>& operator*() const { return _table._entries[_index]; }
+		inline const std::pair<const K, T>* operator->() const { return (std::pair<const K, T>*)&_table._entries[_index]; }
 		inline const_iterator& operator++() { ++_index; return *this; }
+		inline const_iterator& operator--() { --_index; return *this; }
 		inline bool operator==(const const_iterator& i) const { return _index == i._index; }
 		inline bool operator!=(const const_iterator& i) const { return _index != i._index; }
+		void operator=(const const_iterator& i) { _table = i._table; _index = i._index; }
 	private:
+		friend class Table<K,T>;
 		const Table<K,T>& _table;
 		size_t _index;
 	};
 	
 	struct iterator {
 		iterator(Table<K,T>& t, size_t i) : _table(t), _index(i) {}
-		inline Entry& operator*() const { return _table._array[_index]; }
-		inline Entry* operator->() const { return &_table._array[_index]; }
+		inline std::pair<const K, T>& operator*() const { return _table._entries[_index]; }
+		inline std::pair<const K, T>* operator->() const { return (std::pair<const K, T>*)&_table._entries[_index]; }
 		inline iterator& operator++() { ++_index; return *this; }
+		inline iterator& operator--() { --_index; return *this; }
 		inline bool operator==(const iterator& i) const { return _index == i._index; }
 		inline bool operator!=(const iterator& i) const { return _index != i._index; }
 		operator const_iterator() { return *(const_iterator*)this; }
+		iterator& operator=(const iterator& i) { _table = i._table; _index = i._index; return *this; }
 	private:
+		friend class Table<K,T>;
 		Table<K,T>& _table;
 		size_t _index;
 	};
 
-	inline size_t size() const { return _size; }
+	inline size_t size() const { return _entries.size(); }
 
-	void insert(K key, T value);
-	void remove(K& key);
-	void remove(iterator i);
+	void insert(const K& key, const T& value);
+	void erase(const K& key);
+	void erase(iterator i);
+	void erase(iterator begin, iterator end);
+	void erase(size_t begin, size_t end);
 	
 	const_iterator find(const K& key) const;
 	iterator find(const K& key);
@@ -86,9 +91,9 @@ private:
 
 	friend class iterator;
 	
+	typedef std::pair<K, T> Entry;
 
-	size_t  _size;
-	Entry*  _array;
+	std::vector<Entry> _entries;
 };
 
 

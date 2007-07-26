@@ -28,16 +28,16 @@ template <typename K, typename T>
 bool
 Table<K,T>::is_sorted() const
 {
-	if (_size <= 1)
+	if (size() <= 1)
 		return true;
 	
-	K prev_key = _array[0].first;
+	K prev_key = _entries[0].first;
 
-	for (size_t i=1; i < _size; ++i)
-		if (_array[i].first < prev_key)
+	for (size_t i=1; i < size(); ++i)
+		if (_entries[i].first < prev_key)
 			return false;
 		else
-			prev_key = _array[i].first;
+			prev_key = _entries[i].first;
 	
 	return true;
 }
@@ -49,20 +49,20 @@ template <typename K, typename T>
 typename Table<K,T>::iterator
 Table<K,T>::find(const K& key)
 {
-	if (_size == 0)
+	if (size() == 0)
 		return end();
 
 	size_t lower = 0;
-	size_t upper = _size - 1;
+	size_t upper = size() - 1;
 	size_t i;
 	
 	while (upper >= lower) {
 		i = lower + ((upper - lower) / 2);
-		Entry& elem = _array[i];
+		const Entry& elem = _entries[i];
 
 		if (elem.first == key)
 			return iterator(*this, i);
-		else if (i < _size-1 && elem.first < key)
+		else if (i < size()-1 && elem.first < key)
 			lower = i + 1;
 		else if (i > 0)
 			upper = i - 1;
@@ -76,28 +76,19 @@ Table<K,T>::find(const K& key)
 
 template <typename K, typename T>
 void
-Table<K,T>::insert(K key, T value)
+Table<K,T>::insert(const K& key, const T& value)
 {
-	Entry new_entry = make_pair(key, value);
-
-	if (_size == 0) {
-		_array = (std::pair<K, T>*)malloc(sizeof(Entry) * 2);
-		_array[0] = new_entry;
-		++_size;
+	if (size() == 0 || size() == 1 && key > _entries[0].first) {
+		_entries.push_back(make_pair(key, value));
 		return;
-	} else if (_size == 1) {
-		if (key > _array[0].first) {
-			_array[1] = new_entry;
-		} else {
-			_array[1] = _array[0];
-			_array[0] = new_entry;
-		}
-		++_size;
+	} else if (size() == 1) {
+		_entries.push_back(_entries[0]);
+		_entries[0] = make_pair(key, value);
 		return;
 	}
 
 	size_t lower = 0;
-	size_t upper = _size - 1;
+	size_t upper = size() - 1;
 	size_t i;
 	
 	// Find the earliest element > key
@@ -105,16 +96,16 @@ Table<K,T>::insert(K key, T value)
 		i = lower + ((upper - lower) / 2);
 		assert(i >= lower);
 		assert(i <= upper);
-		assert(_array[lower].first <= _array[i].first);
-		assert(_array[i].first <= _array[upper].first);
+		assert(_entries[lower].first <= _entries[i].first);
+		assert(_entries[i].first <= _entries[upper].first);
 
-		assert(i < _size);
-		Entry& elem = _array[i];
+		assert(i < size());
+		Entry& elem = _entries[i];
 
 		if (elem.first == key) {
 			break;
 		} else if (elem.first > key) {
-			if (i == 0 || _array[i-1].first < key)
+			if (i == 0 || _entries[i-1].first < key)
 				break;
 			upper = i - 1;
 		} else {
@@ -123,18 +114,16 @@ Table<K,T>::insert(K key, T value)
 	}
 
 	// Lil' off by one touchup :)
-	if (i < _size && _array[i].first <= key)
+	if (i < size() && _entries[i].first <= key)
 		++i;
 	
-	_array = (Entry*)realloc(_array, (_size + 1) * sizeof(Entry));
+	_entries.resize(size() + 1);
+
+	// Shift everything beyond i right
+	for (size_t j = size()-1; j > i; --j)
+		_entries[j] = _entries[j-1];
 	
-	// FIXME: This could be faster using memmove etc...
-	for (size_t j=_size; j > i; --j)
-		_array[j] = _array[j-1];
-
-	_array[i] = new_entry;
-
-	++_size;
+	_entries[i] = make_pair(key, value);
 
 	assert(is_sorted());
 }
@@ -142,22 +131,64 @@ Table<K,T>::insert(K key, T value)
 
 template <typename K, typename T>
 void
-Table<K,T>::remove(K& key)
+Table<K,T>::erase(const K& key)
 {
-	iterator i = find(key);
-	if (i != _array.end())
-		remove(i);
+	erase(find(key));
 }
 
 
 template <typename K, typename T>
 void
-Table<K,T>::remove(iterator i)
+Table<K,T>::erase(iterator i)
 {
-	_array.erase(i);
+	if (i == end())
+		return;
+
+	const size_t index = i._index;
+
+	// Shift left
+	for (size_t j=index; j < size()-1; ++j)
+		_entries[j] = _entries[j+1];
+
+	_entries.pop_back();
 
 #ifndef NDEBUG
-	assert(_array.is_sorted());
+	assert(is_sorted());
+#endif
+}
+
+
+/** Erase a range of elements from \a first to \a last, including first but
+ * not including last.
+ */
+template <typename K, typename T>
+void
+Table<K,T>::erase(iterator first, iterator last)
+{
+	const size_t first_index = first._index;
+	const size_t last_index = last._index;
+
+	erase(first_index, last_index);
+}
+
+
+/** Erase a range of elements from \a first_index to \a last_index, including
+ * first_index but not including last_index.
+ */
+template <typename K, typename T>
+void
+Table<K,T>::erase(size_t first_index, size_t last_index)
+{
+	const size_t num_removed = last_index - first_index;
+
+	// Shift left
+	for (size_t j=first_index; j < size() - num_removed; ++j)
+		_entries[j] = _entries[j + num_removed];
+
+	_entries.resize(size() - num_removed);
+
+#ifndef NDEBUG
+	assert(is_sorted());
 #endif
 }
 
