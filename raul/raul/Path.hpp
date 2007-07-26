@@ -74,7 +74,7 @@ public:
 	
 	static bool is_valid_name(const std::basic_string<char>& name)
 	{
-		return is_valid(string("/").append(name));
+		return name.length() > 0 && is_valid(string("/").append(name));
 	}
 
 	static string pathify(const std::basic_string<char>& str);
