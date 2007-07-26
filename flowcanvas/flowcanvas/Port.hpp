@@ -70,6 +70,8 @@ public:
 		_menu.popup(button, activate_time);
 	}
 
+	Gtk::Menu& menu() { return _menu; }
+
 	double width() const { return _width; }
 	void   set_width(double w);
 	
@@ -86,7 +88,7 @@ public:
 
 	bool operator==(const std::string& name) { return (_name == name); }
 
-	sigc::signal<void, std::string> signal_renamed;
+	//sigc::signal<void, std::string> signal_renamed;
 
 protected:
 	friend class Canvas;

@@ -55,7 +55,7 @@ public:
 	
 	struct iterator {
 		iterator(Table<K,T>& t, size_t i) : _table(t), _index(i) {}
-		inline std::pair<const K, T>& operator*() const { return _table._entries[_index]; }
+		inline std::pair<const K, T>& operator*() const { return (std::pair<const K, T>&)_table._entries[_index]; }
 		inline std::pair<const K, T>* operator->() const { return (std::pair<const K, T>*)&_table._entries[_index]; }
 		inline iterator& operator++() { ++_index; return *this; }
 		inline iterator& operator--() { --_index; return *this; }

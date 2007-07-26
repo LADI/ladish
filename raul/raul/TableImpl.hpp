@@ -15,6 +15,9 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#ifndef RAUL_TABLE_IMPL_HPP
+#define RAUL_TABLE_IMPL_HPP
+
 #include <cassert>
 #include <stdexcept>
 #include <algorithm>
@@ -42,6 +45,15 @@ Table<K,T>::is_sorted() const
 	return true;
 }
 #endif
+
+
+/** Binary search (O(log(n))) */
+template <typename K, typename T>
+typename Table<K,T>::const_iterator
+Table<K,T>::find(const K& key) const
+{
+	return ((Table<K,T>*)this)->find(key);
+}
 
 
 /** Binary search (O(log(n))) */
@@ -90,11 +102,11 @@ Table<K,T>::insert(const std::pair<K, T>& entry)
 	
 	if (size() == 0 || size() == 1 && key > _entries[0].first) {
 		_entries.push_back(entry);
-		return make_pair(iterator(*this, size()-1), true);
+		return std::make_pair(iterator(*this, size()-1), true);
 	} else if (size() == 1) {
 		_entries.push_back(_entries[0]);
 		_entries[0] = entry;
-		return make_pair(begin(), true);
+		return std::make_pair(begin(), true);
 	}
 
 	size_t lower = 0;
@@ -114,7 +126,7 @@ Table<K,T>::insert(const std::pair<K, T>& entry)
 
 		if (elem.first == key) {
 			elem.second = value;
-			return make_pair(iterator(*this, i), false);
+			return std::make_pair(iterator(*this, i), false);
 		} else if (elem.first > key) {
 			if (i == 0 || _entries[i-1].first < key)
 				break;
@@ -128,17 +140,17 @@ Table<K,T>::insert(const std::pair<K, T>& entry)
 	if (i < size() && _entries[i].first <= key)
 		++i;
 	
-	_entries.resize(size() + 1);
+	_entries.push_back(_entries.back());
 
 	// Shift everything beyond i right
-	for (size_t j = size()-1; j > i; --j)
+	for (size_t j = size()-2; j > i; --j)
 		_entries[j] = _entries[j-1];
 	
 	_entries[i] = entry;
 
 	assert(is_sorted());
 	
-	return make_pair(iterator(*this, i), true);
+	return std::make_pair(iterator(*this, i), true);
 }
 	
 
@@ -229,4 +241,6 @@ Table<K,T>::erase(size_t first_index, size_t last_index)
 
 
 } // namespace Raul
+
+#endif // RAUL_TABLE_IMLP_HPP
 

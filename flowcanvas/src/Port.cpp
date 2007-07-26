@@ -99,7 +99,7 @@ Port::set_name(const string& n)
 	_label.property_x() = _label.property_text_width() / 2 + 1;
 	_label.property_y() = _height / 2;
 
-	signal_renamed.emit(n);
+	//signal_renamed.emit(n);
 }
 
 
