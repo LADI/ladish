@@ -87,6 +87,8 @@ public:
 	double   height()    const { return _height; }
 
 	virtual void set_control(float value);
+	void show_control() { _control_rect.show(); }
+	void hide_control() { _control_rect.hide(); }
 
 	bool operator==(const std::string& name) { return (_name == name); }
 

@@ -72,6 +72,7 @@ Port::Port(boost::shared_ptr<Module> module, const string& name, bool is_input, 
 	_label.property_x() = _label.property_text_width() / 2.0 + 3.0;
 	_label.property_y() = (_height / 2.0) - 1.0;
 
+	_control_rect.hide();
 	_label.raise_to_top();
 }
 
@@ -87,8 +88,6 @@ Port::~Port()
 void
 Port::set_control(float value)
 {
-	//_control_rect.show();
-	//_control_rect.raise_to_top();
 	_control_rect.property_x2() = _control_rect.property_x1() + (value * _width);
 	_control_value = value;
 }
