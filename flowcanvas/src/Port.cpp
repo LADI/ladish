@@ -34,17 +34,21 @@ Port::Port(boost::shared_ptr<Module> module, const string& name, bool is_input, 
   _name(name),
   _is_input(is_input),
   _color(color),
+  _control_value(0.0f),
   _label(*this, 1, 1, _name),
-  _rect(*this, 0, 0, 0, 0)
+  _rect(*this, 0, 0, 0, 0),
+  _control_rect(*this, 0, 0, 0, 0)
 {
 	_menu.items().push_back(Gtk::Menu_Helpers::MenuElem(
 		"Disconnect All", sigc::mem_fun(this, &Port::disconnect_all)));
 
 	_rect.property_fill_color_rgba() = color;
+	_control_rect.property_fill_color_rgba() = 0xFFFFFF55;
 	
 	// Make rectangle pretty
 	//m_rect.property_outline_color_rgba() = 0x8899AAFF;
 	_rect.property_outline_color_rgba() = color;
+	_control_rect.property_outline_color_rgba() = 0xFFFFFCC;
 	_rect.property_join_style() = Gdk::JOIN_MITER;
 	set_border_width(0.0);
 	
@@ -61,6 +65,10 @@ Port::Port(boost::shared_ptr<Module> module, const string& name, bool is_input, 
 	_rect.property_y1() = 0;
 	_rect.property_x2() = _width;	
 	_rect.property_y2() = _height;
+	_control_rect.property_x1() = 0;
+	_control_rect.property_y1() = 0;
+	_control_rect.property_x2() = 0;	
+	_control_rect.property_y2() = _height;
 	_label.property_x() = _label.property_text_width() / 2.0 + 3.0;
 	_label.property_y() = (_height / 2.0) - 1.0;
 
@@ -70,6 +78,19 @@ Port::Port(boost::shared_ptr<Module> module, const string& name, bool is_input, 
 
 Port::~Port()
 {
+}
+
+/** Set the value for this port's control slider to display.
+ *
+ * \a value is [0, 1]
+ */ 
+void
+Port::set_control(float value)
+{
+	//_control_rect.show();
+	//_control_rect.raise_to_top();
+	_control_rect.property_x2() = _control_rect.property_x1() + (value * _width);
+	_control_value = value;
 }
 
 
@@ -82,6 +103,7 @@ Port::set_border_width(double w)
 {
 	_border_width = w;
 	_rect.property_width_units() = w;
+	_control_rect.property_width_units() = w;
 }
 
 
@@ -97,6 +119,8 @@ Port::set_name(const string& n)
 		_height = _label.property_text_height();
 		_rect.property_x2() = _width;	
 		_rect.property_y2() = _height;
+		_control_rect.property_x2() = _control_rect.property_x1() + (_control_value * _width);
+		_control_rect.property_y2() = _height;
 		_label.property_x() = _label.property_text_width() / 2 + 1;
 		_label.property_y() = _height / 2;
 
@@ -134,6 +158,7 @@ Port::disconnect_all()
 void
 Port::set_highlighted(bool b)
 {
+#if 0
 	boost::shared_ptr<Module> module = _module.lock();
 	if (module)
 		module->set_highlighted(b);
@@ -148,15 +173,16 @@ Port::set_highlighted(bool b)
 	}
 	
 	if (b) {
-		raise_to_top();
+		/*raise_to_top();
 		_rect.raise_to_top();
-		_label.raise_to_top();
+		_label.raise_to_top();*/
 		_rect.property_fill_color_rgba() = _color + 0x33333300;
 		_rect.property_outline_color_rgba() = _color + 0x33333300;
 	} else {
 		_rect.property_fill_color_rgba() = _color;
 		_rect.property_outline_color_rgba() = _color;
 	}
+#endif
 }
 	
 

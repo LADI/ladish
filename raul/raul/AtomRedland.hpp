@@ -59,6 +59,7 @@ public:
 			type = librdf_new_uri(world, U("http://www.w3.org/2001/XMLSchema#integer"));
 			break;
 		case Atom::FLOAT:
+			os.precision(20);
 			os << atom.get_float();
 			str = os.str();
 			// xsd:decimal -> pretty decimal (float) literals in Turtle

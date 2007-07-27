@@ -86,9 +86,12 @@ public:
 	uint32_t color()     const { return _color; }
 	double   height()    const { return _height; }
 
+	virtual void set_control(float value);
+
 	bool operator==(const std::string& name) { return (_name == name); }
 
-	sigc::signal<void> signal_renamed;
+	sigc::signal<void>       signal_renamed;
+	sigc::signal<void,float> signal_control_changed;
 
 protected:
 	friend class Canvas;
@@ -100,9 +103,12 @@ protected:
 	double                  _height;
 	double                  _border_width;
 	uint32_t                _color;
+
+	float _control_value;
 	
 	Gnome::Canvas::Text _label;
 	Gnome::Canvas::Rect _rect;
+	Gnome::Canvas::Rect _control_rect;
 	Gtk::Menu           _menu;
 };
 

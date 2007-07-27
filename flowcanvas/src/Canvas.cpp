@@ -613,19 +613,59 @@ Canvas::port_event(GdkEvent* event, boost::weak_ptr<Port> weak_port)
 	if (!port)
 		return false;
 
+	float control = 0.0;
+
 	static bool port_dragging = false;
+	static bool control_dragging = false;
 	bool handled = true;
 	
 	switch (event->type) {
 	
 	case GDK_BUTTON_PRESS:
-		if (!_locked && event->button.button == 1) {
-			port_dragging = true;
+		if (event->button.button == 1) {
+			boost::shared_ptr<Module> module = port->module().lock();
+			if (module && _locked) {
+				control_dragging = true;
+				const double port_x = module->property_x() + port->property_x();
+				float new_control = ((event->button.x - port_x) / (double)port->width());
+				if (new_control < 0.0)
+					new_control = 0.0;
+				else if (new_control > 1.0)
+					new_control = 1.0;
+				
+				if (control != new_control) {
+					//cerr << "CONTROL: " << new_control << endl;
+					port->set_control(new_control);
+					port->signal_control_changed.emit(control);
+				}
+			} else {
+				port_dragging = true;
+			}
 		} else if (event->button.button == 3) {
 			_selected_port = port;
 			port->popup_menu(event->button.button, event->button.time);
 		} else {
 			handled = false;
+		}
+		break;
+	
+	case GDK_MOTION_NOTIFY:
+		if (control_dragging) {
+			boost::shared_ptr<Module> module = port->module().lock();
+			if (module) {
+				const double port_x = module->property_x() + port->property_x();
+				float new_control = ((event->button.x - port_x) / (double)port->width());
+				if (new_control < 0.0)
+					new_control = 0.0;
+				else if (new_control > 1.0)
+					new_control = 1.0;
+				
+				if (control != new_control) {
+					//cerr << "CONTROL: " << new_control << endl;
+					port->set_control(new_control);
+					port->signal_control_changed.emit(control);
+				}
+			}
 		}
 		break;
 
@@ -640,6 +680,8 @@ Canvas::port_event(GdkEvent* event, boost::weak_ptr<Port> weak_port)
 				selected_port(boost::shared_ptr<Port>());
 			}
 			port_dragging = false;
+		} else if (control_dragging) {
+			control_dragging = false;
 		} else {
 			handled = false;
 		}
@@ -647,7 +689,7 @@ Canvas::port_event(GdkEvent* event, boost::weak_ptr<Port> weak_port)
 		break;
 
 	case GDK_ENTER_NOTIFY:
-		if (port != _selected_port)
+		if (!control_dragging && port != _selected_port)
 			port->set_highlighted(true);
 		break;
 
@@ -660,7 +702,7 @@ Canvas::port_event(GdkEvent* event, boost::weak_ptr<Port> weak_port)
 				Gdk::Cursor(Gdk::CROSSHAIR), event->button.time);
 
 			port_dragging = false;
-		} else {
+		} else if (!control_dragging) {
 			if (port != _selected_port)
 				port->set_highlighted(false);
 		}
