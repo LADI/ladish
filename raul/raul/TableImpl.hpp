@@ -31,7 +31,7 @@ namespace Raul {
  * std::vector::iterator or vice-versa should be shot and pissed on.
  */
 
-#ifndef NDEBUG
+#ifdef TABLE_SORT_DEBUG
 template <typename K, typename T>
 bool
 Table<K,T>::is_sorted() const
@@ -231,7 +231,9 @@ Table<K, T>::cram(const Table<K,T>& range)
 	std::cerr << "********************************\n";*/
 	
 	assert(size() == orig_size + range.size());
+#ifdef TABLE_SORT_DEBUG
 	assert(is_sorted());
+#endif
 
 	return make_pair(iterator(*this, insert_index), true);
 }
@@ -299,7 +301,9 @@ Table<K,T>::insert(const std::pair<K, T>& entry)
 	
 	_entries[i] = entry;
 
+#ifdef TABLE_SORT_DEBUG
 	assert(is_sorted());
+#endif
 	
 	return std::make_pair(iterator(*this, i), true);
 }
@@ -350,7 +354,9 @@ Table<K,T>::erase(iterator i)
 
 	_entries.pop_back();
 
+#ifdef TABLE_SORT_DEBUG
 	assert(is_sorted());
+#endif
 }
 
 
@@ -383,7 +389,9 @@ Table<K,T>::erase_by_index(size_t first_index, size_t last_index)
 
 	_entries.resize(size() - num_removed);
 
+#ifdef TABLE_SORT_DEBUG
 	assert(is_sorted());
+#endif
 }
 
 

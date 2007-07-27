@@ -21,6 +21,8 @@
 #include <vector>
 #include <algorithm>
 
+//#define TABLE_SORT_DEBUG
+
 namespace Raul {
 
 
@@ -98,7 +100,7 @@ public:
 	iterator       end()         { return iterator(*this, size()); }
 
 private:
-#ifndef NDEBUG
+#ifdef TABLE_SORT_DEBUG
 	bool is_sorted() const;
 #endif
 
