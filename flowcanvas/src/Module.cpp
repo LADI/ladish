@@ -24,7 +24,8 @@
 #include <flowcanvas/Item.hpp>
 #include <flowcanvas/Module.hpp>
 #include <flowcanvas/Canvas.hpp>
-using std::string;
+
+using namespace std;
 
 namespace FlowCanvas {
 
@@ -83,6 +84,19 @@ Module::Module(boost::shared_ptr<Canvas> canvas, const string& name, double x, d
 
 Module::~Module()
 {
+}
+
+
+bool
+Module::on_event(GdkEvent* event)
+{
+	if (event->type == GDK_KEY_PRESS || event->type == GDK_KEY_RELEASE) {
+		boost::shared_ptr<Canvas> canvas = _canvas.lock();
+		if (canvas)
+			canvas->canvas_event(event);
+	}
+
+	return false;
 }
 
 

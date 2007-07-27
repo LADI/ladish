@@ -83,6 +83,8 @@ protected:
 	virtual void on_right_click(GdkEventButton&)  {}*/
 	virtual void on_drop(double new_x, double new_y);
 
+	virtual bool on_event(GdkEvent* ev);
+
 	double _border_width;
 	bool   _title_visible;
 

@@ -707,7 +707,7 @@ Canvas::port_event(GdkEvent* event, boost::weak_ptr<Port> weak_port)
 				port->set_highlighted(false);
 		}
 		break;
-
+	
 	default:
 		handled = false;
 	}
@@ -728,6 +728,12 @@ Canvas::canvas_event(GdkEvent* event)
 		case GDK_SCROLL:
 		cerr << "FC SCROLL!\n" << endl;
 		return true;
+	}
+
+	if (event->type == GDK_KEY_PRESS) {
+		cerr << "CANVAS KEY PRESS" << endl;
+	} else if (event->type == GDK_KEY_RELEASE) {
+		cerr << "CANVAS KEY RELEASE" << endl;
 	}
 #endif
 
@@ -842,6 +848,8 @@ Canvas::select_drag_handler(GdkEvent* event)
 		_select_rect = NULL;
 		_drag_state = NOT_DRAGGING;
 		return true;
+	} else if (event->type == GDK_KEY_PRESS) {
+		canvas_event(event);
 	}
 	return false;
 }
