@@ -86,7 +86,14 @@ public:
 	uint32_t color()     const { return _color; }
 	double   height()    const { return _height; }
 
-	virtual void set_control(float value);
+	virtual void set_control(float value, bool signal=true);
+	virtual void set_control_min(float min) { _control_min = min; set_control(_control_value, false);  }
+	virtual void set_control_max(float max) { _control_max = max; set_control(_control_value, false);  }
+	
+	float control_value() { return _control_value; }
+	float control_min() { return _control_min; }
+	float control_max() { return _control_max; }
+
 	void show_control() { _control_rect.show(); }
 	void hide_control() { _control_rect.hide(); }
 
@@ -107,6 +114,8 @@ protected:
 	uint32_t                _color;
 
 	float _control_value;
+	float _control_min;
+	float _control_max;
 	
 	Gnome::Canvas::Text _label;
 	Gnome::Canvas::Rect _rect;

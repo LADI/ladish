@@ -613,8 +613,6 @@ Canvas::port_event(GdkEvent* event, boost::weak_ptr<Port> weak_port)
 	if (!port)
 		return false;
 
-	float control = 0.0;
-
 	static bool port_dragging = false;
 	static bool control_dragging = false;
 	bool handled = true;
@@ -632,11 +630,16 @@ Canvas::port_event(GdkEvent* event, boost::weak_ptr<Port> weak_port)
 					new_control = 0.0;
 				else if (new_control > 1.0)
 					new_control = 1.0;
+
+				new_control *= (port->control_max() - port->control_min());
+				new_control += port->control_min();
+				assert(new_control >= port->control_min());
+				assert(new_control <= port->control_max());
 				
-				if (control != new_control) {
+				if (new_control != port->control_value()) {
 					//cerr << "CONTROL: " << new_control << endl;
 					port->set_control(new_control);
-					port->signal_control_changed.emit(control);
+					port->signal_control_changed.emit(new_control);
 				}
 			} else {
 				port_dragging = true;
@@ -660,11 +663,17 @@ Canvas::port_event(GdkEvent* event, boost::weak_ptr<Port> weak_port)
 				else if (new_control > 1.0)
 					new_control = 1.0;
 				
-				if (control != new_control) {
+				new_control *= (port->control_max() - port->control_min());
+				new_control += port->control_min();
+				assert(new_control >= port->control_min());
+				assert(new_control <= port->control_max());
+				
+				if (new_control != port->control_value()) {
 					//cerr << "CONTROL: " << new_control << endl;
 					port->set_control(new_control);
-					port->signal_control_changed.emit(control);
+					port->signal_control_changed.emit(new_control);
 				}
+
 			}
 		}
 		break;

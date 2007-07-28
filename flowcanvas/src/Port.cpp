@@ -15,11 +15,14 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include <iostream>
 #include <boost/weak_ptr.hpp>
 #include <libgnomecanvasmm.h>
 #include <flowcanvas/Port.hpp>
 #include <flowcanvas/Module.hpp>
 #include <flowcanvas/Canvas.hpp>
+
+using namespace std;
 
 namespace FlowCanvas {
 	
@@ -35,6 +38,8 @@ Port::Port(boost::shared_ptr<Module> module, const string& name, bool is_input, 
   _is_input(is_input),
   _color(color),
   _control_value(0.0f),
+  _control_min(0.0f),
+  _control_max(1.0f),
   _label(*this, 1, 1, _name),
   _rect(*this, 0, 0, 0, 0),
   _control_rect(*this, 0, 0, 0, 0)
@@ -82,13 +87,26 @@ Port::~Port()
 }
 
 /** Set the value for this port's control slider to display.
- *
- * \a value is [0, 1]
  */ 
 void
-Port::set_control(float value)
+Port::set_control(float value, bool signal)
 {
-	_control_rect.property_x2() = _control_rect.property_x1() + (value * _width);
+	//cerr << _name << ".set_control(" << value << "): " << _control_min << " .. " << _control_max
+	//		<< " -> ";
+	if (value < _control_min)
+		_control_min = value;
+	if (value > _control_max)
+		_control_max = value;
+
+	if (_control_max == _control_min)
+		_control_max = _control_min + 1.0;
+
+	double w = (value - _control_min) / (_control_max - _control_min) * _width;
+	assert(!isnan(w));
+
+	//cerr << w << " / " << _width << endl;
+
+	_control_rect.property_x2() = _control_rect.property_x1() + w;
 	_control_value = value;
 }
 
@@ -219,6 +237,7 @@ Port::set_width(double w)
 	double diff = w - _width;
 	_rect.property_x2() = _rect.property_x2() + diff;
 	_width = w;
+	set_control(_control_value, false);
 }
 
 
