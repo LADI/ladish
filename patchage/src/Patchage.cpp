@@ -219,7 +219,7 @@ Patchage::Patchage(int argc, char** argv)
 #endif 
 	_menu_store_positions->signal_activate().connect(sigc::mem_fun(this, &Patchage::menu_store_positions));
 	_menu_file_quit->signal_activate().connect(      sigc::mem_fun(this, &Patchage::menu_file_quit));
-	_menu_view_refresh->signal_activate().connect(   sigc::mem_fun(this, &Patchage::menu_view_refresh));
+	_menu_view_refresh->signal_activate().connect(   sigc::mem_fun(this, &Patchage::refresh));
 	_menu_view_arrange->signal_activate().connect(   sigc::mem_fun(this, &Patchage::menu_view_arrange));
 	_menu_view_toolbar->signal_activate().connect(   sigc::mem_fun(this, &Patchage::view_toolbar_toggled));
 	_menu_view_messages->signal_toggled().connect(   sigc::mem_fun(this, &Patchage::show_messages_toggled));
@@ -282,7 +282,7 @@ Patchage::attach()
 	_alsa_driver->attach();
 #endif
 
-	menu_view_refresh();
+	refresh();
 
 	update_toolbar();
 
@@ -487,7 +487,7 @@ Patchage::connect_widgets()
 	_jack_driver->signal_attached.connect(
 			sigc::mem_fun(this, &Patchage::update_toolbar));
 	_jack_driver->signal_attached.connect(
-			sigc::mem_fun(this, &Patchage::menu_view_refresh));
+			sigc::mem_fun(this, &Patchage::refresh));
 
 	//_jack_driver->signal_attached.connect(sigc::bind(
 	///		sigc::mem_fun(_jack_connect_toggle, &Gtk::ToggleButton::set_active), true));
@@ -510,7 +510,7 @@ Patchage::connect_widgets()
 	_alsa_driver->signal_attached.connect(sigc::bind(
 			sigc::mem_fun(_menu_alsa_disconnect, &Gtk::MenuItem::set_sensitive), true));
 	_alsa_driver->signal_attached.connect(
-			sigc::mem_fun(this, &Patchage::menu_view_refresh));
+			sigc::mem_fun(this, &Patchage::refresh));
 	
 	_alsa_driver->signal_detached.connect(sigc::bind(
 			sigc::mem_fun(_menu_alsa_connect, &Gtk::MenuItem::set_sensitive), true));
@@ -601,7 +601,7 @@ void
 Patchage::menu_alsa_disconnect() 
 {
 	_alsa_driver->detach();
-	menu_view_refresh();
+	refresh();
 }
 #endif
 
@@ -688,7 +688,7 @@ Patchage::show_messages_toggled()
 
 
 void
-Patchage::menu_view_refresh() 
+Patchage::refresh() 
 {
 	assert(_canvas);
 	
