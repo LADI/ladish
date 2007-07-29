@@ -56,6 +56,8 @@ public:
 
 	void clear_load();
 
+	void refresh();
+
 	void update_state();
 	void store_window_location();
 
@@ -73,7 +75,6 @@ protected:
 	void menu_file_quit();
 	void show_messages_toggled();
 	void view_toolbar_toggled();
-	void menu_view_refresh();
 	void menu_view_arrange();
 	void menu_help_about();
 	void zoom(double z);

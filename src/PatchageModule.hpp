@@ -94,13 +94,13 @@ public:
 	void split() {
 		assert(_type == InputOutput);
 		_app->state_manager()->set_module_split(_name, true);
-		_app->queue_refresh();
+		_app->refresh();
 	}
 
 	void join() {
 		assert(_type != InputOutput);
 		_app->state_manager()->set_module_split(_name, false);
-		_app->queue_refresh();
+		_app->refresh();
 	}
 		
 	virtual void store_location() {
