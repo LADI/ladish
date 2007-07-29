@@ -1,7 +1,7 @@
 #!/bin/sh
 
-echo 'Running slv2/autogen.sh...'
-cd slv2 && ./autogen.sh && cd ..
+#echo 'Running slv2/autogen.sh...'
+#cd slv2 && ./autogen.sh && cd ..
 
 echo 'Generating necessary files...'
 mkdir -p config

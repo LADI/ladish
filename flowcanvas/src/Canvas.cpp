@@ -23,7 +23,7 @@
 #include <iostream>
 #include <cmath>
 #include <boost/enable_shared_from_this.hpp>
-#include "../../config/config.h"
+#include CONFIG_H_PATH
 #include <flowcanvas/Canvas.hpp>
 #include <flowcanvas/Port.hpp>
 #include <flowcanvas/Module.hpp>

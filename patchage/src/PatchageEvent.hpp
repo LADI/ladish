@@ -19,7 +19,7 @@
 #define PATCHAGEEVENT_H
 
 #include <jack/jack.h>
-#include "../../config/config.h"
+#include CONFIG_H_PATH
 #ifdef HAVE_ALSA
 #include <alsa/asoundlib.h>
 #endif

@@ -6,6 +6,12 @@ AC_CONFIG_AUX_DIR([config])
 
 ################### SOURCES
 
+# SLV2
+AC_CONFIG_SRCDIR([slv2/src/plugin.c])
+AC_CONFIG_SRCDIR([slv2/slv2/plugin.h])
+AC_CONFIG_SRCDIR([slv2/utils/lv2_list.c])
+AC_CONFIG_HEADER([slv2/config/slv2_config.h])
+
 # Raul
 AC_CONFIG_SRCDIR([raul/raul/Semaphore.h])
 
@@ -69,33 +75,28 @@ AC_CHECK_HEADERS([boost/shared_ptr.hpp], [],
 AC_CHECK_HEADERS([boost/weak_ptr.hpp], [],  
 	AC_MSG_ERROR([You need the boost headers package (e.g. libboost-dev)]))
 
-abs_srcdir=`pwd` # FIXME?
-#
-#export PKG_CONFIG_PATH="$abs_srcdir/flowcanvas:$abs_srcdir/raul:$abs_srcdir/slv2:$PKG_CONFIG_PATH"
-#
-#export RAUL_CFLAGS="-I$abs_srcdir/raul $GLIBMM_CFLAGS"
-#export RAUL_LIBS="-L$abs_srcdir/raul/src/.libs -lraul"
-#AC_SUBST(RAUL_CFLAGS)
-export RAUL_LIBS="$abs_srcdir/raul/src/.libs/libraul.la"
+# This is cute... autohell FTW
+builddir=`pwd`
+cd $srcdir
+abs_srcdir=`pwd`
+cd $builddir
+
+RAUL_CFLAGS="-I$abs_srcdir/raul"
+RAUL_LIBS="$builddir/raul/src/.libs/libraul.la"
+AC_SUBST(RAUL_CFLAGS)
 AC_SUBST(RAUL_LIBS)
-#
-#export FLOWCANVAS_CFLAGS="-I$abs_srcdir/flowcanvas"
-#export FLOWCANVAS_LIBS="-L$abs_srcdir/flowcanvas/src/.libs -lflowcanvas"
-export FLOWCANVAS_LIBS="$abs_srcdir/flowcanvas/src/.libs/libflowcanvas.la"
-#AC_SUBST(FLOWCANVAS_CFLAGS)
+
+FLOWCANVAS_CFLAGS="-I$abs_srcdir/flowcanvas"
+FLOWCANVAS_LIBS="$builddir/flowcanvas/src/.libs/libflowcanvas.la"
+AC_SUBST(FLOWCANVAS_CFLAGS)
 AC_SUBST(FLOWCANVAS_LIBS)
 
-#export SLV2_CFLAGS="-I$abs_srcdir/slv2"
-#export SLV2_LIBS="-L$abs_srcdir/slv2/src/.libs -lslv2"
-export SLV2_LIBS="$abs_srcdir/slv2/src/.libs/libslv2.la"
+SLV2_CFLAGS="-I$abs_srcdir/slv2"
+SLV2_LIBS="$builddir/slv2/src/.libs/libslv2.la"
 AC_SUBST(SLV2_CFLAGS)
 AC_SUBST(SLV2_LIBS)
 
-#AC_MSG_NOTICE([])
-#AC_MSG_NOTICE([Note: PKG_CONFIG_PATH value changed to build against local libraries])
-#AC_MSG_NOTICE([      PKG_CONFIG_PATH = $PKG_CONFIG_PATH])
-#AC_MSG_NOTICE([])
-
+CONFIG_H_PATH="$builddir/config/config.h"
 
 #################### COMMAND LINE PARAMETERS
 
@@ -117,7 +118,7 @@ AC_ARG_ENABLE(debug_asertions,
 
 if test "$debug_symbols" = "yes"; then
   CFLAGS="-O0 -g"
-  CXXFLAGS="$CFLAGS"
+  CXXFLAGS="-O0 -g"
 fi
 
 if test "$debug_assertions" = "yes"; then
@@ -134,8 +135,8 @@ AC_ARG_ENABLE(pointer_debug,
 	[AS_HELP_STRING(--enable-pointer-debug, [Enable smart pointer debugging (no)])],
 	[pointer_debug="$enableval"])
 if test "$pointer_debug" = "yes"; then
-  CFLAGS+=" -DBOOST_SP_ENABLE_DEBUG_HOOKS"
-  CXXFLAGS+=" -DBOOST_SP_ENABLE_DEBUG_HOOKS"
+  CFLAGS="$CFLAGS -DBOOST_SP_ENABLE_DEBUG_HOOKS"
+  CXXFLAGS="$CXXFLAGS -DBOOST_SP_ENABLE_DEBUG_HOOKS"
 fi
 
 # Use strict flags?
@@ -150,8 +151,8 @@ if test "$strict" = "yes"; then
 fi
 
 # Bolt on a few specific flags to CFLAGS that should always be used
-CXXFLAGS="$CXXFLAGS -ansi -pipe -fmessage-length=999"
-CFLAGS="$CFLAGS -std=c99 -pipe -fmessage-length=999"
+CXXFLAGS="$CXXFLAGS -ansi -pipe -fmessage-length=999 -DCONFIG_H_PATH=\\\"$CONFIG_H_PATH\\\""
+CFLAGS="$CFLAGS -std=c99 -pipe -fmessage-length=999 -DCONFIG_H_PATH=\\\"$CONFIG_H_PATH\\\""
 
 
 #################### GENERIC OPTIONS
@@ -174,7 +175,7 @@ AC_ARG_ENABLE(lv2,
 	[ if test x$enable_lv2 = xno ; then build_lv2=no ; fi ])
 if test "$build_lv2" = "yes"; then
 	# Configure SLV2 (independent build system)
-	AC_CONFIG_SUBDIRS([slv2])
+#	AC_CONFIG_SUBDIRS([slv2])
 	AC_DEFINE(HAVE_SLV2, 1, [Has libslv2])
 fi
 
@@ -404,10 +405,10 @@ AC_ARG_ENABLE(anti-aliasing,
 # Yes, this is dirty...
 if test "$anti_alias" = "yes"; then
 	AC_CONFIG_COMMANDS([set_aa],
-		[sed 's/\(\/\*CANVASBASE\*\/\).*/\1Gnome::Canvas::CanvasAA/' -i flowcanvas/flowcanvas/Canvas.hpp])
+		[sed 's/\(\/\*CANVASBASE\*\/\).*/\1Gnome::Canvas::CanvasAA/' -i $srcdir/flowcanvas/flowcanvas/Canvas.hpp])
 else
 	AC_CONFIG_COMMANDS([set_no_aa],
-		[sed 's/\(\/\*CANVASBASE\*\/\).*/\1Gnome::Canvas::Canvas/' -i flowcanvas/flowcanvas/Canvas.hpp])
+		[sed 's/\(\/\*CANVASBASE\*\/\).*/\1Gnome::Canvas::Canvas/' -i $srcdir/flowcanvas/flowcanvas/Canvas.hpp])
 fi
 
 # Check for the graphviz library for auto-layout support
@@ -447,12 +448,30 @@ AC_ARG_WITH(ladspa-dir,
 AC_MSG_RESULT($ladspadir)
 AC_SUBST(ladspadir)
 
+# Doxygen is required to make dist
+AC_CHECK_PROG(HAVE_DOXYGEN, doxygen, true, false)
+if test $HAVE_DOXYGEN = "false"; then
+	AC_MSG_WARN([Doxygen not found, documentation will not be built])
+fi
+AM_CONDITIONAL(HAVE_DOXYGEN, $HAVE_DOXYGEN)
+
 
 #################### OUTPUT
 
 # Omins
 AC_CONFIG_FILES([omins/Makefile])
 AC_CONFIG_FILES([omins/src/Makefile])
+
+# SLV2
+AC_CONFIG_FILES([slv2/Makefile])
+AC_CONFIG_FILES([slv2/src/Makefile])
+AC_CONFIG_FILES([slv2/slv2/Makefile])
+AC_CONFIG_FILES([slv2/utils/Makefile])
+AC_CONFIG_FILES([slv2/hosts/Makefile])
+AC_CONFIG_FILES([slv2/data/Makefile])
+AC_CONFIG_FILES([slv2/libslv2.pc])
+AC_CONFIG_FILES([slv2/doc/Makefile])
+AC_CONFIG_FILES([slv2/doc/reference.doxygen])
 
 # LV2 Stuff
 AC_CONFIG_FILES([lv2/Makefile])

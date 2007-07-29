@@ -16,7 +16,7 @@
  */
 
 #include <raul/SharedPtr.hpp>
-#include "../../config/config.h"
+#include CONFIG_H_PATH
 #include "PatchageCanvas.hpp"
 #include "Patchage.hpp"
 #include "JackDriver.hpp"

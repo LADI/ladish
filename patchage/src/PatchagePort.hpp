@@ -18,7 +18,7 @@
 #ifndef PATCHAGEPORT_H
 #define PATCHAGEPORT_H
 
-#include "../../config/config.h"
+#include CONFIG_H_PATH
 #include <string>
 #include <list>
 #include <boost/shared_ptr.hpp>

@@ -16,9 +16,9 @@
  */
 
 #include <sstream>
-#include "raul/RDFWorld.hpp"
-#include "raul/RDFNode.hpp"
-#include "raul/AtomRedland.hpp"
+#include <raul/RDFWorld.hpp>
+#include <raul/RDFNode.hpp>
+#include <raul/AtomRedland.hpp>
 
 #define U(x) ((const unsigned char*)(x))
 
