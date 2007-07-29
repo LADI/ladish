@@ -17,7 +17,7 @@
 
 #include <iostream>
 #include <string>
-#include "../../config/config.h"
+#include CONFIG_H_PATH
 #include "LashDriver.hpp"
 #include "Patchage.hpp"
 #include "StateManager.hpp"

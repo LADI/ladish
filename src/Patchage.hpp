@@ -18,7 +18,7 @@
 #ifndef PATCHAGE_H
 #define PATCHAGE_H
 
-#include "config.h"
+#include CONFIG_H_PATH
 #include <string>
 #include <boost/shared_ptr.hpp>
 #include <libgnomecanvasmm.h>

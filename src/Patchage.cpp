@@ -17,7 +17,7 @@
 
 #include <cmath>
 #include <sstream>
-#include "../../config/config.h"
+#include CONFIG_H_PATH
 #include <libgnomecanvasmm.h>
 #include <libglademm/xml.h>
 #include <fstream>
