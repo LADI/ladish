@@ -35,11 +35,7 @@ Item::Item(boost::shared_ptr<Canvas> canvas,
 	, _color(color)
 	, _selected(false)
 {
-	signal_event().connect(sigc::mem_fun(this, &Item::item_event));
-
-	signal_clicked.connect(       sigc::mem_fun(this, &Item::on_click));
-	signal_double_clicked.connect(sigc::mem_fun(this, &Item::on_double_click));
-	signal_dragged.connect(       sigc::mem_fun(this, &Item::on_drag));
+	//signal_event().connect(sigc::mem_fun(this, &Item::item_event));
 }
 
 
@@ -58,7 +54,7 @@ Item::set_selected(bool s)
 /** Event handler to fire (higher level, abstracted) Item signals from Gtk events.
  */
 bool
-Item::item_event(GdkEvent* event)
+Item::on_event(GdkEvent* event)
 {
 	boost::shared_ptr<Canvas> canvas = _canvas.lock();
 	if (!canvas || !event)
@@ -78,7 +74,7 @@ Item::item_event(GdkEvent* event)
 	switch (event->type) {
 
 	case GDK_2BUTTON_PRESS:
-		signal_double_clicked.emit(&event->button);
+		on_double_click(&event->button);
 		double_click = true;
 		break;
 
@@ -95,7 +91,7 @@ Item::item_event(GdkEvent* event)
 			           event->button.time);
 			dragging = true;
 		} else {
-			signal_clicked.emit(&event->button);
+			on_click(&event->button);
 		}
 		break;
 	
@@ -105,15 +101,15 @@ Item::item_event(GdkEvent* event)
 			double new_y = click_y;
 
 			if (event->motion.is_hint) {
-				gint t_x;
-				gint t_y;
+				int t_x;
+				int t_y;
 				GdkModifierType state;
 				gdk_window_get_pointer(event->motion.window, &t_x, &t_y, &state);
 				new_x = t_x;
 				new_y = t_y;
 			}
 
-			signal_dragged.emit(new_x - x, new_y - y);
+			on_drag(new_x - x, new_y - y);
 
 			x = new_x;
 			y = new_y;
@@ -125,10 +121,9 @@ Item::item_event(GdkEvent* event)
 			ungrab(event->button.time);
 			dragging = false;
 			if (click_x != drag_start_x || click_y != drag_start_y) {
-				signal_dropped(click_x, click_y);
+				signal_dropped.emit(click_x, click_y);
 			} else if (!double_click) {
 				on_click(&event->button);
-				signal_clicked.emit(&event->button);
 			}
 		}
 		double_click = false;
@@ -172,15 +167,19 @@ Item::on_click(GdkEventButton* event)
 			canvas->select_item(shared_from_this());
 		}
 	}
+
+	signal_clicked.emit(event);
 }
 
 
 void
-Item::on_double_click(GdkEventButton*)
+Item::on_double_click(GdkEventButton* ev)
 {
 	boost::shared_ptr<Canvas> canvas = _canvas.lock();
 	if (canvas)
 		canvas->clear_selection();
+
+	signal_double_clicked.emit(ev);
 }
 
 
@@ -200,6 +199,8 @@ Item::on_drag(double dx, double dy)
 	} else {
 		move(dx, dy);
 	}
+
+	signal_dragged.emit(dx, dy);
 }
 
 

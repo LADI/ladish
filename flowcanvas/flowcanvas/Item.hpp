@@ -99,7 +99,7 @@ protected:
 
 	const boost::weak_ptr<Canvas> _canvas;
 	
-	bool item_event(GdkEvent* event);
+	bool on_event(GdkEvent* event);
 
 	std::string _name;
 	double      _width;

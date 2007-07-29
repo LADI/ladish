@@ -96,7 +96,7 @@ Module::on_event(GdkEvent* event)
 			canvas->canvas_event(event);
 	}
 
-	return false;
+	return Item::on_event(event);
 }
 
 
