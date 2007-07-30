@@ -10,7 +10,7 @@ AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_SRCDIR([slv2/src/plugin.c])
 AC_CONFIG_SRCDIR([slv2/slv2/plugin.h])
 AC_CONFIG_SRCDIR([slv2/utils/lv2_list.c])
-AC_CONFIG_HEADER([slv2/config/slv2_config.h])
+#AC_CONFIG_HEADER([slv2/config/slv2_config.h])
 
 # Raul
 AC_CONFIG_SRCDIR([raul/raul/Semaphore.h])
