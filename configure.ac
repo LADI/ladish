@@ -258,6 +258,16 @@ else
 	AC_MSG_WARN([LASH not found, session support will not be built.])
 fi
 
+# SWIG bindings
+bindings="no"
+AC_ARG_ENABLE(bindings,
+	[AS_HELP_STRING(--enable-bindings, [Build language bindings via SWIG (false)])],
+	[bindings="$enableval"])
+if test "$bindings" = "yes"; then
+  AC_CHECK_PROGS(SWIG, swig)
+fi
+AM_CONDITIONAL(WITH_SWIG, [test "$bindings" = "yes"])
+
 # Build unit tests
 build_unit_tests="no"
 AC_ARG_ENABLE(unit-tests,
@@ -517,6 +527,7 @@ AC_CONFIG_FILES([ingen/src/libs/engine/events/Makefile])
 AC_CONFIG_FILES([ingen/src/libs/serialisation/Makefile])
 AC_CONFIG_FILES([ingen/src/libs/client/Makefile])
 AC_CONFIG_FILES([ingen/src/libs/gui/Makefile])
+AC_CONFIG_FILES([ingen/src/bindings/Makefile])
 AC_CONFIG_FILES([ingen/src/progs/Makefile])
 AC_CONFIG_FILES([ingen/src/progs/ingen/Makefile])
 AC_CONFIG_FILES([ingen/src/progs/supercollider/Makefile])
