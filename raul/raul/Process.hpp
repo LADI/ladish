@@ -46,27 +46,29 @@ public:
 			? command.substr(0, command.find(" "))
 			: command;
 
-		std::cerr << "Launching child process '" << executable << "' with command line '"
-			<< command << "'" << std::endl;
+        const std::string arguments = command.substr((command.find(" ") + 1));
 
-		// Use the same double fork() trick as JACK to prevent zombie children
-		const int err = fork();
+        std::cerr << "Launching child process '" << executable << "' with arguments '"
+            << arguments << "'" << std::endl;
 
-		if (err == 0) {
-			// (child)
+        // Use the same double fork() trick as JACK to prevent zombie children
+        const int err = fork();
 
-			// close all nonstandard file descriptors
-			struct rlimit max_fds;
-			getrlimit(RLIMIT_NOFILE, &max_fds);
+        if (err == 0) {
+            // (child)
 
-			for (rlim_t fd = 3; fd < max_fds.rlim_cur; ++fd)
-				close(fd);
+            // close all nonstandard file descriptors
+            struct rlimit max_fds;
+            getrlimit(RLIMIT_NOFILE, &max_fds);
 
-			switch (fork()) {
-				case 0:
-					// (grandchild)
-					setsid();
-					execlp(executable.c_str(), command.c_str(), NULL);
+            for (rlim_t fd = 3; fd < max_fds.rlim_cur; ++fd)
+                close(fd);
+
+            switch (fork()) {
+                case 0:
+                    // (grandchild)
+                    setsid();
+                    execlp(executable.c_str(), arguments.c_str(), NULL);
 					_exit(-1);
 
 				case -1:
