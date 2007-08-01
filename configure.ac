@@ -268,6 +268,7 @@ if test "$bindings" = "yes"; then
   AC_CHECK_PROGS(SWIG, swig)
 fi
 AM_CONDITIONAL(WITH_SWIG, [test "$bindings" = "yes"])
+AC_DEFINE(WITH_BINDINGS, 1, [Building with SWIG language bindings])
 
 # Build unit tests
 build_unit_tests="no"
