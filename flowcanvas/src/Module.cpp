@@ -286,6 +286,9 @@ Module::move_to(double x, double y)
 	property_x() = x;
 	property_y() = y;
 	
+	// Actually move (stupid gnomecanvas)
+	move(0, 0);
+	
 	// Update any connection line positions
 	for (PortVector::iterator p = _ports.begin(); p != _ports.end(); ++p)
 		(*p)->move_connections();
