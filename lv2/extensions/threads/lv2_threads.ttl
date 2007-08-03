@@ -130,7 +130,7 @@ Signifies a thread should be run with priority equal to that of the
 standard LV2 run callback.
 """ .
 
-:MainPriority a rdfs:;Class ;
+:MainPriority a rdfs:Class ;
 	rdfs:subClassOf :ThreadPriority ;
 	rdfs:label "Main thread priority" ;
 	rdfs:comment """
