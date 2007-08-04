@@ -1,0 +1,9 @@
+@prefix lv2:       <http://lv2plug.in/ns/lv2core#> .
+@prefix drobspecs: <http://drobilla.net/ns/lv2/> .
+@prefix rdfs:      <http://www.w3.org/2000/01/rdf-schema#> .
+
+drobins:osc_print
+  a lv2:Specification ;
+  rdfs:seeAlso <lv2_threads.ttl> .
+
+
