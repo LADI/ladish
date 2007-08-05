@@ -1,6 +1,8 @@
 #include <string>
 #include <iostream>
 #include <utility>
+#include <map>
+#include <sys/time.h>
 #include <raul/PathTable.hpp>
 #include <raul/Table.hpp>
 #include <raul/TableImpl.hpp>
@@ -17,10 +19,17 @@ bool range_comparator(const int& a, const int& b)
 	return ret;
 }
 
+void benchmark(size_t n);
 
 int
-main()
+main(int argc, char** argv)
 {
+	if (argc == 3 && !strcmp(argv[1], "-b")) {
+		benchmark(atoi(argv[2]));
+		return 0;
+	}
+
+	cout << "run with -b num_elems to benchmark" << endl;
 	srand(time(NULL));
 
 	range_end_val = rand()%10;
@@ -191,5 +200,112 @@ main()
 	}
 
 	return 0;
+}
+
+
+void
+benchmark(size_t n)
+{
+	cout << "Benchmarking with n = " << n << endl;
+
+	int useless_accumulator = 0;
+
+	srand(time(NULL));
+
+	vector<int> values(n);
+	for (size_t i=0; i < n; ++i)
+		values.push_back(rand() % n*100);
+
+	timeval t1;
+	t1.tv_sec=0;
+	t1.tv_usec=0;
+	
+	timeval t2;
+	t2.tv_sec=0;
+	t2.tv_usec=0;
+	
+
+	/** std::map **/
+
+	std::map<int,int> m;
+
+	gettimeofday(&t1, NULL);
+	
+	for (size_t i=0; i < n; ++i)
+		m.insert(make_pair(values[i], values[i]));
+	
+	gettimeofday(&t2, NULL);
+
+	float delta_t = (t2.tv_sec - t1.tv_sec) + (t2.tv_usec - t1.tv_usec) * 0.000001f;
+
+	cout << "std::map time to insert " << n << " values: \t" << delta_t << endl;
+	
+	gettimeofday(&t1, NULL);
+	
+	for (size_t i=0; i < n; ++i)
+		useless_accumulator += m.find(values[i])->second;
+	
+	gettimeofday(&t2, NULL);
+
+	delta_t = (t2.tv_sec - t1.tv_sec) + (t2.tv_usec - t1.tv_usec) * 0.000001f;
+
+	cout << "std::map time to lookup " << n << " values: \t" << delta_t << endl;
+	
+	
+	/** sorted std::vector **/
+
+	/*std::vector<int> v;
+
+	gettimeofday(&t1, NULL);
+	
+	for (size_t i=0; i < n; ++i)
+		v.push_back(values[i]);
+
+	sort(v.begin(), v.end());
+	
+	gettimeofday(&t2, NULL);
+
+	delta_t = (t2.tv_sec - t1.tv_sec) + (t2.tv_usec - t1.tv_usec) * 0.000001f;
+
+	cout << "std::vector (sorted) time to insert " << n << " values: \t" << delta_t << endl;
+	
+	gettimeofday(&t1, NULL);
+	
+	for (size_t i=0; i < n; ++i)
+		useless_accumulator += *lower_bound(v.begin(), v.end(), values[i]);
+	
+	gettimeofday(&t2, NULL);
+
+	delta_t = (t2.tv_sec - t1.tv_sec) + (t2.tv_usec - t1.tv_usec) * 0.000001f;
+
+	cout << "std::vector (sorted) time to lookup " << n << " values: \t" << delta_t << endl;*/
+
+
+	/** Raul::Table **/
+	
+	Raul::Table<int,int> t(n);
+	
+	gettimeofday(&t1, NULL);
+	
+	for (size_t i=0; i < n; ++i)
+		t.insert(make_pair(values[i], values[i]));
+	
+	gettimeofday(&t2, NULL);
+
+	delta_t = (t2.tv_sec - t1.tv_sec) + (t2.tv_usec - t1.tv_usec) * 0.000001f;
+
+	cout << "Raul::Table time to insert " << n << " values: " << delta_t << endl;
+	
+	gettimeofday(&t1, NULL);
+	
+	for (size_t i=0; i < n; ++i)
+		useless_accumulator += t.find(values[i])->second;
+	
+	gettimeofday(&t2, NULL);
+
+	delta_t = (t2.tv_sec - t1.tv_sec) + (t2.tv_usec - t1.tv_usec) * 0.000001f;
+
+	cout << "Raul::Table time to lookup " << n << " values: \t" << delta_t << endl;
+
 }
 
