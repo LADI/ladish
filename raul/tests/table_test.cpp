@@ -2,10 +2,15 @@
 #include <iostream>
 #include <utility>
 #include <map>
+#include <set>
+#include <tr1/unordered_map>
 #include <sys/time.h>
 #include <raul/PathTable.hpp>
 #include <raul/Table.hpp>
 #include <raul/TableImpl.hpp>
+
+#define BOOST_MULTI_INDEX_DISABLE_SERIALIZATION 1
+#include <boost/functional/hash.hpp>
 
 using namespace Raul;
 using namespace std;
@@ -205,7 +210,7 @@ main(int argc, char** argv)
 string
 random_string()
 {
-	string ret(40, 'A' + (rand() % 26));
+	string ret(60, 'A' + (rand() % 26));
 	return ret;
 }
 
@@ -257,6 +262,33 @@ benchmark(size_t n)
 	delta_t = (t2.tv_sec - t1.tv_sec) + (t2.tv_usec - t1.tv_usec) * 0.000001f;
 
 	cout << "std::map time to lookup " << n << " values: \t" << delta_t << endl;
+	
+	
+	/** std::set **/
+
+	std::set<std::string> s;
+
+	gettimeofday(&t1, NULL);
+	
+	for (size_t i=0; i < n; ++i)
+		s.insert(values[i]);
+	
+	gettimeofday(&t2, NULL);
+
+	delta_t = (t2.tv_sec - t1.tv_sec) + (t2.tv_usec - t1.tv_usec) * 0.000001f;
+
+	cout << "std::set time to insert " << n << " values: \t" << delta_t << endl;
+	
+	gettimeofday(&t1, NULL);
+	
+	for (size_t i=0; i < n; ++i)
+		useless_accumulator += (int)(*s.find(values[i]))[0];
+	
+	gettimeofday(&t2, NULL);
+
+	delta_t = (t2.tv_sec - t1.tv_sec) + (t2.tv_usec - t1.tv_usec) * 0.000001f;
+
+	cout << "std::set time to lookup " << n << " values: \t" << delta_t << endl;
 	
 	
 	/** sorted std::vector **/
@@ -313,6 +345,34 @@ benchmark(size_t n)
 	delta_t = (t2.tv_sec - t1.tv_sec) + (t2.tv_usec - t1.tv_usec) * 0.000001f;
 
 	cout << "Raul::Table time to lookup " << n << " values: \t" << delta_t << endl;
+	
+	
+	/** boost::hash && std::unordered_map **/
+	
+	tr1::unordered_map<string, int, boost::hash<string> > um;
 
+	gettimeofday(&t1, NULL);
+	
+	um.rehash(n);
+	
+	for (size_t i=0; i < n; ++i)
+		um.insert(make_pair(values[i], i));
+	
+	gettimeofday(&t2, NULL);
+
+	delta_t = (t2.tv_sec - t1.tv_sec) + (t2.tv_usec - t1.tv_usec) * 0.000001f;
+
+	cout << "tr1::unordered_map + boost::hash time to insert " << n << " values: \t" << delta_t << endl;
+	
+	gettimeofday(&t1, NULL);
+	
+	for (size_t i=0; i < n; ++i)
+		useless_accumulator += um.find(values[i])->second;
+	
+	gettimeofday(&t2, NULL);
+
+	delta_t = (t2.tv_sec - t1.tv_sec) + (t2.tv_usec - t1.tv_usec) * 0.000001f;
+
+	cout << "tr1::unordered_map + boost::hash time to lookup " << n << " values: \t" << delta_t << endl;
 }
 
