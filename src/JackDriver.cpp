@@ -158,6 +158,8 @@ JackDriver::create_port(boost::shared_ptr<PatchageModule> parent, jack_port_t* p
 		return boost::shared_ptr<PatchagePort>();
 	}
 	
+	//cerr << "Port " << jack_port_name(port) << " type: " << type_str << " = " << (int)port_type << endl;
+	
 	boost::shared_ptr<PatchagePort> ret(
 		new PatchagePort(parent, port_type, jack_port_short_name(port),
 			(jack_port_flags(port) & JackPortIsInput),

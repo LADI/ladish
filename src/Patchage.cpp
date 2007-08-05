@@ -85,7 +85,8 @@ Patchage::Patchage(int argc, char** argv)
 #endif
   _jack_driver(NULL),
   _state_manager(NULL),
-  _refresh(false)
+  _refresh(false),
+  _enable_refresh(true)
 {
 	_settings_filename = getenv("HOME");
 	_settings_filename += "/.patchagerc";
@@ -273,6 +274,8 @@ Patchage::~Patchage()
 void
 Patchage::attach()
 {
+	_enable_refresh = false;
+
 	_jack_driver->attach(true);
 
 #ifdef HAVE_LASH
@@ -281,6 +284,8 @@ Patchage::attach()
 #ifdef HAVE_ALSA
 	_alsa_driver->attach();
 #endif
+
+	_enable_refresh = true;
 
 	refresh();
 
@@ -345,7 +350,7 @@ Patchage::update_toolbar()
 	//_jack_connect_toggle->set_active(_jack_driver->is_attached());
 	//_jack_realtime_check->set_active(_jack_driver->is_realtime());
 
-	if (_jack_driver->is_attached()) {
+	if (_enable_refresh && _jack_driver->is_attached()) {
 		_buffer_size_combo->set_active((int)log2f(_jack_driver->buffer_size()) - 5);
 
 		/*switch ((int)m_jack_driver->sample_rate()) {
@@ -691,16 +696,19 @@ void
 Patchage::refresh() 
 {
 	assert(_canvas);
-	
-	_canvas->destroy();
-	
-	if (_jack_driver)
-		_jack_driver->refresh();
+
+	if (_enable_refresh) {
+
+		_canvas->destroy();
+
+		if (_jack_driver)
+			_jack_driver->refresh();
 
 #ifdef HAVE_ALSA
-	if (_alsa_driver)
-		_alsa_driver->refresh();
+		if (_alsa_driver)
+			_alsa_driver->refresh();
 #endif
+	}
 }
 
 

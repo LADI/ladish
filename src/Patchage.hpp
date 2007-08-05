@@ -130,6 +130,7 @@ protected:
 
 	string _settings_filename;
 	bool   _refresh;
+	bool   _enable_refresh;
 	
 	Gtk::Window*         _main_window;
 	JackSettingsDialog*  _jack_settings_dialog;
