@@ -141,6 +141,7 @@ protected:
 	Gtk::MenuItem*       _menu_jack_disconnect;
 	Gtk::MenuItem*       _menu_store_positions;
 	Gtk::MenuItem*       _menu_file_quit;
+	Gtk::Box*            _toolbars_box;
 	Gtk::CheckMenuItem*  _menu_view_toolbar;
 	Gtk::CheckMenuItem*  _menu_view_messages;
 	Gtk::MenuItem*       _menu_view_refresh;
@@ -148,7 +149,7 @@ protected:
 	Gtk::MenuItem*       _menu_help_about;
 	Gtk::Toolbar*        _toolbar;
 	Gtk::ScrolledWindow* _canvas_scrolledwindow;
-	Gtk::HScale*         _zoom_slider;
+	//Gtk::HScale*         _zoom_slider;
 	Gtk::TextView*       _status_text;
 	Gtk::Paned*          _main_paned;
 	Gtk::Expander*       _messages_expander;

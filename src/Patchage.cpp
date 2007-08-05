@@ -152,8 +152,9 @@ Patchage::Patchage(int argc, char** argv)
 	xml->get_widget("view_toolbar_menuitem", _menu_view_toolbar);
 	xml->get_widget("help_about_menuitem", _menu_help_about);
 	xml->get_widget("toolbar", _toolbar);
+	xml->get_widget("toolbars_hbox", _toolbars_box);
 	xml->get_widget("canvas_scrolledwindow", _canvas_scrolledwindow);
-	xml->get_widget("zoom_scale", _zoom_slider);
+	//xml->get_widget("zoom_scale", _zoom_slider);
 	xml->get_widget("status_text", _status_text);
 	xml->get_widget("main_paned", _main_paned);
 	xml->get_widget("messages_expander", _messages_expander);
@@ -179,7 +180,7 @@ Patchage::Patchage(int argc, char** argv)
 	_canvas->scroll_to(static_cast<int>(_canvas->width()/2 - 320),
 	                       static_cast<int>(_canvas->height()/2 - 240)); // FIXME: hardcoded
 
-	_zoom_slider->signal_value_changed().connect(sigc::mem_fun(this, &Patchage::zoom_changed));
+	//_zoom_slider->signal_value_changed().connect(sigc::mem_fun(this, &Patchage::zoom_changed));
 	
 	//_jack_connect_toggle->signal_toggled().connect(sigc::mem_fun(this, &Patchage::jack_connect_changed));
 
@@ -428,7 +429,7 @@ Patchage::zoom_changed()
 	static bool enable_signal = true;
 	if (enable_signal) {
 		enable_signal = false;
-		zoom(_zoom_slider->get_value());
+		//zoom(_zoom_slider->get_value());
 		enable_signal = true;
 	}
 }
@@ -727,9 +728,9 @@ Patchage::view_toolbar_toggled()
 	_update_pane_position = false;
 
 	if (_menu_view_toolbar->get_active())
-		_toolbar->show();
+		_toolbars_box->show();
 	else
-		_toolbar->hide();
+		_toolbars_box->hide();
 	
 	_update_pane_position = true;
 }
