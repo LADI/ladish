@@ -202,6 +202,13 @@ main(int argc, char** argv)
 	return 0;
 }
 
+string
+random_string()
+{
+	string ret(40, 'A' + (rand() % 26));
+	return ret;
+}
+
 
 void
 benchmark(size_t n)
@@ -212,9 +219,9 @@ benchmark(size_t n)
 
 	srand(time(NULL));
 
-	vector<int> values(n);
+	vector<string> values(n);
 	for (size_t i=0; i < n; ++i)
-		values.push_back(rand() % n*100);
+		values.push_back(random_string());
 
 	timeval t1;
 	t1.tv_sec=0;
@@ -227,12 +234,12 @@ benchmark(size_t n)
 
 	/** std::map **/
 
-	std::map<int,int> m;
+	std::map<string,int> m;
 
 	gettimeofday(&t1, NULL);
 	
 	for (size_t i=0; i < n; ++i)
-		m.insert(make_pair(values[i], values[i]));
+		m.insert(make_pair(values[i], i));
 	
 	gettimeofday(&t2, NULL);
 
@@ -283,12 +290,12 @@ benchmark(size_t n)
 
 	/** Raul::Table **/
 	
-	Raul::Table<int,int> t(n);
+	Raul::Table<string,int> t(n);
 	
 	gettimeofday(&t1, NULL);
 	
 	for (size_t i=0; i < n; ++i)
-		t.insert(make_pair(values[i], values[i]));
+		t.insert(make_pair(values[i], i));
 	
 	gettimeofday(&t2, NULL);
 
