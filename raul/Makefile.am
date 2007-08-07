@@ -1,6 +1,6 @@
 SUBDIRS = raul src doc
 
-if BUILD_TESTS
+if BUILD_UNIT_TESTS
 SUBDIRS += tests
 endif
 
