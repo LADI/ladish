@@ -37,8 +37,8 @@ cd $srcdir
 abs_srcdir=`pwd`
 cd $builddir
 
-RAUL_CFLAGS="-I$abs_srcdir/raul"
-RAUL_LIBS="$builddir/raul/src/.libs/libraul.la"
+RAUL_CFLAGS="-I$abs_srcdir"
+RAUL_LIBS="$builddir/src/.libs/libraul.la"
 AC_SUBST(RAUL_CFLAGS)
 AC_SUBST(RAUL_LIBS)
 
