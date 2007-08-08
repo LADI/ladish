@@ -18,7 +18,7 @@ AC_CONFIG_SRCDIR([raul/raul/Semaphore.h])
 
 # FlowCanvas
 AC_CONFIG_SRCDIR([flowcanvas/src/Canvas.cpp])
-AC_CONFIG_SRCDIR([flowcanvas/flowcanvas/Canvas.h])
+AC_CONFIG_SRCDIR([flowcanvas/flowcanvas/Canvas.hpp])
 
 # Patchage
 AC_CONFIG_SRCDIR([src/main.cpp])
@@ -27,7 +27,7 @@ AC_CONFIG_SRCDIR([src/main.cpp])
 AC_CONFIG_SRCDIR([omins/src/hz_voct_4200.c])
 
 # Ingen
-AC_CONFIG_SRCDIR([ingen/src/common/interface/EngineInterface.h])
+AC_CONFIG_SRCDIR([ingen/src/common/interface/EngineInterface.hpp])
 AC_CONFIG_SRCDIR([ingen/src/common/lv2ext/lv2-miditype.h])
 AC_CONFIG_SRCDIR([ingen/src/libs/module/Module.cpp])
 AC_CONFIG_SRCDIR([ingen/src/libs/engine/JackAudioDriver.cpp])
@@ -64,6 +64,7 @@ AM_INIT_AUTOMAKE
 AC_LANG([C++])
 
 AC_PROG_CXX
+AC_PROG_CC_C_O
 
 AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
@@ -285,7 +286,6 @@ AM_CONDITIONAL(BUILD_UNIT_TESTS, [test "$build_unit_tests" = "yes"])
 AM_CONDITIONAL(WITH_LADSPA, [test "$build_ladspa" = "yes"])
 AM_CONDITIONAL(WITH_LV2, [test "$build_lv2" = "yes"])
 AM_CONDITIONAL(WITH_DSSI, [test "$build_dssi" = "yes"])
-AM_CONDITIONAL(BUILD_TESTS, [test "$build_unit_tests" = "yes"])
 
 
 ################# INGEN OPTIONS

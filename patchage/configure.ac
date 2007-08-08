@@ -1,14 +1,14 @@
+
 AC_PREREQ(2.59)
-AC_INIT([raul],[svn],[dave@drobilla.net])
+AC_INIT([patchage],[svn],[dave@drobilla.net])
 
 AC_CONFIG_AUX_DIR([config])
 
 
 ################### SOURCES
 
-# Raul
-AC_CONFIG_SRCDIR([raul/Semaphore.h])
-AC_CONFIG_SRCDIR([src/Thread.cpp])
+# Patchage
+AC_CONFIG_SRCDIR([src/main.cpp])
 
 AC_CONFIG_HEADER([config/config.h])
 
@@ -19,6 +19,7 @@ AM_INIT_AUTOMAKE
 AC_LANG([C++])
 
 AC_PROG_CXX
+AC_PROG_CC_C_O
 
 AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
@@ -37,10 +38,7 @@ cd $srcdir
 abs_srcdir=`pwd`
 cd $builddir
 
-RAUL_CFLAGS="-I$abs_srcdir/raul"
-RAUL_LIBS="$builddir/raul/src/.libs/libraul.la"
-AC_SUBST(RAUL_CFLAGS)
-AC_SUBST(RAUL_LIBS)
+PKG_CHECK_MODULES([RAUL], [raul])
 
 CONFIG_H_PATH="$builddir/config/config.h"
 
@@ -114,6 +112,28 @@ if test "$build_jack" = "yes"; then
 	AC_DEFINE(HAVE_JACK_MIDI, 1, [Has Jack MIDI])
 fi
 
+# ALSA support
+build_alsa="yes"
+AC_ARG_ENABLE(alsa,
+[AS_HELP_STRING(--enable-alsa, [Enable Alsa MIDI (yes)])],
+	[ if test x$enable_alsa = xno ; then build_alsa=no ; fi ])
+
+if test "$build_alsa" = "yes"; then
+  AC_CHECK_LIB(asound, snd_seq_open, ALSA_FOUND="yes", ALSA_FOUND="no", -lm -ldl -lpthread)
+
+  if test "$ALSA_FOUND" = "yes"; then
+    AC_DEFINE(HAVE_ALSA, 1, [whether or not we have alsa])
+    ALSA_CFLAGS=""
+    ALSA_LIBS="-lasound -lm -ldl -lpthread"
+    AC_SUBST(ALSA_CFLAGS)
+    AC_SUBST(ALSA_LIBS)
+  else
+    build_alsa="no"
+  fi
+else
+  ALSA_FOUND="no"
+fi
+
 # LASH support
 build_lash="yes"
 AC_ARG_ENABLE(lash,
@@ -130,56 +150,25 @@ else
 	AC_MSG_WARN([LASH not found, session support will not be built.])
 fi
 
-# Build unit tests
-build_unit_tests="no"
-AC_ARG_ENABLE(unit-tests,
-	[AS_HELP_STRING(--enable-unit-tests, [Build unit tests (no) - Developers only])],
-	[build_unit_tests="$enableval"])
-
-AM_CONDITIONAL(WITH_JACK, [test "$build_jack" = "yes"])
+AM_CONDITIONAL(WITH_ALSA, [test "$ALSA_FOUND" = "yes"])
 AM_CONDITIONAL(WITH_LASH, [test "$have_lash" = "yes"])
-AM_CONDITIONAL(BUILD_UNIT_TESTS, [test "$build_unit_tests" = "yes"])
+AM_CONDITIONAL(WITH_JACK, [test "$build_jack" = "yes"])
 
 
-################## RAUL
-
-# Check for Redland
-#PKG_CHECK_MODULES(REDLAND, redland >= 1.0.0)
-# No pkg-config?!  Booo!
-build_redland="no"
-AC_CHECK_PROG(REDLAND_CONFIG, redland-config, redland-config)
-if test "X$REDLAND_CONFIG" = X; then
-  AC_MSG_ERROR([RAUL requires Redland (librdf), but redland-config not found.])
-else
-  build_redland="yes"
-  REDLAND_CFLAGS=`$REDLAND_CONFIG --cflags`
-  REDLAND_LIBS=`$REDLAND_CONFIG --libs`
-  AC_SUBST(REDLAND_CFLAGS)
-  AC_SUBST(REDLAND_LIBS)
-fi
-AM_CONDITIONAL(WITH_REDLAND, [test "$build_redland" = "yes"])
-
-build_liblo="yes"
-AC_ARG_ENABLE(liblo,
-	[AS_HELP_STRING(--enable-liblo, [Include liblo (OSC) support (yes)])],
-	[ if test x$enable_liblo = xno ; then build_liblo=no ; fi ])
-if test "$build_liblo" = "yes"; then
-	PKG_CHECK_MODULES(LIBLO, liblo >= 0.22, [],
-		AC_MSG_ERROR([OSC support requires liblo (>= 0.22)]))
-fi
-AM_CONDITIONAL(WITH_LIBLO, [test "$build_liblo" = "yes"])
+############# PATCHAGE
+PKG_CHECK_MODULES(GTHREAD, gthread-2.0)
+PKG_CHECK_MODULES(GTKMM, gtkmm-2.4)
+PKG_CHECK_MODULES(GNOMECANVASMM, libgnomecanvasmm-2.6)
+PKG_CHECK_MODULES(LIBGLADEMM, libglademm-2.4)
+PKG_CHECK_MODULES(FLOWCANVAS, flowcanvas)
 
 
 #################### OUTPUT
 
-# RAUL
+# Patchage
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
-AC_CONFIG_FILES([raul/Makefile])
-AC_CONFIG_FILES([tests/Makefile])
-AC_CONFIG_FILES([doc/Makefile])
-AC_CONFIG_FILES([doc/reference.doxygen])
-AC_CONFIG_FILES([raul.pc])
+AC_CONFIG_FILES([patchage.desktop])
 
 AC_OUTPUT
 
@@ -188,13 +177,13 @@ AC_MSG_RESULT([])
 AC_MSG_RESULT([**********************************************************************])
 AC_MSG_RESULT([Configuration:])
 AC_MSG_RESULT([])
-AC_MSG_RESULT([Jack support:     $build_jack])
-AC_MSG_RESULT([LASH support:     $build_lash])
-AC_MSG_RESULT([Build unit tests: $build_unit_tests])
+AC_MSG_RESULT([Jack support:            $build_jack])
+AC_MSG_RESULT([LASH support:            $build_lash])
+AC_MSG_RESULT([ALSA support:            $ALSA_FOUND])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([C FLAGS:   $CFLAGS])
 AC_MSG_RESULT([C++ FLAGS: $CXXFLAGS])
+AC_MSG_RESULT([Please note the above and see README for performance information.])
 AC_MSG_RESULT([**********************************************************************])
 AC_MSG_RESULT([])
-
 

@@ -1,14 +1,14 @@
 AC_PREREQ(2.59)
-AC_INIT([raul],[svn],[dave@drobilla.net])
+AC_INIT([flowcanvas],[svn],[dave@drobilla.net])
 
 AC_CONFIG_AUX_DIR([config])
 
 
 ################### SOURCES
 
-# Raul
-AC_CONFIG_SRCDIR([raul/Semaphore.h])
-AC_CONFIG_SRCDIR([src/Thread.cpp])
+# FlowCanvas
+AC_CONFIG_SRCDIR([src/Canvas.cpp])
+AC_CONFIG_SRCDIR([flowcanvas/Canvas.hpp])
 
 AC_CONFIG_HEADER([config/config.h])
 
@@ -19,11 +19,10 @@ AM_INIT_AUTOMAKE
 AC_LANG([C++])
 
 AC_PROG_CXX
+AC_PROG_CC_C_O
 
 AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
-
-PKG_CHECK_MODULES(GLIBMM, glibmm-2.4)
 
 # Check for boost smart pointers
 AC_CHECK_HEADERS([boost/shared_ptr.hpp], [],  
@@ -37,10 +36,10 @@ cd $srcdir
 abs_srcdir=`pwd`
 cd $builddir
 
-RAUL_CFLAGS="-I$abs_srcdir/raul"
-RAUL_LIBS="$builddir/raul/src/.libs/libraul.la"
-AC_SUBST(RAUL_CFLAGS)
-AC_SUBST(RAUL_LIBS)
+FLOWCANVAS_CFLAGS="-I$abs_srcdir/flowcanvas"
+FLOWCANVAS_LIBS="$builddir/flowcanvas/src/.libs/libflowcanvas.la"
+AC_SUBST(FLOWCANVAS_CFLAGS)
+AC_SUBST(FLOWCANVAS_LIBS)
 
 CONFIG_H_PATH="$builddir/config/config.h"
 
@@ -58,7 +57,7 @@ AC_ARG_ENABLE(debug_symbols,
 	[AS_HELP_STRING(--enable-debug-symbols, [Enable debugging symbols - overrides CXXFLAGS (no)])],
 	[debug_symbols="$enableval"])
 
-AC_ARG_ENABLE(debug_assertions,
+AC_ARG_ENABLE(debug_asertions,
 	[AS_HELP_STRING(--enable-debug-assertions, [Enable debugging assertions (no)])],
 	[assertions="$enableval"])
 
@@ -103,83 +102,45 @@ CFLAGS="$CFLAGS -std=c99 -pipe -fmessage-length=999 -DCONFIG_H_PATH=\\\"$CONFIG_
 
 #################### GENERIC OPTIONS
 
+# (none apply)
 
-# Jack support
-build_jack="yes"
-AC_ARG_ENABLE(enable-jack,
-	[AS_HELP_STRING(--enable-jack, [Enable Jack support (yes)])],
-	[ if test x$enable_jack = xno ; then build_jack=no ; fi ])
-if test "$build_jack" = "yes"; then
-	PKG_CHECK_MODULES(JACK, jack >= 0.107.0)
-	AC_DEFINE(HAVE_JACK_MIDI, 1, [Has Jack MIDI])
-fi
+########### FLOWCANVAS
 
-# LASH support
-build_lash="yes"
-AC_ARG_ENABLE(lash,
-	[AS_HELP_STRING(--enable-lash, [Enable LASH session management support (yes)])],
-	[ if test x$enable_lash = xno ; then build_lash=no ; fi ])
-	
-have_lash="no"
-if test "$build_lash" = "yes"; then
-	PKG_CHECK_MODULES(LASH, lash-1.0 >= 0.5.2, have_lash="yes", have_lash="no")
-fi
-if test "$have_lash" = "yes"; then
-	AC_DEFINE(HAVE_LASH, 1, [Has lash.h])
+PKG_CHECK_MODULES(GTKMM, gtkmm-2.4)
+PKG_CHECK_MODULES(GNOMECANVASMM, libgnomecanvasmm-2.6)
+
+# Check for anti-aliased flag
+anti_alias="yes"
+AC_ARG_ENABLE(anti-aliasing,
+	[AS_HELP_STRING(--enable-anti-aliasing, [Enable anti aliased canvas (yes)])],
+	[ anti_alias="$enableval"])
+# Yes, this is dirty...
+if test "$anti_alias" = "yes"; then
+	AC_CONFIG_COMMANDS([set_aa],
+		[sed 's/\(\/\*CANVASBASE\*\/\).*/\1Gnome::Canvas::CanvasAA/' -i $srcdir/flowcanvas/Canvas.hpp])
 else
-	AC_MSG_WARN([LASH not found, session support will not be built.])
+	AC_CONFIG_COMMANDS([set_no_aa],
+		[sed 's/\(\/\*CANVASBASE\*\/\).*/\1Gnome::Canvas::Canvas/' -i $srcdir/flowcanvas/Canvas.hpp])
 fi
 
-# Build unit tests
-build_unit_tests="no"
-AC_ARG_ENABLE(unit-tests,
-	[AS_HELP_STRING(--enable-unit-tests, [Build unit tests (no) - Developers only])],
-	[build_unit_tests="$enableval"])
-
-AM_CONDITIONAL(WITH_JACK, [test "$build_jack" = "yes"])
-AM_CONDITIONAL(WITH_LASH, [test "$have_lash" = "yes"])
-AM_CONDITIONAL(BUILD_UNIT_TESTS, [test "$build_unit_tests" = "yes"])
-
-
-################## RAUL
-
-# Check for Redland
-#PKG_CHECK_MODULES(REDLAND, redland >= 1.0.0)
-# No pkg-config?!  Booo!
-build_redland="no"
-AC_CHECK_PROG(REDLAND_CONFIG, redland-config, redland-config)
-if test "X$REDLAND_CONFIG" = X; then
-  AC_MSG_ERROR([RAUL requires Redland (librdf), but redland-config not found.])
+# Check for the graphviz library for auto-layout support
+PKG_CHECK_MODULES(AGRAPH, libgvc >= 2.8, graphviz="yes", graphviz="no")
+if test "$graphviz" = "yes"; then
+	AC_DEFINE(HAVE_AGRAPH, 1, [Has the graphviz library])
 else
-  build_redland="yes"
-  REDLAND_CFLAGS=`$REDLAND_CONFIG --cflags`
-  REDLAND_LIBS=`$REDLAND_CONFIG --libs`
-  AC_SUBST(REDLAND_CFLAGS)
-  AC_SUBST(REDLAND_LIBS)
+	AC_MSG_WARN([Warning: Graphviz 'agraph' library (graphviz-dev) not found, no auto-arrange support
+				 will be built])
 fi
-AM_CONDITIONAL(WITH_REDLAND, [test "$build_redland" = "yes"])
-
-build_liblo="yes"
-AC_ARG_ENABLE(liblo,
-	[AS_HELP_STRING(--enable-liblo, [Include liblo (OSC) support (yes)])],
-	[ if test x$enable_liblo = xno ; then build_liblo=no ; fi ])
-if test "$build_liblo" = "yes"; then
-	PKG_CHECK_MODULES(LIBLO, liblo >= 0.22, [],
-		AC_MSG_ERROR([OSC support requires liblo (>= 0.22)]))
-fi
-AM_CONDITIONAL(WITH_LIBLO, [test "$build_liblo" = "yes"])
 
 
 #################### OUTPUT
 
-# RAUL
+# FlowCanvas
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
-AC_CONFIG_FILES([raul/Makefile])
-AC_CONFIG_FILES([tests/Makefile])
+AC_CONFIG_FILES([flowcanvas/Makefile])
 AC_CONFIG_FILES([doc/Makefile])
-AC_CONFIG_FILES([doc/reference.doxygen])
-AC_CONFIG_FILES([raul.pc])
+AC_CONFIG_FILES([flowcanvas.pc])
 
 AC_OUTPUT
 
@@ -188,13 +149,11 @@ AC_MSG_RESULT([])
 AC_MSG_RESULT([**********************************************************************])
 AC_MSG_RESULT([Configuration:])
 AC_MSG_RESULT([])
-AC_MSG_RESULT([Jack support:     $build_jack])
-AC_MSG_RESULT([LASH support:     $build_lash])
-AC_MSG_RESULT([Build unit tests: $build_unit_tests])
+AC_MSG_RESULT([Anti-Aliasing: $anti_alias])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([C FLAGS:   $CFLAGS])
 AC_MSG_RESULT([C++ FLAGS: $CXXFLAGS])
+AC_MSG_RESULT([Please note the above and see README for performance information.])
 AC_MSG_RESULT([**********************************************************************])
 AC_MSG_RESULT([])
-
 

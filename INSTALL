@@ -1,0 +1,14 @@
+The various components here can be built individually inside their own
+directories, or the entire tree can be built at once, using the typical
+./configure; make; make install routine.
+
+If you build individuall, get the build order right!  Things will NOT
+compile against the included versions this way.
+
+You're much better off building everything from the top level.
+
+So much better off that you had better not come bother me on IRC with
+broken builds because you screwed it up, or I won't be very nice ;).
+
+Switching back and forth between each method requires a new autogen.sh
+in whatever dir you plan to build from.
