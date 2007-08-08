@@ -36,8 +36,8 @@ cd $srcdir
 abs_srcdir=`pwd`
 cd $builddir
 
-FLOWCANVAS_CFLAGS="-I$abs_srcdir/flowcanvas"
-FLOWCANVAS_LIBS="$builddir/flowcanvas/src/.libs/libflowcanvas.la"
+FLOWCANVAS_CFLAGS="-I$abs_srcdir"
+FLOWCANVAS_LIBS="$builddir/src/.libs/libflowcanvas.la"
 AC_SUBST(FLOWCANVAS_CFLAGS)
 AC_SUBST(FLOWCANVAS_LIBS)
 
