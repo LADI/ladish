@@ -31,7 +31,8 @@ namespace Raul {
  * work in GDB.  Turns out sem_wait can fail when run in GDB, and Debian
  * really needs to update it's man pages.
  *
- * This class remains as a trivial (yet pretty) wrapper/abstraction.
+ * This class remains as a trivial (yet pretty) wrapper/abstraction, because
+ * Glib (idiotically) doesn't have a Semaphore class.
  *
  * \ingroup raul
  */
@@ -61,9 +62,11 @@ public:
 	
 	/** Non-blocking version of wait().
 	 *
+	 * \return true if decrement was successful (lock was acquired).
+	 *
 	 * Realtime safe?
 	 */
-	inline int  try_wait() { return sem_trywait(&_sem); }
+	inline bool try_wait() { return (sem_trywait(&_sem) == 0); }
 
 private:
 	sem_t _sem;

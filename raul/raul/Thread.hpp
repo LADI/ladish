@@ -56,11 +56,11 @@ public:
 
 	void set_scheduling(int policy, unsigned int priority);
 	
-	const std::string& name() { return _name; }
+	const std::string& name() const { return _name; }
 	void set_name(const std::string& name) { _name = name; }
 	
-	const unsigned context()                     { return _context; }
-	void           set_context(unsigned context) { _context = context; }
+	unsigned context() const               { return _context; }
+	void     set_context(unsigned context) { _context = context; }
 
 protected:
 	Thread(const std::string& name="");
