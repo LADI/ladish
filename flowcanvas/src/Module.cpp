@@ -279,9 +279,13 @@ Module::move_to(double x, double y)
 	if (y + _height > canvas->height()) y = canvas->height() - _height - 1;
 		
 	assert(x >= 0);
-	assert(x + _width < canvas->width());
 	assert(y >= 0);
-	assert(y + _height < canvas->height());
+
+	if (x + _width >= canvas->width() || y + _height >= canvas->height()) {
+		double x1, y1, x2, y2;
+		canvas->get_scroll_region(x1, y1, x2, y2);
+		canvas->set_scroll_region(x1, y1, max(x2, x + _width), max(y2, y + _height));
+	}
 
 	property_x() = x;
 	property_y() = y;
