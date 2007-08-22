@@ -36,7 +36,7 @@
 
 #define BACKUP_TIMEOUT ((time_t)(30))
 
-void *alsa_mgr_event_run(void *data);
+static void *alsa_mgr_event_run(void *data);
 static void alsa_mgr_new_client_port(alsa_mgr_t * alsa_mgr, uuid_t client_id,
 									 unsigned char port);
 
@@ -114,9 +114,13 @@ alsa_mgr_destroy(alsa_mgr_t * alsa_mgr)
 {
 	int err;
 
-	alsa_mgr->quit = 1;
-
 	LASH_PRINT_DEBUG("stopping");
+
+	err = pthread_cancel(alsa_mgr->event_thread);
+	if (err)
+		fprintf(stderr, "%s: error canceling event thread: %s\n", __FUNCTION__,
+				snd_strerror(err));
+
 	err = pthread_join(alsa_mgr->event_thread, NULL);
 	if (err) {
 		fprintf(stderr, "%s: error joining event thread: %s\n", __FUNCTION__,
@@ -539,31 +543,7 @@ alsa_mgr_redo_patches(alsa_mgr_t * alsa_mgr)
 	LASH_PRINT_DEBUG("end");
 }
 
-void
-alsa_mgr_recieve_event(alsa_mgr_t * alsa_mgr)
-{
-	snd_seq_event_t *ev;
-	int err;
-
-	err = snd_seq_event_input(alsa_mgr->seq, &ev);
-
-	switch (ev->type) {
-	case SND_SEQ_EVENT_PORT_START:
-		LASH_PRINT_DEBUG("new port");
-		alsa_mgr_new_port(alsa_mgr, ev->data.addr.client, ev->data.addr.port);
-		break;
-	case SND_SEQ_EVENT_PORT_EXIT:
-		alsa_mgr_port_removed(alsa_mgr, ev->data.addr.client,
-							  ev->data.addr.port);
-		break;
-	case SND_SEQ_EVENT_PORT_SUBSCRIBED:
-	case SND_SEQ_EVENT_PORT_UNSUBSCRIBED:
-		alsa_mgr_redo_patches(alsa_mgr);
-		break;
-	}
-}
-
-void
+static void
 alsa_mgr_backup_patches(alsa_mgr_t * alsa_mgr)
 {
 	static time_t last_backup = 0;
@@ -590,59 +570,52 @@ alsa_mgr_backup_patches(alsa_mgr_t * alsa_mgr)
 	last_backup = now;
 }
 
-void *
-alsa_mgr_event_run(void *data)
+static void
+alsa_mgr_recieve_event(alsa_mgr_t * alsa_mgr)
 {
-	alsa_mgr_t *alsa_mgr;
-	int err;
-	struct pollfd *pfds;
-	int nfds, i;
-	unsigned short *revents;
+	snd_seq_event_t *ev;
+	int err, backup;
 
-	alsa_mgr = (alsa_mgr_t *) data;
+	err = snd_seq_event_input(alsa_mgr->seq, &ev);
+	if (err < 0)
+		return;
 
-	nfds = snd_seq_poll_descriptors_count(alsa_mgr->seq, POLLIN);
-	pfds = lash_malloc(sizeof(struct pollfd) * nfds);
-	revents = lash_malloc(sizeof(unsigned short) * nfds);
-	snd_seq_poll_descriptors(alsa_mgr->seq, pfds, nfds, POLLIN);
+	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
+	alsa_mgr_lock(alsa_mgr);
 
-	while (!alsa_mgr->quit) {
-		err = poll(pfds, nfds, 1000);
-		if (err == -1) {
-			if (errno == EINTR)
-				continue;
-
-			fprintf(stderr, "%s: error polling alsa sequencer: %s\n",
-					__FUNCTION__, strerror(errno));
-			continue;
-		}
-
-		if (alsa_mgr->quit)
-			break;
-
-		alsa_mgr_lock(alsa_mgr);
-		err =
-			snd_seq_poll_descriptors_revents(alsa_mgr->seq, pfds, nfds,
-											 revents);
-		if (err) {
-			fprintf(stderr,
-					"%s: error getting alsa sequencer poll revents: %s\n",
-					__FUNCTION__, snd_strerror(err));
-			continue;
-		}
-
-		for (i = 0; i < nfds; i++) {
-			if (revents[i] > 0)
-				alsa_mgr_recieve_event(alsa_mgr);
-		}
-
+	backup = 1;
+	switch (ev->type) {
+	case SND_SEQ_EVENT_PORT_START:
+		LASH_PRINT_DEBUG("new port");
+		alsa_mgr_new_port(alsa_mgr, ev->data.addr.client, ev->data.addr.port);
+		break;
+	case SND_SEQ_EVENT_PORT_EXIT:
+		alsa_mgr_port_removed(alsa_mgr, ev->data.addr.client,
+							  ev->data.addr.port);
+		break;
+	case SND_SEQ_EVENT_PORT_SUBSCRIBED:
+	case SND_SEQ_EVENT_PORT_UNSUBSCRIBED:
+		alsa_mgr_redo_patches(alsa_mgr);
+		break;
+	default:
+		backup = 0;
+		LASH_DEBUGARGS("unhandled ev->type=%u", ev->type);
+		break;
+	}
+	if (backup)
 		alsa_mgr_backup_patches(alsa_mgr);
 
-		alsa_mgr_unlock(alsa_mgr);
-	}
+	alsa_mgr_unlock(alsa_mgr);
+	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+}
 
-	free(revents);
-	free(pfds);
+static void *
+alsa_mgr_event_run(void *data)
+{
+	alsa_mgr_t *alsa_mgr = (alsa_mgr_t *)data;
+
+	while (1)
+		alsa_mgr_recieve_event(alsa_mgr);
 
 	LASH_PRINT_DEBUG("finished");
 	return NULL;

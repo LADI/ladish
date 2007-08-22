@@ -44,8 +44,6 @@ struct _alsa_mgr
   
   lash_list_t *     clients;
   lash_list_t *     foreign_ports;
-  
-  int              quit;
 };
 
 
