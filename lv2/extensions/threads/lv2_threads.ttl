@@ -98,7 +98,7 @@ the plugin is hardRtCapable, this method must be realtime safe.
     rdfs:subClassOf lv2:Hint ;
     rdfs:comment    "Hint for a plugin thread." .
 
-:pluginHint a rdf:Property ;
+:threadHint a rdf:Property ;
     rdfs:domain  :Thread ;
     rdfs:range   :ThreadHint ;
     rdfs:label   "Thread hint" ;
