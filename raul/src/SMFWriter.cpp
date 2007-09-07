@@ -216,7 +216,7 @@ SMFWriter::write_footer()
 
 
 void
-SMFWriter::write_chunk_header(char id[4], uint32_t length)
+SMFWriter::write_chunk_header(const char id[4], uint32_t length)
 {
 	const uint32_t length_be = GUINT32_TO_BE(length);
 
@@ -226,7 +226,7 @@ SMFWriter::write_chunk_header(char id[4], uint32_t length)
 
 
 void
-SMFWriter::write_chunk(char id[4], uint32_t length, void* data)
+SMFWriter::write_chunk(const char id[4], uint32_t length, void* data)
 {
 	write_chunk_header(id, length);
 	

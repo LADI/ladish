@@ -698,8 +698,10 @@ Canvas::port_event(GdkEvent* event, boost::weak_ptr<Port> weak_port)
 		break;
 
 	case GDK_ENTER_NOTIFY:
-		if (!control_dragging && port != _selected_port)
+		if (!control_dragging && port != _selected_port) {
 			port->set_highlighted(true);
+			return true;
+		}
 		break;
 
 	case GDK_LEAVE_NOTIFY:
@@ -1103,9 +1105,9 @@ Canvas::render_to_dot(const string& dot_output_filename)
 	std::map<boost::shared_ptr<Item>, Agnode_t*> nodes;
 
 	GVC_t* gvc = gvContext();
-	Agraph_t* G = agopen("g", AGDIGRAPH);
+	Agraph_t* G = agopen((char*)"g", AGDIGRAPH);
 
-	agraphattr(G, "rankdir", "LR");
+	agraphattr(G, (char*)"rankdir", (char*)"LR");
 
 	unsigned id = 0;
 	for (ItemList::const_iterator i = _items.begin(); i != _items.end(); ++i) {
@@ -1129,11 +1131,11 @@ Canvas::render_to_dot(const string& dot_output_filename)
 		agedge(G, src_node, dst_node);
 	}
 
-	gvLayout (gvc, G, "dot");
+	gvLayout (gvc, G, (char*)"dot");
 		
 	FILE* out_fd = fopen(dot_output_filename.c_str(), "w+");
 	if (out_fd) {
-		gvRender (gvc, G, "dot", out_fd);
+		gvRender (gvc, G, (char*)"dot", out_fd);
 		fclose(out_fd);
 	}
 	
@@ -1156,9 +1158,9 @@ Canvas::arrange()
 	Nodes nodes;
 
 	GVC_t* gvc = gvContext();
-	Agraph_t* G = agopen("g", AGDIGRAPH);
+	Agraph_t* G = agopen((char*)"g", AGDIGRAPH);
 
-	agraphattr(G, "rankdir", "LR");
+	agraphattr(G, (char*)"rankdir", (char*)"LR");
 
 	unsigned id = 0;
 	for (ItemList::const_iterator i = _items.begin(); i != _items.end(); ++i) {
@@ -1168,15 +1170,17 @@ Canvas::arrange()
 		if (boost::dynamic_pointer_cast<Module>(*i)) {
 			ss.str("");
 			ss << (*i)->width() / 96.0;
-			agsafeset(node, "width", strdup(ss.str().c_str()), "");
+			agsafeset(node, (char*)"width", strdup(ss.str().c_str()), (char*)"");
 			ss.str("");
 			ss << (*i)->height() / 96.0;
-			agsafeset(node, "height", strdup(ss.str().c_str()), "");
-			agsafeset(node, "shape", agstrdup("box"), "");
+			agsafeset(node, (char*)"height", strdup(ss.str().c_str()), (char*)"");
+			//agsafeset(node, (char*)"shape", agstrdup((char*)"box"), (char*)"");
+			agsafeset(node, (char*)"shape", (char*)"box", (char*)"");
 		} else {
-			agsafeset(node, "width", "1.0", "");
-			agsafeset(node, "height", "1.0", "");
-			agsafeset(node, "shape", agstrdup("ellipse"), "");
+			agsafeset(node, (char*)"width", (char*)"1.0", (char*)"");
+			agsafeset(node, (char*)"height", (char*)"1.0", (char*)"");
+			//agsafeset(node, (char*)"shape", agstrdup((char*)"ellipse"), (char*)"");
+			agsafeset(node, (char*)"shape", (char*)"ellipse", (char*)"");
 		}
 		assert(node);
 		nodes.insert(std::make_pair(*i, node));
@@ -1219,20 +1223,20 @@ Canvas::arrange()
 		if (c->length_hint() != 0) {
 			std::ostringstream len_ss;
 			len_ss << c->length_hint();
-			agsafeset(edge, "minlen", strdup(len_ss.str().c_str()), "1.0");
+			agsafeset(edge, (char*)"minlen", strdup(len_ss.str().c_str()), (char*)"1.0");
 		}
 	}
 
-	gvLayout (gvc, G, "dot");
+	gvLayout (gvc, G, (char*)"dot");
 	//gvRender (gvc, G, "dot", fopen("/dev/null", "w"));
-	gvRender (gvc, G, "dot", fopen("/home/dave/test.dot", "w"));
+	gvRender (gvc, G, (char*)"dot", fopen("/home/dave/test.dot", "w"));
 
 	double least_x=HUGE_VAL, least_y=HUGE_VAL, most_x=0, most_y=0;
 
 	// Arrange to graphviz coordinates
 	for (std::map<boost::shared_ptr<Item>, Agnode_t*>::iterator i = nodes.begin();
 			i != nodes.end(); ++i) {
-		char* pos_prop = agget(i->second, "pos");
+		char* pos_prop = agget(i->second, (char*)"pos");
 		assert(pos_prop);
 		string pos(pos_prop);
 		const string x_str = pos.substr(0, pos.find(","));

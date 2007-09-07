@@ -50,8 +50,8 @@ protected:
 	void write_header();
 	void write_footer();
 
-	void     write_chunk_header(char id[4], uint32_t length);
-	void     write_chunk(char id[4], uint32_t length, void* data);
+	void     write_chunk_header(const char id[4], uint32_t length);
+	void     write_chunk(const char id[4], uint32_t length, void* data);
 	size_t   write_var_len(uint32_t val);
 	//uint32_t read_var_len() const;
 	//int      read_event(MidiEvent& ev) const;

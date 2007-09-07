@@ -175,7 +175,6 @@ Port::disconnect_all()
 void
 Port::set_highlighted(bool b)
 {
-#if 0
 	boost::shared_ptr<Module> module = _module.lock();
 	if (module)
 		module->set_highlighted(b);
@@ -199,7 +198,6 @@ Port::set_highlighted(bool b)
 		_rect.property_fill_color_rgba() = _color;
 		_rect.property_outline_color_rgba() = _color;
 	}
-#endif
 }
 	
 

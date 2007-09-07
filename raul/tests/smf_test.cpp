@@ -10,7 +10,7 @@ using namespace Raul;
 int
 main(int argc, char** argv)
 {
-	char* filename = NULL;
+	const char* filename = NULL;
 
 	if (argc < 2) {
 		filename = "./test.mid";
