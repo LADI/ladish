@@ -134,6 +134,29 @@ Node::to_float()
 	return strtod((const char*)librdf_node_get_literal_value(_node), NULL);
 }
 
+bool
+Node::is_bool()
+{
+	if (_node && librdf_node_get_type(_node) == LIBRDF_NODE_TYPE_LITERAL) {
+		librdf_uri* datatype_uri = librdf_node_get_literal_value_datatype_uri(_node);
+		if (datatype_uri && !strcmp((const char*)librdf_uri_as_string(datatype_uri),
+					"http://www.w3.org/2001/XMLSchema#boolean"))
+			return true;
+	}
+	return false;
+}
+
+
+float
+Node::to_bool()
+{
+	assert(is_bool());
+	if (!strcmp((const char*)librdf_node_get_literal_value(_node), "true"))
+		return true;
+	else
+		return false;
+}
+
 
 } // namespace RDF
 } // namespace Raul

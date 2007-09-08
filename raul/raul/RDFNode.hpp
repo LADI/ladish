@@ -67,6 +67,9 @@ public:
 
 	bool  is_float();
 	float to_float();
+	
+	bool  is_bool();
+	float to_bool();
 
 private:
 	librdf_node* _node;
