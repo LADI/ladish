@@ -39,6 +39,7 @@ public:
 		NIL,
 		INT,
 		FLOAT,
+		BOOL,
 		STRING,
 		BLOB
 	};
@@ -46,6 +47,7 @@ public:
 	Atom()                       : _type(NIL),    _blob_val(0)                     {}
 	Atom(int32_t val)            : _type(INT),    _int_val(val)                    {}
 	Atom(float val)              : _type(FLOAT),  _float_val(val)                  {}
+	Atom(bool val)               : _type(BOOL),   _bool_val(val)                   {}
 	Atom(const char* val)        : _type(STRING), _string_val(strdup(val))         {}
 	Atom(const std::string& val) : _type(STRING), _string_val(strdup(val.c_str())) {}
 
@@ -70,6 +72,7 @@ public:
 		case NIL:    _blob_val   = 0;                        break;
 		case INT:    _int_val    = copy._int_val;            break;
 		case FLOAT:  _float_val  = copy._float_val;          break;
+		case BOOL:   _bool_val   = copy._bool_val;           break;
 		case STRING: _string_val = strdup(copy._string_val); break;
 
 		case BLOB:   _blob_val = malloc(_blob_size);
@@ -94,6 +97,7 @@ public:
 		case NIL:    _blob_val   = 0;                         break;
 		case INT:    _int_val    = other._int_val;            break;
 		case FLOAT:  _float_val  = other._float_val;          break;
+		case BOOL:   _bool_val   = other._bool_val;           break;
 		case STRING: _string_val = strdup(other._string_val); break;
 
 		case BLOB:   _blob_val = malloc(_blob_size);
@@ -112,6 +116,7 @@ public:
 
 	inline int32_t     get_int32()  const { assert(_type == INT);    return _int_val; }
 	inline float       get_float()  const { assert(_type == FLOAT);  return _float_val; }
+	inline bool        get_bool()  const { assert(_type == BOOL);  return _bool_val; }
 	inline const char* get_string() const { assert(_type == STRING); return _string_val; }
 	inline const void* get_blob()   const { assert(_type == BLOB);   return _blob_val; }
 
@@ -125,6 +130,7 @@ private:
 	union {
 		int32_t _int_val;
 		float   _float_val;
+		bool    _bool_val;
 		char*   _string_val;
 		void*   _blob_val;
 	};

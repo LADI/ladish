@@ -65,6 +65,14 @@ public:
 			// xsd:decimal -> pretty decimal (float) literals in Turtle
 			type = librdf_new_uri(world, U("http://www.w3.org/2001/XMLSchema#decimal"));
 			break;
+		case Atom::BOOL:
+			// xsd:boolean -> pretty boolean literals in Turtle
+			if (atom.get_bool())
+				str = "true";
+			else
+				str = "false";
+			type = librdf_new_uri(world, U("http://www.w3.org/2001/XMLSchema#boolean"));
+			break;
 		case Atom::STRING:
 			str = atom.get_string();
 			break;
