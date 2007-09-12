@@ -94,7 +94,7 @@ Node::to_quoted_uri_string() const
 
 
 bool
-Node::is_int()
+Node::is_int() const
 {
 	if (_node && librdf_node_get_type(_node) == LIBRDF_NODE_TYPE_LITERAL) {
 		librdf_uri* datatype_uri = librdf_node_get_literal_value_datatype_uri(_node);
@@ -107,7 +107,7 @@ Node::is_int()
 
 
 int
-Node::to_int()
+Node::to_int() const
 {
 	assert(is_int());
 	return strtol((const char*)librdf_node_get_literal_value(_node), NULL, 10);
@@ -115,7 +115,7 @@ Node::to_int()
 
 
 bool
-Node::is_float()
+Node::is_float() const
 {
 	if (_node && librdf_node_get_type(_node) == LIBRDF_NODE_TYPE_LITERAL) {
 		librdf_uri* datatype_uri = librdf_node_get_literal_value_datatype_uri(_node);
@@ -128,14 +128,14 @@ Node::is_float()
 
 
 float
-Node::to_float()
+Node::to_float() const
 {
 	assert(is_float());
 	return strtod((const char*)librdf_node_get_literal_value(_node), NULL);
 }
 
 bool
-Node::is_bool()
+Node::is_bool() const
 {
 	if (_node && librdf_node_get_type(_node) == LIBRDF_NODE_TYPE_LITERAL) {
 		librdf_uri* datatype_uri = librdf_node_get_literal_value_datatype_uri(_node);
@@ -148,7 +148,7 @@ Node::is_bool()
 
 
 float
-Node::to_bool()
+Node::to_bool() const
 {
 	assert(is_bool());
 	if (!strcmp((const char*)librdf_node_get_literal_value(_node), "true"))

@@ -29,7 +29,7 @@ namespace Raul {
 /** Slow insertion, fast lookup, cache optimized, super fast sorted iteration.
  *
  * This has the advantage over std::map that iterating over the collection
- * is super fast, and iteration is sorted.  Probably also faster due to all
+ * is fast and sorted.  Possibly also faster in some situations due to all
  * data being in a single chunk of memory, cache optimized, etc.
  */
 template <typename K, typename T>

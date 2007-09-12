@@ -62,14 +62,14 @@ public:
 	std::string to_string() const;
 	std::string to_quoted_uri_string() const;
 
-	bool is_int();
-	int  to_int();
+	bool is_int() const;
+	int  to_int() const;
 
-	bool  is_float();
-	float to_float();
+	bool  is_float() const;
+	float to_float() const;
 	
-	bool  is_bool();
-	float to_bool();
+	bool  is_bool() const;
+	float to_bool() const;
 
 private:
 	librdf_node* _node;
