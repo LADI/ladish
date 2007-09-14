@@ -2,7 +2,7 @@
 @prefix drobspecs: <http://drobilla.net/ns/lv2/> .
 @prefix rdfs:      <http://www.w3.org/2000/01/rdf-schema#> .
 
-drobins:osc_threads
+drobins:threads
   a lv2:Specification ;
   rdfs:seeAlso <lv2_threads.ttl> .
 
