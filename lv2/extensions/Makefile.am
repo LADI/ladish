@@ -1,1 +1,1 @@
-SUBDIRS = osc threads
+SUBDIRS = osc threads variables
