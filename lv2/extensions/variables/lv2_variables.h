@@ -19,7 +19,7 @@
 #ifndef LV2_VARIABLES_H
 #define LV2_VARIABLES_H
 
-#include <stdbool.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -47,11 +47,12 @@ extern "C" {
   
   
 /** An LV2 Plugin Variable */
-typedef struct _LV2Var_Variable {
-	char* key;   /**< Lookup key of variable, full URI */
-	char* type;  /**< Type of value, full URI, may be NULL */
-	char* value; /**< Variable value (string literal or URI) */
-} LV2Var_Variable;
+typedef struct _LV2Var_Variable* LV2Var_Variable;
+
+static const char* lv2var_variable_key(const LV2Var_Variable var);
+static const char* lv2var_variable_type(const LV2Var_Variable var);
+static const char* lv2var_variable_value(const LV2Var_Variable var);
+
   
 
 /** Plugin extension data for plugin variables.
@@ -62,30 +63,20 @@ typedef struct _LV2Var_Variable {
  */
 typedef struct _LV2Var_Descriptor {
 	
-
-	/** Get all variables of a plugin (O(log(n), allocates memory).
-	 *
-	 * @param variables Output, set to a shared array of all set variables
-	 *
-	 * @return The number of variables found
-	 */
-	uint32_t (get_all*)(const LV2Var_Variable** variables);
-
-
 	/** Get the value of a plugin variable (O(log(n), non-blocking).
 	 *
 	 * @param key_uri  Key of variable to look up
-	 * @param type_uri Output, set to type of value (full URI, may be NULL)
-	 * @param value    Output, set to value of variable
+	 * @param type_uri Output, set to (shared) type of value (full URI, may be NULL)
+	 * @param value    Output, set to (shared) value of variable
 	 *
-	 * @return true if variable was found and type, value have been set
-	 * accordingly, otherwise false.
+	 * @return 0 if variable was found and type, value have been set accordingly,
+	 * otherwise non-zero.
 	 */
-	bool (get*)(const char** key_uri,
-	            const char** type_uri,
-	            const char** value);
+	int32_t (*get_value)(const char*  key_uri,
+	                     const char** type_uri,
+	                     const char** value);
 	
-
+	
 	/** Set a plugin variable to a typed literal value (O(log(n), allocates memory).
 	 *
 	 * Note that this function is NOT realtime safe.
@@ -101,9 +92,10 @@ typedef struct _LV2Var_Descriptor {
 	 * @param type_uri Type of value (MUST be a full URI, may be NULL)
 	 * @param value    Value of variable to set
 	 */
-	void (set*)(const char* key_uri,
-	            const char* type_uri,
-	            const char* value);
+	void (*set_value)(const char* key_uri,
+	                  const char* type_uri,
+	                  const char* value);
+	
 	
 	/** Unset (erase) a variable (O(log(n), deallocates memory).
 	 *
@@ -111,14 +103,35 @@ typedef struct _LV2Var_Descriptor {
 	 *
 	 * @param key Key of variable to erase
 	 */
-	void (unset*)(const char* key_uri);
+	void (*unset)(const char* key_uri);
 	
 	
 	/** Clear (erase) all set variables (O(1), deallocates memory).
 	 *
 	 * Note that this function is NOT realtime safe.
 	 */
-	void (clear*)();
+	void (*clear)();
+	
+
+	/** Get all variables of a plugin (O(log(n), allocates memory).
+	 *
+	 * @param variables Output, set to a shared array of all set variables
+	 *
+	 * @return The number of variables found
+	 */
+	uint32_t (*get_all_variables)(const LV2Var_Variable** variables);
+
+
+	/** Get the value of a plugin variable (O(log(n), non-blocking).
+	 *
+	 * @param key_uri  Key of variable to look up
+	 * @param variable Output, set to point at (shared) variable
+	 *
+	 * @return 0 if variable was found and variable has been set accordingly,
+	 * otherwise non-zero.
+	 */
+	int32_t (*get_variable)(const char*             key_uri,
+	                        const LV2Var_Variable** variable);
 	
 } LV2Var_Descriptor;
 
