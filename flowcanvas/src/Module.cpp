@@ -122,7 +122,7 @@ Module::set_stacked_border(bool b)
 		_stacked_border = new Gnome::Canvas::Rect(*this, 4.0, 4.0, _width + 4.0, _height + 4.0);
 		_stacked_border->property_fill_color_rgba() = _color;
 		_stacked_border->property_outline_color_rgba() = MODULE_OUTLINE_COLOUR;
-		_stacked_border->property_width_units() = _module_box.property_width_units().get_value();
+		_stacked_border->property_width_units() = _border_width;
 		_stacked_border->lower_to_bottom();
 		_stacked_border->show();
 	} else if (_stacked_border) {
