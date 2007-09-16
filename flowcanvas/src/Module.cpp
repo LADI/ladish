@@ -50,6 +50,7 @@ Module::Module(boost::shared_ptr<Canvas> canvas, const string& name, double x, d
 	, _title_visible(show_title)
 	, _module_box(*this, 0, 0, 0, 0) // w, h set later
 	, _canvas_title(*this, 0, 8, name) // x set later
+	, _stacked_border(NULL)
 {
 	_module_box.property_fill_color_rgba() = MODULE_FILL_COLOUR;
 
@@ -109,6 +110,25 @@ Module::set_border_width(double w)
 {
 	_border_width = w;
 	_module_box.property_width_units() = w;
+	if (_stacked_border)
+		_stacked_border->property_width_units() = w;
+}
+
+
+void
+Module::set_stacked_border(bool b)
+{
+	if (b && !_stacked_border) {
+		_stacked_border = new Gnome::Canvas::Rect(*this, 4.0, 4.0, _width + 4.0, _height + 4.0);
+		_stacked_border->property_fill_color_rgba() = _color;
+		_stacked_border->property_outline_color_rgba() = MODULE_OUTLINE_COLOUR;
+		_stacked_border->property_width_units() = _module_box.property_width_units().get_value();
+		_stacked_border->lower_to_bottom();
+		_stacked_border->show();
+	} else if (_stacked_border) {
+		delete _stacked_border;
+		_stacked_border = NULL;
+	}
 }
 
 
@@ -214,6 +234,8 @@ Module::set_width(double w)
 {
 	_width = w;
 	_module_box.property_x2() = _module_box.property_x1() + w;
+	if (_stacked_border)
+		_stacked_border->property_x2() = _stacked_border->property_x1() + w;
 }
 
 
@@ -222,6 +244,8 @@ Module::set_height(double h)
 {
 	_height = h;
 	_module_box.property_y2() = _module_box.property_y1() + h;
+	if (_stacked_border)
+		_stacked_border->property_y2() = _stacked_border->property_y1() + h;
 }
 
 
@@ -439,6 +463,7 @@ Module::set_default_base_color()
 {
 	_color = MODULE_FILL_COLOUR;
 	_module_box.property_fill_color_rgba() = _color;
+	_stacked_border->property_fill_color_rgba() = _color;
 }
 
 
@@ -447,7 +472,9 @@ Module::set_base_color(uint32_t c)
 {
 	_color = c;
 	_module_box.property_fill_color_rgba() = _color;
+	_stacked_border->property_fill_color_rgba() = _color;
 }
 
 
 } // namespace FlowCanvas
+

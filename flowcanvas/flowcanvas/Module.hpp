@@ -75,6 +75,7 @@ public:
 	void set_highlighted(bool b);
 	void set_base_color(uint32_t c);
 	void set_default_base_color();
+	void set_stacked_border(bool b);
 
 	int num_ports() const { return _ports.size(); }
 
@@ -90,8 +91,9 @@ protected:
 
 	PortVector _ports;
 
-	Gnome::Canvas::Rect _module_box;
-	Gnome::Canvas::Text _canvas_title;
+	Gnome::Canvas::Rect  _module_box;
+	Gnome::Canvas::Text  _canvas_title;
+	Gnome::Canvas::Rect* _stacked_border;
 
 private:
 	friend class Port;
