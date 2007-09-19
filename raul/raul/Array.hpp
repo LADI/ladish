@@ -83,8 +83,6 @@ public:
 	
 	void free() {
 		delete[] _elems;
-		_size = 0;
-		_top = 0;
 	}
 
 	void push_back(T n) {
