@@ -16,6 +16,7 @@
  */
 
 #include <string>
+#include <iostream>
 #include <raul/RDFWorld.hpp>
 #include <raul/RDFNode.hpp>
 
@@ -27,14 +28,16 @@ namespace RDF {
 
 Node::Node(World& world, Type type, const std::string& s)
 {
-	if (type == RESOURCE)
-		_node = librdf_new_node_from_uri_string(world.world(), (const unsigned char*)s.c_str());
-	else if (type == LITERAL)
+	if (type == RESOURCE) {
+		const string uri = world.expand_uri(s);
+		_node = librdf_new_node_from_uri_string(world.world(), (const unsigned char*)uri.c_str());
+	} else if (type == LITERAL) {
 		_node = librdf_new_node_from_literal(world.world(), (const unsigned char*)s.c_str(), NULL, 0);
-	else if (type == BLANK)
+	} else if (type == BLANK) {
 		_node = librdf_new_node_from_blank_identifier(world.world(), (const unsigned char*)s.c_str());
-	else
+	} else {
 		_node = NULL;
+		}
 
 	assert(this->type() == type);
 }
