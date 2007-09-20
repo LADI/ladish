@@ -22,6 +22,7 @@
 #include <string>
 #include <librdf.h>
 #include <boost/utility.hpp>
+#include <glibmm/thread.h>
 #include <raul/Namespaces.hpp>
 #include <raul/RDFNode.hpp>
 
@@ -44,10 +45,13 @@ public:
 
 	librdf_world* world() { return _world; }
 
+	Glib::Mutex& mutex() { return _mutex; }
+
 private:
 	void setup_prefixes();
 
 	librdf_world* _world;
+	Glib::Mutex   _mutex;
 	Namespaces    _prefixes;
 
 	size_t _next_blank_id;

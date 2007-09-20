@@ -30,6 +30,8 @@ namespace RDF {
 Query::Results
 Query::run(World& world, Model& model, const Glib::ustring base_uri_str) const
 {
+	Glib::Mutex::Lock lock(world.mutex());
+
 	//cout << "\n**************** QUERY *******************\n";
 	//cout << _query << endl;
 	//cout << "******************************************\n\n";
@@ -65,7 +67,7 @@ Query::run(World& world, Model& model, const Glib::ustring base_uri_str) const
 			librdf_node* value = librdf_query_results_get_binding_value(results, i);
 
 			if (name && value)
-				bindings.insert(std::make_pair(std::string(name), Node(value)));
+				bindings.insert(std::make_pair(std::string(name), Node(world, value)));
 		}
 
 		result.push_back(bindings);

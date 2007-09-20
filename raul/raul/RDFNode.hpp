@@ -38,15 +38,17 @@ public:
 		BLANK    = LIBRDF_NODE_TYPE_BLANK
 	};
 
-	Node() : _node(NULL) {}
+	Node() : _world(NULL), _node(NULL) {}
 
 	Node(World& world, Type t, const std::string& s);
 	Node(World& world);
-	Node(librdf_node* node);
+	Node(World& world, librdf_node* node);
 	Node(const Node& other);
 	~Node();
 
 	Type type() const { return ((_node) ? (Type)librdf_node_get_type(_node) : UNKNOWN); }
+
+	World* world() const { return _world; }
 	
 	librdf_node* get_node() const { return _node; }
 
@@ -72,6 +74,7 @@ public:
 	float to_bool() const;
 
 private:
+	World*       _world;
 	librdf_node* _node;
 };
 

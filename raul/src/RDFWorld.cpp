@@ -46,6 +46,7 @@ World::World()
 
 World::~World()
 {
+	Glib::Mutex::Lock lock(_mutex);
 	librdf_free_world(_world);
 }
 

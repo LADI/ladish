@@ -27,7 +27,10 @@ namespace RDF {
 
 
 Node::Node(World& world, Type type, const std::string& s)
+	: _world(&world)
 {
+	Glib::Mutex::Lock lock(world.mutex(), Glib::TRY_LOCK);
+
 	if (type == RESOURCE) {
 		const string uri = world.expand_uri(s);
 		_node = librdf_new_node_from_uri_string(world.world(), (const unsigned char*)uri.c_str());
@@ -37,35 +40,46 @@ Node::Node(World& world, Type type, const std::string& s)
 		_node = librdf_new_node_from_blank_identifier(world.world(), (const unsigned char*)s.c_str());
 	} else {
 		_node = NULL;
-		}
+	}
 
 	assert(this->type() == type);
 }
 	
 
 Node::Node(World& world)
-	: _node(librdf_new_node(world.world()))
+	: _world(&world)
 {
+	Glib::Mutex::Lock lock(world.mutex(), Glib::TRY_LOCK);
+	_node = librdf_new_node(world.world());
 }
 
 
-Node::Node(librdf_node* node)
-	: _node(librdf_new_node_from_node(node))
+Node::Node(World& world, librdf_node* node)
+	: _world(&world)
 {
-	assert(node);
+	Glib::Mutex::Lock lock(world.mutex(), Glib::TRY_LOCK);
+	_node = librdf_new_node_from_node(node);
 }
 
 
 Node::Node(const Node& other)
-	: _node(other._node ? librdf_new_node_from_node(other._node): NULL)
+	: _world(other.world())
+	, _node(NULL)
 {
+	if (_world) {
+		Glib::Mutex::Lock lock(_world->mutex(), Glib::TRY_LOCK);
+		_node = (other._node ? librdf_new_node_from_node(other._node) : NULL);
+	}
 }
 
 
 Node::~Node()
 {
-	if (_node)
-		librdf_free_node(_node);
+	if (_world) {
+		Glib::Mutex::Lock lock(_world->mutex(), Glib::TRY_LOCK);
+		if (_node)
+			librdf_free_node(_node);
+	}
 }
 
 

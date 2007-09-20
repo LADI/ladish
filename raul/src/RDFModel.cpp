@@ -39,6 +39,7 @@ Model::Model(RDF::World& world)
 	: _world(world)
 	, _serializer(NULL)
 { 
+	Glib::Mutex::Lock lock(world.mutex());
 	_storage = librdf_new_storage(_world.world(), "hashes", NULL, "hash-type='memory'");
 	_model = librdf_new_model(_world.world(), _storage, NULL);
 }
@@ -50,6 +51,7 @@ Model::Model(World& world, const Glib::ustring& data_uri, Glib::ustring base_uri
 	: _world(world)
 	, _serializer(NULL)
 {
+	Glib::Mutex::Lock lock(world.mutex());
 	_storage = librdf_new_storage(_world.world(), "hashes", NULL, "hash-type='memory'");
 	_model = librdf_new_model(_world.world(), _storage, NULL);
 
@@ -82,6 +84,8 @@ Model::Model(World& world, const Glib::ustring& data_uri, Glib::ustring base_uri
 
 Model::~Model()
 {
+	Glib::Mutex::Lock lock(_world.mutex());
+
 	if (_serializer)
 		librdf_free_serializer(_serializer);
 
@@ -93,6 +97,7 @@ Model::~Model()
 void
 Model::setup_prefixes()
 {
+	Glib::Mutex::Lock lock(_world.mutex());
 	assert(_serializer);
 
 	for (Namespaces::const_iterator i = _world.prefixes().begin(); i != _world.prefixes().end(); ++i) {
@@ -109,6 +114,8 @@ Model::setup_prefixes()
 void
 Model::serialize_to_file_handle(FILE* fd)
 {
+	Glib::Mutex::Lock lock(_world.mutex());
+
 	_serializer = librdf_new_serializer(_world.world(), RDF_LANG, NULL, NULL);
 	setup_prefixes();
 	librdf_serializer_serialize_model_to_file_handle(_serializer, fd, NULL, _model);
@@ -126,6 +133,8 @@ Model::serialize_to_file_handle(FILE* fd)
 void
 Model::serialize_to_file(const Glib::ustring& uri_str)
 {
+	Glib::Mutex::Lock lock(_world.mutex());
+
 	librdf_uri* uri = librdf_new_uri(_world.world(), (const unsigned char*)uri_str.c_str());
 	if (uri && librdf_uri_is_file_uri(uri)) {
 		_serializer = librdf_new_serializer(_world.world(), RDF_LANG, NULL, NULL);
@@ -148,6 +157,8 @@ Model::serialize_to_file(const Glib::ustring& uri_str)
 string
 Model::serialize_to_string()
 {
+	Glib::Mutex::Lock lock(_world.mutex());
+
 	_serializer = librdf_new_serializer(_world.world(), RDF_LANG, NULL, NULL);
 	setup_prefixes();
 
@@ -169,6 +180,8 @@ Model::add_statement(const Node& subject,
                      const Node& predicate,
                      const Node& object)
 {
+	Glib::Mutex::Lock lock(_world.mutex());
+
 	librdf_statement* triple = librdf_new_statement_from_nodes(_world.world(),
 			subject.get_node(), predicate.get_node(), object.get_node());
 	
@@ -181,6 +194,8 @@ Model::add_statement(const Node&   subject,
                      const string& predicate_id,
                      const Node&   object)
 {
+	Glib::Mutex::Lock lock(_world.mutex());
+
 	const string predicate_uri = _world.expand_uri(predicate_id);
 	librdf_node* predicate = librdf_new_node_from_uri_string(_world.world(),
 			(const unsigned char*)predicate_uri.c_str());
@@ -197,6 +212,8 @@ Model::add_statement(const Node& subject,
                      const Node& predicate,
                      const Atom& object)
 {
+	Glib::Mutex::Lock lock(_world.mutex());
+
 	librdf_node* atom_node = AtomRedland::atom_to_rdf_node(_world.world(), object);
 
 	if (atom_node) {
@@ -214,6 +231,8 @@ Model::add_statement(const Node&   subject,
                      const string& predicate_id,
                      const Atom&   object)
 {
+	Glib::Mutex::Lock lock(_world.mutex());
+
 	const string predicate_uri = _world.expand_uri(predicate_id);
 	librdf_node* predicate = librdf_new_node_from_uri_string(_world.world(),
 			(const unsigned char*)predicate_uri.c_str());
