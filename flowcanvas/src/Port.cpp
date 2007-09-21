@@ -44,7 +44,9 @@ Port::Port(boost::shared_ptr<Module> module, const string& name, bool is_input, 
   _rect(*this, 0, 0, 0, 0),
   _control_rect(*this, 0, 0, 0, 0)
 {
-	_menu.items().push_back(Gtk::Menu_Helpers::MenuElem(
+	// Derived classes might nuke this and make a custom one, or add to it
+	_menu = new Gtk::Menu();
+	_menu->items().push_back(Gtk::Menu_Helpers::MenuElem(
 		"Disconnect All", sigc::mem_fun(this, &Port::disconnect_all)));
 
 	_rect.property_fill_color_rgba() = color;

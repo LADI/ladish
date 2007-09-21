@@ -65,12 +65,14 @@ public:
 	void set_highlighted(bool b);
 	
 	void zoom(float z);
-
+	
 	void popup_menu(guint button, guint32 activate_time) {
-		_menu.popup(button, activate_time);
+		if (_menu)
+			_menu->popup(button, activate_time);
 	}
 
-	Gtk::Menu& menu() { return _menu; }
+	Gtk::Menu* menu() const           { return _menu; }
+	void       set_menu(Gtk::Menu* m) { delete _menu; _menu = m; }
 
 	double width() const { return _width; }
 	void   set_width(double w);
@@ -120,7 +122,7 @@ protected:
 	Gnome::Canvas::Text _label;
 	Gnome::Canvas::Rect _rect;
 	Gnome::Canvas::Rect _control_rect;
-	Gtk::Menu           _menu;
+	Gtk::Menu*          _menu;
 };
 
 typedef std::vector<boost::shared_ptr<Port> > PortVector;
