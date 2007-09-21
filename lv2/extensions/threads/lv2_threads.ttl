@@ -53,7 +53,7 @@ run callback).  The thread run callback has the signature:
 void run(LV2Handle Instance, uint32_t SampleCount)
 
 When run is called, SampleCount frames worth of input/output should be
-read/written to all ports associated with this thread.
+read from/written to all ports associated with this thread.
 """ .
 
 
@@ -63,28 +63,25 @@ read/written to all ports associated with this thread.
 A thread which is executed only when there is work to be done
 (e.g. a message is received).  The thread run callback has the signature:
 
-bool run(LV2Handle Instance)
+bool run(LV2Handle Instance, uint8_t* outputs_written)
 
 When run is called, any pending input in ports associated with this thread
 should be processed, and true returned iff output was written (meaning
 plugins connected to those output ports should be executed as well).
 
-Any plugin with a BlockingThread context must provide an additional function
-with the signature:
-
-bool has_data(LV2Handle Instance, uint32_t port)
-
-which is guaranteed to be called only from the thread associated with port,
-and must return true iff the port is an output and contains pending data
-(resulting from the preceding call to this thread's run method).
+If output is written, the plugins must set the nth bit (counting from the
+LSB) to 1 if the nth port was written, otherwise 0, for all ports associated
+with this context.  The plugin MUST NOT touch any bits which correspond to
+ports for other contexts.  The host may use this in turn to execute plugins
+connected to these outputs, triggering a chain of computation.
 
 The HostFeatures struct passed by the host to the plugin's instantiate method
 contains a function with the signature:
 
 void request_run(const char* context_uri)
 
-which allows the plugin to specifically request execution of a blockin
-thread's callback from a rolling thread (e.g. the main LV2 run method).  If
+which allows the plugin to specifically request execution of a blocking
+thread's callback from any thread (e.g. the main LV2 run method).  If
 the plugin is hardRtCapable, this method must be realtime safe.
 """ .
 
