@@ -41,7 +41,8 @@ public:
 	  _app(app),
 	  _type(type)
 	{
-		Gtk::Menu::MenuList& items = _menu.items();
+		_menu = new Gtk::Menu();
+		Gtk::Menu::MenuList& items = _menu->items();
 		if (type == InputOutput) {
 			items.push_back(Gtk::Menu_Helpers::MenuElem("Split",
 				sigc::mem_fun(this, &PatchageModule::split)));
@@ -55,7 +56,7 @@ public:
 		//signal_clicked.connect(sigc::mem_fun(this, &PatchageModule::on_click));
 	}
 
-	virtual ~PatchageModule() { }
+	virtual ~PatchageModule() { delete _menu; }
 	
 	/*virtual void add_patchage_port(const string& port_name, bool is_input, PortType type)
 	{
@@ -110,12 +111,6 @@ public:
 	
 	virtual void show_dialog() {}
 	
-	virtual void on_click(GdkEventButton* ev) {
-		if (ev->button == 3)
-			_menu.popup(ev->button, ev->time);
-		FlowCanvas::Item::on_click(ev);
-	}
-
 	virtual void menu_disconnect_all() {
 		for (PortVector::iterator p = _ports.begin(); p != _ports.end(); ++p)
 			(*p)->disconnect_all();
@@ -125,7 +120,6 @@ public:
 
 protected:
 	Patchage*  _app;
-	Gtk::Menu  _menu;
 	ModuleType _type;
 };
 
