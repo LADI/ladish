@@ -27,8 +27,58 @@
 @prefix xsd:  <http://www.w3.org/2001/XMLSchema> .
 @prefix doap: <http://usefulinc.com/ns/doap#> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
 
-<http://drobilla.net/ns/lv2ext/variables> a lv2:Specification .
+<http://drobilla.net/ns/lv2ext/variables> a lv2:Specification ;
+	rdfs:comment """
+An extension for setting named/typed variables on an instance of an
+LV2 Plugin.  Variables can be set in code and/or serialized in RDF, e.g.
 
-# Nothing yet....
+<http://example.org/plugin> a lv2:Plugin ;
+	lv2var:variable [
+		a            lv2var:Variable ;
+		lv2var:type  xsd:string ;
+		lv2var:value "Hello world."
+	] .
+""" .
+
+
+:Variable a rdfs:Class ;
+	rdfs:label   "LV2 Variable" ;
+	rdfs:comment "A named and typed instance variable for an LV2 Plugin." ;
+
+	rdfs:subClassOf [
+		a                 owl:Restriction ;
+		rdfs:comment      "A Variable must have exactly one :type URI" ;
+		owl:onProperty    :type ;
+		owl:cardinality   1 ;
+		owl:allValuesFrom rdfs:Resource
+	], [
+		a                 owl:Restriction ;
+		rdfs:comment      "A Variable must have exactly one :value" ;
+		owl:onProperty    :value ;
+		owl:cardinality   1
+	] .
+
+
+:type a owl:ObjectProperty ;
+	rdfs:label   "Variable type" ;
+	rdfs:comment "The (data) type of an LV2 Variable." ;
+	rdfs:domain  :Variable ;
+	rdfs:range   rdfs:Resource .
+
+
+:value a owl:ObjectProperty ;
+	rdfs:label   "Variable value" ;
+	rdfs:comment "The value of an LV2 Variable." ;
+	rdfs:domain  :Variable .
+
+
+:variable a owl:ObjectProperty ;
+	rdfs:label   "Has an LV2 Variable" ;
+	rdfs:range   :Variable ;
+	rdfs:comment """
+Relates an LV2 Variable to some Resource.  The domain of this property is
+deliberately not restricted to lv2:Plugin, as LV2 Variables can be useful
+in other contexts as well.""" .
 
