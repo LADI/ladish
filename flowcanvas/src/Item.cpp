@@ -23,10 +23,10 @@ namespace FlowCanvas {
 
 
 Item::Item(boost::shared_ptr<Canvas> canvas,
-     const string&                   name,
-     double                          x,
-     double                          y,
-     uint32_t                        color)
+           const string&             name,
+           double                    x,
+           double                    y,
+           uint32_t                  color)
 	: Gnome::Canvas::Group(*canvas->root(), x, y)
 	, _canvas(canvas)
 	, _name(name)
@@ -34,8 +34,8 @@ Item::Item(boost::shared_ptr<Canvas> canvas,
 	, _height(1)
 	, _color(color)
 	, _selected(false)
+	, _menu(NULL)
 {
-	//signal_event().connect(sigc::mem_fun(this, &Item::item_event));
 }
 
 
@@ -167,8 +167,12 @@ Item::on_click(GdkEventButton* event)
 			canvas->select_item(shared_from_this());
 		}
 	}
-
-	signal_clicked.emit(event);
+	
+	if (event->button == 3) {
+		popup_menu(event->button, event->time);
+	} else {
+		signal_clicked.emit(event);
+	}
 }
 
 

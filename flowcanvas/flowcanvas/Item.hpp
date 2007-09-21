@@ -59,6 +59,14 @@ public:
 	virtual void zoom(double) {}
 	boost::weak_ptr<Canvas> canvas() const { return _canvas; }
 	
+	void popup_menu(guint button, guint32 activate_time) {
+		if (_menu)
+			_menu->popup(button, activate_time);
+	}
+
+	Gtk::Menu* menu() const           { return _menu; }
+	void       set_menu(Gtk::Menu* m) { delete _menu; _menu = m; }
+	
 	double width() const { return _width; }
 	virtual void set_width(double w) = 0;
 	
@@ -106,6 +114,7 @@ protected:
 	double      _height;
 	uint32_t    _color;
 	bool        _selected;
+	Gtk::Menu*  _menu;
 };
 
 
