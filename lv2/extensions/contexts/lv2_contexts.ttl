@@ -1,6 +1,6 @@
-# LV2 Threads Extension
+# LV2 Contexts Extension
 #
-# Allows for an LV2 plugin to have several independent threads, each with its
+# Allows for an LV2 plugin to have several independent contexts, each with its
 # own run callback and associated ports.
 #
 # Copyright (C) 2007 Dave Robillard
@@ -23,7 +23,7 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-@prefix :     <http://drobilla.net/ns/lv2ext/threads#> .
+@prefix :     <http://drobilla.net/ns/lv2ext/contexts#> .
 @prefix lv2:  <http://lv2plug.in/ns/lv2core#> .
 @prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
@@ -31,50 +31,50 @@
 @prefix doap: <http://usefulinc.com/ns/doap#> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
 
-<http://drobilla.net/ns/lv2ext/threads> a lv2:Specification ;
+<http://drobilla.net/ns/lv2ext/contexts> a lv2:Specification ;
 	rdfs:comment """
-An extension for LV2 plugins which have multiple concurrent threads.
+An extension for LV2 plugins which have multiple concurrent contexts.
 
 Any host which supports this extension must pass a "host feature" to
-the plugin's instantiate method with URI http://drobilla.net/ns/lv2ext/threads
+the plugin's instantiate method with URI http://drobilla.net/ns/lv2ext/contexts
 and a pointer to a
 
 struct {
 	void* host_handle;
-	void (*request_run)(void* host_handle, const char* thread_uri);
+	void (*request_run)(void* host_handle, const char* context_uri);
 }
 
 where the plugin may call request_run with the given host_handle (from any
-thread) to demand immediate execution of the thread specified.
+context) to demand immediate execution of the context specified.
 
-If the host does not support blocking threads, request_run may be set to NULL,
-but plugins which have a :BlockingThread which is :mandatory MUST NOT be
-instantiated.  If the plugin has ANY thread which is :hardRtCapable,
+If the host does not support blocking contexts, request_run may be set to NULL,
+but plugins which have a :BlockingContext which is :mandatory MUST NOT be
+instantiated.  If the plugin has ANY context which is :hardRtCapable,
 request_run must be realtime safe (as defined by lv2:hardRtCapable).
 
-Unless otherwise stated, each thread (defined by some URI) adds a new
-threading class similar to the Audio class defined by LV2.  Each thread has a
+Unless otherwise stated, each context (defined by some URI) adds a new
+contexting class similar to the Audio class defined by LV2.  Each context has a
 run callback and a connect_port callback both in the same class (i.e. can't be
 called concurrently), but may be called concurrently with functions for other
-threads.  Thread properties such as :hardRtCapable apply to both functions.
+contexts.  Context properties such as :hardRtCapable apply to both functions.
 The host MUST only call the correct connect_port function associated with the
-thread for that port.
+context for that port.
 """ .
 
 
 #########################
-## Thread Base Classes ##
+## Context Base Classes ##
 #########################
 
-:Thread a rdfs:Class ;
-	rdfs:label "Thread" ;
-	rdfs:comment "A thread (execution context) of an LV2 plugin." .
+:Context a rdfs:Class ;
+	rdfs:label "Context" ;
+	rdfs:comment "A context (execution context) of an LV2 plugin." .
 
 
-:RollingThread a rdfs:Class ;
-	rdfs:subClassOf :Thread ;
+:RollingContext a rdfs:Class ;
+	rdfs:subClassOf :Context ;
 	rdfs:comment """
-A thread which is is continually executed in blocks (like the standard LV2
+A context which is is continually executed in blocks (like the standard LV2
 run callback).  Extension data is a pointer to a
 
 struct {
@@ -83,14 +83,14 @@ struct {
 }
 
 When run is called, sample_count frames worth of input/output should be
-read from/written to all ports associated with this thread.
+read from/written to all ports associated with this context.
 """ .
 
 
-:BlockingThread a rdfs:Class ;
-	rdfs:subClassOf :Thread ;
+:BlockingContext a rdfs:Class ;
+	rdfs:subClassOf :Context ;
 	rdfs:comment """
-A thread which is executed only when there is work to be done
+A context which is executed only when there is work to be done
 (e.g. a message is received).  Extension data is a pointer to a
 
 struct {
@@ -98,14 +98,14 @@ struct {
 	void (*connect_port)(LV2_Handle instance, uint32_t port, void* data);
 }
 
-When run is called, any pending input in ports associated with this thread
+When run is called, any pending input in ports associated with this context
 should be read, and true returned iff output was written (meaning
 plugins connected to ports where output has been written should be executed).
 
 The callback MUST set the nth bit of outputs_written to 1 if the port with
 index n was written to, otherwise 0.  The macros LV2_THREADS_SET_OUTPUT_WRITTEN
-and LV2_THREADS_UNSET_OUTPUT_WRITTEN are provided for this (see lv2_threads.h).
-The callback MUST NOT touch any bits which correspond to ports for other threads.
+and LV2_THREADS_UNSET_OUTPUT_WRITTEN are provided for this (see lv2_contexts.h).
+The callback MUST NOT touch any bits which correspond to ports for other contexts.
 """ .
 
 
@@ -113,114 +113,114 @@ The callback MUST NOT touch any bits which correspond to ports for other threads
 ## Plugin Properties ##
 #######################
 
-:hasThread a rdf:Property ;
+:hasContext a rdf:Property ;
 	rdfs:domain  lv2:Plugin ;
-	rdfs:range   :Thread ;
-	rdfs:label   "Has a thread" ;
+	rdfs:range   :Context ;
+	rdfs:label   "Has a context" ;
 	rdfs:comment """
 Signifies a Plugin supports a certain context, defined by a URI.
 If a plugin supports a context, the extension_data function, when called with
-the URI for that thread, should return a thread descriptor as defined by the
-specification of the thread URI.  If a plugin has any threads, it MUST specify
-the associated thread of ALL ports, with the :thread port property.""" .
+the URI for that context, should return a context descriptor as defined by the
+specification of the context URI.  If a plugin has any contexts, it MUST specify
+the associated context of ALL ports, with the :context port property.""" .
 
 
 #####################
 ## Port Properties ##
 #####################
 
-:thread a rdf:Property ;
+:context a rdf:Property ;
 	rdfs:domain lv2:Port ;
-	rdfs:range  :Thread ;
-	rdfs:label  "Is used by thread" ;
+	rdfs:range  :Context ;
+	rdfs:label  "Is used by context" ;
 	rdfs:comment """
-Every port on a plugin with threads must be associated with exactly one thread.
+Every port on a plugin with contexts must be associated with exactly one context.
 The port will only be connected/read/written by that context.""" .
 
 
 ##################
-## Thread Hints ##
+## Context Hints ##
 ##################
 
-:ThreadHint a rdfs:Class ;
-    rdfs:label      "Thread hint" ;
+:ContextHint a rdfs:Class ;
+    rdfs:label      "Context hint" ;
     rdfs:subClassOf lv2:Hint ;
-    rdfs:comment    "Hint for a plugin thread." .
+    rdfs:comment    "Hint for a plugin context." .
 
-:threadHint a rdf:Property ;
-    rdfs:domain  :Thread ;
-    rdfs:range   :ThreadHint ;
-    rdfs:label   "Thread hint" ;
-    rdfs:comment "Relates Threads to ThreadHints." .
+:contextHint a rdf:Property ;
+    rdfs:domain  :Context ;
+    rdfs:range   :ContextHint ;
+    rdfs:label   "Context hint" ;
+    rdfs:comment "Relates Contexts to ContextHints." .
 
-:hardRTCapable a :ThreadHint ;
+:hardRTCapable a :ContextHint ;
     rdfs:label   "Hard realtime capable" ;
     rdfs:comment """
-Indicates that the thread is capable of running in a "hard real-time"
+Indicates that the context is capable of running in a "hard real-time"
 environment, with identical conditions as lv2:hardRTCapable.
 """ .
 
-:mandatory a :ThreadHint ;
-    rdfs:label   "Mandatory thread" ;
+:mandatory a :ContextHint ;
+    rdfs:label   "Mandatory context" ;
     rdfs:comment """
-Indicates that the thread is necessary for execution of the plugin whatsoever.
-If a thread is mandatory but the host does not know how to execute it (e.g. if
-the thread is blocking but the host doesn't support blocking threads), the
+Indicates that the context is necessary for execution of the plugin whatsoever.
+If a context is mandatory but the host does not know how to execute it (e.g. if
+the context is blocking but the host doesn't support blocking contexts), the
 host MUST NOT instantiate the plugin.
 """ .
 
 
 #######################
-## Thread Priorities ##
+## Context Priorities ##
 #######################
 
 # Ignore this crap for now
 
-:ThreadPriority a rdfs:Class ;
-	rdfs:label "Thread priority" ;
+:ContextPriority a rdfs:Class ;
+	rdfs:label "Context priority" ;
 	rdfs:comment """
-The scheduling priority of a thread.
+The scheduling priority of a context.
 """ .
 
 :AudioPriority a rdfs:Class ;
-	rdfs:subClassOf :ThreadPriority ;
-	rdfs:label "Audio thread priority" ;
+	rdfs:subClassOf :ContextPriority ;
+	rdfs:label "Audio context priority" ;
 	rdfs:comment """
-Signifies a thread should be run with priority equal to that of the
+Signifies a context should be run with priority equal to that of the
 standard LV2 run callback.
 """ .
 
 :MainPriority a rdfs:Class ;
-	rdfs:subClassOf :ThreadPriority ;
-	rdfs:label "Main thread priority" ;
+	rdfs:subClassOf :ContextPriority ;
+	rdfs:label "Main context priority" ;
 	rdfs:comment """
-Signifies a thread should be run with priority equal to that of the
-main thread of the host (typically non-realtime default system priority).
+Signifies a context should be run with priority equal to that of the
+main context of the host (typically non-realtime default system priority).
 """ .
 
 
 :HighPriorityWorker a rdfs:Class ;
-	rdfs:subClassOf :Thread ;
+	rdfs:subClassOf :Context ;
 	rdfs:comment """
-A worker thread with a high priority, just below that of the main run
+A worker context with a high priority, just below that of the main run
 callback.  If the run callback is run with realtime priority, the host
-should run this thread with (slighly lower) realtime priority as well.
+should run this context with (slighly lower) realtime priority as well.
 """ .
 
 :LowPriorityWorker a rdfs:Class ;
-	rdfs:subClassOf :Thread ;
+	rdfs:subClassOf :Context ;
 	rdfs:comment """
-A worker thread with a low non-realtime priority.
+A worker context with a low non-realtime priority.
 """ .
 
 
 #################################
-## Specific thread definitions ##
+## Specific context definitions ##
 #################################
 
-:MessageThread a rdfs:Class ;
-	rdfs:subClassOf :BlockingThread ;
+:MessageContext a rdfs:Class ;
+	rdfs:subClassOf :BlockingContext ;
 	rdfs:comment """
-A blocking thread for on demand message-like processing.
+A blocking context for on demand message-like processing.
 """ .
 
