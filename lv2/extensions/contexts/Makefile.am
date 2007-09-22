@@ -1,6 +1,6 @@
 AM_LDFLAGS = -module -avoid-version -Wc,-nostartfiles
 
-specbasename = lv2_threads
+specbasename = lv2_contexts
 
 specdir   = @lv2plugindir@/$(specbasename).lv2
 spec_DATA = manifest.ttl $(specbasename).ttl
