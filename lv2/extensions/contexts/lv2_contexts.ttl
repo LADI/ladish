@@ -70,7 +70,15 @@ function on a port with a context other than the main LV2 run function.
 
 :Context a rdfs:Class ;
 	rdfs:label "LV2 Context" ;
-	rdfs:comment "A potentially concurrent context (callback) on a plugin." .
+	rdfs:comment """
+A potentially concurrent context (callback) on a plugin.
+
+If a plugin supports a context (specified with the :optionalContext or
+:requiredContext plugin properties) its extension_data function, called with
+the URI for that context, should return a context descriptor as defined by the
+specification of the context URI.  If a plugin has any contexts, it MUST specify
+the associated context of ALL ports, with the :context port property.""" .
+
 
 
 :RollingContext a rdfs:Class ;
@@ -115,16 +123,21 @@ The callback MUST NOT touch any bits which correspond to ports for other context
 ## Plugin Properties ##
 #######################
 
-:hasContext a rdf:Property ;
+:optionalContext a rdf:Property ;
 	rdfs:domain  lv2:Plugin ;
 	rdfs:range   :Context ;
-	rdfs:label   "Has a context" ;
+	rdfs:label   "Has an optional context" ;
 	rdfs:comment """
-Signifies a Plugin supports a certain context, defined by a URI.
-If a plugin supports a context, its extension_data function, when called with
-the URI for that context, should return a context descriptor as defined by the
-specification of the context URI.  If a plugin has any contexts, it MUST specify
-the associated context of ALL ports, with the :context port property.""" .
+Signifies a Plugin supports a certain context, defined by a URI, which may
+be ignored by the host.""" .
+
+:requiredContext a rdf:Property ;
+	rdfs:domain  lv2:Plugin ;
+	rdfs:range   :Context ;
+	rdfs:label   "Has a required context" ;
+	rdfs:comment """
+Signifies a Plugin supports a certain context, defined by a URI, which must be
+supported by the host for the plugin to function.""" .
 
 
 #####################
