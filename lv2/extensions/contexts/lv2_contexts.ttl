@@ -136,8 +136,11 @@ the associated context of ALL ports, with the :context port property.""" .
 	rdfs:range  :Context ;
 	rdfs:label  "Is used by context" ;
 	rdfs:comment """
-Every port on a plugin with contexts must be associated with exactly one context.
-The port will only be connected/read/written by that context.""" .
+The context a particular port is associated with; the port will only be
+connected/read/written by that context.
+
+If no context is specified, the port is considered part of the default LV2
+audio context.""" .
 
 
 ###################
@@ -169,6 +172,8 @@ Indicates that the context is necessary for execution of the plugin whatsoever.
 If a context is mandatory but the host does not know how to execute it (e.g. if
 the context is blocking but the host doesn't support them, or if the host
 doesn't recognize the context type), the host MUST NOT instantiate the plugin.
+
+If a context is not mandatory, all its ports must be lv2:connectionOptional.
 """ .
 
 
