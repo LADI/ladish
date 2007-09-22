@@ -319,6 +319,10 @@ typedef struct _LV2_Descriptor {
    * NULL if it does not support the extension, but hosts SHOULD NOT use this
    * as a discovery method (e.g. hosts should only call this function for
    * extensions known to be supported by the plugin from the data file).
+   *
+   * The host has no responsibility to free the value returned by any call
+   * to this function (it will typically return a pointer to a static struct,
+   * like lv2_descriptor).
    * 
    * NOTE: It is highly recommended that this function returns a struct, and
    * NOT a direct function pointer.  Standard C++ (for real reasons) does not
@@ -327,7 +331,7 @@ typedef struct _LV2_Descriptor {
    * function pointers (which is valid standard C++, and a much better idea
    * for extensibility anyway).
    */
-  void* (*extension_data)(const char * URI); 
+  const void* (*extension_data)(const char * URI); 
 
 } LV2_Descriptor;
 
