@@ -90,8 +90,6 @@ Item::on_event(GdkEvent* event)
 			           Gdk::Cursor(Gdk::FLEUR),
 			           event->button.time);
 			dragging = true;
-		} else {
-			on_click(&event->button);
 		}
 		break;
 	
@@ -125,6 +123,8 @@ Item::on_event(GdkEvent* event)
 			} else if (!double_click) {
 				on_click(&event->button);
 			}
+		} else {
+			on_click(&event->button);
 		}
 		double_click = false;
 		break;

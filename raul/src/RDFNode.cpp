@@ -88,6 +88,7 @@ Node::to_string() const
 {
 	const Type type = this->type();
 	if (type == RESOURCE) {
+		assert(librdf_node_get_uri(_node));
 		return string((const char*)librdf_uri_as_string(librdf_node_get_uri(_node)));
 	} else if (type == LITERAL) {
 		return string((const char*)librdf_node_get_literal_value(_node));
@@ -103,6 +104,7 @@ string
 Node::to_quoted_uri_string() const
 {
 	assert(type() == RESOURCE);
+	assert(librdf_node_get_uri(_node));
 	string str = "<";
 	str.append((const char*)librdf_uri_as_string(librdf_node_get_uri(_node)));
 	str.append(">");

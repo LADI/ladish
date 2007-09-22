@@ -52,8 +52,6 @@ public:
 		}
 		items.push_back(Gtk::Menu_Helpers::MenuElem("Disconnect All",
 			sigc::mem_fun(this, &PatchageModule::menu_disconnect_all)));
-
-		//signal_clicked.connect(sigc::mem_fun(this, &PatchageModule::on_click));
 	}
 
 	virtual ~PatchageModule() { delete _menu; }
