@@ -31,7 +31,36 @@
 @prefix doap: <http://usefulinc.com/ns/doap#> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
 
-<http://drobilla.net/ns/lv2ext/threads> a lv2:Specification .
+<http://drobilla.net/ns/lv2ext/threads> a lv2:Specification ;
+	rdfs:comment """
+An extension for LV2 plugins which have multiple concurrent threads.
+
+Any host which supports this extension must pass a "host feature" to
+the plugin's instantiate method with URI http://drobilla.net/ns/lv2ext/threads
+and a pointer to a
+
+struct {
+	void* host_handle;
+	void (*request_run)(void* host_handle, const char* thread_uri);
+}
+
+where the plugin may call request_run with the given host_handle (from any
+thread) to demand immediate execution of the thread specified.
+
+If the host does not support blocking threads, request_run may be set to NULL,
+but plugins which have a :BlockingThread which is :mandatory MUST NOT be
+instantiated.  If the plugin has ANY thread which is :hardRtCapable,
+request_run must be realtime safe (as defined by lv2:hardRtCapable).
+
+Unless otherwise stated, each thread (defined by some URI) adds a new
+threading class similar to the Audio class defined by LV2.  Each thread has a
+run callback and a connect_port callback both in the same class (i.e. can't be
+called concurrently), but may be called concurrently with functions for other
+threads.  Thread properties such as :hardRtCapable apply to both functions.
+The host MUST only call the correct connect_port function associated with the
+thread for that port.
+""" .
+
 
 #########################
 ## Thread Base Classes ##
@@ -39,20 +68,21 @@
 
 :Thread a rdfs:Class ;
 	rdfs:label "Thread" ;
-	rdfs:comment """
-A thread (execution context) of a plugin.
-""" .
+	rdfs:comment "A thread (execution context) of an LV2 plugin." .
 
 
 :RollingThread a rdfs:Class ;
 	rdfs:subClassOf :Thread ;
 	rdfs:comment """
 A thread which is is continually executed in blocks (like the standard LV2
-run callback).  The thread run callback has the signature:
+run callback).  Extension data is a pointer to a
 
-void run(LV2Handle Instance, uint32_t SampleCount)
+struct {
+	void (*run)(LV2Handle instance, uint32_t sample_count);
+	void (*connect_port)(LV2_Handle instance, uint32_t port, void* data);
+}
 
-When run is called, SampleCount frames worth of input/output should be
+When run is called, sample_count frames worth of input/output should be
 read from/written to all ports associated with this thread.
 """ .
 
@@ -61,29 +91,51 @@ read from/written to all ports associated with this thread.
 	rdfs:subClassOf :Thread ;
 	rdfs:comment """
 A thread which is executed only when there is work to be done
-(e.g. a message is received).  The thread run callback has the signature:
+(e.g. a message is received).  Extension data is a pointer to a
 
-bool run(LV2Handle Instance, uint8_t* outputs_written)
+struct {
+	bool (*run)(LV2Handle instance, uint8_t* outputs_written)
+	void (*connect_port)(LV2_Handle instance, uint32_t port, void* data);
+}
 
 When run is called, any pending input in ports associated with this thread
-should be processed, and true returned iff output was written (meaning
-plugins connected to those output ports should be executed as well).
+should be read, and true returned iff output was written (meaning
+plugins connected to ports where output has been written should be executed).
 
-If output is written, the plugins must set the nth bit (counting from the
-LSB) to 1 if the nth port was written, otherwise 0, for all ports associated
-with this context.  The plugin MUST NOT touch any bits which correspond to
-ports for other contexts.  The host may use this in turn to execute plugins
-connected to these outputs, triggering a chain of computation.
-
-The HostFeatures struct passed by the host to the plugin's instantiate method
-contains a function with the signature:
-
-void request_run(const char* context_uri)
-
-which allows the plugin to specifically request execution of a blocking
-thread's callback from any thread (e.g. the main LV2 run method).  If
-the plugin is hardRtCapable, this method must be realtime safe.
+The callback MUST set the nth bit of outputs_written to 1 if the port with
+index n was written to, otherwise 0.  The macros LV2_THREADS_SET_OUTPUT_WRITTEN
+and LV2_THREADS_UNSET_OUTPUT_WRITTEN are provided for this (see lv2_threads.h).
+The callback MUST NOT touch any bits which correspond to ports for other threads.
 """ .
+
+
+#######################
+## Plugin Properties ##
+#######################
+
+:hasThread a rdf:Property ;
+	rdfs:domain  lv2:Plugin ;
+	rdfs:range   :Thread ;
+	rdfs:label   "Has a thread" ;
+	rdfs:comment """
+Signifies a Plugin supports a certain context, defined by a URI.
+If a plugin supports a context, the extension_data function, when called with
+the URI for that thread, should return a thread descriptor as defined by the
+specification of the thread URI.  If a plugin has any threads, it MUST specify
+the associated thread of ALL ports, with the :thread port property.""" .
+
+
+#####################
+## Port Properties ##
+#####################
+
+:thread a rdf:Property ;
+	rdfs:domain lv2:Port ;
+	rdfs:range  :Thread ;
+	rdfs:label  "Is used by thread" ;
+	rdfs:comment """
+Every port on a plugin with threads must be associated with exactly one thread.
+The port will only be connected/read/written by that context.""" .
 
 
 ##################
@@ -105,13 +157,24 @@ the plugin is hardRtCapable, this method must be realtime safe.
     rdfs:label   "Hard realtime capable" ;
     rdfs:comment """
 Indicates that the thread is capable of running in a "hard real-time"
-environment, with identical conditions as lv2:hardRTCapable (see lv2.ttl).
+environment, with identical conditions as lv2:hardRTCapable.
+""" .
+
+:mandatory a :ThreadHint ;
+    rdfs:label   "Mandatory thread" ;
+    rdfs:comment """
+Indicates that the thread is necessary for execution of the plugin whatsoever.
+If a thread is mandatory but the host does not know how to execute it (e.g. if
+the thread is blocking but the host doesn't support blocking threads), the
+host MUST NOT instantiate the plugin.
 """ .
 
 
 #######################
 ## Thread Priorities ##
 #######################
+
+# Ignore this crap for now
 
 :ThreadPriority a rdfs:Class ;
 	rdfs:label "Thread priority" ;
@@ -151,9 +214,13 @@ A worker thread with a low non-realtime priority.
 """ .
 
 
+#################################
+## Specific thread definitions ##
+#################################
+
 :MessageThread a rdfs:Class ;
 	rdfs:subClassOf :BlockingThread ;
 	rdfs:comment """
-A blocking thread for on demand message-based processing.
+A blocking thread for on demand message-like processing.
 """ .
 
