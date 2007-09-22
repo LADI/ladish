@@ -33,7 +33,7 @@
 
 <http://drobilla.net/ns/lv2ext/contexts> a lv2:Specification ;
 	rdfs:comment """
-An extension for LV2 plugins which have multiple concurrent contexts.
+An extension for LV2 plugins which have potentially concurrent contexts.
 
 Any host which supports this extension must pass a "host feature" to
 the plugin's instantiate method with URI http://drobilla.net/ns/lv2ext/contexts
@@ -53,12 +53,14 @@ instantiated.  If the plugin has ANY context which is :hardRtCapable,
 request_run must be realtime safe (as defined by lv2:hardRtCapable).
 
 Unless otherwise stated, each context (defined by some URI) adds a new
-contexting class similar to the Audio class defined by LV2.  Each context has a
+threading class similar to the Audio class defined by LV2.  Each context has a
 run callback and a connect_port callback both in the same class (i.e. can't be
 called concurrently), but may be called concurrently with functions for other
-contexts.  Context properties such as :hardRtCapable apply to both functions.
+contexts (excluding the Instantiation class).  Context properties such as
+:hardRtCapable apply to both functions.
 The host MUST only call the correct connect_port function associated with the
-context for that port.
+context for that port, i.e. it is an error to use the main LV2 connect_port
+function on a port with a context other than the main LV2 run function.
 """ .
 
 
@@ -67,8 +69,8 @@ context for that port.
 #########################
 
 :Context a rdfs:Class ;
-	rdfs:label "Context" ;
-	rdfs:comment "A context (execution context) of an LV2 plugin." .
+	rdfs:label "LV2 Context" ;
+	rdfs:comment "A potentially concurrent context (callback) on a plugin." .
 
 
 :RollingContext a rdfs:Class ;
@@ -99,8 +101,8 @@ struct {
 }
 
 When run is called, any pending input in ports associated with this context
-should be read, and true returned iff output was written (meaning
-plugins connected to ports where output has been written should be executed).
+should be read, and true returned iff output was written (meaning plugins
+connected to ports where output has been written should be executed).
 
 The callback MUST set the nth bit of outputs_written to 1 if the port with
 index n was written to, otherwise 0.  The macros LV2_THREADS_SET_OUTPUT_WRITTEN
@@ -119,7 +121,7 @@ The callback MUST NOT touch any bits which correspond to ports for other context
 	rdfs:label   "Has a context" ;
 	rdfs:comment """
 Signifies a Plugin supports a certain context, defined by a URI.
-If a plugin supports a context, the extension_data function, when called with
+If a plugin supports a context, its extension_data function, when called with
 the URI for that context, should return a context descriptor as defined by the
 specification of the context URI.  If a plugin has any contexts, it MUST specify
 the associated context of ALL ports, with the :context port property.""" .
@@ -138,9 +140,9 @@ Every port on a plugin with contexts must be associated with exactly one context
 The port will only be connected/read/written by that context.""" .
 
 
-##################
+###################
 ## Context Hints ##
-##################
+###################
 
 :ContextHint a rdfs:Class ;
     rdfs:label      "Context hint" ;
@@ -165,16 +167,14 @@ environment, with identical conditions as lv2:hardRTCapable.
     rdfs:comment """
 Indicates that the context is necessary for execution of the plugin whatsoever.
 If a context is mandatory but the host does not know how to execute it (e.g. if
-the context is blocking but the host doesn't support blocking contexts), the
-host MUST NOT instantiate the plugin.
+the context is blocking but the host doesn't support them, or if the host
+doesn't recognize the context type), the host MUST NOT instantiate the plugin.
 """ .
 
 
-#######################
+########################
 ## Context Priorities ##
-#######################
-
-# Ignore this crap for now
+########################
 
 :ContextPriority a rdfs:Class ;
 	rdfs:label "Context priority" ;
@@ -210,17 +210,18 @@ should run this context with (slighly lower) realtime priority as well.
 :LowPriorityWorker a rdfs:Class ;
 	rdfs:subClassOf :Context ;
 	rdfs:comment """
-A worker context with a low non-realtime priority.
+A worker context with a low non-realtime priority, lower then that of the
+standard LV2 run callback.
 """ .
 
 
-#################################
+##################################
 ## Specific context definitions ##
-#################################
+##################################
 
 :MessageContext a rdfs:Class ;
 	rdfs:subClassOf :BlockingContext ;
 	rdfs:comment """
-A blocking context for on demand message-like processing.
+A blocking context for on-demand message-like processing.
 """ .
 
