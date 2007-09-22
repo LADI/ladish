@@ -17,9 +17,14 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <assert.h>
 #include "../lv2.h"
 #include "../../extensions/osc/lv2_osc.h"
 #include "../../extensions/osc/lv2_osc_print.h"
+#include "../../extensions/contexts/lv2_contexts.h"
+
+static const char* message_context_uri = "http://drobilla.net/ns/lv2ext/contexts/MessageContext";
 
 /* Plugin */
 
@@ -27,24 +32,6 @@
 typedef struct {
 	LV2OSCBuffer* input_buffer;
 } OSCPrint;
-
-
-static void osc_print_cleanup(LV2_Handle instance)
-{
-	free(instance);
-}
-
-
-static void osc_print_connect_port(LV2_Handle instance, uint32_t port, void* data)
-{
-	OSCPrint* plugin = (OSCPrint*)instance;
-
-	switch (port) {
-	case 0:
-		plugin->input_buffer = data;
-		break;
-	}
-}
 
 
 static LV2_Handle
@@ -62,17 +49,57 @@ osc_print_instantiate(const LV2_Descriptor*         descriptor,
 
 
 static void
-osc_print_run(LV2_Handle instance, uint32_t sample_count)
+osc_print_cleanup(LV2_Handle instance)
+{
+	free(instance);
+}
+	
+
+static struct {
+	void (*message_run)(LV2_Handle instance, uint8_t* outputs_written);
+} osc_print_message_context_data;
+
+
+static const void*
+osc_print_extension_data(const char* uri)
+{
+	if (!strcmp(uri, message_context_uri)) {
+		return &osc_print_message_context_data;
+	} else {
+		return NULL;
+	}
+}
+
+
+static void
+osc_print_connect_port(LV2_Handle instance, uint32_t port, void* data)
+{
+	OSCPrint* plugin = (OSCPrint*)instance;
+
+	switch (port) {
+	case 0:
+		plugin->input_buffer = data;
+		break;
+	}
+}
+
+
+static void
+osc_print_message_run(LV2_Handle instance, uint8_t* outputs_written)
 {
 	OSCPrint* plugin = (OSCPrint*)instance;
 
 	if (plugin->input_buffer) {
-		for (uint32_t i=0; i < plugin->input_buffer->message_count; ++i) {
+
+		for (uint32_t i=0; i < plugin->input_buffer->message_count; ++i)
 			lv2_osc_message_print(lv2_osc_buffer_get_message(plugin->input_buffer, i));
-		}
+		
+		LV2_CONTEXTS_SET_OUTPUT_WRITTEN(outputs_written, 0);
+	
+	} else {
+		LV2_CONTEXTS_UNSET_OUTPUT_WRITTEN(outputs_written, 0);
 	}
 }
-
 
 
 /* Library */
@@ -80,8 +107,12 @@ osc_print_run(LV2_Handle instance, uint32_t sample_count)
 
 static LV2_Descriptor *osc_print_descriptor = NULL;
 
+#if 0
+/* Doesn't work :/ */
+void init_descriptor() __attribute__((constructor));
+#endif
 
-static void
+void
 init_descriptor()
 {
 	osc_print_descriptor = (LV2_Descriptor*)malloc(sizeof(LV2_Descriptor));
@@ -92,8 +123,24 @@ init_descriptor()
 	osc_print_descriptor->connect_port = osc_print_connect_port;
 	osc_print_descriptor->deactivate = NULL;
 	osc_print_descriptor->instantiate = osc_print_instantiate;
-	osc_print_descriptor->run = osc_print_run;
+	osc_print_descriptor->run = NULL;
+	osc_print_descriptor->extension_data = osc_print_extension_data;
+
+	osc_print_message_context_data.message_run = osc_print_message_run;
 }
+
+
+#if 0
+/* Doesn't work :/ */
+static void
+__attribute__((destructor))
+free_descriptor()
+{
+	fprintf(stderr, "FINISH\n");
+	free(osc_print_descriptor);
+	osc_print_descriptor = NULL;
+}
+#endif
 
 
 LV2_SYMBOL_EXPORT
@@ -101,7 +148,7 @@ const LV2_Descriptor*
 lv2_descriptor(uint32_t index)
 {
 	if (!osc_print_descriptor)
-		init_descriptor();
+		init_descriptor(); /* FIXME: leak */
 
 	switch (index) {
 	case 0:

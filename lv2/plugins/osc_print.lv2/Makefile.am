@@ -1,4 +1,5 @@
-AM_LDFLAGS = -module -avoid-version -Wc,-nostartfiles
+AM_LDFLAGS = -shared -module -avoid-version -Wc,-nostartfiles
+AM_CFLAGS = -shared -fPIC -DPIC
 
 pluginbasename = osc_print
 
