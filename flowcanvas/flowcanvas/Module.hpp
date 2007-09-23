@@ -79,6 +79,9 @@ public:
 
 	int num_ports() const { return _ports.size(); }
 
+	void   set_ports_y_offset(double offset)   { _ports_y_offset = offset; }
+	double ports_y_offset(double offset) const { return _ports_y_offset; }
+
 protected:
 	/*virtual void on_middle_click(GdkEventButton&) {}
 	virtual void on_right_click(GdkEventButton&)  {}*/
@@ -88,6 +91,7 @@ protected:
 
 	double _border_width;
 	bool   _title_visible;
+	double _ports_y_offset;
 
 	PortVector _ports;
 

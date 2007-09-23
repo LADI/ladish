@@ -48,6 +48,7 @@ static const uint32_t MODULE_TITLE_COLOUR          = 0xFFFFFFFF;
 Module::Module(boost::shared_ptr<Canvas> canvas, const string& name, double x, double y, bool show_title)
 	: Item(canvas, name, x, y, MODULE_FILL_COLOUR)
 	, _title_visible(show_title)
+	, _ports_y_offset(0)
 	, _module_box(*this, 0, 0, 0, 0) // w, h set later
 	, _canvas_title(*this, 0, 8, name) // x set later
 	, _stacked_border(NULL)
@@ -397,7 +398,7 @@ Module::resize()
 		widest_out = width - hor_pad;
 
 	width = std::max(width,
-	                 (std::max(widest_in, widest_out) + hor_pad));
+			(std::max(widest_in, widest_out) + hor_pad));
 	               
 	width += border_width() * 2.0;
 
@@ -407,6 +408,8 @@ Module::resize()
 	double height_base = 2;
 	if (_title_visible)
 		height_base += 2 + _canvas_title.property_text_height();
+
+	height_base += _ports_y_offset;
 
 	double h = height_base;
 	if (_ports.size() > 0)
