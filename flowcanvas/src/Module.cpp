@@ -402,7 +402,8 @@ Module::resize()
 	               
 	width += border_width() * 2.0;
 
-	set_width(width);
+	if (width > _width)
+		set_width(width);
 
 	// Set height to contain ports and title
 	double height_base = 2;
