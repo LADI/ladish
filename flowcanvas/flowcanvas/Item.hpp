@@ -60,9 +60,13 @@ public:
 	boost::weak_ptr<Canvas> canvas() const { return _canvas; }
 	
 	void popup_menu(guint button, guint32 activate_time) {
+		if ( ! _menu)
+			create_menu();
 		if (_menu)
 			_menu->popup(button, activate_time);
 	}
+	
+	virtual void create_menu() {}
 
 	Gtk::Menu* menu() const           { return _menu; }
 	void       set_menu(Gtk::Menu* m) { delete _menu; _menu = m; }
