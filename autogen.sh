@@ -12,6 +12,8 @@ rm -rf flowcanvas/config
 mkdir -p flowcanvas/config
 rm -rf config
 mkdir -p config
+rm -rf doc
+mkdir -p doc
 libtoolize --force
 aclocal
 autoheader -Wall
