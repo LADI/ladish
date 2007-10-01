@@ -62,7 +62,10 @@ public:
 	
 	void set_fill_color(uint32_t c) { _rect.property_fill_color_rgba() = c; }
 	
-	void set_highlighted(bool b);
+	void set_highlighted(bool highlight,
+	                     bool highlight_parent=true,
+	                     bool highlight_connections=true,
+	                     bool raise_connections=true);
 	
 	void zoom(float z);
 	

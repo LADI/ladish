@@ -175,18 +175,22 @@ Port::disconnect_all()
 
 
 void
-Port::set_highlighted(bool b)
+Port::set_highlighted(bool b, bool highlight_parent, bool highlight_connections, bool raise_connections)
 {
-	boost::shared_ptr<Module> module = _module.lock();
-	if (module)
-		module->set_highlighted(b);
+	if (highlight_parent) {
+		boost::shared_ptr<Module> module = _module.lock();
+		if (module)
+			module->set_highlighted(b);
+	}
 
-	for (list<boost::weak_ptr<Connection> >::iterator i = _connections.begin(); i != _connections.end(); ++i) {
-		boost::shared_ptr<Connection> connection = (*i).lock();
-		if (connection) {
-			connection->set_highlighted(b);
-			if (b)
-				connection->raise_to_top();
+	if (highlight_connections) {
+		for (Connections::iterator i = _connections.begin(); i != _connections.end(); ++i) {
+			boost::shared_ptr<Connection> connection = (*i).lock();
+			if (connection) {
+				connection->set_highlighted(b);
+				if (raise_connections && b)
+					connection->raise_to_top();
+			}
 		}
 	}
 	

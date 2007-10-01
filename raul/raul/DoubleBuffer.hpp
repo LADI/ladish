@@ -38,7 +38,7 @@ class DoubleBuffer : public boost::noncopyable {
 public:
 	
 	inline DoubleBuffer(T val)
-		: _state(READ_WRITE)
+		: _state(RAUL_DB_READ_WRITE)
 	{
 		_vals[0] = val;
 		_read_val = &_vals[0];
@@ -51,23 +51,23 @@ public:
 
 	inline bool set(T new_val)
 	{
-		if (_state.compare_and_exchange(READ_WRITE, READ_LOCK)) {
+		if (_state.compare_and_exchange(RAUL_DB_READ_WRITE, RAUL_DB_READ_LOCK)) {
 
 			// locked _vals[1] for write
 			_vals[1] = new_val;
 			_read_val = &_vals[1];
-			_state = WRITE_READ;
+			_state = RAUL_DB_WRITE_READ;
 			return true;
 
 			// concurrent calls here are fine.  good, actually - caught
 			// the WRITE_READ state immediately after it was set above
 
-		} else if (_state.compare_and_exchange(WRITE_READ, LOCK_READ)) {
+		} else if (_state.compare_and_exchange(RAUL_DB_WRITE_READ, RAUL_DB_LOCK_READ)) {
 
 			// locked _vals[0] for write
 			_vals[0] = new_val;
 			_read_val = &_vals[0];
-			_state = READ_WRITE;
+			_state = RAUL_DB_READ_WRITE;
 			return true;
 
 		} else {
@@ -80,10 +80,10 @@ public:
 private:
 	enum States {
 		// vals[0] state _ vals[1] state
-		READ_WRITE = 0,
-		READ_LOCK,
-		WRITE_READ,
-		LOCK_READ
+		RAUL_DB_READ_WRITE = 0,
+		RAUL_DB_READ_LOCK,
+		RAUL_DB_WRITE_READ,
+		RAUL_DB_LOCK_READ
 	};
 
 	AtomicInt    _state;
