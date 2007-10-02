@@ -97,7 +97,6 @@ Model::~Model()
 void
 Model::setup_prefixes()
 {
-	Glib::Mutex::Lock lock(_world.mutex());
 	assert(_serializer);
 
 	for (Namespaces::const_iterator i = _world.prefixes().begin(); i != _world.prefixes().end(); ++i) {
@@ -181,6 +180,10 @@ Model::add_statement(const Node& subject,
                      const Node& object)
 {
 	Glib::Mutex::Lock lock(_world.mutex());
+
+	assert(subject.get_node());
+	assert(predicate.get_node());
+	assert(object.get_node());
 
 	librdf_statement* triple = librdf_new_statement_from_nodes(_world.world(),
 			subject.get_node(), predicate.get_node(), object.get_node());
