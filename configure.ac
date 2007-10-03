@@ -11,7 +11,12 @@ AC_CONFIG_SRCDIR([slv2/src/plugin.c])
 AC_CONFIG_SRCDIR([slv2/slv2/plugin.h])
 AC_CONFIG_SRCDIR([slv2/utils/lv2_list.c])
 AC_CONFIG_SRCDIR([slv2/swig/slv2.i])
-#AC_CONFIG_HEADER([slv2/config/slv2_config.h])
+SLV2_VERSION="0.3.0"
+SLV2_API_CURRENT=4
+SLV2_API_REVISION=0
+SLV2_API_AGE=0
+AC_SUBST(SLV2_SO_VERSION)
+AC_SUBST(SLV2_VERSION)
 
 # Raul
 AC_CONFIG_SRCDIR([raul/raul/Semaphore.h])
