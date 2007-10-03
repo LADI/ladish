@@ -467,7 +467,8 @@ Module::set_default_base_color()
 {
 	_color = MODULE_FILL_COLOUR;
 	_module_box.property_fill_color_rgba() = _color;
-	_stacked_border->property_fill_color_rgba() = _color;
+	if (_stacked_border)
+		_stacked_border->property_fill_color_rgba() = _color;
 }
 
 
@@ -476,7 +477,8 @@ Module::set_base_color(uint32_t c)
 {
 	_color = c;
 	_module_box.property_fill_color_rgba() = _color;
-	_stacked_border->property_fill_color_rgba() = _color;
+	if (_stacked_border)
+		_stacked_border->property_fill_color_rgba() = _color;
 }
 
 
