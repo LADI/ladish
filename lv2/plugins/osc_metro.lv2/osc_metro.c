@@ -58,10 +58,10 @@ static void osc_metro_connect_port(LV2_Handle instance, uint32_t port, void* dat
 
 
 static LV2_Handle
-osc_metro_instantiate(const LV2_Descriptor*         descriptor,
-                      double                        rate,
-                      const char*                   bundle_path,
-                      const LV2_Host_Feature*const* features)
+osc_metro_instantiate(const LV2_Descriptor*    descriptor,
+                      double                   rate,
+                      const char*              bundle_path,
+                      const LV2_Feature*const* features)
 {
 	OSCMetro* plugin = (OSCMetro*)malloc(sizeof(OSCMetro));
 	

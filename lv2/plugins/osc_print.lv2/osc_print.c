@@ -35,10 +35,10 @@ typedef struct {
 
 
 static LV2_Handle
-osc_print_instantiate(const LV2_Descriptor*         descriptor,
-                      double                        rate,
-                      const char*                   bundle_path,
-                      const LV2_Host_Feature*const* features)
+osc_print_instantiate(const LV2_Descriptor*    descriptor,
+                      double                   rate,
+                      const char*              bundle_path,
+                      const LV2_Feature*const* features)
 {
 	OSCPrint* plugin = (OSCPrint*)malloc(sizeof(OSCPrint));
 	
