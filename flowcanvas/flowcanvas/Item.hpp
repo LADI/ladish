@@ -51,6 +51,8 @@ public:
 	
 	bool selected() const { return _selected; }
 	virtual void set_selected(bool s);
+	
+	virtual void set_minimum_width(double w) { _minimum_width = w; }
 
 	virtual void select_tick() = 0;
 
@@ -72,10 +74,7 @@ public:
 	void       set_menu(Gtk::Menu* m) { delete _menu; _menu = m; }
 	
 	double width() const { return _width; }
-	virtual void set_width(double w) = 0;
-	
 	double height() const { return _height; }
-	virtual void set_height(double h) = 0;
 
 	virtual void resize() = 0;
 	
@@ -108,12 +107,16 @@ protected:
 	virtual void on_drag(double dx, double dy);
 	virtual void on_click(GdkEventButton*);
 	virtual void on_double_click(GdkEventButton*);
+	
+	virtual void set_height(double h) = 0;
+	virtual void set_width(double w) = 0;
 
 	const boost::weak_ptr<Canvas> _canvas;
 	
 	bool on_event(GdkEvent* event);
 
 	std::string _name;
+	double      _minimum_width;
 	double      _width;
 	double      _height;
 	uint32_t    _color;

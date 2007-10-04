@@ -238,7 +238,7 @@ Port::dst_connection_point(const Gnome::Art::Point& src)
 void
 Port::set_width(double w)
 {
-	double diff = w - _width;
+	const double diff = w - _width;
 	_rect.property_x2() = _rect.property_x2() + diff;
 	_width = w;
 	set_control(_control_value, false);

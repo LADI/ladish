@@ -389,7 +389,9 @@ Module::resize()
 			widest_out = p->width();
 	}
 	
-	double width = _canvas_title.property_text_width() + 8.0;
+	double width = ( _title_visible
+		? _canvas_title.property_text_width() + 8.0
+		: 1.0 );
 
 	// Fit ports to module (or vice-versa)
 	if (widest_in < width - hor_pad)
@@ -402,7 +404,7 @@ Module::resize()
 	               
 	width += border_width() * 2.0;
 
-	if (width > _width)
+	if (width > _minimum_width)
 		set_width(width);
 
 	// Set height to contain ports and title

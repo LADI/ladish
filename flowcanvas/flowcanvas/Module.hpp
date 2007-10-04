@@ -56,10 +56,6 @@ public:
 
 	void zoom(double z);
 	void resize();
-	
-	virtual void set_width(double w);
-	
-	virtual void set_height(double h);
 
 	virtual void move(double dx, double dy);
 	virtual void move_to(double x, double y);
@@ -88,6 +84,9 @@ protected:
 	virtual void on_drop(double new_x, double new_y);
 
 	virtual bool on_event(GdkEvent* ev);
+	
+	virtual void set_width(double w);
+	virtual void set_height(double h);
 
 	double _border_width;
 	bool   _title_visible;
