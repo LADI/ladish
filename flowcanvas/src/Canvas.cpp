@@ -1228,8 +1228,8 @@ Canvas::arrange()
 	}
 
 	gvLayout (gvc, G, (char*)"dot");
-	//gvRender (gvc, G, "dot", fopen("/dev/null", "w"));
-	gvRender (gvc, G, (char*)"dot", fopen("/home/dave/test.dot", "w"));
+	gvRender (gvc, G, (char*)"dot", fopen("/dev/null", "w"));
+	//gvRender (gvc, G, (char*)"dot", fopen("/home/dave/test.dot", "w"));
 
 	double least_x=HUGE_VAL, least_y=HUGE_VAL, most_x=0, most_y=0;
 

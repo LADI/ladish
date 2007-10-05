@@ -52,11 +52,12 @@ public:
 	
 	librdf_node* get_node() const { return _node; }
 
-	operator bool() const { return (_node != NULL); }
+	operator bool() const { return (_world != NULL && _node != NULL); }
 
 	const Node& operator=(const Node& other) {
 		if (_node)
 			librdf_free_node(_node);
+		_world = other._world;
 		_node = (other._node) ? librdf_new_node_from_node(other._node) : NULL;
 		return *this;
 	}

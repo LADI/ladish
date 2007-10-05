@@ -87,7 +87,9 @@ World::blank_id()
 {
 	std::ostringstream ss;
 	ss << "n" << _next_blank_id++;
-	return Node(*this, Node::BLANK, ss.str());
+	Node result = Node(*this, Node::BLANK, ss.str());
+	assert(result.to_string() == ss.str());
+	return result;
 }
 
 

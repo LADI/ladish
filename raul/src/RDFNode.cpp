@@ -43,6 +43,7 @@ Node::Node(World& world, Type type, const std::string& s)
 	}
 
 	assert(this->type() == type);
+	assert(_world);
 }
 	
 
@@ -51,6 +52,7 @@ Node::Node(World& world)
 {
 	Glib::Mutex::Lock lock(world.mutex(), Glib::TRY_LOCK);
 	_node = librdf_new_node(world.world());
+	assert(_world);
 }
 
 
@@ -59,6 +61,7 @@ Node::Node(World& world, librdf_node* node)
 {
 	Glib::Mutex::Lock lock(world.mutex(), Glib::TRY_LOCK);
 	_node = librdf_new_node_from_node(node);
+	assert(_world);
 }
 
 
@@ -70,6 +73,8 @@ Node::Node(const Node& other)
 		Glib::Mutex::Lock lock(_world->mutex(), Glib::TRY_LOCK);
 		_node = (other._node ? librdf_new_node_from_node(other._node) : NULL);
 	}
+
+	assert(to_string() == other.to_string());
 }
 
 
