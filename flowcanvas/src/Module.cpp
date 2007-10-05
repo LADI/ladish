@@ -406,6 +406,8 @@ Module::resize()
 
 	if (width > _minimum_width)
 		set_width(width);
+	else if (_width < _minimum_width)
+		set_width(_minimum_width);
 
 	// Set height to contain ports and title
 	double height_base = 2;
