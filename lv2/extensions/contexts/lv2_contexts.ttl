@@ -31,11 +31,13 @@
 @prefix doap: <http://usefulinc.com/ns/doap#> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
 
-<http://drobilla.net/ns/lv2ext/contexts> a lv2:Specification ;
+<http://drobilla.net/ns/lv2ext/contexts>
+	a lv2:Specification ;
+	a lv2:Feature ;
 	rdfs:comment """
 An extension for LV2 plugins which have potentially concurrent contexts.
 
-Any host which supports this extension must pass a "host feature" to
+Any host which supports this extension must pass an LV2_Feature to
 the plugin's instantiate method with URI http://drobilla.net/ns/lv2ext/contexts
 and a pointer to a
 
@@ -64,9 +66,9 @@ function on a port with a context other than the main LV2 run function.
 """ .
 
 
-#########################
+##########################
 ## Context Base Classes ##
-#########################
+##########################
 
 :Context a rdfs:Class ;
 	rdfs:label "LV2 Context" ;
