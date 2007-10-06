@@ -368,10 +368,14 @@ if test "$build_ingen_gtk_client" = "yes"; then
 	PKG_CHECK_MODULES(LIBGLADEMM, libglademm-2.4)
 	#PKG_CHECK_MODULES(FLOWCANVAS, flowcanvas >= 0.1.0)
 	PKG_CHECK_MODULES(CURL, libcurl >= 7.15.0, build_curl="yes", build_curl="no")
+	if test "$build_curl" = "yes"; then
+		AC_DEFINE(HAVE_CURL, 1, [Has the libcurl library])
+	fi
 else
   AC_MSG_WARN([GTK client will NOT be built!])
 fi
 AM_CONDITIONAL(BUILD_GTK_CLIENT, [test "$build_ingen_gtk_client" = "yes"])
+AM_CONDITIONAL(WITH_CURL, [test "$build_curl" = "yes"])
 
 # Build ingen client lib if anything above that depends on it is to be built
 AM_CONDITIONAL(BUILD_CLIENT_LIB, [test "$build_ingen_clients" = "yes" -o "$build_ingen_gtk_client" = "yes"])
