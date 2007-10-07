@@ -36,7 +36,6 @@ AC_CONFIG_SRCDIR([ingen/src/common/interface/EngineInterface.hpp])
 AC_CONFIG_SRCDIR([ingen/src/common/lv2ext/lv2-miditype.h])
 AC_CONFIG_SRCDIR([ingen/src/libs/module/Module.cpp])
 AC_CONFIG_SRCDIR([ingen/src/libs/engine/JackAudioDriver.cpp])
-AC_CONFIG_SRCDIR([ingen/src/libs/engine/tests/node_tree_test.cpp])
 AC_CONFIG_SRCDIR([ingen/src/libs/serialisation/Loader.cpp])
 AC_CONFIG_SRCDIR([ingen/src/libs/client/OSCController.cpp])
 AC_CONFIG_SRCDIR([ingen/src/libs/gui/App.cpp])
@@ -200,32 +199,6 @@ if test "$build_ladspa" = "yes"; then
 	AC_DEFINE(HAVE_LADSPA, 1, [Has ladspa.h])
 fi
 
-# DSSI support
-build_dssi="yes"
-AC_ARG_ENABLE(dssi,
-	[AS_HELP_STRING(--enable-dssi, [Enable DSSI plugin support (yes) - Requires: alsa])],
-	[ if test x$enable_dssi = xno ; then build_dssi=no ; fi ])
-if test "$build_dssi" = "yes"; then
-	if test "$build_ladspa" = "no"; then
-		AC_MSG_WARN([DSSI support requires LADSPA.  DSSI support will not be built.])
-		build_dssi="no"
-	fi 
-	if test "$build_dssi" = "yes"; then
-		PKG_CHECK_MODULES(ALSA, alsa >= 1.0.0, [build_dssi="yes"], [build_dssi="no"])
-		if test "$build_dssi" = "no"; then
-			AC_MSG_WARN([DSSI support requires Alsa.  DSSI support will not be built.])
-		fi
-	fi
-	if test "$build_dssi" = "yes"; then
-		build_dssi="no"
-		AC_CHECK_HEADER([dssi.h], [build_dssi="yes"],
-			[AC_MSG_WARN([You do not seem to have dssi.h, DSSI support will not be built.])])
-		if test "$build_dssi" = "yes"; then
-			AC_DEFINE(HAVE_DSSI, 1, [Has dssi.h])
-		fi
-	fi
-fi
-
 # ALSA support
 build_alsa="yes"
 AC_ARG_ENABLE(alsa,
@@ -290,7 +263,6 @@ AM_CONDITIONAL(BUILD_IN_PROCESS_ENGINE, [test "$build_in_process_engine" = "yes"
 AM_CONDITIONAL(BUILD_UNIT_TESTS, [test "$build_unit_tests" = "yes"])
 AM_CONDITIONAL(WITH_LADSPA, [test "$build_ladspa" = "yes"])
 AM_CONDITIONAL(WITH_LV2, [test "$build_lv2" = "yes"])
-AM_CONDITIONAL(WITH_DSSI, [test "$build_dssi" = "yes"])
 
 
 ################# INGEN OPTIONS
@@ -536,7 +508,6 @@ AC_CONFIG_FILES([ingen/src/common/lv2ext/Makefile])
 AC_CONFIG_FILES([ingen/src/libs/Makefile])
 AC_CONFIG_FILES([ingen/src/libs/module/Makefile])
 AC_CONFIG_FILES([ingen/src/libs/engine/Makefile])
-AC_CONFIG_FILES([ingen/src/libs/engine/tests/Makefile])
 AC_CONFIG_FILES([ingen/src/libs/engine/events/Makefile])
 AC_CONFIG_FILES([ingen/src/libs/serialisation/Makefile])
 AC_CONFIG_FILES([ingen/src/libs/client/Makefile])
@@ -571,7 +542,6 @@ AC_MSG_RESULT([Configuration:])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([Jack support:            $build_jack])
 AC_MSG_RESULT([LV2 Plugin support:      $build_lv2])
-AC_MSG_RESULT([DSSI Plugin support:     $build_dssi])
 AC_MSG_RESULT([LADSPA Plugin support:   $build_ladspa])
 AC_MSG_RESULT([LASH support:            $build_lash])
 AC_MSG_RESULT([])
