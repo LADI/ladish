@@ -66,11 +66,20 @@ template <typename K, typename T>
 typename Table<K,T>::iterator
 Table<K,T>::find(const K& key)
 {
+	return  find(begin(), end(), key);
+}
+
+
+/** Binary search (O(log(end - start))) */
+template <typename K, typename T>
+typename Table<K,T>::iterator
+Table<K,T>::find(iterator start, iterator finish, const K& key)
+{
 	if (size() == 0)
 		return end();
 
-	size_t lower = 0;
-	size_t upper = size() - 1;
+	size_t lower = start._index;
+	size_t upper = finish._index - 1;
 	size_t i;
 	
 	while (upper >= lower) {
