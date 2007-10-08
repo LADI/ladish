@@ -41,7 +41,7 @@ void
 Maid::manage(SharedPtr<Raul::Deletable> ptr)
 {
 	if (ptr)
-		_managed.push_back(new Raul::ListNode<SharedPtr<Raul::Deletable> >(ptr));
+		_managed.push_back(new Raul::List<SharedPtr<Raul::Deletable> >::Node(ptr));
 }
 
 

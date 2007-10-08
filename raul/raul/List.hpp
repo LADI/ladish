@@ -27,34 +27,6 @@
 namespace Raul {
 
 
-/** A node in a List.
- *
- * This is exposed so the user can allocate ListNodes in different thread
- * than the list reader, and insert (e.g. via an Event) it later in the
- * reader thread.
- */
-template <typename T>
-class ListNode : public Raul::Deletable
-{
-public:
-	ListNode(T elem) : _elem(elem) {}
-	virtual ~ListNode() {}
-
-	ListNode* next() const       { return _next.get(); }
-	void      next(ListNode* ln) { _next = ln; }
-	ListNode* prev() const       { return _prev.get(); }
-	void      prev(ListNode* ln) { _prev = ln; }
-	T&        elem()             { return _elem;}
-	const T&  elem() const       { return _elem; }
-	
-private:
-	T                   _elem;
-	AtomicPtr<ListNode> _next;
-	AtomicPtr<ListNode> _prev;
-};
-
-
-
 /** A realtime safe, (partially) thread safe doubly-linked list.
  * 
  * Elements can be added safely while another thread is reading the list.
@@ -65,6 +37,35 @@ template <typename T>
 class List : public Raul::Deletable
 {
 public:
+	
+	/** A node in a List.
+	 *
+	 * This is exposed so the user can allocate Nodes in different thread
+	 * than the list reader, and insert (e.g. via an Event) it later in the
+	 * reader thread.
+	 */
+	class Node : public Raul::Deletable
+	{
+	public:
+		Node(T elem) : _elem(elem) {}
+		virtual ~Node() {}
+	
+		Node* next() const       { return _next.get(); }
+		void      next(Node* ln) { _next = ln; }
+		Node* prev() const       { return _prev.get(); }
+		void      prev(Node* ln) { _prev = ln; }
+		T&        elem()             { return _elem;}
+		const T&  elem() const       { return _elem; }
+		
+	private:
+		T                   _elem;
+		AtomicPtr<Node> _next;
+		AtomicPtr<Node> _prev;
+	};
+
+
+	// List
+
 	List() : _size(0), _end_iter(this), _const_end_iter(this)
 	{
 		_end_iter._listnode = NULL;
@@ -72,8 +73,8 @@ public:
 	}
 	~List();
 
-	void push_back(ListNode<T>* elem); // realtime safe
-	void push_back(T& elem);           // NOT realtime safe
+	void push_back(Node* elem); // realtime safe
+	void push_back(T& elem);    // NOT realtime safe
 
 	void append(List<T>& list);
 
@@ -105,8 +106,8 @@ public:
 		friend class List<T>;
 		
 	private:
-		const List<T>* const _list;
-		const ListNode<T>*   _listnode;
+		const List<T>* const          _list;
+		const typename List<T>::Node* _listnode;
 	};
 
 
@@ -127,12 +128,12 @@ public:
 		friend class List<T>::const_iterator;
 
 	private:
-		const List<T>* _list;
-		ListNode<T>*   _listnode;
+		const List<T>*          _list;
+		typename List<T>::Node* _listnode;
 	};
 
 	
-	ListNode<T>* erase(const iterator iter);
+	Node* erase(const iterator iter);
 
 	iterator find(const T& val);
 
@@ -143,11 +144,11 @@ public:
 	//const_iterator end()   const;
 
 private:
-	AtomicPtr<ListNode<T> > _head;
-	AtomicPtr<ListNode<T> > _tail; ///< writer only
-	AtomicInt               _size;
-	iterator                _end_iter;
-	const_iterator          _const_end_iter;
+	AtomicPtr<Node> _head;
+	AtomicPtr<Node> _tail; ///< writer only
+	AtomicInt       _size;
+	iterator        _end_iter;
+	const_iterator  _const_end_iter;
 };
 
 
@@ -160,7 +161,7 @@ List<T>::~List<T>()
 }
 
 
-/** Clear the list, deleting all ListNodes contained (but NOT their contents!)
+/** Clear the list, deleting all Nodes contained (but NOT their contents!)
  *
  * Not realtime safe.
  */
@@ -168,8 +169,8 @@ template <typename T>
 void
 List<T>::clear()
 {
-	ListNode<T>* node = _head.get();
-	ListNode<T>* next = NULL;
+	Node* node = _head.get();
+	Node* next = NULL;
 
 	while (node) {
 		next = node->next();
@@ -190,7 +191,7 @@ List<T>::clear()
  */
 template <typename T>
 void
-List<T>::push_back(ListNode<T>* const ln)
+List<T>::push_back(Node* const ln)
 {
 	assert(ln);
 
@@ -212,13 +213,13 @@ List<T>::push_back(ListNode<T>* const ln)
 /** Add an element to the list.
  *
  * Thread safe (may be called while another thread is reading the list).
- * NOT realtime safe (a ListNode is allocated).
+ * NOT realtime safe (a Node is allocated).
  */
 template <typename T>
 void
 List<T>::push_back(T& elem)
 {
-	ListNode<T>* const ln = new ListNode<T>(elem);
+	Node* const ln = new Node(elem);
 
 	assert(ln);
 
@@ -251,10 +252,10 @@ template <typename T>
 void
 List<T>::append(List<T>& list)
 {
-	ListNode<T>* const my_head    = _head.get();
-	ListNode<T>* const my_tail    = _tail.get();
-	ListNode<T>* const other_head = list._head.get();
-	ListNode<T>* const other_tail = list._tail.get();
+	Node* const my_head    = _head.get();
+	Node* const my_tail    = _tail.get();
+	Node* const other_head = list._head.get();
+	Node* const other_tail = list._tail.get();
 
 	// Appending to an empty list
 	if (my_head == NULL && my_tail == NULL) {
@@ -335,20 +336,20 @@ List<T>::find(const T& val)
 /** Remove an element from the list using an iterator.
  * 
  * This function is realtime safe - it is the caller's responsibility to
- * delete the returned ListNode, or there will be a leak.
+ * delete the returned Node, or there will be a leak.
  * Thread safe (safe to call while another thread reads the list).
  * @a iter is invalid immediately following this call.
  */
 template <typename T>
-ListNode<T>*
+typename List<T>::Node*
 List<T>::erase(const iterator iter)
 {
-	ListNode<T>* const n = iter._listnode;
+	Node* const n = iter._listnode;
 	
 	if (n) {
 	
-		ListNode<T>* const prev = n->prev();
-		ListNode<T>* const next = n->next();
+		Node* const prev = n->prev();
+		Node* const next = n->next();
 
 		// Removing the head (or the only element)
 		if (n == _head.get())

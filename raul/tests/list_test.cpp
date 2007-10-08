@@ -10,14 +10,14 @@ int main()
 {
 	List<int> l;
 
-	l.push_back(new ListNode<int>(1));
-	l.push_back(new ListNode<int>(2));
-	l.push_back(new ListNode<int>(3));
-	l.push_back(new ListNode<int>(4));
-	l.push_back(new ListNode<int>(5));
-	l.push_back(new ListNode<int>(6));
-	l.push_back(new ListNode<int>(7));
-	l.push_back(new ListNode<int>(8));
+	l.push_back(new List<int>::Node(1));
+	l.push_back(new List<int>::Node(2));
+	l.push_back(new List<int>::Node(3));
+	l.push_back(new List<int>::Node(4));
+	l.push_back(new List<int>::Node(5));
+	l.push_back(new List<int>::Node(6));
+	l.push_back(new List<int>::Node(7));
+	l.push_back(new List<int>::Node(8));
 
 	cout << "List:" << endl;
 	for (List<int>::iterator i = l.begin(); i != l.end(); ++i) {
@@ -91,7 +91,7 @@ int main()
 	cout << endl;
 
 	List<int> r;
-	r.push_back(new ListNode<int>(9));
+	r.push_back(new List<int>::Node(9));
 	r.erase(r.begin());
 	cout << "Should not see ANY numbers:\n";
 	for (List<int>::iterator i = r.begin(); i != r.end(); ++i) {
@@ -102,10 +102,10 @@ int main()
 	l.clear();
 
 	List<int> l2;
-	l2.push_back(new ListNode<int>(1));
-	l2.push_back(new ListNode<int>(2));
-	l2.push_back(new ListNode<int>(3));
-	l2.push_back(new ListNode<int>(4));
+	l2.push_back(new List<int>::Node(1));
+	l2.push_back(new List<int>::Node(2));
+	l2.push_back(new List<int>::Node(3));
+	l2.push_back(new List<int>::Node(4));
 	
 	cout << "l1:\n";
 	for (List<int>::iterator i = l.begin(); i != l.end(); ++i) {
@@ -124,10 +124,10 @@ int main()
 	}
 	
 	cout << "\n\nAppending non-empty lists:\n";
-	l2.push_back(new ListNode<int>(5));
-	l2.push_back(new ListNode<int>(6));
-	l2.push_back(new ListNode<int>(7));
-	l2.push_back(new ListNode<int>(8));
+	l2.push_back(new List<int>::Node(5));
+	l2.push_back(new List<int>::Node(6));
+	l2.push_back(new List<int>::Node(7));
+	l2.push_back(new List<int>::Node(8));
 	
 	cout << "l1:\n";
 	for (List<int>::iterator i = l.begin(); i != l.end(); ++i) {

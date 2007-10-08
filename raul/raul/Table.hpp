@@ -89,7 +89,7 @@ public:
 	const_iterator find(const_iterator start, const_iterator end, const K& key) const;
 	const_iterator find(const K& key) const;
 	
-	iterator find(iterator start, iterator end, const K& key);
+	iterator find(const_iterator start, const_iterator end, const K& key);
 	iterator find(const K& key);
 
 	const_iterator find_range_end(const_iterator left, bool (*comp)(const K&,const K&)) const;
