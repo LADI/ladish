@@ -105,7 +105,7 @@ read from/written to all ports associated with this context.
 A context which is executed only when there is work to be done
 (e.g. a message is received).  Extension data is a pointer to a
 
-struct {
+struct LV2BlockingContext {
 	bool (*run)(LV2Handle instance, uint8_t* outputs_written)
 	void (*connect_port)(LV2_Handle instance, uint32_t port, void* data);
 }

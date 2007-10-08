@@ -55,9 +55,7 @@ osc_print_cleanup(LV2_Handle instance)
 }
 	
 
-static struct {
-	void (*message_run)(LV2_Handle instance, uint8_t* outputs_written);
-} osc_print_message_context_data;
+static LV2BlockingContext osc_print_message_context_data;
 
 
 static const void*
@@ -84,8 +82,8 @@ osc_print_connect_port(LV2_Handle instance, uint32_t port, void* data)
 }
 
 
-static void
-osc_print_message_run(LV2_Handle instance, uint8_t* outputs_written)
+static bool
+osc_print_blocking_run(LV2_Handle instance, uint8_t* outputs_written)
 {
 	OSCPrint* plugin = (OSCPrint*)instance;
 
@@ -95,9 +93,11 @@ osc_print_message_run(LV2_Handle instance, uint8_t* outputs_written)
 			lv2_osc_message_print(lv2_osc_buffer_get_message(plugin->input_buffer, i));
 		
 		LV2_CONTEXTS_SET_OUTPUT_WRITTEN(outputs_written, 0);
+		return true;
 	
 	} else {
 		LV2_CONTEXTS_UNSET_OUTPUT_WRITTEN(outputs_written, 0);
+		return false;
 	}
 }
 
@@ -126,7 +126,8 @@ init_descriptor()
 	osc_print_descriptor->run = NULL;
 	osc_print_descriptor->extension_data = osc_print_extension_data;
 
-	osc_print_message_context_data.message_run = osc_print_message_run;
+	osc_print_message_context_data.blocking_run = osc_print_blocking_run;
+	osc_print_message_context_data.connect_port = NULL;
 }
 
 
