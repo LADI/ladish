@@ -79,7 +79,7 @@ main(int argc, char** argv)
 	Raul::RDF::World world;
 	Raul::RDF::Model model(world);
 	machine->write_state(model);
-	model.serialize_to_file_handle(stdout);
+	model.serialise_to_file_handle(stdout);
 	
 	return 0;
 }

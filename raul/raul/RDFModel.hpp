@@ -40,9 +40,9 @@ public:
 	Model(World& world, const Glib::ustring& uri, Glib::ustring base_uri="");
 	~Model();
 	
-	void        serialize_to_file_handle(FILE* fd);
-	void        serialize_to_file(const Glib::ustring& uri);
-	std::string serialize_to_string();
+	void        serialise_to_file_handle(FILE* fd);
+	void        serialise_to_file(const Glib::ustring& uri);
+	std::string serialise_to_string();
 	
 	void add_statement(const Node& subject,
 	                   const Node& predicate,
@@ -70,7 +70,7 @@ private:
 	World&             _world;
 	librdf_storage*    _storage;
 	librdf_model*      _model;
-	librdf_serializer* _serializer;
+	librdf_serializer* _serialiser;
 
 	size_t _next_blank_id;
 };

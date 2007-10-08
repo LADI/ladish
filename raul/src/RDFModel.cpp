@@ -37,7 +37,7 @@ static const char* const RDF_LANG = "turtle";
  */
 Model::Model(RDF::World& world)
 	: _world(world)
-	, _serializer(NULL)
+	, _serialiser(NULL)
 { 
 	Glib::Mutex::Lock lock(world.mutex());
 	_storage = librdf_new_storage(_world.world(), "hashes", NULL, "hash-type='memory'");
@@ -49,7 +49,7 @@ Model::Model(RDF::World& world)
  */
 Model::Model(World& world, const Glib::ustring& data_uri, Glib::ustring base_uri_str)
 	: _world(world)
-	, _serializer(NULL)
+	, _serialiser(NULL)
 {
 	Glib::Mutex::Lock lock(world.mutex());
 	_storage = librdf_new_storage(_world.world(), "hashes", NULL, "hash-type='memory'");
@@ -86,8 +86,8 @@ Model::~Model()
 {
 	Glib::Mutex::Lock lock(_world.mutex());
 
-	if (_serializer)
-		librdf_free_serializer(_serializer);
+	if (_serialiser)
+		librdf_free_serializer(_serialiser);
 
 	librdf_free_model(_model);
 	librdf_free_storage(_storage);
@@ -97,10 +97,10 @@ Model::~Model()
 void
 Model::setup_prefixes()
 {
-	assert(_serializer);
+	assert(_serialiser);
 
 	for (Namespaces::const_iterator i = _world.prefixes().begin(); i != _world.prefixes().end(); ++i) {
-		librdf_serializer_set_namespace(_serializer,
+		librdf_serializer_set_namespace(_serialiser,
 			librdf_new_uri(_world.world(), U(i->second.c_str())), i->first.c_str());
 	}
 }
@@ -111,15 +111,15 @@ Model::setup_prefixes()
  * This must be called before any write methods.
  */
 void
-Model::serialize_to_file_handle(FILE* fd)
+Model::serialise_to_file_handle(FILE* fd)
 {
 	Glib::Mutex::Lock lock(_world.mutex());
 
-	_serializer = librdf_new_serializer(_world.world(), RDF_LANG, NULL, NULL);
+	_serialiser = librdf_new_serializer(_world.world(), RDF_LANG, NULL, NULL);
 	setup_prefixes();
-	librdf_serializer_serialize_model_to_file_handle(_serializer, fd, NULL, _model);
-	librdf_free_serializer(_serializer);
-	_serializer = NULL;
+	librdf_serializer_serialize_model_to_file_handle(_serialiser, fd, NULL, _model);
+	librdf_free_serializer(_serialiser);
+	_serialiser = NULL;
 }
 
 
@@ -130,17 +130,17 @@ Model::serialize_to_file_handle(FILE* fd)
  * This must be called before any write methods.
  */
 void
-Model::serialize_to_file(const Glib::ustring& uri_str)
+Model::serialise_to_file(const Glib::ustring& uri_str)
 {
 	Glib::Mutex::Lock lock(_world.mutex());
 
 	librdf_uri* uri = librdf_new_uri(_world.world(), (const unsigned char*)uri_str.c_str());
 	if (uri && librdf_uri_is_file_uri(uri)) {
-		_serializer = librdf_new_serializer(_world.world(), RDF_LANG, NULL, NULL);
+		_serialiser = librdf_new_serializer(_world.world(), RDF_LANG, NULL, NULL);
 		setup_prefixes();
-		librdf_serializer_serialize_model_to_file(_serializer, librdf_uri_to_filename(uri), uri, _model);
-		librdf_free_serializer(_serializer);
-		_serializer = NULL;
+		librdf_serializer_serialize_model_to_file(_serialiser, librdf_uri_to_filename(uri), uri, _model);
+		librdf_free_serializer(_serialiser);
+		_serialiser = NULL;
 	}
 	librdf_free_uri(uri);
 }
@@ -154,21 +154,21 @@ Model::serialize_to_file(const Glib::ustring& uri_str)
  * the desired objects have been serialized.
  */
 string
-Model::serialize_to_string()
+Model::serialise_to_string()
 {
 	Glib::Mutex::Lock lock(_world.mutex());
 
-	_serializer = librdf_new_serializer(_world.world(), RDF_LANG, NULL, NULL);
+	_serialiser = librdf_new_serializer(_world.world(), RDF_LANG, NULL, NULL);
 	setup_prefixes();
 
 	unsigned char* c_str
-		= librdf_serializer_serialize_model_to_string(_serializer, NULL, _model);
+		= librdf_serializer_serialize_model_to_string(_serialiser, NULL, _model);
 
 	string result((const char*)c_str);
 	free(c_str);
 	
-	librdf_free_serializer(_serializer);
-	_serializer = NULL;
+	librdf_free_serializer(_serialiser);
+	_serialiser = NULL;
 
 	return result;
 }

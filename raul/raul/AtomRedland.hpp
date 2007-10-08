@@ -23,9 +23,9 @@
 #include <cstring>
 #include <librdf.h>
 #include <raul/Atom.hpp>
-using std::cerr; using std::endl;
+#include <raul/RDFNode.hpp>
 
-#define U(x) ((const unsigned char*)(x))
+#define CUC(x) ((const unsigned char*)(x))
 
 namespace Raul {
 
@@ -56,14 +56,14 @@ public:
 			os << atom.get_int32();
 			str = os.str();
 			// xsd:integer -> pretty integer literals in Turtle
-			type = librdf_new_uri(world, U("http://www.w3.org/2001/XMLSchema#integer"));
+			type = librdf_new_uri(world, CUC("http://www.w3.org/2001/XMLSchema#integer"));
 			break;
 		case Atom::FLOAT:
 			os.precision(20);
 			os << atom.get_float();
 			str = os.str();
 			// xsd:decimal -> pretty decimal (float) literals in Turtle
-			type = librdf_new_uri(world, U("http://www.w3.org/2001/XMLSchema#decimal"));
+			type = librdf_new_uri(world, CUC("http://www.w3.org/2001/XMLSchema#decimal"));
 			break;
 		case Atom::BOOL:
 			// xsd:boolean -> pretty boolean literals in Turtle
@@ -71,7 +71,7 @@ public:
 				str = "true";
 			else
 				str = "false";
-			type = librdf_new_uri(world, U("http://www.w3.org/2001/XMLSchema#boolean"));
+			type = librdf_new_uri(world, CUC("http://www.w3.org/2001/XMLSchema#boolean"));
 			break;
 		case Atom::STRING:
 			str = atom.get_string();
@@ -79,35 +79,27 @@ public:
 		case Atom::BLOB:
 		case Atom::NIL:
 		default:
-			cerr << "WARNING: Unserializable Atom!" << endl;
+			std::cerr << "WARNING: Unserializable Atom!" << std::endl;
 		}
 		
 		if (str != "")
-			node = librdf_new_node_from_typed_literal(world, U(str.c_str()), NULL, type);
+			node = librdf_new_node_from_typed_literal(world, CUC(str.c_str()), NULL, type);
 
 		return node;
 	}
 
-#if 0
-	static Atom node_to_atom(librdf_node* node) {
-		/*switch (type) {
-		case 'i':
-			return Atom(arg->i);
-		case 'f':
-			return Atom(arg->f);
-		case 's':
-			return Atom(&arg->s);
-		//case 'b'
-			// FIXME: How to get a blob from a lo_arg?
-			//return Atom(arg->b);
-		default:
-			return Atom();
-		}*/
-		cerr << "FIXME: node_to_atom\n";
-		return Atom();
+	static Atom rdf_node_to_atom(const RDF::Node& node) {
+		if (node.type() == RDF::Node::RESOURCE)
+			return Atom(node.to_string());
+		else if (node.is_float())
+			return Atom(node.to_float());
+		else if (node.is_int())
+			return Atom(node.to_int());
+		else if (node.is_bool())
+			return Atom(node.to_bool());
+		else
+			return Atom(node.to_string());
 	}
-#endif
-
 };
 
 

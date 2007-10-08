@@ -33,7 +33,7 @@ namespace Raul {
 class Atom {
 public:
 
-	//TODO: Add a bool type here that serializes nicely to Turtle "true" and "false"
+	//TODO: Add a bool type here that serialises nicely to Turtle "true" and "false"
 	
 	enum Type {
 		NIL,

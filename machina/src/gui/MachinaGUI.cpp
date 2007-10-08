@@ -276,7 +276,7 @@ MachinaGUI::menu_file_save()
 		Raul::RDF::Model model(_engine->rdf_world());
 		cout << "Writing machine to " << save_filename << endl;
 		machine()->write_state(model);
-		model.serialize_to_file(save_filename);
+		model.serialise_to_file(save_filename);
 		free(save_filename);
 	}
 }
@@ -326,7 +326,7 @@ MachinaGUI::menu_file_save_as()
 		if (confirm) {
 			Raul::RDF::Model model(_engine->rdf_world());
 			_engine->machine()->write_state(model);
-			model.serialize_to_file(filename);
+			model.serialise_to_file(filename);
 			_save_uri = dialog.get_uri();
 		}
 	}
