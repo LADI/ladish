@@ -118,18 +118,9 @@ public:
 	/** Length of current sub-cycle in beats */
 	inline BeatCount length_beats() const { return _length_beats; }
 
-
-	// Real-time conversion
-/*
-	TickCount ticks_to_offset(TickTime time) {
-		assert(time >= _start_ticks);
-		TickCount ret = time - _start_ticks + _offset_ticks;
-		assert(ret < _offset_ticks + _length_ticks);
-		return ret;
-	}
-*/
 	/** Set the offset between real-time and timeslice-time. */
 	inline void set_offset(TickCount offset) { _offset_ticks = offset; }
+
 	/** Offset relative to external (e.g Jack) time */
 	inline TickCount offset_ticks() const { return _offset_ticks; }
 

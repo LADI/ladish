@@ -9,6 +9,7 @@ raulinclude_HEADERS = \
 	DoubleBuffer.hpp \
 	JackDriver.hpp \
 	List.hpp \
+	ListImpl.hpp \
 	MIDISink.hpp \
 	Maid.hpp \
 	Namespaces.hpp \

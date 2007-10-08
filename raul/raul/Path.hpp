@@ -18,6 +18,7 @@
 #ifndef RAUL_PATH_HPP
 #define RAUL_PATH_HPP
 
+#include <iostream>
 #include <cctype>
 #include <string>
 #include <cassert>
@@ -130,7 +131,7 @@ public:
 	{
 		return ( child == parent || (child.length() > parent.length() &&
 				(!strncmp(parent.c_str(), child.c_str(), parent.length())
-						&& child[parent.length()] == '/')) );
+						&& (parent == "/" || child[parent.length()] == '/'))) );
 	}
 };
 
