@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include "../lv2.h"
 #include "../../extensions/osc/lv2_osc.h"
@@ -85,8 +84,17 @@ osc_metro_run(LV2_Handle instance, uint32_t sample_count)
 
 	/* FIXME: write this correctly (sample accurate) */
 
-	if (plugin->frames_since_last_tick > frames_per_beat) {
-			
+	if (plugin->input_sync->message_count > 0) {
+
+		const LV2Message* sync_msg = lv2_osc_buffer_get_message(plugin->input_sync, 0);
+		
+		if (plugin->output_bang)
+			lv2_osc_buffer_append(plugin->output_bang, sync_msg->time, "/bang", NULL);
+		
+		plugin->frames_since_last_tick = sample_count - sync_msg->time;
+
+	} else if (plugin->frames_since_last_tick > frames_per_beat) {
+
 		if (plugin->output_bang)
 			lv2_osc_buffer_append(plugin->output_bang, 0.0, "/bang", NULL);
 

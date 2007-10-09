@@ -24,6 +24,8 @@ drobins:osc_metronome
     lv2:name "BPM" ;
 	units:unit units:bpm ;
 	lv2:default 120.0 ;
+	lv2:minimum 0.0 ;
+	lv2:maximum 360.0 ;
   ] ;
 
   lv2:port [

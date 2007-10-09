@@ -76,6 +76,8 @@ typedef struct {
 
 } LV2Message;
 
+LV2Message* lv2_osc_message_new(double time, const char* path, const char* types, ...);
+
 LV2Message* lv2_osc_message_from_raw(double time,
                                      uint32_t out_buf_size, void* out_buf,
                                      uint32_t raw_msg_size, void* raw_msg);

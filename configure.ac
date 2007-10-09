@@ -184,6 +184,17 @@ if test "$build_lv2" = "yes"; then
 #	AC_CONFIG_SUBDIRS([slv2])
 	AC_DEFINE(HAVE_SLV2, 1, [Has libslv2])
 fi
+	
+# Build LV2 GTK GUI
+build_lv2_gui="yes"
+AC_ARG_ENABLE(lv2-gui,
+	[AS_HELP_STRING(--enable-lv2-gui, [Build plugin GUIs (requires Gtk2)])],
+	[ if test x$enable_lv2_gui = xno ; then build_lv2_gui=no ; fi ])
+if test "$build_lv2_gui" = "yes"; then
+	PKG_CHECK_MODULES(GTK, gtk+-2.0)
+fi
+AM_CONDITIONAL(WITH_LV2_GUI, [test "$build_lv2_gui" = "yes"])
+
 
 # LADSPA support
 build_ladspa="yes"
@@ -477,6 +488,7 @@ AC_CONFIG_FILES([lv2/extensions/variables/Makefile])
 AC_CONFIG_FILES([lv2/plugins/Makefile])
 AC_CONFIG_FILES([lv2/plugins/osc_print.lv2/Makefile])
 AC_CONFIG_FILES([lv2/plugins/osc_metro.lv2/Makefile])
+AC_CONFIG_FILES([lv2/plugins/osc_bang.lv2/Makefile])
 
 # RAUL
 AC_CONFIG_FILES([raul/Makefile])

@@ -135,6 +135,29 @@ lv2_osc_message_swap_byte_order(LV2Message* msg)
 }
 
 
+/** Not realtime safe, returned value must be free()'d by caller. */
+LV2Message*
+lv2_osc_message_new(double time, const char* path, const char* types, ...)
+{
+	/* FIXME: path only */
+
+	LV2Message* result = malloc(sizeof(LV2Message)
+			+ 4 + lv2_osc_string_size(path));
+	
+	const uint32_t path_size = lv2_osc_string_size(path);
+	result->time = time;
+	result->data_size = path_size + 4; // 4 for types
+	result->argument_count = 0;
+	result->types_offset = lv2_osc_string_size(path) + 1;
+	(&result->data)[result->types_offset - 1] = ',';
+	(&result->data)[result->types_offset] = '\0';
+	
+	memcpy(&result->data, path, strlen(path) + 1);
+
+	return result;
+}
+
+
 /** Create a new LV2Message from a raw OSC message.
  * 
  * If \a out_buf is NULL, new memory will be allocated.  Otherwise the returned
