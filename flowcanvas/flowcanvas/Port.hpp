@@ -56,9 +56,8 @@ public:
 	
 	virtual Gnome::Art::Point src_connection_point();
 	virtual Gnome::Art::Point dst_connection_point(const Gnome::Art::Point& src);
-
-	boost::weak_ptr<Module>                  module() const { return _module; }
-	std::list<boost::weak_ptr<Connection> >& connections()  { return _connections; }
+	
+	boost::weak_ptr<Module> module() const { return _module; }
 	
 	void set_fill_color(uint32_t c) { _rect.property_fill_color_rgba() = c; }
 	

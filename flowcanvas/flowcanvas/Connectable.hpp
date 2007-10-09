@@ -37,9 +37,12 @@ public:
 
 	virtual void move_connections();
 	virtual void raise_connections();
+	
+	typedef std::list< boost::weak_ptr<Connection> > Connections;
+	Connections& connections() { return _connections; }
 
 protected:
-	typedef std::list<boost::weak_ptr<Connection> > Connections;
+
 	Connections _connections; ///< needed for dragging
 };
 
