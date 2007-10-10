@@ -35,7 +35,7 @@ public:
 	World();
 	~World();
 	
-	Node blank_id();
+	Node blank_id(const std::string base_name="");
 
 	void        add_prefix(const std::string& prefix, const std::string& uri);
 	std::string expand_uri(const std::string& uri) const;

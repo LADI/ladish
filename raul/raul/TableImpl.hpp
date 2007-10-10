@@ -198,12 +198,12 @@ Table<K,T>::find_range_end(iterator start, bool (*comp)(const K&,const K&))
 
 /** Erase and return a range of entries */
 template <typename K, typename T>
-Table<K, T>
+SharedPtr< Table<K, T> >
 Table<K, T>::yank(iterator start, iterator end)
 {
-	Table<K, T> ret(end._index - start._index);
+	SharedPtr< Table<K, T> > ret(new Table<K, T>(end._index - start._index));
 	for (size_t i=start._index; i < end._index; ++i)
-		ret._entries.at(i - start._index) = _entries[i];
+		ret->_entries.at(i - start._index) = _entries[i];
 	erase(start, end);
 	return ret;
 }

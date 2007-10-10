@@ -20,6 +20,8 @@
 
 #include <vector>
 #include <algorithm>
+#include <boost/utility.hpp>
+#include "SharedPtr.hpp"
 
 //#define TABLE_SORT_DEBUG
 
@@ -33,7 +35,7 @@ namespace Raul {
  * data being in a single chunk of memory, cache optimized, etc.
  */
 template <typename K, typename T>
-class Table {
+class Table : public boost::noncopyable {
 public:
 	Table<K, T>() : _entries() {}
 	Table<K, T>(size_t capacity) : _entries(capacity) {}
@@ -43,9 +45,9 @@ public:
 	void reserve(size_t n) { _entries.reserve(n); }
 
 	struct const_iterator {
-		const_iterator(const Table<K,T>& t, size_t i) : _table(t), _index(i) {}
-		inline const std::pair<const K, T> operator*() const { return _table._entries[_index]; }
-		inline const std::pair<const K, T>* operator->() const { return (std::pair<const K, T>*)&_table._entries[_index]; }
+		const_iterator(const Table<K,T>& t, size_t i) : _table(&t), _index(i) {}
+		inline const std::pair<const K, T> operator*() const { return _table->_entries[_index]; }
+		inline const std::pair<const K, T>* operator->() const { return (std::pair<const K, T>*)&_table->_entries[_index]; }
 		inline const_iterator& operator++() { ++_index; return *this; }
 		inline const_iterator& operator--() { --_index; return *this; }
 		inline bool operator==(const const_iterator& i) const { return _index == i._index; }
@@ -53,14 +55,14 @@ public:
 		void operator=(const const_iterator& i) { _table = i._table; _index = i._index; }
 	private:
 		friend class Table<K,T>;
-		const Table<K,T>& _table;
+		const Table<K,T>* _table;
 		size_t _index;
 	};
 	
 	struct iterator {
-		iterator(Table<K,T>& t, size_t i) : _table(t), _index(i) {}
-		inline std::pair<K, T>& operator*() const { return (std::pair<K, T>&)_table._entries[_index]; }
-		inline std::pair<K, T>* operator->() const { return (std::pair<K, T>*)&_table._entries[_index]; }
+		iterator(Table<K,T>& t, size_t i) : _table(&t), _index(i) {}
+		inline std::pair<K, T>& operator*() const { return (std::pair<K, T>&)_table->_entries[_index]; }
+		inline std::pair<K, T>* operator->() const { return (std::pair<K, T>*)&_table->_entries[_index]; }
 		inline iterator& operator++() { ++_index; return *this; }
 		inline iterator& operator--() { --_index; return *this; }
 		inline bool operator==(const iterator& i) const { return _index == i._index; }
@@ -69,7 +71,7 @@ public:
 		iterator& operator=(const iterator& i) { _table = i._table; _index = i._index; return *this; }
 	private:
 		friend class Table<K,T>;
-		Table<K,T>& _table;
+		Table<K,T>* _table;
 		size_t _index;
 	};
 
@@ -82,7 +84,7 @@ public:
 	void erase(iterator start, iterator end);
 	void erase_by_index(size_t start, size_t end);
 	
-	Table<K, T> yank(iterator start, iterator end);
+	SharedPtr< Table<K, T> > yank(iterator start, iterator end);
 
 	std::pair<iterator, bool> cram(const Table<K, T>& range);
 	

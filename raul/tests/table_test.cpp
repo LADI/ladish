@@ -142,14 +142,14 @@ main(int argc, char** argv)
 	PathTable<char>::iterator quux_end = pt.find_descendants_end(quux );
 	assert(quux_end != quux);
 
-	Table<Path,char> yanked = pt.yank(quux, quux_end);
+	SharedPtr< Table<Path,char> > yanked = pt.yank(quux, quux_end);
 	
 	cout << "Yanked " << yank_path << endl;
 	for (PathTable<char>::const_iterator i = pt.begin(); i != pt.end(); ++i)
 		cout << i->first << " ";
 	cout << endl;
 
-	pt.cram(yanked);
+	pt.cram(*yanked.get());
 	
 	cout << "Crammed " << yank_path << endl;
 	for (PathTable<char>::const_iterator i = pt.begin(); i != pt.end(); ++i)

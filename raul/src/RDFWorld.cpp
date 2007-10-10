@@ -83,10 +83,14 @@ World::qualify(const string& uri) const
 
 
 Node
-World::blank_id()
+World::blank_id(const string base_name)
 {
 	std::ostringstream ss;
-	ss << "n" << _next_blank_id++;
+	ss << "b" << _next_blank_id++ << "_";
+	
+	if (base_name != "")
+		ss << base_name;
+
 	Node result = Node(*this, Node::BLANK, ss.str());
 	assert(result.to_string() == ss.str());
 	return result;
