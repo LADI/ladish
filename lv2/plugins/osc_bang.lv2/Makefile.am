@@ -13,5 +13,5 @@ uninstall-hook:
 
 plugin_LTLIBRARIES = osc_bang.la osc_bang_ui.la
 osc_bang_la_SOURCES = osc_bang.c ../../extensions/osc/lv2_osc.c ../../extensions/osc/lv2_osc_print.c
-osc_bang_ui_la_SOURCES = osc_bang_ui.c
+osc_bang_ui_la_SOURCES = osc_bang_ui.c ../../extensions/osc/lv2_osc.c ../../extensions/osc/lv2_osc_print.c
 
