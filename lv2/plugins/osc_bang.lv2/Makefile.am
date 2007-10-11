@@ -1,4 +1,4 @@
-AM_LDFLAGS = -shared -module -avoid-version -Wc,-nostartfiles
+AM_LDFLAGS = -shared -module -avoid-version -Wc,-nostartfiles @GTK_LIBS@
 AM_CFLAGS = -shared -fPIC -DPIC @GTK_CFLAGS@
 
 pluginbasename = osc_bang
