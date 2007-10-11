@@ -98,7 +98,7 @@ Thread::set_scheduling(int policy, unsigned int priority)
 {
 	sched_param sp;
 	sp.sched_priority = priority;
-	int result = pthread_setschedparam(_pthread, SCHED_FIFO, &sp);
+	int result = pthread_setschedparam(_pthread, policy, &sp);
 	if (!result) {
 		cout << "[" << _name << "] Set scheduling policy to ";
 		switch (policy) {
