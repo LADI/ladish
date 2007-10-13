@@ -40,8 +40,10 @@ public:
 	typedef std::map<std::string, Node> Bindings; // FIXME: order?  better to use int
 	typedef std::list<Bindings>         Results;
 
-	Query(const World& world, Glib::ustring query)
+	Query(World& world, Glib::ustring query)
 	{
+		Glib::Mutex::Lock lock(world.mutex());
+
 		// Prepend prefix header
 		for (Namespaces::const_iterator i = world.prefixes().begin();
 				i != world.prefixes().end(); ++i) {
@@ -54,7 +56,7 @@ public:
 
 	Results run(World& world, Model& model, const Glib::ustring base_uri="") const;
 
-	Glib::ustring string() const { return _query; };
+	const Glib::ustring& string() const { return _query; };
 
 private:
 	Glib::ustring _query;
