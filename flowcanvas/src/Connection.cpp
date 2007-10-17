@@ -53,6 +53,8 @@ Connection::Connection(boost::shared_ptr<Canvas>      canvas,
 	_bpath.property_cap_style() = (Gdk::CapStyle)GDK_CAP_ROUND;
 
 	update_location();	
+	lower_to_bottom();
+	raise(1); // raise above base rect
 }
 
 

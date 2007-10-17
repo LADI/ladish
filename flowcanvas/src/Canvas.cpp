@@ -135,7 +135,7 @@ Canvas::zoom_full()
 			top = mod->property_y() + mod->height();
 	}
 
-	static const double pad = 4.0;
+	static const double pad = 8.0;
 
 	const double new_zoom = std::min(
 		((double)win_width / (double)(right - left + pad*2.0)),
