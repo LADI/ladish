@@ -7,4 +7,6 @@ flowcanvasinclude_HEADERS = \
 	Ellipse.hpp \
 	Item.hpp \
 	Module.hpp \
-	Port.hpp
+	Port.hpp \
+	flowcanvas.hpp \
+	types.hpp
