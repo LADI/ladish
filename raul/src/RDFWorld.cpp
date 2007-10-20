@@ -35,7 +35,7 @@ static const char* const RDF_LANG = "turtle";
 /** Create an empty in-memory RDF model.
  */
 World::World()
-{ 
+{
 	_world = librdf_new_world();
 	assert(_world);
 	librdf_world_open(_world);

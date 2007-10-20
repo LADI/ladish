@@ -74,6 +74,7 @@ AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
 
 PKG_CHECK_MODULES(GLIBMM, glibmm-2.4)
+PKG_CHECK_MODULES(GTHREAD, gthread-2.0)
 
 # Check for boost smart pointers
 AC_CHECK_HEADERS([boost/shared_ptr.hpp], [],  
@@ -317,12 +318,6 @@ if test "$build_ingen_client_lib" = "yes"; then
 	# Check for libxml2 # FIXME: deprecated, make optional
 	PKG_CHECK_MODULES(LXML2, libxml-2.0 >= 2.6.0)
 	
-	# Check for glibmm
-	PKG_CHECK_MODULES(GLIBMM, glibmm-2.4)
-	
-	# Check for glib threads
-	PKG_CHECK_MODULES(GTHREAD, gthread-2.0)
-
 	# Check for raptor (for RDF serialization)
 	PKG_CHECK_MODULES(RAPTOR, raptor >= 1.4.14, build_raptor="yes", build_raptor="no")
 	
@@ -365,7 +360,6 @@ AM_CONDITIONAL(BUILD_CLIENT_LIB, [test "$build_ingen_clients" = "yes" -o "$build
 
 
 ############# PATCHAGE OPTIONS
-PKG_CHECK_MODULES(GTHREAD, gthread-2.0)
 PKG_CHECK_MODULES(GTKMM, gtkmm-2.4)
 PKG_CHECK_MODULES(GNOMECANVASMM, libgnomecanvasmm-2.6)
 PKG_CHECK_MODULES(LIBGLADEMM, libglademm-2.4)

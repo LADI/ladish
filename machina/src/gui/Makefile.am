@@ -1,4 +1,4 @@
-AM_CXXFLAGS = -I$(top_srcdir)/flowcanvas -I$(top_srcdir)/raul -I$(top_srcdir)/machina/src/engine -DPKGDATADIR=\"$(pkgdatadir)\" @LIBGLADEMM_CFLAGS@ @GNOMECANVASMM_CFLAGS@ @JACK_CFLAGS@
+AM_CXXFLAGS = -I$(top_srcdir)/flowcanvas -I$(top_srcdir)/raul -I$(top_srcdir)/machina/src/engine -DPKGDATADIR=\"$(pkgdatadir)\" @LIBGLADEMM_CFLAGS@ @GNOMECANVASMM_CFLAGS@ @JACK_CFLAGS@ @GTHREAD_CFLAGS@
 
 EXTRA_DIST = machina.gladep
 
