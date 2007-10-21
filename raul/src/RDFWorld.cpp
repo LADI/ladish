@@ -63,7 +63,8 @@ World::add_prefix(const string& prefix, const string& uri)
 string
 World::expand_uri(const string& uri) const
 {
-	assert(uri.find(":") != string::npos);
+	if (uri.find(":") == string::npos)
+		return uri;
 
 	for (Namespaces::const_iterator i = _prefixes.begin(); i != _prefixes.end(); ++i)
 		if (uri.substr(0, i->first.length()+1) == i->first + ":")
