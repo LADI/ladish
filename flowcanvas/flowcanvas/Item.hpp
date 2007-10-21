@@ -61,11 +61,15 @@ public:
 	virtual void zoom(double) {}
 	boost::weak_ptr<Canvas> canvas() const { return _canvas; }
 	
-	void popup_menu(guint button, guint32 activate_time) {
+	bool popup_menu(guint button, guint32 activate_time) {
 		if ( ! _menu)
 			create_menu();
-		if (_menu)
+		if (_menu) {
 			_menu->popup(button, activate_time);
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
 	virtual void create_menu() {}
