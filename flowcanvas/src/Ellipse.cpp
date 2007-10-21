@@ -28,10 +28,10 @@ using std::string;
 
 namespace FlowCanvas {
 
-static const uint32_t ELLIPSE_FILL_COLOUR           = 0x212222C8;
-static const uint32_t ELLIPSE_HILITE_FILL_COLOUR    = 0x212222F4;
-static const uint32_t ELLIPSE_OUTLINE_COLOUR        = 0x676868E8;
-static const uint32_t ELLIPSE_HILITE_OUTLINE_COLOUR = 0x7F8080F4;
+static const uint32_t ELLIPSE_FILL_COLOUR           = 0x212222FF;
+static const uint32_t ELLIPSE_HILITE_FILL_COLOUR    = 0x212222FF;
+static const uint32_t ELLIPSE_OUTLINE_COLOUR        = 0x9FA0A0F4;
+static const uint32_t ELLIPSE_HILITE_OUTLINE_COLOUR = 0xCFD0D0F4;
 static const uint32_t ELLIPSE_TITLE_COLOUR          = 0xFFFFFFFF;
 
 

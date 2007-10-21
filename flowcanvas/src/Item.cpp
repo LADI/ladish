@@ -169,7 +169,7 @@ Item::on_click(GdkEventButton* event)
 		}
 	}
 	
-	if (event->button == 3) {
+	if (event->button == 3 && _menu) {
 		popup_menu(event->button, event->time);
 	} else {
 		signal_clicked.emit(event);

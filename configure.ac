@@ -172,6 +172,7 @@ AC_ARG_ENABLE(enable-jack,
 	[ if test x$enable_jack = xno ; then build_jack=no ; fi ])
 if test "$build_jack" = "yes"; then
 	PKG_CHECK_MODULES(JACK, jack >= 0.107.0)
+	AC_DEFINE(HAVE_JACK, 1, [Has Jack])
 	AC_DEFINE(HAVE_JACK_MIDI, 1, [Has Jack MIDI])
 fi
 

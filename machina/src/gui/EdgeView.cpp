@@ -28,7 +28,7 @@ EdgeView::EdgeView(SharedPtr<Canvas>        canvas,
                    SharedPtr<NodeView>      src,
                    SharedPtr<NodeView>      dst,
                    SharedPtr<Machina::Edge> edge)
-	: FlowCanvas::Connection(canvas, src, dst, 0x9999AAff, true)
+	: FlowCanvas::Connection(canvas, src, dst, 0x9FA0A0F4, true)
 	, _edge(edge)
 {
 }

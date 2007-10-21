@@ -53,7 +53,6 @@ MachinaCanvas::node_clicked(WeakPtr<NodeView> item, GdkEventButton* event)
 		_app->machine()->learn(Machina::LearnRequest::create(_app->maid(), node->node()));
 		return;
 	} else if (event->button == 3) {
-
 		SharedPtr<NodeView> last = _last_clicked.lock();
 
 		if (last) {

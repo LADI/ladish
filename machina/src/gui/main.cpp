@@ -26,7 +26,7 @@
 #include "machina/SMFDriver.hpp"
 #include "MachinaGUI.hpp"
 
-#ifdef WITH_JACK
+#ifdef HAVE_JACK
 #include "machina/JackDriver.hpp"
 #endif
 
@@ -70,7 +70,7 @@ main(int argc, char** argv)
 
 	// Build engine
 	SharedPtr<Driver> driver;
-#ifdef WITH_JACK
+#ifdef HAVE_JACK
 	driver = SharedPtr<Driver>(new JackDriver(machine));
 	((JackDriver*)driver.get())->attach("machina");
 #endif
