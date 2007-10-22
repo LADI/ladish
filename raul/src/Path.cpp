@@ -27,11 +27,11 @@ Path::is_valid(const std::basic_string<char>& path)
 		return false;
 
 	// Must start with a /
-	if (path.at(0) != '/')
+	if (path[0] != '/')
 		return false;
 	
 	// Must not end with a slash unless "/"
-	if (path.length() > 1 && path.at(path.length()-1) == '/')
+	if (path.length() > 1 && path[path.length()-1] == '/')
 		return false;
 
 	assert(path.find_last_of("/") != string::npos);
@@ -40,11 +40,17 @@ Path::is_valid(const std::basic_string<char>& path)
 	if (path.find("//") != string::npos)
 		return false;
 
-	// All characters must be printable ASCII
+	// All characters must be _, a-z, A-Z, 0-9
 	for (size_t i=0; i < path.length(); ++i)
-		if (path.at(i) < 32 || path.at(i) > 126)
+		if ( path[i] != '/' && path[i] != '_'
+				&& (path[i] < 'a' || path[i] > 'z')
+				&& (path[i] < 'A' || path[i] > 'Z')
+				&& (path[i] < '0' || path[i] > '9') )
 			return false;
 
+	// FIXME: first character can't be number?
+
+#if 0
 	// Disallowed characters
 	if (       path.find(" ") != string::npos 
 			|| path.find("#") != string::npos
@@ -56,6 +62,7 @@ Path::is_valid(const std::basic_string<char>& path)
 			|| path.find("{") != string::npos
 			|| path.find("}") != string::npos)
 		return false;
+#endif
 
 	return true;
 }
@@ -102,7 +109,7 @@ Path::nameify(const std::basic_string<char>& str)
 	string name = str;
 
 	if (name.length() == 0)
-		return "."; // this might not be wise
+		return "_"; // this might not be wise
 
 	replace_invalid_chars(name, true);
 
@@ -113,14 +120,11 @@ Path::nameify(const std::basic_string<char>& str)
 
 
 /** Replace any invalid characters in @a str with a suitable replacement.
- *
- * Makes a pretty name - underscores are a valid character, but this chops
- * both spaces and underscores, uppercasing the next letter, to create
- * uniform CamelCase names that look nice
  */
 void
 Path::replace_invalid_chars(string& str, bool replace_slash)
 {
+#if 0
 	for (size_t i=0; i < str.length(); ++i) {
 		if (str[i] == ' ' || str[i] == '_') {
 			str[i+1] = std::toupper(str[i+1]); // capitalize next char
@@ -139,22 +143,55 @@ Path::replace_invalid_chars(string& str, bool replace_slash)
 			str[i] = '.';
 		}
 	}
+#endif
 
-	// Chop brackets
-	// No, ruins uniqueness (LADSPA plugins)
-	/*while (true) {
+	size_t open_bracket = str.find_first_of('(');
+	if (open_bracket != string::npos)
+		str = str.substr(0, open_bracket-1);
+	
+	open_bracket = str.find_first_of('[');
+	if (open_bracket != string::npos)
+		str = str.substr(0, open_bracket-1);
 
-		const string::size_type open  = str.find("(");
-		const string::size_type close = str.find(")");
-
-		if (open != string::npos) {
-			if (close != string::npos)
-				str.erase(open, (close - open) + 1);
-		} else {
+	// dB = special case, need to avoid CamelCase killing below
+	while (true) {
+		size_t decibels = str.find("dB");
+		if (decibels != string::npos)
+			str[decibels+1] = 'b';
+		else
 			break;
-		}
+	}
 
-	}*/
+
+	// Kill CamelCase in favour of god_fearing_symbol_names
+	for (size_t i=1; i < str.length(); ++i) {
+		if (str[i] >= 'A' && str[i] <= 'Z' && str[i-1] >= 'a' && str[i-1] <= 'z') {
+			//str[i] = std::tolower(str[i]);
+			str = str.substr(0, i) + '_' + str.substr(i);
+		}
+	}
+	
+	for (size_t i=0; i < str.length(); ++i) {
+		if (str[i] == '\'') {
+			str = str.substr(0, i) + str.substr(i+1);
+		} else if (str[i] >= 'A' && str[i] <= 'Z') {
+			str[i] = std::tolower(str[i]);
+		} else if ( str[i] != '_' && str[i] != '/'
+				&& (str[i] < 'a' || str[i] > 'z')
+				&& (str[i] < '0' || str[i] > '9') ) {
+			if (i > 0 && str[i-1] == '_') {
+				str = str.substr(0, i) + str.substr(i+1);
+				--i;
+			} else {
+				str[i] = '_';
+			}
+		} else if (replace_slash && str[i] == '/') {
+			str[i] = '_';
+		}
+	}
+	
+	if (str[str.length()-1] == '_')
+		str = str.substr(0, str.length()-1);
 }
 
 
