@@ -72,6 +72,7 @@ public:
 	void set_base_color(uint32_t c);
 	void set_default_base_color();
 	void set_stacked_border(bool b);
+  void set_icon(const Glib::RefPtr<Gdk::Pixbuf>& icon);
 
 	int num_ports() const { return _ports.size(); }
 
@@ -91,12 +92,14 @@ protected:
 	double _border_width;
 	bool   _title_visible;
 	double _ports_y_offset;
+	double _icon_size;
 
 	PortVector _ports;
 
-	Gnome::Canvas::Rect  _module_box;
-	Gnome::Canvas::Text  _canvas_title;
-	Gnome::Canvas::Rect* _stacked_border;
+	Gnome::Canvas::Rect    _module_box;
+	Gnome::Canvas::Text    _canvas_title;
+	Gnome::Canvas::Rect*   _stacked_border;
+	Gnome::Canvas::Pixbuf* _icon_box;
 
 private:
 	friend class Port;

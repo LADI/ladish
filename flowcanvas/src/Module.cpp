@@ -29,10 +29,10 @@ using namespace std;
 
 namespace FlowCanvas {
 
-static const uint32_t MODULE_FILL_COLOUR           = 0x212222C8;
-static const uint32_t MODULE_HILITE_FILL_COLOUR    = 0x212222F4;
-static const uint32_t MODULE_OUTLINE_COLOUR        = 0x9FA0A0F4;
-static const uint32_t MODULE_HILITE_OUTLINE_COLOUR = 0xCFD0D0F4;
+static const uint32_t MODULE_FILL_COLOUR           = 0x232425C8;
+static const uint32_t MODULE_HILITE_FILL_COLOUR    = 0x252627F4;
+static const uint32_t MODULE_OUTLINE_COLOUR        = 0xA2A3A4F4;
+static const uint32_t MODULE_HILITE_OUTLINE_COLOUR = 0xC2C3C4F4;
 static const uint32_t MODULE_TITLE_COLOUR          = 0xFFFFFFFF;
 
 
@@ -49,9 +49,11 @@ Module::Module(boost::shared_ptr<Canvas> canvas, const string& name, double x, d
 	: Item(canvas, name, x, y, MODULE_FILL_COLOUR)
 	, _title_visible(show_title)
 	, _ports_y_offset(0)
+	, _icon_size(16)
 	, _module_box(*this, 0, 0, 0, 0) // w, h set later
 	, _canvas_title(*this, 0, 8, name) // x set later
 	, _stacked_border(NULL)
+	, _icon_box(NULL)
 {
 	_module_box.property_fill_color_rgba() = MODULE_FILL_COLOUR;
 
@@ -130,6 +132,25 @@ Module::set_stacked_border(bool b)
 		delete _stacked_border;
 		_stacked_border = NULL;
 	}
+}
+
+
+void
+Module::set_icon(const Glib::RefPtr<Gdk::Pixbuf>& icon)
+{
+	if (_icon_box) {
+		delete _icon_box;
+		_icon_box = 0;
+	}
+
+	if (icon) {
+		_icon_box = new Gnome::Canvas::Pixbuf(*this, 8, 10, icon);
+		double scale = _icon_size / (icon->get_width() > icon->get_height() ?
+				icon->get_width() : icon->get_height());
+		_icon_box->affine_relative(Gnome::Art::AffineTrans::scaling(scale));
+		_icon_box->show();
+	}
+	resize();
 }
 
 
@@ -392,6 +413,9 @@ Module::resize()
 	double width = ( _title_visible
 		? _canvas_title.property_text_width() + 8.0
 		: 1.0 );
+	
+	if (_icon_box)
+		width += _icon_size + 2;
 
 	// Fit ports to module (or vice-versa)
 	if (widest_in < width - hor_pad)
@@ -413,6 +437,9 @@ Module::resize()
 	double height_base = 2;
 	if (_title_visible)
 		height_base += 2 + _canvas_title.property_text_height();
+	
+	if (_icon_box && _icon_size > _canvas_title.property_text_height())
+		height_base += _icon_size - _canvas_title.property_text_height();
 
 	height_base += _ports_y_offset;
 
@@ -445,7 +472,10 @@ Module::resize()
 	}
 
 	// Center title
-	_canvas_title.property_x() = _width/2.0;
+	if (_icon_box)
+		_canvas_title.property_x() = _icon_size + (_width - _icon_size + 1)/2.0;
+	else
+		_canvas_title.property_x() = _width/2.0;
 
 	// Update connection locations if we've moved/resized
 	for (PortVector::iterator pi = _ports.begin(); pi != _ports.end(); ++pi, ++i) {
