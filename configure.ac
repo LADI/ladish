@@ -12,9 +12,13 @@ AC_CONFIG_SRCDIR([slv2/slv2/plugin.h])
 AC_CONFIG_SRCDIR([slv2/utils/lv2_list.c])
 AC_CONFIG_SRCDIR([slv2/swig/slv2.i])
 SLV2_VERSION="0.3.0"
-SLV2_API_CURRENT=4
-SLV2_API_REVISION=0
-SLV2_API_AGE=0
+SLV2_API_CURRENT="4"
+SLV2_API_REVISION="0"
+SLV2_API_AGE="0"
+AC_SUBST(SLV2_API_CURRENT)
+AC_SUBST(SLV2_API_REVISION)
+AC_SUBST(SLV2_API_AGE)
+SLV2_SO_VERSION="${SLV2_API_CURRENT}:${SLV2_API_REVISION}:${SLV2_API_AGE}"
 AC_SUBST(SLV2_SO_VERSION)
 AC_SUBST(SLV2_VERSION)
 
@@ -102,6 +106,9 @@ SLV2_CFLAGS="-I$abs_srcdir/slv2"
 SLV2_LIBS="$builddir/slv2/src/.libs/libslv2.la"
 AC_SUBST(SLV2_CFLAGS)
 AC_SUBST(SLV2_LIBS)
+	
+INGEN_CFLAGS="-I$abs_srcdir/ingen/src/common -I$abs_srcdir/ingen/src/libs -I$abs_srcdir/ingen/src/libs/engine/events -I$abs_srcdir/ingen/src"
+AC_SUBST(INGEN_CFLAGS)
 
 CONFIG_H_PATH="$builddir/config/config.h"
 
