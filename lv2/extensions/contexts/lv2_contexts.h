@@ -25,7 +25,7 @@
 #define LV2_CONTEXTS_UNSET_OUTPUT_WRITTEN(flags, index) \
 	(flags)[(index) / 8] &= ~(1 << ((index) % 8))
 
-#include "../../plugins/lv2.h"
+#include "lv2.h"
 #include <stdbool.h>
 
 typedef struct {

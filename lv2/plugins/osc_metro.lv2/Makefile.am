@@ -1,4 +1,5 @@
 AM_LDFLAGS = -module -avoid-version -Wc,-nostartfiles
+AM_CFLAGS = -shared -fPIC -DPIC -I$(top_srcdir)/lv2
 
 pluginbasename = osc_metro
 
@@ -11,6 +12,6 @@ uninstall-hook:
 
 plugin_LTLIBRARIES = osc_metro.la
 osc_metro_la_SOURCES = osc_metro.c \
-                       ../../extensions/osc/lv2_osc.c \
-                       ../../extensions/osc/lv2_osc_print.c
+                       $(top_srcdir)/lv2/extensions/osc/lv2_osc.c \
+                       $(top_srcdir)/lv2/extensions/osc/lv2_osc_print.c
 
