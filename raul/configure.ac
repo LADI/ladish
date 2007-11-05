@@ -24,6 +24,7 @@ AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
 
 PKG_CHECK_MODULES(GLIBMM, glibmm-2.4)
+PKG_CHECK_MODULES(GTHREAD, gthread-2.0)
 
 # Check for boost smart pointers
 AC_CHECK_HEADERS([boost/shared_ptr.hpp], [],  
