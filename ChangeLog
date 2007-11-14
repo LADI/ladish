@@ -1,3 +1,205 @@
+2007-11-14 16:29  drobilla
+
+	* lashd/alsa_mgr.c: Fix memory leak.
+
+2007-08-22 11:20  drobilla
+
+	* lashd/: alsa_mgr.c, alsa_mgr.h: Applied patch to fix Alsa Seq
+	  event handling from Karsten Wiese.
+
+2007-07-04 01:00  drobilla
+
+	* configure.ac, liblash/Makefile.am: Update version.
+
+2007-04-09 18:19  drobilla
+
+	* pylash/Makefile.am: Pylash Makefile fix.
+
+2007-04-08 23:32  drobilla
+
+	* acinclude.m4, configure.ac, pylash/Makefile.am: Better Python
+	  checks.
+
+2007-04-08 22:38  drobilla
+
+	* configure.ac: Fixed Python check.
+
+2007-04-08 21:16  drobilla
+
+	* acinclude.m4: Added missing acinclude.m4
+
+2007-04-08 21:16  drobilla
+
+	* pylash/: Makefile.am, lash.c, lash.h, lash.i, test.py: Added
+	  Python bindings, for real this time!
+
+2007-04-08 21:11  drobilla
+
+	* Makefile.am, configure.ac: Added Python bindings.
+
+2007-04-08 18:58  drobilla
+
+	* lash/Makefile.am: Fixed headers missing from distribution
+	  (missing '\').
+
+2007-04-08 18:06  drobilla
+
+	* .cvsignore, clients/.cvsignore, clients/control/.cvsignore,
+	  clients/panel/.cvsignore, clients/save_button/.cvsignore,
+	  clients/simple_client/.cvsignore, clients/synth/.cvsignore,
+	  docs/.cvsignore, docs/lash-manual-html-one-page/.cvsignore,
+	  docs/lash-manual-html-split/.cvsignore, icons/.cvsignore,
+	  lash/.cvsignore, lashd/.cvsignore, liblash/.cvsignore,
+	  m4/.cvsignore: Added .cvsignore files.
+
+2007-04-08 17:19  drobilla
+
+	* lashd/conn_mgr.c: Fix crash bug when trying to start multiple
+	  lashd instances.
+
+2007-04-08 17:12  drobilla
+
+	* lashd/alsa_fport.c: Fixed alsa compile errors.
+
+2007-04-08 17:06  drobilla
+
+	* clients/panel/panel.c, clients/panel/project.c, lash/Makefile.am,
+	  lash/internal_headers.h, lash/lash.h, lash/xmalloc.h,
+	  liblash/args.c, liblash/file.c, liblash/xmalloc.c: Cleanup
+	  installed headers (i.e. don't install unnecessary headers clients
+	  shouldn't see).
+
+2007-04-05 22:03  drobilla
+
+	* configure.ac, lashd/server.c: Fixed reference to "cca" in debug
+	  output.  Updated configure to check for required version of Jack.
+
+2007-03-03 10:29  drobilla
+
+	* clients/simple_client/simple_client.c, clients/synth/synth.c,
+	  lashd/jack_mgr.c: Switched (deprecated) jack_client_new with
+	  jack_client_open
+
+2007-02-26 21:01  drobilla
+
+	* NEWS, liblash/args.c, liblash/lash.c: Compiler error/warning
+	  fixes.
+
+2007-01-14 13:02  drobilla
+
+	* liblash/lash.c: Type fix
+
+2007-01-13 17:18  drobilla
+
+	* configure.ac, clients/panel/project.c, lash/args.h,
+	  lash/internal.h, lashd/client_event.c, lashd/conn_mgr.c,
+	  lashd/main.c, lashd/project.c, lashd/server.c, lashd/store.c,
+	  liblash/args.c, liblash/comm.c, liblash/lash.c, liblash/loader.c,
+	  m4/readline.m4: Portability fixes (BSD, no Alsa).  Trivial code
+	  cleanups, warning fixes.  Readline detection build system fixes.
+
+2007-01-13 13:21  drobilla
+
+	* configure.ac, clients/control/Makefile.am, m4/readline.m4:
+	  Readline fixes.
+
+2006-11-06 12:53  drobilla
+
+	* configure.ac, lash-1.0.pc.in: Fixed pkgconfig file to only depend
+	  on Alsa if necessary.
+
+2006-10-17 04:01  drobilla
+
+	* NEWS, docs/lash-manual.info, docs/lash-manual.texi.in,
+	  liblash/lash.c: Switched LASH_START_SERVER for
+	  LASH_NO_START_SERVER (with opposite semantics), for consistency
+	  with Jack and to lower learning curve.
+
+2006-10-08 13:06  drobilla
+
+	* NEWS, configure.ac: Release preparation
+
+2006-10-05 04:31  drobilla
+
+	* docs/Makefile.am: Split manual by section instead of node (much
+	  more readable).
+
+2006-10-05 04:01  drobilla
+
+	* NEWS, autogen.sh, configure.ac, docs/Makefile.am,
+	  docs/lash-manual.info, docs/lash-manual.texi,
+	  docs/lash-manual.texi.in, liblash/Makefile.am: Preparation for
+	  0.5.2 release.
+
+2006-09-21 15:15  drobilla
+
+	* lash-configure-template, clients/simple_client/simple_client.c:
+	  Fixed missing break; resulting in a double free bug.
+
+2006-09-16 16:39  drobilla
+
+	* configure.ac, lash-1.0.pc.in, docs/lash-manual.texi, lash/args.h,
+	  lash/client.h, lash/config.h, lashd/Makefile.am,
+	  lashd/conn_mgr.c, liblash/args.c, liblash/client.c,
+	  liblash/comm.c, liblash/config.c, liblash/event.c,
+	  liblash/lash.c, liblash/socket.c: Applied patch from larsl to
+	  drop file desctiptors on server launch.  Applied Debian patch to
+	  fix memory errors on 64-bit archs (supposedly..).  Applied Debian
+	  patch to kill /etc/services requirement.  Fixed server auto
+	  launch to work without /etc/services (debian patch broke it).
+
+2006-09-06 16:31  drobilla
+
+	* configure.ac: Fixed help text of configure to match parameter
+
+2006-05-29 18:51  drobilla
+
+	* liblash/lash.c: - Fixed bug where client didn't show up in server
+	  interfaces - Fixed auto server start
+
+2006-05-23 22:30  drobilla
+
+	* lashd/: alsa_client.h, alsa_fport.h, alsa_mgr.h, alsa_patch.h,
+	  server.h: Yet more ALSA fixes
+
+2006-05-23 21:14  drobilla
+
+	* configure.ac: Fixed Alsa detection for configure
+
+2006-05-22 00:00  drobilla
+
+	* docs/lash-manual.texi, lash/args.h, lash/client_interface.h,
+	  liblash/args.c, liblash/comm.c, liblash/lash.c: Fixes for
+	  lash_args (duplicated, documentation clarification, etc)
+
+2006-05-21 22:11  drobilla
+
+	* docs/lash-manual.texi, lash/client_interface.h, lash/types.h:
+	  Added LASH_No_Start_Server option and exported lash_args_destroy
+	  to API so clients don't have to leak memory every
+	  lash_extract_args
+
+2006-05-21 14:44  drobilla
+
+	* configure.ac, clients/Makefile.am, clients/control/Makefile.am,
+	  lashd/Makefile.am, lashd/alsa_client.h, lashd/alsa_fport.h,
+	  lashd/alsa_mgr.h, lashd/alsa_patch.h, lashd/client.c,
+	  lashd/client_event.c, lashd/main.c, lashd/project.c,
+	  lashd/server.c, lashd/server.h, liblash/lash.c, m4/readline.m4: -
+	  Support for building without ALSA - Readline build fixes - Fix
+	  for daemon auto launching (prevent zombies patch from larsl)
+
+2006-03-26 21:00  drobilla
+
+	* Makefile.am, lash-configure-template: - Updated
+	  lash-configure-template to use pkgconfig - Removed autogen.sh
+	  from distribution tarballs
+
+2006-03-26 20:53  drobilla
+
+	* ChangeLog, ChangeLog.old, Makefile.am: Updated ChangeLog, broke
+	  pre-0.5.0 changelog into a seperate file
+
 2006-03-26 20:49  drobilla
 
 	* AUTHORS, NEWS, README.SECURITY: [no log message]
@@ -134,7 +336,6 @@
 
 	* clients/control/client.c, clients/control/lash_control.c,
 	  clients/control/main.c, clients/control/project.c,
-	  clients/gtk_client/gtk_client.c, clients/gtk_client/main.c,
 	  clients/panel/panel.c, clients/panel/project.c,
 	  clients/save_button/hints.c, clients/save_button/save_button.c,
 	  clients/simple_client/simple_client.c, clients/synth/interface.c,
@@ -176,8 +377,6 @@
 	  clients/control/client.h, clients/control/lash_control.c,
 	  clients/control/lash_control.h, clients/control/main.c,
 	  clients/control/project.c, clients/control/project.h,
-	  clients/gtk_client/Makefile.am, clients/gtk_client/gtk_client.c,
-	  clients/gtk_client/gtk_client.h, clients/gtk_client/main.c,
 	  clients/panel/Makefile.am, clients/panel/main.c,
 	  clients/panel/panel.c, clients/panel/panel.h,
 	  clients/panel/project.c, clients/panel/project.h,
