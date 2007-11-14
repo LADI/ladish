@@ -134,8 +134,7 @@ alsa_mgr_destroy(alsa_mgr_t * alsa_mgr)
 		fprintf(stderr, "%s: error closing alsa sequencer: %s\n",
 				__FUNCTION__, snd_strerror(err));
 
-	/* FIXME: free data */
-
+	free(alsa_mgr);
 }
 
 /* CLIENT IS LOCKED ON RETURN */
