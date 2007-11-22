@@ -480,6 +480,7 @@ AC_CONFIG_FILES([slv2/data/lv2core.lv2/Makefile])
 AC_CONFIG_FILES([slv2/slv2.pc])
 AC_CONFIG_FILES([slv2/doc/Makefile])
 AC_CONFIG_FILES([slv2/doc/reference.doxygen])
+AC_CONFIG_FILES([slv2/debian/Makefile])
 
 # LV2 Stuff
 AC_CONFIG_FILES([lv2/Makefile])
