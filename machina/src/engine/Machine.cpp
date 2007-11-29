@@ -305,7 +305,7 @@ Machine::write_state(Raul::RDF::Model& model)
 
 	model.world().add_prefix("machina", "http://drobilla.net/ns/machina#");
 
-	model.add_statement(RDF::Node(model.world(), RDF::Node::RESOURCE, ""),
+	model.add_statement(model.base_uri(),
 			RDF::Node(model.world(), RDF::Node::RESOURCE, "rdf:type"),
 			RDF::Node(model.world(), RDF::Node::RESOURCE, "machina:Machine"));
 
@@ -316,11 +316,11 @@ Machine::write_state(Raul::RDF::Model& model)
 		(*n)->write_state(model);
 
 		if ((*n)->is_initial()) {
-			model.add_statement(RDF::Node(model.world(), RDF::Node::RESOURCE, ""),
+			model.add_statement(model.base_uri(),
 					RDF::Node(model.world(), RDF::Node::RESOURCE, "machina:initialNode"),
 					(*n)->id());
 		} else {
-			model.add_statement(RDF::Node(model.world(), RDF::Node::RESOURCE, ""),
+			model.add_statement(model.base_uri(),
 					RDF::Node(model.world(), RDF::Node::RESOURCE, "machina:node"),
 					(*n)->id());
 		}
@@ -335,7 +335,7 @@ Machine::write_state(Raul::RDF::Model& model)
 			
 			(*e)->write_state(model);
 		
-			model.add_statement(RDF::Node(model.world(), RDF::Node::RESOURCE, ""),
+			model.add_statement(model.base_uri(),
 				RDF::Node(model.world(), RDF::Node::RESOURCE, "machina:edge"),
 				(*e)->id());
 		}

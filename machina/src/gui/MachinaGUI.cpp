@@ -267,17 +267,13 @@ MachinaGUI::menu_file_save()
 	if (_save_uri == "" || _save_uri.substr(0, 5) != "file:") {
 		menu_file_save_as();
 	} else {
-		char* save_filename = raptor_uri_uri_string_to_filename(
-				(const unsigned char*)_save_uri.c_str());
-		if (!save_filename) {
-			cerr << "ERROR: Unable to create filename from \"" << _save_uri << "\"" << endl;
+		if (!raptor_uri_uri_string_is_file_uri((const unsigned char*)_save_uri.c_str()))
 			menu_file_save_as();
-		}
+		
 		Raul::RDF::Model model(_engine->rdf_world());
-		cout << "Writing machine to " << save_filename << endl;
+		model.set_base_uri(_save_uri);
 		machine()->write_state(model);
-		model.serialise_to_file(save_filename);
-		free(save_filename);
+		model.serialise_to_file(_save_uri);
 	}
 }
 
@@ -303,8 +299,10 @@ MachinaGUI::menu_file_save_as()
 	if (result == Gtk::RESPONSE_OK) {	
 		string filename = dialog.get_filename();
 
-		if (filename.length() < 8 || filename.substr(filename.length()-8) != ".machina")
-			filename += ".machina";
+		if (filename.length() < 13 || filename.substr(filename.length()-12) != ".machina.ttl")
+			filename += ".machina.ttl";
+
+		Glib::ustring uri = Glib::filename_to_uri(filename);
 			
 		bool confirm = false;
 		std::fstream fin;
@@ -325,9 +323,10 @@ MachinaGUI::menu_file_save_as()
 		
 		if (confirm) {
 			Raul::RDF::Model model(_engine->rdf_world());
+			_save_uri = uri;
+			model.set_base_uri(_save_uri);
 			_engine->machine()->write_state(model);
-			model.serialise_to_file(filename);
-			_save_uri = dialog.get_uri();
+			model.serialise_to_file(_save_uri);
 		}
 	}
 }
