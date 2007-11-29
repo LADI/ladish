@@ -51,6 +51,7 @@ public:
 	World* world() const { return _world; }
 	
 	librdf_node* get_node() const { return _node; }
+	librdf_uri*  get_uri()  const { return librdf_node_get_uri(_node); }
 
 	operator bool() const { return (_world != NULL && _node != NULL); }
 

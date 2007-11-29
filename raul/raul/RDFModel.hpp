@@ -39,6 +39,9 @@ public:
 	Model(World& world);
 	Model(World& world, const Glib::ustring& uri, Glib::ustring base_uri="");
 	~Model();
+
+	void        set_base_uri(const Glib::ustring& uri);
+	const Node& base_uri() const { return _base; }
 	
 	void        serialise_to_file_handle(FILE* fd);
 	void        serialise_to_file(const Glib::ustring& uri);
@@ -68,6 +71,7 @@ private:
 	void setup_prefixes();
 
 	World&             _world;
+	Node               _base;
 	librdf_storage*    _storage;
 	librdf_model*      _model;
 	librdf_serializer* _serialiser;

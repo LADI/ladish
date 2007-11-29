@@ -47,7 +47,7 @@ Model::Model(RDF::World& world)
 
 /** Load a model from a URI (local file or remote).
  */
-Model::Model(World& world, const Glib::ustring& data_uri, Glib::ustring base_uri_str)
+Model::Model(World& world, const Glib::ustring& data_uri, Glib::ustring base_uri)
 	: _world(world)
 	, _serialiser(NULL)
 {
@@ -55,23 +55,17 @@ Model::Model(World& world, const Glib::ustring& data_uri, Glib::ustring base_uri
 	_storage = librdf_new_storage(_world.world(), "hashes", NULL, "hash-type='memory'");
 	_model = librdf_new_model(_world.world(), _storage, NULL);
 
+	set_base_uri(base_uri);
+
 	librdf_uri* uri = librdf_new_uri(world.world(), (const unsigned char*)data_uri.c_str());
-	librdf_uri* base_uri = NULL;
-	if (base_uri_str != "")
-		base_uri = librdf_new_uri(world.world(), (const unsigned char*)base_uri_str.c_str());
 	
 	if (uri) {
 		librdf_parser* parser = librdf_new_parser(world.world(), "guess", NULL, NULL);
-		librdf_parser_parse_into_model(parser, uri, base_uri, _model);
-		
-
+		librdf_parser_parse_into_model(parser, uri, _base.get_uri(), _model);
 		librdf_free_parser(parser);
 	} else {
 		cerr << "Unable to create URI " << data_uri << endl;
 	}
-	
-	if (base_uri)
-		librdf_free_uri(base_uri);
 	
 	if (uri)
 		librdf_free_uri(uri);
@@ -91,6 +85,16 @@ Model::~Model()
 
 	librdf_free_model(_model);
 	librdf_free_storage(_storage);
+}
+
+
+void
+Model::set_base_uri(const Glib::ustring& uri)
+{
+	if (uri == "")
+		return;
+
+	_base = Node(_world, Node::RESOURCE, uri);
 }
 
 
