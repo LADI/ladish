@@ -1,4 +1,5 @@
 EXTRA_DIST = reference.doxygen mainpage.dox
 
-doc: $(top_srcdir)/doc/reference.doxygen $(top_srcdir)/raul/*.h
-	doxygen $(top_srcdir)/doc/reference.doxygen
+docs: @RAUL_SRCDIR@/doc/reference.doxygen @RAUL_SRCDIR@/raul/*.hpp
+	mkdir -p @abs_top_builddir@/doc/raul
+	doxygen @RAUL_SRCDIR@/doc/reference.doxygen

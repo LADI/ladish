@@ -1,4 +1,5 @@
 EXTRA_DIST = reference.doxygen mainpage.dox
 
-doc: $(top_srcdir)/doc/reference.doxygen $(top_srcdir)/redlandmm/*.hpp
-	doxygen $(top_srcdir)/doc/reference.doxygen
+docs: @REDLANDMM_SRCDIR@/doc/reference.doxygen @REDLANDMM_SRCDIR@/redlandmm/*.hpp
+	mkdir -p @abs_top_builddir@/doc/redlandmm
+	doxygen @REDLANDMM_SRCDIR@/doc/reference.doxygen

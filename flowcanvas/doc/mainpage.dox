@@ -1,0 +1,10 @@
+/** @mainpage
+
+@section Overview
+
+FlowCanvas is a canvas widger for modular/patching/dataflow/graph/etc interfaces,
+based on libgnomecanvasmm.
+
+See the class heirarchy for an index of the available functionality.
+
+*/

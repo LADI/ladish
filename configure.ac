@@ -98,23 +98,31 @@ cd $builddir
 
 REDLANDMM_CFLAGS="-I$abs_srcdir/redlandmm"
 REDLANDMM_LIBS="$builddir/redlandmm/src/.libs/libredlandmm.la"
+REDLANDMM_SRCDIR="$abs_srcdir/redlandmm"
 AC_SUBST(REDLANDMM_CFLAGS)
 AC_SUBST(REDLANDMM_LIBS)
+AC_SUBST(REDLANDMM_SRCDIR)
 
 RAUL_CFLAGS="-I$abs_srcdir/raul"
 RAUL_LIBS="$builddir/raul/src/.libs/libraul.la"
+RAUL_SRCDIR="$abs_srcdir/raul"
 AC_SUBST(RAUL_CFLAGS)
 AC_SUBST(RAUL_LIBS)
+AC_SUBST(RAUL_SRCDIR)
 
 FLOWCANVAS_CFLAGS="-I$abs_srcdir/flowcanvas"
 FLOWCANVAS_LIBS="$builddir/flowcanvas/src/.libs/libflowcanvas.la"
+FLOWCANVAS_SRCDIR="$abs_srcdir/flowcanvas"
 AC_SUBST(FLOWCANVAS_CFLAGS)
 AC_SUBST(FLOWCANVAS_LIBS)
+AC_SUBST(FLOWCANVAS_SRCDIR)
 
 SLV2_CFLAGS="-I$abs_srcdir/slv2"
 SLV2_LIBS="$builddir/slv2/src/.libs/libslv2.la"
+SLV2_SRCDIR="$abs_srcdir/slv2"
 AC_SUBST(SLV2_CFLAGS)
 AC_SUBST(SLV2_LIBS)
+AC_SUBST(SLV2_SRCDIR)
 	
 INGEN_CFLAGS="-I$abs_srcdir/ingen/src/common -I$abs_srcdir/ingen/src/libs -I$abs_srcdir/ingen/src/libs/engine/events -I$abs_srcdir/ingen/src"
 AC_SUBST(INGEN_CFLAGS)
@@ -526,6 +534,7 @@ AC_CONFIG_FILES([flowcanvas/Makefile])
 AC_CONFIG_FILES([flowcanvas/src/Makefile])
 AC_CONFIG_FILES([flowcanvas/flowcanvas/Makefile])
 AC_CONFIG_FILES([flowcanvas/doc/Makefile])
+AC_CONFIG_FILES([flowcanvas/doc/reference.doxygen])
 AC_CONFIG_FILES([flowcanvas/flowcanvas.pc])
 
 # Patchage

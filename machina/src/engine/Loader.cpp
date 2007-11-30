@@ -27,7 +27,7 @@
 #include "machina/ActionFactory.hpp"
 
 using namespace Raul;
-using std::cerr; using std::cout; using std::endl;
+using namespace std;
 
 namespace Machina {
 

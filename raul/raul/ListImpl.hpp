@@ -147,7 +147,7 @@ List<T>::append(List<T>& list)
 }
 
 
-/** Remove all elements equal to @val from the list.
+/** Remove all elements equal to @a val from the list.
  *
  * This function is realtime safe - it is the caller's responsibility to
  * delete the returned ListNode, or there will be a leak.

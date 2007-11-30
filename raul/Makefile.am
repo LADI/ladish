@@ -6,3 +6,6 @@ endif
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = raul.pc
+
+docs:
+	cd doc && make docs

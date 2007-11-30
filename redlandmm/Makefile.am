@@ -6,3 +6,6 @@ endif
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = redlandmm.pc
+
+docs:
+	cd doc && make docs
