@@ -35,6 +35,7 @@ static const char* const RDF_LANG = "turtle";
 /** Create an empty in-memory RDF model.
  */
 World::World()
+	: _next_blank_id(1)
 {
 	_world = librdf_new_world();
 	assert(_world);
@@ -87,10 +88,10 @@ Node
 World::blank_id(const string base_name)
 {
 	std::ostringstream ss;
-	ss << "b" << _next_blank_id++ << "_";
+	ss << "b" << _next_blank_id++;
 	
 	if (base_name != "")
-		ss << base_name;
+		ss << "_" << base_name;
 
 	Node result = Node(*this, Node::BLANK, ss.str());
 	assert(result.to_string() == ss.str());
