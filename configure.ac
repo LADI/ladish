@@ -22,6 +22,10 @@ SLV2_SO_VERSION="${SLV2_API_CURRENT}:${SLV2_API_REVISION}:${SLV2_API_AGE}"
 AC_SUBST(SLV2_SO_VERSION)
 AC_SUBST(SLV2_VERSION)
 
+# Redlandmm
+AC_CONFIG_SRCDIR([redlandmm/redlandmm/Model.h])
+AC_CONFIG_SRCDIR([redlandmm/src/Model.cpp])
+
 # Raul
 AC_CONFIG_SRCDIR([raul/raul/Semaphore.h])
 
@@ -91,6 +95,11 @@ builddir=`pwd`
 cd $srcdir
 abs_srcdir=`pwd`
 cd $builddir
+
+REDLANDMM_CFLAGS="-I$abs_srcdir/redlandmm"
+REDLANDMM_LIBS="$builddir/redlandmm/src/.libs/libredlandmm.la"
+AC_SUBST(REDLANDMM_CFLAGS)
+AC_SUBST(REDLANDMM_LIBS)
 
 RAUL_CFLAGS="-I$abs_srcdir/raul"
 RAUL_LIBS="$builddir/raul/src/.libs/libraul.la"
@@ -389,6 +398,7 @@ else
   AC_SUBST(REDLAND_LIBS)
 fi
 AM_CONDITIONAL(WITH_REDLAND, [test "$build_redland" = "yes"])
+AC_DEFINE(HAVE_REDLANDMM, 1, [Has redlandmm])
 
 build_liblo="yes"
 AC_ARG_ENABLE(liblo,
@@ -492,6 +502,15 @@ AC_CONFIG_FILES([lv2/plugins/Makefile])
 AC_CONFIG_FILES([lv2/plugins/osc_print.lv2/Makefile])
 AC_CONFIG_FILES([lv2/plugins/osc_metro.lv2/Makefile])
 AC_CONFIG_FILES([lv2/plugins/osc_bang.lv2/Makefile])
+
+# Redlandmm
+AC_CONFIG_FILES([redlandmm/Makefile])
+AC_CONFIG_FILES([redlandmm/src/Makefile])
+AC_CONFIG_FILES([redlandmm/redlandmm/Makefile])
+AC_CONFIG_FILES([redlandmm/tests/Makefile])
+AC_CONFIG_FILES([redlandmm/doc/Makefile])
+AC_CONFIG_FILES([redlandmm/doc/reference.doxygen])
+AC_CONFIG_FILES([redlandmm/redlandmm.pc])
 
 # RAUL
 AC_CONFIG_FILES([raul/Makefile])

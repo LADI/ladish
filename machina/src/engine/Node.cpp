@@ -135,7 +135,7 @@ Node::remove_outgoing_edges_to(SharedPtr<Node> node)
 
 
 void
-Node::write_state(Raul::RDF::Model& model)
+Node::write_state(Redland::Model& model)
 {
 	using namespace Raul;
 	
@@ -145,15 +145,15 @@ Node::write_state(Raul::RDF::Model& model)
 	if (_is_selector)
 		model.add_statement(_id,
 				"rdf:type",
-				RDF::Node(model.world(), RDF::Node::RESOURCE, "machina:SelectorNode"));
+				Redland::Node(model.world(), Redland::Node::RESOURCE, "machina:SelectorNode"));
 	else
 		model.add_statement(_id,
 				"rdf:type",
-				RDF::Node(model.world(), RDF::Node::RESOURCE, "machina:Node"));
+				Redland::Node(model.world(), Redland::Node::RESOURCE, "machina:Node"));
 
 	model.add_statement(_id,
 			"machina:duration",
-			Raul::Atom((float)_duration));
+			Raul::Atom((float)_duration).to_rdf_node(model.world()));
 
 	if (_enter_action) {
 		_enter_action->write_state(model);

@@ -1,11 +1,10 @@
 #!/bin/sh
 
-#echo 'Running slv2/autogen.sh...'
-#cd slv2 && ./autogen.sh && cd ..
-
 echo 'Generating necessary files...'
 rm -rf slv2/config
 mkdir -p slv2/config
+rm -rf redlandmm/config
+mkdir -p redlandmm/config
 rm -rf raul/config
 mkdir -p raul/config
 rm -rf flowcanvas/config

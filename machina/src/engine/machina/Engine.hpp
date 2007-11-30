@@ -31,13 +31,13 @@ class Machine;
 
 class Engine {
 public:
-	Engine(SharedPtr<Driver> driver, Raul::RDF::World& rdf_world)
+	Engine(SharedPtr<Driver> driver, Redland::World& rdf_world)
 		: _driver(driver)
 		, _rdf_world(rdf_world)
 		, _loader(_rdf_world)
 	{ }
 	
-	Raul::RDF::World& rdf_world() { return _rdf_world; }
+	Redland::World& rdf_world() { return _rdf_world; }
 
 	SharedPtr<Driver>  driver()  { return _driver; }
 	SharedPtr<Machine> machine() { return _driver->machine(); }
@@ -51,7 +51,7 @@ public:
 
 private:
 	SharedPtr<Driver> _driver;
-	Raul::RDF::World& _rdf_world;
+	Redland::World& _rdf_world;
 	Loader            _loader;
 };
 

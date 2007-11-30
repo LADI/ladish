@@ -12,15 +12,10 @@ raulinclude_HEADERS = \
 	ListImpl.hpp \
 	MIDISink.hpp \
 	Maid.hpp \
-	Namespaces.hpp \
 	Path.hpp \
 	PathTable.hpp \
 	Process.hpp \
 	Quantizer.hpp \
-	RDFModel.hpp \
-	RDFNode.hpp \
-	RDFQuery.hpp \
-	RDFWorld.hpp \
 	RingBuffer.hpp \
 	SMFReader.hpp \
 	SMFWriter.hpp \
@@ -41,10 +36,6 @@ raulinclude_HEADERS = \
 
 if WITH_LIBLO
 raulinclude_HEADERS += AtomLiblo.hpp
-endif
-
-if WITH_REDLAND
-raulinclude_HEADERS += AtomRedland.hpp
 endif
 
 if WITH_LASH

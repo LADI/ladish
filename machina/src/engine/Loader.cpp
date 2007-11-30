@@ -19,7 +19,7 @@
 #include <map>
 #include <cmath>
 #include <glibmm/ustring.h>
-#include <raul/RDFQuery.hpp>
+#include <redlandmm/Query.hpp>
 #include "machina/Loader.hpp"
 #include "machina/Node.hpp"
 #include "machina/Edge.hpp"
@@ -32,7 +32,7 @@ using std::cerr; using std::cout; using std::endl;
 namespace Machina {
 
 
-Loader::Loader(Raul::RDF::World& rdf_world)
+Loader::Loader(Redland::World& rdf_world)
 	: _rdf_world(rdf_world)
 {
 	_rdf_world.add_prefix("xsd", "http://www.w3.org/2001/XMLSchema#");
@@ -48,7 +48,7 @@ Loader::Loader(Raul::RDF::World& rdf_world)
 SharedPtr<Machine>
 Loader::load(const Glib::ustring& uri)
 {
-	using Raul::RDF::Query;
+	using Redland::Query;
 	SharedPtr<Machine> machine;
 
 	Glib::ustring document_uri = uri;
@@ -77,7 +77,7 @@ Loader::load(const Glib::ustring& uri)
 	typedef std::map<string, SharedPtr<Node> > Created;
 	Created created;
 
-	Raul::RDF::Model model(_rdf_world, document_uri);
+	Redland::Model model(_rdf_world, document_uri);
 
 	/* Get initial nodes */
 

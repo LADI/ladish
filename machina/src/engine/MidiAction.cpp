@@ -18,6 +18,7 @@
 #include <iostream>
 #include <raul/SharedPtr.hpp>
 #include <raul/MIDISink.hpp>
+#include <raul/Atom.hpp>
 #include "machina/MidiAction.hpp"
 
 namespace Machina {
@@ -91,20 +92,20 @@ MidiAction::execute(SharedPtr<Raul::MIDISink> sink, Raul::BeatTime time)
 
 
 void
-MidiAction::write_state(Raul::RDF::Model& model)
+MidiAction::write_state(Redland::Model& model)
 {
 	using namespace Raul;
 
 	Action::write_state(model);
 
 	model.add_statement(_id,
-			RDF::Node(model.world(), RDF::Node::RESOURCE, "rdf:type"),
-			RDF::Node(model.world(), RDF::Node::RESOURCE, "machina:MidiAction"));
+			Redland::Node(model.world(), Redland::Node::RESOURCE, "rdf:type"),
+			Redland::Node(model.world(), Redland::Node::RESOURCE, "machina:MidiAction"));
 	
 	// FIXME: Assumes note on/note off
 	model.add_statement(_id,
-			RDF::Node(model.world(), RDF::Node::RESOURCE, "machina:midiNote"),
-			(int)(_event.get()[1]));
+			Redland::Node(model.world(), Redland::Node::RESOURCE, "machina:midiNote"),
+			Atom((int)(_event.get()[1])).to_rdf_node(model.world()));
 }
 
 

@@ -22,7 +22,7 @@
 #include <pthread.h>
 #include <libgnomecanvasmm.h>
 #include <libglademm/xml.h>
-#include <raul/RDFModel.hpp>
+#include <redlandmm/Model.hpp>
 #include <machina/Machine.hpp>
 #include <machina/SMFDriver.hpp>
 #include "GladeXml.hpp"
@@ -270,7 +270,7 @@ MachinaGUI::menu_file_save()
 		if (!raptor_uri_uri_string_is_file_uri((const unsigned char*)_save_uri.c_str()))
 			menu_file_save_as();
 		
-		Raul::RDF::Model model(_engine->rdf_world());
+		Redland::Model model(_engine->rdf_world());
 		model.set_base_uri(_save_uri);
 		machine()->write_state(model);
 		model.serialise_to_file(_save_uri);
@@ -322,7 +322,7 @@ MachinaGUI::menu_file_save_as()
 		fin.close();
 		
 		if (confirm) {
-			Raul::RDF::Model model(_engine->rdf_world());
+			Redland::Model model(_engine->rdf_world());
 			_save_uri = uri;
 			model.set_base_uri(_save_uri);
 			_engine->machine()->write_state(model);

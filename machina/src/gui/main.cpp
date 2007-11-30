@@ -40,7 +40,7 @@ main(int argc, char** argv)
 	if ( ! Glib::thread_supported())
 		Glib::thread_init();
 
-	Raul::RDF::World rdf_world;
+	Redland::World rdf_world;
 
 	SharedPtr<Machina::Machine> machine;
 

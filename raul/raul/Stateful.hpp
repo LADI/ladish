@@ -18,7 +18,7 @@
 #ifndef STATEFUL_H
 #define STATEFUL_H
 
-#include <raul/RDFModel.hpp>
+#include <redlandmm/Model.hpp>
 
 namespace Raul {
 
@@ -27,13 +27,13 @@ class Stateful {
 public:
 	virtual ~Stateful() {}
 
-	virtual void write_state(RDF::Model& model) = 0;
+	virtual void write_state(Redland::Model& model) = 0;
 	
-	RDF::Node id() const { return _id; }
-	void      set_id(const RDF::Node& id) { _id = id; }
+	Redland::Node id() const                      { return _id; }
+	void          set_id(const Redland::Node& id) { _id = id; }
 
 protected:
-	RDF::Node _id;
+	Redland::Node _id;
 };
 	
 

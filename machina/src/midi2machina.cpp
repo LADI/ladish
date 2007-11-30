@@ -76,8 +76,8 @@ main(int argc, char** argv)
 	cout << "Writing output to " << out_filename << endl;
 	*/
 
-	Raul::RDF::World world;
-	Raul::RDF::Model model(world);
+	Redland::World world;
+	Redland::Model model(world);
 	machine->write_state(model);
 	model.serialise_to_file_handle(stdout);
 	

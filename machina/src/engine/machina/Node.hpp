@@ -62,7 +62,7 @@ public:
 	void remove_outgoing_edge(SharedPtr<Edge> edge);
 	void remove_outgoing_edges_to(SharedPtr<Node> node);
 
-	void write_state(Raul::RDF::Model& model);
+	void write_state(Redland::Model& model);
 
 	bool      is_initial() const        { return _is_initial; }
 	void      set_initial(bool i)       { _is_initial = i; }

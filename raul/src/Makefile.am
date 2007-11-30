@@ -5,16 +5,10 @@ lib_LTLIBRARIES = libraul.la
 
 libraul_la_SOURCES = \
 	Maid.cpp \
-	Namespaces.cpp \
 	Path.cpp \
-	RDFWorld.cpp \
 	SMFReader.cpp \
 	SMFWriter.cpp \
 	Thread.cpp
-
-if WITH_REDLAND
-libraul_la_SOURCES += RDFModel.cpp RDFNode.cpp RDFQuery.cpp
-endif
 
 if WITH_JACK
 libraul_la_SOURCES += JackDriver.cpp

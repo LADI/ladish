@@ -1,12 +1,12 @@
-/* This file is part of Raul.
+/* This file is part of redlandmm.
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
  * 
- * Raul is free software; you can redistribute it and/or modify it under the
+ * redlandmm is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 2 of the License, or (at your option) any later
  * version.
  * 
- * Raul is distributed in the hope that it will be useful, but WITHOUT ANY
+ * redlandmm is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for details.
  * 
@@ -15,21 +15,19 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef RAUL_RDF_MODEL_HPP
-#define RAUL_RDF_MODEL_HPP
+#ifndef REDLANDMM_MODEL_HPP
+#define REDLANDMM_MODEL_HPP
 
 #include <stdexcept>
 #include <string>
 #include <librdf.h>
 #include <glibmm/ustring.h>
 #include <boost/utility.hpp>
-#include <raul/Namespaces.hpp>
-#include <raul/Atom.hpp>
-#include <raul/RDFNode.hpp>
+#include <redlandmm/Namespaces.hpp>
+//#include <redlandmm/Atom.hpp>
+#include <redlandmm/Node.hpp>
 
-
-namespace Raul {
-namespace RDF {
+namespace Redland {
 
 class World;
 
@@ -55,13 +53,13 @@ public:
 	                   const std::string& predicate,
 	                   const Node&        object);   
 	
-	void add_statement(const Node& subject,
+	/*void add_statement(const Node& subject,
 	                   const Node& predicate,
 	                   const Atom& object);
 	
 	void add_statement(const Node&        subject,
 	                   const std::string& predicate,
-	                   const Atom&        object);
+	                   const Atom&        object);*/
 
 	World& world() const { return _world; }
 
@@ -80,7 +78,6 @@ private:
 };
 
 
-} // namespace RDF
-} // namespace Raul
+} // namespace Redland
 
-#endif // RAUL_RDF_MODEL_HPP
+#endif // REDLANDMM_MODEL_HPP

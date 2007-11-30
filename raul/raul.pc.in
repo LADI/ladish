@@ -6,5 +6,5 @@ includedir=@includedir@
 Name: raul
 Version: @VERSION@
 Description: A C++ convenience library for realtime audio applications
-Libs: -L${libdir} -lraul @GLIBMM_LIBS@ @GTHREAD_LIBS@ @REDLAND_LIBS@ @JACK_LIBS@ @LASH_LIBS@
-Cflags: -I${includedir} @GLIBMM_CFLAGS@ @GTHREAD_CFLAGS@ @REDLAND_CFLAGS@ @JACK_CFLAGS@ @LASH_CFLAGS@
+Libs: -L${libdir} -lraul @GLIBMM_LIBS@ @GTHREAD_LIBS@ @REDLANDMM_LIBS@ @JACK_LIBS@ @LASH_LIBS@
+Cflags: -I${includedir} @GLIBMM_CFLAGS@ @GTHREAD_CFLAGS@ @REDLANDMM_CFLAGS@ @JACK_CFLAGS@ @LASH_CFLAGS@

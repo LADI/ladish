@@ -32,12 +32,12 @@ class Machine;
 
 class Loader {
 public:
-	Loader(Raul::RDF::World& rdf_world);
+	Loader(Redland::World& rdf_world);
 
 	SharedPtr<Machine> load(const Glib::ustring& filename);
 
 private:
-	Raul::RDF::World& _rdf_world;
+	Redland::World& _rdf_world;
 };
 
 

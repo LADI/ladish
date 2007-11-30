@@ -22,7 +22,7 @@
 namespace Machina {
 
 void
-Action::write_state(Raul::RDF::Model& model)
+Action::write_state(Redland::Model& model)
 {
 	using namespace Raul;
 	
@@ -30,8 +30,8 @@ Action::write_state(Raul::RDF::Model& model)
 		set_id(model.world().blank_id());
 
 	model.add_statement(_id,
-			RDF::Node(model.world(), RDF::Node::RESOURCE, "rdf:type"),
-			RDF::Node(model.world(), RDF::Node::RESOURCE, "machina:Action"));
+			Redland::Node(model.world(), Redland::Node::RESOURCE, "rdf:type"),
+			Redland::Node(model.world(), Redland::Node::RESOURCE, "machina:Action"));
 }
 
 

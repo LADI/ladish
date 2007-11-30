@@ -53,7 +53,7 @@ public:
 
 	void execute(SharedPtr<Raul::MIDISink> driver, Raul::BeatTime time);
 	
-	virtual void write_state(Raul::RDF::Model& model);
+	virtual void write_state(Redland::Model& model);
 
 private:
 

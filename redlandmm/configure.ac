@@ -1,14 +1,14 @@
 AC_PREREQ(2.59)
-AC_INIT([raul],[svn],[dave@drobilla.net])
+AC_INIT([redlandmm],[svn],[dave@drobilla.net])
 
 AC_CONFIG_AUX_DIR([config])
 
 
 ################### SOURCES
 
-# Raul
-AC_CONFIG_SRCDIR([raul/Semaphore.h])
-AC_CONFIG_SRCDIR([src/Thread.cpp])
+# Redlandmm
+AC_CONFIG_SRCDIR([redlandmm/Model.h])
+AC_CONFIG_SRCDIR([src/Model.cpp])
 
 AC_CONFIG_HEADER([config/config.h])
 
@@ -38,10 +38,10 @@ cd $srcdir
 abs_srcdir=`pwd`
 cd $builddir
 
-RAUL_CFLAGS="-I$abs_srcdir"
-RAUL_LIBS="$builddir/src/.libs/libraul.la"
-AC_SUBST(RAUL_CFLAGS)
-AC_SUBST(RAUL_LIBS)
+REDLANDMM_CFLAGS="-I$abs_srcdir"
+REDLANDMM_LIBS="$builddir/src/.libs/libredlandmm.la"
+AC_SUBST(REDLANDMM_CFLAGS)
+AC_SUBST(REDLANDMM_LIBS)
 
 CONFIG_H_PATH="$builddir/config/config.h"
 
@@ -104,74 +104,42 @@ CFLAGS="$CFLAGS -std=c99 -pipe -fmessage-length=999 -DCONFIG_H_PATH=\\\"$CONFIG_
 
 #################### GENERIC OPTIONS
 
-
-# Jack support
-build_jack="yes"
-AC_ARG_ENABLE(enable-jack,
-	[AS_HELP_STRING(--enable-jack, [Enable Jack support (yes)])],
-	[ if test x$enable_jack = xno ; then build_jack=no ; fi ])
-if test "$build_jack" = "yes"; then
-	PKG_CHECK_MODULES(JACK, jack >= 0.107.0)
-	AC_DEFINE(HAVE_JACK_MIDI, 1, [Has Jack MIDI])
-fi
-
-# LASH support
-build_lash="yes"
-AC_ARG_ENABLE(lash,
-	[AS_HELP_STRING(--enable-lash, [Enable LASH session management support (yes)])],
-	[ if test x$enable_lash = xno ; then build_lash=no ; fi ])
-	
-have_lash="no"
-if test "$build_lash" = "yes"; then
-	PKG_CHECK_MODULES(LASH, lash-1.0 >= 0.5.2, have_lash="yes", have_lash="no")
-fi
-if test "$have_lash" = "yes"; then
-	AC_DEFINE(HAVE_LASH, 1, [Has lash.h])
-else
-	AC_MSG_WARN([LASH not found, session support will not be built.])
-fi
-
 # Build unit tests
 build_unit_tests="no"
 AC_ARG_ENABLE(unit-tests,
 	[AS_HELP_STRING(--enable-unit-tests, [Build unit tests (no) - Developers only])],
 	[build_unit_tests="$enableval"])
 
-AM_CONDITIONAL(WITH_JACK, [test "$build_jack" = "yes"])
-AM_CONDITIONAL(WITH_LASH, [test "$have_lash" = "yes"])
 AM_CONDITIONAL(BUILD_UNIT_TESTS, [test "$build_unit_tests" = "yes"])
 
 
-################## RAUL
+################## REDLANDMM
 
-# Check for Redlandmm
-build_redlandmm="no"
-PKG_CHECK_MODULES([REDLANDMM], [redlandmm], [build_redlandmm="yes"])
-AM_CONDITIONAL(WITH_REDLANDMM, [test "$build_redlandmm" = "yes"])
-AC_DEFINE(HAVE_REDLANDMM, 1, [Has redlandmm])
-
-# Check for liblo
-build_liblo="yes"
-AC_ARG_ENABLE(liblo,
-	[AS_HELP_STRING(--enable-liblo, [Include liblo (OSC) support (yes)])],
-	[ if test x$enable_liblo = xno ; then build_liblo=no ; fi ])
-if test "$build_liblo" = "yes"; then
-	PKG_CHECK_MODULES(LIBLO, liblo >= 0.22, [],
-		AC_MSG_ERROR([OSC support requires liblo (>= 0.22)]))
+# Check for Redland
+build_redland="no"
+AC_CHECK_PROG(REDLAND_CONFIG, redland-config, redland-config)
+if test "X$REDLAND_CONFIG" = X; then
+  AC_MSG_ERROR([REDLANDMM requires Redland (librdf), but redland-config not found.])
+else
+  build_redland="yes"
+  REDLAND_CFLAGS=`$REDLAND_CONFIG --cflags`
+  REDLAND_LIBS=`$REDLAND_CONFIG --libs`
+  AC_SUBST(REDLAND_CFLAGS)
+  AC_SUBST(REDLAND_LIBS)
 fi
-AM_CONDITIONAL(WITH_LIBLO, [test "$build_liblo" = "yes"])
+AM_CONDITIONAL(WITH_REDLAND, [test "$build_redland" = "yes"])
 
 
 #################### OUTPUT
 
-# RAUL
+# REDLANDMM
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
-AC_CONFIG_FILES([raul/Makefile])
+AC_CONFIG_FILES([redlandmm/Makefile])
 AC_CONFIG_FILES([tests/Makefile])
 AC_CONFIG_FILES([doc/Makefile])
 AC_CONFIG_FILES([doc/reference.doxygen])
-AC_CONFIG_FILES([raul.pc])
+AC_CONFIG_FILES([redlandmm.pc])
 
 AC_OUTPUT
 
@@ -179,9 +147,6 @@ AC_MSG_RESULT([])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([**********************************************************************])
 AC_MSG_RESULT([Configuration:])
-AC_MSG_RESULT([])
-AC_MSG_RESULT([Jack support:     $build_jack])
-AC_MSG_RESULT([LASH support:     $build_lash])
 AC_MSG_RESULT([Build unit tests: $build_unit_tests])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([C FLAGS:   $CFLAGS])

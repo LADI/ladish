@@ -47,7 +47,7 @@ public:
 	void remove_node(SharedPtr<Node> node);
 	void learn(SharedPtr<LearnRequest> learn);
 
-	void write_state(Raul::RDF::Model& model);
+	void write_state(Redland::Model& model);
 
 	// Audio context
 	void      reset();

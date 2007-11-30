@@ -24,7 +24,7 @@ namespace Machina {
 
 
 void
-Edge::write_state(Raul::RDF::Model& model)
+Edge::write_state(Redland::Model& model)
 {
 	using namespace Raul;
 
@@ -33,7 +33,7 @@ Edge::write_state(Raul::RDF::Model& model)
 
 	model.add_statement(_id,
 			"rdf:type",
-			RDF::Node(model.world(), RDF::Node::RESOURCE, "machina:Edge"));
+			Redland::Node(model.world(), Redland::Node::RESOURCE, "machina:Edge"));
 
 	SharedPtr<Node> tail = _tail.lock();
 	SharedPtr<Node> head = _head;
@@ -53,7 +53,7 @@ Edge::write_state(Raul::RDF::Model& model)
 	
 	model.add_statement(_id,
 			"machina:probability",
-			_probability.get());
+			Atom(_probability.get()).to_rdf_node(model.world()));
 }
 
 

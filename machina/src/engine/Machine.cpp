@@ -299,15 +299,15 @@ Machine::learn(SharedPtr<LearnRequest> learn)
 
 
 void
-Machine::write_state(Raul::RDF::Model& model)
+Machine::write_state(Redland::Model& model)
 {
 	using namespace Raul;
 
 	model.world().add_prefix("machina", "http://drobilla.net/ns/machina#");
 
 	model.add_statement(model.base_uri(),
-			RDF::Node(model.world(), RDF::Node::RESOURCE, "rdf:type"),
-			RDF::Node(model.world(), RDF::Node::RESOURCE, "machina:Machine"));
+			Redland::Node(model.world(), Redland::Node::RESOURCE, "rdf:type"),
+			Redland::Node(model.world(), Redland::Node::RESOURCE, "machina:Machine"));
 
 	size_t count = 0;
 
@@ -317,11 +317,11 @@ Machine::write_state(Raul::RDF::Model& model)
 
 		if ((*n)->is_initial()) {
 			model.add_statement(model.base_uri(),
-					RDF::Node(model.world(), RDF::Node::RESOURCE, "machina:initialNode"),
+					Redland::Node(model.world(), Redland::Node::RESOURCE, "machina:initialNode"),
 					(*n)->id());
 		} else {
 			model.add_statement(model.base_uri(),
-					RDF::Node(model.world(), RDF::Node::RESOURCE, "machina:node"),
+					Redland::Node(model.world(), Redland::Node::RESOURCE, "machina:node"),
 					(*n)->id());
 		}
 	}
@@ -336,7 +336,7 @@ Machine::write_state(Raul::RDF::Model& model)
 			(*e)->write_state(model);
 		
 			model.add_statement(model.base_uri(),
-				RDF::Node(model.world(), RDF::Node::RESOURCE, "machina:edge"),
+				Redland::Node(model.world(), Redland::Node::RESOURCE, "machina:edge"),
 				(*e)->id());
 		}
 

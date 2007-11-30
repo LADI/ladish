@@ -1,7 +1,7 @@
 if BUILD_UNIT_TESTS
 
-AM_CXXFLAGS = -I.. @REDLAND_CFLAGS@ @GLIBMM_CFLAGS@ @GTHREAD_CFLAGS@ # -DTABLE_SORT_DEBUG
-ALL_LIBS = @REDLAND_LIBS@ @GLIBMM_LIBS@ @GTHREAD_LIBS@ ../src/libraul.la
+AM_CXXFLAGS = -I.. @REDLANDMM_CFLAGS@ @GLIBMM_CFLAGS@ @GTHREAD_CFLAGS@ # -DTABLE_SORT_DEBUG
+ALL_LIBS = @REDLANDMM_LIBS@ @GLIBMM_LIBS@ @GTHREAD_LIBS@ ../src/libraul.la
 
 noinst_PROGRAMS = \
 	path_test \
@@ -14,7 +14,6 @@ noinst_PROGRAMS = \
 	time_test \
 	quantize_test \
 	smf_test \
-	rdf_test \
 	table_test
 
 thread_test_LDADD = $(ALL_LIBS)
@@ -27,7 +26,6 @@ list_test_LDADD = $(ALL_LIBS)
 time_test_LDADD = $(ALL_LIBS)
 quantize_test_LDADD = $(ALL_LIBS)
 smf_test_LDADD = $(ALL_LIBS)
-rdf_test_LDADD = $(ALL_LIBS)
 table_test_LDADD = $(ALL_LIBS)
 
 path_test_SOURCES = path_test.cpp
@@ -40,7 +38,6 @@ list_test_SOURCES = list_test.cpp
 time_test_SOURCES = time_test.cpp
 quantize_test_SOURCES = quantize_test.cpp
 smf_test_SOURCES = smf_test.cpp
-rdf_test_SOURCES = rdf_test.cpp
 table_test_SOURCES = table_test.cpp
 
 endif
