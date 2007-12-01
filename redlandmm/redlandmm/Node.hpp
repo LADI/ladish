@@ -57,7 +57,6 @@ public:
 	inline operator float()         const { return to_float(); }
 	inline operator bool()          const { return is_bool() ? to_bool() : (_world && _node); }
 	inline operator const char*()   const { return to_c_string(); }
-	//inline operator Glib::ustring() const { return to_string(); }
 
 	const Node& operator=(const Node& other) {
 		if (_node)
@@ -69,8 +68,6 @@ public:
 	
 	const char* to_c_string() const;
 	std::string to_string() const;
-	//Glib::ustring to_string() const;
-	//Glib::ustring to_quoted_uri_string() const;
 
 	bool is_int() const;
 	int  to_int() const;
