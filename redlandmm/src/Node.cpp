@@ -32,13 +32,13 @@ Node::Node(World& world, Type type, const std::string& s)
 
 	if (type == RESOURCE) {
 		const string uri = world.expand_uri(s);
-		_node = librdf_new_node_from_uri_string(world.world(), (const unsigned char*)uri.c_str());
+		_c_obj = librdf_new_node_from_uri_string(world.world(), (const unsigned char*)uri.c_str());
 	} else if (type == LITERAL) {
-		_node = librdf_new_node_from_literal(world.world(), (const unsigned char*)s.c_str(), NULL, 0);
+		_c_obj = librdf_new_node_from_literal(world.world(), (const unsigned char*)s.c_str(), NULL, 0);
 	} else if (type == BLANK) {
-		_node = librdf_new_node_from_blank_identifier(world.world(), (const unsigned char*)s.c_str());
+		_c_obj = librdf_new_node_from_blank_identifier(world.world(), (const unsigned char*)s.c_str());
 	} else {
-		_node = NULL;
+		_c_obj = NULL;
 	}
 
 	assert(this->type() == type);
@@ -50,7 +50,7 @@ Node::Node(World& world)
 	: _world(&world)
 {
 	Glib::Mutex::Lock lock(world.mutex(), Glib::TRY_LOCK);
-	_node = librdf_new_node(world.world());
+	_c_obj = librdf_new_node(world.world());
 	assert(_world);
 }
 
@@ -59,18 +59,18 @@ Node::Node(World& world, librdf_node* node)
 	: _world(&world)
 {
 	Glib::Mutex::Lock lock(world.mutex(), Glib::TRY_LOCK);
-	_node = librdf_new_node_from_node(node);
+	_c_obj = librdf_new_node_from_node(node);
 	assert(_world);
 }
 
 
 Node::Node(const Node& other)
-	: _world(other.world())
-	, _node(NULL)
+	: Wrapper<librdf_node>()
+	, _world(other.world())
 {
 	if (_world) {
 		Glib::Mutex::Lock lock(_world->mutex(), Glib::TRY_LOCK);
-		_node = (other._node ? librdf_new_node_from_node(other._node) : NULL);
+		_c_obj = (other._c_obj ? librdf_new_node_from_node(other._c_obj) : NULL);
 	}
 
 	assert(to_string() == other.to_string());
@@ -81,8 +81,8 @@ Node::~Node()
 {
 	if (_world) {
 		Glib::Mutex::Lock lock(_world->mutex(), Glib::TRY_LOCK);
-		if (_node)
-			librdf_free_node(_node);
+		if (_c_obj)
+			librdf_free_node(_c_obj);
 	}
 }
 
@@ -99,12 +99,12 @@ Node::to_c_string() const
 {
 	const Type type = this->type();
 	if (type == RESOURCE) {
-		assert(librdf_node_get_uri(_node));
-		return (const char*)librdf_uri_as_string(librdf_node_get_uri(_node));
+		assert(librdf_node_get_uri(_c_obj));
+		return (const char*)librdf_uri_as_string(librdf_node_get_uri(_c_obj));
 	} else if (type == LITERAL) {
-		return (const char*)librdf_node_get_literal_value(_node);
+		return (const char*)librdf_node_get_literal_value(_c_obj);
 	} else if (type == BLANK) {
-		return (const char*)librdf_node_get_blank_identifier(_node);
+		return (const char*)librdf_node_get_blank_identifier(_c_obj);
 	} else {
 		return "";
 	}
@@ -115,9 +115,9 @@ Glib::ustring
 Node::to_quoted_uri_string() const
 {
 	assert(type() == RESOURCE);
-	assert(librdf_node_get_uri(_node));
+	assert(librdf_node_get_uri(_c_obj));
 	Glib::ustring str = "<";
-	str.append((const char*)librdf_uri_as_string(librdf_node_get_uri(_node)));
+	str.append((const char*)librdf_uri_as_string(librdf_node_get_uri(_c_obj)));
 	str.append(">");
 	return str;
 }
@@ -126,8 +126,8 @@ Node::to_quoted_uri_string() const
 bool
 Node::is_int() const
 {
-	if (_node && librdf_node_get_type(_node) == LIBRDF_NODE_TYPE_LITERAL) {
-		librdf_uri* datatype_uri = librdf_node_get_literal_value_datatype_uri(_node);
+	if (_c_obj && librdf_node_get_type(_c_obj) == LIBRDF_NODE_TYPE_LITERAL) {
+		librdf_uri* datatype_uri = librdf_node_get_literal_value_datatype_uri(_c_obj);
 		if (datatype_uri && !strcmp((const char*)librdf_uri_as_string(datatype_uri),
 					"http://www.w3.org/2001/XMLSchema#integer"))
 			return true;
@@ -140,15 +140,15 @@ int
 Node::to_int() const
 {
 	assert(is_int());
-	return strtol((const char*)librdf_node_get_literal_value(_node), NULL, 10);
+	return strtol((const char*)librdf_node_get_literal_value(_c_obj), NULL, 10);
 }
 
 
 bool
 Node::is_float() const
 {
-	if (_node && librdf_node_get_type(_node) == LIBRDF_NODE_TYPE_LITERAL) {
-		librdf_uri* datatype_uri = librdf_node_get_literal_value_datatype_uri(_node);
+	if (_c_obj && librdf_node_get_type(_c_obj) == LIBRDF_NODE_TYPE_LITERAL) {
+		librdf_uri* datatype_uri = librdf_node_get_literal_value_datatype_uri(_c_obj);
 		if (datatype_uri && !strcmp((const char*)librdf_uri_as_string(datatype_uri),
 					"http://www.w3.org/2001/XMLSchema#decimal"))
 			return true;
@@ -161,14 +161,14 @@ float
 Node::to_float() const
 {
 	assert(is_float());
-	return strtod((const char*)librdf_node_get_literal_value(_node), NULL);
+	return strtod((const char*)librdf_node_get_literal_value(_c_obj), NULL);
 }
 
 bool
 Node::is_bool() const
 {
-	if (_node && librdf_node_get_type(_node) == LIBRDF_NODE_TYPE_LITERAL) {
-		librdf_uri* datatype_uri = librdf_node_get_literal_value_datatype_uri(_node);
+	if (_c_obj && librdf_node_get_type(_c_obj) == LIBRDF_NODE_TYPE_LITERAL) {
+		librdf_uri* datatype_uri = librdf_node_get_literal_value_datatype_uri(_c_obj);
 		if (datatype_uri && !strcmp((const char*)librdf_uri_as_string(datatype_uri),
 					"http://www.w3.org/2001/XMLSchema#boolean"))
 			return true;
@@ -181,7 +181,7 @@ float
 Node::to_bool() const
 {
 	assert(is_bool());
-	if (!strcmp((const char*)librdf_node_get_literal_value(_node), "true"))
+	if (!strcmp((const char*)librdf_node_get_literal_value(_c_obj), "true"))
 		return true;
 	else
 		return false;

@@ -21,6 +21,7 @@
 #include <string>
 #include <stdexcept>
 #include <librdf.h>
+#include <redlandmm/Wrapper.hpp>
 
 namespace Redland {
 
@@ -29,7 +30,7 @@ class World;
 
 /** An RDF Node (resource, literal, etc)
  */
-class Node {
+class Node : public Wrapper<librdf_node> {
 public:
 	enum Type {
 		UNKNOWN  = LIBRDF_NODE_TYPE_UNKNOWN,
@@ -38,7 +39,7 @@ public:
 		BLANK    = LIBRDF_NODE_TYPE_BLANK
 	};
 
-	Node() : _world(NULL), _node(NULL) {}
+	Node() : _world(NULL) {}
 
 	Node(World& world, Type t, const std::string& s);
 	Node(World& world);
@@ -46,23 +47,23 @@ public:
 	Node(const Node& other);
 	~Node();
 
-	Type type() const { return ((_node) ? (Type)librdf_node_get_type(_node) : UNKNOWN); }
+	Type type() const { return ((_c_obj) ? (Type)librdf_node_get_type(_c_obj) : UNKNOWN); }
 
 	World* world() const { return _world; }
 	
-	librdf_node* get_node() const { return _node; }
-	librdf_uri*  get_uri()  const { return librdf_node_get_uri(_node); }
+	librdf_node* get_node() const { return _c_obj; }
+	librdf_uri*  get_uri()  const { return librdf_node_get_uri(_c_obj); }
 	
 	inline operator int()           const { return to_int(); }
 	inline operator float()         const { return to_float(); }
-	inline operator bool()          const { return is_bool() ? to_bool() : (_world && _node); }
+	inline operator bool()          const { return is_bool() ? to_bool() : (_world && _c_obj); }
 	inline operator const char*()   const { return to_c_string(); }
 
 	const Node& operator=(const Node& other) {
-		if (_node)
-			librdf_free_node(_node);
+		if (_c_obj)
+			librdf_free_node(_c_obj);
 		_world = other._world;
-		_node = (other._node) ? librdf_new_node_from_node(other._node) : NULL;
+		_c_obj = (other._c_obj) ? librdf_new_node_from_node(other._c_obj) : NULL;
 		return *this;
 	}
 	
@@ -79,8 +80,7 @@ public:
 	float to_bool() const;
 
 private:
-	World*       _world;
-	librdf_node* _node;
+	World* _world;
 };
 
 

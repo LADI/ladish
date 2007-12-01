@@ -24,7 +24,6 @@
 #include <glibmm/ustring.h>
 #include <boost/utility.hpp>
 #include <redlandmm/Namespaces.hpp>
-//#include <redlandmm/Atom.hpp>
 #include <redlandmm/Node.hpp>
 
 namespace Redland {
@@ -55,14 +54,6 @@ public:
 	                   const std::string& predicate,
 	                   const Node&        object);   
 	
-	/*void add_statement(const Node& subject,
-	                   const Node& predicate,
-	                   const Atom& object);
-	
-	void add_statement(const Node&        subject,
-	                   const std::string& predicate,
-	                   const Atom&        object);*/
-
 	World& world() const { return _world; }
 
 private:

@@ -21,7 +21,6 @@
 #include <redlandmm/World.hpp>
 #include <redlandmm/Model.hpp>
 #include <redlandmm/Node.hpp>
-//#include <redlandmm/AtomRedland.hpp>
 
 #define U(x) ((const unsigned char*)(x))
 
@@ -214,49 +213,6 @@ Model::add_statement(const Node&   subject,
 	librdf_model_add_statement(_model, triple);
 }
 
-
-#if 0
-void
-Model::add_statement(const Node& subject,
-                     const Node& predicate,
-                     const Atom& object)
-{
-	Glib::Mutex::Lock lock(_world.mutex());
-
-	librdf_node* atom_node = AtomRedland::atom_to_rdf_node(_world.world(), object);
-
-	if (atom_node) {
-		librdf_statement* triple = librdf_new_statement_from_nodes(_world.world(),
-			subject.get_node(), predicate.get_node(), atom_node);
-		librdf_model_add_statement(_model, triple);
-	} else {
-		cerr << "WARNING: Unable to add statement (unserializable Atom)" << endl;
-	}
-}
-
-
-void
-Model::add_statement(const Node&   subject,
-                     const string& predicate_id,
-                     const Atom&   object)
-{
-	Glib::Mutex::Lock lock(_world.mutex());
-
-	const string predicate_uri = _world.expand_uri(predicate_id);
-	librdf_node* predicate = librdf_new_node_from_uri_string(_world.world(),
-			(const unsigned char*)predicate_uri.c_str());
-
-	librdf_node* atom_node = AtomRedland::atom_to_rdf_node(_world.world(), object);
-
-	if (atom_node) {
-		librdf_statement* triple = librdf_new_statement_from_nodes(_world.world(),
-			subject.get_node(), predicate, atom_node);
-		librdf_model_add_statement(_model, triple);
-	} else {
-		cerr << "WARNING: Unable to add statement (unserializable Atom)" << endl;
-	}
-}
-#endif
 
 } // namespace Redland
 

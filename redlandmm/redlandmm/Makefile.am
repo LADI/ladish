@@ -1,8 +1,9 @@
 redlandmmincludedir = $(includedir)/redlandmm
 
 redlandmminclude_HEADERS = \
-	Namespaces.hpp \
 	Model.hpp \
+	Namespaces.hpp \
 	Node.hpp \
 	Query.hpp \
-	World.hpp
+	World.hpp \
+	Wrapper.hpp
