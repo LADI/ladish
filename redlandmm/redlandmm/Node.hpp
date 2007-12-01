@@ -18,8 +18,8 @@
 #ifndef REDLANDMM_NODE_HPP
 #define REDLANDMM_NODE_HPP
 
-#include <stdexcept>
 #include <string>
+#include <stdexcept>
 #include <librdf.h>
 
 namespace Redland {
@@ -27,6 +27,8 @@ namespace Redland {
 class World;
 
 
+/** An RDF Node (resource, literal, etc)
+ */
 class Node {
 public:
 	enum Type {
@@ -50,8 +52,12 @@ public:
 	
 	librdf_node* get_node() const { return _node; }
 	librdf_uri*  get_uri()  const { return librdf_node_get_uri(_node); }
-
-	operator bool() const { return (_world != NULL && _node != NULL); }
+	
+	inline operator int()           const { return to_int(); }
+	inline operator float()         const { return to_float(); }
+	inline operator bool()          const { return is_bool() ? to_bool() : (_world && _node); }
+	inline operator const char*()   const { return to_c_string(); }
+	//inline operator Glib::ustring() const { return to_string(); }
 
 	const Node& operator=(const Node& other) {
 		if (_node)
@@ -61,8 +67,10 @@ public:
 		return *this;
 	}
 	
+	const char* to_c_string() const;
 	std::string to_string() const;
-	std::string to_quoted_uri_string() const;
+	//Glib::ustring to_string() const;
+	//Glib::ustring to_quoted_uri_string() const;
 
 	bool is_int() const;
 	int  to_int() const;

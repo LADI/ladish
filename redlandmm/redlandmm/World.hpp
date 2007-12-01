@@ -29,6 +29,8 @@
 namespace Redland {
 
 
+/** Library state
+ */
 class World : public boost::noncopyable {
 public:
 	World();

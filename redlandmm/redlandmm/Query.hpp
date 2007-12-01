@@ -30,7 +30,7 @@ class World;
 class Model;
 
 
-/** Pretty wrapper for a SPARQL query.
+/** SPARQL query.
  *
  * Automatically handles things like prepending prefixes, etc.
  */

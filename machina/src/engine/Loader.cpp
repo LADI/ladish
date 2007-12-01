@@ -49,12 +49,14 @@ SharedPtr<Machine>
 Loader::load(const Glib::ustring& uri)
 {
 	using Redland::Query;
+	using Glib::ustring;
+
 	SharedPtr<Machine> machine;
 
-	Glib::ustring document_uri = uri;
+	ustring document_uri = uri;
 
 	// If "URI" doesn't contain a colon, try to resolve as a filename
-	if (uri.find(":") == Glib::ustring::npos) {
+	if (uri.find(":") == ustring::npos) {
 		raptor_uri* base_uri = raptor_new_uri((const unsigned char*)"file:.");
 		raptor_uri* document_raptor_uri = raptor_new_uri_relative_to_base(
 				base_uri, (const unsigned char*)uri.c_str());
@@ -68,7 +70,7 @@ Loader::load(const Glib::ustring& uri)
 		}
 	}
 
-	const Glib::ustring machine_uri = "<>";
+	const string machine_uri = string("<") + document_uri + ">";
 
 	cout << "[Loader] Loading " << machine_uri << " from " << document_uri << endl;
 
@@ -81,69 +83,57 @@ Loader::load(const Glib::ustring& uri)
 
 	/* Get initial nodes */
 
-	Query query = Query(_rdf_world, Glib::ustring(
-			"SELECT DISTINCT ?initialNode ?duration FROM <")
-			+ document_uri + "> WHERE {\n" +
-			machine_uri + " :initialNode ?initialNode .\n"
-			"?initialNode   :duration    ?duration .\n"
-			"}\n");
+	Query query = Query(_rdf_world, ustring(
+		"SELECT DISTINCT ?initialNode ?duration WHERE {\n") + 
+		machine_uri + " :initialNode ?initialNode .\n"
+		"?initialNode   :duration    ?duration .\n"
+		"}\n");
 
 	Query::Results results = query.run(_rdf_world, model);
 
 	for (Query::Results::iterator i = results.begin(); i != results.end(); ++i) {
-		Glib::ustring node_id  = (*i)["initialNode"].to_string();
-		float         duration = (*i)["duration"].to_float();
-
-		SharedPtr<Node> node(new Node(duration, true));
+		const char* node_id = (*i)["node"];
+		SharedPtr<Node> node(new Node(float((*i)["duration"]), true));
 		machine->add_node(node);
-		created.insert(std::make_pair(node_id.collate_key(), node));
+		created[node_id] = node;
 	}
 
 
 	/* Get remaining (non-initial) nodes */
 
-	query = Query(_rdf_world, Glib::ustring(
-			"SELECT DISTINCT ?node ?duration FROM <")
-			+ document_uri + "> WHERE {\n" +
-			machine_uri + " :node     ?node .\n"
-			"?node          :duration ?duration .\n"
-			"}\n");
+	query = Query(_rdf_world, ustring(
+		"SELECT DISTINCT ?node ?duration WHERE {\n") +
+		machine_uri + " :node     ?node .\n"
+		"?node          :duration ?duration .\n"
+		"}\n");
 
 	results = query.run(_rdf_world, model);
 
 	for (Query::Results::iterator i = results.begin(); i != results.end(); ++i) {
-		Glib::ustring node_id  = (*i)["initialNode"].to_string();
-		float         duration = (*i)["duration"].to_float();
-
-		if (created.find(node_id.collate_key()) == created.end()) {
-			SharedPtr<Node> node(new Node(duration, false));
+		const char* node_id = (*i)["node"];
+		if (created.find(node_id) == created.end()) {
+			SharedPtr<Node> node(new Node((float)(*i)["duration"], false));
 			machine->add_node(node); 
-			created.insert(std::make_pair(node_id.collate_key(), node));
-		} else {
-			cout << "Already created, skipping." << endl;
+			created[node_id] = node;
 		}
 	}
 
 
 	/* Get note actions */
 
-	query = Query(_rdf_world, Glib::ustring(
-			"SELECT DISTINCT ?node ?note FROM <")
-			+ document_uri + "> WHERE {\n" +
-			"?node :enterAction [ a :MidiAction; :midiNote ?note ] ;\n"
-			"      :exitAction  [ a :MidiAction; :midiNote ?note ] .\n"
-			"}\n");
+	query = Query(_rdf_world, ustring(
+		"SELECT DISTINCT ?node ?note WHERE {\n"
+		"	?node :enterAction [ a :MidiAction; :midiNote ?note ] ;\n"
+		"	      :exitAction  [ a :MidiAction; :midiNote ?note ] .\n"
+		"}\n"));
 
 	results = query.run(_rdf_world, model);
 
 	for (Query::Results::iterator i = results.begin(); i != results.end(); ++i) {
-		Glib::ustring node_id  = (*i)["initialNode"].to_string();
-		Glib::ustring note     = (*i)["note"].to_string();
-
-		Created::iterator node_i = created.find(node_id);
+		Created::iterator node_i = created.find((const char*)(*i)["initialNode"]);
 		if (node_i != created.end()) {
 			SharedPtr<Node> node = node_i->second;
-			const long note_num = strtol(note.c_str(), NULL, 10);
+			const int note_num = (*i)["note"];
 			if (note_num >= 0 && note_num <= 127) {
 				node->set_enter_action(ActionFactory::note_on((unsigned char)note_num));
 				node->set_exit_action(ActionFactory::note_off((unsigned char)note_num));
@@ -158,23 +148,22 @@ Loader::load(const Glib::ustring& uri)
 
 	/* Get edges */
 
-	query = Query(_rdf_world, Glib::ustring(
-			"SELECT DISTINCT ?edge ?src ?dst ?prob FROM <")
-			+ document_uri + "> WHERE {\n" +
+	query = Query(_rdf_world, ustring(
+		"SELECT DISTINCT ?edge ?src ?dst ?prob WHERE {\n" +
 			machine_uri + " :edge ?edge .\n"
 			"?edge :tail        ?src ;\n"
 			"      :head        ?dst ;\n"
-			"      :probability ?prob .\n }");
+			"      :probability ?prob .\n }"));
 
 	results = query.run(_rdf_world, model);
 
 	for (Query::Results::iterator i = results.begin(); i != results.end(); ++i) {
-		Glib::ustring src_uri = (*i)["src"].to_string();
-		Glib::ustring dst_uri = (*i)["dst"].to_string(); 
-		float         prob    = (*i)["prob"].to_float();
+		const char* src_uri = (*i)["src"];
+		const char* dst_uri = (*i)["dst"]; 
+		float       prob    = (*i)["prob"];
 
-		Created::iterator src_i = created.find(src_uri.collate_key());
-		Created::iterator dst_i = created.find(dst_uri.collate_key());
+		Created::iterator src_i = created.find(src_uri);
+		Created::iterator dst_i = created.find(dst_uri);
 
 		if (src_i != created.end() && dst_i != created.end()) {
 			const SharedPtr<Node> src = src_i->second;

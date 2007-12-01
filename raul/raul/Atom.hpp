@@ -67,7 +67,7 @@ public:
 	{
 		if (node.type() == Redland::Node::RESOURCE) {
 			_type = STRING;
-			_string_val = strdup(node.to_string().c_str());
+			_string_val = strdup(node.to_c_string());
 		} else if (node.is_float()) {
 			_type = FLOAT;
 			_float_val = node.to_float();
@@ -79,7 +79,7 @@ public:
 			_bool_val = node.to_bool();
 		} else {
 			_type = STRING;
-			_string_val = strdup(node.to_string().c_str());
+			_string_val = strdup(node.to_c_string());
 		}
 	}
 #endif

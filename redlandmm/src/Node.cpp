@@ -15,7 +15,6 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <string>
 #include <iostream>
 #include <cassert>
 #include <redlandmm/World.hpp>
@@ -88,34 +87,41 @@ Node::~Node()
 }
 
 
-string
+std::string
 Node::to_string() const
+{
+	return std::string(to_c_string());
+}
+
+
+const char*
+Node::to_c_string() const
 {
 	const Type type = this->type();
 	if (type == RESOURCE) {
 		assert(librdf_node_get_uri(_node));
-		return string((const char*)librdf_uri_as_string(librdf_node_get_uri(_node)));
+		return (const char*)librdf_uri_as_string(librdf_node_get_uri(_node));
 	} else if (type == LITERAL) {
-		return string((const char*)librdf_node_get_literal_value(_node));
+		return (const char*)librdf_node_get_literal_value(_node);
 	} else if (type == BLANK) {
-		return string((const char*)librdf_node_get_blank_identifier(_node));
+		return (const char*)librdf_node_get_blank_identifier(_node);
 	} else {
 		return "";
 	}
 }
 
-
-string
+/*
+Glib::ustring
 Node::to_quoted_uri_string() const
 {
 	assert(type() == RESOURCE);
 	assert(librdf_node_get_uri(_node));
-	string str = "<";
+	Glib::ustring str = "<";
 	str.append((const char*)librdf_uri_as_string(librdf_node_get_uri(_node)));
 	str.append(">");
 	return str;
 }
-
+*/
 
 bool
 Node::is_int() const

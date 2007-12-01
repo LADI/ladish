@@ -32,6 +32,8 @@ namespace Redland {
 class World;
 
 
+/** An RDF Model (collection of triples).
+ */
 class Model : public boost::noncopyable {
 public:
 	Model(World& world);
