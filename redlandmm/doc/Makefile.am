@@ -1,5 +1,10 @@
-EXTRA_DIST = reference.doxygen mainpage.dox
+EXTRA_DIST = reference.doxygen.in mainpage.dox
 
-docs: @REDLANDMM_SRCDIR@/doc/reference.doxygen @REDLANDMM_SRCDIR@/redlandmm/*.hpp
-	mkdir -p @abs_top_builddir@/doc/redlandmm
-	doxygen @REDLANDMM_SRCDIR@/doc/reference.doxygen
+reference.doxygen: @REDLANDMM_SRCDIR@/doc/reference.doxygen.in
+
+distclean-local:
+	rm -rf html
+
+docs: reference.doxygen @REDLANDMM_SRCDIR@/redlandmm/*.hpp
+	doxygen reference.doxygen
+

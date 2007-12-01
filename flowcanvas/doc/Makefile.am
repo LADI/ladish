@@ -1,5 +1,9 @@
-EXTRA_DIST = port_offsets.dia
+EXTRA_DIST = reference.doxygen.in mainpage.dox
 
-docs: @FLOWCANVAS_SRCDIR@/doc/reference.doxygen @FLOWCANVAS_SRCDIR@/flowcanvas/*.hpp
-	mkdir -p @abs_top_builddir@/doc/flowcanvas
-	doxygen @FLOWCANVAS_SRCDIR@/doc/reference.doxygen
+reference.doxygen: @FLOWCANVAS_SRCDIR@/doc/reference.doxygen.in
+
+distclean-local:
+	rm -rf html
+
+docs: reference.doxygen @FLOWCANVAS_SRCDIR@/flowcanvas/*.hpp
+	doxygen reference.doxygen

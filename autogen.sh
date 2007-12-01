@@ -16,6 +16,6 @@ mkdir -p doc
 libtoolize --force
 aclocal
 autoheader -Wall
-automake --foreign --add-missing -Wall
+automake --foreign --add-missing -Wall -Wno-portability
 autoconf
 

@@ -292,6 +292,18 @@ AC_ARG_ENABLE(unit-tests,
 	[AS_HELP_STRING(--enable-unit-tests, [Build unit tests (no) - Developers only])],
 	[build_unit_tests="$enableval"])
 
+# Build documentation
+build_documentation="yes"
+AC_ARG_ENABLE(documentation,
+	[AS_HELP_STRING(--enable-documentation, [Build documentation (no)])],
+	[build_documentation="$enableval"])
+AC_CHECK_PROG(HAVE_DOXYGEN, doxygen, true, false)
+if test $HAVE_DOXYGEN = "false"; then
+	AC_MSG_WARN([*** Doxygen not found, API documentation will not be built])
+	build_documentation="no"
+fi
+AM_CONDITIONAL(HAVE_DOXYGEN, [test "x$build_documentation" = "xyes"])
+
 AM_CONDITIONAL(WITH_ALSA, [test "$ALSA_FOUND" = "yes"])
 AM_CONDITIONAL(WITH_LASH, [test "$have_lash" = "yes"])
 AM_CONDITIONAL(WITH_JACK, [test "$build_jack" = "yes"])

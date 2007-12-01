@@ -10,8 +10,12 @@ docs:
 	cd slv2/doc && make docs
 
 upload-docs:
-	echo "If you're not me, this isn't going to work..."
-	scp -pr doc/flowcanvas/html/* drobilla@drobilla.net:~/drobilla.net/docs/flowcanvas
-	scp -pr doc/raul/html/* drobilla@drobilla.net:~/drobilla.net/docs/raul
-	scp -pr doc/redlandmm/html/* drobilla@drobilla.net:~/drobilla.net/docs/redlandmm
-	scp -pr doc/slv2/html/* drobilla@drobilla.net:~/drobilla.net/docs/slv2
+	@echo "If you're not me, this isn't going to work..."
+	@echo -e "\n\n*** Uploading flowcanvas documentation\n"
+	scp -pr flowcanvas/doc/html/* drobilla@drobilla.net:~/drobilla.net/docs/flowcanvas
+	@echo -e "\n\n*** Uploading raul documentation\n"
+	scp -pr raul/doc/html/* drobilla@drobilla.net:~/drobilla.net/docs/raul
+	@echo -e "\n\n*** Uploading redlandmm documentation\n"
+	scp -pr redlandmm/doc/html/* drobilla@drobilla.net:~/drobilla.net/docs/redlandmm
+	@echo -e "\n\n*** Uploading slv2 documentation\n"
+	scp -pr slv2/doc/html/* drobilla@drobilla.net:~/drobilla.net/docs/slv2
