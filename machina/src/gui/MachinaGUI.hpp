@@ -65,6 +65,7 @@ protected:
 	void zoom(double z);
 	bool idle_callback();
 	void update_toolbar();
+	void arrange();
 	bool scrolled_window_event(GdkEvent* ev);
 
 	void record_toggled();
@@ -98,6 +99,7 @@ protected:
 	Gtk::MenuItem*         _menu_export_graphviz;
 	Gtk::MenuItem*         _menu_help_about;
 	Gtk::CheckMenuItem*    _menu_view_labels;
+	Gtk::CheckMenuItem*    _menu_view_time_edges;
 	Gtk::CheckMenuItem*    _menu_view_toolbar;
 	Gtk::MenuItem*         _menu_help_help;
 	Gtk::ScrolledWindow*   _canvas_scrolledwindow;

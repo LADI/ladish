@@ -52,6 +52,7 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	xml->get_widget("import_midi_menuitem", _menu_import_midi);
 	xml->get_widget("export_midi_menuitem", _menu_export_midi);
 	xml->get_widget("export_graphviz_menuitem", _menu_export_graphviz);
+	xml->get_widget("view_time_edges_menuitem", _menu_view_time_edges);
 	xml->get_widget("view_toolbar_menuitem", _menu_view_toolbar);
 	xml->get_widget("view_labels_menuitem", _menu_view_labels);
 	xml->get_widget("help_about_menuitem", _menu_help_about);
@@ -82,9 +83,11 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	_zoom_normal_button->signal_clicked().connect(sigc::bind(
 		sigc::mem_fun(this, &MachinaGUI::zoom), 1.0));
 	
-	_zoom_full_button->signal_clicked().connect(sigc::mem_fun(_canvas.get(), &MachinaCanvas::zoom_full));
-	_arrange_button->signal_clicked().connect(sigc::mem_fun(_canvas.get(), &MachinaCanvas::arrange));
-	
+	_zoom_full_button->signal_clicked().connect(
+		sigc::mem_fun(_canvas.get(), &MachinaCanvas::zoom_full));
+
+	_arrange_button->signal_clicked().connect(
+		sigc::mem_fun(this, &MachinaGUI::arrange));
 
 	_menu_file_open->signal_activate().connect(
 		sigc::mem_fun(this, &MachinaGUI::menu_file_open));
@@ -186,6 +189,13 @@ MachinaGUI::scrolled_window_event(GdkEvent* event)
 	}
 	
 	return false;
+}
+
+
+void
+MachinaGUI::arrange()
+{
+	_canvas->arrange(_menu_view_time_edges->get_active());
 }
 
 
