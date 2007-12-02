@@ -44,13 +44,9 @@ Connection::Connection(boost::shared_ptr<Canvas>      canvas,
   _path(gnome_canvas_path_def_new()),
   _label(NULL)
 {
-	if (canvas->property_aa())
-		_bpath.property_width_units() = 0.75;
-	else
-		_bpath.property_width_units() = 1.0;
-
+	_bpath.property_width_units() = 1.0;
 	_bpath.property_outline_color_rgba() = _color;
-	_bpath.property_cap_style() = (Gdk::CapStyle)GDK_CAP_ROUND;
+	//_bpath.property_cap_style() = (Gdk::CapStyle)GDK_CAP_ROUND;
 
 	update_location();	
 	lower_to_bottom();
@@ -160,14 +156,14 @@ Connection::update_location()
 			dy = dy / h * 10;
 			
 			gnome_canvas_path_def_lineto(_path,
-					dst_x - 10,
-					dst_y - 5);
+					dst_x - 12,
+					dst_y - 4);
 
 			gnome_canvas_path_def_moveto(_path, dst_x, dst_y);
 
 			gnome_canvas_path_def_lineto(_path,
-					dst_x - 10,
-					dst_y + 5);
+					dst_x - 12,
+					dst_y + 4);
 		}
 	}
 

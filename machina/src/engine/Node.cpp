@@ -47,6 +47,7 @@ Node::set_selector(bool yn)
 		for (Edges::iterator i = _outgoing_edges.begin(); i != _outgoing_edges.end(); ++i)
 			(*i)->set_probability((*i)->probability() / prob_sum);
 	}
+	_changed = true;
 }
 
 
@@ -54,28 +55,15 @@ void
 Node::set_enter_action(SharedPtr<Action> action)
 {
 	_enter_action = action;
+	_changed = true;
 }
-
-
-void
-Node::remove_enter_action()
-{
-	_enter_action.reset();
-}
-
 
 
 void
 Node::set_exit_action(SharedPtr<Action> action)
 {
 	_exit_action = action;
-}
-
-
-void
-Node::remove_exit_action()
-{
-	_exit_action.reset();
+	_changed = true;
 }
 
 
@@ -84,8 +72,10 @@ Node::enter(SharedPtr<Raul::MIDISink> sink, BeatTime time)
 {
 	assert(!_is_active);
 	
+	_changed = true;
 	_is_active = true;
 	_enter_time = time;
+	
 	if (sink && _enter_action)
 		_enter_action->execute(sink, time);
 }
@@ -98,6 +88,8 @@ Node::exit(SharedPtr<Raul::MIDISink> sink, BeatTime time)
 	
 	if (sink && _exit_action)
 		_exit_action->execute(sink, time);
+	
+	_changed = true;
 	_is_active = false;
 	_enter_time = 0;
 }

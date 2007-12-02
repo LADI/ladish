@@ -41,7 +41,7 @@ Model::Model(World& world)
 { 
 	Glib::Mutex::Lock lock(world.mutex());
 	_storage = librdf_new_storage(_world.world(), "hashes", NULL, "hash-type='memory'");
-	_model = librdf_new_model(_world.world(), _storage, NULL);
+	_c_obj = librdf_new_model(_world.world(), _storage, NULL);
 }
 
 
@@ -53,7 +53,7 @@ Model::Model(World& world, const Glib::ustring& data_uri, Glib::ustring base_uri
 {
 	Glib::Mutex::Lock lock(world.mutex());
 	_storage = librdf_new_storage(_world.world(), "hashes", NULL, "hash-type='memory'");
-	_model = librdf_new_model(_world.world(), _storage, NULL);
+	_c_obj = librdf_new_model(_world.world(), _storage, NULL);
 
 	set_base_uri(base_uri);
 
@@ -61,7 +61,7 @@ Model::Model(World& world, const Glib::ustring& data_uri, Glib::ustring base_uri
 	
 	if (uri) {
 		librdf_parser* parser = librdf_new_parser(world.world(), "guess", NULL, NULL);
-		librdf_parser_parse_into_model(parser, uri, _base.get_uri(), _model);
+		librdf_parser_parse_into_model(parser, uri, _base.get_uri(), _c_obj);
 		librdf_free_parser(parser);
 	} else {
 		cerr << "Unable to create URI " << data_uri << endl;
@@ -83,7 +83,7 @@ Model::~Model()
 	if (_serialiser)
 		librdf_free_serializer(_serialiser);
 
-	librdf_free_model(_model);
+	librdf_free_model(_c_obj);
 	librdf_free_storage(_storage);
 }
 
@@ -121,7 +121,7 @@ Model::serialise_to_file_handle(FILE* fd)
 
 	_serialiser = librdf_new_serializer(_world.world(), RDF_LANG, NULL, NULL);
 	setup_prefixes();
-	librdf_serializer_serialize_model_to_file_handle(_serialiser, fd, NULL, _model);
+	librdf_serializer_serialize_model_to_file_handle(_serialiser, fd, NULL, _c_obj);
 	librdf_free_serializer(_serialiser);
 	_serialiser = NULL;
 }
@@ -142,7 +142,7 @@ Model::serialise_to_file(const Glib::ustring& uri_str)
 	if (uri && librdf_uri_is_file_uri(uri)) {
 		_serialiser = librdf_new_serializer(_world.world(), RDF_LANG, NULL, NULL);
 		setup_prefixes();
-		librdf_serializer_serialize_model_to_file(_serialiser, librdf_uri_to_filename(uri), uri, _model);
+		librdf_serializer_serialize_model_to_file(_serialiser, librdf_uri_to_filename(uri), uri, _c_obj);
 		librdf_free_serializer(_serialiser);
 		_serialiser = NULL;
 	}
@@ -166,7 +166,7 @@ Model::serialise_to_string()
 	setup_prefixes();
 
 	unsigned char* c_str
-		= librdf_serializer_serialize_model_to_string(_serialiser, NULL, _model);
+		= librdf_serializer_serialize_model_to_string(_serialiser, NULL, _c_obj);
 
 	string result((const char*)c_str);
 	free(c_str);
@@ -192,7 +192,7 @@ Model::add_statement(const Node& subject,
 	librdf_statement* triple = librdf_new_statement_from_nodes(_world.world(),
 			subject.get_node(), predicate.get_node(), object.get_node());
 	
-	librdf_model_add_statement(_model, triple);
+	librdf_model_add_statement(_c_obj, triple);
 }
 
 	
@@ -210,7 +210,7 @@ Model::add_statement(const Node&   subject,
 	librdf_statement* triple = librdf_new_statement_from_nodes(_world.world(),
 			subject.get_node(), predicate, object.get_node());
 	
-	librdf_model_add_statement(_model, triple);
+	librdf_model_add_statement(_c_obj, triple);
 }
 
 

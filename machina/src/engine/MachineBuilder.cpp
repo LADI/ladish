@@ -214,8 +214,8 @@ MachineBuilder::event(Raul::BeatTime time_offset,
 							assert(_connect_node->outgoing_edges().empty());
 							_connect_node->set_enter_action(resolved->enter_action());
 							_connect_node->set_exit_action(resolved->exit_action());
-							resolved->remove_enter_action();
-							resolved->remove_exit_action();
+							resolved->set_enter_action(SharedPtr<Action>());
+							resolved->set_exit_action(SharedPtr<Action>());
 							set_node_duration(_connect_node, resolved->duration());
 							resolved = _connect_node;
 							if (_machine->nodes().find(_connect_node) == _machine->nodes().end())

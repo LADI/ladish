@@ -35,7 +35,7 @@ public:
 	
 	void show_label(bool show);
 
-	void update_state();
+	void update_state(bool show_labels);
 
 private:
 	void handle_click(GdkEventButton* ev);

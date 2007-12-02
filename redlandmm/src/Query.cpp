@@ -50,7 +50,7 @@ Query::run(World& world, Model& model, const Glib::ustring base_uri_str) const
 		return result; /* Return an empty Results */
 	}
 
-	librdf_query_results* results = librdf_query_execute(q, model._model);
+	librdf_query_results* results = librdf_query_execute(q, model._c_obj);
 	
 	if (!results) {
 		cerr << "Failed query:" << endl << _query << endl;

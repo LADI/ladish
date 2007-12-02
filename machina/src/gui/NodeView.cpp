@@ -15,9 +15,12 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include <iostream>
 #include <machina/MidiAction.hpp>
 #include "NodeView.hpp"
 #include "NodePropertiesWindow.hpp"
+
+using namespace std;
 
 
 NodeView::NodeView(Gtk::Window*                  window,
@@ -31,7 +34,7 @@ NodeView::NodeView(Gtk::Window*                  window,
 	, _node(node)
 {
 	signal_clicked.connect(sigc::mem_fun(this, &NodeView::handle_click));
-	update_state();
+	update_state(false);
 }
 
 
@@ -49,11 +52,11 @@ NodeView::handle_click(GdkEventButton* event)
 		if (event->button == 1) {
 			bool is_initial = _node->is_initial();
 			_node->set_initial( ! is_initial );
-			update_state();
+			update_state(_label != NULL);
 		} else if (event->button == 3) {
 			bool is_selector = _node->is_selector();
 			_node->set_selector( ! is_selector );
-			update_state();
+			update_state(_label != NULL);
 		}
 	}
 }
@@ -68,12 +71,10 @@ NodeView::show_label(bool show)
 		= PtrCast<Machina::MidiAction>(_node->enter_action());
 
 	if (show) {
-		if (action && action->event_size() >= 2
+		if (action && action->event_size() > 1
 				&& (action->event()[0] & 0xF0) == 0x90) {
-
-			unsigned char note = action->event()[1];
-			snprintf(str, 4, "%d", (int)note);
-
+			uint8_t note = action->event()[1];
+			snprintf(str, 4, "%d", note);
 			set_name(str);
 		}
 	} else {
@@ -83,7 +84,7 @@ NodeView::show_label(bool show)
 
 
 void
-NodeView::update_state()
+NodeView::update_state(bool show_labels)
 {
 	static const uint32_t active_color = 0xA0A0AAFF;
 	
@@ -103,5 +104,8 @@ NodeView::update_state()
 			set_base_color(0x00A000FF);
 	
 	set_border_width(_node->is_initial() ? 4.0 : 1.0);
+
+	if (show_labels)
+		show_label(true);
 }
 

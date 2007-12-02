@@ -33,7 +33,7 @@ class World;
 
 /** An RDF Model (collection of triples).
  */
-class Model : public boost::noncopyable {
+class Model : public boost::noncopyable, public Wrapper<librdf_model> {
 public:
 	Model(World& world);
 	Model(World& world, const Glib::ustring& uri, Glib::ustring base_uri="");
@@ -64,7 +64,6 @@ private:
 	World&             _world;
 	Node               _base;
 	librdf_storage*    _storage;
-	librdf_model*      _model;
 	librdf_serializer* _serialiser;
 
 	size_t _next_blank_id;

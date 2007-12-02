@@ -36,9 +36,9 @@ static const char* const RDF_LANG = "turtle";
 World::World()
 	: _next_blank_id(1)
 {
-	_world = librdf_new_world();
-	assert(_world);
-	librdf_world_open(_world);
+	_c_obj = librdf_new_world();
+	assert(_c_obj);
+	librdf_world_open(_c_obj);
 	
 	add_prefix("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
 }
@@ -47,7 +47,7 @@ World::World()
 World::~World()
 {
 	Glib::Mutex::Lock lock(_mutex);
-	librdf_free_world(_world);
+	librdf_free_world(_c_obj);
 }
 
 

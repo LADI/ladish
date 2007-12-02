@@ -30,8 +30,8 @@ namespace FlowCanvas {
 
 static const uint32_t ELLIPSE_FILL_COLOUR           = 0x232425FF;
 static const uint32_t ELLIPSE_HILITE_FILL_COLOUR    = 0x252627FF;
-static const uint32_t ELLIPSE_OUTLINE_COLOUR        = 0xA2A3A4F4;
-static const uint32_t ELLIPSE_HILITE_OUTLINE_COLOUR = 0xC2C3C4F4;
+static const uint32_t ELLIPSE_OUTLINE_COLOUR        = 0xAAAAAAFF;
+static const uint32_t ELLIPSE_HILITE_OUTLINE_COLOUR = 0xFFFFFFFF;
 static const uint32_t ELLIPSE_TITLE_COLOUR          = 0xFFFFFFFF;
 
 
@@ -287,17 +287,15 @@ void
 Ellipse::set_name(const string& str)
 {
 	if (str != "") {
-		if (!_label) {
-			_label = new Gnome::Canvas::Text(*this,
-					0, 0, str);
-			_label->property_size_set() = true;
-			_label->property_size() = 9000;
-			_label->property_weight_set() = true;
-			_label->property_weight() = 200;
-			_label->property_fill_color_rgba() = ELLIPSE_TITLE_COLOUR;
-		} else {
-			_label->property_text() = str;
-		}
+		if (!_label)
+			_label = new Gnome::Canvas::Text(*this, 0, 0, str);
+
+		_label->property_size_set() = true;
+		_label->property_size() = 9000;
+		_label->property_weight_set() = true;
+		_label->property_weight() = 200;
+		_label->property_fill_color_rgba() = ELLIPSE_TITLE_COLOUR;
+		_label->property_text() = str;
 		_label->show();
 	} else {
 		delete _label;

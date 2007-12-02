@@ -17,6 +17,7 @@
 
 #include <string>
 #include "machina/MidiAction.hpp"
+#include "machina/ActionFactory.hpp"
 #include "NodePropertiesWindow.hpp"
 #include "GladeXml.hpp"
 
@@ -52,8 +53,20 @@ NodePropertiesWindow::~NodePropertiesWindow()
 void
 NodePropertiesWindow::apply_clicked()
 {
+	const uint8_t note = _note_spinbutton->get_value();
+	if (!_node->enter_action()) {
+		_node->set_enter_action(ActionFactory::note_on(note));
+		_node->set_exit_action(ActionFactory::note_off(note));
+	} else {
+		SharedPtr<MidiAction> action = PtrCast<MidiAction>(_node->enter_action());
+		action->event()[1] = note;
+		action = PtrCast<MidiAction>(_node->exit_action());
+		action->event()[1] = note;
+	}
+
 	double duration = _duration_spinbutton->get_value();
 	_node->set_duration(duration);
+	_node->set_changed();
 }
 
 	
@@ -82,6 +95,9 @@ NodePropertiesWindow::set_node(SharedPtr<Machina::Node> node)
 	if (enter_action && enter_action->event_size() > 1
 			&& (enter_action->event()[0] & 0xF0) == 0x90) {
 		_note_spinbutton->set_value(enter_action->event()[1]);
+		_note_spinbutton->show();
+	} else if (!enter_action) {
+		_note_spinbutton->set_value(60);
 		_note_spinbutton->show();
 	} else {
 		_note_spinbutton->hide();

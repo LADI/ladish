@@ -151,10 +151,12 @@ MachinaGUI::~MachinaGUI()
 bool
 MachinaGUI::idle_callback() 
 {
+	const bool show_labels = _menu_view_labels->get_active();
+
 	for (ItemList::iterator i = _canvas->items().begin(); i != _canvas->items().end(); ++i) {
 		const SharedPtr<NodeView> nv = PtrCast<NodeView>(*i);
-		if (nv)
-			nv->update_state();
+		if (nv && nv->node()->changed())
+			nv->update_state(show_labels);
 	}
 
 	return true;

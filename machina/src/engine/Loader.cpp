@@ -130,7 +130,7 @@ Loader::load(const Glib::ustring& uri)
 	results = query.run(_rdf_world, model);
 
 	for (Query::Results::iterator i = results.begin(); i != results.end(); ++i) {
-		Created::iterator node_i = created.find((const char*)(*i)["initialNode"]);
+		Created::iterator node_i = created.find((const char*)(*i)["node"]);
 		if (node_i != created.end()) {
 			SharedPtr<Node> node = node_i->second;
 			const int note_num = (*i)["note"];

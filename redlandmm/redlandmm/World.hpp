@@ -23,6 +23,7 @@
 #include <librdf.h>
 #include <boost/utility.hpp>
 #include <glibmm/thread.h>
+#include <redlandmm/Wrapper.hpp>
 #include <redlandmm/Namespaces.hpp>
 #include <redlandmm/Node.hpp>
 
@@ -31,7 +32,7 @@ namespace Redland {
 
 /** Library state
  */
-class World : public boost::noncopyable {
+class World : public boost::noncopyable, public Wrapper<librdf_world> {
 public:
 	World();
 	~World();
@@ -44,14 +45,13 @@ public:
 
 	const Namespaces& prefixes() const { return _prefixes; }
 
-	librdf_world* world() { return _world; }
+	librdf_world* world() { return _c_obj; }
 
 	Glib::Mutex& mutex() { return _mutex; }
 
 private:
 	void setup_prefixes();
 
-	librdf_world* _world;
 	Glib::Mutex   _mutex;
 	Namespaces    _prefixes;
 

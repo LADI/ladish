@@ -47,10 +47,7 @@ public:
 	Node(BeatCount duration=0, bool initial=false);
 
 	void set_enter_action(SharedPtr<Action> action);
-	void remove_enter_action();
-
 	void set_exit_action(SharedPtr<Action> action);
-	void remove_exit_action();
 
 	SharedPtr<Action> enter_action() { return _enter_action; }
 	SharedPtr<Action> exit_action()  { return _exit_action; }
@@ -73,11 +70,24 @@ public:
 	void      set_duration(BeatCount d) { _duration = d; }
 	bool      is_selector() const       { return _is_selector; }
 	void      set_selector(bool i);
+
+	/// Schroedinger's flag
+	inline bool changed() {
+		if (_changed) {
+			_changed = false;
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	void set_changed() { _changed = true; }
 	
 	typedef Raul::List<SharedPtr<Edge> > Edges;
 	Edges& outgoing_edges() { return _outgoing_edges; }
 	
 private:
+	bool              _changed;
 	bool              _is_initial;
 	bool              _is_selector;
 	bool              _is_active;
