@@ -1148,7 +1148,7 @@ Canvas::render_to_dot(const string& dot_output_filename)
 	
 
 void
-Canvas::arrange()
+Canvas::arrange(bool use_length_hints)
 {
 	/* FIXME: Are the strdup's here a leak?
 	 * GraphViz documentation disagrees with function prototypes.
@@ -1220,7 +1220,7 @@ Canvas::arrange()
 
 		Agedge_t* edge = agedge(G, src_node, dst_node);
 
-		if (c->length_hint() != 0) {
+		if (use_length_hints && c->length_hint() != 0) {
 			std::ostringstream len_ss;
 			len_ss << c->length_hint();
 			agsafeset(edge, (char*)"minlen", strdup(len_ss.str().c_str()), (char*)"1.0");
