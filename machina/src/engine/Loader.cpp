@@ -84,9 +84,9 @@ Loader::load(const Glib::ustring& uri)
 	/* Get initial nodes */
 
 	Query query = Query(_rdf_world, ustring(
-		"SELECT DISTINCT ?initialNode ?duration WHERE {\n") + 
-		machine_uri + " :initialNode ?initialNode .\n"
-		"?initialNode   :duration    ?duration .\n"
+		"SELECT DISTINCT ?node ?duration WHERE {\n") + 
+		machine_uri + " :initialNode ?node .\n"
+		"?node          :duration    ?duration .\n"
 		"}\n");
 
 	Query::Results results = query.run(_rdf_world, model);
