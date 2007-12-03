@@ -22,7 +22,6 @@
 
 using namespace std;
 
-
 NodeView::NodeView(Gtk::Window*                  window,
                    SharedPtr<FlowCanvas::Canvas> canvas,
                    SharedPtr<Machina::Node>      node,
@@ -85,6 +84,31 @@ NodeView::show_label(bool show)
 }
 
 
+/// Dash style for selector node outlines
+static ArtVpathDash* selector_dash()
+{
+	static ArtVpathDash* selector_dash = NULL;
+
+	if (!selector_dash) {
+		selector_dash = new ArtVpathDash();
+		selector_dash->n_dash = 2;
+		selector_dash->dash = art_new(double, 2);
+		selector_dash->dash[0] = 8;
+		selector_dash->dash[1] = 8;		
+	}
+
+	return selector_dash;
+}
+
+void
+NodeView::set_selected(bool selected)
+{
+	Ellipse::set_selected(selected);
+	if (!selected)
+		_ellipse.property_dash() = _node->is_selector() ? selector_dash() : 0;
+}
+
+
 void
 NodeView::update_state(bool show_labels)
 {
@@ -102,11 +126,7 @@ NodeView::update_state(bool show_labels)
 		set_border_color(_default_border_color);
 	}
 		
-	if (_node->is_selector())
-		if (_node->is_active())
-			set_base_color(0x00FF00FF);
-		else	
-			set_base_color(0x00A000FF);
+	_ellipse.property_dash() = _node->is_selector() ? selector_dash() : 0;
 	
 	set_border_width(_node->is_initial() ? 4.0 : 1.0);
 

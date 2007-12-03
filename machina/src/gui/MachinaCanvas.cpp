@@ -31,8 +31,9 @@ using namespace FlowCanvas;
 
 
 MachinaCanvas::MachinaCanvas(MachinaGUI* app, int width, int height)
-: Canvas(width, height),
-  _app(app)
+	: Canvas(width, height)
+	, _app(app)
+	, _selector_dash(NULL)
 {
 	grab_focus();
 }

@@ -40,6 +40,7 @@ public:
 private:
 	void handle_click(GdkEventButton* ev);
 	void on_double_click(GdkEventButton* ev);
+	void set_selected(bool selected);
 
 	Gtk::Window*             _window;
 	SharedPtr<Machina::Node> _node;

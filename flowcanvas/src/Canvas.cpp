@@ -32,7 +32,7 @@
 #include <graphviz/gvc.h>
 #endif
 
-using std::cerr; using std::cout; using std::endl;
+using namespace std;
 
 namespace FlowCanvas {
 	

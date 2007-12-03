@@ -156,7 +156,7 @@ Ellipse::set_selected(bool selected)
 	boost::shared_ptr<Canvas> canvas = _canvas.lock();
 	if (!canvas)
 		return;
-
+		
 	if (selected) {
 		_ellipse.property_fill_color_rgba() = ELLIPSE_HILITE_FILL_COLOUR;
 		_ellipse.property_outline_color_rgba() = ELLIPSE_HILITE_OUTLINE_COLOUR;

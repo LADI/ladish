@@ -42,6 +42,8 @@ public:
 
 	void build(SharedPtr<Machina::Machine> machine);
 
+	ArtVpathDash* selector_dash() { return _selector_dash; }
+
 protected:
 	bool canvas_event(GdkEvent* event);
 
@@ -50,8 +52,8 @@ protected:
 private:
 	SharedPtr<NodeView> create_node_view(SharedPtr<Machina::Node> node);
 
-	MachinaGUI* _app;
-
+	MachinaGUI*       _app;
+	ArtVpathDash*     _selector_dash;
 	WeakPtr<NodeView> _last_clicked;
 };
 
