@@ -42,15 +42,32 @@ Connection::Connection(boost::shared_ptr<Canvas>      canvas,
   _show_arrowhead(show_arrowhead),
   _bpath(*this),
   _path(gnome_canvas_path_def_new()),
-  _label(NULL)
+  _handle_style(HANDLE_NONE),
+  _handle(NULL)
 {
 	_bpath.property_width_units() = 1.0;
-	_bpath.property_outline_color_rgba() = _color;
-	//_bpath.property_cap_style() = (Gdk::CapStyle)GDK_CAP_ROUND;
+	set_color(color);
 
 	update_location();	
 	lower_to_bottom();
 	raise(1); // raise above base rect
+}
+
+
+void
+Connection::set_color(uint32_t color)
+{
+	_color = color;
+	_bpath.property_outline_color_rgba() = _color;
+	if (_handle) {
+		if (_handle->text) {
+			_handle->text->property_fill_color_rgba() = _color;
+		}
+		if (_handle->shape) {
+			_handle->shape->property_fill_color_rgba() = 0x000000FF;
+			_handle->shape->property_outline_color_rgba() = _color;
+		}
+	}
 }
 
 
@@ -84,9 +101,10 @@ Connection::update_location()
 		double dx = src_x - dst_x;
 		double dy = src_y - dst_y;	
 		
-		if (_label) {
-			_label->property_x() = src_x - dx/2.0;
-			_label->property_y() = src_y - dy/2.0;
+		if (_handle) {
+			_handle->property_x() = src_x - dx/2.0;
+			_handle->property_y() = src_y - dy/2.0;
+			_handle->move(0, 0);
 		}
 		
 		if (_show_arrowhead) {
@@ -180,21 +198,69 @@ void
 Connection::set_label(const string& str)
 {
 	if (str != "") {
-		if (!_label) {
-			_label = new Gnome::Canvas::Text(*this, 50, 50, str);
-			_label->property_size_set() = true;
-			_label->property_size() = 9000;
-			_label->property_weight_set() = true;
-			_label->property_weight() = 200;
-			_label->property_fill_color_rgba() = _color;
+		if (!_handle)
+			_handle = new Handle(*this);
+
+		if (!_handle->text) {
+			_handle->text = new Gnome::Canvas::Text(*_handle, 0, 0, str);
+			_handle->text->property_size_set() = true;
+			_handle->text->property_size() = 9000;
+			_handle->text->property_weight_set() = true;
+			_handle->text->property_weight() = 200;
+			_handle->text->property_fill_color_rgba() = _color;
+			_handle->text->show();
 		} else {
-			_label->property_text() = str;
+			_handle->text->property_text() = str;
 		}
-		_label->show();
+
+		if (_handle->shape)
+			show_handle(true);
+
+		_handle->text->raise(1);
 		update_location();
+	} else if (_handle) {
+		delete _handle->text;
+		_handle->text = NULL;
+	}
+}
+
+
+void
+Connection::show_handle(bool show)
+{
+	if (show) {
+		if (!_handle)
+			_handle = new Handle(*this);
+		
+		double handle_width = 8.0;
+		double handle_height = 8.0;
+		if (_handle->text) {
+			handle_width = _handle->text->property_text_width();
+			handle_height = _handle->text->property_text_height();
+		}
+
+		// FIXME: slow
+		delete _handle->shape;
+		
+		if (_handle_style != HANDLE_NONE) {
+			if (_handle_style == HANDLE_RECT)
+				_handle->shape = new Gnome::Canvas::Rect(*_handle,
+						-handle_width/2.0 - 1.0, -handle_height/2.0,
+						handle_width/2.0 + 1.0, handle_height/2.0);
+			else// if (_handle_style == HANDLE_CIRCLE)
+				_handle->shape = new Gnome::Canvas::Ellipse(*_handle,
+						-handle_width/2.0 - 1.0, -handle_height/2.0,
+						handle_width/2.0 + 1.0, handle_height/2.0);
+		}
+
+		_handle->shape->property_fill_color_rgba() = 0x000000FF;
+		_handle->shape->property_outline_color_rgba() = _color;
+		_handle->shape->show();
+		_handle->show();
+
 	} else {
-		delete _label;
-		_label = NULL;
+		delete _handle;
+		_handle = NULL;
 	}
 }
 
@@ -258,8 +324,8 @@ Connection::select_tick()
 void
 Connection::zoom(double z)
 {
-	if (_label) {
-		_label->property_size() = static_cast<int>(floor((double)9000.0f * z));
+	if (_handle && _handle->text) {
+		_handle->text->property_size() = static_cast<int>(floor((double)9000.0f * z));
 	}
 }
 

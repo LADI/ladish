@@ -22,6 +22,41 @@
 #include "EdgeView.hpp"
 #include "NodeView.hpp"
 
+
+/* probability colour stuff */
+
+#define RGB_TO_UINT(r,g,b) ((((guint)(r))<<16)|(((guint)(g))<<8)|((guint)(b)))
+#define RGB_TO_RGBA(x,a) (((x) << 8) | ((((guint)a) & 0xff)))
+#define RGBA_TO_UINT(r,g,b,a) RGB_TO_RGBA(RGB_TO_UINT(r,g,b), a)
+
+#define UINT_RGBA_R(x) (((uint32_t)(x))>>24)
+#define UINT_RGBA_G(x) ((((uint32_t)(x))>>16)&0xff)
+#define UINT_RGBA_B(x) ((((uint32_t)(x))>>8)&0xff)
+#define UINT_RGBA_A(x) (((uint32_t)(x))&0xff)
+
+#define MONO_INTERPOLATE(v1, v2, t) ((int)rint((v2)*(t)+(v1)*(1-(t))))
+
+#define UINT_INTERPOLATE(c1, c2, t) \
+  RGBA_TO_UINT( MONO_INTERPOLATE(UINT_RGBA_R(c1), UINT_RGBA_R(c2), t), \
+		MONO_INTERPOLATE(UINT_RGBA_G(c1), UINT_RGBA_G(c2), t), \
+		MONO_INTERPOLATE(UINT_RGBA_B(c1), UINT_RGBA_B(c2), t), \
+		MONO_INTERPOLATE(UINT_RGBA_A(c1), UINT_RGBA_A(c2), t) )
+
+inline static uint32_t edge_color(float prob)
+{
+	static uint32_t min = 0xFF4444C0;
+	static uint32_t mid = 0xFFFF44C0;
+	static uint32_t max = 0x44FF44C0;
+
+	if (prob <= 0.5)
+		return UINT_INTERPOLATE(min, mid, prob*2.0);
+	else
+		return UINT_INTERPOLATE(mid, max, (prob-0.5)*2.0);
+}
+
+/* end probability colour stuff */
+
+
 using namespace FlowCanvas;
 
 EdgeView::EdgeView(SharedPtr<Canvas>        canvas,
@@ -31,6 +66,9 @@ EdgeView::EdgeView(SharedPtr<Canvas>        canvas,
 	: FlowCanvas::Connection(canvas, src, dst, 0x9FA0A0F4, true)
 	, _edge(edge)
 {
+	set_color(edge_color(_edge->probability()));
+	set_handle_style(HANDLE_CIRCLE);
+	show_handle(true);
 }
 
 	
@@ -44,24 +82,29 @@ EdgeView::length_hint() const
 void
 EdgeView::show_label(bool show)
 {
+	/* too slow
 	if (show) {
 		char label[4];
 		snprintf(label, 4, "%3f", _edge->probability());
 		set_label(label);
 	} else {
 		set_label("");
-	}
+	}*/
+	show_handle(show);
+	set_color(edge_color(_edge->probability()));
 }
 
 
 void
-EdgeView::update_label()
+EdgeView::update()
 {
-	if (_label) {
-		char label[4];
+	if (_handle/* && _handle->text*/) {
+		/*char label[4];
 		snprintf(label, 4, "%3f", _edge->probability());
-		set_label(label);
+		set_label(label);*/
+		show_handle(true);
 	}
+	set_color(edge_color(_edge->probability()));
 }
 
 
@@ -72,11 +115,11 @@ EdgeView::on_event(GdkEvent* ev)
 		if (ev->button.state & GDK_CONTROL_MASK) {
 			if (ev->button.button == 1) {
 				_edge->set_probability(_edge->probability() - 0.1);
-				update_label();
+				update();
 				return true;
 			} else if (ev->button.button == 3) {
 				_edge->set_probability(_edge->probability() + 0.1);
-				update_label();
+				update();
 				return true;
 			}
 		}

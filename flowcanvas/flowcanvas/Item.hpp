@@ -91,8 +91,9 @@ public:
 	const string& name() const              { return _name; }
 	virtual void  set_name(const string& n) { _name = n; }
 
-	uint32_t     base_color() const         { return _color; }
-	virtual void set_base_color(uint32_t c) { _color = c; }
+	uint32_t     base_color() const           { return _color; }
+	virtual void set_border_color(uint32_t c) { _border_color = c; }
+	virtual void set_base_color(uint32_t c)   { _color = c; }
 	virtual void set_default_base_color() = 0;
 
 	sigc::signal<void> signal_pointer_entered;
@@ -123,6 +124,7 @@ protected:
 	double      _minimum_width;
 	double      _width;
 	double      _height;
+	uint32_t    _border_color;
 	uint32_t    _color;
 	bool        _selected;
 	Gtk::Menu*  _menu;

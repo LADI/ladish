@@ -43,6 +43,7 @@ private:
 
 	Gtk::Window*             _window;
 	SharedPtr<Machina::Node> _node;
+	uint32_t                 _default_border_color;
 	uint32_t                 _old_color;
 };
 

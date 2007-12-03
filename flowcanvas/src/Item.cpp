@@ -33,6 +33,7 @@ Item::Item(boost::shared_ptr<Canvas> canvas,
 	, _minimum_width(0.0)
 	, _width(1.0)
 	, _height(1.0)
+	, _border_color(color)
 	, _color(color)
 	, _selected(false)
 	, _menu(NULL)

@@ -38,7 +38,7 @@ public:
 	virtual double length_hint() const;
 
 private:
-	void update_label();
+	void update();
 	bool on_event(GdkEvent* ev);
 
 	SharedPtr<Machina::Edge> _edge;

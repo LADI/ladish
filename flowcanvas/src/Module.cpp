@@ -56,9 +56,9 @@ Module::Module(boost::shared_ptr<Canvas> canvas, const string& name, double x, d
 	, _icon_box(NULL)
 {
 	_module_box.property_fill_color_rgba() = MODULE_FILL_COLOUR;
-
 	_module_box.property_outline_color_rgba() = MODULE_OUTLINE_COLOUR;
-	
+	_border_color = MODULE_OUTLINE_COLOUR;
+
 	if (canvas->property_aa())
 		set_border_width(0.5);
 	else
@@ -493,6 +493,14 @@ Module::select_tick()
 	boost::shared_ptr<Canvas> canvas = _canvas.lock();
 	if (canvas)
 		_module_box.property_dash() = canvas->select_dash();
+}
+
+	
+void
+Module::set_border_color(uint32_t c)
+{
+	_border_color = c;
+	_module_box.property_outline_color_rgba() = _border_color;
 }
 
 

@@ -61,7 +61,9 @@ public:
 	virtual double length_hint() const { return 0.0; }
 
 	void set_label(const std::string& str);
+	void show_handle(bool show);
 	
+	void set_color(uint32_t color);
 	void set_highlighted(bool b);
 	void raise_to_top();
 
@@ -69,6 +71,14 @@ public:
 
 	const boost::weak_ptr<Connectable> source() const { return _source; }
 	const boost::weak_ptr<Connectable> dest() const   { return _dest; }
+
+	enum HandleStyle {
+		HANDLE_NONE,
+		HANDLE_RECT,
+		HANDLE_CIRCLE,
+	};
+
+	void set_handle_style(HandleStyle s) { _handle_style = s; }
 
 protected:
 	friend class Canvas;
@@ -88,7 +98,15 @@ protected:
 	//Glib::RefPtr<Gnome::Canvas::PathDef> _path;
 	GnomeCanvasPathDef* _path;
 
-	Gnome::Canvas::Text* _label;
+	HandleStyle _handle_style;
+
+	struct Handle : public Gnome::Canvas::Group {
+		Handle(Gnome::Canvas::Group& parent)
+			: Gnome::Canvas::Group(parent), shape(NULL), text(NULL) {}
+		~Handle() { delete shape; delete text; }
+		Gnome::Canvas::Shape* shape;
+		Gnome::Canvas::Text*  text;
+	}* _handle;
 };
 
 typedef list<boost::shared_ptr<Connection> > ConnectionList;

@@ -69,10 +69,11 @@ public:
 	void set_selected(bool b);
 	
 	void set_highlighted(bool b);
+	void set_border_color(uint32_t c);
 	void set_base_color(uint32_t c);
 	void set_default_base_color();
 	void set_stacked_border(bool b);
-  void set_icon(const Glib::RefPtr<Gdk::Pixbuf>& icon);
+	void set_icon(const Glib::RefPtr<Gdk::Pixbuf>& icon);
 
 	int num_ports() const { return _ports.size(); }
 

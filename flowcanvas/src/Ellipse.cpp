@@ -28,9 +28,9 @@ using std::string;
 
 namespace FlowCanvas {
 
-static const uint32_t ELLIPSE_FILL_COLOUR           = 0x232425FF;
+static const uint32_t ELLIPSE_FILL_COLOUR           = 0x131415FF;
 static const uint32_t ELLIPSE_HILITE_FILL_COLOUR    = 0x252627FF;
-static const uint32_t ELLIPSE_OUTLINE_COLOUR        = 0xAAAAAAFF;
+static const uint32_t ELLIPSE_OUTLINE_COLOUR        = 0xBBBBBBFF;
 static const uint32_t ELLIPSE_HILITE_OUTLINE_COLOUR = 0xFFFFFFFF;
 static const uint32_t ELLIPSE_TITLE_COLOUR          = 0xFFFFFFFF;
 
@@ -60,8 +60,8 @@ Ellipse::Ellipse(boost::shared_ptr<Canvas> canvas,
 		_label = Gtk::manage(new Gnome::Canvas::Text(*this, 0, 0, name));
 
 	_ellipse.property_fill_color_rgba() = ELLIPSE_FILL_COLOUR;
-
 	_ellipse.property_outline_color_rgba() = ELLIPSE_OUTLINE_COLOUR;
+	_border_color = ELLIPSE_OUTLINE_COLOUR;
 	
 	if (canvas->property_aa())
 		set_border_width(0.5);
@@ -397,6 +397,14 @@ Ellipse::add_connection(boost::shared_ptr<Connection> c)
 {
 	Connectable::add_connection(c);
 	raise_to_top();
+}
+
+	
+void
+Ellipse::set_border_color(uint32_t c)
+{
+	_border_color = c;
+	_ellipse.property_outline_color_rgba() = _border_color;
 }
 
 

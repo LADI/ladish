@@ -32,6 +32,8 @@ NodeView::NodeView(Gtk::Window*                  window,
 	: FlowCanvas::Ellipse(canvas, name, x, y, 20, 20, false)
 	, _window(window)
 	, _node(node)
+	, _default_border_color(_border_color)
+	, _old_color(_color)
 {
 	signal_clicked.connect(sigc::mem_fun(this, &NodeView::handle_click));
 	update_state(false);
@@ -86,15 +88,18 @@ NodeView::show_label(bool show)
 void
 NodeView::update_state(bool show_labels)
 {
-	static const uint32_t active_color = 0xA0A0AAFF;
+	static const uint32_t active_color = 0x408040FF;
+	static const uint32_t active_border_color = 0x00FF00FF;
 	
 	if (_node->is_active()) {
 		if (_color != active_color) {
 			_old_color = _color;
 			set_base_color(active_color);
+			set_border_color(active_border_color);
 		}
 	} else if (_color == active_color) {
 		set_base_color(_old_color);
+		set_border_color(_default_border_color);
 	}
 		
 	if (_node->is_selector())

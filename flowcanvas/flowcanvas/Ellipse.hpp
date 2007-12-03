@@ -78,12 +78,12 @@ public:
 
 	double border_width() const { return _border_width; }
 	void   set_border_width(double w);
-	void   set_border_color(uint32_t c) { _ellipse.property_outline_color_rgba() = c; }
 
 	void select_tick();
 	void set_selected(bool b);
 	
 	void set_highlighted(bool b);
+	void set_border_color(uint32_t c);
 	void set_base_color(uint32_t c);
 	void set_default_base_color();
 
