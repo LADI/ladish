@@ -42,8 +42,16 @@ public:
 	
 	inline ~Semaphore() { sem_destroy(&_sem); }
 
-	inline void reset(unsigned int initial)
-	{ sem_destroy(&_sem); sem_init(&_sem, 0, initial); }
+	inline void reset(unsigned int initial) {
+		sem_destroy(&_sem);
+		sem_init(&_sem, 0, initial);
+	}
+
+	inline bool has_waiter() {
+		int val;
+		sem_getvalue(&_sem, &val);
+		return (val <= 0);
+	}
 
 	/** Increment (and signal any waiters).
 	 * 

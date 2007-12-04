@@ -5,6 +5,7 @@ raulinclude_HEADERS = \
 	Atom.hpp \
 	AtomicInt.hpp \
 	AtomicPtr.hpp \
+	Command.hpp \
 	Deletable.hpp \
 	DoubleBuffer.hpp \
 	JackDriver.hpp \
