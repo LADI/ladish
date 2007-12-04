@@ -50,11 +50,11 @@ public:
 	void write_state(Redland::Model& model);
 
 	// Audio context
-	void      reset();
+	void      reset(Raul::BeatTime time);
 	BeatCount run(const Raul::TimeSlice& time);
 	
 	// Any context
-	Raul::BeatTime time() { return _time; }
+	inline Raul::BeatTime time() const { return _time; }
 
 	SharedPtr<LearnRequest> pending_learn() { return _pending_learn; }
 	void clear_pending_learn()              { _pending_learn.reset(); }

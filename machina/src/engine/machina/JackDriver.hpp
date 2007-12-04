@@ -24,6 +24,7 @@
 #include <raul/DoubleBuffer.hpp>
 #include <raul/StampedChunkRingBuffer.hpp>
 #include <raul/Semaphore.hpp>
+#include <raul/Command.hpp>
 #include <jack/midiport.h>
 #include "Machine.hpp"
 #include "Driver.hpp"
@@ -62,7 +63,7 @@ public:
 	void set_bpm(double bpm)                   { _bpm.set(bpm); }
 	void set_quantization(double quantization) { _quantization.set(quantization); }
 
-	void reset();
+	void stop();
 
 	bool recording() { return _recording.get(); }
 	void start_record();
@@ -84,6 +85,8 @@ private:
 
 	Raul::DoubleBuffer<double> _bpm;
 	Raul::DoubleBuffer<double> _quantization;
+
+	Raul::Command _stop;
 
 	Raul::TickTime      _record_time;
 	Raul::AtomicInt     _recording;

@@ -24,22 +24,24 @@ namespace Machina {
 SharedPtr<Action>
 ActionFactory::note_on(unsigned char note)
 {
-	unsigned char buf[2];
+	unsigned char buf[3];
 	buf[0] = 0x90;
 	buf[1] = note;
+	buf[2] = 0x40;
 
-	return SharedPtr<Action>(new MidiAction(2, buf));
+	return SharedPtr<Action>(new MidiAction(3, buf));
 }
 
 
 SharedPtr<Action>
 ActionFactory::note_off(unsigned char note)
 {
-	unsigned char buf[2];
+	unsigned char buf[3];
 	buf[0] = 0x80;
 	buf[1] = note;
+	buf[2] = 0x40;
 
-	return SharedPtr<Action>(new MidiAction(2, buf));
+	return SharedPtr<Action>(new MidiAction(3, buf));
 }
 
 

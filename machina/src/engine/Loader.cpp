@@ -181,7 +181,7 @@ Loader::load(const Glib::ustring& uri)
 	}
 
 	if (machine && machine->nodes().size() > 0) {
-		machine->reset();
+		machine->reset(machine->time());
 		return machine;
 	} else {
 		return SharedPtr<Machine>();

@@ -62,7 +62,7 @@ SMFDriver::learn(const string& filename, unsigned track, double q, Raul::BeatTim
 	else
 		learn_track(builder, reader, track, q, max_duration);
 
-	m->reset();
+	m->reset(m->time());
 
 	if (m->nodes().size() > 1)
 		return m;
@@ -92,7 +92,7 @@ SMFDriver::learn(const string& filename, double q, Raul::BeatTime max_duration)
 		learn_track(builder, reader, t, q, max_duration);
 	}
 
-	m->reset();
+	m->reset(m->time());
 
 	if (m->nodes().size() > 1)
 		return m;

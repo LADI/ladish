@@ -76,7 +76,7 @@ Machine::remove_node(SharedPtr<Node> node)
 /** Exit all active states and reset time to 0.
  */
 void
-Machine::reset()
+Machine::reset(Raul::BeatTime time)
 {
 	for (size_t i=0; i < MAX_ACTIVE_NODES; ++i) {
 		_active_nodes[i].reset();
@@ -87,7 +87,7 @@ Machine::reset()
 			const SharedPtr<Node> node = (*n);
 
 			if (node->is_active())
-				node->exit(_sink.lock(), _time);
+				node->exit(_sink.lock(), time);
 
 			assert(! node->is_active());
 		}
@@ -216,10 +216,8 @@ Machine::exit_node(SharedPtr<Raul::MIDISink> sink, const SharedPtr<Node> node)
 BeatCount
 Machine::run(const Raul::TimeSlice& time)
 {
-	using namespace std;
-	if (_is_finished) {
+	if (_is_finished)
 		return 0;
-	}
 
 	const SharedPtr<Raul::MIDISink> sink = _sink.lock();
 

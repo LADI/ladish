@@ -23,6 +23,7 @@
 #include "jack_compat.h"
 
 using namespace Raul;
+using namespace std;
 
 namespace Machina {
 
@@ -116,8 +117,6 @@ JackDriver::process_input(SharedPtr<Machine> machine, const TimeSlice& time)
 	// We only actually read Jack input at the beginning of a cycle
 	assert(time.offset_ticks() == 0);
 	assert(_input_port);
-
-	using namespace std;
 
 	if (_recording.get()) {
 
@@ -245,7 +244,7 @@ JackDriver::on_process(jack_nframes_t nframes)
 		if (_last_machine) {
 			assert(!_last_machine.unique()); // Realtime, can't delete
 			_last_machine->set_sink(shared_from_this());
-			_last_machine->reset(); // Exit all active states
+			_last_machine->reset(_last_machine->time()); // Exit all active states
 			_last_machine.reset(); // Cut our reference
 		}
 		_cycle_time.set_start(0);
@@ -254,14 +253,17 @@ JackDriver::on_process(jack_nframes_t nframes)
 
 	if (_recording.get())
 		_record_time += nframes;
-
+	
 	if (!machine)
 		return;
+
+	if (_stop.pending())
+		machine->reset(_cycle_time.start_beats());
 
 	process_input(machine, _cycle_time);
 
 	if (machine->is_empty() || !machine->is_activated())
-		return;
+		goto end;
 
 	while (true) {
 	
@@ -270,16 +272,16 @@ JackDriver::on_process(jack_nframes_t nframes)
 
 		// Machine didn't run at all (empty, or no initial states)
 		if (run_dur_beats == 0) {
-			machine->reset(); // Try again next cycle
+			machine->reset(machine->time()); // Try again next cycle
 			_cycle_time.set_start(0);
-			return;
+			goto end;
 
 		// Machine ran for portion of cycle (finished)
 		} else if (run_dur_ticks < _cycle_time.length_ticks()) {
 			const TickCount finish_offset = _cycle_time.offset_ticks() + run_dur_ticks;
 			assert(finish_offset < nframes);
 			
-			machine->reset();
+			machine->reset(machine->time());
 
 			_cycle_time.set_start(0);
 			_cycle_time.set_length(nframes - finish_offset);
@@ -288,7 +290,7 @@ JackDriver::on_process(jack_nframes_t nframes)
 		// Machine ran for entire cycle
 		} else {
 			if (machine->is_finished()) {
-				machine->reset();
+				machine->reset(machine->time());
 				_cycle_time.set_start(0);
 			} else {
 				_cycle_time.set_start(
@@ -302,17 +304,22 @@ JackDriver::on_process(jack_nframes_t nframes)
 	/* Remember the last machine run, in case a switch happens and
 	 * we need to finalize it next cycle. */
 	_last_machine = machine;
+	
+end:
+	if (_stop.pending()) {
+		_cycle_time.set_start(0);
+		_stop.finish();
+	}
 }
 
 
 void
-JackDriver::reset()
+JackDriver::stop()
 {
-	/* FIXME: This should signal the audio thread and wait for it 
-	 * to exit all active states to resolve stuck notes, then reset. */
-	_machine->deactivate();
-	_machine->reset();
-	_cycle_time.set_start(0);
+	if (recording())
+		finish_record();
+
+	_stop(); // waits
 }
 
 

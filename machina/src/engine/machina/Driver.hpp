@@ -39,7 +39,7 @@ public:
 	virtual void activate() {}
 	virtual void deactivate() {}
 
-	virtual void reset() {}
+	virtual void stop() {}
 
 	virtual bool recording() { return false; }
 	virtual void start_record() {}

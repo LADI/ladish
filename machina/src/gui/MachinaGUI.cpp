@@ -376,7 +376,7 @@ MachinaGUI::menu_import_midi()
 		if (machine) {
 			dialog.hide();
 			machine->activate();
-			machine->reset();
+			machine->reset(machine->time());
 			_canvas->build(machine);
 			_engine->driver()->set_machine(machine);
 		} else {
@@ -406,7 +406,7 @@ MachinaGUI::menu_export_midi()
 		file_driver->writer()->start(dialog.get_filename());
 		file_driver->run(m, 32); // TODO: solve halting problem
 		m->set_sink(_engine->driver());
-		m->reset();
+		m->reset(m->time());
 		file_driver->writer()->finish();
 		_engine->driver()->activate();
 	}
@@ -492,10 +492,11 @@ void
 MachinaGUI::stop_clicked()
 {
 	if (_engine->driver()->recording()) {
-		_engine->driver()->finish_record();
+		_engine->driver()->stop();
+		_canvas->build(_engine->machine());
+		update_toolbar();
 	} else {
-		_engine->machine()->deactivate();
-		_engine->driver()->reset();
+		_engine->driver()->stop();
 	}
 
 	update_toolbar();
