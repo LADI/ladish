@@ -29,10 +29,10 @@ using namespace std;
 
 namespace FlowCanvas {
 
-static const uint32_t MODULE_FILL_COLOUR           = 0x232425C8;
-static const uint32_t MODULE_HILITE_FILL_COLOUR    = 0x252627F4;
-static const uint32_t MODULE_OUTLINE_COLOUR        = 0xA2A3A4F4;
-static const uint32_t MODULE_HILITE_OUTLINE_COLOUR = 0xC2C3C4F4;
+static const uint32_t MODULE_FILL_COLOUR           = 0x1E2426FF;
+static const uint32_t MODULE_HILITE_FILL_COLOUR    = 0x2E3436FF;
+static const uint32_t MODULE_OUTLINE_COLOUR        = 0xBABDB6FF;
+static const uint32_t MODULE_HILITE_OUTLINE_COLOUR = 0xD3D7CFFF;
 static const uint32_t MODULE_TITLE_COLOUR          = 0xFFFFFFFF;
 
 
