@@ -21,19 +21,28 @@
 #include <boost/utility.hpp>
 #include <raul/SharedPtr.hpp>
 #include <raul/List.hpp>
-#include <raul/RDFModel.hpp> 
 #include <raul/TimeSlice.hpp>
+#include <redlandmm/Model.hpp> 
 #include "types.hpp"
 #include "LearnRequest.hpp"
 #include "Node.hpp"
 
 namespace Machina {
 
+class Gene;
 
+
+/** A (Finite State) Machine.
+ *
+ * In evolutionary terms, this is the phenotype of Gene.
+ */
 class Machine : public Raul::Stateful, public boost::noncopyable {
 public:
 	Machine();
+	Machine(SharedPtr<Gene> genotype);
 	~Machine();
+	
+	SharedPtr<Gene> genotype();
 
 	// Main context
 	void activate()   { _is_activated = true; }
@@ -74,13 +83,13 @@ private:
 	static const size_t MAX_ACTIVE_NODES = 128;
 	SharedPtr<Node> _active_nodes[MAX_ACTIVE_NODES];
 
-	WeakPtr<Raul::MIDISink> _sink;
 	bool                    _is_activated;
 	bool                    _is_finished;
 	Raul::BeatTime          _time;
-	Nodes                   _nodes;
-
+	SharedPtr<Gene>         _genotype;
 	SharedPtr<LearnRequest> _pending_learn;
+	WeakPtr<Raul::MIDISink> _sink;
+	Nodes                   _nodes;
 };
 
 

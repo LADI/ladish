@@ -16,8 +16,9 @@
  */
 
 #include <cassert>
-#include <raul/RDFWorld.hpp>
-#include <raul/RDFModel.hpp>
+#include <raul/Atom.hpp>
+#include <redlandmm/World.hpp>
+#include <redlandmm/Model.hpp>
 #include <machina/Node.hpp>
 #include <machina/Edge.hpp>
 

@@ -21,9 +21,9 @@
 #include <glibmm/ustring.h>
 #include <raul/SharedPtr.hpp>
 #include <raul/Path.hpp>
-#include <raul/RDFWorld.hpp>
+#include <redlandmm/World.hpp>
 
-using Raul::Namespaces;
+using Redland::Namespaces;
 
 namespace Machina {
 

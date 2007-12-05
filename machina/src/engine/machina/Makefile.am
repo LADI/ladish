@@ -1,22 +1,19 @@
 libmachinaincludedir = $(includedir)/machina
 
 libmachinainclude_HEADERS = \
-	types.hpp \
 	Action.hpp \
-	Node.hpp \
-	Edge.hpp \
-	Machine.hpp \
-	Loader.hpp \
-	MidiAction.hpp \
 	ActionFactory.hpp \
 	Driver.hpp \
-	LearnRequest.hpp \
+	Edge.hpp \
 	Engine.hpp \
-	Recorder.hpp \
+	Gene.hpp \
+	JackDriver.hpp \
+	LearnRequest.hpp \
+	Loader.hpp \
+	Machine.hpp \
 	MachineBuilder.hpp \
+	MidiAction.hpp \
+	Node.hpp \
+	Recorder.hpp \
 	SMFDriver.hpp \
-	JackDriver.hpp
-	
-if WITH_JACK	
-	JackDriver.hpp
-endif
+	types.hpp
