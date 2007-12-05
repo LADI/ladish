@@ -94,16 +94,16 @@ MachineBuilder::connect_nodes(SharedPtr<Machine> m,
 	if (is_delay_node(tail) && tail->edges().size() == 0) {
 		// Tail is a delay node, just accumulate the time difference into it
 		set_node_duration(tail, tail->duration() + head_start_time - tail_end_time);
-		tail->add_outgoing_edge(SharedPtr<Edge>(new Edge(tail, head)));
+		tail->add_edge(SharedPtr<Edge>(new Edge(tail, head)));
 	} else if (head_start_time == tail_end_time) {
 		// Connect directly
-		tail->add_outgoing_edge(SharedPtr<Edge>(new Edge(tail, head)));
+		tail->add_edge(SharedPtr<Edge>(new Edge(tail, head)));
 	} else {
 		// Need to actually create a delay node
 		delay_node = SharedPtr<Node>(new Node());
 		set_node_duration(delay_node, head_start_time - tail_end_time);
-		tail->add_outgoing_edge(SharedPtr<Edge>(new Edge(tail, delay_node)));
-		delay_node->add_outgoing_edge(SharedPtr<Edge>(new Edge(delay_node, head)));
+		tail->add_edge(SharedPtr<Edge>(new Edge(tail, delay_node)));
+		delay_node->add_edge(SharedPtr<Edge>(new Edge(delay_node, head)));
 		m->add_node(delay_node);
 	}
 	

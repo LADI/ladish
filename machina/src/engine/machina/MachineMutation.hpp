@@ -26,6 +26,10 @@ namespace Mutation {
 
 struct Mutation { virtual void mutate(Machine& machine) = 0; };
 
+struct Compress   { static void mutate(Machine& machine); };
+struct AddNode    { static void mutate(Machine& machine); };
+struct RemoveNode { static void mutate(Machine& machine); };
+struct AdjustNode { static void mutate(Machine& machine); };
 struct AddEdge    { static void mutate(Machine& machine); };
 struct RemoveEdge { static void mutate(Machine& machine); };
 struct AdjustEdge { static void mutate(Machine& machine); };

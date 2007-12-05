@@ -56,9 +56,10 @@ public:
 	void enter(SharedPtr<Raul::MIDISink> driver, BeatTime time);
 	void exit(SharedPtr<Raul::MIDISink> driver, BeatTime time);
 
-	void add_outgoing_edge(SharedPtr<Edge> edge);
-	void remove_outgoing_edge(SharedPtr<Edge> edge);
+	void add_edge(SharedPtr<Edge> edge);
+	void remove_edge(SharedPtr<Edge> edge);
 	void remove_edges_to(SharedPtr<Node> node);
+	bool connected_to(SharedPtr<Node> node);
 
 	void write_state(Redland::Model& model);
 

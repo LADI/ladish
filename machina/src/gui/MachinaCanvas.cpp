@@ -117,7 +117,7 @@ MachinaCanvas::connect_node(boost::shared_ptr<NodeView> src,
                             boost::shared_ptr<NodeView> head)
 {
 	SharedPtr<Machina::Edge> edge(new Machina::Edge(src->node(), head->node()));
-	src->node()->add_outgoing_edge(edge);
+	src->node()->add_edge(edge);
 	
 	boost::shared_ptr<Connection> c(new EdgeView(shared_from_this(),
 			src, head, edge));

@@ -59,6 +59,9 @@ Machine::set_sink(SharedPtr<Raul::MIDISink> sink)
 SharedPtr<Node>
 Machine::random_node()
 {
+	if (_nodes.empty())
+		return SharedPtr<Node>();
+	
 	size_t i = rand() % _nodes.size();
 
 	// FIXME: O(n) worst case :(
@@ -79,7 +82,7 @@ Machine::random_edge()
 	for (size_t i = 0; i < _nodes.size() && tail->edges().empty(); ++i)
 		tail = random_node();
 
-	return tail->random_edge();
+	return tail ? tail->random_edge() : SharedPtr<Edge>();
 }
 
 

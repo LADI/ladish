@@ -171,7 +171,7 @@ Loader::load(const Glib::ustring& uri)
 
 			SharedPtr<Edge> edge(new Edge(src, dst));
 			edge->set_probability(prob);
-			src->add_outgoing_edge(edge);
+			src->add_edge(edge);
 
 		} else {
 			cerr << "[Loader] WARNING: Ignored edge between unknown nodes "

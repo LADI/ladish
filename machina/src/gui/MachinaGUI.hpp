@@ -63,6 +63,11 @@ protected:
 	void menu_help_about();
 	void menu_help_help();
 	void arrange();
+	void mutate();
+	void compress();
+	void add_node();
+	void remove_node();
+	void adjust_node();
 	void add_edge();
 	void remove_edge();
 	void adjust_edge();
@@ -108,8 +113,7 @@ protected:
 	Gtk::ScrolledWindow*   _canvas_scrolledwindow;
 	Gtk::TextView*         _status_text;
 	Gtk::Expander*         _messages_expander;
-	Gtk::RadioButton*      _slave_radiobutton;
-	Gtk::RadioButton*      _bpm_radiobutton;
+	Gtk::CheckButton*      _clock_checkbutton;
 	Gtk::SpinButton*       _bpm_spinbutton;
 	Gtk::CheckButton*      _quantize_checkbutton;
 	Gtk::SpinButton*       _quantize_spinbutton;
@@ -119,6 +123,11 @@ protected:
 	Gtk::ToolButton*       _zoom_normal_button;
 	Gtk::ToolButton*       _zoom_full_button;
 	Gtk::ToolButton*       _arrange_button;
+	Gtk::ToolButton*       _mutate_button;
+	Gtk::ToolButton*       _compress_button;
+	Gtk::ToolButton*       _add_node_button;
+	Gtk::ToolButton*       _remove_node_button;
+	Gtk::ToolButton*       _adjust_node_button;
 	Gtk::ToolButton*       _add_edge_button;
 	Gtk::ToolButton*       _remove_edge_button;
 	Gtk::ToolButton*       _adjust_edge_button;

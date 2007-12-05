@@ -15,8 +15,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef PATCHAGEPATCHBAYAREA_H
-#define PATCHAGEPATCHBAYAREA_H
+#ifndef MACHINA_CANVAS_HPP_H
+#define MACHINA_CANVAS_HPP_H
 
 #include <string>
 #include <raul/SharedPtr.hpp>
@@ -59,4 +59,4 @@ private:
 };
 
 
-#endif // PATCHAGEPATCHBAYAREA_H
+#endif // MACHINA_CANVAS_HPP_H

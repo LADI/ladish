@@ -20,6 +20,7 @@
 #include "machina/Edge.hpp"
 #include "machina/Machine.hpp"
 #include "machina/MachineMutation.hpp"
+#include "machina/ActionFactory.hpp"
 
 using namespace std;
 
@@ -28,16 +29,80 @@ namespace Mutation {
 
 
 void
+Compress::mutate(Machine& machine)
+{
+	// Trim disconnected nodes
+	for (Machine::Nodes::iterator i = machine.nodes().begin(); i != machine.nodes().end() ;) {
+		Machine::Nodes::iterator next = i;
+		++next;
+		
+		if ((*i)->edges().empty())
+			machine.remove_node(*i);
+
+		i = next;
+	}
+}
+
+
+void
+AddNode::mutate(Machine& machine)
+{
+	// Create random node
+	SharedPtr<Node> node(new Node(1.0));
+	uint8_t note = rand() % 128;
+	node->set_enter_action(ActionFactory::note_on(note));
+	node->set_exit_action(ActionFactory::note_off(note));
+	machine.add_node(node);
+	
+	// Add as a successor to some other random node
+	SharedPtr<Node> tail = machine.random_node();
+	if (tail && tail != node)
+		tail->add_edge(boost::shared_ptr<Edge>(new Edge(tail, node)));
+}
+
+
+void
+RemoveNode::mutate(Machine& machine)
+{
+	SharedPtr<Node> node = machine.random_node();
+	machine.remove_node(node);
+}
+
+	
+void
+AdjustNode::mutate(Machine& machine)
+{
+	SharedPtr<Node> node = machine.random_node();
+	if (node) {
+		SharedPtr<MidiAction> enter_action = PtrCast<MidiAction>(node->enter_action());
+		SharedPtr<MidiAction> exit_action  = PtrCast<MidiAction>(node->exit_action());
+		if (enter_action && exit_action) {
+			const uint8_t note = rand() % 128;
+			enter_action->event()[1] = note;
+			exit_action->event()[1] = note;
+		}
+		node->set_changed();
+	}
+}
+
+
+void
 AddEdge::mutate(Machine& machine)
 {
-	cout << "ADD" << endl;
+	SharedPtr<Node> tail = machine.random_node();
+	SharedPtr<Node> head = machine.random_node();
+
+	if (tail && head && tail != head && !tail->connected_to(head))
+		tail->add_edge(boost::shared_ptr<Edge>(new Edge(tail, head)));
 }
 
 
 void
 RemoveEdge::mutate(Machine& machine)
 {
-	cout << "REMOVE" << endl;
+	SharedPtr<Node> tail = machine.random_node();
+	if (tail)
+		tail->remove_edge(tail->random_edge());
 }
 
 	

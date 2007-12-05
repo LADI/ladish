@@ -61,8 +61,7 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	xml->get_widget("help_about_menuitem", _menu_help_about);
 	xml->get_widget("help_help_menuitem", _menu_help_help);
 	xml->get_widget("canvas_scrolledwindow", _canvas_scrolledwindow);
-	xml->get_widget("slave_radiobutton", _slave_radiobutton);
-	xml->get_widget("bpm_radiobutton", _bpm_radiobutton);
+	xml->get_widget("clock_checkbutton", _clock_checkbutton);
 	xml->get_widget("bpm_spinbutton", _bpm_spinbutton);
 	xml->get_widget("quantize_checkbutton", _quantize_checkbutton);
 	xml->get_widget("quantize_spinbutton", _quantize_spinbutton);
@@ -72,6 +71,11 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	xml->get_widget("zoom_normal_but", _zoom_normal_button);
 	xml->get_widget("zoom_full_but", _zoom_full_button);
 	xml->get_widget("arrange_but", _arrange_button);
+	xml->get_widget("mutate_but", _mutate_button);
+	xml->get_widget("compress_but", _compress_button);
+	xml->get_widget("add_node_but", _add_node_button);
+	xml->get_widget("remove_node_but", _remove_node_button);
+	xml->get_widget("adjust_node_but", _adjust_node_button);
 	xml->get_widget("add_edge_but", _add_edge_button);
 	xml->get_widget("remove_edge_but", _remove_edge_button);
 	xml->get_widget("adjust_edge_but", _adjust_edge_button);
@@ -117,17 +121,23 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 		sigc::mem_fun(this, &MachinaGUI::menu_help_about));
 	_menu_help_help->signal_activate().connect(
 		sigc::mem_fun(this, &MachinaGUI::menu_help_help));
-	_slave_radiobutton->signal_toggled().connect(
-		sigc::mem_fun(this, &MachinaGUI::tempo_changed));
-	_bpm_radiobutton->signal_toggled().connect(
-		sigc::mem_fun(this, &MachinaGUI::tempo_changed));
-	_bpm_spinbutton->signal_changed().connect(
+	_clock_checkbutton->signal_toggled().connect(
 		sigc::mem_fun(this, &MachinaGUI::tempo_changed));
 	_quantize_checkbutton->signal_toggled().connect(
 		sigc::mem_fun(this, &MachinaGUI::quantize_changed));
 	_quantize_spinbutton->signal_changed().connect(
 		sigc::mem_fun(this, &MachinaGUI::quantize_changed));
 	
+	_mutate_button->signal_clicked().connect(
+		sigc::mem_fun(this, &MachinaGUI::mutate));
+	_compress_button->signal_clicked().connect(
+		sigc::mem_fun(this, &MachinaGUI::compress));
+	_add_node_button->signal_clicked().connect(
+		sigc::mem_fun(this, &MachinaGUI::add_node));
+	_remove_node_button->signal_clicked().connect(
+		sigc::mem_fun(this, &MachinaGUI::remove_node));
+	_adjust_node_button->signal_clicked().connect(
+		sigc::mem_fun(this, &MachinaGUI::adjust_node));
 	_add_edge_button->signal_clicked().connect(
 		sigc::mem_fun(this, &MachinaGUI::add_edge));
 	_remove_edge_button->signal_clicked().connect(
@@ -141,7 +151,7 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 
 	_main_window->present();
 
-	_bpm_radiobutton->set_active(true);
+	_clock_checkbutton->set_active(true);
 	_quantize_checkbutton->set_active(false);
 	update_toolbar();
 
@@ -211,11 +221,59 @@ MachinaGUI::arrange()
 	_canvas->arrange(_menu_view_time_edges->get_active());
 }
 
+
+void
+MachinaGUI::mutate()
+{
+	switch (rand() % 7) {
+		case 0: compress(); break;
+		case 1: add_node(); break;
+		case 2: remove_node(); break;
+		case 3: adjust_node(); break;
+		case 4: add_edge(); break;
+		case 5: remove_edge(); break;
+		case 6: adjust_edge(); default: break;
+	}
+}
+
+
+void
+MachinaGUI::compress()
+{
+	Mutation::Compress::mutate(*_engine->machine().get());
+	_canvas->build(_engine->machine());
+}
+
+
+void
+MachinaGUI::add_node()
+{
+	Mutation::AddNode::mutate(*_engine->machine().get());
+	_canvas->build(_engine->machine());
+}
+
+
+void
+MachinaGUI::remove_node()
+{
+	Mutation::RemoveNode::mutate(*_engine->machine().get());
+	_canvas->build(_engine->machine());
+}
+
+	
+void
+MachinaGUI::adjust_node()
+{
+	Mutation::AdjustNode::mutate(*_engine->machine().get());
+	idle_callback(); // update nodes
+}
+
 	
 void
 MachinaGUI::add_edge()
 {
 	Mutation::AddEdge::mutate(*_engine->machine().get());
+	_canvas->build(_engine->machine());
 }
 
 
@@ -223,6 +281,7 @@ void
 MachinaGUI::remove_edge()
 {
 	Mutation::RemoveEdge::mutate(*_engine->machine().get());
+	_canvas->build(_engine->machine());
 }
 
 	
@@ -239,7 +298,7 @@ MachinaGUI::update_toolbar()
 {
 	_record_button->set_active(_engine->driver()->recording());
 	_play_button->set_active(_engine->machine()->is_activated());
-	_bpm_spinbutton->set_sensitive(_bpm_radiobutton->get_active());
+	_bpm_spinbutton->set_sensitive(_clock_checkbutton->get_active());
 	_quantize_spinbutton->set_sensitive(_quantize_checkbutton->get_active());
 }
 
