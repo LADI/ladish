@@ -53,6 +53,34 @@ Machine::set_sink(SharedPtr<Raul::MIDISink> sink)
 {
 	_sink = sink;
 }
+	
+
+/** Always returns a node, unless there are none */
+SharedPtr<Node>
+Machine::random_node()
+{
+	size_t i = rand() % _nodes.size();
+
+	// FIXME: O(n) worst case :(
+	for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n, --i)
+		if (i == 0)
+			return *n;
+
+	return SharedPtr<Node>();
+}
+
+
+/** May return NULL even if edges exist (with low probability) */
+SharedPtr<Edge>
+Machine::random_edge()
+{
+	SharedPtr<Node> tail = random_node();
+	
+	for (size_t i = 0; i < _nodes.size() && tail->edges().empty(); ++i)
+		tail = random_node();
+
+	return tail->random_edge();
+}
 
 
 void
@@ -69,7 +97,7 @@ Machine::remove_node(SharedPtr<Node> node)
 	_nodes.erase(_nodes.find(node));
 	
 	for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n)
-		(*n)->remove_outgoing_edges_to(node);
+		(*n)->remove_edges_to(node);
 }
 
 
@@ -170,8 +198,8 @@ Machine::exit_node(SharedPtr<Raul::MIDISink> sink, const SharedPtr<Node> node)
 		const double rand_normal = rand() / (double)RAND_MAX; // [0, 1]
 		double range_min = 0;
 
-		for (Node::Edges::const_iterator s = node->outgoing_edges().begin();
-				s != node->outgoing_edges().end(); ++s) {
+		for (Node::Edges::const_iterator s = node->edges().begin();
+				s != node->edges().end(); ++s) {
 			
 			if (!(*s)->head()->is_active()
 					&& rand_normal > range_min
@@ -187,8 +215,8 @@ Machine::exit_node(SharedPtr<Raul::MIDISink> sink, const SharedPtr<Node> node)
 
 	} else {
 
-		for (Node::Edges::const_iterator s = node->outgoing_edges().begin();
-				s != node->outgoing_edges().end(); ++s) {
+		for (Node::Edges::const_iterator s = node->edges().begin();
+				s != node->edges().end(); ++s) {
 
 			const double rand_normal = rand() / (double)RAND_MAX; // [0, 1]
 
@@ -328,8 +356,8 @@ Machine::write_state(Redland::Model& model)
 
 	for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n) {
 		
-		for (Node::Edges::const_iterator e = (*n)->outgoing_edges().begin();
-			e != (*n)->outgoing_edges().end(); ++e) {
+		for (Node::Edges::const_iterator e = (*n)->edges().begin();
+			e != (*n)->edges().end(); ++e) {
 			
 			(*e)->write_state(model);
 		

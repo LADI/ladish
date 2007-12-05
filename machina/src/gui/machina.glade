@@ -207,86 +207,72 @@
           </packing>
         </child>
         <child>
-          <widget class="GtkToolbar" id="toolbar">
+          <widget class="GtkHBox" id="hbox2">
             <property name="visible">True</property>
-            <property name="toolbar_style">GTK_TOOLBAR_BOTH_HORIZ</property>
+            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
             <child>
-              <widget class="GtkToggleToolButton" id="record_but">
+              <widget class="GtkToolbar" id="toolbar">
                 <property name="visible">True</property>
-                <property name="tooltip" translatable="yes">Record</property>
-                <property name="stock_id">gtk-media-record</property>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkToolButton" id="stop_but">
-                <property name="visible">True</property>
-                <property name="tooltip" translatable="yes">Stop playback or recording</property>
-                <property name="stock_id">gtk-media-stop</property>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkToggleToolButton" id="play_but">
-                <property name="visible">True</property>
-                <property name="tooltip" translatable="yes">Play</property>
-                <property name="stock_id">gtk-media-play</property>
-                <property name="active">True</property>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkSeparatorToolItem" id="separatortoolitem4">
-                <property name="visible">True</property>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-                <property name="homogeneous">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkToolItem" id="toolitem1">
-                <property name="visible">True</property>
+                <property name="toolbar_style">GTK_TOOLBAR_BOTH_HORIZ</property>
+                <property name="show_arrow">False</property>
                 <child>
-                  <widget class="GtkHBox" id="hbox1">
+                  <widget class="GtkToggleToolButton" id="record_but">
                     <property name="visible">True</property>
-                    <property name="border_width">4</property>
-                    <property name="spacing">6</property>
+                    <property name="tooltip" translatable="yes">Record</property>
+                    <property name="stock_id">gtk-media-record</property>
+                  </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkToolButton" id="stop_but">
+                    <property name="visible">True</property>
+                    <property name="tooltip" translatable="yes">Stop playback or recording</property>
+                    <property name="stock_id">gtk-media-stop</property>
+                  </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkToggleToolButton" id="play_but">
+                    <property name="visible">True</property>
+                    <property name="tooltip" translatable="yes">Play</property>
+                    <property name="stock_id">gtk-media-play</property>
+                    <property name="active">True</property>
+                  </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkSeparatorToolItem" id="separatortoolitem4">
+                    <property name="visible">True</property>
+                  </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkToolItem" id="toolitem1">
+                    <property name="visible">True</property>
                     <child>
-                      <widget class="GtkRadioButton" id="slave_radiobutton">
+                      <widget class="GtkHBox" id="hbox1">
                         <property name="visible">True</property>
-                        <property name="sensitive">False</property>
-                        <property name="can_focus">True</property>
-                        <property name="tooltip" translatable="yes">Slave to JACK transport</property>
-                        <property name="label" translatable="yes">Slave</property>
-                        <property name="use_underline">True</property>
-                        <property name="response_id">0</property>
-                        <property name="draw_indicator">True</property>
-                      </widget>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <widget class="GtkHBox" id="hbox3">
-                        <property name="visible">True</property>
+                        <property name="border_width">4</property>
+                        <property name="spacing">6</property>
                         <child>
-                          <widget class="GtkRadioButton" id="bpm_radiobutton">
+                          <widget class="GtkRadioButton" id="slave_radiobutton">
                             <property name="visible">True</property>
+                            <property name="sensitive">False</property>
                             <property name="can_focus">True</property>
-                            <property name="tooltip" translatable="yes">Use internal tempo</property>
+                            <property name="tooltip" translatable="yes">Slave to JACK transport</property>
+                            <property name="label" translatable="yes">Slave</property>
                             <property name="use_underline">True</property>
                             <property name="response_id">0</property>
-                            <property name="active">True</property>
                             <property name="draw_indicator">True</property>
-                            <property name="group">slave_radiobutton</property>
                           </widget>
                           <packing>
                             <property name="expand">False</property>
@@ -294,135 +280,204 @@
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkSpinButton" id="bpm_spinbutton">
+                          <widget class="GtkHBox" id="hbox3">
+                            <property name="visible">True</property>
+                            <child>
+                              <widget class="GtkRadioButton" id="bpm_radiobutton">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="tooltip" translatable="yes">Use internal tempo</property>
+                                <property name="use_underline">True</property>
+                                <property name="response_id">0</property>
+                                <property name="active">True</property>
+                                <property name="draw_indicator">True</property>
+                                <property name="group">slave_radiobutton</property>
+                              </widget>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkSpinButton" id="bpm_spinbutton">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="tooltip" translatable="yes">Set internal tempo</property>
+                                <property name="adjustment">120 1 640 1 10 10</property>
+                                <property name="climb_rate">1</property>
+                              </widget>
+                              <packing>
+                                <property name="position">1</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <widget class="GtkLabel" id="label8">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes"> BPM</property>
+                              </widget>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">False</property>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
+                          </widget>
+                          <packing>
+                            <property name="position">1</property>
+                          </packing>
+                        </child>
+                      </widget>
+                    </child>
+                  </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkSeparatorToolItem" id="separatortoolitem2">
+                    <property name="visible">True</property>
+                  </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkToolItem" id="toolitem3">
+                    <property name="visible">True</property>
+                    <child>
+                      <widget class="GtkHBox" id="hbox4">
+                        <property name="visible">True</property>
+                        <property name="border_width">4</property>
+                        <child>
+                          <widget class="GtkCheckButton" id="quantize_checkbutton">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
-                            <property name="tooltip" translatable="yes">Set internal tempo</property>
-                            <property name="adjustment">120 1 640 1 10 10</property>
+                            <property name="tooltip" translatable="yes">Quantize recording</property>
+                            <property name="label" translatable="yes">Quantize: 1/</property>
+                            <property name="use_underline">True</property>
+                            <property name="response_id">0</property>
+                            <property name="draw_indicator">True</property>
+                          </widget>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">False</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="GtkSpinButton" id="quantize_spinbutton">
+                            <property name="visible">True</property>
+                            <property name="sensitive">False</property>
+                            <property name="can_focus">True</property>
+                            <property name="adjustment">1 1 99 1 4 4</property>
                             <property name="climb_rate">1</property>
                           </widget>
                           <packing>
                             <property name="position">1</property>
                           </packing>
                         </child>
-                        <child>
-                          <widget class="GtkLabel" id="label8">
-                            <property name="visible">True</property>
-                            <property name="label" translatable="yes"> BPM</property>
-                          </widget>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-                            <property name="position">2</property>
-                          </packing>
-                        </child>
                       </widget>
-                      <packing>
-                        <property name="position">1</property>
-                      </packing>
                     </child>
                   </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">False</property>
+                  </packing>
                 </child>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-                <property name="homogeneous">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkSeparatorToolItem" id="separatortoolitem2">
-                <property name="visible">True</property>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-                <property name="homogeneous">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkToolItem" id="toolitem3">
-                <property name="visible">True</property>
                 <child>
-                  <widget class="GtkHBox" id="hbox4">
+                  <widget class="GtkSeparatorToolItem" id="separatortoolitem3">
                     <property name="visible">True</property>
-                    <property name="border_width">4</property>
-                    <child>
-                      <widget class="GtkCheckButton" id="quantize_checkbutton">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="tooltip" translatable="yes">Quantize recording</property>
-                        <property name="label" translatable="yes">Quantize: 1/</property>
-                        <property name="use_underline">True</property>
-                        <property name="response_id">0</property>
-                        <property name="draw_indicator">True</property>
-                      </widget>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <widget class="GtkSpinButton" id="quantize_spinbutton">
-                        <property name="visible">True</property>
-                        <property name="sensitive">False</property>
-                        <property name="can_focus">True</property>
-                        <property name="adjustment">1 1 99 1 4 4</property>
-                        <property name="climb_rate">1</property>
-                      </widget>
-                      <packing>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkToolButton" id="zoom_normal_but">
+                    <property name="visible">True</property>
+                    <property name="tooltip" translatable="yes">Zoom to normal size</property>
+                    <property name="stock_id">gtk-zoom-100</property>
+                  </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkToolButton" id="zoom_full_but">
+                    <property name="visible">True</property>
+                    <property name="tooltip" translatable="yes">Zoom to fit entire machine</property>
+                    <property name="stock_id">gtk-zoom-fit</property>
+                  </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkToolButton" id="arrange_but">
+                    <property name="visible">True</property>
+                    <property name="tooltip" translatable="yes">Automatically arrange nodes</property>
+                    <property name="stock_id">gtk-refresh</property>
+                  </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                  </packing>
+                </child>
+              </widget>
+            </child>
+            <child>
+              <widget class="GtkToolbar" id="toolbar1">
+                <property name="visible">True</property>
+                <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                <property name="show_arrow">False</property>
+                <property name="icon_size">GTK_ICON_SIZE_SMALL_TOOLBAR</property>
+                <property name="icon_size_set">True</property>
+                <child>
+                  <widget class="GtkToolButton" id="add_edge_but">
+                    <property name="visible">True</property>
+                    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                    <property name="tooltip" translatable="yes">Add random edge</property>
+                    <property name="label" translatable="yes">Add Edge</property>
+                    <property name="stock_id">gtk-add</property>
+                  </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkToolButton" id="remove_edge_but">
+                    <property name="visible">True</property>
+                    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                    <property name="tooltip" translatable="yes">Remove random edge</property>
+                    <property name="label" translatable="yes">Remove Edge</property>
+                    <property name="stock_id">gtk-remove</property>
+                  </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkToolButton" id="adjust_edge_but">
+                    <property name="visible">True</property>
+                    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                    <property name="tooltip" translatable="yes">Adjust random edge probability</property>
+                    <property name="label" translatable="yes">Mutate Edge Probabililty</property>
+                    <property name="stock_id">gtk-edit</property>
+                  </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                  </packing>
                 </child>
               </widget>
               <packing>
                 <property name="expand">False</property>
-                <property name="homogeneous">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkSeparatorToolItem" id="separatortoolitem3">
-                <property name="visible">True</property>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-                <property name="homogeneous">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkToolButton" id="zoom_normal_but">
-                <property name="visible">True</property>
-                <property name="tooltip" translatable="yes">Zoom to normal size</property>
-                <property name="stock_id">gtk-zoom-100</property>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkToolButton" id="zoom_full_but">
-                <property name="visible">True</property>
-                <property name="tooltip" translatable="yes">Zoom to fit entire machine</property>
-                <property name="stock_id">gtk-zoom-fit</property>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkToolButton" id="arrange_but">
-                <property name="visible">True</property>
-                <property name="tooltip" translatable="yes">Automatically arrange nodes</property>
-                <property name="stock_id">gtk-refresh</property>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
+                <property name="position">1</property>
               </packing>
             </child>
           </widget>
           <packing>
             <property name="expand">False</property>
-            <property name="fill">False</property>
             <property name="position">1</property>
           </packing>
         </child>
@@ -559,27 +614,20 @@ Selector nodes are shown in green.
             <property name="column_spacing">4</property>
             <property name="row_spacing">8</property>
             <child>
-              <widget class="GtkSpinButton" id="node_properties_note_spinbutton">
+              <widget class="GtkSpinButton" id="node_properties_duration_spinbutton">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="adjustment">60 0 127 1 10 10</property>
+                <property name="has_focus">True</property>
+                <property name="adjustment">1 0 999999 1 10 10</property>
                 <property name="climb_rate">1</property>
+                <property name="digits">2</property>
                 <property name="numeric">True</property>
               </widget>
               <packing>
                 <property name="left_attach">1</property>
                 <property name="right_attach">2</property>
-                <property name="y_options"></property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkLabel" id="label6">
-                <property name="visible">True</property>
-                <property name="xalign">0</property>
-                <property name="label" translatable="yes">Note: </property>
-              </widget>
-              <packing>
-                <property name="x_options">GTK_FILL</property>
+                <property name="top_attach">1</property>
+                <property name="bottom_attach">2</property>
                 <property name="y_options"></property>
               </packing>
             </child>
@@ -597,20 +645,27 @@ Selector nodes are shown in green.
               </packing>
             </child>
             <child>
-              <widget class="GtkSpinButton" id="node_properties_duration_spinbutton">
+              <widget class="GtkLabel" id="label6">
+                <property name="visible">True</property>
+                <property name="xalign">0</property>
+                <property name="label" translatable="yes">Note: </property>
+              </widget>
+              <packing>
+                <property name="x_options">GTK_FILL</property>
+                <property name="y_options"></property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkSpinButton" id="node_properties_note_spinbutton">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="has_focus">True</property>
-                <property name="adjustment">1 0 999999 1 10 10</property>
+                <property name="adjustment">60 0 127 1 10 10</property>
                 <property name="climb_rate">1</property>
-                <property name="digits">2</property>
                 <property name="numeric">True</property>
               </widget>
               <packing>
                 <property name="left_attach">1</property>
                 <property name="right_attach">2</property>
-                <property name="top_attach">1</property>
-                <property name="bottom_attach">2</property>
                 <property name="y_options"></property>
               </packing>
             </child>

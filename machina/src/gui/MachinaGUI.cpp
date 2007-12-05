@@ -24,12 +24,15 @@
 #include <libglademm/xml.h>
 #include <redlandmm/Model.hpp>
 #include <machina/Machine.hpp>
+#include <machina/MachineMutation.hpp>
 #include <machina/SMFDriver.hpp>
 #include "GladeXml.hpp"
 #include "MachinaGUI.hpp"
 #include "MachinaCanvas.hpp"
 #include "NodeView.hpp"
 #include "EdgeView.hpp"
+
+using namespace Machina;
 
 
 MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
@@ -69,6 +72,9 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	xml->get_widget("zoom_normal_but", _zoom_normal_button);
 	xml->get_widget("zoom_full_but", _zoom_full_button);
 	xml->get_widget("arrange_but", _arrange_button);
+	xml->get_widget("add_edge_but", _add_edge_button);
+	xml->get_widget("remove_edge_but", _remove_edge_button);
+	xml->get_widget("adjust_edge_but", _adjust_edge_button);
 	
 	_canvas_scrolledwindow->add(*_canvas);
 	_canvas_scrolledwindow->signal_event().connect(sigc::mem_fun(this,
@@ -121,6 +127,13 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 		sigc::mem_fun(this, &MachinaGUI::quantize_changed));
 	_quantize_spinbutton->signal_changed().connect(
 		sigc::mem_fun(this, &MachinaGUI::quantize_changed));
+	
+	_add_edge_button->signal_clicked().connect(
+		sigc::mem_fun(this, &MachinaGUI::add_edge));
+	_remove_edge_button->signal_clicked().connect(
+		sigc::mem_fun(this, &MachinaGUI::remove_edge));
+	_adjust_edge_button->signal_clicked().connect(
+		sigc::mem_fun(this, &MachinaGUI::adjust_edge));
 
 	connect_widgets();
 		
@@ -196,6 +209,28 @@ void
 MachinaGUI::arrange()
 {
 	_canvas->arrange(_menu_view_time_edges->get_active());
+}
+
+	
+void
+MachinaGUI::add_edge()
+{
+	Mutation::AddEdge::mutate(*_engine->machine().get());
+}
+
+
+void
+MachinaGUI::remove_edge()
+{
+	Mutation::RemoveEdge::mutate(*_engine->machine().get());
+}
+
+	
+void
+MachinaGUI::adjust_edge()
+{
+	Mutation::AdjustEdge::mutate(*_engine->machine().get());
+	_canvas->update_edges();
 }
 
 

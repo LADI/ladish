@@ -131,7 +131,7 @@ void
 MachinaCanvas::disconnect_node(boost::shared_ptr<NodeView> src,
                                boost::shared_ptr<NodeView> head)
 {
-	src->node()->remove_outgoing_edges_to(head->node());
+	src->node()->remove_edges_to(head->node());
 	remove_connection(src, head);
 }
 
@@ -177,8 +177,8 @@ MachinaCanvas::build(SharedPtr<Machina::Machine> machine)
 		if (!view)
 			continue;
 
-		for (Machina::Node::Edges::const_iterator e = view->node()->outgoing_edges().begin();
-				e != view->node()->outgoing_edges().end(); ++e) {
+		for (Machina::Node::Edges::const_iterator e = view->node()->edges().begin();
+				e != view->node()->edges().end(); ++e) {
 
 			SharedPtr<NodeView> head_view = views[(*e)->head()];
 			if (!head_view) {
@@ -200,4 +200,14 @@ MachinaCanvas::build(SharedPtr<Machina::Machine> machine)
 	arrange();
 }
 
+
+void
+MachinaCanvas::update_edges()
+{
+	for (ConnectionList::iterator i = _connections.begin(); i != _connections.end(); ++i) {
+		SharedPtr<EdgeView> edge = PtrCast<EdgeView>(*i);
+		if (edge)
+			edge->update();
+	}
+}
 

@@ -35,6 +35,28 @@ Node::Node(BeatCount duration, bool initial)
 }
 
 
+/** Always returns an edge, unless there are none */
+SharedPtr<Edge>
+Node::random_edge()
+{
+	SharedPtr<Edge> ret;
+	if (_edges.empty())
+		return ret;
+	
+	size_t i = rand() % _edges.size();
+
+	// FIXME: O(n) worst case :(
+	for (Edges::const_iterator e = _edges.begin(); e != _edges.end(); ++e, --i) {
+		if (i == 0) {
+			ret = *e;
+			break;
+		}
+	}
+
+	return ret;
+}
+
+
 void
 Node::set_selector(bool yn)
 {
@@ -42,10 +64,10 @@ Node::set_selector(bool yn)
 
 	if (yn) {
 		double prob_sum = 0;
-		for (Edges::iterator i = _outgoing_edges.begin(); i != _outgoing_edges.end(); ++i)
+		for (Edges::iterator i = _edges.begin(); i != _edges.end(); ++i)
 			prob_sum += (*i)->probability();
 	
-		for (Edges::iterator i = _outgoing_edges.begin(); i != _outgoing_edges.end(); ++i)
+		for (Edges::iterator i = _edges.begin(); i != _edges.end(); ++i)
 			(*i)->set_probability((*i)->probability() / prob_sum);
 	}
 	_changed = true;
@@ -101,26 +123,26 @@ Node::add_outgoing_edge(SharedPtr<Edge> edge)
 {
 	assert(edge->tail().lock().get() == this);
 	
-	_outgoing_edges.push_back(edge);
+	_edges.push_back(edge);
 }
 
 
 void
 Node::remove_outgoing_edge(SharedPtr<Edge> edge)
 {
-	_outgoing_edges.erase(_outgoing_edges.find(edge));
+	_edges.erase(_edges.find(edge));
 }
 
 
 void
-Node::remove_outgoing_edges_to(SharedPtr<Node> node)
+Node::remove_edges_to(SharedPtr<Node> node)
 {
-	for (Edges::iterator i = _outgoing_edges.begin(); i != _outgoing_edges.end() ; ) {
+	for (Edges::iterator i = _edges.begin(); i != _edges.end() ; ) {
 		Edges::iterator next = i;
 		++next;
 
 		if ((*i)->head() == node)
-			_outgoing_edges.erase(i);
+			_edges.erase(i);
 
 		i = next;
 	}

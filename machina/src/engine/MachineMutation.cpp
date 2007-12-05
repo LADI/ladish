@@ -15,34 +15,41 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef MACHINA_EDGEVIEW_H
-#define MACHINA_EDGEVIEW_H
+#include <iostream>
+#include <cstdlib>
+#include "machina/Edge.hpp"
+#include "machina/Machine.hpp"
+#include "machina/MachineMutation.hpp"
 
-#include <flowcanvas/Connection.hpp>
+using namespace std;
 
-namespace Machina { class Edge; }
-class NodeView;
+namespace Machina {
+namespace Mutation {
 
 
-class EdgeView : public FlowCanvas::Connection {
-public:
-	EdgeView(SharedPtr<FlowCanvas::Canvas> canvas,
-	         SharedPtr<NodeView>           src,
-	         SharedPtr<NodeView>           dst,
-	         SharedPtr<Machina::Edge>      edge);
+void
+AddEdge::mutate(Machine& machine)
+{
+	cout << "ADD" << endl;
+}
 
-	SharedPtr<Machina::Edge> edge() { return _edge; }
 
-	void show_label(bool show);
-	void update();
+void
+RemoveEdge::mutate(Machine& machine)
+{
+	cout << "REMOVE" << endl;
+}
+
 	
-	virtual double length_hint() const;
+void
+AdjustEdge::mutate(Machine& machine)
+{
+	SharedPtr<Edge> edge = machine.random_edge();
+	if (edge)
+		edge->set_probability(rand() / (float)RAND_MAX);
+}
 
-private:
-	bool on_event(GdkEvent* ev);
 
-	SharedPtr<Machina::Edge> _edge;
-};
+} // namespace Mutation
+} // namespace Machina
 
-
-#endif // MACHINA_EDGEVIEW_H

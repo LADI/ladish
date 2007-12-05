@@ -91,7 +91,7 @@ MachineBuilder::connect_nodes(SharedPtr<Machine> m,
 
 	SharedPtr<Node> delay_node;
 
-	if (is_delay_node(tail) && tail->outgoing_edges().size() == 0) {
+	if (is_delay_node(tail) && tail->edges().size() == 0) {
 		// Tail is a delay node, just accumulate the time difference into it
 		set_node_duration(tail, tail->duration() + head_start_time - tail_end_time);
 		tail->add_outgoing_edge(SharedPtr<Edge>(new Edge(tail, head)));
@@ -133,7 +133,7 @@ MachineBuilder::event(Raul::BeatTime time_offset,
 		// Results in patterns closes to what a human would choose
 		if ( ! _poly_nodes.empty()) {
 			for (PolyList::iterator j = _poly_nodes.begin(); j != _poly_nodes.end(); ++j) {
-				if (j->second->outgoing_edges().empty()) {
+				if (j->second->edges().empty()) {
 					this_connect_node = j->second;
 					this_connect_node_end_time = j->first + j->second->duration();
 					break;
@@ -194,7 +194,7 @@ MachineBuilder::event(Raul::BeatTime time_offset,
 
 						for (PolyList::iterator j = _poly_nodes.begin(); j != _poly_nodes.end(); ++j) {
 							_machine->add_node(j->second);
-							if (j->second->outgoing_edges().size() == 0)
+							if (j->second->edges().size() == 0)
 								connect_nodes(_machine, j->second, j->first + j->second->duration(),
 										_connect_node, t);
 						}
@@ -207,11 +207,11 @@ MachineBuilder::event(Raul::BeatTime time_offset,
 						
 						// Trim useless delay node if possible (these appear after poly sections)
 						if (is_delay_node(_connect_node) && _connect_node->duration() == 0
-								&& _connect_node->outgoing_edges().size() == 1
-								&& (*_connect_node->outgoing_edges().begin())->head() == resolved) {
+								&& _connect_node->edges().size() == 1
+								&& (*_connect_node->edges().begin())->head() == resolved) {
 
-							_connect_node->outgoing_edges().clear();
-							assert(_connect_node->outgoing_edges().empty());
+							_connect_node->edges().clear();
+							assert(_connect_node->edges().empty());
 							_connect_node->set_enter_action(resolved->enter_action());
 							_connect_node->set_exit_action(resolved->exit_action());
 							resolved->set_enter_action(SharedPtr<Action>());

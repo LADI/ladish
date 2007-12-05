@@ -61,8 +61,11 @@ public:
 	SharedPtr<LearnRequest> pending_learn() { return _pending_learn; }
 	void clear_pending_learn()              { _pending_learn.reset(); }
 
-	typedef Raul::List<SharedPtr<Node> > Nodes;
+	typedef Raul::List< SharedPtr<Node> > Nodes;
 	Nodes& nodes() { return _nodes; }
+
+	SharedPtr<Node> random_node();
+	SharedPtr<Edge> random_edge();
 
 	void set_sink(SharedPtr<Raul::MIDISink> sink);
 	

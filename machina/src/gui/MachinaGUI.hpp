@@ -62,10 +62,13 @@ protected:
 	void show_labels_toggled();
 	void menu_help_about();
 	void menu_help_help();
-	void zoom(double z);
-	bool idle_callback();
-	void update_toolbar();
 	void arrange();
+	void add_edge();
+	void remove_edge();
+	void adjust_edge();
+	void zoom(double z);
+	void update_toolbar();
+	bool idle_callback();
 	bool scrolled_window_event(GdkEvent* ev);
 
 	void record_toggled();
@@ -116,6 +119,9 @@ protected:
 	Gtk::ToolButton*       _zoom_normal_button;
 	Gtk::ToolButton*       _zoom_full_button;
 	Gtk::ToolButton*       _arrange_button;
+	Gtk::ToolButton*       _add_edge_button;
+	Gtk::ToolButton*       _remove_edge_button;
+	Gtk::ToolButton*       _adjust_edge_button;
 };
 
 #endif // MACHINA_GUI_H

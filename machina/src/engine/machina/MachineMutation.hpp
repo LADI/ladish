@@ -15,34 +15,23 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef MACHINA_EDGEVIEW_H
-#define MACHINA_EDGEVIEW_H
+#ifndef MACHINA_MACHINE_MUTATION_HPP
+#define MACHINA_MACHINE_MUTATION_HPP
 
-#include <flowcanvas/Connection.hpp>
+namespace Machina {
 
-namespace Machina { class Edge; }
-class NodeView;
+class Machine;
 
+namespace Mutation {
 
-class EdgeView : public FlowCanvas::Connection {
-public:
-	EdgeView(SharedPtr<FlowCanvas::Canvas> canvas,
-	         SharedPtr<NodeView>           src,
-	         SharedPtr<NodeView>           dst,
-	         SharedPtr<Machina::Edge>      edge);
+struct Mutation { virtual void mutate(Machine& machine) = 0; };
 
-	SharedPtr<Machina::Edge> edge() { return _edge; }
+struct AddEdge    { static void mutate(Machine& machine); };
+struct RemoveEdge { static void mutate(Machine& machine); };
+struct AdjustEdge { static void mutate(Machine& machine); };
 
-	void show_label(bool show);
-	void update();
-	
-	virtual double length_hint() const;
+} // namespace Mutation
 
-private:
-	bool on_event(GdkEvent* ev);
+} // namespace Machina
 
-	SharedPtr<Machina::Edge> _edge;
-};
-
-
-#endif // MACHINA_EDGEVIEW_H
+#endif // MACHINA_MACHINE_MUTATION_HPP

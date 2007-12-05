@@ -24,6 +24,7 @@
 #include <raul/Stateful.hpp>
 #include <raul/MIDISink.hpp>
 #include "Action.hpp"
+#include "Schrodinbit.hpp"
 
 namespace Machina {
 
@@ -57,7 +58,7 @@ public:
 
 	void add_outgoing_edge(SharedPtr<Edge> edge);
 	void remove_outgoing_edge(SharedPtr<Edge> edge);
-	void remove_outgoing_edges_to(SharedPtr<Node> node);
+	void remove_edges_to(SharedPtr<Node> node);
 
 	void write_state(Redland::Model& model);
 
@@ -71,23 +72,16 @@ public:
 	bool      is_selector() const       { return _is_selector; }
 	void      set_selector(bool i);
 
-	/// Schroedinger's flag
-	inline bool changed() {
-		if (_changed) {
-			_changed = false;
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	void set_changed() { _changed = true; }
+	inline bool changed()     { return _changed; }
+	inline void set_changed() { _changed = true; }
 	
 	typedef Raul::List<SharedPtr<Edge> > Edges;
-	Edges& outgoing_edges() { return _outgoing_edges; }
+	Edges& edges() { return _edges; }
+	
+	SharedPtr<Edge> random_edge();
 	
 private:
-	bool              _changed;
+	Schrodinbit       _changed;
 	bool              _is_initial;
 	bool              _is_selector;
 	bool              _is_active;
@@ -95,7 +89,7 @@ private:
 	BeatCount         _duration;
 	SharedPtr<Action> _enter_action;
 	SharedPtr<Action> _exit_action;
-	Edges             _outgoing_edges;
+	Edges             _edges;
 };
 
 

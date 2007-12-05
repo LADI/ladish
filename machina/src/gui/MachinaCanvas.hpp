@@ -41,6 +41,7 @@ public:
 	                     SharedPtr<NodeView> port2);
 
 	void build(SharedPtr<Machina::Machine> machine);
+	void update_edges();
 
 	ArtVpathDash* selector_dash() { return _selector_dash; }
 

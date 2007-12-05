@@ -15,34 +15,31 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef MACHINA_EDGEVIEW_H
-#define MACHINA_EDGEVIEW_H
-
-#include <flowcanvas/Connection.hpp>
-
-namespace Machina { class Edge; }
-class NodeView;
+#ifndef SCHRODINBIT_HPP
+#define SCHRODINBIT_HPP
 
 
-class EdgeView : public FlowCanvas::Connection {
+/** A flag which becomes false when it's value is observed
+ */
+class Schrodinbit {
 public:
-	EdgeView(SharedPtr<FlowCanvas::Canvas> canvas,
-	         SharedPtr<NodeView>           src,
-	         SharedPtr<NodeView>           dst,
-	         SharedPtr<Machina::Edge>      edge);
+	Schrodinbit() : _flag(false) {}
 
-	SharedPtr<Machina::Edge> edge() { return _edge; }
+	inline operator bool() {
+		const bool ret = _flag;
+		_flag = false;
+		return ret;
+	}
 
-	void show_label(bool show);
-	void update();
-	
-	virtual double length_hint() const;
+	inline bool operator=(bool flag) {
+		_flag = flag;
+		return flag;
+	}
 
 private:
-	bool on_event(GdkEvent* ev);
-
-	SharedPtr<Machina::Edge> _edge;
+	bool _flag;
 };
 
 
-#endif // MACHINA_EDGEVIEW_H
+#endif // SCHRODINBIT_HPP
+
