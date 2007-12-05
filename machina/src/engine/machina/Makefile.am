@@ -6,7 +6,6 @@ libmachinainclude_HEADERS = \
 	Driver.hpp \
 	Edge.hpp \
 	Engine.hpp \
-	Gene.hpp \
 	JackDriver.hpp \
 	LearnRequest.hpp \
 	Loader.hpp \

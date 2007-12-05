@@ -29,21 +29,14 @@
 
 namespace Machina {
 
-class Gene;
-
 
 /** A (Finite State) Machine.
- *
- * In evolutionary terms, this is the phenotype of Gene.
  */
 class Machine : public Raul::Stateful, public boost::noncopyable {
 public:
 	Machine();
-	Machine(SharedPtr<Gene> genotype);
 	~Machine();
 	
-	SharedPtr<Gene> genotype();
-
 	// Main context
 	void activate()   { _is_activated = true; }
 	void deactivate() { _is_activated = false; }
@@ -86,7 +79,6 @@ private:
 	bool                    _is_activated;
 	bool                    _is_finished;
 	Raul::BeatTime          _time;
-	SharedPtr<Gene>         _genotype;
 	SharedPtr<LearnRequest> _pending_learn;
 	WeakPtr<Raul::MIDISink> _sink;
 	Nodes                   _nodes;

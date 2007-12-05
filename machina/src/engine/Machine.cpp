@@ -20,7 +20,6 @@
 #include <redlandmm/Model.hpp>
 #include <redlandmm/World.hpp>
 #include "machina/Edge.hpp"
-#include "machina/Gene.hpp"
 #include "machina/Machine.hpp"
 #include "machina/MidiAction.hpp"
 #include "machina/Node.hpp"
@@ -39,40 +38,10 @@ Machine::Machine()
 }
 
 	
-Machine::Machine(SharedPtr<Gene> genotype)
-	: _is_activated(false)
-	, _is_finished(false)
-	, _time(0)
-	, _genotype(genotype)
-{
-}
-
-
 Machine::~Machine()
 {
 }
 	
-
-SharedPtr<Gene>
-Machine::genotype()
-{
-	if (_genotype)
-		return _genotype;
-
-	_genotype = SharedPtr<Gene>(new Gene(_nodes.size()));
-
-	size_t node_id = 0;
-	for (Nodes::iterator n = _nodes.begin(); n != _nodes.end(); ++n, ++node_id) {
-		size_t edge_id = 0;
-		for (Node::Edges::iterator e = (*n)->outgoing_edges().begin();
-				e != (*n)->outgoing_edges().end(); ++e, ++edge_id) {
-			(*_genotype.get())[node_id].push_back(edge_id);
-		}
-	}
-
-	return _genotype;
-}
-
 
 /** Set the MIDI sink to be used for executing MIDI actions.
  *
