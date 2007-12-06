@@ -10,7 +10,7 @@ libmachina_la_SOURCES = \
 	Edge.cpp \
 	Action.cpp \
 	Machine.cpp \
-	MachineMutation.cpp \
+	Mutation.cpp \
 	Loader.cpp \
 	MidiAction.cpp \
 	ActionFactory.cpp \

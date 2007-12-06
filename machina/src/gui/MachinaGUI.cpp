@@ -24,7 +24,7 @@
 #include <libglademm/xml.h>
 #include <redlandmm/Model.hpp>
 #include <machina/Machine.hpp>
-#include <machina/MachineMutation.hpp>
+#include <machina/Mutation.hpp>
 #include <machina/SMFDriver.hpp>
 #include "GladeXml.hpp"
 #include "MachinaGUI.hpp"

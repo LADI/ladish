@@ -11,8 +11,8 @@ libmachinainclude_HEADERS = \
 	Loader.hpp \
 	Machine.hpp \
 	MachineBuilder.hpp \
-	MachineMutation.hpp \
 	MidiAction.hpp \
+	Mutation.hpp \
 	Node.hpp \
 	Recorder.hpp \
 	SMFDriver.hpp \

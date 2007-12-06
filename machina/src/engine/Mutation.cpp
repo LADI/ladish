@@ -19,7 +19,7 @@
 #include <cstdlib>
 #include "machina/Edge.hpp"
 #include "machina/Machine.hpp"
-#include "machina/MachineMutation.hpp"
+#include "machina/Mutation.hpp"
 #include "machina/ActionFactory.hpp"
 
 using namespace std;

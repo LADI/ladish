@@ -193,8 +193,8 @@ MachinaCanvas::build(SharedPtr<Machina::Machine> machine)
 			add_connection(c);
 		}
 	
-		while (Gtk::Main::events_pending())
-			Gtk::Main::iteration(false);
+		//while (Gtk::Main::events_pending())
+		//	Gtk::Main::iteration(false);
 	}
 	
 	arrange();
