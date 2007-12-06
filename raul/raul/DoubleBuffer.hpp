@@ -18,7 +18,6 @@
 #ifndef RAUL_DOUBLE_BUFFER_HPP
 #define RAUL_DOUBLE_BUFFER_HPP
 
-#include <boost/utility.hpp>
 #include <raul/AtomicInt.hpp>
 #include <raul/AtomicPtr.hpp>
 
@@ -34,7 +33,7 @@ namespace Raul {
  * Space:  2*sizeof(T) + sizeof(int) + sizeof(void*)
  */
 template<typename T>
-class DoubleBuffer : public boost::noncopyable {
+class DoubleBuffer {
 public:
 	
 	inline DoubleBuffer(T val)
@@ -43,8 +42,16 @@ public:
 		_vals[0] = val;
 		_read_val = &_vals[0];
 	}
+	
+	inline DoubleBuffer(const DoubleBuffer& copy)
+		: _state(RAUL_DB_READ_WRITE)
+	{
+		T val = copy.get();
+		_vals[0] = val;
+		_read_val = &_vals[0];
+	}
 
-	inline T& get()
+	inline T& get() const
 	{
 		return *_read_val.get();
 	}
