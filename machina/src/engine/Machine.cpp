@@ -38,6 +38,25 @@ Machine::Machine()
 }
 
 	
+/** Copy a Machine.
+ *
+ * Creates a deep copy which is the 'same' machine, but with
+ * fresh state (deactivated, rewound)
+ */
+Machine::Machine(const Machine& copy)
+	: Raul::Stateful() // don't copy RDF ID
+	, _is_activated(false)
+	, _is_finished(false)
+	, _time(0)
+	, _sink(copy._sink)
+{
+	for (Nodes::const_iterator i = copy._nodes.begin(); i != copy._nodes.end(); ++i) {
+		SharedPtr<Machina::Node> node(new Machina::Node(*i->get()));
+		_nodes.push_back(node);
+	}
+}
+
+	
 Machine::~Machine()
 {
 }

@@ -20,6 +20,7 @@
 
 #include <boost/utility.hpp>
 #include <raul/SharedPtr.hpp>
+#include <raul/WeakPtr.hpp>
 #include <raul/List.hpp>
 #include <raul/TimeSlice.hpp>
 #include <redlandmm/Model.hpp> 
@@ -32,9 +33,10 @@ namespace Machina {
 
 /** A (Finite State) Machine.
  */
-class Machine : public Raul::Stateful, public boost::noncopyable {
+class Machine : public Raul::Stateful {
 public:
 	Machine();
+	Machine(const Machine& copy);
 	~Machine();
 	
 	// Main context

@@ -20,6 +20,16 @@
 
 namespace Machina {
 
+SharedPtr<Action>
+ActionFactory::copy(SharedPtr<Action> copy)
+{
+	SharedPtr<MidiAction> ma = PtrCast<MidiAction>(copy);
+	if (ma)
+		return SharedPtr<Action>(new MidiAction(ma->event_size(), ma->event()));
+	else
+		return SharedPtr<Action>();
+}
+
 
 SharedPtr<Action>
 ActionFactory::note_on(unsigned char note)

@@ -58,9 +58,11 @@ private:
 	LearnRequest(SharedPtr<Raul::Maid> maid, SharedPtr<Node> node)
 		: _started(false)
 		, _node(node)
-		, _enter_action(MidiAction::create(maid, 4, NULL))
-		, _exit_action(MidiAction::create(maid, 4, NULL))
+		, _enter_action(new MidiAction(4, NULL))
+		, _exit_action(new MidiAction(4, NULL))
 	{
+		maid->manage(_enter_action);
+		maid->manage(_exit_action);
 	}
 
 	bool                  _started;

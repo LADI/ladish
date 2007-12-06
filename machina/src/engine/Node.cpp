@@ -21,6 +21,7 @@
 #include <redlandmm/Model.hpp>
 #include <machina/Node.hpp>
 #include <machina/Edge.hpp>
+#include <machina/ActionFactory.hpp>
 
 namespace Machina {
 
@@ -32,6 +33,23 @@ Node::Node(BeatCount duration, bool initial)
 	, _enter_time(0)
 	, _duration(duration)
 {
+}
+
+
+Node::Node(const Node& copy)
+	: Raul::Stateful() // don't copy RDF ID
+	, _is_initial(copy._is_initial)
+	, _is_selector(copy._is_selector)
+	, _is_active(false)
+	, _enter_time(0)
+	, _duration(copy._duration)
+	, _enter_action(ActionFactory::copy(copy._enter_action))
+	, _exit_action(ActionFactory::copy(copy._exit_action))
+{
+	for (Edges::const_iterator i = copy._edges.begin(); i != copy._edges.end(); ++i) {
+		SharedPtr<Edge> edge(new Edge(*i->get()));
+		_edges.push_back(edge);
+	}
 }
 
 

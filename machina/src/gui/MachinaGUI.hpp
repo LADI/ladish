@@ -63,16 +63,12 @@ protected:
 	void menu_help_about();
 	void menu_help_help();
 	void arrange();
-	void mutate();
-	void compress();
-	void add_node();
-	void remove_node();
-	void adjust_node();
-	void add_edge();
-	void remove_edge();
-	void adjust_edge();
+	void evolve();
+	void random_mutation(SharedPtr<Machina::Machine> machine);
+	void mutate(SharedPtr<Machina::Machine> machine, unsigned mutation);
 	void zoom(double z);
 	void update_toolbar();
+	bool evolve_callback();
 	bool idle_callback();
 	bool scrolled_window_event(GdkEvent* ev);
 
@@ -84,6 +80,7 @@ protected:
 	void tempo_changed();
 
 	bool _refresh;
+	bool _evolve;
 
 	string _save_uri;
 
@@ -123,6 +120,7 @@ protected:
 	Gtk::ToolButton*       _zoom_normal_button;
 	Gtk::ToolButton*       _zoom_full_button;
 	Gtk::ToolButton*       _arrange_button;
+	Gtk::ToggleToolButton* _evolve_button;
 	Gtk::ToolButton*       _mutate_button;
 	Gtk::ToolButton*       _compress_button;
 	Gtk::ToolButton*       _add_node_button;

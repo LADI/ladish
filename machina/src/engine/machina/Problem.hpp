@@ -12,46 +12,45 @@
  * 
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef MACHINA_MIDIACTION_HPP
-#define MACHINA_MIDIACTION_HPP
+#ifndef MACHINA_PROBLEM_HPP
+#define MACHINA_PROBLEM_HPP
 
-#include <raul/AtomicPtr.hpp>
-#include <raul/TimeSlice.hpp>
-#include "types.hpp"
-#include "Action.hpp"
-
-namespace Raul { class MIDISink; }
+#include <raul/MIDISink.hpp>
 
 namespace Machina {
 
+class Machine;
 
-class MidiAction : public Action {
+
+class Problem {
 public:
-	~MidiAction();
-	
-	MidiAction(size_t               size,
-	           const unsigned char* event);
+	Problem(const std::string& target_midi);
 
-	size_t event_size() { return _size; }
-	byte*  event()      { return _event.get(); }
-
-	bool set_event(size_t size, const byte* event);
-
-	void execute(SharedPtr<Raul::MIDISink> driver, Raul::BeatTime time);
-	
-	virtual void write_state(Redland::Model& model);
+	float fitness(Machine& machine);
 
 private:
+	struct Evaluator : public Raul::MIDISink {
+		Evaluator(Problem& problem) : _problem(problem), _n_notes(0) {
+			for (uint8_t i=0; i < 128; ++i)
+				_note_frequency[i] = 0;
+		}
+		void write_event(Raul::BeatTime time,
+		                 size_t         ev_size,
+		                 const uint8_t* ev) throw (std::logic_error);
+		void compute();
+		Problem& _problem;
+	
+		float  _note_frequency[128];
+		size_t _n_notes;
+	};
 
-	size_t                 _size;
-	const size_t           _max_size;
-	Raul::AtomicPtr<byte>  _event;
+	Evaluator _target;
 };
 
 
 } // namespace Machina
 
-#endif // MACHINA_MIDIACTION_HPP
+#endif // MACHINA_PROBLEM_HPP

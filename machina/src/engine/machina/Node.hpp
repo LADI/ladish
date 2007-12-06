@@ -18,7 +18,6 @@
 #ifndef MACHINA_NODE_HPP
 #define MACHINA_NODE_HPP
 
-#include <boost/utility.hpp>
 #include <raul/SharedPtr.hpp>
 #include <raul/List.hpp>
 #include <raul/Stateful.hpp>
@@ -41,11 +40,12 @@ using Raul::BeatTime;
  * Initial nodes do not have enter actions (since they are entered at
  * an undefined point in time <= 0).
  */
-class Node : public Raul::Stateful, public boost::noncopyable {
+class Node : public Raul::Stateful {
 public:
 	typedef std::string ID;
 
 	Node(BeatCount duration=0, bool initial=false);
+	Node(const Node& copy);
 
 	void set_enter_action(SharedPtr<Action> action);
 	void set_exit_action(SharedPtr<Action> action);

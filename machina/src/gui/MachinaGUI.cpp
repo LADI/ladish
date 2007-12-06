@@ -36,9 +36,10 @@ using namespace Machina;
 
 
 MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
-: _refresh(false),
-  _engine(engine),
-  _maid(new Raul::Maid(32))
+	: _refresh(false)
+	, _evolve(false)
+	, _engine(engine)
+	, _maid(new Raul::Maid(32))
 {
 	_canvas = boost::shared_ptr<MachinaCanvas>(new MachinaCanvas(this, 1600*2, 1200*2));
 
@@ -71,6 +72,7 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	xml->get_widget("zoom_normal_but", _zoom_normal_button);
 	xml->get_widget("zoom_full_but", _zoom_full_button);
 	xml->get_widget("arrange_but", _arrange_button);
+	xml->get_widget("evolve_but", _evolve_button);
 	xml->get_widget("mutate_but", _mutate_button);
 	xml->get_widget("compress_but", _compress_button);
 	xml->get_widget("add_node_but", _add_node_button);
@@ -128,22 +130,24 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	_quantize_spinbutton->signal_changed().connect(
 		sigc::mem_fun(this, &MachinaGUI::quantize_changed));
 	
-	_mutate_button->signal_clicked().connect(
-		sigc::mem_fun(this, &MachinaGUI::mutate));
-	_compress_button->signal_clicked().connect(
-		sigc::mem_fun(this, &MachinaGUI::compress));
-	_add_node_button->signal_clicked().connect(
-		sigc::mem_fun(this, &MachinaGUI::add_node));
-	_remove_node_button->signal_clicked().connect(
-		sigc::mem_fun(this, &MachinaGUI::remove_node));
-	_adjust_node_button->signal_clicked().connect(
-		sigc::mem_fun(this, &MachinaGUI::adjust_node));
-	_add_edge_button->signal_clicked().connect(
-		sigc::mem_fun(this, &MachinaGUI::add_edge));
-	_remove_edge_button->signal_clicked().connect(
-		sigc::mem_fun(this, &MachinaGUI::remove_edge));
-	_adjust_edge_button->signal_clicked().connect(
-		sigc::mem_fun(this, &MachinaGUI::adjust_edge));
+	_evolve_button->signal_clicked().connect(
+		sigc::mem_fun(this, &MachinaGUI::evolve));
+	_mutate_button->signal_clicked().connect(sigc::bind(
+		sigc::mem_fun(this, &MachinaGUI::random_mutation), SharedPtr<Machine>()));
+	_compress_button->signal_clicked().connect(sigc::hide_return(sigc::bind(
+		sigc::mem_fun(this, &MachinaGUI::mutate), SharedPtr<Machine>(), 0)));
+	_add_node_button->signal_clicked().connect(sigc::bind(
+		sigc::mem_fun(this, &MachinaGUI::mutate), SharedPtr<Machine>(), 1));
+	_remove_node_button->signal_clicked().connect(sigc::bind(
+		sigc::mem_fun(this, &MachinaGUI::mutate), SharedPtr<Machine>(), 2));
+	_adjust_node_button->signal_clicked().connect(sigc::bind(
+		sigc::mem_fun(this, &MachinaGUI::mutate), SharedPtr<Machine>(), 3));
+	_add_edge_button->signal_clicked().connect(sigc::bind(
+		sigc::mem_fun(this, &MachinaGUI::mutate), SharedPtr<Machine>(), 4));
+	_remove_edge_button->signal_clicked().connect(sigc::bind(
+		sigc::mem_fun(this, &MachinaGUI::mutate), SharedPtr<Machine>(), 5));
+	_adjust_edge_button->signal_clicked().connect(sigc::bind(
+		sigc::mem_fun(this, &MachinaGUI::mutate), SharedPtr<Machine>(), 6));
 
 	connect_widgets();
 		
@@ -165,12 +169,29 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	// Idle callback to update node states
 	Glib::signal_timeout().connect(sigc::mem_fun(this, &MachinaGUI::idle_callback), 100);
 	
+	// Periodic mutation callback (FIXME: temporary kludge, thread this)
+	Glib::signal_timeout().connect(sigc::mem_fun(this, &MachinaGUI::evolve_callback), 1000);
+	
 	_canvas->build(engine->machine());
 }
 
 
 MachinaGUI::~MachinaGUI() 
 {
+}
+
+
+bool
+MachinaGUI::evolve_callback() 
+{
+	if (_evolve) {
+		// Single greedy mutation
+		SharedPtr<Machine> copy(new Machine(*_engine->machine().get()));
+		random_mutation(copy);
+		_canvas->build(copy);
+	}
+
+	return true;
 }
 
 
@@ -223,73 +244,64 @@ MachinaGUI::arrange()
 
 
 void
-MachinaGUI::mutate()
+MachinaGUI::evolve()
 {
-	switch (rand() % 7) {
-		case 0: compress(); break;
-		case 1: add_node(); break;
-		case 2: remove_node(); break;
-		case 3: adjust_node(); break;
-		case 4: add_edge(); break;
-		case 5: remove_edge(); break;
-		case 6: adjust_edge(); default: break;
+	if (_evolve_button->get_active())
+		_evolve = true;
+	else
+		_evolve = false;
+}
+
+
+void
+MachinaGUI::random_mutation(SharedPtr<Machine> machine)
+{
+	if (!machine)
+		machine = _engine->machine();
+
+	mutate(machine, rand() % 7);
+}
+
+
+void
+MachinaGUI::mutate(SharedPtr<Machine> machine, unsigned mutation)
+{
+	if (!machine)
+		machine = _engine->machine();
+
+	using namespace Mutation;
+
+	switch (mutation) {
+		case 0:
+			Compress::mutate(*machine.get());
+			_canvas->build(machine);
+			break;
+		case 1:
+			AddNode::mutate(*machine.get());
+			_canvas->build(machine);
+			break;
+		case 2:
+			RemoveNode::mutate(*machine.get());
+			_canvas->build(machine);
+			break;
+		case 3:
+			AdjustNode::mutate(*machine.get());
+			idle_callback(); // update nodes
+			break;
+		case 4:
+			AddEdge::mutate(*machine.get());
+			_canvas->build(machine);
+			break;
+		case 5:
+			RemoveEdge::mutate(*machine.get());
+			_canvas->build(machine);
+			break;
+		case 6:
+			AdjustEdge::mutate(*machine.get());
+			_canvas->update_edges();
+			break;
+		default: throw;
 	}
-}
-
-
-void
-MachinaGUI::compress()
-{
-	Mutation::Compress::mutate(*_engine->machine().get());
-	_canvas->build(_engine->machine());
-}
-
-
-void
-MachinaGUI::add_node()
-{
-	Mutation::AddNode::mutate(*_engine->machine().get());
-	_canvas->build(_engine->machine());
-}
-
-
-void
-MachinaGUI::remove_node()
-{
-	Mutation::RemoveNode::mutate(*_engine->machine().get());
-	_canvas->build(_engine->machine());
-}
-
-	
-void
-MachinaGUI::adjust_node()
-{
-	Mutation::AdjustNode::mutate(*_engine->machine().get());
-	idle_callback(); // update nodes
-}
-
-	
-void
-MachinaGUI::add_edge()
-{
-	Mutation::AddEdge::mutate(*_engine->machine().get());
-	_canvas->build(_engine->machine());
-}
-
-
-void
-MachinaGUI::remove_edge()
-{
-	Mutation::RemoveEdge::mutate(*_engine->machine().get());
-	_canvas->build(_engine->machine());
-}
-
-	
-void
-MachinaGUI::adjust_edge()
-{
-	Mutation::AdjustEdge::mutate(*_engine->machine().get());
-	_canvas->update_edges();
 }
 
 

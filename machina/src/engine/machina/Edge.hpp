@@ -31,7 +31,7 @@ namespace Machina {
 
 class Node;
 
-class Edge : public Raul::Stateful, public boost::noncopyable {
+class Edge : public Raul::Stateful {
 public:
 
 	Edge(WeakPtr<Node> tail, SharedPtr<Node> head)

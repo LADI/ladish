@@ -26,6 +26,7 @@ class Action;
 
 
 namespace ActionFactory {
+	SharedPtr<Action> copy(SharedPtr<Action> copy);
 	SharedPtr<Action> note_on(unsigned char note);
 	SharedPtr<Action> note_off(unsigned char note);
 }
