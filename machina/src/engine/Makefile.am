@@ -6,19 +6,20 @@ libmachina_la_CXXFLAGS = @REDLANDMM_CFLAGS@ @RAUL_CFLAGS@ @JACK_CFLAGS@ @GLIBMM_
 libmachina_la_LIBADD   = @REDLANDMM_LIBS@ @RAUL_LIBS@ @JACK_LIBS@   @GLIBMM_LIBS@
 
 libmachina_la_SOURCES = \
-	Node.cpp \
-	Edge.cpp \
 	Action.cpp \
-	Machine.cpp \
-	Mutation.cpp \
-	Loader.cpp \
-	MidiAction.cpp \
 	ActionFactory.cpp \
-	SMFDriver.cpp \
+	Edge.cpp \
 	Engine.cpp \
 	LearnRequest.cpp \
+	Loader.cpp \
+	Machine.cpp \
+	MachineBuilder.cpp \
+	MidiAction.cpp \
+	Mutation.cpp \
+	Node.cpp \
+	Problem.cpp \
 	Recorder.cpp \
-	MachineBuilder.cpp
+	SMFDriver.cpp
 	
 if WITH_JACK
 libmachina_la_SOURCES += JackDriver.cpp jack_compat.h

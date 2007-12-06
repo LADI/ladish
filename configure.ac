@@ -131,6 +131,15 @@ CONFIG_H_PATH="$builddir/config/config.h"
 
 #################### COMMAND LINE PARAMETERS
 
+eugene="no"
+AC_ARG_ENABLE(eugene,
+	[AS_HELP_STRING(--enable-eugene, [Use Eugene for machina evolution (no)])]
+	[eugene="$enableval"])
+if test "$eugene" = "yes"; then
+	PKG_CHECK_MODULES(EUGENE, eugene-core)
+fi
+AC_DEFINE(HAVE_EUGENE, 1, [Has Eugene])
+
 AC_ARG_ENABLE(debug,
 	[AS_HELP_STRING(--enable-debug, [Enable debugging symbols and assertions (no)])],
 	[debug="$enableval"])

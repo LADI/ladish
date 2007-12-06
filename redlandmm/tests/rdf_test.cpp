@@ -1,5 +1,5 @@
-#include <raul/RDFModel.hpp>
-#include <raul/RDFQuery.hpp>
+#include <redlandmm/Model.hpp>
+#include <redlandmm/Query.hpp>
 
 int
 main()

@@ -14,6 +14,7 @@ libmachinainclude_HEADERS = \
 	MidiAction.hpp \
 	Mutation.hpp \
 	Node.hpp \
+	Problem.hpp \
 	Recorder.hpp \
 	SMFDriver.hpp \
 	types.hpp

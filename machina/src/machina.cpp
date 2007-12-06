@@ -17,13 +17,14 @@
 
 #include <iostream>
 #include <signal.h>
-#include "machina/Engine.hpp"
-#include "machina/Machine.hpp"
-#include "machina/Node.hpp"
 #include "machina/Action.hpp"
 #include "machina/Edge.hpp"
+#include "machina/Engine.hpp"
 #include "machina/JackDriver.hpp"
+#include "machina/Machine.hpp"
 #include "machina/MidiAction.hpp"
+#include "machina/Node.hpp"
+#include "machina/Problem.hpp"
 
 using namespace std;
 using namespace Machina;
@@ -52,6 +53,9 @@ main(int argc, char** argv)
 		return -1;
 	}
 	
+	if ( ! Glib::thread_supported())
+		Glib::thread_init();
+	
 	SharedPtr<JackDriver> driver(new JackDriver());
 
 	Redland::World rdf_world;
@@ -65,6 +69,10 @@ main(int argc, char** argv)
 	free(uri);
 */
 	engine.load_machine(argv[1]);
+	
+	// FIXME: temporary hack
+	SharedPtr<Problem> problem(new Problem("./gui/target.mid"));
+	cout << "Fitness: " << problem->fitness(*engine.machine().get()) << endl;
 
 	driver->attach("machina");
 
