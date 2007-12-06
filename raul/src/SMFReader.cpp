@@ -209,7 +209,7 @@ SMFReader::read_event(size_t buf_len, unsigned char* buf, uint32_t* ev_size, uin
 {
 	// - 4 is for the EOT event, which we don't actually want to read
 	//if (feof(_fd) || ftell(_fd) >= HEADER_SIZE + _track_size - 4) {
-	if (feof(_fd)) {
+	if (!_fd || feof(_fd)) {
 		return -1;
 	}
 
@@ -264,13 +264,14 @@ SMFReader::read_event(size_t buf_len, unsigned char* buf, uint32_t* ev_size, uin
 		}
 	}
 
-	if (*ev_size > buf_len) {
+	if (*ev_size > buf_len || *ev_size == 0 || feof(_fd)) {
 		//cerr << "Skipping event" << endl;
 		// Skip event, return 0
 		fseek(_fd, *ev_size - 1, SEEK_CUR);
 		return 0;
 	} else {
 		// Read event, return size
+		assert(!ferror(_fd));
 		fread(buf+1, 1, *ev_size - 1, _fd);
 	
 		if ((buf[0] & 0xF0) == 0x90 && buf[2] == 0) {

@@ -29,9 +29,9 @@ namespace Raul {
  */
 class MIDISink : public Deletable {
 public:
-	virtual void write_event(BeatTime             time,
-	                         size_t               ev_size,
-	                         const unsigned char* ev) throw (std::logic_error) = 0;
+	virtual void write_event(BeatTime       time,
+	                         size_t         ev_size,
+	                         const uint8_t* ev) throw (std::logic_error) = 0;
 };
 
 
