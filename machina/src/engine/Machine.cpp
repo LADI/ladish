@@ -167,9 +167,6 @@ Machine::remove_node(SharedPtr<Node> node)
 void
 Machine::reset(Raul::BeatTime time)
 {
-	for (size_t i=0; i < MAX_ACTIVE_NODES; ++i)
-		_active_nodes.at(i).reset();
-
 	if (!_is_finished) {
 		for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n) {
 			SharedPtr<Node> node = (*n);
@@ -179,6 +176,9 @@ Machine::reset(Raul::BeatTime time)
 
 			assert(! node->is_active());
 		}
+	
+		for (size_t i=0; i < MAX_ACTIVE_NODES; ++i)
+			_active_nodes.at(i).reset();
 	}
 
 	_time = 0;
