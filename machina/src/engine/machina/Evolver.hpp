@@ -47,7 +47,7 @@ private:
 
 	SharedPtr<MachinaGA> _ga;
 	SharedPtr<Problem>   _problem;
-	float                _active_fitness;
+	float                _seed_fitness;
 	Schrodinbit          _improvement;
 };
 

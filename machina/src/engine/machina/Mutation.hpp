@@ -39,6 +39,7 @@ struct Compress   SUPER { void mutate(Machine& machine); };
 struct AddNode    SUPER { void mutate(Machine& machine); };
 struct RemoveNode SUPER { void mutate(Machine& machine); };
 struct AdjustNode SUPER { void mutate(Machine& machine); };
+struct SwapNodes  SUPER { void mutate(Machine& machine); };
 struct AddEdge    SUPER { void mutate(Machine& machine); };
 struct RemoveEdge SUPER { void mutate(Machine& machine); };
 struct AdjustEdge SUPER { void mutate(Machine& machine); };

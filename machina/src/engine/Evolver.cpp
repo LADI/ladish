@@ -32,28 +32,31 @@ namespace Machina {
 
 Evolver::Evolver(const string& target_midi, SharedPtr<Machine> seed)
 	: _problem(new Problem(target_midi, seed))
-	, _active_fitness(-FLT_MAX)
+	, _seed_fitness(-FLT_MAX)
 {	
 	SharedPtr<Eugene::HybridMutation<Machine> > m(new HybridMutation<Machine>());
 	
-	m->append_mutation(1/7.0f, boost::shared_ptr< Eugene::Mutation<Machine> >(
+	m->append_mutation(1/6.0f, boost::shared_ptr< Eugene::Mutation<Machine> >(
 			new Mutation::Compress()));
-	m->append_mutation(1/7.0f, boost::shared_ptr< Eugene::Mutation<Machine> >(
+	m->append_mutation(1/6.0f, boost::shared_ptr< Eugene::Mutation<Machine> >(
 			new Mutation::AddNode()));
-	m->append_mutation(1/7.0f, boost::shared_ptr< Eugene::Mutation<Machine> >(
-			new Mutation::RemoveNode()));
-	m->append_mutation(1/7.0f, boost::shared_ptr< Eugene::Mutation<Machine> >(
-			new Mutation::AdjustNode()));
-	m->append_mutation(1/7.0f, boost::shared_ptr< Eugene::Mutation<Machine> >(
+	//m->append_mutation(1/6.0f, boost::shared_ptr< Eugene::Mutation<Machine> >(
+	//		new Mutation::RemoveNode()));
+	//m->append_mutation(1/6.0f, boost::shared_ptr< Eugene::Mutation<Machine> >(
+	//		new Mutation::AdjustNode()));
+	m->append_mutation(1/6.0f, boost::shared_ptr< Eugene::Mutation<Machine> >(
+			new Mutation::SwapNodes()));
+	m->append_mutation(1/6.0f, boost::shared_ptr< Eugene::Mutation<Machine> >(
 			new Mutation::AddEdge()));
-	m->append_mutation(1/7.0f, boost::shared_ptr< Eugene::Mutation<Machine> >(
+	m->append_mutation(1/6.0f, boost::shared_ptr< Eugene::Mutation<Machine> >(
 			new Mutation::RemoveEdge()));
-	m->append_mutation(1/7.0f, boost::shared_ptr< Eugene::Mutation<Machine> >(
+	m->append_mutation(1/6.0f, boost::shared_ptr< Eugene::Mutation<Machine> >(
 			new Mutation::AdjustEdge()));
 
 	boost::shared_ptr< Selection<Machine> > s(new TournamentSelection<Machine>(_problem, 3, 0.8));
 	boost::shared_ptr< Crossover<Machine> > crossover;
-	_ga = SharedPtr<MachinaGA>(new MachinaGA(_problem, s, crossover, m, 10, 10, 2, 1.0, 0.0));
+	_ga = SharedPtr<MachinaGA>(new MachinaGA(_problem, s, crossover, m,
+				20, 20, 2, 1.0, 0.0));
 }
 	
 
@@ -63,7 +66,7 @@ Evolver::seed(SharedPtr<Machine> parent)
 	/*_best = SharedPtr<Machine>(new Machine(*parent.get()));
 	_best_fitness = _problem->fitness(*_best.get());*/
 	_problem->seed(parent);
-	_active_fitness = _problem->fitness(*parent.get());
+	_seed_fitness = _problem->fitness(*parent.get());
 }
 	
 
@@ -72,18 +75,31 @@ Evolver::_run()
 {
 	float old_best = _ga->best_fitness();
 
+	//cout << "ORIGINAL BEST: " << _ga->best_fitness() << endl;
+
+	_improvement = true;
+
 	while (!_exit_flag) {
-		cout << "{";
+		//cout << "{" << endl;
+		_problem->clear_fitness_cache();
 		_ga->iteration();
 
 		float new_best = _ga->best_fitness();
-		if (new_best > old_best) {
+	
+		/*cout << _problem->fitness_less(old_best, *_ga->best().get()) << endl;
+		cout << "best: " << _ga->best().get() << endl;
+		cout << "best fitness: " << _problem->fitness(*_ga->best().get()) << endl;
+		cout << "old best: " << old_best << endl;
+		cout << "new best: " << new_best << endl;*/
+		cout << "generation best: " << new_best << endl;
+
+		if (_problem->fitness_less_than(old_best, new_best)) {
 			_improvement = true;
 			old_best = new_best;
-			cout << "NEW BEST: " << new_best << endl;
+			cout << "*** NEW BEST: " << new_best << endl;
 		}
 		
-		cout << "}" << endl;
+		//cout << "}" << endl;
 	}
 }
 

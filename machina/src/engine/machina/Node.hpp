@@ -44,7 +44,7 @@ class Node : public Raul::Stateful {
 public:
 	typedef std::string ID;
 
-	Node(BeatCount duration=0, bool initial=false);
+	Node(BeatCount duration=1.0, bool initial=false);
 	Node(const Node& copy);
 
 	void set_enter_action(SharedPtr<Action> action);
@@ -55,6 +55,8 @@ public:
 
 	void enter(SharedPtr<Raul::MIDISink> driver, BeatTime time);
 	void exit(SharedPtr<Raul::MIDISink> driver, BeatTime time);
+
+	void edges_changed();
 
 	void add_edge(SharedPtr<Edge> edge);
 	void remove_edge(SharedPtr<Edge> edge);
@@ -82,6 +84,8 @@ public:
 	SharedPtr<Edge> random_edge();
 	
 private:
+	Node& operator=(const Node& other); // undefined
+
 	Schrodinbit       _changed;
 	bool              _is_initial;
 	bool              _is_selector;

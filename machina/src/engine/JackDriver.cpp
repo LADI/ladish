@@ -100,6 +100,9 @@ JackDriver::detach()
 void
 JackDriver::set_machine(SharedPtr<Machine> machine)
 {
+	if (machine == _machine)
+		return;
+
 	cout << "DRIVER MACHINE: " << machine.get() << endl;
 	SharedPtr<Machine> last_machine = _last_machine; // Keep a reference 
 	_machine_changed.reset(0);
@@ -238,10 +241,10 @@ JackDriver::on_process(jack_nframes_t nframes)
 	/* Take a reference to machine here and use only it during the process
 	 * cycle so _machine can be switched with set_machine during a cycle. */
 	SharedPtr<Machine> machine = _machine;
-	machine->set_sink(shared_from_this());
 
 	// Machine was switched since last cycle, finalize old machine.
 	if (machine != _last_machine) {
+		cout << "MACHINE CHANGED!" << endl;
 		if (_last_machine) {
 			assert(!_last_machine.unique()); // Realtime, can't delete
 			_last_machine->set_sink(shared_from_this());
@@ -251,12 +254,16 @@ JackDriver::on_process(jack_nframes_t nframes)
 		_cycle_time.set_start(0);
 		_machine_changed.post(); // Signal we're done with it
 	}
-
+	
+	if (!machine) {
+		_last_machine = machine;
+		return;
+	}
+	
+	machine->set_sink(shared_from_this());
+	
 	if (_recording.get())
 		_record_time += nframes;
-	
-	if (!machine)
-		return;
 
 	if (_stop.pending())
 		machine->reset(_cycle_time.start_beats());
@@ -302,11 +309,12 @@ JackDriver::on_process(jack_nframes_t nframes)
 		}
 	}
 
+end:
+
 	/* Remember the last machine run, in case a switch happens and
 	 * we need to finalize it next cycle. */
 	_last_machine = machine;
 	
-end:
 	if (_stop.pending()) {
 		_cycle_time.set_start(0);
 		_stop.finish();

@@ -76,18 +76,32 @@ Node::random_edge()
 
 
 void
+Node::edges_changed()
+{
+	if ( ! _is_selector)
+		return;
+
+	// Normalize edge probabilities if we're a selector
+	double prob_sum = 0;
+	
+	for (Edges::iterator i = _edges.begin(); i != _edges.end(); ++i)
+		prob_sum += (*i)->probability();
+
+	for (Edges::iterator i = _edges.begin(); i != _edges.end(); ++i)
+		(*i)->set_probability((*i)->probability() / prob_sum);
+	
+	_changed = true;
+}
+
+
+void
 Node::set_selector(bool yn)
 {
 	_is_selector = yn;
 
-	if (yn) {
-		double prob_sum = 0;
-		for (Edges::iterator i = _edges.begin(); i != _edges.end(); ++i)
-			prob_sum += (*i)->probability();
+	if (yn)
+		edges_changed();
 	
-		for (Edges::iterator i = _edges.begin(); i != _edges.end(); ++i)
-			(*i)->set_probability((*i)->probability() / prob_sum);
-	}
 	_changed = true;
 }
 
@@ -140,8 +154,12 @@ void
 Node::add_edge(SharedPtr<Edge> edge)
 {
 	assert(edge->tail().lock().get() == this);
+	for (Edges::const_iterator i = _edges.begin(); i != _edges.end(); ++i)
+		if ((*i)->head() == edge->head())
+			return;
 	
 	_edges.push_back(edge);
+	edges_changed();
 }
 
 
@@ -149,6 +167,7 @@ void
 Node::remove_edge(SharedPtr<Edge> edge)
 {
 	_edges.erase(_edges.find(edge));
+	edges_changed();
 }
 
 	
@@ -175,6 +194,8 @@ Node::remove_edges_to(SharedPtr<Node> node)
 
 		i = next;
 	}
+	
+	edges_changed();
 }
 
 

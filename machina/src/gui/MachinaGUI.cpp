@@ -258,6 +258,7 @@ MachinaGUI::evolve_toggled()
 		_evolver = SharedPtr<Evolver>(new Evolver("target.mid", _engine->machine()));
 		_evolve = true;
 		stop_clicked();
+		_engine->driver()->set_machine(SharedPtr<Machine>());
 		_evolver->start();
 	} else {
 		_evolver->stop();
