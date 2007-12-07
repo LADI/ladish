@@ -35,7 +35,8 @@ public:
 		: _driver(driver)
 		, _rdf_world(rdf_world)
 		, _loader(_rdf_world)
-	{ }
+	{
+	}
 	
 	Redland::World& rdf_world() { return _rdf_world; }
 
@@ -51,7 +52,7 @@ public:
 
 private:
 	SharedPtr<Driver> _driver;
-	Redland::World& _rdf_world;
+	Redland::World&   _rdf_world;
 	Loader            _loader;
 };
 

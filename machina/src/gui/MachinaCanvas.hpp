@@ -40,7 +40,7 @@ public:
 	void disconnect_node(SharedPtr<NodeView> port1,
 	                     SharedPtr<NodeView> port2);
 
-	void build(SharedPtr<Machina::Machine> machine);
+	void build(SharedPtr<const Machina::Machine> machine, bool show_labels);
 	void update_edges();
 
 	ArtVpathDash* selector_dash() { return _selector_dash; }

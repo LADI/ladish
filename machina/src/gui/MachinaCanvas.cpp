@@ -155,10 +155,13 @@ MachinaCanvas::create_node_view(SharedPtr<Machina::Node> node)
 
 
 void
-MachinaCanvas::build(SharedPtr<Machina::Machine> machine)
+MachinaCanvas::build(SharedPtr<const Machina::Machine> machine, bool show_labels)
 {
+	cout << "BUILDING " << machine.get() << endl;
+
 	destroy();
 	_last_clicked.reset();
+	assert(_items.empty());
 
 	if (!machine)
 		return;
@@ -192,9 +195,6 @@ MachinaCanvas::build(SharedPtr<Machina::Machine> machine)
 			head_view->add_connection(c);
 			add_connection(c);
 		}
-	
-		//while (Gtk::Main::events_pending())
-		//	Gtk::Main::iteration(false);
 	}
 	
 	arrange();

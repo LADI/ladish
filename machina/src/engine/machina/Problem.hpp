@@ -19,21 +19,28 @@
 #define MACHINA_PROBLEM_HPP
 
 #include <raul/MIDISink.hpp>
+#include <eugene/core/Problem.hpp>
+#include <machina/Machine.hpp>
 
 namespace Machina {
 
-class Machine;
 
-
-class Problem {
+class Problem : public Eugene::Problem<Machine> {
 public:
-	Problem(const std::string& target_midi);
+	Problem(const std::string& target_midi, SharedPtr<Machine> seed = SharedPtr<Machine>());
 
-	float fitness(Machine& machine);
+	void seed(SharedPtr<Machine> parent) { _seed = parent; }
+
+	float fitness(const Machine& machine) const;
+	
+	bool fitness_less_than(float a, float b) const { return a < b; }
+	
+	boost::shared_ptr<Population>
+	initial_population(size_t gene_size, size_t pop_size) const;
 
 private:
 	struct Evaluator : public Raul::MIDISink {
-		Evaluator(Problem& problem) : _problem(problem), _n_notes(0) {
+		Evaluator(const Problem& problem) : _problem(problem), _n_notes(0) {
 			for (uint8_t i=0; i < 128; ++i)
 				_note_frequency[i] = 0;
 		}
@@ -41,13 +48,14 @@ private:
 		                 size_t         ev_size,
 		                 const uint8_t* ev) throw (std::logic_error);
 		void compute();
-		Problem& _problem;
+		const Problem& _problem;
 	
 		float  _note_frequency[128];
 		size_t _n_notes;
 	};
 
-	Evaluator _target;
+	Evaluator          _target;
+	SharedPtr<Machine> _seed;
 };
 
 

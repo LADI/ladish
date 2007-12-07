@@ -20,14 +20,16 @@
 #include <machina/Machine.hpp>
 #include <raul/SMFReader.hpp>
 #include <raul/midi_events.h>
+#include <eugene/core/Problem.hpp>
 
 using namespace std;
 
 namespace Machina {
 
 	
-Problem::Problem(const std::string& target_midi)
+Problem::Problem(const std::string& target_midi, SharedPtr<Machine> seed)
 	: _target(*this)
+	, _seed(new Machine(*seed.get()))
 {
 	Raul::SMFReader smf;
 	const bool opened = smf.open(target_midi);
@@ -51,33 +53,40 @@ Problem::Problem(const std::string& target_midi)
 
 
 float
-Problem::fitness(Machine& machine)
+Problem::fitness(const Machine& const_machine) const
 {
+	// kluuudge
+	Machine& machine = const_cast<Machine&>(const_machine);
+	
 	SharedPtr<Evaluator> eval(new Evaluator(*this));
 
 	machine.reset(0.0f);
+	machine.deactivate();
+	machine.activate();
 	machine.set_sink(eval);
 
 	// FIXME: timing stuff here isn't right at all...
 	
-	unsigned ppqn = 19200;
-	Raul::TimeSlice time(ppqn, 120);
+	static const unsigned ppqn = 19200;
+	Raul::TimeSlice time(1.0/(double)ppqn, 120);
 	time.set_start(0);
-	time.set_length(ppqn);
+	time.set_length(2*ppqn);
 
 	while (time.start_ticks() < _target._n_notes * ppqn) {
 		machine.run(time);
-		time.set_start(time.start_ticks() + ppqn);
+		time.set_start(time.start_ticks() + 2*ppqn);
 	}
 
 	eval->compute();
 
 	float f = 0;
 
-	// Punish for frequency differences.
-	// Optimal fitness = 0 (max)
-	for (uint8_t i=0; i < 128; ++i)
-		f -= fabs(_target._note_frequency[i] - eval->_note_frequency[i]);
+	for (uint8_t i=0; i < 128; ++i) {
+		if (eval->_note_frequency[i] <= _target._note_frequency[i])
+			f += eval->_note_frequency[i];
+		else
+			f -= _target._note_frequency[i] - eval->_note_frequency[i];
+	}
 
 	return f;
 }
@@ -99,12 +108,24 @@ Problem::Evaluator::write_event(Raul::BeatTime time,
 void
 Problem::Evaluator::compute()
 {
-	for (uint8_t i=0; i < 128; ++i) {
+	/*for (uint8_t i=0; i < 128; ++i) {
 		if (_note_frequency[i] > 0) {
 			_note_frequency[i] /= (float)_n_notes;
 			//cout << (int)i << ":\t" << _note_frequency[i] << endl;
 		}
-	}
+	}*/
+}
+	
+
+boost::shared_ptr<Problem::Population>
+Problem::initial_population(size_t gene_size, size_t pop_size) const
+{
+	boost::shared_ptr<Population> ret(new std::vector<Machine>());
+
+	for (size_t i = 0; i < pop_size; ++i)
+		ret->push_back(Machine(*_seed.get()));
+
+	return ret;
 }
 
 

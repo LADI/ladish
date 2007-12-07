@@ -15,6 +15,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include CONFIG_H_PATH
+
 #include <cmath>
 #include <sstream>
 #include <fstream>
@@ -31,6 +33,10 @@
 #include "MachinaCanvas.hpp"
 #include "NodeView.hpp"
 #include "EdgeView.hpp"
+
+#ifdef HAVE_EUGENE
+#include <machina/Evolver.hpp>
+#endif
 
 using namespace Machina;
 
@@ -130,8 +136,6 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	_quantize_spinbutton->signal_changed().connect(
 		sigc::mem_fun(this, &MachinaGUI::quantize_changed));
 	
-	_evolve_button->signal_clicked().connect(
-		sigc::mem_fun(this, &MachinaGUI::evolve));
 	_mutate_button->signal_clicked().connect(sigc::bind(
 		sigc::mem_fun(this, &MachinaGUI::random_mutation), SharedPtr<Machine>()));
 	_compress_button->signal_clicked().connect(sigc::hide_return(sigc::bind(
@@ -169,10 +173,14 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	// Idle callback to update node states
 	Glib::signal_timeout().connect(sigc::mem_fun(this, &MachinaGUI::idle_callback), 100);
 	
-	// Periodic mutation callback (FIXME: temporary kludge, thread this)
+#ifdef HAVE_EUGENE
+	_evolve_button->signal_clicked().connect(sigc::mem_fun(this, &MachinaGUI::evolve_toggled));
 	Glib::signal_timeout().connect(sigc::mem_fun(this, &MachinaGUI::evolve_callback), 1000);
+#else
+	_evolve_button->hide();
+#endif
 	
-	_canvas->build(engine->machine());
+	_canvas->build(engine->machine(), _menu_view_labels->get_active());
 }
 
 
@@ -185,10 +193,10 @@ bool
 MachinaGUI::evolve_callback() 
 {
 	if (_evolve) {
-		// Single greedy mutation
-		SharedPtr<Machine> copy(new Machine(*_engine->machine().get()));
-		random_mutation(copy);
-		_canvas->build(copy);
+		if (_evolver->improvement()) {
+			//_engine->driver()->set_machine(_evolver->best());
+			_canvas->build(_evolver->best(), _menu_view_labels->get_active());
+		}
 	}
 
 	return true;
@@ -244,12 +252,22 @@ MachinaGUI::arrange()
 
 
 void
-MachinaGUI::evolve()
+MachinaGUI::evolve_toggled()
 {
-	if (_evolve_button->get_active())
+	if (_evolve_button->get_active()) {
+		_evolver = SharedPtr<Evolver>(new Evolver("target.mid", _engine->machine()));
 		_evolve = true;
-	else
+		stop_clicked();
+		_evolver->start();
+	} else {
+		_evolver->stop();
 		_evolve = false;
+		SharedPtr<Machine> new_machine = SharedPtr<Machine>(new Machine(*_evolver->best()));
+		_engine->driver()->set_machine(new_machine);
+		_canvas->build(new_machine, _menu_view_labels->get_active());
+		new_machine->activate();
+		_engine->driver()->activate();
+	}
 }
 
 
@@ -259,7 +277,7 @@ MachinaGUI::random_mutation(SharedPtr<Machine> machine)
 	if (!machine)
 		machine = _engine->machine();
 
-	mutate(machine, rand() % 7);
+	mutate(machine, machine->nodes().size() < 2 ? 1 : rand() % 7);
 }
 
 
@@ -273,31 +291,31 @@ MachinaGUI::mutate(SharedPtr<Machine> machine, unsigned mutation)
 
 	switch (mutation) {
 		case 0:
-			Compress::mutate(*machine.get());
-			_canvas->build(machine);
+			Compress().mutate(*machine.get());
+			_canvas->build(machine, _menu_view_labels->get_active());
 			break;
 		case 1:
-			AddNode::mutate(*machine.get());
-			_canvas->build(machine);
+			AddNode().mutate(*machine.get());
+			_canvas->build(machine, _menu_view_labels->get_active());
 			break;
 		case 2:
-			RemoveNode::mutate(*machine.get());
-			_canvas->build(machine);
+			RemoveNode().mutate(*machine.get());
+			_canvas->build(machine, _menu_view_labels->get_active());
 			break;
 		case 3:
-			AdjustNode::mutate(*machine.get());
+			AdjustNode().mutate(*machine.get());
 			idle_callback(); // update nodes
 			break;
 		case 4:
-			AddEdge::mutate(*machine.get());
-			_canvas->build(machine);
+			AddEdge().mutate(*machine.get());
+			_canvas->build(machine, _menu_view_labels->get_active());
 			break;
 		case 5:
-			RemoveEdge::mutate(*machine.get());
-			_canvas->build(machine);
+			RemoveEdge().mutate(*machine.get());
+			_canvas->build(machine, _menu_view_labels->get_active());
 			break;
 		case 6:
-			AdjustEdge::mutate(*machine.get());
+			AdjustEdge().mutate(*machine.get());
 			_canvas->update_edges();
 			break;
 		default: throw;
@@ -372,7 +390,7 @@ MachinaGUI::menu_file_open()
 		SharedPtr<Machina::Machine> new_machine = _engine->import_machine(dialog.get_uri());
 		if (new_machine) {
 			_canvas->destroy();
-			_canvas->build(new_machine);
+			_canvas->build(new_machine, _menu_view_labels->get_active());
 			_save_uri = dialog.get_uri();
 		}
 	}
@@ -483,7 +501,7 @@ MachinaGUI::menu_import_midi()
 			dialog.hide();
 			machine->activate();
 			machine->reset(machine->time());
-			_canvas->build(machine);
+			_canvas->build(machine, _menu_view_labels->get_active());
 			_engine->driver()->set_machine(machine);
 		} else {
 			Gtk::MessageDialog msg_dialog(dialog, "Error loading MIDI file",
@@ -588,7 +606,7 @@ MachinaGUI::record_toggled()
 		_engine->driver()->start_record();
 	} else if (_engine->driver()->recording()) {
 		_engine->driver()->finish_record();
-		_canvas->build(_engine->machine());
+		_canvas->build(_engine->machine(), _menu_view_labels->get_active());
 		update_toolbar();
 	}
 }
@@ -597,12 +615,15 @@ MachinaGUI::record_toggled()
 void
 MachinaGUI::stop_clicked()
 {
+	_play_button->set_active(false);
+
 	if (_engine->driver()->recording()) {
 		_engine->driver()->stop();
-		_canvas->build(_engine->machine());
-		update_toolbar();
+		_engine->machine()->deactivate();
+		_canvas->build(_engine->machine(), _menu_view_labels->get_active());
 	} else {
 		_engine->driver()->stop();
+		_engine->machine()->deactivate();
 	}
 
 	update_toolbar();

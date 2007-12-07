@@ -44,8 +44,7 @@ MidiAction::MidiAction(size_t      size,
 
 MidiAction::~MidiAction()
 {
-	if (_event.get())
-		delete _event.get();
+	delete[] _event.get();
 }
 
 

@@ -16,9 +16,10 @@
  */
 
 #include <glibmm/ustring.h>
-#include "machina/Loader.hpp"
 #include "machina/Engine.hpp"
 #include "machina/JackDriver.hpp"
+#include "machina/Loader.hpp"
+#include "machina/Machine.hpp"
 #include "machina/SMFDriver.hpp"
 
 namespace Machina {

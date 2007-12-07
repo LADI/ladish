@@ -100,6 +100,7 @@ JackDriver::detach()
 void
 JackDriver::set_machine(SharedPtr<Machine> machine)
 {
+	cout << "DRIVER MACHINE: " << machine.get() << endl;
 	SharedPtr<Machine> last_machine = _last_machine; // Keep a reference 
 	_machine_changed.reset(0);
 	assert(!last_machine.unique());
@@ -320,6 +321,7 @@ JackDriver::stop()
 		finish_record();
 
 	_stop(); // waits
+	_machine->deactivate();
 }
 
 

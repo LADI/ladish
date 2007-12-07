@@ -15,36 +15,43 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef MACHINA_MACHINE_MUTATION_HPP
-#define MACHINA_MACHINE_MUTATION_HPP
+#ifndef MACHINA_EVOLVER_HPP
+#define MACHINA_EVOLVER_HPP
 
-#include CONFIG_H_PATH
+#include <raul/SharedPtr.hpp>
+#include <raul/Thread.hpp>
+#include <eugene/core/GAImpl.hpp>
+#include "Schrodinbit.hpp"
 
-#if HAVE_EUGENE
-	#include <eugene/core/Mutation.hpp>
-	#define SUPER : public Eugene::Mutation<Machine>
-#else
-	#define SUPER
-#endif
+namespace Eugene { template <typename G> class HybridMutation; }
 
 namespace Machina {
 
 class Machine;
+class Problem;
 
-namespace Mutation {
 
-struct Mutation { virtual void mutate(Machine& machine) = 0; };
+class Evolver : public Raul::Thread {
+public:
+	Evolver(const string& target_midi, SharedPtr<Machine> seed);
+	
+	void seed(SharedPtr<Machine> parent);
+	bool improvement() { return _improvement; }
 
-struct Compress   SUPER { void mutate(Machine& machine); };
-struct AddNode    SUPER { void mutate(Machine& machine); };
-struct RemoveNode SUPER { void mutate(Machine& machine); };
-struct AdjustNode SUPER { void mutate(Machine& machine); };
-struct AddEdge    SUPER { void mutate(Machine& machine); };
-struct RemoveEdge SUPER { void mutate(Machine& machine); };
-struct AdjustEdge SUPER { void mutate(Machine& machine); };
+	SharedPtr<const Machine> best() { return _ga->best(); }
+	
+	typedef Eugene::GAImpl<Machine> MachinaGA;
+	
+private:
+	void _run();
 
-} // namespace Mutation
+	SharedPtr<MachinaGA> _ga;
+	SharedPtr<Problem>   _problem;
+	float                _active_fitness;
+	Schrodinbit          _improvement;
+};
+
 
 } // namespace Machina
 
-#endif // MACHINA_MACHINE_MUTATION_HPP
+#endif // MACHINA_EVOLVER_HPP

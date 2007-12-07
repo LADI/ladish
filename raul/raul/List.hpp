@@ -103,7 +103,7 @@ public:
 		const_iterator(const List<T>* const list);
 		const_iterator(const iterator& i)
 		: _list(i._list), _listnode(i._listnode) {}
-	
+
 		inline const T&        operator*();
 		inline const T*        operator->();
 		inline const_iterator& operator++();
@@ -115,7 +115,7 @@ public:
 		friend class List<T>;
 		
 	private:
-		const List<T>* const          _list;
+		const List<T>*                _list;
 		const typename List<T>::Node* _listnode;
 	};
 

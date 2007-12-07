@@ -18,6 +18,7 @@
 #ifndef MACHINA_MACHINE_HPP
 #define MACHINA_MACHINE_HPP
 
+#include <vector>
 #include <boost/utility.hpp>
 #include <raul/SharedPtr.hpp>
 #include <raul/WeakPtr.hpp>
@@ -37,7 +38,11 @@ class Machine : public Raul::Stateful {
 public:
 	Machine();
 	Machine(const Machine& copy);
-	~Machine();
+
+	Machine& operator=(const Machine& other);
+
+	// Kluge to appease Eugene
+	bool operator==(const Machine& other) { return false; }
 	
 	// Main context
 	void activate()   { _is_activated = true; }
@@ -64,7 +69,8 @@ public:
 	void clear_pending_learn()              { _pending_learn.reset(); }
 
 	typedef Raul::List< SharedPtr<Node> > Nodes;
-	Nodes& nodes() { return _nodes; }
+	Nodes&       nodes()       { return _nodes; }
+	const Nodes& nodes() const { return _nodes; }
 
 	SharedPtr<Node> random_node();
 	SharedPtr<Edge> random_edge();
@@ -75,11 +81,11 @@ private:
 	
 	// Audio context
 	SharedPtr<Node> earliest_node() const;
-	bool enter_node(const SharedPtr<Raul::MIDISink> sink, const SharedPtr<Node> node);
-	void exit_node(const SharedPtr<Raul::MIDISink> sink, const SharedPtr<Node>);
+	bool enter_node(SharedPtr<Raul::MIDISink> sink, SharedPtr<Node> node);
+	void exit_node(SharedPtr<Raul::MIDISink> sink, SharedPtr<Node>);
 
 	static const size_t MAX_ACTIVE_NODES = 128;
-	SharedPtr<Node> _active_nodes[MAX_ACTIVE_NODES];
+	std::vector< SharedPtr<Node> > _active_nodes;
 
 	bool                    _is_activated;
 	bool                    _is_finished;

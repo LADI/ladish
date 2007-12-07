@@ -26,7 +26,7 @@
 
 using namespace std;
 
-namespace Machina { class Machine; class Engine; }
+namespace Machina { class Machine; class Engine; class Evolver; }
 
 class MachinaCanvas;
 
@@ -63,7 +63,7 @@ protected:
 	void menu_help_about();
 	void menu_help_help();
 	void arrange();
-	void evolve();
+	void evolve_toggled();
 	void random_mutation(SharedPtr<Machina::Machine> machine);
 	void mutate(SharedPtr<Machina::Machine> machine, unsigned mutation);
 	void zoom(double z);
@@ -87,7 +87,8 @@ protected:
 	boost::shared_ptr<MachinaCanvas>   _canvas;
 	boost::shared_ptr<Machina::Engine> _engine;
 	
-	SharedPtr<Raul::Maid> _maid;
+	SharedPtr<Raul::Maid>       _maid;
+	SharedPtr<Machina::Evolver> _evolver;
 
 	Gtk::Main* _gtk_main;
 	

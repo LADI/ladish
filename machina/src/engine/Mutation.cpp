@@ -31,6 +31,8 @@ namespace Mutation {
 void
 Compress::mutate(Machine& machine)
 {
+	//cout << "COMPRESS" << endl;
+
 	// Trim disconnected nodes
 	for (Machine::Nodes::iterator i = machine.nodes().begin(); i != machine.nodes().end() ;) {
 		Machine::Nodes::iterator next = i;
@@ -47,6 +49,8 @@ Compress::mutate(Machine& machine)
 void
 AddNode::mutate(Machine& machine)
 {
+	//cout << "ADD NODE" << endl;
+
 	// Create random node
 	SharedPtr<Node> node(new Node(1.0));
 	uint8_t note = rand() % 128;
@@ -64,6 +68,8 @@ AddNode::mutate(Machine& machine)
 void
 RemoveNode::mutate(Machine& machine)
 {
+	//cout << "REMOVE NODE" << endl;
+
 	SharedPtr<Node> node = machine.random_node();
 	machine.remove_node(node);
 }
@@ -72,6 +78,8 @@ RemoveNode::mutate(Machine& machine)
 void
 AdjustNode::mutate(Machine& machine)
 {
+	//cout << "ADJUST NODE" << endl;
+
 	SharedPtr<Node> node = machine.random_node();
 	if (node) {
 		SharedPtr<MidiAction> enter_action = PtrCast<MidiAction>(node->enter_action());
@@ -89,6 +97,8 @@ AdjustNode::mutate(Machine& machine)
 void
 AddEdge::mutate(Machine& machine)
 {
+	//cout << "ADJUST EDGE" << endl;
+
 	SharedPtr<Node> tail = machine.random_node();
 	SharedPtr<Node> head = machine.random_node();
 
@@ -100,6 +110,8 @@ AddEdge::mutate(Machine& machine)
 void
 RemoveEdge::mutate(Machine& machine)
 {
+	//cout << "REMOVE EDGE" << endl;
+
 	SharedPtr<Node> tail = machine.random_node();
 	if (tail)
 		tail->remove_edge(tail->random_edge());
@@ -109,6 +121,8 @@ RemoveEdge::mutate(Machine& machine)
 void
 AdjustEdge::mutate(Machine& machine)
 {
+	//cout << "ADJUST EDGE" << endl;
+
 	SharedPtr<Edge> edge = machine.random_edge();
 	if (edge)
 		edge->set_probability(rand() / (float)RAND_MAX);
