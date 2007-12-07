@@ -72,9 +72,9 @@ Evolver::_run()
 {
 	float old_best = _ga->best_fitness();
 
-	while (true) {
+	while (!_exit_flag) {
+		cout << "{";
 		_ga->iteration();
-		//cout << "I" << endl;
 
 		float new_best = _ga->best_fitness();
 		if (new_best > old_best) {
@@ -82,6 +82,8 @@ Evolver::_run()
 			old_best = new_best;
 			cout << "NEW BEST: " << new_best << endl;
 		}
+		
+		cout << "}" << endl;
 	}
 }
 

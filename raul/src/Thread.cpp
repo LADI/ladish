@@ -30,6 +30,7 @@ pthread_key_t  Thread::_thread_key;
 Thread::Thread(const string& name)
 	: _context(0)
 	, _name(name)
+	, _exit_flag(false)
 	, _pthread_exists(false)
 {
 	pthread_once(&_thread_key_once, thread_key_alloc);
@@ -41,6 +42,7 @@ Thread::Thread(const string& name)
 Thread::Thread(pthread_t thread, const string& name)
 	: _context(0)
 	, _name(name)
+	, _exit_flag(false)
 	, _pthread_exists(true)
 	, _pthread(thread)
 {
@@ -86,7 +88,8 @@ void
 Thread::stop()
 {
 	if (_pthread_exists) {
-		pthread_cancel(_pthread);
+		_exit_flag = true;
+		//pthread_cancel(_pthread);
 		pthread_join(_pthread, NULL);
 		_pthread_exists = false;
 		cout << "[" << _name << " Thread] Exiting." << endl;

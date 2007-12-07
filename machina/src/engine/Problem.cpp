@@ -49,7 +49,8 @@ Problem::Problem(const std::string& target_midi, SharedPtr<Machine> seed)
 		}
 	}
 
-	cout << "Target length: " << _target._length << endl;
+	cout << "Target notes: " << _target._n_notes << endl;
+	cout << "Target duration: " << _target._length << endl;
 
 	_target.compute();
 }
@@ -58,7 +59,7 @@ Problem::Problem(const std::string& target_midi, SharedPtr<Machine> seed)
 float
 Problem::fitness(const Machine& const_machine) const
 {
-	//cout << "f";
+	cout << "(";
 
 	// kluuudge
 	Machine& machine = const_cast<Machine&>(const_machine);
@@ -94,6 +95,9 @@ Problem::fitness(const Machine& const_machine) const
 		else
 			f -= _target._note_frequency[i] - eval->_note_frequency[i];
 	}
+	
+
+	cout << ")";
 
 	return f;
 }

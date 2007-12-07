@@ -70,8 +70,13 @@ protected:
 	 *
 	 * This is called once on start, and terminated on stop.
 	 * Implementations likely want to put some infinite loop here.
+	 *
+	 * When _exit_flag becomes true (via a call to stop()) the loop
+	 * should exit.
 	 */
 	virtual void _run() {}
+	
+	bool _exit_flag;
 
 private:
 
