@@ -78,6 +78,7 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	xml->get_widget("zoom_normal_but", _zoom_normal_button);
 	xml->get_widget("zoom_full_but", _zoom_full_button);
 	xml->get_widget("arrange_but", _arrange_button);
+	xml->get_widget("load_target_but", _load_target_button);
 	xml->get_widget("evolve_but", _evolve_button);
 	xml->get_widget("mutate_but", _mutate_button);
 	xml->get_widget("compress_but", _compress_button);
@@ -174,6 +175,7 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	Glib::signal_timeout().connect(sigc::mem_fun(this, &MachinaGUI::idle_callback), 100);
 	
 #ifdef HAVE_EUGENE
+	_load_target_button->signal_clicked().connect(sigc::mem_fun(this, &MachinaGUI::load_target_clicked));
 	_evolve_button->signal_clicked().connect(sigc::mem_fun(this, &MachinaGUI::evolve_toggled));
 	Glib::signal_timeout().connect(sigc::mem_fun(this, &MachinaGUI::evolve_callback), 1000);
 #else
@@ -252,10 +254,31 @@ MachinaGUI::arrange()
 
 
 void
+MachinaGUI::load_target_clicked()
+{
+	Gtk::FileChooserDialog dialog(*_main_window,
+			"Load MIDI file for evolution", Gtk::FILE_CHOOSER_ACTION_OPEN);
+	dialog.set_local_only(false);
+	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+	dialog.add_button(Gtk::Stock::OPEN, Gtk::RESPONSE_OK);
+	
+	Gtk::FileFilter filt;
+	filt.add_pattern("*.mid");
+	filt.set_name("MIDI Files");
+	dialog.set_filter(filt);
+
+	const int result = dialog.run();
+
+	if (result == Gtk::RESPONSE_OK)
+		_target_filename = dialog.get_filename();
+}
+
+
+void
 MachinaGUI::evolve_toggled()
 {
 	if (_evolve_button->get_active()) {
-		_evolver = SharedPtr<Evolver>(new Evolver("target.mid", _engine->machine()));
+		_evolver = SharedPtr<Evolver>(new Evolver(_target_filename, _engine->machine()));
 		_evolve = true;
 		stop_clicked();
 		_engine->driver()->set_machine(SharedPtr<Machine>());
@@ -384,6 +407,11 @@ MachinaGUI::menu_file_open()
 	dialog.set_local_only(false);
 	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
 	dialog.add_button(Gtk::Stock::OPEN, Gtk::RESPONSE_OK);
+	
+	Gtk::FileFilter filt;
+	filt.add_pattern("*.machina.ttl");
+	filt.set_name("Machina Machines (Turtle/RDF)");
+	dialog.set_filter(filt);
 
 	const int result = dialog.run();
 
@@ -477,6 +505,11 @@ MachinaGUI::menu_import_midi()
 	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
 	dialog.add_button(Gtk::Stock::OPEN, Gtk::RESPONSE_OK);
 	
+	Gtk::FileFilter filt;
+	filt.add_pattern("*.mid");
+	filt.set_name("MIDI Files");
+	dialog.set_filter(filt);
+	
 	Gtk::HBox* extra_widget = Gtk::manage(new Gtk::HBox());
 	Gtk::SpinButton* length_sb = Gtk::manage(new Gtk::SpinButton());
 	length_sb->set_increments(1, 10);
@@ -520,6 +553,11 @@ MachinaGUI::menu_export_midi()
 			Gtk::FILE_CHOOSER_ACTION_SAVE);
 	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
 	dialog.add_button(Gtk::Stock::SAVE, Gtk::RESPONSE_OK);
+	
+	Gtk::FileFilter filt;
+	filt.add_pattern("*.mid");
+	filt.set_name("MIDI Files");
+	dialog.set_filter(filt);
 
 	const int result = dialog.run();
 

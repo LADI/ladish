@@ -119,6 +119,26 @@ Loader::load(const Glib::ustring& uri)
 	}
 
 
+	/* Find out which nodes are selectors */
+	
+	query = Query(_rdf_world, ustring(
+		"SELECT DISTINCT ?node WHERE {\n") +
+		machine_uri + " :node     ?node .\n"
+		"?node          a         :SelectorNode .\n"
+		"}\n");
+
+	results = query.run(_rdf_world, model);
+
+	for (Query::Results::iterator i = results.begin(); i != results.end(); ++i) {
+		const char* node_id = (*i)["node"];
+		Created::iterator n = created.find(node_id);
+		if (n != created.end())
+			n->second->set_selector(true);
+		else
+			cerr << "WARNING: Selector node " << node_id << " not found" << endl;
+	}
+
+
 	/* Get note actions */
 
 	query = Query(_rdf_world, ustring(

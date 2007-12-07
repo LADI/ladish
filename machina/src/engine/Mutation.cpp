@@ -52,10 +52,12 @@ AddNode::mutate(Machine& machine)
 	//cout << "ADD NODE" << endl;
 
 	// Create random node
-	SharedPtr<Node> node(new Node(1.0));
+	SharedPtr<Node> node(new Node());
 	node->set_selector(true);
 	
 	SharedPtr<Node> note_node = machine.random_node();
+	if (!note_node)
+		return;
 	uint8_t note = PtrCast<MidiAction>(note_node->enter_action())->event()[1];
 
 	node->set_enter_action(ActionFactory::note_on(note));
@@ -154,7 +156,7 @@ RemoveEdge::mutate(Machine& machine)
 	//cout << "REMOVE EDGE" << endl;
 
 	SharedPtr<Node> tail = machine.random_node();
-	if (tail)
+	if (tail && !(tail->is_initial() && tail->edges().size() == 1))
 		tail->remove_edge(tail->random_edge());
 }
 

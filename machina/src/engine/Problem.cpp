@@ -42,7 +42,7 @@ Problem::Problem(const std::string& target_midi, SharedPtr<Machine> seed)
 	const bool opened = smf.open(target_midi);
 	assert(opened);
 	
-	smf.seek_to_track(2); // FIXME: kluge
+	smf.seek_to_track(2); // FIXME: ?
 	
 	uint8_t  buf[4];
 	uint32_t ev_size;
@@ -221,7 +221,7 @@ Problem::initial_population(size_t gene_size, size_t pop_size) const
 	for (uint8_t i=0; i < 128; ++i) {
 		if (_target._counts[i] > 0) {
 			//cout << "Initial note: " << (int)i << endl;
-			SharedPtr<Node> node(new Node(1.0));
+			SharedPtr<Node> node(new Node(1/4.0));
 			node->set_enter_action(ActionFactory::note_on(i));
 			node->set_exit_action(ActionFactory::note_off(i));
 			node->set_selector(true);

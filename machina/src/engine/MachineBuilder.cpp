@@ -44,7 +44,7 @@ MachineBuilder::MachineBuilder(SharedPtr<Machine> machine, Raul::BeatTime q)
 void
 MachineBuilder::reset()
 {
-	_initial_node = SharedPtr<Node>(new Node());
+	_initial_node = SharedPtr<Node>(new Node(0.0));
 	_initial_node->set_initial(true);
 	_connect_node = _initial_node;
 	_connect_node_end_time = 0;
@@ -123,7 +123,7 @@ MachineBuilder::event(Raul::BeatTime time_offset,
 
 	if ((buf[0] & 0xF0) == MIDI_CMD_NOTE_ON) {
 		
-		SharedPtr<Node> node(new Node());
+		SharedPtr<Node> node(new Node(0.0));
 		node->set_enter_action(SharedPtr<Action>(new MidiAction(ev_size, buf)));
 
 		SharedPtr<Node> this_connect_node;
@@ -187,7 +187,7 @@ MachineBuilder::event(Raul::BeatTime time_offset,
 					// Finish a polyphonic section
 					if (_poly_nodes.size() > 0) {
 
-						_connect_node = SharedPtr<Node>(new Node());
+						_connect_node = SharedPtr<Node>(new Node(0.0));
 						_machine->add_node(_connect_node);
 
 						connect_nodes(_machine, resolved, t, _connect_node, t);

@@ -63,6 +63,7 @@ protected:
 	void menu_help_about();
 	void menu_help_help();
 	void arrange();
+	void load_target_clicked();
 	void evolve_toggled();
 	void random_mutation(SharedPtr<Machina::Machine> machine);
 	void mutate(SharedPtr<Machina::Machine> machine, unsigned mutation);
@@ -83,6 +84,7 @@ protected:
 	bool _evolve;
 
 	string _save_uri;
+	string _target_filename;
 
 	boost::shared_ptr<MachinaCanvas>   _canvas;
 	boost::shared_ptr<Machina::Engine> _engine;
@@ -121,6 +123,7 @@ protected:
 	Gtk::ToolButton*       _zoom_normal_button;
 	Gtk::ToolButton*       _zoom_full_button;
 	Gtk::ToolButton*       _arrange_button;
+	Gtk::ToolButton*       _load_target_button;
 	Gtk::ToggleToolButton* _evolve_button;
 	Gtk::ToolButton*       _mutate_button;
 	Gtk::ToolButton*       _compress_button;

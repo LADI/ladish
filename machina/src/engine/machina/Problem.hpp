@@ -81,7 +81,7 @@ private:
 	};*/
 	
 	struct Evaluator : public Raul::MIDISink {
-		Evaluator(const Problem& problem) : _problem(problem), _order(8), _n_notes(0), _first_note(0) {
+		Evaluator(const Problem& problem) : _problem(problem), _order(4), _n_notes(0), _first_note(0) {
 			for (uint8_t i=0; i < 128; ++i)
 				_counts[i] = 0;
 		}
