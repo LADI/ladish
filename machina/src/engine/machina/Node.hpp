@@ -44,7 +44,7 @@ class Node : public Raul::Stateful {
 public:
 	typedef std::string ID;
 
-	Node(BeatCount duration=1/4.0, bool initial=false);
+	Node(BeatCount duration=1/2.0, bool initial=false);
 	Node(const Node& copy);
 
 	void set_enter_action(SharedPtr<Action> action);
