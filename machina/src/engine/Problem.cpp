@@ -41,12 +41,15 @@ Problem::Problem(const std::string& target_midi, SharedPtr<Machine> seed)
 	uint32_t ev_size;
 	uint32_t delta_time;
 	while (smf.read_event(4, buf, &ev_size, &delta_time) >= 0) {
+		_target._length += delta_time / (double)smf.ppqn();
 		if ((buf[0] & 0xF0) == MIDI_CMD_NOTE_ON) {
 			const uint8_t note = buf[1];
 			++_target._note_frequency[note];
 			++_target._n_notes;
 		}
 	}
+
+	cout << "Target length: " << _target._length << endl;
 
 	_target.compute();
 }
@@ -55,6 +58,8 @@ Problem::Problem(const std::string& target_midi, SharedPtr<Machine> seed)
 float
 Problem::fitness(const Machine& const_machine) const
 {
+	//cout << "f";
+
 	// kluuudge
 	Machine& machine = const_cast<Machine&>(const_machine);
 	
@@ -72,9 +77,11 @@ Problem::fitness(const Machine& const_machine) const
 	time.set_start(0);
 	time.set_length(2*ppqn);
 
-	while (time.start_ticks() < _target._n_notes * ppqn) {
+	while (eval->_n_notes < _target._n_notes) {
 		machine.run(time);
 		time.set_start(time.start_ticks() + 2*ppqn);
+		if (time.start_beats() >= _target._length)
+			break;
 	}
 
 	eval->compute();

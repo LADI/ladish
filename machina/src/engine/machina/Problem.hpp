@@ -40,7 +40,7 @@ public:
 
 private:
 	struct Evaluator : public Raul::MIDISink {
-		Evaluator(const Problem& problem) : _problem(problem), _n_notes(0) {
+		Evaluator(const Problem& problem) : _problem(problem), _n_notes(0), _length(0) {
 			for (uint8_t i=0; i < 128; ++i)
 				_note_frequency[i] = 0;
 		}
@@ -52,6 +52,7 @@ private:
 	
 		float  _note_frequency[128];
 		size_t _n_notes;
+		double _length;
 	};
 
 	Evaluator          _target;
