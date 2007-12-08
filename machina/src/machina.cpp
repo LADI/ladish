@@ -15,6 +15,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include CONFIG_H_PATH
+
 #include <iostream>
 #include <signal.h>
 #include "machina/Action.hpp"
@@ -24,7 +26,9 @@
 #include "machina/Machine.hpp"
 #include "machina/MidiAction.hpp"
 #include "machina/Node.hpp"
-#include "machina/Problem.hpp"
+#ifdef HAVE_EUGENE
+	#include "machina/Problem.hpp"
+#endif
 
 using namespace std;
 using namespace Machina;
@@ -61,19 +65,15 @@ main(int argc, char** argv)
 	Redland::World rdf_world;
 	Engine engine(driver, rdf_world);
 
-	/*// FIXME: Would be nice if this could take URIs on the cmd line
+	/* FIXME: Would be nice if this could take URIs on the cmd line
 	char* uri = (char*)calloc(6 + strlen(argv[1]), sizeof(char));
 	strcpy(uri, "file:");
 	strcat(uri, argv[1]);
 	engine.load_machine(uri);
 	free(uri);
-*/
+	*/
 	engine.load_machine(argv[1]);
 	
-	// FIXME: temporary hack
-	SharedPtr<Problem> problem(new Problem("./gui/target.mid"));
-	cout << "Fitness: " << problem->fitness(*engine.machine().get()) << endl;
-
 	driver->attach("machina");
 
 	signal(SIGINT, catch_int);

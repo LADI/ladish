@@ -137,8 +137,9 @@ AC_ARG_ENABLE(eugene,
 	[eugene="$enableval"])
 if test "$eugene" = "yes"; then
 	PKG_CHECK_MODULES(EUGENE, eugene-core)
+	AC_DEFINE(HAVE_EUGENE, 1, [Has Eugene])
 fi
-AC_DEFINE(HAVE_EUGENE, 1, [Has Eugene])
+AM_CONDITIONAL(WITH_EUGENE, [test "$eugene" = "yes"])
 
 AC_ARG_ENABLE(debug,
 	[AS_HELP_STRING(--enable-debug, [Enable debugging symbols and assertions (no)])],

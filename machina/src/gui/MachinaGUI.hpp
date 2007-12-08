@@ -64,14 +64,19 @@ protected:
 	void menu_help_help();
 	void arrange();
 	void load_target_clicked();
-	void evolve_toggled();
+
 	void random_mutation(SharedPtr<Machina::Machine> machine);
 	void mutate(SharedPtr<Machina::Machine> machine, unsigned mutation);
 	void zoom(double z);
 	void update_toolbar();
-	bool evolve_callback();
-	bool idle_callback();
+
 	bool scrolled_window_event(GdkEvent* ev);
+	bool idle_callback();
+
+#ifdef HAVE_EUGENE
+	void evolve_toggled();
+	bool evolve_callback();
+#endif
 
 	void record_toggled();
 	void stop_clicked();

@@ -179,7 +179,8 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	_evolve_button->signal_clicked().connect(sigc::mem_fun(this, &MachinaGUI::evolve_toggled));
 	Glib::signal_timeout().connect(sigc::mem_fun(this, &MachinaGUI::evolve_callback), 1000);
 #else
-	_evolve_button->hide();
+	_evolve_button->set_sensitive(false);
+	_load_target_button->set_sensitive(false);
 #endif
 	
 	_canvas->build(engine->machine(), _menu_view_labels->get_active());
@@ -191,6 +192,7 @@ MachinaGUI::~MachinaGUI()
 }
 
 
+#ifdef HAVE_EUGENE
 bool
 MachinaGUI::evolve_callback() 
 {
@@ -203,6 +205,7 @@ MachinaGUI::evolve_callback()
 
 	return true;
 }
+#endif
 
 
 bool
@@ -274,6 +277,7 @@ MachinaGUI::load_target_clicked()
 }
 
 
+#ifdef HAVE_EUGENE
 void
 MachinaGUI::evolve_toggled()
 {
@@ -293,6 +297,7 @@ MachinaGUI::evolve_toggled()
 		_engine->driver()->activate();
 	}
 }
+#endif
 
 
 void

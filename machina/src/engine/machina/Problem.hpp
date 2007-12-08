@@ -18,9 +18,10 @@
 #ifndef MACHINA_PROBLEM_HPP
 #define MACHINA_PROBLEM_HPP
 
+#include CONFIG_H_PATH
+
 #include <map>
 #include <raul/MIDISink.hpp>
-#include <eugene/core/Problem.hpp>
 #include <machina/Machine.hpp>
 
 namespace Machina {

@@ -10,7 +10,6 @@ libmachina_la_SOURCES = \
 	ActionFactory.cpp \
 	Edge.cpp \
 	Engine.cpp \
-	Evolver.cpp \
 	LearnRequest.cpp \
 	Loader.cpp \
 	Machine.cpp \
@@ -18,10 +17,13 @@ libmachina_la_SOURCES = \
 	MidiAction.cpp \
 	Mutation.cpp \
 	Node.cpp \
-	Problem.cpp \
 	Recorder.cpp \
 	SMFDriver.cpp
 	
 if WITH_JACK
-libmachina_la_SOURCES += JackDriver.cpp jack_compat.h
+libmachina_la_SOURCES += JackDriver.cpp
+endif
+
+if WITH_EUGENE
+libmachina_la_SOURCES += Evolver.cpp Problem.cpp
 endif
