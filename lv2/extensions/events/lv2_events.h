@@ -70,12 +70,12 @@ typedef struct {
 	 * this event framework, specified by the type field of the event header.
 	 *
 	 * This data buffer contains a header (defined by struct LV2_Event),
-	 * followed by that event's contents (padding to 32 bits), followed by
+	 * followed by that event's contents (padded to 64 bits), followed by
 	 * another header, etc:
 	 *
 	 * |       |       |       |       |       |       |
 	 * | | | | | | | | | | | | | | | | | | | | | | | | |
-	 * |FRAMES |SUBFRMS|TYP|LEN|DATA........PAD|FRAMES | ...
+	 * |FRAMES |SUBFRMS|TYP|LEN|DATA..DATA..PAD|FRAMES | ...
 	 */
 	uint8_t data;
 
