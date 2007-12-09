@@ -413,22 +413,13 @@ PKG_CHECK_MODULES(LIBGLADEMM, libglademm-2.4)
 
 ################## RAUL
 
-# Check for Redland
-#PKG_CHECK_MODULES(REDLAND, redland >= 1.0.0)
-# No pkg-config?!  Booo!
-build_redland="no"
-AC_CHECK_PROG(REDLAND_CONFIG, redland-config, redland-config)
-if test "X$REDLAND_CONFIG" = X; then
-  AC_MSG_ERROR([SLV2 requires Redland (librdf), but redland-config not found.])
-else
-  build_redland="yes"
-  REDLAND_CFLAGS=`$REDLAND_CONFIG --cflags`
-  REDLAND_LIBS=`$REDLAND_CONFIG --libs`
-  AC_SUBST(REDLAND_CFLAGS)
-  AC_SUBST(REDLAND_LIBS)
+# Check for Redlandmm
+build_redlandmm="no"
+PKG_CHECK_MODULES([REDLANDMM], [redlandmm], [build_redlandmm="yes"])
+if test "$build_redland" = "yes"; then
+	AC_DEFINE(HAVE_REDLANDMM, [test "$build_redland" = "yes"], [Has redlandmm])
 fi
-AM_CONDITIONAL(WITH_REDLAND, [test "$build_redland" = "yes"])
-AC_DEFINE(HAVE_REDLANDMM, 1, [Has redlandmm])
+AM_CONDITIONAL(WITH_REDLANDMM, [test "$build_redlandmm" = "yes"])
 
 build_liblo="yes"
 AC_ARG_ENABLE(liblo,

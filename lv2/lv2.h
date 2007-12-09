@@ -276,7 +276,7 @@ typedef struct _LV2_Descriptor {
 	 * various things that the plugin MUST NOT do within the run()
 	 * function (see lv2.ttl). */
 	void (*run)(LV2_Handle instance,
-	            uint32_t   sampleCount);
+	            uint32_t   sample_count);
 
 	/** This is the counterpart to activate() (see above). If there is
 	 * nothing for deactivate() to do then the plugin writer may provide
