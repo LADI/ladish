@@ -411,6 +411,23 @@ PKG_CHECK_MODULES(GTKMM, gtkmm-2.4)
 PKG_CHECK_MODULES(GNOMECANVASMM, libgnomecanvasmm-2.6)
 PKG_CHECK_MODULES(LIBGLADEMM, libglademm-2.4)
 
+################ SLV2 / Redlandmm
+
+# Check for Redland
+build_redland="no"
+AC_CHECK_PROG(REDLAND_CONFIG, redland-config, redland-config)
+if test "X$REDLAND_CONFIG" = X; then
+  AC_MSG_ERROR([This software requires Redland (librdf), but redland-config not found.])
+else
+  build_redland="yes"
+  REDLAND_CFLAGS=`$REDLAND_CONFIG --cflags`
+  REDLAND_LIBS=`$REDLAND_CONFIG --libs`
+  AC_SUBST(REDLAND_CFLAGS)
+  AC_SUBST(REDLAND_LIBS)
+fi
+AM_CONDITIONAL(WITH_REDLAND, [test "$build_redland" = "yes"])
+
+
 ################## RAUL
 
 # Check for Redlandmm
