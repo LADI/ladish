@@ -28,9 +28,9 @@ pthread_key_t  Thread::_thread_key;
 
 
 Thread::Thread(const string& name)
-	: _context(0)
+	: _exit_flag(false)
+	, _context(0)
 	, _name(name)
-	, _exit_flag(false)
 	, _pthread_exists(false)
 {
 	pthread_once(&_thread_key_once, thread_key_alloc);
@@ -40,9 +40,9 @@ Thread::Thread(const string& name)
 
 /** Must be called from thread */
 Thread::Thread(pthread_t thread, const string& name)
-	: _context(0)
+	: _exit_flag(false)
+	, _context(0)
 	, _name(name)
-	, _exit_flag(false)
 	, _pthread_exists(true)
 	, _pthread(thread)
 {
