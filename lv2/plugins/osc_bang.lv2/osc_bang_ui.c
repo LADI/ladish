@@ -46,9 +46,6 @@ osc_bang_ui_instantiate(const struct _LV2UI_Descriptor* descriptor,
                         const char*                     plugin_uri,
                         const char*                     bundle_path,
                         LV2UI_Write_Function            write_function,
-                        LV2UI_Command_Function          command_function,
-                        LV2UI_Program_Change_Function   program_function,
-                        LV2UI_Program_Save_Function     save_function,
                         LV2UI_Controller                controller,
                         LV2UI_Widget*                   widget,
                         const LV2_Feature* const*       features)
@@ -92,11 +89,6 @@ init_descriptor()
 	osc_bang_ui_descriptor->instantiate = osc_bang_ui_instantiate;
 	osc_bang_ui_descriptor->cleanup = osc_bang_ui_cleanup;
 	osc_bang_ui_descriptor->port_event = NULL;
-	osc_bang_ui_descriptor->feedback = NULL;
-	osc_bang_ui_descriptor->program_added = NULL;
-	osc_bang_ui_descriptor->program_removed = NULL;
-	osc_bang_ui_descriptor->programs_cleared = NULL;
-	osc_bang_ui_descriptor->current_program_changed = NULL;
 	osc_bang_ui_descriptor->extension_data = NULL;
 }
 
