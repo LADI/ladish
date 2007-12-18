@@ -103,6 +103,9 @@ Port::set_control(float value, bool signal)
 	if (_control_max == _control_min)
 		_control_max = _control_min + 1.0;
 
+	if (isinf(_control_max))
+		_control_max = FLT_MAX;
+
 	const double w = (value - _control_min) / (_control_max - _control_min) * _width;
 	assert(!isnan(w));
 
