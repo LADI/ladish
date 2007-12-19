@@ -142,7 +142,7 @@ AlsaDriver::refresh_ports()
 		while (snd_seq_query_next_port(_seq, pinfo) >= 0) {
 			int caps = snd_seq_port_info_get_capability(pinfo);
 			int type = snd_seq_port_info_get_type(pinfo);
-
+			
 			// Skip ports we shouldn't show
 			if (caps & SND_SEQ_PORT_CAP_NO_EXPORT)
 				continue;
@@ -174,8 +174,10 @@ AlsaDriver::refresh_ports()
 			bool split = _app->state_manager()->get_module_split(client_name, !is_application)
 				|| is_duplex;
 			
-			//cout << client_name << " : " << port_name << " is_application = " << is_application
-			//	<< " is_duplex = " << is_duplex << ", split = " << split << endl;
+			//cout << "SHOW: " << client_name << " : " << port_name
+				//<< " is_application = " << is_application
+				//<< " is_duplex = " << is_duplex
+				//<< ", split = " << split << endl;
 			
 			// Application input/output ports go on the same module
 			if (!split) {
@@ -184,6 +186,7 @@ AlsaDriver::refresh_ports()
 					m = boost::shared_ptr<PatchageModule>(new PatchageModule(_app, client_name, InputOutput));
 					m->load_location();
 					m->store_location();
+					_app->canvas()->add_item(m);
 				}
 				
 				if (!m->get_port(port_name)) {
@@ -217,6 +220,7 @@ AlsaDriver::refresh_ports()
 							new PatchageModule(_app, client_name, type));
 						m->load_location();
 						m->store_location();
+						_app->canvas()->add_item(m);
 					}
 					
 					if (!m->get_port(port_name)) {
@@ -525,12 +529,6 @@ AlsaDriver::_refresh_main()
 
 				switch (ev->type) {
 				case SND_SEQ_EVENT_PORT_SUBSCRIBED:
-					/*cout << "Subscription: ";
-					print_addr(ev->data.connect.sender);
-					cout << " -> ";
-					print_addr(ev->data.connect.dest);
-					cout << endl;*/
-
 					_events.push(PatchageEvent(PatchageEvent::CONNECTION,
 								ev->data.connect.sender, ev->data.connect.dest));
 					break;
@@ -538,18 +536,15 @@ AlsaDriver::_refresh_main()
 					_events.push(PatchageEvent(PatchageEvent::DISCONNECTION,
 								ev->data.connect.sender, ev->data.connect.dest));
 					break;
-				case SND_SEQ_EVENT_RESET:
-				case SND_SEQ_EVENT_CLIENT_START:
-				case SND_SEQ_EVENT_CLIENT_EXIT:
-				case SND_SEQ_EVENT_CLIENT_CHANGE:
 				case SND_SEQ_EVENT_PORT_START:
 				case SND_SEQ_EVENT_PORT_EXIT:
 				case SND_SEQ_EVENT_PORT_CHANGE:
-					break;
-
-					break;
+				case SND_SEQ_EVENT_CLIENT_START:
+				case SND_SEQ_EVENT_CLIENT_EXIT:
+				case SND_SEQ_EVENT_CLIENT_CHANGE:
+				case SND_SEQ_EVENT_RESET:
 				default:
-					break;
+					cout << "Unknown ALSA event: " << (int)ev->type << endl;
 				}
 			}
 		}
