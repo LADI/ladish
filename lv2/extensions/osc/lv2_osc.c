@@ -92,8 +92,8 @@ lv2_osc_arg_size(char type, const LV2Argument* arg)
 	case 's':
 		return lv2_osc_string_size(&arg->s);
 	
-	case 'S':
-		return lv2_osc_string_size(&arg->S);
+	/*case 'S':
+		return lv2_osc_string_size(&arg->S);*/
 
 	case 'b':
 		return lv2_osc_blob_size(&arg->b);

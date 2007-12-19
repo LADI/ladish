@@ -36,8 +36,8 @@ lv2_osc_argument_print(char type, const LV2Argument* arg)
 		printf("%f", arg->d); break;
 	case 's':
 		printf("\"%s\"", &arg->s); break;
-	case 'S':
-		printf("\"%s\"", &arg->S); break;
+	/*case 'S':
+		printf("\"%s\"", &arg->S); break;*/
 	case 'b':
 		blob_size = *((int32_t*)arg);
 		printf("{ ");

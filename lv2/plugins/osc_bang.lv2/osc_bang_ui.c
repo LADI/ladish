@@ -38,6 +38,7 @@ osc_bang_ui_on_click(GtkWidget* widget, void* data)
 	OSCBangUI* ui = (OSCBangUI*)data;
 	LV2Message* msg = lv2_osc_message_new(0, "/bang", NULL);
 	ui->write_function(ui->controller, 0, lv2_message_get_size(msg), msg);
+	free(msg);
 }
 
 
