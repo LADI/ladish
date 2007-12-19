@@ -25,9 +25,6 @@
 #endif
 #include "PatchagePort.hpp"
 
-#include <iostream>
-using namespace std;
-
 class Patchage;
 
 
@@ -48,25 +45,19 @@ public:
 		: _type(type)
 	{}
 
-	PatchageEvent(Type type, jack_port_id_t port)
+	template <typename P>
+	PatchageEvent(Type type, P port)
 		: _type(type)
 		, _port_1(port)
 	{}
 	
-	PatchageEvent(Type type, jack_port_id_t port_1, jack_port_id_t port_2)
-		: _type(type)
-		, _port_1(port_1)
-		, _port_2(port_2)
-	{}
-	
-#ifdef HAVE_ALSA
-	PatchageEvent(Type type, snd_seq_addr_t port_1, snd_seq_addr_t port_2)
+	template <typename P>
+	PatchageEvent(Type type, P port_1, P port_2)
 		: _type(type)
 		, _port_1(port_1, false)
 		, _port_2(port_2, true)
 	{}
-#endif
-
+	
 	void execute(Patchage* patchage);
 
 	inline Type type() const { return (Type)_type; }
@@ -77,28 +68,28 @@ private:
 	struct PortRef {
 		PortRef() : type(NULL_PORT_REF) { memset(&id, 0, sizeof(id)); }
 
-		PortRef(jack_port_id_t jack_id) : type(JACK_ID) { id.jack_id = jack_id; }
-		PortRef(jack_port_t* jack_port) : type(JACK_PORT) { id.jack_port = jack_port; }
+		PortRef(jack_port_id_t jack_id, bool ign=false)
+			: type(JACK_ID) { id.jack_id = jack_id; }
+
+		PortRef(jack_port_t* jack_port, bool ign=false)
+			: type(JACK_PORT) { id.jack_port = jack_port; }
 
 #ifdef HAVE_ALSA
-		PortRef(snd_seq_addr_t addr, bool input) : type(ALSA_ADDR)
-			{ id.alsa_addr = addr; is_input = input; }
+		PortRef(snd_seq_addr_t addr, bool in)
+			: type(ALSA_ADDR) { id.alsa_addr = addr; is_input = in; }
+		
+		bool is_input;
 #endif
 
 		enum { NULL_PORT_REF, JACK_ID, JACK_PORT, ALSA_ADDR } type;
 
 		union {
-			jack_port_t* jack_port;
+			jack_port_t*   jack_port;
 			jack_port_id_t jack_id;
 #ifdef HAVE_ALSA
 			snd_seq_addr_t alsa_addr;
 #endif
 		} id;
-
-#ifdef HAVE_ALSA
-		bool is_input;
-#endif
-
 	};
 
 	PortRef _port_1;
