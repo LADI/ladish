@@ -17,12 +17,13 @@
 
 #include <cmath>
 #include <sstream>
-#include CONFIG_H_PATH
-#include <libgnomecanvasmm.h>
-#include <libglademm/xml.h>
 #include <fstream>
 #include <pthread.h>
+#include <libgnomecanvasmm.h>
+#include <libglademm/xml.h>
 #include <jack/statistics.h>
+
+#include CONFIG_H_PATH
 #include "Patchage.hpp"
 #include "PatchageEvent.hpp"
 #include "StateManager.hpp"
@@ -35,11 +36,6 @@
 #ifdef HAVE_ALSA
 #include "AlsaDriver.hpp"
 #endif
-
-// FIXME: include to avoid undefined reference to boost SP debug hooks stuff
-#include <raul/SharedPtr.hpp>
-
-
 
 /* Gtk helpers (resize combo boxes) */
 
@@ -168,12 +164,10 @@ Patchage::Patchage(int argc, char** argv)
 	//xml->get_widget("main_jack_connect_toggle", _jack_connect_toggle);
 	//xml->get_widget("main_jack_realtime_check", _jack_realtime_check);
 	xml->get_widget("main_buffer_size_combo", _buffer_size_combo);
-	xml->get_widget("main_sample_rate_label", _sample_rate_label);
 	xml->get_widget("main_xrun_progress", _xrun_progress_bar);
 	xml->get_widget("main_clear_load_button", _clear_load_button);
 	
 	gtkmm_set_width_for_given_text(*_buffer_size_combo, "4096 frames", 40);
-	//gtkmm_set_width_for_given_text(*m_sample_rate_combo, "44.1", 40);
 
 	_canvas_scrolledwindow->add(*_canvas);
 	//m_canvas_scrolledwindow->signal_event().connect(sigc::mem_fun(_canvas, &FlowCanvas::scroll_event_handler));
@@ -185,8 +179,6 @@ Patchage::Patchage(int argc, char** argv)
 	//_jack_connect_toggle->signal_toggled().connect(sigc::mem_fun(this, &Patchage::jack_connect_changed));
 
 	_buffer_size_combo->signal_changed().connect(sigc::mem_fun(this, &Patchage::buffer_size_changed));
-	//m_sample_rate_combo->signal_changed().connect(sigc::mem_fun(this, &Patchage::sample_rate_changed));
-	//_jack_realtime_check->signal_toggled().connect(sigc::mem_fun(this, &Patchage::realtime_changed));
 	
 	_rewind_button->signal_clicked().connect(sigc::mem_fun(_jack_driver, &JackDriver::rewind_transport));
 	_play_button->signal_clicked().connect(sigc::mem_fun(_jack_driver, &JackDriver::start_transport));
@@ -348,31 +340,8 @@ Patchage::idle_callback()
 void
 Patchage::update_toolbar()
 {
-	//_jack_connect_toggle->set_active(_jack_driver->is_attached());
-	//_jack_realtime_check->set_active(_jack_driver->is_realtime());
-
-	if (_enable_refresh && _jack_driver->is_attached()) {
+	if (_enable_refresh && _jack_driver->is_attached())
 		_buffer_size_combo->set_active((int)log2f(_jack_driver->buffer_size()) - 5);
-
-		/*switch ((int)m_jack_driver->sample_rate()) {
-			case 44100:
-				_sample_rate_combo->set_active(0);
-				break;
-			case 48000:
-				_sample_rate_combo->set_active(1);
-				break;
-			case 96000:
-				_sample_rate_combo->set_active(2);
-				break;
-			default:
-				_sample_rate_combo->set_active(-1);
-				status_message("[JACK] ERROR: Unknown sample rate");
-				break;
-		}*/
-		stringstream srate;
-		srate << _jack_driver->sample_rate()/1000.0;
-		_sample_rate_label->set_text(srate.str());
-	}
 }
 
 
@@ -387,15 +356,8 @@ Patchage::update_load()
 	const float max_delay = _jack_driver->max_delay();
 
 	if (max_delay != last_delay) {
-		const float sample_rate = _jack_driver->sample_rate();
 		const float buffer_size = _jack_driver->buffer_size();
-		const float period      = buffer_size / sample_rate * 1000000; // usecs
-		/*
-		   if (max_delay > 0) {
-		   cerr << "SR: " << sample_rate << ", BS: " << buffer_size << ", P = " << period
-		   << ", MD: " << max_delay << endl;
-		   }*/
-
+		
 		_xrun_progress_bar->set_fraction(max_delay / period);
 
 		char tmp_buf[8];
@@ -492,19 +454,13 @@ Patchage::connect_widgets()
 
 	_jack_driver->signal_attached.connect(
 			sigc::mem_fun(this, &Patchage::update_toolbar));
-	_jack_driver->signal_attached.connect(
-			sigc::mem_fun(this, &Patchage::refresh));
-
-	//_jack_driver->signal_attached.connect(sigc::bind(
-	///		sigc::mem_fun(_jack_connect_toggle, &Gtk::ToggleButton::set_active), true));
-
 	_jack_driver->signal_attached.connect(sigc::bind(
 			sigc::mem_fun(_menu_jack_connect, &Gtk::MenuItem::set_sensitive), false));
+	_jack_driver->signal_attached.connect(
+			sigc::mem_fun(this, &Patchage::refresh));
 	_jack_driver->signal_attached.connect(sigc::bind(
 			sigc::mem_fun(_menu_jack_disconnect, &Gtk::MenuItem::set_sensitive), true));
 	
-	//_jack_driver->signal_detached.connect(sigc::bind(
-	//		sigc::mem_fun(_jack_connect_toggle, &Gtk::ToggleButton::set_active), false));
 	_jack_driver->signal_detached.connect(sigc::bind(
 			sigc::mem_fun(_menu_jack_connect, &Gtk::MenuItem::set_sensitive), true));
 	_jack_driver->signal_detached.connect(sigc::bind(
@@ -515,8 +471,6 @@ Patchage::connect_widgets()
 			sigc::mem_fun(_menu_alsa_connect, &Gtk::MenuItem::set_sensitive), false));
 	_alsa_driver->signal_attached.connect(sigc::bind(
 			sigc::mem_fun(_menu_alsa_disconnect, &Gtk::MenuItem::set_sensitive), true));
-	_alsa_driver->signal_attached.connect(
-			sigc::mem_fun(this, &Patchage::refresh));
 	
 	_alsa_driver->signal_detached.connect(sigc::bind(
 			sigc::mem_fun(_menu_alsa_connect, &Gtk::MenuItem::set_sensitive), true));
@@ -576,7 +530,6 @@ Patchage::menu_save_session_as()
 void
 Patchage::menu_close_session() 
 {
-	cerr << "CLOSE SESSION\n";
 	_lash_driver->close_project();
 }
 
@@ -788,45 +741,3 @@ Patchage::buffer_size_changed()
 	}
 }
 
-
-/*
-void
-Patchage::sample_rate_changed()
-{
-	const int selected = _sample_rate_combo->get_active_row_number();
-
-	if (selected == -1) {
-		update_toolbar();
-	} else {
-		jack_nframes_t rate = 44100; // selected == 0
-		if (selected == 1)
-			rate = 48000;
-		else if (selected == 2)
-			rate = 96000;
-	
-		//cerr << "SR Changed: " << selected << ": " << rate << endl;
-
-		//m_jack_driver->set_sample_rate(rate);
-	}
-}
-
-void
-Patchage::realtime_changed()
-{
-	_jack_driver->set_realtime(_jack_realtime_check->get_active());
-}
-
-void
-Patchage::jack_connect_changed()
-{
-	const bool selected = _jack_connect_toggle->get_active();
-
-	if (selected != _jack_driver->is_attached()) {
-		if (selected) {
-			_jack_driver->attach(true);
-		} else {
-			_jack_driver->detach();
-		}
-	}
-}
-*/

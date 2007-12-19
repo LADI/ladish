@@ -18,12 +18,10 @@
 #ifndef PATCHAGE_H
 #define PATCHAGE_H
 
-#include CONFIG_H_PATH
 #include <string>
 #include <boost/shared_ptr.hpp>
 #include <libgnomecanvasmm.h>
-
-using namespace std;
+#include CONFIG_H_PATH
 
 class PatchageCanvas;
 class JackDriver;
