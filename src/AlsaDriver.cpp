@@ -544,7 +544,8 @@ AlsaDriver::_refresh_main()
 				case SND_SEQ_EVENT_CLIENT_CHANGE:
 				case SND_SEQ_EVENT_RESET:
 				default:
-					cout << "Unknown ALSA event: " << (int)ev->type << endl;
+					// FIXME: Ultra slow kludge, use proper find-grained events
+					_events.push(PatchageEvent(PatchageEvent::REFRESH));
 				}
 			}
 		}

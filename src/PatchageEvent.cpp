@@ -71,7 +71,9 @@ PatchageEvent::execute(Patchage* patchage)
 {
 	//cerr << "{ EXECUTING EVENT" << endl;
 
-	if (_type == PORT_CREATION) {
+	if (_type  == REFRESH) {
+		patchage->refresh();
+	} else if (_type == PORT_CREATION) {
 		jack_port_t* jack_port = NULL;
 		if (patchage->jack_driver()->client())
 			jack_port = jack_port_by_id(patchage->jack_driver()->client(), _port_1.id.jack_id);
