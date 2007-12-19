@@ -59,7 +59,7 @@ public:
 	void update_state();
 	void store_window_location();
 
-	void status_message(const string& msg);
+	void status_message(const std::string& msg);
 	inline void queue_refresh() { _refresh = true; }
 
 	int max_pane_position()
@@ -126,9 +126,9 @@ protected:
 
 	Gtk::Main* _gtk_main;
 
-	string _settings_filename;
-	bool   _refresh;
-	bool   _enable_refresh;
+	std::string _settings_filename;
+	bool        _refresh;
+	bool        _enable_refresh;
 	
 	Gtk::Window*         _main_window;
 	JackSettingsDialog*  _jack_settings_dialog;
