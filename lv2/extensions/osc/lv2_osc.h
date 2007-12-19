@@ -20,7 +20,6 @@
 #define LV2_OSC_H
 
 #include <stdint.h>
-#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
