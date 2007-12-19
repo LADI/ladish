@@ -37,6 +37,8 @@
 #include "AlsaDriver.hpp"
 #endif
 
+using namespace std;
+
 /* Gtk helpers (resize combo boxes) */
 
 static void
@@ -170,82 +172,93 @@ Patchage::Patchage(int argc, char** argv)
 	gtkmm_set_width_for_given_text(*_buffer_size_combo, "4096 frames", 40);
 
 	_canvas_scrolledwindow->add(*_canvas);
-	//m_canvas_scrolledwindow->signal_event().connect(sigc::mem_fun(_canvas, &FlowCanvas::scroll_event_handler));
 	_canvas->scroll_to(static_cast<int>(_canvas->width()/2 - 320),
-	                       static_cast<int>(_canvas->height()/2 - 240)); // FIXME: hardcoded
+	                   static_cast<int>(_canvas->height()/2 - 240)); // FIXME: hardcoded
 
-	//_zoom_slider->signal_value_changed().connect(sigc::mem_fun(this, &Patchage::zoom_changed));
+	//m_canvas_scrolledwindow->signal_event().connect(
+	//		sigc::mem_fun(_canvas, &FlowCanvas::scroll_event_handler));
+	//_zoom_slider->signal_value_changed().connect(
+	//		sigc::mem_fun(this, &Patchage::zoom_changed));
 	
-	//_jack_connect_toggle->signal_toggled().connect(sigc::mem_fun(this, &Patchage::jack_connect_changed));
-
-	_buffer_size_combo->signal_changed().connect(sigc::mem_fun(this, &Patchage::buffer_size_changed));
-	
-	_rewind_button->signal_clicked().connect(sigc::mem_fun(_jack_driver, &JackDriver::rewind_transport));
-	_play_button->signal_clicked().connect(sigc::mem_fun(_jack_driver, &JackDriver::start_transport));
-	_stop_button->signal_clicked().connect(sigc::mem_fun(_jack_driver, &JackDriver::stop_transport));
-
-	_clear_load_button->signal_clicked().connect(sigc::mem_fun(this, &Patchage::clear_load));
-
+	_buffer_size_combo->signal_changed().connect(
+			sigc::mem_fun(this, &Patchage::buffer_size_changed));
+	_rewind_button->signal_clicked().connect(
+			sigc::mem_fun(_jack_driver, &JackDriver::rewind_transport));
+	_play_button->signal_clicked().connect(
+			sigc::mem_fun(_jack_driver, &JackDriver::start_transport));
+	_stop_button->signal_clicked().connect(
+			sigc::mem_fun(_jack_driver, &JackDriver::stop_transport));
+	_clear_load_button->signal_clicked().connect(
+			sigc::mem_fun(this, &Patchage::clear_load));
 	_zoom_normal_button->signal_clicked().connect(sigc::bind(
-		sigc::mem_fun(this, &Patchage::zoom), 1.0));
-	
-	_zoom_full_button->signal_clicked().connect(sigc::mem_fun(_canvas.get(), &PatchageCanvas::zoom_full));
-
-	_menu_jack_settings->signal_activate().connect(
-		sigc::hide_return(sigc::mem_fun(_jack_settings_dialog, &JackSettingsDialog::run)));
-
+			sigc::mem_fun(this, &Patchage::zoom), 1.0));
+	_zoom_full_button->signal_clicked().connect(
+			sigc::mem_fun(_canvas.get(), &PatchageCanvas::zoom_full));
+	_menu_jack_settings->signal_activate().connect(sigc::hide_return(
+			sigc::mem_fun(_jack_settings_dialog, &JackSettingsDialog::run)));
 	_menu_jack_connect->signal_activate().connect(sigc::bind(
-		sigc::mem_fun(_jack_driver, &JackDriver::attach), true));
-	
-	_menu_jack_disconnect->signal_activate().connect(sigc::mem_fun(_jack_driver, &JackDriver::detach));
+			sigc::mem_fun(_jack_driver, &JackDriver::attach), true));
+	_menu_jack_disconnect->signal_activate().connect(
+			sigc::mem_fun(_jack_driver, &JackDriver::detach));
 
 #ifdef HAVE_LASH
-	_menu_open_session->signal_activate().connect(   sigc::mem_fun(this, &Patchage::menu_open_session));
-	_menu_save_session->signal_activate().connect(   sigc::mem_fun(this, &Patchage::menu_save_session));
-	_menu_save_session_as->signal_activate().connect(sigc::mem_fun(this, &Patchage::menu_save_session_as));
-	_menu_close_session->signal_activate().connect(sigc::mem_fun(this, &Patchage::menu_close_session));
-	_menu_lash_connect->signal_activate().connect(   sigc::mem_fun(this, &Patchage::menu_lash_connect));
-	_menu_lash_disconnect->signal_activate().connect(sigc::mem_fun(this, &Patchage::menu_lash_disconnect));
+	_menu_open_session->signal_activate().connect(
+			sigc::mem_fun(this, &Patchage::menu_open_session));
+	_menu_save_session->signal_activate().connect(
+			sigc::mem_fun(this, &Patchage::menu_save_session));
+	_menu_save_session_as->signal_activate().connect(
+			sigc::mem_fun(this, &Patchage::menu_save_session_as));
+	_menu_close_session->signal_activate().connect(
+			sigc::mem_fun(this, &Patchage::menu_close_session));
+	_menu_lash_connect->signal_activate().connect(
+			sigc::mem_fun(this, &Patchage::menu_lash_connect));
+	_menu_lash_disconnect->signal_activate().connect(
+			sigc::mem_fun(this, &Patchage::menu_lash_disconnect));
 #endif
+
 #ifdef HAVE_ALSA
-	_menu_alsa_connect->signal_activate().connect(   sigc::mem_fun(this, &Patchage::menu_alsa_connect));
-	_menu_alsa_disconnect->signal_activate().connect(sigc::mem_fun(this, &Patchage::menu_alsa_disconnect));
-#endif 
-	_menu_store_positions->signal_activate().connect(sigc::mem_fun(this, &Patchage::menu_store_positions));
-	_menu_file_quit->signal_activate().connect(      sigc::mem_fun(this, &Patchage::menu_file_quit));
-	_menu_view_refresh->signal_activate().connect(   sigc::mem_fun(this, &Patchage::refresh));
-	_menu_view_arrange->signal_activate().connect(   sigc::mem_fun(this, &Patchage::menu_view_arrange));
-	_menu_view_toolbar->signal_activate().connect(   sigc::mem_fun(this, &Patchage::view_toolbar_toggled));
-	_menu_view_messages->signal_toggled().connect(   sigc::mem_fun(this, &Patchage::show_messages_toggled));
-	_menu_help_about->signal_activate().connect(     sigc::mem_fun(this, &Patchage::menu_help_about));
+	_menu_alsa_connect->signal_activate().connect(
+			sigc::mem_fun(this, &Patchage::menu_alsa_connect));
+	_menu_alsa_disconnect->signal_activate().connect(
+			sigc::mem_fun(this, &Patchage::menu_alsa_disconnect));
+#endif
+	
+	_menu_store_positions->signal_activate().connect(
+			sigc::mem_fun(this, &Patchage::menu_store_positions));
+	_menu_file_quit->signal_activate().connect(
+			sigc::mem_fun(this, &Patchage::menu_file_quit));
+	_menu_view_refresh->signal_activate().connect(
+			sigc::mem_fun(this, &Patchage::refresh));
+	_menu_view_arrange->signal_activate().connect(
+			sigc::mem_fun(this, &Patchage::menu_view_arrange));
+	_menu_view_toolbar->signal_activate().connect(
+			sigc::mem_fun(this, &Patchage::view_toolbar_toggled));
+	_menu_view_messages->signal_toggled().connect(
+			sigc::mem_fun(this, &Patchage::show_messages_toggled));
+	_menu_help_about->signal_activate().connect(
+			sigc::mem_fun(this, &Patchage::menu_help_about));
 
 	connect_widgets();
-	
 	update_state();
 
 	_canvas->show();
-
 	_main_window->present();
 
 	_update_pane_position = false;
 	_main_paned->set_position(max_pane_position());
-	
 	_user_pane_position = max_pane_position() - _main_window->get_height()/8;
-
 	_messages_expander->set_expanded(false);
 	_pane_closed = true;
 	
 	_main_paned->property_position().signal_changed().connect(
-		sigc::mem_fun(*this, &Patchage::on_pane_position_changed));
+			sigc::mem_fun(*this, &Patchage::on_pane_position_changed));
 	
 	_messages_expander->property_expanded().signal_changed().connect(
-		sigc::mem_fun(*this, &Patchage::on_messages_expander_changed));
+			sigc::mem_fun(*this, &Patchage::on_messages_expander_changed));
 
 	// Idle callback, check if we need to refresh
-	Glib::signal_timeout().connect(sigc::mem_fun(this, &Patchage::idle_callback), 100);
-	
-	// Faster idle callback to update DSP load progress bar
-	//Glib::signal_timeout().connect(sigc::mem_fun(this, &Patchage::update_load), 50);
+	Glib::signal_timeout().connect(
+			sigc::mem_fun(this, &Patchage::idle_callback), 100);
 	
 	_update_pane_position = true;
 }
@@ -356,7 +369,9 @@ Patchage::update_load()
 	const float max_delay = _jack_driver->max_delay();
 
 	if (max_delay != last_delay) {
+		const float sample_rate = _jack_driver->sample_rate();
 		const float buffer_size = _jack_driver->buffer_size();
+		const float period      = buffer_size / sample_rate * 1000000; // usec 
 		
 		_xrun_progress_bar->set_fraction(max_delay / period);
 

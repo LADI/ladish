@@ -22,6 +22,7 @@
 #include <libglademm.h>
 #include <gtkmm/dialog.h>
 #include <fstream>
+#include <string>
 
 
 class JackSettingsDialog : public Gtk::Dialog {
@@ -46,14 +47,14 @@ private:
 
 	string current_jack_command()
 	{
-		string result;
+		std::string result;
 
 		const char* const home = getenv("HOME");
 		if (home) {
-			string jackdrc_path(home);
+			std::string jackdrc_path(home);
 			jackdrc_path += "/.jackdrc";
 
-			ifstream jackdrc(jackdrc_path.c_str());
+			std::ifstream jackdrc(jackdrc_path.c_str());
 			std::getline(jackdrc, result);
 			jackdrc.close();
 		}
@@ -69,8 +70,8 @@ private:
 			string jackdrc_path(home);
 			jackdrc_path += "/.jackdrc";
 			
-			ofstream jackdrc(jackdrc_path.c_str());
-			jackdrc << _command_entry->get_text() << endl;
+			std::ofstream jackdrc(jackdrc_path.c_str());
+			jackdrc << _command_entry->get_text() << std::endl;
 			jackdrc.close();
 		}
 	}

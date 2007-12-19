@@ -23,6 +23,8 @@
 #include "PatchageEvent.hpp"
 #include "JackDriver.hpp"
 
+using namespace std;
+
 	
 SharedPtr<PatchagePort>
 PatchageEvent::find_port(const Patchage* patchage, const PortRef& ref)
