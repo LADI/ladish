@@ -10,7 +10,7 @@ This is the LASH Audio Session Handler Reference Manual,
 Edition @PACKAGE_VERSION@, @DATE@ for LASH version @PACKAGE_VERSION@.
 
 Copyright @copyright{} 2002, 2003 Robert Ham (rah@@bash.sh)
-Copyright @copyright{} 2005, 2006 Dave Robillard (drobilla@@connect.carleton.ca)
+Copyright @copyright{} 2005, 2006 Dave Robillard (dave@@drobilla.net)
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.2
@@ -28,13 +28,13 @@ Free Documentation License''.
 @subtitle Edition @PACKAGE_VERSION@, @DATE@
 @subtitle Covering LASH @PACKAGE_VERSION@
 @author Bob Ham (rah@@bash.sh)
-@author Dave Robillard (drobilla@@connect.carleton.ca)
+@author Dave Robillard (dave@@drobilla.net)
 
 @page
 @vskip 0pt plus 1filll
 
 Copyright @copyright{} 2002, 2003 Robert Ham (rah@@bash.sh)
-Copyright @copyright{} 2005, 2006 Dave Robillard (drobilla@@connect.carleton.ca)
+Copyright @copyright{} 2005-2007 Dave Robillard (dave@@drobilla.net)
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.2

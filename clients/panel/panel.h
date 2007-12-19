@@ -1,5 +1,5 @@
 /* LASH Control Panel
- * Copyright (C) 2006 Dave Robillard <drobilla@connect.carleton.ca>
+ * Copyright (C) 2006 Dave Robillard <dave@drobilla.net>
  *  
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
