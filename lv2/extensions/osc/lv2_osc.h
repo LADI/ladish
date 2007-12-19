@@ -40,14 +40,26 @@ extern "C" {
  * type tag character in LV2Message::types.
  */
 typedef union {
-	int32_t       c; /**< Standard C, 8 bit char, as a 32-bit int. */
-	int32_t       i; /**< 32 bit signed integer. */
-	float         f; /**< 32 bit IEEE-754 float. */
-	int64_t       h; /**< 64 bit signed integer. */
-	double        d; /**< 64 bit IEEE-754 double. */
-	char          s; /**< Standard C, NULL terminated string. */
-	char          S; /**< Standard C, NULL terminated symbol. */
-	unsigned char b; /**< Blob (int32 size then size bytes padded to 32 bits) */
+	/* Standard OSC types */
+	int32_t i; /**< 32 bit signed integer */
+	float   f; /**< 32 bit IEEE-754 floating point number ("float") */
+	char    s; /**< Standard C, NULL terminated string */
+	uint8_t b; /**< Blob (int32 size then size bytes padded to 32 bits) */
+	
+	/* "Nonstandard" OSC types (defined in the OSC standard) */
+	int64_t h; /* 64 bit signed integer */
+	// t       /* OSC-timetag */
+	double  d; /* 64 bit IEEE 754 floating point number ("double") */
+	// S       /* Symbol, represented as an OSC-string */
+	int32_t c; /* Character, represented as a 32-bit integer */
+	// r  /* 32 bit RGBA color */
+	// m  /* 4 byte MIDI message. Bytes from MSB to LSB are: port id, status byte, data1, data2 */
+	// T  /* True. No bytes are allocated in the argument data. */
+	// F  /* False. No bytes are allocated in the argument data. */
+	// N  /* Nil. No bytes are allocated in the argument data. */
+	// I  /* Infinitum. No bytes are allocated in the argument data. */
+	// [  /* The beginning of an array. */
+	// ]  /* The end of an array. */
 } LV2Argument;
 
 
