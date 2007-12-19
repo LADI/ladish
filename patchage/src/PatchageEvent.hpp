@@ -37,14 +37,15 @@ class PatchageEvent {
 public:
 	enum Type {
 		NULL_EVENT = 0,
+		REFRESH,
 		PORT_CREATION,
 		PORT_DESTRUCTION,
 		CONNECTION,
 		DISCONNECTION
 	};
 
-	PatchageEvent()
-		: _type(NULL_EVENT)
+	PatchageEvent(Type type=NULL_EVENT)
+		: _type(type)
 	{}
 
 	PatchageEvent(Type type, jack_port_id_t port)
