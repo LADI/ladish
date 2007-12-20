@@ -23,6 +23,7 @@
 #include <libgnomecanvasmm.h>
 #include <libglademm/xml.h>
 #include CONFIG_H_PATH
+#include "Widget.hpp"
 
 class PatchageCanvas;
 class JackDriver;
@@ -40,8 +41,9 @@ public:
 
 	boost::shared_ptr<PatchageCanvas> canvas() const { return _canvas; }
 	
+	Gtk::Window* window() { return _main_win.get(); }
+	
 	StateManager* state_manager() const { return _state_manager; }
-	Gtk::Window*  window()        const { return _main_window; }
 	JackDriver*   jack_driver()   const { return _jack_driver; }
 #ifdef HAVE_ALSA
 	AlsaDriver*   alsa_driver()   const { return _alsa_driver; }
@@ -51,7 +53,7 @@ public:
 #endif
 	
 	void attach();
-	void quit() { _main_window->hide(); }
+	void quit() { _main_win->hide(); }
 	
 	void        refresh();
 	inline void queue_refresh() { _refresh = true; }
@@ -62,28 +64,26 @@ public:
 
 	int max_pane_position() {
 		return _main_paned->property_max_position()
-		- _messages_expander->get_label_widget()->get_height() - 10;
+			- _messages_expander->get_label_widget()->get_height() - 10;
 	}
 
 protected:
 	void connect_widgets();
 
-	void menu_store_positions();
-	void menu_file_quit();
-	void show_messages_toggled();
-	void view_toolbar_toggled();
-	void menu_view_arrange();
-	void menu_help_about();
+	void on_arrange();
+	void on_help_about();
+	void on_quit();
+	void on_show_messages();
+	void on_store_positions();
+	void on_view_toolbar();
+
 	void zoom(double z);
 	void zoom_changed();
 	bool idle_callback();
 	bool update_load();
 	void update_toolbar();
 
-	//void jack_connect_changed();
 	void buffer_size_changed();
-	//void sample_rate_changed();
-	//void realtime_changed();
 	
 	void on_pane_position_changed();
 	void on_messages_expander_changed();
@@ -92,26 +92,24 @@ protected:
 
 #ifdef HAVE_LASH
 	LashDriver*    _lash_driver;
-	Gtk::MenuItem* _menu_open_session;
-	Gtk::MenuItem* _menu_save_session;
-	Gtk::MenuItem* _menu_save_session_as;
-	Gtk::MenuItem* _menu_close_session;
-	Gtk::MenuItem* _menu_lash_launch;
-	Gtk::MenuItem* _menu_lash_connect;
-	Gtk::MenuItem* _menu_lash_disconnect;
+	Widget<Gtk::MenuItem> _menu_open_session;
+	Widget<Gtk::MenuItem> _menu_save_session;
+	Widget<Gtk::MenuItem> _menu_save_session_as;
+	Widget<Gtk::MenuItem> _menu_close_session;
+	Widget<Gtk::MenuItem> _menu_lash_connect;
+	Widget<Gtk::MenuItem> _menu_lash_disconnect;
 	void menu_open_session();
 	void menu_save_session();
 	void menu_save_session_as();
 	void menu_close_session();
-	void menu_lash_launch();
 	void menu_lash_connect();
 	void menu_lash_disconnect();
 #endif
 
 #ifdef HAVE_ALSA
 	AlsaDriver*    _alsa_driver;
-	Gtk::MenuItem* _menu_alsa_connect;
-	Gtk::MenuItem* _menu_alsa_disconnect;
+	Widget<Gtk::MenuItem> _menu_alsa_connect;
+	Widget<Gtk::MenuItem> _menu_alsa_disconnect;
 	void menu_alsa_connect();
 	void menu_alsa_disconnect();
 #endif
@@ -130,38 +128,35 @@ protected:
 	bool        _update_pane_position;
 	int         _user_pane_position;
 	
-	Gtk::Window*         _main_window;
 	JackSettingsDialog*  _jack_settings_dialog;
-	Gtk::AboutDialog*    _about_window;
-	Gtk::MenuItem*       _menu_jack_settings;
-	Gtk::MenuItem*       _menu_jack_launch;
-	Gtk::MenuItem*       _menu_jack_connect;
-	Gtk::MenuItem*       _menu_jack_disconnect;
-	Gtk::MenuItem*       _menu_store_positions;
-	Gtk::MenuItem*       _menu_file_quit;
-	Gtk::Box*            _toolbars_box;
-	Gtk::CheckMenuItem*  _menu_view_toolbar;
-	Gtk::CheckMenuItem*  _menu_view_messages;
-	Gtk::MenuItem*       _menu_view_refresh;
-	Gtk::MenuItem*       _menu_view_arrange;
-	Gtk::MenuItem*       _menu_help_about;
-	Gtk::Toolbar*        _toolbar;
-	Gtk::ScrolledWindow* _canvas_scrolledwindow;
-	//Gtk::HScale*         _zoom_slider;
-	Gtk::TextView*       _status_text;
-	Gtk::Paned*          _main_paned;
-	Gtk::Expander*       _messages_expander;
-	Gtk::Button*         _rewind_button;
-	Gtk::Button*         _play_button;
-	Gtk::Button*         _stop_button;
-	Gtk::ToolButton*     _zoom_normal_button;
-	Gtk::ToolButton*     _zoom_full_button;
-	//Gtk::ProgressBar*    _load_progress_bar;
-	Gtk::ComboBox*       _buffer_size_combo;
-	Gtk::Label*          _sample_rate_label;
-	Gtk::ProgressBar*    _xrun_progress_bar;
-	Gtk::ToolButton*     _clear_load_button;
-	//Gtk::Statusbar*      _status_bar;
+	
+	Widget<Gtk::AboutDialog>    _about_win;
+	Widget<Gtk::ComboBox>       _buffer_size_combo;
+	Widget<Gtk::ToolButton>     _clear_load_but;
+	Widget<Gtk::Paned>          _main_paned;
+	Widget<Gtk::ScrolledWindow> _main_scrolledwin;
+	Widget<Gtk::Window>         _main_win;
+	Widget<Gtk::ProgressBar>    _main_xrun_progress;
+	Widget<Gtk::MenuItem>       _menu_file_quit;
+	Widget<Gtk::MenuItem>       _menu_help_about;
+	Widget<Gtk::MenuItem>       _menu_jack_connect;
+	Widget<Gtk::MenuItem>       _menu_jack_disconnect;
+	Widget<Gtk::MenuItem>       _menu_jack_settings;
+	Widget<Gtk::MenuItem>       _menu_store_positions;
+	Widget<Gtk::MenuItem>       _menu_view_arrange;
+	Widget<Gtk::CheckMenuItem>  _menu_view_messages;
+	Widget<Gtk::MenuItem>       _menu_view_refresh;
+	Widget<Gtk::CheckMenuItem>  _menu_view_toolbar;
+	Widget<Gtk::Expander>       _messages_expander;
+	Widget<Gtk::Button>         _play_but;
+	Widget<Gtk::Button>         _rewind_but;
+	Widget<Gtk::Label>          _sample_rate_label;
+	Widget<Gtk::TextView>       _status_text;
+	Widget<Gtk::Button>         _stop_but;
+	Widget<Gtk::Toolbar>        _toolbar;
+	Widget<Gtk::Box>            _toolbars_box;
+	Widget<Gtk::ToolButton>     _zoom_full_but;
+	Widget<Gtk::ToolButton>     _zoom_normal_but;
 };
 
 #endif // PATCHAGE_H

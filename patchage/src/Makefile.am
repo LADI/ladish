@@ -23,6 +23,7 @@ patchage_SOURCES = \
 	PatchagePort.hpp \
 	StateManager.cpp  \
 	StateManager.hpp \
+	Widget.hpp \
 	main.cpp
 
 if WITH_LASH
