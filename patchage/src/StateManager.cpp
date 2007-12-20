@@ -27,10 +27,6 @@ using namespace std;
 
 StateManager::StateManager()
 {
-	_window_location.x = 0;
-	_window_location.y = 0;
-	_window_size.x = 640;
-	_window_size.y = 480;
 	_zoom = 1.0;
 }
 
@@ -104,23 +100,22 @@ StateManager::load(const string& filename)
 	}
 
 	string s;
+	is >> s;
 
-	is >> s;
-	if (s != "window_location") throw std::runtime_error("Corrupt settings file.");
-	is >> s;
-	_window_location.x = atoi(s.c_str());
-	is >> s;
-	_window_location.y = atoi(s.c_str());
+	if (s == "window_location") {
+		is >> s; is >> s; is >> s;// skip
+	}
+	
+	if (s == "window_size") {
+		is >> s; is >> s; is >> s;// skip
+	}
 
-	is >> s;
-	if (s != "window_size") throw std::runtime_error("Corrupt settings file.");
-	is >> s;
-	_window_size.x = atoi(s.c_str());
-	is >> s;
-	_window_size.y = atoi(s.c_str());
-
-	is >> s;
-	if (s != "zoom_level") throw std::runtime_error("Corrupt settings file.");
+	if (s != "zoom_level") {
+		std::string msg = "Corrupt settings file: expected \"zoom_level\", found \"";
+		msg.append(s).append("\"");
+		throw std::runtime_error(msg);
+	}
+	
 	is >> s;
 	_zoom = atof(s.c_str());
 
@@ -170,8 +165,6 @@ StateManager::save(const string& filename)
 	std::ofstream os;
 	os.open(filename.c_str(), std::ios::out);
 
-	os << "window_location " << _window_location.x << " " << _window_location.y << std::endl;
-	os << "window_size " << _window_size.x << " " << _window_size.y << std::endl;
 	os << "zoom_level " << _zoom << std::endl;
 
 	ModuleLocation ml;
@@ -188,34 +181,6 @@ StateManager::save(const string& filename)
 	}
 
 	os.close();
-}
-
-
-Coord
-StateManager::get_window_location() 
-{
-	return _window_location;
-}
-
-
-void
-StateManager::set_window_location(Coord loc) 
-{
-	_window_location = loc;
-}
-
-
-Coord
-StateManager::get_window_size() 
-{
-	return _window_size;
-}
-
-
-void
-StateManager::set_window_size(Coord size) 
-{
-	_window_size = size;
 }
 
 

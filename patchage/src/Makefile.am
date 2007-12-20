@@ -1,4 +1,4 @@
-AM_CXXFLAGS = -I.. -I$(top_srcdir)/raul -I$(top_srcdir)/flowcanvas -DPKGDATADIR=\"$(pkgdatadir)\" @GTHREAD_CFLAGS@ @LIBGLADEMM_CFLAGS@ @GNOMECANVASMM_CFLAGS@ @JACK_CFLAGS@ @ALSA_CFLAGS@ @LASH_CFLAGS@
+AM_CXXFLAGS = -I.. -I$(top_srcdir)/raul -I$(top_srcdir)/flowcanvas -DDATA_DIR=\"$(pkgdatadir)\" @GTHREAD_CFLAGS@ @LIBGLADEMM_CFLAGS@ @GNOMECANVASMM_CFLAGS@ @JACK_CFLAGS@ @ALSA_CFLAGS@ @LASH_CFLAGS@
 patchage_LDADD = @GTHREAD_LIBS@ @LIBGLADEMM_LIBS@ @GNOMECANVASMM_LIBS@ @JACK_LIBS@ @ALSA_LIBS@ @LASH_LIBS@ @RAUL_LIBS@ @FLOWCANVAS_LIBS@
 
 EXTRA_DIST = patchage.gladep
@@ -8,21 +8,22 @@ dist_sharefiles_DATA = patchage.glade
 
 bin_PROGRAMS = patchage
 patchage_SOURCES = \
-	main.cpp \
-	Patchage.hpp \
-	Patchage.cpp \
+	Driver.hpp \
+	GladeFile.hpp \
+	JackDriver.cpp \
+	JackDriver.hpp \
 	JackSettingsDialog.hpp \
-	StateManager.hpp \
-	StateManager.cpp  \
+	Patchage.cpp \
+	Patchage.hpp \
+	PatchageCanvas.cpp \
+	PatchageCanvas.hpp \
+	PatchageEvent.cpp \
+	PatchageEvent.hpp \
 	PatchageModule.hpp \
 	PatchagePort.hpp \
-	Driver.hpp \
-	PatchageEvent.hpp \
-	PatchageEvent.cpp \
-	JackDriver.hpp \
-	JackDriver.cpp \
-	PatchageCanvas.hpp \
-	PatchageCanvas.cpp
+	StateManager.cpp  \
+	StateManager.hpp \
+	main.cpp
 
 if WITH_LASH
 patchage_SOURCES += LashDriver.hpp LashDriver.cpp
