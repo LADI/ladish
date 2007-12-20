@@ -71,14 +71,23 @@ gtkmm_set_width_for_given_text (Gtk::Widget &w, const gchar *text,
 /* end Gtk helpers */
 
 
+#define INIT_WIDGET(x) x(xml, ((const char*)#x) + 1)
 
 Patchage::Patchage(int argc, char** argv)
 	: xml(GladeFile::open("patchage"))
 #ifdef HAVE_LASH
 	, _lash_driver(NULL)
+	, INIT_WIDGET(_menu_open_session)
+	, INIT_WIDGET(_menu_save_session)
+	, INIT_WIDGET(_menu_save_session_as)
+	, INIT_WIDGET(_menu_close_session)
+	, INIT_WIDGET(_menu_lash_connect)
+	, INIT_WIDGET(_menu_lash_disconnect)
 #endif
 #ifdef HAVE_ALSA
 	, _alsa_driver(NULL)
+	, INIT_WIDGET(_menu_alsa_connect)
+	, INIT_WIDGET(_menu_alsa_disconnect)
 #endif
 	, _jack_driver(NULL)
 	, _state_manager(NULL)
@@ -87,12 +96,40 @@ Patchage::Patchage(int argc, char** argv)
 	, _pane_closed(false)
 	, _update_pane_position(true)
 	, _user_pane_position(0)
+	, _jack_settings_dialog(NULL)
+	, INIT_WIDGET(_about_win)
+	, INIT_WIDGET(_buffer_size_combo)
+	, INIT_WIDGET(_clear_load_but)
+	, INIT_WIDGET(_main_paned)
+	, INIT_WIDGET(_main_scrolledwin)
+	, INIT_WIDGET(_main_win)
+	, INIT_WIDGET(_main_xrun_progress)
+	, INIT_WIDGET(_menu_file_quit)
+	, INIT_WIDGET(_menu_help_about)
+	, INIT_WIDGET(_menu_jack_connect)
+	, INIT_WIDGET(_menu_jack_disconnect)
+	, INIT_WIDGET(_menu_jack_settings)
+	, INIT_WIDGET(_menu_store_positions)
+	, INIT_WIDGET(_menu_view_arrange)
+	, INIT_WIDGET(_menu_view_messages)
+	, INIT_WIDGET(_menu_view_refresh)
+	, INIT_WIDGET(_menu_view_toolbar)
+	, INIT_WIDGET(_messages_expander)
+	, INIT_WIDGET(_play_but)
+	, INIT_WIDGET(_rewind_but)
+	, INIT_WIDGET(_sample_rate_label)
+	, INIT_WIDGET(_status_text)
+	, INIT_WIDGET(_stop_but)
+	, INIT_WIDGET(_toolbar)
+	, INIT_WIDGET(_toolbars_box)
+	, INIT_WIDGET(_zoom_full_but)
+	, INIT_WIDGET(_zoom_normal_but)
 {
 	_settings_filename = getenv("HOME");
 	_settings_filename += "/.patchagerc";
-
 	_state_manager = new StateManager();
 	_canvas = boost::shared_ptr<PatchageCanvas>(new PatchageCanvas(this, 1600*2, 1200*2));
+
 	_jack_driver = new JackDriver(this);
 	_jack_driver->signal_detached.connect(sigc::mem_fun(this, &Patchage::queue_refresh));
 
@@ -106,54 +143,12 @@ Patchage::Patchage(int argc, char** argv)
 	_lash_driver = new LashDriver(this, argc, argv);
 #endif
 
-	xml->get_widget("patchage_win", _main_window);
 	xml->get_widget_derived("jack_settings_win", _jack_settings_dialog);
-	xml->get_widget("about_win", _about_window);
-	xml->get_widget("jack_settings_menuitem", _menu_jack_settings);
-	xml->get_widget("connect_to_jack_menuitem", _menu_jack_connect);
-	xml->get_widget("disconnect_from_jack_menuitem", _menu_jack_disconnect);
-#ifdef HAVE_LASH
-	xml->get_widget("open_session_menuitem", _menu_open_session);
-	xml->get_widget("save_session_menuitem", _menu_save_session);
-	xml->get_widget("save_session_as_menuitem", _menu_save_session_as);
-	xml->get_widget("close_session_menuitem", _menu_close_session);
-	xml->get_widget("connect_to_lash_menuitem", _menu_lash_connect);
-	xml->get_widget("disconnect_from_lash_menuitem", _menu_lash_disconnect);
-#endif
-#ifdef HAVE_ALSA
-	xml->get_widget("connect_to_alsa_menuitem", _menu_alsa_connect);
-	xml->get_widget("disconnect_from_alsa_menuitem", _menu_alsa_disconnect);
-#endif
-	xml->get_widget("store_positions_menuitem", _menu_store_positions);
-	xml->get_widget("file_quit_menuitem", _menu_file_quit);
-	xml->get_widget("view_refresh_menuitem", _menu_view_refresh);
-	xml->get_widget("view_arrange_menuitem", _menu_view_arrange);
-	xml->get_widget("view_messages_menuitem", _menu_view_messages);
-	xml->get_widget("view_toolbar_menuitem", _menu_view_toolbar);
-	xml->get_widget("help_about_menuitem", _menu_help_about);
-	xml->get_widget("toolbar", _toolbar);
-	xml->get_widget("toolbars_hbox", _toolbars_box);
-	xml->get_widget("canvas_scrolledwindow", _canvas_scrolledwindow);
-	//xml->get_widget("zoom_scale", _zoom_slider);
-	xml->get_widget("status_text", _status_text);
-	xml->get_widget("main_paned", _main_paned);
-	xml->get_widget("messages_expander", _messages_expander);
-	xml->get_widget("rewind_but", _rewind_button);
-	xml->get_widget("play_but", _play_button);
-	xml->get_widget("stop_but", _stop_button);
-	xml->get_widget("zoom_full_but", _zoom_full_button);
-	xml->get_widget("zoom_normal_but", _zoom_normal_button);
-	//xml->get_widget("main_statusbar", _status_bar);
-	//xml->get_widget("main_load_progress", _load_progress_bar);
-	//xml->get_widget("main_jack_connect_toggle", _jack_connect_toggle);
-	//xml->get_widget("main_jack_realtime_check", _jack_realtime_check);
-	xml->get_widget("main_buffer_size_combo", _buffer_size_combo);
-	xml->get_widget("main_xrun_progress", _xrun_progress_bar);
-	xml->get_widget("main_clear_load_button", _clear_load_button);
+	_about_win->property_program_name() = "Patchage";
 	
 	gtkmm_set_width_for_given_text(*_buffer_size_combo, "4096 frames", 40);
 
-	_canvas_scrolledwindow->add(*_canvas);
+	_main_scrolledwin->add(*_canvas);
 	_canvas->scroll_to(static_cast<int>(_canvas->width()/2 - 320),
 	                   static_cast<int>(_canvas->height()/2 - 240)); // FIXME: hardcoded
 
@@ -164,17 +159,17 @@ Patchage::Patchage(int argc, char** argv)
 	
 	_buffer_size_combo->signal_changed().connect(
 			sigc::mem_fun(this, &Patchage::buffer_size_changed));
-	_rewind_button->signal_clicked().connect(
+	_rewind_but->signal_clicked().connect(
 			sigc::mem_fun(_jack_driver, &JackDriver::rewind_transport));
-	_play_button->signal_clicked().connect(
+	_play_but->signal_clicked().connect(
 			sigc::mem_fun(_jack_driver, &JackDriver::start_transport));
-	_stop_button->signal_clicked().connect(
+	_stop_but->signal_clicked().connect(
 			sigc::mem_fun(_jack_driver, &JackDriver::stop_transport));
-	_clear_load_button->signal_clicked().connect(
+	_clear_load_but->signal_clicked().connect(
 			sigc::mem_fun(this, &Patchage::clear_load));
-	_zoom_normal_button->signal_clicked().connect(sigc::bind(
+	_zoom_normal_but->signal_clicked().connect(sigc::bind(
 			sigc::mem_fun(this, &Patchage::zoom), 1.0));
-	_zoom_full_button->signal_clicked().connect(
+	_zoom_full_but->signal_clicked().connect(
 			sigc::mem_fun(_canvas.get(), &PatchageCanvas::zoom_full));
 	_menu_jack_settings->signal_activate().connect(sigc::hide_return(
 			sigc::mem_fun(_jack_settings_dialog, &JackSettingsDialog::run)));
@@ -206,29 +201,29 @@ Patchage::Patchage(int argc, char** argv)
 #endif
 	
 	_menu_store_positions->signal_activate().connect(
-			sigc::mem_fun(this, &Patchage::menu_store_positions));
+			sigc::mem_fun(this, &Patchage::on_store_positions));
 	_menu_file_quit->signal_activate().connect(
-			sigc::mem_fun(this, &Patchage::menu_file_quit));
+			sigc::mem_fun(this, &Patchage::on_quit));
 	_menu_view_refresh->signal_activate().connect(
 			sigc::mem_fun(this, &Patchage::refresh));
 	_menu_view_arrange->signal_activate().connect(
-			sigc::mem_fun(this, &Patchage::menu_view_arrange));
+			sigc::mem_fun(this, &Patchage::on_arrange));
 	_menu_view_toolbar->signal_activate().connect(
-			sigc::mem_fun(this, &Patchage::view_toolbar_toggled));
+			sigc::mem_fun(this, &Patchage::on_view_toolbar));
 	_menu_view_messages->signal_toggled().connect(
-			sigc::mem_fun(this, &Patchage::show_messages_toggled));
+			sigc::mem_fun(this, &Patchage::on_show_messages));
 	_menu_help_about->signal_activate().connect(
-			sigc::mem_fun(this, &Patchage::menu_help_about));
+			sigc::mem_fun(this, &Patchage::on_help_about));
 
 	connect_widgets();
 	update_state();
 
 	_canvas->show();
-	_main_window->present();
+	_main_win->present();
 
 	_update_pane_position = false;
 	_main_paned->set_position(max_pane_position());
-	_user_pane_position = max_pane_position() - _main_window->get_height()/8;
+	_user_pane_position = max_pane_position() - _main_win->get_height()/8;
 	_messages_expander->set_expanded(false);
 	_pane_closed = true;
 	
@@ -355,15 +350,15 @@ Patchage::update_load()
 		const float buffer_size = _jack_driver->buffer_size();
 		const float period      = buffer_size / sample_rate * 1000000; // usec 
 		
-		_xrun_progress_bar->set_fraction(max_delay / period);
+		_main_xrun_progress->set_fraction(max_delay / period);
 
 		char tmp_buf[8];
 		snprintf(tmp_buf, 8, "%zd", _jack_driver->xruns());
 
-		_xrun_progress_bar->set_text(string(tmp_buf) + " Dropouts");
+		_main_xrun_progress->set_text(string(tmp_buf) + " Dropouts");
 
 		if (max_delay > period) {
-			_xrun_progress_bar->set_fraction(1.0);
+			_main_xrun_progress->set_fraction(1.0);
 			_jack_driver->reset_delay();
 		}
 
@@ -393,6 +388,46 @@ Patchage::zoom_changed()
 	}
 }
 
+	
+void
+Patchage::refresh() 
+{
+	assert(_canvas);
+
+	if (_enable_refresh) {
+
+		_canvas->destroy();
+
+		if (_jack_driver)
+			_jack_driver->refresh();
+
+#ifdef HAVE_ALSA
+		if (_alsa_driver)
+			_alsa_driver->refresh();
+#endif
+	}
+}
+
+
+void
+Patchage::clear_load()
+{
+	_main_xrun_progress->set_fraction(0.0);
+	_jack_driver->reset_xruns();
+	_jack_driver->reset_delay();
+}
+
+	
+void
+Patchage::status_message(const string& msg) 
+{
+	if (_status_text->get_buffer()->size() > 0)
+		_status_text->get_buffer()->insert(_status_text->get_buffer()->end(), "\n");
+
+	_status_text->get_buffer()->insert(_status_text->get_buffer()->end(), msg);
+	_status_text->scroll_to_mark(_status_text->get_buffer()->get_insert(), 0);
+}
+
 
 void
 Patchage::update_state()
@@ -405,17 +440,6 @@ Patchage::update_state()
 }
 
 
-void
-Patchage::status_message(const string& msg) 
-{
-	if (_status_text->get_buffer()->size() > 0)
-		_status_text->get_buffer()->insert(_status_text->get_buffer()->end(), "\n");
-
-	_status_text->get_buffer()->insert(_status_text->get_buffer()->end(), msg);
-	_status_text->scroll_to_mark(_status_text->get_buffer()->get_insert(), 0);
-}
-
-
 /** Update the sensitivity status of menus to reflect the present.
  *
  * (eg. disable "Connect to Jack" when Patchage is already connected to Jack)
@@ -425,40 +449,40 @@ Patchage::connect_widgets()
 {
 #ifdef HAVE_LASH
 	_lash_driver->signal_attached.connect(sigc::bind(
-			sigc::mem_fun(_menu_lash_connect, &Gtk::MenuItem::set_sensitive), false));
+			sigc::mem_fun(*_menu_lash_connect, &Gtk::MenuItem::set_sensitive), false));
 	_lash_driver->signal_attached.connect(sigc::bind(
-			sigc::mem_fun(_menu_lash_disconnect, &Gtk::MenuItem::set_sensitive), true));
+			sigc::mem_fun(*_menu_lash_disconnect, &Gtk::MenuItem::set_sensitive), true));
 	
 	_lash_driver->signal_detached.connect(sigc::bind(
-			sigc::mem_fun(_menu_lash_connect, &Gtk::MenuItem::set_sensitive), true));
+			sigc::mem_fun(*_menu_lash_connect, &Gtk::MenuItem::set_sensitive), true));
 	_lash_driver->signal_detached.connect(sigc::bind(
-			sigc::mem_fun(_menu_lash_disconnect, &Gtk::MenuItem::set_sensitive), false));
+			sigc::mem_fun(*_menu_lash_disconnect, &Gtk::MenuItem::set_sensitive), false));
 #endif
 
 	_jack_driver->signal_attached.connect(
 			sigc::mem_fun(this, &Patchage::update_toolbar));
 	_jack_driver->signal_attached.connect(sigc::bind(
-			sigc::mem_fun(_menu_jack_connect, &Gtk::MenuItem::set_sensitive), false));
+			sigc::mem_fun(*_menu_jack_connect, &Gtk::MenuItem::set_sensitive), false));
 	_jack_driver->signal_attached.connect(
 			sigc::mem_fun(this, &Patchage::refresh));
 	_jack_driver->signal_attached.connect(sigc::bind(
-			sigc::mem_fun(_menu_jack_disconnect, &Gtk::MenuItem::set_sensitive), true));
+			sigc::mem_fun(*_menu_jack_disconnect, &Gtk::MenuItem::set_sensitive), true));
 	
 	_jack_driver->signal_detached.connect(sigc::bind(
-			sigc::mem_fun(_menu_jack_connect, &Gtk::MenuItem::set_sensitive), true));
+			sigc::mem_fun(*_menu_jack_connect, &Gtk::MenuItem::set_sensitive), true));
 	_jack_driver->signal_detached.connect(sigc::bind(
-			sigc::mem_fun(_menu_jack_disconnect, &Gtk::MenuItem::set_sensitive), false));
+			sigc::mem_fun(*_menu_jack_disconnect, &Gtk::MenuItem::set_sensitive), false));
 
 #ifdef HAVE_ALSA	
 	_alsa_driver->signal_attached.connect(sigc::bind(
-			sigc::mem_fun(_menu_alsa_connect, &Gtk::MenuItem::set_sensitive), false));
+			sigc::mem_fun(*_menu_alsa_connect, &Gtk::MenuItem::set_sensitive), false));
 	_alsa_driver->signal_attached.connect(sigc::bind(
-			sigc::mem_fun(_menu_alsa_disconnect, &Gtk::MenuItem::set_sensitive), true));
+			sigc::mem_fun(*_menu_alsa_disconnect, &Gtk::MenuItem::set_sensitive), true));
 	
 	_alsa_driver->signal_detached.connect(sigc::bind(
-			sigc::mem_fun(_menu_alsa_connect, &Gtk::MenuItem::set_sensitive), true));
+			sigc::mem_fun(*_menu_alsa_connect, &Gtk::MenuItem::set_sensitive), true));
 	_alsa_driver->signal_detached.connect(sigc::bind(
-			sigc::mem_fun(_menu_alsa_disconnect, &Gtk::MenuItem::set_sensitive), false));
+			sigc::mem_fun(*_menu_alsa_disconnect, &Gtk::MenuItem::set_sensitive), false));
 #endif
 }
 
@@ -467,7 +491,7 @@ Patchage::connect_widgets()
 void
 Patchage::menu_open_session() 
 {
-	Gtk::FileChooserDialog dialog(*_main_window, "Open LASH Session",
+	Gtk::FileChooserDialog dialog(*_main_win, "Open LASH Session",
 			Gtk::FILE_CHOOSER_ACTION_SELECT_FOLDER);
 	
 	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
@@ -495,7 +519,7 @@ Patchage::menu_save_session_as()
 	if (!_lash_driver)
 		return;
 
-	Gtk::FileChooserDialog dialog(*_main_window, "Save LASH Session",
+	Gtk::FileChooserDialog dialog(*_main_win, "Save LASH Session",
 			Gtk::FILE_CHOOSER_ACTION_SAVE);
 	
 	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
@@ -547,30 +571,12 @@ Patchage::menu_alsa_disconnect()
 }
 #endif
 
-void
-Patchage::menu_store_positions() 
-{
-	_state_manager->save(_settings_filename);
-}
-
-
-void
-Patchage::menu_file_quit() 
-{
-#ifdef HAVE_ALSA
-	_alsa_driver->detach();
-#endif
-	_jack_driver->detach();
-	_main_window->hide();
-}
-
 
 void
 Patchage::on_pane_position_changed()
 {
-	// avoid infinite recursion...
 	if (!_update_pane_position)
-		return;
+		return; // avoid infinite recursion ...
 
 	_update_pane_position = false;
 
@@ -591,7 +597,7 @@ Patchage::on_pane_position_changed()
 			_main_paned->set_position(max_pane_position()); // ... here
 		_menu_view_messages->set_active(false);
 		
-		_user_pane_position = max_pane_position() - _main_window->get_height()/8;
+		_user_pane_position = max_pane_position() - _main_win->get_height()/8;
 	}
 
 	_update_pane_position = true;
@@ -621,44 +627,49 @@ Patchage::on_messages_expander_changed()
 
 
 void
-Patchage::show_messages_toggled()
-{
-	if (_update_pane_position)
-		_messages_expander->set_expanded(_menu_view_messages->get_active());
-}
-
-
-void
-Patchage::refresh() 
-{
-	assert(_canvas);
-
-	if (_enable_refresh) {
-
-		_canvas->destroy();
-
-		if (_jack_driver)
-			_jack_driver->refresh();
-
-#ifdef HAVE_ALSA
-		if (_alsa_driver)
-			_alsa_driver->refresh();
-#endif
-	}
-}
-
-
-void
-Patchage::menu_view_arrange() 
+Patchage::on_arrange() 
 {
 	assert(_canvas);
 	
 	_canvas->arrange();
 }
 
+	
+void
+Patchage::on_help_about() 
+{
+	_about_win->run();
+	_about_win->hide();
+}
 
 void
-Patchage::view_toolbar_toggled() 
+Patchage::on_quit() 
+{
+#ifdef HAVE_ALSA
+	_alsa_driver->detach();
+#endif
+	_jack_driver->detach();
+	_main_win->hide();
+}
+
+	
+void
+Patchage::on_show_messages()
+{
+	if (_update_pane_position)
+		_messages_expander->set_expanded(_menu_view_messages->get_active());
+}
+
+	
+void
+Patchage::on_store_positions() 
+{
+	_state_manager->save(_settings_filename);
+}
+
+
+void
+Patchage::on_view_toolbar() 
 {
 	_update_pane_position = false;
 
@@ -672,22 +683,6 @@ Patchage::view_toolbar_toggled()
 
 
 void
-Patchage::menu_help_about() 
-{
-	_about_window->show();
-}
-
-
-void
-Patchage::clear_load()
-{
-	_xrun_progress_bar->set_fraction(0.0);
-	_jack_driver->reset_xruns();
-	_jack_driver->reset_delay();
-}
-
-
-void
 Patchage::buffer_size_changed()
 {
 	const int selected = _buffer_size_combo->get_active_row_number();
@@ -697,8 +692,6 @@ Patchage::buffer_size_changed()
 	} else {
 		jack_nframes_t buffer_size = 1 << (selected+5);
 	
-		//cerr << "BS Changed: " << selected << ": " << buffer_size << endl;
-
 		if ( ! _jack_driver->set_buffer_size(buffer_size))
 			update_toolbar(); // reset combo box to actual value
 	}

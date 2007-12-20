@@ -2,7 +2,7 @@
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
 <!--*- mode: xml -*-->
 <glade-interface>
-  <widget class="GtkWindow" id="patchage_win">
+  <widget class="GtkWindow" id="main_win">
     <property name="border_width">1</property>
     <property name="title" translatable="yes">Patchage</property>
     <property name="default_width">640</property>
@@ -22,7 +22,7 @@
                 <child>
                   <widget class="GtkMenu" id="file_menu_menu">
                     <child>
-                      <widget class="GtkImageMenuItem" id="open_session_menuitem">
+                      <widget class="GtkImageMenuItem" id="menu_open_session">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Open Project</property>
                         <property name="use_underline">True</property>
@@ -38,7 +38,7 @@
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkImageMenuItem" id="save_session_menuitem">
+                      <widget class="GtkImageMenuItem" id="menu_save_session">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Save Project</property>
                         <property name="use_underline">True</property>
@@ -54,7 +54,7 @@
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkImageMenuItem" id="save_session_as_menuitem">
+                      <widget class="GtkImageMenuItem" id="menu_save_session_as">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">Save Project _As...</property>
                         <property name="use_underline">True</property>
@@ -70,7 +70,7 @@
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkImageMenuItem" id="close_session_menuitem">
+                      <widget class="GtkImageMenuItem" id="menu_close_session">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Close Project</property>
                         <property name="use_underline">True</property>
@@ -90,7 +90,7 @@
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkImageMenuItem" id="store_positions_menuitem">
+                      <widget class="GtkImageMenuItem" id="menu_store_positions">
                         <property name="visible">True</property>
                         <property name="tooltip" translatable="yes">Store the current module positions as the defaults</property>
                         <property name="label" translatable="yes">_Save Layout as Default</property>
@@ -111,7 +111,7 @@
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkImageMenuItem" id="file_quit_menuitem">
+                      <widget class="GtkImageMenuItem" id="menu_file_quit">
                         <property name="visible">True</property>
                         <property name="label">gtk-quit</property>
                         <property name="use_underline">True</property>
@@ -124,14 +124,14 @@
               </widget>
             </child>
             <child>
-              <widget class="GtkMenuItem" id="file_system_menuitem">
+              <widget class="GtkMenuItem" id="menu_file_system">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">_System</property>
                 <property name="use_underline">True</property>
                 <child>
                   <widget class="GtkMenu" id="file_system_menuitem_menu">
                     <child>
-                      <widget class="GtkImageMenuItem" id="jack_settings_menuitem">
+                      <widget class="GtkImageMenuItem" id="menu_jack_settings">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">Jack _Settings</property>
                         <property name="use_underline">True</property>
@@ -152,11 +152,11 @@
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkImageMenuItem" id="connect_to_jack_menuitem">
+                      <widget class="GtkImageMenuItem" id="menu_jack_connect">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">Connect to _JACK</property>
                         <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_connect_to_jack_menuitem_activate"/>
+                        <signal name="activate" handler="on_menu_jack_connect_activate"/>
                         <accelerator key="J" modifiers="GDK_CONTROL_MASK" signal="activate"/>
                         <child internal-child="image">
                           <widget class="GtkImage" id="image829">
@@ -168,7 +168,7 @@
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkImageMenuItem" id="disconnect_from_jack_menuitem">
+                      <widget class="GtkImageMenuItem" id="menu_jack_disconnect">
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="label" translatable="yes">Disconnect from JACK</property>
@@ -190,11 +190,11 @@
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkImageMenuItem" id="connect_to_alsa_menuitem">
+                      <widget class="GtkImageMenuItem" id="menu_alsa_connect">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">Connect to _ALSA</property>
                         <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_connect_to_alsa_menuitem_activate"/>
+                        <signal name="activate" handler="on_menu_alsa_connect_activate"/>
                         <accelerator key="A" modifiers="GDK_CONTROL_MASK" signal="activate"/>
                         <child internal-child="image">
                           <widget class="GtkImage" id="image831">
@@ -206,12 +206,12 @@
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkImageMenuItem" id="disconnect_from_alsa_menuitem">
+                      <widget class="GtkImageMenuItem" id="menu_alsa_disconnect">
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="label" translatable="yes">Disconnect from ALSA</property>
                         <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_disconnect_from_alsa_menuitem_activate"/>
+                        <signal name="activate" handler="on_menu_alsa_disconnect_activate"/>
                         <accelerator key="A" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK" signal="activate"/>
                         <child internal-child="image">
                           <widget class="GtkImage" id="image832">
@@ -228,11 +228,11 @@
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkImageMenuItem" id="connect_to_lash_menuitem">
+                      <widget class="GtkImageMenuItem" id="menu_lash_connect">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">Connect to _LASH</property>
                         <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_connect_to_lash1_activate"/>
+                        <signal name="activate" handler="on_menu_lash_connect"/>
                         <accelerator key="L" modifiers="GDK_CONTROL_MASK" signal="activate"/>
                         <child internal-child="image">
                           <widget class="GtkImage" id="image833">
@@ -244,12 +244,12 @@
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkImageMenuItem" id="disconnect_from_lash_menuitem">
+                      <widget class="GtkImageMenuItem" id="menu_lash_disconnect">
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="label" translatable="yes">Disconnect from LASH</property>
                         <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_disconnect_from_lash1_activate"/>
+                        <signal name="activate" handler="on_menu_lash_disconnect_activate"/>
                         <accelerator key="L" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK" signal="activate"/>
                         <child internal-child="image">
                           <widget class="GtkImage" id="image834">
@@ -272,17 +272,17 @@
                 <child>
                   <widget class="GtkMenu" id="view_menu_menu">
                     <child>
-                      <widget class="GtkCheckMenuItem" id="view_toolbar_menuitem">
+                      <widget class="GtkCheckMenuItem" id="menu_view_toolbar">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Toolbar</property>
                         <property name="use_underline">True</property>
                         <property name="active">True</property>
-                        <signal name="activate" handler="on_view_jack_toolbar_menuitem_activate"/>
+                        <signal name="activate" handler="on_menu_view_toolbar_activate"/>
                         <accelerator key="T" modifiers="GDK_CONTROL_MASK" signal="activate"/>
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkCheckMenuItem" id="view_messages_menuitem">
+                      <widget class="GtkCheckMenuItem" id="menu_view_messages">
                         <property name="visible">True</property>
                         <property name="tooltip" translatable="yes">View "console" messages</property>
                         <property name="label" translatable="yes">_Messages</property>
@@ -292,7 +292,7 @@
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkImageMenuItem" id="view_refresh_menuitem">
+                      <widget class="GtkImageMenuItem" id="menu_view_refresh">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Refresh</property>
                         <property name="use_underline">True</property>
@@ -308,12 +308,12 @@
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkImageMenuItem" id="view_arrange_menuitem">
+                      <widget class="GtkImageMenuItem" id="menu_view_arrange">
                         <property name="visible">True</property>
                         <property name="tooltip" translatable="yes">Automatically organize canvas</property>
                         <property name="label" translatable="yes">_Arrange</property>
                         <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_view_arrange_menuitem_activate"/>
+                        <signal name="activate" handler="on_menu_view_arrange"/>
                         <accelerator key="G" modifiers="GDK_CONTROL_MASK" signal="activate"/>
                         <child internal-child="image">
                           <widget class="GtkImage" id="image836">
@@ -336,7 +336,7 @@
                 <child>
                   <widget class="GtkMenu" id="help_menu_menu">
                     <child>
-                      <widget class="GtkImageMenuItem" id="help_about_menuitem">
+                      <widget class="GtkImageMenuItem" id="menu_help_about">
                         <property name="visible">True</property>
                         <property name="label">gtk-about</property>
                         <property name="use_underline">True</property>
@@ -355,7 +355,7 @@
           </packing>
         </child>
         <child>
-          <widget class="GtkHBox" id="toolbars_hbox">
+          <widget class="GtkHBox" id="toolbars_box">
             <property name="visible">True</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
             <child>
@@ -386,7 +386,7 @@
                               </packing>
                             </child>
                             <child>
-                              <widget class="GtkComboBoxEntry" id="main_buffer_size_combo">
+                              <widget class="GtkComboBoxEntry" id="buffer_size_combo">
                                 <property name="visible">True</property>
                                 <property name="border_width">1</property>
                                 <property name="items" translatable="yes">32 frames
@@ -408,7 +408,7 @@
                               </packing>
                             </child>
                             <child>
-                              <widget class="GtkLabel" id="main_sample_rate_label">
+                              <widget class="GtkLabel" id="sample_rate_label">
                                 <property name="label" translatable="yes">48</property>
                               </widget>
                               <packing>
@@ -450,7 +450,7 @@
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkToolButton" id="main_clear_load_button">
+                  <widget class="GtkToolButton" id="clear_load_but">
                     <property name="visible">True</property>
                     <property name="stock_id">gtk-clear</property>
                   </widget>
@@ -694,7 +694,7 @@ The bar represents the maximum processing delay as a fraction of the time availa
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <child>
-              <widget class="GtkScrolledWindow" id="canvas_scrolledwindow">
+              <widget class="GtkScrolledWindow" id="main_scrolledwin">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="has_focus">True</property>
@@ -878,7 +878,7 @@ along with Patchage; if not, write to the Free Software Foundation, Inc.,
             <property name="visible">True</property>
             <property name="layout_style">GTK_BUTTONBOX_END</property>
             <child>
-              <widget class="GtkButton" id="jack_settings_cancel_button">
+              <widget class="GtkButton" id="jack_settings_cancel_but">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="label">gtk-cancel</property>
@@ -887,7 +887,7 @@ along with Patchage; if not, write to the Free Software Foundation, Inc.,
               </widget>
             </child>
             <child>
-              <widget class="GtkButton" id="jack_settings_ok_button">
+              <widget class="GtkButton" id="jack_settings_ok_but">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="can_default">True</property>

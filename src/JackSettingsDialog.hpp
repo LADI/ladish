@@ -28,25 +28,24 @@
 class JackSettingsDialog : public Gtk::Dialog {
 public:
 	JackSettingsDialog(BaseObjectType* cobject, const Glib::RefPtr<Gnome::Glade::Xml>& xml)
-	: Gtk::Dialog(cobject)
+		: Gtk::Dialog(cobject)
 	{
 		xml->get_widget("jack_settings_command_entry", _command_entry);
-		xml->get_widget("jack_settings_cancel_button", _cancel_button);
-		xml->get_widget("jack_settings_ok_button", _ok_button);
+		xml->get_widget("jack_settings_cancel_but", _cancel_but);
+		xml->get_widget("jack_settings_ok_but", _ok_but);
 
-		_cancel_button->signal_clicked().connect(sigc::mem_fun(this, &JackSettingsDialog::on_cancel));
-		_ok_button->signal_clicked().connect(sigc::mem_fun(this, &JackSettingsDialog::on_ok));
+		_cancel_but->signal_clicked().connect(
+				sigc::mem_fun(this, &JackSettingsDialog::on_cancel));
+		_ok_but->signal_clicked().connect(
+				sigc::mem_fun(this, &JackSettingsDialog::on_ok));
+		
 		_command_entry->set_text(current_jack_command());
 	}
 
 private:
-	void on_cancel()
-	{
-		hide();
-	}
+	void on_cancel() { hide(); }
 
-	string current_jack_command()
-	{
+	string current_jack_command() {
 		std::string result;
 
 		const char* const home = getenv("HOME");
@@ -62,8 +61,7 @@ private:
 		return result;
 	}
 
-	void on_ok()
-	{
+	void on_ok() {
 		hide();
 		const char* const home = getenv("HOME");
 		if (home) {
@@ -78,8 +76,8 @@ private:
 
 
 	Gtk::Entry*  _command_entry;
-	Gtk::Button* _cancel_button;
-	Gtk::Button* _ok_button;
+	Gtk::Button* _cancel_but;
+	Gtk::Button* _ok_but;
 };
 
 
