@@ -88,7 +88,6 @@ void
 LashDriver::on_save_file(const string& directory)
 {
 	cout << "[LashDriver] LASH Save File - " << directory << endl;
-	_app->store_window_location();
 	_app->state_manager()->save(directory + "/locations");
 }
 

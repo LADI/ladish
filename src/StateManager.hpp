@@ -53,12 +53,6 @@ public:
 	void set_module_split(const string& name, bool split);
 	bool get_module_split(const string& name, bool default_val) const;
 	
-	Coord get_window_location();
-	void  set_window_location(Coord loc);
-
-	Coord get_window_size();
-	void  set_window_size(Coord loc);
-
 	float get_zoom();
 	void  set_zoom(float zoom);
 	
@@ -67,8 +61,6 @@ public:
 private:
 	list<ModuleLocation> _module_locations;
 	map<string,bool>     _module_splits;
-	Coord                _window_location;
-	Coord                _window_size;
 	float                _zoom;
 };
 

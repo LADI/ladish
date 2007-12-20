@@ -24,17 +24,18 @@
 #include <jack/statistics.h>
 
 #include CONFIG_H_PATH
-#include "Patchage.hpp"
-#include "PatchageEvent.hpp"
-#include "StateManager.hpp"
-#include "PatchageCanvas.hpp"
+#include "GladeFile.hpp"
 #include "JackDriver.hpp"
 #include "JackSettingsDialog.hpp"
-#ifdef HAVE_LASH
-#include "LashDriver.hpp"
-#endif
+#include "Patchage.hpp"
+#include "PatchageCanvas.hpp"
+#include "PatchageEvent.hpp"
+#include "StateManager.hpp"
 #ifdef HAVE_ALSA
 #include "AlsaDriver.hpp"
+#endif
+#ifdef HAVE_LASH
+#include "LashDriver.hpp"
 #endif
 
 using namespace std;
@@ -72,19 +73,20 @@ gtkmm_set_width_for_given_text (Gtk::Widget &w, const gchar *text,
 
 
 Patchage::Patchage(int argc, char** argv)
-: _pane_closed(false),
-  _update_pane_position(true),
-  _user_pane_position(0),
+	: xml(GladeFile::open("patchage"))
 #ifdef HAVE_LASH
-  _lash_driver(NULL),
+	, _lash_driver(NULL)
 #endif
 #ifdef HAVE_ALSA
-  _alsa_driver(NULL),
+	, _alsa_driver(NULL)
 #endif
-  _jack_driver(NULL),
-  _state_manager(NULL),
-  _refresh(false),
-  _enable_refresh(true)
+	, _jack_driver(NULL)
+	, _state_manager(NULL)
+	, _refresh(false)
+	, _enable_refresh(true)
+	, _pane_closed(false)
+	, _update_pane_position(true)
+	, _user_pane_position(0)
 {
 	_settings_filename = getenv("HOME");
 	_settings_filename += "/.patchagerc";
@@ -103,26 +105,6 @@ Patchage::Patchage(int argc, char** argv)
 #ifdef HAVE_LASH
 	_lash_driver = new LashDriver(this, argc, argv);
 #endif
-
-	Glib::RefPtr<Gnome::Glade::Xml> xml;
-
-	// Check for the .glade file in current directory
-	string glade_filename = "./patchage.glade";
-	ifstream fs(glade_filename.c_str());
-	if (fs.fail()) { // didn't find it, check PKGDATADIR
-		fs.clear();
-		glade_filename = PKGDATADIR;
-		glade_filename += "/patchage.glade";
-	
-		fs.open(glade_filename.c_str());
-		if (fs.fail()) {
-			cerr << "Unable to find patchage.glade in current directory or " << PKGDATADIR << "." << endl;
-			exit(EXIT_FAILURE);
-		}
-		fs.close();
-	}
-	
-	xml = Gnome::Glade::Xml::create(glade_filename);
 
 	xml->get_widget("patchage_win", _main_window);
 	xml->get_widget_derived("jack_settings_win", _jack_settings_dialog);
@@ -420,20 +402,6 @@ Patchage::update_state()
 		if (module) 
 			module->load_location();
 	}
-
-	//cerr << "[Patchage] Resizing window: (" << _state_manager->get_window_size().x
-	//	<< "," << _state_manager->get_window_size().y << ")" << endl;
-
-	_main_window->resize(
-		static_cast<int>(_state_manager->get_window_size().x),
-		static_cast<int>(_state_manager->get_window_size().y));
-	
-	//cerr << "[Patchage] Moving window: (" << _state_manager->get_window_location().x
-	//	<< "," << _state_manager->get_window_location().y << ")" << endl;
-	
-	_main_window->move(
-		static_cast<int>(_state_manager->get_window_location().x),
-		static_cast<int>(_state_manager->get_window_location().y));
 }
 
 
@@ -582,7 +550,6 @@ Patchage::menu_alsa_disconnect()
 void
 Patchage::menu_store_positions() 
 {
-	store_window_location();
 	_state_manager->save(_settings_filename);
 }
 
@@ -708,25 +675,6 @@ void
 Patchage::menu_help_about() 
 {
 	_about_window->show();
-}
-
-
-/** Update the stored window location and size in the StateManager (in memory).
- */
-void
-Patchage::store_window_location()
-{
-	int loc_x, loc_y, size_x, size_y;
-	_main_window->get_position(loc_x, loc_y);
-	_main_window->get_size(size_x, size_y);
-	Coord window_location;
-	window_location.x = loc_x;
-	window_location.y = loc_y;
-	Coord window_size;
-	window_size.x = size_x;
-	window_size.y = size_y;
-	_state_manager->set_window_location(window_location);
-	_state_manager->set_window_size(window_size);
 }
 
 

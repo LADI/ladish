@@ -21,6 +21,7 @@
 #include <string>
 #include <boost/shared_ptr.hpp>
 #include <libgnomecanvasmm.h>
+#include <libglademm/xml.h>
 #include CONFIG_H_PATH
 
 class PatchageCanvas;
@@ -51,20 +52,18 @@ public:
 	
 	void attach();
 	void quit() { _main_window->hide(); }
-
-	void clear_load();
-
-	void refresh();
-
-	void update_state();
-	void store_window_location();
-
-	void status_message(const std::string& msg);
+	
+	void        refresh();
 	inline void queue_refresh() { _refresh = true; }
 
-	int max_pane_position()
-	{ return _main_paned->property_max_position()
-		- _messages_expander->get_label_widget()->get_height() - 10; }
+	void clear_load();
+	void status_message(const std::string& msg);
+	void update_state();
+
+	int max_pane_position() {
+		return _main_paned->property_max_position()
+		- _messages_expander->get_label_widget()->get_height() - 10;
+	}
 
 protected:
 	void connect_widgets();
@@ -88,10 +87,8 @@ protected:
 	
 	void on_pane_position_changed();
 	void on_messages_expander_changed();
-
-	bool _pane_closed;
-	bool _update_pane_position;
-	int  _user_pane_position;
+	
+	Glib::RefPtr<Gnome::Glade::Xml> xml;
 
 #ifdef HAVE_LASH
 	LashDriver*    _lash_driver;
@@ -129,6 +126,9 @@ protected:
 	std::string _settings_filename;
 	bool        _refresh;
 	bool        _enable_refresh;
+	bool        _pane_closed;
+	bool        _update_pane_position;
+	int         _user_pane_position;
 	
 	Gtk::Window*         _main_window;
 	JackSettingsDialog*  _jack_settings_dialog;
