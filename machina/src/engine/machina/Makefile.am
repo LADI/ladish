@@ -18,4 +18,5 @@ libmachinainclude_HEADERS = \
 	Problem.hpp \
 	Recorder.hpp \
 	SMFDriver.hpp \
+	Schrodinbit.hpp \
 	types.hpp

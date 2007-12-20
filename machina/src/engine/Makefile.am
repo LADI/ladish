@@ -18,7 +18,8 @@ libmachina_la_SOURCES = \
 	Mutation.cpp \
 	Node.cpp \
 	Recorder.cpp \
-	SMFDriver.cpp
+	SMFDriver.cpp \
+	jack_compat.h
 	
 if WITH_JACK
 libmachina_la_SOURCES += JackDriver.cpp
