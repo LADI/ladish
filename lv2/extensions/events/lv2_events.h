@@ -1,4 +1,4 @@
-/* lv2_events.h - header file for the LV2 events extension.
+/* lv2_events.h - C header file for the LV2 events extension.
  *
  * This header defines the code portion of the LV2 extension with URI
  * <http://drobilla.net/ns/lv2ext/events> (preferred prefix 'lv2ev').
@@ -26,68 +26,19 @@
 #ifndef LV2_EVENTS_H
 #define LV2_EVENTS_H
 
-/** A buffer of LV2 events.
- *
- * This is a flat buffer, the header and all contained events are POD:
- * the entire buffer (12 + size bytes) can be copied with a single memcpy
- * (using sizeof(LV2_EventBuffer) anywhere is almost certainly an error).
- */
-typedef struct {
-
-	/** The number of events in the data buffer. 
-	 * INPUT PORTS: The host must set this field to the number of events
-	 * contained in the data buffer before calling run()
-	 * OUTPUT PORTS: The plugin must set this field to the number of events it
-	 * has written to the buffer before returning from the run().  Any initial
-	 * value should be ignored by the plugin.
-	 */
-	uint32_t event_count;
-
-	/** The size of the data buffer in bytes.
-	 * This is set by the host and must not be changed by the plugin.
-	 * The host is allowed to change this between run() calls.
-	 */
-	uint32_t capacity;
-
-	/** The size of the initial portion of the data buffer containing data.
-	 *  INPUT PORTS: It's the host's responsibility to set this field to the
-	 *  number of bytes used by all MIDI events it has written to the buffer
-	 *  (including timestamps and size fields) before calling the plugin's 
-	 *  run() function. The plugin may not change this field.
-	 *  OUTPUT PORTS: It's the plugin's responsibility to set this field to
-	 *  the number of bytes used by all MIDI events it has written to the
-	 *  buffer (including timestamps and size fields) before returning from
-	 *  the run() function. Any initial value should be ignored by the plugin.
-	 */
-	uint32_t size;
-
-	/** The data buffer where events are packed sequentially (size bytes).
-	 * Take the address of this member (&buf.data) for a pointer to the first
-	 * event contained in this buffer.
-	 *
-	 * Events are a generic container in which seveal types of specific events
-	 * can be transported.  New event types can be created and used within
-	 * this event framework, specified by the type field of the event header.
-	 *
-	 * This data buffer contains a header (defined by struct LV2_Event),
-	 * followed by that event's contents (padded to 64 bits), followed by
-	 * another header, etc:
-	 *
-	 * |       |       |       |       |       |       |
-	 * | | | | | | | | | | | | | | | | | | | | | | | | |
-	 * |FRAMES |SUBFRMS|TYP|LEN|DATA..DATA..PAD|FRAMES | ...
-	 */
-	uint8_t data;
-
-} LV2_EventBuffer;
-
 
 /** An LV2 event.
  *
- * Like LV2_EventBuffer above (which this is a portion of), this is a single
- * continuous chunk of memory: the entire event (12 + size bytes) can be
- * copied with a single memcpy
- * (using sizeof(LV2_EventHeader) anywhere is almost certainly an error).
+ * LV2 events are generic time-stamped containers for any type of event.
+ * The type field defines the format of a given event's contents.
+ *
+ * This struct defined the header of an LV2 event.  An LV2 event is a single
+ * chunk of POD (plain old data), usually contained in a flat buffer
+ * (see LV2_EventBuffer below).  Unless a required feature says otherwise,
+ * hosts may assume a deep copy of an LV2 event can be created safely
+ * using a simple:
+ *
+ * memcpy(ev_copy, ev, sizeof(LV2_Event) + ev->size);  (or equivalent)
  */
 typedef struct {
 
@@ -115,13 +66,59 @@ typedef struct {
 	 */
 	uint16_t size;
 
-	/** The data portion of this event (size bytes).
-	 * Take the address of this member (&ev.data) for a pointer to the start
-	 * of the events contained in this buffer.
-	 */
-	uint8_t data;
+	/* size bytes of data follow here */
 
 } LV2_Event;
 
 
-#endif
+
+/** A buffer of LV2 events.
+ *
+ * Like events (which this contains) an event buffer is a single chunk of POD:
+ * the entire buffer (including contents) can be copied with a single memcpy.
+ * The first contained event begins sizeof(LV2_EventBuffer) bytes after
+ * the start of this struct.
+ *
+ * After this header, the buffer contains an event header (defined by struct
+ * LV2_Event), followed by that event's contents (padded to 64 bits), followed by
+ * another header, etc:
+ *
+ * |       |       |       |       |       |       |
+ * | | | | | | | | | | | | | | | | | | | | | | | | |
+ * |FRAMES |SUBFRMS|TYP|LEN|DATA..DATA..PAD|FRAMES | ...
+ */
+typedef struct {
+
+	/** The number of events in this buffer.
+	 * INPUT PORTS: The host must set this field to the number of events
+	 *     contained in the data buffer before calling run().
+	 *     The plugin must not change this field.
+	 * OUTPUT PORTS: The plugin must set this field to the number of events it
+	 *     has written to the buffer before returning from run().
+	 *     Any initial value should be ignored by the plugin.
+	 */
+	uint32_t event_count;
+
+	/** The size of the data buffer in bytes.
+	 * This is set by the host and must not be changed by the plugin.
+	 * The host is allowed to change this between run() calls.
+	 */
+	uint32_t capacity;
+
+	/** The size of the initial portion of the data buffer containing data.
+	 *  INPUT PORTS: The host must set this field to the number of bytes used
+	 *      by all events it has written to the buffer (including headers)
+	 *      before calling the plugin's run().
+	 *      The plugin must not change this field.
+	 *  OUTPUT PORTS: The plugin must set this field to the number of bytes
+	 *      used by all events it has written to the buffer (including headers)
+	 *      before returning from run().
+	 *      Any initial value should be ignored by the plugin.
+	 */
+	uint32_t size;
+
+} LV2_EventBuffer;
+
+
+#endif // LV2_EVENTS_H
+
