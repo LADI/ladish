@@ -22,6 +22,7 @@
 #include <libgnomecanvasmm.h>
 #include <libglademm/xml.h>
 #include <jack/statistics.h>
+#include <raul/SharedPtr.hpp>
 
 #include CONFIG_H_PATH
 #include "GladeFile.hpp"
