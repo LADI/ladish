@@ -11,10 +11,13 @@ AC_CONFIG_SRCDIR([slv2/src/plugin.c])
 AC_CONFIG_SRCDIR([slv2/slv2/plugin.h])
 AC_CONFIG_SRCDIR([slv2/utils/lv2_list.c])
 AC_CONFIG_SRCDIR([slv2/swig/slv2.i])
-SLV2_VERSION="0.3.2"
-SLV2_API_CURRENT="5"
+
+# See slv2/configure.ac for versioning info/history
+SLV2_VERSION="0.4.0"
+SLV2_API_CURRENT="6"
 SLV2_API_REVISION="0"
-SLV2_API_AGE="1"
+SLV2_API_AGE="0"
+
 AC_SUBST(SLV2_API_CURRENT)
 AC_SUBST(SLV2_API_REVISION)
 AC_SUBST(SLV2_API_AGE)
