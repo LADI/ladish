@@ -26,8 +26,6 @@
 #include <libgnomecanvasmm.h>
 #include <flowcanvas/Port.hpp>
 
-using std::string; using std::multimap;
-
 namespace FlowCanvas {
 	
 class Canvas;
@@ -42,7 +40,7 @@ class Item : public Gnome::Canvas::Group
 {
 public:
 	Item(boost::shared_ptr<Canvas> canvas,
-	     const string&             name,
+	     const std::string&        name,
 	     double                    x,
 	     double                    y,
 	     uint32_t                  color);
@@ -88,8 +86,8 @@ public:
 	bool        is_within(const Gnome::Canvas::Rect& rect) const;
 	inline bool point_is_within(double x, double y) const;
 
-	const string& name() const              { return _name; }
-	virtual void  set_name(const string& n) { _name = n; }
+	const std::string& name() const                   { return _name; }
+	virtual void       set_name(const std::string& n) { _name = n; }
 
 	uint32_t     base_color() const           { return _color; }
 	virtual void set_border_color(uint32_t c) { _border_color = c; }

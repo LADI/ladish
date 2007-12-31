@@ -87,7 +87,7 @@ public:
 	void   set_border_width(double w);
 
 	const std::string& name() const { return _name; }
-	virtual void set_name(const std::string& n);
+	virtual void       set_name(const std::string& n);
 	
 	bool     is_input()  const { return _is_input; }
 	bool     is_output() const { return !_is_input; }
@@ -99,13 +99,12 @@ public:
 	virtual void set_control_max(float max) { _control_max = max; set_control(_control_value, false);  }
 	
 	float control_value() { return _control_value; }
-	float control_min() { return _control_min; }
-	float control_max() { return _control_max; }
+	float control_min()   { return _control_min; }
+	float control_max()   { return _control_max; }
+	void  show_control()  { _control_rect.show(); }
+	void  hide_control()  { _control_rect.hide(); }
 
-	void show_control() { _control_rect.show(); }
-	void hide_control() { _control_rect.hide(); }
-
-	bool operator==(const std::string& name) { return (_name == name); }
+	inline bool operator==(const std::string& name) { return (_name == name); }
 
 	sigc::signal<void>       signal_renamed;
 	sigc::signal<void,float> signal_control_changed;

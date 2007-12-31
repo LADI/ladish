@@ -70,7 +70,7 @@ public:
 	virtual void load_location()  {}
 	virtual void store_location() {}
 	
-	virtual void set_name(const string& n);
+	virtual void set_name(const std::string& n);
 
 	void set_width(double w);
 	

@@ -304,13 +304,12 @@ Patchage::idle_callback()
 
 	// Do a full refresh (ie user clicked refresh)
 	if (_refresh) {
-		_canvas->flag_all_connections();
+		_canvas->destroy();
 		_jack_driver->refresh();
 #ifdef HAVE_ALSA
 		if (_alsa_driver)
 			_alsa_driver->refresh();
 #endif
-		_canvas->destroy_all_flagged_connections();
 		_refresh = false;
 	}
 

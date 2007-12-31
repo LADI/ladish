@@ -26,8 +26,6 @@
 #include <flowcanvas/Module.hpp>
 #include <flowcanvas/Item.hpp>
 
-using std::list;
-
 
 /** FlowCanvas namespace, everything is defined under this.
  *
@@ -79,11 +77,6 @@ public:
 	boost::shared_ptr<Connection> remove_connection(boost::shared_ptr<Connectable> tail,
 	                                                boost::shared_ptr<Connectable> head);
 	
-	void destroy_all_connections();
-	
-	void flag_all_connections();
-	void destroy_all_flagged_connections();
-
 	void set_default_placement(boost::shared_ptr<Module> m);
 	
 	void clear_selection();
@@ -97,14 +90,14 @@ public:
 	ConnectionList& connections()          { return _connections; }
 	ConnectionList& selected_connections() { return _selected_connections; }
 
-	void lock(bool l) { _locked = l; }
+	void lock(bool l)   { _locked = l; }
 	bool locked() const { return _locked; }
 
 	double get_zoom() { return _zoom; }
 	void   set_zoom(double pix_per_unit);
 	void   zoom_full();
 
-	void render_to_dot(const string& filename);
+	void render_to_dot(const std::string& filename);
 	virtual void arrange(bool use_length_hints=false);
 
 	double width() const  { return _width; }
@@ -126,23 +119,19 @@ public:
 	                        boost::shared_ptr<Connectable> /*head*/) {}
 
 protected:
-	ItemList                             _items;  ///< All items on this canvas
-	ConnectionList                       _connections;  ///< All connections on this canvas
-	list<boost::shared_ptr<Item> >       _selected_items;  ///< All currently selected modules
-	list<boost::shared_ptr<Connection> > _selected_connections;  ///< All currently selected connections
+	ItemList                                   _items;  ///< All items on this canvas
+	ConnectionList                             _connections;  ///< All connections on this canvas
+	std::list< boost::shared_ptr<Item> >       _selected_items;  ///< All currently selected modules
+	std::list< boost::shared_ptr<Connection> > _selected_connections;  ///< All currently selected connections
 
 	virtual bool canvas_event(GdkEvent* event);
 	
 private:
+
 	friend class Module;
-	friend class Item;
+	bool port_event(GdkEvent* event, boost::weak_ptr<Port> port);
 
-	friend class Connection;
-	void        remove_connection(boost::shared_ptr<Connection> c);
-
-	friend class Port;
-	virtual bool port_event(GdkEvent* event, boost::weak_ptr<Port> port);
-
+	void remove_connection(boost::shared_ptr<Connection> c);
 	bool are_connected(boost::shared_ptr<const Connectable> tail,
 	                   boost::shared_ptr<const Connectable> head);
 	
@@ -151,7 +140,7 @@ private:
 	
 	boost::shared_ptr<Port> get_port_at(double x, double y);
 
-	bool scroll_drag_handler(GdkEvent* event);
+	bool         scroll_drag_handler(GdkEvent* event);
 	virtual bool select_drag_handler(GdkEvent* event);
 	virtual bool connection_drag_handler(GdkEvent* event);
 	

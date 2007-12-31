@@ -47,11 +47,11 @@ public:
 	
 	const PortVector& ports()  const { return _ports; }
 	
-	inline boost::shared_ptr<Port> get_port(const string& name) const;
+	inline boost::shared_ptr<Port> get_port(const std::string& name) const;
 	
 	void                    add_port(boost::shared_ptr<Port> port);
 	void                    remove_port(boost::shared_ptr<Port> port);
-	boost::shared_ptr<Port> remove_port(const string& name);
+	boost::shared_ptr<Port> remove_port(const std::string& name);
 	boost::shared_ptr<Port> port_at(double x, double y);
 
 	void zoom(double z);
@@ -60,7 +60,7 @@ public:
 	virtual void move(double dx, double dy);
 	virtual void move_to(double x, double y);
 	
-	virtual void set_name(const string& n);
+	virtual void set_name(const std::string& n);
 
 	double border_width() const { return _border_width; }
 	void   set_border_width(double w);
@@ -75,16 +75,13 @@ public:
 	void set_stacked_border(bool b);
 	void set_icon(const Glib::RefPtr<Gdk::Pixbuf>& icon);
 
-	int num_ports() const { return _ports.size(); }
+	size_t num_ports() const { return _ports.size(); }
 
 	void   set_ports_y_offset(double offset)   { _ports_y_offset = offset; }
 	double ports_y_offset(double offset) const { return _ports_y_offset; }
 
 protected:
-	/*virtual void on_middle_click(GdkEventButton&) {}
-	virtual void on_right_click(GdkEventButton&)  {}*/
 	virtual void on_drop(double new_x, double new_y);
-
 	virtual bool on_event(GdkEvent* ev);
 	
 	virtual void set_width(double w);
@@ -103,15 +100,13 @@ protected:
 	Gnome::Canvas::Pixbuf* _icon_box;
 
 private:
-	friend class Port;
 	friend class Canvas;
-	friend class Connection;
 	
 	struct PortComparator {
-		PortComparator(const string& name) : _name(name) {}
+		PortComparator(const std::string& name) : _name(name) {}
 		inline bool operator()(const boost::shared_ptr<Port> port)
 			{ return (port && port->name() == _name); }
-		const string& _name;
+		const std::string& _name;
 	};
 };
 
@@ -120,10 +115,7 @@ private:
 // Performance critical functions:
 
 
-/** Find a port on this module.
- *
- * TODO: Make this faster.
- */
+/** Find a port on this module. */
 inline boost::shared_ptr<Port>
 Module::get_port(const std::string& port_name) const
 {

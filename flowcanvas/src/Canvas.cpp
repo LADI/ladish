@@ -513,60 +513,6 @@ Canvas::remove_connection(boost::shared_ptr<Connection> connection)
 }
 
 
-void
-Canvas::flag_all_connections()
-{
-	for (ConnectionList::iterator c = _connections.begin(); c != _connections.end(); ++c)
-		(*c)->set_flagged(true);
-}
-
-
-void
-Canvas::destroy_all_flagged_connections()
-{
-	_remove_objects = false;
-
-	for (ConnectionList::iterator c = _connections.begin(); c != _connections.end() ; ) {
-		if ((*c)->flagged()) {
-			ConnectionList::iterator next = c;
-			++next;
-			const boost::shared_ptr<Connectable> src = (*c)->source().lock();
-			const boost::shared_ptr<Connectable> dst = (*c)->dest().lock();
-			if (src)
-				src->remove_connection(*c);
-			if (dst)
-				dst->remove_connection(*c);
-			_connections.erase(c);
-			c = next;
-		} else {
-			++c;
-		}
-	}
-
-	_remove_objects = true;
-}
-
-
-void
-Canvas::destroy_all_connections()
-{
-	_remove_objects = false;
-
-	for (ConnectionList::iterator c = _connections.begin(); c != _connections.end(); ++c) {
-		const boost::shared_ptr<Connectable> src = (*c)->source().lock();
-		const boost::shared_ptr<Connectable> dst = (*c)->dest().lock();
-		if (src)
-			src->remove_connection(*c);
-		if (dst)
-			dst->remove_connection(*c);
-	}
-
-	_connections.clear();
-
-	_remove_objects = true;
-}
-
-
 /** Called when two ports are 'toggled' (connected or disconnected)
  */
 void

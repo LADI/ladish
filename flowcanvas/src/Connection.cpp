@@ -195,7 +195,7 @@ Connection::update_location()
  * Passing the empty string will remove the label.
  */
 void
-Connection::set_label(const string& str)
+Connection::set_label(const std::string& str)
 {
 	if (str != "") {
 		if (!_handle)

@@ -24,8 +24,6 @@
 #include <libgnomecanvasmm/bpath.h>
 #include <libgnomecanvasmm/path-def.h>
 
-using std::list;
-
 namespace FlowCanvas {
 
 class Canvas;
@@ -70,7 +68,7 @@ public:
 	void select_tick();
 
 	const boost::weak_ptr<Connectable> source() const { return _source; }
-	const boost::weak_ptr<Connectable> dest() const   { return _dest; }
+	const boost::weak_ptr<Connectable> dest()   const { return _dest; }
 
 	enum HandleStyle {
 		HANDLE_NONE,
@@ -82,7 +80,6 @@ public:
 
 protected:
 	friend class Canvas;
-
 	friend class Connectable;
 	void update_location();
 	
@@ -95,8 +92,7 @@ protected:
 	bool                               _show_arrowhead;
 
 	Gnome::Canvas::Bpath _bpath;
-	//Glib::RefPtr<Gnome::Canvas::PathDef> _path;
-	GnomeCanvasPathDef* _path;
+	GnomeCanvasPathDef*  _path;
 
 	HandleStyle _handle_style;
 
@@ -109,7 +105,7 @@ protected:
 	}* _handle;
 };
 
-typedef list<boost::shared_ptr<Connection> > ConnectionList;
+typedef std::list<boost::shared_ptr<Connection> > ConnectionList;
 
 
 } // namespace FlowCanvas

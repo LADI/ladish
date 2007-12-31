@@ -19,6 +19,8 @@
 #include <flowcanvas/Item.hpp>
 #include <flowcanvas/Canvas.hpp>
 
+using namespace std;
+
 namespace FlowCanvas {
 
 
