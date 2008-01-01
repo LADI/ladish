@@ -26,10 +26,7 @@
 
 namespace Raul {
 
-/* This is all a god awful mess.
- * Whoever decided you shouldn't be able to get an index from an
- * std::vector::iterator or vice-versa should be shot and pissed on.
- */
+/* FIXME: This could be a lot less code... */
 
 #ifdef TABLE_SORT_DEBUG
 template <typename K, typename T>
@@ -125,7 +122,7 @@ template <typename K, typename T>
 typename Table<K,T>::const_iterator
 Table<K,T>::find_range_end(const_iterator start, bool (*comp)(const K&,const K&)) const
 {
-	return ((Table<K, T>*)this)->find_range_end(*((iterator*)&start), comp);
+	return (const_cast<Table<K, T>&>(*this)).find_range_end(*((iterator*)&start), comp);
 }
 
 	

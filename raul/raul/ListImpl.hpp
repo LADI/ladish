@@ -147,42 +147,6 @@ List<T>::append(List<T>& list)
 }
 
 
-/** Remove all elements equal to @a val from the list.
- *
- * This function is realtime safe - it is the caller's responsibility to
- * delete the returned ListNode, or there will be a leak.
- */
-#if 0
-template <typename T>
-ListNode<T>*
-List<T>::remove(const T val)
-{
-	// FIXME: atomicity?
-	ListNode<T>* n = _head;
-	while (n) {
-		if (n->elem() == elem)
-			break;
-		n = n->next();
-	}
-	if (n) {
-		if (n == _head) _head = _head->next();
-		if (n == _tail) _tail = _tail->prev();
-		if (n->prev())
-			n->prev()->next(n->next());
-		if (n->next())
-			n->next()->prev(n->prev());
-		--_size;
-		
-		if (_size == 0)
-			_head = _tail = NULL; // FIXME: Shouldn't be necessary
-		
-		return n;
-	}
-	return NULL;
-}
-#endif
-
-
 /** Find an element in the list.
  *
  * This will only return the first element found.  If there are duplicated,
@@ -410,19 +374,6 @@ List<T>::begin() const
 	iter._listnode = _head.get();
 	return iter;
 }
-
-#if 0
-template <typename T>
-inline typename List<T>::const_iterator
-List<T>::end() const
-{
-	/*typename List<T>::const_iterator iter(this);
-	iter._listnode = NULL;
-	iter._next = NULL;
-	return iter;*/
-	return _const_end_iter;
-}
-#endif
 
 
 } // namespace Raul

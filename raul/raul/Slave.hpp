@@ -52,8 +52,7 @@ protected:
 	Semaphore _whip;
 
 private:
-	inline void _run()
-	{
+	inline void _run() {
 		while (true) {
 			_whip.wait();
 			_whipped();

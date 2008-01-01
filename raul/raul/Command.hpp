@@ -28,13 +28,14 @@ namespace Raul {
  *
  * This is useful for calling simple parameterless commands from another thread
  * (OSC, GUI, etc) and waiting on the result.  Works well for coarsely timed
- * events.  Realtime safe on the commend executing side.
+ * events (e.g. 'play' clicked in a GUI).
+ *
+ * Realtime safe on the commend executing side.
  *
  * \ingroup raul
  */
 class Command : boost::noncopyable {
 public:
-
 	inline Command() : _sem(0) {}
 
 	/** Caller context */
@@ -42,7 +43,7 @@ public:
 
 	/** Execution context */
 	inline bool pending() { return _sem.has_waiter(); }
-	inline void finish() { _sem.post(); }
+	inline void finish()  { _sem.post(); }
 
 private:
 	Semaphore _sem;

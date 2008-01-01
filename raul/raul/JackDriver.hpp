@@ -23,15 +23,13 @@
 #include <jack/jack.h>
 #include <jack/statistics.h>
 
-using std::string;
-
 namespace Raul {
 
 
-/** Handles all externally driven functionality, registering ports etc.
+/** Jack based driver for an audio context.
  *
- * Jack callbacks and connect methods and things like that live here.
- * Right now just for jack ports, but that will change...
+ * Apps can override the  on_* methods of this class to implement reactions
+ * to Jack events (e.g. new port, process callback, etc).
  */
 class JackDriver
 {
@@ -39,7 +37,7 @@ public:
 	JackDriver();
 	virtual ~JackDriver();
 	
-	void attach(const string& client_name, string server_name="");
+	void attach(const std::string& client_name, std::string server_name="");
 	void detach();
 
 	void activate();
@@ -65,10 +63,10 @@ public:
 	inline jack_nframes_t sample_rate() { return jack_get_sample_rate(_client); }
 
 	inline size_t xruns() { return _xruns; }
-	void reset_xruns();
+	void          reset_xruns();
 
-	inline float max_delay() { return jack_get_max_delayed_usecs(_client); }
-	inline void reset_delay() { jack_reset_max_delayed_usecs(_client); }
+	inline float max_delay()   { return jack_get_max_delayed_usecs(_client); }
+	inline void  reset_delay() { jack_reset_max_delayed_usecs(_client); }
 
 	jack_client_t* jack_client() { return _client; }
 

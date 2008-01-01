@@ -51,13 +51,11 @@ public:
 		_read_val = &_vals[0];
 	}
 
-	inline T& get() const
-	{
+	inline T& get() const {
 		return *_read_val.get();
 	}
 
-	inline bool set(T new_val)
-	{
+	inline bool set(T new_val) {
 		if (_state.compare_and_exchange(RAUL_DB_READ_WRITE, RAUL_DB_READ_LOCK)) {
 
 			// locked _vals[1] for write

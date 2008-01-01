@@ -40,8 +40,7 @@ public:
 	 *
 	 * @param command can be a typical shell command with parameters, the PATH is searched etc.
 	 */
-	static bool launch(std::string command)
-	{
+	static bool launch(const std::string& command) {
 		const std::string executable = (command.find(" ") != std::string::npos)
 			? command.substr(0, command.find(" "))
 			: command;

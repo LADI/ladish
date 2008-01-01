@@ -44,8 +44,7 @@ public:
 	 * than the list reader, and insert (e.g. via an Event) it later in the
 	 * reader thread.
 	 */
-	class Node : public Raul::Deletable
-	{
+	class Node : public Raul::Deletable {
 	public:
 		Node(T elem) : _elem(elem) {}
 		virtual ~Node() {}
@@ -59,7 +58,6 @@ public:
 		void      prev(Node* ln) { _prev = ln; }
 		Node*     next() const   { return _next.get(); }
 		void      next(Node* ln) { _next = ln; }
-
 		T&        elem()         { return _elem;}
 		const T&  elem() const   { return _elem; }
 		
@@ -70,19 +68,15 @@ public:
 	};
 
 
-	// List
-
-	List()
-		: _size(0), _end_iter(this), _const_end_iter(this)
-	{
+	List() : _size(0), _end_iter(this), _const_end_iter(this) {
 		_end_iter._listnode = NULL;
 		_const_end_iter._listnode = NULL;
 	}
 
 	~List();
 
-	void push_back(Node* elem); // realtime safe
-	void push_back(T& elem);    // NOT realtime safe
+	void push_back(Node* elem); ///< Realtime Safe
+	void push_back(T& elem);    ///< NOT Realtime Safe
 
 	void append(List<T>& list);
 
@@ -97,8 +91,7 @@ public:
 	class iterator;
 
 	/** Realtime safe const iterator for a List. */
-	class const_iterator
-	{
+	class const_iterator {
 	public:
 		const_iterator(const List<T>* const list);
 		const_iterator(const iterator& i)
@@ -121,8 +114,7 @@ public:
 
 
 	/** Realtime safe iterator for a List. */
-	class iterator
-	{
+	class iterator {
 	public:
 		iterator(List<T>* const list);
 
@@ -147,11 +139,9 @@ public:
 
 	iterator find(const T& val);
 
-	iterator begin();
-	const iterator end() const;
-	
+	iterator       begin();
 	const_iterator begin() const;
-	//const_iterator end()   const;
+	const iterator end()   const;
 
 private:
 	AtomicPtr<Node> _head;

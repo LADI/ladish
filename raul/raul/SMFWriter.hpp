@@ -53,8 +53,6 @@ protected:
 	void     write_chunk_header(const char id[4], uint32_t length);
 	void     write_chunk(const char id[4], uint32_t length, void* data);
 	size_t   write_var_len(uint32_t val);
-	//uint32_t read_var_len() const;
-	//int      read_event(MidiEvent& ev) const;
 
 	std::string    _filename;
 	FILE*          _fd;

@@ -28,7 +28,9 @@ namespace Raul {
 
 /** An array.
  * 
- * Has a stack-like push_back() too, for find_process_order...
+ * Has a stack-like push_back(), but is NOT a resizeable array (the size given
+ * to the constructor or alloc method is the maximum number of elements which
+ * can be pushed).
  */
 template <class T>
 class Array : public Deletable
@@ -56,7 +58,7 @@ public:
 	}
 
 	~Array() {
-		free();
+		delete[] _elems;
 	}
 
 	void alloc(size_t num_elems) {
@@ -81,10 +83,6 @@ public:
 			_elems[i] = initial_value;
 	}
 	
-	void free() {
-		delete[] _elems;
-	}
-
 	void push_back(T n) {
 		assert(_top < _size);
 		_elems[_top++] = n;

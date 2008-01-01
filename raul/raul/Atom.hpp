@@ -95,8 +95,8 @@ public:
 	// Gotta love C++ boilerplate:
 	
 	Atom(const Atom& copy)
-	: _type(copy._type)
-	, _blob_size(copy._blob_size)
+		: _type(copy._type)
+		, _blob_size(copy._blob_size)
 	{
 		switch (_type) {
 		case NIL:    _blob_val   = 0;                        break;

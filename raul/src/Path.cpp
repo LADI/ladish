@@ -17,6 +17,8 @@
 
 #include <raul/Path.hpp>
 
+using namespace std;
+
 namespace Raul {
 
 
@@ -124,27 +126,6 @@ Path::nameify(const std::basic_string<char>& str)
 void
 Path::replace_invalid_chars(string& str, bool replace_slash)
 {
-#if 0
-	for (size_t i=0; i < str.length(); ++i) {
-		if (str[i] == ' ' || str[i] == '_') {
-			str[i+1] = std::toupper(str[i+1]); // capitalize next char
-			str = str.substr(0, i) + str.substr(i+1); // chop space/underscore
-			--i;
-		} else if (str[i] ==  '[' || str[i] ==  '{') {
-			str[i] = '(';
-		} else if (str[i] ==  ']' || str[i] ==  '}') {
-			str[i] = ')';
-		} else if (str[i] < 32 || str.at(i) > 126
-				|| str[i] ==  '#' 
-				|| str[i] ==  '*' 
-				|| str[i] ==  ',' 
-				|| str[i] ==  '?' 
-				|| (replace_slash && str[i] ==  '/')) {
-			str[i] = '.';
-		}
-	}
-#endif
-
 	size_t open_bracket = str.find_first_of('(');
 	if (open_bracket != string::npos)
 		str = str.substr(0, open_bracket-1);
@@ -165,10 +146,8 @@ Path::replace_invalid_chars(string& str, bool replace_slash)
 
 	// Kill CamelCase in favour of god_fearing_symbol_names
 	for (size_t i=1; i < str.length(); ++i) {
-		if (str[i] >= 'A' && str[i] <= 'Z' && str[i-1] >= 'a' && str[i-1] <= 'z') {
-			//str[i] = std::tolower(str[i]);
+		if (str[i] >= 'A' && str[i] <= 'Z' && str[i-1] >= 'a' && str[i-1] <= 'z')
 			str = str.substr(0, i) + '_' + str.substr(i);
-		}
 	}
 	
 	for (size_t i=0; i < str.length(); ++i) {

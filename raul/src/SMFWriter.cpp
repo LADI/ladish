@@ -71,48 +71,6 @@ SMFWriter::start(const string&  filename,
 	return (_fd == 0) ? -1 : 0;
 }
 
-#if 0
-jack_nframes_t
-SMFWriter::write_unlocked (MidiRingBuffer& src, jack_nframes_t cnt)
-{
-	//cerr << "SMF WRITE -- " << _length << "--" << cnt << endl;
-	
-	MidiBuffer buf(1024); // FIXME: allocation, size?
-	src.read(buf, /*_length*/0, _length + cnt); // FIXME?
-
-	fseek(_fd, 0, SEEK_END);
-
-	// FIXME: start of source time?
-	
-	for (size_t i=0; i < buf.size(); ++i) {
-		const MidiEvent& ev = buf[i];
-		assert(ev.time >= _timeline_position);
-		uint32_t delta_time = (ev.time - _timeline_position) - _last_ev_time;
-		
-		/*printf("SMF - writing event, delta = %u, size = %zu, data = ",
-			delta_time, ev.size);
-		for (size_t i=0; i < ev.size; ++i) {
-			printf("%X ", ev.buffer[i]);
-		}
-		printf("\n");
-		*/
-		size_t stamp_size = write_var_len(delta_time);
-		fwrite(ev.buffer, 1, ev.size, _fd);
-		_last_ev_time += delta_time;
-		_track_size += stamp_size + ev.size;
-	}
-
-	fflush(_fd);
-
-	if (buf.size() > 0) {
-		ViewDataRangeReady (_length, cnt); /* EMIT SIGNAL */
-	}
-
-	update_length(_length, cnt);
-	return cnt;
-}
-#endif
-
 
 /** Write an event at the end of the file.
  *
@@ -184,9 +142,9 @@ SMFWriter::write_header()
 
 	assert(_fd);
 
-	const uint16_t type     = GUINT16_TO_BE(0);    // SMF Type 0 (single track)
-	const uint16_t ntracks  = GUINT16_TO_BE(1);    // Number of tracks (always 1 for Type 0)
-	const uint16_t division = GUINT16_TO_BE(_ppqn);    // Number of tracks (always 1 for Type 0)
+	const uint16_t type     = GUINT16_TO_BE(0);     // SMF Type 0 (single track)
+	const uint16_t ntracks  = GUINT16_TO_BE(1);     // Number of tracks (always 1 for Type 0)
+	const uint16_t division = GUINT16_TO_BE(_ppqn); // Number of tracks (always 1 for Type 0)
 
 	char data[6];
 	memcpy(data, &type, 2);
@@ -262,31 +220,6 @@ SMFWriter::write_var_len(uint32_t value)
 
 	return ret;
 }
-
-
-#if 0
-uint32_t
-SMFWriter::read_var_len() const
-{
-	assert(!feof(_fd));
-
-	//int offset = ftell(_fd);
-	//cerr << "SMF - reading var len at " << offset << endl;
-
-	uint32_t value;
-	unsigned char c;
-
-	if ( (value = getc(_fd)) & 0x80 ) {
-		value &= 0x7F;
-		do {
-			assert(!feof(_fd));
-			value = (value << 7) + ((c = getc(_fd)) & 0x7F);
-		} while (c & 0x80);
-	}
-
-	return value;
-}
-#endif
 
 
 } // namespace Raul

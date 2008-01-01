@@ -93,7 +93,7 @@ protected:
 	mutable gint _read_ptr;
 	
 	size_t _size; ///< Size (capacity) in bytes
-	T*  _buf;  ///< size, event, size, event...
+	T*  _buf;     ///< size, event, size, event...
 };
 
 

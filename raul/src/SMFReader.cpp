@@ -73,6 +73,7 @@ midi_event_size(unsigned char status)
 SMFReader::SMFReader()
 	: _fd(NULL)
 	, _ppqn(0)
+	, _track(0)
 	, _track_size(0)
 {
 }
@@ -127,14 +128,6 @@ SMFReader::open(const string& filename)
 		_ppqn = GUINT16_FROM_BE(ppqn_be);
 
 		seek_to_track(1);
-		// Read Track size (skip bytes 14..17 'Mtrk')
-		// FIXME: first track read only
-		/*fseek(_fd, 18, SEEK_SET);
-		uint32_t track_size_be = 0;
-		fread(&track_size_be, 4, 1, _fd);
-		_track_size = GUINT32_FROM_BE(track_size_be);
-		std::cerr << "SMF - read track size " << _track_size << std::endl;
-		*/
 		
 		return true;
 	} else {
@@ -147,12 +140,12 @@ SMFReader::open(const string& filename)
  * Returns true if specified track was found.
  */
 bool
-SMFReader::seek_to_track(unsigned track)
+SMFReader::seek_to_track(unsigned track) throw (std::logic_error)
 {
 	assert(track > 0);
 
 	if (!_fd)
-		throw logic_error("Attempt to seek to track on unopen SMF file.");
+		throw logic_error("Attempt to seek to track on unopened SMF file.");
 
 	unsigned track_pos = 0;
 
@@ -182,7 +175,7 @@ SMFReader::seek_to_track(unsigned track)
 	}
 
 	if (!feof(_fd) && track_pos == track) {
-		//_track = track;
+		_track = track;
 		_track_size = chunk_size;
 		return true;
 	} else {
@@ -205,10 +198,14 @@ SMFReader::seek_to_track(unsigned track)
  * set to the actual size of the event.
  */
 int
-SMFReader::read_event(size_t buf_len, unsigned char* buf, uint32_t* ev_size, uint32_t* delta_time)
+SMFReader::read_event(size_t    buf_len,
+                      uint8_t*  buf,
+                      uint32_t* ev_size,
+                      uint32_t* delta_time) throw (std::logic_error)
 {
-	// - 4 is for the EOT event, which we don't actually want to read
-	//if (feof(_fd) || ftell(_fd) >= HEADER_SIZE + _track_size - 4) {
+	if (_track == 0)
+		throw logic_error("Attempt to read from unopened SMF file");
+
 	if (!_fd || feof(_fd)) {
 		return -1;
 	}

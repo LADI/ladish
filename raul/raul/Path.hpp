@@ -22,8 +22,6 @@
 #include <cctype>
 #include <string>
 #include <cassert>
-#include <iostream>
-using std::string;
 
 namespace Raul {
 
@@ -54,7 +52,7 @@ public:
 	 * use is_valid first to check.
 	 */
 	Path(const std::basic_string<char>& path)
-	: std::basic_string<char>(path)
+		: std::basic_string<char>(path)
 	{
 		assert(is_valid(path));
 	}
@@ -66,22 +64,21 @@ public:
 	 * use is_valid first to check.
 	 */
 	Path(const char* cpath)
-	: std::basic_string<char>(cpath)
+		: std::basic_string<char>(cpath)
 	{
 		assert(is_valid(cpath));
 	}
 	
 	static bool is_valid(const std::basic_string<char>& path);
 	
-	static bool is_valid_name(const std::basic_string<char>& name)
-	{
-		return name.length() > 0 && is_valid(string("/").append(name));
+	static bool is_valid_name(const std::basic_string<char>& name) {
+		return name.length() > 0 && is_valid(std::string("/").append(name));
 	}
 
-	static string pathify(const std::basic_string<char>& str);
-	static string nameify(const std::basic_string<char>& str);
+	static std::string pathify(const std::basic_string<char>& str);
+	static std::string nameify(const std::basic_string<char>& str);
 
-	static void replace_invalid_chars(string& str, bool replace_slash = false);
+	static void replace_invalid_chars(std::string& str, bool replace_slash = false);
 	
 	bool is_child_of(const Path& parent) const;
 	bool is_parent_of(const Path& child) const;
@@ -90,8 +87,7 @@ public:
 	/** Return the name of this object (everything after the last '/').
 	 * This is the "method name" for OSC paths.
 	 */
-	inline std::basic_string<char> name() const
-	{
+	inline std::basic_string<char> name() const {
 		if ((*this) == "/")
 			return "";
 		else
@@ -104,22 +100,18 @@ public:
 	 * Calling this on the path "/" will return "/".
 	 * This is the (deepest) "container path" for OSC paths.
 	 */
-	inline Path parent() const
-	{
+	inline Path parent() const {
 		std::basic_string<char> parent = substr(0, find_last_of("/"));
 		return (parent == "") ? "/" : parent;
 	}
 	
 
-	/** Parent path with a "/" appended.
+	/** Return path with a trailing "/".
 	 *
-	 * This exists to avoid needing to be careful about the special case of "/".
-	 * To create a child of a path, use parent.base() + child_name.
-	 * Returned value is always a valid path, with the single exception that
-	 * the last character is "/".
+	 * Returned value is guaranteed to be a valid parent path, i.e. a valid
+	 * child path can be made using parent.base() + child_name.
 	 */
-	inline const string base() const
-	{
+	inline const std::string base() const {
 		if ((*this) == "/")
 			return *this;
 		else
@@ -127,8 +119,7 @@ public:
 	}
 
 	/** Return true if \a child is equal to, or a descendant of \a parent */
-	static bool descendant_comparator(const Path& parent, const Path& child)
-	{
+	static bool descendant_comparator(const Path& parent, const Path& child) {
 		return ( child == parent || (child.length() > parent.length() &&
 				(!strncmp(parent.c_str(), child.c_str(), parent.length())
 						&& (parent == "/" || child[parent.length()] == '/'))) );

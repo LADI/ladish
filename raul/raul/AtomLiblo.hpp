@@ -34,9 +34,6 @@ class AtomLiblo {
 public:
 	static void lo_message_add_atom(lo_message m, const Atom& atom) {
 		switch (atom.type()) {
-		//case NIL:
-			// (see below)
-			//break;
 		case Atom::INT:
 			lo_message_add_int32(m, atom.get_int32());
 			break;
@@ -50,7 +47,8 @@ public:
 			// FIXME: is this okay?  what does liblo do?
 			lo_message_add_blob(m, const_cast<void*>(atom.get_blob()));
 			break;
-		default: // This catches Atom::Type::NIL too
+		case Atom::NIL:
+		default:
 			lo_message_add_nil(m);
 			break;
 		}

@@ -19,6 +19,8 @@
 #define RAUL_SMF_READER_HPP
 
 #include <stdexcept>
+#include <string>
+#include <inttypes.h>
 
 namespace Raul {
 
@@ -34,19 +36,20 @@ public:
 
 	bool open(const std::string& filename);
 
-	bool seek_to_track(unsigned track);
+	bool seek_to_track(unsigned track) throw (std::logic_error);
 
 	uint16_t type() const { return _type; }
 	uint16_t ppqn() const { return _ppqn; }
 	size_t   num_tracks() { return _num_tracks; }
 
-	int read_event(size_t buf_len, unsigned char* buf, uint32_t* ev_size, uint32_t* ev_delta_time);
+	int read_event(size_t    buf_len,
+	               uint8_t*  buf,
+	               uint32_t* ev_size,
+	               uint32_t* ev_delta_time) throw (std::logic_error);
 	
 	void close();
 
 protected:
-	//static const uint32_t VAR_LEN_MAX = 0x0FFFFFFF;
-	
 	/** size of SMF header, including MTrk chunk header */
 	static const uint32_t HEADER_SIZE = 22;
 
@@ -57,11 +60,8 @@ protected:
 	uint16_t       _type;
 	uint16_t       _ppqn;
 	uint16_t       _num_tracks;
-	//uint32_t       _track;
+	uint32_t       _track;
 	uint32_t       _track_size;
-/*	Raul::BeatTime _start_time;
-	Raul::BeatTime _last_ev_time; ///< Time last event was written relative to _start_time
-	*/
 };
 
 
