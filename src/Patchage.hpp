@@ -77,7 +77,6 @@ protected:
 	void on_view_toolbar();
 
 	void zoom(double z);
-	void zoom_changed();
 	bool idle_callback();
 	bool update_load();
 	void update_toolbar();
