@@ -45,7 +45,7 @@ public:
 private:
 	void on_cancel() { hide(); }
 
-	string current_jack_command() {
+	std::string current_jack_command() {
 		std::string result;
 
 		const char* const home = getenv("HOME");
@@ -65,7 +65,7 @@ private:
 		hide();
 		const char* const home = getenv("HOME");
 		if (home) {
-			string jackdrc_path(home);
+			std::string jackdrc_path(home);
 			jackdrc_path += "/.jackdrc";
 			
 			std::ofstream jackdrc(jackdrc_path.c_str());
@@ -73,7 +73,6 @@ private:
 			jackdrc.close();
 		}
 	}
-
 
 	Gtk::Entry*  _command_entry;
 	Gtk::Button* _cancel_but;

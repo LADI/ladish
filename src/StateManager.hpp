@@ -24,34 +24,22 @@
 #include <iostream>
 #include "PatchagePort.hpp"
 
-using std::string; using std::list; using std::map;
-
-
 enum ModuleType { Input, Output, InputOutput };
 struct Coord { double x; double y; };
-
-// This should probably be moved out in to a seperate class/file....
-typedef struct ModuleLocation
-{
-	string name;
-	ModuleType  type; // for distinguishing terminal modules (input or output)
-	Coord       loc;
-};
-
 
 class StateManager
 {
 public:
 	StateManager();
 
-	void load(const string& filename);
-	void save(const string& filename);
+	void load(const std::string& filename);
+	void save(const std::string& filename);
 
-	Coord get_module_location(const string& name, ModuleType type);
-	void  set_module_location(const string& name, ModuleType type, Coord loc);
+	Coord get_module_location(const std::string& name, ModuleType type);
+	void  set_module_location(const std::string& name, ModuleType type, Coord loc);
 
-	void set_module_split(const string& name, bool split);
-	bool get_module_split(const string& name, bool default_val) const;
+	void set_module_split(const std::string& name, bool split);
+	bool get_module_split(const std::string& name, bool default_val) const;
 	
 	float get_zoom();
 	void  set_zoom(float zoom);
@@ -59,9 +47,15 @@ public:
 	int get_port_color(PortType type);
 
 private:
-	list<ModuleLocation> _module_locations;
-	map<string,bool>     _module_splits;
-	float                _zoom;
+	struct ModuleLocation {
+		std::string name;
+		ModuleType  type; // for distinguishing terminal modules (input or output)
+		Coord       loc;
+	};
+
+	std::list<ModuleLocation>  _module_locations;
+	std::map<std::string,bool> _module_splits;
+	float                      _zoom;
 };
 
 

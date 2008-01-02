@@ -29,17 +29,15 @@
 #include "StateManager.hpp"
 #include "PatchagePort.hpp"
 
-using std::string; using std::list;
-
 using namespace FlowCanvas;
 
 class PatchageModule : public Module
 {
 public:
-	PatchageModule(Patchage* app, const string& title, ModuleType type, double x=0, double y=0)
-	: Module(app->canvas(), title, x, y),
-	  _app(app),
-	  _type(type)
+	PatchageModule(Patchage* app, const std::string& title, ModuleType type, double x=0, double y=0)
+		: Module(app->canvas(), title, x, y)
+		, _app(app)
+		, _type(type)
 	{
 		_menu = new Gtk::Menu();
 		Gtk::Menu::MenuList& items = _menu->items();
@@ -56,32 +54,12 @@ public:
 
 	virtual ~PatchageModule() { delete _menu; }
 	
-	/*virtual void add_patchage_port(const string& port_name, bool is_input, PortType type)
-	{
-		new PatchagePort(this, type, port_name, is_input, _app->state_manager()->get_port_color(type));
-
-		resize();
-	}
-
-	virtual void add_patchage_port(const string& port_name, bool is_input, PortType type, const snd_seq_addr_t addr)
-	{
-		PatchagePort* port = new PatchagePort(this, type, port_name, is_input,
-			_app->state_manager()->get_port_color(type));
-
-		port->alsa_addr(addr);
-
-		resize();
-	}*/
-
-
 	virtual void load_location() {
 		boost::shared_ptr<Canvas> canvas = _canvas.lock();
 		if (!canvas)
 			return;
 
 		Coord loc = _app->state_manager()->get_module_location(_name, _type);
-
-		//cerr << "******" << _name << " MOVING TO (" << loc.x << "," << loc.y << ")" << endl;
 
 		if (loc.x != -1)
 			move_to(loc.x, loc.y);

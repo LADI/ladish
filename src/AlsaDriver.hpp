@@ -21,14 +21,10 @@
 #include <iostream>
 #include <alsa/asoundlib.h>
 #include <pthread.h>
-#include <queue>
 #include <string>
 #include "Driver.hpp"
 class Patchage;
 class PatchagePort;
-class PatchageFlowCanvas;
-
-using std::queue; using std::string;
 
 
 /** Handles all externally driven functionality, registering ports etc.
@@ -60,18 +56,19 @@ private:
 	
 	void add_connections(boost::shared_ptr<PatchagePort> port);
 	
-	bool create_refresh_port();
+	bool          create_refresh_port();
 	static void* refresh_main(void* me);
-	void _refresh_main();
+	void         _refresh_main();
 	
-	boost::shared_ptr<PatchagePort> create_port(boost::shared_ptr<PatchageModule> parent,
-		const string& name, bool is_input, snd_seq_addr_t addr);
+	boost::shared_ptr<PatchagePort> create_port(
+		boost::shared_ptr<PatchageModule> parent,
+		const std::string&                name,
+		bool                              is_input,
+		snd_seq_addr_t                    addr);
 	                                            
-	Patchage* _app;
-
+	Patchage*  _app;
 	snd_seq_t* _seq;
-
-	pthread_t _refresh_thread;
+	pthread_t  _refresh_thread;
 };
 
 #endif // ALSADRIVER_H

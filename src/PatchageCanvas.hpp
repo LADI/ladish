@@ -33,8 +33,7 @@ class PatchagePort;
 using std::string;
 using namespace FlowCanvas;
 
-class PatchageCanvas : public Canvas
-{
+class PatchageCanvas : public Canvas {
 public:
 	PatchageCanvas(Patchage* _app, int width, int height);
 	
