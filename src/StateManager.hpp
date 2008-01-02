@@ -46,6 +46,11 @@ public:
 	
 	int get_port_color(PortType type);
 
+	Coord get_window_location()          { return _window_location; }
+	void  set_window_location(Coord loc) { _window_location = loc; }
+	Coord get_window_size()              { return _window_size; }
+	void  set_window_size(Coord size)    { _window_size = size; }
+
 private:
 	struct ModuleLocation {
 		std::string name;
@@ -55,6 +60,8 @@ private:
 
 	std::list<ModuleLocation>  _module_locations;
 	std::map<std::string,bool> _module_splits;
+	Coord                      _window_location;
+	Coord                      _window_size;
 	float                      _zoom;
 };
 

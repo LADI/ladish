@@ -59,6 +59,7 @@ public:
 	void clear_load();
 	void status_message(const std::string& msg);
 	void update_state();
+	void store_window_location();
 
 	int max_pane_position() {
 		return _main_paned->property_max_position()

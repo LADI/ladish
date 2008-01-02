@@ -237,6 +237,14 @@ Patchage::Patchage(int argc, char** argv)
 	// Idle callback, check if we need to refresh
 	Glib::signal_timeout().connect(
 			sigc::mem_fun(this, &Patchage::idle_callback), 100);
+
+	_main_win->resize(
+		static_cast<int>(_state_manager->get_window_size().x),
+		static_cast<int>(_state_manager->get_window_size().y));
+
+	_main_win->move(
+		static_cast<int>(_state_manager->get_window_location().x),
+		static_cast<int>(_state_manager->get_window_location().y));
 	
 	_update_pane_position = true;
 }
@@ -406,6 +414,25 @@ Patchage::refresh()
 			_alsa_driver->refresh();
 #endif
 	}
+}
+
+
+/** Update the stored window location and size in the StateManager (in memory).
+ */
+void
+Patchage::store_window_location()
+{
+	int loc_x, loc_y, size_x, size_y;
+	_main_win->get_position(loc_x, loc_y);
+	_main_win->get_size(size_x, size_y);
+	Coord window_location;
+	window_location.x = loc_x;
+	window_location.y = loc_y;
+	Coord window_size;
+	window_size.x = size_x;
+	window_size.y = size_y;
+	_state_manager->set_window_location(window_location);
+	_state_manager->set_window_size(window_size);
 }
 
 
@@ -665,6 +692,7 @@ Patchage::on_show_messages()
 void
 Patchage::on_store_positions() 
 {
+	store_window_location();
 	_state_manager->save(_settings_filename);
 }
 
