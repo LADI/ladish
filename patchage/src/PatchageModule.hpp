@@ -54,7 +54,12 @@ public:
 
 	virtual ~PatchageModule() { delete _menu; }
 	
-	virtual void load_location() {
+	void move(double dx, double dy) {
+		FlowCanvas::Module::move(dx, dy);
+		store_location();
+	}
+	
+	void load_location() {
 		boost::shared_ptr<Canvas> canvas = _canvas.lock();
 		if (!canvas)
 			return;
@@ -67,7 +72,12 @@ public:
 			move_to((canvas->width()/2) - 100 + rand() % 400,
 			         (canvas->height()/2) - 100 + rand() % 400);
 	}
-
+	
+	virtual void store_location() {
+		Coord loc = { property_x().get_value(), property_y().get_value() };
+		_app->state_manager()->set_module_location(_name, _type, loc);
+	}
+	
 	void split() {
 		assert(_type == InputOutput);
 		_app->state_manager()->set_module_split(_name, true);
@@ -79,12 +89,7 @@ public:
 		_app->state_manager()->set_module_split(_name, false);
 		_app->refresh();
 	}
-		
-	virtual void store_location() {
-		Coord loc = { property_x().get_value(), property_y().get_value() };
-		_app->state_manager()->set_module_location(_name, _type, loc);
-	}
-	
+
 	virtual void show_dialog() {}
 	
 	virtual void menu_disconnect_all() {
