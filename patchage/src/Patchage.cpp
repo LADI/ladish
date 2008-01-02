@@ -560,6 +560,7 @@ void
 Patchage::menu_alsa_connect() 
 {
 	_alsa_driver->attach(false);
+	_alsa_driver->refresh();
 }
 
 
