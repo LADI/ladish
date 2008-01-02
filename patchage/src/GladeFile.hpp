@@ -24,9 +24,7 @@
 #include <stdexcept>
 #include <libglademm/xml.h>
 
-
-class GladeFile
-{
+class GladeFile {
 public:
 	static Glib::RefPtr<Gnome::Glade::Xml> open(const std::string& base_name) {
 		Glib::RefPtr<Gnome::Glade::Xml> xml;
@@ -52,4 +50,4 @@ public:
 	}
 };
 
-#endif //GLADEFILE_HPP
+#endif // GLADEFILE_HPP

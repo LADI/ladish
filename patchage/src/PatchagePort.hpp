@@ -20,18 +20,15 @@
 
 #include CONFIG_H_PATH
 #include <string>
-#include <list>
 #include <boost/shared_ptr.hpp>
 #include <flowcanvas/Port.hpp>
 #include <flowcanvas/Module.hpp>
-
 
 #ifdef HAVE_ALSA
 #include <alsa/asoundlib.h>
 #endif
 
 using namespace FlowCanvas;
-using std::string; using std::list;
 
 enum PortType { JACK_AUDIO, JACK_MIDI, ALSA_MIDI };
 
@@ -43,9 +40,9 @@ enum PortType { JACK_AUDIO, JACK_MIDI, ALSA_MIDI };
 class PatchagePort : public FlowCanvas::Port
 {
 public:
-	PatchagePort(boost::shared_ptr<Module> module, PortType type, const string& name, bool is_input, int color)
-	: Port(module, name, is_input, color),
-	  _type(type)
+	PatchagePort(boost::shared_ptr<Module> module, PortType type, const std::string& name, bool is_input, int color)
+		: Port(module, name, is_input, color)
+		, _type(type)
 	{
 #ifdef HAVE_ALSA
 		_alsa_addr.client = '\0';
@@ -58,11 +55,11 @@ public:
 #ifdef HAVE_ALSA
 	// FIXME: This driver specific crap really needs to go
 	void                  alsa_addr(const snd_seq_addr_t addr) { _alsa_addr = addr; }
-	const snd_seq_addr_t* alsa_addr() const
-	{ return (_type == ALSA_MIDI) ? &_alsa_addr : NULL; }
+	const snd_seq_addr_t* alsa_addr() const { return (_type == ALSA_MIDI) ? &_alsa_addr : NULL; }
 #endif
+
 	/** Returns the full name of this port, as "modulename:portname" */
-	string full_name() const { return _module.lock()->name() + ":" + _name; }
+	std::string full_name() const { return _module.lock()->name() + ":" + _name; }
 
 	PortType type() const { return _type; }
 

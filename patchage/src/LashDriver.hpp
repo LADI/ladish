@@ -24,8 +24,7 @@
 
 class Patchage;
 
-class LashDriver : public Driver
-{
+class LashDriver : public Driver {
 public:
 	LashDriver(Patchage* app, int argc, char** argv);
 	~LashDriver();

@@ -32,9 +32,7 @@ class LashDriver;
 class StateManager;
 class JackSettingsDialog;
 
-
-class Patchage
-{
+class Patchage {
 public:
 	Patchage(int argc, char** argv);
 	~Patchage();
