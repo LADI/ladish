@@ -153,11 +153,6 @@ Patchage::Patchage(int argc, char** argv)
 	_canvas->scroll_to(static_cast<int>(_canvas->width()/2 - 320),
 	                   static_cast<int>(_canvas->height()/2 - 240)); // FIXME: hardcoded
 
-	//m_canvas_scrolledwindow->signal_event().connect(
-	//		sigc::mem_fun(_canvas, &FlowCanvas::scroll_event_handler));
-	//_zoom_slider->signal_value_changed().connect(
-	//		sigc::mem_fun(this, &Patchage::zoom_changed));
-	
 	_buffer_size_combo->signal_changed().connect(
 			sigc::mem_fun(this, &Patchage::buffer_size_changed));
 	_rewind_but->signal_clicked().connect(
@@ -385,18 +380,6 @@ Patchage::zoom(double z)
 }
 
 
-void
-Patchage::zoom_changed() 
-{
-	static bool enable_signal = true;
-	if (enable_signal) {
-		enable_signal = false;
-		//zoom(_zoom_slider->get_value());
-		enable_signal = true;
-	}
-}
-
-	
 void
 Patchage::refresh() 
 {

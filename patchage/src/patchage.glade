@@ -5,8 +5,6 @@
   <widget class="GtkWindow" id="main_win">
     <property name="border_width">1</property>
     <property name="title" translatable="yes">Patchage</property>
-    <property name="default_width">640</property>
-    <property name="default_height">480</property>
     <property name="icon">patchage.svg</property>
     <child>
       <widget class="GtkVBox" id="main_vbox">
@@ -523,6 +521,7 @@ The bar represents the maximum processing delay as a fraction of the time availa
                   </widget>
                   <packing>
                     <property name="expand">False</property>
+                    <property name="homogeneous">False</property>
                   </packing>
                 </child>
                 <child>
@@ -700,6 +699,8 @@ The bar represents the maximum processing delay as a fraction of the time availa
                 <property name="has_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="has_default">True</property>
+                <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+                <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
                 <property name="shadow_type">GTK_SHADOW_IN</property>
                 <child>
                   <placeholder/>
