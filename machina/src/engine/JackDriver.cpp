@@ -244,7 +244,6 @@ JackDriver::on_process(jack_nframes_t nframes)
 
 	// Machine was switched since last cycle, finalize old machine.
 	if (machine != _last_machine) {
-		cout << "MACHINE CHANGED!" << endl;
 		if (_last_machine) {
 			assert(!_last_machine.unique()); // Realtime, can't delete
 			_last_machine->set_sink(shared_from_this());

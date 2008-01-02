@@ -95,6 +95,9 @@ MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	_canvas->scroll_to(static_cast<int>(_canvas->width()/2 - 320),
 	                       static_cast<int>(_canvas->height()/2 - 240)); // FIXME: hardcoded
 
+	_canvas_scrolledwindow->property_hadjustment().get_value()->set_step_increment(10);
+	_canvas_scrolledwindow->property_vadjustment().get_value()->set_step_increment(10);
+	
 	_record_button->signal_toggled().connect(sigc::mem_fun(this, &MachinaGUI::record_toggled));
 	_stop_button->signal_clicked().connect(sigc::mem_fun(this, &MachinaGUI::stop_clicked));
 	_play_button->signal_toggled().connect(sigc::mem_fun(this, &MachinaGUI::play_toggled));
