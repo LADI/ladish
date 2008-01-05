@@ -94,14 +94,10 @@ Patchage::Patchage(int argc, char** argv)
 	, _state_manager(NULL)
 	, _refresh(false)
 	, _enable_refresh(true)
-	, _pane_closed(false)
-	, _update_pane_position(true)
-	, _user_pane_position(0)
 	, _jack_settings_dialog(NULL)
 	, INIT_WIDGET(_about_win)
 	, INIT_WIDGET(_buffer_size_combo)
 	, INIT_WIDGET(_clear_load_but)
-	, INIT_WIDGET(_main_paned)
 	, INIT_WIDGET(_main_scrolledwin)
 	, INIT_WIDGET(_main_win)
 	, INIT_WIDGET(_main_xrun_progress)
@@ -115,7 +111,9 @@ Patchage::Patchage(int argc, char** argv)
 	, INIT_WIDGET(_menu_view_messages)
 	, INIT_WIDGET(_menu_view_refresh)
 	, INIT_WIDGET(_menu_view_toolbar)
-	, INIT_WIDGET(_messages_expander)
+	, INIT_WIDGET(_messages_win)
+	, INIT_WIDGET(_messages_clear_but)
+	, INIT_WIDGET(_messages_close_but)
 	, INIT_WIDGET(_play_but)
 	, INIT_WIDGET(_rewind_but)
 	, INIT_WIDGET(_sample_rate_label)
@@ -213,24 +211,19 @@ Patchage::Patchage(int argc, char** argv)
 			sigc::mem_fun(this, &Patchage::on_show_messages));
 	_menu_help_about->signal_activate().connect(
 			sigc::mem_fun(this, &Patchage::on_help_about));
+	
+	_messages_clear_but->signal_clicked().connect(
+			sigc::mem_fun(this, &Patchage::on_messages_clear));
+	_messages_close_but->signal_clicked().connect(
+			sigc::mem_fun(this, &Patchage::on_messages_close));
+	_messages_win->signal_delete_event().connect(
+			sigc::mem_fun(this, &Patchage::on_messages_delete));
 
 	connect_widgets();
 	update_state();
 
 	_canvas->show();
 	_main_win->present();
-
-	_update_pane_position = false;
-	_main_paned->set_position(max_pane_position());
-	_user_pane_position = max_pane_position() - _main_win->get_height()/8;
-	_messages_expander->set_expanded(false);
-	_pane_closed = true;
-	
-	_main_paned->property_position().signal_changed().connect(
-			sigc::mem_fun(*this, &Patchage::on_pane_position_changed));
-	
-	_messages_expander->property_expanded().signal_changed().connect(
-			sigc::mem_fun(*this, &Patchage::on_messages_expander_changed));
 
 	// Idle callback, check if we need to refresh
 	Glib::signal_timeout().connect(
@@ -243,8 +236,6 @@ Patchage::Patchage(int argc, char** argv)
 	_main_win->move(
 		static_cast<int>(_state_manager->get_window_location().x),
 		static_cast<int>(_state_manager->get_window_location().y));
-	
-	_update_pane_position = true;
 }
 
 
@@ -430,7 +421,7 @@ Patchage::clear_load()
 	_jack_driver->reset_delay();
 }
 
-	
+
 void
 Patchage::status_message(const string& msg) 
 {
@@ -587,60 +578,6 @@ Patchage::menu_alsa_disconnect()
 
 
 void
-Patchage::on_pane_position_changed()
-{
-	if (!_update_pane_position)
-		return; // avoid infinite recursion ...
-
-	_update_pane_position = false;
-
-	int new_position = _main_paned->get_position();
-
-	if (_pane_closed && new_position < max_pane_position()) {
-		// Auto open
-		_user_pane_position = new_position;
-		_messages_expander->set_expanded(true);
-		_pane_closed = false;
-		_menu_view_messages->set_active(true);
-	} else if (new_position >= max_pane_position()) {
-		// Auto close
-		_pane_closed = true;
-
-		_messages_expander->set_expanded(false);
-		if (new_position > max_pane_position())
-			_main_paned->set_position(max_pane_position()); // ... here
-		_menu_view_messages->set_active(false);
-		
-		_user_pane_position = max_pane_position() - _main_win->get_height()/8;
-	}
-
-	_update_pane_position = true;
-}
-
-
-void
-Patchage::on_messages_expander_changed()
-{
-	if (!_update_pane_position)
-		return;
-
-	if (!_pane_closed) {
-		// Store pane position for restoring
-		_user_pane_position = _main_paned->get_position();
-		if (_update_pane_position) {
-			_update_pane_position = false;
-			_main_paned->set_position(max_pane_position());
-			_update_pane_position = true;
-		}
-		_pane_closed = true;
-	} else {
-		_main_paned->set_position(_user_pane_position);
-		_pane_closed = false;
-	}
-}
-
-
-void
 Patchage::on_arrange() 
 {
 	assert(_canvas);
@@ -656,6 +593,31 @@ Patchage::on_help_about()
 	_about_win->hide();
 }
 
+
+void
+Patchage::on_messages_clear()
+{
+	_status_text->get_buffer()->erase(
+			_status_text->get_buffer()->begin(),
+			_status_text->get_buffer()->end());
+}
+
+	
+void
+Patchage::on_messages_close() 
+{
+	_menu_view_messages->set_active(false);
+}
+
+	
+bool
+Patchage::on_messages_delete(GdkEventAny*) 
+{
+	_menu_view_messages->set_active(false);
+	return true;
+}
+
+
 void
 Patchage::on_quit() 
 {
@@ -666,12 +628,14 @@ Patchage::on_quit()
 	_main_win->hide();
 }
 
-	
+
 void
 Patchage::on_show_messages()
 {
-	if (_update_pane_position)
-		_messages_expander->set_expanded(_menu_view_messages->get_active());
+	if (_menu_view_messages->get_active())
+		_messages_win->present();
+	else
+		_messages_win->hide();
 }
 
 	
@@ -686,14 +650,10 @@ Patchage::on_store_positions()
 void
 Patchage::on_view_toolbar() 
 {
-	_update_pane_position = false;
-
 	if (_menu_view_toolbar->get_active())
 		_toolbars_box->show();
 	else
 		_toolbars_box->hide();
-	
-	_update_pane_position = true;
 }
 
 
