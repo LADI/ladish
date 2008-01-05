@@ -713,7 +713,8 @@ The bar represents the maximum processing delay as a fraction of the time availa
     <property name="destroy_with_parent">True</property>
     <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
     <property name="copyright" translatable="yes">© 2007 Dave Robillard</property>
-    <property name="comments" translatable="yes">A control centre for music/audio systems</property>
+	<property name="comments" translatable="yes">A modular patch bay for audio and MIDI systems
+based on JACK, LASH, and ALSA.</property>
     <property name="website">http://drobilla.net/software/patchage</property>
     <property name="license" translatable="yes">Patchage is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
