@@ -61,16 +61,14 @@ public:
 	void update_state();
 	void store_window_location();
 
-	int max_pane_position() {
-		return _main_paned->property_max_position()
-			- _messages_expander->get_label_widget()->get_height() - 10;
-	}
-
 protected:
 	void connect_widgets();
 
 	void on_arrange();
 	void on_help_about();
+	void on_messages_clear();
+	void on_messages_close();
+	bool on_messages_delete(GdkEventAny*);
 	void on_quit();
 	void on_show_messages();
 	void on_store_positions();
@@ -82,9 +80,6 @@ protected:
 	void update_toolbar();
 
 	void buffer_size_changed();
-	
-	void on_pane_position_changed();
-	void on_messages_expander_changed();
 	
 	Glib::RefPtr<Gnome::Glade::Xml> xml;
 
@@ -131,7 +126,6 @@ protected:
 	Widget<Gtk::AboutDialog>    _about_win;
 	Widget<Gtk::ComboBox>       _buffer_size_combo;
 	Widget<Gtk::ToolButton>     _clear_load_but;
-	Widget<Gtk::Paned>          _main_paned;
 	Widget<Gtk::ScrolledWindow> _main_scrolledwin;
 	Widget<Gtk::Window>         _main_win;
 	Widget<Gtk::ProgressBar>    _main_xrun_progress;
@@ -145,7 +139,9 @@ protected:
 	Widget<Gtk::CheckMenuItem>  _menu_view_messages;
 	Widget<Gtk::MenuItem>       _menu_view_refresh;
 	Widget<Gtk::CheckMenuItem>  _menu_view_toolbar;
-	Widget<Gtk::Expander>       _messages_expander;
+	Widget<Gtk::Dialog>         _messages_win;
+	Widget<Gtk::Button>         _messages_clear_but;
+	Widget<Gtk::Button>         _messages_close_but;
 	Widget<Gtk::Button>         _play_but;
 	Widget<Gtk::Button>         _rewind_but;
 	Widget<Gtk::Label>          _sample_rate_label;
