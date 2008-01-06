@@ -78,6 +78,7 @@ LashDriver::detach()
 void
 LashDriver::on_project_add(const SharedPtr<Raul::LashProject> project)
 {
+	cout << "[LashDriver] Add project - " << project->name() << endl;
 	_project_name = project->name();
 	project->signal_save_file.connect(sigc::mem_fun(this, &LashDriver::on_save_file));
 	project->signal_restore_file.connect(sigc::mem_fun(this, &LashDriver::on_restore_file));
@@ -87,7 +88,7 @@ LashDriver::on_project_add(const SharedPtr<Raul::LashProject> project)
 void
 LashDriver::on_save_file(const string& directory)
 {
-	cout << "[LashDriver] LASH Save File - " << directory << endl;
+	cout << "[LashDriver] Save File - " << directory << endl;
 	_app->store_window_location();
 	_app->state_manager()->save(directory + "/locations");
 }
@@ -96,7 +97,7 @@ LashDriver::on_save_file(const string& directory)
 void
 LashDriver::on_restore_file(const string& directory)
 {
-	cout << "[LashDriver] LASH Restore File - " << directory << endl;
+	cout << "[LashDriver] Restore File - " << directory << endl;
 	_app->state_manager()->load(directory + "/locations");
 	_app->update_state();
 }
@@ -140,7 +141,7 @@ LashDriver::set_project_directory(const std::string& directory)
 	if (project)
 		project->set_directory(directory);
 	else
-		cerr << "[LashDriver] No LASH project to set directory!" << endl;
+		cerr << "[LashDriver] No  project \'" << _project_name << "\' to set directory!" << endl;
 }
 
 
@@ -152,21 +153,18 @@ LashDriver::save_project()
 	if (project)
 		project->save();
 	else
-		cerr << "[LashDriver] No LASH project to save!" << endl;
+		cerr << "[LashDriver] No  project \'" << _project_name << "\' to save!" << endl;
 }
 
 	
 void
 LashDriver::close_project()
 {
-	cerr << "CLOSE PROJECT\n";
 	SharedPtr<Raul::LashProject> project = _server_interface->project(_project_name);
 	
 	if (project)
 		project->close();
 	else
-		cerr << "[LashDriver] No LASH project to close!" << endl;
+		cerr << "[LashDriver] No  project \'" << _project_name << "\' to close!" << endl;
 }
-
-
 
