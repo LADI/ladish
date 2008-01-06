@@ -143,6 +143,8 @@ Patchage::Patchage(int argc, char** argv)
 #endif
 
 	xml->get_widget_derived("jack_settings_win", _jack_settings_dialog);
+	
+	Glib::set_application_name("Patchage");
 	_about_win->property_program_name() = "Patchage";
 	
 	gtkmm_set_width_for_given_text(*_buffer_size_combo, "4096 frames", 40);

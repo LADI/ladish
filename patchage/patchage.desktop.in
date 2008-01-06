@@ -5,6 +5,6 @@ Version=@PACKAGE_VERSION@
 Comment=Connect audio and MIDI applications together and manage audio sessions
 Exec=patchage
 Terminal=false
-Icon=patchage-icon.svg
+Icon=patchage
 Type=Application
 Categories=Application;AudioVideo;Sound;Audio
