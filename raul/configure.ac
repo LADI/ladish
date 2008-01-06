@@ -146,7 +146,7 @@ AM_CONDITIONAL(BUILD_UNIT_TESTS, [test "$build_unit_tests" = "yes"])
 
 # Check for Redlandmm
 build_redlandmm="no"
-PKG_CHECK_MODULES([REDLANDMM], [redlandmm], [build_redlandmm="yes"])
+PKG_CHECK_MODULES([REDLANDMM], [redlandmm], [build_redlandmm="yes"], [build_redlandmm="no"])
 AM_CONDITIONAL(WITH_REDLANDMM, [test "$build_redlandmm" = "yes"])
 AC_DEFINE(HAVE_REDLANDMM, 1, [Has redlandmm])
 
@@ -182,6 +182,7 @@ AC_MSG_RESULT([Configuration:])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([Jack support:     $build_jack])
 AC_MSG_RESULT([LASH support:     $build_lash])
+AC_MSG_RESULT([RDF support:      $build_redlandmm])
 AC_MSG_RESULT([Build unit tests: $build_unit_tests])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([C FLAGS:   $CFLAGS])
