@@ -215,12 +215,14 @@ StateManager::set_zoom(float zoom)
 int
 StateManager::get_port_color(PortType type)
 {
+	// Darkest tango palette colour, with S -= 6, V -= 6, w/ transparency
+	
 	if (type == JACK_AUDIO)
-		return 0x305171B0;
+		return 0x244678FF;
 	else if (type == JACK_MIDI)
-		return 0x663939B0;
+		return 0x960909FF;
 	else if (type == ALSA_MIDI)
-		return 0x307130B0;
+		return 0x4A8A0EFF;
 	else
-		return 0xFF0000B0;
+		return 0xFF0000FF;
 }	
