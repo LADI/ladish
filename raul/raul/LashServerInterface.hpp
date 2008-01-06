@@ -26,7 +26,6 @@
 #include <raul/SharedPtr.hpp>
 #include <sigc++/sigc++.h>
 
-
 namespace Raul {
 
 

@@ -15,6 +15,7 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <iostream>
 #include <raul/LashProject.hpp>
 
 using namespace std;
@@ -33,6 +34,7 @@ LashProject::save()
 {
 	SharedPtr<LashClient> client = _client.lock();
 	if (client) {
+		cout << "[LASH] Saving project " << _name << endl;
 		lash_event_t* event = lash_event_new_with_type(LASH_Save);
 		lash_event_set_project(event, _name.c_str());
 		lash_send_event(client->lash_client(), event);
@@ -45,6 +47,7 @@ LashProject::close()
 {
 	SharedPtr<LashClient> client = _client.lock();
 	if (client) {
+		cout << "[LASH] Closing project " << _name << endl;
 		lash_event_t* event = lash_event_new_with_type(LASH_Project_Remove);
 		lash_event_set_project(event, _name.c_str());
 		lash_send_event(client->lash_client(), event);
@@ -57,6 +60,7 @@ LashProject::set_directory(const string& filename)
 {
 	SharedPtr<LashClient> client = _client.lock();
 	if (client) {
+		cout << "[LASH] Project " << _name << " directory = " << filename << endl;
 		lash_event_t* event = lash_event_new_with_type(LASH_Project_Dir);
 		lash_event_set_project(event, _name.c_str());
 		lash_event_set_string(event, filename.c_str());
@@ -70,6 +74,7 @@ LashProject::set_name(const string& name)
 {
 	SharedPtr<LashClient> client = _client.lock();
 	if (client) {
+		cout << "[LASH] Project " << _name << " name = " << name << endl;
 		lash_event_t* event = lash_event_new_with_type(LASH_Project_Name);
 		lash_event_set_project(event, _name.c_str());
 		lash_event_set_string(event, name.c_str());

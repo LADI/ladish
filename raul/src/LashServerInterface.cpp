@@ -56,7 +56,8 @@ LashServerInterface::handle_event(lash_event_t* ev)
 
 	SharedPtr<LashProject> p;
 	
-	//cout << "[LashDriver] LASH Event.  Type = " << (unsigned int)type << ", string = " << str << "**********" << endl;
+	//cout << "[LashServerInterface] Event, type = " << (unsigned int)type
+	//	<< ", string = " << str << endl;
 	
 	switch (type) {
 	case LASH_Project_Add:
@@ -125,6 +126,7 @@ LashServerInterface::handle_event(lash_event_t* ev)
 void
 LashServerInterface::restore_project(const std::string& filename)
 {
+	cout << "[LASH] Restoring project at " << filename << endl;
 	lash_event_t* event = lash_event_new_with_type(LASH_Project_Add);
 	lash_event_set_string(event, filename.c_str());
 	lash_send_event(lash_client(), event);

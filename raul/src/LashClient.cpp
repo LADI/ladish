@@ -30,14 +30,13 @@ LashClient::LashClient(lash_client_t* lash_client)
 
 LashClient::~LashClient()
 {
-
 }
 
 
 
 SharedPtr<LashClient>
 LashClient::create(
-		lash_args_t*    args,
+		lash_args_t*  args,
         const string& name,
         int           flags)
 {
