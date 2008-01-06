@@ -167,8 +167,15 @@ PKG_CHECK_MODULES(FLOWCANVAS, flowcanvas)
 
 # Patchage
 AC_CONFIG_FILES([Makefile])
-AC_CONFIG_FILES([src/Makefile])
 AC_CONFIG_FILES([patchage.desktop])
+AC_CONFIG_FILES([src/Makefile])
+AC_CONFIG_FILES([icons/Makefile])
+AC_CONFIG_FILES([icons/16x16/Makefile])
+AC_CONFIG_FILES([icons/22x22/Makefile])
+AC_CONFIG_FILES([icons/24x24/Makefile])
+AC_CONFIG_FILES([icons/32x32/Makefile])
+AC_CONFIG_FILES([icons/48x48/Makefile])
+AC_CONFIG_FILES([icons/scalable/Makefile])
 
 AC_OUTPUT
 
