@@ -385,6 +385,7 @@
                             <child>
                               <widget class="GtkComboBoxEntry" id="buffer_size_combo">
                                 <property name="visible">True</property>
+                                <property name="tooltip" translatable="yes">Jack latency</property>
                                 <property name="border_width">1</property>
                                 <property name="items" translatable="yes">32 frames
 64 frames
@@ -449,6 +450,7 @@
                 <child>
                   <widget class="GtkToolButton" id="clear_load_but">
                     <property name="visible">True</property>
+                    <property name="tooltip" translatable="yes">Clear the drouput indicator</property>
                     <property name="stock_id">gtk-clear</property>
                   </widget>
                   <packing>
@@ -465,9 +467,9 @@
                         <child>
                           <widget class="GtkProgressBar" id="main_xrun_progress">
                             <property name="visible">True</property>
-                            <property name="tooltip" translatable="yes">Delay/XRun Indicator
+                            <property name="tooltip" translatable="yes">Drouput (XRun) Indicator
 
-The bar represents the maximum processing delay as a fraction of the time available for a cycle.  If the bar reaches 100%, an XRun will occur.</property>
+The bar represents the percentage of available time used for audio processing (i.e. the DSP load).  If the bar reaches 100%, a drouput will occur.</property>
                             <property name="pulse_step">0.10000000149</property>
                             <property name="text" translatable="yes">0 Dropouts</property>
                           </widget>
@@ -527,6 +529,7 @@ The bar represents the maximum processing delay as a fraction of the time availa
                   <widget class="GtkToolButton" id="zoom_normal_but">
                     <property name="visible">True</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                    <property name="tooltip" translatable="yes">Zoom to normal size</property>
                     <property name="stock_id">gtk-zoom-100</property>
                   </widget>
                   <packing>
@@ -537,6 +540,7 @@ The bar represents the maximum processing delay as a fraction of the time availa
                   <widget class="GtkToolButton" id="zoom_full_but">
                     <property name="visible">True</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                    <property name="tooltip" translatable="yes">Zoom to fit all modules</property>
                     <property name="stock_id">gtk-zoom-fit</property>
                   </widget>
                   <packing>
@@ -564,6 +568,7 @@ The bar represents the maximum processing delay as a fraction of the time availa
                   <widget class="GtkButton" id="rewind_but">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="tooltip" translatable="yes">Rewind Jack transport</property>
                     <property name="response_id">0</property>
                     <child>
                       <widget class="GtkImage" id="image577">
@@ -586,6 +591,7 @@ The bar represents the maximum processing delay as a fraction of the time availa
                   <widget class="GtkButton" id="play_but">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="tooltip" translatable="yes">Start Jack transport</property>
                     <property name="border_width">1</property>
                     <property name="response_id">0</property>
                     <child>
@@ -614,6 +620,7 @@ The bar represents the maximum processing delay as a fraction of the time availa
                     <child>
                       <widget class="GtkImage" id="image580">
                         <property name="visible">True</property>
+                        <property name="tooltip" translatable="yes">Pause Jack transport</property>
                         <property name="stock">gtk-media-pause</property>
                       </widget>
                     </child>
@@ -634,6 +641,7 @@ The bar represents the maximum processing delay as a fraction of the time availa
                     <property name="visible">True</property>
                     <property name="sensitive">False</property>
                     <property name="can_focus">True</property>
+                    <property name="tooltip" translatable="yes">Jack transport time</property>
                     <property name="editable">False</property>
                     <property name="invisible_char">*</property>
                     <property name="width_chars">11</property>
@@ -650,31 +658,6 @@ The bar represents the maximum processing delay as a fraction of the time availa
               <widget class="GtkSeparatorToolItem" id="separatortoolitem2">
                 <property name="visible">True</property>
                 <property name="border_width">4</property>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-                <property name="homogeneous">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkToolItem" id="toolitem10">
-                <property name="visible">True</property>
-                <child>
-                  <placeholder/>
-                </child>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-                <property name="homogeneous">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkToolItem" id="toolitem1">
-                <property name="visible">True</property>
-                <property name="border_width">1</property>
-                <child>
-                  <placeholder/>
-                </child>
               </widget>
               <packing>
                 <property name="expand">False</property>
@@ -712,7 +695,7 @@ The bar represents the maximum processing delay as a fraction of the time availa
     <property name="destroy_with_parent">True</property>
     <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
     <property name="copyright" translatable="yes">© 2007 Dave Robillard</property>
-	<property name="comments" translatable="yes">A modular patch bay for audio and MIDI systems
+    <property name="comments" translatable="yes">A modular patch bay for audio and MIDI systems
 based on JACK, LASH, and ALSA.</property>
     <property name="website">http://drobilla.net/software/patchage</property>
     <property name="license" translatable="yes">Patchage is free software; you can redistribute it and/or modify
@@ -731,6 +714,8 @@ along with Patchage; if not, write to the Free Software Foundation, Inc.,
 </property>
     <property name="authors">Dave Robillard &lt;dave@drobilla.net&gt;</property>
     <property name="translator_credits" translatable="yes" comments="TRANSLATORS: Replace this string with your names, one name per line.">translator-credits</property>
+    <property name="artists">Icon:
+	Lapo Calamandrei</property>
     <child internal-child="vbox">
       <widget class="GtkVBox" id="dialog-vbox1">
         <child internal-child="action_area">
