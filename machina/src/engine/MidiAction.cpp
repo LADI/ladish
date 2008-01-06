@@ -19,6 +19,7 @@
 #include <raul/SharedPtr.hpp>
 #include <raul/MIDISink.hpp>
 #include <raul/Atom.hpp>
+#include <raul/AtomRDF.hpp>
 #include "machina/MidiAction.hpp"
 
 namespace Machina {
@@ -104,7 +105,7 @@ MidiAction::write_state(Redland::Model& model)
 	// FIXME: Assumes note on/note off
 	model.add_statement(_id,
 			Redland::Node(model.world(), Redland::Node::RESOURCE, "machina:midiNote"),
-			Atom((int)(_event.get()[1])).to_rdf_node(model.world()));
+			AtomRDF::atom_to_node(model.world(), Atom((int)(_event.get()[1]))));
 }
 
 

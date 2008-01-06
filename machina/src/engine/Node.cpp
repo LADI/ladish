@@ -17,11 +17,14 @@
 
 #include <cassert>
 #include <raul/Atom.hpp>
+#include <raul/AtomRDF.hpp>
 #include <redlandmm/World.hpp>
 #include <redlandmm/Model.hpp>
 #include <machina/Node.hpp>
 #include <machina/Edge.hpp>
 #include <machina/ActionFactory.hpp>
+
+using namespace Raul;
 
 namespace Machina {
 
@@ -37,7 +40,7 @@ Node::Node(BeatCount duration, bool initial)
 
 
 Node::Node(const Node& copy)
-	: Raul::Stateful() // don't copy RDF ID
+	: Stateful() // don't copy RDF ID
 	, _is_initial(copy._is_initial)
 	, _is_selector(copy._is_selector)
 	, _is_active(false)
@@ -123,7 +126,7 @@ Node::set_exit_action(SharedPtr<Action> action)
 
 
 void
-Node::enter(SharedPtr<Raul::MIDISink> sink, BeatTime time)
+Node::enter(SharedPtr<MIDISink> sink, BeatTime time)
 {
 	assert(!_is_active);
 	
@@ -137,7 +140,7 @@ Node::enter(SharedPtr<Raul::MIDISink> sink, BeatTime time)
 
 
 void
-Node::exit(SharedPtr<Raul::MIDISink> sink, BeatTime time)
+Node::exit(SharedPtr<MIDISink> sink, BeatTime time)
 {
 	assert(_is_active);
 	
@@ -218,7 +221,7 @@ Node::write_state(Redland::Model& model)
 
 	model.add_statement(_id,
 			"machina:duration",
-			Raul::Atom((float)_duration).to_rdf_node(model.world()));
+			AtomRDF::atom_to_node(model.world(), Atom((float)_duration)));
 
 	if (_enter_action) {
 		_enter_action->write_state(model);

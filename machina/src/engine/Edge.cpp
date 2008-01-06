@@ -16,6 +16,7 @@
  */
 
 #include <raul/Atom.hpp>
+#include <raul/AtomRDF.hpp>
 #include <redlandmm/World.hpp>
 #include <redlandmm/Model.hpp>
 #include "machina/Node.hpp"
@@ -54,7 +55,7 @@ Edge::write_state(Redland::Model& model)
 	
 	model.add_statement(_id,
 			"machina:probability",
-			Atom(_probability.get()).to_rdf_node(model.world()));
+			AtomRDF::atom_to_node(model.world(), Atom(_probability.get())));
 }
 
 

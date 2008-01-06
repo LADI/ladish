@@ -3,6 +3,8 @@ raulincludedir = $(includedir)/raul
 raulinclude_HEADERS = \
 	Array.hpp \
 	Atom.hpp \
+	AtomLiblo.hpp \
+	AtomRDF.hpp \
 	AtomicInt.hpp \
 	AtomicPtr.hpp \
 	Command.hpp \
@@ -34,10 +36,6 @@ raulinclude_HEADERS = \
 	WeakPtr.hpp \
 	midi_events.h \
 	types.hpp
-
-if WITH_LIBLO
-raulinclude_HEADERS += AtomLiblo.hpp
-endif
 
 if WITH_LASH
 raulinclude_HEADERS += LashClient.hpp LashServerInterface.hpp LashProject.hpp

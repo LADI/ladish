@@ -357,6 +357,13 @@ AC_ARG_ENABLE([ingen-gtk-client],
 	AS_HELP_STRING(--enable-ingen-gtk-client, [Build Ingen GTK client (true)]),
 	[ if test x$enable_gtk_client = xno ; then build_gtk_client=no ; fi ])
 
+# OSC via Liblo
+build_liblo="yes"
+PKG_CHECK_MODULES(LIBLO, liblo, [build_liblo="yes"], [build_liblo="no"])
+if test "$build_liblo" = "yes"; then
+	AC_DEFINE(HAVE_LIBLO, 1, [Has the liblo library])
+fi
+
 if test "$build_ingen_gtk_client" = "yes"; then
 	build_ingen_clients="yes"
 fi
@@ -433,24 +440,7 @@ AM_CONDITIONAL(WITH_REDLAND, [test "$build_redland" = "yes"])
 
 ################## RAUL
 
-# Check for Redlandmm
-build_redlandmm="no"
-PKG_CHECK_MODULES([REDLANDMM], [redlandmm], [build_redlandmm="yes"])
-if test "$build_redland" = "yes"; then
-	AC_DEFINE(HAVE_REDLANDMM, [test "$build_redland" = "yes"], [Has redlandmm])
-fi
-AM_CONDITIONAL(WITH_REDLANDMM, [test "$build_redlandmm" = "yes"])
-
-build_liblo="yes"
-AC_ARG_ENABLE(liblo,
-	[AS_HELP_STRING(--enable-liblo, [Include liblo (OSC) support (yes)])],
-	[ if test x$enable_liblo = xno ; then build_liblo=no ; fi ])
-if test "$build_liblo" = "yes"; then
-	PKG_CHECK_MODULES(LIBLO, liblo >= 0.22, [],
-		AC_MSG_ERROR([OSC support requires liblo (>= 0.22)]))
-fi
-AM_CONDITIONAL(WITH_LIBLO, [test "$build_liblo" = "yes"])
-
+# (No required dependencies)
 
 ########### FLOWCANVAS
 
@@ -627,6 +617,7 @@ AC_MSG_RESULT([Jack support:            $build_jack])
 AC_MSG_RESULT([LV2 Plugin support:      $build_lv2])
 AC_MSG_RESULT([LADSPA Plugin support:   $build_ladspa])
 AC_MSG_RESULT([LASH support:            $build_lash])
+AC_MSG_RESULT([OSC support (via liblo): $build_lash])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([LADSPA plugin install location: $ladspadir])
 AC_MSG_RESULT([LV2 plugin install location:    $lv2plugindir])

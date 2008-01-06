@@ -15,6 +15,11 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+/** @file Conversion from Raul Atom to Liblo OSC arguments and vice-versa.
+ * This header depends on liblo, only apps which directly depend on
+ * both raul and liblo should include it.
+ */
+
 #ifndef RAUL_ATOM_LIBLO_HPP
 #define RAUL_ATOM_LIBLO_HPP
 
@@ -22,57 +27,53 @@
 #include <raul/Atom.hpp>
 
 namespace Raul {
+namespace AtomLiblo {
 
-
-/** Support for serializing an Atom to/from liblo messages.
- *
- * (Here to prevent a unnecessary liblo dependency for Atom).
- *
- * \ingroup raul
- */
-class AtomLiblo {
-public:
-	static void lo_message_add_atom(lo_message m, const Atom& atom) {
-		switch (atom.type()) {
-		case Atom::INT:
-			lo_message_add_int32(m, atom.get_int32());
-			break;
-		case Atom::FLOAT:
-			lo_message_add_float(m, atom.get_float());
-			break;
-		case Atom::STRING:
-			lo_message_add_string(m, atom.get_string());
-			break;
-		case Atom::BLOB:
-			// FIXME: is this okay?  what does liblo do?
-			lo_message_add_blob(m, const_cast<void*>(atom.get_blob()));
-			break;
-		case Atom::NIL:
-		default:
-			lo_message_add_nil(m);
-			break;
-		}
+inline void
+lo_message_add_atom(lo_message m, const Atom& atom)
+{
+	switch (atom.type()) {
+	case Atom::INT:
+		lo_message_add_int32(m, atom.get_int32());
+		break;
+	case Atom::FLOAT:
+		lo_message_add_float(m, atom.get_float());
+		break;
+	case Atom::STRING:
+		lo_message_add_string(m, atom.get_string());
+		break;
+	case Atom::BLOB:
+		// FIXME: is this okay?  what does liblo do?
+		lo_message_add_blob(m, const_cast<void*>(atom.get_blob()));
+		break;
+	case Atom::NIL:
+	default:
+		lo_message_add_nil(m);
+		break;
 	}
+}
 
-	static Atom lo_arg_to_atom(char type, lo_arg* arg) {
-		switch (type) {
-		case 'i':
-			return Atom(arg->i);
-		case 'f':
-			return Atom(arg->f);
-		case 's':
-			return Atom(&arg->s);
-		//case 'b'
-			// FIXME: How to get a blob from a lo_arg?
-			//return Atom(arg->b);
-		default:
-			return Atom();
-		}
+
+inline Atom
+lo_arg_to_atom(char type, lo_arg* arg)
+{
+	switch (type) {
+	case 'i':
+		return Atom(arg->i);
+	case 'f':
+		return Atom(arg->f);
+	case 's':
+		return Atom(&arg->s);
+	//case 'b'
+		// FIXME: How to get a blob from a lo_arg?
+		//return Atom(arg->b);
+	default:
+		return Atom();
 	}
+}
 
-};
 
-
+} // namespace AtomLiblo
 } // namespace Raul
 
 #endif // RAUL_ATOM_LIBLO_HPP

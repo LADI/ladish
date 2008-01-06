@@ -144,23 +144,7 @@ AM_CONDITIONAL(BUILD_UNIT_TESTS, [test "$build_unit_tests" = "yes"])
 
 ################## RAUL
 
-# Check for Redlandmm
-build_redlandmm="no"
-PKG_CHECK_MODULES([REDLANDMM], [redlandmm], [build_redlandmm="yes"], [build_redlandmm="no"])
-AM_CONDITIONAL(WITH_REDLANDMM, [test "$build_redlandmm" = "yes"])
-AC_DEFINE(HAVE_REDLANDMM, 1, [Has redlandmm])
-
-# Check for liblo
-build_liblo="yes"
-AC_ARG_ENABLE(liblo,
-	[AS_HELP_STRING(--enable-liblo, [Include liblo (OSC) support (yes)])],
-	[ if test x$enable_liblo = xno ; then build_liblo=no ; fi ])
-if test "$build_liblo" = "yes"; then
-	PKG_CHECK_MODULES(LIBLO, liblo >= 0.22, [],
-		AC_MSG_ERROR([OSC support requires liblo (>= 0.22)]))
-fi
-AM_CONDITIONAL(WITH_LIBLO, [test "$build_liblo" = "yes"])
-
+# (No required dependencies)
 
 #################### OUTPUT
 
