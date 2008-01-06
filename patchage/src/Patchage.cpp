@@ -21,6 +21,7 @@
 #include <pthread.h>
 #include <libgnomecanvasmm.h>
 #include <libglademm/xml.h>
+#include <gtk/gtkwindow.h>
 #include <jack/statistics.h>
 #include <raul/SharedPtr.hpp>
 
@@ -146,6 +147,8 @@ Patchage::Patchage(int argc, char** argv)
 	
 	Glib::set_application_name("Patchage");
 	_about_win->property_program_name() = "Patchage";
+	_about_win->property_logo_icon_name() = "patchage";
+	gtk_window_set_default_icon_name("patchage");
 	
 	gtkmm_set_width_for_given_text(*_buffer_size_combo, "4096 frames", 40);
 

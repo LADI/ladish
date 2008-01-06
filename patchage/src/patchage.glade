@@ -5,7 +5,6 @@
   <widget class="GtkWindow" id="main_win">
     <property name="border_width">1</property>
     <property name="title" translatable="yes">Patchage</property>
-    <property name="icon">patchage.svg</property>
     <child>
       <widget class="GtkVBox" id="main_vbox">
         <property name="visible">True</property>
@@ -732,7 +731,6 @@ along with Patchage; if not, write to the Free Software Foundation, Inc.,
 </property>
     <property name="authors">Dave Robillard &lt;dave@drobilla.net&gt;</property>
     <property name="translator_credits" translatable="yes" comments="TRANSLATORS: Replace this string with your names, one name per line.">translator-credits</property>
-    <property name="logo">patchage.svg</property>
     <child internal-child="vbox">
       <widget class="GtkVBox" id="dialog-vbox1">
         <child internal-child="action_area">
@@ -755,7 +753,6 @@ along with Patchage; if not, write to the Free Software Foundation, Inc.,
     <property name="default_width">400</property>
     <property name="default_height">200</property>
     <property name="destroy_with_parent">True</property>
-    <property name="icon">patchage.svg</property>
     <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
     <child internal-child="vbox">
       <widget class="GtkVBox" id="dialog-vbox1">
@@ -869,7 +866,6 @@ along with Patchage; if not, write to the Free Software Foundation, Inc.,
     <property name="border_width">5</property>
     <property name="title" translatable="yes">Patchage - Messages</property>
     <property name="window_position">GTK_WIN_POS_CENTER_ON_PARENT</property>
-    <property name="icon">patchage.svg</property>
     <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
     <property name="has_separator">False</property>
     <child internal-child="vbox">
