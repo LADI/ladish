@@ -158,7 +158,6 @@ Ellipse::set_selected(bool selected)
 		return;
 		
 	if (selected) {
-		_ellipse.property_fill_color_rgba() = ELLIPSE_HILITE_FILL_COLOUR;
 		_ellipse.property_outline_color_rgba() = ELLIPSE_HILITE_OUTLINE_COLOUR;
 		_ellipse.property_dash() = canvas->select_dash();
 	} else {

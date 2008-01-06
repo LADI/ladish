@@ -194,7 +194,6 @@ Module::set_selected(bool selected)
 		return;
 
 	if (selected) {
-		_module_box.property_fill_color_rgba() = MODULE_HILITE_FILL_COLOUR;
 		_module_box.property_outline_color_rgba() = MODULE_HILITE_OUTLINE_COLOUR;
 		_module_box.property_dash() = canvas->select_dash();
 	} else {
