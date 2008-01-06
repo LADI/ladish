@@ -572,8 +572,15 @@ AC_CONFIG_FILES([flowcanvas/flowcanvas.pc])
 
 # Patchage
 AC_CONFIG_FILES([patchage/Makefile])
-AC_CONFIG_FILES([patchage/src/Makefile])
 AC_CONFIG_FILES([patchage/patchage.desktop])
+AC_CONFIG_FILES([patchage/src/Makefile])
+AC_CONFIG_FILES([patchage/icons/Makefile])
+AC_CONFIG_FILES([patchage/icons/16x16/Makefile])
+AC_CONFIG_FILES([patchage/icons/22x22/Makefile])
+AC_CONFIG_FILES([patchage/icons/24x24/Makefile])
+AC_CONFIG_FILES([patchage/icons/32x32/Makefile])
+AC_CONFIG_FILES([patchage/icons/48x48/Makefile])
+AC_CONFIG_FILES([patchage/icons/scalable/Makefile])
 
 # Ingen
 AC_CONFIG_FILES([ingen/Makefile])
