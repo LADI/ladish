@@ -71,8 +71,6 @@ PatchageEvent::find_port(const Patchage* patchage, const PortRef& ref)
 void
 PatchageEvent::execute(Patchage* patchage)
 {
-	//cerr << "{ EXECUTING EVENT" << endl;
-
 	if (_type  == REFRESH) {
 		patchage->refresh();
 	} else if (_type == PORT_CREATION) {
@@ -152,3 +150,4 @@ PatchageEvent::execute(Patchage* patchage)
 
 	//cerr << "}" << endl << endl;
 }
+

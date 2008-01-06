@@ -370,7 +370,7 @@ Module::add_port(boost::shared_ptr<Port> p)
 {
 	PortVector::const_iterator i = std::find(_ports.begin(), _ports.end(), p);
 	if (i != _ports.end()) // already added
-		return;             // so do nothing
+		return;            // so do nothing
 	
 	_ports.push_back(p);
 	
