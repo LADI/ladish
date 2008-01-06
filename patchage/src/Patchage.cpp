@@ -229,6 +229,7 @@ Patchage::Patchage(int argc, char** argv)
 
 	_canvas->show();
 	_main_win->present();
+	_about_win->set_transient_for(*_main_win);
 
 	// Idle callback, check if we need to refresh
 	Glib::signal_timeout().connect(
