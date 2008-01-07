@@ -1,5 +1,5 @@
 AC_PREREQ(2.59)
-AC_INIT([flowcanvas],[svn],[dave@drobilla.net])
+AC_INIT([flowcanvas],[0.4.0],[dave@drobilla.net])
 
 AC_CONFIG_AUX_DIR([config])
 
@@ -13,6 +13,31 @@ AC_CONFIG_SRCDIR([flowcanvas/Canvas.hpp])
 AC_CONFIG_HEADER([config/config.h])
 
 AM_INIT_AUTOMAKE
+
+# FlowCanvas interface version (libtool shared library versioning)
+#
+# current = incremented whenever the public API is changed 
+# revision = incremented when the implementation of current is changed
+# age = current library is both source and binary compatible with
+#       interfaces: current,current-1,...,current-age
+#
+# See libtool documentation for detailed documentation
+#
+# Version history:
+# 0.4.0 = 0,0,0
+
+FLOWCANVAS_VERSION="0.4.0"
+FLOWCANVAS_API_CURRENT="0"
+FLOWCANVAS_API_REVISION="0"
+FLOWCANVAS_API_AGE="0"
+
+AC_SUBST(FLOWCANVAS_API_CURRENT)
+AC_SUBST(FLOWCANVAS_API_REVISION)
+AC_SUBST(FLOWCANVAS_API_AGE)
+FLOWCANVAS_SO_VERSION="${FLOWCANVAS_API_CURRENT}:${FLOWCANVAS_API_REVISION}:${FLOWCANVAS_API_AGE}"
+AC_SUBST(FLOWCANVAS_SO_VERSION)
+AC_SUBST(FLOWCANVAS_VERSION)
+
 
 #################### ENVIRONMENT
 
@@ -38,8 +63,10 @@ cd $builddir
 
 FLOWCANVAS_CFLAGS="-I$abs_srcdir"
 FLOWCANVAS_LIBS="$builddir/src/.libs/libflowcanvas.la"
+FLOWCANVAS_SRCDIR="$abs_srcdir"
 AC_SUBST(FLOWCANVAS_CFLAGS)
 AC_SUBST(FLOWCANVAS_LIBS)
+AC_SUBST(FLOWCANVAS_SRCDIR)
 
 CONFIG_H_PATH="$builddir/config/config.h"
 
@@ -131,6 +158,18 @@ else
 	AC_MSG_WARN([Warning: Graphviz 'agraph' library (graphviz-dev) not found, no auto-arrange support
 				 will be built])
 fi
+
+# Build documentation
+build_documentation="yes"
+AC_ARG_ENABLE(documentation,
+	[AS_HELP_STRING(--enable-documentation, [Build documentation (no)])],
+	[build_documentation="$enableval"])
+AC_CHECK_PROG(HAVE_DOXYGEN, doxygen, true, false)
+if test $HAVE_DOXYGEN = "false"; then
+	AC_MSG_WARN([*** Doxygen not found, API documentation will not be built])
+	build_documentation="no"
+fi
+AM_CONDITIONAL(HAVE_DOXYGEN, [test "x$build_documentation" = "xyes"])
 
 
 #################### OUTPUT

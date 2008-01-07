@@ -15,11 +15,6 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-/** @file Conversion from Raul Atom to Redlandmm RDF Node and vice-versa.
- * This header depends on redlandmm, only apps which directly depend on
- * both raul and redlandmm should include it.
- */
-
 #ifndef RAUL_ATOM_RDF_HPP
 #define RAUL_ATOM_RDF_HPP
 
@@ -35,8 +30,14 @@
 #define CUC(x) ((const unsigned char*)(x))
 
 namespace Raul {
+
+/** Conversion between Raul Atoms and Redlandmm RDF nodes.
+ * This code (in header raul/AtomRDF.hpp) depends on redlandmm, only apps
+ * which directly depend on both raul and liblo should include it.
+ */
 namespace AtomRDF {
 
+/** Convert a Redland::Node to a Raul::Atom */
 inline Atom
 node_to_atom(const Redland::Node& node)
 {
@@ -53,6 +54,7 @@ node_to_atom(const Redland::Node& node)
 }
 
 
+/** Convert a Raul::Atom to a Redland::Node */
 inline Redland::Node
 atom_to_node(Redland::World& world, const Atom& atom)
 {

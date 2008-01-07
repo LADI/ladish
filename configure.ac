@@ -32,9 +32,21 @@ AC_CONFIG_SRCDIR([redlandmm/src/Model.cpp])
 # Raul
 AC_CONFIG_SRCDIR([raul/raul/Semaphore.h])
 
+# See raul/configure.ac for versioning info/history
+RAUL_VERSION="0.4.0"
+RAUL_API_CURRENT="0"
+RAUL_API_REVISION="0"
+RAUL_API_AGE="0"
+
 # FlowCanvas
 AC_CONFIG_SRCDIR([flowcanvas/src/Canvas.cpp])
 AC_CONFIG_SRCDIR([flowcanvas/flowcanvas/Canvas.hpp])
+
+# See flowcanvas/configure.ac for versioning info/history
+FLOWCANVAS_VERSION="0.4.0"
+FLOWCANVAS_API_CURRENT="0"
+FLOWCANVAS_API_REVISION="0"
+FLOWCANVAS_API_AGE="0"
 
 # Patchage
 AC_CONFIG_SRCDIR([src/main.cpp])

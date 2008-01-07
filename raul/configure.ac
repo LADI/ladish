@@ -1,5 +1,5 @@
 AC_PREREQ(2.59)
-AC_INIT([raul],[svn],[dave@drobilla.net])
+AC_INIT([raul],[0.4.0],[dave@drobilla.net])
 
 AC_CONFIG_AUX_DIR([config])
 
@@ -13,6 +13,31 @@ AC_CONFIG_SRCDIR([src/Thread.cpp])
 AC_CONFIG_HEADER([config/config.h])
 
 AM_INIT_AUTOMAKE
+
+# Raul interface version (libtool shared library versioning)
+#
+# current = incremented whenever the public API is changed 
+# revision = incremented when the implementation of current is changed
+# age = current library is both source and binary compatible with
+#       interfaces: current,current-1,...,current-age
+#
+# See libtool documentation for detailed documentation
+#
+# Version history:
+# 0.4.0 = 0,0,0
+
+RAUL_VERSION="0.4.0"
+RAUL_API_CURRENT="0"
+RAUL_API_REVISION="0"
+RAUL_API_AGE="0"
+
+AC_SUBST(RAUL_API_CURRENT)
+AC_SUBST(RAUL_API_REVISION)
+AC_SUBST(RAUL_API_AGE)
+RAUL_SO_VERSION="${RAUL_API_CURRENT}:${RAUL_API_REVISION}:${RAUL_API_AGE}"
+AC_SUBST(RAUL_SO_VERSION)
+AC_SUBST(RAUL_VERSION)
+
 
 #################### ENVIRONMENT
 
@@ -40,8 +65,10 @@ cd $builddir
 
 RAUL_CFLAGS="-I$abs_srcdir"
 RAUL_LIBS="$builddir/src/.libs/libraul.la"
+RAUL_SRCDIR="$abs_srcdir"
 AC_SUBST(RAUL_CFLAGS)
 AC_SUBST(RAUL_LIBS)
+AC_SUBST(RAUL_SRCDIR)
 
 CONFIG_H_PATH="$builddir/config/config.h"
 
@@ -131,6 +158,18 @@ else
 	AC_MSG_WARN([LASH not found, session support will not be built.])
 fi
 
+# Build documentation
+build_documentation="yes"
+AC_ARG_ENABLE(documentation,
+	[AS_HELP_STRING(--enable-documentation, [Build documentation (no)])],
+	[build_documentation="$enableval"])
+AC_CHECK_PROG(HAVE_DOXYGEN, doxygen, true, false)
+if test $HAVE_DOXYGEN = "false"; then
+	AC_MSG_WARN([*** Doxygen not found, API documentation will not be built])
+	build_documentation="no"
+fi
+AM_CONDITIONAL(HAVE_DOXYGEN, [test "x$build_documentation" = "xyes"])
+
 # Build unit tests
 build_unit_tests="no"
 AC_ARG_ENABLE(unit-tests,
@@ -166,7 +205,6 @@ AC_MSG_RESULT([Configuration:])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([Jack support:     $build_jack])
 AC_MSG_RESULT([LASH support:     $build_lash])
-AC_MSG_RESULT([RDF support:      $build_redlandmm])
 AC_MSG_RESULT([Build unit tests: $build_unit_tests])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([C FLAGS:   $CFLAGS])

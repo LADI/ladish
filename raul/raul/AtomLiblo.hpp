@@ -15,11 +15,6 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-/** @file Conversion from Raul Atom to Liblo OSC arguments and vice-versa.
- * This header depends on liblo, only apps which directly depend on
- * both raul and liblo should include it.
- */
-
 #ifndef RAUL_ATOM_LIBLO_HPP
 #define RAUL_ATOM_LIBLO_HPP
 
@@ -27,8 +22,14 @@
 #include <raul/Atom.hpp>
 
 namespace Raul {
+
+/** Conversion between Raul Atoms and Liblo OSC arguments.
+ * This code (in header raul/AtomLiblo.hpp) depends on liblo, only apps which
+ * directly depend on both raul and liblo should include it.
+ */
 namespace AtomLiblo {
 
+/** Append a Raul Atom as a parameter to a liblo message */
 inline void
 lo_message_add_atom(lo_message m, const Atom& atom)
 {
@@ -54,6 +55,7 @@ lo_message_add_atom(lo_message m, const Atom& atom)
 }
 
 
+/** Convert a liblo argument to a Raul::Atom */
 inline Atom
 lo_arg_to_atom(char type, lo_arg* arg)
 {
