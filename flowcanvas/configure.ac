@@ -179,6 +179,7 @@ AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
 AC_CONFIG_FILES([flowcanvas/Makefile])
 AC_CONFIG_FILES([doc/Makefile])
+AC_CONFIG_FILES([doc/reference.doxygen])
 AC_CONFIG_FILES([flowcanvas.pc])
 
 AC_OUTPUT
