@@ -8,6 +8,7 @@ AM_CXXFLAGS = \
 	@JACK_CFLAGS@ \
 	@LIBGLADEMM_CFLAGS@ \
 	@RAUL_CFLAGS@ \
+	@REDLAND_CFLAGS@
 	@REDLANDMM_CFLAGS@
 
 EXTRA_DIST = machina.gladep
@@ -41,6 +42,7 @@ machina_gui_LDADD = \
 	@JACK_LIBS@ \
 	@LIBGLADEMM_LIBS@ \
 	@RAUL_LIBS@ \
+	@REDLAND_LIBS@
 	@REDLANDMM_LIBS@
 
 bin_PROGRAMS = machina_gui
