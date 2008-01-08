@@ -5,8 +5,11 @@ LV2 is a standard for plugins and matching host applications, primarily
 targeted at audio processing and generation.
 
 LV2 is a successor to LADSPA, created to address the limitations of LADSPA
-which many hosts have outgrown. LV2 is not backwards compatible, but migration
-tools will be released once the specification is finalized.
+which many applications have outgrown.  Compared to LADSPA, all plugin data
+is moved from the code to a separate data file, and the code has been made as
+generic as possible.  As a result, LV2 can be independently extended
+(retaining compatibility wherever possible), and virtually any feasible
+plugin features can be implemented in an LV2 plugin.
 
 More information about LV2 can be found at <http://lv2plug.in>.
 
