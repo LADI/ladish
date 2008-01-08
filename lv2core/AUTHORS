@@ -1,6 +1,8 @@
-The LV2 header (lv2.h) and core bundle (lv2core.ttl) are maintained by:
+The LV2 header (lv2.h) and core bundle (lv2core.lv2) are maintained by
 
 Dave Robillard <dave@drobilla.net>
 Steve Harris <steve@plugin.org.uk>
 
-Thanks to all members of the linux-audio-dev community who made LV2 possible.
+with the input and help of many others.
+
+Thanks to all members of the free software community who made LV2 possible.
