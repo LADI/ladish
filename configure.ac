@@ -227,6 +227,8 @@ CFLAGS="$CFLAGS -std=c99 -pipe -fmessage-length=999 -DCONFIG_H_PATH=\\\"$CONFIG_
 
 #################### GENERIC OPTIONS
 
+# LV2 core package
+PKG_CHECK_MODULES(LV2CORE, lv2core >= 1)
 
 # Jack support
 build_jack="yes"
