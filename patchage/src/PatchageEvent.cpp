@@ -92,7 +92,6 @@ PatchageEvent::execute(Patchage* patchage)
 			module = SharedPtr<PatchageModule>(
 					new PatchageModule(patchage, module_name, InputOutput));
 			module->load_location();
-			module->store_location();
 			patchage->canvas()->add_item(module);
 			module->show();
 		}
