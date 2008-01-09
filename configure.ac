@@ -13,7 +13,7 @@ AC_CONFIG_SRCDIR([slv2/utils/lv2_list.c])
 AC_CONFIG_SRCDIR([slv2/swig/slv2.i])
 
 # See slv2/configure.ac for versioning info/history
-SLV2_VERSION="0.4.1"
+SLV2_VERSION="0.4.2"
 SLV2_API_CURRENT="6"
 SLV2_API_REVISION="0"
 SLV2_API_AGE="0"
@@ -542,8 +542,6 @@ AC_CONFIG_FILES([slv2/slv2/Makefile])
 AC_CONFIG_FILES([slv2/utils/Makefile])
 AC_CONFIG_FILES([slv2/hosts/Makefile])
 AC_CONFIG_FILES([slv2/swig/Makefile])
-AC_CONFIG_FILES([slv2/data/Makefile])
-AC_CONFIG_FILES([slv2/data/lv2core.lv2/Makefile])
 AC_CONFIG_FILES([slv2/slv2.pc])
 AC_CONFIG_FILES([slv2/doc/Makefile])
 AC_CONFIG_FILES([slv2/doc/reference.doxygen])
