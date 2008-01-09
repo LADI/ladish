@@ -206,8 +206,6 @@ JackDriver::refresh()
 	string client2_name;
 	string port2_name;
 	
-	set<SharedPtr<PatchageModule> > resized_modules;
-
 	// Add all ports
 	if (ports)
 	for (int i=0; ports[i]; ++i) {
@@ -262,8 +260,6 @@ JackDriver::refresh()
 		if (!m->get_port(jack_port_short_name(port))) {
 			m->add_port(create_port(m, port));
 		}
-
-		resized_modules.insert(m);
 	}
 	
 	// Add all connections
@@ -325,10 +321,6 @@ JackDriver::refresh()
 			free(connected_ports);
 		}
 	}
-	
-	for (set<SharedPtr<PatchageModule> >::const_iterator i = resized_modules.begin();
-			i != resized_modules.end(); ++i)
-		(*i)->resize();
 
 	free(ports);
 }

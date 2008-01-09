@@ -131,8 +131,6 @@ AlsaDriver::refresh_ports()
 	bool is_duplex      = false;
 	bool is_application = true;
 
-	set<SharedPtr<PatchageModule> > resized_modules;
-	
 	while (snd_seq_query_next_client (_seq, cinfo) >= 0) {
 		snd_seq_port_info_set_client(pinfo, snd_seq_client_info_get_client(cinfo));
 		snd_seq_port_info_set_port(pinfo, -1);
@@ -196,7 +194,6 @@ AlsaDriver::refresh_ports()
 						m->add_port(create_port(m, port_name, true, addr));
 						m->add_port(create_port(m, port_name, false, addr));
 					}
-					resized_modules.insert(m);
 				}
 
 			} else { // non-application input/output ports (hw interface, etc) go on separate modules
@@ -225,7 +222,6 @@ AlsaDriver::refresh_ports()
 					
 					if (!m->get_port(port_name)) {
 						m->add_port(create_port(m, port_name, is_input, addr));
-						resized_modules.insert(m);
 					}
 
 				} else {  // two ports to add
@@ -249,7 +245,6 @@ AlsaDriver::refresh_ports()
 
 					if (!m->get_port(port_name)) {
 						m->add_port(create_port(m, port_name, true, addr));
-						resized_modules.insert(m);
 					}
 
 					type = Output;
@@ -270,16 +265,11 @@ AlsaDriver::refresh_ports()
 
 					if (!m->get_port(port_name)) {
 						m->add_port(create_port(m, port_name, false, addr));
-						resized_modules.insert(m);
 					}
 				}
 			}
 		}
 	}
-
-	for (set<SharedPtr<PatchageModule> >::const_iterator i = resized_modules.begin();
-			i != resized_modules.end(); ++i)
-		(*i)->resize();
 }
 
 

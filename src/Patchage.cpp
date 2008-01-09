@@ -396,6 +396,12 @@ Patchage::refresh()
 		if (_alsa_driver)
 			_alsa_driver->refresh();
 #endif
+	
+		for (ItemList::iterator i = _canvas->items().begin(); i != _canvas->items().end(); ++i) {
+			SharedPtr<Module> module = PtrCast<Module>(*i);
+			if (module) 
+				module->resize();
+		}
 	}
 }
 
