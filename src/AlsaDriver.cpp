@@ -206,17 +206,12 @@ AlsaDriver::refresh_ports()
 
 					type = ((is_input) ? Input : Output);
 					
-					// See if an InputOutput module exists (maybe with Jack ports on it)
-					m = _app->canvas()->find_module(client_name, InputOutput);
+					m = _app->canvas()->find_module(client_name, type);
 				
-					if (!m)
-						m = _app->canvas()->find_module(client_name, type);
-
 					if (!m) {
 						m = boost::shared_ptr<PatchageModule>(
 							new PatchageModule(_app, client_name, type));
 						m->load_location();
-						m->store_location();
 						_app->canvas()->add_item(m);
 					}
 					
@@ -227,17 +222,12 @@ AlsaDriver::refresh_ports()
 				} else {  // two ports to add
 					type = Input;
 					
-					// See if an InputOutput module exists (maybe with Jack ports on it)
-					m = _app->canvas()->find_module(client_name, InputOutput);
-					
-					if (!m)
-						m = _app->canvas()->find_module(client_name, type);
+					m = _app->canvas()->find_module(client_name, type);
 
 					if (!m) {
 						m = boost::shared_ptr<PatchageModule>(
 							new PatchageModule(_app, client_name, type));
 						m->load_location();
-						m->store_location();
 						_app->canvas()->add_item(m);
 					}
 
@@ -249,17 +239,12 @@ AlsaDriver::refresh_ports()
 
 					type = Output;
 					
-					// See if an InputOutput module exists (maybe with Jack ports on it)
-					m = _app->canvas()->find_module(client_name, InputOutput);
-					
-					if (!m)
-						m = _app->canvas()->find_module(client_name, type);
+					m = _app->canvas()->find_module(client_name, type);
 
 					if (!m) {
 						m = boost::shared_ptr<PatchageModule>(
 							new PatchageModule(_app, client_name, type));
 						m->load_location();
-						m->store_location();
 						_app->canvas()->add_item(m);
 					}
 
