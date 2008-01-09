@@ -1,5 +1,5 @@
 AC_PREREQ(2.59)
-AC_INIT([flowcanvas],[0.4.0],[dave@drobilla.net])
+AC_INIT([flowcanvas],[0.4.1],[dave@drobilla.net])
 
 AC_CONFIG_AUX_DIR([config])
 
@@ -25,9 +25,10 @@ AM_INIT_AUTOMAKE
 #
 # Version history:
 # 0.4.0 = 0,0,0
+# 0.4.1 = 1,0,0
 
-FLOWCANVAS_VERSION="0.4.0"
-FLOWCANVAS_API_CURRENT="0"
+FLOWCANVAS_VERSION="0.4.1"
+FLOWCANVAS_API_CURRENT="1"
 FLOWCANVAS_API_REVISION="0"
 FLOWCANVAS_API_AGE="0"
 

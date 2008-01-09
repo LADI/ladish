@@ -396,13 +396,10 @@ Module::resize()
 	double hor_pad = 8.0;
 	if (!_title_visible)
 		hor_pad = 16.0; // leave more room for something to grab for dragging
-
-	boost::shared_ptr<Port> p;
 	
 	// Find widest in/out ports
 	for (PortVector::iterator i = _ports.begin(); i != _ports.end(); ++i) {
-		p = (*i);
-		assert(p);
+		const boost::shared_ptr<Port> p = (*i);
 		if (p->is_input() && p->width() > widest_in)
 			widest_in = p->width();
 		else if (p->is_output() && p->width() > widest_out)
@@ -453,12 +450,11 @@ Module::resize()
 	
 	// Move ports to appropriate locations
 	
-	double y;
 	int i = 0;
 	for (PortVector::iterator pi = _ports.begin(); pi != _ports.end(); ++pi, ++i) {
-		boost::shared_ptr<Port> p = (*pi);
+		const boost::shared_ptr<Port> p = (*pi);
 
-		y = height_base + (i * (p->height() + 2.0));
+		const double y = height_base + (i * (p->height() + 2.0));
 		if (p->is_input()) {
 			p->set_width(widest_in);
 			p->property_x() = 0.0;
@@ -468,6 +464,8 @@ Module::resize()
 			p->property_x() = _width - p->width() - 0.0;
 			p->property_y() = y;
 		}
+		
+		(*pi)->move_connections();
 	}
 
 	// Center title
@@ -476,11 +474,6 @@ Module::resize()
 	else
 		_canvas_title.property_x() = _width/2.0;
 
-	// Update connection locations if we've moved/resized
-	for (PortVector::iterator pi = _ports.begin(); pi != _ports.end(); ++pi, ++i) {
-		(*pi)->move_connections();
-	}
-	
 	// Make things actually move to their new locations (?!)
 	move(0, 0);
 }

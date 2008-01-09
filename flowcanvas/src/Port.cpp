@@ -37,6 +37,7 @@ Port::Port(boost::shared_ptr<Module> module, const string& name, bool is_input, 
   _name(name),
   _is_input(is_input),
   _color(color),
+  _show_control(false),
   _control_value(0.0f),
   _control_min(0.0f),
   _control_max(1.0f),
@@ -93,6 +94,9 @@ Port::~Port()
 void
 Port::set_control(float value, bool signal)
 {
+	if (!_show_control)
+		return;
+
 	//cerr << _name << ".set_control(" << value << "): " << _control_min << " .. " << _control_max
 	//		<< " -> ";
 	if (value < _control_min)
@@ -241,8 +245,7 @@ Port::dst_connection_point(const Gnome::Art::Point& src)
 void
 Port::set_width(double w)
 {
-	const double diff = w - _width;
-	_rect.property_x2() = _rect.property_x2() + diff;
+	_rect.property_x2() = _rect.property_x2() + (w - _width);
 	_width = w;
 	set_control(_control_value, false);
 }

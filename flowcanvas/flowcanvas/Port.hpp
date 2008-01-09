@@ -101,8 +101,8 @@ public:
 	float control_value() { return _control_value; }
 	float control_min()   { return _control_min; }
 	float control_max()   { return _control_max; }
-	void  show_control()  { _control_rect.show(); }
-	void  hide_control()  { _control_rect.hide(); }
+	void  show_control()  { _control_rect.show(); _show_control = true; }
+	void  hide_control()  { _control_rect.hide(); _show_control = false; }
 
 	inline bool operator==(const std::string& name) { return (_name == name); }
 
@@ -120,6 +120,7 @@ protected:
 	double                  _border_width;
 	uint32_t                _color;
 
+	bool  _show_control;
 	float _control_value;
 	float _control_min;
 	float _control_max;

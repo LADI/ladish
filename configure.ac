@@ -50,8 +50,8 @@ AC_CONFIG_SRCDIR([flowcanvas/src/Canvas.cpp])
 AC_CONFIG_SRCDIR([flowcanvas/flowcanvas/Canvas.hpp])
 
 # See flowcanvas/configure.ac for versioning info/history
-FLOWCANVAS_VERSION="0.4.0"
-FLOWCANVAS_API_CURRENT="0"
+FLOWCANVAS_VERSION="0.4.1"
+FLOWCANVAS_API_CURRENT="1"
 FLOWCANVAS_API_REVISION="0"
 FLOWCANVAS_API_AGE="0"
 
