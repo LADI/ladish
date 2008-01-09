@@ -183,7 +183,6 @@ AlsaDriver::refresh_ports()
 				if (!m) {
 					m = boost::shared_ptr<PatchageModule>(new PatchageModule(_app, client_name, InputOutput));
 					m->load_location();
-					m->store_location();
 					_app->canvas()->add_item(m);
 				}
 				
