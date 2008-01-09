@@ -50,9 +50,6 @@ public:
 	
 	virtual void zoom(double);
 
-	bool flagged() const     { return _flag; }
-	void set_flagged(bool b) { _flag = b; }
-	
 	bool selected() const { return _selected; }
 	void set_selected(bool b);
 	
@@ -88,7 +85,6 @@ protected:
 	const boost::weak_ptr<Connectable> _dest;
 	uint32_t                           _color;
 	bool                               _selected;
-	bool                               _flag;
 	bool                               _show_arrowhead;
 
 	Gnome::Canvas::Bpath _bpath;

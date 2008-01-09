@@ -37,6 +37,8 @@ public:
 
 	virtual void move_connections();
 	virtual void raise_connections();
+
+	bool is_connected_to(boost::shared_ptr<Connectable> other);
 	
 	typedef std::list< boost::weak_ptr<Connection> > Connections;
 	Connections& connections() { return _connections; }

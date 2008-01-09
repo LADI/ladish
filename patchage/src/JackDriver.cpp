@@ -222,8 +222,6 @@ JackDriver::refresh()
 		client1_name = client1_name.substr(0, client1_name.find(":"));
 
 		ModuleType type = InputOutput;
-		//if (_app->state_manager()->get_module_split(client1_name)
-		//		|| jack_port_flags(port) & JackPortIsTerminal)
 		if (_app->state_manager()->get_module_split(client1_name,
 					(jack_port_flags(port) & JackPortIsTerminal))) {
 			if (jack_port_flags(port) & JackPortIsInput) {
@@ -238,7 +236,6 @@ JackDriver::refresh()
 		if (!m) {
 			m = boost::shared_ptr<PatchageModule>(new PatchageModule(_app, client1_name, type));
 			m->load_location();
-			m->store_location();
 			_app->canvas()->add_item(m);
 		}
 
@@ -263,20 +260,21 @@ JackDriver::refresh()
 	}
 	
 	// Add all connections
-	if (ports)
+	if (ports) {
+	
+	_mutex.lock();
+	
+	if (!_client) {
+		_mutex.unlock();
+		shutdown();
+		return;
+	}
+
 	for (int i=0; ports[i]; ++i) {
-		_mutex.lock();
-		if (!_client) {
-			_mutex.unlock();
-			shutdown();
-			return;
-		}
 
 		port = jack_port_by_name(_client, ports[i]);
 		const char** connected_ports = jack_port_get_all_connections(_client, port);
-			
-		_mutex.unlock();
-
+		
 		if (connected_ports) {
 			for (int j=0; connected_ports[j]; ++j) {
 				client1_name = ports[i];
@@ -301,25 +299,21 @@ JackDriver::refresh()
 				if (port1->is_output() && port2->is_input()) {
 					src = port1;
 					dst = port2;
-				} else if (port2->is_output() && port1->is_input()) {
+				} else {
 					src = port2;
 					dst = port1;
 				}
 
-				if (src && dst) {
-					boost::shared_ptr<Connection> existing
-						= _app->canvas()->get_connection(src, dst);
-
-					if (existing) {
-						existing->set_flagged(false);
-					} else {
-						_app->canvas()->add_connection(src, dst, port1->color() + 0x22222200);
-					}
-				}
+				if (src && dst && !src->is_connected_to(dst))
+					_app->canvas()->add_connection(src, dst, port1->color() + 0x22222200);
 			}
 			
 			free(connected_ports);
 		}
+	}
+		
+	_mutex.unlock();
+	
 	}
 
 	free(ports);

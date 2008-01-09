@@ -311,14 +311,8 @@ AlsaDriver::add_connections(boost::shared_ptr<PatchagePort> port)
 		
 		connected_port = _app->canvas()->find_port(*connected_addr, true);
 
-		if (connected_port) {
-			boost::shared_ptr<Connection> existing = _app->canvas()->get_connection(port, connected_port);
-			if (existing) {
-				existing->set_flagged(false);
-			} else {
-				_app->canvas()->add_connection(port, connected_port, port->color() + 0x22222200);
-			}
-		}
+		if (connected_port && !port->is_connected_to(connected_port))
+			_app->canvas()->add_connection(port, connected_port, port->color() + 0x22222200);
 
 		snd_seq_query_subscribe_set_index(subsinfo, snd_seq_query_subscribe_get_index(subsinfo) + 1);
 	}

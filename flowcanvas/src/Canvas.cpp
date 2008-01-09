@@ -452,18 +452,14 @@ Canvas::get_connection(boost::shared_ptr<Connectable> tail,
 
 bool
 Canvas::add_connection(boost::shared_ptr<Connectable> src,
-                           boost::shared_ptr<Connectable> dst,
-                           uint32_t                       color)
+                       boost::shared_ptr<Connectable> dst,
+                       uint32_t                       color)
 {
 	// Create (graphical) connection object
-	if ( ! get_connection(src, dst)) {
-		boost::shared_ptr<Connection> c(new Connection(shared_from_this(),
-			src, dst, color));
-		src->add_connection(c);
-		dst->add_connection(c);
-		//c->lower_to_bottom();
-		_connections.push_back(c);
-	}
+	boost::shared_ptr<Connection> c(new Connection(shared_from_this(), src, dst, color));
+	src->add_connection(c);
+	dst->add_connection(c);
+	_connections.push_back(c);
 
 	return true;
 }

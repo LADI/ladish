@@ -89,6 +89,19 @@ Connectable::raise_connections()
 
 	}
 }
+	
+
+bool
+Connectable::is_connected_to(boost::shared_ptr<Connectable> other)
+{
+	for (list<boost::weak_ptr<Connection> >::iterator i = _connections.begin(); i != _connections.end(); ++i) {
+		boost::shared_ptr<Connection> connection = (*i).lock();
+		if (connection->source().lock() == other || connection->dest().lock() == other)
+			return true;
+	}
+
+	return false;
+}
 
 
 } // namespace FlowCanvas
