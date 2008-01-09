@@ -64,8 +64,10 @@ Port::Port(boost::shared_ptr<Module> module, const string& name, bool is_input, 
 	_label.property_size() = PORT_LABEL_SIZE;
 	_label.property_fill_color_rgba() = 0xFFFFFFFF;
 	_label.property_weight() = 200;
+		
+	const double text_width = _label.property_text_width();
 	
-	_width = _label.property_text_width() + 6.0;
+	_width = text_width + 6.0;
 	_height = _label.property_text_height();
 	
 	// Place everything
@@ -77,7 +79,7 @@ Port::Port(boost::shared_ptr<Module> module, const string& name, bool is_input, 
 	_control_rect.property_y1() = 0;
 	_control_rect.property_x2() = 0;	
 	_control_rect.property_y2() = _height;
-	_label.property_x() = _label.property_text_width() / 2.0 + 3.0;
+	_label.property_x() = text_width / 2.0 + 3.0;
 	_label.property_y() = (_height / 2.0) - 1.0;
 
 	_control_rect.hide();
@@ -141,13 +143,14 @@ Port::set_name(const string& n)
 
 		// Reposition label
 		_label.property_text() = _name;
-		_width = _label.property_text_width() + 6.0;
+		const double text_width = _label.property_text_width();
+		_width = text_width + 6.0;
 		_height = _label.property_text_height();
 		_rect.property_x2() = _width;	
 		_rect.property_y2() = _height;
 		_control_rect.property_x2() = _control_rect.property_x1() + (_control_value * _width);
 		_control_rect.property_y2() = _height;
-		_label.property_x() = _label.property_text_width() / 2 + 1;
+		_label.property_x() = text_width / 2 + 1;
 		_label.property_y() = _height / 2;
 
 		signal_renamed.emit();

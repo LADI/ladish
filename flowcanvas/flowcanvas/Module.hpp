@@ -92,6 +92,9 @@ protected:
 	double _ports_y_offset;
 	double _icon_size;
 
+	double _widest_input;
+	double _widest_output;
+
 	PortVector _ports;
 
 	Gnome::Canvas::Rect    _module_box;

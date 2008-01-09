@@ -50,6 +50,8 @@ Module::Module(boost::shared_ptr<Canvas> canvas, const string& name, double x, d
 	, _title_visible(show_title)
 	, _ports_y_offset(0)
 	, _icon_size(16)
+	, _widest_input(0)
+	, _widest_output(0)
 	, _module_box(*this, 0, 0, 0, 0) // w, h set later
 	, _canvas_title(*this, 0, 8, name) // x set later
 	, _stacked_border(NULL)
@@ -243,7 +245,26 @@ Module::remove_port(boost::shared_ptr<Port> port)
 
 	if (i != _ports.end()) {
 		_ports.erase(i);
+		
+		// Find new widest input or output, if necessary
+		if (port->is_input() && port->width() >= _widest_input) {
+			_widest_input = 0;
+			for (PortVector::iterator i = _ports.begin(); i != _ports.end(); ++i) {
+				const boost::shared_ptr<Port> p = (*i);
+				if (p->is_input() && p->width() >= _widest_input)
+					_widest_input = p->width();
+			}
+		} else if (port->is_output() && port->width() >= _widest_output) {
+			_widest_output = 0;
+			for (PortVector::iterator i = _ports.begin(); i != _ports.end(); ++i) {
+				const boost::shared_ptr<Port> p = (*i);
+				if (p->is_output() && p->width() >= _widest_output)
+					_widest_output = p->width();
+			}
+		}
+
 		resize();
+
 	} else {
 		std::cerr << "Unable to find port " << port->name() << " to remove." << std::endl;
 	}
@@ -370,14 +391,18 @@ Module::add_port(boost::shared_ptr<Port> p)
 	PortVector::const_iterator i = std::find(_ports.begin(), _ports.end(), p);
 	if (i != _ports.end()) // already added
 		return;            // so do nothing
+		
+	if (p->is_input() && p->width() > _widest_input)
+		_widest_input = p->width();
+	else if (p->is_output() && p->width() > _widest_output)
+		_widest_output = p->width();
 	
 	_ports.push_back(p);
 	
 	boost::shared_ptr<Canvas> canvas = _canvas.lock();
-	if (canvas) {
+	if (canvas)
 		p->signal_event().connect(
 			sigc::bind(sigc::mem_fun(canvas.get(), &Canvas::port_event), p));
-	}
 	
 	p->signal_renamed.connect(sigc::mem_fun(this, &Module::resize));
 }
@@ -388,23 +413,11 @@ Module::add_port(boost::shared_ptr<Port> p)
 void
 Module::resize()
 {
-	double widest_in = 0.0;
-	double widest_out = 0.0;
-	
 	// The amount of space between a port edge and the module edge (on the
 	// side that the port isn't right on the edge).
 	double hor_pad = 8.0;
 	if (!_title_visible)
 		hor_pad = 16.0; // leave more room for something to grab for dragging
-	
-	// Find widest in/out ports
-	for (PortVector::iterator i = _ports.begin(); i != _ports.end(); ++i) {
-		const boost::shared_ptr<Port> p = (*i);
-		if (p->is_input() && p->width() > widest_in)
-			widest_in = p->width();
-		else if (p->is_output() && p->width() > widest_out)
-			widest_out = p->width();
-	}
 	
 	double width = ( _title_visible
 		? _canvas_title.property_text_width() + 8.0
@@ -414,13 +427,13 @@ Module::resize()
 		width += _icon_size + 2;
 
 	// Fit ports to module (or vice-versa)
-	if (widest_in < width - hor_pad)
-		widest_in = width - hor_pad;
-	if (widest_out < width - hor_pad)
-		widest_out = width - hor_pad;
+	if (_widest_input < width - hor_pad)
+		_widest_input = width - hor_pad;
+	if (_widest_output < width - hor_pad)
+		_widest_output = width - hor_pad;
 
 	width = std::max(width,
-			(std::max(widest_in, widest_out) + hor_pad));
+			(std::max(_widest_input, _widest_output) + hor_pad));
 	               
 	width += border_width() * 2.0;
 
@@ -428,14 +441,16 @@ Module::resize()
 		set_width(width);
 	else if (_width < _minimum_width)
 		set_width(_minimum_width);
+	
+	const double title_height = _canvas_title.property_text_height();
 
 	// Set height to contain ports and title
 	double height_base = 2;
 	if (_title_visible)
-		height_base += 2 + _canvas_title.property_text_height();
+		height_base += 2 + title_height;
 	
-	if (_icon_box && _icon_size > _canvas_title.property_text_height())
-		height_base += _icon_size - _canvas_title.property_text_height();
+	if (_icon_box && _icon_size > title_height)
+		height_base += _icon_size - title_height;
 
 	height_base += _ports_y_offset;
 
@@ -456,11 +471,11 @@ Module::resize()
 
 		const double y = height_base + (i * (p->height() + 2.0));
 		if (p->is_input()) {
-			p->set_width(widest_in);
+			p->set_width(_widest_input);
 			p->property_x() = 0.0;
 			p->property_y() = y;
 		} else {
-			p->set_width(widest_out);
+			p->set_width(_widest_output);
 			p->property_x() = _width - p->width() - 0.0;
 			p->property_y() = y;
 		}
