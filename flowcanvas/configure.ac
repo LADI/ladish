@@ -152,6 +152,7 @@ else
 fi
 
 # Check for the graphviz library for auto-layout support
+graphviz="no"
 PKG_CHECK_MODULES(AGRAPH, libgvc >= 2.8, graphviz="yes", graphviz="no")
 if test "$graphviz" = "yes"; then
 	AC_DEFINE(HAVE_AGRAPH, 1, [Has the graphviz library])
@@ -190,7 +191,8 @@ AC_MSG_RESULT([])
 AC_MSG_RESULT([**********************************************************************])
 AC_MSG_RESULT([Configuration:])
 AC_MSG_RESULT([])
-AC_MSG_RESULT([Anti-Aliasing: $anti_alias])
+AC_MSG_RESULT([Anti-Aliasing:               $anti_alias])
+AC_MSG_RESULT([Auto-Arrange (via GraphViz): $graphviz])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([C FLAGS:   $CFLAGS])
 AC_MSG_RESULT([C++ FLAGS: $CXXFLAGS])
