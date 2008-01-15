@@ -1,6 +1,6 @@
 SUBDIRS = lv2core.lv2
 
-AC_PREREQ(2.61)
+AC_PREREQ(2.59)
 
 AC_INIT([lv2core],[1],[dave@drobilla.net])
 
