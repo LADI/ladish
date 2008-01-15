@@ -17,6 +17,7 @@
 
 #include <iostream>
 #include <cassert>
+#include <sstream>
 #include <redlandmm/World.hpp>
 #include <redlandmm/Node.hpp>
 
@@ -161,8 +162,12 @@ float
 Node::to_float() const
 {
 	assert(is_float());
-	return strtod((const char*)librdf_node_get_literal_value(_c_obj), NULL);
+	float f = 0.0f;
+	std::stringstream ss((const char*)librdf_node_get_literal_value(_c_obj));
+	ss >> f;
+	return f;
 }
+
 
 bool
 Node::is_bool() const
