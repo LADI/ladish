@@ -19,7 +19,7 @@
 #include <string.h>
 #include <assert.h>
 #include <gtk/gtk.h>
-#include "slv2/lv2_gui.h" // FIXME
+#include "slv2/lv2_ui.h" // FIXME
 #include "../../extensions/osc/lv2_osc.h"
 
 /* UI */
