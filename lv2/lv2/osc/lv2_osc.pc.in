@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: libslv2
+Version: @LV2_OSC_VERSION@
+Description: LV2 OSC messages extension
+Libs: -L${libdir} -llv2_osc
+Cflags: -I${includedir}
