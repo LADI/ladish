@@ -1,1 +1,1 @@
-SUBDIRS = osc contexts variables ui
+SUBDIRS = events osc midi contexts variables ui

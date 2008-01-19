@@ -3,8 +3,8 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: libslv2
+Name: lv2_osc
 Version: @LV2_OSC_VERSION@
-Description: LV2 OSC messages extension
-Libs: -L${libdir} -llv2_osc
+Description: LV2 OSC message events extension
+Libs:
 Cflags: -I${includedir}

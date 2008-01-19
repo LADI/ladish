@@ -26,7 +26,7 @@
 
 /** @file
  * This header defines the code portion of the LV2 events extension with URI
- * <http://drobilla.net/ns/lv2ext/events> (preferred prefix 'lv2ev').
+ * <http://lv2plug.in/ns/ext/events> (preferred prefix 'lv2ev').
  *
  * This extension is a generic transport mechanism for time stamped events
  * of any type (e.g. MIDI, OSC, ramps, etc).  Each port can transport mixed
@@ -45,7 +45,7 @@ typedef void* LV2_Symbol_Callback_Data;
 /** The data part of the LV2_Feature for the LV2 events extension.
  *
  * The host MUST pass an LV2_Feature struct to the plugin's instantiate
- * method with URI set to "http://drobilla.net/ns/lv2ext/events" and data
+ * method with URI set to "http://lv2plug.in/ns/ext/events" and data
  * set to an instance of this struct.
  *
  * The plugin MUST pass callback_data to any invocation of the functions
@@ -104,6 +104,8 @@ typedef struct {
 	 * provides a function to map URIs to event types for this field.
 	 * The type 0 is a special nil value, meaning the event has no type and
 	 * should be ignored or passed through without interpretation.
+	 * Plugins MUST gracefully ignore or pass through any events of a type
+	 * which the plugin does not recognize.
 	 */
 	uint16_t type;
 

@@ -575,6 +575,8 @@ AC_CONFIG_FILES([slv2/debian/Makefile])
 # LV2 Stuff
 AC_CONFIG_FILES([lv2/Makefile])
 AC_CONFIG_FILES([lv2/lv2/Makefile])
+AC_CONFIG_FILES([lv2/lv2/events/Makefile])
+AC_CONFIG_FILES([lv2/lv2/midi/Makefile])
 AC_CONFIG_FILES([lv2/lv2/osc/Makefile])
 AC_CONFIG_FILES([lv2/lv2/osc/lv2_osc.pc])
 AC_CONFIG_FILES([lv2/lv2/contexts/Makefile])

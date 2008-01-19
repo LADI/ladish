@@ -1,0 +1,61 @@
+# LV2 Events Extension
+# Copyright (C) 2008 Dave Robillard <dave@drobilla.net>
+#
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the "Software"),
+# to deal in the Software without restriction, including without limitation
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,
+# and/or sell copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included
+# in all copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE.
+
+@prefix :      <http://lv2plug.in/ns/ext/event#> .
+@prefix lv2:   <http://lv2plug.in/ns/lv2core#> .
+@prefix lv2ev: <http://lv2plug.in/ns/ext/event#>
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix doap:  <http://usefulinc.com/ns/doap#> .
+@prefix foaf:  <http://xmlns.com/foaf/0.1/> .
+
+<http://lv2plug.in/ns/ext/event> a lv2:Specification ;
+	doap:license <http://usefulinc.com/doap/licenses/mit> ;
+	doap:name "LV2 Events" ;
+	rdfs:comment "Defines a generic LV2 event" ;
+	doap:maintainer [
+		a foaf:Person ;
+		foaf:name "Dave Robillard" ;
+		foaf:homepage <http://drobilla.net/> ;
+		rdfs:seeAlso <http://drobilla.net/drobilla.xrdf>
+	] .
+
+:EventPort a rdfs:Class ;
+    rdfs:label      "Event port" ;
+    rdfs:subClassOf lv2:Port ;
+    rdfs:comment    """
+Ports of this type will be connected to a struct of type LV2_Event_Buffer,
+defined in <lv2_event.h>.  These ports contain a sequence of generic events
+(possibly several types mixed in a single stream), the specific types of
+which are defined by some URI in another LV2 extension.
+""" .
+
+
+:Event a rdfs:Class ;
+	rdfs:label      "LV2 event" ;
+	rdfs:subClassOf lv2ev:Event ;
+	rdfs:comment    """
+A single generic time-stamped event.
+
+An lv2ev:EventPort contains an LV2_Event_Buffer which contains a sequence
+of these events.  The binary format of LV2 events is defined by the
+LV2_Event struct in <lv2_event.h>.
+""" .
+
