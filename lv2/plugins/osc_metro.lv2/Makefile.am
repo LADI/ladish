@@ -12,6 +12,6 @@ uninstall-hook:
 
 plugin_LTLIBRARIES = osc_metro.la
 osc_metro_la_SOURCES = osc_metro.c
-osc_metro_la_SOURCES += @DROBINS_SRCDIR@/extensions/osc/lv2_osc.c
-osc_metro_la_SOURCES += @DROBINS_SRCDIR@/extensions/osc/lv2_osc_print.c
+osc_metro_la_SOURCES += @DROBINS_SRCDIR@/lv2/osc/lv2_osc.c
+osc_metro_la_SOURCES += @DROBINS_SRCDIR@/lv2/osc/lv2_osc_print.c
 

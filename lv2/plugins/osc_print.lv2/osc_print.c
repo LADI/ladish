@@ -20,9 +20,9 @@
 #include <string.h>
 #include <assert.h>
 #include "lv2.h"
-#include "extensions/osc/lv2_osc.h"
-#include "extensions/osc/lv2_osc_print.h"
-#include "extensions/contexts/lv2_contexts.h"
+#include "lv2/osc/lv2_osc.h"
+#include "lv2/osc/lv2_osc_print.h"
+#include "lv2/contexts/lv2_contexts.h"
 
 static const char* message_context_uri = "http://drobilla.net/ns/lv2ext/contexts/MessageContext";
 
