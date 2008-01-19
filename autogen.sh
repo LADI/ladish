@@ -1,6 +1,8 @@
 #!/bin/sh
 
 echo 'Generating necessary files...'
+rm -rf lv2core/config
+mkdir -p lv2core/config
 rm -rf slv2/config
 mkdir -p slv2/config
 rm -rf redlandmm/config

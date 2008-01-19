@@ -1,5 +1,5 @@
 AM_LDFLAGS = -shared -module -avoid-version -Wc,-nostartfiles @GTK_LIBS@
-AM_CFLAGS = -shared -fPIC -DPIC @GTK_CFLAGS@ @SLV2_CFLAGS@ -I$(top_srcdir)/lv2
+AM_CFLAGS = -shared -fPIC -DPIC @GTK_CFLAGS@ @SLV2_CFLAGS@ -I$(top_srcdir)/lv2 @LV2CORE_CFLAGS@
 
 pluginbasename = osc_bang
 pluginuibasename = osc_bang_ui

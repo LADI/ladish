@@ -6,6 +6,9 @@ AC_CONFIG_AUX_DIR([config])
 
 ################### SOURCES
 
+# LV2 Core
+AC_CONFIG_SRCDIR([lv2core/lv2.h])
+
 # SLV2
 AC_CONFIG_SRCDIR([slv2/src/plugin.c])
 AC_CONFIG_SRCDIR([slv2/slv2/plugin.h])
@@ -146,7 +149,12 @@ AC_SUBST(FLOWCANVAS_CFLAGS)
 AC_SUBST(FLOWCANVAS_LIBS)
 AC_SUBST(FLOWCANVAS_SRCDIR)
 
-SLV2_CFLAGS="-I$abs_srcdir/slv2"
+LV2CORE_VERSION="1"
+LV2CORE_CFLAGS="-I$abs_srcdir/lv2core"
+AC_SUBST(LV2CORE_VERSION)
+AC_SUBST(LV2CORE_CFLAGS)
+
+SLV2_CFLAGS="$LV2CORE_CFLAGS -I$abs_srcdir/slv2"
 SLV2_LIBS="$builddir/slv2/src/.libs/libslv2.la"
 SLV2_SRCDIR="$abs_srcdir/slv2"
 AC_SUBST(SLV2_CFLAGS)
@@ -228,7 +236,7 @@ CFLAGS="$CFLAGS -std=c99 -pipe -fmessage-length=999 -DCONFIG_H_PATH=\\\"$CONFIG_
 #################### GENERIC OPTIONS
 
 # LV2 core package
-PKG_CHECK_MODULES(LV2CORE, lv2core >= 1)
+#PKG_CHECK_MODULES(LV2CORE, lv2core >= 1)
 
 # Jack support
 build_jack="yes"
@@ -536,6 +544,11 @@ AM_CONDITIONAL(HAVE_DOXYGEN, $HAVE_DOXYGEN)
 # Omins
 AC_CONFIG_FILES([omins/Makefile])
 AC_CONFIG_FILES([omins/src/Makefile])
+
+# LV2 Core
+AC_CONFIG_FILES([lv2core/Makefile])
+AC_CONFIG_FILES([lv2core/lv2core.pc])
+AC_CONFIG_FILES([lv2core/lv2core.lv2/Makefile])
 
 # SLV2
 AC_CONFIG_FILES([slv2/Makefile])
