@@ -88,7 +88,7 @@ AC_CONFIG_SRCDIR([machina/src/engine/machina/Machine.hpp])
 AC_CONFIG_SRCDIR([machina/src/gui/main.cpp])
 
 # LV2 stuff
-AC_CONFIG_SRCDIR([lv2/extensions/osc/lv2_osc.h])
+AC_CONFIG_SRCDIR([lv2/lv2/osc/lv2_osc.h])
 
 # LV2 plugin install
 AC_MSG_CHECKING([where to install LV2 plugins])
@@ -153,6 +153,16 @@ LV2CORE_VERSION="1"
 LV2CORE_CFLAGS="-I$abs_srcdir/lv2core"
 AC_SUBST(LV2CORE_VERSION)
 AC_SUBST(LV2CORE_CFLAGS)
+
+DROBINS_CFLAGS="$LV2CORE_CFLAGS -I$abs_srcdir/lv2"
+DROBINS_SRCDIR="$abs_srcdir/lv2"
+AC_SUBST(DROBINS_CFLAGS)
+AC_SUBST(DROBINS_SRCDIR)
+
+LV2_OSC_CFLAGS="$LV2CORE_CFLAGS -I$abs_srcdir/lv2"
+LV2_OSC_LIBS="$builddir/lv2/lv2/osc/.libs/liblv2_osc.la"
+AC_SUBST(LV2_OSC_CFLAGS)
+AC_SUBST(LV2_OSC_LIBS)
 
 SLV2_CFLAGS="$LV2CORE_CFLAGS -I$abs_srcdir/slv2"
 SLV2_LIBS="$builddir/slv2/src/.libs/libslv2.la"
@@ -564,10 +574,12 @@ AC_CONFIG_FILES([slv2/debian/Makefile])
 
 # LV2 Stuff
 AC_CONFIG_FILES([lv2/Makefile])
-AC_CONFIG_FILES([lv2/extensions/Makefile])
-AC_CONFIG_FILES([lv2/extensions/osc/Makefile])
-AC_CONFIG_FILES([lv2/extensions/contexts/Makefile])
-AC_CONFIG_FILES([lv2/extensions/variables/Makefile])
+AC_CONFIG_FILES([lv2/lv2/Makefile])
+AC_CONFIG_FILES([lv2/lv2/osc/Makefile])
+AC_CONFIG_FILES([lv2/lv2/osc/lv2_osc.pc])
+AC_CONFIG_FILES([lv2/lv2/contexts/Makefile])
+AC_CONFIG_FILES([lv2/lv2/variables/Makefile])
+AC_CONFIG_FILES([lv2/lv2/ui/Makefile])
 AC_CONFIG_FILES([lv2/plugins/Makefile])
 AC_CONFIG_FILES([lv2/plugins/osc_print.lv2/Makefile])
 AC_CONFIG_FILES([lv2/plugins/osc_metro.lv2/Makefile])

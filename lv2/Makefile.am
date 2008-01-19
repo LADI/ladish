@@ -1,1 +1,1 @@
-SUBDIRS = extensions plugins
+SUBDIRS = lv2 plugins

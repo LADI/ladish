@@ -12,6 +12,5 @@ uninstall-hook:
 
 plugin_LTLIBRARIES = osc_print.la
 osc_print_la_SOURCES = osc_print.c
-osc_print_la_SOURCES += @DROBINS_SRCDIR@/lv2/osc/lv2_osc.c
-osc_print_la_SOURCES += @DROBINS_SRCDIR@/lv2/osc/lv2_osc_print.c
+osc_print_la_LIBS = @LV2_OSC_LIBS@
 
