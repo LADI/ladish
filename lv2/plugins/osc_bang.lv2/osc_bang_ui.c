@@ -19,8 +19,8 @@
 #include <string.h>
 #include <assert.h>
 #include <gtk/gtk.h>
-#include "slv2/lv2_ui.h" // FIXME
-#include "../../extensions/osc/lv2_osc.h"
+#include "ui/lv2_ui.h"
+#include "osc/lv2_osc.h"
 
 /* UI */
 

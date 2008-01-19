@@ -1,5 +1,5 @@
 AM_LDFLAGS = -module -avoid-version -Wc,-nostartfiles
-AM_CFLAGS = -shared -fPIC -DPIC -I$(top_srcdir)/lv2 @LV2CORE_CFLAGS@
+AM_CFLAGS = -shared -fPIC -DPIC -I$(top_srcdir)/lv2 @LV2CORE_CFLAGS@ @DROBINS_CFLAGS@
 
 pluginbasename = osc_metro
 
@@ -11,7 +11,7 @@ uninstall-hook:
 	rm -rf $(plugindir)/
 
 plugin_LTLIBRARIES = osc_metro.la
-osc_metro_la_SOURCES = osc_metro.c \
-                       $(top_srcdir)/lv2/extensions/osc/lv2_osc.c \
-                       $(top_srcdir)/lv2/extensions/osc/lv2_osc_print.c
+osc_metro_la_SOURCES = osc_metro.c
+osc_metro_la_SOURCES += @DROBINS_SRCDIR@/extensions/osc/lv2_osc.c
+osc_metro_la_SOURCES += @DROBINS_SRCDIR@/extensions/osc/lv2_osc_print.c
 

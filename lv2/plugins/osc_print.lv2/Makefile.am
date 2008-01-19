@@ -1,5 +1,5 @@
 AM_LDFLAGS = -shared -module -avoid-version -Wc,-nostartfiles
-AM_CFLAGS = -shared -fPIC -DPIC -I$(top_srcdir)/lv2  @LV2CORE_CFLAGS@
+AM_CFLAGS = -shared -fPIC -DPIC @LV2CORE_CFLAGS@ @DROBINS_CFLAGS@
 
 pluginbasename = osc_print
 
@@ -11,7 +11,7 @@ uninstall-hook:
 	rm -rf $(plugindir)/
 
 plugin_LTLIBRARIES = osc_print.la
-osc_print_la_SOURCES = osc_print.c \
-                       $(top_srcdir)/lv2/extensions/osc/lv2_osc.c \
-                       $(top_srcdir)/lv2/extensions/osc/lv2_osc_print.c
+osc_print_la_SOURCES = osc_print.c
+osc_print_la_SOURCES += @DROBINS_SRCDIR@/extensions/osc/lv2_osc.c
+osc_print_la_SOURCES += @DROBINS_SRCDIR@/extensions/osc/lv2_osc_print.c
 
