@@ -1,10 +1,7 @@
 /* lv2_events.h - C header file for the LV2 events extension.
- *
- * This header defines the code portion of the LV2 extension with URI
- * <http://drobilla.net/ns/lv2ext/events> (preferred prefix 'lv2ev').
  * 
  * Copyright (C) 2006-2007 Lars Luthman <lars.luthman@gmail.com>
- * Copyright (C) 2007 Dave Robillard <dave@drobilla.net>
+ * Copyright (C) 2008 Dave Robillard <dave@drobilla.net>
  * 
  * This header is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published
@@ -21,10 +18,57 @@
  * Inc., 59 Temple Place, Suite 330, Boston, MA 01222-1307 USA
  */
 
-#include <stdint.h>
-
 #ifndef LV2_EVENTS_H
 #define LV2_EVENTS_H
+
+#include <stdint.h>
+
+
+/** @file
+ * This header defines the code portion of the LV2 events extension with URI
+ * <http://drobilla.net/ns/lv2ext/events> (preferred prefix 'lv2ev').
+ *
+ * This extension is a generic transport mechanism for time stamped events
+ * of any type (e.g. MIDI, OSC, ramps, etc).  Each port can transport mixed
+ * events of any type; the type of events is defined by a URI (in some other
+ * extension) which is mapped to an integer by the host for performance
+ * reasons.
+ */
+
+
+/** Opaque host data passed to LV2_Event_Feature.
+ */
+typedef void* LV2_Symbol_Callback_Data;
+
+
+
+/** The data part of the LV2_Feature for the LV2 events extension.
+ *
+ * The host MUST pass an LV2_Feature struct to the plugin's instantiate
+ * method with URI set to "http://drobilla.net/ns/lv2ext/events" and data
+ * set to an instance of this struct.
+ *
+ * The plugin MUST pass callback_data to any invocation of the functions
+ * defined in this struct.  Otherwise, callback_data is opaque and the
+ * plugin MUST NOT interpret its value in any way.
+ */
+typedef struct {
+
+	/** Get the numeric version of an event type from the host.
+	 *
+	 * The returned value is 0 if there is no type by that URI.
+	 * The returned value correlates to the type field of LV2_Event, and is
+	 * guaranteed never to change over the course of the plugin's
+	 * instantiation, unless the returned value is 0 (i.e. new event types
+	 * can be added, but existing ones can never be changed/removed).
+	 */
+	uint16_t (*uri_to_event_type)(LV2_Symbol_Callback_Data callback_data,
+	                              char const*              uri);
+	
+	LV2_Event_Callback_Data callback_data;
+
+} LV2_Event_Feature;
+
 
 
 /** An LV2 event.
@@ -56,8 +100,10 @@ typedef struct {
 	uint32_t subframes;
 	
 	/** The type of this event, where this numeric value refers to some URI
-	 * via the symbol table LV2 extension
-	 * <http://drobilla.net/ns/lv2ext/symbols#>
+	 * defining an event type.  The LV2_Event_Feature passed from the host
+	 * provides a function to map URIs to event types for this field.
+	 * The type 0 is a special nil value, meaning the event has no type and
+	 * should be ignored or passed through without interpretation.
 	 */
 	uint16_t type;
 
@@ -117,7 +163,7 @@ typedef struct {
 	 */
 	uint32_t size;
 
-} LV2_EventBuffer;
+} LV2_Event_Buffer;
 
 
 #endif // LV2_EVENTS_H
