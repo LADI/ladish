@@ -67,9 +67,13 @@ be rdfs:subClassOf this class.
     rdfs:label   "Supports event type" ;
     rdfs:comment """
 Indicates that this port supports or \"understands\" a certain event type.
-Plugins with event ports must always gracefully handle any type of event, even
-if it does not 'support' it, but this property should always be set for event
-types the plugin understands so hosts can discover plugins appropriate for a
-given scenario (e.g. plugins with a MIDI input).
+For input ports, this means the plugin understands events of this type,
+for output ports, this means the plugin may generate events of this type.
+Plugins with event input ports must always gracefully handle any type of event,
+even if it does not 'support' it.  This property should always be set for
+event types the plugin understands/generates so hosts can discover plugins
+appropriate for a given scenario (e.g. plugins with a MIDI input).
+Hosts are not expected to consider event ports suitable for some type of
+event if the relevant :supportsEvent property is not set.
 """ .
 
