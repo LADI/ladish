@@ -63,7 +63,9 @@ be rdfs:subClassOf this class.
 """ .
 
 
-:supportsEvent a :PortProperty ;
+:supportsEvent a rdf:Property ;
+	rdfs:domain  lv2:Port ;
+	rdfs:range   :Event ;
     rdfs:label   "Supports event type" ;
     rdfs:comment """
 Indicates that this port supports or \"understands\" a certain event type.
@@ -74,6 +76,15 @@ even if it does not 'support' it.  This property should always be set for
 event types the plugin understands/generates so hosts can discover plugins
 appropriate for a given scenario (e.g. plugins with a MIDI input).
 Hosts are not expected to consider event ports suitable for some type of
-event if the relevant :supportsEvent property is not set.
+event if the relevant :supportsEvent property is not set, unless the
+lv2ev:generic property for that port is also set.
+""" .
+
+:generic a lv2:PortProperty ;
+	rdfs:label "Generic event port" ;
+	rdfs:commant """
+Indicated that this port does something meaningful for any event type
+(e.g. event mixers, delays, serialisers, etc).  If this property is set, hosts
+should consider the port suitable for any type of event.
 """ .
 
