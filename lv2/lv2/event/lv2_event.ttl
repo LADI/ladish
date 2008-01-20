@@ -21,7 +21,7 @@
 
 @prefix :      <http://lv2plug.in/ns/ext/event#> .
 @prefix lv2:   <http://lv2plug.in/ns/lv2core#> .
-@prefix lv2ev: <http://lv2plug.in/ns/ext/event#>
+@prefix lv2ev: <http://lv2plug.in/ns/ext/event#> .
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix doap:  <http://usefulinc.com/ns/doap#> .
 @prefix foaf:  <http://xmlns.com/foaf/0.1/> .
@@ -57,5 +57,16 @@ A single generic time-stamped event.
 An lv2ev:EventPort contains an LV2_Event_Buffer which contains a sequence
 of these events.  The binary format of LV2 events is defined by the
 LV2_Event struct in <lv2_event.h>.
+""" .
+
+
+:supportsEvent a :PortProperty ;
+    rdfs:label   "Supports event type" ;
+    rdfs:comment """
+Indicates that this port supports or \"understands\" a certain event type.
+Plugins with event ports must always gracefully handle any type of event, even
+if it does not 'support' it, but this property should always be set for event
+types the plugin understands so hosts can discover plugins appropriate for a
+given scenario (e.g. plugins with a MIDI input).
 """ .
 

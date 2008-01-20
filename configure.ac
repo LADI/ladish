@@ -16,7 +16,7 @@ AC_CONFIG_SRCDIR([slv2/utils/lv2_list.c])
 AC_CONFIG_SRCDIR([slv2/swig/slv2.i])
 
 # See slv2/configure.ac for versioning info/history
-SLV2_VERSION="0.5.0"
+SLV2_VERSION="0.5.1"
 SLV2_API_CURRENT="8"
 SLV2_API_REVISION="0"
 SLV2_API_AGE="0"

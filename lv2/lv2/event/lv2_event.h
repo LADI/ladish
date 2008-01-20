@@ -38,7 +38,7 @@
 
 /** Opaque host data passed to LV2_Event_Feature.
  */
-typedef void* LV2_Symbol_Callback_Data;
+typedef void* LV2_Event_Callback_Data;
 
 
 
@@ -62,8 +62,8 @@ typedef struct {
 	 * instantiation, unless the returned value is 0 (i.e. new event types
 	 * can be added, but existing ones can never be changed/removed).
 	 */
-	uint16_t (*uri_to_event_type)(LV2_Symbol_Callback_Data callback_data,
-	                              char const*              uri);
+	uint16_t (*uri_to_event_type)(LV2_Event_Callback_Data callback_data,
+	                              char const*             uri);
 	
 	LV2_Event_Callback_Data callback_data;
 
