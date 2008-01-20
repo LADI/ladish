@@ -57,6 +57,9 @@ A single generic time-stamped event.
 An lv2ev:EventPort contains an LV2_Event_Buffer which contains a sequence
 of these events.  The binary format of LV2 events is defined by the
 LV2_Event struct in <lv2_event.h>.
+
+Specific event types (e.g. MIDI, OSC) are defined by extensions, and should
+be rdfs:subClassOf this class.
 """ .
 
 
