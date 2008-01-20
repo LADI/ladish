@@ -23,7 +23,6 @@
 
 #include <stdint.h>
 
-
 /** @file
  * This header defines the code portion of the LV2 events extension with URI
  * <http://lv2plug.in/ns/ext/events> (preferred prefix 'lv2ev').
@@ -34,6 +33,13 @@
  * extension) which is mapped to an integer by the host for performance
  * reasons.
  */
+
+
+/** The PPQN (pulses per quarter note) of tempo-based LV2 event time stamps.
+ * Equal to (2^5 * 3^4 * 5 * 7 * 11 * 13 * 17 * 19), which is evenly divisuble
+ * by all integers from 1 through 22 inclusive. */
+static const uint32_t LV2_EVENT_PPQN = 4190266080;
+
 
 
 /** Opaque host data passed to LV2_Event_Feature.
