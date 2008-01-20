@@ -1,4 +1,4 @@
-SUBDIRS = redlandmm raul flowcanvas patchage slv2 omins lv2 ingen machina
+SUBDIRS = redlandmm raul flowcanvas patchage slv2 omins lv2 ingen machina lv2core
 
 distclean-local:
 	rm -rf doc
