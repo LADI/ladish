@@ -1,0 +1,32 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix lv2: <http://lv2plug.in/ns/lv2core#> .
+@prefix lv2ev: <http://lv2plug.in/ns/ext/event#> .
+@prefix drobins: <http://drobilla.net/lv2_plugins/dev/> .
+@prefix doap: <http://usefulinc.com/ns/doap#> .
+
+drobins:transpose
+    a lv2:Plugin;
+    doap:name "Transpose";
+    doap:license <http://usefulinc.com/doap/licenses/gpl>;
+    lv2:port [
+        a lv2ev:EventPort, lv2:InputPort;
+		lv2ev:supportsEvent <http://lv2plug.in/ns/ext/midi#MidiEvent>;
+        lv2:index 0;
+        lv2:symbol "in";
+        lv2:name "Input"
+    ], [
+        a lv2ev:EventPort, lv2:OutputPort;
+        lv2:index 1;
+        lv2:symbol "out";
+        lv2:name "Output"
+    ], [
+        a lv2:ControlPort, lv2:InputPort;
+        lv2:index 2;
+        lv2:symbol "d_note";
+        lv2:name "Note number change";
+        lv2:portProperty lv2:integer;
+        lv2:default 0.0;
+        lv2:minimum -127.0;
+        lv2:maximum 127.0
+    ] .
+
