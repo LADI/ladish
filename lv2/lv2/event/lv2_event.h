@@ -81,17 +81,15 @@ typedef struct {
 	 * defining an event type.  This value MUST be some value previously
 	 * returned from a call to the uri_to_id function defined in the LV2
 	 * URI map extension.
-	 * The LV2_Event_Feature passed from the host
-	 * provides a function to map URIs to event types for this field.
-	 * The type 0 is a special reserved value, meaning the event refers to
-	 * non-POD data (i.e. dynamically allocated waveforms, large SYSEX, etc).
-	 * The plugin MUST call the take_reference function (in LV2_Event_Feature)
-	 * on the event if the event's contents are stored in any way or written
-	 * to an output.  Otherwise, the plugin MUST call the drop_reference
-	 * function on the event.
-	 * should be ignored or passed through without interpretation.
-	 * Plugins should gracefully ignore or pass through any events of a type
-	 * which the plugin does not recognize.
+	 * The type 0 is a special reserved value, meaning the event contains a
+	 * single pointer (of native machine size) to a dynamically allocated
+	 * LV2_Object.  This allows events to carry large non-POD payloads
+	 * (e.g. images, waveforms, large SYSEX dumps, etc.) without copying.
+	 * See the LV2 Object extension for details.
+	 * Plugins which do not support the LV2 Object extension MUST NOT store,
+	 * copy, or pass through to an output any event with type 0.
+	 * Otherwise, plugins should gracefully ignore or pass through any events
+	 * of a type which the plugin does not recognize.
 	 */
 	uint16_t type;
 
@@ -158,6 +156,8 @@ typedef struct {
 	 *     which defines the meaning of the frames and subframes fields of
 	 *     contained events (obtained by the LV2 URI Map uri_to_id function
 	 *     with the URI of this extension as the 'map' argument).
+	 *     The host must never pass a plugin a buffer which uses a stamp type
+	 *     the plugin does not 'understand'
 	 * OUTPUTS: The plugin may set this to any value that has been returned
 	 *     from uri_to_id with the URI of this extension for a 'map' argument.
 	 */

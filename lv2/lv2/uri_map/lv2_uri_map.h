@@ -20,6 +20,8 @@
 #ifndef LV2_URI_MAP_H
 #define LV2_URI_MAP_H
 
+#define LV2_URI_MAP_URI "http://lv2plug.in/ns/ext/uri-map"
+
 #include <stdint.h>
 
 /** @file
@@ -39,19 +41,19 @@
 /** The data field of the LV2_Feature for this extension.
  *
  * To support this feature the host must pass an LV2_Feature struct to the
- * plugin's instantiate method with URI "http://lv2plug.in/ns/ext/events"
+ * plugin's instantiate method with URI "http://lv2plug.in/ns/ext/uri-map"
  * and data pointed to an instance of this struct.
  */
 typedef struct {
 
 	/** Get the numeric ID of a URI from the host.
 	 *
-	 * @param callback_data See callback_data below.
+	 * @param callback_data Must be the callback_data member of this struct.
 	 * @param map The 'context' of this URI.  Certain extensions may define a
 	 *        URI that must be passed here with certain restrictions on the
-	 *        return value (i.e. limited range).  This value may be NULL if
+	 *        return value (e.g. limited range).  This value may be NULL if
 	 *        the plugin needs an ID for a URI in general.
-	 * @param uri The URI to be mapped to an ID.
+	 * @param uri The URI to be mapped to an integer ID.
 	 *
 	 * This function is referentially transparent - any number of calls with
 	 * the same arguments is guaranteed to return the same value over the life
@@ -67,8 +69,8 @@ typedef struct {
 
 	/** Opaque pointer to host data.
 	 *
-	 * The plugin MUST pass this to any call to the uri_to_id function in this
-	 * struct.  Otherwise, it must not be interpreted in any way.
+	 * The plugin MUST pass this to any call to functions in this struct.
+	 * Otherwise, it must not be interpreted in any way.
 	 */
 	LV2_URI_Map_Callback_Data callback_data;
 

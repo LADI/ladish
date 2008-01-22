@@ -30,6 +30,7 @@
 #include "lv2.h"
 #include <stdbool.h>
 
+
 typedef struct {
 	bool (*blocking_run)(LV2_Handle instance, uint8_t* outputs_written);
 	void (*connect_port)(LV2_Handle instance, uint32_t port, void* data);
