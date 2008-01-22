@@ -42,10 +42,10 @@
 
 
 /** The best Pulses Per Quarter Note for tempo-based uint32_t timestmaps.
- * Equal to (2^5 * 3^4 * 5 * 7 * 11 * 13 * 17 * 19), which is evenly divisble
- * by all integers from 1 through 22 inclusive.
+ * Equal to 2^12 * 5 * 7 * 9 * 11 * 13 * 17, which is evenly divisble
+ * by all integers from 1 through 18 inclusive, and powers of 2 up to 2^12.
  */
-static const uint32_t LV2_EVENT_PPQN = 4190266080;
+static const uint32_t LV2_EVENT_PPQN = 3136573440;
 
 
 
@@ -157,9 +157,14 @@ typedef struct {
 	 *     contained events (obtained by the LV2 URI Map uri_to_id function
 	 *     with the URI of this extension as the 'map' argument).
 	 *     The host must never pass a plugin a buffer which uses a stamp type
-	 *     the plugin does not 'understand'
+	 *     the plugin does not 'understand'.  The value of this field must
+	 *     never change, except when connect_port is called on the input
+	 *     port, at which time the host MUST have set the stamp_type field to
+	 *     the value that will be used for all run calls (until a reconnect).
 	 * OUTPUTS: The plugin may set this to any value that has been returned
-	 *     from uri_to_id with the URI of this extension for a 'map' argument.
+	 *     from uri_to_id with the URI of this extension for a 'map' argument,
+	 *     according to the rules specified in the plugin data file
+	 *     (see lv2_event.ttl for details).
 	 */
 	uint16_t stamp_type;
 
