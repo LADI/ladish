@@ -82,7 +82,7 @@ lv2ev:generic property for that port is also set.
 
 :generic a lv2:PortProperty ;
 	rdfs:label "Generic event port" ;
-	rdfs:commant """
+	rdfs:comment """
 Indicated that this port does something meaningful for any event type
 (e.g. event mixers, delays, serialisers, etc).  If this property is set, hosts
 should consider the port suitable for any type of event.
