@@ -1,4 +1,4 @@
-/* lv2_events.h - C header file for the LV2 events extension.
+/* lv2_event.h - C header file for the LV2 events extension.
  * 
  * Copyright (C) 2006-2007 Lars Luthman <lars.luthman@gmail.com>
  * Copyright (C) 2008 Dave Robillard <dave@drobilla.net>
@@ -18,62 +18,34 @@
  * Inc., 59 Temple Place, Suite 330, Boston, MA 01222-1307 USA
  */
 
-#ifndef LV2_EVENTS_H
-#define LV2_EVENTS_H
+#ifndef LV2_EVENT_H
+#define LV2_EVENT_H
+ 
+#define LV2_EVENT_URI "http://lv2plug.in/ns/ext/event"
 
 #include <stdint.h>
 
 /** @file
  * This header defines the code portion of the LV2 events extension with URI
- * <http://lv2plug.in/ns/ext/events> (preferred prefix 'lv2ev').
+ * <http://lv2plug.in/ns/ext/event> (preferred prefix 'lv2ev').
  *
  * This extension is a generic transport mechanism for time stamped events
  * of any type (e.g. MIDI, OSC, ramps, etc).  Each port can transport mixed
- * events of any type; the type of events is defined by a URI (in some other
- * extension) which is mapped to an integer by the host for performance
- * reasons.
+ * events of any type; the type of events and timestamps are defined by a URI
+ * which is mapped to an integer by the host for performance reasons.
+ *
+ * This extension requires the host to support the LV2 URI Map extension.
+ * Any host which supports this extension MUST guarantee that any call to
+ * the LV2 URI Map uri_to_id function with the URI of this extension as the
+ * 'map' argument returns a value within the range of uint16_t.
  */
 
 
-/** The PPQN (pulses per quarter note) of tempo-based LV2 event time stamps.
- * Equal to (2^5 * 3^4 * 5 * 7 * 11 * 13 * 17 * 19), which is evenly divisuble
- * by all integers from 1 through 22 inclusive. */
+/** The best Pulses Per Quarter Note for tempo-based uint32_t timestmaps.
+ * Equal to (2^5 * 3^4 * 5 * 7 * 11 * 13 * 17 * 19), which is evenly divisble
+ * by all integers from 1 through 22 inclusive.
+ */
 static const uint32_t LV2_EVENT_PPQN = 4190266080;
-
-
-
-/** Opaque host data passed to LV2_Event_Feature.
- */
-typedef void* LV2_Event_Callback_Data;
-
-
-
-/** The data part of the LV2_Feature for the LV2 events extension.
- *
- * The host MUST pass an LV2_Feature struct to the plugin's instantiate
- * method with URI set to "http://lv2plug.in/ns/ext/events" and data
- * set to an instance of this struct.
- *
- * The plugin MUST pass callback_data to any invocation of the functions
- * defined in this struct.  Otherwise, callback_data is opaque and the
- * plugin MUST NOT interpret its value in any way.
- */
-typedef struct {
-
-	/** Get the numeric version of an event type from the host.
-	 *
-	 * The returned value is 0 if there is no type by that URI.
-	 * The returned value correlates to the type field of LV2_Event, and is
-	 * guaranteed never to change over the course of the plugin's
-	 * instantiation, unless the returned value is 0 (i.e. new event types
-	 * can be added, but existing ones can never be changed/removed).
-	 */
-	uint16_t (*uri_to_event_type)(LV2_Event_Callback_Data callback_data,
-	                              char const*             uri);
-	
-	LV2_Event_Callback_Data callback_data;
-
-} LV2_Event_Feature;
 
 
 
@@ -105,12 +77,20 @@ typedef struct {
 	 */
 	uint32_t subframes;
 	
-	/** The type of this event, where this numeric value refers to some URI
-	 * defining an event type.  The LV2_Event_Feature passed from the host
+	/** The type of this event, as a number which represents some URI
+	 * defining an event type.  This value MUST be some value previously
+	 * returned from a call to the uri_to_id function defined in the LV2
+	 * URI map extension.
+	 * The LV2_Event_Feature passed from the host
 	 * provides a function to map URIs to event types for this field.
-	 * The type 0 is a special nil value, meaning the event has no type and
+	 * The type 0 is a special reserved value, meaning the event refers to
+	 * non-POD data (i.e. dynamically allocated waveforms, large SYSEX, etc).
+	 * The plugin MUST call the take_reference function (in LV2_Event_Feature)
+	 * on the event if the event's contents are stored in any way or written
+	 * to an output.  Otherwise, the plugin MUST call the drop_reference
+	 * function on the event.
 	 * should be ignored or passed through without interpretation.
-	 * Plugins MUST gracefully ignore or pass through any events of a type
+	 * Plugins should gracefully ignore or pass through any events of a type
 	 * which the plugin does not recognize.
 	 */
 	uint16_t type;
@@ -144,10 +124,10 @@ typedef struct {
 typedef struct {
 
 	/** The number of events in this buffer.
-	 * INPUT PORTS: The host must set this field to the number of events
+	 * INPUTS: The host must set this field to the number of events
 	 *     contained in the data buffer before calling run().
 	 *     The plugin must not change this field.
-	 * OUTPUT PORTS: The plugin must set this field to the number of events it
+	 * OUTPUTS: The plugin must set this field to the number of events it
 	 *     has written to the buffer before returning from run().
 	 *     Any initial value should be ignored by the plugin.
 	 */
@@ -160,19 +140,33 @@ typedef struct {
 	uint32_t capacity;
 
 	/** The size of the initial portion of the data buffer containing data.
-	 *  INPUT PORTS: The host must set this field to the number of bytes used
-	 *      by all events it has written to the buffer (including headers)
-	 *      before calling the plugin's run().
-	 *      The plugin must not change this field.
-	 *  OUTPUT PORTS: The plugin must set this field to the number of bytes
-	 *      used by all events it has written to the buffer (including headers)
-	 *      before returning from run().
-	 *      Any initial value should be ignored by the plugin.
+	 * INPUTS: The host must set this field to the number of bytes used
+	 *     by all events it has written to the buffer (including headers)
+	 *     before calling the plugin's run().
+	 *     The plugin must not change this field.
+	 * OUTPUTS: The plugin must set this field to the number of bytes
+	 *     used by all events it has written to the buffer (including headers)
+	 *     before returning from run().
+	 *     Any initial value should be ignored by the plugin.
 	 */
 	uint32_t size;
+	
+	/** The type of the time stamps for events in this buffer.
+	 * As a special exception, '0' always means audio frames and subframes
+	 * (1/UINT32_MAX'th of a frame) in the sample rate passed to instantiate.
+	 * INPUTS: The host must set this field to the numeric ID of some URI
+	 *     which defines the meaning of the frames and subframes fields of
+	 *     contained events (obtained by the LV2 URI Map uri_to_id function
+	 *     with the URI of this extension as the 'map' argument).
+	 * OUTPUTS: The plugin may set this to any value that has been returned
+	 *     from uri_to_id with the URI of this extension for a 'map' argument.
+	 */
+	uint16_t stamp_type;
+
+	uint16_t pad; /**< For possible future use, do not use */
 
 } LV2_Event_Buffer;
 
 
-#endif // LV2_EVENTS_H
+#endif // LV2_EVENT_H
 

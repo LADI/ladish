@@ -19,6 +19,8 @@
 #ifndef LV2_CONTEXTS_H
 #define LV2_CONTEXTS_H
 
+#define LV2_CONTEXT_URI "http://lv2plug.in/ns/ext/context"
+
 #define LV2_CONTEXTS_SET_OUTPUT_WRITTEN(flags, index) \
 	(flags)[(index) / 8] |= 1 << ((index) % 8)
 
