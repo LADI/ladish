@@ -54,7 +54,7 @@ static const uint32_t LV2_EVENT_PPQN = 4190266080;
  * LV2 events are generic time-stamped containers for any type of event.
  * The type field defines the format of a given event's contents.
  *
- * This struct defined the header of an LV2 event.  An LV2 event is a single
+ * This struct defines the header of an LV2 event.  An LV2 event is a single
  * chunk of POD (plain old data), usually contained in a flat buffer
  * (see LV2_EventBuffer below).  Unless a required feature says otherwise,
  * hosts may assume a deep copy of an LV2 event can be created safely
@@ -163,7 +163,9 @@ typedef struct {
 	 */
 	uint16_t stamp_type;
 
-	uint16_t pad; /**< For possible future use, do not use */
+	/** For possible future use.  Hosts and plugins that do not know of any
+	 * use for this value MUST always set it to 0. */
+	uint16_t pad;
 
 } LV2_Event_Buffer;
 
