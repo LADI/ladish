@@ -50,7 +50,6 @@ which are defined by some URI in another LV2 extension.
 
 :Event a rdfs:Class ;
 	rdfs:label      "LV2 event" ;
-	rdfs:subClassOf lv2ev:Event ;
 	rdfs:comment    """
 A single generic time-stamped event.
 
@@ -63,14 +62,39 @@ be rdfs:subClassOf this class.
 """ .
 
 
+:TimeStamp a rdfs:Class ;
+	rdfs:label      "LV2 event time stamp" ;
+	rdfs:comment    """
+The time stamp of an Event.
+
+This defines the meaning of the 'frames' and 'subframes' fields of an
+LV2_Event (both unsigned 32-bit integers).
+""" .
+
+
+:generic a lv2:PortProperty ;
+	rdfs:label "Generic event port" ;
+	rdfs:comment """
+Indicates that this port does something meaningful for any event type
+(e.g. event mixers, delays, serialisers, etc).  If this property is set, hosts
+should consider the port suitable for any type of event.  Otherwise, hosts 
+should consider the port 'appropriate' only for the specific event types
+listed with :supportsEvent.  Note that plugins must gracefully handle unknown
+event types whether or not this property is present.
+""" .
+
+
 :supportsEvent a rdf:Property ;
 	rdfs:domain  lv2:Port ;
 	rdfs:range   :Event ;
     rdfs:label   "Supports event type" ;
     rdfs:comment """
-Indicates that this port supports or \"understands\" a certain event type.
-For input ports, this means the plugin understands events of this type,
-for output ports, this means the plugin may generate events of this type.
+Indicates that this port supports or "understands" a certain event type.
+For input ports, this means the plugin understands and does something useful
+with events of this type.  For output ports, this means the plugin may generate
+events of this type.  If the plugin never actually generates events of this type,
+but might pass them through from an input, this property should not be set (use
+:inheritsEvent for that).
 Plugins with event input ports must always gracefully handle any type of event,
 even if it does not 'support' it.  This property should always be set for
 event types the plugin understands/generates so hosts can discover plugins
@@ -80,11 +104,56 @@ event if the relevant :supportsEvent property is not set, unless the
 lv2ev:generic property for that port is also set.
 """ .
 
-:generic a lv2:PortProperty ;
-	rdfs:label "Generic event port" ;
-	rdfs:comment """
-Indicated that this port does something meaningful for any event type
-(e.g. event mixers, delays, serialisers, etc).  If this property is set, hosts
-should consider the port suitable for any type of event.
+
+:inheritsEvent a rdf:Property ;
+	rdfs:domain  lv2:Port ;
+	rdfs:range   lv2:Port ;
+    rdfs:label   "Inherits time stamp type" ;
+    rdfs:comment """
+Indicates that this output port might pass through events that arrived at some
+other input port (or generate an event of the same type as events arriving at
+that input).  The host must always check the stamp type of all outputs when
+connecting an input, but this property should be set whenever it applies.
+""" .
+
+
+
+:supportsTimeStamp a rdf:Property ;
+	rdfs:domain  lv2:Port ;
+	rdfs:range   :TimeStamp ;
+    rdfs:label   "Supports time stamp type" ;
+    rdfs:comment """
+Indicates that this port supports or "understands" a certain time stamp type.
+Meaningful only for input ports, the host must never connect a port to an
+event buffer with a time stamp type that isn't supported by the port.
+""" .
+
+
+:generatesTimeStamp a rdf:Property ;
+	rdfs:domain  lv2:Port ;
+	rdfs:range   :TimeStamp ;
+    rdfs:label   "Outputs time stamp type" ;
+    rdfs:comment """
+Indicates that this port may output a certain time stamp type, regardless of
+the time stamp type of any input ports.  If the port outputs stamps based on
+what type inputs are connected to, this property should not be set (use the
+:inheritsTimeStamp property for that).  Hosts MUST check the time_stamp value
+of any output port buffers after a call to connect_port on ANY event input
+port on the plugin.  If the plugin changes the stamp_type field of an output
+event buffer during a call to run(), the plugin must call the
+stamp_type_changed function provided by the host in the LV2_Event_Feature
+struct, if it is non-NULL.
+""" .
+
+
+:inheritsTimeStamp a rdf:Property ;
+	rdfs:domain  lv2:Port ;
+	rdfs:range   lv2:Port ;
+    rdfs:label   "Inherits time stamp type" ;
+    rdfs:comment """
+Indicates that this port follows the time stamp type of an input port.
+This property is not necessary, but it should be set for outputs that
+base their output type on an input port so the host can make more sense
+of the plugin and provide a more sensible interface.
 """ .
 

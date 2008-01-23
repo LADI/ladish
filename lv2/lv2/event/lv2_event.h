@@ -162,9 +162,12 @@ typedef struct {
 	 *     port, at which time the host MUST have set the stamp_type field to
 	 *     the value that will be used for all run calls (until a reconnect).
 	 * OUTPUTS: The plugin may set this to any value that has been returned
-	 *     from uri_to_id with the URI of this extension for a 'map' argument,
-	 *     according to the rules specified in the plugin data file
-	 *     (see lv2_event.ttl for details).
+	 *     from uri_to_id with the URI of this extension for a 'map' argument.
+	 *     When connected to a buffer with connect_port, output ports MUST set
+	 *     this field to the type of time stamp they will be writing.  On any
+	 *     call to connect_port on an event input port, the plugin may change
+	 *     this field on any output port, it is the responsibility of the host
+	 *     to check if any of these values have changed.
 	 */
 	uint16_t stamp_type;
 
