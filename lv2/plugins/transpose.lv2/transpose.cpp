@@ -21,17 +21,24 @@
 
 using namespace std;
 
-class Transpose : public LV2::Plugin<Transpose> {
+class Transpose : public LV2::Plugin< Transpose, LV2::UriMapExt<true> > {
 public:
 	Transpose(double rate)
-		: LV2::Plugin<Transpose>(3)
-	{}
+		: LV2::Plugin< Transpose, LV2::UriMapExt<true> >(3)
+		, _midi_event(uri_to_id(LV2_EVENT_URI, "http://lv2plug.in/ns/ext/midi"))
+		, _osc_event(uri_to_id(LV2_EVENT_URI, "http://lv2plug.in/ns/ext/osc"))
+	{
+	}
 
 	void run(uint32_t sample_count) {
 		LV2_Event_Buffer* in = p<LV2_Event_Buffer>(0);
 		if (in->event_count > 0)
 			cout << "Transpose received " << in->event_count << " events."  << endl;
 	}
+
+private:
+	uint32_t _midi_event;
+	uint32_t _osc_event;
 };
 
 static unsigned _ = Transpose::register_class(

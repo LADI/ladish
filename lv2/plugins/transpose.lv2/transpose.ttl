@@ -8,6 +8,7 @@ drobins:transpose
     a lv2:Plugin;
     doap:name "Transpose";
     doap:license <http://usefulinc.com/doap/licenses/gpl>;
+	lv2:requiredFeature <http://lv2plug.in/ns/ext/uri-map>;
     lv2:port [
         a lv2ev:EventPort, lv2:InputPort;
 		lv2ev:supportsEvent <http://lv2plug.in/ns/ext/midi#MidiEvent>;

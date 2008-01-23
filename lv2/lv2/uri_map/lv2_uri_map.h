@@ -26,7 +26,7 @@
 
 /** @file
  * This header defines the LV2 URI Map extension with the URI
- * <http://lv2plug.in/ns/ext/uri-map> (preferred prefix 'lv2umap').
+ * <http://lv2plug.in/ns/ext/uri-map> (preferred prefix 'lv2urimap').
  *
  * This extension defines a simple mechanism for plugins to map URIs to
  * integers, usually for performance reasons (e.g. processing events
@@ -36,6 +36,10 @@
  * comparison.  This allows the extensibility of RDF with the performance of
  * integers (or centrally defined enumerations).
  */
+	
+
+/** Opaque pointer to host data. */
+typedef void* LV2_URI_Map_Callback_Data;
 
 
 /** The data field of the LV2_Feature for this extension.
@@ -45,7 +49,7 @@
  * and data pointed to an instance of this struct.
  */
 typedef struct {
-
+	
 	/** Get the numeric ID of a URI from the host.
 	 *
 	 * @param callback_data Must be the callback_data member of this struct.
