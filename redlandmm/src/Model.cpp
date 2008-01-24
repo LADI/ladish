@@ -37,6 +37,7 @@ static const char* const RDF_LANG = "turtle";
  */
 Model::Model(World& world)
 	: _world(world)
+	, _base(world, Node::RESOURCE, ".")
 	, _serialiser(NULL)
 { 
 	Glib::Mutex::Lock lock(world.mutex());
@@ -49,19 +50,23 @@ Model::Model(World& world)
  */
 Model::Model(World& world, const Glib::ustring& data_uri, Glib::ustring base_uri)
 	: _world(world)
+	, _base(world, Node::RESOURCE, base_uri == "" ? "." : base_uri)
 	, _serialiser(NULL)
 {
 	Glib::Mutex::Lock lock(world.mutex());
 	_storage = librdf_new_storage(_world.world(), "hashes", NULL, "hash-type='memory'");
 	_c_obj = librdf_new_model(_world.world(), _storage, NULL);
 
-	set_base_uri(base_uri);
-
 	librdf_uri* uri = librdf_new_uri(world.world(), (const unsigned char*)data_uri.c_str());
 	
 	if (uri) {
 		librdf_parser* parser = librdf_new_parser(world.world(), "guess", NULL, NULL);
+		// FIXME: locale kludges to work around librdf bug
+		char* locale = strdup(setlocale(LC_NUMERIC, NULL));
+		setlocale(LC_NUMERIC, "POSIX");
 		librdf_parser_parse_into_model(parser, uri, _base.get_uri(), _c_obj);
+		setlocale(LC_NUMERIC, locale);
+		free(locale);
 		librdf_free_parser(parser);
 	} else {
 		cerr << "Unable to create URI " << data_uri << endl;
@@ -142,7 +147,7 @@ Model::serialise_to_file(const Glib::ustring& uri_str)
 	if (uri && librdf_uri_is_file_uri(uri)) {
 		_serialiser = librdf_new_serializer(_world.world(), RDF_LANG, NULL, NULL);
 		setup_prefixes();
-		librdf_serializer_serialize_model_to_file(_serialiser, librdf_uri_to_filename(uri), uri, _c_obj);
+		librdf_serializer_serialize_model_to_file(_serialiser, librdf_uri_to_filename(uri), NULL, _c_obj);
 		librdf_free_serializer(_serialiser);
 		_serialiser = NULL;
 	}

@@ -50,6 +50,10 @@ Query::run(World& world, Model& model, const Glib::ustring base_uri_str) const
 		return result; /* Return an empty Results */
 	}
 
+	// FIXME: locale kludges to work around librdf bug
+	char* locale = strdup(setlocale(LC_NUMERIC, NULL));
+	setlocale(LC_NUMERIC, "POSIX");
+
 	librdf_query_results* results = librdf_query_execute(q, model._c_obj);
 	
 	if (!results) {
@@ -72,6 +76,9 @@ Query::run(World& world, Model& model, const Glib::ustring base_uri_str) const
 		result.push_back(bindings);
 		librdf_query_results_next(results);
 	}
+	
+	setlocale(LC_NUMERIC, locale);
+	free(locale);
 
 	librdf_free_query_results(results);
 	librdf_free_query(q);

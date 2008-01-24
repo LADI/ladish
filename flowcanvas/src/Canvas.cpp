@@ -1174,6 +1174,10 @@ Canvas::arrange(bool use_length_hints)
 	//gvRender (gvc, G, (char*)"dot", fopen("/home/dave/test.dot", "w"));
 
 	double least_x=HUGE_VAL, least_y=HUGE_VAL, most_x=0, most_y=0;
+	
+	// FIXME: locale kludges
+	char* locale = strdup(setlocale(LC_NUMERIC, NULL));
+	setlocale(LC_NUMERIC, "POSIX");
 
 	// Arrange to graphviz coordinates
 	for (std::map<boost::shared_ptr<Item>, Agnode_t*>::iterator i = nodes.begin();
@@ -1193,6 +1197,9 @@ Canvas::arrange(bool use_length_hints)
 		most_x = std::max(most_x, x);
 		most_y = std::max(most_y, y);
 	}
+	
+	setlocale(LC_NUMERIC, locale);
+	free(locale);
 
 	const double graph_width  = most_x - least_x;
 	const double graph_height = most_y - least_y;

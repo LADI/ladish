@@ -30,6 +30,10 @@ Node::Node(World& world, Type type, const std::string& s)
 	: _world(&world)
 {
 	Glib::Mutex::Lock lock(world.mutex(), Glib::TRY_LOCK);
+	
+	// FIXME: locale kludges to work around librdf bug
+	char* locale = strdup(setlocale(LC_NUMERIC, NULL));
+	setlocale(LC_NUMERIC, "POSIX");
 
 	if (type == RESOURCE) {
 		const string uri = world.expand_uri(s);
@@ -41,6 +45,9 @@ Node::Node(World& world, Type type, const std::string& s)
 	} else {
 		_c_obj = NULL;
 	}
+
+	setlocale(LC_NUMERIC, locale);
+	free(locale);
 
 	assert(this->type() == type);
 	assert(_world);
@@ -141,7 +148,10 @@ int
 Node::to_int() const
 {
 	assert(is_int());
-	return strtol((const char*)librdf_node_get_literal_value(_c_obj), NULL, 10);
+	int i = 0;
+	std::stringstream ss((const char*)librdf_node_get_literal_value(_c_obj));
+	ss >> i;
+	return i;
 }
 
 
