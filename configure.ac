@@ -425,7 +425,7 @@ if test "$build_ingen_client_lib" = "yes"; then
 	PKG_CHECK_MODULES(RAPTOR, raptor >= 1.4.14, build_raptor="yes", build_raptor="no")
 	
 	# Check for rasqal (for RDF querying)
-	PKG_CHECK_MODULES(RASQAL, rasqal >= 0.9.11, build_rasqal="yes", build_rasqal="no")
+	PKG_CHECK_MODULES(RASQAL, rasqal >= 0.9.14, build_rasqal="yes", build_rasqal="no")
 	
 	# Check for sigc++ (FIXME: make this only necessary where.. uh.. necessary)
 	PKG_CHECK_MODULES(LSIGCPP, sigc++-2.0)
