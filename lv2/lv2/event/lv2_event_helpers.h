@@ -36,6 +36,14 @@
  * do not take the address of these functions. */
 
 
+/** Pad a size to 64 bits (for event sizes) */
+static inline uint32_t
+lv2_event_pad_size(uint32_t size)
+{
+	return (size + 7) & (~7);
+}
+
+
 /** Initialize (empty, reset..) an existing event buffer.
  * The contents of buf are ignored entirely and overwritten, except capacity
  * which is unmodified. */
@@ -98,7 +106,7 @@ lv2_event_increment(LV2_Event_Iterator* iter)
 	LV2_Event* const ev = (LV2_Event*)(
 			(uint8_t*)iter->buf + sizeof(LV2_Event_Buffer) + iter->offset);
 
-	iter->offset += sizeof(LV2_Event) + ev->size;
+	iter->offset += sizeof(LV2_Event) + lv2_event_pad_size(ev->size);	
 	
 	return true;
 }
@@ -129,16 +137,18 @@ lv2_event_get(LV2_Event_Iterator* iter,
 }
 
 
-/** Append an event immediately following @a iter.
- * The position of @a iter is incremented to point at the written event.
+/** Write an event at @a iter.
+ * The event (if any) pointed to by @iter will be overwritten, and @a iter
+ * incremented to point to the following event (i.e. several calls to this
+ * function can be done in sequence without twiddling iter in-between).
  * @return True if event was written, otherwise false (buffer is full). */
 static inline bool
-lv2_event_append(LV2_Event_Iterator* iter,
-                 uint32_t            frames,
-                 uint32_t            subframes,
-                 uint16_t            type,
-                 uint16_t            size,
-                 const uint8_t*      data)
+lv2_event_write(LV2_Event_Iterator* iter,
+                uint32_t            frames,
+                uint32_t            subframes,
+                uint16_t            type,
+                uint16_t            size,
+                const uint8_t*      data)
 {
 	if (iter->buf->capacity - iter->buf->size < sizeof(LV2_Event) + size)
 		return false;
@@ -146,8 +156,6 @@ lv2_event_append(LV2_Event_Iterator* iter,
 	LV2_Event* const ev = (LV2_Event*)(
 			(uint8_t*)iter->buf + sizeof(LV2_Event_Buffer) + iter->offset);
 	
-	iter->offset += sizeof(LV2_Event) + ev->size;
-
 	ev->frames = frames;
 	ev->subframes = subframes;
 	ev->type = type;
@@ -155,6 +163,8 @@ lv2_event_append(LV2_Event_Iterator* iter,
 	memcpy((uint8_t*)ev + sizeof(LV2_Event), data, size);
 	iter->buf->size += sizeof(LV2_Event) + size;
 	++iter->buf->event_count;
+	
+	iter->offset += sizeof(LV2_Event) + lv2_event_pad_size(size);	
 	
 	return true;
 }
