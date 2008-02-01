@@ -37,8 +37,8 @@
 
 
 /** Pad a size to 64 bits (for event sizes) */
-static inline uint32_t
-lv2_event_pad_size(uint32_t size)
+static inline uint16_t
+lv2_event_pad_size(uint16_t size)
 {
 	return (size + 7) & (~7);
 }
@@ -106,7 +106,7 @@ lv2_event_increment(LV2_Event_Iterator* iter)
 	LV2_Event* const ev = (LV2_Event*)(
 			(uint8_t*)iter->buf + sizeof(LV2_Event_Buffer) + iter->offset);
 
-	iter->offset += sizeof(LV2_Event) + lv2_event_pad_size(ev->size);	
+	iter->offset += lv2_event_pad_size(sizeof(LV2_Event) + ev->size);
 	
 	return true;
 }
@@ -161,10 +161,11 @@ lv2_event_write(LV2_Event_Iterator* iter,
 	ev->type = type;
 	ev->size = size;
 	memcpy((uint8_t*)ev + sizeof(LV2_Event), data, size);
-	iter->buf->size += sizeof(LV2_Event) + size;
 	++iter->buf->event_count;
 	
-	iter->offset += sizeof(LV2_Event) + lv2_event_pad_size(size);	
+	size = lv2_event_pad_size(sizeof(LV2_Event) + size);
+	iter->buf->size += size;
+	iter->offset    += size;
 	
 	return true;
 }
