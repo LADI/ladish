@@ -65,6 +65,10 @@ typedef struct {
 	 * with a different map parameter).  However, this function is not
 	 * necessarily very fast: plugins should cache any IDs they might need in
 	 * performance critical situations.
+	 * The return value 0 is reserved and means an ID for that URI could not
+	 * be created for whatever reason.  Extensions may define more precisely
+	 * what this means, but in general plugins should gracefully handle 0
+	 * and consider whatever they wanted the URI for "unsupported".
 	 */
 	uint32_t (*uri_to_id)(LV2_URI_Map_Callback_Data callback_data,
 	                      const char*               map,

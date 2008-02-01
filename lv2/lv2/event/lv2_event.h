@@ -22,12 +22,13 @@
 #define LV2_EVENT_H
  
 #define LV2_EVENT_URI "http://lv2plug.in/ns/ext/event"
+#define LV2_EVENT_AUDIO_STAMP 0
 
 #include <stdint.h>
 
 /** @file
  * This header defines the code portion of the LV2 events extension with URI
- * <http://lv2plug.in/ns/ext/event> (preferred prefix 'lv2ev').
+ * <http://lv2plug.in/ns/ext/event> ('lv2ev').
  *
  * This extension is a generic transport mechanism for time stamped events
  * of any type (e.g. MIDI, OSC, ramps, etc).  Each port can transport mixed
@@ -88,8 +89,9 @@ typedef struct {
 	 * See the LV2 Object extension for details.
 	 * Plugins which do not support the LV2 Object extension MUST NOT store,
 	 * copy, or pass through to an output any event with type 0.
-	 * Otherwise, plugins should gracefully ignore or pass through any events
-	 * of a type which the plugin does not recognize.
+	 * If the type is not 0, plugins may assume the event is POD and should
+	 * gracefully ignore or pass through (with a simple copy) any events
+	 * of a type the plugin does not recognize.
 	 */
 	uint16_t type;
 

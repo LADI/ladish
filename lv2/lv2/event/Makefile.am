@@ -11,4 +11,4 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = lv2_event.pc
 
 lv2eventincludedir = $(includedir)/lv2/event
-lv2eventinclude_HEADERS = lv2_event.h
+lv2eventinclude_HEADERS = lv2_event.h lv2_event_helpers.h
