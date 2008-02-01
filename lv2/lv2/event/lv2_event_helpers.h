@@ -95,8 +95,11 @@ lv2_event_increment(LV2_Event_Iterator* iter)
 		return false;
 	}
 
-	LV2_Event* const ev = (LV2_Event*)((uint8_t*)iter->buf + iter->offset);
+	LV2_Event* const ev = (LV2_Event*)(
+			(uint8_t*)iter->buf + sizeof(LV2_Event_Buffer) + iter->offset);
+
 	iter->offset += sizeof(LV2_Event) + ev->size;
+	
 	return true;
 }
 
@@ -116,7 +119,8 @@ lv2_event_get(LV2_Event_Iterator* iter,
 		return NULL;
 	}
 
-	LV2_Event* const ev = (LV2_Event*)((uint8_t*)iter->buf + iter->offset);
+	LV2_Event* const ev = (LV2_Event*)(
+			(uint8_t*)iter->buf + sizeof(LV2_Event_Buffer) + iter->offset);
 
 	if (data)
 		*data = (uint8_t*)ev + sizeof(LV2_Event);
@@ -139,19 +143,20 @@ lv2_event_append(LV2_Event_Iterator* iter,
 	if (iter->buf->capacity - iter->buf->size < sizeof(LV2_Event) + size)
 		return false;
 
-	if (lv2_event_increment(iter)) {
-		LV2_Event* const ev = (LV2_Event*)((uint8_t*)iter->buf + iter->offset);
-		ev->frames = frames;
-		ev->subframes = subframes;
-		ev->type = type;
-		ev->size = size;
-		memcpy((uint8_t*)ev + sizeof(LV2_Event), data, size);
-		iter->buf->size += sizeof(LV2_Event) + size;
-		++iter->buf->event_count;
-		return true;
-	} else {
-		return false;
-	}
+	LV2_Event* const ev = (LV2_Event*)(
+			(uint8_t*)iter->buf + sizeof(LV2_Event_Buffer) + iter->offset);
+	
+	iter->offset += sizeof(LV2_Event) + ev->size;
+
+	ev->frames = frames;
+	ev->subframes = subframes;
+	ev->type = type;
+	ev->size = size;
+	memcpy((uint8_t*)ev + sizeof(LV2_Event), data, size);
+	iter->buf->size += sizeof(LV2_Event) + size;
+	++iter->buf->event_count;
+	
+	return true;
 }
 
 #endif // LV2_EVENT_HELPERS_H
