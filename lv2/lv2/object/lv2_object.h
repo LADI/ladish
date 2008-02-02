@@ -54,6 +54,13 @@ typedef void (*LV2_Object_Destructor)(LV2_Object* object);
  * 'data' pointing to an instance of this struct. */
 typedef struct {
 	
+	/** Opaque pointer to host data.
+	 *
+	 * The plugin MUST pass this to any call to functions in this struct.
+	 * Otherwise, it must not be interpreted in any way.
+	 */
+	LV2_Object_Callback_Data callback_data;
+	
 	/** Create (allocate) a new LV2 Object.
 	 *
 	 * The returned value has size bytes of memory immediately following the
@@ -103,13 +110,6 @@ typedef struct {
 	LV2_Object* (*lv2_object_unref)(LV2_Object_Callback_Data callback_data,
 	                                uint32_t                 context,
 	                                LV2_Object*              object);
-
-	/** Opaque pointer to host data.
-	 *
-	 * The plugin MUST pass this to any call to functions in this struct.
-	 * Otherwise, it must not be interpreted in any way.
-	 */
-	LV2_Object_Callback_Data callback_data;
 
 } LV2_Object_Feature;
 
