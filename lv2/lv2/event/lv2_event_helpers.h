@@ -48,12 +48,13 @@ lv2_event_pad_size(uint16_t size)
  * The contents of buf are ignored entirely and overwritten, except capacity
  * which is unmodified. */
 static inline void
-lv2_event_buffer_reset(LV2_Event_Buffer* buf, uint16_t stamp_type)
+lv2_event_buffer_reset(LV2_Event_Buffer* buf, uint16_t stamp_type, uint8_t *data)
 {
+	buf->data = data;
+	buf->header_size = sizeof(LV2_Event_Buffer);
+	buf->stamp_type = stamp_type;
 	buf->event_count = 0;
 	buf->size = 0;
-	buf->stamp_type = stamp_type;
-	buf->pad = 0;
 }
 
 
@@ -64,7 +65,7 @@ lv2_event_buffer_new(uint32_t capacity, uint16_t stamp_type)
 	LV2_Event_Buffer* buf = (LV2_Event_Buffer*)malloc(sizeof(LV2_Event_Buffer) + capacity);
 	if (buf != NULL) {
 		buf->capacity = capacity;
-		lv2_event_buffer_reset(buf, stamp_type);
+		lv2_event_buffer_reset(buf, stamp_type, (uint8_t *)(buf + 1));
 		return buf;
 	} else {
 		return NULL;
@@ -104,9 +105,9 @@ lv2_event_increment(LV2_Event_Iterator* iter)
 	}
 
 	LV2_Event* const ev = (LV2_Event*)(
-			(uint8_t*)iter->buf + sizeof(LV2_Event_Buffer) + iter->offset);
+			(uint8_t*)iter->buf->data + iter->offset);
 
-	iter->offset += lv2_event_pad_size(sizeof(LV2_Event) + ev->size);
+	iter->offset += lv2_event_pad_size(sizeof(LV2_Event) + ev->size);	
 	
 	return true;
 }
@@ -128,7 +129,7 @@ lv2_event_get(LV2_Event_Iterator* iter,
 	}
 
 	LV2_Event* const ev = (LV2_Event*)(
-			(uint8_t*)iter->buf + sizeof(LV2_Event_Buffer) + iter->offset);
+			(uint8_t*)iter->buf->data + iter->offset);
 
 	if (data)
 		*data = (uint8_t*)ev + sizeof(LV2_Event);
@@ -154,7 +155,7 @@ lv2_event_write(LV2_Event_Iterator* iter,
 		return false;
 
 	LV2_Event* const ev = (LV2_Event*)(
-			(uint8_t*)iter->buf + sizeof(LV2_Event_Buffer) + iter->offset);
+			(uint8_t*)iter->buf->data + iter->offset);
 	
 	ev->frames = frames;
 	ev->subframes = subframes;
