@@ -73,6 +73,16 @@ LV2_Event (both unsigned 32-bit integers).
 """ .
 
 
+:FrameStamp a rdfs:Class ;
+	rdfs:subClassOf :TimeStamp ;
+	rdfs:label      "Audio frame time stamp" ;
+	rdfs:comment    """
+The default time stamp unit for an LV2 event: the frames field represents
+audio frames (in the sample rate passed to intantiate), and the subframes
+field is 1/UINT32_MAX of a frame.
+""" .
+
+
 :generic a lv2:PortProperty ;
 	rdfs:label "Generic event port" ;
 	rdfs:comment """
