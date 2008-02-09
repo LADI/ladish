@@ -586,9 +586,9 @@ AC_CONFIG_FILES([lv2/lv2/ui/Makefile])
 AC_CONFIG_FILES([lv2/lv2/object/Makefile])
 AC_CONFIG_FILES([lv2/lv2/uri_map/Makefile])
 AC_CONFIG_FILES([lv2/plugins/Makefile])
-AC_CONFIG_FILES([lv2/plugins/osc_print.lv2/Makefile])
-AC_CONFIG_FILES([lv2/plugins/osc_metro.lv2/Makefile])
-AC_CONFIG_FILES([lv2/plugins/osc_bang.lv2/Makefile])
+AC_CONFIG_FILES([lv2/plugins/print.lv2/Makefile])
+AC_CONFIG_FILES([lv2/plugins/metro.lv2/Makefile])
+AC_CONFIG_FILES([lv2/plugins/bang.lv2/Makefile])
 AC_CONFIG_FILES([lv2/plugins/transpose.lv2/Makefile])
 
 # Redlandmm
