@@ -1,5 +1,5 @@
-#include <iostream>
 #include <raul/Quantizer.hpp>
+#include <iostream>
 
 using namespace std;
 using namespace Raul;
@@ -8,16 +8,19 @@ using namespace Raul;
 int
 main()
 {
-	double q = 0;
-	double beats = 0;
+	double in = 0;
 
 	cout << "Quantization: ";
-	cin >> q;
+	cin >> in;
 	cout << endl;
+	
+	TimeStamp q(TimeUnit(TimeUnit::BEATS, 19200), in);
 
 	while (true) {
 		cout << "Beats: ";
-		cin >> beats;
+		cin >> in;
+	
+		TimeStamp beats(TimeUnit(TimeUnit::BEATS, 19200), in);
 
 		cout << "Quantized: ";
 		cout << Quantizer::quantize(q, beats) << endl << endl;

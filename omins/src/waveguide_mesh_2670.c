@@ -146,7 +146,7 @@ wgmesh_connect_port(LADSPA_Handle instance,
 }
 
 
-inline void excite_mesh(WgMesh* plugin, LADSPA_Data power, LADSPA_Data ex_x, LADSPA_Data ex_y)
+inline static void excite_mesh(WgMesh* plugin, LADSPA_Data power, LADSPA_Data ex_x, LADSPA_Data ex_y)
 {
 	int i=ex_x,j=ex_y;
 	LADSPA_Data temp;

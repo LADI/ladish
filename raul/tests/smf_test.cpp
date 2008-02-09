@@ -14,10 +14,10 @@ main(int argc, char** argv)
 
 	if (argc < 2) {
 		filename = "./test.mid";
-		SMFWriter writer(32768);
-		writer.start(string(filename));
+		SMFWriter writer(TimeUnit(TimeUnit::BEATS, 19200));
+		writer.start(string(filename), TimeStamp(writer.unit(), 0, 0));
 		writer.finish();
-		cout << "Wrote " << filename << " with PPQN = " << writer.ppqn() << endl;
+		cout << "Wrote " << filename << " with PPQN = " << writer.unit().ppt() << endl;
 
 	} else {
 		filename = argv[1];
@@ -44,7 +44,7 @@ main(int argc, char** argv)
 
 		unsigned char buf[4];
 		uint32_t      ev_size;
-		uint32_t      ev_delta_time;
+		TimeStamp     ev_delta_time(reader.unit());
 		while (reader.read_event(4, buf, &ev_size, &ev_delta_time) >= 0) {
 
 			cout << "Event, size = " << ev_size << ", time = " << ev_delta_time;

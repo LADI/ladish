@@ -19,14 +19,19 @@
 #define RAUL_QUANTIZER_HPP
 
 #include <cmath>
+#include <raul/TimeStamp.hpp>
 
 namespace Raul {
 
 
 class Quantizer {
 public:
-	inline static double quantize(double q, double value) {
-		return (q > 0) ? lrint(value / q) * q : value;
+	inline static TimeStamp quantize(TimeStamp q, TimeStamp t) {
+		assert(q.unit() == t.unit());
+		// FIXME: Precision problem?  Should probably stay in discrete domain
+		const double qd = q.to_double();
+		const double td = t.to_double();
+		return TimeStamp(t.unit(), (qd > 0) ? lrint(td / qd) * qd : td);
 	}
 };
 

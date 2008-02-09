@@ -15,7 +15,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <cstdio>
+#include <stdint.h>
+#include <cassert>
 #include <iostream>
 #include <glibmm/miscutils.h>
 #include <raul/SMFWriter.hpp>
@@ -25,13 +26,23 @@ using namespace std;
 namespace Raul {
 
 
-SMFWriter::SMFWriter(unsigned short ppqn)
+/** Create a new SMF writer.
+ *
+ * @a unit must match the time stamp of ALL events passed to write, or
+ * terrible things will happen.
+ *
+ * *** NOTE: Only beat time is implemented currently.
+ */
+SMFWriter::SMFWriter(TimeUnit unit)
 	: _fd(NULL)
-	, _ppqn(ppqn)
-	, _last_ev_time(0)
+	, _unit(unit)
+	, _start_time(unit, 0, 0)
+	, _last_ev_time(unit, 0, 0)
 	, _track_size(0)
 	, _header_size(0)
 {
+	if (unit.type() == TimeUnit::BEATS)
+		assert(unit.ppt() < std::numeric_limits<uint16_t>::max());
 }
 
 
@@ -49,8 +60,8 @@ SMFWriter::~SMFWriter()
  *    to write_event will have this value subtracted before writing).
  */
 bool
-SMFWriter::start(const string&  filename,
-                 Raul::BeatTime start_time) throw (logic_error)
+SMFWriter::start(const string&   filename,
+                 Raul::TimeStamp start_time) throw (logic_error)
 {
 	if (_fd)
 		throw logic_error("Attempt to start new write while write in progress.");
@@ -79,7 +90,7 @@ SMFWriter::start(const string&  filename,
  *    successive calls to this method.
  */
 void
-SMFWriter::write_event(Raul::BeatTime       time,
+SMFWriter::write_event(Raul::TimeStamp      time,
                        size_t               ev_size,
                        const unsigned char* ev) throw (logic_error)
 {
@@ -87,27 +98,31 @@ SMFWriter::write_event(Raul::BeatTime       time,
 		throw logic_error("Event time is before file start time");
 	else if (time < _last_ev_time)
 		throw logic_error("Event time not monotonically increasing");
+	else if (time.unit() != _unit)
+		throw logic_error("Event has unexpected time unit");
 
-	time -= _start_time;
+	Raul::TimeStamp delta_time = time;
+	delta_time -= _start_time;
 
 	fseek(_fd, 0, SEEK_END);
 	
-	double delta_time = (time - _last_ev_time) / (double)_ppqn;
+	uint64_t delta_ticks = delta_time.ticks() * _unit.ppt() + delta_time.subticks();
 	size_t stamp_size = 0;
 
 	/* If delta time is too long (i.e. overflows), write out empty
 	 * "proprietary" events to reach the desired time.
 	 * Any SMF reading application should interpret this correctly
 	 * (by accumulating the delta time and ignoring the event) */
-	while (delta_time > VAR_LEN_MAX) {
+	while (delta_ticks > VAR_LEN_MAX) {
 		static unsigned char null_event[] = { 0xFF, 0x7F, 0x0 };
 		stamp_size = write_var_len(VAR_LEN_MAX);
 		fwrite(null_event, 1, 3, _fd);
-		delta_time -= VAR_LEN_MAX;
+		_track_size += stamp_size + 3;
+		delta_ticks -= VAR_LEN_MAX;
 	}
 	
-	assert(delta_time < VAR_LEN_MAX);
-	stamp_size = write_var_len((uint32_t)delta_time);
+	assert(delta_ticks <= VAR_LEN_MAX);
+	stamp_size = write_var_len((uint32_t)delta_ticks);
 	fwrite(ev, 1, ev_size, _fd);
 
 	_last_ev_time = time;
@@ -142,9 +157,9 @@ SMFWriter::write_header()
 
 	assert(_fd);
 
-	const uint16_t type     = GUINT16_TO_BE(0);     // SMF Type 0 (single track)
-	const uint16_t ntracks  = GUINT16_TO_BE(1);     // Number of tracks (always 1 for Type 0)
-	const uint16_t division = GUINT16_TO_BE(_ppqn); // Number of tracks (always 1 for Type 0)
+	const uint16_t type     = GUINT16_TO_BE(0);           // SMF Type 0 (single track)
+	const uint16_t ntracks  = GUINT16_TO_BE(1);           // Number of tracks (always 1 for Type 0)
+	const uint16_t division = GUINT16_TO_BE(_unit.ppt()); // PPQN
 
 	char data[6];
 	memcpy(data, &type, 2);

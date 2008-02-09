@@ -78,7 +78,7 @@ MidiAction::set_event(size_t size, const byte* new_event)
  * Safe to call concurrently with set_event.
  */
 void
-MidiAction::execute(SharedPtr<Raul::MIDISink> sink, Raul::BeatTime time)
+MidiAction::execute(SharedPtr<Raul::MIDISink> sink, Raul::TimeStamp time)
 {
 	const byte* const event = _event.get();
 

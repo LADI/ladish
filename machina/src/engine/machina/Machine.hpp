@@ -36,7 +36,7 @@ namespace Machina {
  */
 class Machine : public Raul::Stateful {
 public:
-	Machine();
+	Machine(TimeUnit unit);
 	Machine(const Machine& copy);
 
 	Machine& operator=(const Machine& other);
@@ -59,11 +59,11 @@ public:
 	void write_state(Redland::Model& model);
 
 	// Audio context
-	void      reset(Raul::BeatTime time);
-	BeatCount run(const Raul::TimeSlice& time);
+	void         reset(Raul::TimeStamp time);
+	TimeDuration run(const Raul::TimeSlice& time);
 	
 	// Any context
-	inline Raul::BeatTime time() const { return _time; }
+	inline Raul::TimeStamp time() const { return _time; }
 
 	SharedPtr<LearnRequest> pending_learn() { return _pending_learn; }
 	void clear_pending_learn()              { _pending_learn.reset(); }
@@ -89,7 +89,7 @@ private:
 
 	bool                    _is_activated;
 	bool                    _is_finished;
-	Raul::BeatTime          _time;
+	Raul::TimeStamp         _time;
 	SharedPtr<LearnRequest> _pending_learn;
 	WeakPtr<Raul::MIDISink> _sink;
 	Nodes                   _nodes;

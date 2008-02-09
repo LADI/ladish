@@ -18,10 +18,9 @@
 #ifndef MACHINA_RECORDER_HPP
 #define MACHINA_RECORDER_HPP
 
-#include <raul/types.hpp>
 #include <raul/Slave.hpp>
 #include <raul/SharedPtr.hpp>
-#include <raul/StampedChunkRingBuffer.hpp>
+#include <raul/EventRingBuffer.hpp>
 #include "Machine.hpp"
 
 namespace Machina {
@@ -31,9 +30,9 @@ class MachineBuilder;
 
 class Recorder : public Raul::Slave {
 public:
-	Recorder(size_t buffer_size, double tick_rate, double q);
+	Recorder(size_t buffer_size, TimeUnit unit, TimeStamp q);
 
-	inline void write(Raul::TickTime time, size_t size, const unsigned char* buf) {
+	inline void write(Raul::TimeStamp time, size_t size, const unsigned char* buf) {
 		_record_buffer.write(time, size, buf);
 	}
 
@@ -42,9 +41,9 @@ public:
 private:
 	virtual void _whipped();
 	
-	double                       _tick_rate;
-	Raul::StampedChunkRingBuffer _record_buffer;
-	SharedPtr<MachineBuilder>    _builder;
+	TimeUnit                  _unit;
+	Raul::EventRingBuffer     _record_buffer;
+	SharedPtr<MachineBuilder> _builder;
 };
 
 

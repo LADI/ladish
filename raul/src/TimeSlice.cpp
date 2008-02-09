@@ -20,7 +20,7 @@
 namespace Raul {
 
 
-TimeSlice::TimeSlice(double tick_rate, double bpm)
+TimeSlice::TimeSlice(uint32_t tick_rate, double bpm)
 	: _tick_rate(tick_rate)
 	, _beat_rate(60.0/bpm)
 	, _start_ticks(0)

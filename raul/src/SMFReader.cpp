@@ -72,6 +72,7 @@ midi_event_size(unsigned char status)
 
 SMFReader::SMFReader()
 	: _fd(NULL)
+	, _unit(TimeUnit::BEATS, 192)
 	, _ppqn(0)
 	, _track(0)
 	, _track_size(0)
@@ -126,6 +127,7 @@ SMFReader::open(const string& filename)
 		uint16_t ppqn_be = 0;
 		fread(&ppqn_be, 2, 1, _fd);
 		_ppqn = GUINT16_FROM_BE(ppqn_be);
+		_unit = TimeUnit::beats(_ppqn);
 
 		seek_to_track(1);
 		
@@ -198,10 +200,10 @@ SMFReader::seek_to_track(unsigned track) throw (std::logic_error)
  * set to the actual size of the event.
  */
 int
-SMFReader::read_event(size_t    buf_len,
-                      uint8_t*  buf,
-                      uint32_t* ev_size,
-                      uint32_t* delta_time) throw (std::logic_error)
+SMFReader::read_event(size_t     buf_len,
+                      uint8_t*   buf,
+                      uint32_t*  ev_size,
+                      TimeStamp* delta_time) throw (std::logic_error)
 {
 	if (_track == 0)
 		throw logic_error("Attempt to read from unopened SMF file");

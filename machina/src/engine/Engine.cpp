@@ -67,10 +67,10 @@ Engine::import_machine(const Glib::ustring& uri)
  * Safe to call while engine is processing.
  */
 SharedPtr<Machine>
-Engine::import_midi(const Glib::ustring& uri, Raul::BeatTime duration)
+Engine::import_midi(const Glib::ustring& uri, Raul::TimeStamp q, Raul::TimeDuration duration)
 {
 	SharedPtr<SMFDriver> file_driver(new SMFDriver());
-	SharedPtr<Machine> m = file_driver->learn(uri, duration);
+	SharedPtr<Machine> m = file_driver->learn(uri, q, duration);
 	m->activate();
 	_driver->machine()->nodes().append(m->nodes());
 	

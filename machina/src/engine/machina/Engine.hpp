@@ -20,7 +20,6 @@
 
 #include <glibmm/ustring.h>
 #include <raul/SharedPtr.hpp>
-#include <raul/types.hpp>
 #include "machina/Driver.hpp"
 #include "machina/Loader.hpp"
 
@@ -45,7 +44,7 @@ public:
 
 	SharedPtr<Machine> load_machine(const Glib::ustring& uri);
 	SharedPtr<Machine> import_machine(const Glib::ustring& uri);
-	SharedPtr<Machine> import_midi(const Glib::ustring& uri, Raul::BeatTime d);
+	SharedPtr<Machine> import_midi(const Glib::ustring& uri, Raul::TimeStamp q, Raul::TimeDuration d);
 
 	void set_bpm(double bpm);
 	void set_quantization(double beat_fraction);

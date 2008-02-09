@@ -34,7 +34,7 @@ namespace Machina {
 SMFDriver::SMFDriver(SharedPtr<Machine> machine)
 	: Driver(machine)
 {
-	_writer = SharedPtr<Raul::SMFWriter>(new Raul::SMFWriter());
+	_writer = SharedPtr<Raul::SMFWriter>(new Raul::SMFWriter(machine->time().unit()));
 }
 
 
@@ -46,9 +46,10 @@ SMFDriver::SMFDriver(SharedPtr<Machine> machine)
  * @return the resulting machine.
  */
 SharedPtr<Machine>
-SMFDriver::learn(const string& filename, unsigned track, double q, Raul::BeatTime max_duration)
+SMFDriver::learn(const string& filename, unsigned track, Raul::TimeStamp q, Raul::TimeDuration max_duration)
 {
-	SharedPtr<Machine> m(new Machine());
+	assert(q.unit() == max_duration.unit());
+	SharedPtr<Machine> m(new Machine(max_duration.unit()));
 	SharedPtr<MachineBuilder> builder = SharedPtr<MachineBuilder>(new MachineBuilder(m, q));
 	Raul::SMFReader reader;
 	
@@ -76,9 +77,9 @@ SMFDriver::learn(const string& filename, unsigned track, double q, Raul::BeatTim
  * This will result in one disjoint subgraph in the machine for each track.
  */
 SharedPtr<Machine>
-SMFDriver::learn(const string& filename, double q, Raul::BeatTime max_duration)
+SMFDriver::learn(const string& filename, Raul::TimeStamp q, Raul::TimeStamp max_duration)
 {
-	SharedPtr<Machine> m(new Machine());
+	SharedPtr<Machine> m(new Machine(q.unit()));
 	SharedPtr<MachineBuilder> builder = SharedPtr<MachineBuilder>(new MachineBuilder(m, q));
 	Raul::SMFReader reader;
 	
@@ -105,29 +106,29 @@ void
 SMFDriver::learn_track(SharedPtr<MachineBuilder> builder,
                        Raul::SMFReader&          reader,
                        unsigned                  track,
-                       double                    q,
-                       Raul::BeatTime            max_duration)
+                       Raul::TimeStamp           q,
+                       Raul::TimeDuration        max_duration)
 {
 	const bool found_track = reader.seek_to_track(track);
 	if (!found_track)
 		return;
 
-	Raul::BeatTime unquantized_t = 0;
-	Raul::BeatTime t = 0;
-	unsigned char  buf[4];
-	uint32_t       ev_size;
-	uint32_t       ev_time;
+	Raul::TimeStamp unquantized_t(q.unit(), 0, 0);
+	Raul::TimeStamp t(q.unit(), 0, 0);
+	unsigned char   buf[4];
+	uint32_t        ev_size;
+	Raul::TimeStamp ev_time(q.unit());
 	while (reader.read_event(4, buf, &ev_size, &ev_time) >= 0) {
-		unquantized_t += ev_time / (double)reader.ppqn();
+		unquantized_t += ev_time;
 		t = Raul::Quantizer::quantize(q, unquantized_t);
 
 		builder->set_time(t);
 
-		if (max_duration != 0 && t > max_duration)
+		if ((!max_duration.is_zero()) && t > max_duration)
 			break;
 
 		if (ev_size > 0)
-			builder->event(0, ev_size, buf);
+			builder->event(TimeStamp(t.unit(), 0, 0), ev_size, buf);
 	}
 
 	builder->resolve();
@@ -135,9 +136,10 @@ SMFDriver::learn_track(SharedPtr<MachineBuilder> builder,
 
 
 void
-SMFDriver::run(SharedPtr<Machine> machine, Raul::BeatTime max_time)
+SMFDriver::run(SharedPtr<Machine> machine, Raul::TimeStamp max_time)
 {
-	Raul::TimeSlice time(1.0/(double)_writer->ppqn(), 120);
+	// FIXME: unit kludge (tempo only)
+	Raul::TimeSlice time(1.0/(double)_writer->unit().ppt(), 120);
 	time.set_length(time.beats_to_ticks(max_time));
 	machine->set_sink(shared_from_this());
 	machine->run(time);

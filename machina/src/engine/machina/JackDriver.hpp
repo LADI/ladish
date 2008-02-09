@@ -22,7 +22,7 @@
 #include <raul/JackDriver.hpp>
 #include <raul/SharedPtr.hpp>
 #include <raul/DoubleBuffer.hpp>
-#include <raul/StampedChunkRingBuffer.hpp>
+#include <raul/EventRingBuffer.hpp>
 #include <raul/Semaphore.hpp>
 #include <raul/Command.hpp>
 #include <jack/midiport.h>
@@ -56,12 +56,12 @@ public:
 
 	void set_machine(SharedPtr<Machine> machine);
 	
-	void write_event(Raul::BeatTime       time,
+	void write_event(Raul::TimeStamp      time,
 	                 size_t               size,
 	                 const unsigned char* event) throw (std::logic_error);
 	
-	void set_bpm(double bpm)                   { _bpm.set(bpm); }
-	void set_quantization(double quantization) { _quantization.set(quantization); }
+	void set_bpm(double bpm)                 { _bpm.set(bpm); }
+	void set_quantization(Raul::TimeStamp q) { _quantization.set(q); }
 
 	void stop();
 
@@ -83,12 +83,12 @@ private:
 	
 	Raul::TimeSlice _cycle_time;
 
-	Raul::DoubleBuffer<double> _bpm;
-	Raul::DoubleBuffer<double> _quantization;
+	Raul::DoubleBuffer<double>          _bpm;
+	Raul::DoubleBuffer<Raul::TimeStamp> _quantization;
 
 	Raul::Command _stop;
 
-	Raul::TickTime      _record_time;
+	Raul::TimeStamp     _record_time;
 	Raul::AtomicInt     _recording;
 	SharedPtr<Recorder> _recorder;
 };

@@ -39,17 +39,17 @@ public:
 	SMFDriver(SharedPtr<Machine> machine = SharedPtr<Machine>());
 
 	SharedPtr<Machine> learn(const std::string& filename,
-	                         double             q=0.0,
-	                         Raul::BeatTime     max_duration=0);
+	                         Raul::TimeStamp    q,
+	                         Raul::TimeDuration max_duration);
 
 	SharedPtr<Machine> learn(const std::string& filename,
 	                         unsigned           track,
-	                         double             q=0.0,
-	                         Raul::BeatTime     max_duration=0);
+	                         Raul::TimeStamp    q,
+	                         Raul::TimeDuration max_duration);
 
-	void run(SharedPtr<Machine> machine, Raul::BeatTime max_time);
+	void run(SharedPtr<Machine> machine, Raul::TimeStamp max_time);
 	
-	void write_event(Raul::BeatTime       time,
+	void write_event(Raul::TimeStamp      time,
 	                 size_t               ev_size,
 	                 const unsigned char* ev) throw (std::logic_error)
 	{ _writer->write_event(time, ev_size, ev); }
@@ -65,8 +65,8 @@ private:
 	void learn_track(SharedPtr<MachineBuilder> builder,
 	                 Raul::SMFReader&          reader,
 	                 unsigned                  track,
-	                 double                    q,
-	                 Raul::BeatTime            max_duration=0);
+	                 Raul::TimeStamp           q,
+	                 Raul::TimeDuration        max_duration);
 };
 
 

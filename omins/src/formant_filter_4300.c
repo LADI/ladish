@@ -75,7 +75,7 @@ typedef struct
 
 
 /* Linear interpolation */
-inline float
+inline static float
 linear(float bot, float top, float pos, float val1, float val2)
 {
     float t = (pos - bot) / (top - bot);

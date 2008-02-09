@@ -29,11 +29,11 @@ using namespace Raul;
 namespace Machina {
 
 
-Node::Node(BeatCount duration, bool initial)
+Node::Node(TimeDuration duration, bool initial)
 	: _is_initial(initial)
 	, _is_selector(false)
 	, _is_active(false)
-	, _enter_time(0)
+	, _enter_time(duration.unit())
 	, _duration(duration)
 {
 }
@@ -44,7 +44,7 @@ Node::Node(const Node& copy)
 	, _is_initial(copy._is_initial)
 	, _is_selector(copy._is_selector)
 	, _is_active(false)
-	, _enter_time(0)
+	, _enter_time(copy.enter_time())
 	, _duration(copy._duration)
 	, _enter_action(ActionFactory::copy(copy._enter_action))
 	, _exit_action(ActionFactory::copy(copy._exit_action))
@@ -126,7 +126,7 @@ Node::set_exit_action(SharedPtr<Action> action)
 
 
 void
-Node::enter(SharedPtr<MIDISink> sink, BeatTime time)
+Node::enter(SharedPtr<MIDISink> sink, TimeStamp time)
 {
 	assert(!_is_active);
 	
@@ -140,7 +140,7 @@ Node::enter(SharedPtr<MIDISink> sink, BeatTime time)
 
 
 void
-Node::exit(SharedPtr<MIDISink> sink, BeatTime time)
+Node::exit(SharedPtr<MIDISink> sink, TimeStamp time)
 {
 	assert(_is_active);
 	
@@ -221,7 +221,7 @@ Node::write_state(Redland::Model& model)
 
 	model.add_statement(_id,
 			"machina:duration",
-			AtomRDF::atom_to_node(model.world(), Atom((float)_duration)));
+			AtomRDF::atom_to_node(model.world(), Atom((float)_duration.to_double())));
 
 	if (_enter_action) {
 		_enter_action->write_state(model);

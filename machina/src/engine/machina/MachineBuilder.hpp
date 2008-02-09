@@ -19,7 +19,6 @@
 #define MACHINA_MACHINEBUILDER_HPP
 
 #include <list>
-#include <raul/types.hpp>
 #include <raul/SharedPtr.hpp>
 
 namespace Machina {
@@ -31,11 +30,11 @@ class Node;
 class MachineBuilder {
 public:
 	MachineBuilder(SharedPtr<Machine> machine,
-	               Raul::BeatTime     quantization);
+	               Raul::TimeStamp    quantization);
 
-	void set_time(Raul::BeatTime time) { _time = time; }
+	void set_time(Raul::TimeStamp time) { _time = time; }
 
-	void event(Raul::BeatTime time_offset, size_t size, unsigned char* buf);
+	void event(Raul::TimeStamp time_offset, size_t size, unsigned char* buf);
 	
 	void reset();
 	void resolve();
@@ -44,26 +43,26 @@ public:
 
 private:
 	bool is_delay_node(SharedPtr<Node> node) const;
-	void set_node_duration(SharedPtr<Node> node, Raul::BeatTime d) const;
+	void set_node_duration(SharedPtr<Node> node, Raul::TimeStamp d) const;
 
 	SharedPtr<Node>
 	connect_nodes(SharedPtr<Machine> m,
-                  SharedPtr<Node>    tail, Raul::BeatTime tail_end_time,
-     	          SharedPtr<Node>    head, Raul::BeatTime head_start_time);
+                  SharedPtr<Node>    tail, Raul::TimeStamp tail_end_time,
+     	          SharedPtr<Node>    head, Raul::TimeStamp head_start_time);
 	
 	typedef std::list<SharedPtr<Node> > ActiveList;
 	ActiveList _active_nodes;
 	
-	typedef std::list<std::pair<Raul::BeatTime, SharedPtr<Node> > > PolyList;
+	typedef std::list<std::pair<Raul::TimeStamp, SharedPtr<Node> > > PolyList;
 	PolyList _poly_nodes;
 
-	Raul::BeatTime     _quantization;
-	Raul::BeatTime     _time;
+	Raul::TimeStamp    _quantization;
+	Raul::TimeStamp    _time;
 
 	SharedPtr<Machine> _machine;
 	SharedPtr<Node>    _initial_node;
 	SharedPtr<Node>    _connect_node;
-	Raul::BeatTime     _connect_node_end_time;
+	Raul::TimeStamp    _connect_node_end_time;
 };
 
 

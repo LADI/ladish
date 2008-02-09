@@ -52,7 +52,7 @@ AddNode::mutate(Machine& machine)
 	//cout << "ADD NODE" << endl;
 
 	// Create random node
-	SharedPtr<Node> node(new Node());
+	SharedPtr<Node> node(new Node(machine.time().unit()));
 	node->set_selector(true);
 	
 	SharedPtr<Node> note_node = machine.random_node();

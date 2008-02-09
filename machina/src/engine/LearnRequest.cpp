@@ -23,12 +23,12 @@ namespace Machina {
 
 /** Add the learned actions to the node */
 void
-LearnRequest::finish(BeatTime time)
+LearnRequest::finish(TimeStamp time)
 {
 	_node->set_enter_action(_enter_action);
 	_node->set_exit_action(_exit_action);
 
-	double duration = Raul::Quantizer::quantize(_quantization, time - _start_time);
+	TimeDuration duration = Raul::Quantizer::quantize(_quantization, time - _start_time);
 	
 	_node->set_duration(duration);
 }

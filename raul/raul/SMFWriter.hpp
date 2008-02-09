@@ -20,6 +20,7 @@
 
 #include <stdexcept>
 #include <raul/MIDISink.hpp>
+#include <raul/TimeStamp.hpp>
 
 namespace Raul {
 
@@ -28,15 +29,15 @@ namespace Raul {
  */
 class SMFWriter : public Raul::MIDISink {
 public:
-	SMFWriter(unsigned short ppqn=1920);
+	SMFWriter(TimeUnit unit);
 	~SMFWriter();
 
 	bool start(const std::string& filename,
-	           BeatTime           start_time=0) throw (std::logic_error);
+	           TimeStamp          start_time) throw (std::logic_error);
 
-	uint16_t ppqn() const { return _ppqn; }
+	TimeUnit unit() const { return _unit; }
 
-	void write_event(BeatTime             time,
+	void write_event(TimeStamp            time,
 	                 size_t               ev_size,
 	                 const unsigned char* ev) throw (std::logic_error);
 
@@ -54,13 +55,13 @@ protected:
 	void     write_chunk(const char id[4], uint32_t length, void* data);
 	size_t   write_var_len(uint32_t val);
 
-	std::string    _filename;
-	FILE*          _fd;
-	uint16_t       _ppqn;
-	Raul::BeatTime _start_time;
-	Raul::BeatTime _last_ev_time; ///< Time last event was written relative to _start_time
-	uint32_t       _track_size;
-	uint32_t       _header_size; ///< size of SMF header, including MTrk chunk header
+	std::string     _filename;
+	FILE*           _fd;
+	TimeUnit        _unit;
+	Raul::TimeStamp _start_time;
+	Raul::TimeStamp _last_ev_time; ///< Time last event was written relative to _start_time
+	uint32_t        _track_size;
+	uint32_t        _header_size; ///< size of SMF header, including MTrk chunk header
 };
 
 

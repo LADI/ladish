@@ -35,11 +35,10 @@ JackDriver::JackDriver(SharedPtr<Machine> machine)
 	, _output_port(NULL)
 	, _cycle_time(1/48000.0, 120.0)
 	, _bpm(120.0)
-	, _quantization(0.0)
+	, _quantization(machine->time().unit())
+	, _record_time(machine->time().unit())
 	, _recording(0)
 {
-	if (!_machine)
-		_machine = SharedPtr<Machine>(new Machine());
 }
 
 
@@ -73,6 +72,10 @@ JackDriver::attach(const std::string& client_name)
 		
 		if (!_output_port)
 			std::cerr << "WARNING: Failed to create MIDI output port." << std::endl;
+
+		if (!_machine)
+			_machine = SharedPtr<Machine>(new Machine(
+					TimeUnit::frames(jack_get_sample_rate(jack_client()))));
 
 		_machine->activate();
 	}
@@ -119,12 +122,12 @@ void
 JackDriver::process_input(SharedPtr<Machine> machine, const TimeSlice& time)
 {
 	// We only actually read Jack input at the beginning of a cycle
-	assert(time.offset_ticks() == 0);
+	assert(time.offset_ticks().is_zero());
 	assert(_input_port);
 
 	if (_recording.get()) {
 
-		const jack_nframes_t nframes     = time.length_ticks();
+		const jack_nframes_t nframes     = time.length_ticks().ticks();
 		void*                jack_buffer = jack_port_get_buffer(_input_port, nframes);
 		const jack_nframes_t event_count = jack_midi_get_event_count(jack_buffer);
 
@@ -132,7 +135,8 @@ JackDriver::process_input(SharedPtr<Machine> machine, const TimeSlice& time)
 			jack_midi_event_t ev;
 			jack_midi_event_get(&ev, jack_buffer, i);
 		
-			_recorder->write(_record_time + ev.time, ev.size, ev.buffer);
+			_recorder->write(_record_time + TimeStamp(_record_time.unit(), ev.time, 0),
+					ev.size, ev.buffer);
 		}
 
 		if (event_count > 0)
@@ -140,7 +144,7 @@ JackDriver::process_input(SharedPtr<Machine> machine, const TimeSlice& time)
 
 	} else {
 
-		const jack_nframes_t nframes     = time.length_ticks();
+		const jack_nframes_t nframes     = time.length_ticks().ticks();
 		void*                jack_buffer = jack_port_get_buffer(_input_port, nframes);
 		const jack_nframes_t event_count = jack_midi_get_event_count(jack_buffer);
 
@@ -154,7 +158,8 @@ JackDriver::process_input(SharedPtr<Machine> machine, const TimeSlice& time)
 				if (learn) {
 					learn->enter_action()->set_event(ev.size, ev.buffer);
 					learn->start(_quantization.get(),
-						time.ticks_to_beats(jack_last_frame_time(_client) + ev.time));
+							TimeStamp(TimeUnit::frames(sample_rate()),
+								jack_last_frame_time(_client) + ev.time, 0));
 				}
 
 			} else if (ev.buffer[0] == 0x80) {
@@ -165,7 +170,8 @@ JackDriver::process_input(SharedPtr<Machine> machine, const TimeSlice& time)
 					if (learn->started()) {
 						learn->exit_action()->set_event(ev.size, ev.buffer);
 						learn->finish(
-							time.ticks_to_beats(jack_last_frame_time(_client) + ev.time));
+							TimeStamp(TimeUnit::frames(sample_rate()),
+								jack_last_frame_time(_client) + ev.time, 0));
 						machine->clear_pending_learn();
 					}
 				}
@@ -177,9 +183,9 @@ JackDriver::process_input(SharedPtr<Machine> machine, const TimeSlice& time)
 
 
 void
-JackDriver::write_event(Raul::BeatTime time,
-                        size_t         size,
-                        const byte*    event) throw (std::logic_error)
+JackDriver::write_event(Raul::TimeStamp time,
+                        size_t          size,
+                        const byte*     event) throw (std::logic_error)
 {
 	if (!_output_port)
 		return;

@@ -21,6 +21,7 @@
 #include <stdexcept>
 #include <string>
 #include <inttypes.h>
+#include <raul/TimeStamp.hpp>
 
 namespace Raul {
 
@@ -38,14 +39,15 @@ public:
 
 	bool seek_to_track(unsigned track) throw (std::logic_error);
 
+	TimeUnit unit() const { return _unit; }
 	uint16_t type() const { return _type; }
 	uint16_t ppqn() const { return _ppqn; }
 	size_t   num_tracks() { return _num_tracks; }
 
-	int read_event(size_t    buf_len,
-	               uint8_t*  buf,
-	               uint32_t* ev_size,
-	               uint32_t* ev_delta_time) throw (std::logic_error);
+	int read_event(size_t     buf_len,
+	               uint8_t*   buf,
+	               uint32_t*  ev_size,
+	               TimeStamp* ev_delta_time) throw (std::logic_error);
 	
 	void close();
 
@@ -57,6 +59,7 @@ protected:
 
 	std::string    _filename;
 	FILE*          _fd;
+	TimeUnit       _unit;
 	uint16_t       _type;
 	uint16_t       _ppqn;
 	uint16_t       _num_tracks;

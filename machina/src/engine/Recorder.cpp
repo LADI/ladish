@@ -26,10 +26,10 @@ using namespace Raul;
 namespace Machina {
 
 
-Recorder::Recorder(size_t buffer_size, double tick_rate, double q)
-	: _tick_rate(tick_rate)
+Recorder::Recorder(size_t buffer_size, TimeUnit unit, TimeStamp q)
+	: _unit(unit)
 	, _record_buffer(buffer_size)
-	, _builder(new MachineBuilder(SharedPtr<Machine>(new Machine()), q))
+	, _builder(new MachineBuilder(SharedPtr<Machine>(new Machine(unit)), q))
 {
 }
 
@@ -37,13 +37,13 @@ Recorder::Recorder(size_t buffer_size, double tick_rate, double q)
 void
 Recorder::_whipped()
 {
-	TickTime      t;
+	TimeStamp     t(_unit);
 	size_t        size;
 	unsigned char buf[4];
 
 	while (_record_buffer.read(&t, &size, buf)) {
-		_builder->set_time(t * _tick_rate);
-		_builder->event(0, size, buf);
+		_builder->set_time(t);
+		_builder->event(TimeStamp(_unit), size, buf);
 	}
 } 
 

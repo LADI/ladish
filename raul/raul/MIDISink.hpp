@@ -19,7 +19,7 @@
 #define RAUL_MIDI_SINK_HPP
 
 #include <stdexcept>
-#include <raul/TimeSlice.hpp>
+#include <raul/TimeStamp.hpp>
 #include <raul/Deletable.hpp>
 
 namespace Raul {
@@ -29,7 +29,7 @@ namespace Raul {
  */
 class MIDISink : public Deletable {
 public:
-	virtual void write_event(BeatTime       time,
+	virtual void write_event(TimeStamp      time,
 	                         size_t         ev_size,
 	                         const uint8_t* ev) throw (std::logic_error) = 0;
 };

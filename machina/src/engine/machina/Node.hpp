@@ -28,8 +28,9 @@
 namespace Machina {
 
 class Edge;
-using Raul::BeatCount;
-using Raul::BeatTime;
+using Raul::TimeDuration;
+using Raul::TimeStamp;
+using Raul::TimeUnit;
 
 
 /** A node is a state (as in a FSM diagram), or "note".
@@ -44,7 +45,7 @@ class Node : public Raul::Stateful {
 public:
 	typedef std::string ID;
 
-	Node(BeatCount duration=1/2.0, bool initial=false);
+	Node(TimeDuration duration, bool initial=false);
 	Node(const Node& copy);
 
 	void set_enter_action(SharedPtr<Action> action);
@@ -53,8 +54,8 @@ public:
 	SharedPtr<Action> enter_action() { return _enter_action; }
 	SharedPtr<Action> exit_action()  { return _exit_action; }
 
-	void enter(SharedPtr<Raul::MIDISink> driver, BeatTime time);
-	void exit(SharedPtr<Raul::MIDISink> driver, BeatTime time);
+	void enter(SharedPtr<Raul::MIDISink> driver, TimeStamp time);
+	void exit(SharedPtr<Raul::MIDISink> driver, TimeStamp time);
 
 	void edges_changed();
 
@@ -65,15 +66,15 @@ public:
 
 	void write_state(Redland::Model& model);
 
-	bool      is_initial() const        { return _is_initial; }
-	void      set_initial(bool i)       { _is_initial = i; }
-	bool      is_active() const         { return _is_active; }
-	BeatTime  enter_time() const        { assert(_is_active); return _enter_time; }
-	BeatTime  exit_time() const         { assert(_is_active); return _enter_time + _duration; }
-	BeatCount duration()                { return _duration; }
-	void      set_duration(BeatCount d) { _duration = d; }
-	bool      is_selector() const       { return _is_selector; }
-	void      set_selector(bool i);
+	bool         is_initial() const           { return _is_initial; }
+	void         set_initial(bool i)          { _is_initial = i; }
+	bool         is_active() const            { return _is_active; }
+	TimeStamp    enter_time() const           { assert(_is_active); return _enter_time; }
+	TimeStamp    exit_time() const            { assert(_is_active); return _enter_time + _duration; }
+	TimeDuration duration()                   { return _duration; }
+	void         set_duration(TimeDuration d) { _duration = d; }
+	bool         is_selector() const          { return _is_selector; }
+	void         set_selector(bool i);
 
 	inline bool changed()     { return _changed; }
 	inline void set_changed() { _changed = true; }
@@ -90,8 +91,8 @@ private:
 	bool              _is_initial;
 	bool              _is_selector;
 	bool              _is_active;
-	BeatTime          _enter_time; ///< valid iff _is_active
-	BeatCount         _duration;
+	TimeStamp         _enter_time; ///< valid iff _is_active
+	TimeDuration      _duration;
 	SharedPtr<Action> _enter_action;
 	SharedPtr<Action> _exit_action;
 	Edges             _edges;

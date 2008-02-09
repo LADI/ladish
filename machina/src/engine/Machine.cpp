@@ -30,11 +30,11 @@ using namespace Raul;
 namespace Machina {
 
 
-Machine::Machine()
+Machine::Machine(TimeUnit unit)
 	: _active_nodes(MAX_ACTIVE_NODES, SharedPtr<Node>())
 	, _is_activated(false)
 	, _is_finished(false)
-	, _time(0)
+	, _time(unit)
 {
 }
 
@@ -49,7 +49,7 @@ Machine::Machine(const Machine& copy)
 	, _active_nodes(MAX_ACTIVE_NODES, SharedPtr<Node>())
 	, _is_activated(false)
 	, _is_finished(false)
-	, _time(0)
+	, _time(copy.time().unit())
 	, _sink(copy._sink)
 {
 	map< SharedPtr<Node>, SharedPtr<Node> > replacements;
@@ -165,7 +165,7 @@ Machine::remove_node(SharedPtr<Node> node)
 /** Exit all active states and reset time to 0.
  */
 void
-Machine::reset(Raul::BeatTime time)
+Machine::reset(Raul::TimeStamp time)
 {
 	if (!_is_finished) {
 		for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n) {
@@ -299,27 +299,26 @@ Machine::exit_node(SharedPtr<Raul::MIDISink> sink, SharedPtr<Node> node)
  * machine actually finished on (so it can be restarted immediately
  * with sample accuracy if necessary).
  */
-BeatCount
+TimeDuration
 Machine::run(const Raul::TimeSlice& time)
 {
 	if (_is_finished)
-		return 0;
+		return TimeDuration(_time.unit(), 0, 0);
 
 	SharedPtr<Raul::MIDISink> sink = _sink.lock();
 
-	const TickTime  cycle_end_ticks = time.start_ticks() + time.length_ticks() - 1;
-	const BeatCount cycle_end_beats = time.ticks_to_beats(cycle_end_ticks);
+	const TimeStamp cycle_end = time.start_ticks() + time.length_ticks();
 
 	assert(_is_activated);
 
 	// Initial run, enter all initial states
-	if (_time == 0) {
+	if (_time.is_zero()) {
 		bool entered = false;
 		if ( ! _nodes.empty()) {
 			for (Nodes::const_iterator n = _nodes.begin(); n != _nodes.end(); ++n) {
 				
 				if ((*n)->is_active())
-					(*n)->exit(sink, 0);
+					(*n)->exit(sink, _time);
 				
 				if ((*n)->is_initial()) {
 					if (enter_node(sink, (*n)))
@@ -330,11 +329,11 @@ Machine::run(const Raul::TimeSlice& time)
 		}
 		if (!entered) {
 			_is_finished = true;
-			return 0;
+			return TimeStamp(_time.unit(), 0, 0);
 		}
 	}
 	
-	BeatCount this_time = 0;
+	TimeStamp this_time(_time.unit(), 0, 0);
 
 	while (true) {
 
@@ -350,8 +349,7 @@ Machine::run(const Raul::TimeSlice& time)
 			break;
 
 		// Earliest active state ends this cycle
-		} else if (time.beats_to_ticks(earliest->exit_time())
-				<= cycle_end_ticks) {
+		} else if (earliest->exit_time() <= cycle_end) {
 			this_time += earliest->exit_time() - _time;
 			_time = time.ticks_to_beats(
 					time.beats_to_ticks(earliest->exit_time()));
@@ -359,7 +357,7 @@ Machine::run(const Raul::TimeSlice& time)
 
 		// Earliest active state ends in the future, done this cycle
 		} else {
-			_time = cycle_end_beats;
+			_time = cycle_end;
 			this_time = time.length_beats(); // ran the entire cycle
 			break;
 		}

@@ -29,26 +29,24 @@ using namespace Raul;
 namespace Machina {
 
 
-MachineBuilder::MachineBuilder(SharedPtr<Machine> machine, Raul::BeatTime q)
+MachineBuilder::MachineBuilder(SharedPtr<Machine> machine, Raul::TimeStamp q)
 	: _quantization(q)
-	, _time(0)
+	, _time(machine->time().unit()) // = 0
 	, _machine(machine)
-	, _initial_node(new Node())
+	, _initial_node(new Node(_time, true)) // duration 0
 	, _connect_node(_initial_node)
-	, _connect_node_end_time(0)
+	, _connect_node_end_time(_time) // = 0
 {
-	_initial_node->set_initial(true);
 }
 
 
 void
 MachineBuilder::reset()
 {
-	_initial_node = SharedPtr<Node>(new Node(0.0));
-	_initial_node->set_initial(true);
+	_time = TimeStamp(_machine->time().unit()); // = 0
+	_initial_node = SharedPtr<Node>(new Node(_time, true)); // duration 0
 	_connect_node = _initial_node;
-	_connect_node_end_time = 0;
-	_time = 0;
+	_connect_node_end_time = _time; // = 0
 }
 
 
@@ -65,12 +63,12 @@ MachineBuilder::is_delay_node(SharedPtr<Node> node) const
 /** Set the duration of a node, with quantization.
  */
 void
-MachineBuilder::set_node_duration(SharedPtr<Node> node, Raul::BeatTime d) const
+MachineBuilder::set_node_duration(SharedPtr<Node> node, Raul::TimeStamp d) const
 {
-	Raul::BeatTime q_dur = Quantizer::quantize(_quantization, d);
+	Raul::TimeStamp q_dur = Quantizer::quantize(_quantization, d);
 
 	// Never quantize a note to duration 0
-	if (q_dur == 0 && ( node->enter_action() || node->exit_action() ))
+	if (q_dur.is_zero() && ( node->enter_action() || node->exit_action() ))
 		q_dur = _quantization; // Round up
 
 	node->set_duration(q_dur);
@@ -83,8 +81,8 @@ MachineBuilder::set_node_duration(SharedPtr<Node> node, Raul::BeatTime d) const
  */
 SharedPtr<Node>
 MachineBuilder::connect_nodes(SharedPtr<Machine> m,
-                              SharedPtr<Node>    tail, Raul::BeatTime tail_end_time,
-                              SharedPtr<Node>    head, Raul::BeatTime head_start_time)
+                              SharedPtr<Node>    tail, Raul::TimeStamp tail_end_time,
+                              SharedPtr<Node>    head, Raul::TimeStamp head_start_time)
 {
 	assert(tail != head);
 	assert(head_start_time >= tail_end_time);
@@ -100,8 +98,7 @@ MachineBuilder::connect_nodes(SharedPtr<Machine> m,
 		tail->add_edge(SharedPtr<Edge>(new Edge(tail, head)));
 	} else {
 		// Need to actually create a delay node
-		delay_node = SharedPtr<Node>(new Node());
-		set_node_duration(delay_node, head_start_time - tail_end_time);
+		delay_node = SharedPtr<Node>(new Node(head_start_time - tail_end_time));
 		tail->add_edge(SharedPtr<Edge>(new Edge(tail, delay_node)));
 		delay_node->add_edge(SharedPtr<Edge>(new Edge(delay_node, head)));
 		m->add_node(delay_node);
@@ -112,22 +109,23 @@ MachineBuilder::connect_nodes(SharedPtr<Machine> m,
 
 
 void
-MachineBuilder::event(Raul::BeatTime time_offset,
-                      size_t         ev_size,
-                      unsigned char* buf)
+MachineBuilder::event(Raul::TimeStamp time_offset,
+                      size_t          ev_size,
+                      unsigned char*  buf)
 {
-	Raul::BeatTime t = _time + time_offset;
+	const Raul::TimeUnit unit = time_offset.unit();
+	Raul::TimeStamp t = _time + time_offset;
 
 	if (ev_size == 0)
 		return;
 
 	if ((buf[0] & 0xF0) == MIDI_CMD_NOTE_ON) {
 		
-		SharedPtr<Node> node(new Node(0.0));
+		SharedPtr<Node> node(new Node(TimeStamp(unit)));
 		node->set_enter_action(SharedPtr<Action>(new MidiAction(ev_size, buf)));
 
 		SharedPtr<Node> this_connect_node;
-		Raul::BeatTime  this_connect_node_end_time;
+		Raul::TimeStamp this_connect_node_end_time(unit);
 
 		// If currently polyphonic, use a poly node with no successors as connect node
 		// Results in patterns closes to what a human would choose
@@ -187,7 +185,7 @@ MachineBuilder::event(Raul::BeatTime time_offset,
 					// Finish a polyphonic section
 					if (_poly_nodes.size() > 0) {
 
-						_connect_node = SharedPtr<Node>(new Node(0.0));
+						_connect_node = SharedPtr<Node>(new Node(TimeStamp(unit)));
 						_machine->add_node(_connect_node);
 
 						connect_nodes(_machine, resolved, t, _connect_node, t);
@@ -206,7 +204,7 @@ MachineBuilder::event(Raul::BeatTime time_offset,
 					} else {
 						
 						// Trim useless delay node if possible (these appear after poly sections)
-						if (is_delay_node(_connect_node) && _connect_node->duration() == 0
+						if (is_delay_node(_connect_node) && _connect_node->duration().is_zero()
 								&& _connect_node->edges().size() == 1
 								&& (*_connect_node->edges().begin())->head() == resolved) {
 

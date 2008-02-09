@@ -40,7 +40,7 @@ public:
 
 	bool set_event(size_t size, const byte* event);
 
-	void execute(SharedPtr<Raul::MIDISink> driver, Raul::BeatTime time);
+	void execute(SharedPtr<Raul::MIDISink> driver, Raul::TimeStamp time);
 	
 	virtual void write_state(Redland::Model& model);
 

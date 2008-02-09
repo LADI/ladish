@@ -21,10 +21,13 @@
 #include <cassert>
 #include <cmath>
 #include <boost/utility.hpp>
-#include <raul/types.hpp>
+#include <raul/TimeStamp.hpp>
+#include <raul/lv2_event.h>
 
 namespace Raul {
 
+
+/* FIXME: all the conversion here is wrong now */
 
 /** A duration of time, with conversion between tick time and beat time.
  *
@@ -46,14 +49,14 @@ namespace Raul {
  */
 class TimeSlice : public boost::noncopyable {
 public:
-	TimeSlice(double tick_rate, double bpm)
-		: _tick_rate(tick_rate)
+	TimeSlice(uint32_t rate, double bpm)
+		: _tick_rate(rate)
 		, _beat_rate(60.0/bpm)
-		, _start_ticks(0)
-		, _length_ticks(0)
-		, _start_beats(0)
-		, _length_beats(0)
-		, _offset_ticks(0)
+		, _start_ticks(Raul::TimeUnit(Raul::TimeUnit::FRAMES, rate), 0, 0)
+		, _length_ticks(TimeUnit(TimeUnit::FRAMES, rate), 0, 0)
+		, _start_beats(TimeUnit(TimeUnit::BEATS, LV2_EVENT_PPQN), 0, 0)
+		, _length_beats(TimeUnit(TimeUnit::BEATS, LV2_EVENT_PPQN), 0, 0)
+		, _offset_ticks(TimeUnit(TimeUnit::FRAMES, rate), 0, 0)
 	{}
 
 
@@ -62,17 +65,17 @@ public:
 	 * Note that external offset is not affected by this, don't forget to reset
 	 * the offset each cycle!
 	 */
-	void set_window(TickTime start, TickCount length) {
+	void set_window(TimeStamp start, TimeDuration length) {
 		_start_ticks = start;
 		_length_ticks = length;
 		update_beat_time();
 	}
 
-	void set_start(TickTime time) { _start_ticks = time; update_beat_time(); }
+	void set_start(TimeStamp time) { _start_ticks = time; update_beat_time(); }
 
-	void set_length(TickCount length) { _length_ticks = length; update_beat_time(); }
+	void set_length(TimeDuration length) { _length_ticks = length; update_beat_time(); }
 
-	bool contains(TickTime time) {
+	bool contains(TimeStamp time) {
 		return (time >= start_ticks() && time < start_ticks() + length_ticks());
 	}
 
@@ -90,39 +93,45 @@ public:
 		update_beat_time();
 	}
 	
-	inline Seconds beats_to_seconds(BeatTime beats) const {
-		return (beats * _beat_rate);
+	// FIXME
+	
+	inline TimeStamp beats_to_seconds(TimeStamp beats) const {
+		//return (beats * _beat_rate);
+		throw;
 	}
 
-	inline TickTime beats_to_ticks(BeatTime beats) const {
-		return static_cast<TickTime>(floor(beats_to_seconds(beats) / _tick_rate)); 
+	inline TimeStamp beats_to_ticks(TimeStamp beats) const {
+		//return static_cast<TimeStamp>(floor(beats_to_seconds(beats) / _tick_rate)); 
+		throw;
 	}
 		
-	inline Seconds ticks_to_seconds(TickTime ticks) const {
-		return (ticks * _tick_rate);
+	inline TimeStamp ticks_to_seconds(TimeStamp ticks) const {
+		//return (ticks * _tick_rate);
+		throw;
 	}
 
-	inline BeatTime ticks_to_beats(TickTime ticks) const {
-		return ticks_to_seconds(ticks) / _beat_rate;
+	inline TimeStamp ticks_to_beats(TimeStamp ticks) const {
+		//return ticks_to_seconds(ticks) / _beat_rate;
+		throw;
 	}
 	
 	/** Start of current sub-cycle in ticks */
-	inline TickTime start_ticks() const { return _start_ticks; }
+	inline TimeStamp start_ticks() const { return _start_ticks; }
 
 	/** Length of current sub-cycle in ticks */
-	inline TickCount length_ticks() const { return _length_ticks; }
+	inline TimeDuration length_ticks() const { return _length_ticks; }
 
 	/** Start of current sub-cycle in beats */
-	inline BeatTime start_beats() const { return _start_beats; }
+	inline TimeStamp start_beats() const { return _start_beats; }
 
 	/** Length of current sub-cycle in beats */
-	inline BeatCount length_beats() const { return _length_beats; }
+	inline TimeDuration length_beats() const { return _length_beats; }
 
 	/** Set the offset between real-time and timeslice-time. */
-	inline void set_offset(TickCount offset) { _offset_ticks = offset; }
+	inline void set_offset(TimeDuration offset) { _offset_ticks = offset; }
 
 	/** Offset relative to external (e.g Jack) time */
-	inline TickCount offset_ticks() const { return _offset_ticks; }
+	inline TimeDuration offset_ticks() const { return _offset_ticks; }
 
 private:
 
@@ -136,12 +145,12 @@ private:
 	double _beat_rate; ///< Beat rate in Hz
 
 	// Current time
-	TickTime  _start_ticks;  ///< Current window start in ticks
-	TickCount _length_ticks; ///< Current window length in ticks
-	BeatTime  _start_beats;  ///< Current window start in beats
-	BeatCount _length_beats; ///< Current window length in beats
+	TimeStamp    _start_ticks;  ///< Current window start in ticks
+	TimeDuration _length_ticks; ///< Current window length in ticks
+	TimeStamp    _start_beats;  ///< Current window start in beats
+	TimeDuration _length_beats; ///< Current window length in beats
 	
-	TickCount _offset_ticks; ///< Offset to global time (ie Jack sub-cycle offset)
+	TimeDuration _offset_ticks; ///< Offset to global time (ie Jack sub-cycle offset)
 };
 
 

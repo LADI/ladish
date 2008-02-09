@@ -15,63 +15,63 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef RAUL_STAMPED_CHUNK_RING_BUFFER_HPP
-#define RAUL_STAMPED_CHUNK_RING_BUFFER_HPP
+#ifndef RAUL_EVENT_RING_BUFFER_HPP
+#define RAUL_EVENT_RING_BUFFER_HPP
 
 #include <cassert>
 #include <algorithm>
 #include <glib.h>
-#include <raul/types.hpp>
 #include <raul/RingBuffer.hpp>
+#include <raul/TimeStamp.hpp>
 
 namespace Raul {
 
 
-/** A RingBuffer of timestamped binary "chunks".
+/** A RingBuffer of events (generic time-stamped binary "blobs").
  *
  * This packs a timestamp, size, and size bytes of data flat into the buffer.
  * Useful for MIDI events, OSC messages, etc.
  */
-class StampedChunkRingBuffer : private Raul::RingBuffer<Byte> {
+class EventRingBuffer : private Raul::RingBuffer<uint8_t> {
 public:
 
-	/** @param size Size in bytes.
+	/** @param capacity Ringbuffer capacity in bytes.
 	 */
-	StampedChunkRingBuffer(size_t size)
-		: RingBuffer<Byte>(size)
+	EventRingBuffer(size_t capacity)
+		: RingBuffer<uint8_t>(capacity)
 	{}
 
 	size_t capacity() const { return _size; }
 
-	size_t write(TickTime time, size_t size, const Byte* buf);
-	bool   read(TickTime* time, size_t* size, Byte* buf);
+	size_t write(TimeStamp time, size_t size, const uint8_t* buf);
+	bool   read(TimeStamp* time, size_t* size, uint8_t* buf);
 };
 
 
 inline bool
-StampedChunkRingBuffer::read(TickTime* time, size_t* size, Byte* buf)
+EventRingBuffer::read(TimeStamp* time, size_t* size, uint8_t* buf)
 {
-	bool success = RingBuffer<Byte>::full_read(sizeof(TickTime), (Byte*)time);
+	bool success = RingBuffer<uint8_t>::full_read(sizeof(TimeStamp), (uint8_t*)time);
 	if (success)
-		success = RingBuffer<Byte>::full_read(sizeof(size_t), (Byte*)size);
+		success = RingBuffer<uint8_t>::full_read(sizeof(size_t), (uint8_t*)size);
 	if (success)
-		success = RingBuffer<Byte>::full_read(*size, buf);
+		success = RingBuffer<uint8_t>::full_read(*size, buf);
 
 	return success;
 }
 
 
 inline size_t
-StampedChunkRingBuffer::write(TickTime time, size_t size, const Byte* buf)
+EventRingBuffer::write(TimeStamp time, size_t size, const uint8_t* buf)
 {
 	assert(size > 0);
 
-	if (write_space() < (sizeof(TickTime) + sizeof(size_t) + size)) {
+	if (write_space() < (sizeof(TimeStamp) + sizeof(size_t) + size)) {
 		return 0;
 	} else {
-		RingBuffer<Byte>::write(sizeof(TickTime), (Byte*)&time);
-		RingBuffer<Byte>::write(sizeof(size_t), (Byte*)&size);
-		RingBuffer<Byte>::write(size, buf);
+		RingBuffer<uint8_t>::write(sizeof(TimeStamp), (uint8_t*)&time);
+		RingBuffer<uint8_t>::write(sizeof(size_t), (uint8_t*)&size);
+		RingBuffer<uint8_t>::write(size, buf);
 		return size;
 	}
 }
@@ -79,5 +79,5 @@ StampedChunkRingBuffer::write(TickTime time, size_t size, const Byte* buf)
 
 } // namespace Raul
 
-#endif // RAUL_STAMPED_CHUNK_RING_BUFFER_HPP
+#endif // RAUL_EVENT_RING_BUFFER_HPP
 
