@@ -3,14 +3,14 @@
 @prefix guiext:  <http://ll-plugins.nongnu.org/lv2/ext/gui/dev/1#> .
 @prefix drobins: <http://drobilla.net/lv2_plugins/dev/> .
 
-drobins:osc_print
+drobins:print
   a lv2:Plugin, lv2:UtilityPlugin ;
-  lv2:binary <osc_print.so> ;
-  rdfs:seeAlso <osc_print.ttl> ;
-  guiext:gui drobins:osc_print_ui .
+  lv2:binary <print.so> ;
+  rdfs:seeAlso <print.ttl> ;
+  guiext:gui drobins:print_ui .
 
-drobins:osc_print_ui
+drobins:print_ui
   a guiext:GtkGUI ;
-  guiext:binary <osc_print_ui.so> .
+  guiext:binary <print_ui.so> .
 
 

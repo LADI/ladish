@@ -21,6 +21,7 @@
 #define LV2_EVENT_HELPERS_H
 
 #include <stdint.h>
+#include <stdbool.h>
 #include <malloc.h>
 #include "lv2_event.h"
 
@@ -95,14 +96,22 @@ lv2_event_begin(LV2_Event_Iterator* iter,
 }
 
 
+/** Check if @a iter is valid..
+ * @return True if @a iter is valid, otherwise false (past end of buffer) */
+static inline bool
+lv2_event_is_valid(LV2_Event_Iterator* iter)
+{
+	return (iter->offset < iter->buf->size);
+}
+
+
 /** Advance @a iter forward one event.
+ * @a iter must be valid.
  * @return True if @a iter is valid, otherwise false (reached end of buffer) */
 static inline bool
 lv2_event_increment(LV2_Event_Iterator* iter)
 {
-	if (iter->offset >= iter->buf->size) {
-		return false;
-	}
+	assert(lv2_event_is_valid(iter));
 
 	LV2_Event* const ev = (LV2_Event*)(
 			(uint8_t*)iter->buf->data + iter->offset);
@@ -114,6 +123,7 @@ lv2_event_increment(LV2_Event_Iterator* iter)
 
 
 /** Dereference an event iterator (get the event currently pointed at).
+ * @a iter must be valid.
  * @a data if non-NULL, will be set to point to the contents of the event
  *         returned.
  * @return A Pointer to the event @a iter is currently pointing at, or NULL
@@ -123,10 +133,7 @@ static inline LV2_Event*
 lv2_event_get(LV2_Event_Iterator* iter,
               uint8_t**           data)
 {
-	if (iter->offset >= iter->buf->size) {
-		*data = NULL;
-		return NULL;
-	}
+	assert(lv2_event_is_valid(iter));
 
 	LV2_Event* const ev = (LV2_Event*)(
 			(uint8_t*)iter->buf->data + iter->offset);
@@ -165,6 +172,34 @@ lv2_event_write(LV2_Event_Iterator* iter,
 	++iter->buf->event_count;
 	
 	size = lv2_event_pad_size(sizeof(LV2_Event) + size);
+	iter->buf->size += size;
+	iter->offset    += size;
+	
+	return true;
+}
+
+
+/** Write an event at @a iter.
+ * The event (if any) pointed to by @iter will be overwritten, and @a iter
+ * incremented to point to the following event (i.e. several calls to this
+ * function can be done in sequence without twiddling iter in-between).
+ * @return True if event was written, otherwise false (buffer is full). */
+static inline bool
+lv2_event_write_event(LV2_Event_Iterator* iter,
+                      const LV2_Event*    ev,
+                      const uint8_t*      data)
+{
+	if (iter->buf->capacity - iter->buf->size < sizeof(LV2_Event) + ev->size)
+		return false;
+
+	LV2_Event* const write_ev = (LV2_Event*)(
+			(uint8_t*)iter->buf->data + iter->offset);
+	
+	*write_ev = *ev;
+	memcpy((uint8_t*)ev + sizeof(LV2_Event), data, ev->size);
+	++iter->buf->event_count;
+	
+	const uint16_t size = lv2_event_pad_size(sizeof(LV2_Event) + ev->size);
 	iter->buf->size += size;
 	iter->offset    += size;
 	

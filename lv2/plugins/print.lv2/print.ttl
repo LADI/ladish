@@ -4,7 +4,7 @@
 @prefix drobins:      <http://drobilla.net/lv2_plugins/dev/> .
 @prefix doap:         <http://usefulinc.com/ns/doap#> .
 
-drobins:osc_print
+drobins:print
 	a lv2:Plugin ;
 	doap:name "OSC Printer" ;
 	doap:license <http://usefulinc.com/doap/licenses/gpl> ;

@@ -4,7 +4,7 @@
 @prefix oscext:  <http://drobilla.net/ns/lv2ext/osc/0#> .
 @prefix doap:    <http://usefulinc.com/ns/doap#> .
 
-drobins:osc_metronome
+drobins:metronome
   a lv2:Plugin ;
   doap:name "OSC Metronome" ;
   doap:license <http://usefulinc.com/doap/licenses/gpl> ;

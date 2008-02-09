@@ -20,27 +20,27 @@
 #include <string.h>
 #include <assert.h>
 #include "lv2.h"
-#include "lv2/osc/lv2_osc.h"
+#include "lv2/event/lv2_event.h"
+#include "lv2/event/lv2_event_helpers.h"
 #include "lv2/contexts/lv2_contexts.h"
 
-static const char* message_context_uri = "http://drobilla.net/ns/lv2ext/contexts/MessageContext";
 
 /* Plugin */
 
 
 typedef struct {
-	LV2OSCBuffer* input_buffer;
-	LV2OSCBuffer* output_buffer;
-} OSCPrint;
+	LV2_Event_Buffer* input_buffer;
+	LV2_Event_Buffer* output_buffer;
+} Bang;
 
 
 static LV2_Handle
-osc_bang_instantiate(const LV2_Descriptor*    descriptor,
+bang_instantiate(const LV2_Descriptor*    descriptor,
                      double                   rate,
                      const char*              bundle_path,
                      const LV2_Feature*const* features)
 {
-	OSCPrint* plugin = (OSCPrint*)malloc(sizeof(OSCPrint));
+	Bang* plugin = (Bang*)malloc(sizeof(Bang));
 	
 	plugin->input_buffer = NULL;
 	plugin->output_buffer = NULL;
@@ -50,30 +50,32 @@ osc_bang_instantiate(const LV2_Descriptor*    descriptor,
 
 
 static void
-osc_bang_cleanup(LV2_Handle instance)
+bang_cleanup(LV2_Handle instance)
 {
 	free(instance);
 }
 	
 
-static LV2BlockingContext osc_bang_message_context_data;
+//static LV2BlockingContext bang_message_context_data;
 
 
+#if 0
 static const void*
-osc_bang_extension_data(const char* uri)
+bang_extension_data(const char* uri)
 {
-	if (!strcmp(uri, message_context_uri)) {
-		return &osc_bang_message_context_data;
+	if (!strcmp(uri, LV2_CONTEXT_MESSAGE)) {
+		return &bang_message_context_data;
 	} else {
 		return NULL;
 	}
 }
+#endif
 
 
 static void
-osc_bang_connect_port(LV2_Handle instance, uint32_t port, void* data)
+bang_connect_port(LV2_Handle instance, uint32_t port, void* data)
 {
-	OSCPrint* plugin = (OSCPrint*)instance;
+	Bang* plugin = (Bang*)instance;
 
 	switch (port) {
 	case 0:
@@ -85,19 +87,20 @@ osc_bang_connect_port(LV2_Handle instance, uint32_t port, void* data)
 	}
 }
 
+#if 0
 static bool
-osc_bang_blocking_run(LV2_Handle instance, uint8_t* outputs_written)
+bang_msg_run(LV2_Handle instance, uint8_t* outputs_written)
 {
-	printf("OSC_BANG BLOCKING RUN\n");
+	printf("BANG MESSAGE RUN\n");
 	/*
-	OSCPrint* plugin = (OSCPrint*)instance;
+	Bang* plugin = (Bang*)instance;
 
 	if (plugin->input_buffer && plugin->output_buffer) {
 
 		for (uint32_t i=0; i < plugin->input_buffer->message_count; ++i) {
 
-			const LV2Message* in = lv2_osc_buffer_get_message(plugin->input_buffer, i);
-			lv2_osc_buffer_append(plugin->output_buffer, in->time, "/bang", NULL);
+			const LV2Message* in = lv2_buffer_get_message(plugin->input_buffer, i);
+			lv2_buffer_append(plugin->output_buffer, in->time, "/bang", NULL);
 
 		}
 		
@@ -113,44 +116,54 @@ osc_bang_blocking_run(LV2_Handle instance, uint8_t* outputs_written)
 	*/
 	return false;
 }
+#endif
 
 	
 static void
-osc_bang_run(LV2_Handle instance, uint32_t nframes)
+bang_run(LV2_Handle instance, uint32_t nframes)
 {
-	OSCPrint* plugin = (OSCPrint*)instance;
+	Bang* plugin = (Bang*)instance;
 
 	if (plugin->input_buffer && plugin->output_buffer) {
-		for (uint32_t i=0; i < plugin->input_buffer->message_count; ++i) {
-			const LV2Message* in = lv2_osc_buffer_get_message(plugin->input_buffer, i);
-			lv2_osc_buffer_append(plugin->output_buffer, in->time, "/bang", NULL);
+		LV2_Event_Iterator in;
+		LV2_Event_Iterator out;
+		uint8_t*           data;
+
+		lv2_event_begin(&in, plugin->input_buffer);
+		lv2_event_begin(&out, plugin->output_buffer);
+
+		// Copy input events directly to output
+		// FIXME: Not really what this plugin should do....
+		while (lv2_event_is_valid(&in)) {
+			const LV2_Event* ev = lv2_event_get(&in, &data);
+			lv2_event_write_event(&out, ev, data);
+			lv2_event_increment(&in);
 		}
 	}
 }
 
-
 /* Library */
 
 
-static LV2_Descriptor *osc_bang_descriptor = NULL;
+static LV2_Descriptor *bang_descriptor = NULL;
 
 
 void
 init_descriptor()
 {
-	osc_bang_descriptor = (LV2_Descriptor*)malloc(sizeof(LV2_Descriptor));
+	bang_descriptor = (LV2_Descriptor*)malloc(sizeof(LV2_Descriptor));
 
-	osc_bang_descriptor->URI = "http://drobilla.net/lv2_plugins/dev/osc_bang";
-	osc_bang_descriptor->activate = NULL;
-	osc_bang_descriptor->cleanup = osc_bang_cleanup;
-	osc_bang_descriptor->connect_port = osc_bang_connect_port;
-	osc_bang_descriptor->deactivate = NULL;
-	osc_bang_descriptor->instantiate = osc_bang_instantiate;
-	osc_bang_descriptor->run = osc_bang_run;
-	osc_bang_descriptor->extension_data = osc_bang_extension_data;
+	bang_descriptor->URI = "http://drobilla.net/lv2_plugins/dev/bang";
+	bang_descriptor->activate = NULL;
+	bang_descriptor->cleanup = bang_cleanup;
+	bang_descriptor->connect_port = bang_connect_port;
+	bang_descriptor->deactivate = NULL;
+	bang_descriptor->instantiate = bang_instantiate;
+	bang_descriptor->run = bang_run;
+	bang_descriptor->extension_data = NULL; /*bang_extension_data;
 
-	osc_bang_message_context_data.blocking_run = osc_bang_blocking_run;
-	osc_bang_message_context_data.connect_port = NULL;
+	bang_message_context_data.blocking_run = bang_blocking_run;
+	bang_message_context_data.connect_port = bang_blocking_connect_port;*/
 }
 
 
@@ -158,12 +171,12 @@ LV2_SYMBOL_EXPORT
 const LV2_Descriptor*
 lv2_descriptor(uint32_t index)
 {
-	if (!osc_bang_descriptor)
+	if (!bang_descriptor)
 		init_descriptor(); /* FIXME: leak */
 
 	switch (index) {
 	case 0:
-		return osc_bang_descriptor;
+		return bang_descriptor;
 	default:
 		return NULL;
 	}

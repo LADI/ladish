@@ -1,26 +1,26 @@
-@prefix lv2:          <http://lv2plug.in/ns/lv2core#> .
-@prefix lv2_contexts: <http://drobilla.net/ns/lv2ext/contexts#> .
-@prefix lv2_osc:      <http://drobilla.net/ns/lv2ext/osc/0#> .
-@prefix drobins:      <http://drobilla.net/lv2_plugins/dev/> .
-@prefix doap:         <http://usefulinc.com/ns/doap#> .
+@prefix lv2:     <http://lv2plug.in/ns/lv2core#> .
+@prefix lv2cnt:  <http://drobilla.net/ns/lv2ext/contexts#> .
+@prefix lv2ev:   <http://lv2plug.in/ns/ext/event#> .
+@prefix drobins: <http://drobilla.net/lv2_plugins/dev/> .
+@prefix doap:    <http://usefulinc.com/ns/doap#> .
 
-drobins:osc_bang
+drobins:bang
 	a lv2:Plugin ;
-	doap:name "OSC Bang" ;
+	doap:name "Bang" ;
 	doap:license <http://usefulinc.com/doap/licenses/gpl> ;
 
-	lv2_contexts:requiredContext lv2_contexts:MessageContext ;
+	lv2cnt:requiredContext lv2cnt:MessageContext ;
 
 	lv2:port [
-		a lv2_osc:OSCPort, lv2:InputPort ;
-		lv2_contexts:context lv2_contexts:MessageContext ;
+		a lv2ev:EventPort, lv2:InputPort ;
+		# lv2cnt:context lv2cnt:MessageContext ;
 		lv2:index 0 ;
 		lv2:symbol "in" ;
 		lv2:name "Input" ;
 		lv2:portHint lv2:connectionOptional
 	] , [
-		a lv2_osc:OSCPort, lv2:OutputPort ;
-		lv2_contexts:context lv2_contexts:MessageContext ;
+		a lv2ev:EventPort, lv2:OutputPort ;
+		# lv2cnt:context lv2cnt:MessageContext ;
 		lv2:index 1 ;
 		lv2:symbol "out" ;
 		lv2:name "Output" ;
