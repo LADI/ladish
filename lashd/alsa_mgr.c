@@ -40,7 +40,7 @@ static void *alsa_mgr_event_run(void *data);
 static void alsa_mgr_new_client_port(alsa_mgr_t * alsa_mgr, uuid_t client_id,
 									 unsigned char port);
 
-static void
+static int
 alsa_mgr_init_alsa(alsa_mgr_t * alsa_mgr)
 {
 	int err;
@@ -49,15 +49,17 @@ alsa_mgr_init_alsa(alsa_mgr_t * alsa_mgr)
 	/* open the alsa connection */
 	err = snd_seq_open(&alsa_mgr->seq, "default", SND_SEQ_OPEN_DUPLEX, 0);
 	if (err) {
-		fprintf(stderr, "%s: error opening alsa sequencer, aborting: %s\n",
+		fprintf(stderr, "%s: error opening alsa sequencer, alsa disabled: %s\n",
 				__FUNCTION__, snd_strerror(err));
-		abort();
+		return err;
 	}
 
 	err = snd_seq_set_client_name(alsa_mgr->seq, "LASH Server");
 	if (err) {
 		fprintf(stderr, "%s: could not set alsa client name: %s\n",
 				__FUNCTION__, snd_strerror(err));
+		snd_seq_close(alsa_mgr->seq);
+		return err;
 	}
 
 	printf("Opened ALSA sequencer with client ID %d\n",
@@ -74,9 +76,10 @@ alsa_mgr_init_alsa(alsa_mgr_t * alsa_mgr)
 
 	err = snd_seq_create_port(alsa_mgr->seq, port_info);
 	if (err) {
-		fprintf(stderr, "%s: error creating alsa port, aborting: %s\n",
+		fprintf(stderr, "%s: error creating alsa port, alsa disabled: %s\n",
 				__FUNCTION__, snd_strerror(err));
-		abort();
+		snd_seq_close(alsa_mgr->seq);
+		return err;
 	}
 
 	/* subscribe the port to the system announcer */
@@ -84,15 +87,19 @@ alsa_mgr_init_alsa(alsa_mgr_t * alsa_mgr)
 							   SND_SEQ_PORT_SYSTEM_ANNOUNCE);	/* the "Announce" port */
 	if (err) {
 		fprintf(stderr,
-				"%s: could not connect to system announcer port, aborting: %s\n",
+				"%s: could not connect to system announcer port, alsa disabled: %s\n",
 				__FUNCTION__, snd_strerror(err));
-		abort();
+		snd_seq_close(alsa_mgr->seq);
+		return err;
 	}
+	return 0;
 }
 
 alsa_mgr_t *
 alsa_mgr_new(server_t * server)
 {
+	int err;
+
 	alsa_mgr_t *alsa_mgr;
 
 	alsa_mgr = lash_malloc0(sizeof(alsa_mgr_t));
@@ -101,12 +108,16 @@ alsa_mgr_new(server_t * server)
 
 	pthread_mutex_init(&alsa_mgr->lock, NULL);
 
-	alsa_mgr_init_alsa(alsa_mgr);
+	err = alsa_mgr_init_alsa(alsa_mgr);
 
-	pthread_create(&alsa_mgr->event_thread, NULL, alsa_mgr_event_run,
-				   alsa_mgr);
-
-	return alsa_mgr;
+	if (err) {
+		free(alsa_mgr);
+		return NULL;
+	} else {
+		pthread_create(&alsa_mgr->event_thread, NULL, alsa_mgr_event_run,
+				alsa_mgr);
+		return alsa_mgr;
+	}
 }
 
 void

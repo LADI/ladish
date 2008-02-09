@@ -6,7 +6,7 @@ AM_ACLOCAL_INCLUDE([m4])
 
 ### Check for programs ###
 AC_LANG([C])
-AC_PROG_CC
+AM_PROG_CC_C_O
 AC_PROG_LIBTOOL
 
 #################
