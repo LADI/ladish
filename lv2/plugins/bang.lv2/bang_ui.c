@@ -33,17 +33,18 @@ typedef struct {
  
 
 void
-osc_bang_ui_on_click(GtkWidget* widget, void* data)
+bang_ui_on_click(GtkWidget* widget, void* data)
 {
-	OSCBangUI* ui = (OSCBangUI*)data;
-	LV2Message* msg = lv2_osc_message_new(0, "/bang", NULL);
-	ui->write_function(ui->controller, 0, lv2_message_get_size(msg), msg);
-	free(msg);
+	//OSCBangUI* ui = (OSCBangUI*)data;
+	printf("CLICK\n");
+	//LV2Message* msg = lv2_message_new(0, "/bang", NULL);
+	//ui->write_function(ui->controller, 0, lv2_message_get_size(msg), msg);
+	//free(msg);
 }
 
 
 LV2UI_Handle
-osc_bang_ui_instantiate(const struct _LV2UI_Descriptor* descriptor,
+bang_ui_instantiate(const struct _LV2UI_Descriptor* descriptor,
                         const char*                     plugin_uri,
                         const char*                     bundle_path,
                         LV2UI_Write_Function            write_function,
@@ -58,7 +59,7 @@ osc_bang_ui_instantiate(const struct _LV2UI_Descriptor* descriptor,
 	g_object_ref(ui->button);
 
 	gtk_signal_connect(GTK_OBJECT(ui->button), "clicked",
-			GTK_SIGNAL_FUNC(osc_bang_ui_on_click), ui);
+			GTK_SIGNAL_FUNC(bang_ui_on_click), ui);
 
 	*widget = ui->button;
 
@@ -70,7 +71,7 @@ osc_bang_ui_instantiate(const struct _LV2UI_Descriptor* descriptor,
 
 
 void
-osc_bang_ui_cleanup(LV2UI_Handle ui)
+bang_ui_cleanup(LV2UI_Handle ui)
 {
 	g_object_unref(((OSCBangUI*)ui)->button);
 }
@@ -79,19 +80,19 @@ osc_bang_ui_cleanup(LV2UI_Handle ui)
 /* Library */
 
 
-static LV2UI_Descriptor *osc_bang_ui_descriptor = NULL;
+static LV2UI_Descriptor *bang_ui_descriptor = NULL;
 
 
 void
 init_descriptor()
 {
-	osc_bang_ui_descriptor = (LV2UI_Descriptor*)malloc(sizeof(LV2UI_Descriptor));
+	bang_ui_descriptor = (LV2UI_Descriptor*)malloc(sizeof(LV2UI_Descriptor));
 
-	osc_bang_ui_descriptor->URI = "http://drobilla.net/lv2_plugins/dev/osc_bang_ui";
-	osc_bang_ui_descriptor->instantiate = osc_bang_ui_instantiate;
-	osc_bang_ui_descriptor->cleanup = osc_bang_ui_cleanup;
-	osc_bang_ui_descriptor->port_event = NULL;
-	osc_bang_ui_descriptor->extension_data = NULL;
+	bang_ui_descriptor->URI = "http://drobilla.net/lv2_plugins/dev/bang_ui";
+	bang_ui_descriptor->instantiate = bang_ui_instantiate;
+	bang_ui_descriptor->cleanup = bang_ui_cleanup;
+	bang_ui_descriptor->port_event = NULL;
+	bang_ui_descriptor->extension_data = NULL;
 }
 
 
@@ -99,12 +100,12 @@ LV2_SYMBOL_EXPORT
 const LV2UI_Descriptor*
 lv2ui_descriptor(uint32_t index)
 {
-	if (!osc_bang_ui_descriptor)
+	if (!bang_ui_descriptor)
 		init_descriptor(); /* FIXME: leak */
 
 	switch (index) {
 	case 0:
-		return osc_bang_ui_descriptor;
+		return bang_ui_descriptor;
 	default:
 		return NULL;
 	}

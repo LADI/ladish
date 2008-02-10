@@ -23,6 +23,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <malloc.h>
+#include <assert.h>
 #include "lv2_event.h"
 
 /** @file

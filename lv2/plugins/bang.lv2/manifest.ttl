@@ -1,16 +1,15 @@
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix lv2:     <http://lv2plug.in/ns/lv2core#> .
-@prefix guiext:  <http://ll-plugins.nongnu.org/lv2/ext/gui#> .
+@prefix uiext:  <http://ll-plugins.nongnu.org/lv2/ext/ui#> .
 @prefix drobins: <http://drobilla.net/lv2_plugins/dev/> .
 
 drobins:bang
-  a lv2:Plugin, lv2:UtilityPlugin ;
-  lv2:binary <bang.so> ;
-  rdfs:seeAlso <bang.ttl> ;
-  guiext:gui drobins:bang_ui .
+	a lv2:Plugin, lv2:UtilityPlugin ;
+	lv2:binary <bang.so> ;
+	rdfs:seeAlso <bang.ttl> ;
+	uiext:ui drobins:bang_ui .
 
 drobins:bang_ui
-  a guiext:GtkGUI ;
-  guiext:binary <bang_ui.so> .
-
+	a uiext:GtkUI ;
+	uiext:binary <bang_ui.so> .
 
