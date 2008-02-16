@@ -25,13 +25,10 @@ extern "C" {
 #endif
 
 void
-lv2_osc_argument_print(char type, const LV2Argument* arg);
+lv2_osc_argument_print(char type, const LV2_OSC_Argument* arg);
 
 void
-lv2_osc_message_print(const LV2Message* msg);
-
-void
-lv2_osc_buffer_print(const LV2OSCBuffer* buf);
+lv2_osc_message_print(const LV2_OSC_Event* msg);
 
 #ifdef __cplusplus
 }

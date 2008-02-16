@@ -1,5 +1,6 @@
 AM_LDFLAGS = -module -avoid-version -Wc,-nostartfiles
-AM_CFLAGS = -shared -fPIC -DPIC -I$(top_srcdir)/lv2 @LV2CORE_CFLAGS@ @DROBINS_CFLAGS@
+AM_CFLAGS = -shared -fPIC -DPIC -I$(top_srcdir)/lv2 \
+			@LV2CORE_CFLAGS@ @DROBINS_CFLAGS@ @LV2_OSC_CFLAGS@
 
 pluginbasename = metro
 

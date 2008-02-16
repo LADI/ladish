@@ -159,7 +159,7 @@ DROBINS_SRCDIR="$abs_srcdir/lv2"
 AC_SUBST(DROBINS_CFLAGS)
 AC_SUBST(DROBINS_SRCDIR)
 
-LV2_OSC_CFLAGS="$LV2CORE_CFLAGS -I$abs_srcdir/lv2"
+LV2_OSC_CFLAGS="$LV2CORE_CFLAGS -I$abs_srcdir/lv2 -I$abs_srcdir/lv2/lv2/event"
 LV2_OSC_LIBS="$builddir/lv2/lv2/osc/.libs/liblv2_osc.la"
 AC_SUBST(LV2_OSC_CFLAGS)
 AC_SUBST(LV2_OSC_LIBS)

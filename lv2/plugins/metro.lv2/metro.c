@@ -26,9 +26,9 @@ typedef struct {
 	double        sample_rate;
 	uint32_t      frames_since_last_tick;
 
-	LV2OSCBuffer* input_sync;
-	float*        input_bpm;
-	LV2OSCBuffer* output_bang;
+	LV2_Event_Buffer* input_sync;
+	float*            input_bpm;
+	LV2_Event_Buffer* output_bang;
 } OSCMetro;
 
 
@@ -84,21 +84,21 @@ osc_metro_run(LV2_Handle instance, uint32_t sample_count)
 
 	/* FIXME: write this correctly (sample accurate) */
 
-	if (plugin->input_sync->message_count > 0) {
+	if (plugin->input_sync->event_count > 0) {
 
-		const LV2Message* sync_msg = lv2_osc_buffer_get_message(plugin->input_sync, 0);
+		/*const LV2_Event* sync_msg = lv2_osc_buffer_get_message(plugin->input_sync, 0);
 		
 		if (plugin->output_bang)
 			lv2_osc_buffer_append(plugin->output_bang, sync_msg->time, "/bang", NULL);
 		
-		plugin->frames_since_last_tick = sample_count - sync_msg->time;
+		plugin->frames_since_last_tick = sample_count - sync_msg->time;*/
 
 	} else if (plugin->frames_since_last_tick > frames_per_beat) {
 
-		if (plugin->output_bang)
+		/*if (plugin->output_bang)
 			lv2_osc_buffer_append(plugin->output_bang, 0.0, "/bang", NULL);
 
-		plugin->frames_since_last_tick = 0;
+		plugin->frames_since_last_tick = 0;*/
 
 	} else {
 		plugin->frames_since_last_tick += sample_count;

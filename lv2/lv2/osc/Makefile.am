@@ -1,4 +1,5 @@
 EXTRA_DIST = lv2_osc_test.c
+AM_CFLAGS = -I../event
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = lv2_osc.pc

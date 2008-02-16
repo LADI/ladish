@@ -30,8 +30,8 @@ static const char* message_context_uri = "http://drobilla.net/ns/lv2ext/contexts
 
 
 typedef struct {
-	LV2OSCBuffer* input_buffer;
-} OSCPrint;
+	LV2_Event_Buffer* input_buffer;
+} Print;
 
 
 static LV2_Handle
@@ -40,7 +40,7 @@ osc_print_instantiate(const LV2_Descriptor*    descriptor,
                       const char*              bundle_path,
                       const LV2_Feature*const* features)
 {
-	OSCPrint* plugin = (OSCPrint*)malloc(sizeof(OSCPrint));
+	Print* plugin = (Print*)malloc(sizeof(Print));
 	
 	plugin->input_buffer = NULL;
 
@@ -72,7 +72,7 @@ osc_print_extension_data(const char* uri)
 static void
 osc_print_connect_port(LV2_Handle instance, uint32_t port, void* data)
 {
-	OSCPrint* plugin = (OSCPrint*)instance;
+	Print* plugin = (Print*)instance;
 
 	switch (port) {
 	case 0:
@@ -85,12 +85,12 @@ osc_print_connect_port(LV2_Handle instance, uint32_t port, void* data)
 static bool
 osc_print_blocking_run(LV2_Handle instance, uint8_t* outputs_written)
 {
-	OSCPrint* plugin = (OSCPrint*)instance;
+	Print* plugin = (Print*)instance;
 
 	if (plugin->input_buffer) {
 
-		for (uint32_t i=0; i < plugin->input_buffer->message_count; ++i)
-			lv2_osc_message_print(lv2_osc_buffer_get_message(plugin->input_buffer, i));
+		//for (uint32_t i=0; i < plugin->input_buffer->event_count; ++i)
+		//	lv2_osc_message_print(lv2_osc_buffer_get_message(plugin->input_buffer, i));
 		
 		LV2_CONTEXTS_SET_OUTPUT_WRITTEN(outputs_written, 0);
 		return true;

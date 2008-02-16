@@ -77,7 +77,7 @@ lv2_osc_blob_size(const void* blob)
 
 
 uint32_t
-lv2_osc_arg_size(char type, const LV2Argument* arg)
+lv2_osc_arg_size(char type, const LV2_OSC_Argument* arg)
 {
     switch (type) {
 	case 'c':
@@ -106,7 +106,7 @@ lv2_osc_arg_size(char type, const LV2Argument* arg)
 
 
 void
-lv2_osc_argument_swap_byte_order(char type, LV2Argument* arg)
+lv2_osc_argument_swap_byte_order(char type, LV2_OSC_Argument* arg)
 {
     switch (type) {
 	case 'i':
@@ -126,26 +126,25 @@ lv2_osc_argument_swap_byte_order(char type, LV2Argument* arg)
 
 /** Convert a message from network byte order to host byte order. */
 void
-lv2_osc_message_swap_byte_order(LV2Message* msg)
+lv2_osc_message_swap_byte_order(LV2_OSC_Event* msg)
 {
-	const char* const types = lv2_message_get_types(msg);
+	const char* const types = lv2_osc_get_types(msg);
 
 	for (uint32_t i=0; i < msg->argument_count; ++i)
-		lv2_osc_argument_swap_byte_order(types[i], lv2_message_get_argument(msg, i));
+		lv2_osc_argument_swap_byte_order(types[i], lv2_osc_get_argument(msg, i));
 }
 
 
 /** Not realtime safe, returned value must be free()'d by caller. */
-LV2Message*
-lv2_osc_message_new(double time, const char* path, const char* types, ...)
+LV2_OSC_Event*
+lv2_osc_message_new(const char* path, const char* types, ...)
 {
 	/* FIXME: path only */
 
-	LV2Message* result = malloc(sizeof(LV2Message)
+	LV2_OSC_Event* result = malloc(sizeof(LV2_OSC_Event)
 			+ 4 + lv2_osc_string_size(path));
 	
 	const uint32_t path_size = lv2_osc_string_size(path);
-	result->time = time;
 	result->data_size = path_size + 4; // 4 for types
 	result->argument_count = 0;
 	result->types_offset = lv2_osc_string_size(path) + 1;
@@ -158,17 +157,19 @@ lv2_osc_message_new(double time, const char* path, const char* types, ...)
 }
 
 
-/** Create a new LV2Message from a raw OSC message.
+/** Create a new LV2_OSC_Event from a raw OSC message.
  * 
  * If \a out_buf is NULL, new memory will be allocated.  Otherwise the returned
  * value will be equal to buf, unless there is insufficient space in which
  * case NULL is returned.
  */
-LV2Message*
-lv2_osc_message_from_raw(double time, uint32_t out_buf_size, void* out_buf, uint32_t raw_msg_size, void* raw_msg)
+LV2_OSC_Event*
+lv2_osc_message_from_raw(uint32_t out_buf_size,
+                         void*    out_buf,
+                         uint32_t raw_msg_size,
+                         void*    raw_msg)
 {
-	const uint32_t message_header_size = sizeof(double) + (sizeof(uint32_t) * 4);
-
+	const uint32_t message_header_size = (sizeof(uint32_t) * 4);
 	
 	const uint32_t path_size  = lv2_osc_string_size((char*)raw_msg);
 	const uint32_t types_len  = strlen((char*)(raw_msg + path_size + 1));
@@ -181,18 +182,15 @@ lv2_osc_message_from_raw(double time, uint32_t out_buf_size, void* out_buf, uint
 		return NULL;
 	}
 
-	LV2Message* write_loc = (LV2Message*)(out_buf);
-	write_loc->time = time;
-	
+	LV2_OSC_Event* write_loc = (LV2_OSC_Event*)(out_buf);
 	write_loc->argument_count = types_len;
-	
 	write_loc->data_size = index_size + raw_msg_size;
 	
 	// Copy raw message
 	memcpy(&write_loc->data + index_size, raw_msg, raw_msg_size);
 
 	write_loc->types_offset = index_size + path_size + 1;
-	const char* const types = lv2_message_get_types(write_loc);
+	const char* const types = lv2_osc_get_types(write_loc);
 	
 	// Calculate/Write index
 	uint32_t args_base_offset = write_loc->types_offset + lv2_osc_string_size(types) - 1;
@@ -200,7 +198,7 @@ lv2_osc_message_from_raw(double time, uint32_t out_buf_size, void* out_buf, uint
 	
 	for (uint32_t i=0; i < write_loc->argument_count; ++i) {
 		((uint32_t*)&write_loc->data)[i] = args_base_offset + arg_offset;
-		const LV2Argument* const arg = (LV2Argument*)(&write_loc->data + args_base_offset + arg_offset);
+		const LV2_OSC_Argument* const arg = (LV2_OSC_Argument*)(&write_loc->data + args_base_offset + arg_offset);
 		// Special case because size is still big-endian
 #ifndef BIG_ENDIAN
 		if (types[i] == 'b') // special case because size is still big-endian
@@ -242,11 +240,12 @@ lv2_osc_message_from_raw(double time, uint32_t out_buf_size, void* out_buf, uint
 }
 
 
+#if 0
 /** Allocate a new LV2OSCBuffer.
  *
  * This function is NOT realtime safe.
  */
-LV2OSCBuffer*
+LV2_OSCBuffer*
 lv2_osc_buffer_new(uint32_t capacity)
 {
 	LV2OSCBuffer* buf = (LV2OSCBuffer*)malloc((sizeof(uint32_t) * 3) + capacity);
@@ -266,7 +265,7 @@ lv2_osc_buffer_clear(LV2OSCBuffer* buf)
 }
 
 int
-lv2_osc_buffer_append_message(LV2OSCBuffer* buf, LV2Message* msg)
+lv2_osc_buffer_append_message(LV2OSCBuffer* buf, LV2_OSC_Event* msg)
 {
 	const uint32_t msg_size = lv2_message_get_size(msg);
 
@@ -292,7 +291,7 @@ int
 lv2_osc_buffer_append(LV2OSCBuffer* buf, double time, const char* path, const char* types, ...)
 {
 	// FIXME: crazy unsafe
-	LV2Message* write_msg = (LV2Message*)(&buf->data + buf->size);
+	LV2_OSC_Event* write_msg = (LV2_OSC_Event*)(&buf->data + buf->size);
 
 	write_msg->time = time;
 	write_msg->data_size = 0;
@@ -311,4 +310,5 @@ lv2_osc_buffer_append(LV2OSCBuffer* buf, double time, const char* path, const ch
 
 	return 0;
 }
+#endif
 

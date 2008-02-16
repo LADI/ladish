@@ -20,6 +20,7 @@
 #define LV2_OSC_H
 
 #include <stdint.h>
+#include "lv2_event.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,7 +38,7 @@ extern "C" {
 /** Argument (in a message).
  *
  * The name of the element in this union directly corresponds to the OSC
- * type tag character in LV2Message::types.
+ * type tag character in LV2_Event::types.
  */
 typedef union {
 	/* Standard OSC types */
@@ -60,103 +61,61 @@ typedef union {
 	// I  /* Infinitum. No bytes are allocated in the argument data. */
 	// [  /* The beginning of an array. */
 	// ]  /* The end of an array. */
-} LV2Argument;
+} LV2_OSC_Argument;
 
 
 
 /** Message.
  *
  * This is an OSC message at heart, but with some additional cache information
- * to allow fast access to parameters.
+ * to allow fast access to parameters.  This is the payload of an LV2_Event,
+ * time stamp and size (being generic) are in the containing header.
  */
 typedef struct {
-	double    time;           /**< Time stamp of message, in frames */
-	uint32_t  data_size;      /**< Total size of data, in bytes */
-	uint32_t  argument_count; /**< Number of arguments in data */
-	uint32_t  types_offset;   /**< Offset of types string in data */
+	uint32_t data_size;      /**< Total size of data, in bytes */
+	uint32_t argument_count; /**< Number of arguments in data */
+	uint32_t types_offset;   /**< Offset of types string in data */
 
 	/** Take the address of this member to get a pointer to the remaining data.
 	 * 
-	 * Contents:
+	 * Contents are an argument index:
 	 * uint32_t argument_index[argument_count]
+	 *
+	 * followed by a standard OSC message:
 	 * char     path[path_length]     (padded OSC string)
 	 * char     types[argument_count] (padded OSC string)
 	 * void     data[data_size]
 	 */
 	char data;
 
-} LV2Message;
+} LV2_OSC_Event;
 
-LV2Message* lv2_osc_message_new(double time, const char* path, const char* types, ...);
+LV2_Event* lv2_osc_event_new(double time, const char* path, const char* types, ...);
 
-LV2Message* lv2_osc_message_from_raw(double time,
-                                     uint32_t out_buf_size, void* out_buf,
-                                     uint32_t raw_msg_size, void* raw_msg);
+LV2_Event* lv2_osc_event_from_raw(double time,
+                                  uint32_t out_buf_size, void* out_buf,
+                                  uint32_t raw_msg_size, void* raw_msg);
 
-static inline uint32_t lv2_message_get_size(LV2Message* msg)
-	{ return sizeof(double) + (sizeof(uint32_t) * 3) + msg->data_size; }
-
-static inline uint32_t lv2_message_get_osc_message_size(const LV2Message* msg)
+static inline uint32_t lv2_osc_get_osc_message_size(const LV2_OSC_Event* msg)
 	{ return (msg->argument_count * sizeof(char) + 1) + msg->data_size; }
 
-static inline const void* lv2_message_get_osc_message(const LV2Message* msg)
+static inline const void* lv2_osc_get_osc_message(const LV2_OSC_Event* msg)
 	{ return (const void*)(&msg->data + (sizeof(uint32_t) * msg->argument_count)); }
 
-static inline const char* lv2_message_get_path(const LV2Message* msg)
+static inline const char* lv2_osc_get_path(const LV2_OSC_Event* msg)
 	{ return (const char*)(&msg->data + (sizeof(uint32_t) * msg->argument_count)); }
 
-static inline const char* lv2_message_get_types(const LV2Message* msg)
+static inline const char* lv2_osc_get_types(const LV2_OSC_Event* msg)
 	{ return (const char*)(&msg->data + msg->types_offset); }
 
-static inline LV2Argument* lv2_message_get_argument(const LV2Message* msg, uint32_t i)
-	{ return (LV2Argument*)(&msg->data + ((uint32_t*)&msg->data)[i]); }
+static inline LV2_OSC_Argument* lv2_osc_get_argument(const LV2_OSC_Event* msg, uint32_t i)
+	{ return (LV2_OSC_Argument*)(&msg->data + ((uint32_t*)&msg->data)[i]); }
 
 
-/** OSC Message Buffer.
- *
- * The port buffer for an LV2 port of the type
- * <http://drobilla.net/ns/lv2ext/osc> should be a pointer 
- * to an instance of this struct.
- *
- * This buffer and all contained messages are flat packed, an OSC buffer can
- * be copied using memcpy with the size returned by lv2_osc_buffer_get_size.
- *
- * The index is maintained at the end of the buffer's allocated space.
- * To reuse the unclaimed space, use lv2_osc_buffer_compact.
- */
-typedef struct {
-	uint32_t  capacity;      /**< Total allocated size of data */
-	uint32_t  size;          /**< Used size of data */
-	uint32_t  message_count; /**< Number of messages in data */
+int lv2_osc_buffer_append_message(LV2_Event_Buffer* buf, LV2_Event* msg);
+int lv2_osc_buffer_append(LV2_Event_Buffer* buf, double time, const char* path, const char* types, ...);
 
-	/** Take the address of this member to get a pointer to the remaining data.
-	 *
-	 * Contents:
-	 * char     data[data_size]
-	 * char     padding[...]
-	 * uint32_t message_index[message_count]
-	 */
-	char data;
-
-} LV2OSCBuffer;
-
-LV2OSCBuffer* lv2_osc_buffer_new(uint32_t capacity);
-
-void lv2_osc_buffer_clear(LV2OSCBuffer* buf);
-
-static inline uint32_t lv2_osc_buffer_get_size(LV2Message* msg)
-	{ return sizeof(double) + (sizeof(uint32_t) * 3) + msg->data_size; }
-
-static inline const LV2Message* lv2_osc_buffer_get_message(const LV2OSCBuffer* buf, uint32_t i)
-{
-	const uint32_t* const index_end = (uint32_t*)(&buf->data + buf->capacity - sizeof(uint32_t));
-	return (const LV2Message*)(&buf->data + *(index_end - i));
-}
-
-int lv2_osc_buffer_append_message(LV2OSCBuffer* buf, LV2Message* msg);
-int lv2_osc_buffer_append(LV2OSCBuffer* buf, double time, const char* path, const char* types, ...);
-
-void lv2_osc_buffer_compact(LV2OSCBuffer* buf);
+void lv2_osc_buffer_compact(LV2_Event_Buffer* buf);
 
 #ifdef __cplusplus
 }

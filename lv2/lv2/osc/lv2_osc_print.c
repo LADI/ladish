@@ -19,7 +19,7 @@
 #include <stdio.h>
 
 void
-lv2_osc_argument_print(char type, const LV2Argument* arg)
+lv2_osc_argument_print(char type, const LV2_OSC_Argument* arg)
 {
 	int32_t blob_size;
 
@@ -52,25 +52,15 @@ lv2_osc_argument_print(char type, const LV2Argument* arg)
 
 
 void
-lv2_osc_message_print(const LV2Message* msg)
+lv2_osc_print(const LV2_OSC_Event* msg)
 {
-	const char* const types = lv2_message_get_types(msg);
+	const char* const types = lv2_osc_get_types(msg);
 
-	printf("%s (%s) ", lv2_message_get_path(msg), types);
+	printf("%s (%s) ", lv2_osc_get_path(msg), types);
 	for (uint32_t i=0; i < msg->argument_count; ++i) {
-		lv2_osc_argument_print(types[i], lv2_message_get_argument(msg, i));
+		lv2_osc_argument_print(types[i], lv2_osc_get_argument(msg, i));
 		printf(" ");
 	}
 	printf("\n");
-}
-
-
-void
-lv2_osc_buffer_print(const LV2OSCBuffer* buf)
-{
-	for (uint32_t i=0; i < buf->message_count; ++i) {
-		const LV2Message* msg = lv2_osc_buffer_get_message(buf, i);
-		lv2_osc_message_print(msg);
-	}
 }
 
