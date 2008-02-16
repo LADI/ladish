@@ -13,4 +13,14 @@ plugin features can be implemented in an LV2 plugin.
 
 More information about LV2 can be found at <http://lv2plug.in>.
 
+This package is the "core" LV2 specification in usual source package form.
+The major version of this package refers to the LV2 specification revision
+contained, while the minor version refers only to this package.
+
+Application authors aren't required to depend on this package (including lv2.h
+in source distributions is acceptable) but any system with LV2 plugins should
+have the LV2 bundle contained in this package installed somewhere in the LV2
+path (it contains plugin classes and other useful information).
+Distributions are encouraged to include this package.
+
  -- Dave Robillard <dave@drobilla.net>

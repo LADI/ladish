@@ -1,5 +1,5 @@
 # RDF Schema for LV2 plugins
-# Revision 1
+# Revision 2
 #
 # This document describes the classes and properties that are defined by the
 # core LV2 specification.  See <http://lv2plug.in> for more information.
@@ -32,7 +32,7 @@
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
 
 :Specification a rdfs:Class ;
-	rdfs:comment """
+    rdfs:comment """
 An LV2 specification (ie this specification, or an LV2 extension).
 
 Specification data, like plugins, is distributed in standardized
@@ -41,28 +41,28 @@ See http://lv2plug.in/docs for more details.
 """ .
 
 <> a doap:Project ;
-   a :Specification ;
-   doap:license <http://usefulinc.com/doap/licenses/mit> ;
-   doap:name "LV2" ;
-   doap:homepage <http://lv2plug.in> ;
-   doap:created "2004-04-21" ;
-   doap:shortdesc "An audio processing plugin specification" ;
-   doap:programming-language "C" ;
-   doap:release [
-       doap:revision "1" ;
-       doap:created "2008-01-07"
-   ] ;
-   doap:maintainer [
-       a foaf:Person ;
-       foaf:name "Steve Harris" ;
-       foaf:homepage <http://plugin.org.uk/> ;
-       rdfs:seeAlso <http://plugin.org.uk/swh.xrdf>
-   ] , [
-       a foaf:Person ;
-       foaf:name "Dave Robillard" ;
-       foaf:homepage <http://drobilla.net/> ;
-       rdfs:seeAlso <http://drobilla.net/drobilla.xrdf>
-   ].
+    a :Specification ;
+    doap:license <http://usefulinc.com/doap/licenses/mit> ;
+    doap:name "LV2" ;
+    doap:homepage <http://lv2plug.in> ;
+    doap:created "2004-04-21" ;
+    doap:shortdesc "An audio processing plugin specification" ;
+    doap:programming-language "C" ;
+    doap:release [
+        doap:revision "2" ;
+        doap:created "2008-01-30"
+    ] ;
+    doap:maintainer [
+        a foaf:Person ;
+        foaf:name "Steve Harris" ;
+        foaf:homepage <http://plugin.org.uk/> ;
+        rdfs:seeAlso <http://plugin.org.uk/swh.xrdf>
+    ] , [
+        a foaf:Person ;
+        foaf:name "Dave Robillard" ;
+        foaf:homepage <http://drobilla.net/> ;
+        rdfs:seeAlso <http://drobilla.net/drobilla.xrdf>
+    ] .
 
 
 ##################
@@ -99,7 +99,7 @@ The class which represents an LV2 port.
 In order for it to be used by a host it must have at least 
 the following properties:
     rdf:type (with object one of :Port, :InputPort, :OutputPort)
-	rdf:type (more specific port class, see below)
+    rdf:type (more specific port class, see below)
     :index
     :symbol
     :name
@@ -121,7 +121,7 @@ not recognize).
 :InputPort a rdfs:Class ;
     rdfs:label      "Input port" ;
     rdfs:subClassOf :Port ;
-	rdfs:comment    """
+    rdfs:comment    """
 Ports of this type will be connected to a pointer to some value, which will
 be read by the plugin during their run method.
 """ .
@@ -129,7 +129,7 @@ be read by the plugin during their run method.
 :OutputPort a rdfs:Class ;
     rdfs:label      "Output port" ;
     rdfs:subClassOf :Port ;
-	rdfs:comment    """
+    rdfs:comment    """
 Ports of this type will be connected to a pointer to some value, which will
 be written to by the plugin during their run method.
 """ .
@@ -156,10 +156,10 @@ conforming to the 32bit IEEE-754 floating point specification.
 #####################################
 
 :port a rdf:Property ;
-	rdfs:domain  :Plugin ;
-	rdfs:range   :Port ;
-	rdfs:label   "port" ;
-	rdfs:comment "Relates a Plugin to the Ports it contains" .
+    rdfs:domain  :Plugin ;
+    rdfs:range   :Port ;
+    rdfs:label   "port" ;
+    rdfs:comment "Relates a Plugin to the Ports it contains" .
 
 
 ####################################
@@ -316,7 +316,7 @@ sensible decisions (e.g. to provide a better interface).
 Relates Ports to PortProperties. The PortProperty may be ignored without 
 catastrophic effects, though it may be useful e.g. for providing a sensible
 interface for the port.
-""".
+""" .
 
 
 #######################
@@ -335,11 +335,11 @@ and calls to the run method should be done in rapid succession.
     rdfs:label   "in-place broken" ;
     rdfs:comment """
 Indicates that the plugin may cease to work correctly if the host elects to use
-the same data location for both input and output.  Plugins that will fail to
-work correctly if ANY input buffer is set to the same location as ANY output
-buffer (with connect_port()) MUST require this Feature.  Doing so should be
-avoided as it makes it impossible for hosts to use the plugin to process audio
-"in-place".
+the same data location for both audio input and audio output.  Plugins that will 
+fail to work correctly if ANY input buffer for a port of the class :AudioPort 
+is set to the same location as ANY output buffer for a port of the same class
+(with connect_port()) MUST require this Feature.  Doing so should be avoided as it
+makes it impossible for hosts to use the plugin to process audio "in-place".
 """ .
 
 :hardRTCapable a :Feature ;
@@ -396,7 +396,7 @@ EXACTLY ONE port with this property set which informs the host of the "correct"
 latency.  In "fuzzy" cases the value output should be the most reasonable based
 on user expectation of input/output alignment (eg. musical delay/echo plugins
 should not report their delay as latency, as it is an intentional effect).
-""".
+""" .
 
 :toggled a :PortProperty ;
    rdfs:label   "Toggled" ;
@@ -550,8 +550,8 @@ Plugins that intentionally delay their input signal as an effect.
     rdfs:label "Multiband" .
 
 :SpectralPlugin a rdfs:Class ;
-	rdfs:subClassOf :Plugin ;
-	rdfs:label "Spectral Processor" .
+    rdfs:subClassOf :Plugin ;
+    rdfs:label "Spectral Processor" .
 
 :PitchPlugin a rdfs:Class ;
     rdfs:subClassOf :SpectralPlugin ;
