@@ -1,5 +1,5 @@
 AM_LDFLAGS = -shared -module -avoid-version -Wc,-nostartfiles
-AM_CFLAGS = -shared -fPIC -DPIC @LV2CORE_CFLAGS@ @DROBINS_CFLAGS@
+AM_CFLAGS = -shared -fPIC -DPIC @LV2CORE_CFLAGS@ @DROBINS_CFLAGS@ @LV2_OSC_CFLAGS@
 
 pluginbasename = print
 
