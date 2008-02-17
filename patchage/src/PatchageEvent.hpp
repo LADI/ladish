@@ -26,6 +26,7 @@
 #include "PatchagePort.hpp"
 
 class Patchage;
+class Driver;
 
 
 /** A Driver event to be processed by the GUI thread.
@@ -41,29 +42,29 @@ public:
 		DISCONNECTION
 	};
 
-	PatchageEvent(Type type=NULL_EVENT)
-		: _type(type)
+	PatchageEvent(Driver* d = NULL, Type type=NULL_EVENT)
+		: _driver(d)
+		, _type(type)
 	{}
 
 	template <typename P>
-	PatchageEvent(Type type, P port)
-		: _type(type)
+	PatchageEvent(Driver* driver, Type type, P port)
+		: _driver(driver)
 		, _port_1(port)
+		, _type(type)
 	{}
 	
 	template <typename P>
-	PatchageEvent(Type type, P port_1, P port_2)
-		: _type(type)
+	PatchageEvent(Driver* driver, Type type, P port_1, P port_2)
+		: _driver(driver)
 		, _port_1(port_1, false)
 		, _port_2(port_2, true)
+		, _type(type)
 	{}
 	
 	void execute(Patchage* patchage);
 
 	inline Type type() const { return (Type)_type; }
-
-private:
-	uint8_t _type;
 	
 	struct PortRef {
 		PortRef() : type(NULL_PORT_REF) { memset(&id, 0, sizeof(id)); }
@@ -92,10 +93,11 @@ private:
 		} id;
 	};
 
+private:
+	Driver* _driver;
 	PortRef _port_1;
 	PortRef _port_2;
-	
-	boost::shared_ptr<PatchagePort> find_port(const Patchage* patchage, const PortRef& ref);
+	uint8_t _type;
 };
 
 
