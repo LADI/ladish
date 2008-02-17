@@ -1,6 +1,7 @@
 AC_PREREQ(2.59)
 AC_INIT([drobillad],[svn],[dave@drobilla.net])
 
+m4_include([m4/ac_python_devel.m4])
 AC_CONFIG_AUX_DIR([config])
 
 
@@ -340,10 +341,24 @@ AC_ARG_ENABLE(bindings,
 	[AS_HELP_STRING(--enable-bindings, [Build language bindings via SWIG (false)])],
 	[bindings="$enableval"])
 if test "$bindings" = "yes"; then
-  AC_CHECK_PROGS(SWIG, swig)
+  AC_CHECK_PROGS(SWIG, "swig swig-1.3")
+  if test "$SWIG" = ""; then
+  	AC_MSG_WARN("SWIG not found, language bindings disabled")
+  fi
 fi
 AM_CONDITIONAL(WITH_SWIG, [test "$bindings" = "yes"])
-AC_DEFINE(WITH_BINDINGS, 1, [Building with SWIG language bindings])
+
+# Check for binding languages
+mzscheme="no"
+chicken="no"
+if test "$bindings" = "yes"; then
+  AC_PYTHON_DEVEL([>= '2.3.0'])
+  AC_CHECK_HEADER([plt/escheme.h], [mzscheme="yes"], [mzscheme="no"])
+  AC_CHECK_HEADER([chicken.h], [chicken="yes"], [chicken="no"])
+fi
+AM_CONDITIONAL(WITH_PYTHON, [test ! "$PYTHON_VERSION" = "yes"])
+AM_CONDITIONAL(WITH_MZSCHEME, [test "$mzscheme" = "yes"])
+AM_CONDITIONAL(WITH_CHICKEN, [test "$chicken" = "yes"])
 
 # Build unit tests
 build_unit_tests="no"

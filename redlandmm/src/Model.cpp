@@ -126,7 +126,8 @@ Model::serialise_to_file_handle(FILE* fd)
 
 	_serialiser = librdf_new_serializer(_world.world(), RDF_LANG, NULL, NULL);
 	setup_prefixes();
-	librdf_serializer_serialize_model_to_file_handle(_serialiser, fd, NULL, _c_obj);
+	librdf_serializer_serialize_model_to_file_handle(
+            _serialiser, fd, _base.get_uri(), _c_obj);
 	librdf_free_serializer(_serialiser);
 	_serialiser = NULL;
 }
@@ -147,7 +148,8 @@ Model::serialise_to_file(const Glib::ustring& uri_str)
 	if (uri && librdf_uri_is_file_uri(uri)) {
 		_serialiser = librdf_new_serializer(_world.world(), RDF_LANG, NULL, NULL);
 		setup_prefixes();
-		librdf_serializer_serialize_model_to_file(_serialiser, librdf_uri_to_filename(uri), NULL, _c_obj);
+		librdf_serializer_serialize_model_to_file(
+                _serialiser, librdf_uri_to_filename(uri), _base.get_uri(), _c_obj);
 		librdf_free_serializer(_serialiser);
 		_serialiser = NULL;
 	}
