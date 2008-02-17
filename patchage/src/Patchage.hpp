@@ -101,6 +101,7 @@ protected:
 
 #ifdef HAVE_ALSA
 	AlsaDriver*    _alsa_driver;
+	bool _alsa_driver_autoattach;
 	Widget<Gtk::MenuItem> _menu_alsa_connect;
 	Widget<Gtk::MenuItem> _menu_alsa_disconnect;
 	void menu_alsa_connect();
