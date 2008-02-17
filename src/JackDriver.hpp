@@ -51,6 +51,18 @@ public:
 	
 	void refresh();
 
+	bool port_names(const PatchageEvent::PortRef& ref,
+	                std::string&                  module_name,
+	                std::string&                  port_name);
+
+	boost::shared_ptr<PatchagePort> find_port_view(
+			Patchage*                     patchage,
+			const PatchageEvent::PortRef& ref);
+	
+	boost::shared_ptr<PatchagePort> create_port_view(
+			Patchage*                     patchage,
+			const PatchageEvent::PortRef& ref);
+
 	bool connect(boost::shared_ptr<PatchagePort> src,
 	             boost::shared_ptr<PatchagePort> dst);
 
@@ -81,17 +93,16 @@ public:
 
 	inline float max_delay() { return jack_get_max_delayed_usecs(_client); }
 
-	boost::shared_ptr<PatchagePort> create_port(boost::shared_ptr<PatchageModule> parent,
-		jack_port_t* port);
-
 private:
+	
+	boost::shared_ptr<PatchagePort> create_port(
+			boost::shared_ptr<PatchageModule> parent,
+			jack_port_t*                      port);
 
 	static void error_cb(const char* msg);
 
 	void destroy_all_ports();
 	void shutdown();
-
-	void update_time();
 
 	static void jack_port_registration_cb(jack_port_id_t port_id, int registered, void* me);
 	static void jack_port_connect_cb(jack_port_id_t src, jack_port_id_t dst, int connect, void* me);

@@ -35,6 +35,18 @@ public:
 	bool is_attached() const
 	{ return _server_interface && _server_interface->enabled(); }
 	
+	boost::shared_ptr<PatchagePort> find_port_view(
+			Patchage*                     patchage,
+			const PatchageEvent::PortRef& ref) {
+		return boost::shared_ptr<PatchagePort>();
+	}
+	
+	boost::shared_ptr<PatchagePort> create_port_view(
+			Patchage*                     patchage,
+			const PatchageEvent::PortRef& ref) {
+		return boost::shared_ptr<PatchagePort>();
+	}
+	
 	bool connect(boost::shared_ptr<PatchagePort>, boost::shared_ptr<PatchagePort>)
 	{ return false; }
 

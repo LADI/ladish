@@ -24,6 +24,7 @@
 #include "PatchageEvent.hpp"
 
 class PatchagePort;
+class PatchageCanvas;
 
 /** Trival driver base class */
 class Driver {
@@ -35,6 +36,14 @@ public:
 	virtual bool is_attached() const        = 0;
 
 	virtual void refresh() = 0;
+	
+	virtual boost::shared_ptr<PatchagePort> create_port_view(
+			Patchage*                     patchage,
+			const PatchageEvent::PortRef& ref) = 0;
+	
+	virtual boost::shared_ptr<PatchagePort> find_port_view(
+			Patchage*                     patchage,
+			const PatchageEvent::PortRef& ref) = 0;
 
 	virtual bool connect(boost::shared_ptr<PatchagePort> src_port,
 	                     boost::shared_ptr<PatchagePort> dst_port) = 0;

@@ -97,6 +97,14 @@ AlsaDriver::refresh()
 	refresh_connections();
 }
 
+	
+boost::shared_ptr<PatchagePort>
+AlsaDriver::create_port_view(Patchage*                     patchage,
+                             const PatchageEvent::PortRef& ref)
+{
+	return boost::shared_ptr<PatchagePort>();
+}
+
 
 boost::shared_ptr<PatchagePort>
 AlsaDriver::create_port(boost::shared_ptr<PatchageModule> parent,
@@ -319,6 +327,22 @@ AlsaDriver::add_connections(boost::shared_ptr<PatchagePort> port)
 }
 
 
+/** Find the PatchagePort that corresponds to an Alsa Sequencer port.
+ *
+ * This function is not realtime safe, but safe to call from the GUI thread
+ * (e.g. in PatchageEvent::execute).
+ */
+boost::shared_ptr<PatchagePort>
+AlsaDriver::find_port_view(Patchage*                     patchage,
+                           const PatchageEvent::PortRef& ref)
+{
+	if (ref.type == PatchageEvent::PortRef::ALSA_ADDR)
+		return patchage->canvas()->find_port(ref.id.alsa_addr, ref.is_input);
+	else
+		return boost::shared_ptr<PatchagePort>();
+}
+
+
 /** Connects two Alsa Midi ports.
  * 
  * \return Whether connection succeeded.
@@ -497,11 +521,11 @@ AlsaDriver::_refresh_main()
 
 				switch (ev->type) {
 				case SND_SEQ_EVENT_PORT_SUBSCRIBED:
-					_events.push(PatchageEvent(PatchageEvent::CONNECTION,
+					_events.push(PatchageEvent(this, PatchageEvent::CONNECTION,
 								ev->data.connect.sender, ev->data.connect.dest));
 					break;
 				case SND_SEQ_EVENT_PORT_UNSUBSCRIBED:
-					_events.push(PatchageEvent(PatchageEvent::DISCONNECTION,
+					_events.push(PatchageEvent(this, PatchageEvent::DISCONNECTION,
 								ev->data.connect.sender, ev->data.connect.dest));
 					break;
 				case SND_SEQ_EVENT_PORT_START:
@@ -513,7 +537,7 @@ AlsaDriver::_refresh_main()
 				case SND_SEQ_EVENT_RESET:
 				default:
 					// FIXME: Ultra slow kludge, use proper find-grained events
-					_events.push(PatchageEvent(PatchageEvent::REFRESH));
+					_events.push(PatchageEvent(this, PatchageEvent::REFRESH));
 				}
 			}
 		}

@@ -137,6 +137,45 @@ JackDriver::destroy_all_ports()
 			module->resize();
 	}
 }
+	
+
+boost::shared_ptr<PatchagePort>
+JackDriver::create_port_view(Patchage*                     patchage,
+                             const PatchageEvent::PortRef& ref)
+{
+	jack_port_t* jack_port = NULL;
+
+	if (ref.type == PatchageEvent::PortRef::JACK_PORT)
+		jack_port = ref.id.jack_port;
+	else if (ref.type == PatchageEvent::PortRef::JACK_ID)
+		jack_port = jack_port_by_id(_client, ref.id.jack_id);
+
+	string module_name, port_name;
+	port_names(ref, module_name, port_name);
+	boost::shared_ptr<PatchageModule> parent
+		= _app->canvas()->find_module(module_name, InputOutput);
+	
+	if (!parent) {
+		parent = boost::shared_ptr<PatchageModule>(
+				new PatchageModule(patchage, module_name, InputOutput));
+		parent->load_location();
+		patchage->canvas()->add_item(parent);
+		parent->show();
+	}
+
+	boost::shared_ptr<PatchagePort> port
+			= boost::dynamic_pointer_cast<PatchagePort>(parent->get_port(port_name));
+
+	if (port) {
+		return port;
+	} else {
+		port = create_port(parent, jack_port);
+		port->show();
+		parent->add_port(port);
+		parent->resize();
+		return port;
+	}
+}
 
 
 boost::shared_ptr<PatchagePort>
@@ -147,18 +186,14 @@ JackDriver::create_port(boost::shared_ptr<PatchageModule> parent, jack_port_t* p
 
 	if (!strcmp(type_str, JACK_DEFAULT_AUDIO_TYPE)) {
 		port_type = JACK_AUDIO;
-		//cerr << "TYPE: AUDIO\n";
 #ifdef HAVE_JACK_MIDI
 	} else if (!strcmp(type_str, JACK_DEFAULT_MIDI_TYPE)) {
 		port_type = JACK_MIDI;
-		//cerr << "TYPE: MIDI\n";
 #endif
 	} else {
 		cerr << "WARNING: " << jack_port_name(port) << " has unknown type \'" << type_str << "\'" << endl;
 		return boost::shared_ptr<PatchagePort>();
 	}
-	
-	//cerr << "Port " << jack_port_name(port) << " type: " << type_str << " = " << (int)port_type << endl;
 	
 	boost::shared_ptr<PatchagePort> ret(
 		new PatchagePort(parent, port_type, jack_port_short_name(port),
@@ -320,6 +355,65 @@ JackDriver::refresh()
 }
 
 
+bool
+JackDriver::port_names(const PatchageEvent::PortRef& ref,
+                       string&                       module_name,
+                       string&                       port_name)
+{
+	jack_port_t* jack_port = NULL;
+
+	if (ref.type == PatchageEvent::PortRef::JACK_PORT)
+		jack_port = ref.id.jack_port;
+	else if (ref.type == PatchageEvent::PortRef::JACK_ID)
+		jack_port = jack_port_by_id(_client, ref.id.jack_id);
+
+	if (!jack_port) {
+		module_name = "";
+		port_name = "";
+		return false;
+	}
+
+	const string full_name = jack_port_name(jack_port);
+
+	module_name = full_name.substr(0, full_name.find(":"));
+	port_name   = full_name.substr(full_name.find(":")+1);
+
+	return true;
+}
+
+
+/** Find the PatchagePort that corresponds to a JACK port.
+ *
+ * This function is not realtime safe, but safe to call from the GUI thread
+ * (e.g. in PatchageEvent::execute).
+ */
+boost::shared_ptr<PatchagePort>
+JackDriver::find_port_view(Patchage*                     patchage,
+                           const PatchageEvent::PortRef& ref)
+{
+	jack_port_t* jack_port = NULL;
+
+	if (ref.type == PatchageEvent::PortRef::JACK_PORT)
+		jack_port = ref.id.jack_port;
+	else if (ref.type == PatchageEvent::PortRef::JACK_ID)
+		jack_port = jack_port_by_id(_client, ref.id.jack_id);
+
+	if (!jack_port)
+		return boost::shared_ptr<PatchagePort>();
+
+	string module_name, port_name;
+	port_names(ref, module_name, port_name);
+
+	SharedPtr<PatchageModule> module = patchage->canvas()->find_module(module_name,
+			(jack_port_flags(jack_port) & JackPortIsInput) ? Input : Output);
+
+	if (module)
+		return PtrCast<PatchagePort>(module->get_port(port_name));
+	else
+		return boost::shared_ptr<PatchagePort>();
+}
+
+
 /** Connects two Jack audio ports.
  * To be called from GTK thread only.
  * \return Whether connection succeeded.
@@ -367,12 +461,6 @@ JackDriver::disconnect(boost::shared_ptr<PatchagePort> const src_port, boost::sh
 
 
 void
-JackDriver::update_time()
-{
-}
-
-
-void
 JackDriver::jack_port_registration_cb(jack_port_id_t port_id, int registered, void* jack_driver) 
 {
 	assert(jack_driver);
@@ -385,9 +473,9 @@ JackDriver::jack_port_registration_cb(jack_port_id_t port_id, int registered, vo
 	jack_reset_max_delayed_usecs(me->_client);
 
 	if (registered) {
-		me->_events.push(PatchageEvent(PatchageEvent::PORT_CREATION, port_id));
+		me->_events.push(PatchageEvent(me, PatchageEvent::PORT_CREATION, port_id));
 	} else {
-		me->_events.push(PatchageEvent(PatchageEvent::PORT_DESTRUCTION, port_id));
+		me->_events.push(PatchageEvent(me, PatchageEvent::PORT_DESTRUCTION, port_id));
 	}
 }
 
@@ -402,9 +490,9 @@ JackDriver::jack_port_connect_cb(jack_port_id_t src, jack_port_id_t dst, int con
 	jack_reset_max_delayed_usecs(me->_client);
 
 	if (connect) {
-		me->_events.push(PatchageEvent(PatchageEvent::CONNECTION, src, dst));
+		me->_events.push(PatchageEvent(me, PatchageEvent::CONNECTION, src, dst));
 	} else {
-		me->_events.push(PatchageEvent(PatchageEvent::DISCONNECTION, src, dst));
+		me->_events.push(PatchageEvent(me, PatchageEvent::DISCONNECTION, src, dst));
 	}
 }
 
@@ -431,11 +519,9 @@ JackDriver::jack_buffer_size_cb(jack_nframes_t buffer_size, void* jack_driver)
 	
 	jack_reset_max_delayed_usecs(me->_client);
 
-	//(me->_mutex).lock();
 	me->_buffer_size = buffer_size;
 	me->reset_xruns();
 	me->reset_delay();
-	//(me->_mutex).unlock();
 
 	return 0;
 }
@@ -448,14 +534,9 @@ JackDriver::jack_xrun_cb(void* jack_driver)
 	JackDriver* me = reinterpret_cast<JackDriver*>(jack_driver);
 	assert(me->_client);
 
-	//(me->_mutex).lock();
 	me->_xruns++;
 	me->_xrun_delay = jack_get_xrun_delayed_usecs(me->_client);
 	jack_reset_max_delayed_usecs(me->_client);
-
-	//cerr << "** XRUN Delay = " << me->_xrun_delay << endl;
-
-	//(me->_mutex).unlock();
 	
 	return 0;
 }
