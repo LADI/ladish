@@ -88,6 +88,7 @@ Patchage::Patchage(int argc, char** argv)
 #endif
 #ifdef HAVE_ALSA
 	, _alsa_driver(NULL)
+	, _alsa_driver_autoattach(true)
 	, INIT_WIDGET(_menu_alsa_connect)
 	, INIT_WIDGET(_menu_alsa_disconnect)
 #endif
@@ -142,6 +143,20 @@ Patchage::Patchage(int argc, char** argv)
 #ifdef HAVE_LASH
 	_lash_driver = new LashDriver(this, argc, argv);
 #endif
+
+	while (argc > 0) {
+		if (!strcmp(*argv, "--help")) {
+			cout << "Usage: patchage [OPTIONS]\nOptions: --no-alsa" << endl;
+			exit(0);
+#ifdef HAVE_ALSA
+		} else if (!strcmp(*argv, "-A") || !strcmp(*argv, "--no-alsa")) {
+			_alsa_driver_autoattach = false;
+#endif
+		}
+
+		argv++;
+		argc--;
+	}
 
 	xml->get_widget_derived("jack_settings_win", _jack_settings_dialog);
 	
@@ -269,7 +284,8 @@ Patchage::attach()
 	_lash_driver->attach(true);
 #endif
 #ifdef HAVE_ALSA
-	_alsa_driver->attach();
+	if (_alsa_driver_autoattach)
+		_alsa_driver->attach();
 #endif
 
 	_enable_refresh = true;
