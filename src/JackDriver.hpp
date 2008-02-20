@@ -104,6 +104,7 @@ private:
 	void destroy_all_ports();
 	void shutdown();
 
+	static void jack_client_registration_cb(const char* name, int registered, void* me);
 	static void jack_port_registration_cb(jack_port_id_t port_id, int registered, void* me);
 	static void jack_port_connect_cb(jack_port_id_t src, jack_port_id_t dst, int connect, void* me);
 	static int  jack_graph_order_cb(void* me);

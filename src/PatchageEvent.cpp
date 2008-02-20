@@ -31,6 +31,22 @@ PatchageEvent::execute(Patchage* patchage)
 {
 	if (_type == REFRESH) {
 		patchage->refresh();
+	} else if (_type == CLIENT_CREATION) {
+		// No empty modules (for now)
+		free(_str);
+		_str = NULL;
+	} else if (_type == CLIENT_DESTRUCTION) {
+		SharedPtr<PatchageModule> module = PtrCast<PatchageModule>(
+				patchage->canvas()->find_module(_str, InputOutput));
+
+		if (module) {
+			patchage->canvas()->remove_item(module);
+			module.reset();
+		}
+
+		free(_str);
+		_str = NULL;
+
 	} else if (_type == PORT_CREATION) {
 		
 		if ( ! _driver->create_port_view(patchage, _port_1)) {
@@ -48,6 +64,7 @@ PatchageEvent::execute(Patchage* patchage)
 			module->remove_port(port);
 			port->hide();
 			
+			// No empty modules (for now)
 			if (module->num_ports() == 0) {
 				patchage->canvas()->remove_item(module);
 				module.reset();
