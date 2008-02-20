@@ -36,6 +36,8 @@ public:
 	enum Type {
 		NULL_EVENT = 0,
 		REFRESH,
+		CLIENT_CREATION,
+		CLIENT_DESTRUCTION,
 		PORT_CREATION,
 		PORT_DESTRUCTION,
 		CONNECTION,
@@ -44,12 +46,20 @@ public:
 
 	PatchageEvent(Driver* d = NULL, Type type=NULL_EVENT)
 		: _driver(d)
+		, _str(NULL)
+		, _type(type)
+	{}
+	
+	PatchageEvent(Driver* driver, Type type, const char* str)
+		: _driver(driver)
+		, _str(strdup(str)) // FIXME: not realtime (jack) :(
 		, _type(type)
 	{}
 
 	template <typename P>
 	PatchageEvent(Driver* driver, Type type, P port)
 		: _driver(driver)
+		, _str(NULL)
 		, _port_1(port)
 		, _type(type)
 	{}
@@ -57,6 +67,7 @@ public:
 	template <typename P>
 	PatchageEvent(Driver* driver, Type type, P port_1, P port_2)
 		: _driver(driver)
+		, _str(NULL)
 		, _port_1(port_1, false)
 		, _port_2(port_2, true)
 		, _type(type)
@@ -95,6 +106,7 @@ public:
 
 private:
 	Driver* _driver;
+	char*   _str;
 	PortRef _port_1;
 	PortRef _port_2;
 	uint8_t _type;

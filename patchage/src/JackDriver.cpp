@@ -75,6 +75,7 @@ JackDriver::attach(bool launch_daemon)
 
 		jack_set_error_function(error_cb);
 		jack_on_shutdown(client, jack_shutdown_cb, this);
+		jack_set_client_registration_callback(client, jack_client_registration_cb, this);
 		jack_set_port_registration_callback(client, jack_port_registration_cb, this);
 		jack_set_port_connect_callback(client, jack_port_connect_cb, this);
 		jack_set_graph_order_callback(client, jack_graph_order_cb, this);
@@ -461,15 +462,33 @@ JackDriver::disconnect(boost::shared_ptr<PatchagePort> const src_port, boost::sh
 
 
 void
-JackDriver::jack_port_registration_cb(jack_port_id_t port_id, int registered, void* jack_driver) 
+JackDriver::jack_client_registration_cb(const char* name, int registered, void* jack_driver) 
 {
 	assert(jack_driver);
 	JackDriver* me = reinterpret_cast<JackDriver*>(jack_driver);
 	assert(me->_client);
 
-	jack_port_t* const port = jack_port_by_id(me->_client, port_id);
-	const string full_name = jack_port_name(port);
+	jack_reset_max_delayed_usecs(me->_client);
+
+	// FIXME: This sucks, not realtime :(
+	if (registered) {
+		me->_events.push(PatchageEvent(me, PatchageEvent::CLIENT_CREATION, name));
+	} else {
+		me->_events.push(PatchageEvent(me, PatchageEvent::CLIENT_DESTRUCTION, name));
+	}
+}
+
+
+void
+JackDriver::jack_port_registration_cb(jack_port_id_t port_id, int registered, void* jack_driver) 
+{
+	assert(jack_driver);
+	JackDriver* me = reinterpret_cast<JackDriver*>(jack_driver);
+	assert(me->_client);
 	
+	//jack_port_t* const port = jack_port_by_id(me->_client, port_id);
+	//const string full_name = jack_port_name(port);
+
 	jack_reset_max_delayed_usecs(me->_client);
 
 	if (registered) {
