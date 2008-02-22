@@ -115,7 +115,7 @@ private:
 	Patchage*      _app;
 	jack_client_t* _client;
 
-	Glib::Mutex _mutex;
+	Glib::Mutex _shutdown_mutex;
 	
 	bool            _is_activated;
 	jack_position_t _last_pos;

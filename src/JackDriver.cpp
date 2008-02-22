@@ -102,9 +102,9 @@ JackDriver::detach()
 	if (_client) {
 		jack_deactivate(_client);
 		jack_client_close(_client);
-		_mutex.lock();
+		_shutdown_mutex.lock();
 		_client = NULL;
-		_mutex.unlock();
+		_shutdown_mutex.unlock();
 		destroy_all_ports();
 		_is_activated = false;
 		signal_detached.emit();
@@ -225,17 +225,15 @@ JackDriver::refresh()
 	// Jack can take _client away from us at any time throughout here :/
 	// Shortest locks possible is the best solution I can figure out
 	
-	_mutex.lock();
+	_shutdown_mutex.lock();
 	
 	if (_client == NULL) {
-		_mutex.unlock();
+		_shutdown_mutex.unlock();
 		shutdown();
 		return;
 	}
 
 	ports = jack_get_ports(_client, NULL, NULL, 0); // get all existing ports
-	
-	_mutex.unlock();
 
 	string client1_name;
 	string port1_name;
@@ -245,14 +243,7 @@ JackDriver::refresh()
 	// Add all ports
 	if (ports)
 	for (int i=0; ports[i]; ++i) {
-		_mutex.lock();
-		if (!_client) {
-			_mutex.unlock();
-			shutdown();
-			return;
-		}
 		port = jack_port_by_name(_client, ports[i]);
-		_mutex.unlock();
 
 		client1_name = ports[i];
 		client1_name = client1_name.substr(0, client1_name.find(":"));
@@ -298,14 +289,6 @@ JackDriver::refresh()
 	// Add all connections
 	if (ports) {
 	
-	_mutex.lock();
-	
-	if (!_client) {
-		_mutex.unlock();
-		shutdown();
-		return;
-	}
-
 	for (int i=0; ports[i]; ++i) {
 
 		port = jack_port_by_name(_client, ports[i]);
@@ -314,12 +297,14 @@ JackDriver::refresh()
 		if (connected_ports) {
 			for (int j=0; connected_ports[j]; ++j) {
 				client1_name = ports[i];
-				port1_name = client1_name.substr(client1_name.find(':')+1);
-				client1_name = client1_name.substr(0, client1_name.find(':'));
+				size_t colon = client1_name.find(':');
+				port1_name = client1_name.substr(colon+1);
+				client1_name = client1_name.substr(0, colon);
 
 				client2_name = connected_ports[j];
-				port2_name = client2_name.substr(client2_name.find(':')+1);
-				client2_name = client2_name.substr(0, client2_name.find(':'));
+				colon = client2_name.find(':');
+				port2_name = client2_name.substr(colon+1);
+				client2_name = client2_name.substr(0, colon);
 
 				boost::shared_ptr<Port> port1
 					= _app->canvas()->get_port(client1_name, port1_name);
@@ -347,10 +332,10 @@ JackDriver::refresh()
 			free(connected_ports);
 		}
 	}
-		
-	_mutex.unlock();
 	
 	}
+	
+	_shutdown_mutex.unlock();
 
 	free(ports);
 }
@@ -570,9 +555,9 @@ JackDriver::jack_shutdown_cb(void* jack_driver)
 
 	jack_reset_max_delayed_usecs(me->_client);
 
-	me->_mutex.lock();
+	me->_shutdown_mutex.lock();
 	me->_client = NULL;
-	me->_mutex.unlock();
+	me->_shutdown_mutex.unlock();
 }
 
 

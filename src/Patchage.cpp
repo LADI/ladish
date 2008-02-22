@@ -94,6 +94,7 @@ Patchage::Patchage(int argc, char** argv)
 #endif
 	, _jack_driver(NULL)
 	, _state_manager(NULL)
+	, _attach(true)
 	, _refresh(false)
 	, _enable_refresh(true)
 	, _jack_settings_dialog(NULL)
@@ -130,19 +131,6 @@ Patchage::Patchage(int argc, char** argv)
 	_settings_filename += "/.patchagerc";
 	_state_manager = new StateManager();
 	_canvas = boost::shared_ptr<PatchageCanvas>(new PatchageCanvas(this, 1600*2, 1200*2));
-
-	_jack_driver = new JackDriver(this);
-	_jack_driver->signal_detached.connect(sigc::mem_fun(this, &Patchage::queue_refresh));
-
-#ifdef HAVE_ALSA
-	_alsa_driver = new AlsaDriver(this);
-#endif
-	
-	_state_manager->load(_settings_filename);
-
-#ifdef HAVE_LASH
-	_lash_driver = new LashDriver(this, argc, argv);
-#endif
 
 	while (argc > 0) {
 		if (!strcmp(*argv, "--help")) {
@@ -239,16 +227,7 @@ Patchage::Patchage(int argc, char** argv)
 	_messages_win->signal_delete_event().connect(
 			sigc::mem_fun(this, &Patchage::on_messages_delete));
 
-	connect_widgets();
-	update_state();
-
 	_canvas->show();
-	_main_win->present();
-	_about_win->set_transient_for(*_main_win);
-
-	// Idle callback, check if we need to refresh
-	Glib::signal_timeout().connect(
-			sigc::mem_fun(this, &Patchage::idle_callback), 100);
 
 	_main_win->resize(
 		static_cast<int>(_state_manager->get_window_size().x),
@@ -257,6 +236,29 @@ Patchage::Patchage(int argc, char** argv)
 	_main_win->move(
 		static_cast<int>(_state_manager->get_window_location().x),
 		static_cast<int>(_state_manager->get_window_location().y));
+	
+	_main_win->present();
+	_about_win->set_transient_for(*_main_win);
+	
+	_jack_driver = new JackDriver(this);
+	_jack_driver->signal_detached.connect(sigc::mem_fun(this, &Patchage::queue_refresh));
+
+#ifdef HAVE_ALSA
+	_alsa_driver = new AlsaDriver(this);
+#endif
+	
+	_state_manager->load(_settings_filename);
+
+#ifdef HAVE_LASH
+	_lash_driver = new LashDriver(this, argc, argv);
+#endif
+	
+	connect_widgets();
+	update_state();
+
+	// Idle callback, check if we need to refresh
+	Glib::signal_timeout().connect(
+			sigc::mem_fun(this, &Patchage::idle_callback), 100);
 }
 
 
@@ -301,6 +303,12 @@ Patchage::attach()
 bool
 Patchage::idle_callback() 
 {
+	// Initial run, attach
+	if (_attach) {
+		attach();
+		_attach = false;
+	}
+
 	// Process any JACK events
 	if (_jack_driver) {
 		while (!_jack_driver->events().empty()) {
@@ -414,9 +422,7 @@ Patchage::refresh()
 #endif
 	
 		for (ItemList::iterator i = _canvas->items().begin(); i != _canvas->items().end(); ++i) {
-			SharedPtr<Module> module = PtrCast<Module>(*i);
-			if (module) 
-				module->resize();
+			(*i)->resize();
 		}
 	}
 }
