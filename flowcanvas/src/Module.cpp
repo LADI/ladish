@@ -31,7 +31,7 @@ namespace FlowCanvas {
 
 static const uint32_t MODULE_FILL_COLOUR           = 0x1E2224FF;
 static const uint32_t MODULE_HILITE_FILL_COLOUR    = 0x2E3436FF;
-static const uint32_t MODULE_OUTLINE_COLOUR        = 0xD3D7CFFF;
+static const uint32_t MODULE_OUTLINE_COLOUR        = 0x93978FFF;
 static const uint32_t MODULE_HILITE_OUTLINE_COLOUR = 0xEEEEECFF;
 static const uint32_t MODULE_TITLE_COLOUR          = 0xFFFFFFFF;
 
@@ -59,12 +59,8 @@ Module::Module(boost::shared_ptr<Canvas> canvas, const string& name, double x, d
 {
 	_module_box.property_fill_color_rgba() = MODULE_FILL_COLOUR;
 	_module_box.property_outline_color_rgba() = MODULE_OUTLINE_COLOUR;
-	_border_color = MODULE_OUTLINE_COLOUR;
 
-	if (canvas->property_aa())
-		set_border_width(0.5);
-	else
-		set_border_width(1.0);
+	_border_color = MODULE_OUTLINE_COLOUR;
 
 	if (show_title) {
 		/* WARNING: Doing this makes things extremely slow!
@@ -471,11 +467,11 @@ Module::resize()
 		const double y = height_base + (i * (p->height() + 2.0));
 		if (p->is_input()) {
 			p->set_width(_widest_input);
-			p->property_x() = 0.0;
+			p->property_x() = 0.5;
 			p->property_y() = y;
 		} else {
 			p->set_width(_widest_output);
-			p->property_x() = _width - p->width() - 0.0;
+			p->property_x() = _width - p->width() - 0.5;
 			p->property_y() = y;
 		}
 		
