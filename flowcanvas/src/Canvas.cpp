@@ -877,8 +877,8 @@ Canvas::connection_drag_handler(GdkEvent* event)
 			
 			drag_port->property_x() = 0;
 			drag_port->property_y() = 0;
-			drag_port->_rect.property_x2() = 1;
-			drag_port->_rect.property_y2() = 1;
+			drag_port->_rect->property_x2() = 1;
+			drag_port->_rect->property_y2() = 1;
 			
 			if (drag_port_is_input)
 				drag_connection = boost::shared_ptr<Connection>(new Connection(
@@ -926,8 +926,8 @@ Canvas::connection_drag_handler(GdkEvent* event)
 				drag_module->property_y() = y;
 				drag_port->property_x() = 0;
 				drag_port->property_y() = 0;
-				drag_port->_rect.property_x2() = 1;
-				drag_port->_rect.property_y2() = 1;
+				drag_port->_rect->property_x2() = 1;
+				drag_port->_rect->property_y2() = 1;
 			}
 			drag_connection->update_location();
 		} else { // not snapped to a port
@@ -957,8 +957,8 @@ Canvas::connection_drag_handler(GdkEvent* event)
 					drag_port->property_x() = p->property_x().get_value();
 					drag_port->property_y() = p->property_y().get_value();
 					// Make the drag port as wide as the snapped port so the connection coords are the same
-					drag_port->_rect.property_x2() = p->_rect.property_x2().get_value();
-					drag_port->_rect.property_y2() = p->_rect.property_y2().get_value();
+					drag_port->_rect->property_x2() = p->_rect->property_x2().get_value();
+					drag_port->_rect->property_y2() = p->_rect->property_y2().get_value();
 				}
 			} else {
 				drag_module->property_x() = x;

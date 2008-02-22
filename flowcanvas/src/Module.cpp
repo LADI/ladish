@@ -67,10 +67,11 @@ Module::Module(boost::shared_ptr<Canvas> canvas, const string& name, double x, d
 		set_border_width(1.0);
 
 	if (show_title) {
+		/* WARNING: Doing this makes things extremely slow!
 		_canvas_title.property_size_set() = true;
 		_canvas_title.property_size() = 9000;
 		_canvas_title.property_weight_set() = true;
-		_canvas_title.property_weight() = 400;
+		_canvas_title.property_weight() = 400; */
 		_canvas_title.property_fill_color_rgba() = MODULE_TITLE_COLOUR;
 	} else {
 		_canvas_title.hide();
@@ -415,13 +416,11 @@ Module::resize()
 {
 	// The amount of space between a port edge and the module edge (on the
 	// side that the port isn't right on the edge).
-	double hor_pad = 8.0;
-	if (!_title_visible)
-		hor_pad = 16.0; // leave more room for something to grab for dragging
+	const double hor_pad = (_title_visible ? 8.0 : 16.0);
 	
-	double width = ( _title_visible
+	double width = (_title_visible
 		? _canvas_title.property_text_width() + 8.0
-		: 1.0 );
+		: 1.0);
 	
 	if (_icon_box)
 		width += _icon_size + 2;
@@ -435,7 +434,7 @@ Module::resize()
 	width = std::max(width,
 			(std::max(_widest_input, _widest_output) + hor_pad));
 	               
-	width += border_width() * 2.0;
+	width += _border_width * 2.0;
 
 	if (width > _minimum_width)
 		set_width(width);

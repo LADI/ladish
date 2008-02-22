@@ -38,53 +38,31 @@ Port::Port(boost::shared_ptr<Module> module, const string& name, bool is_input, 
   _name(name),
   _is_input(is_input),
   _color(color),
-  _show_control(false),
   _control_value(0.0f),
   _control_min(0.0f),
   _control_max(1.0f),
-  _label(*this, 1, 1, _name),
-  _rect(*this, 0, 0, 0, 0),
-  _control_rect(*this, 0, 0, 0, 0)
+  _control_rect(NULL),
+  _menu(NULL)
 {
-	// Derived classes might nuke this and make a custom one, or add to it
-	_menu = new Gtk::Menu();
-	_menu->items().push_back(Gtk::Menu_Helpers::MenuElem(
-		"Disconnect All", sigc::mem_fun(this, &Port::disconnect_all)));
-
-	_rect.property_fill_color_rgba() = color;
-	_control_rect.property_fill_color_rgba() = 0xFFFFFF55;
-	
-	// Make rectangle pretty
-	//m_rect.property_outline_color_rgba() = 0x8899AAFF;
-	_rect.property_outline_color_rgba() = color;
-	_control_rect.property_outline_color_rgba() = 0xFFFFFCC;
-	_rect.property_join_style() = Gdk::JOIN_MITER;
-	set_border_width(0.0);
-	
-	// Make label pretty
-	_label.property_size() = PORT_LABEL_SIZE;
-	_label.property_fill_color_rgba() = 0xFFFFFFFF;
-	_label.property_weight() = 200;
-		
-	const double text_width = _label.property_text_width();
-	
+	// Create label first (and find size)
+	_label = new Gnome::Canvas::Text(*this, 0, 0, _name);
+	const double text_width = _label->property_text_width();
 	_width = text_width + 6.0;
-	_height = _label.property_text_height();
-	
-	// Place everything
-	_rect.property_x1() = 0;
-	_rect.property_y1() = 0;
-	_rect.property_x2() = _width;	
-	_rect.property_y2() = _height;
-	_control_rect.property_x1() = 0;
-	_control_rect.property_y1() = 0;
-	_control_rect.property_x2() = 0;	
-	_control_rect.property_y2() = _height;
-	_label.property_x() = text_width / 2.0 + 3.0;
-	_label.property_y() = (_height / 2.0) - 1.0;
+	_height = _label->property_text_height();
+	_label_normal_size = _label->property_size();
+	_label->property_x() = text_width / 2.0 + 3.0;
+	_label->property_y() = (_height / 2.0) - 1.0;
+	/* WARNING: Doing this makes things extremely slow!
+	_label->property_size() = PORT_LABEL_SIZE;
+	_label->property_weight() = 200; */
+	_label->property_fill_color_rgba() = 0xFFFFFFFF;
 
-	_control_rect.hide();
-	_label.raise_to_top();
+	// Create rect to enclose label
+	_rect = new Gnome::Canvas::Rect(*this, 0, 0, _width, _height);
+	set_border_width(0.0);
+	_rect->property_fill_color_rgba() = color;
+	
+	_label->raise_to_top();
 }
 
 
@@ -92,12 +70,33 @@ Port::~Port()
 {
 }
 
+
+void
+Port::show_control()
+{
+	if (!_control_rect) {
+		_control_rect = new Gnome::Canvas::Rect(*this, 0, 0, 0, _height);
+		_control_rect->property_outline_color_rgba() = 0xFFFFFCC;
+		_control_rect->property_fill_color_rgba() = 0xFFFFFF55;
+		_control_rect->show();
+	}
+}
+
+
+void
+Port::hide_control()
+{
+	delete _control_rect;
+	_control_rect = NULL;
+}
+
+
 /** Set the value for this port's control slider to display.
  */ 
 void
 Port::set_control(float value, bool signal)
 {
-	if (!_show_control)
+	if (!_control_rect)
 		return;
 
 	//cerr << _name << ".set_control(" << value << "): " << _control_min << " .. " << _control_max
@@ -118,7 +117,7 @@ Port::set_control(float value, bool signal)
 
 	//cerr << w << " / " << _width << endl;
 
-	_control_rect.property_x2() = _control_rect.property_x1() + w;
+	_control_rect->property_x2() = _control_rect->property_x1() + w;
 	_control_value = value;
 }
 
@@ -131,8 +130,9 @@ void
 Port::set_border_width(double w)
 {
 	_border_width = w;
-	_rect.property_width_units() = w;
-	_control_rect.property_width_units() = w;
+	_rect->property_width_units() = w;
+	if (_control_rect)
+		_control_rect->property_width_units() = w;
 }
 
 
@@ -143,16 +143,18 @@ Port::set_name(const string& n)
 		_name = n;
 
 		// Reposition label
-		_label.property_text() = _name;
-		const double text_width = _label.property_text_width();
+		_label->property_text() = _name;
+		const double text_width = _label->property_text_width();
 		_width = text_width + 6.0;
-		_height = _label.property_text_height();
-		_rect.property_x2() = _width;	
-		_rect.property_y2() = _height;
-		_control_rect.property_x2() = _control_rect.property_x1() + (_control_value * _width);
-		_control_rect.property_y2() = _height;
-		_label.property_x() = text_width / 2 + 1;
-		_label.property_y() = _height / 2;
+		_height = _label->property_text_height();
+		_rect->property_x2() = _width;	
+		_rect->property_y2() = _height;
+		if (_control_rect) {
+			_control_rect->property_x2() = _control_rect->property_x1() + (_control_value * _width);
+			_control_rect->property_y2() = _height;
+		}
+		_label->property_x() = text_width / 2 + 1;
+		_label->property_y() = _height / 2;
 
 		signal_renamed.emit();
 	}
@@ -162,7 +164,17 @@ Port::set_name(const string& n)
 void
 Port::zoom(float z)
 {
-	_label.property_size() = static_cast<int>(8000 * z);
+	_label->property_size() = static_cast<int>(floor(_label_normal_size * z));
+}
+
+
+void
+Port::create_menu()
+{
+	// Derived classes may just override this
+	_menu = new Gtk::Menu();
+	_menu->items().push_back(Gtk::Menu_Helpers::MenuElem(
+		"Disconnect All", sigc::mem_fun(this, &Port::disconnect_all)));
 }
 
 
@@ -207,13 +219,13 @@ Port::set_highlighted(bool b, bool highlight_parent, bool highlight_connections,
 	
 	if (b) {
 		/*raise_to_top();
-		_rect.raise_to_top();
+		_rect->raise_to_top();
 		_label.raise_to_top();*/
-		_rect.property_fill_color_rgba() = _color + 0x33333300;
-		_rect.property_outline_color_rgba() = _color + 0x33333300;
+		_rect->property_fill_color_rgba() = _color + 0x33333300;
+		_rect->property_outline_color_rgba() = _color + 0x33333300;
 	} else {
-		_rect.property_fill_color_rgba() = _color;
-		_rect.property_outline_color_rgba() = _color;
+		_rect->property_fill_color_rgba() = _color;
+		_rect->property_outline_color_rgba() = _color;
 	}
 }
 	
@@ -223,8 +235,8 @@ Port::set_highlighted(bool b, bool highlight_parent, bool highlight_connections,
 Gnome::Art::Point
 Port::src_connection_point()
 {
-	double x = (is_input()) ? _rect.property_x1()-1.0 : _rect.property_x2()+1.0;
-	double y = _rect.property_y1() + _height / 2.0;
+	double x = (is_input()) ? _rect->property_x1()-1.0 : _rect->property_x2()+1.0;
+	double y = _rect->property_y1() + _height / 2.0;
 	
 	i2w(x, y); // convert to world-relative coords
 	
@@ -237,8 +249,8 @@ Port::src_connection_point()
 Gnome::Art::Point
 Port::dst_connection_point(const Gnome::Art::Point& src)
 {
-	double x = (is_input()) ? _rect.property_x1()-1.0 : _rect.property_x2()+1.0;
-	double y = _rect.property_y1() + _height / 2.0;
+	double x = (is_input()) ? _rect->property_x1()-1.0 : _rect->property_x2()+1.0;
+	double y = _rect->property_y1() + _height / 2.0;
 	
 	i2w(x, y); // convert to world-relative coords
 	
@@ -249,7 +261,7 @@ Port::dst_connection_point(const Gnome::Art::Point& src)
 void
 Port::set_width(double w)
 {
-	_rect.property_x2() = _rect.property_x2() + (w - _width);
+	_rect->property_x2() = _rect->property_x2() + (w - _width);
 	_width = w;
 	set_control(_control_value, false);
 }

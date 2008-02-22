@@ -59,7 +59,7 @@ public:
 	
 	boost::weak_ptr<Module> module() const { return _module; }
 	
-	void set_fill_color(uint32_t c) { _rect.property_fill_color_rgba() = c; }
+	void set_fill_color(uint32_t c) { _rect->property_fill_color_rgba() = c; }
 	
 	void set_highlighted(bool highlight,
 	                     bool highlight_parent=true,
@@ -75,7 +75,7 @@ public:
 			_menu->popup(button, activate_time);
 	}
 
-	virtual void create_menu() {}
+	virtual void create_menu();
 
 	Gtk::Menu* menu() const           { return _menu; }
 	void       set_menu(Gtk::Menu* m) { delete _menu; _menu = m; }
@@ -101,8 +101,9 @@ public:
 	float control_value() { return _control_value; }
 	float control_min()   { return _control_min; }
 	float control_max()   { return _control_max; }
-	void  show_control()  { _control_rect.show(); _show_control = true; }
-	void  hide_control()  { _control_rect.hide(); _show_control = false; }
+	
+	void show_control();
+	void hide_control();
 
 	inline bool operator==(const std::string& name) { return (_name == name); }
 
@@ -117,18 +118,18 @@ protected:
 	bool                    _is_input;
 	double                  _width;
 	double                  _height;
+	int                     _label_normal_size;
 	double                  _border_width;
 	uint32_t                _color;
 
-	bool  _show_control;
 	float _control_value;
 	float _control_min;
 	float _control_max;
 	
-	Gnome::Canvas::Text _label;
-	Gnome::Canvas::Rect _rect;
-	Gnome::Canvas::Rect _control_rect;
-	Gtk::Menu*          _menu;
+	Gnome::Canvas::Text* _label;
+	Gnome::Canvas::Rect* _rect;
+	Gnome::Canvas::Rect* _control_rect;
+	Gtk::Menu*           _menu;
 };
 
 typedef std::vector<boost::shared_ptr<Port> > PortVector;
