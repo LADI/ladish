@@ -38,8 +38,6 @@ int main(int argc, char** argv)
 	Gtk::Main app(argc, argv);
 	
 	Patchage patchage(argc, argv);
-	patchage.attach();
-
 	app.run(*patchage.window());
 	
 	} catch (std::exception& e) {

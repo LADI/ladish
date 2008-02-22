@@ -116,6 +116,7 @@ protected:
 	Gtk::Main* _gtk_main;
 
 	std::string _settings_filename;
+	bool        _attach;
 	bool        _refresh;
 	bool        _enable_refresh;
 	bool        _pane_closed;
