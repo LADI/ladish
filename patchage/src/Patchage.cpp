@@ -230,6 +230,8 @@ Patchage::Patchage(int argc, char** argv)
 	_canvas->show();
 	_main_win->present();
 	
+	_state_manager->load(_settings_filename);
+	
 	_main_win->resize(
 		static_cast<int>(_state_manager->get_window_size().x),
 		static_cast<int>(_state_manager->get_window_size().y));
@@ -246,8 +248,6 @@ Patchage::Patchage(int argc, char** argv)
 #ifdef HAVE_ALSA
 	_alsa_driver = new AlsaDriver(this);
 #endif
-	
-	_state_manager->load(_settings_filename);
 
 #ifdef HAVE_LASH
 	_lash_driver = new LashDriver(this, argc, argv);
