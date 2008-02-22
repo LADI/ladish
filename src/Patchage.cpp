@@ -228,7 +228,8 @@ Patchage::Patchage(int argc, char** argv)
 			sigc::mem_fun(this, &Patchage::on_messages_delete));
 
 	_canvas->show();
-
+	_main_win->present();
+	
 	_main_win->resize(
 		static_cast<int>(_state_manager->get_window_size().x),
 		static_cast<int>(_state_manager->get_window_size().y));
@@ -237,7 +238,6 @@ Patchage::Patchage(int argc, char** argv)
 		static_cast<int>(_state_manager->get_window_location().x),
 		static_cast<int>(_state_manager->get_window_location().y));
 	
-	_main_win->present();
 	_about_win->set_transient_for(*_main_win);
 	
 	_jack_driver = new JackDriver(this);
