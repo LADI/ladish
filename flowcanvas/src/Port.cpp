@@ -49,7 +49,6 @@ Port::Port(boost::shared_ptr<Module> module, const string& name, bool is_input, 
 	const double text_width = _label->property_text_width();
 	_width = text_width + 6.0;
 	_height = _label->property_text_height();
-	_label_normal_size = _label->property_size();
 	_label->property_x() = text_width / 2.0 + 3.0;
 	_label->property_y() = (_height / 2.0) - 1.0;
 	/* WARNING: Doing this makes things extremely slow!
@@ -164,7 +163,7 @@ Port::set_name(const string& n)
 void
 Port::zoom(float z)
 {
-	_label->property_size() = static_cast<int>(floor(_label_normal_size * z));
+	_label->property_size() = static_cast<int>(floor(8000.0f * z));
 }
 
 

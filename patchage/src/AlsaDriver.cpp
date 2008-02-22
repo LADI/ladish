@@ -130,7 +130,7 @@ AlsaDriver::refresh_ports()
 	snd_seq_client_info_alloca(&cinfo);
 	snd_seq_client_info_set_client(cinfo, -1);
 
-	snd_seq_port_info_t * pinfo;
+	snd_seq_port_info_t* pinfo;
 	snd_seq_port_info_alloca(&pinfo);
 	
 	string client_name;

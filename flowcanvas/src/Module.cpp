@@ -167,7 +167,7 @@ Module::on_drop(double new_x, double new_y)
 void
 Module::zoom(double z)
 {
-	_canvas_title.property_size() = static_cast<int>(floor((double)9000.0f * z));
+	_canvas_title.property_size() = static_cast<int>(floor(8000.0f * z));
 	for (PortVector::iterator p = _ports.begin(); p != _ports.end(); ++p)
 		(*p)->zoom(z);
 }

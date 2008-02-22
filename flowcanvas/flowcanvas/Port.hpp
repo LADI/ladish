@@ -118,7 +118,6 @@ protected:
 	bool                    _is_input;
 	double                  _width;
 	double                  _height;
-	int                     _label_normal_size;
 	double                  _border_width;
 	uint32_t                _color;
 
