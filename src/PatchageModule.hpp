@@ -39,9 +39,15 @@ public:
 		, _app(app)
 		, _type(type)
 	{
+
+	}
+
+	virtual ~PatchageModule() { delete _menu; _menu = NULL; }
+
+	void create_menu() {
 		_menu = new Gtk::Menu();
 		Gtk::Menu::MenuList& items = _menu->items();
-		if (type == InputOutput) {
+		if (_type == InputOutput) {
 			items.push_back(Gtk::Menu_Helpers::MenuElem("Split",
 				sigc::mem_fun(this, &PatchageModule::split)));
 		} else {
@@ -51,8 +57,6 @@ public:
 		items.push_back(Gtk::Menu_Helpers::MenuElem("Disconnect All",
 			sigc::mem_fun(this, &PatchageModule::menu_disconnect_all)));
 	}
-
-	virtual ~PatchageModule() { delete _menu; }
 	
 	void move(double dx, double dy) {
 		FlowCanvas::Module::move(dx, dy);
