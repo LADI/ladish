@@ -329,24 +329,16 @@ Patchage::idle_callback()
 	}
 #endif
 
-	// Do a full refresh (ie user clicked refresh)
-	if (_refresh) {
-		_canvas->destroy();
-		_jack_driver->refresh();
-#ifdef HAVE_ALSA
-		if (_alsa_driver)
-			_alsa_driver->refresh();
-#endif
-		_refresh = false;
-	}
-
 #ifdef HAVE_LASH
 	if (_lash_driver->is_attached())
 		_lash_driver->process_events();
 #endif
 
-	if (_refresh)
+	// Do a full refresh (ie user clicked refresh)
+	if (_refresh) {
+		refresh();
 		_refresh = false;
+	}
 
 	update_load();
 
@@ -410,7 +402,7 @@ Patchage::refresh()
 	assert(_canvas);
 
 	if (_enable_refresh) {
-
+	
 		_canvas->destroy();
 
 		if (_jack_driver)

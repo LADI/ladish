@@ -47,6 +47,7 @@ static const uint32_t MODULE_TITLE_COLOUR          = 0xFFFFFFFF;
  */
 Module::Module(boost::shared_ptr<Canvas> canvas, const string& name, double x, double y, bool show_title)
 	: Item(canvas, name, x, y, MODULE_FILL_COLOUR)
+	, _border_width(1.0)
 	, _title_visible(show_title)
 	, _ports_y_offset(0)
 	, _icon_size(16)
@@ -59,6 +60,7 @@ Module::Module(boost::shared_ptr<Canvas> canvas, const string& name, double x, d
 {
 	_module_box.property_fill_color_rgba() = MODULE_FILL_COLOUR;
 	_module_box.property_outline_color_rgba() = MODULE_OUTLINE_COLOUR;
+	_module_box.property_width_units() = _border_width;
 
 	_border_color = MODULE_OUTLINE_COLOUR;
 
