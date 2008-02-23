@@ -62,7 +62,7 @@ PatchageEvent::execute(Patchage* patchage)
 			assert(module);
 
 			module->remove_port(port);
-			port->hide();
+			port.reset();
 			
 			// No empty modules (for now)
 			if (module->num_ports() == 0) {
