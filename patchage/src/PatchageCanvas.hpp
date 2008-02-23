@@ -25,6 +25,7 @@
 #endif
 #include <flowcanvas/Canvas.hpp>
 #include "StateManager.hpp"
+#include "PatchageEvent.hpp"
 
 class Patchage;
 class PatchageModule;
@@ -38,9 +39,8 @@ public:
 	PatchageCanvas(Patchage* _app, int width, int height);
 	
 	boost::shared_ptr<PatchageModule> find_module(const string& name, ModuleType type);
-#ifdef HAVE_ALSA
-	boost::shared_ptr<PatchagePort> find_port(snd_seq_addr_t alsa_addr, bool input);
-#endif
+	boost::shared_ptr<PatchagePort>   find_port(const PatchageEvent::PortRef& ref);
+	
 	void connect(boost::shared_ptr<Connectable> port1, boost::shared_ptr<Connectable> port2);
 	void disconnect(boost::shared_ptr<Connectable> port1, boost::shared_ptr<Connectable> port2);
 

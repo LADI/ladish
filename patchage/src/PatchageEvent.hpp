@@ -26,8 +26,6 @@
 #include "PatchagePort.hpp"
 
 class Patchage;
-class Driver;
-
 
 /** A Driver event to be processed by the GUI thread.
  */
@@ -44,30 +42,26 @@ public:
 		DISCONNECTION
 	};
 
-	PatchageEvent(Driver* d = NULL, Type type=NULL_EVENT)
-		: _driver(d)
-		, _str(NULL)
+	PatchageEvent(Type type=NULL_EVENT)
+		: _str(NULL)
 		, _type(type)
 	{}
 	
-	PatchageEvent(Driver* driver, Type type, const char* str)
-		: _driver(driver)
-		, _str(strdup(str)) // FIXME: not realtime (jack) :(
+	PatchageEvent(Type type, const char* str)
+		: _str(strdup(str)) // FIXME: not realtime (jack) :(
 		, _type(type)
 	{}
 
 	template <typename P>
-	PatchageEvent(Driver* driver, Type type, P port)
-		: _driver(driver)
-		, _str(NULL)
+	PatchageEvent(Type type, P port)
+		: _str(NULL)
 		, _port_1(port)
 		, _type(type)
 	{}
 	
 	template <typename P>
-	PatchageEvent(Driver* driver, Type type, P port_1, P port_2)
-		: _driver(driver)
-		, _str(NULL)
+	PatchageEvent(Type type, P port_1, P port_2)
+		: _str(NULL)
 		, _port_1(port_1, false)
 		, _port_2(port_2, true)
 		, _type(type)
@@ -83,9 +77,6 @@ public:
 		PortRef(jack_port_id_t jack_id, bool ign=false)
 			: type(JACK_ID) { id.jack_id = jack_id; }
 
-		PortRef(jack_port_t* jack_port, bool ign=false)
-			: type(JACK_PORT) { id.jack_port = jack_port; }
-
 #ifdef HAVE_ALSA
 		PortRef(snd_seq_addr_t addr, bool in)
 			: type(ALSA_ADDR) { id.alsa_addr = addr; is_input = in; }
@@ -93,10 +84,9 @@ public:
 		bool is_input;
 #endif
 
-		enum { NULL_PORT_REF, JACK_ID, JACK_PORT, ALSA_ADDR } type;
+		enum { NULL_PORT_REF, JACK_ID, ALSA_ADDR } type;
 
 		union {
-			jack_port_t*   jack_port;
 			jack_port_id_t jack_id;
 #ifdef HAVE_ALSA
 			snd_seq_addr_t alsa_addr;
@@ -105,7 +95,6 @@ public:
 	};
 
 private:
-	Driver* _driver;
 	char*   _str;
 	PortRef _port_1;
 	PortRef _port_2;

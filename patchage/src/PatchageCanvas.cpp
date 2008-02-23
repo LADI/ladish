@@ -60,41 +60,71 @@ PatchageCanvas::find_module(const string& name, ModuleType type)
 }
 
 
-#ifdef HAVE_ALSA
 boost::shared_ptr<PatchagePort>
-PatchageCanvas::find_port(snd_seq_addr_t alsa_addr, bool input)
+PatchageCanvas::find_port(const PatchageEvent::PortRef& ref)
 {
+	jack_port_t* jack_port = NULL;
+	string       module_name;
+	string       port_name;
+	
+	SharedPtr<PatchageModule> module;
 	boost::shared_ptr<PatchagePort> pp;
-	for (ItemList::iterator m = _items.begin(); m != _items.end(); ++m) {
-		SharedPtr<PatchageModule> module = PtrCast<PatchageModule>(*m);
-		if (!module)
-			continue;
 
-		for (PortVector::const_iterator p = module->ports().begin(); p != module->ports().end(); ++p) {
-			pp = boost::dynamic_pointer_cast<PatchagePort>(*p);
-			if (!pp)
+	// TODO: filthy.  keep a port map and make this O(log(n))
+	switch (ref.type) {
+	case PatchageEvent::PortRef::JACK_ID:
+		jack_port = jack_port_by_id(_app->jack_driver()->client(), ref.id.jack_id);
+		if (!jack_port)
+			return boost::shared_ptr<PatchagePort>();
+	
+		_app->jack_driver()->port_names(ref, module_name, port_name);
+	
+		module = find_module(module_name,
+				(jack_port_flags(jack_port) & JackPortIsInput) ? Input : Output);
+	
+		if (module)
+			return PtrCast<PatchagePort>(module->get_port(port_name));
+		else
+			return boost::shared_ptr<PatchagePort>();
+	
+		break;
+	
+#ifdef HAVE_ALSA
+	case PatchageEvent::PortRef::ALSA_ADDR:
+		for (ItemList::iterator m = _items.begin(); m != _items.end(); ++m) {
+			SharedPtr<PatchageModule> module = PtrCast<PatchageModule>(*m);
+			if (!module)
 				continue;
-
-			if (pp->type() == ALSA_MIDI) {
-				/*cerr << "ALSA PORT: " << (int)pp->alsa_addr()->client << ":"
-					<< (int)pp->alsa_addr()->port << endl;*/
-
-				if (pp->alsa_addr()
-						&& pp->alsa_addr()->client == alsa_addr.client
-						&& pp->alsa_addr()->port   == alsa_addr.port) {
-					if (!input && module->type() == Input) {
-						//cerr << "WRONG DIRECTION, SKIPPED PORT" << endl;
-					} else {
-						return pp;
+	
+			for (PortVector::const_iterator p = module->ports().begin(); p != module->ports().end(); ++p) {
+				pp = boost::dynamic_pointer_cast<PatchagePort>(*p);
+				if (!pp)
+					continue;
+	
+				if (pp->type() == ALSA_MIDI) {
+					/*cerr << "ALSA PORT: " << (int)pp->alsa_addr()->client << ":"
+					  << (int)pp->alsa_addr()->port << endl;*/
+	
+					if (pp->alsa_addr()
+							&& pp->alsa_addr()->client == ref.id.alsa_addr.client
+							&& pp->alsa_addr()->port   == ref.id.alsa_addr.port) {
+						if (!ref.is_input && module->type() == Input) {
+							//cerr << "WRONG DIRECTION, SKIPPED PORT" << endl;
+						} else {
+							return pp;
+						}
 					}
 				}
 			}
 		}
+	default:
+		break;
 	}
+#endif // HAVE_ALSA
 
 	return boost::shared_ptr<PatchagePort>();
 }
-#endif
+
 
 void
 PatchageCanvas::connect(boost::shared_ptr<Connectable> port1, boost::shared_ptr<Connectable> port2)

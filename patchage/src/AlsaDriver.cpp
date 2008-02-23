@@ -316,7 +316,8 @@ AlsaDriver::add_connections(boost::shared_ptr<PatchagePort> port)
 		if (!connected_addr)
 			continue;
 		
-		connected_port = _app->canvas()->find_port(*connected_addr, true);
+		PatchageEvent::PortRef ref(*connected_addr, true);
+		connected_port = _app->canvas()->find_port(ref);
 
 		if (connected_port && !port->is_connected_to(connected_port))
 			_app->canvas()->add_connection(port, connected_port, port->color() + 0x22222200);
@@ -324,22 +325,6 @@ AlsaDriver::add_connections(boost::shared_ptr<PatchagePort> port)
 		snd_seq_query_subscribe_set_index(subsinfo, snd_seq_query_subscribe_get_index(subsinfo) + 1);
 	}
 
-}
-
-
-/** Find the PatchagePort that corresponds to an Alsa Sequencer port.
- *
- * This function is not realtime safe, but safe to call from the GUI thread
- * (e.g. in PatchageEvent::execute).
- */
-boost::shared_ptr<PatchagePort>
-AlsaDriver::find_port_view(Patchage*                     patchage,
-                           const PatchageEvent::PortRef& ref)
-{
-	if (ref.type == PatchageEvent::PortRef::ALSA_ADDR)
-		return patchage->canvas()->find_port(ref.id.alsa_addr, ref.is_input);
-	else
-		return boost::shared_ptr<PatchagePort>();
 }
 
 
@@ -521,11 +506,11 @@ AlsaDriver::_refresh_main()
 
 				switch (ev->type) {
 				case SND_SEQ_EVENT_PORT_SUBSCRIBED:
-					_events.push(PatchageEvent(this, PatchageEvent::CONNECTION,
+					_events.push(PatchageEvent(PatchageEvent::CONNECTION,
 								ev->data.connect.sender, ev->data.connect.dest));
 					break;
 				case SND_SEQ_EVENT_PORT_UNSUBSCRIBED:
-					_events.push(PatchageEvent(this, PatchageEvent::DISCONNECTION,
+					_events.push(PatchageEvent(PatchageEvent::DISCONNECTION,
 								ev->data.connect.sender, ev->data.connect.dest));
 					break;
 				case SND_SEQ_EVENT_PORT_START:
@@ -537,7 +522,7 @@ AlsaDriver::_refresh_main()
 				case SND_SEQ_EVENT_RESET:
 				default:
 					// FIXME: Ultra slow kludge, use proper find-grained events
-					_events.push(PatchageEvent(this, PatchageEvent::REFRESH));
+					_events.push(PatchageEvent(PatchageEvent::REFRESH));
 				}
 			}
 		}
