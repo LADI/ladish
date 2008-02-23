@@ -117,13 +117,9 @@ Patchage::Patchage(int argc, char** argv)
 	, INIT_WIDGET(_messages_win)
 	, INIT_WIDGET(_messages_clear_but)
 	, INIT_WIDGET(_messages_close_but)
-	, INIT_WIDGET(_play_but)
-	, INIT_WIDGET(_rewind_but)
 	, INIT_WIDGET(_sample_rate_label)
 	, INIT_WIDGET(_status_text)
-	, INIT_WIDGET(_stop_but)
 	, INIT_WIDGET(_toolbar)
-	, INIT_WIDGET(_toolbars_box)
 	, INIT_WIDGET(_zoom_full_but)
 	, INIT_WIDGET(_zoom_normal_but)
 {
@@ -164,12 +160,6 @@ Patchage::Patchage(int argc, char** argv)
 
 	_buffer_size_combo->signal_changed().connect(
 			sigc::mem_fun(this, &Patchage::buffer_size_changed));
-	_rewind_but->signal_clicked().connect(
-			sigc::mem_fun(_jack_driver, &JackDriver::rewind_transport));
-	_play_but->signal_clicked().connect(
-			sigc::mem_fun(_jack_driver, &JackDriver::start_transport));
-	_stop_but->signal_clicked().connect(
-			sigc::mem_fun(_jack_driver, &JackDriver::stop_transport));
 	_clear_load_but->signal_clicked().connect(
 			sigc::mem_fun(this, &Patchage::clear_load));
 	_zoom_normal_but->signal_clicked().connect(sigc::bind(
@@ -677,9 +667,9 @@ void
 Patchage::on_view_toolbar() 
 {
 	if (_menu_view_toolbar->get_active())
-		_toolbars_box->show();
+		_toolbar->show();
 	else
-		_toolbars_box->hide();
+		_toolbar->hide();
 }
 
 

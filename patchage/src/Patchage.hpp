@@ -144,13 +144,9 @@ protected:
 	Widget<Gtk::Dialog>         _messages_win;
 	Widget<Gtk::Button>         _messages_clear_but;
 	Widget<Gtk::Button>         _messages_close_but;
-	Widget<Gtk::Button>         _play_but;
-	Widget<Gtk::Button>         _rewind_but;
 	Widget<Gtk::Label>          _sample_rate_label;
 	Widget<Gtk::TextView>       _status_text;
-	Widget<Gtk::Button>         _stop_but;
 	Widget<Gtk::Toolbar>        _toolbar;
-	Widget<Gtk::Box>            _toolbars_box;
 	Widget<Gtk::ToolButton>     _zoom_full_but;
 	Widget<Gtk::ToolButton>     _zoom_normal_but;
 };
