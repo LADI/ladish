@@ -67,6 +67,9 @@ Port::Port(boost::shared_ptr<Module> module, const string& name, bool is_input, 
 
 Port::~Port()
 {
+	delete _label;
+	delete _rect;
+	delete _control_rect;
 }
 
 

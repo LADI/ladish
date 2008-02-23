@@ -43,7 +43,7 @@ public:
 	           uint32_t                       color,
 			   bool                           show_arrow_head = false);
 
-	virtual ~Connection() {}
+	virtual ~Connection();
 	
 	virtual void move(double /*dx*/, double /*dy*/)
 	{ /* ignore, src/dst take care of it */ }

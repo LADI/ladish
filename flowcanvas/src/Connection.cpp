@@ -53,6 +53,12 @@ Connection::Connection(boost::shared_ptr<Canvas>      canvas,
 }
 
 
+Connection::~Connection()
+{
+	gnome_canvas_path_def_unref(_path);
+}
+
+
 void
 Connection::set_color(uint32_t color)
 {

@@ -75,6 +75,8 @@ Canvas::Canvas(double width, double height)
 Canvas::~Canvas()
 {
 	destroy();
+	art_free(_select_dash->dash);
+	delete _select_dash;
 }
 
 

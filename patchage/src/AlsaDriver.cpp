@@ -60,7 +60,11 @@ AlsaDriver::attach(bool /*launch_daemon*/)
 
 		snd_seq_set_client_name(_seq, "Patchage");
 	
-		ret = pthread_create(&_refresh_thread, NULL, &AlsaDriver::refresh_main, this);
+		pthread_attr_t attr;
+		pthread_attr_init(&attr);
+		pthread_attr_setstacksize(&attr, 50000);
+
+		ret = pthread_create(&_refresh_thread, &attr, &AlsaDriver::refresh_main, this);
 		if (ret)
 			cerr << "Couldn't start refresh thread" << endl;
 		
@@ -466,16 +470,16 @@ AlsaDriver::_refresh_main()
 {
 	// "Heavily influenced" from alsa-patch-bay
 	// (C) 2002 Robert Ham, released under GPL
+	
+	if (!create_refresh_port()) {
+		cerr << "Could not create Alsa listen port.  Auto refreshing will not work." << endl;
+		return;
+	}
 
 	int             ret;
 	int             nfds    = snd_seq_poll_descriptors_count(_seq, POLLIN);
 	struct pollfd*  pfds    = new struct pollfd[nfds];
 	unsigned short* revents = new unsigned short[nfds];
-
-	if (!create_refresh_port()) {
-		cerr << "Could not create Alsa listen port.  Auto refreshing will not work." << endl;
-		return;
-	}
 
 	snd_seq_poll_descriptors(_seq, pfds, nfds, POLLIN);
 
@@ -527,6 +531,9 @@ AlsaDriver::_refresh_main()
 			}
 		}
 	}
+
+	delete[] pfds;
+	delete[] revents;
 }
 
 

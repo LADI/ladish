@@ -89,6 +89,8 @@ Module::Module(boost::shared_ptr<Canvas> canvas, const string& name, double x, d
 
 Module::~Module()
 {
+	delete _stacked_border;
+	delete _icon_box;
 }
 
 
