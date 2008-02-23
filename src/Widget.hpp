@@ -27,7 +27,9 @@ public:
 	Widget(Glib::RefPtr<Gnome::Glade::Xml> xml, const std::string& name) {
 		xml->get_widget(name.c_str(), _me);
 	}
-	
+
+	void destroy() { delete _me; }
+
 	W*       get()              { return _me; }
 	const W* get() const        { return _me; }
 	W*       operator->()       { return _me; }
@@ -38,5 +40,6 @@ public:
 private:
 	W* _me;
 };
+	
 
 #endif // WIDGET_HPP

@@ -27,8 +27,6 @@
 class GladeFile {
 public:
 	static Glib::RefPtr<Gnome::Glade::Xml> open(const std::string& base_name) {
-		Glib::RefPtr<Gnome::Glade::Xml> xml;
-
 		// Check for the .glade file in current directory
 		std::string glade_filename = std::string("./").append(base_name).append(".glade");
 		std::ifstream fs(glade_filename.c_str());
