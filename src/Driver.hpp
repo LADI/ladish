@@ -41,10 +41,6 @@ public:
 			Patchage*                     patchage,
 			const PatchageEvent::PortRef& ref) = 0;
 	
-	virtual boost::shared_ptr<PatchagePort> find_port_view(
-			Patchage*                     patchage,
-			const PatchageEvent::PortRef& ref) = 0;
-
 	virtual bool connect(boost::shared_ptr<PatchagePort> src_port,
 	                     boost::shared_ptr<PatchagePort> dst_port) = 0;
 	

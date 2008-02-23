@@ -55,10 +55,6 @@ public:
 	                std::string&                  module_name,
 	                std::string&                  port_name);
 
-	boost::shared_ptr<PatchagePort> find_port_view(
-			Patchage*                     patchage,
-			const PatchageEvent::PortRef& ref);
-	
 	boost::shared_ptr<PatchagePort> create_port_view(
 			Patchage*                     patchage,
 			const PatchageEvent::PortRef& ref);

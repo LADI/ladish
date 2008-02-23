@@ -146,9 +146,7 @@ JackDriver::create_port_view(Patchage*                     patchage,
 {
 	jack_port_t* jack_port = NULL;
 
-	if (ref.type == PatchageEvent::PortRef::JACK_PORT)
-		jack_port = ref.id.jack_port;
-	else if (ref.type == PatchageEvent::PortRef::JACK_ID)
+	if (ref.type == PatchageEvent::PortRef::JACK_ID)
 		jack_port = jack_port_by_id(_client, ref.id.jack_id);
 
 	string module_name, port_name;
@@ -348,9 +346,7 @@ JackDriver::port_names(const PatchageEvent::PortRef& ref,
 {
 	jack_port_t* jack_port = NULL;
 
-	if (ref.type == PatchageEvent::PortRef::JACK_PORT)
-		jack_port = ref.id.jack_port;
-	else if (ref.type == PatchageEvent::PortRef::JACK_ID)
+	if (ref.type == PatchageEvent::PortRef::JACK_ID)
 		jack_port = jack_port_by_id(_client, ref.id.jack_id);
 
 	if (!jack_port) {
@@ -365,38 +361,6 @@ JackDriver::port_names(const PatchageEvent::PortRef& ref,
 	port_name   = full_name.substr(full_name.find(":")+1);
 
 	return true;
-}
-
-
-/** Find the PatchagePort that corresponds to a JACK port.
- *
- * This function is not realtime safe, but safe to call from the GUI thread
- * (e.g. in PatchageEvent::execute).
- */
-boost::shared_ptr<PatchagePort>
-JackDriver::find_port_view(Patchage*                     patchage,
-                           const PatchageEvent::PortRef& ref)
-{
-	jack_port_t* jack_port = NULL;
-
-	if (ref.type == PatchageEvent::PortRef::JACK_PORT)
-		jack_port = ref.id.jack_port;
-	else if (ref.type == PatchageEvent::PortRef::JACK_ID)
-		jack_port = jack_port_by_id(_client, ref.id.jack_id);
-
-	if (!jack_port)
-		return boost::shared_ptr<PatchagePort>();
-
-	string module_name, port_name;
-	port_names(ref, module_name, port_name);
-
-	SharedPtr<PatchageModule> module = patchage->canvas()->find_module(module_name,
-			(jack_port_flags(jack_port) & JackPortIsInput) ? Input : Output);
-
-	if (module)
-		return PtrCast<PatchagePort>(module->get_port(port_name));
-	else
-		return boost::shared_ptr<PatchagePort>();
 }
 
 
@@ -457,9 +421,9 @@ JackDriver::jack_client_registration_cb(const char* name, int registered, void* 
 
 	// FIXME: This sucks, not realtime :(
 	if (registered) {
-		me->_events.push(PatchageEvent(me, PatchageEvent::CLIENT_CREATION, name));
+		me->_events.push(PatchageEvent(PatchageEvent::CLIENT_CREATION, name));
 	} else {
-		me->_events.push(PatchageEvent(me, PatchageEvent::CLIENT_DESTRUCTION, name));
+		me->_events.push(PatchageEvent(PatchageEvent::CLIENT_DESTRUCTION, name));
 	}
 }
 
@@ -477,9 +441,9 @@ JackDriver::jack_port_registration_cb(jack_port_id_t port_id, int registered, vo
 	jack_reset_max_delayed_usecs(me->_client);
 
 	if (registered) {
-		me->_events.push(PatchageEvent(me, PatchageEvent::PORT_CREATION, port_id));
+		me->_events.push(PatchageEvent(PatchageEvent::PORT_CREATION, port_id));
 	} else {
-		me->_events.push(PatchageEvent(me, PatchageEvent::PORT_DESTRUCTION, port_id));
+		me->_events.push(PatchageEvent(PatchageEvent::PORT_DESTRUCTION, port_id));
 	}
 }
 
@@ -494,9 +458,9 @@ JackDriver::jack_port_connect_cb(jack_port_id_t src, jack_port_id_t dst, int con
 	jack_reset_max_delayed_usecs(me->_client);
 
 	if (connect) {
-		me->_events.push(PatchageEvent(me, PatchageEvent::CONNECTION, src, dst));
+		me->_events.push(PatchageEvent(PatchageEvent::CONNECTION, src, dst));
 	} else {
-		me->_events.push(PatchageEvent(me, PatchageEvent::DISCONNECTION, src, dst));
+		me->_events.push(PatchageEvent(PatchageEvent::DISCONNECTION, src, dst));
 	}
 }
 
