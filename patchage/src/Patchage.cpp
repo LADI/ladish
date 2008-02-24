@@ -305,27 +305,19 @@ Patchage::idle_callback()
 
 	// Process any JACK events
 	if (_jack_driver) {
-		while (!_jack_driver->events().empty()) {
-			PatchageEvent& ev = _jack_driver->events().front();
-			ev.execute(this);
-			_jack_driver->events().pop();
-		}
+		_jack_driver->process_events(this);
 	}
 	
 	// Process any ALSA events
 #ifdef HAVE_ALSA
 	if (_alsa_driver) {
-		while (!_alsa_driver->events().empty()) {
-			PatchageEvent& ev = _alsa_driver->events().front();
-			ev.execute(this);
-			_alsa_driver->events().pop();
-		}
+		_alsa_driver->process_events(this);
 	}
 #endif
 
 #ifdef HAVE_LASH
 	if (_lash_driver->is_attached())
-		_lash_driver->process_events();
+		_lash_driver->process_events(this);
 #endif
 
 	// Do a full refresh (ie user clicked refresh)

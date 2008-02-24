@@ -55,7 +55,7 @@ public:
 
 	void refresh() {}
 
-	void process_events() { _server_interface->process_events(); }
+	void process_events(Patchage* app) { _server_interface->process_events(); }
 
 	void restore_project(const std::string& directory);
 	void set_project_directory(const std::string& directory);
