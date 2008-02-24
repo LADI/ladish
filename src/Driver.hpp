@@ -31,6 +31,14 @@ class Driver {
 public:
 	virtual ~Driver() {}
 	
+	virtual void process_events(Patchage* app) {
+		while (!events().empty()) {
+			PatchageEvent& ev = events().front();
+			ev.execute(app);
+			events().pop();
+		}
+	}
+
 	virtual void attach(bool launch_daemon) = 0;
 	virtual void detach()                   = 0;
 	virtual bool is_attached() const        = 0;
