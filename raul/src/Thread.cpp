@@ -89,7 +89,7 @@ Thread::stop()
 {
 	if (_pthread_exists) {
 		_exit_flag = true;
-		//pthread_cancel(_pthread);
+		pthread_cancel(_pthread);
 		pthread_join(_pthread, NULL);
 		_pthread_exists = false;
 		cout << "[" << _name << " Thread] Exiting." << endl;
