@@ -22,7 +22,6 @@
 #include <glibmm/exception.h>
 
 #include "Patchage.hpp"
-#include "JackDriver.hpp"
 
 #ifdef HAVE_LASH
 #include <lash/lash.h>

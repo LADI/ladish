@@ -249,16 +249,31 @@ CFLAGS="$CFLAGS -std=c99 -pipe -fmessage-length=999 -DCONFIG_H_PATH=\\\"$CONFIG_
 # LV2 core package
 #PKG_CHECK_MODULES(LV2CORE, lv2core >= 1)
 
+# Jack D-Bus support
+build_jack_dbus="no"
+AC_ARG_ENABLE(dbus,
+	[AS_HELP_STRING(--enable-dbus, [Use Jack D-Bus instead of libjack])],
+	[ if test x$enable_dbus = xyes ; then build_jack_dbus=yes ; fi ])
+if test "$build_jack_dbus" = "yes"; then
+	PKG_CHECK_MODULES(DBUS, dbus-glib-1, [build_jack_dbus="yes"], [build_jack_dbus="no"])
+	if test "x$build_jack_dbus" = "xyes"; then
+		AC_DEFINE([HAVE_JACKDBUS], 1, [Defined if Jack D-Bus driver needs to be built])
+	fi
+fi
+	
 # Jack support
 build_jack="yes"
 AC_ARG_ENABLE(enable-jack,
 	[AS_HELP_STRING(--enable-jack, [Enable Jack support (yes)])],
-	[ if test x$enable_jack = xno ; then build_jack=no ; fi ])
-if test "$build_jack" = "yes"; then
-	PKG_CHECK_MODULES(JACK, jack >= 0.107.0)
-	AC_DEFINE(HAVE_JACK, 1, [Has Jack])
-	AC_DEFINE(HAVE_JACK_MIDI, 1, [Has Jack MIDI])
+	[ if test $enable_jack = no ; then build_jack=no ; fi ])
+if test "x$build_jack" = "xyes"; then
+	PKG_CHECK_MODULES(JACK, jack >= 0.107.0, [build_jack="yes"], [build_jack="no"])
+	if test "x$build_jack" = "xyes"; then
+		AC_DEFINE(HAVE_JACK, 1, [Has Jack])
+		AC_DEFINE(HAVE_JACK_MIDI, 1, [Has Jack MIDI])
+	fi
 fi
+
 
 # LV2 support
 build_lv2="yes"
@@ -378,14 +393,15 @@ if test $HAVE_DOXYGEN = "false"; then
 fi
 AM_CONDITIONAL(HAVE_DOXYGEN, [test "x$build_documentation" = "xyes"])
 
-AM_CONDITIONAL(WITH_ALSA, [test "$ALSA_FOUND" = "yes"])
-AM_CONDITIONAL(WITH_LASH, [test "$have_lash" = "yes"])
-AM_CONDITIONAL(WITH_JACK, [test "$build_jack" = "yes"])
-AM_CONDITIONAL(BUILD_SERVER, [test "$build_ingen_server" = "yes"])
-AM_CONDITIONAL(BUILD_IN_PROCESS_ENGINE, [test "$build_in_process_engine" = "yes"])
-AM_CONDITIONAL(BUILD_UNIT_TESTS, [test "$build_unit_tests" = "yes"])
-AM_CONDITIONAL(WITH_LADSPA, [test "$build_ladspa" = "yes"])
-AM_CONDITIONAL(WITH_LV2, [test "$build_lv2" = "yes"])
+AM_CONDITIONAL(WITH_ALSA, [test "x$ALSA_FOUND" = "xyes"])
+AM_CONDITIONAL(WITH_LASH, [test "x$have_lash" = "xyes"])
+AM_CONDITIONAL(WITH_JACK, [test "x$build_jack" = "xyes"])
+AM_CONDITIONAL(WITH_JACK_DBUS, [test "x$build_jack_dbus" = "xyes"])
+AM_CONDITIONAL(BUILD_SERVER, [test "x$build_ingen_server" = "xyes"])
+AM_CONDITIONAL(BUILD_IN_PROCESS_ENGINE, [test "x$build_in_process_engine" = "xyes"])
+AM_CONDITIONAL(BUILD_UNIT_TESTS, [test "x$build_unit_tests" = "xyes"])
+AM_CONDITIONAL(WITH_LADSPA, [test "x$build_ladspa" = "xyes"])
+AM_CONDITIONAL(WITH_LV2, [test "x$build_lv2" = "xyes"])
 
 
 ################# INGEN OPTIONS
@@ -686,6 +702,7 @@ AC_MSG_RESULT([*****************************************************************
 AC_MSG_RESULT([Configuration:])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([Jack support:            $build_jack])
+AC_MSG_RESULT([Jack D-Bus support:      $build_jack_dbus])
 AC_MSG_RESULT([LV2 Plugin support:      $build_lv2])
 AC_MSG_RESULT([LADSPA Plugin support:   $build_ladspa])
 AC_MSG_RESULT([LASH support:            $build_lash])

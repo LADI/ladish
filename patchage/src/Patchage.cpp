@@ -27,7 +27,12 @@
 
 #include CONFIG_H_PATH
 #include "GladeFile.hpp"
+#ifdef HAVE_JACK
 #include "JackDriver.hpp"
+#endif
+#ifdef HAVE_JACKDBUS
+#include "JackDbusDriver.hpp"
+#endif
 #include "JackSettingsDialog.hpp"
 #include "Patchage.hpp"
 #include "PatchageCanvas.hpp"
@@ -168,10 +173,6 @@ Patchage::Patchage(int argc, char** argv)
 			sigc::mem_fun(_canvas.get(), &PatchageCanvas::zoom_full));
 	_menu_jack_settings->signal_activate().connect(sigc::hide_return(
 			sigc::mem_fun(_jack_settings_dialog, &JackSettingsDialog::run)));
-	_menu_jack_connect->signal_activate().connect(sigc::bind(
-			sigc::mem_fun(_jack_driver, &JackDriver::attach), true));
-	_menu_jack_disconnect->signal_activate().connect(
-			sigc::mem_fun(_jack_driver, &JackDriver::detach));
 
 #ifdef HAVE_LASH
 	_menu_open_session->signal_activate().connect(
@@ -234,6 +235,11 @@ Patchage::Patchage(int argc, char** argv)
 	
 	_jack_driver = new JackDriver(this);
 	_jack_driver->signal_detached.connect(sigc::mem_fun(this, &Patchage::queue_refresh));
+	
+	_menu_jack_connect->signal_activate().connect(sigc::bind(
+			sigc::mem_fun(_jack_driver, &JackDriver::attach), true));
+	_menu_jack_disconnect->signal_activate().connect(
+			sigc::mem_fun(_jack_driver, &JackDriver::detach));
 
 #ifdef HAVE_ALSA
 	_alsa_driver = new AlsaDriver(this);
@@ -346,28 +352,18 @@ Patchage::update_load()
 	if (!_jack_driver->is_attached())
 		return true;
 
-	static float last_delay = 0;
+	char tmp_buf[8];
+	snprintf(tmp_buf, 8, "%zd", _jack_driver->xruns());
 
-	const float max_delay = _jack_driver->max_delay();
+	_main_xrun_progress->set_text(string(tmp_buf) + " Dropouts");
 
-	if (max_delay != last_delay) {
-		const float sample_rate = _jack_driver->sample_rate();
-		const float buffer_size = _jack_driver->buffer_size();
-		const float period      = buffer_size / sample_rate * 1000000; // usec 
-		
-		_main_xrun_progress->set_fraction(max_delay / period);
+	static float last_max_dsp_load = 0;
 
-		char tmp_buf[8];
-		snprintf(tmp_buf, 8, "%zd", _jack_driver->xruns());
+	const float max_dsp_load = _jack_driver->get_max_dsp_load();
 
-		_main_xrun_progress->set_text(string(tmp_buf) + " Dropouts");
-
-		if (max_delay > period) {
-			_main_xrun_progress->set_fraction(1.0);
-			_jack_driver->reset_delay();
-		}
-
-		last_delay = max_delay;
+	if (max_dsp_load != last_max_dsp_load) {
+		_main_xrun_progress->set_fraction(max_dsp_load);
+		last_max_dsp_load = max_dsp_load;
 	}
 	
 	return true;
@@ -430,7 +426,7 @@ Patchage::clear_load()
 {
 	_main_xrun_progress->set_fraction(0.0);
 	_jack_driver->reset_xruns();
-	_jack_driver->reset_delay();
+	_jack_driver->reset_max_dsp_load();
 }
 
 

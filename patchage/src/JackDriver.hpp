@@ -69,7 +69,7 @@ public:
 	void stop_transport()  { jack_transport_stop(_client); }
 	
 	void reset_xruns();
-	void reset_delay() { jack_reset_max_delayed_usecs(_client); }
+	void reset_max_dsp_load();
 
 	void rewind_transport() {
 		jack_position_t zero;
@@ -87,7 +87,7 @@ public:
 
 	inline size_t xruns() { return _xruns; }
 
-	inline float max_delay() { return jack_get_max_delayed_usecs(_client); }
+	float get_max_dsp_load();
 
 private:
 	
