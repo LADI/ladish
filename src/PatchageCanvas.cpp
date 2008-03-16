@@ -19,11 +19,10 @@
 #include CONFIG_H_PATH
 #include "PatchageCanvas.hpp"
 #include "Patchage.hpp"
-#ifdef HAVE_JACK
-#include "JackDriver.hpp"
-#endif
-#ifdef HAVE_JACK_DBUS
+#if defined(HAVE_JACK_DBUS)
 #include "JackDbusDriver.hpp"
+#elif defined(HAVE_JACK)
+#include "JackDriver.hpp"
 #endif
 #include "PatchageModule.hpp"
 #include "PatchagePort.hpp"
@@ -77,7 +76,7 @@ PatchageCanvas::find_port(const PatchageEvent::PortRef& ref)
 
 	// TODO: filthy.  keep a port map and make this O(log(n))
 	switch (ref.type) {
-#if HAVE_JACK
+#if defined(HAVE_JACK) && !defined(HAVE_JACK_DBUS)
 	case PatchageEvent::PortRef::JACK_ID:
 		jack_port = jack_port_by_id(_app->jack_driver()->client(), ref.id.jack_id);
 		if (!jack_port)

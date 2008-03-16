@@ -197,8 +197,14 @@ AC_MSG_RESULT([])
 AC_MSG_RESULT([**********************************************************************])
 AC_MSG_RESULT([Configuration:])
 AC_MSG_RESULT([])
-AC_MSG_RESULT([Jack support:            $build_jack])
-AC_MSG_RESULT([Jack D-Bus:              $build_jack_dbus])
+# we are not building libjack driver if jackdbus driver is being built (src/Makefile.am)
+if test "$build_jack_dbus" = "yes"; then
+AC_MSG_RESULT([Jack support:            yes (D-Bus)])
+elif test "$build_jack" = "yes"; then
+AC_MSG_RESULT([Jack support:            yes (libjack)])
+else
+AC_MSG_RESULT([Jack support:            no])
+fi
 AC_MSG_RESULT([LASH support:            $build_lash])
 AC_MSG_RESULT([ALSA support:            $ALSA_FOUND])
 AC_MSG_RESULT([])
