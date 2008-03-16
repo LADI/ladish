@@ -25,7 +25,7 @@
 #ifdef HAVE_JACK
 #include "JackDriver.hpp"
 #endif
-#ifdef HAVE_JACKDBUS
+#ifdef HAVE_JACK_DBUS
 #include "JackDbusDriver.hpp"
 #endif
 #ifdef HAVE_ALSA
