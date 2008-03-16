@@ -252,7 +252,7 @@ CFLAGS="$CFLAGS -std=c99 -pipe -fmessage-length=999 -DCONFIG_H_PATH=\\\"$CONFIG_
 # Jack D-Bus support
 build_jack_dbus="no"
 AC_ARG_ENABLE(dbus,
-	[AS_HELP_STRING(--enable-dbus, [Use Jack D-Bus instead of libjack])],
+	[AS_HELP_STRING(--enable-jack-dbus, [Use Jack D-Bus instead of libjack])],
 	[ if test x$enable_dbus = xyes ; then build_jack_dbus=yes ; fi ])
 if test "$build_jack_dbus" = "yes"; then
 	PKG_CHECK_MODULES(DBUS, dbus-glib-1, [build_jack_dbus="yes"], [build_jack_dbus="no"])
