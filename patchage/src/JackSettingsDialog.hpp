@@ -15,8 +15,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef JACK_SETTINGS_DIALOG_H
-#define JACK_SETTINGS_DIALOG_H
+#ifndef PATCHAGE_JACK_SETTINGS_DIALOG_HPP
+#define PATCHAGE_JACK_SETTINGS_DIALOG_HPP
 
 #include <libglademm/xml.h>
 #include <libglademm.h>
@@ -80,5 +80,5 @@ private:
 };
 
 
-#endif // JACK_SETTINGS_DIALOG_H
+#endif // PATCHAGE_JACK_SETTINGS_DIALOG_HPP
 

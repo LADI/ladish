@@ -15,8 +15,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef STATEMANAGER_H
-#define STATEMANAGER_H
+#ifndef PATCHAGE_STATEMANAGER_HPP
+#define PATCHAGE_STATEMANAGER_HPP
 
 #include <string>
 #include <list>
@@ -66,4 +66,4 @@ private:
 };
 
 
-#endif // STATEMANAGER_H
+#endif // PATCHAGE_STATEMANAGER_HPP

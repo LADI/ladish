@@ -15,8 +15,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef PATCHAGEEVENT_H
-#define PATCHAGEEVENT_H
+#ifndef PATCHAGE_PATCHAGEEVENT_HPP
+#define PATCHAGE_PATCHAGEEVENT_HPP
 
 #include <jack/jack.h>
 #include CONFIG_H_PATH
@@ -104,5 +104,5 @@ private:
 };
 
 
-#endif // PATCHAGEEVENT_H
+#endif // PATCHAGE_PATCHAGEEVENT_HPP
 

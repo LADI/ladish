@@ -15,8 +15,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef PATCHAGECANVAS_H
-#define PATCHAGECANVAS_H
+#ifndef PATCHAGE_PATCHAGECANVAS_HPP
+#define PATCHAGE_PATCHAGECANVAS_HPP
 
 #include CONFIG_H_PATH
 #include <string>
@@ -55,4 +55,4 @@ private:
 };
 
 
-#endif // PATCHAGECANVAS_H
+#endif // PATCHAGE_PATCHAGECANVAS_HPP

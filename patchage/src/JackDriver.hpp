@@ -15,8 +15,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef JACKDRIVER_H
-#define JACKDRIVER_H
+#ifndef PATCHAGE_JACKDRIVER_HPP
+#define PATCHAGE_JACKDRIVER_HPP
 
 #include <iostream>
 #include <boost/shared_ptr.hpp>
@@ -121,4 +121,4 @@ private:
 };
 
 
-#endif // JACKDRIVER_H
+#endif // PATCHAGE_JACKDRIVER_HPP

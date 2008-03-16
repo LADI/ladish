@@ -15,8 +15,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef LASHDRIVER_H
-#define LASHDRIVER_H
+#ifndef PATCHAGE_LASHDRIVER_HPP
+#define PATCHAGE_LASHDRIVER_HPP
 
 #include <lash/lash.h>
 #include <raul/LashServerInterface.hpp>
@@ -79,4 +79,4 @@ private:
 };
 
 
-#endif // LASHDRIVER_H
+#endif // PATCHAGE_LASHDRIVER_HPP

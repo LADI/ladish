@@ -15,8 +15,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef DRIVER_H
-#define DRIVER_H
+#ifndef PATCHAGE_DRIVER_HPP
+#define PATCHAGE_DRIVER_HPP
 
 #include <boost/shared_ptr.hpp>
 #include <sigc++/sigc++.h>
@@ -67,5 +67,5 @@ protected:
 };
 
 
-#endif // DRIVER_H
+#endif // PATCHAGE_DRIVER_HPP
 
