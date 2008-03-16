@@ -19,7 +19,12 @@
 #include CONFIG_H_PATH
 #include "PatchageCanvas.hpp"
 #include "Patchage.hpp"
+#ifdef HAVE_JACK
 #include "JackDriver.hpp"
+#endif
+#ifdef HAVE_JACKDBUS
+#include "JackDbusDriver.hpp"
+#endif
 #include "PatchageModule.hpp"
 #include "PatchagePort.hpp"
 #ifdef HAVE_ALSA
@@ -72,6 +77,7 @@ PatchageCanvas::find_port(const PatchageEvent::PortRef& ref)
 
 	// TODO: filthy.  keep a port map and make this O(log(n))
 	switch (ref.type) {
+#if HAVE_JACK
 	case PatchageEvent::PortRef::JACK_ID:
 		jack_port = jack_port_by_id(_app->jack_driver()->client(), ref.id.jack_id);
 		if (!jack_port)
@@ -88,6 +94,7 @@ PatchageCanvas::find_port(const PatchageEvent::PortRef& ref)
 			return boost::shared_ptr<PatchagePort>();
 	
 		break;
+#endif
 	
 #ifdef HAVE_ALSA
 	case PatchageEvent::PortRef::ALSA_ADDR:

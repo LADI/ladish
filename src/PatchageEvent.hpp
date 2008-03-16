@@ -74,8 +74,10 @@ public:
 	struct PortRef {
 		PortRef() : type(NULL_PORT_REF) { memset(&id, 0, sizeof(id)); }
 
+#ifdef HAVE_JACK
 		PortRef(jack_port_id_t jack_id, bool ign=false)
 			: type(JACK_ID) { id.jack_id = jack_id; }
+#endif
 
 #ifdef HAVE_ALSA
 		PortRef(snd_seq_addr_t addr, bool in)
