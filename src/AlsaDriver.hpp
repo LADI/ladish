@@ -15,8 +15,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef ALSADRIVER_H
-#define ALSADRIVER_H
+#ifndef PATCHAGE_ALSADRIVER_HPP
+#define PATCHAGE_ALSADRIVER_HPP
 
 #include <iostream>
 #include <alsa/asoundlib.h>
@@ -75,4 +75,4 @@ private:
 	pthread_t  _refresh_thread;
 };
 
-#endif // ALSADRIVER_H
+#endif // PATCHAGE_ALSADRIVER_HPP

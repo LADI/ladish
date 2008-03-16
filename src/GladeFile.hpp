@@ -15,8 +15,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef GLADEFILE_HPP
-#define GLADEFILE_HPP
+#ifndef PATCHAGE_GLADEFILE_HPP
+#define PATCHAGE_GLADEFILE_HPP
 
 #include <string>
 #include <fstream>
@@ -48,4 +48,4 @@ public:
 	}
 };
 
-#endif // GLADEFILE_HPP
+#endif // PATCHAGE_GLADEFILE_HPP

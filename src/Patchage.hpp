@@ -15,8 +15,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef PATCHAGE_H
-#define PATCHAGE_H
+#ifndef PATCHAGE_PATCHAGE_HPP
+#define PATCHAGE_PATCHAGE_HPP
 
 #include <string>
 #include <boost/shared_ptr.hpp>
@@ -151,4 +151,4 @@ protected:
 	Widget<Gtk::ToolButton>     _zoom_normal_but;
 };
 
-#endif // PATCHAGE_H
+#endif // PATCHAGE_PATCHAGE_HPP

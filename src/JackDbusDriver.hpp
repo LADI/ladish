@@ -1,4 +1,3 @@
-// -*- Mode: C++ ; indent-tabs-mode: t -*-
 /* This file is part of Patchage.
  * Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
  * 
@@ -16,8 +15,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef JACKDBUSDRIVER_HPP__B02CBCEF_31D6_4546_9457_C7DF6D6B0300__INCLUDED
-#define JACKDBUSDRIVER_HPP__B02CBCEF_31D6_4546_9457_C7DF6D6B0300__INCLUDED
+#ifndef PATCHAGE_JACKDBUSDRIVER_HPP
+#define PATCHAGE_JACKDBUSDRIVER_HPP
 
 #include <iostream>
 #include <boost/shared_ptr.hpp>
@@ -176,4 +175,4 @@ private:
 	float _max_dsp_load;
 };
 
-#endif // #ifndef JACKDBUSDRIVER_HPP__B02CBCEF_31D6_4546_9457_C7DF6D6B0300__INCLUDED
+#endif // PATCHAGE_JACKDBUSDRIVER_HPP

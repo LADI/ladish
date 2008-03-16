@@ -15,8 +15,8 @@
  * with Patchage.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef WIDGET_HPP
-#define WIDGET_HPP
+#ifndef PATCHAGE_WIDGET_HPP
+#define PATCHAGE_WIDGET_HPP
 
 #include <string>
 #include <boost/utility.hpp>
@@ -42,4 +42,4 @@ private:
 };
 	
 
-#endif // WIDGET_HPP
+#endif // PATCHAGE_WIDGET_HPP

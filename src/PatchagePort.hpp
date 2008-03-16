@@ -15,8 +15,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef PATCHAGEPORT_H
-#define PATCHAGEPORT_H
+#ifndef PATCHAGE_PATCHAGEPORT_HPP
+#define PATCHAGE_PATCHAGEPORT_HPP
 
 #include CONFIG_H_PATH
 #include <string>
@@ -71,4 +71,4 @@ private:
 };
 
 
-#endif // PATCHAGEPORT_H
+#endif // PATCHAGE_PATCHAGEPORT_HPP
