@@ -113,6 +113,7 @@ if test "x$build_jack_dbus" = "xyes"; then
 fi
 
 # Jack support
+build_jack="yes"
 AC_ARG_ENABLE(enable-jack,
 	[AS_HELP_STRING(--enable-jack, [Enable Jack support (yes)])],
 	[ if test x$enable_jack = xno ; then build_jack=no ; fi ])
