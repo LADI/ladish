@@ -123,10 +123,10 @@ PatchageCanvas::find_port(const PatchageEvent::PortRef& ref)
 				}
 			}
 		}
+#endif // HAVE_ALSA
 	default:
 		break;
 	}
-#endif // HAVE_ALSA
 
 	return boost::shared_ptr<PatchagePort>();
 }
