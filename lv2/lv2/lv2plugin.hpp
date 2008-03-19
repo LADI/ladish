@@ -367,9 +367,6 @@ LV2_MIDI* midibuffer = p<LV2_MIDI>(midiport_index);
       
     protected:
       
-      /** This returns the buffer size that the host has promised to use.
-          If the host does not support this extension this function will
-          return 0. */
       uint32_t uri_to_id(const char* map, const char* uri) const {
 		  return m_uri_map_feature->uri_to_id(
 				  m_uri_map_feature->callback_data, map, uri);
