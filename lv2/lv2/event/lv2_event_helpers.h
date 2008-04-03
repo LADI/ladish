@@ -180,6 +180,37 @@ lv2_event_write(LV2_Event_Iterator* iter,
 }
 
 
+/** Reserve space for an event in the buffer and return a pointer to
+    the memory where the caller can write the event data, or NULL if there
+    is not enough room in the buffer. */
+static inline uint8_t*
+lv2_event_reserve(LV2_Event_Iterator* iter,
+		  uint32_t frames,
+		  uint32_t subframes,
+		  uint16_t type,
+		  uint16_t size) 
+{
+	size = lv2_event_pad_size(size);
+	if (iter->buf->capacity - iter->buf->size < sizeof(LV2_Event) + size)
+		return NULL;
+
+	LV2_Event* const ev = (LV2_Event*)((uint8_t*)iter->buf->data + 
+					   iter->offset);
+	
+	ev->frames = frames;
+	ev->subframes = subframes;
+	ev->type = type;
+	ev->size = size;
+	++iter->buf->event_count;
+	
+	size = lv2_event_pad_size(sizeof(LV2_Event) + size);
+	iter->buf->size += size;
+	iter->offset    += size;
+	
+	return (uint8_t*)ev + sizeof(LV2_Event);
+}
+
+
 /** Write an event at @a iter.
  * The event (if any) pointed to by @iter will be overwritten, and @a iter
  * incremented to point to the following event (i.e. several calls to this
@@ -197,7 +228,7 @@ lv2_event_write_event(LV2_Event_Iterator* iter,
 			(uint8_t*)iter->buf->data + iter->offset);
 	
 	*write_ev = *ev;
-	memcpy((uint8_t*)ev + sizeof(LV2_Event), data, ev->size);
+	memcpy((uint8_t*)write_ev + sizeof(LV2_Event), data, ev->size);
 	++iter->buf->event_count;
 	
 	const uint16_t size = lv2_event_pad_size(sizeof(LV2_Event) + ev->size);
