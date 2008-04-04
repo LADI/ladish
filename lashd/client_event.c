@@ -165,7 +165,6 @@ server_lash_event_project_add(server_t * server, const char *dir)
 	client_t *client;
 	lash_exec_params_t *exec_params;
 	lash_list_t *node;
-	char server_name[MAXHOSTNAMELEN];
 	int err;
 
 	project = project_restore(server, dir);
@@ -185,14 +184,6 @@ server_lash_event_project_add(server_t * server, const char *dir)
 		project_set_name(project, name);
 	}
 
-	err = gethostname(server_name, MAXHOSTNAMELEN);
-	if (err == -1) {
-		fprintf(stderr,
-				"%s: could not get local host name, using 'localhost' instead: %s\n",
-				__FUNCTION__, strerror(errno));
-		strcpy(server_name, "localhost");
-	}
-
 	server->projects = lash_list_append(server->projects, project);
 
 	server_notify_interfaces(project, NULL, LASH_Project_Add, project->name);
@@ -205,7 +196,7 @@ server_lash_event_project_add(server_t * server, const char *dir)
 		exec_params = lash_exec_params_new();
 
 		lash_exec_params_set_working_dir(exec_params, client->working_dir);
-		lash_exec_params_set_server(exec_params, server_name);
+		lash_exec_params_set_server(exec_params, "localhost");
 		lash_exec_params_set_project(exec_params, project->name);
 		lash_exec_params_set_args(exec_params, client->argc,
 								  (const char *const *)client->argv);
