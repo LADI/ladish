@@ -114,7 +114,7 @@ main(int argc, char **argv)
 			exit(0);
 			break;
 		case 'd':
-			default_dir = lash_strdup(optarg);
+			default_dir = optarg;
 			break;
 		case 'n':
 			no_v6 = 1;
