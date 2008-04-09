@@ -76,7 +76,7 @@ AM_CONDITIONAL(WITH_ALSA, [test "x$ALSA_FOUND" = "xyes"])
 ### libxml2 ###
 ###############
 PKG_CHECK_MODULES(XML2, libxml-2.0 >= 2.0.0, true, AC_MSG_ERROR([you need libxml2 >= 2.0.0.  see http://xmlsoft.org/]))
-JACK_VERSION=$( pkg-config --modversion libxml-2.0 )
+XML2_VERSION=$( pkg-config --modversion libxml-2.0 )
 AC_SUBST(XML2_CFLAGS)
 AC_SUBST(XML2_LIBS)
 AC_DEFINE_UNQUOTED(XML2_VERSION, "$XML2_VERSION", [The version of libxml2 we're compiling against])
@@ -87,12 +87,12 @@ AC_DEFINE_UNQUOTED(XML2_VERSION, "$XML2_VERSION", [The version of libxml2 we're 
 ############
 AC_CHECK_HEADER(uuid/uuid.h, UUID_FOUND="yes", UUID_FOUND="no")
 if test x$UUID_FOUND = xno; then
-  AC_MSG_ERROR([libuuid, from the e2fsprogs prackage, is required for lashd.  see http://e2fsprogs.sourceforge.net/])
+  AC_MSG_ERROR([libuuid, from the e2fsprogs package, is required for lashd.  see http://e2fsprogs.sourceforge.net/])
 fi
 
 AC_CHECK_LIB(uuid, uuid_generate, UUID_FOUND="yes", UUID_FOUND="no")
 if test x$UUID_FOUND = xno; then
-  AC_MSG_ERROR([libuuid, from the e2fsprogs prackage, is required for lashd. see http://e2fsprogs.sourceforge.net/])
+  AC_MSG_ERROR([libuuid, from the e2fsprogs package, is required for lashd. see http://e2fsprogs.sourceforge.net/])
 fi
 UUID_LIBS="-luuid"
 AC_SUBST(UUID_CFLAGS)
