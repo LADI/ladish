@@ -21,6 +21,7 @@
 #include <iostream>
 #include <cctype>
 #include <string>
+#include <cstring>
 #include <cassert>
 
 namespace Raul {
@@ -121,7 +122,7 @@ public:
 	/** Return true if \a child is equal to, or a descendant of \a parent */
 	static bool descendant_comparator(const Path& parent, const Path& child) {
 		return ( child == parent || (child.length() > parent.length() &&
-				(!strncmp(parent.c_str(), child.c_str(), parent.length())
+				(!std::strncmp(parent.c_str(), child.c_str(), parent.length())
 						&& (parent == "/" || child[parent.length()] == '/'))) );
 	}
 };
