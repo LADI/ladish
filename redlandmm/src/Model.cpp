@@ -112,6 +112,11 @@ Model::setup_prefixes()
 		librdf_serializer_set_namespace(_serialiser,
 			librdf_new_uri(_world.world(), U(i->second.c_str())), i->first.c_str());
 	}
+	
+	/* Don't write @base directive */
+	librdf_serializer_set_feature(_serialiser,
+			librdf_new_uri(_world.world(), U("http://feature.librdf.org/raptor-writeBaseURI")),
+			Node(_world, Node::LITERAL, "0").get_node());
 }
 
 
@@ -125,6 +130,7 @@ Model::serialise_to_file_handle(FILE* fd)
 	Glib::Mutex::Lock lock(_world.mutex());
 
 	_serialiser = librdf_new_serializer(_world.world(), RDF_LANG, NULL, NULL);
+	
 	setup_prefixes();
 	librdf_serializer_serialize_model_to_file_handle(
             _serialiser, fd, _base.get_uri(), _c_obj);
