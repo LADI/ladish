@@ -67,7 +67,10 @@ Node::Node(World& world, librdf_node* node)
 	: _world(&world)
 {
 	Glib::Mutex::Lock lock(world.mutex(), Glib::TRY_LOCK);
-	_c_obj = librdf_new_node_from_node(node);
+	if (node)
+		_c_obj = librdf_new_node_from_node(node);
+	else
+		_c_obj = NULL;
 	assert(_world);
 }
 

@@ -54,7 +54,9 @@ node_to_atom(const Redland::Node& node)
 }
 
 
-/** Convert a Raul::Atom to a Redland::Node */
+/** Convert a Raul::Atom to a Redland::Node
+ * Note that not all Atoms are serialisable, the returned node should
+ * be checked (can be treated as a bool) before use. */
 inline Redland::Node
 atom_to_node(Redland::World& world, const Atom& atom)
 {
@@ -91,7 +93,8 @@ atom_to_node(Redland::World& world, const Atom& atom)
 	case Atom::BLOB:
 	case Atom::NIL:
 	default:
-		std::cerr << "WARNING: Unserializable Atom!" << std::endl;
+		//std::cerr << "WARNING: Unserializable Atom!" << std::endl;
+		break;
 	}
 	
 	if (str != "")
