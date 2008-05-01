@@ -141,14 +141,24 @@ private:
 
 	bool
 	call(
+		bool response_expected,
 		const char* iface,
 		const char* method,
 		DBusMessage ** reply_ptr_ptr,
 		int in_type,
 		...);
 
+	void
+	update_attached();
+
 	bool
 	is_started();
+
+	void
+	start_server();
+
+	void
+	stop_server();
 
 	void
 	destroy_all_ports();
@@ -161,6 +171,12 @@ private:
 		DBusConnection *connection,
 		DBusMessage *message,
 		void *me);
+
+	void
+	on_jack_appeared();
+
+	void
+	on_jack_disappeared();
 
 private:
 	Patchage* _app;
