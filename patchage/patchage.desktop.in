@@ -1,7 +1,6 @@
 [Desktop Entry]
 Encoding=UTF-8
 Name=Patchage
-Version=@PACKAGE_VERSION@
 Comment=Connect audio and MIDI applications together and manage audio sessions
 Exec=patchage
 Terminal=false

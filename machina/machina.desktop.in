@@ -1,7 +1,6 @@
 [Desktop Entry]
 Encoding=UTF-8
 Name=Machina
-Version=@PACKAGE_VERSION@
 Comment=Sequencer influenced by finite automata
 Exec=machina_gui
 Terminal=false
