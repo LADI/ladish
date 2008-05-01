@@ -230,8 +230,7 @@ typedef struct {
 	 * PLUGINS THAT VIOLATE THESE RULES MAY CAUSE CRASHES AND MEMORY LEAKS.
 	 */
 	uint32_t (*lv2_event_ref)(LV2_Event_Callback_Data callback_data,
-	                          LV2_Event*              event,
-	                          uint32_t                context);
+	                          LV2_Event*              event);
 	
 	/** Drop a reference to a non-POD event.
 	 *
@@ -252,8 +251,7 @@ typedef struct {
 	 * PLUGINS THAT VIOLATE THESE RULES MAY CAUSE CRASHES AND MEMORY LEAKS.
 	 */
 	uint32_t (*lv2_event_unref)(LV2_Event_Callback_Data callback_data,
-	                            LV2_Event*              event,
-	                            uint32_t                context);
+	                            LV2_Event*              event);
 
 } LV2_Event_Feature;
 
