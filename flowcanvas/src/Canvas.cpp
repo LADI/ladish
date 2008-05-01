@@ -376,8 +376,8 @@ Canvas::remove_item(boost::shared_ptr<Item> item)
 
 		if (boost::dynamic_pointer_cast<Item>(c->source().lock()) == item
 				|| boost::dynamic_pointer_cast<Item>(c->dest().lock()) == item
-				|| src_port && src_port->module().lock() == item
-				|| dst_port && dst_port->module().lock() == item)
+				|| (src_port && src_port->module().lock() == item)
+				|| (dst_port && dst_port->module().lock() == item))
 			remove_connection(c);
 
 		i = next;

@@ -126,7 +126,7 @@ JackDriver::destroy_all_ports()
 		PortVector ports = module->ports(); // copy
 		for (PortVector::iterator p = ports.begin(); p != ports.end(); ++p) {
 			boost::shared_ptr<PatchagePort> port = boost::dynamic_pointer_cast<PatchagePort>(*p);
-			if (port && port->type() == JACK_AUDIO || port->type() == JACK_MIDI) {
+			if ((port && port->type() == JACK_AUDIO) || (port->type() == JACK_MIDI)) {
 				module->remove_port(port);
 				port->hide();
 			}

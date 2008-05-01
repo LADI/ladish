@@ -150,11 +150,12 @@ Table<K,T>::find_range_end(iterator start, bool (*comp)(const K&,const K&))
 	size_t lower = start._index;
 	size_t upper = size() - 1;
 
-	if (lower == upper)
+	if (lower == upper) {
 		if (comp(key, _entries[lower].first))
 			return iterator(*this, lower+1);
 		else
 			return this->end();
+	}
 
 	size_t i;
 	
@@ -162,11 +163,12 @@ Table<K,T>::find_range_end(iterator start, bool (*comp)(const K&,const K&))
 	
 		i = lower + ((upper - lower) / 2);
 		
-		if (upper - lower == 1)
+		if (upper - lower == 1) {
 			if (comp(key, _entries[upper].first) && upper < size())
 				return iterator(*this, upper+1);
 			else if (lower < size())
 				return iterator(*this, lower+1);
+		}
 
 		const Entry& elem = _entries[i];
 
@@ -268,7 +270,7 @@ Table<K,T>::insert(const std::pair<K, T>& entry)
 	const K& key = entry.first;
 	const T& value = entry.second;
 	
-	if (size() == 0 || size() == 1 && key > _entries[0].first) {
+	if (size() == 0 || (size() == 1 && key > _entries[0].first)) {
 		_entries.push_back(entry);
 		return std::make_pair(iterator(*this, size()-1), true);
 	} else if (size() == 1) {

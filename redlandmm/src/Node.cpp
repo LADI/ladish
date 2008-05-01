@@ -17,6 +17,7 @@
 
 #include <iostream>
 #include <cassert>
+#include <cstring>
 #include <sstream>
 #include <redlandmm/World.hpp>
 #include <redlandmm/Node.hpp>

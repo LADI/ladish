@@ -17,6 +17,7 @@
 
 #include <stdint.h>
 #include <cassert>
+#include <cstring>
 #include <iostream>
 #include <glibmm/miscutils.h>
 #include <raul/SMFWriter.hpp>

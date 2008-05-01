@@ -17,6 +17,7 @@
 
 #include <cstdio>
 #include <cassert>
+#include <cstring>
 #include <iostream>
 #include <glibmm/miscutils.h>
 #include <raul/SMFReader.hpp>

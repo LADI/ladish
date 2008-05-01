@@ -17,6 +17,7 @@
 
 #include <iostream>
 #include <cassert>
+#include <cstring>
 #include <rasqal.h>
 #include <redlandmm/Query.hpp>
 #include <redlandmm/Model.hpp>

@@ -1,6 +1,7 @@
 #include "raul/TimeStamp.hpp"
 #include "raul/EventRingBuffer.hpp"
 #include <iostream>
+#include <cstring>
 #include "raul/midi_names.h"
 
 using namespace std;

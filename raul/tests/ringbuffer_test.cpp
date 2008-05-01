@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstring>
 #include "raul/RingBuffer.hpp"
 
 using namespace std;
