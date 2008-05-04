@@ -76,6 +76,8 @@ atom_to_node(Redland::World& world, const Atom& atom)
 		os.precision(20);
 		os << atom.get_float();
 		str = os.str();
+		if (str.find(".") == std::string::npos)
+			str += ".0";
 		// xsd:decimal -> pretty decimal (float) literals in Turtle
 		type = librdf_new_uri(world.world(), CUC("http://www.w3.org/2001/XMLSchema#decimal"));
 		break;
