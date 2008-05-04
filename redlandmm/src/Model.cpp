@@ -42,7 +42,9 @@ Model::Model(World& world)
 	, _serialiser(NULL)
 { 
 	Glib::Mutex::Lock lock(world.mutex());
-	_storage = librdf_new_storage(_world.world(), "hashes", NULL, "hash-type='memory'");
+	_storage = librdf_new_storage(_world.world(), "trees", NULL, NULL);
+	if (!_storage)
+		_storage = librdf_new_storage(_world.world(), "hashes", NULL, "hash-type='memory'");
 	_c_obj = librdf_new_model(_world.world(), _storage, NULL);
 }
 
@@ -55,7 +57,9 @@ Model::Model(World& world, const Glib::ustring& data_uri, Glib::ustring base_uri
 	, _serialiser(NULL)
 {
 	Glib::Mutex::Lock lock(world.mutex());
-	_storage = librdf_new_storage(_world.world(), "hashes", NULL, "hash-type='memory'");
+	_storage = librdf_new_storage(_world.world(), "trees", NULL, NULL);
+	if (!_storage)
+		_storage = librdf_new_storage(_world.world(), "hashes", NULL, "hash-type='memory'");
 	_c_obj = librdf_new_model(_world.world(), _storage, NULL);
 
 	librdf_uri* uri = librdf_new_uri(world.world(), (const unsigned char*)data_uri.c_str());
