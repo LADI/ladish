@@ -45,12 +45,12 @@ bang_ui_on_click(GtkWidget* widget, void* data)
 
 LV2UI_Handle
 bang_ui_instantiate(const struct _LV2UI_Descriptor* descriptor,
-                        const char*                     plugin_uri,
-                        const char*                     bundle_path,
-                        LV2UI_Write_Function            write_function,
-                        LV2UI_Controller                controller,
-                        LV2UI_Widget*                   widget,
-                        const LV2_Feature* const*       features)
+                        const char*                 plugin_uri,
+                        const char*                 bundle_path,
+                        LV2UI_Write_Function        write_function,
+                        LV2UI_Controller            controller,
+                        LV2UI_Widget*               widget,
+                        const LV2_Feature* const*   features)
 {
 	OSCBangUI* ui = (OSCBangUI*)malloc(sizeof(OSCBangUI));
 	
