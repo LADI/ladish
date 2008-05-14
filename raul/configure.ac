@@ -88,7 +88,7 @@ AC_ARG_ENABLE(debug_symbols,
 
 AC_ARG_ENABLE(debug_assertions,
 	[AS_HELP_STRING(--enable-debug-assertions, [Enable debugging assertions (no)])],
-	[assertions="$enableval"])
+	[debug_assertions="$enableval"])
 
 if test "$debug_symbols" = "yes"; then
   CFLAGS="-O0 -g"
