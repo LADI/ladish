@@ -20,6 +20,7 @@
 
 #include <cstddef>
 #include <cassert>
+#include <boost/utility.hpp>
 #include <raul/Deletable.hpp>
 #include <raul/AtomicPtr.hpp>
 #include <raul/AtomicInt.hpp>
@@ -34,7 +35,7 @@ namespace Raul {
  * only.  See documentation for specific functions for specifics.
  */
 template <typename T>
-class List : public Raul::Deletable
+class List : public Raul::Deletable, public boost::noncopyable
 {
 public:
 	
