@@ -1235,11 +1235,13 @@ Canvas::arrange(bool use_length_hints)
 void
 Canvas::resize(double width, double height)
 {
-	_base_rect.property_x2() = _base_rect.property_x1() + width;
-	_base_rect.property_y2() = _base_rect.property_y1() + height;
-	_width = width;
-	_height = height;
-	set_scroll_region(0.0, 0.0, width, height);
+	if (width != _width || height != _height) {
+		_base_rect.property_x2() = _base_rect.property_x1() + width;
+		_base_rect.property_y2() = _base_rect.property_y1() + height;
+		_width = width;
+		_height = height;
+		set_scroll_region(0.0, 0.0, width, height);
+	}
 }
 	
 

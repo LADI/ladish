@@ -87,6 +87,8 @@ protected:
 	virtual void set_width(double w);
 	virtual void set_height(double h);
 
+	void fit_canvas();
+
 	double _border_width;
 	bool   _title_visible;
 	double _ports_y_offset;

@@ -275,20 +275,30 @@ Module::remove_port(boost::shared_ptr<Port> port)
 void
 Module::set_width(double w)
 {
+	const bool growing = (w > _width);
+
 	_width = w;
 	_module_box.property_x2() = _module_box.property_x1() + w;
 	if (_stacked_border)
 		_stacked_border->property_x2() = _stacked_border->property_x1() + w;
+
+	if (growing)
+		fit_canvas();
 }
 
 
 void
 Module::set_height(double h)
 {
+	const bool growing = (h > _height);
+
 	_height = h;
 	_module_box.property_y2() = _module_box.property_y1() + h;
 	if (_stacked_border)
 		_stacked_border->property_y2() = _stacked_border->property_y1() + h;
+
+	if (growing)
+		fit_canvas();
 }
 
 
@@ -490,6 +500,24 @@ Module::resize()
 
 	// Make things actually move to their new locations (?!)
 	move(0, 0);
+}
+
+	
+/** Expand the canvas if the module is outside bounds.
+ */
+void
+Module::fit_canvas()
+{
+	boost::shared_ptr<Canvas> canvas = _canvas.lock();
+	if (canvas) {
+		double canvas_width = canvas->width();
+		double canvas_height = canvas->height();
+	
+		canvas_width = max(canvas_width, property_x() + _width + 5.0);
+		canvas_height = max(canvas_height, property_y() + _height + 5.0);
+
+		canvas->resize(canvas_width, canvas_height);
+	}
 }
 
 
