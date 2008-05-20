@@ -77,12 +77,9 @@ public:
 		case FLOAT:  _float_val  = copy._float_val;          break;
 		case BOOL:   _bool_val   = copy._bool_val;           break;
 		case STRING: _string_val = strdup(copy._string_val); break;
-
 		case BLOB:   _blob_val = malloc(_blob_size);
 		             memcpy(_blob_val, copy._blob_val, _blob_size);
 					 break;
-
-		default: break;
 		}
 	}
 	
@@ -101,15 +98,55 @@ public:
 		case FLOAT:  _float_val  = other._float_val;          break;
 		case BOOL:   _bool_val   = other._bool_val;           break;
 		case STRING: _string_val = strdup(other._string_val); break;
-
 		case BLOB:   _blob_val = malloc(_blob_size);
 		             memcpy(_blob_val, other._blob_val, _blob_size);
 					 break;
-
-		default: break;
 		}
 		return *this;
 	}
+
+	inline bool operator==(const Atom& other) const {
+		if (_type == other.type()) {
+			switch (_type) {
+			case NIL:    return true;
+			case INT:    return _int_val    == other._int_val;
+			case FLOAT:  return _float_val  == other._float_val;
+			case BOOL:   return _bool_val   == other._bool_val;
+			case STRING: return strcmp(_string_val, other._string_val) == 0;
+			case BLOB:   return _blob_val   == other._blob_val;
+			}
+		}
+		return false;
+	}
+
+	inline bool operator!=(const Atom& other) const { return ! operator==(other); }
+	
+	inline bool operator<(const Atom& other) const {
+		if (_type == other.type()) {
+			switch (_type) {
+			case NIL:    return true;
+			case INT:    return _int_val    < other._int_val;
+			case FLOAT:  return _float_val  < other._float_val;
+			case BOOL:   return _bool_val   < other._bool_val;
+			case STRING: return strcmp(_string_val, other._string_val) < 0;
+			case BLOB:   return _blob_val   < other._blob_val;
+			}
+		}
+		return _type < other.type();
+	}
+
+	inline size_t data_size() {
+		switch (_type) {
+		case NIL:    return 0;
+		case INT:    return sizeof(uint32_t);
+		case FLOAT:  return sizeof(float);
+		case BOOL:   return sizeof(bool);
+		case STRING: return strlen(_string_val);
+		case BLOB:   return _blob_size;
+		}
+	}
+	
+	inline bool is_valid() const { return (_type != NIL); }
 
 	/** Type of this atom.  Always check this before attempting to get the
 	 * value - attempting to get the incorrectly typed value is a fatal error.
@@ -122,12 +159,9 @@ public:
 	inline const char* get_string() const { assert(_type == STRING); return _string_val; }
 	inline const void* get_blob()   const { assert(_type == BLOB);   return _blob_val; }
 
-	inline operator bool() const { return (_type != NIL); }
-
 private:
-	Type _type;
-	
-	size_t _blob_size; ///< always a multiple of 32
+	Type   _type;
+	size_t _blob_size; ///< Always a multiple of 32
 	
 	union {
 		int32_t _int_val;
