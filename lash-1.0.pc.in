@@ -7,6 +7,6 @@ Name: LASH
 Description: Audio session management
 Requires: @PC_REQUIRES@
 Version: @PACKAGE_VERSION@
-Libs: -llash
+Libs: -L${libdir} -llash
 Libs.static: -lpthread -luuid
 Cflags: -I${includedir}/lash-1.0
