@@ -32,39 +32,48 @@ namespace Raul {
  */
 class SMFReader {
 public:
-	SMFReader();
+	class PrematureEOF : public std::exception {
+		const char* what() const throw() { return "Unexpected end of file"; }
+	};
+	class CorruptFile : public std::exception {
+		const char* what() const throw() { return "Corrupted file"; }
+	};
+	class UnsupportedTime : public std::exception {
+		const char* what() const throw() { return "Unsupported time stamp type (SMPTE)"; }
+	};
+
+	SMFReader(const std::string filename="");
 	~SMFReader();
 
-	bool open(const std::string& filename);
+	bool open(const std::string& filename) throw (std::logic_error, UnsupportedTime);
 
 	bool seek_to_track(unsigned track) throw (std::logic_error);
 
-	TimeUnit unit() const { return _unit; }
 	uint16_t type() const { return _type; }
 	uint16_t ppqn() const { return _ppqn; }
 	size_t   num_tracks() { return _num_tracks; }
 
-	int read_event(size_t     buf_len,
-	               uint8_t*   buf,
-	               uint32_t*  ev_size,
-	               TimeStamp* ev_delta_time) throw (std::logic_error);
+	int read_event(size_t    buf_len,
+	               uint8_t*  buf,
+	               uint32_t* ev_size,
+	               uint32_t* ev_delta_time)
+		throw (std::logic_error, PrematureEOF, CorruptFile);
 	
 	void close();
+	
+	static uint32_t read_var_len(FILE* fd) throw (PrematureEOF);
 
 protected:
 	/** size of SMF header, including MTrk chunk header */
 	static const uint32_t HEADER_SIZE = 22;
 
-	uint32_t read_var_len() const;
-
-	std::string    _filename;
-	FILE*          _fd;
-	TimeUnit       _unit;
-	uint16_t       _type;
-	uint16_t       _ppqn;
-	uint16_t       _num_tracks;
-	uint32_t       _track;
-	uint32_t       _track_size;
+	std::string _filename;
+	FILE*       _fd;
+	uint16_t    _type;
+	uint16_t    _ppqn;
+	uint16_t    _num_tracks;
+	uint32_t    _track;
+	uint32_t    _track_size;
 };
 
 

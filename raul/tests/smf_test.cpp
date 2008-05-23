@@ -44,7 +44,7 @@ main(int argc, char** argv)
 
 		unsigned char buf[4];
 		uint32_t      ev_size;
-		TimeStamp     ev_delta_time(reader.unit());
+		uint32_t      ev_delta_time;
 		while (reader.read_event(4, buf, &ev_size, &ev_delta_time) >= 0) {
 
 			cout << "Event, size = " << ev_size << ", time = " << ev_delta_time;

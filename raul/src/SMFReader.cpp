@@ -71,13 +71,14 @@ midi_event_size(unsigned char status)
 }
 
 
-SMFReader::SMFReader()
+SMFReader::SMFReader(const string filename)
 	: _fd(NULL)
-	, _unit(TimeUnit::BEATS, 192)
 	, _ppqn(0)
 	, _track(0)
 	, _track_size(0)
 {
+	if (filename.length() > 0)
+		open(filename);
 }
 
 
@@ -87,14 +88,14 @@ SMFReader::~SMFReader()
 		close();
 }
 
-
+	
 bool
-SMFReader::open(const string& filename)
+SMFReader::open(const string& filename) throw (logic_error, UnsupportedTime)
 {
 	if (_fd)
 		throw logic_error("Attempt to start new read while write in progress.");
 
-	cerr << "Opening SMF file " << filename << " for reading." << endl;
+	cout << "Opening SMF file " << filename << " for reading." << endl;
 
 	_fd = fopen(filename.c_str(), "r+");
 
@@ -105,12 +106,11 @@ SMFReader::open(const string& filename)
 		mthd[4] = '\0';
 		fread(mthd, 1, 4, _fd);
 		if (strcmp(mthd, "MThd")) {
-			cerr << "File is not an SMF file, aborting." << endl;
+			cerr << filename << " is not an SMF file, aborting." << endl;
 			fclose(_fd);
 			_fd = NULL;
 			return false;
 		}
-
 		
 		// Read type (bytes 8..9)
 		fseek(_fd, 8, SEEK_SET);
@@ -124,11 +124,13 @@ SMFReader::open(const string& filename)
 		_num_tracks = GUINT16_FROM_BE(num_tracks_be);
 
 		// Read PPQN (bytes 12..13)
-		// FIXME: broken for time-based divisions
 		uint16_t ppqn_be = 0;
 		fread(&ppqn_be, 2, 1, _fd);
 		_ppqn = GUINT16_FROM_BE(ppqn_be);
-		_unit = TimeUnit::beats(_ppqn);
+		
+		// TODO: Absolute (SMPTE seconds) time support
+		if ((_ppqn & 0x8000) != 0)
+			throw UnsupportedTime();
 
 		seek_to_track(1);
 		
@@ -145,7 +147,8 @@ SMFReader::open(const string& filename)
 bool
 SMFReader::seek_to_track(unsigned track) throw (std::logic_error)
 {
-	assert(track > 0);
+	if (track == 0)
+		throw logic_error("Seek to track 0 out of range (must be >= 1)");
 
 	if (!_fd)
 		throw logic_error("Attempt to seek to track on unopened SMF file.");
@@ -153,7 +156,7 @@ SMFReader::seek_to_track(unsigned track) throw (std::logic_error)
 	unsigned track_pos = 0;
 
 	fseek(_fd, 14, SEEK_SET);
-	char     id[5];
+	char id[5];
 	id[4] = '\0';
 	uint32_t chunk_size = 0;
 
@@ -162,7 +165,6 @@ SMFReader::seek_to_track(unsigned track) throw (std::logic_error)
 
 		if (!strcmp(id, "MTrk")) {
 			++track_pos;
-			//std::cerr << "Found track " << track_pos << endl;
 		} else {
 			std::cerr << "Unknown chunk ID " << id << endl;
 		}
@@ -201,10 +203,11 @@ SMFReader::seek_to_track(unsigned track) throw (std::logic_error)
  * set to the actual size of the event.
  */
 int
-SMFReader::read_event(size_t     buf_len,
-                      uint8_t*   buf,
-                      uint32_t*  ev_size,
-                      TimeStamp* delta_time) throw (std::logic_error)
+SMFReader::read_event(size_t    buf_len,
+                      uint8_t*  buf,
+                      uint32_t* ev_size,
+                      uint32_t* delta_time)
+		throw (std::logic_error, PrematureEOF, CorruptFile)
 {
 	if (_track == 0)
 		throw logic_error("Attempt to read from unopened SMF file");
@@ -218,45 +221,43 @@ SMFReader::read_event(size_t     buf_len,
 	assert(ev_size);
 	assert(delta_time);
 
-	//cerr.flags(ios::hex);
-	//cerr << "SMF - Reading event at offset 0x" << ftell(_fd) << endl;
-	//cerr.flags(ios::dec);
-
 	// Running status state
-	static unsigned char last_status = 0;
-	static uint32_t      last_size   = 1234567;
+	static uint8_t  last_status = 0;
+	static uint32_t last_size   = 0;
 
-	*delta_time = read_var_len();
+	*delta_time = read_var_len(_fd);
 	int status = fgetc(_fd);
-	assert(status != EOF); // FIXME die gracefully
-	assert(status <= 0xFF);
+	if (status == EOF)
+		throw PrematureEOF();
+	else if (status > 0xFF)
+		throw CorruptFile();
 
 	if (status < 0x80) {
+		if (last_status == 0)
+			throw CorruptFile();
 		status = last_status;
 		*ev_size = last_size;
 		fseek(_fd, -1, SEEK_CUR);
-		//cerr << "RUNNING STATUS, size = " << *ev_size << endl;
 	} else {
 		last_status = status;
 		*ev_size = midi_event_size(status) + 1;
 		last_size = *ev_size;
-		//cerr << "NORMAL STATUS, size = " << *ev_size << endl;
 	}
 
-	buf[0] = (unsigned char)status;
+	buf[0] = (uint8_t)status;
 
 	if (status == 0xFF) {
 		*ev_size = 0;
-		assert(!feof(_fd));
-		unsigned char type = fgetc(_fd);
-		const uint32_t size = read_var_len();
+		if (feof(_fd))
+			throw PrematureEOF();
+		uint8_t type = fgetc(_fd);
+		const uint32_t size = read_var_len(_fd);
 		/*cerr.flags(ios::hex);
 		cerr << "SMF - meta 0x" << (int)type << ", size = ";
 		cerr.flags(ios::dec);
 		cerr << size << endl;*/
 
-		if ((unsigned char)type == 0x2F) {
-			//cerr << "SMF - hit EOT" << endl;
+		if ((uint8_t)type == 0x2F) {
 			return -1; // we hit the logical EOF anyway...
 		} else {
 			fseek(_fd, size, SEEK_CUR);
@@ -265,13 +266,15 @@ SMFReader::read_event(size_t     buf_len,
 	}
 
 	if (*ev_size > buf_len || *ev_size == 0 || feof(_fd)) {
-		//cerr << "Skipping event" << endl;
+		//cerr << "SMF - Skipping event" << endl;
 		// Skip event, return 0
 		fseek(_fd, *ev_size - 1, SEEK_CUR);
 		return 0;
 	} else {
 		// Read event, return size
-		assert(!ferror(_fd));
+		if (ferror(_fd))
+			throw CorruptFile();
+		
 		fread(buf+1, 1, *ev_size - 1, _fd);
 	
 		if ((buf[0] & 0xF0) == 0x90 && buf[2] == 0) {
@@ -295,21 +298,20 @@ SMFReader::close()
 
 
 uint32_t
-SMFReader::read_var_len() const
+SMFReader::read_var_len(FILE* fd) throw (PrematureEOF)
 {
-	assert(!feof(_fd));
-
-	//int offset = ftell(_fd);
-	//cerr << "SMF - reading var len at " << offset << endl;
+	if (feof(fd))
+		throw PrematureEOF();
 
 	uint32_t value;
-	unsigned char c;
+	uint8_t  c;
 
-	if ( (value = getc(_fd)) & 0x80 ) {
+	if ( (value = getc(fd)) & 0x80 ) {
 		value &= 0x7F;
 		do {
-			assert(!feof(_fd));
-			value = (value << 7) + ((c = getc(_fd)) & 0x7F);
+			if (feof(fd))
+				throw PrematureEOF();
+			value = (value << 7) + ((c = getc(fd)) & 0x7F);
 		} while (c & 0x80);
 	}
 

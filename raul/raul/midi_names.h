@@ -81,69 +81,69 @@ inline static const char* midi_name(uint8_t status)
 		return "Reset"; break;
 
 	case MIDI_CTL_MSB_BANK:
-		return "Bank Selection"; break;
+		return "Bank Select (Coarse)"; break;
 	case MIDI_CTL_MSB_MODWHEEL:
-		return "Modulation"; break;
+		return "Modulation (Coarse)"; break;
 	case MIDI_CTL_MSB_BREATH:
-		return "Breath"; break;
+		return "Breath (Coarse)"; break;
 	case MIDI_CTL_MSB_FOOT:
-		return "Foot"; break;
+		return "Foot (Coarse)"; break;
 	case MIDI_CTL_MSB_PORTAMENTO_TIME:
-		return "Portamento Time"; break;
+		return "Portamento Time (Coarse)"; break;
 	case MIDI_CTL_MSB_DATA_ENTRY:
-		return "Data Entry"; break;
+		return "Data Entry (Coarse)"; break;
 	case MIDI_CTL_MSB_MAIN_VOLUME:
-		return "Main Volume"; break;
+		return "Main Volume (Coarse)"; break;
 	case MIDI_CTL_MSB_BALANCE:
-		return "Balance"; break;
+		return "Balance (Coarse)"; break;
 	case MIDI_CTL_MSB_PAN:
-		return "Panpot"; break;
+		return "Pan (Coarse)"; break;
 	case MIDI_CTL_MSB_EXPRESSION:
-		return "Expression"; break;
+		return "Expression (Coarse)"; break;
 	case MIDI_CTL_MSB_EFFECT1:
-		return "Effect1"; break;
+		return "Effect 1 (Coarse)"; break;
 	case MIDI_CTL_MSB_EFFECT2:
-		return "Effect2"; break;
+		return "Effect 2 (Coarse)"; break;
 	case MIDI_CTL_MSB_GENERAL_PURPOSE1:
-		return "General Purpose 1"; break;
+		return "General Purpose 1 (Coarse)"; break;
 	case MIDI_CTL_MSB_GENERAL_PURPOSE2:
-		return "General Purpose 2"; break;
+		return "General Purpose 2 (Coarse)"; break;
 	case MIDI_CTL_MSB_GENERAL_PURPOSE3:
-		return "General Purpose 3"; break;
+		return "General Purpose 3 (Coarse)"; break;
 	case MIDI_CTL_MSB_GENERAL_PURPOSE4:
-		return "General Purpose 4"; break;
+		return "General Purpose 4 (Coarse)"; break;
 	case MIDI_CTL_LSB_BANK:
-		return "Bank Selection"; break;
+		return "Bank Select (Fine)"; break;
 	case MIDI_CTL_LSB_MODWHEEL:
-		return "Modulation"; break;
+		return "Modulation (Fine)"; break;
 	case MIDI_CTL_LSB_BREATH:
-		return "Breath"; break;
+		return "Breath (Fine)"; break;
 	case MIDI_CTL_LSB_FOOT:
-		return "Foot"; break;
+		return "Foot (Fine)"; break;
 	case MIDI_CTL_LSB_PORTAMENTO_TIME:
-		return "Portamento Time"; break;
+		return "Portamento Time (Fine)"; break;
 	case MIDI_CTL_LSB_DATA_ENTRY:
-		return "Data Entry"; break;
+		return "Data Entry (Fine)"; break;
 	case MIDI_CTL_LSB_MAIN_VOLUME:
-		return "Main Volume"; break;
+		return "Main Volume (Fine)"; break;
 	case MIDI_CTL_LSB_BALANCE:
-		return "Balance"; break;
+		return "Balance (Fine)"; break;
 	case MIDI_CTL_LSB_PAN:
-		return "Panpot"; break;
+		return "Pan (Fine)"; break;
 	case MIDI_CTL_LSB_EXPRESSION:
-		return "Expression"; break;
+		return "Expression (Fine)"; break;
 	case MIDI_CTL_LSB_EFFECT1:
-		return "Effect1"; break;
+		return "Effect 1 (Fine)"; break;
 	case MIDI_CTL_LSB_EFFECT2:
-		return "Effect2"; break;
+		return "Effect 2 (Fine)"; break;
 	case MIDI_CTL_LSB_GENERAL_PURPOSE1:
-		return "General Purpose 1"; break;
+		return "General Purpose 1 (Fine)"; break;
 	case MIDI_CTL_LSB_GENERAL_PURPOSE2:
-		return "General Purpose 2"; break;
+		return "General Purpose 2 (Fine)"; break;
 	case MIDI_CTL_LSB_GENERAL_PURPOSE3:
-		return "General Purpose 3"; break;
+		return "General Purpose 3 (Fine)"; break;
 	case MIDI_CTL_LSB_GENERAL_PURPOSE4:
-		return "General Purpose 4"; break;
+		return "General Purpose 4 (Fine)"; break;
 	case MIDI_CTL_SUSTAIN:
 		return "Sustain Pedal"; break;
 	case MIDI_CTL_PORTAMENTO:
@@ -157,25 +157,25 @@ inline static const char* midi_name(uint8_t status)
 	case MIDI_CTL_HOLD2:
 		return "Hold2"; break;
 	case MIDI_CTL_SC1_SOUND_VARIATION:
-		return "SC1 Sound Variation"; break;
+		return "Sound Variation"; break;
 	case MIDI_CTL_SC2_TIMBRE:
-		return "SC2 Timbre"; break;
+		return "Sound Timbre"; break;
 	case MIDI_CTL_SC3_RELEASE_TIME:
-		return "SC3 Release Time"; break;
+		return "Sound Release Time"; break;
 	case MIDI_CTL_SC4_ATTACK_TIME:
-		return "SC4 Attack Time"; break;
+		return "Sound Attack Time"; break;
 	case MIDI_CTL_SC5_BRIGHTNESS:
-		return "SC5 Brightness"; break;
+		return "Sound Brightness"; break;
 	case MIDI_CTL_SC6:
-		return "SC6"; break;
+		return "Sound Control 6"; break;
 	case MIDI_CTL_SC7:
-		return "SC7"; break;
+		return "Sound Control 7"; break;
 	case MIDI_CTL_SC8:
-		return "SC8"; break;
+		return "Sound Control 8"; break;
 	case MIDI_CTL_SC9:
-		return "SC9"; break;
+		return "Sound Control 9"; break;
 	case MIDI_CTL_SC10:
-		return "SC10"; break;
+		return "Sound Control 10"; break;
 	case MIDI_CTL_GENERAL_PURPOSE5:
 		return "General Purpose 5"; break;
 	case MIDI_CTL_GENERAL_PURPOSE6:
@@ -187,15 +187,15 @@ inline static const char* midi_name(uint8_t status)
 	case MIDI_CTL_PORTAMENTO_CONTROL:
 		return "Portamento Control"; break;
 	case MIDI_CTL_E1_REVERB_DEPTH:
-		return "E1 Reverb Depth"; break;
+		return "Reverb Depth"; break;
 	case MIDI_CTL_E2_TREMOLO_DEPTH:
-		return "E2 Tremolo Depth"; break;
+		return "Tremolo Depth"; break;
 	case MIDI_CTL_E3_CHORUS_DEPTH:
-		return "E3 Chorus Depth"; break;
+		return "Chorus Depth"; break;
 	case MIDI_CTL_E4_DETUNE_DEPTH:
-		return "E4 Detune Depth"; break;
+		return "Detune Depth"; break;
 	case MIDI_CTL_E5_PHASER_DEPTH:
-		return "E5 Phaser Depth"; break;
+		return "Phaser Depth"; break;
 	case MIDI_CTL_DATA_INCREMENT:
 		return "Data Increment"; break;
 	case MIDI_CTL_DATA_DECREMENT:
