@@ -288,7 +288,7 @@ if test "x$build_jack" = "xyes"; then
 fi
 
 # OSC support (mandatory for now due to laziness)
-PKG_CHECK_MODULES(LIBLO, liblo >= 0.24)
+PKG_CHECK_MODULES(LIBLO, liblo >= 0.25)
 
 # LV2 support
 build_lv2="yes"
@@ -453,7 +453,7 @@ AC_ARG_ENABLE([ingen-gtk-client],
 
 # OSC via Liblo
 build_liblo="yes"
-PKG_CHECK_MODULES(LIBLO, liblo, [build_liblo="yes"], [build_liblo="no"])
+PKG_CHECK_MODULES(LIBLO, liblo >= 0.25, [build_liblo="yes"], [build_liblo="no"])
 if test "$build_liblo" = "yes"; then
 	AC_DEFINE(HAVE_LIBLO, 1, [Has the liblo library])
 fi
