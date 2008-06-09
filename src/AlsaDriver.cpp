@@ -143,6 +143,8 @@ AlsaDriver::refresh_ports()
 	bool is_duplex      = false;
 	bool is_application = true;
 
+	set< boost::shared_ptr<PatchageModule> > to_resize;
+
 	while (snd_seq_query_next_client (_seq, cinfo) >= 0) {
 		snd_seq_port_info_set_client(pinfo, snd_seq_client_info_get_client(cinfo));
 		snd_seq_port_info_set_port(pinfo, -1);
@@ -193,7 +195,8 @@ AlsaDriver::refresh_ports()
 			if (!split) {
 				m = _app->canvas()->find_module(client_name, InputOutput);
 				if (!m) {
-					m = boost::shared_ptr<PatchageModule>(new PatchageModule(_app, client_name, InputOutput));
+					m = boost::shared_ptr<PatchageModule>(
+							new PatchageModule(_app, client_name, InputOutput));
 					m->load_location();
 					_app->canvas()->add_item(m);
 				}
@@ -205,6 +208,7 @@ AlsaDriver::refresh_ports()
 						m->add_port(create_port(m, port_name, true, addr));
 						m->add_port(create_port(m, port_name, false, addr));
 					}
+					to_resize.insert(m);
 				}
 
 			} else { // non-application input/output ports (hw interface, etc) go on separate modules
@@ -228,6 +232,7 @@ AlsaDriver::refresh_ports()
 					
 					if (!m->get_port(port_name)) {
 						m->add_port(create_port(m, port_name, is_input, addr));
+						to_resize.insert(m);
 					}
 
 				} else {  // two ports to add
@@ -246,6 +251,7 @@ AlsaDriver::refresh_ports()
 
 					if (!m->get_port(port_name)) {
 						m->add_port(create_port(m, port_name, true, addr));
+						to_resize.insert(m);
 					}
 
 					type = Output;
@@ -261,10 +267,16 @@ AlsaDriver::refresh_ports()
 
 					if (!m->get_port(port_name)) {
 						m->add_port(create_port(m, port_name, false, addr));
+						to_resize.insert(m);
 					}
 				}
 			}
 		}
+	}
+
+	for (set< boost::shared_ptr<PatchageModule> >::iterator i = to_resize.begin();
+			i != to_resize.end(); ++i) {
+		(*i)->resize();
 	}
 }
 
