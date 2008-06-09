@@ -600,9 +600,9 @@ JackDriver::is_attached() const
 void
 JackDriver::add_port(
 	boost::shared_ptr<PatchageModule>& module,
-	PortType type,
-	const std::string& name,
-	bool is_input)
+	PortType                           type,
+	const std::string&                 name,
+	bool                               is_input)
 {
 	if (module->get_port(name)) {
 		return;
@@ -623,9 +623,9 @@ JackDriver::add_port(
 void
 JackDriver::add_port(
 	dbus_uint64_t client_id,
-	const char *client_name,
+	const char*   client_name,
 	dbus_uint64_t port_id,
-	const char *port_name,
+	const char*   port_name,
 	dbus_uint32_t port_flags,
 	dbus_uint32_t port_type)
 {
@@ -660,9 +660,9 @@ JackDriver::add_port(
 void
 JackDriver::remove_port(
 	dbus_uint64_t client_id,
-	const char *client_name,
+	const char*   client_name,
 	dbus_uint64_t port_id,
-	const char *port_name)
+	const char*   port_name)
 {
 	boost::shared_ptr<PatchagePort> port = PtrCast<PatchagePort>(_app->canvas()->get_port(client_name, port_name));
 	if (!port) {
@@ -712,13 +712,13 @@ void
 JackDriver::connect_ports(
 	dbus_uint64_t connection_id,
 	dbus_uint64_t client1_id,
-	const char *client1_name,
+	const char*   client1_name,
 	dbus_uint64_t port1_id,
-	const char *port1_name,
+	const char*   port1_name,
 	dbus_uint64_t client2_id,
-	const char *client2_name,
+	const char*   client2_name,
 	dbus_uint64_t port2_id,
-	const char *port2_name)
+	const char*   port2_name)
 {
 	boost::shared_ptr<PatchagePort> port1 = PtrCast<PatchagePort>(_app->canvas()->get_port(client1_name, port1_name));
 	if (!port1) {
@@ -739,13 +739,13 @@ void
 JackDriver::disconnect_ports(
 	dbus_uint64_t connection_id,
 	dbus_uint64_t client1_id,
-	const char *client1_name,
+	const char*   client1_name,
 	dbus_uint64_t port1_id,
-	const char *port1_name,
+	const char*   port1_name,
 	dbus_uint64_t client2_id,
-	const char *client2_name,
+	const char*   client2_name,
 	dbus_uint64_t port2_id,
-	const char *port2_name)
+	const char*   port2_name)
 {
 	boost::shared_ptr<PatchagePort> port1 = PtrCast<PatchagePort>(_app->canvas()->get_port(client1_name, port1_name));
 	if (!port1) {
@@ -1227,3 +1227,4 @@ JackDriver::info_msg(const std::string& msg) const
 	cerr << (std::string)"[JACKDBUS] " << msg << endl;
 #endif
 }
+
