@@ -1,5 +1,7 @@
 EXTRA_DIST = reference.doxygen.in mainpage.dox
 
+all: docs
+
 reference.doxygen: @REDLANDMM_SRCDIR@/doc/reference.doxygen.in
 
 distclean-local:

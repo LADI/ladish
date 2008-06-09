@@ -1,5 +1,7 @@
 EXTRA_DIST = reference.doxygen.in mainpage.dox
 
+all: docs
+
 reference.doxygen: @FLOWCANVAS_SRCDIR@/doc/reference.doxygen.in
 
 distclean-local:
@@ -7,3 +9,4 @@ distclean-local:
 
 docs: reference.doxygen @FLOWCANVAS_SRCDIR@/flowcanvas/*.hpp
 	doxygen reference.doxygen
+
