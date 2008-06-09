@@ -551,6 +551,10 @@ else
 fi
 
 # Check for the graphviz library for auto-layout support
+graphviz="no"
+AC_ARG_ENABLE(graphviz,
+	[AS_HELP_STRING(--enable-graphviz, [Use graphviz to automatically organize canvas (yes)])],
+	[ graphviz="$enableval"])
 PKG_CHECK_MODULES(AGRAPH, libgvc >= 2.8, graphviz="yes", graphviz="no")
 if test "$graphviz" = "yes"; then
 	AC_DEFINE(HAVE_AGRAPH, 1, [Has the graphviz library])
