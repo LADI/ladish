@@ -73,6 +73,7 @@ protected:
 	void on_show_messages();
 	void on_store_positions();
 	void on_view_toolbar();
+	bool on_scroll(GdkEventScroll* ev);
 
 	void zoom(double z);
 	bool idle_callback();

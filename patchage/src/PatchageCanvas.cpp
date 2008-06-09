@@ -31,8 +31,8 @@
 #endif
 
 PatchageCanvas::PatchageCanvas(Patchage* app, int width, int height)
-: FlowCanvas::Canvas(width, height),
-  _app(app)
+	: FlowCanvas::Canvas(width, height)
+  	, _app(app)
 {
 }
 

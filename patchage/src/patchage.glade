@@ -486,6 +486,7 @@ The bar represents the percentage of available time used for audio processing (i
                 <property name="draw">False</property>
               </widget>
               <packing>
+                <property name="expand">False</property>
                 <property name="homogeneous">False</property>
               </packing>
             </child>
@@ -496,6 +497,7 @@ The bar represents the percentage of available time used for audio processing (i
               </widget>
               <packing>
                 <property name="expand">False</property>
+                <property name="homogeneous">False</property>
               </packing>
             </child>
             <child>
@@ -529,8 +531,10 @@ The bar represents the percentage of available time used for audio processing (i
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="has_focus">True</property>
+            <property name="is_focus">True</property>
             <property name="can_default">True</property>
             <property name="has_default">True</property>
+            <property name="receives_default">True</property>
             <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
             <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
             <property name="shadow_type">GTK_SHADOW_IN</property>
@@ -595,7 +599,7 @@ JACK D-Bus driver by Nedko Arnaudov &lt;nedko@arnaudov.name&gt;</property>
     <property name="destroy_with_parent">True</property>
     <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
     <child internal-child="vbox">
-      <widget class="GtkVBox" id="dialog-vbox1">
+      <widget class="GtkVBox" id="dialog-vbox2">
         <property name="visible">True</property>
         <child>
           <widget class="GtkVBox" id="vbox2">
@@ -663,7 +667,7 @@ JACK D-Bus driver by Nedko Arnaudov &lt;nedko@arnaudov.name&gt;</property>
           </packing>
         </child>
         <child internal-child="action_area">
-          <widget class="GtkHButtonBox" id="dialog-action_area1">
+          <widget class="GtkHButtonBox" id="dialog-action_area2">
             <property name="visible">True</property>
             <property name="layout_style">GTK_BUTTONBOX_END</property>
             <child>

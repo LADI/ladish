@@ -674,25 +674,31 @@ Canvas::port_event(GdkEvent* event, boost::weak_ptr<Port> weak_port)
 bool
 Canvas::canvas_event(GdkEvent* event)
 {
-#if 0
+	static const int scroll_increment = 10;
+	int scroll_x, scroll_y;
+	get_scroll_offsets(scroll_x, scroll_y);
+
 	switch (event->type) {
-		case GDK_BUTTON_PRESS:
-		cerr << "FC BUTTON PRESS!\n" << endl;
+	case GDK_KEY_PRESS:
+		switch (event->key.keyval) {
+		case GDK_Up:
+			scroll_y += scroll_increment;
+			break;
+		case GDK_Down:
+			scroll_y -= scroll_increment;
+			break;
+		case GDK_Left:
+			scroll_x += scroll_increment;
+			break;
+		case GDK_Right:
+			scroll_x -= scroll_increment;
+		default: break;
+		}
+		scroll_to(scroll_x, scroll_y);
 		return true;
-
-		case GDK_SCROLL:
-		cerr << "FC SCROLL!\n" << endl;
-		return true;
+	default:
+		return false;
 	}
-
-	if (event->type == GDK_KEY_PRESS) {
-		cerr << "CANVAS KEY PRESS" << endl;
-	} else if (event->type == GDK_KEY_RELEASE) {
-		cerr << "CANVAS KEY RELEASE" << endl;
-	}
-#endif
-
-	return false;
 }
 
 
@@ -803,8 +809,6 @@ Canvas::select_drag_handler(GdkEvent* event)
 		_select_rect = NULL;
 		_drag_state = NOT_DRAGGING;
 		return true;
-	} else if (event->type == GDK_KEY_PRESS) {
-		canvas_event(event);
 	}
 	return false;
 }
