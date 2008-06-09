@@ -40,8 +40,10 @@ cd $builddir
 
 REDLANDMM_CFLAGS="-I$abs_srcdir"
 REDLANDMM_LIBS="$builddir/src/.libs/libredlandmm.la"
+REDLANDMM_SRCDIR="$abs_srcdir"
 AC_SUBST(REDLANDMM_CFLAGS)
 AC_SUBST(REDLANDMM_LIBS)
+AC_SUBST(REDLANDMM_SRCDIR)
 
 CONFIG_H_PATH="$builddir/config/config.h"
 
