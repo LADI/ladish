@@ -148,15 +148,26 @@ JackDriver::create_port_view(Patchage*                     patchage,
 
 	if (ref.type == PatchageEvent::PortRef::JACK_ID)
 		jack_port = jack_port_by_id(_client, ref.id.jack_id);
-
+	
 	string module_name, port_name;
 	port_names(ref, module_name, port_name);
+
+	ModuleType type = InputOutput;
+	if (_app->state_manager()->get_module_split(module_name,
+			(jack_port_flags(jack_port) & JackPortIsTerminal))) {
+		if (jack_port_flags(jack_port) & JackPortIsInput) {
+			type = Input;
+		} else {
+			type = Output;
+		}
+	}
+
 	boost::shared_ptr<PatchageModule> parent
-		= _app->canvas()->find_module(module_name, InputOutput);
+		= _app->canvas()->find_module(module_name, type);
 	
 	if (!parent) {
 		parent = boost::shared_ptr<PatchageModule>(
-				new PatchageModule(patchage, module_name, InputOutput));
+				new PatchageModule(patchage, module_name, type));
 		parent->load_location();
 		patchage->canvas()->add_item(parent);
 		parent->show();
@@ -233,13 +244,17 @@ JackDriver::refresh()
 
 	ports = jack_get_ports(_client, NULL, NULL, 0); // get all existing ports
 
+	if (!ports) {
+		_shutdown_mutex.unlock();
+		return;
+	}
+
 	string client1_name;
 	string port1_name;
 	string client2_name;
 	string port2_name;
 	
 	// Add all ports
-	if (ports)
 	for (int i=0; ports[i]; ++i) {
 		port = jack_port_by_name(_client, ports[i]);
 
@@ -285,8 +300,6 @@ JackDriver::refresh()
 	}
 	
 	// Add all connections
-	if (ports) {
-	
 	for (int i=0; ports[i]; ++i) {
 
 		port = jack_port_by_name(_client, ports[i]);
@@ -329,8 +342,6 @@ JackDriver::refresh()
 			
 			free(connected_ports);
 		}
-	}
-	
 	}
 	
 	_shutdown_mutex.unlock();
@@ -570,6 +581,7 @@ JackDriver::set_buffer_size(jack_nframes_t size)
 	}
 }
 
+
 float
 JackDriver::get_max_dsp_load()
 {
@@ -592,8 +604,10 @@ JackDriver::get_max_dsp_load()
 	return max_load;
 }
 
+
 void
 JackDriver::reset_max_dsp_load()
 {
-		jack_reset_max_delayed_usecs(_client);
+	jack_reset_max_delayed_usecs(_client);
 }
+
