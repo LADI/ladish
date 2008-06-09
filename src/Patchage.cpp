@@ -162,6 +162,9 @@ Patchage::Patchage(int argc, char** argv)
 	_main_scrolledwin->property_hadjustment().get_value()->set_step_increment(10);
 	_main_scrolledwin->property_vadjustment().get_value()->set_step_increment(10);
 
+	_main_scrolledwin->signal_scroll_event().connect(
+			sigc::mem_fun(this, &Patchage::on_scroll));
+
 	_buffer_size_combo->signal_changed().connect(
 			sigc::mem_fun(this, &Patchage::buffer_size_changed));
 	_clear_load_but->signal_clicked().connect(
@@ -250,6 +253,8 @@ Patchage::Patchage(int argc, char** argv)
 	
 	connect_widgets();
 	update_state();
+
+	_canvas->grab_focus();
 
 	// Idle callback, check if we need to refresh
 	Glib::signal_timeout().connect(
@@ -661,6 +666,14 @@ Patchage::on_view_toolbar()
 		_toolbar->show();
 	else
 		_toolbar->hide();
+}
+
+	
+bool
+Patchage::on_scroll(GdkEventScroll* ev) 
+{
+	cout << "ON SCROLL" << endl;
+	return false;
 }
 
 
