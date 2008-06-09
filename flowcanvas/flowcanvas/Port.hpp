@@ -76,9 +76,9 @@ public:
 	}
 
 	virtual void create_menu();
+	void         set_menu(Gtk::Menu* m);
 
 	Gtk::Menu* menu() const           { return _menu; }
-	void       set_menu(Gtk::Menu* m) { delete _menu; _menu = m; }
 
 	double width() const { return _width; }
 	void   set_width(double w);
@@ -112,6 +112,8 @@ public:
 
 protected:
 	friend class Canvas;
+
+	void on_menu_hide();
 
 	boost::weak_ptr<Module> _module;
 	std::string             _name;

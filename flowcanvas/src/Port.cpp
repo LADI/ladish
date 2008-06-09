@@ -177,6 +177,23 @@ Port::create_menu()
 	_menu = new Gtk::Menu();
 	_menu->items().push_back(Gtk::Menu_Helpers::MenuElem(
 		"Disconnect All", sigc::mem_fun(this, &Port::disconnect_all)));
+	_menu->signal_selection_done().connect(sigc::mem_fun(this, &Port::on_menu_hide));
+}
+	
+
+void
+Port::set_menu(Gtk::Menu* m)
+{
+	delete _menu;
+	_menu = m;
+	_menu->signal_selection_done().connect(sigc::mem_fun(this, &Port::on_menu_hide));
+}
+
+
+void
+Port::on_menu_hide()
+{
+	set_highlighted(false);
 }
 
 
