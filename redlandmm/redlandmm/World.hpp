@@ -57,6 +57,7 @@ private:
 	Namespaces    _prefixes;
 
 	std::set<std::string> _blank_ids;
+	size_t                _next_blank_id;
 };
 
 
