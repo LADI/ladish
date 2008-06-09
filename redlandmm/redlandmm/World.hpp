@@ -20,6 +20,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <set>
 #include <librdf.h>
 #include <boost/utility.hpp>
 #include <glibmm/thread.h>
@@ -55,7 +56,7 @@ private:
 	Glib::Mutex   _mutex;
 	Namespaces    _prefixes;
 
-	size_t _next_blank_id;
+	std::set<std::string> _blank_ids;
 };
 
 
