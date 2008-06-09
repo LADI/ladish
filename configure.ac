@@ -287,6 +287,8 @@ if test "x$build_jack" = "xyes"; then
 	fi
 fi
 
+# OSC support (mandatory for now due to laziness)
+PKG_CHECK_MODULES(LIBLO, liblo)
 
 # LV2 support
 build_lv2="yes"
