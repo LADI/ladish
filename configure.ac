@@ -178,6 +178,10 @@ AC_SUBST(INGEN_CFLAGS)
 
 CONFIG_H_PATH="$builddir/config/config.h"
 
+# Check for 64-bit platform
+AC_CHECK_SIZEOF([void *])
+
+
 #################### COMMAND LINE PARAMETERS
 
 eugene="no"
