@@ -142,6 +142,7 @@ AlsaDriver::refresh_ports()
 	bool is_input       = false;
 	bool is_duplex      = false;
 	bool is_application = true;
+	bool need_refresh   = false;
 
 	set< boost::shared_ptr<PatchageModule> > to_resize;
 
@@ -183,13 +184,24 @@ AlsaDriver::refresh_ports()
 			port_name = snd_seq_port_info_get_name(pinfo);
 			boost::shared_ptr<PatchageModule> m;
 
-			bool split = _app->state_manager()->get_module_split(client_name, !is_application)
-				|| is_duplex;
+			bool split = false;
+
+			// Because there would be name conflicts, we must force a split if (stupid)
+			// alsa duplex ports are present on the client
+			if (is_duplex) {
+				split = true;
+				if (!_app->state_manager()->get_module_split(client_name, !is_application)) {
+					need_refresh = true;
+					_app->state_manager()->set_module_split(client_name, true);
+				}
+			} else {
+				split = _app->state_manager()->get_module_split(client_name, !is_application);
+			}
 			
-			//cout << "SHOW: " << client_name << " : " << port_name
-				//<< " is_application = " << is_application
-				//<< " is_duplex = " << is_duplex
-				//<< ", split = " << split << endl;
+			/*cout << "SHOW: " << client_name << " : " << port_name
+				<< " is_application = " << is_application
+				<< " is_duplex = " << is_duplex
+				<< ", split = " << split << endl;*/
 			
 			// Application input/output ports go on the same module
 			if (!split) {
@@ -274,9 +286,13 @@ AlsaDriver::refresh_ports()
 		}
 	}
 
-	for (set< boost::shared_ptr<PatchageModule> >::iterator i = to_resize.begin();
-			i != to_resize.end(); ++i) {
-		(*i)->resize();
+	if (need_refresh) {
+		_app->refresh();
+	} else {
+		for (set< boost::shared_ptr<PatchageModule> >::iterator i = to_resize.begin();
+				i != to_resize.end(); ++i) {
+			(*i)->resize();
+		}
 	}
 }
 
