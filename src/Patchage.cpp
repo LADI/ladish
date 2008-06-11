@@ -24,6 +24,7 @@
 #include <gtk/gtkwindow.h>
 #include <jack/statistics.h>
 #include <raul/SharedPtr.hpp>
+#include <boost/format.hpp>
 
 #include CONFIG_H_PATH
 #include "GladeFile.hpp"
@@ -100,6 +101,7 @@ Patchage::Patchage(int argc, char** argv)
 	, INIT_WIDGET(_toolbar)
 	, INIT_WIDGET(_zoom_full_but)
 	, INIT_WIDGET(_zoom_normal_but)
+	, INIT_WIDGET(_projects_list)
 {
 	_settings_filename = getenv("HOME");
 	_settings_filename += "/.patchagerc";

@@ -121,6 +121,7 @@ protected:
 	Widget<Gtk::Toolbar>        _toolbar;
 	Widget<Gtk::ToolButton>     _zoom_full_but;
 	Widget<Gtk::ToolButton>     _zoom_normal_but;
+	Widget<Gtk::TreeView>       _projects_list;
 };
 
 #endif // PATCHAGE_PATCHAGE_HPP
