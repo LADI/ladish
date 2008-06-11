@@ -233,7 +233,7 @@ JackDriver::dbus_message_hook(
 			me->refresh_internal(false);
 		}
 
-    return DBUS_HANDLER_RESULT_HANDLED;
+		return DBUS_HANDLER_RESULT_HANDLED;
 	}
 #else
 // 	if (dbus_message_is_signal(message, JACKDBUS_IFACE_PATCHBAY, "ClientAppeared")) {
@@ -297,7 +297,7 @@ JackDriver::dbus_message_hook(
 
 		me->remove_port(client_id, client_name, port_id, port_name);
 
-	    return DBUS_HANDLER_RESULT_HANDLED;
+		return DBUS_HANDLER_RESULT_HANDLED;
 	}
 
 	if (dbus_message_is_signal(message, JACKDBUS_IFACE_PATCHBAY, "PortsConnected")) {
@@ -331,7 +331,7 @@ JackDriver::dbus_message_hook(
 			client2_id, client2_name,
 			port2_id, port2_name);
 
-    	return DBUS_HANDLER_RESULT_HANDLED;
+		return DBUS_HANDLER_RESULT_HANDLED;
 	}
 
 	if (dbus_message_is_signal(message, JACKDBUS_IFACE_PATCHBAY, "PortsDisconnected")) {
