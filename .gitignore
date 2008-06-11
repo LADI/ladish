@@ -1,0 +1,13 @@
+*.o
+Makefile
+Makefile.in
+/aclocal.m4
+/autom4te.cache
+/config.log
+/config.status
+/config
+/configure
+/libtool
+/patchage.desktop
+/src/.deps
+/src/patchage

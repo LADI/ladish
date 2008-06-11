@@ -100,73 +100,8 @@ CFLAGS="$CFLAGS -std=c99 -pipe -fmessage-length=999 -DCONFIG_H_PATH=\\\"$CONFIG_
 
 #################### GENERIC OPTIONS
 
-# Jack D-Bus support
-build_jack_dbus="no"
-AC_ARG_ENABLE(jack-dbus,
-	[AS_HELP_STRING(--enable-jack-dbus, [Use Jack D-Bus instead of libjack])],
-	[ if test x$enable_jack_dbus = xyes ; then build_jack_dbus=yes ; fi ])
-if test "x$build_jack_dbus" = "xyes"; then
-	PKG_CHECK_MODULES(DBUS, dbus-glib-1, [build_jack_dbus="yes"], [build_jack_dbus="no"])
-	if test "x$build_jack_dbus" = "xyes"; then
-		AC_DEFINE([HAVE_JACK_DBUS], 1, [Defined if Jack D-Bus driver needs to be built])
-	fi
-fi
-
-# Jack support
-build_jack="yes"
-AC_ARG_ENABLE(enable-jack,
-	[AS_HELP_STRING(--enable-jack, [Enable Jack support (yes)])],
-	[ if test x$enable_jack = xno ; then build_jack=no ; fi ])
-if test "x$build_jack" = "xyes"; then
-	PKG_CHECK_MODULES(JACK, jack >= 0.107.0, [build_jack="yes"], [build_jack="no"])
-	if test "x$build_jack" = "xyes"; then
-		AC_DEFINE(HAVE_JACK, 1, [Has Jack])
-		AC_DEFINE(HAVE_JACK_MIDI, 1, [Has Jack MIDI])
-	fi
-fi
-
-# ALSA support
-build_alsa="yes"
-AC_ARG_ENABLE(alsa,
-[AS_HELP_STRING(--enable-alsa, [Enable Alsa MIDI (yes)])],
-	[ if test x$enable_alsa = xno ; then build_alsa=no ; fi ])
-
-if test "$build_alsa" = "yes"; then
-  AC_CHECK_LIB(asound, snd_seq_open, ALSA_FOUND="yes", ALSA_FOUND="no", -lm -ldl -lpthread)
-
-  if test "$ALSA_FOUND" = "yes"; then
-    AC_DEFINE(HAVE_ALSA, 1, [whether or not we have alsa])
-    ALSA_CFLAGS=""
-    ALSA_LIBS="-lasound -lm -ldl -lpthread"
-    AC_SUBST(ALSA_CFLAGS)
-    AC_SUBST(ALSA_LIBS)
-  else
-    build_alsa="no"
-  fi
-else
-  ALSA_FOUND="no"
-fi
-
-# LASH support
-build_lash="yes"
-AC_ARG_ENABLE(lash,
-	[AS_HELP_STRING(--enable-lash, [Enable LASH session management support (yes)])],
-	[ if test x$enable_lash = xno ; then build_lash=no ; fi ])
-	
-have_lash="no"
-if test "$build_lash" = "yes"; then
-	PKG_CHECK_MODULES(LASH, lash-1.0 >= 0.5.2, have_lash="yes", have_lash="no")
-fi
-if test "$have_lash" = "yes"; then
-	AC_DEFINE(HAVE_LASH, 1, [Has lash.h])
-else
-	AC_MSG_WARN([LASH not found, session support will not be built.])
-fi
-
-AM_CONDITIONAL(WITH_ALSA, [test "x$ALSA_FOUND" = "xyes"])
-AM_CONDITIONAL(WITH_LASH, [test "x$have_lash" = "xyes"])
-AM_CONDITIONAL(WITH_JACK, [test "x$build_jack" = "xyes"])
-AM_CONDITIONAL(WITH_JACK_DBUS, [test "x$build_jack_dbus" = "xyes"])
+# D-Bus
+PKG_CHECK_MODULES(DBUS, dbus-glib-1)
 
 ############# PATCHAGE
 PKG_CHECK_MODULES(GTHREAD, gthread-2.0)
@@ -196,17 +131,6 @@ AC_MSG_RESULT([])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([**********************************************************************])
 AC_MSG_RESULT([Configuration:])
-AC_MSG_RESULT([])
-# we are not building libjack driver if jackdbus driver is being built (src/Makefile.am)
-if test "$build_jack_dbus" = "yes"; then
-AC_MSG_RESULT([Jack support:            yes (D-Bus)])
-elif test "$build_jack" = "yes"; then
-AC_MSG_RESULT([Jack support:            yes (libjack)])
-else
-AC_MSG_RESULT([Jack support:            no])
-fi
-AC_MSG_RESULT([LASH support:            $build_lash])
-AC_MSG_RESULT([ALSA support:            $ALSA_FOUND])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([C FLAGS:   $CFLAGS])
 AC_MSG_RESULT([C++ FLAGS: $CXXFLAGS])

@@ -19,11 +19,7 @@
 #include CONFIG_H_PATH
 #include "PatchageCanvas.hpp"
 #include "Patchage.hpp"
-#if defined(HAVE_JACK_DBUS)
 #include "JackDbusDriver.hpp"
-#elif defined(HAVE_JACK)
-#include "JackDriver.hpp"
-#endif
 #include "PatchageModule.hpp"
 #include "PatchagePort.hpp"
 #ifdef HAVE_ALSA

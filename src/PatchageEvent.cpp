@@ -22,11 +22,7 @@
 #include "PatchageModule.hpp"
 #include "PatchageEvent.hpp"
 #include "Driver.hpp"
-#if defined(HAVE_JACK_DBUS)
 #include "JackDbusDriver.hpp"
-#elif defined(HAVE_JACK)
-#include "JackDriver.hpp"
-#endif
 #ifdef HAVE_ALSA
 #include "AlsaDriver.hpp"
 #endif

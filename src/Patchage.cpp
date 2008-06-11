@@ -27,11 +27,7 @@
 
 #include CONFIG_H_PATH
 #include "GladeFile.hpp"
-#if defined(HAVE_JACK_DBUS)
 #include "JackDbusDriver.hpp"
-#elif defined(HAVE_JACK)
-#include "JackDriver.hpp"
-#endif
 #include "JackSettingsDialog.hpp"
 #include "Patchage.hpp"
 #include "PatchageCanvas.hpp"
