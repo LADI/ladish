@@ -71,6 +71,38 @@ JackDriver::JackDriver(Patchage* app)
 	, _max_dsp_load(0.0)
 {
 	dbus_error_init(&_dbus_error);
+
+	// Connect to the bus
+	_dbus_connection = dbus_bus_get(DBUS_BUS_SESSION, &_dbus_error);
+	if (dbus_error_is_set(&_dbus_error)) {
+		error_msg("dbus_bus_get() failed");
+		error_msg(_dbus_error.message);
+		dbus_error_free(&_dbus_error);
+		return;
+	}
+
+	dbus_connection_setup_with_g_main(_dbus_connection, NULL);
+
+	dbus_bus_add_match(_dbus_connection, "type='signal',interface='" DBUS_INTERFACE_DBUS "',member=NameOwnerChanged,arg0='org.jackaudio.service'", NULL);
+#if defined(USE_FULL_REFRESH)
+	dbus_bus_add_match(_dbus_connection, "type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=GraphChanged", NULL);
+#else
+	//   dbus_bus_add_match(_dbus_connection, "type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=ClientAppeared", NULL);
+	//   dbus_bus_add_match(_dbus_connection, "type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=ClientDisappeared", NULL);
+	dbus_bus_add_match(_dbus_connection, "type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=PortAppeared", NULL);
+	dbus_bus_add_match(_dbus_connection, "type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=PortDisappeared", NULL);
+	dbus_bus_add_match(_dbus_connection, "type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=PortsConnected", NULL);
+	dbus_bus_add_match(_dbus_connection, "type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=PortsDisconnected", NULL);
+#endif
+	dbus_connection_add_filter(_dbus_connection, dbus_message_hook, this, NULL);
+
+	update_attached();
+
+	if (!_server_responding) {
+		return;
+	}
+
+	refresh();										// the initial refresh
 }
 
 
@@ -117,23 +149,23 @@ JackDriver::destroy_all_ports()
 void
 JackDriver::update_attached()
 {
-	bool was_attached = _server_started;
+	bool was_started = _server_started;
 	_server_started = is_started();
 
 	if (!_server_responding) {
-		if (was_attached) {
-			signal_detached.emit();
+		if (was_started) {
+			signal_stopped.emit();
 		}
 		return;
 	}
 
-	if (_server_started && !was_attached) {
-		signal_attached.emit();
+	if (_server_started && !was_started) {
+		signal_started.emit();
 		return;
 	}
 
-	if (!_server_started && was_attached) {
-		signal_detached.emit();
+	if (!_server_started && was_started) {
+		signal_stopped.emit();
 		return;
 	}
 }
@@ -157,7 +189,7 @@ JackDriver::on_jack_disappeared()
 	_server_responding = false;
 
 	if (_server_started) {
-		signal_detached.emit();
+		signal_stopped.emit();
 	}
 
 	_server_started = false;
@@ -266,7 +298,7 @@ JackDriver::dbus_message_hook(
 
 		if (!me->_server_started) {
 			me->_server_started = true;
-			me->signal_attached.emit();
+			me->signal_started.emit();
 		}
 
 		me->add_port(client_id, client_name, port_id, port_name, port_flags, port_type);
@@ -292,7 +324,7 @@ JackDriver::dbus_message_hook(
 
 		if (!me->_server_started) {
 			me->_server_started = true;
-			me->signal_attached.emit();
+			me->signal_started.emit();
 		}
 
 		me->remove_port(client_id, client_name, port_id, port_name);
@@ -321,7 +353,7 @@ JackDriver::dbus_message_hook(
 
 		if (!me->_server_started) {
 			me->_server_started = true;
-			me->signal_attached.emit();
+			me->signal_started.emit();
 		}
 
 		me->connect_ports(
@@ -355,7 +387,7 @@ JackDriver::dbus_message_hook(
 
 		if (!me->_server_started) {
 			me->_server_started = true;
-			me->signal_attached.emit();
+			me->signal_started.emit();
 		}
 
 		me->disconnect_ports(
@@ -475,63 +507,9 @@ JackDriver::stop_server()
 	
 	if (!_server_started) {
 		_server_started = false;
-		signal_detached.emit();
+		signal_stopped.emit();
 	}
 }
-
-
-void
-JackDriver::attach(bool launch_daemon)
-{
-	// Connect to the bus
-	_dbus_connection = dbus_bus_get(DBUS_BUS_SESSION, &_dbus_error);
-	if (dbus_error_is_set(&_dbus_error)) {
-		error_msg("dbus_bus_get() failed");
-		error_msg(_dbus_error.message);
-		dbus_error_free(&_dbus_error);
-		return;
-	}
-
-	dbus_connection_setup_with_g_main(_dbus_connection, NULL);
-
-	dbus_bus_add_match(_dbus_connection, "type='signal',interface='" DBUS_INTERFACE_DBUS "',member=NameOwnerChanged,arg0='org.jackaudio.service'", NULL);
-#if defined(USE_FULL_REFRESH)
-	dbus_bus_add_match(_dbus_connection, "type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=GraphChanged", NULL);
-#else
-	//   dbus_bus_add_match(_dbus_connection, "type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=ClientAppeared", NULL);
-	//   dbus_bus_add_match(_dbus_connection, "type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=ClientDisappeared", NULL);
-	dbus_bus_add_match(_dbus_connection, "type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=PortAppeared", NULL);
-	dbus_bus_add_match(_dbus_connection, "type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=PortDisappeared", NULL);
-	dbus_bus_add_match(_dbus_connection, "type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=PortsConnected", NULL);
-	dbus_bus_add_match(_dbus_connection, "type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=PortsDisconnected", NULL);
-#endif
-	dbus_connection_add_filter(_dbus_connection, dbus_message_hook, this, NULL);
-
-	update_attached();
-
-	if (!_server_responding) {
-		return;
-	}
-
-	if (launch_daemon) {
-		start_server();
-	}
-}
-
-
-void
-JackDriver::detach()
-{
-	stop_server();
-}
-
-
-bool
-JackDriver::is_attached() const
-{
-	return _dbus_connection && _server_responding;
-}
-
 
 void
 JackDriver::add_port(
@@ -623,7 +601,7 @@ JackDriver::remove_port(
 
 	if (_app->canvas()->items().empty()) {
 		if (_server_started) {
-			signal_detached.emit();
+			signal_stopped.emit();
 		}
 
 		_server_started = false;
@@ -1001,12 +979,12 @@ JackDriver::sample_rate()
 
 
 bool
-JackDriver::is_realtime() const
+JackDriver::is_realtime()
 {
 	DBusMessage* reply_ptr;
 	dbus_bool_t realtime;
 
-	if (!((JackDriver *)this)->call(true, JACKDBUS_IFACE_CONTROL, "IsRealtime", &reply_ptr, DBUS_TYPE_INVALID)) {
+	if (!call(true, JACKDBUS_IFACE_CONTROL, "IsRealtime", &reply_ptr, DBUS_TYPE_INVALID)) {
 		return false;
 	}
 

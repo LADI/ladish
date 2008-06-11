@@ -70,18 +70,12 @@ gtkmm_set_width_for_given_text (Gtk::Widget &w, const gchar *text,
 
 Patchage::Patchage(int argc, char** argv)
 	: xml(GladeFile::open("patchage"))
-#ifdef HAVE_LASH
-	, _lash_driver(NULL)
 	, INIT_WIDGET(_menu_open_session)
 	, INIT_WIDGET(_menu_save_session)
 	, INIT_WIDGET(_menu_save_session_as)
 	, INIT_WIDGET(_menu_close_session)
-	, INIT_WIDGET(_menu_lash_connect)
-	, INIT_WIDGET(_menu_lash_disconnect)
-#endif
 	, _jack_driver(NULL)
 	, _state_manager(NULL)
-	, _attach(true)
 	, _refresh(false)
 	, _enable_refresh(true)
 	, _jack_settings_dialog(NULL)
@@ -93,8 +87,6 @@ Patchage::Patchage(int argc, char** argv)
 	, INIT_WIDGET(_main_xrun_progress)
 	, INIT_WIDGET(_menu_file_quit)
 	, INIT_WIDGET(_menu_help_about)
-	, INIT_WIDGET(_menu_jack_connect)
-	, INIT_WIDGET(_menu_jack_disconnect)
 	, INIT_WIDGET(_menu_jack_settings)
 	, INIT_WIDGET(_menu_store_positions)
 	, INIT_WIDGET(_menu_view_arrange)
@@ -208,13 +200,8 @@ Patchage::Patchage(int argc, char** argv)
 	_about_win->set_transient_for(*_main_win);
 	
 	_jack_driver = new JackDriver(this);
-	_jack_driver->signal_detached.connect(sigc::mem_fun(this, &Patchage::queue_refresh));
+	//_jack_driver->signal_detached.connect(sigc::mem_fun(this, &Patchage::queue_refresh));
 	
-	_menu_jack_connect->signal_activate().connect(sigc::bind(
-			sigc::mem_fun(_jack_driver, &JackDriver::attach), true));
-	_menu_jack_disconnect->signal_activate().connect(
-			sigc::mem_fun(_jack_driver, &JackDriver::detach));
-
 	connect_widgets();
 	update_state();
 
@@ -237,32 +224,9 @@ Patchage::~Patchage()
 }
 
 
-void
-Patchage::attach()
-{
-	_enable_refresh = false;
-
-	_jack_driver->attach(true);
-
-	_enable_refresh = true;
-
-	refresh();
-
-	update_toolbar();
-
-	//m_status_bar->push("Connected to JACK server");
-}
-	
-
 bool
 Patchage::idle_callback() 
 {
-	// Initial run, attach
-	if (_attach) {
-		attach();
-		_attach = false;
-	}
-
 	// Do a full refresh (ie user clicked refresh)
 	if (_refresh) {
 		refresh();
@@ -278,7 +242,7 @@ Patchage::idle_callback()
 void
 Patchage::update_toolbar()
 {
-	if (_enable_refresh && _jack_driver->is_attached())
+	if (_enable_refresh && _jack_driver->is_started())
 		_buffer_size_combo->set_active((int)log2f(_jack_driver->buffer_size()) - 5);
 }
 
@@ -286,7 +250,7 @@ Patchage::update_toolbar()
 bool
 Patchage::update_load()
 {
-	if (!_jack_driver->is_attached())
+	if (!_jack_driver->is_started())
 		return true;
 
 	char tmp_buf[8];
@@ -391,7 +355,7 @@ Patchage::update_state()
 void
 Patchage::connect_widgets()
 {
-#ifdef HAVE_LASH
+#if 0
 	_lash_driver->signal_attached.connect(sigc::bind(
 			sigc::mem_fun(*_menu_lash_connect, &Gtk::MenuItem::set_sensitive), false));
 	_lash_driver->signal_attached.connect(sigc::bind(
@@ -401,7 +365,6 @@ Patchage::connect_widgets()
 			sigc::mem_fun(*_menu_lash_connect, &Gtk::MenuItem::set_sensitive), true));
 	_lash_driver->signal_detached.connect(sigc::bind(
 			sigc::mem_fun(*_menu_lash_disconnect, &Gtk::MenuItem::set_sensitive), false));
-#endif
 
 	_jack_driver->signal_attached.connect(
 			sigc::mem_fun(this, &Patchage::update_toolbar));
@@ -416,13 +379,14 @@ Patchage::connect_widgets()
 			sigc::mem_fun(*_menu_jack_connect, &Gtk::MenuItem::set_sensitive), true));
 	_jack_driver->signal_detached.connect(sigc::bind(
 			sigc::mem_fun(*_menu_jack_disconnect, &Gtk::MenuItem::set_sensitive), false));
+#endif
 }
 
 
-#ifdef HAVE_LASH
 void
 Patchage::menu_open_session() 
 {
+#if 0
 	Gtk::FileChooserDialog dialog(*_main_win, "Open LASH Session",
 			Gtk::FILE_CHOOSER_ACTION_SELECT_FOLDER);
 	
@@ -434,20 +398,24 @@ Patchage::menu_open_session()
 	if (result == Gtk::RESPONSE_OK) {
 		_lash_driver->restore_project(dialog.get_filename());
 	}
+#endif
 }
 
 
 void
 Patchage::menu_save_session() 
 {
+#if 0
 	if (_lash_driver)
 		_lash_driver->save_project();
+#endif
 }
 
 
 void
 Patchage::menu_save_session_as() 
 {
+#if 0
 	if (!_lash_driver)
 		return;
 
@@ -463,29 +431,15 @@ Patchage::menu_save_session_as()
 		_lash_driver->set_project_directory(dialog.get_filename());
 		_lash_driver->save_project();
 	}
+#endif
 }
 
 	
 void
 Patchage::menu_close_session() 
 {
-	_lash_driver->close_project();
+	//_lash_driver->close_project();
 }
-
-
-void
-Patchage::menu_lash_connect() 
-{
-	_lash_driver->attach(true);
-}
-
-
-void
-Patchage::menu_lash_disconnect() 
-{
-	_lash_driver->detach();
-}
-#endif
 
 void
 Patchage::on_arrange() 
@@ -531,7 +485,6 @@ Patchage::on_messages_delete(GdkEventAny*)
 void
 Patchage::on_quit() 
 {
-	_jack_driver->detach();
 	_main_win->hide();
 }
 

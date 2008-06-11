@@ -44,7 +44,6 @@ public:
 	StateManager* state_manager() const { return _state_manager; }
 	JackDriver*   jack_driver()   const { return _jack_driver; }
 	
-	void attach();
 	void quit() { _main_win->hide(); }
 	
 	void        refresh();
@@ -78,21 +77,16 @@ protected:
 	
 	Glib::RefPtr<Gnome::Glade::Xml> xml;
 
-#ifdef HAVE_LASH
-	LashDriver*    _lash_driver;
 	Widget<Gtk::MenuItem> _menu_open_session;
 	Widget<Gtk::MenuItem> _menu_save_session;
 	Widget<Gtk::MenuItem> _menu_save_session_as;
 	Widget<Gtk::MenuItem> _menu_close_session;
-	Widget<Gtk::MenuItem> _menu_lash_connect;
-	Widget<Gtk::MenuItem> _menu_lash_disconnect;
 	void menu_open_session();
 	void menu_save_session();
 	void menu_save_session_as();
 	void menu_close_session();
 	void menu_lash_connect();
 	void menu_lash_disconnect();
-#endif
 
 	boost::shared_ptr<PatchageCanvas> _canvas;
 
@@ -102,7 +96,6 @@ protected:
 	Gtk::Main* _gtk_main;
 
 	std::string _settings_filename;
-	bool        _attach;
 	bool        _refresh;
 	bool        _enable_refresh;
 	bool        _pane_closed;
@@ -119,8 +112,6 @@ protected:
 	Widget<Gtk::ProgressBar>    _main_xrun_progress;
 	Widget<Gtk::MenuItem>       _menu_file_quit;
 	Widget<Gtk::MenuItem>       _menu_help_about;
-	Widget<Gtk::MenuItem>       _menu_jack_connect;
-	Widget<Gtk::MenuItem>       _menu_jack_disconnect;
 	Widget<Gtk::MenuItem>       _menu_jack_settings;
 	Widget<Gtk::MenuItem>       _menu_store_positions;
 	Widget<Gtk::MenuItem>       _menu_view_arrange;

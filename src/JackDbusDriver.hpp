@@ -34,17 +34,14 @@ class PatchageEvent;
 class PatchageFlowCanvas;
 class PatchagePort;
 
-class JackDriver : public Driver
+class JackDriver
 {
 public:
 	JackDriver(Patchage* app);
 	~JackDriver();
 
-	void attach(bool launch_daemon);
-	void detach();
-
-	bool is_attached() const;
-	bool is_realtime() const;
+	bool is_started();
+	bool is_realtime();
 	
 	void refresh();
 
@@ -72,6 +69,9 @@ public:
 
 	float get_max_dsp_load();
 	void reset_max_dsp_load();
+
+	sigc::signal<void> signal_started;
+	sigc::signal<void> signal_stopped;
 
 private:
 	void error_msg(const std::string& msg) const;
@@ -140,9 +140,6 @@ private:
 
 	void
 	update_attached();
-
-	bool
-	is_started();
 
 	void
 	start_server();
