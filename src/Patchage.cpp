@@ -76,9 +76,6 @@ Patchage::Patchage(int argc, char** argv)
 	, INIT_WIDGET(_menu_close_session)
 	, _jack_driver(NULL)
 	, _state_manager(NULL)
-	, _refresh(false)
-	, _enable_refresh(true)
-	, _jack_settings_dialog(NULL)
 	, INIT_WIDGET(_about_win)
 	, INIT_WIDGET(_buffer_size_combo)
 	, INIT_WIDGET(_clear_load_but)
@@ -87,7 +84,8 @@ Patchage::Patchage(int argc, char** argv)
 	, INIT_WIDGET(_main_xrun_progress)
 	, INIT_WIDGET(_menu_file_quit)
 	, INIT_WIDGET(_menu_help_about)
-	, INIT_WIDGET(_menu_jack_settings)
+	, INIT_WIDGET(_menu_jack_start)
+	, INIT_WIDGET(_menu_jack_stop)
 	, INIT_WIDGET(_menu_store_positions)
 	, INIT_WIDGET(_menu_view_arrange)
 	, INIT_WIDGET(_menu_view_messages)
@@ -117,8 +115,6 @@ Patchage::Patchage(int argc, char** argv)
 		argc--;
 	}
 
-	xml->get_widget_derived("jack_settings_win", _jack_settings_dialog);
-	
 	Glib::set_application_name("Patchage");
 	_about_win->property_program_name() = "Patchage";
 	_about_win->property_logo_icon_name() = "patchage";
@@ -144,10 +140,7 @@ Patchage::Patchage(int argc, char** argv)
 			sigc::mem_fun(this, &Patchage::zoom), 1.0));
 	_zoom_full_but->signal_clicked().connect(
 			sigc::mem_fun(_canvas.get(), &PatchageCanvas::zoom_full));
-	_menu_jack_settings->signal_activate().connect(sigc::hide_return(
-			sigc::mem_fun(_jack_settings_dialog, &JackSettingsDialog::run)));
 
-#ifdef HAVE_LASH
 	_menu_open_session->signal_activate().connect(
 			sigc::mem_fun(this, &Patchage::menu_open_session));
 	_menu_save_session->signal_activate().connect(
@@ -156,11 +149,6 @@ Patchage::Patchage(int argc, char** argv)
 			sigc::mem_fun(this, &Patchage::menu_save_session_as));
 	_menu_close_session->signal_activate().connect(
 			sigc::mem_fun(this, &Patchage::menu_close_session));
-	_menu_lash_connect->signal_activate().connect(
-			sigc::mem_fun(this, &Patchage::menu_lash_connect));
-	_menu_lash_disconnect->signal_activate().connect(
-			sigc::mem_fun(this, &Patchage::menu_lash_disconnect));
-#endif
 
 	_menu_store_positions->signal_activate().connect(
 			sigc::mem_fun(this, &Patchage::on_store_positions));
@@ -200,8 +188,14 @@ Patchage::Patchage(int argc, char** argv)
 	_about_win->set_transient_for(*_main_win);
 	
 	_jack_driver = new JackDriver(this);
-	//_jack_driver->signal_detached.connect(sigc::mem_fun(this, &Patchage::queue_refresh));
-	
+
+ 	_menu_jack_start->signal_activate().connect(
+ 		sigc::mem_fun(_jack_driver, &JackDriver::start_server));
+ 	_menu_jack_stop->signal_activate().connect(
+ 		sigc::mem_fun(_jack_driver, &JackDriver::stop_server));
+
+	jack_status_changed(_jack_driver->is_started());
+
 	connect_widgets();
 	update_state();
 
@@ -211,7 +205,6 @@ Patchage::Patchage(int argc, char** argv)
 	Glib::signal_timeout().connect(
 			sigc::mem_fun(this, &Patchage::idle_callback), 100);
 }
-
 
 Patchage::~Patchage() 
 {
@@ -227,12 +220,6 @@ Patchage::~Patchage()
 bool
 Patchage::idle_callback() 
 {
-	// Do a full refresh (ie user clicked refresh)
-	if (_refresh) {
-		refresh();
-		_refresh = false;
-	}
-
 	update_load();
 
 	return true;
@@ -242,16 +229,27 @@ Patchage::idle_callback()
 void
 Patchage::update_toolbar()
 {
-	if (_enable_refresh && _jack_driver->is_started())
+	bool started;
+
+	started = _jack_driver->is_started();
+
+	_buffer_size_combo->set_sensitive(started);
+
+	if (started)
+	{
 		_buffer_size_combo->set_active((int)log2f(_jack_driver->buffer_size()) - 5);
+	}
 }
 
 
-bool
+void
 Patchage::update_load()
 {
 	if (!_jack_driver->is_started())
-		return true;
+	{
+		_main_xrun_progress->set_text("JACK stopped");
+		return;
+	}
 
 	char tmp_buf[8];
 	snprintf(tmp_buf, 8, "%zd", _jack_driver->xruns());
@@ -266,8 +264,6 @@ Patchage::update_load()
 		_main_xrun_progress->set_fraction(max_dsp_load);
 		last_max_dsp_load = max_dsp_load;
 	}
-	
-	return true;
 }
 
 
@@ -284,16 +280,13 @@ Patchage::refresh()
 {
 	assert(_canvas);
 
-	if (_enable_refresh) {
-	
-		_canvas->destroy();
+	_canvas->destroy();
 
-		if (_jack_driver)
-			_jack_driver->refresh();
+	if (_jack_driver)
+		_jack_driver->refresh();
 
-		for (ItemList::iterator i = _canvas->items().begin(); i != _canvas->items().end(); ++i) {
-			(*i)->resize();
-		}
+	for (ItemList::iterator i = _canvas->items().begin(); i != _canvas->items().end(); ++i) {
+		(*i)->resize();
 	}
 }
 
@@ -365,23 +358,25 @@ Patchage::connect_widgets()
 			sigc::mem_fun(*_menu_lash_connect, &Gtk::MenuItem::set_sensitive), true));
 	_lash_driver->signal_detached.connect(sigc::bind(
 			sigc::mem_fun(*_menu_lash_disconnect, &Gtk::MenuItem::set_sensitive), false));
-
-	_jack_driver->signal_attached.connect(
-			sigc::mem_fun(this, &Patchage::update_toolbar));
-	_jack_driver->signal_attached.connect(sigc::bind(
-			sigc::mem_fun(*_menu_jack_connect, &Gtk::MenuItem::set_sensitive), false));
-	_jack_driver->signal_attached.connect(
-			sigc::mem_fun(this, &Patchage::refresh));
-	_jack_driver->signal_attached.connect(sigc::bind(
-			sigc::mem_fun(*_menu_jack_disconnect, &Gtk::MenuItem::set_sensitive), true));
-	
-	_jack_driver->signal_detached.connect(sigc::bind(
-			sigc::mem_fun(*_menu_jack_connect, &Gtk::MenuItem::set_sensitive), true));
-	_jack_driver->signal_detached.connect(sigc::bind(
-			sigc::mem_fun(*_menu_jack_disconnect, &Gtk::MenuItem::set_sensitive), false));
 #endif
+
+	_jack_driver->signal_started.connect(
+		sigc::bind(sigc::mem_fun(this, &Patchage::jack_status_changed), true));
+	
+	_jack_driver->signal_stopped.connect(
+		sigc::bind(sigc::mem_fun(this, &Patchage::jack_status_changed), false));
 }
 
+void
+Patchage::jack_status_changed(
+	bool started)
+{
+	update_toolbar();
+
+	_menu_jack_start->set_sensitive(!started);
+	_menu_jack_stop->set_sensitive(started);
+	_clear_load_but->set_sensitive(started);
+}
 
 void
 Patchage::menu_open_session() 

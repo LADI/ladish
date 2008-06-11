@@ -30,7 +30,6 @@ class JackDriver;
 class AlsaDriver;
 class LashDriver;
 class StateManager;
-class JackSettingsDialog;
 
 class Patchage {
 public:
@@ -47,7 +46,6 @@ public:
 	void quit() { _main_win->hide(); }
 	
 	void        refresh();
-	inline void queue_refresh() { _refresh = true; }
 
 	void clear_load();
 	void status_message(const std::string& msg);
@@ -70,8 +68,10 @@ protected:
 
 	void zoom(double z);
 	bool idle_callback();
-	bool update_load();
+	void update_load();
 	void update_toolbar();
+
+	void jack_status_changed(bool started);
 
 	void buffer_size_changed();
 	
@@ -96,13 +96,9 @@ protected:
 	Gtk::Main* _gtk_main;
 
 	std::string _settings_filename;
-	bool        _refresh;
-	bool        _enable_refresh;
 	bool        _pane_closed;
 	bool        _update_pane_position;
 	int         _user_pane_position;
-	
-	JackSettingsDialog*  _jack_settings_dialog;
 	
 	Widget<Gtk::AboutDialog>    _about_win;
 	Widget<Gtk::ComboBox>       _buffer_size_combo;
@@ -112,8 +108,9 @@ protected:
 	Widget<Gtk::ProgressBar>    _main_xrun_progress;
 	Widget<Gtk::MenuItem>       _menu_file_quit;
 	Widget<Gtk::MenuItem>       _menu_help_about;
-	Widget<Gtk::MenuItem>       _menu_jack_settings;
-	Widget<Gtk::MenuItem>       _menu_store_positions;
+	Widget<Gtk::MenuItem>       _menu_jack_start;
+	Widget<Gtk::MenuItem>       _menu_jack_stop;
+ 	Widget<Gtk::MenuItem>       _menu_store_positions;
 	Widget<Gtk::MenuItem>       _menu_view_arrange;
 	Widget<Gtk::CheckMenuItem>  _menu_view_messages;
 	Widget<Gtk::MenuItem>       _menu_view_refresh;

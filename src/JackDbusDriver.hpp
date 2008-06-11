@@ -70,6 +70,12 @@ public:
 	float get_max_dsp_load();
 	void reset_max_dsp_load();
 
+	void
+	start_server();
+
+	void
+	stop_server();
+
 	sigc::signal<void> signal_started;
 	sigc::signal<void> signal_stopped;
 
@@ -140,12 +146,6 @@ private:
 
 	void
 	update_attached();
-
-	void
-	start_server();
-
-	void
-	stop_server();
 
 	void
 	destroy_all_ports();
