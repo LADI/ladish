@@ -31,14 +31,7 @@
 #include "JackSettingsDialog.hpp"
 #include "Patchage.hpp"
 #include "PatchageCanvas.hpp"
-#include "PatchageEvent.hpp"
 #include "StateManager.hpp"
-#ifdef HAVE_ALSA
-#include "AlsaDriver.hpp"
-#endif
-#ifdef HAVE_LASH
-#include "LashDriver.hpp"
-#endif
 
 using namespace std;
 
@@ -86,12 +79,6 @@ Patchage::Patchage(int argc, char** argv)
 	, INIT_WIDGET(_menu_lash_connect)
 	, INIT_WIDGET(_menu_lash_disconnect)
 #endif
-#ifdef HAVE_ALSA
-	, _alsa_driver(NULL)
-	, _alsa_driver_autoattach(true)
-	, INIT_WIDGET(_menu_alsa_connect)
-	, INIT_WIDGET(_menu_alsa_disconnect)
-#endif
 	, _jack_driver(NULL)
 	, _state_manager(NULL)
 	, _attach(true)
@@ -132,10 +119,6 @@ Patchage::Patchage(int argc, char** argv)
 		if (!strcmp(*argv, "--help")) {
 			cout << "Usage: patchage [OPTIONS]\nOptions: --no-alsa" << endl;
 			exit(0);
-#ifdef HAVE_ALSA
-		} else if (!strcmp(*argv, "-A") || !strcmp(*argv, "--no-alsa")) {
-			_alsa_driver_autoattach = false;
-#endif
 		}
 
 		argv++;
@@ -187,13 +170,6 @@ Patchage::Patchage(int argc, char** argv)
 			sigc::mem_fun(this, &Patchage::menu_lash_disconnect));
 #endif
 
-#ifdef HAVE_ALSA
-	_menu_alsa_connect->signal_activate().connect(
-			sigc::mem_fun(this, &Patchage::menu_alsa_connect));
-	_menu_alsa_disconnect->signal_activate().connect(
-			sigc::mem_fun(this, &Patchage::menu_alsa_disconnect));
-#endif
-	
 	_menu_store_positions->signal_activate().connect(
 			sigc::mem_fun(this, &Patchage::on_store_positions));
 	_menu_file_quit->signal_activate().connect(
@@ -239,14 +215,6 @@ Patchage::Patchage(int argc, char** argv)
 	_menu_jack_disconnect->signal_activate().connect(
 			sigc::mem_fun(_jack_driver, &JackDriver::detach));
 
-#ifdef HAVE_ALSA
-	_alsa_driver = new AlsaDriver(this);
-#endif
-
-#ifdef HAVE_LASH
-	_lash_driver = new LashDriver(this, argc, argv);
-#endif
-	
 	connect_widgets();
 	update_state();
 
@@ -261,12 +229,6 @@ Patchage::Patchage(int argc, char** argv)
 Patchage::~Patchage() 
 {
 	delete _jack_driver;
-#ifdef HAVE_ALSA
-	delete _alsa_driver;
-#endif
-#ifdef HAVE_LASH
-	delete _lash_driver;
-#endif
 	delete _state_manager;
 
 	_about_win.destroy();
@@ -281,14 +243,6 @@ Patchage::attach()
 	_enable_refresh = false;
 
 	_jack_driver->attach(true);
-
-#ifdef HAVE_LASH
-	_lash_driver->attach(true);
-#endif
-#ifdef HAVE_ALSA
-	if (_alsa_driver_autoattach)
-		_alsa_driver->attach();
-#endif
 
 	_enable_refresh = true;
 
@@ -308,23 +262,6 @@ Patchage::idle_callback()
 		attach();
 		_attach = false;
 	}
-
-	// Process any JACK events
-	if (_jack_driver) {
-		_jack_driver->process_events(this);
-	}
-	
-	// Process any ALSA events
-#ifdef HAVE_ALSA
-	if (_alsa_driver) {
-		_alsa_driver->process_events(this);
-	}
-#endif
-
-#ifdef HAVE_LASH
-	if (_lash_driver->is_attached())
-		_lash_driver->process_events(this);
-#endif
 
 	// Do a full refresh (ie user clicked refresh)
 	if (_refresh) {
@@ -390,11 +327,6 @@ Patchage::refresh()
 		if (_jack_driver)
 			_jack_driver->refresh();
 
-#ifdef HAVE_ALSA
-		if (_alsa_driver)
-			_alsa_driver->refresh();
-#endif
-	
 		for (ItemList::iterator i = _canvas->items().begin(); i != _canvas->items().end(); ++i) {
 			(*i)->resize();
 		}
@@ -484,18 +416,6 @@ Patchage::connect_widgets()
 			sigc::mem_fun(*_menu_jack_connect, &Gtk::MenuItem::set_sensitive), true));
 	_jack_driver->signal_detached.connect(sigc::bind(
 			sigc::mem_fun(*_menu_jack_disconnect, &Gtk::MenuItem::set_sensitive), false));
-
-#ifdef HAVE_ALSA	
-	_alsa_driver->signal_attached.connect(sigc::bind(
-			sigc::mem_fun(*_menu_alsa_connect, &Gtk::MenuItem::set_sensitive), false));
-	_alsa_driver->signal_attached.connect(sigc::bind(
-			sigc::mem_fun(*_menu_alsa_disconnect, &Gtk::MenuItem::set_sensitive), true));
-	
-	_alsa_driver->signal_detached.connect(sigc::bind(
-			sigc::mem_fun(*_menu_alsa_connect, &Gtk::MenuItem::set_sensitive), true));
-	_alsa_driver->signal_detached.connect(sigc::bind(
-			sigc::mem_fun(*_menu_alsa_disconnect, &Gtk::MenuItem::set_sensitive), false));
-#endif
 }
 
 
@@ -567,24 +487,6 @@ Patchage::menu_lash_disconnect()
 }
 #endif
 
-#ifdef HAVE_ALSA
-void
-Patchage::menu_alsa_connect() 
-{
-	_alsa_driver->attach(false);
-	_alsa_driver->refresh();
-}
-
-
-void
-Patchage::menu_alsa_disconnect() 
-{
-	_alsa_driver->detach();
-	refresh();
-}
-#endif
-
-
 void
 Patchage::on_arrange() 
 {
@@ -629,9 +531,6 @@ Patchage::on_messages_delete(GdkEventAny*)
 void
 Patchage::on_quit() 
 {
-#ifdef HAVE_ALSA
-	_alsa_driver->detach();
-#endif
 	_jack_driver->detach();
 	_main_win->hide();
 }

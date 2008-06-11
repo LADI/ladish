@@ -20,9 +20,6 @@
 
 #include <string>
 #include <libgnomecanvasmm.h>
-#ifdef HAVE_ALSA
-#include <alsa/asoundlib.h>
-#endif
 #include <flowcanvas/Canvas.hpp>
 #include <flowcanvas/Module.hpp>
 #include "PatchageCanvas.hpp"

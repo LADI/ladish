@@ -73,16 +73,6 @@ public:
 	float get_max_dsp_load();
 	void reset_max_dsp_load();
 
-	boost::shared_ptr<PatchagePort>
-	find_port_view(
-		Patchage * patchage,
-		const PatchageEvent::PortRef& ref);
-	
-	boost::shared_ptr<PatchagePort>
-	create_port_view(
-			Patchage * patchage,
-			const PatchageEvent::PortRef& ref);
-
 private:
 	void error_msg(const std::string& msg) const;
 	void info_msg(const std::string& msg) const;

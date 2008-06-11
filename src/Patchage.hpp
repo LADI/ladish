@@ -43,12 +43,6 @@ public:
 	
 	StateManager* state_manager() const { return _state_manager; }
 	JackDriver*   jack_driver()   const { return _jack_driver; }
-#ifdef HAVE_ALSA
-	AlsaDriver*   alsa_driver()   const { return _alsa_driver; }
-#endif
-#ifdef HAVE_LASH
-	LashDriver*   lash_driver()   const { return _lash_driver; }
-#endif
 	
 	void attach();
 	void quit() { _main_win->hide(); }
@@ -98,15 +92,6 @@ protected:
 	void menu_close_session();
 	void menu_lash_connect();
 	void menu_lash_disconnect();
-#endif
-
-#ifdef HAVE_ALSA
-	AlsaDriver*    _alsa_driver;
-	bool _alsa_driver_autoattach;
-	Widget<Gtk::MenuItem> _menu_alsa_connect;
-	Widget<Gtk::MenuItem> _menu_alsa_disconnect;
-	void menu_alsa_connect();
-	void menu_alsa_disconnect();
 #endif
 
 	boost::shared_ptr<PatchageCanvas> _canvas;

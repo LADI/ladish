@@ -23,10 +23,6 @@
 
 #include "Patchage.hpp"
 
-#ifdef HAVE_LASH
-#include <lash/lash.h>
-#endif // HAVE_LASH
-
 int main(int argc, char** argv)
 {
 	try {

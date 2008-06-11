@@ -33,7 +33,6 @@
 #include <raul/SharedPtr.hpp>
 
 #include "PatchageCanvas.hpp"
-#include "PatchageEvent.hpp"
 #include "Patchage.hpp"
 #include "PatchageModule.hpp"
 #include "Driver.hpp"
@@ -64,8 +63,7 @@ using namespace FlowCanvas;
 
 
 JackDriver::JackDriver(Patchage* app)
-	: Driver(128)
-	, _app(app)
+	: _app(app)
 	, _dbus_connection(0)
 	, _server_started(false)
 	, _server_responding(false)
@@ -1124,22 +1122,6 @@ void
 JackDriver::rewind_transport()
 {
 	//info_msg(__func__);
-}
-
-
-boost::shared_ptr<PatchagePort>
-JackDriver::find_port_view(Patchage* patchage, const PatchageEvent::PortRef& ref)
-{
-	assert(false);  // we dont use events at all
-}
-
-
-boost::shared_ptr<PatchagePort>
-JackDriver::create_port_view(
-	Patchage * patchage,
-	const PatchageEvent::PortRef& ref)
-{
-	assert(false);  // we dont use events at all
 }
 
 

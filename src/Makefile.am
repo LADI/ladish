@@ -15,8 +15,6 @@ patchage_SOURCES = \
 	Patchage.hpp \
 	PatchageCanvas.cpp \
 	PatchageCanvas.hpp \
-	PatchageEvent.cpp \
-	PatchageEvent.hpp \
 	PatchageModule.hpp \
 	PatchagePort.hpp \
 	StateManager.cpp  \

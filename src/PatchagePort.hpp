@@ -24,10 +24,6 @@
 #include <flowcanvas/Port.hpp>
 #include <flowcanvas/Module.hpp>
 
-#ifdef HAVE_ALSA
-#include <alsa/asoundlib.h>
-#endif
-
 using namespace FlowCanvas;
 
 enum PortType { JACK_AUDIO, JACK_MIDI, ALSA_MIDI };
@@ -44,19 +40,10 @@ public:
 		: Port(module, name, is_input, color)
 		, _type(type)
 	{
-#ifdef HAVE_ALSA
-		_alsa_addr.client = '\0';
-		_alsa_addr.port = '\0';
-#endif
 	}
 
 	virtual ~PatchagePort() {}
 
-#ifdef HAVE_ALSA
-	// FIXME: This driver specific crap really needs to go
-	void                  alsa_addr(const snd_seq_addr_t addr) { _alsa_addr = addr; }
-	const snd_seq_addr_t* alsa_addr() const { return (_type == ALSA_MIDI) ? &_alsa_addr : NULL; }
-#endif
 
 	/** Returns the full name of this port, as "modulename:portname" */
 	std::string full_name() const { return _module.lock()->name() + ":" + _name; }
@@ -64,9 +51,6 @@ public:
 	PortType type() const { return _type; }
 
 private:
-#ifdef HAVE_ALSA
-	snd_seq_addr_t _alsa_addr;
-#endif
 	PortType       _type;
 };
 

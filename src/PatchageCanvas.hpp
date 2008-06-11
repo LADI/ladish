@@ -20,12 +20,8 @@
 
 #include CONFIG_H_PATH
 #include <string>
-#ifdef HAVE_ALSA
-#include <alsa/asoundlib.h>
-#endif
 #include <flowcanvas/Canvas.hpp>
 #include "StateManager.hpp"
-#include "PatchageEvent.hpp"
 
 class Patchage;
 class PatchageModule;
@@ -39,7 +35,6 @@ public:
 	PatchageCanvas(Patchage* _app, int width, int height);
 	
 	boost::shared_ptr<PatchageModule> find_module(const string& name, ModuleType type);
-	boost::shared_ptr<PatchagePort>   find_port(const PatchageEvent::PortRef& ref);
 	
 	void connect(boost::shared_ptr<Connectable> port1, boost::shared_ptr<Connectable> port2);
 	void disconnect(boost::shared_ptr<Connectable> port1, boost::shared_ptr<Connectable> port2);
