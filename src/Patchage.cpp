@@ -76,6 +76,7 @@ Patchage::Patchage(int argc, char** argv)
 	, INIT_WIDGET(_menu_close_session)
 	, _jack_driver(NULL)
 	, _state_manager(NULL)
+	, _max_dsp_load(0.0)
 	, INIT_WIDGET(_about_win)
 	, INIT_WIDGET(_buffer_size_combo)
 	, INIT_WIDGET(_clear_load_but)
@@ -256,13 +257,11 @@ Patchage::update_load()
 
 	_main_xrun_progress->set_text(string(tmp_buf) + " Dropouts");
 
-	static float last_max_dsp_load = 0;
+	float max_dsp_load = _jack_driver->get_max_dsp_load();
 
-	const float max_dsp_load = _jack_driver->get_max_dsp_load();
-
-	if (max_dsp_load != last_max_dsp_load) {
+	if (max_dsp_load != _max_dsp_load) {
 		_main_xrun_progress->set_fraction(max_dsp_load);
-		last_max_dsp_load = max_dsp_load;
+		_max_dsp_load = max_dsp_load;
 	}
 }
 

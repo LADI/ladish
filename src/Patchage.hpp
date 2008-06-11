@@ -96,9 +96,7 @@ protected:
 	Gtk::Main* _gtk_main;
 
 	std::string _settings_filename;
-	bool        _pane_closed;
-	bool        _update_pane_position;
-	int         _user_pane_position;
+	float _max_dsp_load;
 	
 	Widget<Gtk::AboutDialog>    _about_win;
 	Widget<Gtk::ComboBox>       _buffer_size_combo;
