@@ -705,6 +705,12 @@ JackDriver::refresh_internal(bool force)
 	const char *port2_name;
 	dbus_uint64_t connection_id;
 
+	if (!_server_started)
+	{
+		info_msg("ignoring refresh request because JACK server is stopped");
+		return;
+	}
+
 	if (force) {
 		version = 0; // workaround module split/join stupidity
 	} else {
