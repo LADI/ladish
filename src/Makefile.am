@@ -26,3 +26,6 @@ AM_CXXFLAGS += @DBUS_CFLAGS@
 patchage_SOURCES += JackDbusDriver.cpp
 patchage_SOURCES += JackDbusDriver.hpp
 patchage_LDADD +=  @DBUS_LIBS@
+
+patchage_SOURCES += lash_proxy.cpp
+patchage_SOURCES += lash_proxy.hpp
