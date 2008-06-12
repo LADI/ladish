@@ -56,9 +56,6 @@ using namespace FlowCanvas;
 #define JACKDBUS_PORT_TYPE_AUDIO    0
 #define JACKDBUS_PORT_TYPE_MIDI     1
 
-//#define LOG_TO_STD
-#define LOG_TO_STATUS
-
 //#define USE_FULL_REFRESH
 
 
@@ -1087,29 +1084,14 @@ JackDriver::rewind_transport()
 	//info_msg(__func__);
 }
 
-
 void
 JackDriver::error_msg(const std::string& msg) const
 {
-#if defined(LOG_TO_STATUS)
-	_app->status_message((std::string)"[JACKDBUS] " + msg);
-#endif
-
-#if defined(LOG_TO_STD)
-	cerr << (std::string)"[JACKDBUS] " << msg << endl;
-#endif
+	_app->error_msg((std::string)"[JACKDBUS] " + msg);
 }
-
 
 void
 JackDriver::info_msg(const std::string& msg) const
 {
-#if defined(LOG_TO_STATUS)
-	_app->status_message((std::string)"[JACKDBUS] " + msg);
-#endif
-
-#if defined(LOG_TO_STD)
-	cerr << (std::string)"[JACKDBUS] " << msg << endl;
-#endif
+	_app->info_msg((std::string)"[JACKDBUS] " + msg);
 }
-

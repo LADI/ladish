@@ -52,6 +52,9 @@ public:
 	void update_state();
 	void store_window_location();
 
+	void error_msg(const std::string& msg);
+	void info_msg(const std::string& msg);
+
 protected:
 	void connect_widgets();
 

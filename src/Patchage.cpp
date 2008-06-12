@@ -34,6 +34,9 @@
 #include "PatchageCanvas.hpp"
 #include "StateManager.hpp"
 
+//#define LOG_TO_STD
+#define LOG_TO_STATUS
+
 using namespace std;
 
 /* Gtk helpers (resize combo boxes) */
@@ -547,3 +550,26 @@ Patchage::buffer_size_changed()
 	}
 }
 
+void
+Patchage::error_msg(const std::string& msg)
+{
+#if defined(LOG_TO_STATUS)
+	status_message(msg);
+#endif
+
+#if defined(LOG_TO_STD)
+	cerr << msg << endl;
+#endif
+}
+
+void
+Patchage::info_msg(const std::string& msg)
+{
+#if defined(LOG_TO_STATUS)
+	status_message(msg);
+#endif
+
+#if defined(LOG_TO_STD)
+	cerr << msg << endl;
+#endif
+}
