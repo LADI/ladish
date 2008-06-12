@@ -25,6 +25,10 @@
 #include CONFIG_H_PATH
 #include "Widget.hpp"
 
+#include <dbus/dbus.h>
+#include <dbus/dbus-glib.h>
+#include <dbus/dbus-glib-lowlevel.h>
+
 class PatchageCanvas;
 class JackDriver;
 class AlsaDriver;
@@ -54,6 +58,31 @@ public:
 
 	void error_msg(const std::string& msg);
 	void info_msg(const std::string& msg);
+
+	bool
+	dbus_call(
+		bool response_expected,
+		const char * service,
+		const char * object,
+		const char * iface,
+		const char * method,
+		DBusMessage ** reply_ptr_ptr,
+		int in_type,
+		va_list ap);
+
+	bool
+	dbus_call(
+		bool response_expected,
+		const char * service,
+		const char * object,
+		const char * iface,
+		const char * method,
+		DBusMessage ** reply_ptr_ptr,
+		int in_type,
+		...);
+
+	DBusError _dbus_error;
+	DBusConnection* _dbus_connection;
 
 protected:
 	void connect_widgets();

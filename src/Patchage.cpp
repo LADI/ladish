@@ -37,6 +37,8 @@
 //#define LOG_TO_STD
 #define LOG_TO_STATUS
 
+#define DBUS_CALL_DEFAULT_TIMEOUT 1000 // in milliseconds
+
 using namespace std;
 
 /* Gtk helpers (resize combo boxes) */
@@ -78,6 +80,7 @@ Patchage::Patchage(int argc, char** argv)
 	, INIT_WIDGET(_menu_save_session)
 	, INIT_WIDGET(_menu_save_session_as)
 	, INIT_WIDGET(_menu_close_session)
+	, _dbus_connection(0)
 	, _jack_driver(NULL)
 	, _state_manager(NULL)
 	, _max_dsp_load(0.0)
@@ -120,6 +123,19 @@ Patchage::Patchage(int argc, char** argv)
 		argv++;
 		argc--;
 	}
+
+	dbus_error_init(&_dbus_error);
+
+	// Connect to the bus
+	_dbus_connection = dbus_bus_get(DBUS_BUS_SESSION, &_dbus_error);
+	if (dbus_error_is_set(&_dbus_error)) {
+		error_msg("dbus_bus_get() failed");
+		error_msg(_dbus_error.message);
+		dbus_error_free(&_dbus_error);
+		return;
+	}
+
+	dbus_connection_setup_with_g_main(_dbus_connection, NULL);
 
 	Glib::set_application_name("Patchage");
 	_about_win->property_program_name() = "Patchage";
@@ -572,4 +588,82 @@ Patchage::info_msg(const std::string& msg)
 #if defined(LOG_TO_STD)
 	cerr << msg << endl;
 #endif
+}
+
+bool
+Patchage::dbus_call(
+		bool response_expected,
+		const char * service,
+		const char * object,
+		const char * iface,
+		const char * method,
+		DBusMessage ** reply_ptr_ptr,
+		int in_type,
+		va_list ap)
+{
+	DBusMessage* request_ptr;
+	DBusMessage* reply_ptr;
+
+	request_ptr = dbus_message_new_method_call(
+		service,
+		object,
+		iface,
+		method);
+	if (!request_ptr) {
+		throw std::runtime_error("dbus_message_new_method_call() returned 0");
+	}
+
+	dbus_message_append_args_valist(request_ptr, in_type, ap);
+
+	// send message and get a handle for a reply
+	reply_ptr = dbus_connection_send_with_reply_and_block(
+		_dbus_connection,
+		request_ptr,
+		DBUS_CALL_DEFAULT_TIMEOUT,
+		&_dbus_error);
+
+	dbus_message_unref(request_ptr);
+
+	if (!reply_ptr) {
+		if (response_expected) {
+			error_msg(str(boost::format("no reply from server when calling method '%s'"
+					", error is '%s'") % method % _dbus_error.message));
+		}
+		dbus_error_free(&_dbus_error);
+	} else {
+		*reply_ptr_ptr = reply_ptr;
+	}
+
+	return reply_ptr;
+}
+
+bool
+Patchage::dbus_call(
+		bool response_expected,
+		const char * serivce,
+		const char * object,
+		const char * iface,
+		const char * method,
+		DBusMessage ** reply_ptr_ptr,
+		int in_type,
+		...)
+{
+	bool ret;
+	va_list ap;
+
+	va_start(ap, in_type);
+
+	ret = dbus_call(
+		response_expected,
+		serivce,
+		object,
+		iface,
+		method,
+		reply_ptr_ptr,
+		in_type,
+		ap);
+
+	va_end(ap);
+
+	return ap;
 }

@@ -169,8 +169,6 @@ private:
 
 private:
 	Patchage* _app;
-	DBusError _dbus_error;
-	DBusConnection* _dbus_connection;
 
 	bool _server_responding;
 	bool _server_started;
