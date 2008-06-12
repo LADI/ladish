@@ -259,11 +259,14 @@ Patchage::update_load()
 
 	_main_xrun_progress->set_text(string(tmp_buf) + " Dropouts");
 
-	float max_dsp_load = _jack_driver->get_max_dsp_load();
+	float load = _jack_driver->get_dsp_load();
 
-	if (max_dsp_load != _max_dsp_load) {
-		_main_xrun_progress->set_fraction(max_dsp_load);
-		_max_dsp_load = max_dsp_load;
+	load /= 100.0;								// dbus returns it in percents, we use 0..1
+
+	if (load > _max_dsp_load)
+	{
+		_max_dsp_load = load;
+		_main_xrun_progress->set_fraction(load);
 	}
 }
 
@@ -316,7 +319,7 @@ Patchage::clear_load()
 {
 	_main_xrun_progress->set_fraction(0.0);
 	_jack_driver->reset_xruns();
-	_jack_driver->reset_max_dsp_load();
+	_max_dsp_load = 0.0;
 }
 
 
@@ -531,8 +534,16 @@ Patchage::buffer_size_changed()
 	} else {
 		jack_nframes_t buffer_size = 1 << (selected+5);
 	
-		if ( ! _jack_driver->set_buffer_size(buffer_size))
-			update_toolbar(); // reset combo box to actual value
+		// this check is temporal workaround for jack bug
+		// we skip setting buffer size if it same as acutal one
+		// proper place for such check is in jack
+		if (_jack_driver->buffer_size() != buffer_size)
+		{
+			if (!_jack_driver->set_buffer_size(buffer_size))
+			{
+				update_toolbar(); // reset combo box to actual value
+			}
+		}
 	}
 }
 

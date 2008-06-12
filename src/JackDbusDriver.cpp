@@ -1042,7 +1042,7 @@ JackDriver::reset_xruns()
 
 
 float
-JackDriver::get_max_dsp_load()
+JackDriver::get_dsp_load()
 {
 	DBusMessage* reply_ptr;
 	double load;
@@ -1064,23 +1064,8 @@ JackDriver::get_max_dsp_load()
 
 	dbus_message_unref(reply_ptr);
 
-	load /= 100.0;								// dbus returns it in percents, we use 0..1
-
-	if (load > _max_dsp_load)
-	{
-		_max_dsp_load = load;
-	}
-
-	return _max_dsp_load;
+	return load;
 }
-
-
-void
-JackDriver::reset_max_dsp_load()
-{
-	_max_dsp_load = 0.0;
-}
-
 
 void
 JackDriver::start_transport()

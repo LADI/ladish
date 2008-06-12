@@ -67,6 +67,8 @@ public:
 
 	size_t xruns();
 
+	float get_dsp_load();
+
 	float get_max_dsp_load();
 	void reset_max_dsp_load();
 
