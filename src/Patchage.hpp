@@ -31,8 +31,7 @@
 
 class PatchageCanvas;
 class JackDriver;
-class AlsaDriver;
-class LashDriver;
+class lash_proxy;
 class StateManager;
 
 class Patchage {
@@ -123,6 +122,7 @@ protected:
 	boost::shared_ptr<PatchageCanvas> _canvas;
 
 	JackDriver*         _jack_driver;
+	lash_proxy * _lash;
 	StateManager*       _state_manager;
 
 	Gtk::Main* _gtk_main;

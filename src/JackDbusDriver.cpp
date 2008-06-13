@@ -65,7 +65,7 @@ JackDriver::JackDriver(Patchage* app)
 	, _graph_version(0)
 	, _max_dsp_load(0.0)
 {
-	dbus_bus_add_match(_app->_dbus_connection, "type='signal',interface='" DBUS_INTERFACE_DBUS "',member=NameOwnerChanged,arg0='org.jackaudio.service'", NULL);
+	dbus_bus_add_match(_app->_dbus_connection, "type='signal',interface='" DBUS_INTERFACE_DBUS "',member=NameOwnerChanged,arg0='" JACKDBUS_SERVICE "'", NULL);
 #if defined(USE_FULL_REFRESH)
 	dbus_bus_add_match(_app->_dbus_connection, "type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=GraphChanged", NULL);
 #else
@@ -220,11 +220,18 @@ JackDriver::dbus_message_hook(
 			return DBUS_HANDLER_RESULT_HANDLED;
 		}
 
+		if ((string)object_name != JACKDBUS_SERVICE)
+		{
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		}
+
 		if (old_owner[0] == '\0') {
 			me->on_jack_appeared();
 		} else if (new_owner[0] == '\0') {
 			me->on_jack_disappeared();
 		}
+
+		return DBUS_HANDLER_RESULT_HANDLED;
 	}
 
 #if defined(USE_FULL_REFRESH)

@@ -28,6 +28,16 @@ public:
 	~lash_proxy();
 
 private:
+	void error_msg(const std::string& msg) const;
+	void info_msg(const std::string& msg) const;
+
+	static
+	DBusHandlerResult
+	dbus_message_hook(
+		DBusConnection * connection,
+		DBusMessage * message,
+		void * proxy);
+
 	Patchage* _app;
 	bool _server_responding;
 };

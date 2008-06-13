@@ -33,6 +33,7 @@
 #include "Patchage.hpp"
 #include "PatchageCanvas.hpp"
 #include "StateManager.hpp"
+#include "lash_proxy.hpp"
 
 //#define LOG_TO_STD
 #define LOG_TO_STATUS
@@ -208,6 +209,8 @@ Patchage::Patchage(int argc, char** argv)
 		static_cast<int>(_state_manager->get_window_location().y));
 	
 	_about_win->set_transient_for(*_main_win);
+
+	_lash = new lash_proxy(this);
 	
 	_jack_driver = new JackDriver(this);
 
@@ -231,6 +234,7 @@ Patchage::Patchage(int argc, char** argv)
 Patchage::~Patchage() 
 {
 	delete _jack_driver;
+	delete _lash;
 	delete _state_manager;
 
 	_about_win.destroy();
