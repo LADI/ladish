@@ -403,6 +403,10 @@ Patchage::jack_status_changed(
 	_menu_jack_start->set_sensitive(!started);
 	_menu_jack_stop->set_sensitive(started);
 	_clear_load_but->set_sensitive(started);
+	if (!started)
+	{
+		_main_xrun_progress->set_fraction(0.0);
+	}
 }
 
 void
