@@ -29,3 +29,6 @@ patchage_LDADD +=  @DBUS_LIBS@
 
 patchage_SOURCES += lash_proxy.cpp
 patchage_SOURCES += lash_proxy.hpp
+
+patchage_SOURCES += project_list.cpp
+patchage_SOURCES += project_list.hpp

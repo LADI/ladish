@@ -25,6 +25,16 @@ template <typename W>
 class Widget : public boost::noncopyable {
 public:
 	Widget(Glib::RefPtr<Gnome::Glade::Xml> xml, const std::string& name) {
+		init(xml, name);
+	}
+
+	Widget()
+	{
+		_me = 0;
+	}
+
+	void init(Glib::RefPtr<Gnome::Glade::Xml> xml, const std::string& name)
+	{
 		xml->get_widget(name.c_str(), _me);
 	}
 

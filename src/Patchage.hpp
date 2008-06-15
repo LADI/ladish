@@ -1,5 +1,6 @@
 /* This file is part of Patchage.
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
+ * Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
  * 
  * Patchage is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -33,6 +34,7 @@ class PatchageCanvas;
 class JackDriver;
 class lash_proxy;
 class StateManager;
+class project_list;
 
 class Patchage {
 public:
@@ -80,6 +82,14 @@ public:
 		int in_type,
 		...);
 
+	void
+	on_project_added(
+		const std::string& project_name);
+
+	void
+	on_project_closed(
+		const std::string& project_name);
+
 	DBusError _dbus_error;
 	DBusConnection* _dbus_connection;
 
@@ -123,6 +133,7 @@ protected:
 
 	JackDriver*         _jack_driver;
 	lash_proxy * _lash;
+	project_list * _project_list;
 	StateManager*       _state_manager;
 
 	Gtk::Main* _gtk_main;
@@ -153,7 +164,6 @@ protected:
 	Widget<Gtk::Toolbar>        _toolbar;
 	Widget<Gtk::ToolButton>     _zoom_full_but;
 	Widget<Gtk::ToolButton>     _zoom_normal_but;
-	Widget<Gtk::TreeView>       _projects_list;
 };
 
 #endif // PATCHAGE_PATCHAGE_HPP

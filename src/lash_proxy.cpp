@@ -116,7 +116,7 @@ lash_proxy::dbus_message_hook(
 		}
 
 		me->info_msg((string)"Project '" + project_name + "' added.");
-		// do something here
+		me->_app->on_project_added(project_name);
 
 		return DBUS_HANDLER_RESULT_HANDLED;
 	}
@@ -134,7 +134,7 @@ lash_proxy::dbus_message_hook(
 		}
 
 		me->info_msg((string)"Project '" + project_name + "' closed.");
-		// do something here
+		me->_app->on_project_closed(project_name);
 
 		return DBUS_HANDLER_RESULT_HANDLED;
 	}

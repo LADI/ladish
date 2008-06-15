@@ -1,5 +1,6 @@
 /* This file is part of Patchage.
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
+ * Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
  * 
  * Patchage is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -34,6 +35,7 @@
 #include "PatchageCanvas.hpp"
 #include "StateManager.hpp"
 #include "lash_proxy.hpp"
+#include "project_list.hpp"
 
 //#define LOG_TO_STD
 #define LOG_TO_STATUS
@@ -108,7 +110,6 @@ Patchage::Patchage(int argc, char** argv)
 	, INIT_WIDGET(_toolbar)
 	, INIT_WIDGET(_zoom_full_but)
 	, INIT_WIDGET(_zoom_normal_but)
-	, INIT_WIDGET(_projects_list)
 {
 	_settings_filename = getenv("HOME");
 	_settings_filename += "/.patchagerc";
@@ -210,8 +211,10 @@ Patchage::Patchage(int argc, char** argv)
 	
 	_about_win->set_transient_for(*_main_win);
 
+	_project_list = new project_list(xml);
+
 	_lash = new lash_proxy(this);
-	
+
 	_jack_driver = new JackDriver(this);
 
  	_menu_jack_start->signal_activate().connect(
@@ -235,6 +238,7 @@ Patchage::~Patchage()
 {
 	delete _jack_driver;
 	delete _lash;
+	delete _project_list;
 	delete _state_manager;
 
 	_about_win.destroy();
@@ -674,4 +678,18 @@ Patchage::dbus_call(
 	va_end(ap);
 
 	return ap;
+}
+
+void
+Patchage::on_project_added(
+	const std::string& project_name)
+{
+	_project_list->project_added(project_name);
+}
+
+void
+Patchage::on_project_closed(
+	const std::string& project_name)
+{
+	_project_list->project_closed(project_name);
 }
