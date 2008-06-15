@@ -28,6 +28,11 @@ public:
 	~lash_proxy();
 
 	void get_loaded_projects(std::list<std::string>& projects);
+	void get_available_projects(std::list<std::string>& projects);
+	void save_all_projects();
+	void save_project(const std::string& project_name);
+	void close_project(const std::string& project_name);
+	void close_all_projects();
 
 private:
 	void error_msg(const std::string& msg) const;

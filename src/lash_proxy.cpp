@@ -221,3 +221,100 @@ lash_proxy::get_loaded_projects(
 unref:
 	dbus_message_unref(reply_ptr);
 }
+
+void
+lash_proxy::get_available_projects(
+	list<string>& projects)
+{
+	DBusMessage * reply_ptr;
+	const char * reply_signature;
+	DBusMessageIter iter;
+	DBusMessageIter array_iter;
+	const char * project_name;
+
+	if (!call(true, LASH_IFACE_CONTROL, "GetProjects", &reply_ptr, DBUS_TYPE_INVALID))
+	{
+		return;
+	}
+
+	reply_signature = dbus_message_get_signature(reply_ptr);
+
+	if (strcmp(reply_signature, "as") != 0)
+	{
+		error_msg((string)"GetLoadedProjects() reply signature mismatch. " + reply_signature);
+		goto unref;
+	}
+
+	dbus_message_iter_init(reply_ptr, &iter);
+
+	for (dbus_message_iter_recurse(&iter, &array_iter);
+	     dbus_message_iter_get_arg_type(&array_iter) != DBUS_TYPE_INVALID;
+	     dbus_message_iter_next(&array_iter))
+	{
+		dbus_message_iter_get_basic(&array_iter, &project_name);
+		projects.push_back(project_name);
+	}
+
+unref:
+	dbus_message_unref(reply_ptr);
+}
+
+void
+lash_proxy::save_all_projects()
+{
+	DBusMessage * reply_ptr;
+
+	if (!call(true, LASH_IFACE_CONTROL, "Save", &reply_ptr, DBUS_TYPE_INVALID))
+	{
+		return;
+	}
+
+	dbus_message_unref(reply_ptr);
+}
+
+void
+lash_proxy::save_project(
+	const string& project_name)
+{
+	DBusMessage * reply_ptr;
+	const char * project_name_cstr;
+
+	project_name_cstr = project_name.c_str();
+
+	if (!call(true, LASH_IFACE_CONTROL, "ProjectSave", &reply_ptr, DBUS_TYPE_STRING, &project_name_cstr, DBUS_TYPE_INVALID))
+	{
+		return;
+	}
+
+	dbus_message_unref(reply_ptr);
+}
+
+void
+lash_proxy::close_project(
+	const string& project_name)
+{
+	DBusMessage * reply_ptr;
+	const char * project_name_cstr;
+
+	project_name_cstr = project_name.c_str();
+
+	if (!call(true, LASH_IFACE_CONTROL, "ProjectClose", &reply_ptr, DBUS_TYPE_STRING, &project_name_cstr, DBUS_TYPE_INVALID))
+	{
+		return;
+	}
+
+	dbus_message_unref(reply_ptr);
+}
+
+void
+lash_proxy::close_all_projects()
+{
+	DBusMessage * reply_ptr;
+
+	if (!call(true, LASH_IFACE_CONTROL, "Clear", &reply_ptr, DBUS_TYPE_INVALID))
+	{
+		return;
+	}
+
+	dbus_message_unref(reply_ptr);
+}
