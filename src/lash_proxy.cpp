@@ -41,7 +41,6 @@ lash_proxy::~lash_proxy()
 {
 }
 
-
 void
 lash_proxy::error_msg(const std::string& msg) const
 {
