@@ -30,6 +30,8 @@ lash_proxy::lash_proxy(Patchage* app)
 	: _app(app)
 	, _server_responding(false)
 {
+	list<string> projects;
+
 	dbus_bus_add_match(_app->_dbus_connection, "type='signal',interface='" DBUS_INTERFACE_DBUS "',member=NameOwnerChanged,arg0='" LASH_SERVICE "'", NULL);
 	dbus_bus_add_match(_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectAdded", NULL);
 	dbus_bus_add_match(_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectClosed", NULL);
@@ -37,9 +39,15 @@ lash_proxy::lash_proxy(Patchage* app)
 
 	dbus_connection_add_filter(_app->_dbus_connection, dbus_message_hook, this, NULL);
 
-	// call any method to update server responding status
+	// get initial list of projects
+	// calling any method to updates server responding status
 	// this also actiavtes lash object if it not activated already
-	list();
+	get_loaded_projects(projects);
+
+	for (list<string>::iterator iter = projects.begin(); iter != projects.end(); iter++)
+	{
+		app->on_project_added(*iter);
+	}
 
 	_app->set_lash_availability(_server_responding);
 }
@@ -179,13 +187,37 @@ lash_proxy::call(
 }
 
 void
-lash_proxy::list()
+lash_proxy::get_loaded_projects(
+	list<string>& projects)
 {
 	DBusMessage* reply_ptr;
+	const char * reply_signature;
+	DBusMessageIter iter;
+	DBusMessageIter array_iter;
+	const char * project_name;
 
-	if (!call(true, LASH_IFACE_CONTROL, "GetProjects", &reply_ptr, DBUS_TYPE_INVALID)) {
+	if (!call(true, LASH_IFACE_CONTROL, "GetLoadedProjects", &reply_ptr, DBUS_TYPE_INVALID)) {
 		return;
 	}
 
+	reply_signature = dbus_message_get_signature(reply_ptr);
+
+	if (strcmp(reply_signature, "as") != 0)
+	{
+		error_msg((string)"GetLoadedProjects() reply signature mismatch. " + reply_signature);
+		goto unref;
+	}
+
+	dbus_message_iter_init(reply_ptr, &iter);
+
+	for (dbus_message_iter_recurse(&iter, &array_iter);
+	     dbus_message_iter_get_arg_type(&array_iter) != DBUS_TYPE_INVALID;
+	     dbus_message_iter_next(&array_iter))
+	{
+		dbus_message_iter_get_basic(&array_iter, &project_name);
+		projects.push_back(project_name);
+	}
+
+unref:
 	dbus_message_unref(reply_ptr);
 }

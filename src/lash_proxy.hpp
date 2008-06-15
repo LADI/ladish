@@ -27,7 +27,7 @@ public:
 	lash_proxy(Patchage* app);
 	~lash_proxy();
 
-	void list();
+	void get_loaded_projects(std::list<std::string>& projects);
 
 private:
 	void error_msg(const std::string& msg) const;
