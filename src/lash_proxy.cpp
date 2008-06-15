@@ -21,6 +21,7 @@
 #include "lash_proxy.hpp"
 
 #define LASH_SERVICE       "org.nongnu.LASH"
+#define LASH_OBJECT        "/"
 #define LASH_IFACE_CONTROL "org.nongnu.LASH.Control"
 
 using namespace std;
@@ -35,6 +36,12 @@ lash_proxy::lash_proxy(Patchage* app)
 	dbus_bus_add_match(_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectNameChanged", NULL);
 
 	dbus_connection_add_filter(_app->_dbus_connection, dbus_message_hook, this, NULL);
+
+	// call any method to update server responding status
+	// this also actiavtes lash object if it not activated already
+	list();
+
+	_app->set_lash_availability(_server_responding);
 }
 
 lash_proxy::~lash_proxy()
@@ -94,10 +101,12 @@ lash_proxy::dbus_message_hook(
 		if (old_owner[0] == '\0')
 		{
 			me->info_msg((string)"LASH activated.");
+			me->_app->set_lash_availability(true);
 		}
 		else if (new_owner[0] == '\0')
 		{
 			me->info_msg((string)"LASH deactivated.");
+			me->_app->set_lash_availability(false);
 		}
 
 		return DBUS_HANDLER_RESULT_HANDLED;
@@ -139,4 +148,44 @@ lash_proxy::dbus_message_hook(
 	}
 
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+bool
+lash_proxy::call(
+	bool response_expected,
+	const char* iface,
+	const char* method,
+	DBusMessage ** reply_ptr_ptr,
+	int in_type,
+	...)
+{
+	va_list ap;
+
+	va_start(ap, in_type);
+
+	_server_responding = _app->dbus_call(
+		response_expected,
+		LASH_SERVICE,
+		LASH_OBJECT,
+		iface,
+		method,
+		reply_ptr_ptr,
+		in_type,
+		ap);
+
+	va_end(ap);
+
+	return _server_responding;
+}
+
+void
+lash_proxy::list()
+{
+	DBusMessage* reply_ptr;
+
+	if (!call(true, LASH_IFACE_CONTROL, "GetProjects", &reply_ptr, DBUS_TYPE_INVALID)) {
+		return;
+	}
+
+	dbus_message_unref(reply_ptr);
 }

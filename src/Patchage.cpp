@@ -681,6 +681,13 @@ Patchage::dbus_call(
 }
 
 void
+Patchage::set_lash_availability(
+	bool lash_active)
+{
+	_project_list->set_lash_availability(lash_active);
+}
+
+void
 Patchage::on_project_added(
 	const std::string& project_name)
 {

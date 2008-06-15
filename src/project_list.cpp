@@ -56,6 +56,13 @@ project_list::~project_list()
 }
 
 void
+project_list::set_lash_availability(
+	bool lash_active)
+{
+	_impl_ptr->widget->set_sensitive(lash_active);
+}
+
+void
 project_list::project_added(
 	const string& project_name)
 {

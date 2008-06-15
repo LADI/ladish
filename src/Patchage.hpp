@@ -82,6 +82,8 @@ public:
 		int in_type,
 		...);
 
+	void set_lash_availability(bool lash_active);
+
 	void
 	on_project_added(
 		const std::string& project_name);

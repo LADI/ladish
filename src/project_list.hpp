@@ -24,14 +24,16 @@ struct project_list_impl;
 class project_list
 {
 public:
-	 project_list(Glib::RefPtr<Gnome::Glade::Xml> xml);
-	 ~project_list();
+	project_list(Glib::RefPtr<Gnome::Glade::Xml> xml);
+	~project_list();
 
-	 void project_added(const string& project_name);
-	 void project_closed(const string& project_name);
+	void set_lash_availability(bool lash_active);
+
+	void project_added(const string& project_name);
+	void project_closed(const string& project_name);
 
 private:
-	 project_list_impl * _impl_ptr;
+	project_list_impl * _impl_ptr;
 };
 
 #endif // #ifndef PROJECT_LIST_HPP__D786489B_E400_4E92_85C7_2BAE606DE56D__INCLUDED

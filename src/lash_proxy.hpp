@@ -27,6 +27,8 @@ public:
 	lash_proxy(Patchage* app);
 	~lash_proxy();
 
+	void list();
+
 private:
 	void error_msg(const std::string& msg) const;
 	void info_msg(const std::string& msg) const;
@@ -37,6 +39,15 @@ private:
 		DBusConnection * connection,
 		DBusMessage * message,
 		void * proxy);
+
+	bool
+	call(
+		bool response_expected,
+		const char* iface,
+		const char* method,
+		DBusMessage ** reply_ptr_ptr,
+		int in_type,
+		...);
 
 	Patchage* _app;
 	bool _server_responding;
