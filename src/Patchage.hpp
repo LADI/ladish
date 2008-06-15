@@ -92,6 +92,12 @@ public:
 	on_project_closed(
 		const std::string& project_name);
 
+	void load_project();
+	void save_all_projects();
+	void save_project(const std::string& project_name);
+	void close_project(const std::string& project_name);
+	void close_all_projects();
+
 	DBusError _dbus_error;
 	DBusConnection* _dbus_connection;
 

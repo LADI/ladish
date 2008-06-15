@@ -211,7 +211,7 @@ Patchage::Patchage(int argc, char** argv)
 	
 	_about_win->set_transient_for(*_main_win);
 
-	_project_list = new project_list(xml);
+	_project_list = new project_list(xml, this);
 
 	_lash = new lash_proxy(this);
 
@@ -699,4 +699,36 @@ Patchage::on_project_closed(
 	const std::string& project_name)
 {
 	_project_list->project_closed(project_name);
+}
+
+void
+Patchage::load_project()
+{
+	// TODO
+}
+
+void
+Patchage::save_all_projects()
+{
+	_lash->save_all_projects();
+}
+
+void
+Patchage::save_project(
+	const std::string& project_name)
+{
+	_lash->save_project(project_name);
+}
+
+void
+Patchage::close_project(
+	const std::string& project_name)
+{
+	_lash->close_project(project_name);
+}
+
+void
+Patchage::close_all_projects()
+{
+	_lash->close_all_projects();
 }

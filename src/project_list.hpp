@@ -20,11 +20,15 @@
 #define PROJECT_LIST_HPP__D786489B_E400_4E92_85C7_2BAE606DE56D__INCLUDED
 
 struct project_list_impl;
+class Patchage;
 
 class project_list
 {
 public:
-	project_list(Glib::RefPtr<Gnome::Glade::Xml> xml);
+	project_list(
+		Glib::RefPtr<Gnome::Glade::Xml> xml,
+		Patchage* app);
+
 	~project_list();
 
 	void set_lash_availability(bool lash_active);

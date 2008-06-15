@@ -23,6 +23,7 @@
 #include "common.hpp"
 #include "project_list.hpp"
 #include "Widget.hpp"
+#include "Patchage.hpp"
 
 struct project_list_column_record : public Gtk::TreeModel::ColumnRecord
 {
@@ -31,12 +32,15 @@ struct project_list_column_record : public Gtk::TreeModel::ColumnRecord
 
 struct project_list_impl
 {
+	Patchage *_app;
 	Widget<Gtk::TreeView> _widget;
 	project_list_column_record _columns;
 	Glib::RefPtr<Gtk::ListStore> _model;
 	Gtk::Menu _menu_popup;
 
-	project_list_impl(Glib::RefPtr<Gnome::Glade::Xml> xml);
+	project_list_impl(
+		Glib::RefPtr<Gnome::Glade::Xml> xml,
+		Patchage * app);
 
 	bool on_button_press_event(GdkEventButton * event);
 
@@ -44,12 +48,14 @@ struct project_list_impl
 	void on_menu_popup_save_all_projects();
 	void on_menu_popup_save_project(const Glib::ustring& project_name);
 	void on_menu_popup_close_project(const Glib::ustring& project_name);
+	void on_menu_popup_close_all_projects();
 };
 
 project_list::project_list(
-	Glib::RefPtr<Gnome::Glade::Xml> xml)
+	Glib::RefPtr<Gnome::Glade::Xml> xml,
+	Patchage * app)
 {
-	_impl_ptr = new project_list_impl(xml);
+	_impl_ptr = new project_list_impl(xml, app);
 }
 
 project_list::~project_list()
@@ -57,7 +63,10 @@ project_list::~project_list()
 	delete _impl_ptr;
 }
 
-project_list_impl::project_list_impl(Glib::RefPtr<Gnome::Glade::Xml> xml)
+project_list_impl::project_list_impl(
+	Glib::RefPtr<Gnome::Glade::Xml> xml,
+	Patchage * app)
+	: _app(app)
 {
 	_widget.init(xml, "projects_list");
 
@@ -111,6 +120,8 @@ project_list_impl::on_button_press_event(GdkEventButton * event_ptr)
 			selection->unselect_all();
 		}
 
+		menulist.push_back(Gtk::Menu_Helpers::MenuElem("Cl_ose all projects", sigc::mem_fun(*this, &project_list_impl::on_menu_popup_close_all_projects)));
+
 		_menu_popup.popup(event_ptr->button, event_ptr->time);
 
 		return true;
@@ -122,27 +133,33 @@ project_list_impl::on_button_press_event(GdkEventButton * event_ptr)
 void
 project_list_impl::on_menu_popup_load_project()
 {
-	cout << "Load project!" << endl;
+	_app->load_project();
 }
 
 void
 project_list_impl::on_menu_popup_save_all_projects()
 {
-	cout << "Save all projects!" << endl;
+	_app->save_all_projects();
 }
 
 void
 project_list_impl::on_menu_popup_save_project(
 	const Glib::ustring& project_name)
 {
-	cout << "Save project! '" << project_name << "'" << endl;
+	_app->save_project(project_name);
 }
 
 void
 project_list_impl::on_menu_popup_close_project(
 	const Glib::ustring& project_name)
 {
-	cout << "Close project! '" << project_name << "'" << endl;
+	_app->close_project(project_name);
+}
+
+void
+project_list_impl::on_menu_popup_close_all_projects()
+{
+	_app->close_all_projects();
 }
 
 void
