@@ -707,56 +707,95 @@ struct loadable_project_list_column_record : public Gtk::TreeModel::ColumnRecord
 	Gtk::TreeModelColumn<Glib::ustring> comment;
 };
 
+class load_project_dialog
+{
+public:
+	load_project_dialog(
+		Glib::RefPtr<Gnome::Glade::Xml> xml,
+		Patchage *app)
+		: _app(app)
+	{
+		_dialog.init(xml, "load_project_dialog");
+		_widget.init(xml, "loadable_projects_list");
+
+		_columns.add(_columns.name);
+		_columns.add(_columns.comment);
+
+		_model = Gtk::ListStore::create(_columns);
+		_widget->set_model(_model);
+
+		_widget->remove_all_columns();
+		_widget->append_column("Project Name", _columns.name);
+		_widget->append_column("Comment", _columns.comment);
+	}
+
+	void
+	run(
+		std::list<std::string>& projects)
+	{
+		Gtk::TreeModel::Row row;
+		int result;
+
+		for (std::list<std::string>::iterator iter = projects.begin(); iter != projects.end(); iter++)
+		{
+			row = *(_model->append());
+			row[_columns.name] = *iter;
+			row[_columns.comment] = "";
+		}
+
+		_widget->signal_button_press_event().connect(sigc::mem_fun(*this, &load_project_dialog::on_load_project_dialog_button_press_event), false);
+
+	loop:
+		result = _dialog->run();
+
+		if (result == 2)
+		{
+			Glib::RefPtr<Gtk::TreeView::Selection> selection = _widget->get_selection();
+			Gtk::TreeIter iter = selection->get_selected();
+			if (!iter)
+			{
+				goto loop;
+			}
+
+			Glib::ustring project_name = (*iter)[_columns.name];
+			_app->load_project(project_name);
+		}
+
+		_dialog->hide();
+	}
+
+private:
+	bool
+	on_load_project_dialog_button_press_event(GdkEventButton * event_ptr)
+	{
+		if (event_ptr->type == GDK_2BUTTON_PRESS && event_ptr->button == 1)
+		{
+			Glib::RefPtr<Gtk::TreeView::Selection> selection = _widget->get_selection();
+			Glib::ustring name = (*selection->get_selected())[_columns.name];
+			_app->load_project(name);
+			_dialog->hide();
+			return true;
+		}
+
+		return false;
+	}
+
+	Patchage *_app;
+	Widget<Gtk::Dialog> _dialog;
+	Widget<Gtk::TreeView> _widget;
+	loadable_project_list_column_record _columns;
+	Glib::RefPtr<Gtk::ListStore> _model;
+};
+
 void
 Patchage::load_project()
 {
-	Widget<Gtk::Dialog> dialog;
-	Widget<Gtk::TreeView> widget;
-	loadable_project_list_column_record columns;
-	Glib::RefPtr<Gtk::ListStore> model;
-	Gtk::TreeModel::Row row;
 	std::list<std::string> projects;
-	int result;
-
-	dialog.init(xml, "load_project_dialog");
-	widget.init(xml, "loadable_projects_list");
-
-	columns.add(columns.name);
-	columns.add(columns.comment);
-
-	model = Gtk::ListStore::create(columns);
-	widget->set_model(model);
-
-	widget->remove_all_columns();
-	widget->append_column("Project Name", columns.name);
-	widget->append_column("Comment", columns.comment);
+	load_project_dialog dialog(xml, this);
 
 	_lash->get_available_projects(projects);
 
-	for (std::list<std::string>::iterator iter = projects.begin(); iter != projects.end(); iter++)
-	{
-		row = *(model->append());
-		row[columns.name] = *iter;
-		row[columns.comment] = "";
-	}
-
-loop:
-	result = dialog->run();
-
-	if (result == 2)
-	{
-		Glib::RefPtr<Gtk::TreeView::Selection> selection = widget->get_selection();
-		Gtk::TreeIter iter = selection->get_selected();
-		if (!iter)
-		{
-			goto loop;
-		}
-
-		Glib::ustring project_name = (*iter)[columns.name];
-		load_project(project_name);
-	}
-
-	dialog->hide();
+	dialog.run(projects);
 }
 
 void
