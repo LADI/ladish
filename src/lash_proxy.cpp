@@ -298,7 +298,7 @@ lash_proxy::save_project(
 
 	project_name_cstr = project_name.c_str();
 
-	if (!call(true, LASH_IFACE_CONTROL, "ProjectSave", &reply_ptr, DBUS_TYPE_STRING, &project_name_cstr, DBUS_TYPE_INVALID))
+	if (!call(true, LASH_IFACE_CONTROL, "SaveProject", &reply_ptr, DBUS_TYPE_STRING, &project_name_cstr, DBUS_TYPE_INVALID))
 	{
 		return;
 	}
@@ -315,7 +315,7 @@ lash_proxy::close_project(
 
 	project_name_cstr = project_name.c_str();
 
-	if (!call(true, LASH_IFACE_CONTROL, "ProjectClose", &reply_ptr, DBUS_TYPE_STRING, &project_name_cstr, DBUS_TYPE_INVALID))
+	if (!call(true, LASH_IFACE_CONTROL, "CloseProject", &reply_ptr, DBUS_TYPE_STRING, &project_name_cstr, DBUS_TYPE_INVALID))
 	{
 		return;
 	}
