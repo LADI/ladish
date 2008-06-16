@@ -111,8 +111,22 @@ project_list_impl::on_button_press_event(GdkEventButton * event_ptr)
 
 			Glib::ustring name = (*selection->get_selected())[_columns.name];
 
-			menulist.push_back(Gtk::Menu_Helpers::MenuElem("_Save project", sigc::bind(sigc::mem_fun(*this, &project_list_impl::on_menu_popup_save_project), name)));
-			menulist.push_back(Gtk::Menu_Helpers::MenuElem("_Close project", sigc::bind(sigc::mem_fun(*this, &project_list_impl::on_menu_popup_close_project), name)));
+			menulist.push_back(
+				Gtk::Menu_Helpers::MenuElem(
+					(string)"_Save project '" + name + "'",
+					sigc::bind(
+						sigc::mem_fun(
+							*this,
+							&project_list_impl::on_menu_popup_save_project),
+						name)));
+			menulist.push_back(
+				Gtk::Menu_Helpers::MenuElem(
+					(string)"_Close project '" + name + "'",
+					sigc::bind(
+						sigc::mem_fun(
+							*this,
+							&project_list_impl::on_menu_popup_close_project),
+						name)));
 		}
 		else
 		{
