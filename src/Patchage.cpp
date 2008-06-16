@@ -727,6 +727,7 @@ Patchage::load_project()
 	model = Gtk::ListStore::create(columns);
 	widget->set_model(model);
 
+	widget->remove_all_columns();
 	widget->append_column("Project Name", columns.name);
 	widget->append_column("Comment", columns.comment);
 
