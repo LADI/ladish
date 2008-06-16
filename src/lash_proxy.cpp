@@ -260,6 +260,23 @@ unref:
 }
 
 void
+lash_proxy::load_project(
+	const string& project_name)
+{
+	DBusMessage * reply_ptr;
+	const char * project_name_cstr;
+
+	project_name_cstr = project_name.c_str();
+
+	if (!call(true, LASH_IFACE_CONTROL, "LoadProject", &reply_ptr, DBUS_TYPE_STRING, &project_name_cstr, DBUS_TYPE_INVALID))
+	{
+		return;
+	}
+
+	dbus_message_unref(reply_ptr);
+}
+
+void
 lash_proxy::save_all_projects()
 {
 	DBusMessage * reply_ptr;

@@ -701,10 +701,68 @@ Patchage::on_project_closed(
 	_project_list->project_closed(project_name);
 }
 
+struct loadable_project_list_column_record : public Gtk::TreeModel::ColumnRecord
+{
+	Gtk::TreeModelColumn<Glib::ustring> name;
+	Gtk::TreeModelColumn<Glib::ustring> comment;
+};
+
 void
 Patchage::load_project()
 {
-	// TODO
+	Widget<Gtk::Dialog> dialog;
+	Widget<Gtk::TreeView> widget;
+	loadable_project_list_column_record columns;
+	Glib::RefPtr<Gtk::ListStore> model;
+	Gtk::TreeModel::Row row;
+	std::list<std::string> projects;
+	int result;
+
+	dialog.init(xml, "load_project_dialog");
+	widget.init(xml, "loadable_projects_list");
+
+	columns.add(columns.name);
+	columns.add(columns.comment);
+
+	model = Gtk::ListStore::create(columns);
+	widget->set_model(model);
+
+	widget->append_column("Project Name", columns.name);
+	widget->append_column("Comment", columns.comment);
+
+	_lash->get_available_projects(projects);
+
+	for (std::list<std::string>::iterator iter = projects.begin(); iter != projects.end(); iter++)
+	{
+		row = *(model->append());
+		row[columns.name] = *iter;
+		row[columns.comment] = "";
+	}
+
+loop:
+	result = dialog->run();
+
+	if (result == 2)
+	{
+		Glib::RefPtr<Gtk::TreeView::Selection> selection = widget->get_selection();
+		Gtk::TreeIter iter = selection->get_selected();
+		if (!iter)
+		{
+			goto loop;
+		}
+
+		Glib::ustring project_name = (*iter)[columns.name];
+		load_project(project_name);
+	}
+
+	dialog->hide();
+}
+
+void
+Patchage::load_project(
+	const std::string& project_name)
+{
+	_lash->load_project(project_name);
 }
 
 void

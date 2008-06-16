@@ -29,6 +29,7 @@ public:
 
 	void get_loaded_projects(std::list<std::string>& projects);
 	void get_available_projects(std::list<std::string>& projects);
+	void load_project(const std::string& project_name);
 	void save_all_projects();
 	void save_project(const std::string& project_name);
 	void close_project(const std::string& project_name);

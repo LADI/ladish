@@ -93,6 +93,7 @@ public:
 		const std::string& project_name);
 
 	void load_project();
+	void load_project(const std::string& project_name);
 	void save_all_projects();
 	void save_project(const std::string& project_name);
 	void close_project(const std::string& project_name);
