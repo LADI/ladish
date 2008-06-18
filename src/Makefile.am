@@ -8,7 +8,6 @@ dist_sharefiles_DATA = patchage.glade
 
 bin_PROGRAMS = patchage
 patchage_SOURCES = \
-	Driver.hpp \
 	GladeFile.hpp \
 	JackSettingsDialog.hpp \
 	Patchage.cpp \
