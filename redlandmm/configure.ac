@@ -106,6 +106,20 @@ CFLAGS="$CFLAGS -std=c99 -pipe -fmessage-length=999 -DCONFIG_H_PATH=\\\"$CONFIG_
 
 #################### GENERIC OPTIONS
 
+# Build documentation
+build_documentation="yes"
+AC_ARG_ENABLE(documentation,
+	[AS_HELP_STRING(--enable-documentation, [Build documentation (yes, if doxygen available)])],
+	[build_documentation="$enableval"])
+if test "$build_documentation" = "yes"; then
+	AC_CHECK_PROG(HAVE_DOXYGEN, doxygen, true, false)
+	if test $HAVE_DOXYGEN = "false"; then
+		AC_MSG_WARN([*** Doxygen not found, API documentation will not be built])
+		build_documentation="no"
+	fi
+fi
+AM_CONDITIONAL(HAVE_DOXYGEN, [test "x$build_documentation" = "xyes"])
+
 # Build unit tests
 build_unit_tests="no"
 AC_ARG_ENABLE(unit-tests,
