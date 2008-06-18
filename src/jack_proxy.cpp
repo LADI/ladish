@@ -35,7 +35,7 @@
 #include "PatchageCanvas.hpp"
 #include "Patchage.hpp"
 #include "PatchageModule.hpp"
-#include "JackDbusDriver.hpp"
+#include "jack_proxy.hpp"
 
 using namespace std;
 using namespace FlowCanvas;
@@ -57,7 +57,7 @@ using namespace FlowCanvas;
 //#define USE_FULL_REFRESH
 
 
-JackDriver::JackDriver(Patchage* app)
+jack_proxy::jack_proxy(Patchage* app)
 	: _app(app)
 	, _server_started(false)
 	, _server_responding(false)
@@ -87,7 +87,7 @@ JackDriver::JackDriver(Patchage* app)
 }
 
 
-JackDriver::~JackDriver()
+jack_proxy::~jack_proxy()
 {
 	if (_app->_dbus_connection) {
 		dbus_connection_flush(_app->_dbus_connection);
@@ -102,7 +102,7 @@ JackDriver::~JackDriver()
 /** Destroy all JACK (canvas) ports.
  */
 void
-JackDriver::destroy_all_ports()
+jack_proxy::destroy_all_ports()
 {
 	ItemList modules = _app->canvas()->items(); // copy
 	for (ItemList::iterator m = modules.begin(); m != modules.end(); ++m) {
@@ -128,7 +128,7 @@ JackDriver::destroy_all_ports()
 
 
 void
-JackDriver::update_attached()
+jack_proxy::update_attached()
 {
 	bool was_started = _server_started;
 	_server_started = is_started();
@@ -153,7 +153,7 @@ JackDriver::update_attached()
 
 
 void
-JackDriver::on_jack_appeared()
+jack_proxy::on_jack_appeared()
 {
 	info_msg("JACK appeared.");
 	update_attached();
@@ -161,7 +161,7 @@ JackDriver::on_jack_appeared()
 
 
 void
-JackDriver::on_jack_disappeared()
+jack_proxy::on_jack_disappeared()
 {
 	info_msg("JACK disappeared.");
 
@@ -178,7 +178,7 @@ JackDriver::on_jack_disappeared()
 
 
 DBusHandlerResult
-JackDriver::dbus_message_hook(
+jack_proxy::dbus_message_hook(
 	DBusConnection* connection,
 	DBusMessage*    message,
 	void*           jack_driver)
@@ -200,7 +200,7 @@ JackDriver::dbus_message_hook(
 	const char *new_owner;
 
 	assert(jack_driver);
-	JackDriver* me = reinterpret_cast<JackDriver*>(jack_driver);
+	jack_proxy* me = reinterpret_cast<jack_proxy*>(jack_driver);
 	assert(me->_app->_dbus_connection);
 
 	//me->info_msg("dbus_message_hook() called.");
@@ -393,7 +393,7 @@ JackDriver::dbus_message_hook(
 }
 
 bool
-JackDriver::call(
+jack_proxy::call(
 	bool          response_expected,
 	const char*   iface,
 	const char*   method,
@@ -420,7 +420,7 @@ JackDriver::call(
 }
 
 bool
-JackDriver::is_started()
+jack_proxy::is_started()
 {
 	DBusMessage* reply_ptr;
 	dbus_bool_t started;
@@ -445,7 +445,7 @@ JackDriver::is_started()
 
 
 void
-JackDriver::start_server()
+jack_proxy::start_server()
 {
 	DBusMessage* reply_ptr;
 
@@ -460,7 +460,7 @@ JackDriver::start_server()
 
 
 void
-JackDriver::stop_server()
+jack_proxy::stop_server()
 {
 	DBusMessage* reply_ptr;
 
@@ -477,7 +477,7 @@ JackDriver::stop_server()
 }
 
 void
-JackDriver::add_port(
+jack_proxy::add_port(
 	boost::shared_ptr<PatchageModule>& module,
 	PortType                           type,
 	const std::string&                 name,
@@ -501,7 +501,7 @@ JackDriver::add_port(
 
 
 void
-JackDriver::add_port(
+jack_proxy::add_port(
 	dbus_uint64_t client_id,
 	const char*   client_name,
 	dbus_uint64_t port_id,
@@ -539,7 +539,7 @@ JackDriver::add_port(
 
 
 void
-JackDriver::remove_port(
+jack_proxy::remove_port(
 	dbus_uint64_t client_id,
 	const char*   client_name,
 	dbus_uint64_t port_id,
@@ -575,7 +575,7 @@ JackDriver::remove_port(
 
 
 boost::shared_ptr<PatchageModule>
-JackDriver::find_or_create_module(
+jack_proxy::find_or_create_module(
 	ModuleType type,
 	const std::string& name)
 {
@@ -592,7 +592,7 @@ JackDriver::find_or_create_module(
 
 
 void
-JackDriver::connect_ports(
+jack_proxy::connect_ports(
 	dbus_uint64_t connection_id,
 	dbus_uint64_t client1_id,
 	const char*   client1_name,
@@ -620,7 +620,7 @@ JackDriver::connect_ports(
 
 
 void
-JackDriver::disconnect_ports(
+jack_proxy::disconnect_ports(
 	dbus_uint64_t connection_id,
 	dbus_uint64_t client1_id,
 	const char*   client1_name,
@@ -648,7 +648,7 @@ JackDriver::disconnect_ports(
 
 
 void
-JackDriver::refresh_internal(bool force)
+jack_proxy::refresh_internal(bool force)
 {
 	DBusMessage* reply_ptr;
 	DBusMessageIter iter;
@@ -814,14 +814,14 @@ unref:
 
 
 void
-JackDriver::refresh()
+jack_proxy::refresh()
 {
 	refresh_internal(true);
 }
 
 
 bool
-JackDriver::connect(
+jack_proxy::connect(
 	boost::shared_ptr<PatchagePort> src,
 	boost::shared_ptr<PatchagePort> dst)
 {
@@ -851,7 +851,7 @@ JackDriver::connect(
 
 
 bool
-JackDriver::disconnect(
+jack_proxy::disconnect(
 	boost::shared_ptr<PatchagePort> src,
 	boost::shared_ptr<PatchagePort> dst)
 {
@@ -881,7 +881,7 @@ JackDriver::disconnect(
 
 
 jack_nframes_t
-JackDriver::buffer_size()
+jack_proxy::buffer_size()
 {
 	DBusMessage* reply_ptr;
 	dbus_uint32_t buffer_size;
@@ -911,7 +911,7 @@ fail:
 
 
 bool
-JackDriver::set_buffer_size(jack_nframes_t size)
+jack_proxy::set_buffer_size(jack_nframes_t size)
 {
 	DBusMessage* reply_ptr;
 	dbus_uint32_t buffer_size;
@@ -927,7 +927,7 @@ JackDriver::set_buffer_size(jack_nframes_t size)
 
 
 float
-JackDriver::sample_rate()
+jack_proxy::sample_rate()
 {
 	DBusMessage* reply_ptr;
 	double sample_rate;
@@ -950,7 +950,7 @@ JackDriver::sample_rate()
 
 
 bool
-JackDriver::is_realtime()
+jack_proxy::is_realtime()
 {
 	DBusMessage* reply_ptr;
 	dbus_bool_t realtime;
@@ -959,9 +959,9 @@ JackDriver::is_realtime()
 		return false;
 	}
 
-	if (!dbus_message_get_args(reply_ptr, &((JackDriver *)this)->_app->_dbus_error, DBUS_TYPE_BOOLEAN, &realtime, DBUS_TYPE_INVALID)) {
+	if (!dbus_message_get_args(reply_ptr, &((jack_proxy *)this)->_app->_dbus_error, DBUS_TYPE_BOOLEAN, &realtime, DBUS_TYPE_INVALID)) {
 		dbus_message_unref(reply_ptr);
-		dbus_error_free(&((JackDriver *)this)->_app->_dbus_error);
+		dbus_error_free(&((jack_proxy *)this)->_app->_dbus_error);
 		error_msg("decoding reply of IsRealtime failed.");
 		return false;
 	}
@@ -973,7 +973,7 @@ JackDriver::is_realtime()
 
 
 size_t
-JackDriver::xruns()
+jack_proxy::xruns()
 {
 	DBusMessage* reply_ptr;
 	dbus_uint32_t xruns;
@@ -1000,7 +1000,7 @@ JackDriver::xruns()
 
 
 void
-JackDriver::reset_xruns()
+jack_proxy::reset_xruns()
 {
 	DBusMessage* reply_ptr;
 
@@ -1013,7 +1013,7 @@ JackDriver::reset_xruns()
 
 
 float
-JackDriver::get_dsp_load()
+jack_proxy::get_dsp_load()
 {
 	DBusMessage* reply_ptr;
 	double load;
@@ -1039,33 +1039,33 @@ JackDriver::get_dsp_load()
 }
 
 void
-JackDriver::start_transport()
+jack_proxy::start_transport()
 {
 	//info_msg(__func__);
 }
 
 
 void
-JackDriver::stop_transport()
+jack_proxy::stop_transport()
 {
 	//info_msg(__func__);
 }
 
 
 void
-JackDriver::rewind_transport()
+jack_proxy::rewind_transport()
 {
 	//info_msg(__func__);
 }
 
 void
-JackDriver::error_msg(const std::string& msg) const
+jack_proxy::error_msg(const std::string& msg) const
 {
 	_app->error_msg((std::string)"[JACKDBUS] " + msg);
 }
 
 void
-JackDriver::info_msg(const std::string& msg) const
+jack_proxy::info_msg(const std::string& msg) const
 {
 	_app->info_msg((std::string)"[JACKDBUS] " + msg);
 }

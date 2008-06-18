@@ -29,7 +29,7 @@
 
 #include CONFIG_H_PATH
 #include "GladeFile.hpp"
-#include "JackDbusDriver.hpp"
+#include "jack_proxy.hpp"
 #include "JackSettingsDialog.hpp"
 #include "Patchage.hpp"
 #include "PatchageCanvas.hpp"
@@ -84,7 +84,6 @@ Patchage::Patchage(int argc, char** argv)
 	, INIT_WIDGET(_menu_save_session_as)
 	, INIT_WIDGET(_menu_close_session)
 	, _dbus_connection(0)
-	, _jack_driver(NULL)
 	, _state_manager(NULL)
 	, _max_dsp_load(0.0)
 	, INIT_WIDGET(_about_win)
@@ -215,14 +214,14 @@ Patchage::Patchage(int argc, char** argv)
 
 	_lash = new lash_proxy(this);
 
-	_jack_driver = new JackDriver(this);
+	_jack = new jack_proxy(this);
 
  	_menu_jack_start->signal_activate().connect(
- 		sigc::mem_fun(_jack_driver, &JackDriver::start_server));
+ 		sigc::mem_fun(_jack, &jack_proxy::start_server));
  	_menu_jack_stop->signal_activate().connect(
- 		sigc::mem_fun(_jack_driver, &JackDriver::stop_server));
+ 		sigc::mem_fun(_jack, &jack_proxy::stop_server));
 
-	jack_status_changed(_jack_driver->is_started());
+	jack_status_changed(_jack->is_started());
 
 	connect_widgets();
 	update_state();
@@ -236,7 +235,7 @@ Patchage::Patchage(int argc, char** argv)
 
 Patchage::~Patchage() 
 {
-	delete _jack_driver;
+	delete _jack;
 	delete _lash;
 	delete _project_list;
 	delete _state_manager;
@@ -261,13 +260,13 @@ Patchage::update_toolbar()
 {
 	bool started;
 
-	started = _jack_driver->is_started();
+	started = _jack->is_started();
 
 	_buffer_size_combo->set_sensitive(started);
 
 	if (started)
 	{
-		_buffer_size_combo->set_active((int)log2f(_jack_driver->buffer_size()) - 5);
+		_buffer_size_combo->set_active((int)log2f(_jack->buffer_size()) - 5);
 	}
 }
 
@@ -275,18 +274,18 @@ Patchage::update_toolbar()
 void
 Patchage::update_load()
 {
-	if (!_jack_driver->is_started())
+	if (!_jack->is_started())
 	{
 		_main_xrun_progress->set_text("JACK stopped");
 		return;
 	}
 
 	char tmp_buf[8];
-	snprintf(tmp_buf, 8, "%zd", _jack_driver->xruns());
+	snprintf(tmp_buf, 8, "%zd", _jack->xruns());
 
 	_main_xrun_progress->set_text(string(tmp_buf) + " Dropouts");
 
-	float load = _jack_driver->get_dsp_load();
+	float load = _jack->get_dsp_load();
 
 	load /= 100.0;								// dbus returns it in percents, we use 0..1
 
@@ -313,8 +312,8 @@ Patchage::refresh()
 
 	_canvas->destroy();
 
-	if (_jack_driver)
-		_jack_driver->refresh();
+	if (_jack)
+		_jack->refresh();
 
 	for (ItemList::iterator i = _canvas->items().begin(); i != _canvas->items().end(); ++i) {
 		(*i)->resize();
@@ -345,7 +344,7 @@ void
 Patchage::clear_load()
 {
 	_main_xrun_progress->set_fraction(0.0);
-	_jack_driver->reset_xruns();
+	_jack->reset_xruns();
 	_max_dsp_load = 0.0;
 }
 
@@ -391,10 +390,10 @@ Patchage::connect_widgets()
 			sigc::mem_fun(*_menu_lash_disconnect, &Gtk::MenuItem::set_sensitive), false));
 #endif
 
-	_jack_driver->signal_started.connect(
+	_jack->signal_started.connect(
 		sigc::bind(sigc::mem_fun(this, &Patchage::jack_status_changed), true));
 	
-	_jack_driver->signal_stopped.connect(
+	_jack->signal_stopped.connect(
 		sigc::bind(sigc::mem_fun(this, &Patchage::jack_status_changed), false));
 }
 
@@ -568,9 +567,9 @@ Patchage::buffer_size_changed()
 		// this check is temporal workaround for jack bug
 		// we skip setting buffer size if it same as acutal one
 		// proper place for such check is in jack
-		if (_jack_driver->buffer_size() != buffer_size)
+		if (_jack->buffer_size() != buffer_size)
 		{
-			if (!_jack_driver->set_buffer_size(buffer_size))
+			if (!_jack->set_buffer_size(buffer_size))
 			{
 				update_toolbar(); // reset combo box to actual value
 			}
@@ -829,4 +828,36 @@ void
 Patchage::close_all_projects()
 {
 	_lash->close_all_projects();
+}
+
+void
+Patchage::connect(
+	boost::shared_ptr<PatchagePort> p1,
+	boost::shared_ptr<PatchagePort> p2)
+{
+	if ((p1->type() == JACK_AUDIO && p2->type() == JACK_AUDIO) ||
+			(p1->type() == JACK_MIDI  && p2->type() == JACK_MIDI))
+	{
+		_jack->connect(p1, p2);
+	}
+	else
+	{
+		status_message("ERROR: Attempt to connect ports with mismatched types");
+	}
+}
+
+void
+Patchage::disconnect(
+	boost::shared_ptr<PatchagePort> p1,
+	boost::shared_ptr<PatchagePort> p2)
+{
+	if ((p1->type() == JACK_AUDIO && p2->type() == JACK_AUDIO) ||
+			(p1->type() == JACK_MIDI  && p2->type() == JACK_MIDI))
+	{
+		_jack->disconnect(p1, p2);
+	}
+	else
+	{
+		status_message("ERROR: Attempt to disconnect ports with mismatched types");
+	}
 }

@@ -19,7 +19,6 @@
 #include CONFIG_H_PATH
 #include "PatchageCanvas.hpp"
 #include "Patchage.hpp"
-#include "JackDbusDriver.hpp"
 #include "PatchageModule.hpp"
 #include "PatchagePort.hpp"
 
@@ -60,47 +59,14 @@ PatchageCanvas::find_module(const string& name, ModuleType type)
 void
 PatchageCanvas::connect(boost::shared_ptr<Connectable> port1, boost::shared_ptr<Connectable> port2)
 {
-	boost::shared_ptr<PatchagePort> p1 = boost::dynamic_pointer_cast<PatchagePort>(port1);
-	boost::shared_ptr<PatchagePort> p2 = boost::dynamic_pointer_cast<PatchagePort>(port2);
-	if (!p1 || !p2)
-		return;
-
-	if ((p1->type() == JACK_AUDIO && p2->type() == JACK_AUDIO)
-			|| ((p1->type() == JACK_MIDI && p2->type() == JACK_MIDI)))
-		_app->jack_driver()->connect(p1, p2);
-	else
-		status_message("WARNING: Cannot make connection, incompatible port types.");
+	_app->connect(boost::dynamic_pointer_cast<PatchagePort>(port1), boost::dynamic_pointer_cast<PatchagePort>(port2));
 }
 
 
 void
 PatchageCanvas::disconnect(boost::shared_ptr<Connectable> port1, boost::shared_ptr<Connectable> port2)
 {
-	boost::shared_ptr<PatchagePort> input
-		= boost::dynamic_pointer_cast<PatchagePort>(port1);
-	boost::shared_ptr<PatchagePort> output
-		= boost::dynamic_pointer_cast<PatchagePort>(port2);
-
-	if (!input || !output)
-		return;
-
-	if (input->is_output() && output->is_input()) {
-		// Damn, guessed wrong
-		boost::shared_ptr<PatchagePort> swap = input;
-		input = output;
-		output = swap;
-	}
-
-	if (!input || !output || input->is_output() || output->is_input()) {
-		status_message("ERROR: Attempt to disconnect mismatched/unknown ports");
-		return;
-	}
-	
-	if ((input->type() == JACK_AUDIO && output->type() == JACK_AUDIO)
-			|| (input->type() == JACK_MIDI && output->type() == JACK_MIDI))
-		_app->jack_driver()->disconnect(output, input);
-	else
-		status_message("ERROR: Attempt to disconnect ports with mismatched types");
+	_app->disconnect(boost::dynamic_pointer_cast<PatchagePort>(port1), boost::dynamic_pointer_cast<PatchagePort>(port2));
 }
 
 

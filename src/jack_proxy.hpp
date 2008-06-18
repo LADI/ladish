@@ -33,11 +33,11 @@ class PatchageEvent;
 class PatchageFlowCanvas;
 class PatchagePort;
 
-class JackDriver
+class jack_proxy
 {
 public:
-	JackDriver(Patchage* app);
-	~JackDriver();
+	jack_proxy(Patchage* app);
+	~jack_proxy();
 
 	bool is_started();
 	bool is_realtime();

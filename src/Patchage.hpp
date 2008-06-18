@@ -31,10 +31,11 @@
 #include <dbus/dbus-glib-lowlevel.h>
 
 class PatchageCanvas;
-class JackDriver;
+class jack_proxy;
 class lash_proxy;
 class StateManager;
 class project_list;
+class PatchagePort;
 
 class Patchage {
 public:
@@ -46,10 +47,12 @@ public:
 	Gtk::Window* window() { return _main_win.get(); }
 	
 	StateManager* state_manager() const { return _state_manager; }
-	JackDriver*   jack_driver()   const { return _jack_driver; }
-	
+
 	void quit() { _main_win->hide(); }
-	
+
+	void connect(boost::shared_ptr<PatchagePort> p1, boost::shared_ptr<PatchagePort> p2);
+	void disconnect(boost::shared_ptr<PatchagePort> p1, boost::shared_ptr<PatchagePort> p2);
+
 	void        refresh();
 
 	void clear_load();
@@ -140,7 +143,7 @@ protected:
 
 	boost::shared_ptr<PatchageCanvas> _canvas;
 
-	JackDriver*         _jack_driver;
+	jack_proxy*         _jack;
 	lash_proxy * _lash;
 	project_list * _project_list;
 	StateManager*       _state_manager;
