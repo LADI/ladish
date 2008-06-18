@@ -21,6 +21,13 @@
 
 #include "Patchage.hpp"
 
+struct lash_project_info
+{
+	std::string name;
+	time_t modification_time;
+	std::string comment;
+};
+
 class lash_proxy
 {
 public:
@@ -28,7 +35,7 @@ public:
 	~lash_proxy();
 
 	void get_loaded_projects(std::list<std::string>& projects);
-	void get_available_projects(std::list<std::string>& projects);
+	void get_available_projects(std::list<lash_project_info>& projects);
 	void load_project(const std::string& project_name);
 	void save_all_projects();
 	void save_project(const std::string& project_name);
