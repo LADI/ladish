@@ -11,3 +11,4 @@ Makefile.in
 /patchage.desktop
 /src/.deps
 /src/patchage
+/build
