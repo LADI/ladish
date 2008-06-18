@@ -26,7 +26,6 @@
 #include <raul/AtomicPtr.hpp>
 #include <dbus/dbus.h>
 
-#include "Driver.hpp"
 #include "Patchage.hpp"
 #include "PatchageModule.hpp"
 

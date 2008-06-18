@@ -35,7 +35,6 @@
 #include "PatchageCanvas.hpp"
 #include "Patchage.hpp"
 #include "PatchageModule.hpp"
-#include "Driver.hpp"
 #include "JackDbusDriver.hpp"
 
 using namespace std;
