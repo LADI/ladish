@@ -147,7 +147,7 @@ project_list_impl::on_button_press_event(GdkEventButton * event_ptr)
 void
 project_list_impl::on_menu_popup_load_project()
 {
-	_app->load_project();
+	_app->load_project_ask();
 }
 
 void

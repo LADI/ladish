@@ -95,7 +95,7 @@ public:
 	on_project_closed(
 		const std::string& project_name);
 
-	void load_project();
+	void load_project_ask();
 	void load_project(const std::string& project_name);
 	void save_all_projects();
 	void save_project(const std::string& project_name);
@@ -134,12 +134,6 @@ protected:
 	Widget<Gtk::MenuItem> _menu_save_session;
 	Widget<Gtk::MenuItem> _menu_save_session_as;
 	Widget<Gtk::MenuItem> _menu_close_session;
-	void menu_open_session();
-	void menu_save_session();
-	void menu_save_session_as();
-	void menu_close_session();
-	void menu_lash_connect();
-	void menu_lash_disconnect();
 
 	boost::shared_ptr<PatchageCanvas> _canvas;
 

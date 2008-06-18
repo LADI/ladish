@@ -165,13 +165,11 @@ Patchage::Patchage(int argc, char** argv)
 			sigc::mem_fun(_canvas.get(), &PatchageCanvas::zoom_full));
 
 	_menu_open_session->signal_activate().connect(
-			sigc::mem_fun(this, &Patchage::menu_open_session));
+			sigc::mem_fun(this, &Patchage::load_project_ask));
 	_menu_save_session->signal_activate().connect(
-			sigc::mem_fun(this, &Patchage::menu_save_session));
-	_menu_save_session_as->signal_activate().connect(
-			sigc::mem_fun(this, &Patchage::menu_save_session_as));
+			sigc::mem_fun(this, &Patchage::save_all_projects));
 	_menu_close_session->signal_activate().connect(
-			sigc::mem_fun(this, &Patchage::menu_close_session));
+			sigc::mem_fun(this, &Patchage::close_all_projects));
 
 	_menu_store_positions->signal_activate().connect(
 			sigc::mem_fun(this, &Patchage::on_store_positions));
@@ -410,64 +408,6 @@ Patchage::jack_status_changed(
 	{
 		_main_xrun_progress->set_fraction(0.0);
 	}
-}
-
-void
-Patchage::menu_open_session() 
-{
-#if 0
-	Gtk::FileChooserDialog dialog(*_main_win, "Open LASH Session",
-			Gtk::FILE_CHOOSER_ACTION_SELECT_FOLDER);
-	
-	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
-	dialog.add_button(Gtk::Stock::OPEN, Gtk::RESPONSE_OK);
-
-	const int result = dialog.run();
-
-	if (result == Gtk::RESPONSE_OK) {
-		_lash_driver->restore_project(dialog.get_filename());
-	}
-#endif
-}
-
-
-void
-Patchage::menu_save_session() 
-{
-#if 0
-	if (_lash_driver)
-		_lash_driver->save_project();
-#endif
-}
-
-
-void
-Patchage::menu_save_session_as() 
-{
-#if 0
-	if (!_lash_driver)
-		return;
-
-	Gtk::FileChooserDialog dialog(*_main_win, "Save LASH Session",
-			Gtk::FILE_CHOOSER_ACTION_SAVE);
-	
-	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
-	dialog.add_button(Gtk::Stock::SAVE, Gtk::RESPONSE_OK);	
-	
-	const int result = dialog.run();
-
-	if (result == Gtk::RESPONSE_OK) {
-		_lash_driver->set_project_directory(dialog.get_filename());
-		_lash_driver->save_project();
-	}
-#endif
-}
-
-	
-void
-Patchage::menu_close_session() 
-{
-	//_lash_driver->close_project();
 }
 
 void
@@ -851,7 +791,7 @@ private:
 };
 
 void
-Patchage::load_project()
+Patchage::load_project_ask()
 {
 	std::list<lash_project_info> projects;
 	load_project_dialog dialog(xml, this);
