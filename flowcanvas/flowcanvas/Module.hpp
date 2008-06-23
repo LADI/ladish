@@ -88,6 +88,8 @@ protected:
 	virtual void set_height(double h);
 
 	void fit_canvas();
+	
+	void embed(Gtk::Container* widget);
 
 	double _border_width;
 	bool   _title_visible;
@@ -103,6 +105,8 @@ protected:
 	Gnome::Canvas::Text    _canvas_title;
 	Gnome::Canvas::Rect*   _stacked_border;
 	Gnome::Canvas::Pixbuf* _icon_box;
+	Gtk::Container*        _embed_container;
+	Gnome::Canvas::Widget* _embed_item;
 
 private:
 	friend class Canvas;
@@ -113,6 +117,11 @@ private:
 			{ return (port && port->name() == _name); }
 		const std::string& _name;
 	};
+	
+	void embed_size_request(Gtk::Requisition* req, bool force);
+	
+	int _last_embed_request_width;
+	int _last_embed_request_height;
 };
 
 

@@ -57,6 +57,10 @@ Module::Module(boost::shared_ptr<Canvas> canvas, const string& name, double x, d
 	, _canvas_title(*this, 0, 8, name) // x set later
 	, _stacked_border(NULL)
 	, _icon_box(NULL)
+	, _embed_container(NULL)
+	, _embed_item(NULL)
+	, _last_embed_request_width(0)
+	, _last_embed_request_height(0)
 {
 	_module_box.property_fill_color_rgba() = MODULE_FILL_COLOUR;
 	_module_box.property_outline_color_rgba() = MODULE_OUTLINE_COLOUR;
@@ -416,6 +420,69 @@ Module::add_port(boost::shared_ptr<Port> p)
 			sigc::bind(sigc::mem_fun(canvas.get(), &Canvas::port_event), p));
 	
 	p->signal_renamed.connect(sigc::mem_fun(this, &Module::resize));
+}
+
+	
+
+/** Embed a widget on the module.
+ *
+ * Resize may need to be called after this to ensure the module
+ * displays correctly.
+ */
+void
+Module::embed(Gtk::Container* widget)
+{
+	if (!widget) {
+		delete _embed_item;
+		_embed_item = NULL;
+		_ports_y_offset = 0;
+		_minimum_width = 0; // resize() will takes care of this
+		return;
+	} else {
+		_embed_container = manage(widget);
+	}
+
+	_embed_container->set_border_width(2);
+	_embed_container->show_all();
+
+	const double y = 4 + _canvas_title.property_text_height();
+	delete _embed_item;
+	_embed_item = new Gnome::Canvas::Widget(*this, 2.0, y, *_embed_container);
+	_embed_item->show();
+
+	Gtk::Requisition r = _embed_container->size_request();
+	embed_size_request(&r, true);
+
+	_embed_item->raise_to_top();
+
+	_embed_container->signal_size_request().connect(sigc::bind(
+				sigc::mem_fun(this, &Module::embed_size_request), false));
+}
+
+	
+void
+Module::embed_size_request(Gtk::Requisition* r, bool force)
+{
+	if (!force && _last_embed_request_width == r->width && _last_embed_request_height == r->height)
+		return;
+
+	if (r->width + 4 > _width)
+		set_minimum_width(r->width + 4);
+	
+	_ports_y_offset = r->height + 2;
+	
+	resize();
+
+	Gtk::Allocation allocation;
+	allocation.set_width(r->width + 4);
+	allocation.set_height(r->height + 4);
+
+	_embed_container->size_allocate(allocation);
+	_embed_item->property_width() = _width - 4;
+	_embed_item->property_height() = r->height;
+
+	_last_embed_request_width = r->width;
+	_last_embed_request_height = r->height;
 }
 
 
