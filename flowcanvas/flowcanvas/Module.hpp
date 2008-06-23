@@ -77,9 +77,6 @@ public:
 
 	size_t num_ports() const { return _ports.size(); }
 
-	void   set_ports_y_offset(double offset)   { _ports_y_offset = offset; }
-	double ports_y_offset(double offset) const { return _ports_y_offset; }
-
 protected:
 	virtual void on_drop(double new_x, double new_y);
 	virtual bool on_event(GdkEvent* ev);
@@ -93,9 +90,9 @@ protected:
 
 	double _border_width;
 	bool   _title_visible;
-	double _ports_y_offset;
+	double _embed_width;
+	double _embed_height;
 	double _icon_size;
-
 	double _widest_input;
 	double _widest_output;
 
@@ -119,9 +116,6 @@ private:
 	};
 	
 	void embed_size_request(Gtk::Requisition* req, bool force);
-	
-	int _last_embed_request_width;
-	int _last_embed_request_height;
 };
 
 

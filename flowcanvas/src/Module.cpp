@@ -49,7 +49,8 @@ Module::Module(boost::shared_ptr<Canvas> canvas, const string& name, double x, d
 	: Item(canvas, name, x, y, MODULE_FILL_COLOUR)
 	, _border_width(1.0)
 	, _title_visible(show_title)
-	, _ports_y_offset(0)
+	, _embed_width(0)
+	, _embed_height(0)
 	, _icon_size(16)
 	, _widest_input(0)
 	, _widest_output(0)
@@ -59,8 +60,6 @@ Module::Module(boost::shared_ptr<Canvas> canvas, const string& name, double x, d
 	, _icon_box(NULL)
 	, _embed_container(NULL)
 	, _embed_item(NULL)
-	, _last_embed_request_width(0)
-	, _last_embed_request_height(0)
 {
 	_module_box.property_fill_color_rgba() = MODULE_FILL_COLOUR;
 	_module_box.property_outline_color_rgba() = MODULE_OUTLINE_COLOUR;
@@ -435,8 +434,8 @@ Module::embed(Gtk::Container* widget)
 	if (!widget) {
 		delete _embed_item;
 		_embed_item = NULL;
-		_ports_y_offset = 0;
-		_minimum_width = 0; // resize() will takes care of this
+		_embed_width = 0;
+		_embed_height = 0;
 		return;
 	} else {
 		_embed_container = manage(widget);
@@ -463,14 +462,14 @@ Module::embed(Gtk::Container* widget)
 void
 Module::embed_size_request(Gtk::Requisition* r, bool force)
 {
-	if (!force && _last_embed_request_width == r->width && _last_embed_request_height == r->height)
+	if (!force && _embed_width == r->width && _embed_height == r->height)
 		return;
 
-	if (r->width + 4 > _width)
-		set_minimum_width(r->width + 4);
+	_embed_width = r->width;
+	_embed_height = r->height;
 	
-	_ports_y_offset = r->height + 2;
-	
+	cerr << "*** EMBED WIDTH: " << r->width << endl;
+
 	resize();
 
 	Gtk::Allocation allocation;
@@ -478,11 +477,8 @@ Module::embed_size_request(Gtk::Requisition* r, bool force)
 	allocation.set_height(r->height + 4);
 
 	_embed_container->size_allocate(allocation);
-	_embed_item->property_width() = _width - 4;
+	_embed_item->property_width() = r->width - 4;
 	_embed_item->property_height() = r->height;
-
-	_last_embed_request_width = r->width;
-	_last_embed_request_height = r->height;
 }
 
 
@@ -493,65 +489,86 @@ Module::resize()
 {
 	// The amount of space between a port edge and the module edge (on the
 	// side that the port isn't right on the edge).
-	const double hor_pad = (_title_visible ? 8.0 : 16.0);
+	const double hor_pad = (_title_visible ? 10.0 : 20.0);
 	
 	double width = (_title_visible
-		? _canvas_title.property_text_width() + 8.0
+		? _canvas_title.property_text_width() + 10.0
 		: 1.0);
 	
 	if (_icon_box)
 		width += _icon_size + 2;
 
 	// Fit ports to module (or vice-versa)
-	if (_widest_input < width - hor_pad)
-		_widest_input = width - hor_pad;
-	if (_widest_output < width - hor_pad)
-		_widest_output = width - hor_pad;
-
-	width = std::max(width,
-			(std::max(_widest_input, _widest_output) + hor_pad));
-	               
-	width += _border_width * 2.0;
-
-	if (width > _minimum_width)
-		set_width(width);
-	else if (_width < _minimum_width)
-		set_width(_minimum_width);
+	double widest_in  = (_embed_item ? _widest_input  : std::max(_widest_input,  width - hor_pad));
+	double widest_out = (_embed_item ? _widest_output : std::max(_widest_output, width - hor_pad));
 	
+	const double widest = std::max(widest_in, widest_out);
 	const double title_height = _canvas_title.property_text_height();
 
-	// Set height to contain ports and title
-	double height_base = 2;
-	if (_title_visible)
-		height_base += 2 + title_height;
+	double above_w   = std::max(width, widest + hor_pad);
+	double between_w = std::max(width, widest_in + widest_out + _embed_width);
 	
+	above_w = std::max(above_w, _embed_width);
+
+	// Basic height contains title, icon
+	double header_height = 2;
+	if (_title_visible)
+		header_height += 2 + title_height;
 	if (_icon_box && _icon_size > title_height)
-		height_base += _icon_size - title_height;
+		header_height += _icon_size - title_height;
 
-	height_base += _ports_y_offset;
+	double height = header_height;
 
-	double h = height_base;
+	double above_h = 0.0f;
 	if (_ports.size() > 0)
-		h += _ports.size() * ((*_ports.begin())->height()+2.0);
+		above_h += _ports.size() * ((*_ports.begin())->height()+2.0);
 
-	if (!_title_visible && _ports.size() > 0)
-		h += 0.5;
+	double between_h = std::max(above_h, _embed_height);
+	above_h += _embed_height;
+	
+	// Decide where to place embedded widget if necessary (minimize area)
+	enum { BETWEEN, ABOVE } embed_pos = ABOVE;
+	if (above_w * above_h > between_w * between_h) {
+		embed_pos = BETWEEN;
+		height += between_h;
+		width = between_w;
+		if (_embed_item)
+			_embed_item->property_x() = widest_in;
+	} else {
+		height += above_h;
+		width = above_w;
+	}
 
-	set_height(h);
+	if (!_title_visible) {
+		if (_ports.size() > 0)
+			height += 0.5;
+		if (_widest_input == 0.0 || _widest_output == 0.0f)
+			width += 10.0;
+	}
+
+	width += _border_width * 2.0;
+	
+	// Actually set width and height
+	set_width(width);
+	set_height(height);
+	
+	// Offset ports below embedded widget
+	if (embed_pos == ABOVE) {
+		header_height += _embed_height;
+	}
 	
 	// Move ports to appropriate locations
-	
 	int i = 0;
 	for (PortVector::iterator pi = _ports.begin(); pi != _ports.end(); ++pi, ++i) {
 		const boost::shared_ptr<Port> p = (*pi);
 
-		const double y = height_base + (i * (p->height() + 2.0));
+		const double y = header_height + (i * (p->height() + 2.0));
 		if (p->is_input()) {
-			p->set_width(_widest_input);
+			p->set_width(widest_in);
 			p->property_x() = 0.5;
 			p->property_y() = y;
 		} else {
-			p->set_width(_widest_output);
+			p->set_width(widest_out);
 			p->property_x() = _width - p->width() - 0.5;
 			p->property_y() = y;
 		}
