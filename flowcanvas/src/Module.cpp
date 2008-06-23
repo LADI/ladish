@@ -468,8 +468,6 @@ Module::embed_size_request(Gtk::Requisition* r, bool force)
 	_embed_width = r->width;
 	_embed_height = r->height;
 	
-	cerr << "*** EMBED WIDTH: " << r->width << endl;
-
 	resize();
 
 	Gtk::Allocation allocation;
@@ -526,9 +524,13 @@ Module::resize()
 	double between_h = std::max(above_h, _embed_height);
 	above_h += _embed_height;
 	
-	// Decide where to place embedded widget if necessary (minimize area)
+	/*cerr << above_w << "x" << above_h << "(" << above_w * above_h << ") ? "
+			<< between_w << "x" << between_h << "(" << between_w * between_h << ")" << endl;*/
+	
+	// Decide where to place embedded widget if necessary)
 	enum { BETWEEN, ABOVE } embed_pos = ABOVE;
-	if (above_w * above_h > between_w * between_h) {
+	//if (above_w * above_h >= between_w * between_h) { // minimize area
+	if (_embed_width < _embed_height * 2.0) {
 		embed_pos = BETWEEN;
 		height += between_h;
 		width = between_w;
@@ -537,6 +539,8 @@ Module::resize()
 	} else {
 		height += above_h;
 		width = above_w;
+		if (_embed_item)
+			_embed_item->property_x() = 0.0f;
 	}
 
 	if (!_title_visible) {
