@@ -19,6 +19,7 @@
 #include "common.hpp"
 #include "lash_proxy.hpp"
 #include "session.hpp"
+#include "project.hpp"
 
 #define LASH_SERVICE       "org.nongnu.LASH"
 #define LASH_OBJECT        "/"
@@ -39,6 +40,7 @@ lash_proxy::lash_proxy(
 	dbus_bus_add_match(_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectAdded", NULL);
 	dbus_bus_add_match(_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectClosed", NULL);
 	dbus_bus_add_match(_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectNameChanged", NULL);
+	dbus_bus_add_match(_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectModifiedStatusChanged", NULL);
 
 	dbus_connection_add_filter(_app->_dbus_connection, dbus_message_hook, this, NULL);
 
@@ -82,6 +84,8 @@ lash_proxy::dbus_message_hook(
 	const char * object_name;
 	const char * old_owner;
 	const char * new_owner;
+	dbus_bool_t modified_status;
+	shared_ptr<project> project_ptr;
 
 	assert(proxy);
 	lash_proxy * me = reinterpret_cast<lash_proxy *>(proxy);
@@ -174,6 +178,30 @@ lash_proxy::dbus_message_hook(
 
 		me->info_msg((string)"Project '" + project_name + "' renamed to '" + new_project_name + "'.");
 		me->_session_ptr->project_rename(project_name, new_project_name);
+
+		return DBUS_HANDLER_RESULT_HANDLED;
+	}
+
+	if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "ProjectModifiedStatusChanged"))
+	{
+		if (!dbus_message_get_args(
+			    message, &me->_app->_dbus_error,
+			    DBUS_TYPE_STRING, &project_name,
+			    DBUS_TYPE_BOOLEAN, &modified_status,
+			    DBUS_TYPE_INVALID))
+		{
+			me->error_msg(str(boost::format("dbus_message_get_args() failed to extract ProjectNameChanged signal arguments (%s)") % me->_app->_dbus_error.message));
+			dbus_error_free(&me->_app->_dbus_error);
+			return DBUS_HANDLER_RESULT_HANDLED;
+		}
+
+		me->info_msg((string)"Project '" + project_name + "' modified status changed to '" + (modified_status ? "true" : "false") + "'.");
+
+		project_ptr = me->_session_ptr->find_project_by_name(project_name);
+		if (project_ptr)
+		{
+			project_ptr->set_modified_status(modified_status);
+		}
 
 		return DBUS_HANDLER_RESULT_HANDLED;
 	}

@@ -77,3 +77,11 @@ project::get_modified_status()
 {
 	return _impl_ptr->modified_status;
 }
+
+bool
+project::set_modified_status(
+	bool modified_status)
+{
+	_impl_ptr->modified_status = modified_status;
+	_signal_modified_status_changed.emit();
+}

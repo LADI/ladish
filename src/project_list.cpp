@@ -208,6 +208,7 @@ project_list_impl::project_added(
 	row[_columns.project_ptr] = project_ptr;
 
 	project_ptr->_signal_renamed.connect(bind(mem_fun(this, &project_list_impl::project_renamed), iter));
+	project_ptr->_signal_modified_status_changed.connect(bind(mem_fun(this, &project_list_impl::project_renamed), iter));
 }
 
 void
@@ -245,6 +246,12 @@ project_list_impl::project_renamed(
 
 	project_ptr = row[_columns.project_ptr];
 	project_ptr->get_name(project_name);
+
+	if (project_ptr->get_modified_status())
+	{
+		project_name += " *";
+	}
+
 	row[_columns.name] = project_name;
 }
 
