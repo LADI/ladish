@@ -36,6 +36,7 @@
 #include "StateManager.hpp"
 #include "lash_proxy.hpp"
 #include "project_list.hpp"
+#include "session.hpp"
 
 //#define LOG_TO_STD
 #define LOG_TO_STATUS
@@ -208,9 +209,11 @@ Patchage::Patchage(int argc, char** argv)
 	
 	_about_win->set_transient_for(*_main_win);
 
-	_project_list = new project_list(xml, this);
+	_session = new session();
 
-	_lash = new lash_proxy(this);
+	_project_list = new project_list(xml, this, _session);
+
+	_lash = new lash_proxy(this, _session);
 
 	_jack = new jack_proxy(this);
 
@@ -236,6 +239,7 @@ Patchage::~Patchage()
 	delete _jack;
 	delete _lash;
 	delete _project_list;
+	delete _session;
 	delete _state_manager;
 
 	_about_win.destroy();
@@ -624,20 +628,6 @@ Patchage::set_lash_availability(
 	bool lash_active)
 {
 	_project_list->set_lash_availability(lash_active);
-}
-
-void
-Patchage::on_project_added(
-	const std::string& project_name)
-{
-	_project_list->project_added(project_name);
-}
-
-void
-Patchage::on_project_closed(
-	const std::string& project_name)
-{
-	_project_list->project_closed(project_name);
 }
 
 struct loadable_project_list_column_record : public Gtk::TreeModel::ColumnRecord

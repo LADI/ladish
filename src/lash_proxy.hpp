@@ -28,10 +28,14 @@ struct lash_project_info
 	std::string comment;
 };
 
+class session;
+
 class lash_proxy
 {
 public:
-	lash_proxy(Patchage* app);
+	lash_proxy(
+		Patchage* app,
+		session * session_ptr);
 	~lash_proxy();
 
 	void get_loaded_projects(std::list<std::string>& projects);
@@ -64,6 +68,7 @@ private:
 
 	Patchage* _app;
 	bool _server_responding;
+	session * _session_ptr;
 };
 
 #endif // #ifndef LASH_PROXY_HPP__89E81B38_627F_41B9_AD08_DB119FB5F34C__INCLUDED

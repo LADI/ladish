@@ -21,20 +21,19 @@
 
 struct project_list_impl;
 class Patchage;
+class session;
 
 class project_list
 {
 public:
 	project_list(
 		Glib::RefPtr<Gnome::Glade::Xml> xml,
-		Patchage* app);
+		Patchage* app,
+		session * session_ptr);
 
 	~project_list();
 
 	void set_lash_availability(bool lash_active);
-
-	void project_added(const string& project_name);
-	void project_closed(const string& project_name);
 
 private:
 	project_list_impl * _impl_ptr;

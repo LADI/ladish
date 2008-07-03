@@ -36,6 +36,7 @@ class lash_proxy;
 class StateManager;
 class project_list;
 class PatchagePort;
+class session;
 
 class Patchage {
 public:
@@ -87,14 +88,6 @@ public:
 
 	void set_lash_availability(bool lash_active);
 
-	void
-	on_project_added(
-		const std::string& project_name);
-
-	void
-	on_project_closed(
-		const std::string& project_name);
-
 	void load_project_ask();
 	void load_project(const std::string& project_name);
 	void save_all_projects();
@@ -138,6 +131,7 @@ protected:
 	boost::shared_ptr<PatchageCanvas> _canvas;
 
 	jack_proxy*         _jack;
+	session * _session;
 	lash_proxy * _lash;
 	project_list * _project_list;
 	StateManager*       _state_manager;

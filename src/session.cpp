@@ -17,12 +17,6 @@
  */
 
 #include "common.hpp"
-#include <list>
-#include <string>
-#include <boost/shared_ptr.hpp>
-
-using namespace boost;
-
 #include "project.hpp"
 #include "session.hpp"
 
@@ -46,13 +40,16 @@ void
 session::project_add(
 	const std::string& project_name)
 {
-	shared_ptr<project> project_ptr(new project(project_name));
+	//shared_ptr<project> project_ptr(new project(project_name));
 
-	_impl_ptr->projects.push_back(project_ptr);
+	//_impl_ptr->projects.push_back(project_ptr);
+
+	_signal_project_added.emit(project_name);
 }
 
 void
 session::project_close(
 	const std::string& project_name)
 {
+	_signal_project_closed.emit(project_name);
 }

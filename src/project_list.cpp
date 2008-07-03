@@ -24,13 +24,14 @@
 #include "project_list.hpp"
 #include "Widget.hpp"
 #include "Patchage.hpp"
+#include "session.hpp"
 
 struct project_list_column_record : public Gtk::TreeModel::ColumnRecord
 {
 	Gtk::TreeModelColumn<Glib::ustring> name;
 };
 
-struct project_list_impl
+struct project_list_impl : public sigc::trackable
 {
 	Patchage *_app;
 	Widget<Gtk::TreeView> _widget;
@@ -41,6 +42,9 @@ struct project_list_impl
 	project_list_impl(
 		Glib::RefPtr<Gnome::Glade::Xml> xml,
 		Patchage * app);
+
+	void project_added(const string& project_name);
+	void project_closed(const string& project_name);
 
 	bool on_button_press_event(GdkEventButton * event);
 
@@ -53,9 +57,12 @@ struct project_list_impl
 
 project_list::project_list(
 	Glib::RefPtr<Gnome::Glade::Xml> xml,
-	Patchage * app)
+	Patchage * app,
+	session * session_ptr)
 {
 	_impl_ptr = new project_list_impl(xml, app);
+	session_ptr->_signal_project_added.connect(mem_fun(_impl_ptr, &project_list_impl::project_added));
+	session_ptr->_signal_project_closed.connect(mem_fun(_impl_ptr, &project_list_impl::project_closed));
 }
 
 project_list::~project_list()
@@ -177,39 +184,39 @@ project_list_impl::on_menu_popup_close_all_projects()
 }
 
 void
-project_list::set_lash_availability(
-	bool lash_active)
-{
-	_impl_ptr->_widget->set_sensitive(lash_active);
-}
-
-void
-project_list::project_added(
+project_list_impl::project_added(
 	const string& project_name)
 {
 	Gtk::TreeModel::Row row;
 
-	row = *(_impl_ptr->_model->append());
-	row[_impl_ptr->_columns.name] = project_name;
+	row = *(_model->append());
+	row[_columns.name] = project_name;
 }
 
 void
-project_list::project_closed(
+project_list_impl::project_closed(
 	const string& project_name)
 {
-	Gtk::TreeModel::Children children = _impl_ptr->_model->children();
+	Gtk::TreeModel::Children children = _model->children();
 	Gtk::TreeModel::Children::iterator iter = children.begin();
 
 	while(iter != children.end())
 	{
 		Gtk::TreeModel::Row row = *iter;
 
-		if (row[_impl_ptr->_columns.name] == project_name)
+		if (row[_columns.name] == project_name)
 		{
-			_impl_ptr->_model->erase(iter);
+			_model->erase(iter);
 			return;
 		}
 
 		iter++;
 	}
+}
+
+void
+project_list::set_lash_availability(
+	bool lash_active)
+{
+	_impl_ptr->_widget->set_sensitive(lash_active);
 }

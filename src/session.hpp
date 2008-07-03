@@ -35,6 +35,9 @@ public:
 	project_close(
 		const std::string& project_name);
 
+	sigc::signal<void, const std::string&> _signal_project_added;
+	sigc::signal<void, const std::string&> _signal_project_closed;
+
 private:
 	session_impl * _impl_ptr;
 };

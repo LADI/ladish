@@ -19,6 +19,7 @@
 #include <boost/format.hpp>
 
 #include "lash_proxy.hpp"
+#include "session.hpp"
 
 #define LASH_SERVICE       "org.nongnu.LASH"
 #define LASH_OBJECT        "/"
@@ -26,8 +27,11 @@
 
 using namespace std;
 
-lash_proxy::lash_proxy(Patchage* app)
+lash_proxy::lash_proxy(
+	Patchage* app,
+	session * session_ptr)
 	: _app(app)
+	, _session_ptr(session_ptr)
 	, _server_responding(false)
 {
 	list<string> projects;
@@ -46,7 +50,7 @@ lash_proxy::lash_proxy(Patchage* app)
 
 	for (list<string>::iterator iter = projects.begin(); iter != projects.end(); iter++)
 	{
-		app->on_project_added(*iter);
+		session_ptr->project_add(*iter);
 	}
 
 	_app->set_lash_availability(_server_responding);
@@ -133,7 +137,7 @@ lash_proxy::dbus_message_hook(
 		}
 
 		me->info_msg((string)"Project '" + project_name + "' added.");
-		me->_app->on_project_added(project_name);
+		me->_session_ptr->project_add(project_name);
 
 		return DBUS_HANDLER_RESULT_HANDLED;
 	}
@@ -151,7 +155,7 @@ lash_proxy::dbus_message_hook(
 		}
 
 		me->info_msg((string)"Project '" + project_name + "' closed.");
-		me->_app->on_project_closed(project_name);
+		me->_session_ptr->project_close(project_name);
 
 		return DBUS_HANDLER_RESULT_HANDLED;
 	}
