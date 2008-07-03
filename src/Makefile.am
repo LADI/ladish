@@ -31,3 +31,9 @@ patchage_SOURCES += lash_proxy.hpp
 
 patchage_SOURCES += project_list.cpp
 patchage_SOURCES += project_list.hpp
+
+patchage_SOURCES += project.cpp
+patchage_SOURCES += project.hpp
+
+patchage_SOURCES += session.cpp
+patchage_SOURCES += session.hpp
