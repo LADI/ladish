@@ -48,6 +48,27 @@ session::project_add(
 	_signal_project_added.emit(project_ptr);
 }
 
+shared_ptr<project>
+session::find_project_by_name(
+	const string& name)
+{
+	shared_ptr<project> project_ptr;
+	string temp_name;
+
+	for (list<shared_ptr<project> >::iterator iter = _impl_ptr->projects.begin(); iter != _impl_ptr->projects.end(); iter++)
+	{
+		project_ptr = *iter;
+		project_ptr->get_name(temp_name);
+
+		if (temp_name == name)
+		{
+			return project_ptr;
+		}
+	}
+
+	return shared_ptr<project>();
+}
+
 void
 session::project_close(
 	const string& project_name)
@@ -75,17 +96,11 @@ session::project_rename(
 	const string& new_name)
 {
 	shared_ptr<project> project_ptr;
-	string temp_name;
+	project_ptr = find_project_by_name(old_name);
 
-	for (list<shared_ptr<project> >::iterator iter = _impl_ptr->projects.begin(); iter != _impl_ptr->projects.end(); iter++)
+	if (project_ptr)
 	{
-		project_ptr = *iter;
-		project_ptr->get_name(temp_name);
-
-		if (temp_name == old_name)
-		{
-			project_ptr->set_name(new_name);
-			_signal_project_renamed.emit(project_ptr);
-		}
+		project_ptr->set_name(new_name);
+		_signal_project_renamed.emit(project_ptr);
 	}
 }

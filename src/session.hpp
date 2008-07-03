@@ -41,6 +41,8 @@ public:
 		const string& old_name,
 		const string& new_name);
 
+	shared_ptr<project> find_project_by_name(const string& name);
+
 	sigc::signal<void, shared_ptr<project> > _signal_project_added;
 	sigc::signal<void, shared_ptr<project> > _signal_project_closed;
 	sigc::signal<void, shared_ptr<project> > _signal_project_renamed;
