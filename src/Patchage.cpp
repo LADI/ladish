@@ -28,6 +28,7 @@
 #include <boost/format.hpp>
 
 #include CONFIG_H_PATH
+#include "common.hpp"
 #include "GladeFile.hpp"
 #include "jack_proxy.hpp"
 #include "JackSettingsDialog.hpp"

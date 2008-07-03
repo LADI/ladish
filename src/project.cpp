@@ -22,12 +22,19 @@
 struct project_impl
 {
 	string name;
+	time_t modification_time;
+	string comment;
 };
 
-project::project(const string& project_name)
+project::project(
+	const string& name,
+	time_t modification_time,
+	const string& comment)
 {
 	_impl_ptr = new project_impl;
-	_impl_ptr->name = project_name;
+	_impl_ptr->name = name;
+	_impl_ptr->modification_time = modification_time;
+	_impl_ptr->comment = comment;
 }
 
 project::~project()
@@ -36,8 +43,20 @@ project::~project()
 }
 
 void
-project::get_project_name(
-	string& project_name)
+project::get_name(
+	string& name)
 {
-	project_name = _impl_ptr->name;
+	name = _impl_ptr->name;
+}
+
+void
+project::get_modification_time(
+	time_t& modification_time)
+{
+}
+
+void
+get_comment(
+	string& comment)
+{
 }

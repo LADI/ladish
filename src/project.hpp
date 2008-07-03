@@ -24,12 +24,24 @@ struct project_impl;
 class project
 {
 public:
-	project(const std::string& project_name);
+	project(
+		const string& name,
+		time_t modification_time,
+		const string& comment);
+
 	~project();
 
 	void
-	get_project_name(
-		std::string& project_name);
+	get_name(
+		string& name);
+
+	void
+	get_modification_time(
+		time_t& modification_time);
+
+	void
+	get_comment(
+		string& comment);
 
 private:
 	project_impl * _impl_ptr;

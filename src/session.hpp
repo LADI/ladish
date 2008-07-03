@@ -20,6 +20,7 @@
 #define SESSION_HPP__C870E949_EF2A_43E8_8FE8_55AE5A714172__INCLUDED
 
 struct session_impl;
+class project;
 
 class session
 {
@@ -29,14 +30,14 @@ public:
 
 	void
 	project_add(
-		const std::string& project_name);
+		const string& project_name);
 
 	void
 	project_close(
-		const std::string& project_name);
+		const string& project_name);
 
-	sigc::signal<void, const std::string&> _signal_project_added;
-	sigc::signal<void, const std::string&> _signal_project_closed;
+	sigc::signal<void, shared_ptr<project> > _signal_project_added;
+	sigc::signal<void, shared_ptr<project> > _signal_project_closed;
 
 private:
 	session_impl * _impl_ptr;

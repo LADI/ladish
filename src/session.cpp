@@ -19,6 +19,7 @@
 #include "common.hpp"
 #include "project.hpp"
 #include "session.hpp"
+#include <iostream>
 
 struct session_impl
 {
@@ -38,18 +39,30 @@ session::~session()
 
 void
 session::project_add(
-	const std::string& project_name)
+	const string& project_name)
 {
-	//shared_ptr<project> project_ptr(new project(project_name));
+	shared_ptr<project> project_ptr(new project(project_name, 0, ""));
 
-	//_impl_ptr->projects.push_back(project_ptr);
+	_impl_ptr->projects.push_back(project_ptr);
 
-	_signal_project_added.emit(project_name);
+	_signal_project_added.emit(project_ptr);
 }
 
 void
 session::project_close(
-	const std::string& project_name)
+	const string& project_name)
 {
-	_signal_project_closed.emit(project_name);
+	shared_ptr<project> project_ptr;
+	string temp_name;
+
+	for (list<shared_ptr<project> >::iterator iter = _impl_ptr->projects.begin(); iter != _impl_ptr->projects.end(); iter++)
+	{
+		project_ptr = *iter;
+		project_ptr->get_name(temp_name);
+
+		if (temp_name == project_name)
+		{
+			_signal_project_closed.emit(project_ptr);
+		}
+	}
 }

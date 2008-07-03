@@ -25,6 +25,7 @@
 #include "Widget.hpp"
 #include "Patchage.hpp"
 #include "session.hpp"
+#include "project.hpp"
 
 struct project_list_column_record : public Gtk::TreeModel::ColumnRecord
 {
@@ -43,8 +44,8 @@ struct project_list_impl : public sigc::trackable
 		Glib::RefPtr<Gnome::Glade::Xml> xml,
 		Patchage * app);
 
-	void project_added(const string& project_name);
-	void project_closed(const string& project_name);
+	void project_added(shared_ptr<project> project_ptr);
+	void project_closed(shared_ptr<project> project_ptr);
 
 	bool on_button_press_event(GdkEventButton * event);
 
@@ -185,9 +186,12 @@ project_list_impl::on_menu_popup_close_all_projects()
 
 void
 project_list_impl::project_added(
-	const string& project_name)
+	shared_ptr<project> project_ptr)
 {
 	Gtk::TreeModel::Row row;
+	string project_name;
+
+	project_ptr->get_name(project_name);
 
 	row = *(_model->append());
 	row[_columns.name] = project_name;
@@ -195,10 +199,13 @@ project_list_impl::project_added(
 
 void
 project_list_impl::project_closed(
-	const string& project_name)
+	shared_ptr<project> project_ptr)
 {
+	string project_name;
 	Gtk::TreeModel::Children children = _model->children();
 	Gtk::TreeModel::Children::iterator iter = children.begin();
+
+	project_ptr->get_name(project_name);
 
 	while(iter != children.end())
 	{
