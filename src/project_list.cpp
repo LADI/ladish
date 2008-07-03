@@ -47,7 +47,7 @@ struct project_list_impl : public sigc::trackable
 
 	void project_added(shared_ptr<project> project_ptr);
 	void project_closed(shared_ptr<project> project_ptr);
-	void project_renamed(shared_ptr<project> project_ptr);
+	void project_renamed(Gtk::TreeModel::iterator ref);
 
 	bool on_button_press_event(GdkEventButton * event);
 
@@ -66,7 +66,6 @@ project_list::project_list(
 	_impl_ptr = new project_list_impl(xml, app);
 	session_ptr->_signal_project_added.connect(mem_fun(_impl_ptr, &project_list_impl::project_added));
 	session_ptr->_signal_project_closed.connect(mem_fun(_impl_ptr, &project_list_impl::project_closed));
-	session_ptr->_signal_project_renamed.connect(mem_fun(_impl_ptr, &project_list_impl::project_renamed));
 }
 
 project_list::~project_list()
@@ -192,6 +191,7 @@ void
 project_list_impl::project_added(
 	shared_ptr<project> project_ptr)
 {
+	Gtk::TreeModel::iterator iter;
 	Gtk::TreeModel::Row row;
 	string project_name;
 
@@ -202,9 +202,12 @@ project_list_impl::project_added(
 		project_name += " *";
 	}
 
-	row = *(_model->append());
+	iter = _model->append();
+	row = *iter;
 	row[_columns.name] = project_name;
 	row[_columns.project_ptr] = project_ptr;
+
+	project_ptr->_signal_renamed.connect(bind(mem_fun(this, &project_list_impl::project_renamed), iter));
 }
 
 void
@@ -233,29 +236,16 @@ project_list_impl::project_closed(
 
 void
 project_list_impl::project_renamed(
-	shared_ptr<project> project_ptr)
+	Gtk::TreeModel::iterator iter)
 {
-	shared_ptr<project> temp_project_ptr;
+	shared_ptr<project> project_ptr;
 	string project_name;
-	Gtk::TreeModel::Children children = _model->children();
-	Gtk::TreeModel::Children::iterator iter = children.begin();
 
+	Gtk::TreeModel::Row row = *iter;
+
+	project_ptr = row[_columns.project_ptr];
 	project_ptr->get_name(project_name);
-
-	while(iter != children.end())
-	{
-		Gtk::TreeModel::Row row = *iter;
-
-		temp_project_ptr = row[_columns.project_ptr];
-
-		if (temp_project_ptr == project_ptr)
-		{
-			row[_columns.name] = project_name;
-			return;
-		}
-
-		iter++;
-	}
+	row[_columns.name] = project_name;
 }
 
 void

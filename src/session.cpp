@@ -101,6 +101,5 @@ session::project_rename(
 	if (project_ptr)
 	{
 		project_ptr->set_name(new_name);
-		_signal_project_renamed.emit(project_ptr);
 	}
 }

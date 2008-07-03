@@ -57,6 +57,7 @@ project::set_name(
 	const string& name)
 {
 	_impl_ptr->name = name;
+	_signal_renamed.emit();
 }
 
 void

@@ -51,6 +51,8 @@ public:
 	bool
 	get_modified_status();
 
+	signal<void> _signal_renamed;
+
 private:
 	project_impl * _impl_ptr;
 };
