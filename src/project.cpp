@@ -50,6 +50,13 @@ project::get_name(
 }
 
 void
+project::set_name(
+	const string& name)
+{
+	_impl_ptr->name = name;
+}
+
+void
 project::get_modification_time(
 	time_t& modification_time)
 {

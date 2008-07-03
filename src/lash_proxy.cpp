@@ -173,7 +173,7 @@ lash_proxy::dbus_message_hook(
 		}
 
 		me->info_msg((string)"Project '" + project_name + "' renamed to '" + new_project_name + "'.");
-		//me->_app->on_project_renamed(project_name, new_project_name);
+		me->_session_ptr->project_rename(project_name, new_project_name);
 
 		return DBUS_HANDLER_RESULT_HANDLED;
 	}

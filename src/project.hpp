@@ -43,6 +43,10 @@ public:
 	get_comment(
 		string& comment);
 
+	void
+	set_name(
+		const string& name);
+
 private:
 	project_impl * _impl_ptr;
 };

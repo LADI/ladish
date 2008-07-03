@@ -36,8 +36,14 @@ public:
 	project_close(
 		const string& project_name);
 
+	void
+	project_rename(
+		const string& old_name,
+		const string& new_name);
+
 	sigc::signal<void, shared_ptr<project> > _signal_project_added;
 	sigc::signal<void, shared_ptr<project> > _signal_project_closed;
+	sigc::signal<void, shared_ptr<project> > _signal_project_renamed;
 
 private:
 	session_impl * _impl_ptr;

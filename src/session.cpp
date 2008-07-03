@@ -66,3 +66,24 @@ session::project_close(
 		}
 	}
 }
+
+void
+session::project_rename(
+	const string& old_name,
+	const string& new_name)
+{
+	shared_ptr<project> project_ptr;
+	string temp_name;
+
+	for (list<shared_ptr<project> >::iterator iter = _impl_ptr->projects.begin(); iter != _impl_ptr->projects.end(); iter++)
+	{
+		project_ptr = *iter;
+		project_ptr->get_name(temp_name);
+
+		if (temp_name == old_name)
+		{
+			project_ptr->set_name(new_name);
+			_signal_project_renamed.emit(project_ptr);
+		}
+	}
+}
