@@ -24,17 +24,20 @@ struct project_impl
 	string name;
 	time_t modification_time;
 	string comment;
+	bool modified_status;
 };
 
 project::project(
 	const string& name,
 	time_t modification_time,
-	const string& comment)
+	const string& comment,
+	bool modified_status)
 {
 	_impl_ptr = new project_impl;
 	_impl_ptr->name = name;
 	_impl_ptr->modification_time = modification_time;
 	_impl_ptr->comment = comment;
+	_impl_ptr->modified_status = modified_status;
 }
 
 project::~project()
@@ -63,7 +66,13 @@ project::get_modification_time(
 }
 
 void
-get_comment(
+project::get_comment(
 	string& comment)
 {
+}
+
+bool
+project::get_modified_status()
+{
+	return _impl_ptr->modified_status;
 }

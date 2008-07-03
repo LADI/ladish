@@ -41,7 +41,7 @@ void
 session::project_add(
 	const string& project_name)
 {
-	shared_ptr<project> project_ptr(new project(project_name, 0, ""));
+	shared_ptr<project> project_ptr(new project(project_name, 0, "", false));
 
 	_impl_ptr->projects.push_back(project_ptr);
 

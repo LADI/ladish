@@ -27,7 +27,8 @@ public:
 	project(
 		const string& name,
 		time_t modification_time,
-		const string& comment);
+		const string& comment,
+		bool modified_status);
 
 	~project();
 
@@ -46,6 +47,9 @@ public:
 	void
 	set_name(
 		const string& name);
+
+	bool
+	get_modified_status();
 
 private:
 	project_impl * _impl_ptr;

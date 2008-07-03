@@ -197,6 +197,11 @@ project_list_impl::project_added(
 
 	project_ptr->get_name(project_name);
 
+	if (project_ptr->get_modified_status())
+	{
+		project_name += " *";
+	}
+
 	row = *(_model->append());
 	row[_columns.name] = project_name;
 	row[_columns.project_ptr] = project_ptr;
