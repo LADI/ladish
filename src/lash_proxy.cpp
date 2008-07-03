@@ -75,9 +75,10 @@ lash_proxy::dbus_message_hook(
 	void * proxy)
 {
 	const char * project_name;
-	const char *object_name;
-	const char *old_owner;
-	const char *new_owner;
+	const char * new_project_name;
+	const char * object_name;
+	const char * old_owner;
+	const char * new_owner;
 
 	assert(proxy);
 	lash_proxy * me = reinterpret_cast<lash_proxy *>(proxy);
@@ -151,6 +152,25 @@ lash_proxy::dbus_message_hook(
 
 		me->info_msg((string)"Project '" + project_name + "' closed.");
 		me->_app->on_project_closed(project_name);
+
+		return DBUS_HANDLER_RESULT_HANDLED;
+	}
+
+	if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "ProjectNameChanged"))
+	{
+		if (!dbus_message_get_args(
+			    message, &me->_app->_dbus_error,
+			    DBUS_TYPE_STRING, &project_name,
+			    DBUS_TYPE_STRING, &new_project_name,
+			    DBUS_TYPE_INVALID))
+		{
+			me->error_msg(str(boost::format("dbus_message_get_args() failed to extract ProjectNameChanged signal arguments (%s)") % me->_app->_dbus_error.message));
+			dbus_error_free(&me->_app->_dbus_error);
+			return DBUS_HANDLER_RESULT_HANDLED;
+		}
+
+		me->info_msg((string)"Project '" + project_name + "' renamed to '" + new_project_name + "'.");
+		//me->_app->on_project_renamed(project_name, new_project_name);
 
 		return DBUS_HANDLER_RESULT_HANDLED;
 	}
