@@ -89,17 +89,3 @@ session::project_close(
 		}
 	}
 }
-
-void
-session::project_rename(
-	const string& old_name,
-	const string& new_name)
-{
-	shared_ptr<project> project_ptr;
-	project_ptr = find_project_by_name(old_name);
-
-	if (project_ptr)
-	{
-		project_ptr->set_name(new_name);
-	}
-}
