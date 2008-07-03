@@ -62,7 +62,9 @@ session::project_close(
 
 		if (temp_name == project_name)
 		{
+			_impl_ptr->projects.erase(iter);
 			_signal_project_closed.emit(project_ptr);
+			return;
 		}
 	}
 }
