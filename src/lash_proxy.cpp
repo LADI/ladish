@@ -574,6 +574,11 @@ lash_proxy::get_loaded_project_properties(
 					dbus_message_iter_get_basic(&variant_iter, &value_string);
 					properties.description = value_string;
 				}
+				else if (strcmp(key, "Notes") == 0)
+				{
+					dbus_message_iter_get_basic(&variant_iter, &value_string);
+					properties.notes = value_string;
+				}
 				break;
 			}
 		}
