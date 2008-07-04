@@ -30,15 +30,14 @@ struct lash_project_info
 
 class session;
 
+struct lash_proxy_impl;
+
 class lash_proxy
 {
 public:
-	lash_proxy(
-		Patchage* app,
-		session * session_ptr);
+	lash_proxy(session * session_ptr);
 	~lash_proxy();
 
-	void get_loaded_projects(std::list<std::string>& projects);
 	void get_available_projects(std::list<lash_project_info>& projects);
 	void load_project(const std::string& project_name);
 	void save_all_projects();
@@ -47,28 +46,7 @@ public:
 	void close_all_projects();
 
 private:
-	void error_msg(const std::string& msg) const;
-	void info_msg(const std::string& msg) const;
-
-	static
-	DBusHandlerResult
-	dbus_message_hook(
-		DBusConnection * connection,
-		DBusMessage * message,
-		void * proxy);
-
-	bool
-	call(
-		bool response_expected,
-		const char* iface,
-		const char* method,
-		DBusMessage ** reply_ptr_ptr,
-		int in_type,
-		...);
-
-	Patchage* _app;
-	bool _server_responding;
-	session * _session_ptr;
+	lash_proxy_impl * _impl_ptr;
 };
 
 #endif // #ifndef LASH_PROXY_HPP__89E81B38_627F_41B9_AD08_DB119FB5F34C__INCLUDED

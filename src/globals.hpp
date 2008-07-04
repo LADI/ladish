@@ -23,4 +23,8 @@
 extern Glib::RefPtr<Gnome::Glade::Xml> g_xml;
 #endif
 
+#if defined(PATCHAGE_PATCHAGE_HPP)
+extern Patchage * g_app;
+#endif
+
 #endif // #ifndef GLOBALS_HPP__08F1016E_CB85_4758_B5CD_92E0C15F5568__INCLUDED

@@ -30,7 +30,7 @@ public:
 
 	void
 	project_add(
-		const string& project_name);
+		shared_ptr<project> project_ptr);
 
 	void
 	project_close(

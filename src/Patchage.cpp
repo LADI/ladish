@@ -39,6 +39,8 @@
 #include "session.hpp"
 #include "globals.hpp"
 
+Patchage * g_app;
+
 //#define LOG_TO_STD
 #define LOG_TO_STATUS
 
@@ -111,6 +113,8 @@ Patchage::Patchage(int argc, char** argv)
 	, INIT_WIDGET(_zoom_full_but)
 	, INIT_WIDGET(_zoom_normal_but)
 {
+	g_app = this;
+
 	_settings_filename = getenv("HOME");
 	_settings_filename += "/.patchagerc";
 	_state_manager = new StateManager();
@@ -213,7 +217,7 @@ Patchage::Patchage(int argc, char** argv)
 
 	_project_list = new project_list(this, _session);
 
-	_lash = new lash_proxy(this, _session);
+	_lash = new lash_proxy(_session);
 
 	_jack = new jack_proxy(this);
 
