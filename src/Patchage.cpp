@@ -738,6 +738,7 @@ public:
 		}
 
 		_widget->signal_button_press_event().connect(sigc::mem_fun(*this, &load_project_dialog::on_load_project_dialog_button_press_event), false);
+		_widget->signal_key_press_event().connect(sigc::mem_fun(*this, &load_project_dialog::on_load_project_dialog_key_press_event), false);
 
 	loop:
 		result = _dialog->run();
@@ -759,15 +760,35 @@ public:
 	}
 
 private:
+	void
+	load_selected_project()
+	{
+			Glib::RefPtr<Gtk::TreeView::Selection> selection = _widget->get_selection();
+			Glib::ustring name = (*selection->get_selected())[_columns.name];
+			_app->load_project(name);
+			_dialog->hide();
+	}
+
 	bool
 	on_load_project_dialog_button_press_event(GdkEventButton * event_ptr)
 	{
 		if (event_ptr->type == GDK_2BUTTON_PRESS && event_ptr->button == 1)
 		{
-			Glib::RefPtr<Gtk::TreeView::Selection> selection = _widget->get_selection();
-			Glib::ustring name = (*selection->get_selected())[_columns.name];
-			_app->load_project(name);
-			_dialog->hide();
+			load_selected_project();
+			return true;
+		}
+
+		return false;
+	}
+
+	bool
+	on_load_project_dialog_key_press_event(GdkEventKey * event_ptr)
+	{
+		if (event_ptr->type == GDK_KEY_PRESS &&
+				(event_ptr->keyval == GDK_Return ||
+				 event_ptr->keyval == GDK_KP_Enter))
+		{
+			load_selected_project();
 			return true;
 		}
 
