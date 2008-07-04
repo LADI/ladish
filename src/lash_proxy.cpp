@@ -57,11 +57,13 @@ struct lash_proxy_impl
 
 	bool _server_responding;
 	session * _session_ptr;
+	lash_proxy * _interface_ptr;
 };
 
 lash_proxy::lash_proxy(session * session_ptr)
 {
 	_impl_ptr = new lash_proxy_impl;
+	_impl_ptr->_interface_ptr = this;
 	_impl_ptr->_session_ptr = session_ptr;
 	_impl_ptr->init();
 }
@@ -212,7 +214,7 @@ lash_proxy_impl::dbus_message_hook(
 		project_ptr = me->_session_ptr->find_project_by_name(project_name);
 		if (project_ptr)
 		{
-			project_ptr->set_name(new_project_name);
+			project_ptr->on_name_changed(new_project_name);
 		}
 
 		return DBUS_HANDLER_RESULT_HANDLED;
@@ -236,7 +238,7 @@ lash_proxy_impl::dbus_message_hook(
 		project_ptr = me->_session_ptr->find_project_by_name(project_name);
 		if (project_ptr)
 		{
-			project_ptr->set_modified_status(modified_status);
+			project_ptr->on_modified_status_changed(modified_status);
 		}
 
 		return DBUS_HANDLER_RESULT_HANDLED;
@@ -311,7 +313,7 @@ unref:
 void
 lash_proxy_impl::on_project_added(string name)
 {
-	shared_ptr<project> project_ptr(new project(name, 0, "", false));
+	shared_ptr<project> project_ptr(new project(_interface_ptr, name));
 
 	_session_ptr->project_add(project_ptr);
 }
@@ -460,6 +462,33 @@ lash_proxy::close_all_projects()
 	DBusMessage * reply_ptr;
 
 	if (!_impl_ptr->call(true, LASH_IFACE_CONTROL, "Clear", &reply_ptr, DBUS_TYPE_INVALID))
+	{
+		return;
+	}
+
+	dbus_message_unref(reply_ptr);
+}
+
+void
+lash_proxy::project_rename(
+	const string& old_name,
+	const string& new_name)
+{
+	DBusMessage * reply_ptr;
+	const char * old_name_cstr;
+	const char * new_name_cstr;
+
+	old_name_cstr = old_name.c_str();
+	new_name_cstr = new_name.c_str();
+
+	if (!_impl_ptr->call(
+		    true,
+		    LASH_IFACE_CONTROL,
+		    "RenameProject",
+		    &reply_ptr,
+		    DBUS_TYPE_STRING, &old_name_cstr,
+		    DBUS_TYPE_STRING, &new_name_cstr,
+		    DBUS_TYPE_INVALID))
 	{
 		return;
 	}

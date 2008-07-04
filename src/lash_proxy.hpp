@@ -44,6 +44,7 @@ public:
 	void save_project(const std::string& project_name);
 	void close_project(const std::string& project_name);
 	void close_all_projects();
+	void project_rename(const string& old_name, const string& new_name);
 
 private:
 	lash_proxy_impl * _impl_ptr;

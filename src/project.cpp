@@ -18,26 +18,25 @@
 
 #include "common.hpp"
 #include "project.hpp"
+#include "lash_proxy.hpp"
 
 struct project_impl
 {
+	lash_proxy * lash_ptr;
 	string name;
-	time_t modification_time;
 	string comment;
 	bool modified_status;
 };
 
 project::project(
-	const string& name,
-	time_t modification_time,
-	const string& comment,
-	bool modified_status)
+	lash_proxy * lash_ptr,
+	const string& name)
 {
 	_impl_ptr = new project_impl;
+	_impl_ptr->lash_ptr = lash_ptr;
 	_impl_ptr->name = name;
-	_impl_ptr->modification_time = modification_time;
-	_impl_ptr->comment = comment;
-	_impl_ptr->modified_status = modified_status;
+	_impl_ptr->comment = "";			// not implemented
+	_impl_ptr->modified_status = false;	// not implemented
 }
 
 project::~project()
@@ -53,17 +52,11 @@ project::get_name(
 }
 
 void
-project::set_name(
+project::on_name_changed(
 	const string& name)
 {
 	_impl_ptr->name = name;
 	_signal_renamed.emit();
-}
-
-void
-project::get_modification_time(
-	time_t& modification_time)
-{
 }
 
 void
@@ -79,9 +72,16 @@ project::get_modified_status()
 }
 
 bool
-project::set_modified_status(
+project::on_modified_status_changed(
 	bool modified_status)
 {
 	_impl_ptr->modified_status = modified_status;
 	_signal_modified_status_changed.emit();
+}
+
+void
+project::do_rename(
+	const string& name)
+{
+	_impl_ptr->lash_ptr->project_rename(_impl_ptr->name, name);
 }

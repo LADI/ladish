@@ -20,15 +20,15 @@
 #define PROJECT_HPP__C1D5778B_7D4B_4DD7_9B27_657D79B53083__INCLUDED
 
 struct project_impl;
+class lash_proxy;
+class lash_proxy_impl;
 
 class project
 {
 public:
 	project(
-		const string& name,
-		time_t modification_time,
-		const string& comment,
-		bool modified_status);
+		lash_proxy * lash_ptr,
+		const string& name);
 
 	~project();
 
@@ -37,28 +37,30 @@ public:
 		string& name);
 
 	void
-	get_modification_time(
-		time_t& modification_time);
-
-	void
 	get_comment(
 		string& comment);
-
-	void
-	set_name(
-		const string& name);
 
 	bool
 	get_modified_status();
 
-	bool
-	set_modified_status(
-		bool modified_status);
+	void
+	do_rename(
+		const string& name);
 
 	signal<void> _signal_renamed;
 	signal<void> _signal_modified_status_changed;
 
 private:
+	friend class lash_proxy_impl;
+
+	void
+	on_name_changed(
+		const string& name);
+
+	bool
+	on_modified_status_changed(
+		bool modified_status);
+
 	project_impl * _impl_ptr;
 };
 

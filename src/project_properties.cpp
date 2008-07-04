@@ -57,7 +57,7 @@ project_properties_dialog::run(
 	result = _impl_ptr->_dialog->run();
 	if (result == 2)
 	{
-		//project_ptr->set_name(_impl_ptr->_name->get_text());
+		project_ptr->do_rename(_impl_ptr->_name->get_text());
 	}
 
 	_impl_ptr->_dialog->hide();
