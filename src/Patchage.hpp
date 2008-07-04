@@ -121,8 +121,6 @@ protected:
 
 	void buffer_size_changed();
 	
-	Glib::RefPtr<Gnome::Glade::Xml> xml;
-
 	Widget<Gtk::MenuItem> _menu_open_session;
 	Widget<Gtk::MenuItem> _menu_save_session;
 	Widget<Gtk::MenuItem> _menu_save_session_as;

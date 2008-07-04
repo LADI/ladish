@@ -21,6 +21,9 @@ patchage_SOURCES = \
 	Widget.hpp \
 	main.cpp
 
+patchage_SOURCES += common.hpp
+patchage_SOURCES += globals.hpp
+
 AM_CXXFLAGS += @DBUS_CFLAGS@
 patchage_SOURCES += jack_proxy.cpp
 patchage_SOURCES += jack_proxy.hpp
@@ -37,3 +40,6 @@ patchage_SOURCES += project.hpp
 
 patchage_SOURCES += session.cpp
 patchage_SOURCES += session.hpp
+
+patchage_SOURCES += project_properties.cpp
+patchage_SOURCES += project_properties.hpp

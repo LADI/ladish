@@ -16,26 +16,21 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef PROJECT_LIST_HPP__D786489B_E400_4E92_85C7_2BAE606DE56D__INCLUDED
-#define PROJECT_LIST_HPP__D786489B_E400_4E92_85C7_2BAE606DE56D__INCLUDED
+#ifndef PROJECT_PROPERTIES_HPP__B854A265_3660_4DAA_87E7_104020C5962D__INCLUDED
+#define PROJECT_PROPERTIES_HPP__B854A265_3660_4DAA_87E7_104020C5962D__INCLUDED
 
-struct project_list_impl;
-class Patchage;
-class session;
+struct project_properties_dialog_impl;
 
-class project_list
+class project_properties_dialog
 {
 public:
-	project_list(
-		Patchage* app,
-		session * session_ptr);
+	project_properties_dialog();
+	~project_properties_dialog();
 
-	~project_list();
-
-	void set_lash_availability(bool lash_active);
+	void run(shared_ptr<project> project_ptr);
 
 private:
-	project_list_impl * _impl_ptr;
+	project_properties_dialog_impl * _impl_ptr;
 };
 
-#endif // #ifndef PROJECT_LIST_HPP__D786489B_E400_4E92_85C7_2BAE606DE56D__INCLUDED
+#endif // #ifndef PROJECT_PROPERTIES_HPP__B854A265_3660_4DAA_87E7_104020C5962D__INCLUDED

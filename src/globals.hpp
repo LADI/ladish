@@ -16,26 +16,11 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef PROJECT_LIST_HPP__D786489B_E400_4E92_85C7_2BAE606DE56D__INCLUDED
-#define PROJECT_LIST_HPP__D786489B_E400_4E92_85C7_2BAE606DE56D__INCLUDED
+#ifndef GLOBALS_HPP__08F1016E_CB85_4758_B5CD_92E0C15F5568__INCLUDED
+#define GLOBALS_HPP__08F1016E_CB85_4758_B5CD_92E0C15F5568__INCLUDED
 
-struct project_list_impl;
-class Patchage;
-class session;
+#if defined(PATCHAGE_WIDGET_HPP)
+extern Glib::RefPtr<Gnome::Glade::Xml> g_xml;
+#endif
 
-class project_list
-{
-public:
-	project_list(
-		Patchage* app,
-		session * session_ptr);
-
-	~project_list();
-
-	void set_lash_availability(bool lash_active);
-
-private:
-	project_list_impl * _impl_ptr;
-};
-
-#endif // #ifndef PROJECT_LIST_HPP__D786489B_E400_4E92_85C7_2BAE606DE56D__INCLUDED
+#endif // #ifndef GLOBALS_HPP__08F1016E_CB85_4758_B5CD_92E0C15F5568__INCLUDED

@@ -26,6 +26,8 @@
 #include "Patchage.hpp"
 #include "session.hpp"
 #include "project.hpp"
+#include "project_properties.hpp"
+#include "globals.hpp"
 
 struct project_list_column_record : public Gtk::TreeModel::ColumnRecord
 {
@@ -55,15 +57,15 @@ struct project_list_impl : public sigc::trackable
 	void on_menu_popup_save_all_projects();
 	void on_menu_popup_save_project(const Glib::ustring& project_name);
 	void on_menu_popup_close_project(const Glib::ustring& project_name);
+	void on_menu_popup_project_properties(shared_ptr<project> project_ptr);
 	void on_menu_popup_close_all_projects();
 };
 
 project_list::project_list(
-	Glib::RefPtr<Gnome::Glade::Xml> xml,
 	Patchage * app,
 	session * session_ptr)
 {
-	_impl_ptr = new project_list_impl(xml, app);
+	_impl_ptr = new project_list_impl(g_xml, app);
 	session_ptr->_signal_project_added.connect(mem_fun(_impl_ptr, &project_list_impl::project_added));
 	session_ptr->_signal_project_closed.connect(mem_fun(_impl_ptr, &project_list_impl::project_closed));
 }
@@ -120,7 +122,9 @@ project_list_impl::on_button_press_event(GdkEventButton * event_ptr)
 			selection->unselect_all();
 			selection->select(path);
 
-			Glib::ustring name = (*selection->get_selected())[_columns.name];
+			Gtk::TreeIter iter = selection->get_selected();
+			Glib::ustring name = (*iter)[_columns.name];
+			shared_ptr<project> project_ptr = (*iter)[_columns.project_ptr];
 
 			menulist.push_back(
 				Gtk::Menu_Helpers::MenuElem(
@@ -138,6 +142,15 @@ project_list_impl::on_button_press_event(GdkEventButton * event_ptr)
 							*this,
 							&project_list_impl::on_menu_popup_close_project),
 						name)));
+
+			menulist.push_back(
+				Gtk::Menu_Helpers::MenuElem(
+					(string)"_Project '" + name + "' properties",
+					sigc::bind(
+						sigc::mem_fun(
+							*this,
+							&project_list_impl::on_menu_popup_project_properties),
+						project_ptr)));
 		}
 		else
 		{
@@ -179,6 +192,15 @@ project_list_impl::on_menu_popup_close_project(
 	const Glib::ustring& project_name)
 {
 	_app->close_project(project_name);
+}
+
+void
+project_list_impl::on_menu_popup_project_properties(
+	shared_ptr<project> project_ptr)
+{
+	project_properties_dialog dialog;
+
+	dialog.run(project_ptr);
 }
 
 void

@@ -29,7 +29,6 @@
 
 #include CONFIG_H_PATH
 #include "common.hpp"
-#include "GladeFile.hpp"
 #include "jack_proxy.hpp"
 #include "JackSettingsDialog.hpp"
 #include "Patchage.hpp"
@@ -38,6 +37,7 @@
 #include "lash_proxy.hpp"
 #include "project_list.hpp"
 #include "session.hpp"
+#include "globals.hpp"
 
 //#define LOG_TO_STD
 #define LOG_TO_STATUS
@@ -77,11 +77,10 @@ gtkmm_set_width_for_given_text (Gtk::Widget &w, const gchar *text,
 /* end Gtk helpers */
 
 
-#define INIT_WIDGET(x) x(xml, ((const char*)#x) + 1)
+#define INIT_WIDGET(x) x(g_xml, ((const char*)#x) + 1)
 
 Patchage::Patchage(int argc, char** argv)
-	: xml(GladeFile::open("patchage"))
-	, INIT_WIDGET(_menu_open_session)
+	: INIT_WIDGET(_menu_open_session)
 	, INIT_WIDGET(_menu_save_session)
 	, INIT_WIDGET(_menu_save_session_as)
 	, INIT_WIDGET(_menu_close_session)
@@ -212,7 +211,7 @@ Patchage::Patchage(int argc, char** argv)
 
 	_session = new session();
 
-	_project_list = new project_list(xml, this, _session);
+	_project_list = new project_list(this, _session);
 
 	_lash = new lash_proxy(this, _session);
 
@@ -700,12 +699,11 @@ class load_project_dialog
 {
 public:
 	load_project_dialog(
-		Glib::RefPtr<Gnome::Glade::Xml> xml,
 		Patchage *app)
 		: _app(app)
 	{
-		_dialog.init(xml, "load_project_dialog");
-		_widget.init(xml, "loadable_projects_list");
+		_dialog.init(g_xml, "load_project_dialog");
+		_widget.init(g_xml, "loadable_projects_list");
 
 		_columns.add(_columns.name);
 		_columns.add(_columns.modified);
@@ -806,7 +804,7 @@ void
 Patchage::load_project_ask()
 {
 	std::list<lash_project_info> projects;
-	load_project_dialog dialog(xml, this);
+	load_project_dialog dialog(this);
 
 	_lash->get_available_projects(projects);
 

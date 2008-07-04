@@ -22,6 +22,10 @@
 #include <glibmm/exception.h>
 
 #include "Patchage.hpp"
+#include "GladeFile.hpp"
+#include "globals.hpp"
+
+Glib::RefPtr<Gnome::Glade::Xml> g_xml;
 
 int main(int argc, char** argv)
 {
@@ -31,6 +35,8 @@ int main(int argc, char** argv)
 
 	Gnome::Canvas::init();
 	Gtk::Main app(argc, argv);
+
+	g_xml = GladeFile::open("patchage");
 	
 	Patchage patchage(argc, argv);
 	app.run(*patchage.window());
