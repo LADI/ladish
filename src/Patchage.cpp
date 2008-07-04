@@ -638,7 +638,7 @@ struct loadable_project_list_column_record : public Gtk::TreeModel::ColumnRecord
 {
 	Gtk::TreeModelColumn<Glib::ustring> name;
 	Gtk::TreeModelColumn<Glib::ustring> modified;
-	Gtk::TreeModelColumn<Glib::ustring> comment;
+	Gtk::TreeModelColumn<Glib::ustring> description;
 };
 
 static
@@ -711,7 +711,7 @@ public:
 
 		_columns.add(_columns.name);
 		_columns.add(_columns.modified);
-		_columns.add(_columns.comment);
+		_columns.add(_columns.description);
 
 		_model = Gtk::ListStore::create(_columns);
 		_widget->set_model(_model);
@@ -719,7 +719,7 @@ public:
 		_widget->remove_all_columns();
 		_widget->append_column("Project Name", _columns.name);
 		_widget->append_column("Modified", _columns.modified);
-		_widget->append_column("Comment", _columns.comment);
+		_widget->append_column("Description", _columns.description);
 	}
 
 	void
@@ -736,7 +736,7 @@ public:
 			row[_columns.name] = iter->name;
 			convert_timestamp_to_string(iter->modification_time, str);
 			row[_columns.modified] = str;
-			row[_columns.comment] = iter->comment;
+			row[_columns.description] = iter->description;
 		}
 
 		_widget->signal_button_press_event().connect(sigc::mem_fun(*this, &load_project_dialog::on_load_project_dialog_button_press_event), false);

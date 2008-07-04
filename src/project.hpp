@@ -37,8 +37,12 @@ public:
 		string& name);
 
 	void
-	get_comment(
-		string& comment);
+	get_description(
+		string& description);
+
+	void
+	get_notes(
+		string& notes);
 
 	bool
 	get_modified_status();
@@ -46,6 +50,14 @@ public:
 	void
 	do_rename(
 		const string& name);
+
+	void
+	do_change_description(
+		const string& description);
+
+	void
+	do_change_notes(
+		const string& notes);
 
 	signal<void> _signal_renamed;
 	signal<void> _signal_modified_status_changed;

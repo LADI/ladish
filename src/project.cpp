@@ -24,7 +24,8 @@ struct project_impl
 {
 	lash_proxy * lash_ptr;
 	string name;
-	string comment;
+	string description;
+	string notes;
 	bool modified_status;
 };
 
@@ -40,7 +41,8 @@ project::project(
 	_impl_ptr->lash_ptr = lash_ptr;
 	_impl_ptr->name = name;
 
-	_impl_ptr->comment = properties.comment;
+	_impl_ptr->description = properties.description;
+	_impl_ptr->notes = properties.notes;
 	_impl_ptr->modified_status = properties.modified_status;
 }
 
@@ -65,9 +67,17 @@ project::on_name_changed(
 }
 
 void
-project::get_comment(
-	string& comment)
+project::get_description(
+	string& description)
 {
+	description = _impl_ptr->description;
+}
+
+void
+project::get_notes(
+	string& notes)
+{
+	notes = _impl_ptr->notes;
 }
 
 bool
@@ -88,5 +98,28 @@ void
 project::do_rename(
 	const string& name)
 {
-	_impl_ptr->lash_ptr->project_rename(_impl_ptr->name, name);
+	if (_impl_ptr->name != name)
+	{
+		_impl_ptr->lash_ptr->project_rename(_impl_ptr->name, name);
+	}
+}
+
+void
+project::do_change_description(
+	const string& description)
+{
+	if (_impl_ptr->description != description)
+	{
+		_impl_ptr->lash_ptr->project_set_description(_impl_ptr->name, description);
+	}
+}
+
+void
+project::do_change_notes(
+	const string& notes)
+{
+	if (_impl_ptr->notes != notes)
+	{
+		_impl_ptr->lash_ptr->project_set_notes(_impl_ptr->name, notes);
+	}
 }

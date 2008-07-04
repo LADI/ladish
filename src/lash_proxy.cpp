@@ -334,6 +334,7 @@ lash_proxy::get_available_projects(
 	const char * key;
 	const char * value_type;
 	dbus_uint32_t value_uint32;
+ 	const char * value_string;
 	lash_project_info project_info;
 
 	if (!_impl_ptr->call(true, LASH_IFACE_CONTROL, "GetProjects", &reply_ptr, DBUS_TYPE_INVALID))
@@ -361,6 +362,7 @@ lash_proxy::get_available_projects(
 
 		project_info.name = project_name;
 		project_info.modification_time = 0;
+		project_info.description.erase();
 
 		dbus_message_iter_next(&struct_iter);
 
@@ -378,8 +380,18 @@ lash_proxy::get_available_projects(
 				switch (*value_type)
 				{
 				case DBUS_TYPE_UINT32:
-					dbus_message_iter_get_basic(&variant_iter, &value_uint32);
-					project_info.modification_time = value_uint32;
+					if (strcmp(key, "Modification Time") == 0)
+					{
+						dbus_message_iter_get_basic(&variant_iter, &value_uint32);
+						project_info.modification_time = value_uint32;
+					}
+					break;
+				case DBUS_TYPE_STRING:
+					if (strcmp(key, "Description") == 0)
+					{
+						dbus_message_iter_get_basic(&variant_iter, &value_string);
+						project_info.description = value_string;
+					}
 					break;
 				}
 			}
@@ -550,17 +562,17 @@ lash_proxy::get_loaded_project_properties(
 			switch (*value_type)
 			{
 			case DBUS_TYPE_BOOLEAN:
-				if (strcmp(key, "Modified Status"))
+				if (strcmp(key, "Modified Status") == 0)
 				{
 					dbus_message_iter_get_basic(&variant_iter, &value_bool);
 					properties.modified_status = value_bool;
 				}
 				break;
 			case DBUS_TYPE_STRING:
-				if (strcmp(key, "Comment"))
+				if (strcmp(key, "Description") == 0)
 				{
 					dbus_message_iter_get_basic(&variant_iter, &value_string);
-					properties.modified_status = value_string;
+					properties.description = value_string;
 				}
 				break;
 			}
@@ -568,5 +580,59 @@ lash_proxy::get_loaded_project_properties(
 	}
 
 unref:
+	dbus_message_unref(reply_ptr);
+}
+
+void
+lash_proxy::project_set_description(
+	const string& project_name,
+	const string& description)
+{
+	DBusMessage * reply_ptr;
+	const char * project_name_cstr;
+	const char * description_cstr;
+
+	project_name_cstr = project_name.c_str();
+	description_cstr = description.c_str();
+
+	if (!_impl_ptr->call(
+		    true,
+		    LASH_IFACE_CONTROL,
+		    "SetLoadedProjectDescription",
+		    &reply_ptr,
+		    DBUS_TYPE_STRING, &project_name_cstr,
+		    DBUS_TYPE_STRING, &description_cstr,
+		    DBUS_TYPE_INVALID))
+	{
+		return;
+	}
+
+	dbus_message_unref(reply_ptr);
+}
+
+void
+lash_proxy::project_set_notes(
+	const string& project_name,
+	const string& notes)
+{
+	DBusMessage * reply_ptr;
+	const char * project_name_cstr;
+	const char * notes_cstr;
+
+	project_name_cstr = project_name.c_str();
+	notes_cstr = notes.c_str();
+
+	if (!_impl_ptr->call(
+		    true,
+		    LASH_IFACE_CONTROL,
+		    "SetLoadedProjectNotes",
+		    &reply_ptr,
+		    DBUS_TYPE_STRING, &project_name_cstr,
+		    DBUS_TYPE_STRING, &notes_cstr,
+		    DBUS_TYPE_INVALID))
+	{
+		return;
+	}
+
 	dbus_message_unref(reply_ptr);
 }
