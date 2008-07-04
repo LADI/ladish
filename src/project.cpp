@@ -32,11 +32,16 @@ project::project(
 	lash_proxy * lash_ptr,
 	const string& name)
 {
+	lash_loaded_project_properties properties;
+
+	lash_ptr->get_loaded_project_properties(name, properties);
+
 	_impl_ptr = new project_impl;
 	_impl_ptr->lash_ptr = lash_ptr;
 	_impl_ptr->name = name;
-	_impl_ptr->comment = "";			// not implemented
-	_impl_ptr->modified_status = false;	// not implemented
+
+	_impl_ptr->comment = properties.comment;
+	_impl_ptr->modified_status = properties.modified_status;
 }
 
 project::~project()

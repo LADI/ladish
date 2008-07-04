@@ -495,3 +495,78 @@ lash_proxy::project_rename(
 
 	dbus_message_unref(reply_ptr);
 }
+
+void
+lash_proxy::get_loaded_project_properties(
+	const string& name,
+	lash_loaded_project_properties& properties)
+{
+ 	DBusMessage * reply_ptr;
+ 	const char * reply_signature;
+ 	DBusMessageIter iter;
+ 	DBusMessageIter dict_iter;
+ 	DBusMessageIter dict_entry_iter;
+ 	DBusMessageIter variant_iter;
+ 	const char * key;
+ 	const char * value_type;
+ 	dbus_bool_t value_bool;
+ 	const char * value_string;
+ 	const char * project_name_cstr;
+
+	project_name_cstr = name.c_str();
+
+	if (!_impl_ptr->call(
+		    true,
+		    LASH_IFACE_CONTROL,
+		    "GetLoadedProjectProperties",
+		    &reply_ptr,
+		    DBUS_TYPE_STRING, &project_name_cstr,
+		    DBUS_TYPE_INVALID))
+	{
+		return;
+	}
+
+	reply_signature = dbus_message_get_signature(reply_ptr);
+
+	if (strcmp(reply_signature, "a{sv}") != 0)
+	{
+		lash_proxy_impl::error_msg((string)"GetLoadedProjectProperties() reply signature mismatch. " + reply_signature);
+		goto unref;
+	}
+
+	dbus_message_iter_init(reply_ptr, &iter);
+
+	for (dbus_message_iter_recurse(&iter, &dict_iter);
+	     dbus_message_iter_get_arg_type(&dict_iter) != DBUS_TYPE_INVALID;
+	     dbus_message_iter_next(&dict_iter))
+	{
+		dbus_message_iter_recurse(&dict_iter, &dict_entry_iter);
+		dbus_message_iter_get_basic(&dict_entry_iter, &key);
+		dbus_message_iter_next(&dict_entry_iter);
+		dbus_message_iter_recurse(&dict_entry_iter, &variant_iter);
+		value_type = dbus_message_iter_get_signature(&variant_iter);
+		if (value_type[0] != 0 && value_type[1] == 0)
+		{
+			switch (*value_type)
+			{
+			case DBUS_TYPE_BOOLEAN:
+				if (strcmp(key, "Modified Status"))
+				{
+					dbus_message_iter_get_basic(&variant_iter, &value_bool);
+					properties.modified_status = value_bool;
+				}
+				break;
+			case DBUS_TYPE_STRING:
+				if (strcmp(key, "Comment"))
+				{
+					dbus_message_iter_get_basic(&variant_iter, &value_string);
+					properties.modified_status = value_string;
+				}
+				break;
+			}
+		}
+	}
+
+unref:
+	dbus_message_unref(reply_ptr);
+}

@@ -23,9 +23,15 @@
 
 struct lash_project_info
 {
-	std::string name;
+	string name;
 	time_t modification_time;
-	std::string comment;
+	string comment;
+};
+
+struct lash_loaded_project_properties
+{
+	bool modified_status;
+	string comment;
 };
 
 class session;
@@ -45,6 +51,7 @@ public:
 	void close_project(const std::string& project_name);
 	void close_all_projects();
 	void project_rename(const string& old_name, const string& new_name);
+	void get_loaded_project_properties(const string& name, lash_loaded_project_properties& properties);
 
 private:
 	lash_proxy_impl * _impl_ptr;
