@@ -27,6 +27,7 @@
 #include "session.hpp"
 #include "project.hpp"
 #include "project_properties.hpp"
+#include "lash_client.hpp"
 #include "globals.hpp"
 
 struct project_list_column_record : public Gtk::TreeModel::ColumnRecord
@@ -40,7 +41,7 @@ struct project_list_impl : public sigc::trackable
 	Patchage *_app;
 	Widget<Gtk::TreeView> _widget;
 	project_list_column_record _columns;
-	Glib::RefPtr<Gtk::ListStore> _model;
+	Glib::RefPtr<Gtk::TreeStore> _model;
 	Gtk::Menu _menu_popup;
 
 	project_list_impl(
@@ -49,7 +50,9 @@ struct project_list_impl : public sigc::trackable
 
 	void project_added(shared_ptr<project> project_ptr);
 	void project_closed(shared_ptr<project> project_ptr);
-	void project_renamed(Gtk::TreeModel::iterator ref);
+	void project_renamed(Gtk::TreeModel::iterator iter);
+	void client_added(shared_ptr<lash_client> client_ptr, Gtk::TreeModel::iterator iter);
+	void client_removed(shared_ptr<lash_client> client_ptr, Gtk::TreeModel::iterator iter);
 
 	bool on_button_press_event(GdkEventButton * event);
 
@@ -85,7 +88,7 @@ project_list_impl::project_list_impl(
 	_columns.add(_columns.name);
 	_columns.add(_columns.project_ptr);
 
-	_model = Gtk::ListStore::create(_columns);
+	_model = Gtk::TreeStore::create(_columns);
 	_widget->set_model(_model);
 
 	_widget->append_column("Project Name", _columns.name);
@@ -222,6 +225,7 @@ project_list_impl::project_added(
 	shared_ptr<project> project_ptr)
 {
 	Gtk::TreeModel::iterator iter;
+	Gtk::TreeModel::iterator child_iter;
 	Gtk::TreeModel::Row row;
 	string project_name;
 
@@ -239,6 +243,8 @@ project_list_impl::project_added(
 
 	project_ptr->_signal_renamed.connect(bind(mem_fun(this, &project_list_impl::project_renamed), iter));
 	project_ptr->_signal_modified_status_changed.connect(bind(mem_fun(this, &project_list_impl::project_renamed), iter));
+	project_ptr->_signal_client_added.connect(bind(mem_fun(this, &project_list_impl::client_added), iter));
+	project_ptr->_signal_client_removed.connect(bind(mem_fun(this, &project_list_impl::client_removed), iter));
 }
 
 void
@@ -283,6 +289,47 @@ project_list_impl::project_renamed(
 	}
 
 	row[_columns.name] = project_name;
+}
+
+void
+project_list_impl::client_added(
+	shared_ptr<lash_client> client_ptr,
+	Gtk::TreeModel::iterator iter)
+{
+	string name;
+
+	Gtk::TreeModel::Row row = *iter;
+
+	client_ptr->get_name(name);
+
+	iter = _model->append(row.children());
+	row = *iter;
+	row[_columns.name] = name;
+}
+
+void
+project_list_impl::client_removed(
+	shared_ptr<lash_client> client_ptr,
+	Gtk::TreeModel::iterator iter)
+{
+	string name;
+
+	Gtk::TreeModel::Row row = *iter;
+
+	client_ptr->get_name(name);
+
+	Gtk::TreeNodeChildren childs = row.children();
+
+	for (Gtk::TreeModel::iterator child_iter = childs.begin(); iter != childs.end(); child_iter++)
+	{
+		row = *child_iter;
+
+		if (row[_columns.name] == name)
+		{
+			_model->erase(child_iter);
+			return;
+		}
+	}
 }
 
 void
