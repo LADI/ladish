@@ -41,5 +41,8 @@ patchage_SOURCES += project.hpp
 patchage_SOURCES += session.cpp
 patchage_SOURCES += session.hpp
 
+patchage_SOURCES += lash_client.cpp
+patchage_SOURCES += lash_client.hpp
+
 patchage_SOURCES += project_properties.cpp
 patchage_SOURCES += project_properties.hpp
