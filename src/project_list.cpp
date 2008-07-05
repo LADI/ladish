@@ -91,7 +91,7 @@ project_list_impl::project_list_impl(
 	_model = Gtk::TreeStore::create(_columns);
 	_widget->set_model(_model);
 
-	_widget->append_column("Project Name", _columns.name);
+	_widget->append_column("LASH projects", _columns.name);
 
 	_menu_popup.accelerate(*_widget);
 
@@ -297,7 +297,7 @@ project_list_impl::client_added(
 	Gtk::TreeModel::iterator iter)
 {
 	string name;
-
+	Gtk::TreeModel::Path path = _model->get_path(iter);
 	Gtk::TreeModel::Row row = *iter;
 
 	client_ptr->get_name(name);
@@ -305,6 +305,8 @@ project_list_impl::client_added(
 	iter = _model->append(row.children());
 	row = *iter;
 	row[_columns.name] = name;
+
+	_widget->expand_row(path, false);
 }
 
 void
@@ -313,7 +315,7 @@ project_list_impl::client_removed(
 	Gtk::TreeModel::iterator iter)
 {
 	string name;
-
+	Gtk::TreeModel::Path path = _model->get_path(iter);
 	Gtk::TreeModel::Row row = *iter;
 
 	client_ptr->get_name(name);
@@ -326,6 +328,7 @@ project_list_impl::client_removed(
 
 		if (row[_columns.name] == name)
 		{
+			_widget->expand_row(path, false);
 			_model->erase(child_iter);
 			return;
 		}
