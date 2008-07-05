@@ -20,6 +20,7 @@
 #include "lash_proxy.hpp"
 #include "session.hpp"
 #include "project.hpp"
+#include "lash_client.hpp"
 #include "globals.hpp"
 
 #define LASH_SERVICE       "org.nongnu.LASH"
@@ -85,6 +86,9 @@ lash_proxy_impl::init()
 	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectModifiedStatusChanged", NULL);
 	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectDescriptionChanged", NULL);
 	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectNotesChanged", NULL);
+	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ClientAdded", NULL);
+	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ClientRemoved", NULL);
+	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ClientNameChanged", NULL);
 
 	dbus_connection_add_filter(g_app->_dbus_connection, dbus_message_hook, this, NULL);
 
@@ -120,8 +124,11 @@ lash_proxy_impl::dbus_message_hook(
 	const char * old_owner;
 	const char * new_owner;
 	const char * value_string;
+	const char * client_id;
+	const char * client_name;
 	dbus_bool_t modified_status;
 	shared_ptr<project> project_ptr;
+	shared_ptr<lash_client> client_ptr;
 
 	assert(proxy);
 	lash_proxy_impl * me = reinterpret_cast<lash_proxy_impl *>(proxy);
@@ -198,6 +205,7 @@ lash_proxy_impl::dbus_message_hook(
 
 		return DBUS_HANDLER_RESULT_HANDLED;
 	}
+
 
 	if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "ProjectNameChanged"))
 	{
@@ -290,6 +298,86 @@ lash_proxy_impl::dbus_message_hook(
 		if (project_ptr)
 		{
 			project_ptr->on_notes_changed(value_string);
+		}
+
+		return DBUS_HANDLER_RESULT_HANDLED;
+	}
+
+	if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "ClientAdded"))
+	{
+		if (!dbus_message_get_args(
+			    message, &g_app->_dbus_error,
+			    DBUS_TYPE_STRING, &project_name,
+			    DBUS_TYPE_STRING, &client_id,
+			    DBUS_TYPE_STRING, &client_name,
+			    DBUS_TYPE_INVALID))
+		{
+			error_msg(str(boost::format("dbus_message_get_args() failed to extract ClientAdded signal arguments (%s)") % g_app->_dbus_error.message));
+			dbus_error_free(&g_app->_dbus_error);
+			return DBUS_HANDLER_RESULT_HANDLED;
+		}
+
+		info_msg((string)"Client '" + client_id + "':'" + client_name + "' added to project '" + project_name + "'.");
+
+		project_ptr = me->_session_ptr->find_project_by_name(project_name);
+		if (project_ptr)
+		{
+			client_ptr = shared_ptr<lash_client>(
+				new lash_client(
+					me->_interface_ptr,
+					project_ptr.get(),
+					client_id,
+					client_name));
+			project_ptr->on_client_added(client_ptr);
+			me->_session_ptr->client_add(client_ptr);
+		}
+
+		return DBUS_HANDLER_RESULT_HANDLED;
+	}
+
+	if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "ClientRemoved"))
+	{
+		if (!dbus_message_get_args(
+			    message, &g_app->_dbus_error,
+			    DBUS_TYPE_STRING, &client_id,
+			    DBUS_TYPE_INVALID))
+		{
+			error_msg(str(boost::format("dbus_message_get_args() failed to extract ClientRemoved signal arguments (%s)") % g_app->_dbus_error.message));
+			dbus_error_free(&g_app->_dbus_error);
+			return DBUS_HANDLER_RESULT_HANDLED;
+		}
+
+		info_msg((string)"Client '" + client_id + "' removed.");
+
+		client_ptr = me->_session_ptr->find_client_by_id(client_id);
+		if (client_ptr)
+		{
+			client_ptr->get_project()->on_client_removed(client_id);
+			me->_session_ptr->client_remove(client_id);
+		}
+
+		return DBUS_HANDLER_RESULT_HANDLED;
+	}
+
+	if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "ClientNameChanged"))
+	{
+		if (!dbus_message_get_args(
+			    message, &g_app->_dbus_error,
+			    DBUS_TYPE_STRING, &client_id,
+			    DBUS_TYPE_STRING, &client_name,
+			    DBUS_TYPE_INVALID))
+		{
+			error_msg(str(boost::format("dbus_message_get_args() failed to extract ClientNameChanged signal arguments (%s)") % g_app->_dbus_error.message));
+			dbus_error_free(&g_app->_dbus_error);
+			return DBUS_HANDLER_RESULT_HANDLED;
+		}
+
+		info_msg((string)"Client '" + client_id + "' name changed to '" + client_name + "'.");
+
+		client_ptr = me->_session_ptr->find_client_by_id(client_id);
+		if (client_ptr)
+		{
+			client_ptr->on_name_changed(client_name);
 		}
 
 		return DBUS_HANDLER_RESULT_HANDLED;

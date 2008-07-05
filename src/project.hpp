@@ -22,6 +22,7 @@
 struct project_impl;
 class lash_proxy;
 class lash_proxy_impl;
+class lash_client;
 
 class project
 {
@@ -48,6 +49,10 @@ public:
 	get_modified_status();
 
 	void
+	get_clients(
+		list<shared_ptr<lash_client> >& clients);
+
+	void
 	do_rename(
 		const string& name);
 
@@ -63,6 +68,8 @@ public:
 	signal<void> _signal_modified_status_changed;
 	signal<void> _signal_description_changed;
 	signal<void> _signal_notes_changed;
+	signal<void, shared_ptr<lash_client> > _signal_client_added;
+	signal<void, shared_ptr<lash_client> > _signal_client_removed;
 
 private:
 	friend class lash_proxy_impl;
@@ -82,6 +89,14 @@ private:
 	void
 	on_notes_changed(
 		const string& notes);
+
+	void
+	on_client_added(
+		shared_ptr<lash_client> client_ptr);
+
+	void
+	on_client_removed(
+		const string& id);
 
 	project_impl * _impl_ptr;
 };

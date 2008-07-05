@@ -21,6 +21,7 @@
 
 struct session_impl;
 class project;
+class lash_client;
 
 class session
 {
@@ -37,6 +38,16 @@ public:
 		const string& project_name);
 
 	shared_ptr<project> find_project_by_name(const string& name);
+
+	void
+	client_add(
+		shared_ptr<lash_client> client_ptr);
+
+	void
+	client_remove(
+		const string& id);
+
+	shared_ptr<lash_client> find_client_by_id(const string& id);
 
 	sigc::signal<void, shared_ptr<project> > _signal_project_added;
 	sigc::signal<void, shared_ptr<project> > _signal_project_closed;

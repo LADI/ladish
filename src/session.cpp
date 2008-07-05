@@ -19,12 +19,12 @@
 #include "common.hpp"
 #include "project.hpp"
 #include "session.hpp"
-#include <iostream>
+#include "lash_client.hpp"
 
 struct session_impl
 {
-public:
 	list<shared_ptr<project> > projects;
+	list<shared_ptr<lash_client> > clients;
 };
 
 session::session()
@@ -73,6 +73,7 @@ session::project_close(
 {
 	shared_ptr<project> project_ptr;
 	string temp_name;
+	list<shared_ptr<lash_client> > clients;
 
 	for (list<shared_ptr<project> >::iterator iter = _impl_ptr->projects.begin(); iter != _impl_ptr->projects.end(); iter++)
 	{
@@ -83,7 +84,66 @@ session::project_close(
 		{
 			_impl_ptr->projects.erase(iter);
 			_signal_project_closed.emit(project_ptr);
+
+			// remove clients from session, if not removed already
+			project_ptr->get_clients(clients);
+			for (list<shared_ptr<lash_client> >::iterator iter = clients.begin(); iter != clients.end(); iter++)
+			{
+				string id;
+
+				(*iter)->get_id(id);
+
+				client_remove(id);
+			}
+
 			return;
 		}
 	}
+}
+
+void
+session::client_add(
+	shared_ptr<lash_client> client_ptr)
+{
+	_impl_ptr->clients.push_back(client_ptr);
+}
+
+void
+session::client_remove(
+	const string& id)
+{
+	shared_ptr<lash_client> client_ptr;
+	string temp_id;
+
+	for (list<shared_ptr<lash_client> >::iterator iter = _impl_ptr->clients.begin(); iter != _impl_ptr->clients.end(); iter++)
+	{
+		client_ptr = *iter;
+		client_ptr->get_id(temp_id);
+
+		if (temp_id == id)
+		{
+			_impl_ptr->clients.erase(iter);
+			return;
+		}
+	}
+}
+
+shared_ptr<lash_client>
+session::find_client_by_id(const string& id)
+{
+	shared_ptr<lash_client> client_ptr;
+	string temp_id;
+
+	for (list<shared_ptr<lash_client> >::iterator iter = _impl_ptr->clients.begin(); iter != _impl_ptr->clients.end(); iter++)
+	{
+		client_ptr = *iter;
+		client_ptr->get_id(temp_id);
+
+		if (temp_id == id)
+		{
+			return client_ptr;
+		}
+	}
+
+	return shared_ptr<lash_client>();
 }

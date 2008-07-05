@@ -18,6 +18,8 @@
 
 #include "common.hpp"
 #include "lash_client.hpp"
+#include "Patchage.hpp"
+#include "globals.hpp"
 
 struct lash_client_impl
 {
@@ -38,10 +40,27 @@ lash_client::lash_client(
 	_impl_ptr->project_ptr = project_ptr;
 	_impl_ptr->id = id;
 	_impl_ptr->name = name;
+
+	//g_app->info_msg("client created");
 }
 
 lash_client::~lash_client()
 {
+	delete _impl_ptr;
+	//g_app->info_msg("client destroyed");
+}
+
+project *
+lash_client::get_project()
+{
+	return _impl_ptr->project_ptr;
+}
+
+void
+lash_client::get_id(
+	string& id)
+{
+	id = _impl_ptr->id;
 }
 
 void

@@ -19,6 +19,7 @@
 #include "common.hpp"
 #include "project.hpp"
 #include "lash_proxy.hpp"
+#include "lash_client.hpp"
 
 struct project_impl
 {
@@ -27,6 +28,7 @@ struct project_impl
 	string description;
 	string notes;
 	bool modified_status;
+	list<shared_ptr<lash_client> > clients;
 };
 
 project::project(
@@ -84,6 +86,42 @@ bool
 project::get_modified_status()
 {
 	return _impl_ptr->modified_status;
+}
+
+void
+project::get_clients(
+		list<shared_ptr<lash_client> >& clients)
+{
+	clients = _impl_ptr->clients;
+}
+
+void
+project::on_client_added(
+		shared_ptr<lash_client> client_ptr)
+{
+	_impl_ptr->clients.push_back(client_ptr);
+	_signal_client_added.emit(client_ptr);
+}
+
+void
+project::on_client_removed(
+	const string& id)
+{
+	shared_ptr<lash_client> client_ptr;
+	string temp_id;
+
+	for (list<shared_ptr<lash_client> >::iterator iter = _impl_ptr->clients.begin(); iter != _impl_ptr->clients.end(); iter++)
+	{
+		client_ptr = *iter;
+		client_ptr->get_id(temp_id);
+
+		if (temp_id == id)
+		{
+			_impl_ptr->clients.erase(iter);
+			_signal_client_removed.emit(client_ptr);
+			return;
+		}
+	}
 }
 
 bool

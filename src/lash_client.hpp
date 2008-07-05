@@ -35,6 +35,13 @@ public:
 
 	~lash_client();
 
+	project *
+	get_project();
+
+	void
+	get_id(
+		string& id);
+
 	void
 	get_name(
 		string& name);
