@@ -129,33 +129,36 @@ project_list_impl::on_button_press_event(GdkEventButton * event_ptr)
 			shared_ptr<project> project_ptr = (*iter)[_columns.project_ptr];
 			string name;
 
-			project_ptr->get_name(name);
+			if (project_ptr)
+			{
+				project_ptr->get_name(name);
 
-			menulist.push_back(
-				Gtk::Menu_Helpers::MenuElem(
-					(string)"_Save project '" + name + "'",
-					sigc::bind(
-						sigc::mem_fun(
-							*this,
-							&project_list_impl::on_menu_popup_save_project),
-						project_ptr)));
-			menulist.push_back(
-				Gtk::Menu_Helpers::MenuElem(
-					(string)"_Close project '" + name + "'",
-					sigc::bind(
-						sigc::mem_fun(
-							*this,
-							&project_list_impl::on_menu_popup_close_project),
-						project_ptr)));
+				menulist.push_back(
+					Gtk::Menu_Helpers::MenuElem(
+						(string)"_Save project '" + name + "'",
+						sigc::bind(
+							sigc::mem_fun(
+								*this,
+								&project_list_impl::on_menu_popup_save_project),
+							project_ptr)));
+				menulist.push_back(
+					Gtk::Menu_Helpers::MenuElem(
+						(string)"_Close project '" + name + "'",
+						sigc::bind(
+							sigc::mem_fun(
+								*this,
+								&project_list_impl::on_menu_popup_close_project),
+							project_ptr)));
 
-			menulist.push_back(
-				Gtk::Menu_Helpers::MenuElem(
-					(string)"_Project '" + name + "' properties",
-					sigc::bind(
-						sigc::mem_fun(
-							*this,
-							&project_list_impl::on_menu_popup_project_properties),
-						project_ptr)));
+				menulist.push_back(
+					Gtk::Menu_Helpers::MenuElem(
+						(string)"_Project '" + name + "' properties",
+						sigc::bind(
+							sigc::mem_fun(
+								*this,
+								&project_list_impl::on_menu_popup_project_properties),
+							project_ptr)));
+			}
 		}
 		else
 		{
