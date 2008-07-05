@@ -34,6 +34,7 @@ struct lash_proxy_impl
 	void init();
 
 	void fetch_loaded_projects();
+	void fetch_project_clients(shared_ptr<project> project_ptr);
 
 	static void error_msg(const std::string& msg);
 	static void info_msg(const std::string& msg);
@@ -54,7 +55,15 @@ struct lash_proxy_impl
 		int in_type,
 		...);
 
-	void on_project_added(string name);
+	shared_ptr<project>
+	on_project_added(
+		string name);
+
+	shared_ptr<lash_client>
+	on_client_added(
+		shared_ptr<project> project_ptr,
+		string id,
+		string name);
 
 	bool _server_responding;
 	session * _session_ptr;
@@ -322,14 +331,7 @@ lash_proxy_impl::dbus_message_hook(
 		project_ptr = me->_session_ptr->find_project_by_name(project_name);
 		if (project_ptr)
 		{
-			client_ptr = shared_ptr<lash_client>(
-				new lash_client(
-					me->_interface_ptr,
-					project_ptr.get(),
-					client_id,
-					client_name));
-			project_ptr->on_client_added(client_ptr);
-			me->_session_ptr->client_add(client_ptr);
+			me->on_client_added(project_ptr, client_id, client_name);
 		}
 
 		return DBUS_HANDLER_RESULT_HANDLED;
@@ -422,6 +424,7 @@ lash_proxy_impl::fetch_loaded_projects()
 	DBusMessageIter iter;
 	DBusMessageIter array_iter;
 	const char * project_name;
+	shared_ptr<project> project_ptr;
 
 	if (!call(true, LASH_IFACE_CONTROL, "GetLoadedProjects", &reply_ptr, DBUS_TYPE_INVALID)) {
 		return;
@@ -442,7 +445,8 @@ lash_proxy_impl::fetch_loaded_projects()
 	     dbus_message_iter_next(&array_iter))
 	{
 		dbus_message_iter_get_basic(&array_iter, &project_name);
-		on_project_added(project_name);
+		project_ptr = on_project_added(project_name);
+		fetch_project_clients(project_ptr);
 	}
 
 unref:
@@ -450,11 +454,89 @@ unref:
 }
 
 void
-lash_proxy_impl::on_project_added(string name)
+lash_proxy_impl::fetch_project_clients(
+	shared_ptr<project> project_ptr)
+{
+	DBusMessage* reply_ptr;
+	const char * reply_signature;
+	DBusMessageIter iter;
+	DBusMessageIter array_iter;
+	DBusMessageIter struct_iter;
+	const char * client_id;
+	const char * client_name;
+	string project_name;
+	const char * project_name_cstr;
+
+	project_ptr->get_name(project_name);
+	project_name_cstr = project_name.c_str();
+
+	if (!call(
+		    true,
+		    LASH_IFACE_CONTROL,
+		    "GetProjectClients",
+		    &reply_ptr,
+		    DBUS_TYPE_STRING, &project_name_cstr,
+		    DBUS_TYPE_INVALID))
+	{
+		return;
+	}
+
+	reply_signature = dbus_message_get_signature(reply_ptr);
+
+	if (strcmp(reply_signature, "a(ss)") != 0)
+	{
+		error_msg((string)"GetLoadedProjects() reply signature mismatch. " + reply_signature);
+		goto unref;
+	}
+
+	dbus_message_iter_init(reply_ptr, &iter);
+
+	for (dbus_message_iter_recurse(&iter, &array_iter);
+	     dbus_message_iter_get_arg_type(&array_iter) != DBUS_TYPE_INVALID;
+	     dbus_message_iter_next(&array_iter))
+	{
+		dbus_message_iter_recurse(&array_iter, &struct_iter);
+
+		dbus_message_iter_get_basic(&struct_iter, &client_id);
+		dbus_message_iter_next(&struct_iter);
+		dbus_message_iter_get_basic(&struct_iter, &client_name);
+		dbus_message_iter_next(&struct_iter);
+
+		on_client_added(project_ptr, client_id, client_name);
+	}
+
+unref:
+	dbus_message_unref(reply_ptr);
+}
+
+shared_ptr<project>
+lash_proxy_impl::on_project_added(
+	string name)
 {
 	shared_ptr<project> project_ptr(new project(_interface_ptr, name));
 
 	_session_ptr->project_add(project_ptr);
+
+	return project_ptr;
+}
+
+shared_ptr<lash_client>
+lash_proxy_impl::on_client_added(
+	shared_ptr<project> project_ptr,
+	string id,
+	string name)
+{
+	shared_ptr<lash_client> client_ptr(
+		new lash_client(
+			_interface_ptr,
+			project_ptr.get(),
+			id,
+			name));
+
+	project_ptr->on_client_added(client_ptr);
+	_session_ptr->client_add(client_ptr);
+
+	return client_ptr;
 }
 
 void
