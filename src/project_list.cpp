@@ -55,8 +55,8 @@ struct project_list_impl : public sigc::trackable
 
 	void on_menu_popup_load_project();
 	void on_menu_popup_save_all_projects();
-	void on_menu_popup_save_project(const Glib::ustring& project_name);
-	void on_menu_popup_close_project(const Glib::ustring& project_name);
+	void on_menu_popup_save_project(shared_ptr<project> project_ptr);
+	void on_menu_popup_close_project(shared_ptr<project> project_ptr);
 	void on_menu_popup_project_properties(shared_ptr<project> project_ptr);
 	void on_menu_popup_close_all_projects();
 };
@@ -123,8 +123,10 @@ project_list_impl::on_button_press_event(GdkEventButton * event_ptr)
 			selection->select(path);
 
 			Gtk::TreeIter iter = selection->get_selected();
-			Glib::ustring name = (*iter)[_columns.name];
 			shared_ptr<project> project_ptr = (*iter)[_columns.project_ptr];
+			string name;
+
+			project_ptr->get_name(name);
 
 			menulist.push_back(
 				Gtk::Menu_Helpers::MenuElem(
@@ -133,7 +135,7 @@ project_list_impl::on_button_press_event(GdkEventButton * event_ptr)
 						sigc::mem_fun(
 							*this,
 							&project_list_impl::on_menu_popup_save_project),
-						name)));
+						project_ptr)));
 			menulist.push_back(
 				Gtk::Menu_Helpers::MenuElem(
 					(string)"_Close project '" + name + "'",
@@ -141,7 +143,7 @@ project_list_impl::on_button_press_event(GdkEventButton * event_ptr)
 						sigc::mem_fun(
 							*this,
 							&project_list_impl::on_menu_popup_close_project),
-						name)));
+						project_ptr)));
 
 			menulist.push_back(
 				Gtk::Menu_Helpers::MenuElem(
@@ -182,16 +184,22 @@ project_list_impl::on_menu_popup_save_all_projects()
 
 void
 project_list_impl::on_menu_popup_save_project(
-	const Glib::ustring& project_name)
+	shared_ptr<project> project_ptr)
 {
-	_app->save_project(project_name);
+	string name;
+
+	project_ptr->get_name(name);
+	_app->save_project(name);
 }
 
 void
 project_list_impl::on_menu_popup_close_project(
-	const Glib::ustring& project_name)
+	shared_ptr<project> project_ptr)
 {
-	_app->close_project(project_name);
+	string name;
+
+	project_ptr->get_name(name);
+	_app->close_project(name);
 }
 
 void
