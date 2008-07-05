@@ -61,6 +61,8 @@ public:
 
 	signal<void> _signal_renamed;
 	signal<void> _signal_modified_status_changed;
+	signal<void> _signal_description_changed;
+	signal<void> _signal_notes_changed;
 
 private:
 	friend class lash_proxy_impl;
@@ -72,6 +74,14 @@ private:
 	bool
 	on_modified_status_changed(
 		bool modified_status);
+
+	void
+	on_description_changed(
+		const string& description);
+
+	void
+	on_notes_changed(
+		const string& notes);
 
 	project_impl * _impl_ptr;
 };

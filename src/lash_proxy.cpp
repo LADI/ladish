@@ -83,6 +83,8 @@ lash_proxy_impl::init()
 	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectClosed", NULL);
 	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectNameChanged", NULL);
 	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectModifiedStatusChanged", NULL);
+	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectDescriptionChanged", NULL);
+	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectNotesChanged", NULL);
 
 	dbus_connection_add_filter(g_app->_dbus_connection, dbus_message_hook, this, NULL);
 
@@ -117,6 +119,7 @@ lash_proxy_impl::dbus_message_hook(
 	const char * object_name;
 	const char * old_owner;
 	const char * new_owner;
+	const char * value_string;
 	dbus_bool_t modified_status;
 	shared_ptr<project> project_ptr;
 
@@ -228,7 +231,7 @@ lash_proxy_impl::dbus_message_hook(
 			    DBUS_TYPE_BOOLEAN, &modified_status,
 			    DBUS_TYPE_INVALID))
 		{
-			error_msg(str(boost::format("dbus_message_get_args() failed to extract ProjectNameChanged signal arguments (%s)") % g_app->_dbus_error.message));
+			error_msg(str(boost::format("dbus_message_get_args() failed to extract ProjectModifiedStatusChanged signal arguments (%s)") % g_app->_dbus_error.message));
 			dbus_error_free(&g_app->_dbus_error);
 			return DBUS_HANDLER_RESULT_HANDLED;
 		}
@@ -239,6 +242,54 @@ lash_proxy_impl::dbus_message_hook(
 		if (project_ptr)
 		{
 			project_ptr->on_modified_status_changed(modified_status);
+		}
+
+		return DBUS_HANDLER_RESULT_HANDLED;
+	}
+
+	if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "ProjectDescriptionChanged"))
+	{
+		if (!dbus_message_get_args(
+			    message, &g_app->_dbus_error,
+			    DBUS_TYPE_STRING, &project_name,
+			    DBUS_TYPE_STRING, &value_string,
+			    DBUS_TYPE_INVALID))
+		{
+			error_msg(str(boost::format("dbus_message_get_args() failed to extract ProjectDescriptionChanged signal arguments (%s)") % g_app->_dbus_error.message));
+			dbus_error_free(&g_app->_dbus_error);
+			return DBUS_HANDLER_RESULT_HANDLED;
+		}
+
+		info_msg((string)"Project '" + project_name + "' description changed.");
+
+		project_ptr = me->_session_ptr->find_project_by_name(project_name);
+		if (project_ptr)
+		{
+			project_ptr->on_description_changed(value_string);
+		}
+
+		return DBUS_HANDLER_RESULT_HANDLED;
+	}
+
+	if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "ProjectNotesChanged"))
+	{
+		if (!dbus_message_get_args(
+			    message, &g_app->_dbus_error,
+			    DBUS_TYPE_STRING, &project_name,
+			    DBUS_TYPE_STRING, &value_string,
+			    DBUS_TYPE_INVALID))
+		{
+			error_msg(str(boost::format("dbus_message_get_args() failed to extract ProjectNotesChanged signal arguments (%s)") % g_app->_dbus_error.message));
+			dbus_error_free(&g_app->_dbus_error);
+			return DBUS_HANDLER_RESULT_HANDLED;
+		}
+
+		info_msg((string)"Project '" + project_name + "' notes changed.");
+
+		project_ptr = me->_session_ptr->find_project_by_name(project_name);
+		if (project_ptr)
+		{
+			project_ptr->on_notes_changed(value_string);
 		}
 
 		return DBUS_HANDLER_RESULT_HANDLED;

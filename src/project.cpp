@@ -95,6 +95,22 @@ project::on_modified_status_changed(
 }
 
 void
+project::on_description_changed(
+		const string& description)
+{
+	_impl_ptr->description = description;
+	_signal_description_changed.emit();
+}
+
+void
+project::on_notes_changed(
+		const string& notes)
+{
+	_impl_ptr->notes = notes;
+	_signal_notes_changed.emit();
+}
+
+void
 project::do_rename(
 	const string& name)
 {
