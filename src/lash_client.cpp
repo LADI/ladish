@@ -19,7 +19,7 @@
 #include "common.hpp"
 #include "lash_client.hpp"
 #include "Patchage.hpp"
-#include "globals.hpp"
+//#include "globals.hpp"
 
 struct lash_client_impl
 {

@@ -632,6 +632,10 @@ Patchage::set_lash_availability(
 	bool lash_active)
 {
 	_project_list->set_lash_availability(lash_active);
+	if (!lash_active)
+	{
+		_session->clear();
+	}
 }
 
 struct loadable_project_list_column_record : public Gtk::TreeModel::ColumnRecord

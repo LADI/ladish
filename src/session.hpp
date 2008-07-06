@@ -30,6 +30,9 @@ public:
 	~session();
 
 	void
+	clear();
+
+	void
 	project_add(
 		shared_ptr<project> project_ptr);
 

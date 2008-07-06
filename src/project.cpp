@@ -20,6 +20,7 @@
 #include "project.hpp"
 #include "lash_proxy.hpp"
 #include "lash_client.hpp"
+//#include "globals.hpp"
 
 struct project_impl
 {
@@ -46,11 +47,27 @@ project::project(
 	_impl_ptr->description = properties.description;
 	_impl_ptr->notes = properties.notes;
 	_impl_ptr->modified_status = properties.modified_status;
+
+	//g_app->info_msg("project created");
 }
 
 project::~project()
 {
 	delete _impl_ptr;
+	//g_app->info_msg("project destroyed");
+}
+
+void
+project::clear()
+{
+	shared_ptr<lash_client> client_ptr;
+
+	while (!_impl_ptr->clients.empty())
+	{
+		client_ptr = _impl_ptr->clients.front();
+		_impl_ptr->clients.pop_front();
+		_signal_client_removed.emit(client_ptr);
+	}
 }
 
 void

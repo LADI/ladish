@@ -38,6 +38,22 @@ session::~session()
 }
 
 void
+session::clear()
+{
+	shared_ptr<project> project_ptr;
+
+	_impl_ptr->clients.clear();
+
+	while (!_impl_ptr->projects.empty())
+	{
+		project_ptr = _impl_ptr->projects.front();
+		_impl_ptr->projects.pop_front();
+		project_ptr->clear();
+		_signal_project_closed.emit(project_ptr);
+	}
+}
+
+void
 session::project_add(
 	shared_ptr<project> project_ptr)
 {

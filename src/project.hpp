@@ -34,6 +34,9 @@ public:
 	~project();
 
 	void
+	clear();
+
+	void
 	get_name(
 		string& name);
 
