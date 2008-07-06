@@ -10,8 +10,8 @@ dist-check-doxygen:
 	@false
 endif
 
-SUBDIRS = flowcanvas src $(DOC_DIR)
-DIST_SUBDIRS = flowcanvas src doc
+SUBDIRS = flowcanvas src $(DOC_DIR) debian
+DIST_SUBDIRS = flowcanvas src doc debian
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = flowcanvas.pc
@@ -20,3 +20,6 @@ dist-hook: dist-check-doxygen
 
 docs:
 	cd doc && make docs
+
+deb:
+	dpkg-buildpackage -sn

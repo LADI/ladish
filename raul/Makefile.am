@@ -10,8 +10,8 @@ dist-check-doxygen:
 	@false
 endif
 
-SUBDIRS = raul src $(DOC_DIR)
-DIST_SUBDIRS = raul src tests doc
+SUBDIRS = raul src $(DOC_DIR) debian
+DIST_SUBDIRS = raul src tests doc debian
 
 if BUILD_UNIT_TESTS
 SUBDIRS += tests
@@ -24,3 +24,6 @@ dist-hook: dist-check-doxygen
 
 docs:
 	cd doc && make docs
+
+deb:
+	dpkg-buildpackage -sn

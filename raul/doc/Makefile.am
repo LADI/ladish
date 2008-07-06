@@ -13,4 +13,3 @@ distclean-local:
 
 docs: reference.doxygen @RAUL_SRCDIR@/raul/*.hpp
 	doxygen reference.doxygen
-

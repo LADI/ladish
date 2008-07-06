@@ -1,7 +1,10 @@
-SUBDIRS = src icons
+SUBDIRS = src icons debian
 
 desktopfilesdir = $(datadir)/applications
 dist_desktopfiles_DATA = patchage.desktop
 
-doc: Doxyfile src/*.h src/*.cpp
+docs: Doxyfile src/*.h src/*.cpp
 	doxygen
+
+deb:
+	dpkg-buildpackage -sn

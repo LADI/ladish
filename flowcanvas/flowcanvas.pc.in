@@ -4,7 +4,7 @@ libdir=@libdir@
 includedir=@includedir@
 
 Name: flowcanvas
-Version: @VERSION@
+Version: @FLOWCANVAS_VERSION@
 Description: A Gtkmm canvas widget for graph based interfaces
 Libs: -L${libdir} -lflowcanvas @GNOMECANVASMM_LIBS@
 Cflags: -I${includedir} @GNOMECANVASMM_CFLAGS@

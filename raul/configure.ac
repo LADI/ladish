@@ -1,5 +1,5 @@
 AC_PREREQ(2.59)
-AC_INIT([raul],[0.4.0],[dave@drobilla.net])
+AC_INIT([raul],[0.5.0],[dave@drobilla.net])
 
 AC_CONFIG_AUX_DIR([config])
 
@@ -25,9 +25,10 @@ AM_INIT_AUTOMAKE
 #
 # Version history:
 # 0.4.0 = 0,0,0
+# 0.5.0 = 1,0,0 (SVN r1283)
 
-RAUL_VERSION="0.4.0"
-RAUL_API_CURRENT="0"
+RAUL_VERSION="0.5.0"
+RAUL_API_CURRENT="1"
 RAUL_API_REVISION="0"
 RAUL_API_AGE="0"
 
@@ -99,8 +100,8 @@ if test "$debug_assertions" = "yes"; then
   CFLAGS="$CFLAGS -DDEBUG -DLIBRDF_DEBUG"
   CXXFLAGS="$CXXFLAGS -DDEBUG -DLIBRDF_DEBUG"
 else
-  CFLAGS="$CFLAGS -DNDEBUG -DLIBRDF_DEBUG"
-  CXXFLAGS="$CXXFLAGS -DNDEBUG -DLIBRDF_DEBUG"
+  CFLAGS="$CFLAGS -DNDEBUG"
+  CXXFLAGS="$CXXFLAGS -DNDEBUG"
 fi
 
 # Boost shared_ptr debugging
@@ -191,12 +192,13 @@ AM_CONDITIONAL(BUILD_UNIT_TESTS, [test "$build_unit_tests" = "yes"])
 
 # RAUL
 AC_CONFIG_FILES([Makefile])
-AC_CONFIG_FILES([src/Makefile])
-AC_CONFIG_FILES([raul/Makefile])
-AC_CONFIG_FILES([tests/Makefile])
+AC_CONFIG_FILES([debian/Makefile])
 AC_CONFIG_FILES([doc/Makefile])
 AC_CONFIG_FILES([doc/reference.doxygen])
 AC_CONFIG_FILES([raul.pc])
+AC_CONFIG_FILES([raul/Makefile])
+AC_CONFIG_FILES([src/Makefile])
+AC_CONFIG_FILES([tests/Makefile])
 
 AC_OUTPUT
 
