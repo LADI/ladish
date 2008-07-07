@@ -17,6 +17,7 @@ raulinclude_HEADERS = \
 	lv2_event.h \
 	Maid.hpp \
 	midi_events.h \
+	midi_names.h \
 	MIDISink.hpp \
 	Path.hpp \
 	PathTable.hpp \
