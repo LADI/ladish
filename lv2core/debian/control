@@ -1,0 +1,13 @@
+Source: lv2core
+Priority: extra
+Maintainer: Dave Robillard <dave@drobilla.net>
+Build-Depends: debhelper (>= 5), autotools-dev
+Standards-Version: 3.7.3
+Section: sound
+
+Package: lv2core
+Architecture: any
+Description: The LV2 audio plugin specification
+ This package contains the 'core' LV2 audio plugin specification,
+ including data required by hosts to make effective use of LV2 plugins.
+

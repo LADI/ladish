@@ -609,6 +609,7 @@ AC_CONFIG_FILES([omins/src/Makefile])
 
 # LV2 Core
 AC_CONFIG_FILES([lv2core/Makefile])
+AC_CONFIG_FILES([lv2core/debian/Makefile])
 AC_CONFIG_FILES([lv2core/lv2core.lv2/Makefile])
 AC_CONFIG_FILES([lv2core/lv2core.pc])
 

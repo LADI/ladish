@@ -13,6 +13,7 @@ LV2CORE_VERSION="2.0"
 AC_SUBST(LV2CORE_VERSION)
 
 AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([debian/Makefile])
 AC_CONFIG_FILES([lv2core.pc])
 AC_CONFIG_FILES([lv2core.lv2/Makefile])
 
