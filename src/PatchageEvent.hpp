@@ -18,6 +18,7 @@
 #ifndef PATCHAGE_PATCHAGEEVENT_HPP
 #define PATCHAGE_PATCHAGEEVENT_HPP
 
+#include <cstring>
 #include <jack/jack.h>
 #include CONFIG_H_PATH
 #ifdef HAVE_ALSA
