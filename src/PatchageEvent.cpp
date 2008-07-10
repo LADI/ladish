@@ -57,13 +57,17 @@ PatchageEvent::execute(Patchage* patchage)
 
 	} else if (_type == PORT_CREATION) {
 		
-		Driver* driver;
-		if (_port_1.type == PatchageEvent::PortRef::JACK_ID)
+		Driver* driver = NULL;
+		if (_port_1.type == PatchageEvent::PortRef::JACK_ID) {
+#if defined(HAVE_JACK) || defined(HAVE_JACK_DBUS)
 			driver = patchage->jack_driver();
+#endif
 #ifdef HAVE_ALSA
-		else if (_port_1.type == PatchageEvent::PortRef::ALSA_ADDR)
+		} else if (_port_1.type == PatchageEvent::PortRef::ALSA_ADDR) {
 			driver = patchage->alsa_driver();
 #endif
+		}
+
 
 		if (driver) {
 			if ( ! driver->create_port_view(patchage, _port_1))
