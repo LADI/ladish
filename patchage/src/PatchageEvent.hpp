@@ -19,7 +19,9 @@
 #define PATCHAGE_PATCHAGEEVENT_HPP
 
 #include <cstring>
+#ifdef HAVE_JACK
 #include <jack/jack.h>
+#endif
 #include CONFIG_H_PATH
 #ifdef HAVE_ALSA
 #include <alsa/asoundlib.h>
@@ -90,7 +92,9 @@ public:
 		enum { NULL_PORT_REF, JACK_ID, ALSA_ADDR } type;
 
 		union {
+#ifdef HAVE_JACK
 			jack_port_id_t jack_id;
+#endif
 #ifdef HAVE_ALSA
 			snd_seq_addr_t alsa_addr;
 #endif

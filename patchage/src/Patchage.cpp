@@ -22,7 +22,6 @@
 #include <libgnomecanvasmm.h>
 #include <libglademm/xml.h>
 #include <gtk/gtkwindow.h>
-#include <jack/statistics.h>
 #include <raul/SharedPtr.hpp>
 
 #include CONFIG_H_PATH
@@ -31,6 +30,7 @@
 #include "JackDbusDriver.hpp"
 #elif defined(HAVE_JACK)
 #include "JackDriver.hpp"
+#include <jack/statistics.h>
 #endif
 #include "JackSettingsDialog.hpp"
 #include "Patchage.hpp"
@@ -235,6 +235,7 @@ Patchage::Patchage(int argc, char** argv)
 	
 	_about_win->set_transient_for(*_main_win);
 	
+#if defined(HAVE_JACK) || defined(HAVE_JACK_DBUS)
 	_jack_driver = new JackDriver(this);
 	_jack_driver->signal_detached.connect(sigc::mem_fun(this, &Patchage::queue_refresh));
 	
@@ -242,6 +243,7 @@ Patchage::Patchage(int argc, char** argv)
 			sigc::mem_fun(_jack_driver, &JackDriver::attach), true));
 	_menu_jack_disconnect->signal_activate().connect(
 			sigc::mem_fun(_jack_driver, &JackDriver::detach));
+#endif
 
 #ifdef HAVE_ALSA
 	_alsa_driver = new AlsaDriver(this);
@@ -264,7 +266,9 @@ Patchage::Patchage(int argc, char** argv)
 
 Patchage::~Patchage() 
 {
+#if defined(HAVE_JACK) || defined(HAVE_JACK_DBUS)
 	delete _jack_driver;
+#endif
 #ifdef HAVE_ALSA
 	delete _alsa_driver;
 #endif
@@ -284,7 +288,9 @@ Patchage::attach()
 {
 	_enable_refresh = false;
 
+#if defined(HAVE_JACK) || defined(HAVE_JACK_DBUS)
 	_jack_driver->attach(true);
+#endif
 
 #ifdef HAVE_LASH
 	_lash_driver->attach(true);
@@ -314,9 +320,11 @@ Patchage::idle_callback()
 	}
 
 	// Process any JACK events
+#if defined(HAVE_JACK) || defined(HAVE_JACK_DBUS)
 	if (_jack_driver) {
 		_jack_driver->process_events(this);
 	}
+#endif
 	
 	// Process any ALSA events
 #ifdef HAVE_ALSA
@@ -345,14 +353,17 @@ Patchage::idle_callback()
 void
 Patchage::update_toolbar()
 {
+#if defined(HAVE_JACK) || defined(HAVE_JACK_DBUS)
 	if (_enable_refresh && _jack_driver->is_attached())
 		_buffer_size_combo->set_active((int)log2f(_jack_driver->buffer_size()) - 5);
+#endif
 }
 
 
 bool
 Patchage::update_load()
 {
+#if defined(HAVE_JACK) || defined(HAVE_JACK_DBUS)
 	if (!_jack_driver->is_attached())
 		return true;
 
@@ -369,6 +380,7 @@ Patchage::update_load()
 		_main_xrun_progress->set_fraction(max_dsp_load);
 		last_max_dsp_load = max_dsp_load;
 	}
+#endif
 	
 	return true;
 }
@@ -391,8 +403,10 @@ Patchage::refresh()
 	
 		_canvas->destroy();
 
+#if defined(HAVE_JACK) || defined(HAVE_JACK_DBUS)
 		if (_jack_driver)
 			_jack_driver->refresh();
+#endif
 
 #ifdef HAVE_ALSA
 		if (_alsa_driver)
@@ -428,9 +442,11 @@ Patchage::store_window_location()
 void
 Patchage::clear_load()
 {
+#if defined(HAVE_JACK) || defined(HAVE_JACK_DBUS)
 	_main_xrun_progress->set_fraction(0.0);
 	_jack_driver->reset_xruns();
 	_jack_driver->reset_max_dsp_load();
+#endif
 }
 
 
@@ -475,6 +491,7 @@ Patchage::connect_widgets()
 			sigc::mem_fun(*_menu_lash_disconnect, &Gtk::MenuItem::set_sensitive), false));
 #endif
 
+#if defined(HAVE_JACK) || defined(HAVE_JACK_DBUS)
 	_jack_driver->signal_attached.connect(
 			sigc::mem_fun(this, &Patchage::update_toolbar));
 	_jack_driver->signal_attached.connect(sigc::bind(
@@ -488,6 +505,7 @@ Patchage::connect_widgets()
 			sigc::mem_fun(*_menu_jack_connect, &Gtk::MenuItem::set_sensitive), true));
 	_jack_driver->signal_detached.connect(sigc::bind(
 			sigc::mem_fun(*_menu_jack_disconnect, &Gtk::MenuItem::set_sensitive), false));
+#endif
 
 #ifdef HAVE_ALSA	
 	_alsa_driver->signal_attached.connect(sigc::bind(
@@ -636,7 +654,9 @@ Patchage::on_quit()
 #ifdef HAVE_ALSA
 	_alsa_driver->detach();
 #endif
+#if defined(HAVE_JACK) || defined(HAVE_JACK_DBUS)
 	_jack_driver->detach();
+#endif
 	_main_win->hide();
 }
 
@@ -680,6 +700,7 @@ Patchage::on_scroll(GdkEventScroll* ev)
 void
 Patchage::buffer_size_changed()
 {
+#if defined(HAVE_JACK) || defined(HAVE_JACK_DBUS)
 	const int selected = _buffer_size_combo->get_active_row_number();
 
 	if (selected == -1) {
@@ -690,5 +711,6 @@ Patchage::buffer_size_changed()
 		if ( ! _jack_driver->set_buffer_size(buffer_size))
 			update_toolbar(); // reset combo box to actual value
 	}
+#endif
 }
 

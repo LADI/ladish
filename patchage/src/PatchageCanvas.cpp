@@ -67,9 +67,12 @@ PatchageCanvas::find_module(const string& name, ModuleType type)
 boost::shared_ptr<PatchagePort>
 PatchageCanvas::find_port(const PatchageEvent::PortRef& ref)
 {
-	jack_port_t* jack_port = NULL;
 	string       module_name;
 	string       port_name;
+
+#if defined(HAVE_JACK) || defined(HAVE_JACK_DBUS)
+	jack_port_t* jack_port = NULL;
+#endif
 	
 	SharedPtr<PatchageModule> module;
 	boost::shared_ptr<PatchagePort> pp;
@@ -141,14 +144,17 @@ PatchageCanvas::connect(boost::shared_ptr<Connectable> port1, boost::shared_ptr<
 		return;
 
 	if ((p1->type() == JACK_AUDIO && p2->type() == JACK_AUDIO)
-			|| ((p1->type() == JACK_MIDI && p2->type() == JACK_MIDI)))
+			|| ((p1->type() == JACK_MIDI && p2->type() == JACK_MIDI))) {
+#if defined(HAVE_JACK) || defined(HAVE_JACK_DBUS)
 		_app->jack_driver()->connect(p1, p2);
+#endif
 #ifdef HAVE_ALSA
-	else if (p1->type() == ALSA_MIDI && p2->type() == ALSA_MIDI)
+	} else if (p1->type() == ALSA_MIDI && p2->type() == ALSA_MIDI) {
 		_app->alsa_driver()->connect(p1, p2);
 #endif
-	else
+	} else {
 		status_message("WARNING: Cannot make connection, incompatible port types.");
+	}
 }
 
 
@@ -176,14 +182,17 @@ PatchageCanvas::disconnect(boost::shared_ptr<Connectable> port1, boost::shared_p
 	}
 	
 	if ((input->type() == JACK_AUDIO && output->type() == JACK_AUDIO)
-			|| (input->type() == JACK_MIDI && output->type() == JACK_MIDI))
+			|| (input->type() == JACK_MIDI && output->type() == JACK_MIDI)) {
+#if defined(HAVE_JACK) || defined(HAVE_JACK_DBUS)
 		_app->jack_driver()->disconnect(output, input);
+#endif
 #ifdef HAVE_ALSA
-	else if (input->type() == ALSA_MIDI && output->type() == ALSA_MIDI)
+	} else if (input->type() == ALSA_MIDI && output->type() == ALSA_MIDI) {
 		_app->alsa_driver()->disconnect(output, input);
 #endif
-	else
+	} else {
 		status_message("ERROR: Attempt to disconnect ports with mismatched types");
+	}
 }
 
 
