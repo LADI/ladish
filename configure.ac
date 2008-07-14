@@ -166,10 +166,7 @@ if test x$build_pylash != xdisabled; then
     AM_CHECK_PYTHON_HEADERS(, python_found=no)
 
     if test x$python_found == xyes; then
-      AC_PROG_SWIG(1.3.31)
-      if test "$SWIG_LIB" ; then
-        build_pylash=yes
-      fi
+      build_pylash=yes
     fi
   fi
 fi

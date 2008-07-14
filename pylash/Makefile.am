@@ -27,14 +27,13 @@ INCLUDES = $(PYTHON_INCLUDES)
 
 _lash_la_LDFLAGS = -module -avoid-version ../liblash/liblash.la
 
-_lash_la_SOURCES = lash.c lash.h
-nodist__lash_la_SOURCES = lash_wrap.c
+_lash_la_SOURCES = lash.c lash.h lash_wrap.c
 
 pkgpyexec_SCRIPTS = lash.py
 
 CLEANFILES = lash_wrap.c lash.py lash.pyc zynjacku.defs
-EXTRA_DIST = test.py lash.i
+EXTRA_DIST = test.py lash.i lash.py
 
 lash_wrap.c lash.py: lash.i lash.h
-	$(SWIG) -o lash_wrap.c -I$(top_srcdir) -python $(top_srcdir)/$(subdir)/lash.i
+	swig -o lash_wrap.c -I$(top_srcdir) -python $(top_srcdir)/$(subdir)/lash.i
 endif
