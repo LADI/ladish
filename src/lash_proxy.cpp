@@ -89,14 +89,14 @@ lash_proxy_impl::init()
 	_server_responding = false;
 
 	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" DBUS_INTERFACE_DBUS "',member=NameOwnerChanged,arg0='" LASH_SERVICE "'", NULL);
-	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectAdded", NULL);
-	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectClosed", NULL);
+	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectAppeared", NULL);
+	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectDisappeared", NULL);
 	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectNameChanged", NULL);
 	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectModifiedStatusChanged", NULL);
 	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectDescriptionChanged", NULL);
 	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectNotesChanged", NULL);
-	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ClientAdded", NULL);
-	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ClientRemoved", NULL);
+	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ClientAppeared", NULL);
+	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ClientDisappeared", NULL);
 	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ClientNameChanged", NULL);
 
 	dbus_connection_add_filter(g_app->_dbus_connection, dbus_message_hook, this, NULL);
@@ -180,36 +180,36 @@ lash_proxy_impl::dbus_message_hook(
 		return DBUS_HANDLER_RESULT_HANDLED;
 	}
 
-	if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "ProjectAdded"))
+	if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "ProjectAppeared"))
 	{
 		if (!dbus_message_get_args( message, &g_app->_dbus_error,
 					DBUS_TYPE_STRING, &project_name,
 					DBUS_TYPE_INVALID))
 		{
-			error_msg(str(boost::format("dbus_message_get_args() failed to extract ProjectAdded signal arguments (%s)") % g_app->_dbus_error.message));
+			error_msg(str(boost::format("dbus_message_get_args() failed to extract ProjectAppeared signal arguments (%s)") % g_app->_dbus_error.message));
 			dbus_error_free(&g_app->_dbus_error);
 			return DBUS_HANDLER_RESULT_HANDLED;
 		}
 
-		info_msg((string)"Project '" + project_name + "' added.");
+		info_msg((string)"Project '" + project_name + "' appeared.");
 		me->on_project_added(project_name);
 
 		return DBUS_HANDLER_RESULT_HANDLED;
 	}
 
-	if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "ProjectClosed"))
+	if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "ProjectDisappeared"))
 	{
 		if (!dbus_message_get_args(
 			    message, &g_app->_dbus_error,
 			    DBUS_TYPE_STRING, &project_name,
 			    DBUS_TYPE_INVALID))
 		{
-			error_msg(str(boost::format("dbus_message_get_args() failed to extract ProjectClosed signal arguments (%s)") % g_app->_dbus_error.message));
+			error_msg(str(boost::format("dbus_message_get_args() failed to extract ProjectDisappeared signal arguments (%s)") % g_app->_dbus_error.message));
 			dbus_error_free(&g_app->_dbus_error);
 			return DBUS_HANDLER_RESULT_HANDLED;
 		}
 
-		info_msg((string)"Project '" + project_name + "' closed.");
+		info_msg((string)"Project '" + project_name + "' disappeared.");
 		me->_session_ptr->project_close(project_name);
 
 		return DBUS_HANDLER_RESULT_HANDLED;
@@ -312,21 +312,21 @@ lash_proxy_impl::dbus_message_hook(
 		return DBUS_HANDLER_RESULT_HANDLED;
 	}
 
-	if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "ClientAdded"))
+	if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "ClientAppeared"))
 	{
 		if (!dbus_message_get_args(
 			    message, &g_app->_dbus_error,
-			    DBUS_TYPE_STRING, &project_name,
 			    DBUS_TYPE_STRING, &client_id,
+			    DBUS_TYPE_STRING, &project_name,
 			    DBUS_TYPE_STRING, &client_name,
 			    DBUS_TYPE_INVALID))
 		{
-			error_msg(str(boost::format("dbus_message_get_args() failed to extract ClientAdded signal arguments (%s)") % g_app->_dbus_error.message));
+			error_msg(str(boost::format("dbus_message_get_args() failed to extract ClientAppeared signal arguments (%s)") % g_app->_dbus_error.message));
 			dbus_error_free(&g_app->_dbus_error);
 			return DBUS_HANDLER_RESULT_HANDLED;
 		}
 
-		info_msg((string)"Client '" + client_id + "':'" + client_name + "' added to project '" + project_name + "'.");
+		info_msg((string)"Client '" + client_id + "':'" + client_name + "' appeared in project '" + project_name + "'.");
 
 		project_ptr = me->_session_ptr->find_project_by_name(project_name);
 		if (project_ptr)
@@ -337,19 +337,20 @@ lash_proxy_impl::dbus_message_hook(
 		return DBUS_HANDLER_RESULT_HANDLED;
 	}
 
-	if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "ClientRemoved"))
+	if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "ClientDisappeared"))
 	{
 		if (!dbus_message_get_args(
 			    message, &g_app->_dbus_error,
 			    DBUS_TYPE_STRING, &client_id,
+			    DBUS_TYPE_STRING, &project_name,
 			    DBUS_TYPE_INVALID))
 		{
-			error_msg(str(boost::format("dbus_message_get_args() failed to extract ClientRemoved signal arguments (%s)") % g_app->_dbus_error.message));
+			error_msg(str(boost::format("dbus_message_get_args() failed to extract ClientDisappeared signal arguments (%s)") % g_app->_dbus_error.message));
 			dbus_error_free(&g_app->_dbus_error);
 			return DBUS_HANDLER_RESULT_HANDLED;
 		}
 
-		info_msg((string)"Client '" + client_id + "' removed.");
+		info_msg((string)"Client '" + client_id + "' of project '" + project_name + "' disappeared.");
 
 		client_ptr = me->_session_ptr->find_client_by_id(client_id);
 		if (client_ptr)
@@ -426,7 +427,7 @@ lash_proxy_impl::fetch_loaded_projects()
 	const char * project_name;
 	shared_ptr<project> project_ptr;
 
-	if (!call(true, LASH_IFACE_CONTROL, "GetLoadedProjects", &reply_ptr, DBUS_TYPE_INVALID)) {
+	if (!call(true, LASH_IFACE_CONTROL, "ProjectsGet", &reply_ptr, DBUS_TYPE_INVALID)) {
 		return;
 	}
 
@@ -434,7 +435,7 @@ lash_proxy_impl::fetch_loaded_projects()
 
 	if (strcmp(reply_signature, "as") != 0)
 	{
-		error_msg((string)"GetLoadedProjects() reply signature mismatch. " + reply_signature);
+		error_msg((string)"ProjectsGet() reply signature mismatch. " + reply_signature);
 		goto unref;
 	}
 
@@ -473,7 +474,7 @@ lash_proxy_impl::fetch_project_clients(
 	if (!call(
 		    true,
 		    LASH_IFACE_CONTROL,
-		    "GetProjectClients",
+		    "ProjectGetClients",
 		    &reply_ptr,
 		    DBUS_TYPE_STRING, &project_name_cstr,
 		    DBUS_TYPE_INVALID))
@@ -485,7 +486,7 @@ lash_proxy_impl::fetch_project_clients(
 
 	if (strcmp(reply_signature, "a(ss)") != 0)
 	{
-		error_msg((string)"GetLoadedProjects() reply signature mismatch. " + reply_signature);
+		error_msg((string)"ProjectGetClients() reply signature mismatch. " + reply_signature);
 		goto unref;
 	}
 
@@ -558,7 +559,7 @@ lash_proxy::get_available_projects(
  	const char * value_string;
 	lash_project_info project_info;
 
-	if (!_impl_ptr->call(true, LASH_IFACE_CONTROL, "GetProjects", &reply_ptr, DBUS_TYPE_INVALID))
+	if (!_impl_ptr->call(true, LASH_IFACE_CONTROL, "ProjectsGetAvailable", &reply_ptr, DBUS_TYPE_INVALID))
 	{
 		return;
 	}
@@ -567,7 +568,7 @@ lash_proxy::get_available_projects(
 
 	if (strcmp(reply_signature, "a(sa{sv})") != 0)
 	{
-		lash_proxy_impl::error_msg((string)"GetLoadedProjects() reply signature mismatch. " + reply_signature);
+		lash_proxy_impl::error_msg((string)"ProjectsGetAvailable() reply signature mismatch. " + reply_signature);
 		goto unref;
 	}
 
@@ -634,7 +635,7 @@ lash_proxy::load_project(
 
 	project_name_cstr = project_name.c_str();
 
-	if (!_impl_ptr->call(true, LASH_IFACE_CONTROL, "LoadProject", &reply_ptr, DBUS_TYPE_STRING, &project_name_cstr, DBUS_TYPE_INVALID))
+	if (!_impl_ptr->call(true, LASH_IFACE_CONTROL, "ProjectOpen", &reply_ptr, DBUS_TYPE_STRING, &project_name_cstr, DBUS_TYPE_INVALID))
 	{
 		return;
 	}
@@ -647,7 +648,7 @@ lash_proxy::save_all_projects()
 {
 	DBusMessage * reply_ptr;
 
-	if (!_impl_ptr->call(true, LASH_IFACE_CONTROL, "Save", &reply_ptr, DBUS_TYPE_INVALID))
+	if (!_impl_ptr->call(true, LASH_IFACE_CONTROL, "ProjectsSaveAll", &reply_ptr, DBUS_TYPE_INVALID))
 	{
 		return;
 	}
@@ -664,7 +665,7 @@ lash_proxy::save_project(
 
 	project_name_cstr = project_name.c_str();
 
-	if (!_impl_ptr->call(true, LASH_IFACE_CONTROL, "SaveProject", &reply_ptr, DBUS_TYPE_STRING, &project_name_cstr, DBUS_TYPE_INVALID))
+	if (!_impl_ptr->call(true, LASH_IFACE_CONTROL, "ProjectSave", &reply_ptr, DBUS_TYPE_STRING, &project_name_cstr, DBUS_TYPE_INVALID))
 	{
 		return;
 	}
@@ -681,7 +682,7 @@ lash_proxy::close_project(
 
 	project_name_cstr = project_name.c_str();
 
-	if (!_impl_ptr->call(true, LASH_IFACE_CONTROL, "CloseProject", &reply_ptr, DBUS_TYPE_STRING, &project_name_cstr, DBUS_TYPE_INVALID))
+	if (!_impl_ptr->call(true, LASH_IFACE_CONTROL, "ProjectClose", &reply_ptr, DBUS_TYPE_STRING, &project_name_cstr, DBUS_TYPE_INVALID))
 	{
 		return;
 	}
@@ -694,7 +695,7 @@ lash_proxy::close_all_projects()
 {
 	DBusMessage * reply_ptr;
 
-	if (!_impl_ptr->call(true, LASH_IFACE_CONTROL, "Clear", &reply_ptr, DBUS_TYPE_INVALID))
+	if (!_impl_ptr->call(true, LASH_IFACE_CONTROL, "ProjectsCloseAll", &reply_ptr, DBUS_TYPE_INVALID))
 	{
 		return;
 	}
@@ -717,7 +718,7 @@ lash_proxy::project_rename(
 	if (!_impl_ptr->call(
 		    true,
 		    LASH_IFACE_CONTROL,
-		    "RenameProject",
+		    "ProjectRename",
 		    &reply_ptr,
 		    DBUS_TYPE_STRING, &old_name_cstr,
 		    DBUS_TYPE_STRING, &new_name_cstr,
@@ -751,7 +752,7 @@ lash_proxy::get_loaded_project_properties(
 	if (!_impl_ptr->call(
 		    true,
 		    LASH_IFACE_CONTROL,
-		    "GetLoadedProjectProperties",
+		    "ProjectGetProperties",
 		    &reply_ptr,
 		    DBUS_TYPE_STRING, &project_name_cstr,
 		    DBUS_TYPE_INVALID))
@@ -763,7 +764,7 @@ lash_proxy::get_loaded_project_properties(
 
 	if (strcmp(reply_signature, "a{sv}") != 0)
 	{
-		lash_proxy_impl::error_msg((string)"GetLoadedProjectProperties() reply signature mismatch. " + reply_signature);
+		lash_proxy_impl::error_msg((string)"ProjectGetProperties() reply signature mismatch. " + reply_signature);
 		goto unref;
 	}
 
@@ -824,7 +825,7 @@ lash_proxy::project_set_description(
 	if (!_impl_ptr->call(
 		    true,
 		    LASH_IFACE_CONTROL,
-		    "SetLoadedProjectDescription",
+		    "ProjectSetDescription",
 		    &reply_ptr,
 		    DBUS_TYPE_STRING, &project_name_cstr,
 		    DBUS_TYPE_STRING, &description_cstr,
@@ -851,7 +852,7 @@ lash_proxy::project_set_notes(
 	if (!_impl_ptr->call(
 		    true,
 		    LASH_IFACE_CONTROL,
-		    "SetLoadedProjectNotes",
+		    "ProjectSetNotes",
 		    &reply_ptr,
 		    DBUS_TYPE_STRING, &project_name_cstr,
 		    DBUS_TYPE_STRING, &notes_cstr,
