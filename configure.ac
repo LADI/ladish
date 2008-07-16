@@ -37,7 +37,7 @@ cd $srcdir
 abs_srcdir=`pwd`
 cd $builddir
 
-PKG_CHECK_MODULES([RAUL], [raul >= 0.4.0])
+PKG_CHECK_MODULES([RAUL], [raul >= 0.5.0])
 
 CONFIG_H_PATH="$builddir/config/config.h"
 
@@ -108,22 +108,23 @@ PKG_CHECK_MODULES(GTHREAD, gthread-2.0)
 PKG_CHECK_MODULES(GTKMM, gtkmm-2.4 >= 2.11.12)
 PKG_CHECK_MODULES(GNOMECANVASMM, libgnomecanvasmm-2.6)
 PKG_CHECK_MODULES(LIBGLADEMM, libglademm-2.4)
-PKG_CHECK_MODULES(FLOWCANVAS, flowcanvas >= 0.4.0)
+PKG_CHECK_MODULES(FLOWCANVAS, flowcanvas >= 0.5.0)
 
 
 #################### OUTPUT
 
 # Patchage
 AC_CONFIG_FILES([Makefile])
-AC_CONFIG_FILES([patchage.desktop])
-AC_CONFIG_FILES([src/Makefile])
-AC_CONFIG_FILES([icons/Makefile])
+AC_CONFIG_FILES([debian/Makefile])
 AC_CONFIG_FILES([icons/16x16/Makefile])
 AC_CONFIG_FILES([icons/22x22/Makefile])
 AC_CONFIG_FILES([icons/24x24/Makefile])
 AC_CONFIG_FILES([icons/32x32/Makefile])
 AC_CONFIG_FILES([icons/48x48/Makefile])
+AC_CONFIG_FILES([icons/Makefile])
 AC_CONFIG_FILES([icons/scalable/Makefile])
+AC_CONFIG_FILES([patchage.desktop])
+AC_CONFIG_FILES([src/Makefile])
 
 AC_OUTPUT
 

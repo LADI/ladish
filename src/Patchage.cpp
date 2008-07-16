@@ -23,7 +23,6 @@
 #include <libgnomecanvasmm.h>
 #include <libglademm/xml.h>
 #include <gtk/gtkwindow.h>
-#include <jack/statistics.h>
 #include <raul/SharedPtr.hpp>
 #include <boost/format.hpp>
 
