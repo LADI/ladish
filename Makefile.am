@@ -1,4 +1,4 @@
-SUBDIRS = src icons debian
+SUBDIRS = src icons
 
 desktopfilesdir = $(datadir)/applications
 dist_desktopfiles_DATA = patchage.desktop
