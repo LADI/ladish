@@ -37,7 +37,7 @@ cd $srcdir
 abs_srcdir=`pwd`
 cd $builddir
 
-PKG_CHECK_MODULES([RAUL], [raul >= 0.5.0])
+PKG_CHECK_MODULES([RAUL], [raul >= 0.4.0])
 
 CONFIG_H_PATH="$builddir/config/config.h"
 
@@ -108,7 +108,7 @@ PKG_CHECK_MODULES(GTHREAD, gthread-2.0)
 PKG_CHECK_MODULES(GTKMM, gtkmm-2.4 >= 2.11.12)
 PKG_CHECK_MODULES(GNOMECANVASMM, libgnomecanvasmm-2.6)
 PKG_CHECK_MODULES(LIBGLADEMM, libglademm-2.4)
-PKG_CHECK_MODULES(FLOWCANVAS, flowcanvas >= 0.5.0)
+PKG_CHECK_MODULES(FLOWCANVAS, flowcanvas >= 0.4.0)
 
 
 #################### OUTPUT
