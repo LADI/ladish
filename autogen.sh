@@ -11,6 +11,12 @@ rm -rf raul/config
 mkdir -p raul/config
 rm -rf flowcanvas/config
 mkdir -p flowcanvas/config
+rm -rf patchage/config
+mkdir -p patchage/config
+rm -rf ingen/config
+mkdir -p ingen/config
+rm -rf omins/config
+mkdir -p omins/config
 rm -rf config
 mkdir -p config
 rm -rf doc
