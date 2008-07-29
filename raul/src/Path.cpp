@@ -128,12 +128,18 @@ Path::replace_invalid_chars(string& str, bool replace_slash)
 {
 	size_t open_bracket = str.find_first_of('(');
 	if (open_bracket != string::npos)
-		str = str.substr(0, open_bracket-1);
+		str = str.substr(0, open_bracket);
 	
 	open_bracket = str.find_first_of('[');
 	if (open_bracket != string::npos)
-		str = str.substr(0, open_bracket-1);
+		str = str.substr(0, open_bracket);
 
+	if (str[str.length()-1] == ' ')
+		str = str.substr(0, str.length()-1);
+
+//#define STRICT_SYMBOLS
+
+#ifdef STRICT_SYMBOLS
 	// dB = special case, need to avoid CamelCase killing below
 	while (true) {
 		size_t decibels = str.find("dB");
@@ -143,20 +149,25 @@ Path::replace_invalid_chars(string& str, bool replace_slash)
 			break;
 	}
 
-
 	// Kill CamelCase in favour of god_fearing_symbol_names
 	for (size_t i=1; i < str.length(); ++i) {
 		if (str[i] >= 'A' && str[i] <= 'Z' && str[i-1] >= 'a' && str[i-1] <= 'z')
 			str = str.substr(0, i) + '_' + str.substr(i);
 	}
+#endif
 	
 	for (size_t i=0; i < str.length(); ++i) {
 		if (str[i] == '\'') {
 			str = str.substr(0, i) + str.substr(i+1);
+#ifdef STRICT_SYMBOLS
 		} else if (str[i] >= 'A' && str[i] <= 'Z') {
 			str[i] = std::tolower(str[i]);
+#endif
 		} else if ( str[i] != '_' && str[i] != '/'
 				&& (str[i] < 'a' || str[i] > 'z')
+#ifndef STRICT_SYMBOLS
+				&& (str[i] < 'A' || str[i] > 'Z')
+#endif
 				&& (str[i] < '0' || str[i] > '9') ) {
 			if (i > 0 && str[i-1] == '_') {
 				str = str.substr(0, i) + str.substr(i+1);

@@ -506,6 +506,19 @@ fi
 AM_CONDITIONAL(BUILD_GTK_CLIENT, [test "$build_ingen_gtk_client" = "yes"])
 AM_CONDITIONAL(WITH_CURL, [test "$build_curl" = "yes"])
 
+if test "$build_ingen_client_lib" = "yes" -o "$build_ingen_server" = "yes"; then
+	new_redland="no"
+	PKG_CHECK_MODULES(REDLAND, redland >= 1.0.8, new_redland="yes", new_redland="no")
+	if test "$new_redland" = "no"; then
+		AC_MSG_WARN([Your version of librdf is too old, Ingen requires librdf >= 1.0.8])
+		AC_MSG_WARN([*** Ingen will not be compiled ***])
+		build_ingen_client_lib="no"
+		build_ingen_server="no"
+		build_ingen_gtk_client="no"
+		build_ingen_clients="no"
+	fi
+fi
+
 # Build ingen client lib if anything above that depends on it is to be built
 AM_CONDITIONAL(BUILD_CLIENT_LIB, [test "$build_ingen_clients" = "yes" -o "$build_ingen_gtk_client" = "yes"])
 

@@ -104,6 +104,9 @@ Model::set_base_uri(const Glib::ustring& uri)
 	if (uri == "")
 		return;
 
+	assert(uri.find(":") != string::npos);
+	assert(uri.substr(uri.find(":")+1).find(":") == string::npos);
+	cout << "[Model] Base URI = " << uri << endl;
 	_base = Node(_world, Node::RESOURCE, uri);
 }
 
@@ -122,6 +125,11 @@ Model::setup_prefixes()
 	librdf_serializer_set_feature(_serialiser,
 			librdf_new_uri(_world.world(), U("http://feature.librdf.org/raptor-writeBaseURI")),
 			Node(_world, Node::LITERAL, "0").get_node());
+	
+	/* Write relative URIs wherever possible */
+	librdf_serializer_set_feature(_serialiser,
+			librdf_new_uri(_world.world(), U("http://feature.librdf.org/raptor-relativeURIs")),
+			Node(_world, Node::LITERAL, "1").get_node());
 }
 
 
@@ -146,7 +154,7 @@ Model::serialise_to_file_handle(FILE* fd)
 
 /** Begin a serialization to a file.
  *
- * \a uri must be a local (file://) URI.
+ * \a uri must be a local (file:) URI.
  *
  * This must be called before any write methods.
  */
