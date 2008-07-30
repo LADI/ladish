@@ -636,6 +636,9 @@ AC_CONFIG_FILES([slv2/slv2.pc])
 AC_CONFIG_FILES([slv2/slv2/Makefile])
 AC_CONFIG_FILES([slv2/src/Makefile])
 AC_CONFIG_FILES([slv2/swig/Makefile])
+AC_CONFIG_FILES([slv2/swig/python/Makefile])
+AC_CONFIG_FILES([slv2/swig/mzscheme/Makefile])
+AC_CONFIG_FILES([slv2/swig/chicken/Makefile])
 AC_CONFIG_FILES([slv2/utils/Makefile])
 
 # LV2 Stuff
