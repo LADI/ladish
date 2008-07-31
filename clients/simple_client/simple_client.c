@@ -115,6 +115,16 @@ main(int argc, char **argv)
 				lash_send_config(client, config);
 				lash_send_event(client, event);
 				break;
+			case LASH_Restore_Data_Set:
+				while ((config = lash_get_config(client))) {
+					printf("%s: got config with key '%s', value_size %d\n",
+					       __FUNCTION__, lash_config_get_key(config),
+					       lash_config_get_value_size(config));
+					lash_config_free(config);
+					free(config);
+				}
+				lash_send_event(client, event);
+				break;
 			case LASH_Save_File:
 			{
 				FILE *config_file;
@@ -151,6 +161,11 @@ main(int argc, char **argv)
 				lash_send_event(client, event);
 				break;
 			}
+			case LASH_Quit:
+				printf("server told us to quit; exiting\n");
+				done = 1;
+				break;
+
 			case LASH_Server_Lost:
 				printf("server connection lost; exiting\n");
 				exit(0);
@@ -163,15 +178,6 @@ main(int argc, char **argv)
 				lash_event_destroy(event);
 				break;
 			}
-		}
-
-		config = lash_get_config(client);
-		if (config) {
-			printf("%s: got config with key '%s', value_size %d\n",
-				   __FUNCTION__, lash_config_get_key(config),
-				   lash_config_get_value_size(config));
-			lash_config_free(config);
-			free(config);
 		}
 
 		sleep(5);
