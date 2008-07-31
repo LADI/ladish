@@ -15,7 +15,6 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <raul/SharedPtr.hpp>
 #include CONFIG_H_PATH
 #include "PatchageCanvas.hpp"
 #include "Patchage.hpp"

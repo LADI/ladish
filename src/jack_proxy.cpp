@@ -18,7 +18,6 @@
 
 #include <cassert>
 #include <cstring>
-#include <string>
 #include <set>
 #include <iostream>
 
@@ -29,9 +28,7 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
-#include <boost/format.hpp>
-#include <raul/SharedPtr.hpp>
-
+#include "common.hpp"
 #include "PatchageCanvas.hpp"
 #include "Patchage.hpp"
 #include "PatchageModule.hpp"
@@ -106,7 +103,7 @@ jack_proxy::destroy_all_ports()
 {
 	ItemList modules = _app->canvas()->items(); // copy
 	for (ItemList::iterator m = modules.begin(); m != modules.end(); ++m) {
-		SharedPtr<Module> module = PtrCast<Module>(*m);
+		shared_ptr<Module> module = dynamic_pointer_cast<Module>(*m);
 		if (!module)
 			continue;
 
@@ -545,13 +542,13 @@ jack_proxy::remove_port(
 	dbus_uint64_t port_id,
 	const char*   port_name)
 {
-	boost::shared_ptr<PatchagePort> port = PtrCast<PatchagePort>(_app->canvas()->get_port(client_name, port_name));
+	boost::shared_ptr<PatchagePort> port = dynamic_pointer_cast<PatchagePort>(_app->canvas()->get_port(client_name, port_name));
 	if (!port) {
 		error_msg("Unable to remove unknown port");
 		return;
 	}
 
-	boost::shared_ptr<PatchageModule> module = PtrCast<PatchageModule>(port->module().lock());
+	boost::shared_ptr<PatchageModule> module = dynamic_pointer_cast<PatchageModule>(port->module().lock());
 
 	module->remove_port(port);
 	port.reset();
@@ -603,13 +600,13 @@ jack_proxy::connect_ports(
 	dbus_uint64_t port2_id,
 	const char*   port2_name)
 {
-	boost::shared_ptr<PatchagePort> port1 = PtrCast<PatchagePort>(_app->canvas()->get_port(client1_name, port1_name));
+	boost::shared_ptr<PatchagePort> port1 = dynamic_pointer_cast<PatchagePort>(_app->canvas()->get_port(client1_name, port1_name));
 	if (!port1) {
 		error_msg((string)"Unable to connect unknown port '" + port1_name + "' of client '" + client1_name + "'");
 		return;
 	}
 
-	boost::shared_ptr<PatchagePort> port2 = PtrCast<PatchagePort>(_app->canvas()->get_port(client2_name, port2_name));
+	boost::shared_ptr<PatchagePort> port2 = dynamic_pointer_cast<PatchagePort>(_app->canvas()->get_port(client2_name, port2_name));
 	if (!port2) {
 		error_msg((string)"Unable to connect unknown port '" + port2_name + "' of client '" + client2_name + "'");
 		return;
@@ -631,13 +628,13 @@ jack_proxy::disconnect_ports(
 	dbus_uint64_t port2_id,
 	const char*   port2_name)
 {
-	boost::shared_ptr<PatchagePort> port1 = PtrCast<PatchagePort>(_app->canvas()->get_port(client1_name, port1_name));
+	boost::shared_ptr<PatchagePort> port1 = dynamic_pointer_cast<PatchagePort>(_app->canvas()->get_port(client1_name, port1_name));
 	if (!port1) {
 		error_msg((string)"Unable to disconnect unknown port '" + port1_name + "' of client '" + client1_name + "'");
 		return;
 	}
 
-	boost::shared_ptr<PatchagePort> port2 = PtrCast<PatchagePort>(_app->canvas()->get_port(client2_name, port2_name));
+	boost::shared_ptr<PatchagePort> port2 = dynamic_pointer_cast<PatchagePort>(_app->canvas()->get_port(client2_name, port2_name));
 	if (!port2) {
 		error_msg((string)"Unable to disconnect unknown port '" + port2_name + "' of client '" + client2_name + "'");
 		return;

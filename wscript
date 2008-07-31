@@ -50,7 +50,6 @@ def configure(conf):
     conf.check_header('boost/shared_ptr.hpp', mandatory=True)
     conf.check_header('boost/weak_ptr.hpp', mandatory=True)
     
-    conf.check_pkg('raul', mandatory=True, vnum='0.4.0')
     conf.check_pkg('flowcanvas', mandatory=True, vnum='0.4.0')
 
     display_msg("Install prefix", conf.env['PREFIX'], 'CYAN')
@@ -76,7 +75,7 @@ def build(bld):
 	'src/project_properties.cpp',
 	'src/session.cpp',
         ]
-    prog.includes = '.' # make waf dependency tracking work
+    prog.includes = 'src' # make waf dependency tracking work
     prog.target = APPNAME
     prog.uselib = 'DBUS-1 LIBGNOMECANVASMM-2.6 LIBGLADEMM-2.4 FLOWCANVAS DBUS-GLIB-1'
 

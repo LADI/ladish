@@ -22,7 +22,6 @@
 #include <boost/shared_ptr.hpp>
 #include <jack/jack.h>
 #include <jack/statistics.h>
-#include <raul/AtomicPtr.hpp>
 #include <dbus/dbus.h>
 
 #include "Patchage.hpp"

@@ -23,7 +23,6 @@
 #include <libgnomecanvasmm.h>
 #include <libglademm/xml.h>
 #include <gtk/gtkwindow.h>
-#include <raul/SharedPtr.hpp>
 #include <boost/format.hpp>
 
 #include CONFIG_H_PATH
@@ -369,7 +368,7 @@ void
 Patchage::update_state()
 {
 	for (ItemList::iterator i = _canvas->items().begin(); i != _canvas->items().end(); ++i) {
-		SharedPtr<Module> module = PtrCast<Module>(*i);
+		shared_ptr<Module> module = dynamic_pointer_cast<Module>(*i);
 		if (module) 
 			module->load_location();
 	}
