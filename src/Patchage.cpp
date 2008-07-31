@@ -20,7 +20,6 @@
 #include <cmath>
 #include <sstream>
 #include <fstream>
-#include <pthread.h>
 #include <libgnomecanvasmm.h>
 #include <libglademm/xml.h>
 #include <gtk/gtkwindow.h>

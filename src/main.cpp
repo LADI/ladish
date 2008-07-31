@@ -31,8 +31,6 @@ int main(int argc, char** argv)
 {
 	try {
 	
-	Glib::thread_init();
-
 	Gnome::Canvas::init();
 	Gtk::Main app(argc, argv);
 

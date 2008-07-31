@@ -42,7 +42,6 @@ def configure(conf):
     conf.check_pkg('dbus-1', mandatory=True)
     conf.check_pkg('dbus-glib-1', mandatory=True)
     conf.check_pkg('glibmm-2.4', mandatory=True)
-    conf.check_pkg('gthread-2.0', mandatory=True)
     conf.check_pkg('gtkmm-2.4', mandatory=True, vnum='2.11.12')
     conf.check_pkg('libgnomecanvasmm-2.6', mandatory=True)
     conf.check_pkg('libglademm-2.4', mandatory=True)
@@ -79,7 +78,7 @@ def build(bld):
         ]
     prog.includes = '.' # make waf dependency tracking work
     prog.target = APPNAME
-    prog.uselib = 'DBUS-1 LIBGNOMECANVASMM-2.6 LIBGLADEMM-2.4 FLOWCANVAS DBUS-GLIB-1 GTHREAD-2.0'
+    prog.uselib = 'DBUS-1 LIBGNOMECANVASMM-2.6 LIBGLADEMM-2.4 FLOWCANVAS DBUS-GLIB-1'
 
     # Installation layout (with /usr prefix)
     # /usr/bin/patchage
