@@ -2,8 +2,8 @@
 Encoding=UTF-8
 Name=@APP_HUMAN_NAME@
 Comment=Connect audio and MIDI applications together and manage audio sessions
-Exec=@BINDIR@/@APPNAME@
+Exec=@BINDIR@/@APP_INSTALL_NAME@
 Terminal=false
-Icon=@APPNAME@
+Icon=@APP_INSTALL_NAME@
 Type=Application
 Categories=Application;AudioVideo;Sound;Audio
