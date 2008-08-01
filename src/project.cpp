@@ -141,7 +141,7 @@ project::on_client_removed(
 	}
 }
 
-bool
+void
 project::on_modified_status_changed(
 	bool modified_status)
 {

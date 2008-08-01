@@ -56,8 +56,8 @@ using namespace FlowCanvas;
 
 jack_proxy::jack_proxy(Patchage* app)
 	: _app(app)
-	, _server_started(false)
 	, _server_responding(false)
+	, _server_started(false)
 	, _graph_version(0)
 	, _max_dsp_load(0.0)
 {
@@ -649,7 +649,6 @@ jack_proxy::refresh_internal(bool force)
 {
 	DBusMessage* reply_ptr;
 	DBusMessageIter iter;
-	int type;
 	dbus_uint64_t version;
 	const char * reply_signature;
 	DBusMessageIter clients_array_iter;
@@ -920,6 +919,8 @@ jack_proxy::set_buffer_size(jack_nframes_t size)
 	}
 
 	dbus_message_unref(reply_ptr);
+
+	return true;
 }
 
 

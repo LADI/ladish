@@ -81,7 +81,7 @@ private:
 	on_name_changed(
 		const string& name);
 
-	bool
+	void
 	on_modified_status_changed(
 		bool modified_status);
 

@@ -80,11 +80,11 @@ gtkmm_set_width_for_given_text (Gtk::Widget &w, const gchar *text,
 #define INIT_WIDGET(x) x(g_xml, ((const char*)#x) + 1)
 
 Patchage::Patchage(int argc, char** argv)
-	: INIT_WIDGET(_menu_open_session)
+	: _dbus_connection(0)
+	, INIT_WIDGET(_menu_open_session)
 	, INIT_WIDGET(_menu_save_session)
 	, INIT_WIDGET(_menu_save_session_as)
 	, INIT_WIDGET(_menu_close_session)
-	, _dbus_connection(0)
 	, _state_manager(NULL)
 	, _max_dsp_load(0.0)
 	, INIT_WIDGET(_about_win)
@@ -654,7 +654,6 @@ convert_timestamp_to_string(
 	struct tm tm_mtime;
 	time_t time_now;
 	const gchar *format;
-	gchar *locale_format = NULL;
 	gchar buf[256];
 
 	if (timestamp == 0)
