@@ -8,8 +8,9 @@ from Configure import g_maxlen
 #g_maxlen = 40
 import shutil
 
-VERSION='1'
-APPNAME='patchage'
+VERSION='2'
+APPNAME='lpatchage'
+APP_HUMAN_NAME='LADI Patchage'
 
 # these variables are mandatory ('/' are converted automatically)
 srcdir = '.'
@@ -100,15 +101,20 @@ def build(bld):
     obj = bld.create_obj('subst')
     obj.source = 'patchage.desktop.in'
     obj.target = 'patchage.desktop'
-    obj.dict = {'BINDIR': bld.env()['PREFIX'] + '/bin'}
-    obj.inst_var = os.path.normpath(bld.env()['PREFIX'] + '/share/applications/')
-    obj.inst_dir = '/'
+    obj.dict = {
+	'BINDIR': bld.env()['PREFIX'] + '/bin',
+	'APPNAME': APPNAME,
+	'APP_HUMAN_NAME': APP_HUMAN_NAME,
+	}
+    #obj.inst_var = os.path.normpath(bld.env()['PREFIX'] + '/share/applications/')
+    #obj.inst_dir = '/'
+    install_as(os.path.normpath(bld.env()['PREFIX'] + '/share/applications/'), APPNAME + '.desktop', 'build/default/patchage.desktop')
 
-    install_files('PREFIX', '/share/icons/hicolor/scalable/apps/', 'icons/scalable/patchage.svg')
+    install_as(os.path.normpath(bld.env()['PREFIX'] + '/share/icons/hicolor/scalable/apps/'), APPNAME + '.svg', 'icons/scalable/patchage.svg')
 
     icon_sizes = ['16x16', '22x22', '24x24', '32x32', '48x48']
     for icon_size in icon_sizes:
-	install_files('PREFIX', '/share/icons/hicolor/' + icon_size + '/apps/', 'icons/' + icon_size + '/patchage.png')
+	install_as(os.path.normpath(bld.env()['PREFIX'] + '/share/icons/hicolor/' + icon_size + '/apps/'), APPNAME + '.png', 'icons/' + icon_size + '/patchage.png')
 
     # TODO: ask some packagers for best policy about updating icon cache here
     # gtk-update-icon-cache -f -t $(datadir)/icons/hicolor

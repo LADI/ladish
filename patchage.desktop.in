@@ -1,9 +1,9 @@
 [Desktop Entry]
 Encoding=UTF-8
-Name=Patchage
+Name=@APP_HUMAN_NAME@
 Comment=Connect audio and MIDI applications together and manage audio sessions
-Exec=patchage
+Exec=@BINDIR@/@APPNAME@
 Terminal=false
-Icon=patchage
+Icon=@APPNAME@
 Type=Application
 Categories=Application;AudioVideo;Sound;Audio
