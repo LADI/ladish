@@ -36,6 +36,7 @@
 #include "project_list.hpp"
 #include "session.hpp"
 #include "globals.hpp"
+#include "a2j_proxy.hpp"
 
 Patchage * g_app;
 
@@ -211,6 +212,10 @@ Patchage::Patchage(int argc, char** argv)
 	
 	_about_win->set_transient_for(*_main_win);
 
+	_a2j = new a2j_proxy;
+
+	//info_msg(str(boost::format("a2j jack client name is '%s'") % _a2j->get_jack_client_name()));
+
 	_session = new session();
 
 	_project_list = new project_list(this, _session);
@@ -243,6 +248,7 @@ Patchage::~Patchage()
 	delete _project_list;
 	delete _session;
 	delete _state_manager;
+	delete _a2j;
 
 	_about_win.destroy();
 	_messages_win.destroy();

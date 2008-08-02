@@ -31,6 +31,7 @@
 #include <dbus/dbus-glib-lowlevel.h>
 
 class PatchageCanvas;
+class a2j_proxy;
 class jack_proxy;
 class lash_proxy;
 class StateManager;
@@ -128,6 +129,7 @@ protected:
 
 	boost::shared_ptr<PatchageCanvas> _canvas;
 
+	a2j_proxy * _a2j;
 	jack_proxy*         _jack;
 	session * _session;
 	lash_proxy * _lash;

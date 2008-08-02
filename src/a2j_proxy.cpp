@@ -16,19 +16,133 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include <dbus/dbus.h>
+
 #include "common.hpp"
 #include "a2j_proxy.hpp"
+#include "Patchage.hpp"
+#include "globals.hpp"
+
+#define A2J_SERVICE       "org.gna.home.a2jmidid"
+#define A2J_OBJECT        "/"
+#define A2J_IFACE_CONTROL "org.gna.home.a2jmidid.control"
+
+static
+void
+error_msg(
+	const string& msg)
+{
+	g_app->error_msg((string)"[A2J] " + msg);
+}
+
+#if 0
+static
+void
+info_msg(
+	const string& msg)
+{
+	g_app->info_msg((string)"[A2J] " + msg);
+}
+#endif
+
+struct a2j_proxy_impl
+{
+	void
+	init();
+
+	bool
+	call(
+		bool response_expected,
+		const char* iface,
+		const char* method,
+		DBusMessage ** reply_ptr_ptr,
+		int in_type,
+		...);
+
+	bool
+	get_jack_client_name(
+		string& jack_client_name_ref);
+
+	bool _server_responding;
+	string _jack_client_name;
+};
 
 a2j_proxy::a2j_proxy()
 {
+	_impl_ptr = new a2j_proxy_impl;
+	_impl_ptr->init();
 }
 
 a2j_proxy::~a2j_proxy()
 {
+	delete _impl_ptr;
 }
 
 const char *
 a2j_proxy::get_jack_client_name()
 {
-	return NULL;
+	return _impl_ptr->_jack_client_name.c_str();
+}
+
+void
+a2j_proxy_impl::init()
+{
+	_server_responding = false;
+
+	get_jack_client_name(_jack_client_name);
+}
+
+bool
+a2j_proxy_impl::call(
+	bool response_expected,
+	const char* iface,
+	const char* method,
+	DBusMessage ** reply_ptr_ptr,
+	int in_type,
+	...)
+{
+	va_list ap;
+
+	va_start(ap, in_type);
+
+	_server_responding = g_app->dbus_call(
+		response_expected,
+		A2J_SERVICE,
+		A2J_OBJECT,
+		iface,
+		method,
+		reply_ptr_ptr,
+		in_type,
+		ap);
+
+	va_end(ap);
+
+	return _server_responding;
+}
+
+bool
+a2j_proxy_impl::get_jack_client_name(
+	string& jack_client_name_ref)
+{
+	DBusMessage * reply_ptr;
+	const char * jack_client_name;
+
+	if (!call(true, A2J_IFACE_CONTROL, "get_jack_client_name", &reply_ptr, DBUS_TYPE_INVALID))
+	{
+		return false;
+	}
+
+	if (!dbus_message_get_args(reply_ptr, &g_app->_dbus_error, DBUS_TYPE_STRING, &jack_client_name, DBUS_TYPE_INVALID))
+	{
+		dbus_message_unref(reply_ptr);
+		dbus_error_free(&g_app->_dbus_error);
+		error_msg("decoding reply of get_jack_client_name failed.");
+		return false;
+	}
+
+	jack_client_name_ref = jack_client_name;
+
+	dbus_message_unref(reply_ptr);
+
+	return true;
 }
