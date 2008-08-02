@@ -157,20 +157,17 @@ protected:
 
 	void buffer_size_changed();
 
-	bool
-	maybe_map_j2a(
-		const char * jack_client_name,
-		const char * jack_port_name,
-		std::string& canvas_client_name,
-		std::string& canvas_port_name,
-		bool& is_a2j_mapped);
-
 	void
 	get_port_jack_names(
 		boost::shared_ptr<PatchagePort> port,
 		std::string& jack_client_name,
 		std::string& jack_port_name);
 	
+	boost::shared_ptr<PatchagePort>
+	lookup_port(
+		const char * jack_client_name,
+		const char * jack_port_name);
+
 	Widget<Gtk::MenuItem> _menu_open_session;
 	Widget<Gtk::MenuItem> _menu_save_session;
 	Widget<Gtk::MenuItem> _menu_save_session_as;

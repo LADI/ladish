@@ -16,6 +16,7 @@
  */
 
 #include CONFIG_H_PATH
+#include "common.hpp"
 #include "PatchageCanvas.hpp"
 #include "Patchage.hpp"
 #include "PatchageModule.hpp"
@@ -76,7 +77,7 @@ PatchageCanvas::status_message(const string& msg)
 }
 
 
-boost::shared_ptr<Port>
+boost::shared_ptr<PatchagePort>
 PatchageCanvas::get_port(const string& node_name, const string& port_name)
 {
 	for (ItemList::iterator i = _items.begin(); i != _items.end(); ++i) {
@@ -87,9 +88,33 @@ PatchageCanvas::get_port(const string& node_name, const string& port_name)
 			continue;
 		const boost::shared_ptr<Port> port = module->get_port(port_name);
 		if (module->name() == node_name && port)
-			return port;
+			return dynamic_pointer_cast<PatchagePort>(port);
 	}
 	
-	return boost::shared_ptr<Port>();
+	return boost::shared_ptr<PatchagePort>();
 }
 
+boost::shared_ptr<PatchagePort>
+PatchageCanvas::lookup_port_by_a2j_jack_port_name(
+	const char * a2j_jack_port_name)
+{
+	for (ItemList::iterator i = _items.begin(); i != _items.end(); ++i)
+	{
+		const boost::shared_ptr<Item> item = *i;
+		const boost::shared_ptr<Module> module = boost::dynamic_pointer_cast<Module>(item);
+		if (!module)
+			continue;
+
+		PortVector ports = module->ports(); // copy
+		for (PortVector::iterator p = ports.begin(); p != ports.end(); ++p)
+		{
+			boost::shared_ptr<PatchagePort> port = boost::dynamic_pointer_cast<PatchagePort>(*p);
+			if (port->is_a2j_mapped && port->a2j_jack_port_name == a2j_jack_port_name)
+			{
+				return dynamic_pointer_cast<PatchagePort>(port);
+			}
+		}
+	}
+	
+	return boost::shared_ptr<PatchagePort>();
+}
