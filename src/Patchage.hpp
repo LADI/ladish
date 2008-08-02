@@ -30,6 +30,8 @@
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
+#include "PatchagePort.hpp"
+
 class PatchageCanvas;
 class a2j_proxy;
 class jack_proxy;
@@ -95,6 +97,39 @@ public:
 	void save_project(const std::string& project_name);
 	void close_project(const std::string& project_name);
 	void close_all_projects();
+
+	void
+	on_port_added(
+		const char * client_name,
+		const char * port_name,
+		PortType port_type,
+		bool is_input,
+		bool is_terminal);
+
+	void
+	on_port_removed(
+		const char * client_name,
+		const char * port_name);
+
+	void
+	on_ports_connected(
+		const char * client1_name,
+		const char * port1_name,
+		const char * client2_name,
+		const char * port2_name);
+
+	void
+	on_ports_disconnected(
+		const char * client1_name,
+		const char * port1_name,
+		const char * client2_name,
+		const char * port2_name);
+
+	void
+	clear_canvas();
+
+	bool
+	is_canvas_empty();
 
 	DBusError _dbus_error;
 	DBusConnection* _dbus_connection;

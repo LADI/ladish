@@ -29,13 +29,10 @@
 #include <dbus/dbus-glib-lowlevel.h>
 
 #include "common.hpp"
-#include "PatchageCanvas.hpp"
 #include "Patchage.hpp"
-#include "PatchageModule.hpp"
 #include "jack_proxy.hpp"
 
 using namespace std;
-using namespace FlowCanvas;
 
 #define JACKDBUS_SERVICE         "org.jackaudio.service"
 #define JACKDBUS_OBJECT          "/org/jackaudio/Controller"
@@ -94,35 +91,6 @@ jack_proxy::~jack_proxy()
 		dbus_error_free(&_app->_dbus_error);
 	}
 }
-
-
-/** Destroy all JACK (canvas) ports.
- */
-void
-jack_proxy::destroy_all_ports()
-{
-	ItemList modules = _app->canvas()->items(); // copy
-	for (ItemList::iterator m = modules.begin(); m != modules.end(); ++m) {
-		shared_ptr<Module> module = dynamic_pointer_cast<Module>(*m);
-		if (!module)
-			continue;
-
-		PortVector ports = module->ports(); // copy
-		for (PortVector::iterator p = ports.begin(); p != ports.end(); ++p) {
-			boost::shared_ptr<PatchagePort> port = boost::dynamic_pointer_cast<PatchagePort>(*p);
-			if (port && port->type() == JACK_AUDIO || port->type() == JACK_MIDI) {
-				module->remove_port(port);
-				port->hide();
-			}
-		}
-
-		if (module->ports().empty())
-			_app->canvas()->remove_item(module);
-		else
-			module->resize();
-	}
-}
-
 
 void
 jack_proxy::update_attached()
@@ -286,9 +254,9 @@ jack_proxy::dbus_message_hook(
 			me->signal_started.emit();
 		}
 
-		me->add_port(client_id, client_name, port_id, port_name, port_flags, port_type);
+		me->on_port_added(client_id, client_name, port_id, port_name, port_flags, port_type);
 
-	    return DBUS_HANDLER_RESULT_HANDLED;
+		return DBUS_HANDLER_RESULT_HANDLED;
 	}
 
 	if (dbus_message_is_signal(message, JACKDBUS_IFACE_PATCHBAY, "PortDisappeared")) {
@@ -312,7 +280,7 @@ jack_proxy::dbus_message_hook(
 			me->signal_started.emit();
 		}
 
-		me->remove_port(client_id, client_name, port_id, port_name);
+		me->on_port_removed(client_id, client_name, port_id, port_name);
 
 		return DBUS_HANDLER_RESULT_HANDLED;
 	}
@@ -341,7 +309,7 @@ jack_proxy::dbus_message_hook(
 			me->signal_started.emit();
 		}
 
-		me->connect_ports(
+		me->on_ports_connected(
 			connection_id,
 			client_id, client_name,
 			port_id, port_name,
@@ -375,14 +343,14 @@ jack_proxy::dbus_message_hook(
 			me->signal_started.emit();
 		}
 
-		me->disconnect_ports(
+		me->on_ports_disconnected(
 			connection_id,
 			client_id, client_name,
 			port_id, port_name,
 			client2_id, client2_name,
 			port2_id, port2_name);
 
-	    return DBUS_HANDLER_RESULT_HANDLED;
+		return DBUS_HANDLER_RESULT_HANDLED;
 	}
 #endif
 
@@ -474,35 +442,11 @@ jack_proxy::stop_server()
 }
 
 void
-jack_proxy::add_port(
-	boost::shared_ptr<PatchageModule>& module,
-	PortType                           type,
-	const std::string&                 name,
-	bool                               is_input)
-{
-	if (module->get_port(name)) {
-		return;
-	}
-
-	module->add_port(
-		boost::shared_ptr<PatchagePort>(
-			new PatchagePort(
-				module,
-				type,
-				name,
-				is_input,
-				_app->state_manager()->get_port_color(type))));
-
-	module->resize();
-}
-
-
-void
-jack_proxy::add_port(
+jack_proxy::on_port_added(
 	dbus_uint64_t client_id,
-	const char*   client_name,
+	const char * client_name,
 	dbus_uint64_t port_id,
-	const char*   port_name,
+	const char * port_name,
 	dbus_uint32_t port_flags,
 	dbus_uint32_t port_type)
 {
@@ -520,49 +464,27 @@ jack_proxy::add_port(
 		return;
 	}
 
-	ModuleType type = InputOutput;
-	if (_app->state_manager()->get_module_split(client_name, port_flags & JACKDBUS_PORT_FLAG_TERMINAL)) {
-		if (port_flags & JACKDBUS_PORT_FLAG_INPUT) {
-			type = Input;
-		} else {
-			type = Output;
-		}
-	}
-
-	boost::shared_ptr<PatchageModule> module = find_or_create_module(type, client_name);
-
-	add_port(module, local_port_type, port_name, port_flags & JACKDBUS_PORT_FLAG_INPUT);
+	_app->on_port_added(
+		client_name,
+		port_name,
+		local_port_type,
+		port_flags & JACKDBUS_PORT_FLAG_INPUT,
+		port_flags & JACKDBUS_PORT_FLAG_TERMINAL);
 }
 
-
 void
-jack_proxy::remove_port(
+jack_proxy::on_port_removed(
 	dbus_uint64_t client_id,
-	const char*   client_name,
+	const char * client_name,
 	dbus_uint64_t port_id,
-	const char*   port_name)
+	const char * port_name)
 {
-	boost::shared_ptr<PatchagePort> port = dynamic_pointer_cast<PatchagePort>(_app->canvas()->get_port(client_name, port_name));
-	if (!port) {
-		error_msg("Unable to remove unknown port");
-		return;
-	}
+	_app->on_port_removed(client_name, port_name);
 
-	boost::shared_ptr<PatchageModule> module = dynamic_pointer_cast<PatchageModule>(port->module().lock());
-
-	module->remove_port(port);
-	port.reset();
-			
-	// No empty modules (for now)
-	if (module->num_ports() == 0) {
-		_app->canvas()->remove_item(module);
-		module.reset();
-	} else {
-		module->resize();
-	}
-
-	if (_app->canvas()->items().empty()) {
-		if (_server_started) {
+	if (_app->is_canvas_empty())
+	{
+		if (_server_started)
+		{
 			signal_stopped.emit();
 		}
 
@@ -570,26 +492,8 @@ jack_proxy::remove_port(
 	}
 }
 
-
-boost::shared_ptr<PatchageModule>
-jack_proxy::find_or_create_module(
-	ModuleType type,
-	const std::string& name)
-{
-	boost::shared_ptr<PatchageModule> module = _app->canvas()->find_module(name, type);
-
-	if (!module) {
-		module = boost::shared_ptr<PatchageModule>(new PatchageModule(_app, name, type));
-		module->load_location();
-		_app->canvas()->add_item(module);
-	}
-
-	return module;
-}
-
-
 void
-jack_proxy::connect_ports(
+jack_proxy::on_ports_connected(
 	dbus_uint64_t connection_id,
 	dbus_uint64_t client1_id,
 	const char*   client1_name,
@@ -600,24 +504,11 @@ jack_proxy::connect_ports(
 	dbus_uint64_t port2_id,
 	const char*   port2_name)
 {
-	boost::shared_ptr<PatchagePort> port1 = dynamic_pointer_cast<PatchagePort>(_app->canvas()->get_port(client1_name, port1_name));
-	if (!port1) {
-		error_msg((string)"Unable to connect unknown port '" + port1_name + "' of client '" + client1_name + "'");
-		return;
-	}
-
-	boost::shared_ptr<PatchagePort> port2 = dynamic_pointer_cast<PatchagePort>(_app->canvas()->get_port(client2_name, port2_name));
-	if (!port2) {
-		error_msg((string)"Unable to connect unknown port '" + port2_name + "' of client '" + client2_name + "'");
-		return;
-	}
-
-	_app->canvas()->add_connection(port1, port2, port1->color() + 0x22222200);
+	_app->on_ports_connected(client1_name, port1_name, client2_name, port2_name);
 }
 
-
 void
-jack_proxy::disconnect_ports(
+jack_proxy::on_ports_disconnected(
 	dbus_uint64_t connection_id,
 	dbus_uint64_t client1_id,
 	const char*   client1_name,
@@ -628,21 +519,8 @@ jack_proxy::disconnect_ports(
 	dbus_uint64_t port2_id,
 	const char*   port2_name)
 {
-	boost::shared_ptr<PatchagePort> port1 = dynamic_pointer_cast<PatchagePort>(_app->canvas()->get_port(client1_name, port1_name));
-	if (!port1) {
-		error_msg((string)"Unable to disconnect unknown port '" + port1_name + "' of client '" + client1_name + "'");
-		return;
-	}
-
-	boost::shared_ptr<PatchagePort> port2 = dynamic_pointer_cast<PatchagePort>(_app->canvas()->get_port(client2_name, port2_name));
-	if (!port2) {
-		error_msg((string)"Unable to disconnect unknown port '" + port2_name + "' of client '" + client2_name + "'");
-		return;
-	}
-
-	_app->canvas()->remove_connection(port1, port2);
+	_app->on_ports_disconnected(client1_name, port1_name, client2_name, port2_name);
 }
-
 
 void
 jack_proxy::refresh_internal(bool force)
@@ -703,7 +581,7 @@ jack_proxy::refresh_internal(bool force)
 		goto unref;
 	}
 
-	destroy_all_ports();
+	_app->clear_canvas();
 
 	//info_msg(str(boost::format("got new graph version %llu") % version));
 	_graph_version = version;
@@ -744,7 +622,7 @@ jack_proxy::refresh_internal(bool force)
 
 			//info_msg((string)"port: " + port_name);
 
-			add_port(client_id, client_name, port_id, port_name, port_flags, port_type);
+			on_port_added(client_id, client_name, port_id, port_name, port_flags, port_type);
 		}
 
 		dbus_message_iter_next(&client_struct_iter);
@@ -796,7 +674,7 @@ jack_proxy::refresh_internal(bool force)
 		//		port2_name %
 		//		port2_id));
 
-		connect_ports(
+		on_ports_connected(
 			connection_id,
 			client_id, client_name,
 			port_id, port_name,
@@ -818,19 +696,12 @@ jack_proxy::refresh()
 
 bool
 jack_proxy::connect(
-	boost::shared_ptr<PatchagePort> src,
-	boost::shared_ptr<PatchagePort> dst)
+	const char * client1_name,
+	const char * port1_name,
+	const char * client2_name,
+	const char * port2_name)
 {
-	const char *client1_name;
-	const char *port1_name;
-	const char *client2_name;
-	const char *port2_name;
 	DBusMessage* reply_ptr;
-
-	client1_name = src->module().lock()->name().c_str();
-	port1_name = src->name().c_str();
-	client2_name = dst->module().lock()->name().c_str();
-	port2_name = dst->name().c_str();
 
 	if (!call(true, JACKDBUS_IFACE_PATCHBAY, "ConnectPortsByName", &reply_ptr,
 				DBUS_TYPE_STRING, &client1_name,
@@ -848,19 +719,12 @@ jack_proxy::connect(
 
 bool
 jack_proxy::disconnect(
-	boost::shared_ptr<PatchagePort> src,
-	boost::shared_ptr<PatchagePort> dst)
+	const char * client1_name,
+	const char * port1_name,
+	const char * client2_name,
+	const char * port2_name)
 {
-	const char *client1_name;
-	const char *port1_name;
-	const char *client2_name;
-	const char *port2_name;
 	DBusMessage* reply_ptr;
-
-	client1_name = src->module().lock()->name().c_str();
-	port1_name = src->name().c_str();
-	client2_name = dst->module().lock()->name().c_str();
-	port2_name = dst->name().c_str();
 
 	if (!call(true, JACKDBUS_IFACE_PATCHBAY, "DisconnectPortsByName", &reply_ptr,
 				DBUS_TYPE_STRING, &client1_name,
@@ -874,7 +738,6 @@ jack_proxy::disconnect(
 
 	return true;
 }
-
 
 jack_nframes_t
 jack_proxy::buffer_size()

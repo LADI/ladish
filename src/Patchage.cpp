@@ -37,6 +37,7 @@
 #include "session.hpp"
 #include "globals.hpp"
 #include "a2j_proxy.hpp"
+#include "PatchageModule.hpp"
 
 Patchage * g_app;
 
@@ -856,14 +857,146 @@ Patchage::close_all_projects()
 }
 
 void
-Patchage::connect(
-	boost::shared_ptr<PatchagePort> p1,
-	boost::shared_ptr<PatchagePort> p2)
+Patchage::on_port_added(
+	const char * client_name,
+	const char * port_name,
+	PortType port_type,
+	bool is_input,
+	bool is_terminal)
 {
-	if ((p1->type() == JACK_AUDIO && p2->type() == JACK_AUDIO) ||
-			(p1->type() == JACK_MIDI  && p2->type() == JACK_MIDI))
+	ModuleType module_type = InputOutput;
+	if (_state_manager->get_module_split(client_name, is_terminal)) {
+		if (is_input) {
+			module_type = Input;
+		} else {
+			module_type = Output;
+		}
+	}
+
+	boost::shared_ptr<PatchageModule> module = _canvas->find_module(client_name, module_type);
+
+	if (!module) {
+		module = boost::shared_ptr<PatchageModule>(new PatchageModule(this, client_name, module_type));
+		module->load_location();
+		_canvas->add_item(module);
+	}
+
+	if (module->get_port(port_name)) {
+		return;
+	}
+
+	module->add_port(
+		boost::shared_ptr<PatchagePort>(
+			new PatchagePort(
+				module,
+				port_type,
+				port_name,
+				is_input,
+				_state_manager->get_port_color(port_type))));
+
+	module->resize();
+}
+
+void
+Patchage::on_port_removed(
+	const char * client_name,
+	const char * port_name)
+{
+	boost::shared_ptr<PatchagePort> port = dynamic_pointer_cast<PatchagePort>(_canvas->get_port(client_name, port_name));
+	if (!port) {
+		error_msg(str(boost::format("Unable to remove unknown port '%s':'%s'") % client_name % port_name));
+		return;
+	}
+
+	boost::shared_ptr<PatchageModule> module = dynamic_pointer_cast<PatchageModule>(port->module().lock());
+
+	module->remove_port(port);
+	port.reset();
+			
+	// No empty modules (for now)
+	if (module->num_ports() == 0) {
+		_canvas->remove_item(module);
+		module.reset();
+	} else {
+		module->resize();
+	}
+}
+
+void
+Patchage::on_ports_connected(
+	const char * client1_name,
+	const char * port1_name,
+	const char * client2_name,
+	const char * port2_name)
+{
+	boost::shared_ptr<PatchagePort> port1 = dynamic_pointer_cast<PatchagePort>(_canvas->get_port(client1_name, port1_name));
+	if (!port1) {
+		error_msg((string)"Unable to connect unknown port '" + port1_name + "' of client '" + client1_name + "'");
+		return;
+	}
+
+	boost::shared_ptr<PatchagePort> port2 = dynamic_pointer_cast<PatchagePort>(_canvas->get_port(client2_name, port2_name));
+	if (!port2) {
+		error_msg((string)"Unable to connect unknown port '" + port2_name + "' of client '" + client2_name + "'");
+		return;
+	}
+
+	_canvas->add_connection(port1, port2, port1->color() + 0x22222200);
+}
+
+void
+Patchage::on_ports_disconnected(
+	const char * client1_name,
+	const char * port1_name,
+	const char * client2_name,
+	const char * port2_name)
+{
+	boost::shared_ptr<PatchagePort> port1 = dynamic_pointer_cast<PatchagePort>(_canvas->get_port(client1_name, port1_name));
+	if (!port1) {
+		error_msg((string)"Unable to disconnect unknown port '" + port1_name + "' of client '" + client1_name + "'");
+		return;
+	}
+
+	boost::shared_ptr<PatchagePort> port2 = dynamic_pointer_cast<PatchagePort>(_canvas->get_port(client2_name, port2_name));
+	if (!port2) {
+		error_msg((string)"Unable to disconnect unknown port '" + port2_name + "' of client '" + client2_name + "'");
+		return;
+	}
+
+	_canvas->remove_connection(port1, port2);
+}
+
+static
+bool
+port_type_match(
+	boost::shared_ptr<PatchagePort> port1,
+	boost::shared_ptr<PatchagePort> port2)
+{
+	return port1->type() == port2->type();
+}
+
+void
+Patchage::connect(
+	boost::shared_ptr<PatchagePort> port1,
+	boost::shared_ptr<PatchagePort> port2)
+{
+	const char * client1_name;
+	const char * port1_name;
+	const char * client2_name;
+	const char * port2_name;
+
+	if (port_type_match(port1, port2))
 	{
-		_jack->connect(p1, p2);
+		client1_name = port1->module().lock()->name().c_str();
+		port1_name = port1->name().c_str();
+		client2_name = port2->module().lock()->name().c_str();
+		port2_name = port2->name().c_str();
+
+		_jack->connect(
+			client1_name,
+			port1_name,
+			client2_name,
+			port2_name);
 	}
 	else
 	{
@@ -873,16 +1006,62 @@ Patchage::connect(
 
 void
 Patchage::disconnect(
-	boost::shared_ptr<PatchagePort> p1,
-	boost::shared_ptr<PatchagePort> p2)
+	boost::shared_ptr<PatchagePort> port1,
+	boost::shared_ptr<PatchagePort> port2)
 {
-	if ((p1->type() == JACK_AUDIO && p2->type() == JACK_AUDIO) ||
-			(p1->type() == JACK_MIDI  && p2->type() == JACK_MIDI))
+	const char * client1_name;
+	const char * port1_name;
+	const char * client2_name;
+	const char * port2_name;
+
+	if (port_type_match(port1, port2))
 	{
-		_jack->disconnect(p1, p2);
+		client1_name = port1->module().lock()->name().c_str();
+		port1_name = port1->name().c_str();
+		client2_name = port2->module().lock()->name().c_str();
+		port2_name = port2->name().c_str();
+
+		_jack->disconnect(
+			client1_name,
+			port1_name,
+			client2_name,
+			port2_name);
 	}
 	else
 	{
 		status_message("ERROR: Attempt to disconnect ports with mismatched types");
 	}
+}
+
+/** Destroy all JACK (canvas) ports.
+ */
+void
+Patchage::clear_canvas()
+{
+	ItemList modules = _canvas->items(); // copy
+	for (ItemList::iterator m = modules.begin(); m != modules.end(); ++m) {
+		shared_ptr<Module> module = dynamic_pointer_cast<Module>(*m);
+		if (!module)
+			continue;
+
+		PortVector ports = module->ports(); // copy
+		for (PortVector::iterator p = ports.begin(); p != ports.end(); ++p) {
+			boost::shared_ptr<PatchagePort> port = boost::dynamic_pointer_cast<PatchagePort>(*p);
+			if (port && port->type() == JACK_AUDIO || port->type() == JACK_MIDI) {
+				module->remove_port(port);
+				port->hide();
+			}
+		}
+
+		if (module->ports().empty())
+			_canvas->remove_item(module);
+		else
+			module->resize();
+	}
+}
+
+bool
+Patchage::is_canvas_empty()
+{
+	return _canvas->items().empty();
 }
