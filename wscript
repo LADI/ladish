@@ -85,6 +85,7 @@ def build(bld):
 	'src/project_list.cpp',
 	'src/project_properties.cpp',
 	'src/session.cpp',
+	'src/a2j_proxy.cpp'
         ]
     prog.includes = 'src' # make waf dependency tracking work
     prog.target = bld.env()['APP_INSTALL_NAME']
