@@ -884,7 +884,7 @@ Patchage::on_port_added(
 	}
 
 	ModuleType module_type = InputOutput;
-	if (_state_manager->get_module_split(canvas_client_name, is_terminal)) {
+	if (_state_manager->get_module_split(canvas_client_name, is_terminal && !is_a2j_mapped)) {
 		if (is_input) {
 			module_type = Input;
 		} else {
