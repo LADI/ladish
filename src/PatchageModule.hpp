@@ -68,9 +68,9 @@ public:
 		if (!canvas)
 			return;
 
-		Coord loc = _app->state_manager()->get_module_location(_name, _type);
+		Coord loc;
 
-		if (loc.x != -1)
+		if (_app->state_manager()->get_module_location(_name, _type, loc))
 			move_to(loc.x, loc.y);
 		else
 			move_to((canvas->width()/2) - 100 + rand() % 400,
@@ -78,7 +78,7 @@ public:
 	}
 	
 	virtual void store_location() {
-		Coord loc = { property_x().get_value(), property_y().get_value() };
+		Coord loc(property_x().get_value(), property_y().get_value());
 		_app->state_manager()->set_module_location(_name, _type, loc);
 	}
 	
