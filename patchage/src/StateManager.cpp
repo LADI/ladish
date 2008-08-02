@@ -35,33 +35,66 @@ StateManager::StateManager()
 }
 
 
-Coord
-StateManager::get_module_location(const string& name, ModuleType type) 
+bool
+StateManager::get_module_location(const string& name, ModuleType type, Coord& loc) 
 {
-	for (std::list<ModuleLocation>::iterator i = _module_locations.begin(); i != _module_locations.end(); ++i) {
-		if ((*i).name == name && (*i).type == type)
-			return (*i).loc;
+	map<string, ModuleSettings>::const_iterator i = _module_settings.find(name);
+	if (i == _module_settings.end())
+	{
+		return false;
 	}
 
-	// -1 used as a flag value
-	Coord r = { -1, -1 };
-	return r;
+	const ModuleSettings& settings = (*i).second;
+	switch (type)
+	{
+	case Input:
+		loc = settings.input_location;
+		goto check;
+	case Output:
+		loc = settings.output_location;
+		goto check;
+	case InputOutput:
+		loc = settings.inout_location;
+		goto check;
+	default:
+		throw std::runtime_error("Invalid module type");
+	}
+
+	return false;
+
+check:
+	return loc.x != UNINITIALIZED_COORD;
 }
 
 
 void
 StateManager::set_module_location(const string& name, ModuleType type, Coord loc) 
 {
-	for (std::list<ModuleLocation>::iterator i = _module_locations.begin(); i != _module_locations.end(); ++i) {
-		if ((*i).name == name && (*i).type == type) {
-			(*i).loc = loc;
-			return;
-		}
+retry:
+	map<string, ModuleSettings>::iterator i = _module_settings.find(name);
+	if (i == _module_settings.end())
+	{
+		// no mapping exists, insert new element and set its split type, then retry to retrieve reference to it
+		_module_settings[name].split = type != InputOutput;
+		goto retry;
 	}
-	
-	// If we get here, module isn't in list yet
-	ModuleLocation ml = { name, type, loc };
-	_module_locations.push_back(ml);
+
+	ModuleSettings& settings_ref = (*i).second;
+
+	switch (type)
+	{
+	case Input:
+		settings_ref.input_location = loc;
+		break;
+	case Output:
+		settings_ref.output_location = loc;
+		break;
+	case InputOutput:
+		settings_ref.inout_location = loc;
+		break;
+	default:
+		throw std::runtime_error("Invalid module type");
+	}
 }
 
 
@@ -73,25 +106,27 @@ StateManager::set_module_location(const string& name, ModuleType type, Coord loc
 bool
 StateManager::get_module_split(const string& name, bool default_val) const
 {
-	map<string, bool>::const_iterator i = _module_splits.find(name);
-	if (i == _module_splits.end())
+	map<string, ModuleSettings>::const_iterator i = _module_settings.find(name);
+	if (i == _module_settings.end())
+	{
 		return default_val;
-	else
-		return (*i).second;
+	}
+
+	return (*i).second.split;
 }
 
 
 void
 StateManager::set_module_split(const string& name, bool split) 
 {
-	_module_splits[name] = split;
+	_module_settings[name].split = split;
 }
 
 
 void
 StateManager::load(const string& filename) 
 {	
-	_module_locations.clear();
+	_module_settings.clear();
 
 	cerr << "Loading configuration file " << filename << endl;
 	
@@ -131,7 +166,10 @@ StateManager::load(const string& filename)
 	is >> s;
 	_zoom = atof(s.c_str());
 
-	ModuleLocation ml;
+	Coord loc;
+	ModuleType type;
+	string name;
+
 	while (1) {
 		is >> s;
 		if (is.eof()) break;
@@ -139,37 +177,48 @@ StateManager::load(const string& filename)
 		// Old versions didn't quote, so need to support both :/
 		if (s[0] == '\"') {
 			if (s.length() > 1 && s[s.length()-1] == '\"') {
-				ml.name = s.substr(1, s.length()-2);
+				name = s.substr(1, s.length()-2);
 			} else {
-				ml.name = s.substr(1);
+				name = s.substr(1);
 				is >> s;
 				while (s[s.length()-1] != '\"') {
-					ml.name.append(" ").append(s);
+					name.append(" ").append(s);
 					is >> s;
 				}
-				ml.name.append(" ").append(s.substr(0, s.length()-1));
+				name.append(" ").append(s.substr(0, s.length()-1));
 			}
 		} else {
-			ml.name = s;
+			name = s;
 		}
 
 		is >> s;
-		if (s == "input") ml.type = Input;
-		else if (s == "output") ml.type = Output;
-		else if (s == "inputoutput") ml.type = InputOutput;
+		if (s == "input") type = Input;
+		else if (s == "output") type = Output;
+		else if (s == "inputoutput") type = InputOutput;
 		else throw std::runtime_error("Corrupt settings file.");
 
 		is >> s;
-		ml.loc.x = atoi(s.c_str());
+		loc.x = atoi(s.c_str());
 		is >> s;
-		ml.loc.y = atoi(s.c_str());
+		loc.y = atoi(s.c_str());
 
-		_module_locations.push_back(ml);
+		set_module_location(name, type, loc);
 	}
 
 	is.close();
 }
 
+static
+inline
+void
+write_module_settings_entry(
+	std::ofstream& os,
+	const string& name,
+	const char * type,
+	const Coord& loc)
+{
+	os << "\"" << name << "\"" << " " << type << " " << loc.x << " " << loc.y << std::endl;
+}
 
 void
 StateManager::save(const string& filename) 
@@ -181,17 +230,20 @@ StateManager::save(const string& filename)
 	os << "window_size " << _window_size.x << " " << _window_size.y << std::endl;
 	os << "zoom_level " << _zoom << std::endl;
 
-	ModuleLocation ml;
-	for (std::list<ModuleLocation>::iterator i = _module_locations.begin(); i != _module_locations.end(); ++i) {
-		ml = *i;
-		os << "\"" << ml.name << "\"";
-		
-		if (ml.type == Input) os << " input ";
-		else if (ml.type == Output) os << " output ";
-		else if (ml.type == InputOutput) os << " inputoutput ";
-		else throw std::runtime_error("Invalid module type");
 
-		os << ml.loc.x << " " << ml.loc.y << std::endl;
+	for (map<string, ModuleSettings>::iterator i = _module_settings.begin(); i != _module_settings.end(); ++i) {
+		const ModuleSettings& settings = (*i).second;
+		const string& name = (*i).first;
+
+		if (settings.split)
+		{
+			write_module_settings_entry(os, name, "input", settings.input_location);
+			write_module_settings_entry(os, name, "output", settings.output_location);
+		}
+		else
+		{
+			write_module_settings_entry(os, name, "inputoutput", settings.inout_location);
+		}
 	}
 
 	os.close();
