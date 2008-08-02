@@ -25,7 +25,15 @@
 #include "PatchagePort.hpp"
 
 enum ModuleType { Input, Output, InputOutput };
-struct Coord { double x; double y; };
+
+#define UNINITIALIZED_COORD -1
+struct Coord
+{
+	Coord() { x = UNINITIALIZED_COORD; y = UNINITIALIZED_COORD; }
+	Coord(double x_, double y_) : x(x_), y(y_) {}
+	double x;
+	double y;
+};
 
 class StateManager
 {
@@ -35,7 +43,7 @@ public:
 	void load(const std::string& filename);
 	void save(const std::string& filename);
 
-	Coord get_module_location(const std::string& name, ModuleType type);
+	bool get_module_location(const std::string& name, ModuleType type, Coord& loc);
 	void  set_module_location(const std::string& name, ModuleType type, Coord loc);
 
 	void set_module_split(const std::string& name, bool split);
@@ -52,14 +60,15 @@ public:
 	void  set_window_size(Coord size)    { _window_size = size; }
 
 private:
-	struct ModuleLocation {
-		std::string name;
-		ModuleType  type; // for distinguishing terminal modules (input or output)
-		Coord       loc;
+	struct ModuleSettings {
+		ModuleSettings() { split = false; };
+		bool split;
+		Coord input_location;
+		Coord output_location;
+		Coord inout_location;
 	};
 
-	std::list<ModuleLocation>  _module_locations;
-	std::map<std::string,bool> _module_splits;
+	std::map<std::string,ModuleSettings> _module_settings;
 	Coord                      _window_location;
 	Coord                      _window_size;
 	float                      _zoom;
