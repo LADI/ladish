@@ -146,3 +146,54 @@ a2j_proxy_impl::get_jack_client_name(
 
 	return true;
 }
+
+bool
+a2j_proxy::map_jack_port(
+	const char * jack_port_name,
+	string& alsa_client_name_ref,
+	string& alsa_port_name_ref)
+{
+	DBusMessage * reply_ptr;
+	dbus_uint32_t alsa_client_id;
+	dbus_uint32_t alsa_port_id;
+	const char * alsa_client_name;
+	const char * alsa_port_name;
+
+	if (!_impl_ptr->call(
+				true,
+				A2J_IFACE_CONTROL,
+				"map_jack_port_to_alsa",
+				&reply_ptr,
+				DBUS_TYPE_STRING,
+				&jack_port_name,
+				DBUS_TYPE_INVALID))
+	{
+		return false;
+	}
+
+	if (!dbus_message_get_args(
+				reply_ptr,
+				&g_app->_dbus_error,
+				DBUS_TYPE_UINT32,
+				&alsa_client_id,
+				DBUS_TYPE_UINT32,
+				&alsa_port_id,
+				DBUS_TYPE_STRING,
+				&alsa_client_name,
+				DBUS_TYPE_STRING,
+				&alsa_port_name,
+				DBUS_TYPE_INVALID))
+	{
+		dbus_message_unref(reply_ptr);
+		dbus_error_free(&g_app->_dbus_error);
+		error_msg("decoding reply of map_jack_port_to_alsa failed.");
+		return false;
+	}
+
+	alsa_client_name_ref = alsa_client_name;
+	alsa_port_name_ref = alsa_port_name;
+
+	dbus_message_unref(reply_ptr);
+
+	return true;
+}

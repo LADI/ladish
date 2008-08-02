@@ -221,8 +221,8 @@ StateManager::get_port_color(PortType type)
 		return 0x244678C0;
 	else if (type == JACK_MIDI)
 		return 0x960909C0;
-	else if (type == ALSA_MIDI)
-		return 0x4A8A0EC0;
+// 	else if (type == ALSA_MIDI)
+// 		return 0x4A8A0EC0;
 	else
 		return 0xFF0000FF;
 }	

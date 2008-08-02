@@ -26,32 +26,29 @@
 
 using namespace FlowCanvas;
 
-enum PortType { JACK_AUDIO, JACK_MIDI, ALSA_MIDI };
+enum PortType { JACK_AUDIO, JACK_MIDI };
 
 
 /** A Port on a PatchageModule
  *
  * \ingroup OmGtk
  */
-class PatchagePort : public FlowCanvas::Port
+struct PatchagePort : public FlowCanvas::Port
 {
-public:
-	PatchagePort(boost::shared_ptr<Module> module, PortType type, const std::string& name, bool is_input, int color)
+	PatchagePort(
+		boost::shared_ptr<Module> module,
+		const std::string& name,
+		bool is_input,
+		int color)
 		: Port(module, name, is_input, color)
-		, _type(type)
 	{
 	}
 
 	virtual ~PatchagePort() {}
 
-
-	/** Returns the full name of this port, as "modulename:portname" */
-	std::string full_name() const { return _module.lock()->name() + ":" + _name; }
-
-	PortType type() const { return _type; }
-
-private:
-	PortType       _type;
+	PortType type;
+	bool is_a2j_mapped;
+	std::string a2j_jack_port_name; // valid only if is_a2j_mapped is true
 };
 
 

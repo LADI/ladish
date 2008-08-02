@@ -30,6 +30,12 @@ public:
 	const char *
 	get_jack_client_name();
 
+	bool
+	map_jack_port(
+		const char * jack_port_name,
+		string& alsa_client_name,
+		string& alsa_port_name);
+
 private:
 	a2j_proxy_impl * _impl_ptr;
 };
