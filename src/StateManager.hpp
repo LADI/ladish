@@ -22,15 +22,13 @@
 #include <list>
 #include <map>
 #include <iostream>
+#include <boost/optional.hpp>
 #include "PatchagePort.hpp"
 
 enum ModuleType { Input, Output, InputOutput };
 
-#define UNINITIALIZED_COORD -1
-struct Coord
-{
-	Coord() { x = UNINITIALIZED_COORD; y = UNINITIALIZED_COORD; }
-	Coord(double x_, double y_) : x(x_), y(y_) {}
+struct Coord {
+	Coord(double x_=0, double y_=0) : x(x_), y(y_) {}
 	double x;
 	double y;
 };
@@ -61,17 +59,17 @@ public:
 
 private:
 	struct ModuleSettings {
-		ModuleSettings() { split = false; };
+		ModuleSettings() : split(false) {}
 		bool split;
-		Coord input_location;
-		Coord output_location;
-		Coord inout_location;
+		boost::optional<Coord> input_location;
+		boost::optional<Coord> output_location;
+		boost::optional<Coord> inout_location;
 	};
 
 	std::map<std::string,ModuleSettings> _module_settings;
-	Coord                      _window_location;
-	Coord                      _window_size;
-	float                      _zoom;
+	Coord _window_location;
+	Coord _window_size;
+	float _zoom;
 };
 
 
