@@ -1,0 +1,45 @@
+This is a port of the MDA VST plugins to LV2.
+
+MDA plugins are originally by Paul Kellett and were released under the GPL
+v2 or later, or the MIT license.  Thanks, Paul!
+
+This port is by Dave Robillard, and is released under the GPL v2.
+See COPYING file for more information.
+
+To port these plugins to LV2, I wrote the missing code blindly in order to
+make things compile and work as an LV2 plugin.  From the previous names I
+assume these missing pieces were part of the VST SDK, but I have never seen,
+or heard about, anything related to the VST SDK whatsoever, at any time, ever.
+
+I have named this implemented wrapper "LVZ" (for LV0).
+It may be useful for porting other GPL VST plugins to native LV2.
+
+This code is 100% Free Software under the GNU General Public License,
+verion 2 or later.
+
+----
+
+Original release announcement:
+
+This archive contains the source code for the mda freeware VST 
+plug-ins, with the least restrictive licensing I could find.
+
+Projects are provided for Visual C++ 5, Visual C++ 8, and XCode 2.
+You will need a copy of the VST 2.4 SDK to compile the plug-ins,
+unless you are only interested in the AU versions (kindly ported 
+by Sophia Poirier).  Code for "mda SpecMeter" is included but does
+not compile with any recent version of VSTGUI.  The GUIs for
+"mda Piano" and "mda ePiano" are not included for the same reason,
+and also because nobody really liked them.
+
+This code is definitely not an example of how to write plug-ins!
+It's obvious that I didn't know much C++ when I started, and some
+of the optimizations might have worked on a 486 processor but are
+not relevant today.  The code is very raw with no niceties like
+parameter de-zipping, but maybe you'll find some useful stuff in
+there.  Hopefully someone will feel like tidying everything up and
+put the code in a more generic format that can be wrapped into any
+current or future plug-in format.
+
+Paul Kellett (paul.kellett@mda-vst.com), June 2008
+
