@@ -1,62 +1,96 @@
-CFLAGS = -O0 -g -Wall -fPIC -Ilvz -DPLUGIN_URI_PREFIX=\"http://drobilla.net/ns/plugins/mda-lv2/\"
+CFLAGS = -O0 -g -Wall -fPIC -Ilvz -I. -DPLUGIN_URI_PREFIX=\"http://drobilla.net/ns/plugins/mda-lv2/\"
+
+# Change this to wherever you want system-wide bundles installed
+LV2_INSTALL_DIR = /usr/local/lib/lv2
 
 all: lvz/gendata libs data
 
-libs: \
-	src/mdaAmbience.so \
-	src/mdaBandisto.so \
-	src/mdaBeatBox.so \
-	src/mdaCombo.so \
-	src/mdaDX10.so \
-	src/mdaDeEss.so \
-	src/mdaDegrade.so \
-	src/mdaDelay.so \
-	src/mdaDetune.so \
-	src/mdaDither.so \
-	src/mdaDubDelay.so \
-	src/mdaDynamics.so \
-	src/mdaEPiano.so \
-	src/mdaImage.so \
-	src/mdaJX10.so \
-	src/mdaLeslie.so \
-	src/mdaLimiter.so \
-	src/mdaLoudness.so \
-	src/mdaMultiBand.so \
-	src/mdaOverdrive.so \
-	src/mdaPiano.so \
-	src/mdaRePsycho.so \
-	src/mdaRezFilter.so \
-	src/mdaRingMod.so \
-	src/mdaRoundPan.so \
-	src/mdaShepard.so \
-	src/mdaSplitter.so \
-	src/mdaStereo.so \
-	src/mdaSubSynth.so \
-	src/mdaTalkBox.so \
-	src/mdaTestTone.so \
-	src/mdaThruZero.so \
-	src/mdaTracker.so \
-	src/mdaTransient.so \
-	src/mdaVocInput.so \
-	src/mdaVocoder.so
+bundle:
+	mkdir -p ./mda.lv2
 
-data: libs
-	lvz/gendata src/*.so
+libs: bundle \
+	mda.lv2/mdaAmbience.so \
+	mda.lv2/mdaBandisto.so \
+	mda.lv2/mdaBeatBox.so \
+	mda.lv2/mdaCombo.so \
+	mda.lv2/mdaDX10.so \
+	mda.lv2/mdaDeEss.so \
+	mda.lv2/mdaDegrade.so \
+	mda.lv2/mdaDelay.so \
+	mda.lv2/mdaDetune.so \
+	mda.lv2/mdaDither.so \
+	mda.lv2/mdaDubDelay.so \
+	mda.lv2/mdaDynamics.so \
+	mda.lv2/mdaEPiano.so \
+	mda.lv2/mdaImage.so \
+	mda.lv2/mdaJX10.so \
+	mda.lv2/mdaLeslie.so \
+	mda.lv2/mdaLimiter.so \
+	mda.lv2/mdaLoudness.so \
+	mda.lv2/mdaMultiBand.so \
+	mda.lv2/mdaOverdrive.so \
+	mda.lv2/mdaPiano.so \
+	mda.lv2/mdaRePsycho.so \
+	mda.lv2/mdaRezFilter.so \
+	mda.lv2/mdaRingMod.so \
+	mda.lv2/mdaRoundPan.so \
+	mda.lv2/mdaShepard.so \
+	mda.lv2/mdaSplitter.so \
+	mda.lv2/mdaStereo.so \
+	mda.lv2/mdaSubSynth.so \
+	mda.lv2/mdaTalkBox.so \
+	mda.lv2/mdaTestTone.so \
+	mda.lv2/mdaThruZero.so \
+	mda.lv2/mdaTracker.so \
+	mda.lv2/mdaTransient.so \
+	mda.lv2/mdaVocInput.so \
+	mda.lv2/mdaVocoder.so
+
+data: libs lvz/gendata
+	cd ./mda.lv2 && ../lvz/gendata ./*.so > manifest.ttl
+
+install:
+	if [ "$(INSTALL_DIR)" == "" ]; then \
+		echo -e "\n*** ERROR: INSTALL_DIR is not set\n"; \
+		echo -e "Try make install-user, install-local, or install-system\n"; \
+		echo -e "You can also specify where to install the plugin bundle:"; \
+		echo -e "    make install INSTALL_DIR=~/.lv2/\n"; \
+	else \
+		install -d $(INSTALL_DIR)/mda.lv2; \
+		install -m 644 ./mda.lv2/*.ttl $(INSTALL_DIR)/mda.lv2; \
+		install -m 755 ./mda.lv2/*.so $(INSTALL_DIR)/mda.lv2; \
+	fi
+
+install-user:
+	INSTALL_DIR=$(HOME)/.lv2 make install
+
+install-local:
+	INSTALL_DIR=/usr/local/lib/lv2 make install
+
+install-system:
+	INSTALL_DIR=/usr/lib/lv2 make install
+
+uninstall:
+	rm -rf $(HOME)/.lv2/mda.lv2
+	rm -rf /usr/local/lib/lv2/mda.lv2
+	rm -rf /usr/lib/lv2/mda.lv2
 
 src/%.c: src/%.h lvz/audioeffectx.h
 
 lvz/gendata: lvz/gendata.cpp lvz/audioeffectx.h
 	$(CXX) $(CFLAGS) -ldl $< -o $@
 
-src/%.so: src/%.cpp lvz/wrapper.cpp
-	basename="foo"
+mda.lv2/%.so: src/%.cpp lvz/wrapper.cpp
 	$(CXX) -shared $(CFLAGS) \
-		-DPLUGIN_CLASS=`echo $@ | sed 's/\..*//' | sed 's/src\///'` \
-		-DPLUGIN_URI_SUFFIX=\"`echo $@ | sed 's/\..*//' | sed 's/src\///' | sed 's/^mda//'`\" \
-		-DPLUGIN_HEADER=\"`echo $@ | sed 's/\..*//' | sed 's/src\//\.\.\/src\//' | sed 's/$$/\.h/'`\" \
+		-DPLUGIN_CLASS=`echo $@ | sed 's/mda.lv2\///' | sed 's/\..*//'` \
+		-DPLUGIN_URI_SUFFIX=\"`echo $@ | sed 's/mda.lv2\///' | sed 's/^mda//' | sed 's/\..*//'`\" \
+		-DPLUGIN_HEADER=\"`echo $@ | sed 's/^mda.lv2/src/' | sed 's/\(.*\)\..*/\1/' | sed 's/$$/\.h/'`\" \
 		$< lvz/wrapper.cpp -o $@
 
 clean:
-	rm -f src/*.o src/*.so lvz/gendata src/*.ttl
-
+	rm -f `find -name '*.o'`
+	rm -f `find -name '*.so'`
+	rm -f `find -name '*.ttl'`
+	rm -f lvz/gendata
+	rm -rf ./mda.lv2
 

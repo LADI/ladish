@@ -16,6 +16,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <list>
+#include <string>
 #include <iostream>
 #include <fstream>
 #include <dlfcn.h>
@@ -32,8 +34,17 @@ char name[MAX_NAME_LENGTH];
 
 #define NS_LV2CORE "http://lv2plug.in/ns/lv2core#"
 
+struct Record {
+	Record(const string& u, const string& f) : uri(u), file(f) {}
+	string uri;
+	string file;
+};
+
+typedef std::list<Record> Manifest;
+Manifest manifest;
+
 void
-write_data(AudioEffectX* effect, const char* lib_file_name)
+write_plugin(AudioEffectX* effect, const string& lib_file_name)
 {
 	string data_file_name = lib_file_name;
 	data_file_name = data_file_name.substr(0, data_file_name.find_last_of("."));
@@ -47,7 +58,9 @@ write_data(AudioEffectX* effect, const char* lib_file_name)
 	os << "@prefix doap: <http://usefulinc.com/ns/doap#> ." << endl << endl;
 	os << "<" << effect->getURI() << ">" << endl;
 	os << "\t:symbol \"" << effect->getUniqueID() << "\" ;" << endl;
-	os << "\tdoap:name \"" << name << "\"";
+	os << "\tdoap:name \"" << name << "\" ;" << endl;
+	os << "\tdoap:license <http://usefulinc.com/doap/licenses/gpl> ;" << endl;
+	os << "\t:pluginProperty :hardRtCapable";
 
 	uint32_t num_params     = effect->getNumParameters();
 	uint32_t num_audio_ins  = effect->getNumInputs();
@@ -82,7 +95,20 @@ write_data(AudioEffectX* effect, const char* lib_file_name)
 	}
 
 	os.close();
-	cout << "Wrote " << data_file_name << endl;
+
+	manifest.push_back(Record(effect->getURI(), data_file_name));
+}
+
+
+void
+write_manifest(ostream& os)
+{
+	os << "@prefix : <http://lv2plug.in/ns/lv2core#> ." << endl;
+	os << "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> ." << endl << endl;
+	for (Manifest::iterator i = manifest.begin(); i != manifest.end(); ++i) {
+		os << "<" << i->uri << "> a :Plugin ;" << endl;
+		os << "\trdfs:seeAlso <" << i->file << "> ." << endl << endl;
+	}
 }
 
 
@@ -94,6 +120,7 @@ main(int argc, char** argv)
 		cout << "Each argument is a path to a LVZ plugin library." << endl;
 		cout << "For each library an LV2 data file with the same name" << endl;
 		cout << "will be output containing the data for that plugin." << endl;
+		cout << "A manifest of the plugins found is written to stdout" << endl;
 		return 1;
 	}
 
@@ -115,10 +142,17 @@ main(int argc, char** argv)
 		}
 
 		effect = constructor();
-		write_data(effect, argv[i]);
+		string lib_path = argv[i];
+		size_t last_slash = lib_path.find_last_of("/");
+		if (last_slash != string::npos)
+			lib_path = lib_path.substr(last_slash + 1);
+		
+		write_plugin(effect, lib_path);
 
 		dlclose(handle);
 	}
+
+	write_manifest(cout);
 	
 	return 0;
 }
