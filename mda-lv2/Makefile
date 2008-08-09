@@ -50,7 +50,7 @@ data: libs lvz/gendata
 	cd ./mda.lv2 && ../lvz/gendata ./*.so > manifest.ttl
 
 install:
-	if test "$(INSTALL_DIR)" == ""; then \
+	if [ "x$(INSTALL_DIR)" == "x" ]; then \
 		echo -e "\n*** ERROR: INSTALL_DIR is not set\n"; \
 		echo -e "Try make install-user, install-local, or install-system\n"; \
 		echo -e "You can also specify where to install the plugin bundle:"; \
