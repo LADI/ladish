@@ -1,6 +1,22 @@
 #CFLAGS = -O0 -g -ansi -pedantic -Wall -Wextra -Wshadow -Woverloaded-virtual -Wno-unused
 CFLAGS += -fPIC -DPIC -Ilvz -I. -DPLUGIN_URI_PREFIX=\"http://drobilla.net/ns/dev/mda-lv2/\"
 
+SYSTEMNAME = $(shell uname -s)
+
+ifeq ($(SYSTEMNAME),Darwin)
+CFLAGS += -fno-common -flat_namespace 
+SHARED_LDFLAGS = -fno-common -flat_namespace -bundle -undefined suppress -lbundle1.o -nostartfiles
+USER_INSTALL_DIR = ~/Library/Audio/Plug-Ins/LV2/
+LOCAL_INSTALL_DIR = /Library/Audio/Plug-Ins/LV2/
+SYSTEM_INSTALL_DIR = /Library/Audio/Plug-Ins/LV2/
+else
+SHARED_LDFLAGS = -shared
+USER_INSTALL_DIR = ~/.lv2/
+SYSTEM_INSTALL_DIR = /usr/lib/lv2/
+LOCAL_INSTALL_DIR = /usr/local/lib/lv2/
+endif
+
+
 all: lvz/gendata libs data
 
 bundle:
@@ -60,13 +76,13 @@ install:
 	fi
 
 install-user:
-	INSTALL_DIR=$(HOME)/.lv2 make install
+	INSTALL_DIR=$(USER_INSTALL_DIR) make install
 
 install-local:
-	INSTALL_DIR=/usr/local/lib/lv2 make install
+	INSTALL_DIR=$(LOCAL_INSTALL_DIR) make install
 
 install-system:
-	INSTALL_DIR=/usr/lib/lv2 make install
+	INSTALL_DIR=$(SYSTEM_INSTALL_DIR) make install
 
 uninstall:
 	rm -rf $(HOME)/.lv2/mda.lv2
@@ -79,7 +95,7 @@ lvz/gendata: lvz/gendata.cpp lvz/audioeffectx.h
 	$(CXX) $(CFLAGS) -ldl $< -o $@
 
 mda.lv2/%.so: src/%.cpp lvz/wrapper.cpp
-	$(CXX) -shared $(CFLAGS) \
+	$(CXX) $(SHARED_LDFLAGS) $(CFLAGS) \
 		-DPLUGIN_CLASS=`echo $@ | sed 's/mda.lv2\///' | sed 's/\..*//'` \
 		-DPLUGIN_URI_SUFFIX=\"`echo $@ | sed 's/mda.lv2\///' | sed 's/^mda//' | sed 's/\..*//'`\" \
 		-DPLUGIN_HEADER=\"`echo $@ | sed 's/^mda.lv2/src/' | sed 's/\(.*\)\..*/\1/' | sed 's/$$/\.h/'`\" \
