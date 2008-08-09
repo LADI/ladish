@@ -131,10 +131,10 @@ void mdaDX10::update()  //parameter change //if multitimbral would have to move 
 }
 
 
-void mdaDX10::setSampleRate(float sampleRate)
+void mdaDX10::setSampleRate(float rate)
 {
-	AudioEffectX::setSampleRate(sampleRate);
-  Fs = sampleRate;
+	AudioEffectX::setSampleRate(rate);
+  Fs = rate;
 }
 
 

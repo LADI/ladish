@@ -37,7 +37,6 @@ struct LvzPinProperties {
 	LvzPinProperties() : label(NULL), flags(0) {}
 	char* label;
 	int   flags;
-
 };
 
 enum LvzEventTypes {
@@ -61,11 +60,13 @@ struct LvzEvents {
 #define DECLARE_LVZ_DEPRECATED(x) x
 
 class AudioEffect {
+public:
+	virtual ~AudioEffect() {}
 };
 
 class AudioEffectX : public AudioEffect {
 public:
-	AudioEffectX(audioMasterCallback audioMaster, int progs, int params)
+	AudioEffectX(audioMasterCallback audioMaster, LvzInt32 progs, LvzInt32 params)
 		: uniqueID("NIL")
 		, URI("NIL")
 		, curProgram(0)
@@ -76,27 +77,27 @@ public:
 		, sampleRate(44100)
 	{
 	}
-  
-	virtual const char*  getURI()           { return URI; }
-	virtual const char*  getUniqueID()      { return uniqueID; }
-	virtual float        getSampleRate()    { return sampleRate; }
-	virtual uint32_t     getNumInputs()     { return numInputs; }		  
-	virtual uint32_t     getNumOutputs()    { return numOutputs; }
-	virtual uint32_t     getNumParameters() { return numParams; }
+
+	virtual const char*  getURI()           const { return URI; }
+	virtual const char*  getUniqueID()      const { return uniqueID; }
+	virtual float        getSampleRate()    const { return sampleRate; }
+	virtual LvzInt32     getNumInputs()     const { return numInputs; }		  
+	virtual LvzInt32     getNumOutputs()    const { return numOutputs; }
+	virtual LvzInt32     getNumParameters() const { return numParams; }
 
 	virtual float getParameter(LvzInt32 index) = 0;
 	virtual void  getParameterName(LvzInt32 index, char *label) = 0;
 	virtual bool  getProductString(char* text) = 0;
 
-	virtual void suspend() {};
+	virtual void suspend() {}
 	virtual void canMono() {}
 	virtual void canProcessReplacing() {}
 	virtual void isSynth() {}
-	virtual void process(float **inputs, float **outputs, uint32_t nframes) {}
-	virtual void setBlockSize(uint32_t blockSize) {}
-	virtual void setNumInputs(uint32_t num) { numInputs = num; }
-	virtual void setNumOutputs(uint32_t num) { numOutputs = num;}
-	virtual void setParameter(uint32_t index, float value) {}
+	virtual void process(float **inputs, float **outputs, LvzInt32 nframes) = 0;
+	virtual void setBlockSize(LvzInt32 blockSize) {}
+	virtual void setNumInputs(LvzInt32 num) { numInputs = num; }
+	virtual void setNumOutputs(LvzInt32 num) { numOutputs = num; }
+	virtual void setParameter(LvzInt32 index, float value) = 0;
 	virtual void setSampleRate(float rate) { sampleRate = rate; }
 	virtual void setUniqueID(const char* id) { uniqueID = id; }
 	virtual void setURI(const char* uri) { URI = uri; }
@@ -105,12 +106,12 @@ public:
 protected:
 	const char* uniqueID;
 	const char* URI;
-	uint32_t curProgram;
-	uint32_t numPrograms;
-	uint32_t numParams;
-	uint32_t numInputs;
-	uint32_t numOutputs;
-	float    sampleRate;
+	LvzInt32    curProgram;
+	LvzInt32    numPrograms;
+	LvzInt32    numParams;
+	LvzInt32    numInputs;
+	LvzInt32    numOutputs;
+	float       sampleRate;
 
 	AEffGUIEditor* editor;
 };

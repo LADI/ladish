@@ -204,10 +204,10 @@ void mdaJX10::update()  //parameter change
 }
 
 
-void mdaJX10::setSampleRate(float sampleRate)
+void mdaJX10::setSampleRate(float rate)
 {
-	AudioEffectX::setSampleRate(sampleRate);
-  Fs = sampleRate;
+	AudioEffectX::setSampleRate(rate);
+  Fs = rate;
  
   dlfo = lfoHz * (float)(TWOPI * KMAX) / Fs; 
 }

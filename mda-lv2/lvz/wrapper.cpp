@@ -37,24 +37,37 @@ extern "C" {
 
 typedef struct {
 	PLUGIN_CLASS* effect;
-	float**       buffers;
 	float*        controls;
+	float**       control_buffers;
+	float**       inputs;
+	float**       outputs;
 } MDAPlugin;
 
 
-static void mda_cleanup(LV2_Handle instance)
+static void
+mda_cleanup(LV2_Handle instance)
 {
 	free(instance);
 }
 
 
-static void mda_connect_port(LV2_Handle instance, uint32_t port, void* data)
+static void
+mda_connect_port(LV2_Handle instance, uint32_t port, void* data)
 {
 	MDAPlugin* plugin = (MDAPlugin*)instance;
-	plugin->buffers[port] = (float*)data;
+
+	uint32_t num_params = plugin->effect->getNumParameters();
+	uint32_t num_inputs = plugin->effect->getNumInputs();
 	
-	if (data != NULL && port < plugin->effect->getNumParameters())
-		plugin->controls[port] = *(float*)data;
+	if (port < num_params) {
+		plugin->control_buffers[port] = (float*)data;
+		if (data != NULL)
+			plugin->controls[port] = *(float*)data;
+	} else if (port < num_params + num_inputs) {
+		plugin->inputs[port - num_params] = (float*)data;
+	} else {
+		plugin->outputs[port - num_params - num_inputs] = (float*)data;
+	}
 }
 
 
@@ -71,14 +84,21 @@ mda_instantiate(const LV2_Descriptor*    descriptor,
 	MDAPlugin* plugin = (MDAPlugin*)malloc(sizeof(MDAPlugin));
 	plugin->effect = effect;
 	
-	uint32_t num_ports = effect->getNumParameters()
-	                   + effect->getNumInputs()
-	                   + effect->getNumOutputs();
-
-	plugin->buffers = (float**)malloc(sizeof(float*) * num_ports);
 	plugin->controls = (float*)malloc(sizeof(float) * effect->getNumParameters());
-	memset(plugin->controls, '\0', sizeof(float) * effect->getNumParameters());
+	plugin->control_buffers = (float**)malloc(sizeof(float*) * effect->getNumParameters());
+	for (int32_t i = 0; i < effect->getNumParameters(); ++i) {
+		plugin->controls[i] = effect->getParameter(i);
+		plugin->control_buffers[i] = NULL;
+	}
 
+	plugin->inputs = (float**)malloc(sizeof(float*) * effect->getNumInputs());
+	for (int32_t i = 0; i < effect->getNumInputs(); ++i)
+		plugin->inputs[i] = NULL;
+	
+	plugin->outputs = (float**)malloc(sizeof(float*) * effect->getNumOutputs());
+	for (int32_t i = 0; i < effect->getNumOutputs(); ++i)
+		plugin->outputs[i] = NULL;
+	
 	return (LV2_Handle)plugin;
 }
 
@@ -88,20 +108,15 @@ mda_run(LV2_Handle instance, uint32_t sample_count)
 {
 	MDAPlugin* plugin = (MDAPlugin*)instance;
 	
-	uint32_t num_params = plugin->effect->getNumParameters();
-	uint32_t num_inputs = plugin->effect->getNumInputs();
-
-	for (uint32_t i = 0; i < num_params; ++i) {
-		float val = plugin->buffers[i][0];
+	for (int32_t i = 0; i < plugin->effect->getNumParameters(); ++i) {
+		float val = plugin->control_buffers[i][0];
 		if (val != plugin->controls[i]) {
 			plugin->effect->setParameter(i, val);
 			plugin->controls[i] = val;
 		}
 	}
-
-	plugin->effect->process(plugin->buffers + num_params,
-	                        plugin->buffers + num_params + num_inputs,
-	                        sample_count);
+	
+	plugin->effect->process(plugin->inputs, plugin->outputs, sample_count);
 }
 	
 

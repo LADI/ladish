@@ -30,7 +30,7 @@ using namespace std;
 
 // VST is so incredibly awful.  Just.. wow.
 #define MAX_NAME_LENGTH 1024
-char name[MAX_NAME_LENGTH];
+char name_buf[MAX_NAME_LENGTH];
 
 
 struct Record {
@@ -89,13 +89,13 @@ write_plugin(AudioEffectX* effect, const string& lib_file_name)
 	string data_file_name = base_name + ".ttl";
 	
 	fstream os(data_file_name.c_str(), ios::out);
-	effect->getProductString(name);
+	effect->getProductString(name_buf);
 	
 	os << "@prefix : <http://lv2plug.in/ns/lv2core#> ." << endl;
 	os << "@prefix doap: <http://usefulinc.com/ns/doap#> ." << endl << endl;
 	os << "<" << effect->getURI() << ">" << endl;
 	os << "\t:symbol \"" << effect->getUniqueID() << "\" ;" << endl;
-	os << "\tdoap:name \"" << name << "\" ;" << endl;
+	os << "\tdoap:name \"" << name_buf << "\" ;" << endl;
 	os << "\tdoap:license <http://usefulinc.com/doap/licenses/gpl> ;" << endl;
 	os << "\t:pluginProperty :hardRtCapable";
 
@@ -112,11 +112,11 @@ write_plugin(AudioEffectX* effect, const string& lib_file_name)
 	uint32_t idx = 0;
 
 	for (uint32_t i = idx; i < num_params; ++i, ++idx) {
-		effect->getParameterName(i, name);
+		effect->getParameterName(i, name_buf);
 		os << "\t\ta :InputPort, :ControlPort ;" << endl;
 		os << "\t\t:index" << " " << idx << " ;" << endl;
-		os << "\t\t:name \"" << name << "\" ;" << endl;
-		os << "\t\t:symbol \"" << symbolify(name) << "\" ;" << endl;
+		os << "\t\t:name \"" << name_buf << "\" ;" << endl;
+		os << "\t\t:symbol \"" << symbolify(name_buf) << "\" ;" << endl;
 		os << "\t\t:default " << effect->getParameter(i) << " ;" << endl;
 		os << "\t\t:minimum 0.0 ;" << endl;
 		os << "\t\t:maximum 1.0 ;" << endl;
@@ -124,7 +124,6 @@ write_plugin(AudioEffectX* effect, const string& lib_file_name)
 	}
 
 	for (uint32_t i = 0; i < num_audio_ins; ++i, ++idx) {
-		snprintf(name, MAX_NAME_LENGTH, "\"in%d\"", i);
 		os << "\t\ta :InputPort, :AudioPort ;" << endl;
 		os << "\t\t:index" << " " << idx << " ;" << endl;
 		os << "\t\t:symbol \"in" << i+1 << "\" ;" << endl;
@@ -133,7 +132,6 @@ write_plugin(AudioEffectX* effect, const string& lib_file_name)
 	}
 	
 	for (uint32_t i = 0; i < num_audio_outs; ++i, ++idx) {
-		snprintf(name, MAX_NAME_LENGTH, "\"out%d\"", i);
 		os << "\t\ta :OutputPort, :AudioPort ;" << endl;
 		os << "\t\t:index " << idx << " ;" << endl;
 		os << "\t\t:symbol \"out" << i+1 << "\" ;" << endl;

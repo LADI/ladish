@@ -1,4 +1,4 @@
-CFLAGS = -O0 -g -Wall -fPIC -Ilvz -I. -DPLUGIN_URI_PREFIX=\"http://drobilla.net/ns/dev/mda-lv2/\"
+CFLAGS = -O0 -g -Wall -Wextra -Wshadow -Wno-unused -ansi -pedantic -fPIC -DPIC -Ilvz -I. -DPLUGIN_URI_PREFIX=\"http://drobilla.net/ns/dev/mda-lv2/\"
 
 # Change this to wherever you want system-wide bundles installed
 LV2_INSTALL_DIR = /usr/local/lib/lv2

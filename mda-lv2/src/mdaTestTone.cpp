@@ -75,11 +75,11 @@ void mdaTestTone::setParameter(LvzInt32 index, float value)
 
 
   //just update display text...
-  int mode = int(8.9 * fParam0);
+  int this_mode = int(8.9 * fParam0);
   float f, df=0.0f;
   if(fParam4>0.6) df = 1.25f*fParam4 - 0.75f;
   if(fParam4<0.4) df = 1.25f*fParam4 - 0.50f;
-  switch(mode)
+  switch(this_mode)
   {
     case 0: //MIDI note
             f = (float)floor(128.f*fParam3);
