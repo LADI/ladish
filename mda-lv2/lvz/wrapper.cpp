@@ -71,33 +71,56 @@ mda_connect_port(LV2_Handle instance, uint32_t port, void* data)
 }
 
 
+static int
+master_callback(int, int ver, int, int, int, int)
+{
+}
+
+
 static LV2_Handle
 mda_instantiate(const LV2_Descriptor*    descriptor,
                 double                   rate,
                 const char*              bundle_path,
                 const LV2_Feature*const* features)
 {
-	PLUGIN_CLASS* effect = new PLUGIN_CLASS(NULL);
+	PLUGIN_CLASS* effect = new PLUGIN_CLASS(master_callback);
 	effect->setURI(PLUGIN_URI_PREFIX PLUGIN_URI_SUFFIX);
 	effect->setSampleRate(rate);
+	
+	uint32_t num_params = effect->getNumParameters();
+	uint32_t num_inputs = effect->getNumInputs();
+	uint32_t num_outputs = effect->getNumOutputs();
 	
 	MDAPlugin* plugin = (MDAPlugin*)malloc(sizeof(MDAPlugin));
 	plugin->effect = effect;
 	
-	plugin->controls = (float*)malloc(sizeof(float) * effect->getNumParameters());
-	plugin->control_buffers = (float**)malloc(sizeof(float*) * effect->getNumParameters());
-	for (int32_t i = 0; i < effect->getNumParameters(); ++i) {
-		plugin->controls[i] = effect->getParameter(i);
-		plugin->control_buffers[i] = NULL;
+	if (num_params > 0) {
+		plugin->controls = (float*)malloc(sizeof(float) * num_params);
+		plugin->control_buffers = (float**)malloc(sizeof(float*) * num_params);
+		for (int32_t i = 0; i < num_params; ++i) {
+			plugin->controls[i] = effect->getParameter(i);
+			plugin->control_buffers[i] = NULL;
+		}
+	} else {
+		plugin->controls = NULL;
+		plugin->control_buffers = NULL;
 	}
 
-	plugin->inputs = (float**)malloc(sizeof(float*) * effect->getNumInputs());
-	for (int32_t i = 0; i < effect->getNumInputs(); ++i)
-		plugin->inputs[i] = NULL;
+	if (num_inputs > 0) {
+		plugin->inputs = (float**)malloc(sizeof(float*) * num_inputs);
+		for (int32_t i = 0; i < num_inputs; ++i)
+			plugin->inputs[i] = NULL;
+	} else {
+		plugin->inputs = NULL;
+	}
 	
-	plugin->outputs = (float**)malloc(sizeof(float*) * effect->getNumOutputs());
-	for (int32_t i = 0; i < effect->getNumOutputs(); ++i)
-		plugin->outputs[i] = NULL;
+	if (num_outputs > 0) {
+		plugin->outputs = (float**)malloc(sizeof(float*) * num_outputs);
+		for (int32_t i = 0; i < num_outputs; ++i)
+			plugin->outputs[i] = NULL;
+	} else {
+		plugin->outputs = NULL;
+	}
 	
 	return (LV2_Handle)plugin;
 }
@@ -167,7 +190,7 @@ LV2_SYMBOL_EXPORT
 AudioEffectX*
 lvz_new_audioeffectx()
 {
-	PLUGIN_CLASS* effect = new PLUGIN_CLASS(NULL);
+	PLUGIN_CLASS* effect = new PLUGIN_CLASS(master_callback);
 	effect->setURI(PLUGIN_URI_PREFIX PLUGIN_URI_SUFFIX);
 	return effect;
 }
