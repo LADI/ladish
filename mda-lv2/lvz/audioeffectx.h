@@ -16,18 +16,16 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __lvz_audioeffectx_h
-#define __lvz_audioeffectx_h
+#ifndef __LVZ_AUDIOEFFECTX_H
+#define __LVZ_AUDIOEFFECTX_H
 
 #include <stdint.h>
 #include <string.h>
 
 typedef int16_t LvzInt16;
 typedef int32_t LvzInt32;
-typedef void*   audioMasterCallback;
+typedef int (*audioMasterCallback)(int, int ver, int, int, int, int);
 	 
-class AEffGUIEditor;
-
 enum LvzPinFlags {
 	kLvzPinIsActive = 1<<0,
 	kLvzPinIsStereo = 1<<1
@@ -49,11 +47,11 @@ struct LvzEvent {
 
 struct LvzMidiEvent : public LvzEvent {
 	char* midiData;
-	long deltaFrames;
+	LvzInt32 deltaFrames;
 };
 
 struct LvzEvents {
-	long numEvents;
+	LvzInt32 numEvents;
 	LvzEvent** events;
 };
 
@@ -67,55 +65,56 @@ public:
 class AudioEffectX : public AudioEffect {
 public:
 	AudioEffectX(audioMasterCallback audioMaster, LvzInt32 progs, LvzInt32 params)
-		: uniqueID("NIL")
-		, URI("NIL")
+		: URI("NIL")
+		, uniqueID("NIL")
+		, sampleRate(44100)
 		, curProgram(0)
-		, numPrograms(progs)
-		, numParams(params)
 		, numInputs(0)
 		, numOutputs(0)
-		, sampleRate(44100)
+		, numParams(params)
+		, numPrograms(progs)
 	{
 	}
-
-	virtual const char*  getURI()           const { return URI; }
-	virtual const char*  getUniqueID()      const { return uniqueID; }
-	virtual float        getSampleRate()    const { return sampleRate; }
-	virtual LvzInt32     getNumInputs()     const { return numInputs; }		  
-	virtual LvzInt32     getNumOutputs()    const { return numOutputs; }
-	virtual LvzInt32     getNumParameters() const { return numParams; }
-
-	virtual float getParameter(LvzInt32 index) = 0;
-	virtual void  getParameterName(LvzInt32 index, char *label) = 0;
-	virtual bool  getProductString(char* text) = 0;
-
-	virtual void suspend() {}
-	virtual void canMono() {}
-	virtual void canProcessReplacing() {}
-	virtual void isSynth() {}
-	virtual void process(float **inputs, float **outputs, LvzInt32 nframes) = 0;
+	
+	virtual void process         (float **inputs, float **outputs, LvzInt32 nframes) = 0;
 	virtual void processReplacing(float **inputs, float **outputs, LvzInt32 nframes) = 0;
-	virtual void setBlockSize(LvzInt32 blockSize) {}
-	virtual void setNumInputs(LvzInt32 num) { numInputs = num; }
+
+	virtual const char*  getURI()           { return URI; }
+	virtual const char*  getUniqueID()      { return uniqueID; }
+	virtual float        getSampleRate()    { return sampleRate; }
+	virtual LvzInt32     getNumInputs()     { return numInputs; }		  
+	virtual LvzInt32     getNumOutputs()    { return numOutputs; }
+	virtual LvzInt32     getNumParameters() { return numParams; }
+
+	virtual void  setParameter(LvzInt32 index, float value)     = 0;
+	virtual float getParameter(LvzInt32 index)                  = 0;
+	virtual void  getParameterName(LvzInt32 index, char *label) = 0;
+	virtual bool  getProductString(char* text)                  = 0;
+
+	virtual void canMono()             {}
+	virtual void canProcessReplacing() {}
+	virtual void isSynth()             {}
+	virtual void wantEvents()          {}
+
+	virtual void setBlockSize(LvzInt32 size) {}
+	virtual void setNumInputs(LvzInt32 num)  { numInputs = num; }
 	virtual void setNumOutputs(LvzInt32 num) { numOutputs = num; }
-	virtual void setParameter(LvzInt32 index, float value) = 0;
-	virtual void setSampleRate(float rate) { sampleRate = rate; }
+	virtual void setSampleRate(float rate)   { sampleRate = rate; }
+	virtual void setProgram(LvzInt32 prog)   { curProgram = prog; }
+	virtual void setURI(const char* uri)     { URI = uri; }
 	virtual void setUniqueID(const char* id) { uniqueID = id; }
-	virtual void setURI(const char* uri) { URI = uri; }
-	virtual void wantEvents() {}
+	virtual void suspend()                   {}
 
 protected:
-	const char* uniqueID;
 	const char* URI;
+	const char* uniqueID;
+	float       sampleRate;
 	LvzInt32    curProgram;
-	LvzInt32    numPrograms;
-	LvzInt32    numParams;
 	LvzInt32    numInputs;
 	LvzInt32    numOutputs;
-	float       sampleRate;
-
-	AEffGUIEditor* editor;
+	LvzInt32    numParams;
+	LvzInt32    numPrograms;
 };
 
-#endif // __lvz_audioeffectx_h
+#endif // __LVZ_AUDIOEFFECTX_H
 
