@@ -307,7 +307,7 @@ void mdaTestTone::getParameterName(LvzInt32 index, char *label)
 {
 	switch(index)
   {
-    case 0: strcpy(label, "Mode:"); break;
+    case 0: strcpy(label, "Mode"); break;
     case 1: strcpy(label, "Level"); break;
     case 2: strcpy(label, "Channel"); break;
     case 3: strcpy(label, "F1"); break;

@@ -179,7 +179,7 @@ void mdaMultiBand::getParameterName(LvzInt32 index, char *label)
 {
 	switch(index)
   {
-    case 0: strcpy(label, "Listen:"); break;
+    case 0: strcpy(label, "Listen"); break;
     case 1: strcpy(label, "L <> M"); break;
     case 2: strcpy(label, "M <> H"); break;
     case 3: strcpy(label, "L Comp"); break;
@@ -191,7 +191,7 @@ void mdaMultiBand::getParameterName(LvzInt32 index, char *label)
     case 9: strcpy(label, "Attack"); break;
     case 10: strcpy(label, "Release"); break;
     case 11: strcpy(label, "Stereo"); break;
-    case 12: strcpy(label, "Process:"); break;
+    case 12: strcpy(label, "Process"); break;
   }
 }
 

@@ -349,13 +349,13 @@ void mdaLooplex::getParameterName(LvzInt32 index, char *label)
 {
 	switch (index)
 	{
-		case  0: strcpy(label, "Max Del "); break;
-		case  1: strcpy(label, "Reset   "); break;
-		case  2: strcpy(label, "Record  "); break;
-		case  3: strcpy(label, "In Mix  "); break;
-		case  4: strcpy(label, "In Pan  "); break;
+		case  0: strcpy(label, "Max Del"); break;
+		case  1: strcpy(label, "Reset"); break;
+		case  2: strcpy(label, "Record"); break;
+		case  3: strcpy(label, "In Mix"); break;
+		case  4: strcpy(label, "In Pan"); break;
 		case  5: strcpy(label, "Feedback"); break;
-		case  6: strcpy(label, "Out Mix "); break;
+		case  6: strcpy(label, "Out Mix"); break;
 
     default: strcpy(label, "        ");
 	}

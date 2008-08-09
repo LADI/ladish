@@ -127,13 +127,13 @@ void mdaDubDelay::getParameterName(LvzInt32 index, char *label)
 {
 	switch(index)
   {
-    case 0: strcpy(label, "Delay   "); break;
+    case 0: strcpy(label, "Delay"); break;
     case 1: strcpy(label, "Feedback"); break;
-    case 2: strcpy(label, "Fb Tone "); break;
+    case 2: strcpy(label, "Fb Tone"); break;
     case 3: strcpy(label, "LFO Dep."); break;
     case 4: strcpy(label, "LFO Rate"); break;
-    case 5: strcpy(label, "FX Mix  "); break;
-    case 6: strcpy(label, "Output  "); break;
+    case 5: strcpy(label, "FX Mix"); break;
+    case 6: strcpy(label, "Output"); break;
   }
 }
 

@@ -154,7 +154,7 @@ void mdaBandisto::getParameterName(LvzInt32 index, char *label)
 {
 	switch(index)
   {
-    case 0: strcpy(label, "Listen:"); break;
+    case 0: strcpy(label, "Listen"); break;
     case 1: strcpy(label, "L <> M"); break;
     case 2: strcpy(label, "M <> H"); break;
     case 3: strcpy(label, "L Dist"); break;
@@ -163,7 +163,7 @@ void mdaBandisto::getParameterName(LvzInt32 index, char *label)
     case 6: strcpy(label, "L Out"); break;
     case 7: strcpy(label, "M Out"); break;
     case 8: strcpy(label, "H Out"); break;
-    case 9: strcpy(label, "Mode:"); break;
+    case 9: strcpy(label, "Mode"); break;
   }
 }
 

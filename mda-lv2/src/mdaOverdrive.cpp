@@ -73,9 +73,9 @@ void mdaOverdrive::getParameterName(LvzInt32 index, char *label)
 {
 	switch(index)
   {
-    case 0: strcpy(label, "Drive   "); break;
-    case 1: strcpy(label, "Muffle  "); break;
-    case 2: strcpy(label, "Output  "); break;
+    case 0: strcpy(label, "Drive"); break;
+    case 1: strcpy(label, "Muffle"); break;
+    case 2: strcpy(label, "Output"); break;
   }
 }
 

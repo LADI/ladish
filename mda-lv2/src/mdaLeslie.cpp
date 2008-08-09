@@ -187,7 +187,7 @@ void mdaLeslie::getParameterName(LvzInt32 index, char *label)
 {
 	switch(index)
   {
-    case 0: strcpy(label, "Speed:"); break;
+    case 0: strcpy(label, "Mode"); break;
     case 1: strcpy(label, "Lo Width"); break;
     case 2: strcpy(label, "Lo Throb"); break;
     case 3: strcpy(label, "Hi Width"); break;

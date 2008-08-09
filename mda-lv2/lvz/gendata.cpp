@@ -49,37 +49,36 @@ write_data(AudioEffectX* effect, const char* lib_file_name)
 	os << "\t:symbol \"" << effect->getUniqueID() << "\" ;" << endl;
 	os << "\tdoap:name \"" << name << "\"";
 
-	if (effect->getNumInputs() + effect->getNumOutputs() == 0)
-		os << " ." << endl;
+	uint32_t num_params     = effect->getNumParameters();
+	uint32_t num_audio_ins  = effect->getNumInputs();
+	uint32_t num_audio_outs = effect->getNumOutputs();
+	uint32_t num_ports      = num_params + num_audio_ins + num_audio_outs;
+		
+	if (num_ports > 0)
+		os << " ;" << endl << "\t:port [" << endl;
 	else
-		os << " ;" << endl;
+		os << " ." << endl;
 	
-	for (uint32_t i = 0; i < effect->getNumInputs(); ++i) {
-		if (i == 0)
-			os << "\t:port [" << endl;
+	uint32_t idx = 0;
 
+	for (uint32_t i = idx; i < num_params; ++i, ++idx) {
+		effect->getParameterName(i, name);
+		os << "\t\ta :InputPort, :ControlPort ;" << endl;
+		os << "\t\t:index" << " " << idx << " ;" << endl;
+		os << "\t\t:name \"" << name << "\" ;" << endl;
+		os << ((idx == num_ports - 1) ? "\t] ." : "\t] , [") << endl;
+	}
+
+	for (uint32_t i = 0; i < num_audio_ins; ++i, ++idx) {
 		os << "\t\ta :InputPort, :AudioPort ;" << endl;
-		os << "\t\t:index" << " " << i << " ;" << endl;
-
-		if (i == effect->getNumInputs() - 1) {
-			os << "\t] " << (effect->getNumOutputs() ? ";" : ".") << endl;
-		} else {
-			os << "\t] , [" << endl;
-		}
+		os << "\t\t:index" << " " << idx << " ;" << endl;
+		os << ((idx == num_ports - 1) ? "\t] ." : "\t] , [") << endl;
 	}
 	
-	for (uint32_t i = 0; i < effect->getNumOutputs(); ++i) {
-		if (i == 0)
-			os << "\t:port [" << endl;
-
+	for (uint32_t i = 0; i < num_audio_outs; ++i, ++idx) {
 		os << "\t\ta :OutputPort, :AudioPort ;" << endl;
-		os << "\t\t:index" << " " << effect->getNumInputs() + i << " ;" << endl;
-
-		if (i == effect->getNumInputs() - 1) {
-			os << "\t] ." << endl;
-		} else {
-			os << "\t] , [" << endl;
-		}
+		os << "\t\t:index" << " " << idx << " ;" << endl;
+		os << ((idx == num_ports - 1) ? "\t] ." : "\t] , [") << endl;
 	}
 
 	os.close();

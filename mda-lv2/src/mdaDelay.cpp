@@ -135,12 +135,12 @@ void mdaDelay::getParameterName(LvzInt32 index, char *label)
 {
 	switch(index)
   {
-    case 0: strcpy(label, "L Delay "); break;
-    case 1: strcpy(label, "R Delay "); break;
+    case 0: strcpy(label, "L Delay"); break;
+    case 1: strcpy(label, "R Delay"); break;
     case 2: strcpy(label, "Feedback"); break;
-    case 3: strcpy(label, "Fb Tone "); break;
-    case 4: strcpy(label, "FX Mix  "); break;
-    case 5: strcpy(label, "Output  "); break;
+    case 3: strcpy(label, "Fb Tone"); break;
+    case 4: strcpy(label, "FX Mix"); break;
+    case 5: strcpy(label, "Output"); break;
   }
 }
 

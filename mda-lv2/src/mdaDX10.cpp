@@ -244,18 +244,18 @@ void mdaDX10::getParameterName(LvzInt32 index, char *label)
 {
 	switch (index)
 	{
-		case  0: strcpy(label, "Attack  "); break;
-		case  1: strcpy(label, "Decay   "); break;
-		case  2: strcpy(label, "Release "); break;
-		case  3: strcpy(label, "Coarse  "); break;
-		case  4: strcpy(label, "Fine    "); break;
+		case  0: strcpy(label, "Attack"); break;
+		case  1: strcpy(label, "Decay"); break;
+		case  2: strcpy(label, "Release"); break;
+		case  3: strcpy(label, "Coarse"); break;
+		case  4: strcpy(label, "Fine"); break;
 		case  5: strcpy(label, "Mod Init"); break;
-		case  6: strcpy(label, "Mod Dec "); break;
-		case  7: strcpy(label, "Mod Sus "); break;
-		case  8: strcpy(label, "Mod Rel "); break;
-		case  9: strcpy(label, "Mod Vel "); break;
- 	  case 10: strcpy(label, "Vibrato "); break;
- 	  case 11: strcpy(label, "Octave  "); break;
+		case  6: strcpy(label, "Mod Dec"); break;
+		case  7: strcpy(label, "Mod Sus"); break;
+		case  8: strcpy(label, "Mod Rel"); break;
+		case  9: strcpy(label, "Mod Vel"); break;
+ 	  case 10: strcpy(label, "Vibrato"); break;
+ 	  case 11: strcpy(label, "Octave"); break;
  	  case 12: strcpy(label, "FineTune"); break;
  	  case 13: strcpy(label, "Waveform"); break;
  	  case 14: strcpy(label, "Mod Thru"); break;

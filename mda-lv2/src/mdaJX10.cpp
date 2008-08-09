@@ -336,37 +336,37 @@ void mdaJX10::getParameterName(LvzInt32 index, char *label)
 {
 	switch (index)
 	{
-		case  0: strcpy(label, "OSC Mix "); break;
+		case  0: strcpy(label, "OSC Mix"); break;
 		case  1: strcpy(label, "OSC Tune"); break;
 		case  2: strcpy(label, "OSC Fine"); break;
 		
-    case  3: strcpy(label, "Glide   "); break;
+    case  3: strcpy(label, "Glide"); break;
 		case  4: strcpy(label, "Gld Rate"); break;
 		case  5: strcpy(label, "Gld Bend"); break;
 		
     case  6: strcpy(label, "VCF Freq"); break;
 		case  7: strcpy(label, "VCF Reso"); break;
-		case  8: strcpy(label, "VCF Env "); break;
+		case  8: strcpy(label, "VCF Env"); break;
 		
-    case  9: strcpy(label, "VCF LFO "); break;
- 	  case 10: strcpy(label, "VCF Vel "); break;
- 	  case 11: strcpy(label, "VCF Att "); break;
+    case  9: strcpy(label, "VCF LFO"); break;
+ 	  case 10: strcpy(label, "VCF Vel"); break;
+ 	  case 11: strcpy(label, "VCF Att"); break;
 
-    case 12: strcpy(label, "VCF Dec "); break;
-    case 13: strcpy(label, "VCF Sus "); break;
- 	  case 14: strcpy(label, "VCF Rel "); break;
+    case 12: strcpy(label, "VCF Dec"); break;
+    case 13: strcpy(label, "VCF Sus"); break;
+ 	  case 14: strcpy(label, "VCF Rel"); break;
  	  
-    case 15: strcpy(label, "ENV Att "); break;
-		case 16: strcpy(label, "ENV Dec "); break;
-		case 17: strcpy(label, "ENV Sus "); break;
+    case 15: strcpy(label, "ENV Att"); break;
+		case 16: strcpy(label, "ENV Dec"); break;
+		case 17: strcpy(label, "ENV Sus"); break;
 
-		case 18: strcpy(label, "ENV Rel "); break;
+		case 18: strcpy(label, "ENV Rel"); break;
 		case 19: strcpy(label, "LFO Rate"); break;
-		case 20: strcpy(label, "Vibrato "); break;
+		case 20: strcpy(label, "Vibrato"); break;
 
-    case 21: strcpy(label, "Noise   "); break;
-    case 22: strcpy(label, "Octave  "); break;
-    default: strcpy(label, "Tuning  ");
+    case 21: strcpy(label, "Noise"); break;
+    case 22: strcpy(label, "Octave"); break;
+    default: strcpy(label, "Tuning");
 	}
 }
 

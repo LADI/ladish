@@ -110,10 +110,10 @@ void mdaDither::getParameterName(LvzInt32 index, char *label)
 	switch(index)
   {
     case 0: strcpy(label, "Word Len"); break;
-    case 1: strcpy(label, "Dither  "); break;
+    case 1: strcpy(label, "Dither"); break;
     case 2: strcpy(label, "Dith Amp"); break;
-    case 3: strcpy(label, "DC Trim "); break;
-    case 4: strcpy(label, "Zoom... "); break;
+    case 3: strcpy(label, "DC Trim"); break;
+    case 4: strcpy(label, "Zoom"); break;
   }
 }
 

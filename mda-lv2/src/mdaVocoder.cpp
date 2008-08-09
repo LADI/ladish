@@ -182,7 +182,7 @@ void mdaVocoder::getParameterName(LvzInt32 index, char *label)
 {
   switch(index)
   {
-    case  0: strcpy(label, "Mod In:"); break;
+    case  0: strcpy(label, "Mod In"); break;
     case  1: strcpy(label, "Output"); break;
     case  2: strcpy(label, "Hi Thru"); break;
     case  3: strcpy(label, "Hi Band"); break;

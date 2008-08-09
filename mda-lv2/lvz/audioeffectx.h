@@ -70,18 +70,21 @@ public:
 		, URI("NIL")
 		, curProgram(0)
 		, numPrograms(progs)
+		, numParams(params)
 		, numInputs(0)
 		, numOutputs(0)
 		, sampleRate(44100)
 	{
 	}
   
-	const char* getURI()        { return URI; }
-	const char* getUniqueID()   { return uniqueID; }
-	float       getSampleRate() { return sampleRate; }
-	uint32_t    getNumInputs()  { return numInputs; }		  
-	uint32_t    getNumOutputs() { return numOutputs; }
-	
+	const char*  getURI()           { return URI; }
+	const char*  getUniqueID()      { return uniqueID; }
+	float        getSampleRate()    { return sampleRate; }
+	uint32_t     getNumInputs()     { return numInputs; }		  
+	uint32_t     getNumOutputs()    { return numOutputs; }
+	uint32_t     getNumParameters() { return numParams; }
+
+	virtual void getParameterName(LvzInt32 index, char *label) = 0;
 	virtual bool getProductString(char* text) = 0;
 
 	void canMono() {}
@@ -103,6 +106,7 @@ protected:
 	const char* URI;
 	uint32_t curProgram;
 	uint32_t numPrograms;
+	uint32_t numParams;
 	uint32_t numInputs;
 	uint32_t numOutputs;
 	float    sampleRate;

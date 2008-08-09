@@ -223,7 +223,7 @@ void mdaBeatBox::getParameterName(LvzInt32 index, char *label)
     case 7:  strcpy(label, "Snr Trig"); break;
     case 8:  strcpy(label, "Snr Mix"); break;
     case 9:  strcpy(label, "Dynamics"); break;
-    case 10: strcpy(label, "Record:"); break;
+    case 10: strcpy(label, "Record"); break;
     case 11: strcpy(label, "Thru Mix"); break;
   }
 }

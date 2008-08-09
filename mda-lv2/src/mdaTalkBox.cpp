@@ -146,7 +146,7 @@ void mdaTalkBox::getParameterName(LvzInt32 index, char *label)
   {
     case  0: strcpy(label, "Wet"); break;
     case  1: strcpy(label, "Dry"); break;
-    case  2: strcpy(label, "Carrier:"); break;
+    case  2: strcpy(label, "Carrier"); break;
     case  3: strcpy(label, "Quality"); break;
     default: strcpy(label, "");
   }

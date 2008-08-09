@@ -126,7 +126,7 @@ void mdaImage::getParameterName(LvzInt32 index, char *label)
 {
 	switch(index)
   {
-    case 0: strcpy(label, "Mode:"); break;
+    case 0: strcpy(label, "Mode"); break;
     case 1: strcpy(label, "S Width"); break;
     case 2: strcpy(label, "S Pan"); break;
     case 3: strcpy(label, "M Level"); break;

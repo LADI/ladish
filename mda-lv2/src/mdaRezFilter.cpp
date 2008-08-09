@@ -130,7 +130,7 @@ void mdaRezFilter::getParameterName(LvzInt32 index, char *label)
     case 5: strcpy(label, "Release"); break;
     case 6: strcpy(label, "LFO->VCF"); break;
     case 7: strcpy(label, "LFO Rate"); break;
-    case 8: strcpy(label, "Trigger:"); break;
+    case 8: strcpy(label, "Trigger"); break;
     case 9: strcpy(label, "Max Freq"); break;
   }
 }

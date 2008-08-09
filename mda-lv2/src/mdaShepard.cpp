@@ -108,7 +108,7 @@ void mdaShepard::getParameterName(LvzInt32 index, char *label)
 {
 	switch(index)
   {
-    case 0: strcpy(label, "Mode:"); break;
+    case 0: strcpy(label, "Mode"); break;
     case 1: strcpy(label, "Rate"); break;
     case 2: strcpy(label, "Output"); break;
   }
