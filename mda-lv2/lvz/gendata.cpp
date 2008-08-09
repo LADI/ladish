@@ -25,32 +25,29 @@
 
 using namespace std;
 
-typedef AudioEffectX* (*new_effect_func)();
-typedef AudioEffectX* (*plugin_uri_func)();
+#define NS_LV2CORE "http://lv2plug.in/ns/lv2core#"
 
 // VST is so incredibly awful.  Just.. wow.
 #define MAX_NAME_LENGTH 1024
 char name[MAX_NAME_LENGTH];
 
-#define NS_LV2CORE "http://lv2plug.in/ns/lv2core#"
 
 struct Record {
-	Record(const string& u, const string& f) : uri(u), file(f) {}
+	Record(const string& u, const string& n) : uri(u), base_name(n) {}
 	string uri;
-	string file;
+	string base_name;
 };
 
 typedef std::list<Record> Manifest;
 Manifest manifest;
 
+
 void
 write_plugin(AudioEffectX* effect, const string& lib_file_name)
 {
-	string data_file_name = lib_file_name;
-	data_file_name = data_file_name.substr(0, data_file_name.find_last_of("."));
-	data_file_name += ".ttl";
+	string base_name = lib_file_name.substr(0, lib_file_name.find_last_of("."));
+	string data_file_name = base_name + ".ttl";
 	
-	//ostream& os = cout;
 	fstream os(data_file_name.c_str(), ios::out);
 	effect->getProductString(name);
 	
@@ -96,7 +93,7 @@ write_plugin(AudioEffectX* effect, const string& lib_file_name)
 
 	os.close();
 
-	manifest.push_back(Record(effect->getURI(), data_file_name));
+	manifest.push_back(Record(effect->getURI(), base_name));
 }
 
 
@@ -107,7 +104,8 @@ write_manifest(ostream& os)
 	os << "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> ." << endl << endl;
 	for (Manifest::iterator i = manifest.begin(); i != manifest.end(); ++i) {
 		os << "<" << i->uri << "> a :Plugin ;" << endl;
-		os << "\trdfs:seeAlso <" << i->file << "> ." << endl << endl;
+		os << "\trdfs:seeAlso <" << i->base_name << ".ttl> ;" << endl;
+		os << "\t:binary <" << i->base_name << ".so> ." << endl << endl;
 	}
 }
 
@@ -123,6 +121,9 @@ main(int argc, char** argv)
 		cout << "A manifest of the plugins found is written to stdout" << endl;
 		return 1;
 	}
+	
+	typedef AudioEffectX* (*new_effect_func)();
+	typedef AudioEffectX* (*plugin_uri_func)();
 
 	new_effect_func constructor = NULL;
 	AudioEffectX*   effect      = NULL; 
