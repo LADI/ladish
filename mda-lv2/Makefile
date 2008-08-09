@@ -1,4 +1,4 @@
-CFLAGS = -O0 -g -Wall -Wextra -Wshadow -Wno-unused -ansi -pedantic -fPIC -DPIC -Ilvz -I. -DPLUGIN_URI_PREFIX=\"http://drobilla.net/ns/dev/mda-lv2/\"
+CFLAGS = -O0 -g -Wall -Wextra -Wshadow -Woverloaded-virtual -Wno-unused -ansi -pedantic -fPIC -DPIC -Ilvz -I. -DPLUGIN_URI_PREFIX=\"http://drobilla.net/ns/dev/mda-lv2/\"
 
 # Change this to wherever you want system-wide bundles installed
 LV2_INSTALL_DIR = /usr/local/lib/lv2
@@ -75,7 +75,7 @@ uninstall:
 	rm -rf /usr/local/lib/lv2/mda.lv2
 	rm -rf /usr/lib/lv2/mda.lv2
 
-src/%.c: src/%.h lvz/audioeffectx.h
+src/%.cpp: src/%.h lvz/audioeffectx.h
 
 lvz/gendata: lvz/gendata.cpp lvz/audioeffectx.h
 	$(CXX) $(CFLAGS) -ldl $< -o $@

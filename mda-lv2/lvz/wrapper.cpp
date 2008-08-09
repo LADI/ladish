@@ -116,7 +116,7 @@ mda_run(LV2_Handle instance, uint32_t sample_count)
 		}
 	}
 	
-	plugin->effect->process(plugin->inputs, plugin->outputs, sample_count);
+	plugin->effect->processReplacing(plugin->inputs, plugin->outputs, sample_count);
 }
 	
 

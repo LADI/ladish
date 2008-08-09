@@ -94,6 +94,7 @@ public:
 	virtual void canProcessReplacing() {}
 	virtual void isSynth() {}
 	virtual void process(float **inputs, float **outputs, LvzInt32 nframes) = 0;
+	virtual void processReplacing(float **inputs, float **outputs, LvzInt32 nframes) = 0;
 	virtual void setBlockSize(LvzInt32 blockSize) {}
 	virtual void setNumInputs(LvzInt32 num) { numInputs = num; }
 	virtual void setNumOutputs(LvzInt32 num) { numOutputs = num; }
