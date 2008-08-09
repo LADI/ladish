@@ -187,7 +187,7 @@ void mdaCombo::getParameterName(LvzInt32 index, char *label)
     case 1: strcpy(label, "Drive"); break;
     case 2: strcpy(label, "Bias"); break;
     case 3: strcpy(label, "Output"); break;
-    case 4: strcpy(label, "Process:"); break;
+    case 4: strcpy(label, "Process"); break;
     case 5: strcpy(label, "HPF Freq"); break;
     case 6: strcpy(label, "HPF Reso"); break;
   }

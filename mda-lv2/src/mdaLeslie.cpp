@@ -195,7 +195,7 @@ void mdaLeslie::getParameterName(LvzInt32 index, char *label)
     case 5: strcpy(label, "Hi Throb"); break;
     case 6: strcpy(label, "X-Over"); break;
     case 7: strcpy(label, "Output"); break;
-    case 8: strcpy(label, "Speed "); break;
+    case 8: strcpy(label, "Speed"); break;
   }
 }
 

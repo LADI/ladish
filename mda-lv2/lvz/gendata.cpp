@@ -18,6 +18,7 @@
 
 #include <list>
 #include <string>
+#include <cassert>
 #include <iostream>
 #include <fstream>
 #include <dlfcn.h>
@@ -40,6 +41,45 @@ struct Record {
 
 typedef std::list<Record> Manifest;
 Manifest manifest;
+
+	
+string
+symbolify(const char* name)
+{
+	string str(name);
+	
+	// Like This -> Like_This
+	for (size_t i=0; i < str.length(); ++i)
+		if (str[i] == ' ')
+			str[i] = '_';
+
+	str[0] = std::tolower(str[0]);
+	
+	// LikeThis -> like_this
+	for (size_t i=1; i < str.length(); ++i)
+		if (str[i] >= 'A' && str[i] <= 'Z'
+				&& str[i-1] >= 'a' && str[i-1] <= 'z'
+				&& ((i == str.length() - 1) || (str[i+1] <= 'a' && str[i+1] >= 'Z'))
+				&& (!(str[i-1] == 'd' && str[i] == 'B'))
+				&& (!(str[i-1] == 'F' && str[i] == 'X'))
+				&& (!(str[i-1] == 'D' && str[i] == 'C')))
+			str = str.substr(0, i) + '_' + str.substr(i);
+	
+	// To lowercase, and skip invalids
+	for (size_t i=1; i < str.length(); ) {
+		if (std::isalpha(str[i]) || std::isdigit(str[i])) {
+			str[i] = std::tolower(str[i]);
+			++i;
+		} else if (str[i-1] != '_') {
+			str[i] = '_';
+			++i;
+		} else {
+			str = str.substr(0, i) + str.substr(i+1);
+		}
+	}
+	
+	return str;
+}
 
 
 void
@@ -76,18 +116,28 @@ write_plugin(AudioEffectX* effect, const string& lib_file_name)
 		os << "\t\ta :InputPort, :ControlPort ;" << endl;
 		os << "\t\t:index" << " " << idx << " ;" << endl;
 		os << "\t\t:name \"" << name << "\" ;" << endl;
+		os << "\t\t:symbol \"" << symbolify(name) << "\" ;" << endl;
+		os << "\t\t:default " << effect->getParameter(i) << " ;" << endl;
+		os << "\t\t:minimum 0.0 ;" << endl;
+		os << "\t\t:maximum 1.0 ;" << endl;
 		os << ((idx == num_ports - 1) ? "\t] ." : "\t] , [") << endl;
 	}
 
 	for (uint32_t i = 0; i < num_audio_ins; ++i, ++idx) {
+		snprintf(name, MAX_NAME_LENGTH, "\"in%d\"", i);
 		os << "\t\ta :InputPort, :AudioPort ;" << endl;
 		os << "\t\t:index" << " " << idx << " ;" << endl;
+		os << "\t\t:symbol \"in" << i+1 << "\" ;" << endl;
+		os << "\t\t:name \"Input " << i+1 << "\" ;" << endl;
 		os << ((idx == num_ports - 1) ? "\t] ." : "\t] , [") << endl;
 	}
 	
 	for (uint32_t i = 0; i < num_audio_outs; ++i, ++idx) {
+		snprintf(name, MAX_NAME_LENGTH, "\"out%d\"", i);
 		os << "\t\ta :OutputPort, :AudioPort ;" << endl;
-		os << "\t\t:index" << " " << idx << " ;" << endl;
+		os << "\t\t:index " << idx << " ;" << endl;
+		os << "\t\t:symbol \"out" << i+1 << "\" ;" << endl;
+		os << "\t\t:name \"Output " << i+1 << "\" ;" << endl;
 		os << ((idx == num_ports - 1) ? "\t] ." : "\t] , [") << endl;
 	}
 

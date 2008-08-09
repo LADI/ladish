@@ -37,8 +37,8 @@ extern "C" {
 
 typedef struct {
 	PLUGIN_CLASS* effect;
-	float**       inputs;
-	float**       outputs;
+	float**       buffers;
+	float*        controls;
 } MDAPlugin;
 
 
@@ -51,7 +51,10 @@ static void mda_cleanup(LV2_Handle instance)
 static void mda_connect_port(LV2_Handle instance, uint32_t port, void* data)
 {
 	MDAPlugin* plugin = (MDAPlugin*)instance;
-	plugin->effect->setParameter(port, *(float*)data);
+	plugin->buffers[port] = (float*)data;
+	
+	if (data != NULL && port < plugin->effect->getNumParameters())
+		plugin->controls[port] = *(float*)data;
 }
 
 
@@ -67,8 +70,14 @@ mda_instantiate(const LV2_Descriptor*    descriptor,
 	
 	MDAPlugin* plugin = (MDAPlugin*)malloc(sizeof(MDAPlugin));
 	plugin->effect = effect;
-	plugin->inputs = (float**)malloc(sizeof(float*) * effect->getNumInputs());
-	plugin->outputs = (float**)malloc(sizeof(float*) * effect->getNumOutputs());
+	
+	uint32_t num_ports = effect->getNumParameters()
+	                   + effect->getNumInputs()
+	                   + effect->getNumOutputs();
+
+	plugin->buffers = (float**)malloc(sizeof(float*) * num_ports);
+	plugin->controls = (float*)malloc(sizeof(float) * effect->getNumParameters());
+	memset(plugin->controls, '\0', sizeof(float) * effect->getNumParameters());
 
 	return (LV2_Handle)plugin;
 }
@@ -78,8 +87,31 @@ static void
 mda_run(LV2_Handle instance, uint32_t sample_count)
 {
 	MDAPlugin* plugin = (MDAPlugin*)instance;
-	plugin->effect->process(plugin->inputs, plugin->outputs, sample_count);
+	
+	uint32_t num_params = plugin->effect->getNumParameters();
+	uint32_t num_inputs = plugin->effect->getNumInputs();
+
+	for (uint32_t i = 0; i < num_params; ++i) {
+		float val = plugin->buffers[i][0];
+		if (val != plugin->controls[i]) {
+			plugin->effect->setParameter(i, val);
+			plugin->controls[i] = val;
+		}
+	}
+
+	plugin->effect->process(plugin->buffers + num_params,
+	                        plugin->buffers + num_params + num_inputs,
+	                        sample_count);
 }
+	
+
+static void
+mda_deactivate(LV2_Handle instance)
+{
+	MDAPlugin* plugin = (MDAPlugin*)instance;
+	plugin->effect->suspend();
+}
+
 
 /* Library */
 
@@ -94,7 +126,7 @@ init_descriptor()
 	mda_descriptor->activate = NULL;
 	mda_descriptor->cleanup = mda_cleanup;
 	mda_descriptor->connect_port = mda_connect_port;
-	mda_descriptor->deactivate = NULL;
+	mda_descriptor->deactivate = mda_deactivate;
 	mda_descriptor->instantiate = mda_instantiate;
 	mda_descriptor->run = mda_run;
 }

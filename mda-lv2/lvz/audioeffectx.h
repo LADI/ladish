@@ -77,29 +77,30 @@ public:
 	{
 	}
   
-	const char*  getURI()           { return URI; }
-	const char*  getUniqueID()      { return uniqueID; }
-	float        getSampleRate()    { return sampleRate; }
-	uint32_t     getNumInputs()     { return numInputs; }		  
-	uint32_t     getNumOutputs()    { return numOutputs; }
-	uint32_t     getNumParameters() { return numParams; }
+	virtual const char*  getURI()           { return URI; }
+	virtual const char*  getUniqueID()      { return uniqueID; }
+	virtual float        getSampleRate()    { return sampleRate; }
+	virtual uint32_t     getNumInputs()     { return numInputs; }		  
+	virtual uint32_t     getNumOutputs()    { return numOutputs; }
+	virtual uint32_t     getNumParameters() { return numParams; }
 
-	virtual void getParameterName(LvzInt32 index, char *label) = 0;
-	virtual bool getProductString(char* text) = 0;
+	virtual float getParameter(LvzInt32 index) = 0;
+	virtual void  getParameterName(LvzInt32 index, char *label) = 0;
+	virtual bool  getProductString(char* text) = 0;
 
-	void canMono() {}
-	void canProcessReplacing() {}
-	void isSynth() {}
-	void process(float **inputs, float **outputs, uint32_t nframes) {}
-	void setBlockSize(uint32_t blockSize) {}
-	void setNumInputs(uint32_t num) { numInputs = num; }
-	void setNumOutputs(uint32_t num) { numOutputs = num;}
-	void setParameter(uint32_t index, float value) {}
-	void setSampleRate(float rate) { sampleRate = rate; }
-	void setUniqueID(const char* id) { uniqueID = id; }
-	void setURI(const char* uri) { URI = uri; }
-	void suspend() {}
-	void wantEvents() {}
+	virtual void suspend() {};
+	virtual void canMono() {}
+	virtual void canProcessReplacing() {}
+	virtual void isSynth() {}
+	virtual void process(float **inputs, float **outputs, uint32_t nframes) {}
+	virtual void setBlockSize(uint32_t blockSize) {}
+	virtual void setNumInputs(uint32_t num) { numInputs = num; }
+	virtual void setNumOutputs(uint32_t num) { numOutputs = num;}
+	virtual void setParameter(uint32_t index, float value) {}
+	virtual void setSampleRate(float rate) { sampleRate = rate; }
+	virtual void setUniqueID(const char* id) { uniqueID = id; }
+	virtual void setURI(const char* uri) { URI = uri; }
+	virtual void wantEvents() {}
 
 protected:
 	const char* uniqueID;
