@@ -41,7 +41,7 @@ mdaSpecMeter::mdaSpecMeter(audioMasterCallback audioMaster) : AudioEffectX(audio
 	setNumInputs(2);
 	setNumOutputs(2);
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
-	setUniqueID("mda?");
+	setUniqueID("mdaSpecMeter");
 	canProcessReplacing();
 
   //initialise...

@@ -30,6 +30,8 @@ mdaEPiano::mdaEPiano(audioMasterCallback audioMaster) : AudioEffectX(audioMaster
     fillpatch(i++, " ", 0.500f, 0.500f, 0.500f, 0.500f, 0.500f, 0.650f, 0.250f, 0.500f, 0.50f, 0.500f, 0.146f, 0.000f);
     setProgram(0);
   }
+		
+  setUniqueID("mdaEPiano");
 
   if(audioMaster)
 	{
@@ -37,7 +39,6 @@ mdaEPiano::mdaEPiano(audioMasterCallback audioMaster) : AudioEffectX(audioMaster
 		setNumOutputs(NOUTS);
 		canProcessReplacing();
 		isSynth();
-		setUniqueID("MDAe");	///
 	}
 
   waves = epianoData;

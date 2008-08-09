@@ -27,6 +27,15 @@ mdaLeslieProgram::mdaLeslieProgram()
 
 mdaLeslie::mdaLeslie(audioMasterCallback audioMaster)	: AudioEffectX(audioMaster, 3, 9)	// programs, parameters 
 {
+	fParam1 = 0.66f;
+  fParam7 = 0.50f;
+  fParam9 = 0.60f;
+  fParam4 = 0.70f;
+  fParam5 = 0.60f;
+  fParam6 = 0.70f;
+  fParam3 = 0.48f;
+  fParam2 = 0.50f;
+  fParam8 = 0.50f;
 
   size = 256; hpos = 0;
 	hbuf = new float[size];
@@ -35,7 +44,7 @@ mdaLeslie::mdaLeslie(audioMasterCallback audioMaster)	: AudioEffectX(audioMaster
   
   setNumInputs(2);		  
 	setNumOutputs(2);		  
-	setUniqueID("mdaH");  // identify here
+	setUniqueID("mdaLeslie");  // identify here
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
 	canProcessReplacing();	
 	suspend();		

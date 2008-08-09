@@ -50,7 +50,7 @@ mdaLoudness::mdaLoudness(audioMasterCallback audioMaster): AudioEffectX(audioMas
 {
   setNumInputs(2);
   setNumOutputs(2);
-  setUniqueID("mdal");
+  setUniqueID("mdaLoudness");
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
   canProcessReplacing();
 

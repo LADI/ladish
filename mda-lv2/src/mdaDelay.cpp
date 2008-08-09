@@ -25,7 +25,7 @@ mdaDelay::mdaDelay(audioMasterCallback audioMaster)	: AudioEffectX(audioMaster, 
 
   setNumInputs(2);		  
 	setNumOutputs(2);		  
-	setUniqueID("mday");  //identify here
+	setUniqueID("mdaDelay");  //identify here
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
 	canProcessReplacing();	
 	strcpy(programName, "Delay");

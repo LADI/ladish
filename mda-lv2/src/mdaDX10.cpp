@@ -59,6 +59,8 @@ mdaDX10::mdaDX10(audioMasterCallback audioMaster) : AudioEffectX(audioMaster, NP
   
     setProgram(0);
   }
+		
+  setUniqueID("mdaDX10");
 
   if(audioMaster)
 	{
@@ -66,7 +68,6 @@ mdaDX10::mdaDX10(audioMasterCallback audioMaster) : AudioEffectX(audioMaster, NP
 		setNumOutputs(NOUTS);
 		canProcessReplacing();
 		isSynth();
-		setUniqueID("MDAx");	///
 	}
 
  	//initialise...

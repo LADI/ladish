@@ -33,7 +33,7 @@ mdaDetune::mdaDetune(audioMasterCallback audioMaster): AudioEffectX(audioMaster,
 {
   setNumInputs(2);
   setNumOutputs(2);
-  setUniqueID("mdat");  ///identify mdaDetune-in here
+  setUniqueID("mdaDetune");  ///identify mdaDetune-in here
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
   canProcessReplacing();
 

@@ -66,38 +66,48 @@ class AudioEffect {
 class AudioEffectX : public AudioEffect {
 public:
 	AudioEffectX(audioMasterCallback audioMaster, int progs, int params)
-		: curProgram(0)
+		: uniqueID("NIL")
+		, URI("NIL")
+		, curProgram(0)
 		, numPrograms(progs)
 		, numInputs(0)
 		, numOutputs(0)
+		, sampleRate(44100)
 	{
 	}
   
-	float getSampleRate() { return sampleRate; }
-	uint32_t getNumInputs() { return numInputs; }		  
-	uint32_t getNumOutputs() { return numOutputs; }
-	void setNumInputs(uint32_t num) { numInputs = num; }
-	void setNumOutputs(uint32_t num) { numOutputs = num;}
-	void setUniqueID(const char* id) {}
-	void setSampleRate(float rate) { sampleRate = rate; }
+	const char* getURI()        { return URI; }
+	const char* getUniqueID()   { return uniqueID; }
+	float       getSampleRate() { return sampleRate; }
+	uint32_t    getNumInputs()  { return numInputs; }		  
+	uint32_t    getNumOutputs() { return numOutputs; }
+	
+	virtual bool getProductString(char* text) = 0;
+
 	void canMono() {}
-	void wantEvents() {}
 	void canProcessReplacing() {}
 	void isSynth() {}
-	void suspend() {}
-	void setBlockSize(uint32_t blockSize) {}
-	void setParameter(uint32_t index, float value) {}
-
 	void process(float **inputs, float **outputs, uint32_t nframes) {}
+	void setBlockSize(uint32_t blockSize) {}
+	void setNumInputs(uint32_t num) { numInputs = num; }
+	void setNumOutputs(uint32_t num) { numOutputs = num;}
+	void setParameter(uint32_t index, float value) {}
+	void setSampleRate(float rate) { sampleRate = rate; }
+	void setUniqueID(const char* id) { uniqueID = id; }
+	void setURI(const char* uri) { URI = uri; }
+	void suspend() {}
+	void wantEvents() {}
 
 protected:
-	 uint32_t curProgram;
-	 uint32_t numPrograms;
-	 uint32_t numInputs;
-	 uint32_t numOutputs;
-	 float    sampleRate;
+	const char* uniqueID;
+	const char* URI;
+	uint32_t curProgram;
+	uint32_t numPrograms;
+	uint32_t numInputs;
+	uint32_t numOutputs;
+	float    sampleRate;
 
-	 AEffGUIEditor* editor;
+	AEffGUIEditor* editor;
 };
 
 #endif // __lvz_audioeffectx_h

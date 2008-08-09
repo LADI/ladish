@@ -31,7 +31,7 @@ mdaTalkBox::mdaTalkBox(audioMasterCallback audioMaster): AudioEffectX(audioMaste
 {
   setNumInputs(2);
   setNumOutputs(2);
-  setUniqueID("mda&");  ///identify plug-in here
+  setUniqueID("mdaTalkBox");  ///identify plug-in here
   //canMono();
   canProcessReplacing();
 

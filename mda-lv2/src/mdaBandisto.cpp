@@ -25,7 +25,7 @@ mdaBandisto::mdaBandisto(audioMasterCallback audioMaster)	: AudioEffectX(audioMa
 
   setNumInputs(2);		  
 	setNumOutputs(2);		  
-	setUniqueID("mdaD");    // identify here
+	setUniqueID("mdaBand");    // identify here
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
 	canProcessReplacing();	
 	strcpy(programName, "Multi-Band Distortion");

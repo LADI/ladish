@@ -25,7 +25,7 @@ mdaRezFilter::mdaRezFilter(audioMasterCallback audioMaster)	: AudioEffectX(audio
 
   setNumInputs(2);		  
 	setNumOutputs(2);		  
-	setUniqueID("mdaF");    
+	setUniqueID("mdaRezFilter");    
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
 	canProcessReplacing();	
 	strcpy(programName, "Resonant Filter");

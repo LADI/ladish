@@ -31,7 +31,7 @@ mdaThruZero::mdaThruZero(audioMasterCallback audioMaster): AudioEffectX(audioMas
 {
   setNumInputs(2);
   setNumOutputs(2);
-  setUniqueID("mdaZ");  ///identify plug-in here
+  setUniqueID("mdaThruZero");  ///identify plug-in here
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
   canProcessReplacing();
 

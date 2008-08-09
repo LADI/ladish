@@ -24,7 +24,7 @@ mdaRePsycho::mdaRePsycho(audioMasterCallback audioMaster)	: AudioEffectX(audioMa
 
   setNumInputs(2);		  
 	setNumOutputs(2);		  
-	setUniqueID("mdaY");    // identify here
+	setUniqueID("mdaRePsycho");    // identify here
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
 	canProcessReplacing();	
 	strcpy(programName, "Re-PsYcHo!");

@@ -18,7 +18,7 @@ mdaTransient::mdaTransient(audioMasterCallback audioMaster)	: AudioEffectX(audio
 
   setNumInputs(2);		    // stereo in
 	setNumOutputs(2);		    // stereo out
-	setUniqueID("mdaK");    // identify
+	setUniqueID("mdaTransient");    // identify
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
 	canProcessReplacing();	// supports both accumulating and replacing output
 	strcpy(programName, "Transient Processor");	// default program name

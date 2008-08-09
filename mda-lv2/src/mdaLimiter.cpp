@@ -17,7 +17,7 @@ mdaLimiter::mdaLimiter(audioMasterCallback audioMaster)	: AudioEffectX(audioMast
 
   setNumInputs(2);		    // stereo in
 	setNumOutputs(2);		    // stereo out
-	setUniqueID("mdaL");    // identify
+	setUniqueID("mdaLimiter");    // identify
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
 	canProcessReplacing();	// supports both accumulating and replacing output
 	strcpy(programName, "Limiter");	// default program name

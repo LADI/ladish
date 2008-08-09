@@ -25,7 +25,7 @@ mdaShepard::mdaShepard(audioMasterCallback audioMaster)	: AudioEffectX(audioMast
   
   setNumInputs(2);		  
 	setNumOutputs(2);		  
-	setUniqueID("mdaX");    // 
+	setUniqueID("mdaShepard");    // 
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
 	canProcessReplacing();	
 	strcpy(programName, "Shepard Tone Generator");

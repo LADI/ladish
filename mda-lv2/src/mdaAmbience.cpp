@@ -17,6 +17,8 @@ mdaAmbience::mdaAmbience(audioMasterCallback audioMaster) : AudioEffectX(audioMa
   fParam2 = 0.9f; //mix
   fParam3 = 0.5f; //output
 
+  size = 0;
+
 	buf1 = new float[1024];
 	buf2 = new float[1024];
 	buf3 = new float[1024];
@@ -27,7 +29,7 @@ mdaAmbience::mdaAmbience(audioMasterCallback audioMaster) : AudioEffectX(audioMa
   
   setNumInputs(2);		  
 	setNumOutputs(2);		  
-	setUniqueID("mdaA");    // identify here
+	setUniqueID("mdaAmb");    // identify here
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
 	canProcessReplacing();	
 	strcpy(programName, "Small Space Ambience");

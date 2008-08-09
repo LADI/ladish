@@ -29,7 +29,7 @@ mdaDubDelay::mdaDubDelay(audioMasterCallback audioMaster)	: AudioEffectX(audioMa
 
   setNumInputs(2);		  
 	setNumOutputs(2);		  
-	setUniqueID("mdaﬂ");  //identify here
+	setUniqueID("mdaDubDelay");  //identify here
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
 	canProcessReplacing();	
 	strcpy(programName, "Dub Feedback Delay");

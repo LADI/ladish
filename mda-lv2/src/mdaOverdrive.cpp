@@ -16,7 +16,7 @@ mdaOverdrive::mdaOverdrive(audioMasterCallback audioMaster)	: AudioEffectX(audio
 
   setNumInputs(2);		    
 	setNumOutputs(2);		    
-	setUniqueID("mdaO");    // identify
+	setUniqueID("mdaOverdrive");    // identify
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
 	canProcessReplacing();	
 	strcpy(programName, "Soft Overdrive");	

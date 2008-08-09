@@ -20,7 +20,7 @@ mdaDegrade::mdaDegrade(audioMasterCallback audioMaster)	: AudioEffectX(audioMast
 
   setNumInputs(2);		  
 	setNumOutputs(2);		  
-	setUniqueID("mdaC");    // identify here
+	setUniqueID("mdaDegrade");    // identify here
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
 	canProcessReplacing();	
 	strcpy(programName, "Degrade");

@@ -23,7 +23,7 @@ mdaStereo::mdaStereo(audioMasterCallback audioMaster)	: AudioEffectX(audioMaster
 
   setNumInputs(2);		  
 	setNumOutputs(2);		  
-	setUniqueID("mdaS");    // identify here
+	setUniqueID("mdaStereo");    // identify here
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
 	canProcessReplacing();	
 	strcpy(programName, "Stereo Simulator");

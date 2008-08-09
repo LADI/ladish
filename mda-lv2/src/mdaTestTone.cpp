@@ -21,7 +21,7 @@ mdaTestTone::mdaTestTone(audioMasterCallback audioMaster)	: AudioEffectX(audioMa
 
   setNumInputs(2);		    
 	setNumOutputs(2);		    
-	setUniqueID("mdaT");    
+	setUniqueID("mdaTestTone");    
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
 	canProcessReplacing();
 	strcpy(programName, "Signal Generator");

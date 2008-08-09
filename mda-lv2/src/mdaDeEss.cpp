@@ -16,7 +16,7 @@ mdaDeEss::mdaDeEss(audioMasterCallback audioMaster)	: AudioEffectX(audioMaster, 
   fParam3 = (float)0.50f; //drive
   setNumInputs(2);		  
 	setNumOutputs(2);		  
-	setUniqueID("mdas");   //identify here
+	setUniqueID("mdaDeEss");   //identify here
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
 	canProcessReplacing();	
 	strcpy(programName, "De-esser");

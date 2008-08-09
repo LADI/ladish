@@ -26,7 +26,7 @@ mdaCombo::mdaCombo(audioMasterCallback audioMaster)	: AudioEffectX(audioMaster, 
 
   setNumInputs(2);		  
 	setNumOutputs(2);		  
-	setUniqueID("mdaX");    // identify here
+	setUniqueID("mdaCombo");    // identify here
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
 	canProcessReplacing();	
 	strcpy(programName, "Amp & Speaker Simulator");

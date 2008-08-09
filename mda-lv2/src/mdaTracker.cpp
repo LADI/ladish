@@ -22,7 +22,7 @@ mdaTracker::mdaTracker(audioMasterCallback audioMaster)	: AudioEffectX(audioMast
 
   setNumInputs(2);		  
 	setNumOutputs(2);		  
-	setUniqueID("mdaJ");    // identify here
+	setUniqueID("mdaTracker");    // identify here
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
 	canProcessReplacing();	
 	strcpy(programName, "Pitch Tracker");

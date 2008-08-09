@@ -21,7 +21,7 @@ mdaRoundPan::mdaRoundPan(audioMasterCallback audioMaster)	: AudioEffectX(audioMa
 
   setNumInputs(2);		  
 	setNumOutputs(2);		  
-	setUniqueID("mdaP");    // identify here
+	setUniqueID("mdaRoundPan");    // identify here
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
 	canProcessReplacing();	
 	strcpy(programName, "Round Panner");

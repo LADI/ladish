@@ -20,7 +20,7 @@ mdaRingMod::mdaRingMod(audioMasterCallback audioMaster)	: AudioEffectX(audioMast
 
   setNumInputs(2);		    // stereo in
 	setNumOutputs(2);		    // stereo out
-	setUniqueID("mdaR");    // identify
+	setUniqueID("mdaRingMod");    // identify
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
 	canProcessReplacing();	// supports both accumulating and replacing output
 	strcpy(programName, "Ring Modulator");	// default program name

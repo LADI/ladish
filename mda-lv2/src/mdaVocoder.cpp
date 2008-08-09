@@ -34,7 +34,7 @@ mdaVocoder::mdaVocoder(audioMasterCallback audioMaster): AudioEffectX(audioMaste
 {
   setNumInputs(2);
   setNumOutputs(2);
-  setUniqueID("mdav");  ///identify plug-in here 
+  setUniqueID("mdaVocoder");  ///identify plug-in here 
   //canMono();
   canProcessReplacing();
 

@@ -33,7 +33,7 @@ mdaSplitter::mdaSplitter(audioMasterCallback audioMaster): AudioEffectX(audioMas
 {
   setNumInputs(2);
   setNumOutputs(2);
-  setUniqueID("mda7");  ///identify plug-in here
+  setUniqueID("mdaSplitter");  ///identify plug-in here
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
   canProcessReplacing();
 

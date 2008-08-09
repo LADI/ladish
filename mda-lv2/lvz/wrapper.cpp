@@ -16,12 +16,14 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef PLUGIN_URI
-#error "This file requires PLUGIN_URI to be defined"
-#endif
-
 #ifndef PLUGIN_CLASS
 #error "This file requires PLUGIN_CLASS to be defined"
+#endif
+#ifndef PLUGIN_URI_PREFIX
+#error "This file requires PLUGIN_URI_PREFIX to be defined"
+#endif
+#ifndef PLUGIN_URI_SUFFIX
+#error "This file requires PLUGIN_URI_SUFFIX to be defined"
 #endif
 
 #include <stdlib.h>
@@ -60,6 +62,7 @@ mda_instantiate(const LV2_Descriptor*    descriptor,
                 const LV2_Feature*const* features)
 {
 	PLUGIN_CLASS* effect = new PLUGIN_CLASS(NULL);
+	effect->setURI(PLUGIN_URI_PREFIX PLUGIN_URI_SUFFIX);
 	effect->setSampleRate(rate);
 	
 	MDAPlugin* plugin = (MDAPlugin*)malloc(sizeof(MDAPlugin));
@@ -87,7 +90,7 @@ init_descriptor()
 {
 	mda_descriptor = (LV2_Descriptor*)malloc(sizeof(LV2_Descriptor));
 
-	mda_descriptor->URI = PLUGIN_URI;
+	mda_descriptor->URI = PLUGIN_URI_PREFIX PLUGIN_URI_SUFFIX;
 	mda_descriptor->activate = NULL;
 	mda_descriptor->cleanup = mda_cleanup;
 	mda_descriptor->connect_port = mda_connect_port;
@@ -111,5 +114,16 @@ lv2_descriptor(uint32_t index)
 		return NULL;
 	}
 }
+
+
+LV2_SYMBOL_EXPORT
+AudioEffectX*
+lvz_new_audioeffectx()
+{
+	PLUGIN_CLASS* effect = new PLUGIN_CLASS(NULL);
+	effect->setURI(PLUGIN_URI_PREFIX PLUGIN_URI_SUFFIX);
+	return effect;
+}
+
 
 } // extern "C"

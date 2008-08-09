@@ -125,6 +125,8 @@ mdaLooplex::mdaLooplex(audioMasterCallback audioMaster) : AudioEffectX(audioMast
 
   programs = new mdaLooplexProgram[NPROGS];
 	if(programs) setProgram(0);
+		
+  setUniqueID("mdaLoopLex");
 
   if(audioMaster)
 	{
@@ -132,7 +134,6 @@ mdaLooplex::mdaLooplex(audioMasterCallback audioMaster) : AudioEffectX(audioMast
 		setNumOutputs(NOUTS);
 		canProcessReplacing();
     //needIdle(); idle is broken in VST2.4
-		setUniqueID("MDA~");	///
 	}
 
   update();

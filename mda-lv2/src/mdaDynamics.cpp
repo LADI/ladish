@@ -22,7 +22,7 @@ mdaDynamics::mdaDynamics(audioMasterCallback audioMaster)	: AudioEffectX(audioMa
 
   setNumInputs(2);		    // stereo in
 	setNumOutputs(2);		    // stereo out
-	setUniqueID("mdaN");    // identify
+	setUniqueID("mdaDynamics");    // identify
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
 	canProcessReplacing();	// supports both accumulating and replacing output
 	strcpy(programName, "Dynamics");	// default program name

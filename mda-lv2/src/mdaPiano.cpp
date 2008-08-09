@@ -60,6 +60,8 @@ mdaPiano::mdaPiano(audioMasterCallback audioMaster) : AudioEffectX(audioMaster, 
    
     setProgram(0);
   }
+		
+  setUniqueID("mdaPiano");
 
   if(audioMaster)
 	{
@@ -67,7 +69,6 @@ mdaPiano::mdaPiano(audioMasterCallback audioMaster) : AudioEffectX(audioMaster, 
 		setNumOutputs(NOUTS);
 		canProcessReplacing();
 		isSynth();
-		setUniqueID("MDAp");	///
 	}
 
   waves = pianoData;

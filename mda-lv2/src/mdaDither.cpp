@@ -23,7 +23,7 @@ mdaDither::mdaDither(audioMasterCallback audioMaster)	: AudioEffectX(audioMaster
 
   setNumInputs(2);		  
 	setNumOutputs(2);		  
-	setUniqueID("mdad");    // identify here
+	setUniqueID("mdaDither");    // identify here
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
 	canProcessReplacing();	
 	strcpy(programName, "Dither & Noise Shaping");

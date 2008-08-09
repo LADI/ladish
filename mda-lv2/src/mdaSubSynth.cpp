@@ -21,7 +21,7 @@ mdaSubSynth::mdaSubSynth(audioMasterCallback audioMaster)
 
   setNumInputs(2);		  
 	setNumOutputs(2);		  
-	setUniqueID("mdaB");    // identify here
+	setUniqueID("mdaSubSynth");    // identify here
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
 	canProcessReplacing();	
 	strcpy(programName, "Sub Bass Synthesizer");

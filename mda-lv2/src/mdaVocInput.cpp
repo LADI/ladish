@@ -31,7 +31,7 @@ mdaVocInput::mdaVocInput(audioMasterCallback audioMaster): AudioEffectX(audioMas
 {
   setNumInputs(2);
   setNumOutputs(2);
-  setUniqueID("mda3");  ///identify plug-in here 
+  setUniqueID("mdaVocInput");  ///identify plug-in here 
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
   canProcessReplacing();
 

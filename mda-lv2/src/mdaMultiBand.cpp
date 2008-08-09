@@ -40,7 +40,7 @@ mdaMultiBand::mdaMultiBand(audioMasterCallback audioMaster)	: AudioEffectX(audio
 
   setNumInputs(2);		  
 	setNumOutputs(2);		  
-	setUniqueID("mdaM");    // identify here
+	setUniqueID("mdaMultiBand");    // identify here
 	DECLARE_LVZ_DEPRECATED(canMono) ();				      
 	canProcessReplacing();	
 	strcpy(programName, "Multi-Band Compressor");

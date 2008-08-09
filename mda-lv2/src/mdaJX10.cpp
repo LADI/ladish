@@ -121,6 +121,8 @@ mdaJX10::mdaJX10(audioMasterCallback audioMaster) : AudioEffectX(audioMaster, NP
 
     setProgram(0);
   }
+		
+  setUniqueID("mdaJX10");
 
   if(audioMaster)
 	{
@@ -128,7 +130,6 @@ mdaJX10::mdaJX10(audioMasterCallback audioMaster) : AudioEffectX(audioMaster, NP
 		setNumOutputs(NOUTS);
 		canProcessReplacing();
 		isSynth();
-		setUniqueID("MDAj");	///
 	}
 
   //initialise...
