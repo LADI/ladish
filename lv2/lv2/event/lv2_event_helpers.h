@@ -23,7 +23,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <assert.h>
 #include "lv2_event.h"
 
