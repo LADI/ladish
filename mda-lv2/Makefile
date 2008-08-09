@@ -1,7 +1,5 @@
-CFLAGS = -O0 -g -Wall -Wextra -Wshadow -Woverloaded-virtual -Wno-unused -ansi -pedantic -fPIC -DPIC -Ilvz -I. -DPLUGIN_URI_PREFIX=\"http://drobilla.net/ns/dev/mda-lv2/\"
-
-# Change this to wherever you want system-wide bundles installed
-LV2_INSTALL_DIR = /usr/local/lib/lv2
+#CFLAGS = -O0 -g -ansi -pedantic -Wall -Wextra -Wshadow -Woverloaded-virtual -Wno-unused
+CFLAGS += -fPIC -DPIC -Ilvz -I. -DPLUGIN_URI_PREFIX=\"http://drobilla.net/ns/dev/mda-lv2/\"
 
 all: lvz/gendata libs data
 
