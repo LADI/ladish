@@ -77,7 +77,7 @@ mdaRezFilter::~mdaRezFilter()
 
 }
 
-bool  mdaRezFilter::getProductString(char* text) { strcpy(text, "mda RezFilter"); return true; }
+bool  mdaRezFilter::getProductString(char* text) { strcpy(text, "MDA RezFilter"); return true; }
 bool  mdaRezFilter::getVendorString(char* text)  { strcpy(text, "mda"); return true; }
 bool  mdaRezFilter::getEffectName(char* name)    { strcpy(name, "RezFilter"); return true; }
 

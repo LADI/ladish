@@ -32,7 +32,7 @@ mdaTestTone::mdaTestTone(audioMasterCallback audioMaster)	: AudioEffectX(audioMa
   setParameter(6, 0.f);
 }
 
-bool  mdaTestTone::getProductString(char* text) { strcpy(text, "mda TestTone"); return true; }
+bool  mdaTestTone::getProductString(char* text) { strcpy(text, "MDA TestTone"); return true; }
 bool  mdaTestTone::getVendorString(char* text)  { strcpy(text, "mda"); return true; }
 bool  mdaTestTone::getEffectName(char* name)    { strcpy(name, "TestTone"); return true; }
 

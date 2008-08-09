@@ -1,5 +1,5 @@
 //
-// Plug-in: "mda Template" v1.0
+// Plug-in: "MDA Template" v1.0
 //
 // Copyright(c)1999-2000 Paul Kellett (maxim digital audio)
 //
@@ -25,7 +25,7 @@ mdaDetuneProgram::mdaDetuneProgram() ///default program settings
   strcpy(name, "Stereo Detune");
 }
 
-bool  mdaDetune::getProductString(char* text) { strcpy(text, "mda Detune"); return true; }
+bool  mdaDetune::getProductString(char* text) { strcpy(text, "MDA Detune"); return true; }
 bool  mdaDetune::getVendorString(char* text)  { strcpy(text, "mda"); return true; }
 bool  mdaDetune::getEffectName(char* name)    { strcpy(name, "Detune"); return true; }
 

@@ -1,5 +1,5 @@
 //
-// Plug-in: "mda Piano" v1.0
+// Plug-in: "MDA Piano" v1.0
 //
 // Copyright(c)1999-2000 Paul Kellett (maxim digital audio)
 //
@@ -36,7 +36,7 @@ mdaPianoProgram::mdaPianoProgram()
 	param[10] = 0.00f; //Random
 	param[11] = 0.50f; //Stretch
 
-  strcpy (name, "mda Piano");
+  strcpy (name, "MDA Piano");
 }
 
 
@@ -49,7 +49,7 @@ mdaPiano::mdaPiano(audioMasterCallback audioMaster) : AudioEffectX(audioMaster, 
   {
     //fill patches...
     long i=0;
-    fillpatch(i++, "mda Piano",        0.500f, 0.500f, 0.500f, 0.5f, 0.803f, 0.251f, 0.376f, 0.500f, 0.330f, 0.500f, 0.246f, 0.500f);
+    fillpatch(i++, "MDA Piano",        0.500f, 0.500f, 0.500f, 0.5f, 0.803f, 0.251f, 0.376f, 0.500f, 0.330f, 0.500f, 0.246f, 0.500f);
     fillpatch(i++, "Plain Piano",      0.500f, 0.500f, 0.500f, 0.5f, 0.751f, 0.000f, 0.452f, 0.000f, 0.000f, 0.500f, 0.000f, 0.500f);
     fillpatch(i++, "Compressed Piano", 0.902f, 0.399f, 0.623f, 0.5f, 1.000f, 0.331f, 0.299f, 0.499f, 0.330f, 0.500f, 0.000f, 0.500f);
     fillpatch(i++, "Dance Piano",      0.399f, 0.251f, 1.000f, 0.5f, 0.672f, 0.124f, 0.127f, 0.249f, 0.330f, 0.500f, 0.283f, 0.667f);
@@ -191,7 +191,7 @@ void  mdaPiano::getProgramName(char *name)   { strcpy(name, programs[curProgram]
 void  mdaPiano::setBlockSize(LvzInt32 blockSize) {	AudioEffectX::setBlockSize(blockSize); }
 bool  mdaPiano::getEffectName(char* name)    { strcpy(name, "Piano"); return true; }
 bool  mdaPiano::getVendorString(char* text)  {	strcpy(text, "mda"); return true; }
-bool  mdaPiano::getProductString(char* text) { strcpy(text, "mda Piano"); return true; }
+bool  mdaPiano::getProductString(char* text) { strcpy(text, "MDA Piano"); return true; }
 
 
 bool mdaPiano::getOutputProperties(LvzInt32 index, LvzPinProperties* properties)

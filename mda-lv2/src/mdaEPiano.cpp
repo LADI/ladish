@@ -210,7 +210,7 @@ void  mdaEPiano::getProgramName(char *name)   { strcpy(name, programs[curProgram
 void  mdaEPiano::setBlockSize(LvzInt32 blockSize) {	AudioEffectX::setBlockSize(blockSize); }
 bool  mdaEPiano::getEffectName(char* name)    { strcpy(name, "ePiano"); return true; }
 bool  mdaEPiano::getVendorString(char* text)  {	strcpy(text, "mda"); return true; }
-bool  mdaEPiano::getProductString(char* text) { strcpy(text, "mda ePiano"); return true; }
+bool  mdaEPiano::getProductString(char* text) { strcpy(text, "MDA ePiano"); return true; }
 
 
 bool mdaEPiano::getOutputProperties(LvzInt32 index, LvzPinProperties* properties)

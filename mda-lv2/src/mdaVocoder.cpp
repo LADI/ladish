@@ -1,5 +1,5 @@
 //
-// Plug-in: "mda Vocoder" v1.0
+// Plug-in: "MDA Vocoder" v1.0
 //
 // Copyright(c)1999-2000 Paul Kellett (maxim digital audio)
 //
@@ -59,7 +59,7 @@ mdaVocoder::mdaVocoder(audioMasterCallback audioMaster): AudioEffectX(audioMaste
   suspend();
 }
 
-bool  mdaVocoder::getProductString(char* text) { strcpy(text, "mda Vocoder"); return true; }
+bool  mdaVocoder::getProductString(char* text) { strcpy(text, "MDA Vocoder"); return true; }
 bool  mdaVocoder::getVendorString(char* text)  { strcpy(text, "mda"); return true; }
 bool  mdaVocoder::getEffectName(char* name)    { strcpy(name, "Vocoder"); return true; }
 

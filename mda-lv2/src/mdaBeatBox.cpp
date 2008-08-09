@@ -69,7 +69,7 @@ mdaBeatBox::mdaBeatBox(audioMasterCallback audioMaster)	: AudioEffectX(audioMast
   dyne = 0.f; dynm = fParam10;
 }
 
-bool  mdaBeatBox::getProductString(char* text) { strcpy(text, "mda BeatBox"); return true; }
+bool  mdaBeatBox::getProductString(char* text) { strcpy(text, "MDA BeatBox"); return true; }
 bool  mdaBeatBox::getVendorString(char* text)  { strcpy(text, "mda"); return true; }
 bool  mdaBeatBox::getEffectName(char* name)    { strcpy(name, "BeatBox"); return true; }
 

@@ -68,7 +68,7 @@ mdaBandisto::~mdaBandisto()
 	
 }
 
-bool  mdaBandisto::getProductString(char* text) { strcpy(text, "mda Bandisto"); return true; }
+bool  mdaBandisto::getProductString(char* text) { strcpy(text, "MDA Bandisto"); return true; }
 bool  mdaBandisto::getVendorString(char* text)  { strcpy(text, "mda"); return true; }
 bool  mdaBandisto::getEffectName(char* name)    { strcpy(name, "Bandisto"); return true; }
 

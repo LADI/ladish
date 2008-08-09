@@ -34,7 +34,7 @@ mdaDelay::mdaDelay(audioMasterCallback audioMaster)	: AudioEffectX(audioMaster, 
   setParameter(0, 0.5); 
 }
 
-bool  mdaDelay::getProductString(char* text) { strcpy(text, "mda Delay"); return true; }
+bool  mdaDelay::getProductString(char* text) { strcpy(text, "MDA Delay"); return true; }
 bool  mdaDelay::getVendorString(char* text)  { strcpy(text, "mda"); return true; }
 bool  mdaDelay::getEffectName(char* name)    { strcpy(name, "Delay"); return true; }
 

@@ -67,7 +67,7 @@ mdaStereo::mdaStereo(audioMasterCallback audioMaster)	: AudioEffectX(audioMaster
 
 //still do something sensible with stereo inputs? Haas?
 
-bool  mdaStereo::getProductString(char* text) { strcpy(text, "mda Stereo"); return true; }
+bool  mdaStereo::getProductString(char* text) { strcpy(text, "MDA Stereo"); return true; }
 bool  mdaStereo::getVendorString(char* text)  { strcpy(text, "mda"); return true; }
 bool  mdaStereo::getEffectName(char* name)    { strcpy(name, "Stereo"); return true; }
 

@@ -1,5 +1,5 @@
 //
-// Plug-in: "mda Loudness" v1.0
+// Plug-in: "MDA Loudness" v1.0
 //
 // Copyright(c)1999-2000 Paul Kellett (maxim digital audio)
 //
@@ -42,7 +42,7 @@ mdaLoudnessProgram::mdaLoudnessProgram() ///default program settings
   strcpy(name, "Equal Loudness Contours");  //re. Stevens-Davis @ 100dB
 }
 
-bool  mdaLoudness::getProductString(char* text) { strcpy(text, "mda Loudness"); return true; }
+bool  mdaLoudness::getProductString(char* text) { strcpy(text, "MDA Loudness"); return true; }
 bool  mdaLoudness::getVendorString(char* text)  { strcpy(text, "mda"); return true; }
 bool  mdaLoudness::getEffectName(char* name)    { strcpy(name, "Loudness"); return true; }
 

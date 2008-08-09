@@ -31,7 +31,7 @@ mdaDither::mdaDither(audioMasterCallback audioMaster)	: AudioEffectX(audioMaster
   setParameter(0, 0.5f);
 }
 
-bool  mdaDither::getProductString(char* text) { strcpy(text, "mda Dither"); return true; }
+bool  mdaDither::getProductString(char* text) { strcpy(text, "MDA Dither"); return true; }
 bool  mdaDither::getVendorString(char* text)  { strcpy(text, "mda"); return true; }
 bool  mdaDither::getEffectName(char* name)    { strcpy(name, "Dither"); return true; }
 

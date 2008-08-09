@@ -1,5 +1,5 @@
 //
-// Plug-in: "mda VocSource" v1.0  (generates carrier signal for vocoder)
+// Plug-in: "MDA VocSource" v1.0  (generates carrier signal for vocoder)
 //
 // Copyright(c)1999-2000 Paul Kellett (maxim digital audio)
 //
@@ -41,7 +41,7 @@ mdaVocInput::mdaVocInput(audioMasterCallback audioMaster): AudioEffectX(audioMas
   suspend();
 }
 
-bool  mdaVocInput::getProductString(char* text) { strcpy(text, "mda VocInput"); return true; }
+bool  mdaVocInput::getProductString(char* text) { strcpy(text, "MDA VocInput"); return true; }
 bool  mdaVocInput::getVendorString(char* text)  { strcpy(text, "mda"); return true; }
 bool  mdaVocInput::getEffectName(char* name)    { strcpy(name, "VocInput"); return true; }
 

@@ -1,5 +1,5 @@
 //
-// mda plug-in: "mda Splitter" v1.0
+// mda plug-in: "MDA Splitter" v1.0
 //
 // Copyright(c)1999-2000 Paul Kellett (maxim digital audio)
 //
@@ -50,7 +50,7 @@ mdaSplitter::mdaSplitter(audioMasterCallback audioMaster): AudioEffectX(audioMas
   suspend();
 }
 
-bool  mdaSplitter::getProductString(char* text) { strcpy(text, "mda Splitter"); return true; }
+bool  mdaSplitter::getProductString(char* text) { strcpy(text, "MDA Splitter"); return true; }
 bool  mdaSplitter::getVendorString(char* text)  { strcpy(text, "mda"); return true; }
 bool  mdaSplitter::getEffectName(char* name)    { strcpy(name, "Splitter"); return true; }
 

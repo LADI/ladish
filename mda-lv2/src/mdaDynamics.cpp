@@ -30,7 +30,7 @@ mdaDynamics::mdaDynamics(audioMasterCallback audioMaster)	: AudioEffectX(audioMa
   setParameter(6, 0.f); //initial settings
 }
 
-bool  mdaDynamics::getProductString(char* text) { strcpy(text, "mda Dynamics"); return true; }
+bool  mdaDynamics::getProductString(char* text) { strcpy(text, "MDA Dynamics"); return true; }
 bool  mdaDynamics::getVendorString(char* text)  { strcpy(text, "mda"); return true; }
 bool  mdaDynamics::getEffectName(char* name)    { strcpy(name, "Dynamics"); return true; }
 

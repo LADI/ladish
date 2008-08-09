@@ -75,7 +75,7 @@ mdaTracker::~mdaTracker()
 {
 }
 
-bool  mdaTracker::getProductString(char* text) { strcpy(text, "mda Tracker"); return true; }
+bool  mdaTracker::getProductString(char* text) { strcpy(text, "MDA Tracker"); return true; }
 bool  mdaTracker::getVendorString(char* text)  { strcpy(text, "mda"); return true; }
 bool  mdaTracker::getEffectName(char* name)    { strcpy(name, "Tracker"); return true; }
 

@@ -1,5 +1,5 @@
 //
-// Plug-in: "mda Template" v1.0
+// Plug-in: "MDA Template" v1.0
 //
 // Copyright(c)2002 Paul Kellett (maxim digital audio)
 //
@@ -56,7 +56,7 @@ mdaSpecMeter::mdaSpecMeter(audioMasterCallback audioMaster) : AudioEffectX(audio
 	suspend();
 }
 
-bool  mdaSpecMeter::getProductString(char* text) { strcpy(text, "mda SpecMeter"); return true; }
+bool  mdaSpecMeter::getProductString(char* text) { strcpy(text, "MDA SpecMeter"); return true; }
 bool  mdaSpecMeter::getVendorString(char* text)  { strcpy(text, "mda"); return true; }
 bool  mdaSpecMeter::getEffectName(char* name)    { strcpy(name, "SpecMeter"); return true; }
 

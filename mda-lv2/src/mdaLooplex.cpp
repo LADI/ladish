@@ -103,7 +103,7 @@ mdaLooplexProgram::mdaLooplexProgram()
 	param[6]  = 1.00f; //out mix
 	//param[7]  = 0.00f;
 
-	strcpy (name, "mda Looplex");
+	strcpy (name, "MDA Looplex");
 }
 
 
@@ -312,7 +312,7 @@ void  mdaLooplex::getProgramName(char *name)   { strcpy(name, programs[curProgra
 void  mdaLooplex::setBlockSize(LvzInt32 blockSize) {	AudioEffectX::setBlockSize(blockSize); }
 bool  mdaLooplex::getEffectName(char* name)    { strcpy(name, "Looplex"); return true; }
 bool  mdaLooplex::getVendorString(char* text)  {	strcpy(text, "mda"); return true; }
-bool  mdaLooplex::getProductString(char* text) { strcpy(text, "mda Looplex"); return true; }
+bool  mdaLooplex::getProductString(char* text) { strcpy(text, "MDA Looplex"); return true; }
 
 
 bool mdaLooplex::getProgramNameIndexed(LvzInt32 category, LvzInt32 index, char* text)

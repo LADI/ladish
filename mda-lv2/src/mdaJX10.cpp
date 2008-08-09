@@ -1,5 +1,5 @@
 //
-// Plug-in: "mda JX10" v1.1
+// Plug-in: "MDA JX10" v1.1
 //
 // Copyright(c)1999-2001 Paul Kellett (maxim digital audio)
 //
@@ -284,9 +284,9 @@ float mdaJX10::getParameter(LvzInt32 index)     { return param[index]; }
 void  mdaJX10::setProgramName(char *name)   { strcpy(programs[curProgram].name, name); }
 void  mdaJX10::getProgramName(char *name)   { strcpy(name, programs[curProgram].name); }
 void  mdaJX10::setBlockSize(LvzInt32 blockSize) {	AudioEffectX::setBlockSize(blockSize); }
-bool  mdaJX10::getEffectName(char* name)    { strcpy(name, "mda JX10 Synth"); return true; }
+bool  mdaJX10::getEffectName(char* name)    { strcpy(name, "MDA JX10 Synth"); return true; }
 bool  mdaJX10::getVendorString(char* text)  {	strcpy(text, "maxim digital audio"); return true; }
-bool  mdaJX10::getProductString(char* text) { strcpy(text, "mda JX10 Synth"); return true; }
+bool  mdaJX10::getProductString(char* text) { strcpy(text, "MDA JX10 Synth"); return true; }
 
 
 bool mdaJX10::getOutputProperties(LvzInt32 index, LvzPinProperties* properties)

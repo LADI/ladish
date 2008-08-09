@@ -1,5 +1,5 @@
 //
-// Plug-in: "mda mdaDX10" v1.0
+// Plug-in: "MDA mdaDX10" v1.0
 //
 // Copyright(c)1999-2000 Paul Kellett (maxim digital audio)
 //
@@ -194,7 +194,7 @@ void  mdaDX10::getProgramName(char *name)   { strcpy(name, programs[curProgram].
 void  mdaDX10::setBlockSize(LvzInt32 blockSize) {	AudioEffectX::setBlockSize(blockSize); }
 bool  mdaDX10::getEffectName(char* name)    { strcpy(name, "DX10"); return true; }
 bool  mdaDX10::getVendorString(char* text)  {	strcpy(text, "mda"); return true; }
-bool  mdaDX10::getProductString(char* text) { strcpy(text, "mda DX10"); return true; }
+bool  mdaDX10::getProductString(char* text) { strcpy(text, "MDA DX10"); return true; }
 
 
 bool mdaDX10::getOutputProperties(LvzInt32 index, LvzPinProperties* properties)

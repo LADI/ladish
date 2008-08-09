@@ -31,7 +31,7 @@ mdaTransient::~mdaTransient()
 	// nothing to do here
 }
 
-bool  mdaTransient::getProductString(char* text) { strcpy(text, "mda Transient"); return true; }
+bool  mdaTransient::getProductString(char* text) { strcpy(text, "MDA Transient"); return true; }
 bool  mdaTransient::getVendorString(char* text)  { strcpy(text, "mda"); return true; }
 bool  mdaTransient::getEffectName(char* name)    { strcpy(name, "Transient"); return true; }
 

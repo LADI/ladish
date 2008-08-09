@@ -32,7 +32,7 @@ mdaRoundPan::mdaRoundPan(audioMasterCallback audioMaster)	: AudioEffectX(audioMa
   dphi = (float)(5.0 / getSampleRate());
 }
 
-bool  mdaRoundPan::getProductString(char* text) { strcpy(text, "mda RoundPan"); return true; }
+bool  mdaRoundPan::getProductString(char* text) { strcpy(text, "MDA RoundPan"); return true; }
 bool  mdaRoundPan::getVendorString(char* text)  { strcpy(text, "mda"); return true; }
 bool  mdaRoundPan::getEffectName(char* name)    { strcpy(name, "RoundPan"); return true; }
 

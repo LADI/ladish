@@ -30,7 +30,7 @@ mdaDegrade::mdaDegrade(audioMasterCallback audioMaster)	: AudioEffectX(audioMast
   setParameter(5, 0.5f);
 }
 
-bool  mdaDegrade::getProductString(char* text) { strcpy(text, "mda Degrade"); return true; }
+bool  mdaDegrade::getProductString(char* text) { strcpy(text, "MDA Degrade"); return true; }
 bool  mdaDegrade::getVendorString(char* text)  { strcpy(text, "mda"); return true; }
 bool  mdaDegrade::getEffectName(char* name)    { strcpy(name, "Degrade"); return true; }
 

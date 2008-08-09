@@ -1,5 +1,5 @@
 //
-// Plug-in: "mda Template" v1.0
+// Plug-in: "MDA Template" v1.0
 //
 // Copyright(c)1999-2000 Paul Kellett (maxim digital audio)
 //
@@ -57,7 +57,7 @@ mdaTalkBox::mdaTalkBox(audioMasterCallback audioMaster): AudioEffectX(audioMaste
   suspend();
 }
 
-bool  mdaTalkBox::getProductString(char* text) { strcpy(text, "mda TalkBox"); return true; }
+bool  mdaTalkBox::getProductString(char* text) { strcpy(text, "MDA TalkBox"); return true; }
 bool  mdaTalkBox::getVendorString(char* text)  { strcpy(text, "mda"); return true; }
 bool  mdaTalkBox::getEffectName(char* name)    { strcpy(name, "TalkBox"); return true; }
 

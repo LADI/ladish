@@ -35,7 +35,7 @@ mdaCombo::mdaCombo(audioMasterCallback audioMaster)	: AudioEffectX(audioMaster, 
   setParameter(0, 0.f); //go and set initial values!
 }
 
-bool  mdaCombo::getProductString(char* text) { strcpy(text, "mda Combo"); return true; }
+bool  mdaCombo::getProductString(char* text) { strcpy(text, "MDA Combo"); return true; }
 bool  mdaCombo::getVendorString(char* text)  { strcpy(text, "mda"); return true; }
 bool  mdaCombo::getEffectName(char* name)    { strcpy(name, "Combo"); return true; }
 

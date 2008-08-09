@@ -34,7 +34,7 @@ mdaSubSynth::~mdaSubSynth()
 	
 }
 
-bool  mdaSubSynth::getProductString(char* text) { strcpy(text, "mda SubSynth"); return true; }
+bool  mdaSubSynth::getProductString(char* text) { strcpy(text, "MDA SubSynth"); return true; }
 bool  mdaSubSynth::getVendorString(char* text)  { strcpy(text, "mda"); return true; }
 bool  mdaSubSynth::getEffectName(char* name)    { strcpy(name, "SubSynth"); return true; }
 

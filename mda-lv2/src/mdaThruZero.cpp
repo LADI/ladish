@@ -1,5 +1,5 @@
 //
-// Plug-in: "mda ThruZero" v1.0
+// Plug-in: "MDA ThruZero" v1.0
 //
 // Copyright(c)1999-2000 Paul Kellett (maxim digital audio)
 //
@@ -66,7 +66,7 @@ mdaThruZero::mdaThruZero(audioMasterCallback audioMaster): AudioEffectX(audioMas
   suspend();
 }
 
-bool  mdaThruZero::getProductString(char* text) { strcpy(text, "mda ThruZero"); return true; }
+bool  mdaThruZero::getProductString(char* text) { strcpy(text, "MDA ThruZero"); return true; }
 bool  mdaThruZero::getVendorString(char* text)  { strcpy(text, "mda"); return true; }
 bool  mdaThruZero::getEffectName(char* name)    { strcpy(name, "ThruZero"); return true; }
 

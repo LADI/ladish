@@ -69,7 +69,7 @@ mdaAmbience::~mdaAmbience()
 	if(buf4) delete [] buf4;
 }
 
-bool  mdaAmbience::getProductString(char* text) { strcpy(text, "mda Ambience"); return true; }
+bool  mdaAmbience::getProductString(char* text) { strcpy(text, "MDA Ambience"); return true; }
 bool  mdaAmbience::getVendorString(char* text)  { strcpy(text, "mda"); return true; }
 bool  mdaAmbience::getEffectName(char* name)    { strcpy(name, "Ambience"); return true; }
 

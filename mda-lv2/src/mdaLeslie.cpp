@@ -70,7 +70,7 @@ mdaLeslie::mdaLeslie(audioMasterCallback audioMaster)	: AudioEffectX(audioMaster
   setParameter(0, 0.66f);
 }
 
-bool  mdaLeslie::getProductString(char* text) { strcpy(text, "mda Leslie"); return true; }
+bool  mdaLeslie::getProductString(char* text) { strcpy(text, "MDA Leslie"); return true; }
 bool  mdaLeslie::getVendorString(char* text)  { strcpy(text, "mda"); return true; }
 bool  mdaLeslie::getEffectName(char* name)    { strcpy(name, "Leslie"); return true; }
 

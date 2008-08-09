@@ -30,7 +30,7 @@ mdaOverdrive::~mdaOverdrive()
 
 }
 
-bool  mdaOverdrive::getProductString(char* text) { strcpy(text, "mda Overdrive"); return true; }
+bool  mdaOverdrive::getProductString(char* text) { strcpy(text, "MDA Overdrive"); return true; }
 bool  mdaOverdrive::getVendorString(char* text)  { strcpy(text, "mda"); return true; }
 bool  mdaOverdrive::getEffectName(char* name)    { strcpy(name, "Overdrive"); return true; }
 
