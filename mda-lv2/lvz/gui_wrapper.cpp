@@ -105,13 +105,13 @@ mda_ui_instantiate(const struct _LV2UI_Descriptor* descriptor,
 	if (features != NULL) {
 		const LV2_Feature* feature = features[0];
 		for (size_t i = 0; (feature = features[i]) != NULL; ++i) {
-			if (!strcmp(feature->URI, "http://lv2plug.in/ns/ext/dev/plugin-instance")) {
+			if (!strcmp(feature->URI, "http://lv2plug.in/ns/ext/instance-access")) {
 				instance = (LV2_Handle)feature->data;
-			} else if (!strcmp(feature->URI, "http://lv2plug.in/ns/ext/dev/extension-data")) {
+			} else if (!strcmp(feature->URI, "http://lv2plug.in/ns/ext/data-access")) {
 				LV2_ExtensionData* ext_data = (LV2_ExtensionData*)feature->data;
 				extension_data_func func = (extension_data_func)feature->data;
 				get_effect = (get_effect_func)ext_data->extension_data(
-						"http://lv2plug.in/ns/ext/dev/vstgui");
+						"http://drobilla.net/ns/dev/vstgui");
 			}
 		}
 	}

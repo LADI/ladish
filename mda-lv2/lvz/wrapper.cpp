@@ -155,7 +155,7 @@ mda_get_audioeffectx(LV2_Handle instance)
 static const void*
 mda_extension_data(const char* uri)
 {
-	if (!strcmp(uri, "http://lv2plug.in/ns/ext/dev/vstgui")) {
+	if (!strcmp(uri, "http://drobilla.net/ns/dev/vstgui")) {
 		// FIXME: shouldn't return function pointers directly
 		return (const void*)mda_get_audioeffectx;
 	} else {

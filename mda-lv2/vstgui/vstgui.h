@@ -50,7 +50,6 @@
 // define global defines
 #define MOTIF 1
 #define PNG 1
-#define DEBUG 1
 
 #include "audioeffectx.h"
 #include <X11/Xlib.h>
