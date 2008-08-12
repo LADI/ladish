@@ -61,6 +61,9 @@ public:
 	
 	void set_fill_color(uint32_t c) { _rect->property_fill_color_rgba() = c; }
 	
+	void set_selected(bool b);
+	bool selected() const { return _selected; }
+
 	void set_highlighted(bool highlight,
 	                     bool highlight_parent=true,
 	                     bool highlight_connections=true,
@@ -122,6 +125,7 @@ protected:
 	double                  _height;
 	double                  _border_width;
 	uint32_t                _color;
+	bool                    _selected;
 
 	float _control_value;
 	float _control_min;

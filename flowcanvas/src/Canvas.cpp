@@ -283,7 +283,7 @@ Canvas::destroy()
 
 	_connections.clear();
 
-	_selected_port.reset();
+	_selected_ports.clear();
 	_connect_port.reset();
 	
 	_items.clear();
@@ -295,22 +295,51 @@ Canvas::destroy()
 void
 Canvas::unselect_ports()
 {
-	if (_selected_port)
-		_selected_port->set_fill_color(_selected_port->color()); // deselect the old one
+	for (SelectedPorts::iterator i = _selected_ports.begin(); i != _selected_ports.end(); ++i)
+		(*i)->set_selected(false);
 	
-	_selected_port.reset();
+	_selected_ports.clear();
+	_last_selected_port.reset();
 }
 
 
 void
-Canvas::selected_port(boost::shared_ptr<Port> p)
+Canvas::select_port(boost::shared_ptr<Port> p, bool unique)
 {
-	unselect_ports();
+	if (unique)
+		unselect_ports();
+	p->set_selected(true);
+	_selected_ports.push_back(p);
+	_last_selected_port = p;
+}
+
 	
-	_selected_port = p;
+void
+Canvas::unselect_port(boost::shared_ptr<Port> p)
+{
+	SelectedPorts::iterator i = find(_selected_ports.begin(), _selected_ports.end(), p);
+	if (i != _selected_ports.end())
+		_selected_ports.erase(i);
+	p->set_selected(false);
+	if (_last_selected_port == p)
+		_last_selected_port.reset();
+}
+
 	
-	if (p)
-		p->set_fill_color(0xFF0000FF);
+void
+Canvas::select_port_toggle(boost::shared_ptr<Port> p, int mod_state)
+{
+	if ((mod_state & GDK_CONTROL_MASK)) {
+		if (p->selected())
+			unselect_port(p);
+		else
+			select_port(p);
+	} else {
+		if (p->selected())
+			unselect_ports();
+		else
+			select_port(p, true);
+	}
 }
 
 
@@ -511,11 +540,22 @@ Canvas::remove_connection(boost::shared_ptr<Connection> connection)
 }
 
 
+void
+Canvas::selection_joined_with(boost::shared_ptr<Port> port)
+{
+	for (SelectedPorts::iterator i = _selected_ports.begin(); i != _selected_ports.end(); ++i)
+		ports_joined(*i, port);
+}
+
+
 /** Called when two ports are 'toggled' (connected or disconnected)
  */
 void
 Canvas::ports_joined(boost::shared_ptr<Port> port1, boost::shared_ptr<Port> port2)
 {
+	if (port1 == port2)
+		return;
+
 	assert(port1);
 	assert(port2);
 
@@ -589,7 +629,7 @@ Canvas::port_event(GdkEvent* event, boost::weak_ptr<Port> weak_port)
 				port_dragging = true;
 			}
 		} else if (event->button.button == 3) {
-			_selected_port = port;
+			select_port(port, true);
 			port->popup_menu(event->button.button, event->button.time);
 		} else {
 			handled = false;
@@ -624,13 +664,16 @@ Canvas::port_event(GdkEvent* event, boost::weak_ptr<Port> weak_port)
 
 	case GDK_BUTTON_RELEASE:
 		if (port_dragging) {
-			if (_connect_port == NULL) {
-				selected_port(port);
-				_connect_port = port;
-			} else {
+			if (_connect_port) { // dragging
 				ports_joined(port, _connect_port);
-				_connect_port.reset();
-				selected_port(boost::shared_ptr<Port>());
+				unselect_ports();
+			} else {
+				if (_last_selected_port && _last_selected_port->is_input() != port->is_input()) {
+					selection_joined_with(port);
+					unselect_ports();
+				} else {
+					select_port_toggle(port, event->button.state);
+				}
 			}
 			port_dragging = false;
 		} else if (control_dragging) {
@@ -642,7 +685,7 @@ Canvas::port_event(GdkEvent* event, boost::weak_ptr<Port> weak_port)
 		break;
 
 	case GDK_ENTER_NOTIFY:
-		if (!control_dragging && port != _selected_port) {
+		if (!control_dragging && !port->selected()) {
 			port->set_highlighted(true);
 			return true;
 		}
@@ -658,8 +701,7 @@ Canvas::port_event(GdkEvent* event, boost::weak_ptr<Port> weak_port)
 
 			port_dragging = false;
 		} else if (!control_dragging) {
-			if (port != _selected_port)
-				port->set_highlighted(false);
+			port->set_highlighted(false);
 		}
 		break;
 	
@@ -910,7 +952,7 @@ Canvas::connection_drag_handler(GdkEvent* event)
 			if (p) {
 				boost::shared_ptr<Module> m = p->module().lock();
 				if (m) {
-					if (p != _selected_port) {
+					if (!p->selected()) {
 						if (snapped_port)
 							snapped_port->set_highlighted(false);
 						p->set_highlighted(true);
@@ -989,11 +1031,10 @@ Canvas::connection_drag_handler(GdkEvent* event)
 	
 		if (p) {
 			if (p == _connect_port) {   // drag ended on same port it started on
-				if (_selected_port == NULL) {  // no active port, just activate (hilite) it
-					selected_port(_connect_port);
+				if (_selected_ports.empty()) {  // no active port, just activate (hilite) it
+					select_port(_connect_port);
 				} else {  // there is already an active port, connect it with this one
-					if (_selected_port != _connect_port)
-						ports_joined(_selected_port, _connect_port);
+					selection_joined_with(_connect_port);
 					unselect_ports();
 					_connect_port.reset();
 					snapped_port.reset();

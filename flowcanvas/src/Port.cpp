@@ -25,6 +25,8 @@
 
 using namespace std;
 
+#define SELECTED_COLOR 0xFF0000FF
+
 namespace FlowCanvas {
 	
 
@@ -38,6 +40,7 @@ Port::Port(boost::shared_ptr<Module> module, const string& name, bool is_input, 
 	, _name(name)
 	, _is_input(is_input)
 	, _color(color)
+	, _selected(false)
 	, _control_value(0.0f)
 	, _control_min(0.0f)
 	, _control_max(1.0f)
@@ -221,6 +224,14 @@ Port::disconnect_all()
 
 
 void
+Port::set_selected(bool b)
+{
+	_selected = b;
+	set_fill_color((b ? SELECTED_COLOR : _color));
+}
+
+
+void
 Port::set_highlighted(bool b, bool highlight_parent, bool highlight_connections, bool raise_connections)
 {
 	if (highlight_parent) {
@@ -247,7 +258,7 @@ Port::set_highlighted(bool b, bool highlight_parent, bool highlight_connections,
 		_rect->property_fill_color_rgba() = _color + 0x33333300;
 		_rect->property_outline_color_rgba() = _color + 0x33333300;
 	} else {
-		_rect->property_fill_color_rgba() = _color;
+		_rect->property_fill_color_rgba() = (_selected ? SELECTED_COLOR : _color);
 		_rect->property_outline_color_rgba() = _color;
 	}
 }

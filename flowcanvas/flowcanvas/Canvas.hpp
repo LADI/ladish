@@ -135,9 +135,12 @@ private:
 	bool are_connected(boost::shared_ptr<const Connectable> tail,
 	                   boost::shared_ptr<const Connectable> head);
 	
-	void selected_port(boost::shared_ptr<Port> p);
-	boost::shared_ptr<Port> selected_port() { return _selected_port; }
-	
+	void select_port(boost::shared_ptr<Port> p, bool unique = false);
+	void select_port_toggle(boost::shared_ptr<Port> p, int mod_state);
+	void unselect_port(boost::shared_ptr<Port> p);
+
+	void selection_joined_with(boost::shared_ptr<Port> port);
+
 	boost::shared_ptr<Port> get_port_at(double x, double y);
 
 	bool         scroll_drag_handler(GdkEvent* event);
@@ -149,8 +152,10 @@ private:
 
 	void scroll_to_center();
 
-	boost::shared_ptr<Port> _selected_port; ///< Selected port (hilited red from clicking once)
+	typedef std::list< boost::shared_ptr<Port> > SelectedPorts;
+	SelectedPorts _selected_ports; ///< Selected ports (hilited red)
 	boost::shared_ptr<Port> _connect_port;  ///< Port for which a connection is being made (if applicable)
+	boost::shared_ptr<Port> _last_selected_port;
 	
 	double _zoom;   ///< Current zoom level
 	double _width;  
