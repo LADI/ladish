@@ -76,24 +76,12 @@ mda_ui_instantiate(const struct _LV2UI_Descriptor* descriptor,
                    LV2UI_Widget*                   widget,
                    const LV2_Feature* const*       features)
 {
-	/* Some extensions need to be defined for this to work.  Hosts must:
-	 * 1) Pass a pointer to the plugin (VST is crap and has no UI separation)
-	 * 2) Call idle on the UI periodically (VST is crap and uses polling)
-	 *
-	 * Thoughts:
-	 *
-	 * 1) This wrapper could be written explicitly in GTK and just get at
-	 *    the idle handler that way.  Less burden on the host...
-	 *
-	 * 2) A better idea is to have a 'get plugin extension data' feature
-	 *    the UI (or anything else) can use to ask for any URI-identified
-	 *    piece of extension data (failing in this case if plugin is remote)
-	 */
-	
+	VSTGUI::setBundlePath(bundle_path);
+
 	MDAPluginUI* ui = (MDAPluginUI*)malloc(sizeof(MDAPluginUI));
 	ui->effect = NULL;
 
-	typedef struct { const void* (*extension_data)(const char* uri); } LV2_ExtensionData;
+	typedef struct { const void* (*extension_data)(const char* uri); } LV2_DataAccess;
 				
 	typedef const void*         (*extension_data_func)(const char* uri);
 	typedef const AudioEffectX* (*get_effect_func)(LV2_Handle instance);
@@ -108,7 +96,7 @@ mda_ui_instantiate(const struct _LV2UI_Descriptor* descriptor,
 			if (!strcmp(feature->URI, "http://lv2plug.in/ns/ext/instance-access")) {
 				instance = (LV2_Handle)feature->data;
 			} else if (!strcmp(feature->URI, "http://lv2plug.in/ns/ext/data-access")) {
-				LV2_ExtensionData* ext_data = (LV2_ExtensionData*)feature->data;
+				LV2_DataAccess* ext_data = (LV2_DataAccess*)feature->data;
 				extension_data_func func = (extension_data_func)feature->data;
 				get_effect = (get_effect_func)ext_data->extension_data(
 						"http://drobilla.net/ns/dev/vstgui");
@@ -124,7 +112,6 @@ mda_ui_instantiate(const struct _LV2UI_Descriptor* descriptor,
 	}
 
 	ui->ui = new UI_CLASS(ui->effect);
-	ui->ui->setBundlePath(bundle_path);
 	ui->stolen = false;
 
 	ui->socket = GTK_SOCKET(gtk_socket_new());

@@ -9,10 +9,15 @@
 
 #include <math.h>
 
+CResTable pngResources = { { 128, "mdaSpecMeter.png" } };
+
 mdaSpecMeterGUI::mdaSpecMeterGUI(AudioEffect * effect)
 	: AEffGUIEditor(effect)
 	, background(NULL)
 {
+	background = new CBitmap(128);
+	rect.right = (LvzInt16) background->getWidth();
+	rect.bottom = (LvzInt16) background->getHeight();
 }
 
 
@@ -22,15 +27,9 @@ mdaSpecMeterGUI::~mdaSpecMeterGUI()
 }
 
 
-bool
+long
 mdaSpecMeterGUI::open(void *ptr)
 {
-	if (background == NULL) {
-		background = new CBitmap(*this, "mdaSpecMeter.png");
-		rect.right = (LvzInt16) background->getWidth();
-		rect.bottom = (LvzInt16) background->getHeight();
-	}
-
 	AEffGUIEditor::open(ptr);
 
 	CPoint offs(0, 0);

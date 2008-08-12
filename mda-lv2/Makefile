@@ -81,8 +81,8 @@ install:
 	else \
 		install -d $(INSTALL_DIR)/mda.lv2; \
 		install -m 644 ./mda.lv2/*.ttl $(INSTALL_DIR)/mda.lv2; \
+		install -m 644 ./mda.lv2/*.png $(INSTALL_DIR)/mda.lv2; \
 		install -m 755 ./mda.lv2/*.so $(INSTALL_DIR)/mda.lv2; \
-		install -m 755 ./mda.lv2/*.png $(INSTALL_DIR)/mda.lv2; \
 	fi
 
 install-user:

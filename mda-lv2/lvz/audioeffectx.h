@@ -80,6 +80,9 @@ class AudioEffect {
 public:
 	AudioEffect() : editor(NULL) {}
 	virtual ~AudioEffect() {}
+	
+	virtual void  setParameter(LvzInt32 index, float value) = 0;
+	virtual float getParameter(LvzInt32 index)              = 0;
 
 	void setEditor(AEffEditor* e) { editor = e; }
 	virtual void masterIdle()                {}
@@ -112,8 +115,6 @@ public:
 	virtual LvzInt32     getNumOutputs()    { return numOutputs; }
 	virtual LvzInt32     getNumParameters() { return numParams; }
 
-	virtual void  setParameter(LvzInt32 index, float value)     = 0;
-	virtual float getParameter(LvzInt32 index)                  = 0;
 	virtual void  getParameterName(LvzInt32 index, char *label) = 0;
 	virtual bool  getProductString(char* text)                  = 0;
 

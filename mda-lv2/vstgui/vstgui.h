@@ -68,9 +68,26 @@ struct ERect {
 	VstInt16 bottom;
 };
 
+/** Table of PNG resources (by filename).
+ * This is ugly and weird, but designed to allow for easy porting
+ * from "motif" ported plugins (via simple search/replacing).
+ */
+struct CResTableEntry {
+    int         id;   ///< Resource ID (same as motif)
+    const char* path; ///< Filename (was char** xpmdata for motif)
+};
+
+typedef CResTableEntry CResTable[];
+extern CResTable pngResources;
+
 //----------------------------------------------------
 //----------------------------------------------------
 namespace VSTGUI {
+
+extern char* bundlePath;
+void setBundlePath(const char* path);
+
+
 
 class CFrame;
 class CDrawContext;
@@ -122,9 +139,6 @@ public:
     void idle ();
     void update ();
 
-	void setBundlePath(const char* path) { bundlePath = strdup(path); }
-	const char* getBundlePath() { return bundlePath; }
-
 #if VST_2_1_EXTENSIONS
     long onKeyDown (VstKeyCode& keyCode);
     long onKeyUp (VstKeyCode& keyCode);
@@ -137,7 +151,6 @@ protected:
     unsigned int lLastTicks;
     bool inIdleStuff;
     static VstInt32 knobMode;
-	char* bundlePath;
     friend class VSTGUI::CFrame;
     VSTGUI::CFrame* frame;
 };
@@ -655,7 +668,7 @@ protected:
 class CBitmap : public CReferenceCounter
 {
 public:
-    CBitmap (AEffGUIEditor& editor, const char* img_name); ///< Create from a filename
+    CBitmap (long resourceID); ///< Create from a filename
     CBitmap (CFrame &frame, CCoord width, CCoord height); ///< Create a pixmap with a given size.
     virtual ~CBitmap ();
 

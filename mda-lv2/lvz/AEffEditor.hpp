@@ -11,7 +11,7 @@ public:
 		, pluginURI("NULL")
 	{}
 
-	virtual bool open(void* ptr) { return true; }
+	virtual long open(void* ptr) { return true; }
 
 	virtual void idle() {}
 	

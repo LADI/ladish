@@ -90,7 +90,6 @@ AEffGUIEditor::AEffGUIEditor (AudioEffect* effect)
 : AEffEditor (effect),
   lLastTicks (0),
   inIdleStuff (false),
-  bundlePath(NULL),
   frame (0)
 {
     rect.left = rect.top = rect.right = rect.bottom = 0;
@@ -321,6 +320,11 @@ void CRect::bound (const CRect& rect)
 }
 
 namespace VSTGUI {
+
+char* bundlePath = NULL;
+void setBundlePath(const char* path) {
+	VSTGUI::bundlePath = strdup(path);
+}
 
 CColor kTransparentCColor = {255, 255, 255,   0};
 CColor kBlackCColor       = {  0,   0,   0, 255};
@@ -3436,36 +3440,34 @@ void CViewContainer::dumpHierarchy ()
 // CBitmap Implementation
 //-----------------------------------------------------------------------------
 /*! @class CBitmap
-@section cbitmap_alphablend Alpha Blend and Transparency
-With Version 3.0 of VSTGUI it is possible to use alpha blended bitmaps. This comes free on Mac OS X and with Windows you need to include libpng.
-Per default PNG images will be rendered alpha blended. If you want to use a transparency color with PNG Bitmaps, you need to call setNoAlpha(true) on the bitmap and set the transparency color.
-@section cbitmap_macos Classic Apple Mac OS
-The Bitmaps are PICTs and stored inside the resource fork.
-@section cbitmap_macosx Apple Mac OS X
-The Bitmaps can be of type PNG, JPEG, PICT, BMP and are stored in the Resources folder of the plugin bundle.
-They must be named bmp00100.png (or bmp00100.jpg, etc). The number is the resource id.
-@section cbitmap_windows Microsoft Windows
-The Bitmaps are .bmp files and must be included in the plug (usually using a .rc file).
-It's also possible to use png as of version 3.0 if you define the macro USE_LIBPNG and include the libpng and zlib libraries/sources to your project.
-*/
-CBitmap::CBitmap (AEffGUIEditor& editor, const char* filename)
-    : resourceID (resourceID), width (0), height (0), noAlpha (true)
+ * Image resources must be in PNG format.
+ * Filenames are specified by the pngResources table defined in the GUI.
+ */
+CBitmap::CBitmap (long ID)
+    : resourceID (ID), width (0), height (0), noAlpha (true)
 {
 #if DEBUG
     gNbCBitmap++;
 #endif
-
-    bool found = false;
-    long  i = 0;
-    long  ncolors, cpp;
-
-    pHandle = 0;
-    pMask  = 0;
     
-	if (editor.getBundlePath() == NULL) {
+	bool found = false;
+    long i = 0;
+    
+	const char* p = NULL;
+	while (pngResources[i].id != 0) {
+        if (pngResources[i].id == resourceID) {
+            if (pngResources[i].path != NULL) {
+				found = true;
+				p = pngResources[i].path;
+				break;
+			}
+		}
+	}
+    
+	if (VSTGUI::bundlePath == NULL) {
 		std::cerr << "ERROR: No bundle path set, unable to load images" << std::endl;
 	} else {
-		std::string path = std::string(editor.getBundlePath()) + filename;
+		std::string path = std::string(VSTGUI::bundlePath) + p;
 		if (openPng(path.c_str())) // reads width, height
 			closePng();
 	}

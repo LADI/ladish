@@ -28,7 +28,7 @@ public:
 	mdaSpecMeterGUI(AudioEffect* effect);
 	~mdaSpecMeterGUI();
 
-	bool open(void* ptr);
+	long open(void* ptr);
 	void idle();
 	void close();
 
