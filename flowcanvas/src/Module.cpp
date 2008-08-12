@@ -73,6 +73,8 @@ Module::Module(boost::shared_ptr<Canvas> canvas, const string& name, double x, d
 		_canvas_title.property_size() = 9000;
 		_canvas_title.property_weight_set() = true;
 		_canvas_title.property_weight() = 400; */
+		if (canvas->get_zoom() != 1.0)
+			zoom(canvas->get_zoom());
 		_canvas_title.property_fill_color_rgba() = MODULE_TITLE_COLOUR;
 	} else {
 		_canvas_title.hide();
