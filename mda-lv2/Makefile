@@ -1,5 +1,5 @@
-#CFLAGS = -O0 -g -ansi -pedantic -Wall -Wextra -Wshadow -Woverloaded-virtual -Wno-unused
-CFLAGS += -fPIC -DPIC -Ilvz -I. -DPLUGIN_URI_PREFIX=\"http://drobilla.net/ns/dev/mda-lv2/\"
+#CFLAGS = -O0 -g -ansi -Wall -Wextra -Wno-unused # -pedantic -Woverloaded-virtual
+CFLAGS += -fPIC -DPIC -Ilvz -Ivstgui -I. -DURI_PREFIX=\"http://drobilla.net/ns/dev/mda-lv2/\"
 
 SYSTEMNAME = $(shell uname -s)
 
@@ -16,8 +16,10 @@ SYSTEM_INSTALL_DIR = /usr/lib/lv2/
 LOCAL_INSTALL_DIR = /usr/local/lib/lv2/
 endif
 
+BUILD_GUI = ! `pkg-config --exists gtk+-2.0`
+GUI_CFLAGS = $(CFLAGS) -Ivstgui `pkg-config --cflags gtk+-2.0 libpng`
 
-all: lvz/gendata libs data
+all: lvz/gendata libs data gui_libs
 
 bundle:
 	mkdir -p ./mda.lv2
@@ -58,9 +60,16 @@ libs: bundle \
 	mda.lv2/mdaTracker.so \
 	mda.lv2/mdaTransient.so \
 	mda.lv2/mdaVocInput.so \
-	mda.lv2/mdaVocoder.so
+	mda.lv2/mdaVocoder.so \
+	mda.lv2/mdaSpecMeter.so
 
-data: libs lvz/gendata
+pixmaps:
+	cp src/mdaSpecMeter.png mda.lv2
+
+gui_libs: bundle pixmaps \
+	mda.lv2/mdaSpecMeterGUI.so
+
+data: libs gui_libs lvz/gendata
 	cd ./mda.lv2 && ../lvz/gendata ./*.so > manifest.ttl
 
 install:
@@ -73,6 +82,7 @@ install:
 		install -d $(INSTALL_DIR)/mda.lv2; \
 		install -m 644 ./mda.lv2/*.ttl $(INSTALL_DIR)/mda.lv2; \
 		install -m 755 ./mda.lv2/*.so $(INSTALL_DIR)/mda.lv2; \
+		install -m 755 ./mda.lv2/*.png $(INSTALL_DIR)/mda.lv2; \
 	fi
 
 install-user:
@@ -94,12 +104,24 @@ src/%.cpp: src/%.h lvz/audioeffectx.h
 lvz/gendata: lvz/gendata.cpp lvz/audioeffectx.h
 	$(CXX) $(CFLAGS) -ldl $< -o $@
 
+mda.lv2/%GUI.so: src/%GUI.cpp src/%.cpp lvz/gui_wrapper.cpp vstgui/vstgui.cpp vstgui/vstgui.h vstgui/vstcontrols.cpp vstgui/vstcontrols.h
+	if [ $(BUILD_GUI) ]; then \
+	$(CXX) $(SHARED_LDFLAGS) $(GUI_CFLAGS) \
+		-DUI_CLASS=`echo $@ | sed 's/mda.lv2\///' | sed 's/\..*//'` \
+		-DPLUGIN_CLASS=`echo $@ | sed 's/mda.lv2\///' | sed 's/\..*//' | sed 's/GUI//'` \
+		-DUI_HEADER=\"`echo $@ | sed 's/^mda.lv2/src/' | sed 's/\(.*\)\..*/\1/' | sed 's/$$/\.h/'`\" \
+		-DPLUGIN_HEADER=\"`echo $@ | sed 's/^mda.lv2/src/' | sed 's/\(.*\)\..*/\1/' | sed 's/$$/\.h/' | sed 's/GUI//'`\" \
+		-DUI_URI_SUFFIX=\"`echo $@ | sed 's/mda.lv2\///' | sed 's/^mda//' | sed 's/\..*//'`\" \
+		-DPLUGIN_URI_SUFFIX=\"`echo $@ | sed 's/mda.lv2\///' | sed 's/^mda//' | sed 's/\..*//' | sed 's/GUI//'`\" \
+		$^ -o $@; \
+	fi
+
 mda.lv2/%.so: src/%.cpp lvz/wrapper.cpp
 	$(CXX) $(SHARED_LDFLAGS) $(CFLAGS) \
 		-DPLUGIN_CLASS=`echo $@ | sed 's/mda.lv2\///' | sed 's/\..*//'` \
 		-DPLUGIN_URI_SUFFIX=\"`echo $@ | sed 's/mda.lv2\///' | sed 's/^mda//' | sed 's/\..*//'`\" \
 		-DPLUGIN_HEADER=\"`echo $@ | sed 's/^mda.lv2/src/' | sed 's/\(.*\)\..*/\1/' | sed 's/$$/\.h/'`\" \
-		$< lvz/wrapper.cpp -o $@
+		$^ -o $@
 
 clean:
 	rm -f `find -name '*.o'`

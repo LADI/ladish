@@ -1,0 +1,19 @@
+//-----------------------------------------------------------------------------
+// VST Plug-Ins SDK Linux ONLY Port
+// VSTGUIL: Graphical User Interface Framework for VST plugins on LINUX:
+//
+// Version: 0.1
+// Author: kRAkEn/gORe
+// Date: 2007/01/21
+//-----------------------------------------------------------------------------
+
+Todo List:
+
+- Fix multiple CParamDisplay objects not showed correctly (only the first is shown)
+- Update other controls from a single control->update (), usually params displays not updating while mouse drag
+- Fix fonts names and sizes (actually only fixed and courier)
+- COffscreenContext not working (add an internal GC different from the frame GC)
+- Fix COffscreenContext CopyFrom
+- Turn back on CViewContainer::bOffscreenDraw (actually turned off to see something)
+- Keep out MOTIF defines (now that IS the default)
+- Make CBitmap work on every kind of GC (not pFrame only)

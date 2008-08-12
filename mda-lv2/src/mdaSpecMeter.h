@@ -1,21 +1,18 @@
-//see associated .cpp file for copyright and other info
+//
+// Plug-in: "MDA SpecMeter"
+//
+// Copyright(c)1999-2000 Paul Kellett (maxim digital audio)
+// Copyright (C) 2008 Dave Robillard
+//
 
 #include "audioeffectx.h"
 
 #include <string.h>
 
-#define NPROGS 4 //can hide decay settings in programs!  fast...slow...peak hold
 #define SILENCE 0.00000001f
 
-
-
-enum 
-{
-	_PARAM0, //peak decay
-	_PARAM1, //RMS speed
-	_PARAM2, //spectrum speed
-	_PARAM3, //peak reset?
-
+enum {
+	_PARAM0, // gain
 	NPARAMS
 };
 

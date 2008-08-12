@@ -22,10 +22,29 @@
 #include <stdint.h>
 #include <string.h>
 
+// Some plugins seem to use these names...
+#ifndef VstInt32
+#  define VstInt32 LvzInt32
+#  define VstInt16 LvzInt16
+#endif
+#define VstEvents LvzEvents
+#define VstMidiEvent LvzMidiEvent
+#define VstPinProperty LvzPinProperty
+
 typedef int16_t LvzInt16;
 typedef int32_t LvzInt32;
 typedef int (*audioMasterCallback)(int, int ver, int, int, int, int);
 	 
+class AEffEditor;
+
+struct VstFileSelect {
+	int reserved;
+	char* returnPath;
+	size_t sizeReturnPath;
+	char** returnMultiplePaths;
+	long nbReturnPath;
+};
+
 enum LvzPinFlags {
 	kLvzPinIsActive = 1<<0,
 	kLvzPinIsStereo = 1<<1
@@ -59,8 +78,15 @@ struct LvzEvents {
 
 class AudioEffect {
 public:
+	AudioEffect() : editor(NULL) {}
 	virtual ~AudioEffect() {}
+
+	void setEditor(AEffEditor* e) { editor = e; }
+	virtual void masterIdle()                {}
+protected:
+	AEffEditor* editor;
 };
+
 
 class AudioEffectX : public AudioEffect {
 public:
@@ -91,10 +117,11 @@ public:
 	virtual void  getParameterName(LvzInt32 index, char *label) = 0;
 	virtual bool  getProductString(char* text)                  = 0;
 
-	virtual void canMono()             {}
-	virtual void canProcessReplacing() {}
-	virtual void isSynth()             {}
-	virtual void wantEvents()          {}
+	virtual bool canHostDo(const char* act) { return false; }
+	virtual void canMono()                  {}
+	virtual void canProcessReplacing()      {}
+	virtual void isSynth()                  {}
+	virtual void wantEvents()               {}
 
 	virtual void setBlockSize(LvzInt32 size) {}
 	virtual void setNumInputs(LvzInt32 num)  { numInputs = num; }
@@ -104,6 +131,11 @@ public:
 	virtual void setURI(const char* uri)     { URI = uri; }
 	virtual void setUniqueID(const char* id) { uniqueID = id; }
 	virtual void suspend()                   {}
+	virtual void beginEdit(VstInt32 index)   {}
+	virtual void endEdit(VstInt32 index)     {}
+
+	virtual bool openFileSelector (VstFileSelect* sel)  { return false; }
+	virtual bool closeFileSelector (VstFileSelect* sel) { return false; }
 
 protected:
 	const char* URI;

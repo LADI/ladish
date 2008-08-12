@@ -19,8 +19,8 @@
 #ifndef PLUGIN_CLASS
 #error "This file requires PLUGIN_CLASS to be defined"
 #endif
-#ifndef PLUGIN_URI_PREFIX
-#error "This file requires PLUGIN_URI_PREFIX to be defined"
+#ifndef URI_PREFIX
+#error "This file requires URI_PREFIX to be defined"
 #endif
 #ifndef PLUGIN_URI_SUFFIX
 #error "This file requires PLUGIN_URI_SUFFIX to be defined"
@@ -74,6 +74,7 @@ mda_connect_port(LV2_Handle instance, uint32_t port, void* data)
 static int
 master_callback(int, int ver, int, int, int, int)
 {
+	return 0;
 }
 
 
@@ -84,7 +85,7 @@ mda_instantiate(const LV2_Descriptor*    descriptor,
                 const LV2_Feature*const* features)
 {
 	PLUGIN_CLASS* effect = new PLUGIN_CLASS(master_callback);
-	effect->setURI(PLUGIN_URI_PREFIX PLUGIN_URI_SUFFIX);
+	effect->setURI(URI_PREFIX PLUGIN_URI_SUFFIX);
 	effect->setSampleRate(rate);
 	
 	uint32_t num_params = effect->getNumParameters();
@@ -97,7 +98,7 @@ mda_instantiate(const LV2_Descriptor*    descriptor,
 	if (num_params > 0) {
 		plugin->controls = (float*)malloc(sizeof(float) * num_params);
 		plugin->control_buffers = (float**)malloc(sizeof(float*) * num_params);
-		for (int32_t i = 0; i < num_params; ++i) {
+		for (uint32_t i = 0; i < num_params; ++i) {
 			plugin->controls[i] = effect->getParameter(i);
 			plugin->control_buffers[i] = NULL;
 		}
@@ -108,7 +109,7 @@ mda_instantiate(const LV2_Descriptor*    descriptor,
 
 	if (num_inputs > 0) {
 		plugin->inputs = (float**)malloc(sizeof(float*) * num_inputs);
-		for (int32_t i = 0; i < num_inputs; ++i)
+		for (uint32_t i = 0; i < num_inputs; ++i)
 			plugin->inputs[i] = NULL;
 	} else {
 		plugin->inputs = NULL;
@@ -116,7 +117,7 @@ mda_instantiate(const LV2_Descriptor*    descriptor,
 	
 	if (num_outputs > 0) {
 		plugin->outputs = (float**)malloc(sizeof(float*) * num_outputs);
-		for (int32_t i = 0; i < num_outputs; ++i)
+		for (uint32_t i = 0; i < num_outputs; ++i)
 			plugin->outputs[i] = NULL;
 	} else {
 		plugin->outputs = NULL;
@@ -141,6 +142,26 @@ mda_run(LV2_Handle instance, uint32_t sample_count)
 	
 	plugin->effect->processReplacing(plugin->inputs, plugin->outputs, sample_count);
 }
+
+
+static const AudioEffectX*
+mda_get_audioeffectx(LV2_Handle instance)
+{
+	MDAPlugin* plugin = (MDAPlugin*)instance;
+	return plugin->effect;
+}
+
+
+static const void*
+mda_extension_data(const char* uri)
+{
+	if (!strcmp(uri, "http://lv2plug.in/ns/ext/dev/vstgui")) {
+		// FIXME: shouldn't return function pointers directly
+		return (const void*)mda_get_audioeffectx;
+	} else {
+		return NULL;
+	}
+}
 	
 
 static void
@@ -160,13 +181,14 @@ init_descriptor()
 {
 	mda_descriptor = (LV2_Descriptor*)malloc(sizeof(LV2_Descriptor));
 
-	mda_descriptor->URI = PLUGIN_URI_PREFIX PLUGIN_URI_SUFFIX;
-	mda_descriptor->activate = NULL;
-	mda_descriptor->cleanup = mda_cleanup;
-	mda_descriptor->connect_port = mda_connect_port;
-	mda_descriptor->deactivate = mda_deactivate;
+	mda_descriptor->URI = URI_PREFIX PLUGIN_URI_SUFFIX;
 	mda_descriptor->instantiate = mda_instantiate;
+	mda_descriptor->connect_port = mda_connect_port;
+	mda_descriptor->activate = NULL;
 	mda_descriptor->run = mda_run;
+	mda_descriptor->deactivate = mda_deactivate;
+	mda_descriptor->cleanup = mda_cleanup;
+	mda_descriptor->extension_data = mda_extension_data;
 }
 
 
@@ -191,9 +213,10 @@ AudioEffectX*
 lvz_new_audioeffectx()
 {
 	PLUGIN_CLASS* effect = new PLUGIN_CLASS(master_callback);
-	effect->setURI(PLUGIN_URI_PREFIX PLUGIN_URI_SUFFIX);
+	effect->setURI(URI_PREFIX PLUGIN_URI_SUFFIX);
 	return effect;
 }
 
 
 } // extern "C"
+

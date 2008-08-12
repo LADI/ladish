@@ -17,12 +17,14 @@
  */
 
 #include <list>
+#include <map>
 #include <string>
 #include <cassert>
 #include <iostream>
 #include <fstream>
 #include <dlfcn.h>
 #include "audioeffectx.h"
+#include "AEffEditor.hpp"
 
 using namespace std;
 
@@ -34,13 +36,16 @@ char name_buf[MAX_NAME_LENGTH];
 
 
 struct Record {
-	Record(const string& u, const string& n) : uri(u), base_name(n) {}
-	string uri;
+	Record(const string& n) : base_name(n) {}
 	string base_name;
+	typedef list<string> UIs;
+	UIs uis;
 };
 
-typedef std::list<Record> Manifest;
+typedef std::map<string, Record> Manifest;
 Manifest manifest;
+typedef std::map<string, Record> GUIManifest;
+GUIManifest gui_manifest;
 
 	
 string
@@ -85,8 +90,8 @@ symbolify(const char* name)
 void
 write_plugin(AudioEffectX* effect, const string& lib_file_name)
 {
-	string base_name = lib_file_name.substr(0, lib_file_name.find_last_of("."));
-	string data_file_name = base_name + ".ttl";
+	const string base_name = lib_file_name.substr(0, lib_file_name.find_last_of("."));
+	const string data_file_name = base_name + ".ttl";
 	
 	fstream os(data_file_name.c_str(), ios::out);
 	effect->getProductString(name_buf);
@@ -141,7 +146,33 @@ write_plugin(AudioEffectX* effect, const string& lib_file_name)
 
 	os.close();
 
-	manifest.push_back(Record(effect->getURI(), base_name));
+	Manifest::iterator i = manifest.find(effect->getURI());
+	if (i != manifest.end()) {
+		i->second.base_name = base_name;
+	} else {
+		manifest.insert(std::make_pair(effect->getURI(), Record(base_name)));
+	}
+}
+
+	
+void
+write_gui(AEffEditor* gui, const string& lib_file_name)
+{
+	const string base_name = lib_file_name.substr(0, lib_file_name.find_last_of("."));
+	assert(gui_manifest.find(gui->getURI()) == gui_manifest.end());
+	gui_manifest.insert(std::make_pair(gui->getURI(), Record(base_name)));
+	Manifest::iterator plugin_record = manifest.find(lib_file_name);
+	if (plugin_record != manifest.end()) {
+		plugin_record->second.uis.push_back(gui->getPluginURI());
+	}
+	Manifest::iterator i = manifest.find(gui->getPluginURI());
+	if (i != manifest.end()) {
+		i->second.uis.push_back(gui->getURI());
+	} else {
+		Record r("ERRNOBASE");
+		r.uis.push_back(gui->getURI());
+		manifest.insert(std::make_pair(gui->getPluginURI(), r));
+	}
 }
 
 
@@ -149,11 +180,23 @@ void
 write_manifest(ostream& os)
 {
 	os << "@prefix : <http://lv2plug.in/ns/lv2core#> ." << endl;
-	os << "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> ." << endl << endl;
+	os << "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> ." << endl;
+	os << "@prefix uiext: <http://lv2plug.in/ns/extensions/ui#> ." << endl << endl;
 	for (Manifest::iterator i = manifest.begin(); i != manifest.end(); ++i) {
-		os << "<" << i->uri << "> a :Plugin ;" << endl;
-		os << "\trdfs:seeAlso <" << i->base_name << ".ttl> ;" << endl;
-		os << "\t:binary <" << i->base_name << ".so> ." << endl << endl;
+		Record& r = i->second;
+		os << "<" << i->first << "> a :Plugin ;" << endl;
+		os << "\trdfs:seeAlso <" << r.base_name << ".ttl> ;" << endl;
+		os << "\t:binary <" << r.base_name << ".so> ";
+		for (Record::UIs::iterator j = r.uis.begin(); j != r.uis.end(); ++j)
+			os << ";" << endl << "\tuiext:ui <" << *j << "> ";
+		os << "." << endl << endl;
+	}
+	
+	for (GUIManifest::iterator i = gui_manifest.begin(); i != gui_manifest.end(); ++i) {
+		Record& r = i->second;
+		os << "<" << i->first << "> a uiext:GtkUI ;" << endl;
+		os << "\trdfs:seeAlso <" << r.base_name << ".ttl> ;" << endl;
+		os << "\tuiext:binary <" << r.base_name << ".so> ." << endl << endl;
 	}
 }
 
@@ -171,33 +214,42 @@ main(int argc, char** argv)
 	}
 	
 	typedef AudioEffectX* (*new_effect_func)();
+	typedef AEffEditor* (*new_gui_func)();
 	typedef AudioEffectX* (*plugin_uri_func)();
 
-	new_effect_func constructor = NULL;
-	AudioEffectX*   effect      = NULL; 
+	new_effect_func constructor     = NULL;
+	new_gui_func    gui_constructor = NULL;
+	AudioEffectX*   effect          = NULL; 
+	AEffEditor*     gui             = NULL; 
 
 	for (int i = 1; i < argc; ++i) {
-		void* handle = dlopen(argv[i], RTLD_NOW);
+		void* handle = dlopen(argv[i], RTLD_LAZY);
 		if (handle == NULL) {
-			cerr << "ERROR: " << argv[i] << " is not a shared library, ignoring" << endl;
+			cerr << "ERROR: " << argv[i] << ": " << dlerror() << " (ignoring)" << endl;
 			continue;
 		}
 
-		constructor = (new_effect_func)dlsym(handle, "lvz_new_audioeffectx");
-		if (constructor == NULL) {
-			dlclose(handle);
-			cerr << "ERROR: " << argv[i] << " is not an LVZ plugin library, ignoring" << endl;
-			continue;
-		}
-
-		effect = constructor();
 		string lib_path = argv[i];
 		size_t last_slash = lib_path.find_last_of("/");
 		if (last_slash != string::npos)
 			lib_path = lib_path.substr(last_slash + 1);
 		
-		write_plugin(effect, lib_path);
-
+		constructor = (new_effect_func)dlsym(handle, "lvz_new_audioeffectx");
+		if (constructor != NULL) {
+			effect = constructor();
+			write_plugin(effect, lib_path);
+		}
+		
+		gui_constructor = (new_gui_func)dlsym(handle, "lvz_new_aeffeditor");
+		if (gui_constructor != NULL) {
+			gui = gui_constructor();
+			write_gui(gui, lib_path);
+		}
+		
+		if (constructor == NULL && gui_constructor == NULL) {
+			cerr << "ERROR: " << argv[i] << ": not an LVZ plugin library, ignoring" << endl;
+		}
+			
 		dlclose(handle);
 	}
 
