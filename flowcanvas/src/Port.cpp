@@ -33,16 +33,16 @@ namespace FlowCanvas {
  * A reference to @a module is not retained (only a weak_ptr is stored).
  */
 Port::Port(boost::shared_ptr<Module> module, const string& name, bool is_input, uint32_t color)
-: Gnome::Canvas::Group(*module.get(), 0, 0),
-  _module(module),
-  _name(name),
-  _is_input(is_input),
-  _color(color),
-  _control_value(0.0f),
-  _control_min(0.0f),
-  _control_max(1.0f),
-  _control_rect(NULL),
-  _menu(NULL)
+	: Gnome::Canvas::Group(*module.get(), 0, 0)
+	, _module(module)
+	, _name(name)
+	, _is_input(is_input)
+	, _color(color)
+	, _control_value(0.0f)
+	, _control_min(0.0f)
+	, _control_max(1.0f)
+	, _control_rect(NULL)
+	, _menu(NULL)
 {
 	const float z = module->canvas().lock()->get_zoom();
 	// Create label first (and find size)

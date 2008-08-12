@@ -38,15 +38,15 @@ namespace FlowCanvas {
 	
 
 Canvas::Canvas(double width, double height)
-: _zoom(1.0),
-  _width(width),
-  _height(height),
-  _drag_state(NOT_DRAGGING),
-  _remove_objects(true),
-  _locked(false),
-  _base_rect(*root(), 0, 0, width, height),
-  _select_rect(NULL),
-  _select_dash(NULL)
+	: _zoom(1.0)
+	, _width(width)
+	, _height(height)
+	, _drag_state(NOT_DRAGGING)
+	, _remove_objects(true)
+	, _locked(false)
+	, _base_rect(*root(), 0, 0, width, height)
+	, _select_rect(NULL)
+	, _select_dash(NULL)
 {
 	set_scroll_region(0.0, 0.0, width, height);
 	set_center_scroll_region(true);
