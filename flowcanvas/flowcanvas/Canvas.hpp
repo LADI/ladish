@@ -138,8 +138,8 @@ private:
 	void select_port(boost::shared_ptr<Port> p, bool unique = false);
 	void select_port_toggle(boost::shared_ptr<Port> p, int mod_state);
 	void unselect_port(boost::shared_ptr<Port> p);
-
 	void selection_joined_with(boost::shared_ptr<Port> port);
+	void join_selection();
 
 	boost::shared_ptr<Port> get_port_at(double x, double y);
 

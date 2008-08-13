@@ -547,6 +547,25 @@ Canvas::selection_joined_with(boost::shared_ptr<Port> port)
 		ports_joined(*i, port);
 }
 
+	
+void
+Canvas::join_selection()
+{
+	vector< boost::shared_ptr<Port> > inputs;
+	vector< boost::shared_ptr<Port> > outputs;
+	for (SelectedPorts::iterator i = _selected_ports.begin(); i != _selected_ports.end(); ++i) {
+		if ((*i)->is_input())
+			inputs.push_back(*i);
+		else
+			outputs.push_back(*i);
+	}
+
+	size_t num_to_connect = min(inputs.size(), outputs.size());
+	for (size_t i = 0; i < num_to_connect; ++i) {
+		ports_joined(inputs[i], outputs[i]);
+	}
+}
+
 
 /** Called when two ports are 'toggled' (connected or disconnected)
  */
@@ -668,7 +687,8 @@ Canvas::port_event(GdkEvent* event, boost::weak_ptr<Port> weak_port)
 				ports_joined(port, _connect_port);
 				unselect_ports();
 			} else {
-				if (_last_selected_port && _last_selected_port->is_input() != port->is_input()) {
+				bool modded = event->button.state & (GDK_SHIFT_MASK|GDK_CONTROL_MASK);
+				if (!modded && _last_selected_port && _last_selected_port->is_input() != port->is_input()) {
 					selection_joined_with(port);
 					unselect_ports();
 				} else {
@@ -734,6 +754,11 @@ Canvas::canvas_event(GdkEvent* event)
 			break;
 		case GDK_Right:
 			scroll_x -= scroll_increment;
+			break;
+		case GDK_Return:
+			if (_selected_ports.size() > 1)
+				join_selection();
+			break;
 		default: break;
 		}
 		scroll_to(scroll_x, scroll_y);
