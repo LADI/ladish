@@ -309,7 +309,9 @@ Canvas::select_port(boost::shared_ptr<Port> p, bool unique)
 	if (unique)
 		unselect_ports();
 	p->set_selected(true);
-	_selected_ports.push_back(p);
+	SelectedPorts::iterator i = find(_selected_ports.begin(), _selected_ports.end(), p);
+	if (i == _selected_ports.end())
+		_selected_ports.push_back(p);
 	_last_selected_port = p;
 }
 
