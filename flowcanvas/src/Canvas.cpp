@@ -337,18 +337,24 @@ Canvas::select_port_toggle(boost::shared_ptr<Port> p, int mod_state)
 	} else if ((mod_state & GDK_SHIFT_MASK)) {
 		boost::shared_ptr<Module> m = p->module().lock();
 		if (_last_selected_port && m && _last_selected_port->module().lock() == m) {
+			// Pivot around _last_selected_port in a single pass over module ports each click
+			boost::shared_ptr<Port> old_last_selected = _last_selected_port;
+			boost::shared_ptr<Port> first;
+			bool done = false;
 			const PortVector& ports = m->ports();
 			for (size_t i = 0; i < ports.size(); ++i) {
-				if (ports[i] == _last_selected_port) { // top down
-					for (++i; i < ports.size() && ports[i-1] != p; ++i)
-						select_port(ports[i]);
-					break;
-				} else if (ports[i] == p) { // bottom up
-					for (++i; i < ports.size() && ports[i-1] != _last_selected_port; ++i)
-						select_port(ports[i]);
-					break;
-				};
+				if (!first && !done && (ports[i] == _last_selected_port || ports[i] == p))
+					first = ports[i];
+
+				if (first && !done)
+					select_port(ports[i], false);
+				else
+					unselect_port(ports[i]);
+
+				if (ports[i] != first && (ports[i] == old_last_selected || ports[i] == p))
+					done = true;
 			}
+			_last_selected_port = old_last_selected;
 		} else {
 			if (p->selected())
 				unselect_port(p);
