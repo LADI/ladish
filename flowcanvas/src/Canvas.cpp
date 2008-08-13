@@ -334,6 +334,27 @@ Canvas::select_port_toggle(boost::shared_ptr<Port> p, int mod_state)
 			unselect_port(p);
 		else
 			select_port(p);
+	} else if ((mod_state & GDK_SHIFT_MASK)) {
+		boost::shared_ptr<Module> m = p->module().lock();
+		if (_last_selected_port && m && _last_selected_port->module().lock() == m) {
+			const PortVector& ports = m->ports();
+			for (size_t i = 0; i < ports.size(); ++i) {
+				if (ports[i] == _last_selected_port) { // top down
+					for (++i; i < ports.size() && ports[i-1] != p; ++i)
+						select_port(ports[i]);
+					break;
+				} else if (ports[i] == p) { // bottom up
+					for (++i; i < ports.size() && ports[i-1] != _last_selected_port; ++i)
+						select_port(ports[i]);
+					break;
+				};
+			}
+		} else {
+			if (p->selected())
+				unselect_port(p);
+			else
+				select_port(p);
+		}
 	} else {
 		if (p->selected())
 			unselect_ports();
