@@ -503,7 +503,6 @@ if test "$build_ingen_gtk_client" = "yes"; then
 else
   AC_MSG_WARN([GTK client will NOT be built!])
 fi
-AM_CONDITIONAL(BUILD_GTK_CLIENT, [test "$build_ingen_gtk_client" = "yes"])
 AM_CONDITIONAL(WITH_CURL, [test "$build_curl" = "yes"])
 
 if test "$build_ingen_client_lib" = "yes" -o "$build_ingen_server" = "yes"; then
@@ -518,6 +517,8 @@ if test "$build_ingen_client_lib" = "yes" -o "$build_ingen_server" = "yes"; then
 		build_ingen_clients="no"
 	fi
 fi
+
+AM_CONDITIONAL(BUILD_GTK_CLIENT, [test "$build_ingen_gtk_client" = "yes"])
 
 # Build ingen client lib if anything above that depends on it is to be built
 AM_CONDITIONAL(BUILD_CLIENT_LIB, [test "$build_ingen_clients" = "yes" -o "$build_ingen_gtk_client" = "yes"])
