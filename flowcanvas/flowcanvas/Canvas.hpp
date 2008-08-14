@@ -125,6 +125,7 @@ protected:
 	std::list< boost::shared_ptr<Connection> > _selected_connections;  ///< All currently selected connections
 
 	virtual bool canvas_event(GdkEvent* event);
+	virtual bool frame_event(GdkEvent* ev);
 	
 private:
 
@@ -151,6 +152,8 @@ private:
 	bool animate_selected();
 
 	void scroll_to_center();
+	void on_parent_changed(Gtk::Widget* old_parent);
+	sigc::connection _parent_event_connection;
 
 	typedef std::list< boost::shared_ptr<Port> > SelectedPorts;
 	SelectedPorts _selected_ports; ///< Selected ports (hilited red)

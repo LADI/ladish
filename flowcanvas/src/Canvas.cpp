@@ -811,6 +811,33 @@ Canvas::canvas_event(GdkEvent* event)
 	}
 }
 
+	
+void
+Canvas::on_parent_changed(Gtk::Widget* old_parent)
+{
+	_parent_event_connection.disconnect();
+	_parent_event_connection = get_parent()->signal_event().connect(sigc::mem_fun(*this, &Canvas::frame_event));
+}
+
+
+bool
+Canvas::frame_event(GdkEvent* ev)
+{
+	bool handled = false;
+	if (ev->type == GDK_SCROLL) {
+		//cout << ev->scroll.x << " x " << ev->scroll.y << endl;
+		//scroll_to(ev->scroll.x_root, ev->scroll.y_root);
+		if (ev->scroll.direction == GDK_SCROLL_UP) {
+			set_zoom(_zoom + 0.1);
+			handled = true;
+		} else if (ev->scroll.direction == GDK_SCROLL_DOWN) {
+			set_zoom(_zoom - 0.1);
+			handled = true;
+		}
+	}
+	return handled;
+}
+
 
 bool
 Canvas::scroll_drag_handler(GdkEvent* event)
