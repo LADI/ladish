@@ -136,7 +136,9 @@ Module::set_stacked_border(bool b)
 		_stacked_border->property_width_units() = _border_width;
 		_stacked_border->lower_to_bottom();
 		_stacked_border->show();
-	} else if (_stacked_border) {
+	} else if (b) {
+		_stacked_border->show();
+	} else {
 		delete _stacked_border;
 		_stacked_border = NULL;
 	}
