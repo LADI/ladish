@@ -787,16 +787,16 @@ Canvas::canvas_event(GdkEvent* event)
 	case GDK_KEY_PRESS:
 		switch (event->key.keyval) {
 		case GDK_Up:
-			scroll_y += scroll_increment;
-			break;
-		case GDK_Down:
 			scroll_y -= scroll_increment;
 			break;
+		case GDK_Down:
+			scroll_y += scroll_increment;
+			break;
 		case GDK_Left:
-			scroll_x += scroll_increment;
+			scroll_x -= scroll_increment;
 			break;
 		case GDK_Right:
-			scroll_x -= scroll_increment;
+			scroll_x += scroll_increment;
 			break;
 		case GDK_Return:
 			if (_selected_ports.size() > 1)
