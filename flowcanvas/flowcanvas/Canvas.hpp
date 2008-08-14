@@ -90,7 +90,7 @@ public:
 	ConnectionList& connections()          { return _connections; }
 	ConnectionList& selected_connections() { return _selected_connections; }
 
-	void lock(bool l)   { _locked = l; }
+	void lock(bool l);
 	bool locked() const { return _locked; }
 
 	double get_zoom() { return _zoom; }

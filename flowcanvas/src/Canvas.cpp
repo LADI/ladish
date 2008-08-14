@@ -78,6 +78,18 @@ Canvas::~Canvas()
 	art_free(_select_dash->dash);
 	delete _select_dash;
 }
+	
+
+void
+Canvas::lock(bool l)
+{
+	_locked = l;
+	if (l)
+		_base_rect.property_fill_color_rgba() = 0x232425FF;
+	else
+		_base_rect.property_fill_color_rgba() = 0x000000FF;
+
+}
 
 
 void
