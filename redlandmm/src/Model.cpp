@@ -103,6 +103,8 @@ Model::set_base_uri(const Glib::ustring& uri)
 {
 	if (uri == "")
 		return;
+	
+	Glib::Mutex::Lock lock(_world.mutex());
 
 	assert(uri.find(":") != string::npos);
 	assert(uri.substr(uri.find(":")+1).find(":") == string::npos);
@@ -114,6 +116,7 @@ Model::set_base_uri(const Glib::ustring& uri)
 void
 Model::setup_prefixes()
 {
+	Glib::Mutex::Lock lock(_world.mutex());
 	assert(_serialiser);
 
 	for (Namespaces::const_iterator i = _world.prefixes().begin(); i != _world.prefixes().end(); ++i) {
