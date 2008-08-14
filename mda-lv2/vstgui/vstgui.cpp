@@ -978,13 +978,14 @@ void CDrawContext::forget ()
 //-----------------------------------------------------------------------------
 long CDrawContext::getIndexColor (CColor color)
 {
-    XColor xcol;
+    /*XColor xcol;
     xcol.red = color.red << 8;
     xcol.green = color.green << 8;
     xcol.blue = color.blue << 8;
     xcol.flags = (DoRed | DoGreen | DoBlue);
-    XAllocColor (display, XDefaultColormap (display, 0), &xcol);
-    return xcol.pixel;
+    XAllocColor (display, getColormap(), &xcol);
+    return xcol.pixel;*/
+	return (color.red << 16) + (color.green << 8) + color.blue;
 }
 
 //-----------------------------------------------------------------------------
@@ -3450,6 +3451,10 @@ CBitmap::CBitmap (long ID)
     gNbCBitmap++;
 #endif
     
+	pHandle = 0;
+	pngRead = NULL;
+	pngInfo = NULL;
+
 	bool found = false;
     long i = 0;
     
@@ -3462,6 +3467,7 @@ CBitmap::CBitmap (long ID)
 				break;
 			}
 		}
+		++i;
 	}
     
 	if (VSTGUI::bundlePath == NULL) {
@@ -3551,10 +3557,8 @@ bool CBitmap::loadFromResource (long resourceID)
 //-----------------------------------------------------------------------------
 bool CBitmap::loadFromPath (const void* platformPath)
 {
-	if (pHandle != NULL) {
+	if (pHandle != NULL)
 		dispose ();
-		closePng ();
-	}
 
 	bool success = openPng ((char*)platformPath);
 	if (success)
@@ -3763,6 +3767,7 @@ bool CBitmap::openPng (const char* path)
 	pngInfo = png_create_info_struct(pngRead);
     if (!pngInfo) {
         png_destroy_read_struct(&pngRead, NULL, NULL);
+		pngRead = NULL;
         return false;
     }
 
@@ -3787,6 +3792,8 @@ bool CBitmap::closePng ()
 	png_destroy_read_struct(&pngRead, &pngInfo, NULL);
 	fclose(pngFp);
 	pngFp = NULL;
+	pngRead = NULL;
+	pngInfo = NULL;
 	return true;
 }
 

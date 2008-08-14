@@ -12,8 +12,10 @@ public:
 	{}
 
 	virtual long open(void* ptr) { return true; }
+	virtual void close() {}
 
 	virtual void idle() {}
+	virtual void postUpdate() {}
 	
 	virtual const char* getURI()       { return URI; }
 	virtual void setURI(const char* u) { URI = u; }

@@ -22,6 +22,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "AEffect.h"
+
 // Some plugins seem to use these names...
 #ifndef VstInt32
 #  define VstInt32 LvzInt32
@@ -56,6 +58,11 @@ struct LvzPinProperties {
 	int   flags;
 };
 
+enum LvzOpCodes {
+	effEditClose,
+	effEditOpen
+};
+
 enum LvzEventTypes {
 	kLvzMidiType = 0
 };
@@ -82,6 +89,7 @@ public:
 	virtual ~AudioEffect() {}
 	
 	virtual void  setParameter(LvzInt32 index, float value) = 0;
+	virtual void  setParameterAutomated(LvzInt32 index, float value) {}
 	virtual float getParameter(LvzInt32 index)              = 0;
 
 	void setEditor(AEffEditor* e) { editor = e; }
@@ -103,6 +111,7 @@ public:
 		, numParams(params)
 		, numPrograms(progs)
 	{
+		cEffect.flags = 0;
 	}
 	
 	virtual void process         (float **inputs, float **outputs, LvzInt32 nframes) = 0;
@@ -138,6 +147,10 @@ public:
 	virtual bool openFileSelector (VstFileSelect* sel)  { return false; }
 	virtual bool closeFileSelector (VstFileSelect* sel) { return false; }
 
+	virtual long dispatcher(long opCode, long index, long value, void *ptr, float opt) {
+		return 0;
+	}
+
 protected:
 	const char* URI;
 	const char* uniqueID;
@@ -147,6 +160,7 @@ protected:
 	LvzInt32    numOutputs;
 	LvzInt32    numParams;
 	LvzInt32    numPrograms;
+	AEffect     cEffect;
 };
 
 #endif // __LVZ_AUDIOEFFECTX_H
