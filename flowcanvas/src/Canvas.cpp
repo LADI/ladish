@@ -828,7 +828,7 @@ Canvas::scroll_drag_handler(GdkEvent* event)
 
 	bool first_motion = true;
 	
-	if (!_locked && event->type == GDK_BUTTON_PRESS && event->button.button == 2) {
+	if (event->type == GDK_BUTTON_PRESS && event->button.button == 2) {
 		_base_rect.grab(GDK_POINTER_MOTION_MASK | GDK_BUTTON_RELEASE_MASK | GDK_BUTTON_PRESS_MASK,
 			Gdk::Cursor(Gdk::FLEUR), event->button.time);
 		get_scroll_offsets(original_scroll_x, original_scroll_y);
