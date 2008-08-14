@@ -647,6 +647,7 @@ Canvas::port_event(GdkEvent* event, boost::weak_ptr<Port> weak_port)
 
 	static bool port_dragging = false;
 	static bool control_dragging = false;
+	static bool ignore_button_release = false;
 	bool handled = true;
 	
 	switch (event->type) {
@@ -655,23 +656,25 @@ Canvas::port_event(GdkEvent* event, boost::weak_ptr<Port> weak_port)
 		if (event->button.button == 1) {
 			boost::shared_ptr<Module> module = port->module().lock();
 			if (module && _locked) {
-				control_dragging = true;
-				const double port_x = module->property_x() + port->property_x();
-				float new_control = ((event->button.x - port_x) / (double)port->width());
-				if (new_control < 0.0)
-					new_control = 0.0;
-				else if (new_control > 1.0)
-					new_control = 1.0;
+				if (port->is_toggled()) {
+					port->toggle();
+					ignore_button_release = true;
+				} else {
+					control_dragging = true;
+					const double port_x = module->property_x() + port->property_x();
+					float new_control = ((event->button.x - port_x) / (double)port->width());
+					if (new_control < 0.0)
+						new_control = 0.0;
+					else if (new_control > 1.0)
+						new_control = 1.0;
 
-				new_control *= (port->control_max() - port->control_min());
-				new_control += port->control_min();
-				assert(new_control >= port->control_min());
-				assert(new_control <= port->control_max());
-				
-				if (new_control != port->control_value()) {
-					//cerr << "CONTROL: " << new_control << endl;
-					port->set_control(new_control);
-					port->signal_control_changed.emit(new_control);
+					new_control *= (port->control_max() - port->control_min());
+					new_control += port->control_min();
+					assert(new_control >= port->control_min());
+					assert(new_control <= port->control_max());
+
+					if (new_control != port->control_value())
+						port->set_control(new_control);
 				}
 			} else {
 				port_dragging = true;
@@ -700,11 +703,8 @@ Canvas::port_event(GdkEvent* event, boost::weak_ptr<Port> weak_port)
 				assert(new_control >= port->control_min());
 				assert(new_control <= port->control_max());
 				
-				if (new_control != port->control_value()) {
-					//cerr << "CONTROL: " << new_control << endl;
+				if (new_control != port->control_value())
 					port->set_control(new_control);
-					port->signal_control_changed.emit(new_control);
-				}
 
 			}
 		}
@@ -727,6 +727,8 @@ Canvas::port_event(GdkEvent* event, boost::weak_ptr<Port> weak_port)
 			port_dragging = false;
 		} else if (control_dragging) {
 			control_dragging = false;
+		} else if (ignore_button_release) {
+			ignore_button_release = false;
 		} else {
 			handled = false;
 		}

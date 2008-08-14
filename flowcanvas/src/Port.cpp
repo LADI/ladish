@@ -41,6 +41,7 @@ Port::Port(boost::shared_ptr<Module> module, const string& name, bool is_input, 
 	, _is_input(is_input)
 	, _color(color)
 	, _selected(false)
+	, _toggled(false)
 	, _control_value(0.0f)
 	, _control_min(0.0f)
 	, _control_max(1.0f)
@@ -107,6 +108,13 @@ Port::set_control(float value, bool signal)
 {
 	if (!_control_rect)
 		return;
+	
+	if (_toggled) {
+		if (value != 0.0)
+			value = _control_max;
+		else
+			value = _control_min;
+	}
 
 	//cerr << _name << ".set_control(" << value << "): " << _control_min << " .. " << _control_max
 	//		<< " -> ";
@@ -131,9 +139,25 @@ Port::set_control(float value, bool signal)
 	assert(!isnan(w));
 
 	//cerr << w << " / " << _width << endl;
-
+	
 	_control_rect->property_x2() = _control_rect->property_x1() + w;
+	if (signal && _control_value == value)
+		signal = false;
+
 	_control_value = value;
+
+	if (signal)
+		signal_control_changed.emit(_control_value);
+}
+
+
+void
+Port::toggle(bool signal)
+{
+	if (_control_value == 0.0f)
+		set_control(1.0f, signal);
+	else
+		set_control(0.0f, signal);
 }
 
 

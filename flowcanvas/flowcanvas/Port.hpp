@@ -97,6 +97,10 @@ public:
 	uint32_t color()     const { return _color; }
 	double   height()    const { return _height; }
 
+	virtual bool is_toggled() const { return _toggled; }
+	virtual void set_toggled(bool b) { _toggled = b; }
+	virtual void toggle(bool signal=true);
+
 	virtual void set_control(float value, bool signal=true);
 	virtual void set_control_min(float min) { _control_min = min; set_control(_control_value, false);  }
 	virtual void set_control_max(float max) { _control_max = max; set_control(_control_value, false);  }
@@ -127,6 +131,7 @@ protected:
 	uint32_t                _color;
 	bool                    _selected;
 
+	bool  _toggled;
 	float _control_value;
 	float _control_min;
 	float _control_max;
