@@ -1,7 +1,6 @@
 AC_PREREQ(2.59)
 AC_INIT([drobillad],[svn],[dave@drobilla.net])
 
-m4_include([m4/ac_python_devel.m4])
 AC_CONFIG_AUX_DIR([config])
 
 

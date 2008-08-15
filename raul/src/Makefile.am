@@ -7,9 +7,9 @@ lib_LTLIBRARIES = libraul.la
 libraul_la_SOURCES = \
 	Maid.cpp \
 	Path.cpp \
-	Symbol.cpp \
 	SMFReader.cpp \
 	SMFWriter.cpp \
+	Symbol.cpp \
 	Thread.cpp
 
 if WITH_JACK
