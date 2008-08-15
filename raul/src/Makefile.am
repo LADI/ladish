@@ -7,6 +7,7 @@ lib_LTLIBRARIES = libraul.la
 libraul_la_SOURCES = \
 	Maid.cpp \
 	Path.cpp \
+	Symbol.cpp \
 	SMFReader.cpp \
 	SMFWriter.cpp \
 	Thread.cpp

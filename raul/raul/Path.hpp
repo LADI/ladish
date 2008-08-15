@@ -24,6 +24,8 @@
 #include <cstring>
 #include <cassert>
 
+#include <raul/Symbol.hpp>
+
 namespace Raul {
 
 	
@@ -44,7 +46,7 @@ namespace Raul {
 class Path : public std::basic_string<char> {
 public:
 
-	/** Contrust an uninitialzed path, because the STL is annoying. */
+	/** Construct an uninitialzed path, because the STL is annoying. */
 	Path() : std::basic_string<char>("/") {}
 
 	/** Construct a Path from an std::string.
@@ -88,7 +90,7 @@ public:
 	/** Return the name of this object (everything after the last '/').
 	 * This is the "method name" for OSC paths.
 	 */
-	inline std::basic_string<char> name() const {
+	inline Symbol name() const {
 		if ((*this) == "/")
 			return "";
 		else
