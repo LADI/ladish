@@ -194,7 +194,7 @@ Model::serialise_to_string()
 	setup_prefixes();
 
 	unsigned char* c_str
-		= librdf_serializer_serialize_model_to_string(_serialiser, NULL, _c_obj);
+		= librdf_serializer_serialize_model_to_string(_serialiser, _base.get_uri(), _c_obj);
 
 	string result((const char*)c_str);
 	free(c_str);
