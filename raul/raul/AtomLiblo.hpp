@@ -18,6 +18,7 @@
 #ifndef RAUL_ATOM_LIBLO_HPP
 #define RAUL_ATOM_LIBLO_HPP
 
+#include <iostream>
 #include <lo/lo.h>
 #include <raul/Atom.hpp>
 
@@ -43,6 +44,12 @@ lo_message_add_atom(lo_message m, const Atom& atom)
 	case Atom::STRING:
 		lo_message_add_string(m, atom.get_string());
 		break;
+	case Atom::BOOL:
+		if (atom.get_bool())
+			lo_message_add_true(m);
+		else
+			lo_message_add_false(m);
+		break;
 	case Atom::BLOB:
 		// FIXME: is this okay?  what does liblo do?
 		lo_message_add_blob(m, const_cast<void*>(atom.get_blob()));
@@ -66,10 +73,13 @@ lo_arg_to_atom(char type, lo_arg* arg)
 		return Atom(arg->f);
 	case 's':
 		return Atom(&arg->s);
-	//case 'b'
-		// FIXME: How to get a blob from a lo_arg?
-		//return Atom(arg->b);
+	case 'T':
+		return Atom((bool)true);
+	case 'F':
+		return Atom((bool)false);
 	default:
+		std::cerr << "WARNING: Unable to convert OSC type '"
+			<< type << "' to Atom" << std::endl;
 		return Atom();
 	}
 }
