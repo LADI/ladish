@@ -55,8 +55,13 @@ public:
 	Atom(const char* val)        : _type(STRING), _string_val(strdup(val))         {}
 	Atom(const std::string& val) : _type(STRING), _string_val(strdup(val.c_str())) {}
 	
-	Atom(void* val) : _type(BLOB), _blob_size(sizeof(val)), _blob_val(malloc(_blob_size))
-	{ memcpy(_blob_val, val, sizeof(_blob_size)); }
+	Atom(const char* type_uri, size_t size, void* val) : _type(BLOB) {
+		_blob_type_length = strlen(type_uri);
+		_blob_size = size + _blob_type_length;
+		_blob_val = malloc(_blob_size);
+		memcpy(_blob_val, type_uri, _blob_type_length);
+		memcpy((char*)_blob_val + _blob_type_length, val, size);
+	}
 
 	~Atom() {
 		if (_type == STRING)
@@ -135,7 +140,7 @@ public:
 		return _type < other.type();
 	}
 
-	inline size_t data_size() {
+	inline size_t data_size() const {
 		switch (_type) {
 		case NIL:    return 0;
 		case INT:    return sizeof(uint32_t);
@@ -144,6 +149,7 @@ public:
 		case STRING: return strlen(_string_val);
 		case BLOB:   return _blob_size;
 		}
+		return 0;
 	}
 	
 	inline bool is_valid() const { return (_type != NIL); }
@@ -157,18 +163,23 @@ public:
 	inline float       get_float()  const { assert(_type == FLOAT);  return _float_val; }
 	inline bool        get_bool()   const { assert(_type == BOOL);   return _bool_val; }
 	inline const char* get_string() const { assert(_type == STRING); return _string_val; }
-	inline const void* get_blob()   const { assert(_type == BLOB);   return _blob_val; }
+	
+	inline const char* get_blob_type() const { assert(_type == BLOB); return (const char*)_blob_val; }
+	inline const void* get_blob()      const { assert(_type == BLOB); return (const char*)_blob_val + _blob_type_length; }
 
 private:
 	Type   _type;
-	size_t _blob_size; ///< Always a multiple of 32
 	
 	union {
 		int32_t _int_val;
 		float   _float_val;
 		bool    _bool_val;
 		char*   _string_val;
-		void*   _blob_val;
+		struct {
+			size_t  _blob_type_length; // length of type string (first part of buffer)
+			size_t  _blob_size;        // length of data after type string
+			void*   _blob_val;         // buffer
+		};
 	};
 };
 
