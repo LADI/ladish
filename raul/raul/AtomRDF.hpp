@@ -73,7 +73,7 @@ atom_to_node(Redland::World& world, const Atom& atom)
 		type = librdf_new_uri(world.world(), CUC("http://www.w3.org/2001/XMLSchema#integer"));
 		break;
 	case Atom::FLOAT:
-		os.precision(20);
+		os.precision(8);
 		os << atom.get_float();
 		str = os.str();
 		if (str.find(".") == std::string::npos)
