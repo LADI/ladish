@@ -86,6 +86,30 @@ Model::Model(World& world, const Glib::ustring& data_uri, Glib::ustring base_uri
 }
 
 
+/** Load a model from a string.
+ */
+Model::Model(World& world, const char* str, size_t len, Glib::ustring base_uri)
+	: _world(world)
+	, _base(world, Node::RESOURCE, base_uri == "" ? "/" : base_uri)
+	, _serialiser(NULL)
+{
+	Glib::Mutex::Lock lock(world.mutex());
+	_storage = librdf_new_storage(_world.world(), "trees", NULL, NULL);
+	if (!_storage)
+		_storage = librdf_new_storage(_world.world(), "hashes", NULL, "hash-type='memory'");
+	_c_obj = librdf_new_model(_world.world(), _storage, NULL);
+
+	librdf_parser* parser = librdf_new_parser(world.world(), "turtle", NULL, NULL);
+	char* locale = strdup(setlocale(LC_NUMERIC, NULL));
+	setlocale(LC_NUMERIC, "POSIX");
+	librdf_parser_parse_counted_string_into_model(parser, (const unsigned char*)str, len,
+			_base.get_uri(), _c_obj);
+	setlocale(LC_NUMERIC, locale);
+	free(locale);
+	librdf_free_parser(parser);
+}
+
+
 Model::~Model()
 {
 	Glib::Mutex::Lock lock(_world.mutex());
@@ -185,7 +209,7 @@ Model::serialise_to_file(const Glib::ustring& uri_str)
  * The results of the serialization will be returned by the finish() method after
  * the desired objects have been serialized.
  */
-string
+char*
 Model::serialise_to_string()
 {
 	Glib::Mutex::Lock lock(_world.mutex());
@@ -193,16 +217,13 @@ Model::serialise_to_string()
 	_serialiser = librdf_new_serializer(_world.world(), RDF_LANG, NULL, NULL);
 	setup_prefixes();
 
-	unsigned char* c_str
-		= librdf_serializer_serialize_model_to_string(_serialiser, _base.get_uri(), _c_obj);
+	unsigned char* c_str = librdf_serializer_serialize_model_to_string(
+			_serialiser, _base.get_uri(), _c_obj);
 
-	string result((const char*)c_str);
-	free(c_str);
-	
 	librdf_free_serializer(_serialiser);
 	_serialiser = NULL;
 
-	return result;
+	return (char*)c_str;
 }
 
 

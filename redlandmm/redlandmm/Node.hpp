@@ -66,6 +66,8 @@ public:
 		_c_obj = (other._c_obj) ? librdf_new_node_from_node(other._c_obj) : NULL;
 		return *this;
 	}
+
+	inline bool operator==(const Node& other) const { return librdf_node_equals(_c_obj, other._c_obj); }
 	
 	const char* to_c_string() const;
 	std::string to_string() const;

@@ -37,14 +37,15 @@ class Model : public boost::noncopyable, public Wrapper<librdf_model> {
 public:
 	Model(World& world);
 	Model(World& world, const Glib::ustring& uri, Glib::ustring base_uri="");
+	Model(World& world, const char* str, size_t len, Glib::ustring base_uri="");
 	~Model();
 
 	void        set_base_uri(const Glib::ustring& uri);
 	const Node& base_uri() const { return _base; }
 	
-	void        serialise_to_file_handle(FILE* fd);
-	void        serialise_to_file(const Glib::ustring& uri);
-	std::string serialise_to_string();
+	void  serialise_to_file_handle(FILE* fd);
+	void  serialise_to_file(const Glib::ustring& uri);
+	char* serialise_to_string();
 	
 	void add_statement(const Node& subject,
 	                   const Node& predicate,
