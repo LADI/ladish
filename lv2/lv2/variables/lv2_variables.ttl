@@ -1,6 +1,5 @@
 # LV2 Variables Extension
-#
-# Copyright (C) 2007 Dave Robillard
+# Copyright (C) 2008 Dave Robillard
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -20,7 +19,7 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-@prefix :     <http://drobilla.net/ns/lv2ext/variables#> .
+@prefix :     <http://lv2plug.in/ns/ext/instance-var#> .
 @prefix lv2:  <http://lv2plug.in/ns/lv2core#> .
 @prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
@@ -29,56 +28,84 @@
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix owl:  <http://www.w3.org/2002/07/owl#> .
 
-<http://drobilla.net/ns/lv2ext/variables> a lv2:Specification ;
+<http://lv2plug.in/ns/ext/instance-var> a lv2:Specification ;
+    doap:license <http://usefulinc.com/doap/licenses/mit> ;
+    doap:name "Instance Variables" ;
+    doap:created "2008-08-18" ;
+    doap:maintainer [
+        a foaf:Person ;
+        foaf:name "Dave Robillard" ;
+        foaf:homepage <http://drobilla.net/> ;
+        rdfs:seeAlso <http://drobilla.net/drobilla.rdf>
+	]
 	rdfs:comment """
 An extension for setting named/typed variables on an instance of an
-LV2 Plugin.  Variables can be set in code and/or serialized in RDF, e.g.
+LV2 Plugin (or anything else).  A "variable" is really just a (reified)
+RDF statement with an implicit subject (e.g. the plugin instance).
+
+Variables serve as a portable, network transparent, and serialisable
+mechanism for clients (e.g. user interfaces, programs) to control any
+parameter of a running plugin instance.  Because variables are 'keyed'
+by URI (the predicate), future extensions can define variables with
+specific meanings or restricted/extended types.
+The value (rdf:value) of a variable may be anything, but hosts or plugins
+aren't guaranteed to support anything other than simple typed literals.
+Serialisation and code access to complex variables is considered outside
+the scope of this extension.
+
+Hosts and plugins SHOULD use the following types for appropriate values:
+ * xsd:string  - string
+ * xsd:decimal - floating point number
+ * xsd:integer - integer number
+ * xsd:boolean - boolean value
+
+This extension does not currently define a code mechanism for access
+to variables.  A future revision, or a different extension, may.
 
 <http://example.org/plugin> a lv2:Plugin ;
 	lv2var:variable [
-		a            lv2var:Variable ;
-		lv2var:type  xsd:string ;
-		lv2var:value "Hello world."
+		rdf:predicate <http://example.org/greetingology#Greeting> ;
+		rdf:value "Hello, cruel world."
+	] , [
+		rdf:predicate <http://example.org/matheybits#Coeff> ;
+		rdf:value 1.23456
+	] , [
+		rdf:predicate <http://example.org/databits#BigValue> ;
+		rdf:value [
+			a somext:Something ;
+			someext:foo "Foo?" ;
+			someext:bar "Bar." ;
+			someext:baz 1234.0
+		]
 	] .
 """ .
 
 
 :Variable a rdfs:Class ;
 	rdfs:label   "LV2 Variable" ;
-	rdfs:comment "A named and typed instance variable for an LV2 Plugin." ;
+	rdfs:comment "A typed instance variable." ;
 
 	rdfs:subClassOf [
 		a                 owl:Restriction ;
-		rdfs:comment      "A Variable must have exactly one :type URI" ;
-		owl:onProperty    :type ;
+		rdfs:comment      "Must have exactly one rdf:predicate which is a resource" ;
+		owl:onProperty    rdf:predicate ;
 		owl:cardinality   1 ;
 		owl:allValuesFrom rdfs:Resource
 	], [
 		a                 owl:Restriction ;
-		rdfs:comment      "A Variable must have exactly one :value" ;
-		owl:onProperty    :value ;
+		rdfs:comment      "Must have exactly one rdf:value (of any type)" ;
+		owl:onProperty    rdf:value ;
 		owl:cardinality   1
 	] .
 
 
-:type a owl:ObjectProperty ;
-	rdfs:label   "Variable type" ;
-	rdfs:comment "The (data) type of an LV2 Variable." ;
-	rdfs:domain  :Variable ;
-	rdfs:range   rdfs:Resource .
-
-
-:value a owl:ObjectProperty ;
-	rdfs:label   "Variable value" ;
-	rdfs:comment "The value of an LV2 Variable." ;
-	rdfs:domain  :Variable .
-
-
 :variable a owl:ObjectProperty ;
-	rdfs:label   "Has an LV2 Variable" ;
+	rdfs:label   "Has a Variable" ;
 	rdfs:range   :Variable ;
 	rdfs:comment """
-Relates an LV2 Variable to some Resource.  The domain of this property is
-deliberately not restricted to lv2:Plugin, as LV2 Variables can be useful
-in other contexts as well.""" .
+Relates an LV2 Variable to some Resource, usually a plugin instance.
+The domain of this property is not restricted, it may be used for anything.
+The range is implicitly an lv2var:Variable, the 'a lv2var:Variable' triple
+is not mandatory.
+""" .
 
