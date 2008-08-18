@@ -109,6 +109,18 @@ public:
 	}
 	
 
+	/** Return path relative to soe base path (chop prefix)
+	 */
+	inline Path relative_to_base(const Path& base) const {
+		if ((*this) == base) {
+			return "/";
+		} else {
+			assert(length() > base.length());
+			return substr(base.length());
+		}
+	}
+
+
 	/** Return path with a trailing "/".
 	 *
 	 * Returned value is guaranteed to be a valid parent path, i.e. a valid
