@@ -136,7 +136,10 @@ Port::set_control(float value, bool signal)
 		value = _control_max;
 
 	const double w = (value - _control_min) / (_control_max - _control_min) * _width;
-	assert(!isnan(w));
+	if (isnan(w)) {
+		cerr << "WARNING (" << _name << "): Control value is NaN" << endl;
+		return;
+	}
 
 	//cerr << w << " / " << _width << endl;
 	
