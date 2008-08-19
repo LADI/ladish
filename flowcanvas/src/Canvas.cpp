@@ -415,7 +415,7 @@ Canvas::remove_item(boost::shared_ptr<Item> item)
 {
 	bool ret = false;
 
-	// Remove the module
+	// Remove from selection
 	for (list<boost::shared_ptr<Item> >::iterator i = _selected_items.begin(); i != _selected_items.end(); ++i) {
 		if ((*i) == item) {
 			_selected_items.erase(i);
@@ -423,7 +423,7 @@ Canvas::remove_item(boost::shared_ptr<Item> item)
 		}
 	}
 	
-	item->set_selected(false);
+	// Remove from items
 	for (ItemList::iterator i = _items.begin(); i != _items.end(); ++i) {
 		if (*i == item) {
 			ret = true;
