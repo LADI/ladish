@@ -60,19 +60,19 @@ public:
 	inline void pop();
 	
 private:
-	volatile size_t _front;   ///< Index to front of queue (circular)
-	volatile size_t _back;    ///< Index to back of queue (one past last element) (circular)
-	const    size_t _size;    ///< Size of @ref _objects (you can store _size-1 objects)
-	T* const        _objects; ///< Fixed array containing queued elements
+	AtomicInt    _front;   ///< Index to front of queue (circular)
+	AtomicInt    _back;    ///< Index to back of queue (one past last element) (circular)
+	const size_t _size;    ///< Size of @ref _objects (you can store _size-1 objects)
+	T* const     _objects; ///< Fixed array containing queued elements
 };
 
 
 template<typename T>
 SRSWQueue<T>::SRSWQueue(size_t size)
-: _front(0),
-  _back(0),
-  _size(size+1),
-  _objects((T*)calloc(_size, sizeof(T)))
+	: _front(0)
+	, _back(0)
+	, _size(size+1)
+	, _objects((T*)calloc(_size, sizeof(T)))
 {
 	assert(size > 1);
 }
@@ -91,7 +91,7 @@ template <typename T>
 inline bool
 SRSWQueue<T>::empty() const
 {
-	return (_back == _front);
+	return (_back.get() == _front.get());
 }
 
 
@@ -101,8 +101,7 @@ template <typename T>
 inline bool
 SRSWQueue<T>::full() const
 {
-	// FIXME: uses both _front and _back - thread safe?
-	return ( ((_front - _back + _size) % _size) == 1 );
+	return (((_front.get() - _back.get() + _size) % _size) == 1);
 }
 
 
@@ -112,7 +111,7 @@ template <typename T>
 inline T&
 SRSWQueue<T>::front() const
 {
-	return _objects[_front];
+	return _objects[_front.get()];
 }
 
 
@@ -128,8 +127,9 @@ SRSWQueue<T>::push(const T& elem)
 	if (full()) {
 		return false;
 	} else {
-		_objects[_back] = elem;
-		_back = (_back + 1) % (_size);
+		unsigned back = _back.get();
+		_objects[back] = elem;
+		_back = (back + 1) % _size;
 		return true;
 	}
 }
@@ -148,7 +148,7 @@ SRSWQueue<T>::pop()
 	assert(!empty());
 	assert(_size > 0);
 
-	_front = (_front + 1) % (_size);
+	_front = (_front.get() + 1) % (_size);
 }
 
 

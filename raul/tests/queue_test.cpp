@@ -120,6 +120,33 @@ int main()
 {
 	unsigned long total_processed = 0;
 	
+	cout << "Testing size" << endl;
+	for (unsigned i=0; i < queue.capacity(); ++i) {
+		queue.push(i);
+		if (i == queue.capacity()-1) {
+			if (!queue.full()) {
+				cerr << "ERROR: Should be full at " << i
+						<< " (size " << queue.capacity() << ")" << endl;
+				return -1;
+			}
+		} else {
+			if (queue.full()) {
+				cerr << "ERROR: Prematurely full at " << i
+					<< " (size " << queue.capacity() << ")" << endl;
+				return -1;
+			}
+		}
+	}
+	
+	for (unsigned i=0; i < queue.capacity(); ++i)
+		queue.pop();
+
+	if (!queue.empty()) {
+		cerr << "ERROR: Should be empty" << endl;
+		return -1;
+	}
+	
+	cout << "Testing concurrent reading/writing" << endl;
 	vector<WriteThread*> writers(NUM_WRITERS, new WriteThread());
 
 	struct termios orig_term;
