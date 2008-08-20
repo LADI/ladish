@@ -38,7 +38,6 @@ namespace Raul {
  */
 class Atom {
 public:
-
 	enum Type {
 		NIL,
 		INT,
@@ -56,9 +55,9 @@ public:
 	Atom(const std::string& val) : _type(STRING), _string_val(strdup(val.c_str())) {}
 	
 	Atom(const char* type_uri, size_t size, void* val) : _type(BLOB) {
-		_blob_type_length = strlen(type_uri);
-		_blob_size = size + _blob_type_length;
-		_blob_val = malloc(_blob_size);
+		_blob_type_length = strlen(type_uri) + 1; // + 1 for \0
+		_blob_size = size;
+		_blob_val = malloc(_blob_type_length + _blob_size);
 		memcpy(_blob_val, type_uri, _blob_type_length);
 		memcpy((char*)_blob_val + _blob_type_length, val, size);
 	}
@@ -74,7 +73,6 @@ public:
 	
 	Atom(const Atom& copy)
 		: _type(copy._type)
-		, _blob_size(copy._blob_size)
 	{
 		switch (_type) {
 		case NIL:    _blob_val   = 0;                        break;
@@ -82,8 +80,10 @@ public:
 		case FLOAT:  _float_val  = copy._float_val;          break;
 		case BOOL:   _bool_val   = copy._bool_val;           break;
 		case STRING: _string_val = strdup(copy._string_val); break;
-		case BLOB:   _blob_val = malloc(_blob_size);
-		             memcpy(_blob_val, copy._blob_val, _blob_size);
+		case BLOB:   _blob_size = copy._blob_size;
+		             _blob_type_length = copy._blob_type_length;
+		             _blob_val = malloc(_blob_type_length + _blob_size);
+		             memcpy(_blob_val, copy._blob_val, _blob_type_length + _blob_size);
 					 break;
 		}
 	}
@@ -95,7 +95,6 @@ public:
 			free(_string_val);
 
 		_type = other._type;
-		_blob_size = other._blob_size;
 
 		switch (_type) {
 		case NIL:    _blob_val   = 0;                         break;
@@ -103,8 +102,10 @@ public:
 		case FLOAT:  _float_val  = other._float_val;          break;
 		case BOOL:   _bool_val   = other._bool_val;           break;
 		case STRING: _string_val = strdup(other._string_val); break;
-		case BLOB:   _blob_val = malloc(_blob_size);
-		             memcpy(_blob_val, other._blob_val, _blob_size);
+		case BLOB:   _blob_size = other._blob_size;
+		             _blob_type_length = other._blob_type_length;
+		             _blob_val = malloc(_blob_type_length + _blob_size);
+		             memcpy(_blob_val, other._blob_val, _blob_type_length + _blob_size);
 					 break;
 		}
 		return *this;
@@ -118,7 +119,7 @@ public:
 			case FLOAT:  return _float_val  == other._float_val;
 			case BOOL:   return _bool_val   == other._bool_val;
 			case STRING: return strcmp(_string_val, other._string_val) == 0;
-			case BLOB:   return _blob_val   == other._blob_val;
+			case BLOB:   return _blob_val == other._blob_val;
 			}
 		}
 		return false;
@@ -168,7 +169,7 @@ public:
 	inline const void* get_blob()      const { assert(_type == BLOB); return (const char*)_blob_val + _blob_type_length; }
 
 private:
-	Type   _type;
+	Type _type;
 	
 	union {
 		int32_t _int_val;
@@ -176,7 +177,7 @@ private:
 		bool    _bool_val;
 		char*   _string_val;
 		struct {
-			size_t  _blob_type_length; // length of type string (first part of buffer)
+			size_t  _blob_type_length; // length of type string (first part of buffer, inc. \0)
 			size_t  _blob_size;        // length of data after type string
 			void*   _blob_val;         // buffer
 		};
