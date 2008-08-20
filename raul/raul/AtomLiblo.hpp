@@ -51,8 +51,7 @@ lo_message_add_atom(lo_message m, const Atom& atom)
 			lo_message_add_false(m);
 		break;
 	case Atom::BLOB:
-		// FIXME: is this okay?  what does liblo do?
-		lo_message_add_blob(m, const_cast<void*>(atom.get_blob()));
+		lo_message_add_blob(m, lo_blob_new(atom.data_size(), atom.get_blob()));
 		break;
 	case Atom::NIL:
 	default:
