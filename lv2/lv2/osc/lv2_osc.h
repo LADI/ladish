@@ -20,7 +20,6 @@
 #define LV2_OSC_H
 
 #include <stdint.h>
-#include "lv2_event.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -90,11 +89,10 @@ typedef struct {
 
 } LV2_OSC_Event;
 
-LV2_Event* lv2_osc_event_new(double time, const char* path, const char* types, ...);
+LV2_OSC_Event* lv2_osc_event_new(const char* path, const char* types, ...);
 
-LV2_Event* lv2_osc_event_from_raw(double time,
-                                  uint32_t out_buf_size, void* out_buf,
-                                  uint32_t raw_msg_size, void* raw_msg);
+LV2_OSC_Event* lv2_osc_event_from_raw(uint32_t out_buf_size, void* out_buf,
+                                      uint32_t raw_msg_size, void* raw_msg);
 
 static inline uint32_t lv2_osc_get_osc_message_size(const LV2_OSC_Event* msg)
 	{ return (msg->argument_count * sizeof(char) + 1) + msg->data_size; }
@@ -111,11 +109,11 @@ static inline const char* lv2_osc_get_types(const LV2_OSC_Event* msg)
 static inline LV2_OSC_Argument* lv2_osc_get_argument(const LV2_OSC_Event* msg, uint32_t i)
 	{ return (LV2_OSC_Argument*)(&msg->data + ((uint32_t*)&msg->data)[i]); }
 
-
+/*
 int lv2_osc_buffer_append_message(LV2_Event_Buffer* buf, LV2_Event* msg);
 int lv2_osc_buffer_append(LV2_Event_Buffer* buf, double time, const char* path, const char* types, ...);
-
 void lv2_osc_buffer_compact(LV2_Event_Buffer* buf);
+*/
 
 #ifdef __cplusplus
 }

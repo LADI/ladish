@@ -17,6 +17,7 @@
 
 #include <stdlib.h>
 #include "lv2.h"
+#include "lv2/event/lv2_event.h"
 #include "lv2/osc/lv2_osc.h"
 
 /* Plugin */

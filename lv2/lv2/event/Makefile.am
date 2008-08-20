@@ -2,7 +2,8 @@ specbasename = lv2_event
 
 specdir   = @lv2plugindir@/$(specbasename).lv2
 spec_DATA = manifest.ttl $(specbasename).ttl
-EXTRA_DIST = $(spec_DATA)
+spec_HEADERS = $(specbasename).h
+EXTRA_DIST = $(spec_DATA) $(spec_HEADERS)
 
 uninstall-hook:
 	rm -rf $(specdir)/

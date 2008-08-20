@@ -1,4 +1,5 @@
 SUBDIRS = redlandmm raul flowcanvas patchage slv2 omins lv2 lv2core ingen # machina
+DIST_SUBDIRS = $(SUBDIRS) machina
 
 distclean-local:
 	rm -rf doc
