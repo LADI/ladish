@@ -1,6 +1,5 @@
 #include "mdaSpecMeterGUI.h"
 #include "mdaSpecMeter.h"
-#include "mdaSpecMeter.xpm"
 #include <X11/Xlib.h>
 #include <assert.h>
 #include <stdio.h>
