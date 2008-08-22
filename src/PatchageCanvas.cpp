@@ -199,7 +199,7 @@ PatchageCanvas::disconnect(boost::shared_ptr<Connectable> port1, boost::shared_p
 void
 PatchageCanvas::status_message(const string& msg)
 {
-	_app->status_message(string("[Canvas] ").append(msg));
+	_app->status_msg(string("[Canvas] ").append(msg));
 }
 
 

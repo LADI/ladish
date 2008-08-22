@@ -20,6 +20,7 @@
 
 #include <string>
 #include <boost/utility.hpp>
+#include <libglademm/xml.h>
 
 template <typename W>
 class Widget : public boost::noncopyable {

@@ -32,7 +32,6 @@
 #include "JackDriver.hpp"
 #include <jack/statistics.h>
 #endif
-#include "JackSettingsDialog.hpp"
 #include "Patchage.hpp"
 #include "PatchageCanvas.hpp"
 #include "PatchageEvent.hpp"
@@ -40,9 +39,15 @@
 #ifdef HAVE_ALSA
 #include "AlsaDriver.hpp"
 #endif
-#ifdef HAVE_LASH
-#include "LashDriver.hpp"
+#ifdef HAVE_DBUS
+#include "DBus.hpp"
+#include "LashProxy.hpp"
+#include "LoadProjectDialog.hpp"
+#include "ProjectList.hpp"
+#include "Session.hpp"
 #endif
+
+#define LOG_TO_STATUS 1
 
 using namespace std;
 
@@ -77,50 +82,48 @@ gtkmm_set_width_for_given_text (Gtk::Widget &w, const gchar *text,
 /* end Gtk helpers */
 
 
-#define INIT_WIDGET(x) x(xml, ((const char*)#x) + 1)
+#define INIT_WIDGET(x) x(_xml, ((const char*)#x) + 1)
 
 Patchage::Patchage(int argc, char** argv)
-	: xml(GladeFile::open("patchage"))
-#ifdef HAVE_LASH
-	, _lash_driver(NULL)
-	, INIT_WIDGET(_menu_open_session)
-	, INIT_WIDGET(_menu_save_session)
-	, INIT_WIDGET(_menu_save_session_as)
-	, INIT_WIDGET(_menu_close_session)
-	, INIT_WIDGET(_menu_lash_connect)
-	, INIT_WIDGET(_menu_lash_disconnect)
+	: _xml(GladeFile::open("patchage"))
+#ifdef HAVE_DBUS
+	, _lash_proxy(NULL)
+	, _dbus(NULL)
+	, _project_list(NULL)
+	, _session(NULL)
 #endif
 #ifdef HAVE_ALSA
 	, _alsa_driver(NULL)
 	, _alsa_driver_autoattach(true)
-	, INIT_WIDGET(_menu_alsa_connect)
-	, INIT_WIDGET(_menu_alsa_disconnect)
 #endif
 	, _jack_driver(NULL)
 	, _state_manager(NULL)
 	, _attach(true)
 	, _refresh(false)
 	, _enable_refresh(true)
-	, _jack_settings_dialog(NULL)
 	, INIT_WIDGET(_about_win)
 	, INIT_WIDGET(_buffer_size_combo)
 	, INIT_WIDGET(_clear_load_but)
 	, INIT_WIDGET(_main_scrolledwin)
 	, INIT_WIDGET(_main_win)
 	, INIT_WIDGET(_main_xrun_progress)
+	, INIT_WIDGET(_menu_alsa_connect)
+	, INIT_WIDGET(_menu_alsa_disconnect)
 	, INIT_WIDGET(_menu_file_quit)
 	, INIT_WIDGET(_menu_help_about)
 	, INIT_WIDGET(_menu_jack_connect)
 	, INIT_WIDGET(_menu_jack_disconnect)
-	, INIT_WIDGET(_menu_jack_settings)
+	, INIT_WIDGET(_menu_open_session)
 	, INIT_WIDGET(_menu_store_positions)
 	, INIT_WIDGET(_menu_view_arrange)
 	, INIT_WIDGET(_menu_view_messages)
+	, INIT_WIDGET(_menu_view_projects)
 	, INIT_WIDGET(_menu_view_refresh)
 	, INIT_WIDGET(_menu_view_toolbar)
-	, INIT_WIDGET(_messages_win)
 	, INIT_WIDGET(_messages_clear_but)
 	, INIT_WIDGET(_messages_close_but)
+	, INIT_WIDGET(_messages_win)
+	, INIT_WIDGET(_project_list_viewport)
 	, INIT_WIDGET(_sample_rate_label)
 	, INIT_WIDGET(_status_text)
 	, INIT_WIDGET(_toolbar)
@@ -146,8 +149,6 @@ Patchage::Patchage(int argc, char** argv)
 		argc--;
 	}
 
-	xml->get_widget_derived("jack_settings_win", _jack_settings_dialog);
-	
 	Glib::set_application_name("Patchage");
 	_about_win->property_program_name() = "Patchage";
 	_about_win->property_logo_icon_name() = "patchage";
@@ -173,22 +174,12 @@ Patchage::Patchage(int argc, char** argv)
 			sigc::mem_fun(this, &Patchage::zoom), 1.0));
 	_zoom_full_but->signal_clicked().connect(
 			sigc::mem_fun(_canvas.get(), &PatchageCanvas::zoom_full));
-	_menu_jack_settings->signal_activate().connect(sigc::hide_return(
-			sigc::mem_fun(_jack_settings_dialog, &JackSettingsDialog::run)));
 
-#ifdef HAVE_LASH
+#ifdef HAVE_DBUS
 	_menu_open_session->signal_activate().connect(
-			sigc::mem_fun(this, &Patchage::menu_open_session));
-	_menu_save_session->signal_activate().connect(
-			sigc::mem_fun(this, &Patchage::menu_save_session));
-	_menu_save_session_as->signal_activate().connect(
-			sigc::mem_fun(this, &Patchage::menu_save_session_as));
-	_menu_close_session->signal_activate().connect(
-			sigc::mem_fun(this, &Patchage::menu_close_session));
-	_menu_lash_connect->signal_activate().connect(
-			sigc::mem_fun(this, &Patchage::menu_lash_connect));
-	_menu_lash_disconnect->signal_activate().connect(
-			sigc::mem_fun(this, &Patchage::menu_lash_disconnect));
+			sigc::mem_fun(this, &Patchage::show_load_project_dialog));
+#else
+	_menu_open_session->set_sensitive(false);
 #endif
 
 #ifdef HAVE_ALSA
@@ -196,6 +187,9 @@ Patchage::Patchage(int argc, char** argv)
 			sigc::mem_fun(this, &Patchage::menu_alsa_connect));
 	_menu_alsa_disconnect->signal_activate().connect(
 			sigc::mem_fun(this, &Patchage::menu_alsa_disconnect));
+#else
+	_menu_alsa_connect->set_sensitive(false);
+	_menu_alsa_disconnect->set_sensitive(false);
 #endif
 	
 	_menu_store_positions->signal_activate().connect(
@@ -210,6 +204,8 @@ Patchage::Patchage(int argc, char** argv)
 			sigc::mem_fun(this, &Patchage::on_view_toolbar));
 	_menu_view_messages->signal_toggled().connect(
 			sigc::mem_fun(this, &Patchage::on_show_messages));
+	_menu_view_projects->signal_toggled().connect(
+			sigc::mem_fun(this, &Patchage::on_show_projects));
 	_menu_help_about->signal_activate().connect(
 			sigc::mem_fun(this, &Patchage::on_help_about));
 	
@@ -249,8 +245,13 @@ Patchage::Patchage(int argc, char** argv)
 	_alsa_driver = new AlsaDriver(this);
 #endif
 
-#ifdef HAVE_LASH
-	_lash_driver = new LashDriver(this, argc, argv);
+#ifdef HAVE_DBUS
+	_dbus = new DBus(this);
+	_session = new Session();
+	_project_list = new ProjectList(this, _session);
+	_lash_proxy = new LashProxy(this, _session);
+#else
+	_project_list_viewport->hide();
 #endif
 	
 	connect_widgets();
@@ -272,14 +273,14 @@ Patchage::~Patchage()
 #ifdef HAVE_ALSA
 	delete _alsa_driver;
 #endif
-#ifdef HAVE_LASH
-	delete _lash_driver;
+#ifdef HAVE_DBUS
+	delete _lash_proxy;
 #endif
 	delete _state_manager;
-
+	
 	_about_win.destroy();
 	_messages_win.destroy();
-	_main_win.destroy();
+	//_main_win.destroy();
 }
 
 
@@ -292,9 +293,6 @@ Patchage::attach()
 	_jack_driver->attach(true);
 #endif
 
-#ifdef HAVE_LASH
-	_lash_driver->attach(true);
-#endif
 #ifdef HAVE_ALSA
 	if (_alsa_driver_autoattach)
 		_alsa_driver->attach();
@@ -331,11 +329,6 @@ Patchage::idle_callback()
 	if (_alsa_driver) {
 		_alsa_driver->process_events(this);
 	}
-#endif
-
-#ifdef HAVE_LASH
-	if (_lash_driver->is_attached())
-		_lash_driver->process_events(this);
 #endif
 
 	// Do a full refresh (ie user clicked refresh)
@@ -451,7 +444,31 @@ Patchage::clear_load()
 
 
 void
-Patchage::status_message(const string& msg) 
+Patchage::error_msg(const std::string& msg)
+{
+#if defined(LOG_TO_STATUS)
+	status_msg(msg);
+#endif
+#if defined(LOG_TO_STD)
+	cerr << msg << endl;
+#endif
+}
+
+
+void
+Patchage::info_msg(const std::string& msg)
+{
+#if defined(LOG_TO_STATUS)
+	status_msg(msg);
+#endif
+#if defined(LOG_TO_STD)
+	cerr << msg << endl;
+#endif
+}
+
+
+void
+Patchage::status_msg(const string& msg) 
 {
 	if (_status_text->get_buffer()->size() > 0)
 		_status_text->get_buffer()->insert(_status_text->get_buffer()->end(), "\n");
@@ -479,18 +496,6 @@ Patchage::update_state()
 void
 Patchage::connect_widgets()
 {
-#ifdef HAVE_LASH
-	_lash_driver->signal_attached.connect(sigc::bind(
-			sigc::mem_fun(*_menu_lash_connect, &Gtk::MenuItem::set_sensitive), false));
-	_lash_driver->signal_attached.connect(sigc::bind(
-			sigc::mem_fun(*_menu_lash_disconnect, &Gtk::MenuItem::set_sensitive), true));
-	
-	_lash_driver->signal_detached.connect(sigc::bind(
-			sigc::mem_fun(*_menu_lash_connect, &Gtk::MenuItem::set_sensitive), true));
-	_lash_driver->signal_detached.connect(sigc::bind(
-			sigc::mem_fun(*_menu_lash_disconnect, &Gtk::MenuItem::set_sensitive), false));
-#endif
-
 #if defined(HAVE_JACK) || defined(HAVE_JACK_DBUS)
 	_jack_driver->signal_attached.connect(
 			sigc::mem_fun(this, &Patchage::update_toolbar));
@@ -520,72 +525,25 @@ Patchage::connect_widgets()
 #endif
 }
 
-
-#ifdef HAVE_LASH
+#ifdef HAVE_DBUS
 void
-Patchage::menu_open_session() 
+Patchage::show_load_project_dialog()
 {
-	Gtk::FileChooserDialog dialog(*_main_win, "Open LASH Session",
-			Gtk::FILE_CHOOSER_ACTION_SELECT_FOLDER);
+	std::list<ProjectInfo> projects;
+	_lash_proxy->get_available_projects(projects);
 	
-	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
-	dialog.add_button(Gtk::Stock::OPEN, Gtk::RESPONSE_OK);
-
-	const int result = dialog.run();
-
-	if (result == Gtk::RESPONSE_OK) {
-		_lash_driver->restore_project(dialog.get_filename());
-	}
+	LoadProjectDialog dialog(this);
+	dialog.run(projects);
 }
+#endif
 
-
+#ifdef HAVE_DBUS
 void
-Patchage::menu_save_session() 
+Patchage::set_lash_available(bool available)
 {
-	if (_lash_driver)
-		_lash_driver->save_project();
-}
-
-
-void
-Patchage::menu_save_session_as() 
-{
-	if (!_lash_driver)
-		return;
-
-	Gtk::FileChooserDialog dialog(*_main_win, "Save LASH Session",
-			Gtk::FILE_CHOOSER_ACTION_SAVE);
-	
-	dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
-	dialog.add_button(Gtk::Stock::SAVE, Gtk::RESPONSE_OK);	
-	
-	const int result = dialog.run();
-
-	if (result == Gtk::RESPONSE_OK) {
-		_lash_driver->set_project_directory(dialog.get_filename());
-		_lash_driver->save_project();
-	}
-}
-
-	
-void
-Patchage::menu_close_session() 
-{
-	_lash_driver->close_project();
-}
-
-
-void
-Patchage::menu_lash_connect() 
-{
-	_lash_driver->attach(true);
-}
-
-
-void
-Patchage::menu_lash_disconnect() 
-{
-	_lash_driver->detach();
+	_project_list->set_lash_available(available);
+	if (!available)
+		_session->clear();
 }
 #endif
 
@@ -668,6 +626,16 @@ Patchage::on_show_messages()
 		_messages_win->present();
 	else
 		_messages_win->hide();
+}
+
+
+void
+Patchage::on_show_projects()
+{
+	if (_menu_view_projects->get_active())
+		_project_list_viewport->show();
+	else
+		_project_list_viewport->hide();
 }
 
 	

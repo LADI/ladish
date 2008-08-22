@@ -1,5 +1,5 @@
-AM_CXXFLAGS = -I.. -I$(top_srcdir)/raul -I$(top_srcdir)/flowcanvas -DDATA_DIR=\"$(pkgdatadir)\" @GTHREAD_CFLAGS@ @LIBGLADEMM_CFLAGS@ @GNOMECANVASMM_CFLAGS@ @ALSA_CFLAGS@ @LASH_CFLAGS@
-patchage_LDADD = @GTHREAD_LIBS@ @LIBGLADEMM_LIBS@ @GNOMECANVASMM_LIBS@ @ALSA_LIBS@ @LASH_LIBS@ @RAUL_LIBS@ @FLOWCANVAS_LIBS@
+AM_CXXFLAGS = -I.. -I$(top_srcdir)/raul -I$(top_srcdir)/flowcanvas -DDATA_DIR=\"$(pkgdatadir)\" @GTHREAD_CFLAGS@ @LIBGLADEMM_CFLAGS@ @GNOMECANVASMM_CFLAGS@ @ALSA_CFLAGS@ @DBUS_CFLAGS@
+patchage_LDADD = @GTHREAD_LIBS@ @LIBGLADEMM_LIBS@ @GNOMECANVASMM_LIBS@ @ALSA_LIBS@ @RAUL_LIBS@ @FLOWCANVAS_LIBS@ @DBUS_LIBS@
 
 EXTRA_DIST = patchage.gladep
 
@@ -10,7 +10,6 @@ bin_PROGRAMS = patchage
 patchage_SOURCES = \
 	Driver.hpp \
 	GladeFile.hpp \
-	JackSettingsDialog.hpp \
 	Patchage.cpp \
 	Patchage.hpp \
 	PatchageCanvas.cpp \
@@ -38,8 +37,24 @@ patchage_LDADD +=  @JACK_LIBS@
 endif
 endif
 
-if WITH_LASH
-patchage_SOURCES += LashDriver.hpp LashDriver.cpp
+if WITH_DBUS
+patchage_SOURCES += \
+	DBus.cpp \
+	DBus.hpp \
+	LashClient.cpp \
+	LashClient.hpp \
+	LashProxy.cpp \
+	LashProxy.hpp \
+	LoadProjectDialog.cpp \
+	LoadProjectDialog.hpp \
+	Project.cpp \
+	Project.hpp \
+	ProjectList.cpp \
+	ProjectList.hpp \
+	ProjectPropertiesDialog.cpp \
+	ProjectPropertiesDialog.hpp \
+	Session.cpp \
+	Session.hpp
 endif
 
 if WITH_ALSA

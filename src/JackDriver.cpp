@@ -68,7 +68,7 @@ JackDriver::attach(bool launch_daemon)
 	jack_options_t options = (!launch_daemon) ? JackNoStartServer : JackNullOption;
 	_client = jack_client_open("Patchage", options, NULL);
 	if (_client == NULL) {
-		_app->status_message("[JACK] Unable to create client");
+		_app->status_msg("[JACK] Unable to create client");
 		_is_activated = false;
 	} else {
 		jack_client_t* const client = _client;
@@ -87,9 +87,9 @@ JackDriver::attach(bool launch_daemon)
 		if (!jack_activate(client)) {
 			_is_activated = true;
 			signal_attached.emit();
-			_app->status_message("[JACK] Attached");
+			_app->status_msg("[JACK] Attached");
 		} else {
-			_app->status_message("[JACK] ERROR: Failed to attach");
+			_app->status_msg("[JACK] ERROR: Failed to attach");
 			_is_activated = false;
 		}
 	}
@@ -108,7 +108,7 @@ JackDriver::detach()
 		destroy_all_ports();
 		_is_activated = false;
 		signal_detached.emit();
-		_app->status_message("[JACK] Detached");
+		_app->status_msg("[JACK] Detached");
 	}
 }
 
@@ -388,10 +388,10 @@ JackDriver::connect(boost::shared_ptr<PatchagePort> src_port, boost::shared_ptr<
 	int result = jack_connect(_client, src_port->full_name().c_str(), dst_port->full_name().c_str());
 	
 	if (result == 0)
-		_app->status_message(string("[JACK] Connected ")
+		_app->status_msg(string("[JACK] Connected ")
 			+ src_port->full_name() + " -> " + dst_port->full_name());
 	else
-		_app->status_message(string("[JACK] Unable to connect ")
+		_app->status_msg(string("[JACK] Unable to connect ")
 			+ src_port->full_name() + " -> " + dst_port->full_name());
 	
 	return (!result);
@@ -411,10 +411,10 @@ JackDriver::disconnect(boost::shared_ptr<PatchagePort> const src_port, boost::sh
 	int result = jack_disconnect(_client, src_port->full_name().c_str(), dst_port->full_name().c_str());
 	
 	if (result == 0)
-		_app->status_message(string("[JACK] Disconnected ")
+		_app->status_msg(string("[JACK] Disconnected ")
 			+ src_port->full_name() + " -> " + dst_port->full_name());
 	else
-		_app->status_message(string("[JACK] Unable to disconnect ")
+		_app->status_msg(string("[JACK] Unable to disconnect ")
 			+ src_port->full_name() + " -> " + dst_port->full_name());
 	
 	return (!result);
@@ -574,7 +574,7 @@ JackDriver::set_buffer_size(jack_nframes_t size)
 	}
 	
 	if (jack_set_buffer_size(_client, size)) {
-		_app->status_message("[JACK] ERROR: Unable to set buffer size");
+		_app->status_msg("[JACK] ERROR: Unable to set buffer size");
 		return false;
 	} else {
 		return true;

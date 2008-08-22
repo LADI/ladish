@@ -147,24 +147,21 @@ else
   ALSA_FOUND="no"
 fi
 
-# LASH support
-build_lash="yes"
-AC_ARG_ENABLE(lash,
-	[AS_HELP_STRING(--enable-lash, [Enable LASH session management support (yes)])],
-	[ if test x$enable_lash = xno ; then build_lash=no ; fi ])
-	
-have_lash="no"
-if test "$build_lash" = "yes"; then
-	PKG_CHECK_MODULES(LASH, lash-1.0 >= 0.5.2, have_lash="yes", have_lash="no")
+# DBUS (for new LASH)
+build_dbus="yes"
+AC_ARG_ENABLE(dbus,
+	[AS_HELP_STRING(--enable-dbus, [Enable D-Bus (for new LASH) (yes if available)])],
+	[ if test x$enable_dbus = xno ; then build_dbus=no ; fi ])
+have_dbus="no"
+if test "$build_dbus" = "yes"; then
+	PKG_CHECK_MODULES(DBUS, dbus-glib-1, [have_dbus="yes"], [have_dbus="no"])
 fi
-if test "$have_lash" = "yes"; then
-	AC_DEFINE(HAVE_LASH, 1, [Has lash.h])
-else
-	AC_MSG_WARN([LASH not found, session support will not be built.])
+if test "$have_dbus" = "yes"; then
+	AC_DEFINE(HAVE_DBUS, 1, [Has DBUS])
 fi
 
 AM_CONDITIONAL(WITH_ALSA, [test "x$ALSA_FOUND" = "xyes"])
-AM_CONDITIONAL(WITH_LASH, [test "x$have_lash" = "xyes"])
+AM_CONDITIONAL(WITH_DBUS, [test "x$have_dbus" = "xyes"])
 AM_CONDITIONAL(WITH_JACK, [test "x$build_jack" = "xyes"])
 AM_CONDITIONAL(WITH_JACK_DBUS, [test "x$build_jack_dbus" = "xyes"])
 
@@ -206,7 +203,7 @@ AC_MSG_RESULT([Jack support:            yes (libjack)])
 else
 AC_MSG_RESULT([Jack support:            no])
 fi
-AC_MSG_RESULT([LASH support:            $build_lash])
+AC_MSG_RESULT([DBUS/LASH support:       $build_dbus])
 AC_MSG_RESULT([ALSA support:            $ALSA_FOUND])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([C FLAGS:   $CFLAGS])
