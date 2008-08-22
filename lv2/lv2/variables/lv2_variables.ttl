@@ -37,7 +37,7 @@
         foaf:name "Dave Robillard" ;
         foaf:homepage <http://drobilla.net/> ;
         rdfs:seeAlso <http://drobilla.net/drobilla.rdf>
-	]
+	] ;
 	rdfs:comment """
 An extension for setting named/typed variables on an instance of an
 LV2 Plugin (or anything else).  A "variable" is really just a (reified)
