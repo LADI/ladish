@@ -36,7 +36,7 @@ AC_CONFIG_SRCDIR([redlandmm/src/Model.cpp])
 AC_CONFIG_SRCDIR([raul/raul/Semaphore.h])
 
 # See raul/configure.ac for versioning info/history
-RAUL_VERSION="0.4.0"
+RAUL_VERSION="0.5.0"
 RAUL_API_CURRENT="0"
 RAUL_API_REVISION="0"
 RAUL_API_AGE="0"
@@ -53,7 +53,7 @@ AC_CONFIG_SRCDIR([flowcanvas/src/Canvas.cpp])
 AC_CONFIG_SRCDIR([flowcanvas/flowcanvas/Canvas.hpp])
 
 # See flowcanvas/configure.ac for versioning info/history
-FLOWCANVAS_VERSION="0.4.1"
+FLOWCANVAS_VERSION="0.5.0"
 FLOWCANVAS_API_CURRENT="1"
 FLOWCANVAS_API_REVISION="0"
 FLOWCANVAS_API_AGE="0"
@@ -215,11 +215,11 @@ if test "$debug_symbols" = "yes"; then
 fi
 
 if test "$debug_assertions" = "yes"; then
-  CFLAGS="$CFLAGS -DDEBUG -DLIBRDF_DEBUG"
-  CXXFLAGS="$CXXFLAGS -DDEBUG -DLIBRDF_DEBUG"
+  CFLAGS="$CFLAGS -DDEBUG"
+  CXXFLAGS="$CXXFLAGS -DDEBUG"
 else
-  CFLAGS="$CFLAGS -DNDEBUG -DLIBRDF_DEBUG"
-  CXXFLAGS="$CXXFLAGS -DNDEBUG -DLIBRDF_DEBUG"
+  CFLAGS="$CFLAGS -DNDEBUG"
+  CXXFLAGS="$CXXFLAGS -DNDEBUG"
 fi
 
 assembly="yes"
@@ -360,21 +360,17 @@ else
   ALSA_FOUND="no"
 fi
 
-
-# LASH support
-build_lash="yes"
-AC_ARG_ENABLE(lash,
-	[AS_HELP_STRING(--enable-lash, [Enable LASH session management support (yes)])],
-	[ if test x$enable_lash = xno ; then build_lash=no ; fi ])
-	
-have_lash="no"
-if test "$build_lash" = "yes"; then
-	PKG_CHECK_MODULES(LASH, lash-1.0 >= 0.5.2, have_lash="yes", have_lash="no")
+# DBUS (for new LASH)
+build_dbus="yes"
+AC_ARG_ENABLE(dbus,
+	[AS_HELP_STRING(--enable-dbus, [Enable D-Bus (for new LASH) (yes if available)])],
+	[ if test x$enable_dbus = xno ; then build_dbus=no ; fi ])
+have_dbus="no"
+if test "$build_dbus" = "yes"; then
+	PKG_CHECK_MODULES(DBUS, dbus-glib-1, [have_dbus="yes"], [have_dbus="no"])
 fi
-if test "$have_lash" = "yes"; then
-	AC_DEFINE(HAVE_LASH, 1, [Has lash.h])
-else
-	AC_MSG_WARN([LASH not found, session support will not be built.])
+if test "$have_dbus" = "yes"; then
+	AC_DEFINE(HAVE_DBUS, 1, [Has DBUS])
 fi
 
 # SWIG bindings
@@ -423,7 +419,7 @@ fi
 AM_CONDITIONAL(HAVE_DOXYGEN, [test "x$build_documentation" = "xyes"])
 
 AM_CONDITIONAL(WITH_ALSA, [test "x$ALSA_FOUND" = "xyes"])
-AM_CONDITIONAL(WITH_LASH, [test "x$have_lash" = "xyes"])
+AM_CONDITIONAL(WITH_DBUS, [test "x$have_dbus" = "xyes"])
 AM_CONDITIONAL(WITH_JACK, [test "x$build_jack" = "xyes"])
 AM_CONDITIONAL(WITH_JACK_DBUS, [test "x$build_jack_dbus" = "xyes"])
 AM_CONDITIONAL(BUILD_SERVER, [test "x$build_ingen_server" = "xyes"])
@@ -762,7 +758,7 @@ AC_MSG_RESULT([Jack support:               $build_jack])
 AC_MSG_RESULT([Jack D-Bus support:         $build_jack_dbus])
 AC_MSG_RESULT([LV2 Plugin support:         $build_lv2])
 AC_MSG_RESULT([LADSPA Plugin support:      $build_ladspa])
-AC_MSG_RESULT([LASH support:               $build_lash])
+AC_MSG_RESULT([D-BUS support:              $build_dbus])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([LADSPA plugin install location: $ladspadir])
 AC_MSG_RESULT([LV2 plugin install location:    $lv2plugindir])

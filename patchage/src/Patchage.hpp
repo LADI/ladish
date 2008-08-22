@@ -28,9 +28,12 @@
 class PatchageCanvas;
 class JackDriver;
 class AlsaDriver;
-class LashDriver;
+class LashProxy;
 class StateManager;
 class JackSettingsDialog;
+class Session;
+class DBus;
+class ProjectList;
 
 class Patchage {
 public:
@@ -46,9 +49,15 @@ public:
 #ifdef HAVE_ALSA
 	AlsaDriver*   alsa_driver()   const { return _alsa_driver; }
 #endif
-#ifdef HAVE_LASH
-	LashDriver*   lash_driver()   const { return _lash_driver; }
+#ifdef HAVE_DBUS
+	LashProxy*   lash_proxy()     const { return _lash_proxy; }
+	DBus*        dbus()           const { return _dbus; }
+	
+	void show_load_project_dialog();
+	void set_lash_available(bool available);
 #endif
+	
+	Glib::RefPtr<Gnome::Glade::Xml> xml() { return _xml; }
 	
 	void attach();
 	void quit() { _main_win->hide(); }
@@ -57,9 +66,12 @@ public:
 	inline void queue_refresh() { _refresh = true; }
 
 	void clear_load();
-	void status_message(const std::string& msg);
+	void info_msg(const std::string& msg);
+	void error_msg(const std::string& msg);
+	void status_msg(const std::string& msg);
 	void update_state();
 	void store_window_location();
+	
 
 protected:
 	void connect_widgets();
@@ -71,6 +83,7 @@ protected:
 	bool on_messages_delete(GdkEventAny*);
 	void on_quit();
 	void on_show_messages();
+	void on_show_projects();
 	void on_store_positions();
 	void on_view_toolbar();
 	bool on_scroll(GdkEventScroll* ev);
@@ -82,37 +95,26 @@ protected:
 
 	void buffer_size_changed();
 	
-	Glib::RefPtr<Gnome::Glade::Xml> xml;
+	Glib::RefPtr<Gnome::Glade::Xml> _xml;
 
-#ifdef HAVE_LASH
-	LashDriver*    _lash_driver;
-	Widget<Gtk::MenuItem> _menu_open_session;
-	Widget<Gtk::MenuItem> _menu_save_session;
-	Widget<Gtk::MenuItem> _menu_save_session_as;
-	Widget<Gtk::MenuItem> _menu_close_session;
-	Widget<Gtk::MenuItem> _menu_lash_connect;
-	Widget<Gtk::MenuItem> _menu_lash_disconnect;
-	void menu_open_session();
-	void menu_save_session();
-	void menu_save_session_as();
-	void menu_close_session();
-	void menu_lash_connect();
-	void menu_lash_disconnect();
+#ifdef HAVE_DBUS
+	LashProxy*   _lash_proxy;
+	DBus*        _dbus;
+	ProjectList* _project_list;
+	Session*     _session;
 #endif
 
 #ifdef HAVE_ALSA
-	AlsaDriver*    _alsa_driver;
+	AlsaDriver* _alsa_driver;
 	bool _alsa_driver_autoattach;
-	Widget<Gtk::MenuItem> _menu_alsa_connect;
-	Widget<Gtk::MenuItem> _menu_alsa_disconnect;
 	void menu_alsa_connect();
 	void menu_alsa_disconnect();
 #endif
 
 	boost::shared_ptr<PatchageCanvas> _canvas;
 
-	JackDriver*         _jack_driver;
-	StateManager*       _state_manager;
+	JackDriver*   _jack_driver;
+	StateManager* _state_manager;
 
 	Gtk::Main* _gtk_main;
 
@@ -120,11 +122,6 @@ protected:
 	bool        _attach;
 	bool        _refresh;
 	bool        _enable_refresh;
-	bool        _pane_closed;
-	bool        _update_pane_position;
-	int         _user_pane_position;
-	
-	JackSettingsDialog*  _jack_settings_dialog;
 	
 	Widget<Gtk::AboutDialog>    _about_win;
 	Widget<Gtk::ComboBox>       _buffer_size_combo;
@@ -132,19 +129,23 @@ protected:
 	Widget<Gtk::ScrolledWindow> _main_scrolledwin;
 	Widget<Gtk::Window>         _main_win;
 	Widget<Gtk::ProgressBar>    _main_xrun_progress;
+	Widget<Gtk::MenuItem>       _menu_alsa_connect;
+	Widget<Gtk::MenuItem>       _menu_alsa_disconnect;
 	Widget<Gtk::MenuItem>       _menu_file_quit;
 	Widget<Gtk::MenuItem>       _menu_help_about;
 	Widget<Gtk::MenuItem>       _menu_jack_connect;
 	Widget<Gtk::MenuItem>       _menu_jack_disconnect;
-	Widget<Gtk::MenuItem>       _menu_jack_settings;
+	Widget<Gtk::MenuItem>       _menu_open_session;
 	Widget<Gtk::MenuItem>       _menu_store_positions;
 	Widget<Gtk::MenuItem>       _menu_view_arrange;
 	Widget<Gtk::CheckMenuItem>  _menu_view_messages;
+	Widget<Gtk::CheckMenuItem>  _menu_view_projects;
 	Widget<Gtk::MenuItem>       _menu_view_refresh;
 	Widget<Gtk::CheckMenuItem>  _menu_view_toolbar;
-	Widget<Gtk::Dialog>         _messages_win;
 	Widget<Gtk::Button>         _messages_clear_but;
 	Widget<Gtk::Button>         _messages_close_but;
+	Widget<Gtk::Dialog>         _messages_win;
+	Widget<Gtk::Viewport>       _project_list_viewport;
 	Widget<Gtk::Label>          _sample_rate_label;
 	Widget<Gtk::TextView>       _status_text;
 	Widget<Gtk::Toolbar>        _toolbar;

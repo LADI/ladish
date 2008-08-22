@@ -143,22 +143,6 @@ if test "$build_jack" = "yes"; then
 	AC_DEFINE(HAVE_JACK_MIDI, 1, [Has Jack MIDI])
 fi
 
-# LASH support
-build_lash="yes"
-AC_ARG_ENABLE(lash,
-	[AS_HELP_STRING(--enable-lash, [Enable LASH session management support (yes)])],
-	[ if test x$enable_lash = xno ; then build_lash=no ; fi ])
-	
-have_lash="no"
-if test "$build_lash" = "yes"; then
-	PKG_CHECK_MODULES(LASH, lash-1.0 >= 0.5.2, have_lash="yes", have_lash="no")
-fi
-if test "$have_lash" = "yes"; then
-	AC_DEFINE(HAVE_LASH, 1, [Has lash.h])
-else
-	AC_MSG_WARN([LASH not found, session support will not be built.])
-fi
-
 # Build documentation
 build_documentation="yes"
 AC_ARG_ENABLE(documentation,
@@ -208,7 +192,6 @@ AC_MSG_RESULT([*****************************************************************
 AC_MSG_RESULT([Configuration:])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([Jack support:     $build_jack])
-AC_MSG_RESULT([LASH support:     $build_lash])
 AC_MSG_RESULT([Build unit tests: $build_unit_tests])
 AC_MSG_RESULT([])
 AC_MSG_RESULT([C FLAGS:   $CFLAGS])

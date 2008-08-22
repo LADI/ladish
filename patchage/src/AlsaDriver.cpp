@@ -53,10 +53,10 @@ AlsaDriver::attach(bool /*launch_daemon*/)
 	                       SND_SEQ_OPEN_DUPLEX,
 	                       SND_SEQ_NONBLOCK);
 	if (ret) {
-		_app->status_message("[ALSA] Unable to attach");
+		_app->status_msg("[ALSA] Unable to attach");
 		_seq = NULL;
 	} else {
-		_app->status_message("[ALSA] Attached");
+		_app->status_msg("[ALSA] Attached");
 
 		snd_seq_set_client_name(_seq, "Patchage");
 	
@@ -82,7 +82,7 @@ AlsaDriver::detach()
 		snd_seq_close(_seq);
 		_seq = NULL;
 		signal_detached.emit();
-		_app->status_message("[ALSA] Detached");
+		_app->status_msg("[ALSA] Detached");
 	}
 }
 
@@ -395,10 +395,10 @@ AlsaDriver::connect(boost::shared_ptr<PatchagePort> src_port, boost::shared_ptr<
 	}
 	
 	if (result)
-		_app->status_message(string("[ALSA] Connected ")
+		_app->status_msg(string("[ALSA] Connected ")
 			+ src_port->full_name() + " -> " + dst_port->full_name());
 	else
-		_app->status_message(string("[ALSA] Unable to connect ")
+		_app->status_msg(string("[ALSA] Unable to connect ")
 			+ src_port->full_name() + " -> " + dst_port->full_name());
 
 	return (!result);
@@ -438,10 +438,10 @@ AlsaDriver::disconnect(boost::shared_ptr<PatchagePort> src_port, boost::shared_p
 	}
 	
 	if (result)
-		_app->status_message(string("[ALSA] Disconnected ")
+		_app->status_msg(string("[ALSA] Disconnected ")
 			+ src_port->full_name() + " -> " + dst_port->full_name());
 	else
-		_app->status_message(string("[ALSA] Unable to disconnect ")
+		_app->status_msg(string("[ALSA] Unable to disconnect ")
 			+ src_port->full_name() + " -> " + dst_port->full_name());
 
 	return (!result);

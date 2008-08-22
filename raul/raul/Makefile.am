@@ -40,6 +40,3 @@ raulinclude_HEADERS = \
 	midi_events.h \
 	midi_names.h
 
-if WITH_LASH
-raulinclude_HEADERS += LashClient.hpp LashServerInterface.hpp LashProject.hpp
-endif
