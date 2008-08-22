@@ -178,8 +178,11 @@ Patchage::Patchage(int argc, char** argv)
 #ifdef HAVE_DBUS
 	_menu_open_session->signal_activate().connect(
 			sigc::mem_fun(this, &Patchage::show_load_project_dialog));
+	_menu_view_projects->set_active(true);
 #else
 	_menu_open_session->set_sensitive(false);
+	_menu_view_projects->set_active(false);
+	_menu_view_projects->set_sensitive(false);
 #endif
 
 #ifdef HAVE_ALSA
