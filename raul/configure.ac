@@ -164,7 +164,6 @@ AC_ARG_ENABLE(unit-tests,
 	[build_unit_tests="$enableval"])
 
 AM_CONDITIONAL(WITH_JACK, [test "$build_jack" = "yes"])
-AM_CONDITIONAL(WITH_LASH, [test "$have_lash" = "yes"])
 AM_CONDITIONAL(BUILD_UNIT_TESTS, [test "$build_unit_tests" = "yes"])
 
 
