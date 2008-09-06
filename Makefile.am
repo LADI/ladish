@@ -1,4 +1,4 @@
-SUBDIRS = m4 docs lash liblash lashd clients icons pylash
+SUBDIRS = m4 docs lash common dbus liblash lashd clients icons pylash
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = lash-1.0.pc
@@ -20,3 +20,24 @@ buildcheck:
 	cd $(top_srcdir)/buildcheck && make distclean
 	rm -rf $(top_srcdir)/buildcheck
 	cd $(top_srcdir) && ./autogen.sh
+
+pacoinstall:
+	test `whoami` == root # test for root
+	-paco -rvB lash
+	-paco -lE `pwd` -p lash-`svnversion` "make install"
+	-paco -i lash
+
+svnversion.h:: # SVNONLY
+	@if test -d $(top_srcdir)/.svn; then $(top_srcdir)/svnversion_regenerate.sh $@; fi # SVNONLY
+
+DISTCLEANFILES = svnversion.h # SVNONLY
+BUILT_SOURCES = svnversion.h # SVNONLY
+EXTRA_DIST += svnversion.h svnversion.sh
+
+dist-hook: # SVNONLY
+	sed -i 's/^.*SVNONLY.*//' $(distdir)/Makefile.am $(distdir)/Makefile.in # SVNONLY
+
+# temporary hack for preview tarballs
+# should be disabled before releasing official tarball
+SVN_VERSION = $(shell $(top_srcdir)/svnversion.sh $(top_srcdir))
+distdir = $(PACKAGE)-$(VERSION).$(SVN_VERSION)

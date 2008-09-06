@@ -1,8 +1,9 @@
 /*
  *   LASH
- *    
+ *
+ *   Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *   Copyright (C) 2002 Robert Ham <rah@bash.sh>
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -18,49 +19,57 @@
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <lash/types.h>
-#include <lash/client.h>
-#include <lash/list.h>
-#include <lash/internal.h>
+#include <stdlib.h>
+
+#include "common/safety.h"
+
+#include "client.h"
 
 lash_client_t *
-lash_client_new()
+lash_client_new(void)
 {
-	lash_client_t *client;
-
-	client = lash_malloc0(sizeof(lash_client_t));
-	pthread_mutex_init(&client->configs_in_lock, NULL);
-	pthread_mutex_init(&client->events_in_lock, NULL);
-	pthread_mutex_init(&client->comm_events_out_lock, NULL);
-	pthread_cond_init(&client->send_conditional, NULL);
-	return client;
+	return lash_calloc(1, sizeof(lash_client_t));
 }
 
 void
 lash_client_destroy(lash_client_t * client)
 {
-	pthread_mutex_destroy(&client->configs_in_lock);
-	pthread_mutex_destroy(&client->events_in_lock);
-	pthread_mutex_destroy(&client->comm_events_out_lock);
-	pthread_cond_destroy(&client->send_conditional);
+	if (client) {
+		lash_free(&client->class);
+		lash_free(&client->project_name);
 
-	lash_client_set_class(client, NULL);
+		if (client->argv) {
+			int i;
+			for (i = 0; i < client->argc; ++i) {
+				free(client->argv[i]);
+			}
+			free(client->argv);
+		}
 
-	lash_args_destroy(client->args);
-
-	free(client);
+		free(client);
+	}
 }
 
-const char *
-lash_client_get_class(const lash_client_t * client)
+#ifdef LASH_OLD_API
+void
+lash_client_add_event(lash_client_t *client,
+                      lash_event_t  *event)
 {
-	return client->class;
+	if (client && event) {
+		client->events_in = lash_list_append(client->events_in, event);
+		++client->num_events_in;
+	}
 }
 
 void
-lash_client_set_class(lash_client_t * client, const char *class)
+lash_client_add_config(lash_client_t *client,
+                       lash_config_t *config)
 {
-	set_string_property(client->class, class);
+	if (client && config) {
+		client->configs_in = lash_list_append(client->configs_in, config);
+		++client->num_configs_in;
+	}
 }
+#endif
 
 /* EOF */

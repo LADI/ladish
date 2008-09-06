@@ -1,8 +1,8 @@
 /*
  *   LASH
- *    
+ *
  *   Copyright (C) 2002 Robert Ham <rah@bash.sh>
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -21,59 +21,100 @@
 #ifndef __LASHD_SERVER_H__
 #define __LASHD_SERVER_H__
 
-#include <lash/lash.h>
-#include <lash/loader.h>
+#include "../config.h"
 
-#include "config.h"
-#include "conn_mgr.h"
-#include "client.h"
-#include "project.h"
-#include "jack_mgr.h"
-#include "alsa_mgr.h"
+#include <stdbool.h>
+#include <sys/types.h>
+#include <dbus/dbus.h>
 
-typedef struct _server server_t;
+#include "types.h"
+#include "dbus/service.h"
+#include "common/klist.h"
+
+#ifdef HAVE_ALSA
+# include "alsa_mgr.h"
+#endif
+
+extern server_t *g_server;
 
 struct _server
 {
-  conn_mgr_t *    conn_mgr;
-  jack_mgr_t *    jack_mgr;
-#ifdef HAVE_ALSA
-  alsa_mgr_t *    alsa_mgr;
+	service_t            *dbus_service;
+#ifdef HAVE_JACK_DBUS
+	lashd_jackdbus_mgr_t *jackdbus_mgr;
 #else
-  void * alsa_mgr;
+	jack_mgr_t           *jack_mgr;
+#endif
+#ifdef HAVE_ALSA
+	alsa_mgr_t           *alsa_mgr;
+#else
+	void                 *alsa_mgr;
 #endif
 
-  loader_t *      loader;
-  int             loader_quit;
+	char                 *projects_dir;
+	struct list_head      loaded_projects;
+	struct list_head      all_projects;
+	struct list_head      appdb;
+	dbus_uint64_t         task_iter;
 
-  char *          default_dir;
-  lash_list_t *    projects;
-  lash_list_t *    interfaces;
-
-  lash_list_t *    server_events;
-  pthread_mutex_t server_events_lock;
-  pthread_cond_t  server_event_cond;
-  
-  int             quit;
+	bool                  quit;
 };
 
-server_t * server_new (const char * default_dir);
-void       server_destroy (server_t * server);
-void       server_create_loader  (server_t * server);
+server_t *
+server_new(const char *default_dir);
 
-const char * server_get_ui_project (server_t * server);
-conn_mgr_t * server_get_conn_mgr (server_t * server);
-int          server_get_loader_quit (server_t * server);
+void
+server_destroy(server_t *server);
 
-void server_set_loader_quit (server_t * server, int quit);
+void
+server_main(server_t *server);
 
-void server_main (server_t * server);
+project_t *
+server_find_project_by_name(server_t   *server,
+                            const char *project_name);
 
-project_t * server_find_project_by_name (server_t * server, const char * project_name);
-const char * server_create_new_project_name (server_t * server);
-void server_notify_interfaces (project_t * project, client_t * client, enum LASH_Event_Type type, const char * str);
+client_t *
+server_add_client(server_t    *server,
+                  const char  *dbus_name,
+                  pid_t        pid,
+                  const char  *class,
+                  int          flags,
+                  const char  *working_dir,
+                  int          argc,
+                  char       **argv);
 
+client_t *
+server_find_client_by_dbus_name(server_t   *server,
+                                const char *dbus_name);
 
-void server_send_event (server_t * server, server_event_t * server_event);
+client_t *
+server_find_client_by_pid(server_t *server,
+                          pid_t     pid);
+
+void
+server_close_project(server_t  *server,
+                     project_t *project);
+
+void
+server_save_all_projects(server_t *server);
+
+void
+server_close_all_projects(server_t *server);
+
+bool
+server_project_close_by_name(server_t   *server,
+                             const char *project_name);
+
+bool
+server_project_restore_by_dir(server_t   *server,
+                              const char *directory);
+
+bool
+server_project_restore_by_name(server_t   *server,
+                               const char *project_name);
+
+bool
+server_project_save_by_name(server_t   *server,
+                            const char *project_name);
 
 #endif /* __LASHD_SERVER_H__ */

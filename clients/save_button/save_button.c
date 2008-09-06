@@ -1,8 +1,8 @@
 /*
  *   LASH 
- *    
+ *
  *   Copyright (C) 2002 Robert Ham <rah@bash.sh>
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -23,7 +23,7 @@
 #include "config.h"
 
 #include <gtk/gtk.h>
-#include <lash/lash.h>
+#include "lash/lash.h"
 
 #include <unistd.h>
 #include <getopt.h>
@@ -110,7 +110,7 @@ idle_cb(void *data)
 			gtk_main_quit();
 			exit(0);
 		default:
-			fprintf(stderr, "%s: recieved unknown LASH event of type %d\n",
+			fprintf(stderr, "%s: received unknown LASH event of type %d\n",
 					__FUNCTION__, lash_event_get_type(event));
 			lash_event_destroy(event);
 			break;

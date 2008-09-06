@@ -1,8 +1,9 @@
 /*
  *   LASH
- *    
+ *
+ *   Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *   Copyright (C) 2002 Robert Ham <rah@bash.sh>
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -20,7 +21,7 @@
 
 #define _GNU_SOURCE
 
-#include "config.h"
+#include "../config.h"
 
 #include <stdlib.h>
 #include <sys/types.h>
@@ -34,559 +35,622 @@
 #include <errno.h>
 #include <stdio.h>
 #include <unistd.h>
-
+#include <uuid/uuid.h>
+#include <dbus/dbus.h>
 #include <jack/jack.h>
-#include <libxml/tree.h>
-
-#ifdef HAVE_ALSA
-#include <alsa/asoundlib.h>
-#endif
-
-#include <lash/lash.h>
-#include <lash/internal_headers.h>
 
 #include "project.h"
 #include "client.h"
+#include "client_dependency.h"
 #include "store.h"
+#include "file.h"
 #include "jack_patch.h"
-#include "alsa_patch.h"
-#include "globals.h"
 #include "server.h"
-#include "jack_mgr.h"
+#include "dbus_iface_control.h"
+#include "common/safety.h"
+#include "common/debug.h"
 
-#define ID_DIR      ".id"
-#define CONFIG_DIR  ".config"
-#define INFO_FILE   ".lash_info"
-#define PROJECT_XML_VERSION "1.0"
+#ifdef HAVE_JACK_DBUS
+# include "jackdbus_mgr.h"
+#else
+# include "jack_mgr.h"
+#endif
+
+#ifdef HAVE_ALSA
+#include <alsa/asoundlib.h>
+#include "alsa_patch.h"
+#endif
+
+static const char *
+project_get_client_dir(project_t *project,
+                       client_t  *client);
+
+static const char *
+project_get_client_config_dir(project_t *project,
+                              client_t  *client);
 
 project_t *
-project_new(server_t * server)
+project_new(void)
 {
 	project_t *project;
 
-	project = lash_malloc0(sizeof(project_t));
+	project = lash_calloc(1, sizeof(project_t));
 
-	project->server = server;
+	INIT_LIST_HEAD(&project->clients);
+	INIT_LIST_HEAD(&project->lost_clients);
 
 	return project;
 }
 
-void
-project_set_directory(project_t * project, const char *directory)
+static client_t *
+project_get_client_by_name(project_t  *project,
+                           const char *name)
 {
-	set_string_property(project->directory, directory);
-}
-
-void
-project_set_name(project_t * project, const char *name)
-{
-	set_string_property(project->name, name);
-}
-
-int
-project_name_exists(lash_list_t * projects, const char *name)
-{
-	for (; projects; projects = lash_list_next(projects)) {
-		if (strcmp(name, ((project_t *) projects->data)->name) == 0)
-			return 1;
-	}
-
-	return 0;
-}
-
-client_t *
-project_get_client_by_id(project_t * project, uuid_t id)
-{
-	lash_list_t *list;
+	struct list_head *node;
 	client_t *client;
 
-	for (list = project->clients; list; list = lash_list_next(list)) {
-		client = (client_t *) list->data;
+	list_for_each(node, &project->clients) {
+		client = list_entry(node, client_t, siblings);
 
-		if (uuid_compare(client->id, id) == 0)
+		if (client && client->name
+		    && strcmp(client->name, name) == 0)
 			return client;
 	}
 
 	return NULL;
 }
 
-client_t *
-project_get_lost_client_by_id(project_t * project, uuid_t id)
+static char *
+project_get_unique_client_name(project_t *project,
+                               client_t  *client)
 {
-	lash_list_t *list;
-	client_t *client;
+	uint8_t i;
+	char *str = lash_malloc(1, strlen(client->class) + 4);
 
-	for (list = project->lost_clients; list; list = lash_list_next(list)) {
-		client = (client_t *) list->data;
+	lash_debug("Creating a unique name for client %s based on its class",
+	           client->id_str);
 
-		if (uuid_compare(client->id, id) == 0)
-			return client;
+	if (!project_get_client_by_name(project, client->class)) {
+		strcpy(str, client->class);
+		return str;
 	}
 
-	return NULL;
-}
-
-/*************************************
- ************ operations *************
- *************************************/
-
-void
-project_new_client(project_t * project, client_t * client)
-{
-	if (uuid_is_null(client->id))
-		client_generate_id(client);
-
-	LASH_DEBUGARGS("client on connection %ld now has id '%s'",
-				   client->conn_id, client_get_id_str(client));
-
-	if (CLIENT_CONFIG_DATA_SET(client))
-		client_store_open(client,
-						  project_get_client_config_dir(project, client));
-
-	project->clients = lash_list_append(project->clients, client);
-
-	printf("Added client %s of class %s to project %s\n",
-		   client_get_id_str(client), client->class, project->name);
-
-	lash_create_dir(project_get_client_id_dir(project, client));
-
-	server_notify_interfaces(project, client, LASH_Client_Add, NULL);
-}
-
-void
-project_name_client(project_t * project, client_t * client, const char *name)
-{
-	lash_list_t *list;
-	client_t *p_client;
-	int err;
-	int linked = 0;
-
-	LASH_DEBUGARGS("naming client '%s' with name '%s'",
-				   client_get_id_str(client), name);
-
-	/* check the client doesn't already have the name */
-	if (client->name && strcmp(name, client->name) == 0) {
-		LASH_DEBUGARGS("client '%s' already has name '%s'; not setting",
-					   client_get_id_str(client), name);
-		return;
-	}
-
-	/* check the name doesn't already exist */
-	for (list = project->clients; list; list = lash_list_next(list)) {
-		p_client = (client_t *) list->data;
-
-		if (p_client->name && strcmp(p_client->name, name) == 0) {
-			fprintf(stderr,
-					"%s: a client '%s' already has the name '%s'; not setting name for client '%s'\n",
-					__FUNCTION__, client_get_id_str(p_client), name,
-					client_get_id_str(client));
-			return;
+	for (i = 1; i < 100; ++i) {
+		sprintf(str, "%s %02u", client->class, i);
+		if (!project_get_client_by_name(project, str)) {
+			return str;
 		}
 	}
 
-	if (client->name && (CLIENT_CONFIG_DATA_SET(client) || CLIENT_CONFIG_FILE(client))) {	/* link should already exist */
-		char *old_link;
+	lash_error("Could not create a unique name for client %s. Do you have "
+	           "100 clients of class %s open?", client->id_str,
+	           client->class);
 
-		old_link = lash_strdup(project_get_client_name_dir(project, client));
+	lash_free(&str);
 
-		client_set_name(client, name);
+	return NULL;
+}
 
-		LASH_DEBUGARGS("moving old link '%s' to '%s'", old_link,
-					   project_get_client_name_dir(project, client));
+client_t *
+project_get_client_by_id(struct list_head *client_list,
+                         uuid_t            id)
+{
+	struct list_head *node;
+	client_t *client;
 
-		err = rename(old_link, project_get_client_name_dir(project, client));
-		if (err == -1) {
-			fprintf(stderr,
-					"%s: could not rename name link for client '%s': %s\n",
-					__FUNCTION__, client_get_id_str(client), strerror(errno));
-		} else
-			linked = 1;
+	list_for_each(node, client_list) {
+		client = list_entry(node, client_t, siblings);
 
-		free(old_link);
+		if (uuid_compare(client->id, id) == 0)
+			return client;
 	}
 
-	if (!linked &&
-		(CLIENT_CONFIG_DATA_SET(client) || CLIENT_CONFIG_FILE(client))) {
-		char *id_dir;
+	return NULL;
+}
 
-		client_set_name(client, name);
-		id_dir = lash_malloc(strlen(ID_DIR) + 1 + sizeof(char[37]) + 1);
-		sprintf(id_dir, "%s/%s", ID_DIR, client_get_id_str(client));
+static void
+project_name_client(project_t  *project,
+                    client_t   *client,
+                    const char *name)
+{
+	char *unique_name = NULL;
 
-		LASH_DEBUGARGS("linking id dir '%s' to name dir '%s", id_dir,
-					   project_get_client_name_dir(project, client));
+	/* If no name was supplied we'll assume that
+	   the caller wants a new unique name. */
+	if (!name) {
+		unique_name = project_get_unique_client_name(project, client);
+		if (!unique_name)
+			return;
+		name = (const char *) unique_name;
+	}
 
-		err = symlink(id_dir, project_get_client_name_dir(project, client));
-		if (err == -1)
-			fprintf(stderr,
-					"%s: could not create name link for client '%s': %s\n",
-					__FUNCTION__, client_get_id_str(client), strerror(errno));
+	lash_debug("Attempting to give client %s the name '%s'",
+	           client->id_str, name);
 
-		free(id_dir);
-	} else
-		client_set_name(client, name);
+	/* Check if the client already has the requested name */
+	if (client->name && strcmp(name, client->name) == 0) {
+		lash_debug("Client %s is already named '%s'; no need to rename",
+		           client->id_str, name);
+		lash_free(&unique_name);
+		return;
+	}
 
-	printf("Client %s set its name to '%s'\n", client_get_id_str(client),
-		   client->name);
-	server_notify_interfaces(project, client, LASH_Client_Name, name);
+	lash_strset(&client->name, name);
+	lash_free(&unique_name);
+
+	lash_info("Client %s set its name to '%s'", client->id_str, client->name);
 }
 
 void
-project_resume_client(project_t * project, client_t * client,
-					  client_t * lost_client)
+project_new_client(project_t *project,
+                   client_t  *client)
+{
+	uuid_generate(client->id);
+	uuid_unparse(client->id, client->id_str);
+
+	/* Set the client's data path */
+	lash_strset(&client->data_path,
+	            project_get_client_dir(project, client));
+
+	lash_debug("New client now has id %s", client->id_str);
+
+	if (CLIENT_CONFIG_DATA_SET(client))
+		client_store_open(client,
+		                  project_get_client_config_dir(project,
+		                                                client));
+
+	client->project = project;
+	list_add(&client->siblings, &project->clients);
+
+	lash_info("Added client %s of class '%s' to project '%s'",
+	          client->id_str, client->class, project->name);
+
+	lash_create_dir(client->data_path);
+
+	/* Give the client a unique name */
+	project_name_client(project, client, NULL);
+
+	// TODO: Swap 2nd and 3rd parameter of this signal
+	lashd_dbus_signal_emit_client_appeared(client->id_str, project->name,
+	                                       client->name);
+}
+
+void
+project_satisfy_client_dependency(project_t *project,
+                                  client_t  *client)
+{
+	struct list_head *node;
+	client_t *lost_client;
+
+	list_for_each(node, &project->lost_clients) {
+		lost_client = list_entry(node, client_t, siblings);
+
+		if (!list_empty(&lost_client->unsatisfied_deps)) {
+			client_dependency_remove(&lost_client->unsatisfied_deps,
+			                         client->id);
+
+			if (list_empty(&lost_client->unsatisfied_deps)) {
+				lash_debug("Dependencies for client '%s' "
+				           "are now satisfied",
+				           lost_client->name);
+				project_launch_client(project, lost_client);
+			}
+		}
+	}
+}
+
+static __inline__ void
+project_load_file(project_t *project,
+                  client_t  *client)
+{
+	lash_debug("Requesting client '%s' to load data from disk",
+	           client_get_identity(client));
+
+	client->pending_task = (++g_server->task_iter);
+	client->task_type = LASH_Restore_File;
+	client->task_progress = 0;
+
+	method_call_new_valist(g_server->dbus_service, NULL,
+	                       method_default_handler, false,
+	                       client->dbus_name,
+	                       "/org/nongnu/LASH/Client",
+	                       "org.nongnu.LASH.Client",
+	                       "Load",
+	                       DBUS_TYPE_UINT64, &client->pending_task,
+	                       DBUS_TYPE_STRING, &client->data_path,
+	                       DBUS_TYPE_INVALID);
+}
+
+/* Send a LoadDataSet method call to the client */
+static __inline__ void
+project_load_data_set(project_t *project,
+                      client_t  *client)
+{
+	if (!client_store_open(client, project_get_client_config_dir(project,
+	                                                             client))) {
+		lash_error("Could not open client's store; "
+		           "not sending data set");
+		return;
+	}
+
+	lash_debug("Sending client '%s' its data set",
+	           client_get_identity(client));
+
+	if (list_empty(&client->store->keys)) {
+		lash_debug("No data found in store");
+		return;
+	}
+
+	method_msg_t new_call;
+	DBusMessageIter iter, array_iter;
+	dbus_uint64_t task_id;
+
+	if (!method_call_init(&new_call, g_server->dbus_service,
+	                      NULL,
+	                      method_default_handler,
+	                      client->dbus_name,
+	                      "/org/nongnu/LASH/Client",
+	                      "org.nongnu.LASH.Client",
+	                      "LoadDataSet")) {
+		lash_error("Failed to initialise LoadDataSet method call");
+		return;
+	}
+
+	dbus_message_iter_init_append(new_call.message, &iter);
+
+	task_id = (++g_server->task_iter);
+
+	if (!dbus_message_iter_append_basic(&iter, DBUS_TYPE_UINT64, &task_id)) {
+		lash_error("Failed to write task ID");
+		goto fail;
+	}
+
+	if (!dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &array_iter)) {
+		lash_error("Failed to open config array container");
+		goto fail;
+	}
+
+	if (!store_create_config_array(client->store, &array_iter)) {
+		lash_error("Failed to create config array");
+		goto fail;
+	}
+
+	if (!dbus_message_iter_close_container(&iter, &array_iter)) {
+		lash_error("Failed to close config array container");
+		goto fail;
+	}
+
+	if (!method_send(&new_call, false)) {
+		lash_error("Failed to send LoadDataSet method call");
+		/* method_send has unref'd the message for us */
+		return;
+	}
+
+	client->pending_task = task_id;
+	client->task_type = LASH_Restore_Data_Set;
+	client->task_progress = 0;
+
+	return;
+
+fail:
+	dbus_message_unref(new_call.message);
+}
+
+static __inline__ void
+project_resume_client(project_t *project,
+                      client_t  *client,
+                      client_t  *lost_client)
 {
 	lash_event_t *event;
-	int err;
+	char *name;
 
-	/*
-	 * get all the necessary data from the lost client
-	 */
-	client_set_name(client, lost_client->name);
+	lash_debug("Attempting to resume client of class '%s'",
+	           lost_client->class);
+
+	/* Get all the necessary data from the lost client */
+	name = lost_client->name;
+	lost_client->name = NULL;
 	client->alsa_patches = lost_client->alsa_patches;
 	lost_client->alsa_patches = NULL;
 	client->jack_patches = lost_client->jack_patches;
 	lost_client->jack_patches = NULL;
 	client->flags = lost_client->flags;
 	uuid_copy(client->id, lost_client->id);
+	memcpy(client->id_str, lost_client->id_str, 37);
+	lash_free(&client->working_dir);
+	client->working_dir = lost_client->working_dir;
+	lost_client->working_dir = NULL;
 
-	/*
-	 * kill the lost client
-	 */
-	project->lost_clients =
-		lash_list_remove(project->lost_clients, lost_client);
+	/* Set the client's data path */
+	if (lost_client->data_path) {
+		client->data_path = lost_client->data_path;
+		lost_client->data_path = NULL;
+	} else {
+		lash_strset(&client->data_path,
+		            project_get_client_dir(project, client));
+	}
+
+	/* Create the data path if necessary */
+	if (CLIENT_CONFIG_FILE(client) || CLIENT_CONFIG_DATA_SET(client))
+		lash_create_dir(client->data_path);
+
+	/* Steal the dependencies from the lost client */
+	list_splice_init(&lost_client->dependencies, &client->dependencies);
+
+	/* Kill the lost client */
+	list_del(&lost_client->siblings);
 	client_destroy(lost_client);
 
-	LASH_DEBUGARGS("resuming client '%s'", client_get_id_str(client));
+	/* Tell the client to load its state if it was saved previously */
+	if (CLIENT_SAVED(client)) {
+		// TODO: Implement task queue so that we can
+		//       give a client both tasks
+		if (CLIENT_CONFIG_FILE(client))
+			project_load_file(project, client);
+		else if (CLIENT_CONFIG_DATA_SET(client))
+			project_load_data_set(project, client);
+	} else
+		lash_debug("Client '%s' has no data to load", client_get_identity(client));
 
-	if (client->name) {
-		char *name;
+	client->project = project;
+	list_add(&client->siblings, &project->clients);
 
-		name = lash_strdup(client->name);
-		client_set_name(client, NULL);
-		project_name_client(project, client, name);
-		free(name);
-	}
+	/* Name the resumed client */
+	project_name_client(project, client, name);
+	lash_free(&name);
+
+	lash_info("Resumed client %s of class '%s' in project '%s'",
+	          client->id_str, client->class, project->name);
+
+	lashd_dbus_signal_emit_client_appeared(client->id_str, project->name,
+	                                       client->name);
+
+	/* Clients with nothing to load need to notify about
+	   their completion as soon as they appear */
+	if (!CLIENT_SAVED(client))
+		project_client_task_completed(project, client);
+}
+
+void
+project_launch_client(project_t *project,
+                      client_t  *client)
+{
+	lash_debug("Launching client %s", client->id_str);
+
+	loader_execute(client, false);
+
+	dbus_free_string_array(client->argv);
+	client->argv = NULL;
+	client->argc = 0;
+}
+
+void
+project_add_client(project_t *project,
+                  client_t   *client)
+{
+	struct list_head *node;
+	client_t *lost_client;
+
+	lash_debug("Adding client to project '%s'", project->name);
+
+	if (CLIENT_NO_AUTORESUME(client) || list_empty(&project->lost_clients))
+		goto new_client;
 
 	/*
-	 * resume the client
+	 * Try and find a client we can resume
 	 */
-	if (CLIENT_CONFIG_FILE(client) || CLIENT_CONFIG_DATA_SET(client))
-		lash_create_dir(project_get_client_id_dir(project, client));
 
-	/* tell the client to load its files */
-	if (CLIENT_CONFIG_FILE(client) && CLIENT_SAVED(client)) {
-		event = lash_event_new_with_type(LASH_Restore_File);
-		lash_event_set_string(event,
-							  project_get_client_id_dir(project, client));
-		conn_mgr_send_client_lash_event(project->server->conn_mgr,
-										client->conn_id, event);
+	/* See if this is a launched client */
+	list_for_each (node, &project->lost_clients) {
+		lost_client = list_entry(node, client_t, siblings);
+
+		lash_debug("Checking client with PID %u "
+		           "against lost client with PID %u",
+		           client->pid, lost_client->pid);
+
+		if (lost_client->pid && client->pid == lost_client->pid)
+			goto resume_client;
 	}
 
-	if (CLIENT_CONFIG_DATA_SET(client)) {
-		err =
-			client_store_open(client,
-							  project_get_client_config_dir(project, client));
-		if (err)
-			fprintf(stderr,
-					"%s: could not open client's store; not restoring its data set\n",
-					__FUNCTION__);
-		else {
-			if (CLIENT_SAVED(client))
-				project_restore_data_set(project, client);
-		}
+	lash_debug("Cannot match PID %u with any lost client, "
+	           "trying to match client class instead");
+
+	/* See if this is a recovering client */
+	list_for_each (node, &project->lost_clients) {
+		lost_client = list_entry(node, client_t, siblings);
+
+		lash_debug("Checking client of class '%s' "
+		           "against lost client of class '%s'",
+		           client->class, lost_client->class);
+
+		if (strcmp(client->class, lost_client->class) == 0)
+			goto resume_client;
 	}
 
-	project->clients = lash_list_append(project->clients, client);
+	lash_debug("Could not resume client, adding as new client");
 
-	printf("Resumed client %s of class %s in project %s\n",
-		   client_get_id_str(client), client->class, project->name);
-	server_notify_interfaces(project, client, LASH_Client_Add, NULL);
-}
-
-void
-project_add_client(project_t * project, client_t * client)
-{
-	lash_list_t *list;
-	client_t *lost_client;
-	int no_client_id;
-
-	if (CLIENT_NO_AUTORESUME(client)) {
-		project_new_client(project, client);
-		return;
-	}
-
-	no_client_id = uuid_is_null(client->id);
-
-	LASH_DEBUGARGS("attempting to resume client on connection %ld",
-				   client->conn_id);
-
-	/* try and find a client we can resume */
-	list = project->lost_clients;
-	while (list) {
-		lost_client = (client_t *) list->data;
-
-#ifdef LASH_DEBUG
-		{
-			char *lost_str;
-
-			lost_str = lash_strdup(client_get_id_str(lost_client));
-			LASH_DEBUGARGS
-				("checking client '%s','%s' against lost client '%s','%s'",
-				 client_get_id_str(client), client->class, lost_str,
-				 lost_client->class);
-			free(lost_str);
-		}
-#endif /* LASH_DEBUG */
-
-		if ((no_client_id && strcmp(client->class, lost_client->class) == 0)
-			|| uuid_compare(client->id, lost_client->id) == 0) {
-			LASH_DEBUGARGS
-				("resuming client '%s' of class '%s' with client on connection %ld",
-				 client_get_id_str(client), lost_client->class,
-				 client->conn_id);
-			project_resume_client(project, client, lost_client);
-			return;
-		}
-
-		list = list->next;
-	}
-
-	LASH_DEBUGARGS("could not resume client on connection %ld",
-				   client->conn_id);
+new_client:
 	project_new_client(project, client);
+	return;
+
+resume_client:
+	project_resume_client(project, client, lost_client);
 }
 
-/**************************************
- ************ store stuff *************
- **************************************/
-
-const char *
-project_get_client_id_dir(project_t * project, client_t * client)
+static const char *
+project_get_client_dir(project_t *project,
+                       client_t  *client)
 {
-	get_store_and_return_fqn(lash_get_fqn(project->directory, ID_DIR),
-							 client_get_id_str(client));
+	get_store_and_return_fqn(lash_get_fqn(project->directory,
+	                                      PROJECT_ID_DIR),
+	                         client->id_str);
 }
 
-const char *
-project_get_client_name_dir(project_t * project, client_t * client)
+static const char *
+project_get_client_config_dir(project_t *project,
+                              client_t  *client)
 {
-	get_store_and_return_fqn(project->directory, client->name);
+	get_store_and_return_fqn(project_get_client_dir(project, client),
+	                         PROJECT_CONFIG_DIR);
 }
 
-const char *
-project_get_client_config_dir(project_t * project, client_t * client)
-{
-	get_store_and_return_fqn(client->name
-							 ? project_get_client_name_dir(project, client)
-							 : project_get_client_id_dir(project, client),
-							 CONFIG_DIR);
-}
-
-const char *
-project_get_client_file_dir(project_t * project, client_t * client)
-{
-	return client->name ? project_get_client_name_dir(project, client)
-		: project_get_client_id_dir(project, client);
-}
-
-char *
-escape_file_name(const char *fn)
-{
-	char *escfn;
-	size_t escfn_size;
-	size_t fn_size;
-	ptrdiff_t *escchars = NULL;
-	size_t escchars_size = 0;
-	const char *ptr;
-	unsigned int i, j;
-
-	ptr = fn - 1;
-
-	while ((ptr = strpbrk(ptr + 1, " |&;()<>"))) {
-		if (!escchars) {
-			escchars_size = 1;
-			escchars = malloc(escchars_size * sizeof(ptrdiff_t));
-		} else {
-			escchars_size++;
-			escchars = realloc(escchars, escchars_size * sizeof(ptrdiff_t));
-		}
-
-		escchars[escchars_size - 1] = ptr - fn;
-	}
-
-	if (!escchars)
-		return strdup(fn);
-
-	fn_size = strlen(fn);
-	escfn_size = fn_size + escchars_size + 1;
-	escfn = malloc(escfn_size);
-	strncpy(escfn, fn, fn_size + 1);
-
-	for (i = 0; i < escchars_size; i++) {
-		for (j = escfn_size - 1; (escfn + j) > (escfn + escchars[i] + i); j--)
-			escfn[j] = escfn[j - 1];
-
-		*(escfn + escchars[i] + i) = '\\';
-	}
-
-	return escfn;
-}
-
+// TODO: - Needs to check for errors so that we can
+//         report failures back to the control app
+//       - Needs to be less fugly
 void
-project_move(project_t * project, const char *new_dir)
+project_move(project_t  *project,
+             const char *new_dir)
 {
-	lash_list_t *list = NULL;
-	client_t *client = NULL;
-	char *esc_proj_dir = NULL;
-	char *esc_new_proj_dir = NULL;
+	struct list_head *node;
+	client_t *client;
 	DIR *dir = NULL;
-	
-	if (strcmp(new_dir, project->directory) == 0)
+
+	if (!new_dir || !new_dir[0]
+	    || strcmp(new_dir, project->directory) == 0)
 		return;
-	
-	esc_proj_dir = escape_file_name(project->directory);
-	esc_new_proj_dir = escape_file_name(new_dir);
 
 	/* Check to be sure directory is acceptable
 	 * FIXME: thorough enough error checking? */
-	dir = opendir(esc_new_proj_dir);
+	dir = opendir(new_dir);
 
-	if (dir != NULL) {
-		fprintf(stderr,
-				"Can not move project directory to %s - exists\n",
-				new_dir);
+	if (dir || errno == ENOTDIR) {
+		lash_error("Cannot move project to %s: Target exists",
+		           new_dir);
+		closedir(dir);
 		return;
-	} else if (dir == NULL && errno == ENOTDIR) {
-		fprintf(stderr,
-				"Can not move project directory to %s - exists but is not a directory\n",
-				new_dir);
-		return;
-	} else if (dir == NULL && errno == ENOENT) {
+	} else if (errno == ENOENT) {
 		/* This is what we want... */
 		/*printf("Directory %s does not exist, creating.\n", new_dir);*/
 	}
 
 	/* close all the clients' stores */
-	for (list = project->clients; list; list = lash_list_next(list)) {
-		client = (client_t *) list->data;
+	list_for_each (node, &project->clients) {
+		client = list_entry(node, client_t, siblings);
 		client_store_close(client);
 		/* FIXME: check for errors */
 	}
 
 	/* move the directory */
-	
 
-	if (rename(esc_proj_dir, esc_new_proj_dir)) {
-		fprintf(stderr, "Unable to move project directory to %s (%s)",
-				new_dir, strerror(errno));
+	if (rename(project->directory, new_dir)) {
+		lash_error("Cannot move project to %s: %s",
+		           new_dir, strerror(errno));
 	} else {
-		printf("Project %s moved from %s to %s\n", project->name,
-			   project->directory, new_dir);
-		project_set_directory(project, new_dir);
-		server_notify_interfaces(project, client, LASH_Project_Dir, new_dir);
+		lash_info("Project '%s' moved from %s to %s",
+		          project->name, project->directory, new_dir);
+
+		lash_strset(&project->directory, new_dir);
+		lashd_dbus_signal_emit_project_path_changed(project->name, new_dir);
 
 		/* open all the clients' stores again */
-		for (list = project->clients; list; list = lash_list_next(list)) {
-			client = (client_t *) list->data;
+		list_for_each (node, &project->clients) {
+			client = list_entry(node, client_t, siblings);
 			client_store_open(client,
-							  project_get_client_config_dir(project, client));
+			                  project_get_client_config_dir(project,
+			                                                client));
 			/* FIXME: check for errors */
 		}
 	}
-
-	free(esc_proj_dir);
-	free(esc_new_proj_dir);
 }
 
-void
-project_restore_data_set(project_t * project, client_t * client)
+/* This is the handler to use when calling a client's Save method.
+   At the moment it isn't used but it will be, so don't delete. */
+static void
+project_save_client_handler(DBusPendingCall *pending,
+                            void            *data)
 {
+	DBusMessage *msg = dbus_pending_call_steal_reply(pending);
+	client_t *client = data;
 
-	if (CLIENT_CONFIG_DATA_SET(client)) {
-		char *key;
-		lash_config_t *config;
-		lash_list_t *list;
-		lash_event_t *event;
+	if (msg) {
+		const char *err_str;
 
-		LASH_DEBUGARGS("restoring data set for client '%s'",
-					   client_get_id_str(client));
-
-		list = store_get_keys(client->store);
-
-		/* send the event to the client */
-		if (list) {
-			event = lash_event_new_with_type(LASH_Restore_Data_Set);
-			conn_mgr_send_client_lash_event(project->server->conn_mgr,
-											client->conn_id, event);
+		if (!method_return_verify(msg, &err_str)) {
+			lash_error("Client save request failed: %s", err_str);
+			client->pending_task = 0;
+			client->task_type = 0;
+			client->task_progress = 0;
+		} else {
+			lash_debug("Client save request succeeded");
+			++client->project->client_tasks_total;
+			/* Now we can start waiting for the client to send
+			   a success or failure report of the save.
+			   We will not reset pending_task until the report
+			   arrives. */
 		}
-
-		for (; list; list = lash_list_next(list)) {
-			key = (char *)list->data;
-
-			config = client_store_get_config(client, key);
-
-			if (config)
-				conn_mgr_send_client_lash_config(project->server->conn_mgr,
-												 client->conn_id, config);
-		}
+		dbus_message_unref(msg);
+	} else {
+		lash_error("Cannot get method return from pending call");
+		client->pending_task = 0;
+		client->task_type = 0;
+		client->task_progress = 0;
 	}
+
+	dbus_pending_call_unref(pending);
 }
 
-void
-project_save_clients(project_t * project)
+static __inline__ void
+project_save_clients(project_t *project)
 {
-	lash_list_t *list;
+	struct list_head *node;
 	client_t *client;
-	lash_event_t *event;
 
-	for (list = project->clients; list; list = lash_list_next(list)) {
-		client = (client_t *) list->data;
-
-		if (CLIENT_CONFIG_FILE(client)) {
-			LASH_DEBUGARGS("telling client %s to save files",
-						   client_get_identity(client));
-
-			event = lash_event_new_with_type(LASH_Save_File);
-
-			lash_event_set_string(event,
-								  project_get_client_file_dir(project,
-															  client));
-			conn_mgr_send_client_lash_event(project->server->conn_mgr,
-											client->conn_id, event);
-
-			project->saves++;
-
-			client->flags |= LASH_Saved;
-		}
-
-		if (CLIENT_CONFIG_DATA_SET(client)) {
-			LASH_DEBUGARGS("telling client %s to save data set",
-						   client_get_identity(client));
-
-			event = lash_event_new_with_type(LASH_Save_Data_Set);
-			conn_mgr_send_client_lash_event(project->server->conn_mgr,
-											client->conn_id, event);
-			project->saves++;
-
-			client->flags |= LASH_Saved;
+	list_for_each (node, &project->clients) {
+		client = list_entry(node, client_t, siblings);
+		if (client->pending_task) {
+			lash_error("Clients have pending tasks, not sending "
+			           "save request");
+			return;
 		}
 	}
 
-	project->pending_saves = project->saves;
+	project->task_type = LASH_TASK_SAVE;
+	project->client_tasks_total = 0;
+	project->client_tasks_progress = 0;
+	++g_server->task_iter;
+
+	lash_debug("Signaling all clients of project '%s' to save (task %llu)",
+	           project->name, g_server->task_iter);
+	signal_new_valist(g_server->dbus_service,
+	                  "/", "org.nongnu.LASH.Server", "Save",
+	                  DBUS_TYPE_STRING, &project->name,
+	                  DBUS_TYPE_UINT64, &g_server->task_iter,
+	                  DBUS_TYPE_INVALID);
+
+	list_for_each (node, &project->clients) {
+		client = list_entry(node, client_t, siblings);
+
+		client->pending_task = g_server->task_iter;
+		client->task_type = (CLIENT_CONFIG_FILE(client))
+		                    ? LASH_Save_File
+		                    : LASH_Save_Data_Set;
+		client->task_progress = 0;
+		client->flags |= LASH_Saved;
+		++project->client_tasks_total;
+	}
+
+	project->client_tasks_pending = project->client_tasks_total;
 }
 
-void
-project_create_client_jack_patch_xml(project_t * project, client_t * client,
-									 xmlNodePtr clientxml)
+static void
+project_create_client_jack_patch_xml(project_t  *project,
+                                     client_t   *client,
+                                     xmlNodePtr  clientxml)
 {
 	xmlNodePtr jack_patch_set;
 	lash_list_t *patches, *node;
 	jack_patch_t *patch;
 
-	jack_mgr_lock(project->server->jack_mgr);
+#ifdef HAVE_JACK_DBUS
 	patches =
-		jack_mgr_get_client_patches(project->server->jack_mgr, client->id);
-	jack_mgr_unlock(project->server->jack_mgr);
+	  lashd_jackdbus_mgr_get_client_patches(g_server->jackdbus_mgr,
+	                                        client->id);
+#else
+	jack_mgr_lock(g_server->jack_mgr);
+	patches =
+	  jack_mgr_get_client_patches(g_server->jack_mgr, client->id);
+	jack_mgr_unlock(g_server->jack_mgr);
+#endif
 
 	if (!patches)
 		return;
@@ -606,18 +670,19 @@ project_create_client_jack_patch_xml(project_t * project, client_t * client,
 }
 
 #ifdef HAVE_ALSA
-void
-project_create_client_alsa_patch_xml(project_t * project, client_t * client,
-									 xmlNodePtr clientxml)
+static void
+project_create_client_alsa_patch_xml(project_t  *project,
+                                     client_t   *client,
+                                     xmlNodePtr  clientxml)
 {
 	xmlNodePtr alsa_patch_set;
 	lash_list_t *patches, *node;
 	alsa_patch_t *patch;
 
-	alsa_mgr_lock(project->server->alsa_mgr);
+	alsa_mgr_lock(g_server->alsa_mgr);
 	patches =
-		alsa_mgr_get_client_patches(project->server->alsa_mgr, client->id);
-	alsa_mgr_unlock(project->server->alsa_mgr);
+		alsa_mgr_get_client_patches(g_server->alsa_mgr, client->id);
+	alsa_mgr_unlock(g_server->alsa_mgr);
 
 	if (!patches)
 		return;
@@ -637,369 +702,530 @@ project_create_client_alsa_patch_xml(project_t * project, client_t * client,
 }
 #endif
 
+static void
+project_create_client_dependencies_xml(client_t   *client,
+                                       xmlNodePtr  parent)
+{
+	struct list_head *node;
+	client_dependency_t *dep;
+	xmlNodePtr deps_xml;
+	char id_str[37];
+
+	deps_xml = xmlNewChild(parent, NULL, BAD_CAST "dependencies", NULL);
+
+	list_for_each (node, &client->dependencies) {
+		dep = list_entry(node, client_dependency_t, siblings);
+		uuid_unparse(dep->client_id, id_str);
+		xmlNewChild(deps_xml, NULL, BAD_CAST "id",
+		            BAD_CAST id_str);
+	}
+}
 
 static xmlDocPtr
-project_create_xml(project_t * project)
+project_create_xml(project_t *project)
 {
 	xmlDocPtr doc;
 	xmlNodePtr lash_project, clientxml, arg_set;
-	lash_list_t *clnode;
+	struct list_head *node;
 	client_t *client;
 	char num[16];
 	int i;
 
 	doc = xmlNewDoc(BAD_CAST XML_DEFAULT_VERSION);
 
-	/* dtd */
+	/* DTD */
 	xmlCreateIntSubset(doc, BAD_CAST "lash_project", NULL,
-					   BAD_CAST
-					   "http://www.nongnu.org/lash/lash-project-1.0.dtd");
+	                   BAD_CAST "http://www.nongnu.org/lash/lash-project-1.0.dtd");
 
-	/* root node */
+	/* Root node */
 	lash_project = xmlNewDocNode(doc, NULL, BAD_CAST "lash_project", NULL);
 	xmlAddChild((xmlNodePtr) doc, lash_project);
 
 	xmlNewChild(lash_project, NULL, BAD_CAST "version",
-				BAD_CAST PROJECT_XML_VERSION);
-	xmlNewChild(lash_project, NULL, BAD_CAST "name", BAD_CAST project->name);
+	            BAD_CAST PROJECT_XML_VERSION);
 
-	for (clnode = project->clients; clnode; clnode = lash_list_next(clnode)) {
-		client = (client_t *) clnode->data;
+	xmlNewChild(lash_project, NULL, BAD_CAST "name",
+	            BAD_CAST project->name);
 
-		clientxml = xmlNewChild(lash_project, NULL, BAD_CAST "client", NULL);
+	xmlNewChild(lash_project, NULL, BAD_CAST "description",
+	            BAD_CAST project->description);
+
+	list_for_each (node, &project->clients) {
+		client = list_entry(node, client_t, siblings);
+
+		clientxml = xmlNewChild(lash_project, NULL, BAD_CAST "client",
+		                        NULL);
 
 		xmlNewChild(clientxml, NULL, BAD_CAST "class",
-					BAD_CAST client->class);
+		            BAD_CAST client->class);
+
 		xmlNewChild(clientxml, NULL, BAD_CAST "id",
-					BAD_CAST client_get_id_str(client));
+		            BAD_CAST client->id_str);
+
+		xmlNewChild(clientxml, NULL, BAD_CAST "name",
+		            BAD_CAST client->name);
+
 		sprintf(num, "%d", client->flags);
 		xmlNewChild(clientxml, NULL, BAD_CAST "flags", BAD_CAST num);
+
 		xmlNewChild(clientxml, NULL, BAD_CAST "working_directory",
-					BAD_CAST client->working_dir);
+		            BAD_CAST client->working_dir);
 
 		arg_set = xmlNewChild(clientxml, NULL, BAD_CAST "arg_set", NULL);
 		for (i = 0; i < client->argc; i++)
 			xmlNewChild(arg_set, NULL, BAD_CAST "arg",
-						BAD_CAST client->argv[i]);
+			            BAD_CAST client->argv[i]);
 
 		if (client->jack_client_name)
-			project_create_client_jack_patch_xml(project, client, clientxml);
+			project_create_client_jack_patch_xml(project, client,
+			                                     clientxml);
 #ifdef HAVE_ALSA
 		if (client->alsa_client_id)
-			project_create_client_alsa_patch_xml(project, client, clientxml);
+			project_create_client_alsa_patch_xml(project, client,
+			                                     clientxml);
 #endif
+		if (!list_empty(&client->dependencies))
+			project_create_client_dependencies_xml(client,
+			                                       clientxml);
 	}
 
 	return doc;
 }
 
-static int
-project_write_info(project_t * project)
+static __inline__ bool
+project_write_info(project_t *project)
 {
 	xmlDocPtr doc;
 	const char *filename;
-	int err;
 
 	doc = project_create_xml(project);
 
-	filename = lash_get_fqn(project->directory, INFO_FILE);
+	if (project->doc)
+		xmlFree(project->doc);
+	project->doc = doc;
 
-	err = xmlSaveFormatFile(filename, doc, 1);
-	if (err == -1) {
-		fprintf(stderr, "%s: could not save project xml to file %s: %s",
-				__FUNCTION__, filename, strerror(errno));
-	} else
-		err = 0;
+	filename = lash_get_fqn(project->directory, PROJECT_INFO_FILE);
 
-	return err;
-}
-
-void
-project_clear_lost_clients(project_t * project)
-{
-	lash_list_t *list;
-	client_t *client;
-	const char *client_dir;
-
-	for (list = project->lost_clients; list; list = lash_list_next(list)) {
-		client = (client_t *) list->data;
-
-		client_dir = project_get_client_id_dir(project, client);
-		if (lash_dir_exists(client_dir))
-			lash_remove_dir(client_dir);
-
-		client_destroy(client);
+	if (xmlSaveFormatFile(filename, doc, 1) == -1) {
+		lash_error("Cannot save project data to file %s: %s",
+		           filename, strerror(errno));
+		return false;
 	}
 
-	lash_list_free(project->lost_clients);
-	project->lost_clients = NULL;
+	return true;
+}
+
+static void
+project_clear_lost_clients(project_t *project)
+{
+	struct list_head *head, *node;
+	client_t *client;
+
+	head = &project->lost_clients;
+	node = head->next;
+
+	while (node != head) {
+		client = list_entry(node, client_t, siblings);
+		node = node->next;
+
+		if (lash_dir_exists(client->data_path))
+			lash_remove_dir(client->data_path);
+
+		list_del(&client->siblings);
+		client_destroy(client);
+	}
+}
+
+static __inline__ void
+project_load_notes(project_t *project)
+{
+	char *filename;
+	char *data;
+
+	filename = lash_dup_fqn(project->directory, PROJECT_NOTES_FILE);
+
+	if (!lash_read_text_file((const char *) filename, &data))
+		lash_error("Failed to read project notes from '%s'", filename);
+	else {
+		project->notes = data;
+		lash_debug("Project notes: \"%s\"", data);
+	}
+
+	free(filename);
+}
+
+static __inline__ bool
+project_save_notes(project_t *project)
+{
+	char *filename;
+	FILE *file;
+	size_t size;
+	bool ret;
+
+	ret = true;
+
+	filename = lash_dup_fqn(project->directory, PROJECT_NOTES_FILE);
+
+	file = fopen(filename, "w");
+	if (!file) {
+		lash_error("Failed to open '%s' for writing: %s",
+		           filename, strerror(errno));
+		ret = false;
+		goto exit;
+	}
+
+	if (project->notes) {
+		size = strlen(project->notes);
+
+		if (fwrite(project->notes, size, 1, file) != 1) {
+			lash_error("Failed to write %ld bytes of data "
+			           "to file '%s'", size, filename);
+			ret = false;
+		}
+	}
+
+	fclose(file);
+
+exit:
+	free(filename);
+	return ret;
 }
 
 void
-project_save(project_t * project)
+project_save(project_t *project)
 {
-	char num[16];
-	int err;
-
-	if (project->pending_saves) {
-		LASH_PRINT_DEBUG("a save is in progress; cannot save at this time");
+	if (project->task_type) {
+		lash_error("Another task is in progress, cannot save right now");
 		return;
 	}
 
-	/* initialise the interfaces' progress display */
-	sprintf(num, "%d", 0);
-	server_notify_interfaces(project, NULL, LASH_Percentage, num);
+	lash_info("Saving project '%s' ...", project->name);
+
+	/* Initialise the controllers' progress display */
+	lashd_dbus_signal_emit_progress(0);
+
+	if (list_empty(&project->siblings_all)) {
+		/* this is first save for new project, add it to available for loading list */
+		list_add_tail(&project->siblings_all, &g_server->all_projects);
+	}
+
+	if (!lash_dir_exists(project->directory)) {
+		lash_create_dir(project->directory);
+		lash_info("Created project directory %s", project->directory);
+	}
 
 	project_save_clients(project);
 
-	err = project_write_info(project);
-	if (err) {
-		fprintf(stderr,
-				"%s: error writing info file for project '%s'; aborting save\n",
-				__FUNCTION__, project->name);
+#ifdef HAVE_JACK_DBUS
+	lashd_jackdbus_mgr_get_graph(g_server->jackdbus_mgr);
+#endif
+
+	if (!project_write_info(project)) {
+		lash_error("Error writing info file for project '%s'; "
+		           "aborting save", project->name);
 		return;
 	}
+
+	if (!project_save_notes(project))
+		lash_error("Error writing notes file for project '%s'", project->name);
 
 	project_clear_lost_clients(project);
 }
 
-project_t *
-project_new_from_xml(server_t * server, xmlDocPtr doc)
+bool
+project_load(project_t *project)
 {
 	xmlNodePtr projectnode, xmlnode;
 	xmlChar *content = NULL;
-	project_t *project = NULL;
-	
-	for (projectnode = doc->children; projectnode;
-		 projectnode = projectnode->next)
-		if (projectnode->type == XML_ELEMENT_NODE
-			&& strcmp(CAST_BAD projectnode->name, "lash_project") == 0)
-			break;
 
-	if (!projectnode) {
-		LASH_PRINT_DEBUG("no lash_project node in doc");
-		return NULL;
+	for (projectnode = project->doc->children; projectnode;
+	     projectnode = projectnode->next) {
+		if (projectnode->type == XML_ELEMENT_NODE
+		    && strcmp((const char *) projectnode->name, "lash_project") == 0)
+			break;
 	}
 
-	project = project_new(server);
+	if (!projectnode) {
+		lash_error("No root node in project XML document");
+		return false;
+	}
 
-	for (xmlnode = projectnode->children; xmlnode; xmlnode = xmlnode->next) {
-		if (strcmp(CAST_BAD xmlnode->name, "version") == 0) {
+	for (xmlnode = projectnode->children; xmlnode;
+	     xmlnode = xmlnode->next) {
+		if (strcmp((const char *) xmlnode->name, "version") == 0) {
 			/* FIXME: check version */
-		} else if (strcmp(CAST_BAD xmlnode->name, "name") == 0) {
+		} else if (strcmp((const char *) xmlnode->name, "name") == 0) {
 			content = xmlNodeGetContent(xmlnode);
-			project_set_name(project, CAST_BAD content);
+			lash_strset(&project->name, (const char *) content);
 			xmlFree(content);
-		} else if (strcmp(CAST_BAD xmlnode->name, "client") == 0) {
+		} else if (strcmp((const char *) xmlnode->name, "client") == 0) {
 			client_t *client;
 
 			client = client_new();
-			client_parse_xml(client, xmlnode);
+			client_parse_xml(project, client, xmlnode);
 
-			project->lost_clients =
-				lash_list_append(project->lost_clients, client);
+			// TODO: reject client if its data doesn't contain
+			//       the basic stuff (id, class, etc.)
+
+			list_add(&client->siblings, &project->lost_clients);
 		}
 	}
 
 	if (!project->name) {
-		project_destroy(project);
-		return NULL;
+		lash_error("No name node in project XML document");
+		project_unload(project);
+		return false;
 	}
 
-	return project;
-}
-
-project_t *
-project_restore(server_t * server, const char *dir)
-{
-	lash_list_t *list;
-	project_t *project;
-	const char *filename;
-	xmlDocPtr doc;
-
-	LASH_DEBUGARGS("attempting to restore project in dir '%s'", dir);
-
-	/* check if we've already got it open */
-	list = server->projects;
-	while (list) {
-		project = (project_t *) list->data;
-
-		if (strcmp(project->directory, dir) == 0) {
-			fprintf(stderr,
-					"%s: cannot restore project from directory '%s': a project, '%s', is already active with this directory\n",
-					__FUNCTION__, dir, project->name);
-			return NULL;
-		}
-
-		list = list->next;
-	}
-
-	filename = lash_get_fqn(dir, INFO_FILE);
-
-	doc = xmlParseFile(filename);
-	if (!doc) {
-		fprintf(stderr, "%s: could not parse file %s\n", __FUNCTION__,
-				filename);
-		return NULL;
-	}
-
-	project = project_new_from_xml(server, doc);
-	if (!project) {
-		fprintf(stderr, "%s: could not recreate project from xml\n",
-				__FUNCTION__);
-		return NULL;
-	}
-
-	project_set_directory(project, dir);
+	project_load_notes(project);
 
 #ifdef LASH_DEBUG
 	{
-		lash_list_t *client_list;
+		struct list_head *node;
 		client_t *client;
 		lash_list_t *list;
 		int i;
 
-		LASH_PRINT_DEBUG("resored project with:");
-		LASH_DEBUGARGS("  directory: '%s'", project->directory);
-		LASH_DEBUGARGS("  name:      '%s'", project->name);
-		LASH_PRINT_DEBUG("  clients:");
-		for (client_list = project->lost_clients; client_list;
-			 client_list = client_list->next) {
-			client = (client_t *) client_list->data;
+		lash_debug("Restored project with:");
+		lash_debug("  directory: '%s'", project->directory);
+		lash_debug("  name:      '%s'", project->name);
+		lash_debug("  clients:");
+		list_for_each (node, &project->lost_clients) {
+			client = list_entry(node, client_t, siblings);
 
-			LASH_PRINT_DEBUG("  ------");
-			LASH_DEBUGARGS("    id:          '%s'",
-						   client_get_id_str(client));
-			LASH_DEBUGARGS("    working dir: '%s'", client->working_dir);
-			LASH_DEBUGARGS("    flags:       %d", client->flags);
-			LASH_DEBUGARGS("    argc:        %d", client->argc);
-			LASH_PRINT_DEBUG("    args:");
+			lash_debug("  ------");
+			lash_debug("    id:          '%s'", client->id_str);
+			lash_debug("    name:        '%s'", client->name);
+			lash_debug("    working dir: '%s'", client->working_dir);
+			lash_debug("    flags:       %d", client->flags);
+			lash_debug("    argc:        %d", client->argc);
+			lash_debug("    args:");
 			for (i = 0; i < client->argc; i++) {
-				LASH_DEBUGARGS("      %d: '%s'", i, client->argv[i]);
+				lash_debug("      %d: '%s'", i, client->argv[i]);
 			}
 #ifdef HAVE_ALSA
 			if (client->alsa_patches) {
-				LASH_PRINT_DEBUG("    alsa patches:");
+				lash_debug("    alsa patches:");
 				for (list = client->alsa_patches; list; list = list->next) {
-					LASH_DEBUGARGS("      %s",
-								   alsa_patch_get_desc((alsa_patch_t *) list->
-													   data));
+					lash_debug("      %s",
+					           alsa_patch_get_desc((alsa_patch_t *) list->data));
 				}
 			} else
-				LASH_PRINT_DEBUG("    no alsa patches");
+				lash_debug("    no alsa patches");
 #endif
 
 			if (client->jack_patches) {
-				LASH_PRINT_DEBUG("    jack patches:");
+				lash_debug("    jack patches:");
 				for (list = client->jack_patches; list; list = list->next) {
-					LASH_DEBUGARGS("      %s",
-								   jack_patch_get_desc((jack_patch_t *) list->
-													   data));
+					lash_debug("      '%s' -> '%s'",
+					           ((jack_patch_t *)list->data)->src_desc,
+					           ((jack_patch_t *)list->data)->dest_desc);
 				}
 			} else
-				LASH_PRINT_DEBUG("    no jack patches");
+				lash_debug("    no jack patches");
 		}
 	}
 #endif
 
-	return project;
+	project->modified_status = false;
+
+	return true;
 }
 
-void
-project_remove_client(project_t * project, client_t * client)
+project_t *
+project_new_from_disk(const char *parent_dir,
+                      const char *project_dir)
 {
-	conn_mgr_send_client_lash_event(project->server->conn_mgr,
-									client->conn_id,
-									lash_event_new_with_type(LASH_Quit));
-}
+	project_t *project;
+	struct stat st;
+	char *filename = NULL;
+	xmlNodePtr projectnode, xmlnode;
+	xmlChar *content = NULL;
 
-void
-project_lose_client(project_t * project, client_t * client,
-					lash_list_t * jack_patches, lash_list_t * alsa_patches)
-{
-	int i;
+	project = project_new();
 
-	LASH_DEBUGARGS("losing client '%s' from project '%s'",
-				   client_get_id_str(client), project->name);
-	project->clients = lash_list_remove(project->clients, client);
+	INIT_LIST_HEAD(&project->siblings_loaded);
 
-	if (CLIENT_CONFIG_DATA_SET(client)) {
-		store_t *store;
+	lash_strset(&project->name, project_dir);
 
-		store = client->store;
+	project->directory = lash_dup_fqn(parent_dir, project_dir);
 
-		if (store) {
-			if (store_get_keys(store))
-				store_write(store);
-			else if (lash_dir_exists(store->dir))
-				lash_remove_dir(store->dir);
+	if (stat(project->directory, &st) == 0) {
+		project->last_modify_time = st.st_mtime;
+	} else {
+		lash_error("failed to stat '%s'", project->directory);
+		goto fail;
+	}
+
+	filename = lash_dup_fqn(project->directory, PROJECT_INFO_FILE);
+	if (!lash_file_exists(filename)) {
+		lash_error("Project '%s' has no info file", project->name);
+		goto fail;
+	}
+
+	project->doc = xmlParseFile(filename);
+	if (project->doc == NULL) {
+		lash_error("Could not parse file %s", filename);
+		goto fail;
+	}
+
+	lash_free(&filename);
+
+	for (projectnode = project->doc->children; projectnode;
+	     projectnode = projectnode->next) {
+		if (projectnode->type == XML_ELEMENT_NODE
+		    && strcmp((const char *) projectnode->name, "lash_project") == 0)
+			break;
+	}
+
+	if (!projectnode) {
+		lash_error("No root node in project XML document");
+		goto fail;
+	}
+
+	for (xmlnode = projectnode->children; xmlnode;
+	     xmlnode = xmlnode->next) {
+		if (strcmp((const char *) xmlnode->name, "version") == 0) {
+			/* FIXME: check version */
+		} else if (strcmp((const char *) xmlnode->name, "name") == 0) {
+			content = xmlNodeGetContent(xmlnode);
+			lash_strset(&project->name, (const char *) content);
+			xmlFree(content);
+		} else if (strcmp((const char *) xmlnode->name, "description") == 0) {
+			content = xmlNodeGetContent(xmlnode);
+			lash_strset(&project->description, (const char *)content);
+			xmlFree(content);
 		}
 	}
 
-	if (CLIENT_CONFIG_DATA_SET(client) || CLIENT_CONFIG_FILE(client)) {
-		const char *dir;
-
-		dir = project_get_client_id_dir(project, client);
-
-		if (lash_dir_exists(dir) && lash_dir_empty(dir))
-			lash_remove_dir(dir);
-
-		dir = lash_get_fqn(project->directory, ID_DIR);
-		if (lash_dir_exists(dir) && lash_dir_empty(dir))
-			lash_remove_dir(dir);
-
-		if (client->name)
-			unlink(project_get_client_name_dir(project, client));
-
+	if (!project->name) {
+		lash_error("No name node in project XML document");
+		goto fail;
 	}
 
-	client->jack_patches =
-		lash_list_concat(client->jack_patches, jack_patches);
-	client->alsa_patches =
-		lash_list_concat(client->alsa_patches, alsa_patches);
-	project->lost_clients = lash_list_append(project->lost_clients, client);
+	return project;
 
-	/* don't need these any more */
-	for (i = 0; i < client->argc; i++)
-		free(client->argv[i]);
-	free(client->argv);
-	client->argc = 0;
-	client->argv = NULL;
+fail:
+	lash_free(&filename);
+	project_destroy(project);
+	return NULL;
+}
 
-	printf("Client %s removed from project %s\n", client_get_identity(client),
-		   project->name);
-	server_notify_interfaces(project, client, LASH_Client_Remove, NULL);
+bool
+project_is_loaded(project_t *project)
+{
+	return !list_empty(&project->siblings_loaded);
 }
 
 void
-project_destroy(project_t * project)
+project_lose_client(project_t *project,
+                    client_t  *client)
 {
-	lash_list_t *node;
+	lash_list_t *patches;
+
+	lash_info("Losing client '%s'", client_get_identity(client));
+
+	if (CLIENT_CONFIG_DATA_SET(client) && client->store) {
+		if (!list_empty(&client->store->keys))
+			store_write(client->store);
+		else if (lash_dir_exists(client->store->dir))
+			lash_remove_dir(client->store->dir);
+	}
+
+	if (CLIENT_CONFIG_DATA_SET(client) || CLIENT_CONFIG_FILE(client)) {
+		const char *dir = (const char *) client->data_path;
+		if (lash_dir_exists(dir) && lash_dir_empty(dir))
+			lash_remove_dir(dir);
+
+		dir = lash_get_fqn(project->directory, PROJECT_ID_DIR);
+		if (lash_dir_exists(dir) && lash_dir_empty(dir))
+			lash_remove_dir(dir);
+	}
+
+	if (client->jack_client_name) {
+#ifdef HAVE_JACK_DBUS
+		lashd_jackdbus_mgr_remove_client(g_server->jackdbus_mgr,
+		                                 client->id, &patches);
+#else
+		jack_mgr_lock(g_server->jack_mgr);
+		patches = jack_mgr_remove_client(g_server->jack_mgr, client->id);
+		jack_mgr_unlock(g_server->jack_mgr);
+#endif
+		if (patches) {
+			client->jack_patches = lash_list_concat(client->jack_patches, patches);
+#ifdef LASH_DEBUG
+			lash_debug("Backed-up JACK patches:");
+			jack_patch_list(client->jack_patches);
+#endif
+		}
+	}
+
+#ifdef HAVE_ALSA
+	if (client->alsa_client_id) {
+		alsa_mgr_lock(g_server->alsa_mgr);
+		patches = alsa_mgr_remove_client(g_server->alsa_mgr, client->id);
+		alsa_mgr_unlock(g_server->alsa_mgr);
+		if (patches)
+			client->alsa_patches = lash_list_concat(client->alsa_patches, patches);
+	}
+#endif
+
+	dbus_free_string_array(client->argv);
+	client->argc = 0;
+	client->argv = NULL;
+
+	client->pid = 0;
+
+	list_add(&client->siblings, &project->lost_clients);
+	lashd_dbus_signal_emit_client_disappeared(client->id_str, project->name);
+}
+
+void
+project_unload(project_t *project)
+{
+	struct list_head *head, *node;
 	lash_list_t *patches, *pnode;
 	client_t *client;
-	lash_event_t *lash_event;
-	server_event_t *server_event;
 
-	for (node = project->clients; node; node = lash_list_next(node)) {
-		client = (client_t *) node->data;
+	list_del_init(&project->siblings_loaded);
+
+	lash_debug("Signaling all clients of project '%s' to quit",
+	           project->name);
+
+	signal_new_single(g_server->dbus_service,
+	                  "/", "org.nongnu.LASH.Server", "Quit",
+	                  DBUS_TYPE_STRING, &project->name);
+
+	head = &project->clients;
+	node = head->next;
+
+	while (node != head) {
+		client = list_entry(node, client_t, siblings);
+		node = node->next;
 
 		if (client->jack_client_name) {
-			jack_mgr_lock(project->server->jack_mgr);
+#ifdef HAVE_JACK_DBUS
+			lashd_jackdbus_mgr_remove_client(g_server->jackdbus_mgr,
+			                                 client->id, NULL);
+#else
+			jack_mgr_lock(g_server->jack_mgr);
 			patches =
-				jack_mgr_remove_client(project->server->jack_mgr, client->id);
-			jack_mgr_unlock(project->server->jack_mgr);
+			  jack_mgr_remove_client(g_server->jack_mgr,
+			                         client->id);
+			jack_mgr_unlock(g_server->jack_mgr);
 
 			for (pnode = patches; pnode; pnode = lash_list_next(pnode))
 				jack_patch_destroy((jack_patch_t *) pnode->data);
 			lash_list_free(patches);
+#endif
 		}
 
 #ifdef HAVE_ALSA
 		if (client->alsa_client_id) {
-			alsa_mgr_lock(project->server->alsa_mgr);
+			alsa_mgr_lock(g_server->alsa_mgr);
 			patches =
-				alsa_mgr_remove_client(project->server->alsa_mgr, client->id);
-			alsa_mgr_unlock(project->server->alsa_mgr);
+			  alsa_mgr_remove_client(g_server->alsa_mgr, client->id);
+			alsa_mgr_unlock(g_server->alsa_mgr);
 
 			for (pnode = patches; pnode; pnode = lash_list_next(pnode))
 				alsa_patch_destroy((alsa_patch_t *) pnode->data);
@@ -1007,88 +1233,177 @@ project_destroy(project_t * project)
 		}
 #endif
 
-		/* remove the client name links */
-		if (CLIENT_CONFIG_DATA_SET(client) || CLIENT_CONFIG_FILE(client))
-			if (client->name)
-				unlink(project_get_client_name_dir(project, client));
-
-		lash_event = lash_event_new_with_type(LASH_Quit);
-		conn_mgr_send_client_lash_event(project->server->conn_mgr,
-										client->conn_id, lash_event);
-
-		server_event = server_event_new();
-		server_event->type = Client_Disconnect;
-		server_event->conn_id = client->conn_id;
-		conn_mgr_send_client_event(project->server->conn_mgr, server_event);
-
+		list_del(&client->siblings);
 		client_destroy(client);
 	}
-	lash_list_free(project->clients);
 
-	for (node = project->lost_clients; node; node = lash_list_next(node))
-		client_destroy((client_t *) node->data);
-	lash_list_free(project->lost_clients);
+	head = &project->lost_clients;
+	node = head->next;
 
-	printf("Project %s removed\n", project->name);
+	while (node != head) {
+		client = list_entry(node, client_t, siblings);
+		node = node->next;
+		list_del(&client->siblings);
+		// TODO: Do lost clients also need to have their
+		//       JACK and ALSA patches destroyed?
+		client_destroy(client);
+	}
 
-	project_set_name(project, NULL);
-
-	if (access(lash_get_fqn(project->directory, INFO_FILE), F_OK) != 0)
-		lash_remove_dir(project->directory);
-
-	project_set_directory(project, NULL);
-
-	free(project);
+	lash_info("Project '%s' unloaded", project->name);
 }
 
-static void
-project_notify_percentage(project_t * project)
+void
+project_destroy(project_t *project)
 {
-	char num[16];
-	int percentage;
+	if (project) {
+		lash_info("Destroying project '%s'", project->name);
 
-	percentage =
-		(((float)(project->saves - project->pending_saves)) /
-		 ((float)project->saves)
-		 * 100.0);
+		if (project_is_loaded(project))
+			project_unload(project);
 
-	if (percentage > 100)
-		percentage = 100;
+		if (project->doc)
+			xmlFree(project->doc);
 
-	sprintf(num, "%d", percentage);
-	server_notify_interfaces(project, NULL, LASH_Percentage, num);
+		lash_free(&project->name);
+		lash_free(&project->directory);
+		lash_free(&project->description);
+		lash_free(&project->notes);
 
-	if (!project->pending_saves) {
-		sprintf(num, "%d", 0);
-		server_notify_interfaces(project, NULL, LASH_Percentage, num);
+		// TODO: Free client lists
 
-		project->saves = 0;
+		free(project);
+	}
+}
+
+/* Calculate a new overall progress reading for the project's current task */
+void
+project_client_progress(project_t *project,
+                        client_t  *client,
+                        uint8_t    percentage)
+{
+	if (client->task_progress)
+		project->client_tasks_progress -= client->task_progress;
+
+	project->client_tasks_progress += percentage;
+	client->task_progress = percentage;
+
+	/* Prevent divide by 0 */
+	if (!project->client_tasks_total)
+		return;
+
+	uint8_t p = project->client_tasks_progress / project->client_tasks_total;
+	lashd_dbus_signal_emit_progress(p > 99 ? 99 : p);
+}
+
+/* Set modified_status to new_status, emit signal if status changed */
+static void
+project_set_modified_status(project_t *project,
+                            bool       new_status)
+{
+	if (project->modified_status == new_status)
+		return;
+
+	dbus_bool_t value = new_status;
+	project->modified_status = new_status;
+
+	signal_new_valist(g_server->dbus_service,
+	                  "/", "org.nongnu.LASH.Control",
+	                  "ProjectModifiedStatusChanged",
+	                  DBUS_TYPE_STRING, &project->name,
+	                  DBUS_TYPE_BOOLEAN, &value,
+	                  DBUS_TYPE_INVALID);
+}
+
+/* Send the appropriate signal(s) to signify that a client completed a task */
+void
+project_client_task_completed(project_t *project,
+                              client_t  *client)
+{
+	/* Calculate new progress reading and send Progress signal */
+	project_client_progress(project, client, 100);
+
+	/* If the project task is finished emit the appropriate signals */
+	if (project->client_tasks_pending && (--project->client_tasks_pending) == 0) {
+		uint8_t x;
+
+		project->task_type = 0;
+		project->client_tasks_total = 0;
+		project->client_tasks_progress = 0;
+
+		/* Send ProjectSaved or ProjectLoaded signal, or return if the task was neither */
+		switch (client->task_type) {
+		case LASH_Save_Data_Set: case LASH_Save_File:
+			lashd_dbus_signal_emit_project_saved(project->name);
+			break;
+		case LASH_Restore_File: case LASH_Restore_Data_Set:
+			lashd_dbus_signal_emit_project_loaded(project->name);
+			break;
+		default:
+			return;
+		}
+
+		project_set_modified_status(project, false);
+
+		/* Reset the controllers' progress display */
+		lashd_dbus_signal_emit_progress(0);
 	}
 }
 
 void
-project_file_complete(project_t * project, client_t * client)
+project_rename(project_t  *project,
+               const char *new_name)
 {
-	project->pending_saves--;
-	project_notify_percentage(project);
+	char *old_name = project->name;
+	project->name = lash_strdup(new_name);
+
+	lashd_dbus_signal_emit_project_name_changed(old_name, new_name);
+
+	project_set_modified_status(project, true);
+
+	lash_free(&old_name);
 }
 
 void
-project_data_set_complete(project_t * project, client_t * client)
+project_set_description(project_t  *project,
+                        const char *description)
 {
-	int err;
+	lash_strset(&project->description, description);
+	lashd_dbus_signal_emit_project_description_changed(project->name, description);
 
-	if (!CLIENT_CONFIG_DATA_SET(client))
+	project_set_modified_status(project, true);
+}
+
+void
+project_set_notes(project_t  *project,
+                  const char *notes)
+{
+	lash_strset(&project->notes, notes);
+	lashd_dbus_signal_emit_project_notes_changed(project->name, notes);
+
+	project_set_modified_status(project, true);
+}
+
+void
+project_rename_client(project_t  *project,
+                      client_t   *client,
+                      const char *name)
+{
+	if (strcmp(client->name, name) == 0)
 		return;
 
-	err = client_store_write(client);
-	if (err)
-		fprintf(stderr, "%s: could not write client '%s's data to disk!"
-				"You should attempt to ascertain why, resolve the situation, and save the project again.\n",
-				__FUNCTION__, client_get_id_str(client));
+	lash_strset(&client->name, name);
+	lashd_dbus_signal_emit_client_name_changed(client->id_str, client->name);
+}
 
-	project->pending_saves--;
-	project_notify_percentage(project);
+void
+project_clear_id_dir(project_t *project)
+{
+	if (project) {
+		const char *dir = lash_get_fqn(project->directory,
+		                               PROJECT_ID_DIR);
+		if (lash_dir_exists(dir))
+			lash_remove_dir(dir);
+	}
 }
 
 /* EOF */

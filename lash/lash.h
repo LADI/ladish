@@ -1,8 +1,8 @@
 /*
  *   LASH
- *    
+ *
  *   Copyright (C) 2002 Robert Ham <rah@bash.sh>
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -21,11 +21,10 @@
 #ifndef __LASH_H__
 #define __LASH_H__
 
-#include <lash/client_interface.h>
 #include <lash/types.h>
 #include <lash/event.h>
 #include <lash/config.h>
-
-#include <uuid/uuid.h>
+#include <lash/protocol.h>
+#include <lash/client_interface.h>
 
 #endif /* __LASH_H__ */

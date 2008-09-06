@@ -1,8 +1,8 @@
 /*
  *   LASH
- *    
+ *
  *   Copyright (C) 2002 Robert Ham <rah@bash.sh>
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -18,13 +18,17 @@
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#define _GNU_SOURCE
-
-#include <lash/lash.h>
-#include <lash/internal_headers.h>
-
 #include "alsa_client.h"
-#include "alsa_patch.h"
+
+#ifdef HAVE_ALSA
+
+# define _GNU_SOURCE
+
+# include <stdlib.h>
+
+# include "alsa_patch.h"
+# include "common/safety.h"
+# include "common/debug.h"
 
 void
 alsa_client_init(alsa_client_t * client)
@@ -46,7 +50,7 @@ alsa_client_free_patch_list(lash_list_t ** list_ptr)
 	for (list = *list_ptr; list; list = lash_list_next(list)) {
 		patch = (alsa_patch_t *) list->data;
 		if (!patch) {
-			LASH_PRINT_DEBUG("NULL patch!")
+			lash_debug("NULL patch!");
 		} else
 			alsa_patch_destroy(patch);
 	}
@@ -92,7 +96,7 @@ alsa_client_new()
 {
 	alsa_client_t *client;
 
-	client = lash_malloc(sizeof(alsa_client_t));
+	client = lash_malloc(1, sizeof(alsa_client_t));
 	alsa_client_init(client);
 	return client;
 }
@@ -148,4 +152,4 @@ alsa_client_get_id(const alsa_client_t * client, uuid_t id)
 	uuid_copy(id, ((alsa_client_t *) client)->id);
 }
 
-/* EOF */
+#endif /* HAVE_ALSA */

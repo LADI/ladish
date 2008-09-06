@@ -1,8 +1,9 @@
 /*
  *   LASH
- *    
+ *
+ *   Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *   Copyright (C) 2002 Robert Ham <rah@bash.sh>
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -20,127 +21,152 @@
 
 #define _GNU_SOURCE
 
-#include <lash/lash.h>
-#include <lash/internal_headers.h>
+#include <string.h>
+
+#include "common/safety.h"
+#include "common/debug.h"
 
 #include "jack_mgr_client.h"
+#include "jack_patch.h"
 
-static void
-jack_mgr_client_free_patch_list(lash_list_t ** list_ptr)
+jack_mgr_client_t *
+jack_mgr_client_new(void)
 {
-	lash_list_t *list;
-	jack_patch_t *patch;
+	return lash_calloc(1, sizeof(jack_mgr_client_t));
+}
 
-	for (list = *list_ptr; list; list = lash_list_next(list)) {
-		patch = (jack_patch_t *) list->data;
-		if (!patch) {
-			LASH_PRINT_DEBUG("NULL patch!")
-		} else
-			jack_patch_destroy(patch);
+void
+jack_mgr_client_destroy(jack_mgr_client_t *client)
+{
+	if (client) {
+		lash_free(&client->name);
+		jack_mgr_client_free_patch_list(client->old_patches);
+		jack_mgr_client_free_patch_list(client->backup_patches);
+#ifndef HAVE_JACK_DBUS
+		jack_mgr_client_free_patch_list(client->patches);
+#endif
+		free(client);
+	}
+}
+
+lash_list_t *
+jack_mgr_client_dup_patch_list(lash_list_t *patch_list)
+{
+	lash_list_t *node, *new_list = NULL;
+	jack_patch_t *new_patch;
+
+	for (node = patch_list; node; node = lash_list_next(node)) {
+		new_patch = jack_patch_dup((jack_patch_t *) node->data);
+		new_list = lash_list_append(new_list, new_patch);
 	}
 
-	lash_list_free(*list_ptr);
-
-	*list_ptr = NULL;
+	return new_list;
 }
 
 void
-jack_mgr_client_free_patches(jack_mgr_client_t * client)
+jack_mgr_client_free_patch_list(lash_list_t *patch_list)
 {
-	if (!client->patches)
-		return;
+	if (patch_list) {
+		lash_list_t *node;
 
-	jack_mgr_client_free_patch_list(&client->patches);
-}
+		for (node = patch_list; node; node = lash_list_next(node))
+			jack_patch_destroy((jack_patch_t *) node->data);
 
-void
-jack_mgr_client_free_backup_patches(jack_mgr_client_t * client)
-{
-	if (!client->backup_patches)
-		return;
-
-	jack_mgr_client_free_patch_list(&client->backup_patches);
-}
-
-static void
-jack_mgr_client_free_old_patches(jack_mgr_client_t * client)
-{
-	jack_mgr_client_free_patch_list(&client->old_patches);
-}
-
-void
-jack_mgr_client_free(jack_mgr_client_t * client)
-{
-	jack_mgr_client_set_name(client, NULL);
-	jack_mgr_client_free_patches(client);
-	jack_mgr_client_free_old_patches(client);
+		lash_list_free(patch_list);
+	}
 }
 
 jack_mgr_client_t *
-jack_mgr_client_new()
+jack_mgr_client_find_by_id(lash_list_t *client_list,
+                           uuid_t       id)
 {
-	jack_mgr_client_t *client;
+	if (client_list) {
+		lash_list_t *node;
+		jack_mgr_client_t *client;
 
-	client = lash_malloc0(sizeof(jack_mgr_client_t));
-	uuid_clear(client->id);
-	return client;
-}
+		for (node = client_list; node; node = lash_list_next(node)) {
+			client = (jack_mgr_client_t *) node->data;
 
-void
-jack_mgr_client_destroy(jack_mgr_client_t * client)
-{
-	jack_mgr_client_free(client);
-	free(client);
-}
-
-void
-jack_mgr_client_set_id(jack_mgr_client_t * client, uuid_t id)
-{
-	uuid_copy(client->id, id);
-}
-
-void
-jack_mgr_client_set_name(jack_mgr_client_t * client, const char *name)
-{
-	set_string_property(client->name, name);
-}
-
-lash_list_t *
-jack_mgr_client_dup_patches(const jack_mgr_client_t * client)
-{
-	lash_list_t *list = NULL, *exlist;
-	jack_patch_t *patch, *expatch;
-
-	for (exlist = client->patches; exlist; exlist = lash_list_next(exlist)) {
-		expatch = (jack_patch_t *) exlist->data;
-
-		patch = jack_patch_dup(expatch);
-		list = lash_list_append(list, patch);
-
-		LASH_DEBUGARGS("duplicated jack patch '%s': '%s'",
-					   jack_patch_get_desc(expatch),
-					   jack_patch_get_desc(patch));
+			if (uuid_compare(id, client->id) == 0)
+				return client;
+		}
 	}
 
-	return list;
+	return NULL;
 }
+
+#ifdef HAVE_JACK_DBUS
+
+jack_mgr_client_t *
+jack_mgr_client_find_by_jackdbus_id(lash_list_t   *client_list,
+                                    dbus_uint64_t  id)
+{
+	if (client_list) {
+		lash_list_t *node;
+		jack_mgr_client_t *client;
+
+		for (node = client_list; node; node = lash_list_next(node)) {
+			client = (jack_mgr_client_t *) node->data;
+
+			if (client->jackdbus_id == id)
+				return client;
+		}
+	}
+
+	return NULL;
+}
+
+#else /* !HAVE_JACK_DBUS */
 
 lash_list_t *
-jack_mgr_client_get_patches(jack_mgr_client_t * client)
+jack_mgr_client_dup_uniq_patches(lash_list_t *jack_mgr_clients,
+                                 uuid_t       client_id)
 {
-	return client->patches;
+	jack_mgr_client_t *client;
+	lash_list_t *node, *uniq_node, *patches, *uniq_patches = NULL;
+	jack_patch_t *patch, *uniq_patch;
+
+	client = jack_mgr_client_find_by_id(jack_mgr_clients, client_id);
+	if (!client) {
+		char id_str[37];
+		uuid_unparse(client_id, id_str);
+		lash_error("Unknown client %s", id_str);
+		return NULL;
+	}
+
+	patches = jack_mgr_client_dup_patch_list(client->patches);
+
+	for (node = patches; node; node = lash_list_next(node)) {
+		patch = (jack_patch_t *) node->data;
+
+		jack_patch_set(patch, jack_mgr_clients);
+
+		for (uniq_node = uniq_patches; uniq_node;
+		     uniq_node = lash_list_next(uniq_node)) {
+			uniq_patch = (jack_patch_t *) uniq_node->data;
+
+			if (strcmp(patch->src_client,
+			           uniq_patch->src_client) == 0
+			    && strcmp(patch->src_port,
+			              uniq_patch->src_port) == 0
+			    && strcmp(patch->dest_client,
+			              uniq_patch->dest_client) == 0
+			    && strcmp(patch->dest_port,
+			              uniq_patch->dest_port) == 0)
+				break;
+		}
+
+		if (uniq_node)
+			jack_patch_destroy(patch);
+		else
+			uniq_patches = lash_list_append(uniq_patches, patch);
+	}
+
+	lash_list_free(patches);
+
+	return uniq_patches;
 }
 
-const char *
-jack_mgr_client_get_name(const jack_mgr_client_t * client)
-{
-	return client->name;
-}
-
-void
-jack_mgr_client_get_id(const jack_mgr_client_t * client, uuid_t id)
-{
-	uuid_copy(id, ((jack_mgr_client_t *) client)->id);
-}
+#endif
 
 /* EOF */

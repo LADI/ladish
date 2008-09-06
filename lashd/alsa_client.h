@@ -1,8 +1,8 @@
 /*
  *   LASH
- *    
+ *
  *   Copyright (C) 2002 Robert Ham <rah@bash.sh>
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -18,17 +18,17 @@
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __LASH_ALSA_CLIENT_H__
-#define __LASH_ALSA_CLIENT_H__
+#ifndef __LASHD_ALSA_CLIENT_H__
+#define __LASHD_ALSA_CLIENT_H__
 
-#include "config.h"
+#include "../config.h"
 
 #ifdef HAVE_ALSA
 
-#include <pthread.h>
-#include <uuid/uuid.h>
+# include <uuid/uuid.h>
 
-typedef struct _alsa_client alsa_client_t;
+# include "types.h"
+# include "common/list.h"
 
 struct _alsa_client
 {
@@ -55,4 +55,4 @@ void alsa_client_free_backup_patches (alsa_client_t * client);
 
 #endif /* HAVE_ALSA */
 
-#endif /* __LASH_ALSA_CLIENT_H__ */
+#endif /* __LASHD_ALSA_CLIENT_H__ */

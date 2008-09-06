@@ -17,7 +17,7 @@
 #include <limits.h>
 #include <pthread.h>
 
-#include <lash/lash.h>
+#include "lash/lash.h"
 
 #define POLY 10
 

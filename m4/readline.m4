@@ -1,5 +1,8 @@
 #
-# downloaded from the gnu autoconf macro archive
+# Original version: Copyright © 2008 Ville Laurikari <vl@iki.fi>
+#                   http://autoconf-archive.cryp.to/vl_lib_readline.html
+#
+# Modified for LASH by Juuso Alasuutari
 #
 AC_DEFUN([VL_LIB_READLINE], [
   AC_CACHE_CHECK([for a readline compatible library],
@@ -22,12 +25,11 @@ AC_DEFUN([VL_LIB_READLINE], [
         break
       fi
     done
-    if test -z "$vl_cv_lib_readline"; then
-      vl_cv_lib_readline="no"
-      LIBS="$ORIG_LIBS"
+    if test -n "$vl_cv_lib_readline"; then
+      READLINE_LIBS="$vl_cv_lib_readline"
     else
-	  READLINE_LIBS=$LIBS
-	fi
+      vl_cv_lib_readline="no"
+    fi
   ])
 
   if test "$vl_cv_lib_readline" != "no"; then
@@ -45,5 +47,6 @@ AC_DEFUN([VL_LIB_READLINE], [
       AC_CHECK_HEADERS(history.h readline/history.h)
     fi
   fi
-])dnl
 
+  LIBS="$ORIG_LIBS"
+])dnl

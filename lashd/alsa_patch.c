@@ -1,8 +1,8 @@
 /*
  *   LASH
- *    
+ *
  *   Copyright (C) 2002 Robert Ham <rah@bash.sh>
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -18,16 +18,16 @@
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <stdlib.h>
-#include <uuid/uuid.h>
-
-#include <alsa/asoundlib.h>
-
-#include <lash/internal_headers.h>
-
-#include "client.h"
 #include "alsa_patch.h"
-#include "alsa_client.h"
+
+#ifdef HAVE_ALSA
+
+# include <stdlib.h>
+
+# include "client.h"
+# include "alsa_client.h"
+# include "common/safety.h"
+# include "common/debug.h"
 
 void
 alsa_patch_init(alsa_patch_t * patch)
@@ -53,7 +53,7 @@ alsa_patch_new()
 {
 	alsa_patch_t *patch;
 
-	patch = lash_malloc(sizeof(alsa_patch_t));
+	patch = lash_malloc(1, sizeof(alsa_patch_t));
 	alsa_patch_init(patch);
 	return patch;
 }
@@ -169,14 +169,14 @@ alsa_patch_unset_client_id(alsa_patch_t * patch,
 		if (uuid_compare(patch_client_id, client->id) == 0) {
 			snd_seq_addr_t addr;
 
-#ifdef LASH_DEBUG
+# ifdef LASH_DEBUG
 			{
 				char id[37];
 
 				uuid_unparse(client->id, id);
-				LASH_DEBUGARGS("found alsa mgr client with id '%s'", id);
+				lash_debug("found alsa mgr client with id '%s'", id);
 			}
-#endif
+# endif
 
 			addr.client = client->client_id;
 			addr.port = get_sub_addr(patch->sub)->port;
@@ -186,14 +186,14 @@ alsa_patch_unset_client_id(alsa_patch_t * patch,
 		}
 	}
 
-#ifdef LASH_DEBUG
+# ifdef LASH_DEBUG
 	{
 		char id[37];
 
 		uuid_unparse(client->id, id);
-		LASH_DEBUGARGS("could not find alsa mgr client with id '%s'", id);
+		lash_debug("could not find alsa mgr client with id '%s'", id);
 	}
-#endif
+# endif
 
 	return 1;
 }
@@ -401,64 +401,64 @@ alsa_patch_parse_xml(alsa_patch_t * patch, xmlNodePtr parent)
 	const snd_seq_addr_t *addrptr;
 
 	for (xmlnode = parent->children; xmlnode; xmlnode = xmlnode->next) {
-		if (strcmp(CAST_BAD(xmlnode->name), "src_client") == 0) {
+		if (strcmp((const char*) xmlnode->name, "src_client") == 0) {
 			content = xmlNodeGetContent(xmlnode);
 			addrptr = snd_seq_port_subscribe_get_sender(patch->sub);
-			addr.client = strtoul(CAST_BAD content, NULL, 10);
+			addr.client = strtoul((const char*) content, NULL, 10);
 			addr.port = addrptr->port;
 			snd_seq_port_subscribe_set_sender(patch->sub, &addr);
 			xmlFree(content);
-		} else if (strcmp(CAST_BAD(xmlnode->name), "src_client_id") == 0) {
+		} else if (strcmp((const char*) xmlnode->name, "src_client_id") == 0) {
 			content = xmlNodeGetContent(xmlnode);
-			uuid_parse(CAST_BAD content, patch->src_id);
+			uuid_parse((char *) content, patch->src_id);
 			xmlFree(content);
-		} else if (strcmp(CAST_BAD(xmlnode->name), "src_port") == 0) {
+		} else if (strcmp((const char*) xmlnode->name, "src_port") == 0) {
 			content = xmlNodeGetContent(xmlnode);
 			addrptr = snd_seq_port_subscribe_get_sender(patch->sub);
-			addr.port = strtoul(CAST_BAD content, NULL, 10);
+			addr.port = strtoul((const char *) content, NULL, 10);
 			addr.client = addrptr->client;
 			snd_seq_port_subscribe_set_sender(patch->sub, &addr);
 			xmlFree(content);
-		} else if (strcmp(CAST_BAD(xmlnode->name), "dest_client") == 0) {
+		} else if (strcmp((const char*) xmlnode->name, "dest_client") == 0) {
 			content = xmlNodeGetContent(xmlnode);
 			addrptr = snd_seq_port_subscribe_get_dest(patch->sub);
-			addr.client = strtoul(CAST_BAD content, NULL, 10);
+			addr.client = strtoul((const char *) content, NULL, 10);
 			addr.port = addrptr->port;
 			snd_seq_port_subscribe_set_dest(patch->sub, &addr);
 			xmlFree(content);
-		} else if (strcmp(CAST_BAD(xmlnode->name), "dest_client_id") == 0) {
+		} else if (strcmp((const char*) xmlnode->name, "dest_client_id") == 0) {
 			content = xmlNodeGetContent(xmlnode);
-			uuid_parse(CAST_BAD content, patch->dest_id);
+			uuid_parse((char *) content, patch->dest_id);
 			xmlFree(content);
-		} else if (strcmp(CAST_BAD(xmlnode->name), "dest_port") == 0) {
+		} else if (strcmp((const char*) xmlnode->name, "dest_port") == 0) {
 			content = xmlNodeGetContent(xmlnode);
 			addrptr = snd_seq_port_subscribe_get_dest(patch->sub);
-			addr.port = strtoul(CAST_BAD content, NULL, 10);
+			addr.port = strtoul((const char *) content, NULL, 10);
 			addr.client = addrptr->client;
 			snd_seq_port_subscribe_set_dest(patch->sub, &addr);
 			xmlFree(content);
-		} else if (strcmp(CAST_BAD(xmlnode->name), "queue") == 0) {
+		} else if (strcmp((const char*) xmlnode->name, "queue") == 0) {
 			content = xmlNodeGetContent(xmlnode);
 			snd_seq_port_subscribe_set_queue(patch->sub,
-											 strtoul(CAST_BAD content, NULL,
+											 strtoul((const char *) content, NULL,
 													 10));
 			xmlFree(content);
-		} else if (strcmp(CAST_BAD(xmlnode->name), "exclusive") == 0) {
+		} else if (strcmp((const char*) xmlnode->name, "exclusive") == 0) {
 			content = xmlNodeGetContent(xmlnode);
 			snd_seq_port_subscribe_set_exclusive(patch->sub,
-												 strtoul(CAST_BAD content,
+												 strtoul((const char *) content,
 														 NULL, 10));
 			xmlFree(content);
-		} else if (strcmp(CAST_BAD(xmlnode->name), "time_update") == 0) {
+		} else if (strcmp((const char*) xmlnode->name, "time_update") == 0) {
 			content = xmlNodeGetContent(xmlnode);
 			snd_seq_port_subscribe_set_time_update(patch->sub,
-												   strtoul(CAST_BAD content,
+												   strtoul((const char *) content,
 														   NULL, 10));
 			xmlFree(content);
-		} else if (strcmp(CAST_BAD(xmlnode->name), "time_real") == 0) {
+		} else if (strcmp((const char*) xmlnode->name, "time_real") == 0) {
 			content = xmlNodeGetContent(xmlnode);
 			snd_seq_port_subscribe_set_time_real(patch->sub,
-												 strtoul(CAST_BAD content,
+												 strtoul((const char *) content,
 														 NULL, 10));
 			xmlFree(content);
 		}
@@ -528,4 +528,4 @@ alsa_patch_compare(alsa_patch_t * a, alsa_patch_t * b)
 	return 0;
 }
 
-/* EOF */
+#endif /* HAVE_ALSA */

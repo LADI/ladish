@@ -1,8 +1,8 @@
 /*
  *   LASH
- *    
+ *
  *   Copyright (C) 2002 Robert Ham <rah@bash.sh>
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -21,9 +21,7 @@
 #ifndef __LASH_PROTOCOL_H__
 #define __LASH_PROTOCOL_H__
 
-#include <stdint.h>
-
-typedef uint32_t lash_protocol_t;
+#include <lash/types.h>
 
 #define LASH_PROTOCOL_MAJOR 2
 #define LASH_PROTOCOL_MINOR 0

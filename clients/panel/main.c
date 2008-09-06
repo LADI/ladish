@@ -18,7 +18,7 @@
 
 #include "config.h"
 
-#include <lash/lash.h>
+#include "lash/lash.h"
 
 #include <getopt.h>
 #include <stdio.h>
@@ -48,7 +48,6 @@ print_help()
 int
 main(int argc, char **argv)
 {
-	lash_args_t *lash_args;
 	lash_client_t *lash_client;
 	panel_t *panel;
 	int opt;
@@ -57,8 +56,6 @@ main(int argc, char **argv)
 		{"help", 0, NULL, 'h'},
 		{0, 0, 0, 0}
 	};
-
-	lash_args = lash_extract_args(&argc, &argv);
 
 	gtk_set_locale();
 	gtk_init(&argc, &argv);
@@ -78,8 +75,7 @@ main(int argc, char **argv)
 		}
 	}
 
-	lash_client = lash_init(lash_args, "LASH Control Panel",
-							LASH_Server_Interface, LASH_PROTOCOL(2, 0));
+	lash_client = lash_client_open_controller();
 
 	if (!lash_client) {
 		fprintf(stderr, "%s: could not initialise LASH\n", __FUNCTION__);
@@ -87,6 +83,13 @@ main(int argc, char **argv)
 	}
 
 	panel = panel_create(lash_client);
+
+	if (!lash_set_control_callback(lash_client, deal_with_event,
+	                               (void *) panel)) {
+		// TODO: Is there really no destructor for panel_t?
+		fprintf(stderr, "%s: could not initialise LASH\n", __FUNCTION__);
+		exit(1);
+	}
 
 	gtk_main();
 

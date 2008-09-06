@@ -1,8 +1,9 @@
 /*
  *   LASH
- *    
+ *
+ *   Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *   Copyright (C) 2002 Robert Ham <rah@bash.sh>
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -21,59 +22,134 @@
 #ifndef __LASHD_PROJECT_H__
 #define __LASHD_PROJECT_H__
 
-#include <lash/list.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <uuid/uuid.h>
+#include <libxml/tree.h>
 
-#include "client.h"
-#include "conn_mgr.h"
+#include "common/klist.h"
+#include "common/list.h"
 
-#define UI_PROJECT_NAME "ui-project"
-#define UI_PROJECT_DIR  ".lashd/ui-project"
+#include "types.h"
 
-typedef struct _project project_t;
+#define PROJECT_ID_DIR      ".id"
+#define PROJECT_CONFIG_DIR  ".config"
+#define PROJECT_INFO_FILE   ".lash_info"
+#define PROJECT_NOTES_FILE  ".notes"
+#define PROJECT_XML_VERSION "1.0"
+
+enum
+{
+	LASH_TASK_SAVE = 1,
+	LASH_TASK_LOAD
+};
 
 struct _project
 {
-  char *           name;
-  char *           directory;
-  lash_list_t *     clients;
-  lash_list_t *     lost_clients;
-  struct _server * server;
+	struct list_head  siblings_all;
+	struct list_head  siblings_loaded;
 
-  /* stuff for operation completion feedback (LASH_Percentage) */
-  int              saves;
-  int              pending_saves;
+	xmlDocPtr         doc;
+
+	char             *name;
+	char             *directory;
+	char             *description;
+	char             *notes;
+	bool              modified_status;
+	time_t            last_modify_time;
+
+	struct list_head  clients;
+	struct list_head  lost_clients;
+
+	/* For task progress feedback (LASH_Percentage) */
+	int               task_type;
+	uint32_t          client_tasks_total;
+	uint32_t          client_tasks_pending;
+	uint32_t          client_tasks_progress; // Min is 0, max is client_tasks_total*100
 };
 
 
-project_t * project_new (struct _server * server);
-void        project_destroy (project_t * project);
-project_t * project_restore (struct _server * server, const char * dir);
+project_t *
+project_new(void);
 
-client_t *project_get_client_by_id (project_t * project, uuid_t id);
+project_t *
+project_new_from_disk(const char *parent_dir,
+                      const char *project_dir);
 
+void
+project_destroy(project_t *project);
 
-void project_set_name (project_t * project, const char * name);
-void project_set_directory (project_t * project, const char * directory);
+void
+project_unload(project_t *project);
 
-void project_move              (project_t * project, const char * new_dir);
-void project_add_client        (project_t * project, client_t * client);
-void project_remove_client     (project_t * project, client_t * client);
-void project_lose_client       (project_t * project, client_t * client, lash_list_t * jack_patches, lash_list_t * alsa_patches);
-void project_name_client       (project_t * project, client_t * client, const char * name);
-void project_move_client       (project_t * project, client_t * client, const char * new_project_dir);
-void project_restore_data_set  (project_t * project, client_t * client);
-void project_save              (project_t * project);
-void project_file_complete     (project_t * project, client_t * client);
-void project_data_set_complete (project_t * project, client_t * client);
-void project_resume_client_alsa_patches (project_t * project, client_t * client);
-void project_resume_client_jack_patches (project_t * project, client_t * client);
+bool
+project_load(project_t *project);
 
+bool
+project_is_loaded(project_t *project);
 
-int project_name_exists (lash_list_t * projects, const char * name);
-  
-const char * project_get_client_id_dir (project_t * project, client_t * client);
-const char * project_get_client_name_dir (project_t * project, client_t * client);
-const char * project_get_client_config_dir (project_t * project, client_t * client);
+client_t *
+project_get_client_by_id(struct list_head *client_list,
+                         uuid_t            id);
 
+void
+project_move(project_t  *project,
+             const char *new_dir);
+
+void
+project_client_progress(project_t *project,
+                        client_t  *client,
+                        uint8_t    percentage);
+
+void
+project_client_task_completed(project_t *project,
+                              client_t  *client);
+
+void
+project_rename(project_t  *project,
+               const char *new_name);
+
+void
+project_launch_client(project_t *project,
+                      client_t  *client);
+
+void
+project_add_client(project_t *project,
+                  client_t   *client);
+
+void
+project_lose_client(project_t *project,
+                    client_t  *client);
+
+void
+project_save(project_t *project);
+
+void
+project_satisfy_client_dependency(project_t *project,
+                                  client_t  *client);
+
+void
+project_set_description(project_t  *project,
+                        const char *description);
+
+void
+project_set_notes(project_t  *project,
+                  const char *notes);
+
+void
+project_set_description(project_t  *project,
+                        const char *description);
+
+void
+project_set_notes(project_t  *project,
+                  const char *notes);
+
+void
+project_rename_client(project_t  *project,
+                      client_t   *client,
+                      const char *name);
+
+void
+project_clear_id_dir(project_t *project);
 
 #endif /* __LASHD_PROJECT_H__ */

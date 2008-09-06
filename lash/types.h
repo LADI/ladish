@@ -1,8 +1,9 @@
 /*
  *   LASH
- *    
+ *
+ *   Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *   Copyright (C) 2002 Robert Ham <rah@bash.sh>
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -21,11 +22,21 @@
 #ifndef __LASH_TYPES_H__
 #define __LASH_TYPES_H__
 
-#define LASH_DEFAULT_PORT 14541
+#include <stdbool.h>
+#include <uuid/uuid.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+enum
+{
+	LASH_TYPE_DOUBLE  = 'd',
+	LASH_TYPE_INTEGER = 'u',
+	LASH_TYPE_STRING  = 's',
+	LASH_TYPE_RAW     = '-',
+};
 
 
 enum LASH_Client_Flag
@@ -66,11 +77,37 @@ enum LASH_Event_Type
 };
 
 
+/** LASH client handle */
+typedef struct _lash_client lash_client_t;
+
+/** Opaque handle used for reading and writing configs. The functions
+    \ref lash_config_read, \ref lash_config_write, and
+    \ref lash_config_write_raw must always be supplied with the
+    lash_config_handle_t pointer provided by liblash as the first
+    parameter of a \ref LashConfigCallback function. */
+typedef struct _lash_config_handle lash_config_handle_t;
+
+/** Client event callback function */
+typedef bool (*LashEventCallback) (void *user_data);
+
+/** Client config message callback function */
+typedef bool (*LashConfigCallback) (lash_config_handle_t *config_handle,
+                                    void                 *user_data);
+
+/** Controller event callback function type. */
+typedef void (*LashControlCallback) (enum LASH_Event_Type  type,
+                                     const char           *string1,
+                                     const char           *string2,
+                                     uuid_t                client_id,
+                                     void                 *user_data);
+
+
+/* Types which belong entirely to the old API */
+
+#include <stdint.h>
+
 /* the set of lash-specific arguments that are extracted from argc/argv */
 typedef struct _lash_args lash_args_t;
-
-/* the main client-side handle for the server connection */
-typedef struct _lash_client lash_client_t;
 
 /* an event */
 typedef struct _lash_event lash_event_t;
@@ -78,6 +115,7 @@ typedef struct _lash_event lash_event_t;
 /* a bit of key-indexed data */
 typedef struct _lash_config lash_config_t;
 
+typedef uint32_t lash_protocol_t;
 
 #ifdef __cplusplus
 }

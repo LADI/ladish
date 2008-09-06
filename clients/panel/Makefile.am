@@ -8,7 +8,6 @@ lash_panel_SOURCES = \
 	project.h project.c
 
 lash_panel_CFLAGS = \
-	$(LASH_CFLAGS) \
 	$(GTK2_CFLAGS)
 
 lash_panel_LDADD = \

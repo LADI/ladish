@@ -19,7 +19,7 @@
 #include "project.h"
 #include "config.h"
 #include <stdlib.h>
-#include <lash/lash.h>
+#include "lash/lash.h"
 #include <assert.h>
 #include <unistd.h>
 #include <string.h>
@@ -27,58 +27,55 @@
 /* Button callbacks */
 
 void
-save_cb(GtkButton * button, void *data)
+save_cb(GtkButton *button,
+        void      *data)
 {
 	project_t *project = (project_t *) data;
-	lash_event_t *event = lash_event_new_with_type(LASH_Save);
 
-	lash_event_set_project(event, project->name);
-	lash_send_event(project->lash_client, event);
+	lash_control_save_project(project->lash_client, project->name);
 
 	printf("Told server to save project %s\n", project->name);
 }
 
 void
-close_cb(GtkButton * button, void *data)
+close_cb(GtkButton *button,
+         void      *data)
 {
 	project_t *project = (project_t *) data;
-	lash_event_t *event = lash_event_new_with_type(LASH_Project_Remove);
 
-	lash_event_set_project(event, project->name);
-	lash_send_event(project->lash_client, event);
+	lash_control_close_project(project->lash_client, project->name);
 
 	printf("Told server to close project %s\n", project->name);
 }
 
 void
-set_dir_cb(GtkButton * button, void *data)
+set_dir_cb(GtkButton *button,
+           void      *data)
 {
 	project_t *project = (project_t *) data;
 	int response = GTK_RESPONSE_NONE;
 	char *filename = NULL;
-	lash_event_t *event = NULL;
 
 	GtkWidget *save_dialog =
-		gtk_file_chooser_dialog_new("Set Project Directory", NULL,
-									GTK_FILE_CHOOSER_ACTION_SAVE,
-									GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-									GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
+	  gtk_file_chooser_dialog_new("Set Project Directory", NULL,
+	                              GTK_FILE_CHOOSER_ACTION_SAVE,
+	                              GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+	                              GTK_STOCK_OK, GTK_RESPONSE_OK, NULL);
 	
 	char default_dir[256];
 	snprintf(default_dir, 256, "%s/%s", getenv("HOME"), DEFAULT_PROJECT_DIR);
 	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(save_dialog),
-		default_dir);
+	                                    default_dir);
 	
 	response = gtk_dialog_run(GTK_DIALOG(save_dialog));
 
 	if (response == GTK_RESPONSE_OK) {
 		filename =
-			gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(save_dialog));
+		  gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(save_dialog));
 		project_set_dir(project, filename);
-		event = lash_event_new_with_type(LASH_Project_Dir);
-		lash_event_set_project(event, project->name);
-		lash_event_set_string(event, filename);
-		lash_send_event(project->lash_client, event);
+
+		lash_control_move_project(project->lash_client, project->name,
+		                          filename);
 
 		printf("Told server to set project directory %s\n", filename);
 	}
@@ -87,18 +84,15 @@ set_dir_cb(GtkButton * button, void *data)
 }
 
 void
-set_name_cb(GtkEntry * entry, void *data)
+set_name_cb(GtkEntry *entry,
+            void     *data)
 {
 	project_t *project = (project_t *) data;
-	lash_event_t *event = NULL;
 	const char *new_name = gtk_entry_get_text(GTK_ENTRY(project->name_entry));
 
-	printf("Name changed: %s\n", new_name);
+	lash_control_name_project(project->lash_client, project->name, new_name);
 
-	event = lash_event_new_with_type(LASH_Project_Name);
-	lash_event_set_project(event, project->name);
-	lash_event_set_string(event, new_name);
-	lash_send_event(project->lash_client, event);
+	printf("Name changed: %s\n", new_name);
 }
 
 /* Project */

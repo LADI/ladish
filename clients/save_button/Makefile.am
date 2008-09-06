@@ -6,7 +6,6 @@ lash_save_button_SOURCES = \
 	save_button.c
 
 lash_save_button_CFLAGS = \
-	$(LASH_CFLAGS) \
 	$(GTK2_CFLAGS)
 
 lash_save_button_LDADD = \

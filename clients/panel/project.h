@@ -20,7 +20,7 @@
 #define __PROJECT_H__
 
 #include <gtk/gtk.h>
-#include <lash/lash.h>
+#include "lash/lash.h"
 
 typedef struct _project project_t;
 

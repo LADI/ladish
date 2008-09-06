@@ -1,8 +1,8 @@
 /*
  *   LASH
- *    
+ *
  *   Copyright (C) 2002 Robert Ham <rah@bash.sh>
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -21,8 +21,7 @@
 #ifndef __HINTS_H__
 #define __HINTS_H__
 
-#include <lash/lash.h>
-#include <lash/list.h>
+#include "lash/lash.h"
 
 extern void (*set_always_func)(GtkWidget *, gboolean);
 extern void (*set_sticky_func)(GtkWidget *, gboolean);

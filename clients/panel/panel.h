@@ -20,7 +20,7 @@
 #define __PANEL_H__
 
 #include <gtk/gtk.h>
-#include <lash/lash.h>
+#include "lash/lash.h"
 
 
 typedef struct _panel panel_t;
@@ -47,6 +47,11 @@ struct _panel
 
 panel_t* panel_create (lash_client_t * client);
 
-
+void
+deal_with_event(enum LASH_Event_Type  type,
+                const char           *string1,
+                const char           *string2,
+                uuid_t                client_id,
+                void                 *user_data);
 
 #endif /* __PANEL_H__ */

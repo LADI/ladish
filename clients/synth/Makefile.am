@@ -9,7 +9,6 @@ lash_synth_SOURCES = \
 	lash.c lash.h
 
 lash_synth_CFLAGS = \
-	$(LASH_CFLAGS) \
 	$(JACK_CFLAGS) \
 	$(ALSA_CFLAGS) \
 	$(GTK2_CFLAGS) \

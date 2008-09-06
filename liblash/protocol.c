@@ -1,8 +1,8 @@
 /*
  *   LASH
- *    
+ *
  *   Copyright (C) 2002 Robert Ham <rah@bash.sh>
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -18,10 +18,14 @@
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <stdio.h>
-#include <inttypes.h>
+#include "../config.h"
 
-#include <lash/protocol.h>
+#ifdef LASH_OLD_API
+
+# include <stdio.h>
+# include <inttypes.h>
+
+# include "lash/protocol.h"
 
 const char *
 lash_protocol_string(lash_protocol_t protocol)
@@ -29,10 +33,12 @@ lash_protocol_string(lash_protocol_t protocol)
 	static char str[32];
 
 	sprintf(str, "%" PRIu32 ".%" PRIu32,
-			LASH_PROTOCOL_GET_MAJOR(protocol),
-			LASH_PROTOCOL_GET_MINOR(protocol));
+	        LASH_PROTOCOL_GET_MAJOR(protocol),
+	        LASH_PROTOCOL_GET_MINOR(protocol));
 
 	return str;
 }
+
+#endif /* LASH_OLD_API */
 
 /* EOF */

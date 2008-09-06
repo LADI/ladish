@@ -1,8 +1,8 @@
 /*
  *   LASH
- *    
+ *
  *   Copyright (C) 2002 Robert Ham <rah@bash.sh>
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -18,24 +18,22 @@
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __LASH_ALSA_MGR_H__
-#define __LASH_ALSA_MGR_H__
+#ifndef __LASHD_ALSA_MGR_H__
+#define __LASHD_ALSA_MGR_H__
 
-#include "config.h"
+#include "../config.h"
 
 #ifdef HAVE_ALSA
 
-#include <pthread.h>
-#include <uuid/uuid.h>
-#include <alsa/asoundlib.h>
+# include <pthread.h>
+# include <uuid/uuid.h>
+# include <alsa/asoundlib.h>
 
-#include <lash/lash.h>
-
-typedef struct _alsa_mgr        alsa_mgr_t;
+# include "types.h"
+# include "common/list.h"
 
 struct _alsa_mgr
 {
-  struct _server * server;
   pthread_mutex_t  lock;
 
   snd_seq_t *      seq;
@@ -46,8 +44,7 @@ struct _alsa_mgr
   lash_list_t *     foreign_ports;
 };
 
-
-alsa_mgr_t * alsa_mgr_new     (struct _server * server);
+alsa_mgr_t * alsa_mgr_new     (void);
 void         alsa_mgr_destroy (alsa_mgr_t * alsa_mgr);
 
 void         alsa_mgr_add_client         (alsa_mgr_t * alsa_mgr,
@@ -64,4 +61,4 @@ const char * get_alsa_port_name_only (const char * port_name);
 
 #endif /* HAVE_ALSA */
 
-#endif /* __LASH_ALSA_MGR_H__ */
+#endif /* __LASHD_ALSA_MGR_H__ */

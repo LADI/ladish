@@ -1,8 +1,8 @@
 /*
  *   LASH
- *    
+ *
  *   Copyright (C) 2002 Robert Ham <rah@bash.sh>
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -21,7 +21,7 @@
 #ifndef __LASH_SYNTH_H__
 #define __LASH_SYNTH_H__
 
-#include <lash/lash.h>
+#include "lash/lash.h"
 
 extern lash_client_t * lash_client;
 extern double modulation, attack, decay, sustain, release, gain, sample_rate;

@@ -1,8 +1,9 @@
 /*
  *   LASH
- *    
+ *
+ *   Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *   Copyright (C) 2002 Robert Ham <rah@bash.sh>
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -18,270 +19,323 @@
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <lash/internal_headers.h>
+#include "../config.h"
 
-#include "config.h"
+#include <dbus/dbus.h>
+
+#include "common/safety.h"
+#include "common/debug.h"
+
 #include "client.h"
+#include "server.h"
+#include "client_dependency.h"
+#include "project.h"
 #include "jack_patch.h"
 #include "alsa_patch.h"
+#include "store.h"
 
 client_t *
-client_new(lash_connect_params_t * params)
+client_new(void)
 {
 	client_t *client;
 
-	client = lash_malloc0(sizeof(client_t));
+	client = lash_calloc(1, sizeof(client_t));
+
+	INIT_LIST_HEAD(&client->dependencies);
+	INIT_LIST_HEAD(&client->unsatisfied_deps);
 
 	return client;
 }
 
 void
-client_destroy(client_t * client)
+client_destroy(client_t *client)
 {
-	client_set_name(client, NULL);
-	client_set_jack_client_name(client, NULL);
-	client_set_class(client, NULL);
-	client_set_requested_project(client, NULL);
-	client_set_working_dir(client, NULL);
-	if (client->store)
-		store_destroy(client->store);
-	free(client);
-}
-
-const char *
-client_get_id_str(client_t * client)
-{
-	static char id_str[37];
-
-	uuid_unparse(client->id, id_str);
-
-	return id_str;
-}
-
-const char *
-client_get_identity(client_t * client)
-{
-	static char *identity = NULL;
-	static size_t identity_len = 0;
-
-	if (!identity) {
-		identity_len = 37;
-		identity = lash_malloc(identity_len);
+	if (client) {
+		lash_free(&client->name);
+		lash_free(&client->jack_client_name);
+		lash_free(&client->class);
+		lash_free(&client->working_dir);
+		lash_free(&client->data_path);
+		dbus_free_string_array(client->argv);
+		if (client->store)
+			store_destroy(client->store);
+		client_dependency_remove_all(&client->dependencies);
+		client_dependency_remove_all(&client->unsatisfied_deps);
+		lash_free(&client);
 	}
+}
 
-	if (!client->name) {
-		uuid_unparse(client->id, identity);
+void
+client_disconnected(client_t *client)
+{
+	if (!client)
+		return;
+
+	lash_debug("Client '%s' disconnected", client_get_identity(client));
+
+	list_del(&client->siblings);
+
+	if (client->project) {
+		project_lose_client(client->project, client);
 	} else {
-		size_t name_len;
+		lashd_dbus_signal_emit_client_disappeared(client->id_str, "");
+		client_destroy(client);
+	}
+}
 
-		name_len = strlen(client->name) + 1;
-		if (name_len > identity_len) {
-			identity_len = name_len;
-			identity = lash_realloc(identity, identity_len);
-		}
-		strcpy(identity, client->name);
+const char *
+client_get_identity(client_t *client)
+{
+	if (client) {
+		return (const char *)
+		  (client->name ? client->name : client->id_str);
 	}
 
-	return identity;
+	return NULL;
 }
 
-void
-client_set_name(client_t * client, const char *name)
+bool
+client_store_open(client_t   *client,
+                  const char *dir)
 {
-	set_string_property(client->name, name);
-}
-
-void
-client_set_conn_id(client_t * client, unsigned long id)
-{
-	client->conn_id = id;
-}
-
-void
-client_set_class(client_t * client, const char *class)
-{
-	set_string_property(client->class, class);
-}
-
-void
-client_set_working_dir(client_t * client, const char *working_dir)
-{
-	set_string_property(client->working_dir, working_dir);
-}
-
-void
-client_set_requested_project(client_t * client, const char *requested_project)
-{
-	set_string_property(client->requested_project, requested_project);
-}
-
-void
-client_set_from_connect_params(client_t * client,
-							   lash_connect_params_t * params)
-{
-	uuid_copy(client->id, params->id);
-	client->flags = params->flags;
-	client_set_class(client, params->class);
-	client_set_working_dir(client, params->working_dir);
-	client_set_requested_project(client, params->project);
-	client->argc = params->argc;
-	client->argv = params->argv;
-
-	params->argv = NULL;
-}
-
-void
-client_set_id(client_t * client, uuid_t id)
-{
-	uuid_copy(client->id, id);
-}
-
-void
-client_generate_id(client_t * client)
-{
-	uuid_generate(client->id);
-}
-
-int
-client_store_open(client_t * client, const char *dir)
-{
-	int err;
-
 	if (client->store) {
 		store_write(client->store);
 		store_destroy(client->store);
+	} else {
+		lash_create_dir(dir);
 	}
 
 	client->store = store_new();
-	store_set_dir(client->store, dir);
+	lash_strset(&client->store->dir, dir);
 
-	err = store_open(client->store);
-	if (err)
-		fprintf(stderr,
-				"%s: WARNING: the store for client '%s' (in directory '%s') could not be read. You should resolve this before saving the project.  You may also wish to restart the client after it has been resolved, as it will not be given any data from the store.\n",
-				__FUNCTION__, client_get_id_str(client), client->store->dir);
+	if (!store_open(client->store)) {
+		lash_error("Cannot open store for client '%s'",
+		           client_get_identity(client));
+		return false;
+	}
 
-	return err;
+	return true;
 }
 
-lash_config_t *
-client_store_get_config(client_t * client, const char *key)
+bool
+client_store_close(client_t *client)
 {
-	return store_get_config(client->store, key);
-}
-
-int
-client_store_write(client_t * client)
-{
-	return store_write(client->store);
-}
-
-int
-client_store_close(client_t * client)
-{
-	int err;
+	bool retval;
 
 	if (!client->store)
-		return 0;
+		return true;
 
-	err = store_write(client->store);
+	retval = store_write(client->store);
 
 	store_destroy(client->store);
-
 	client->store = NULL;
 
-	return err;
+	return retval;
 }
 
 void
-client_set_jack_client_name(client_t * client, const char *name)
+client_task_progressed(client_t *client,
+                       uint8_t   percentage)
 {
-	set_string_property(client->jack_client_name, name);
+	project_t *project = client->project;
+	
+	if (!project) {
+		lash_error("Client's project pointer is NULL");
+		return;
+	}
+
+	if (percentage == 0) {
+		/* Task failed */
+		client_task_completed(client, false);
+		return;
+	} else if (percentage == 255) {
+		/* Task completed succesfully */
+		client_task_completed(client, true);
+		return;
+	} else if (percentage <= client->task_progress) {
+		/* Discard a percentage too small */
+		return;
+	} else if (percentage > 99) {
+		/* Truncate a percentage too big */
+		percentage = 99;
+	}
+
+	/* From here on percentage is always 1...99
+	   and greater than client->task_progress */
+
+	/* Calculate new project task progress reading, update client's
+	   progress reading and send progress notification to controllers */
+	project_client_progress(project, client, percentage);
 }
 
 void
-client_set_alsa_client_id(client_t * client, unsigned char id)
+client_task_completed(client_t *client,
+                      bool      was_succesful)
 {
-	client->alsa_client_id = id;
+	project_t *project = client->project;
+
+	if (!project) {
+		lash_error("Client's project pointer is NULL");
+		goto end;
+	}
+
+	switch (client->task_type) {
+	case LASH_Save_Data_Set:
+		if (was_succesful) {
+			if (store_write(client->store))
+				client->flags |= LASH_Saved;
+			else
+				lash_error("Client '%s' could not write data "
+				           "to disk (task %llu)",
+				           client_get_identity(client),
+				           client->pending_task);
+		}
+		break;
+	case LASH_Save_File:
+		if (was_succesful)
+			client->flags |= LASH_Saved;
+		break;
+	case LASH_Restore_File:
+	case LASH_Restore_Data_Set:
+		if (was_succesful)
+			project_satisfy_client_dependency(project, client);
+		break;
+	default:
+		lash_error("Unknown task type %d", client->task_type);
+		goto end;
+	}
+
+	if (was_succesful)
+		lash_debug("Client '%s' completed task %llu",
+		           client_get_identity(client), client->pending_task);
+	else
+		lash_error("Client '%s' failed to complete task %llu",
+		           client_get_identity(client), client->pending_task);
+
+	/* Signal progress to controllers */
+	project_client_task_completed(project, client);
+
+end:
+	client->pending_task = 0;
+	client->task_type = 0;
+	client->task_progress = 0;
 }
 
 void
-client_parse_xml(client_t * client, xmlNodePtr parent)
+client_parse_xml(project_t  *project,
+                 client_t   *client,
+                 xmlNodePtr  parent)
 {
 	xmlNodePtr xmlnode, argnode;
 	xmlChar *content;
+	uuid_t id;
 	jack_patch_t *jack_patch;
 #ifdef HAVE_ALSA
 	alsa_patch_t *alsa_patch;
 #endif
 
-	LASH_PRINT_DEBUG("parsing client");
+	lash_debug("Parsing client XML data");
 
 	for (xmlnode = parent->children; xmlnode; xmlnode = xmlnode->next) {
-		if (strcmp(CAST_BAD(xmlnode->name), "class") == 0) {
+		if (strcmp((const char*) xmlnode->name, "class") == 0) {
 			content = xmlNodeGetContent(xmlnode);
-			client_set_class(client, CAST_BAD content);
+			lash_strset(&client->class, (const char *) content);
 			xmlFree(content);
-		} else if (strcmp(CAST_BAD(xmlnode->name), "id") == 0) {
+		} else if (strcmp((const char*) xmlnode->name, "id") == 0) {
 			content = xmlNodeGetContent(xmlnode);
-			uuid_parse(CAST_BAD content, client->id);
+			uuid_parse((char *) content, client->id);
+			uuid_unparse(client->id, client->id_str);
 			xmlFree(content);
-		} else if (strcmp(CAST_BAD(xmlnode->name), "flags") == 0) {
+		} else if (strcmp((const char*) xmlnode->name, "name") == 0) {
 			content = xmlNodeGetContent(xmlnode);
-			client->flags = strtoul(CAST_BAD content, NULL, 10);
+			lash_strset(&client->name, (const char *) content);
 			xmlFree(content);
-		} else if (strcmp(CAST_BAD(xmlnode->name), "working_directory") == 0) {
+		} else if (strcmp((const char*) xmlnode->name, "flags") == 0) {
 			content = xmlNodeGetContent(xmlnode);
-			client_set_working_dir(client, CAST_BAD content);
+			client->flags = strtoul((const char *) content, NULL, 10);
 			xmlFree(content);
-		} else if (strcmp(CAST_BAD(xmlnode->name), "arg_set") == 0) {
+		} else if (strcmp((const char*) xmlnode->name,
+			          "working_directory") == 0) {
+			content = xmlNodeGetContent(xmlnode);
+			lash_strset(&client->working_dir, (const char *) content);
+			xmlFree(content);
+		} else if (strcmp((const char*) xmlnode->name, "arg_set") == 0) {
 			for (argnode = xmlnode->children; argnode;
-				 argnode = argnode->next)
-				if (strcmp(CAST_BAD argnode->name, "arg") == 0) {
+			     argnode = argnode->next)
+				if (strcmp((const char *) argnode->name,
+				           "arg") == 0) {
 					client->argc++;
 
 					content = xmlNodeGetContent(argnode);
 
 					if (!client->argv)
-						client->argv = lash_malloc(sizeof(char *));
+						client->argv =
+						  lash_malloc(2, sizeof(char *));
 					else
 						client->argv =
-							lash_realloc(client->argv,
-										 sizeof(char *) * client->argc);
+						  lash_realloc(client->argv,
+						               client->argc + 1,
+						               sizeof(char *));
 
-					/* don't like this unsigned/signed char business, so I want a string from strdup */
 					client->argv[client->argc - 1] =
-						lash_strdup(CAST_BAD content);
+					  lash_strdup((const char *) content);
+
+					/* Make sure that the array is NULL terminated */
+					client->argv[client->argc] = NULL;
 
 					xmlFree(content);
 				}
-		} else if (strcmp(CAST_BAD(xmlnode->name), "jack_patch_set") == 0) {
+		} else if (strcmp((const char*) xmlnode->name,
+		                  "jack_patch_set") == 0) {
 			for (argnode = xmlnode->children; argnode;
 				 argnode = argnode->next)
-				if (strcmp(CAST_BAD argnode->name, "jack_patch") == 0) {
+				if (strcmp((const char *) argnode->name,
+				           "jack_patch") == 0) {
 					jack_patch = jack_patch_new();
-					jack_patch_parse_xml(jack_patch, argnode);
+					jack_patch_parse_xml(jack_patch,
+					                     argnode);
 					client->jack_patches =
-						lash_list_append(client->jack_patches, jack_patch);
+					  lash_list_append(client->jack_patches,
+					                   jack_patch);
 				}
-		} else if (strcmp(CAST_BAD(xmlnode->name), "alsa_patch_set") == 0) {
+		} else if (strcmp((const char*) xmlnode->name,
+		                  "alsa_patch_set") == 0) {
 #ifdef HAVE_ALSA
-			for (argnode = xmlnode->children; argnode; argnode = argnode->next) {
-				if (strcmp(CAST_BAD argnode->name, "alsa_patch") == 0) {
+			for (argnode = xmlnode->children; argnode;
+			     argnode = argnode->next) {
+				if (strcmp((const char *) argnode->name,
+				           "alsa_patch") == 0) {
 					alsa_patch = alsa_patch_new();
-					alsa_patch_parse_xml(alsa_patch, argnode);
+					alsa_patch_parse_xml(alsa_patch,
+					                     argnode);
 					client->alsa_patches =
-						lash_list_append(client->alsa_patches, alsa_patch);
+					  lash_list_append(client->alsa_patches,
+					                   alsa_patch);
 				}
 			}
 #else
-			LASH_PRINT_DEBUG("Warning:  Session contains ALSA information, but LASH"
-				" is built without ALSA support.");
+			lash_info("Warning: Session contains ALSA information, "
+			          "but LASH is built without ALSA support");
 #endif
+		} else if (strcmp((const char*) xmlnode->name,
+		                  "dependencies") == 0) {
+			for (argnode = xmlnode->children; argnode;
+			     argnode = argnode->next)
+				if (strcmp((const char *) argnode->name,
+				           "id") == 0) {
+					content = xmlNodeGetContent(argnode);
+					if (uuid_parse((char *) content,
+					               id) == 0) {
+						client_dependency_add(&project->lost_clients,
+						                      client,
+						                      id);
+					}
+					xmlFree(content);
+				}
 		}
 	}
 
-	LASH_DEBUGARGS("parsed client of class %s", client->class);
+	lash_debug("Parsed client %s of class %s", client->name, client->class);
 }
 
 /* EOF */

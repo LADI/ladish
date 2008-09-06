@@ -1,8 +1,9 @@
 /*
  *   LASH
- *    
+ *
+ *   Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *   Copyright (C) 2002 Robert Ham <rah@bash.sh>
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -18,41 +19,61 @@
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __LASH_JACK_MGR_CLIENT_H__
-#define __LASH_JACK_MGR_CLIENT_H__
+#ifndef __LASHD_JACK_MGR_CLIENT_H__
+#define __LASHD_JACK_MGR_CLIENT_H__
 
-#include <pthread.h>
+#include "../config.h"
+
 #include <uuid/uuid.h>
 
-#include "jack_patch.h"
+#ifdef HAVE_JACK_DBUS
+# include <dbus/dbus.h>
+#endif
 
-typedef struct _jack_mgr_client jack_mgr_client_t;
+#include "common/list.h"
+#include "lashd/types.h"
 
 struct _jack_mgr_client
 {
-  char *          name;
-  uuid_t          id;
-  lash_list_t *    patches;
-  lash_list_t *    old_patches;
-  lash_list_t *    backup_patches;
+	char          *name;
+	uuid_t         id;
+	lash_list_t   *old_patches;
+	lash_list_t   *backup_patches;
+#ifndef HAVE_JACK_DBUS
+	lash_list_t   *patches;
+#else
+	dbus_uint64_t  jackdbus_id;
+#endif
 };
 
-void jack_mgr_client_init (jack_mgr_client_t * client);
-void jack_mgr_client_free (jack_mgr_client_t * client);
+jack_mgr_client_t *
+jack_mgr_client_new(void);
 
-jack_mgr_client_t * jack_mgr_client_new ();
-void                jack_mgr_client_destroy (jack_mgr_client_t * client);
+void
+jack_mgr_client_destroy(jack_mgr_client_t *client);
 
-void jack_mgr_client_set_id          (jack_mgr_client_t * client, uuid_t id);
-void jack_mgr_client_set_name        (jack_mgr_client_t * client, const char * name);
-void jack_mgr_client_add_patch       (jack_mgr_client_t * client, jack_patch_t * patch);
+lash_list_t *
+jack_mgr_client_dup_patch_list(lash_list_t *patch_list);
 
-lash_list_t * jack_mgr_client_dup_patches     (const jack_mgr_client_t * client);
-lash_list_t * jack_mgr_client_get_patches     (jack_mgr_client_t * client);
-const char * jack_mgr_client_get_name        (const jack_mgr_client_t * client);
-void         jack_mgr_client_get_id          (const jack_mgr_client_t * client, uuid_t id);
+void
+jack_mgr_client_free_patch_list(lash_list_t *patch_list);
 
-void jack_mgr_client_free_patches (jack_mgr_client_t * client);
-void jack_mgr_client_free_backup_patches (jack_mgr_client_t * client);
+jack_mgr_client_t *
+jack_mgr_client_find_by_id(lash_list_t *client_list,
+                           uuid_t       id);
 
-#endif /* __LASH_JACK_MGR_CLIENT_H__ */
+#ifdef HAVE_JACK_DBUS
+
+jack_mgr_client_t *
+jack_mgr_client_find_by_jackdbus_id(lash_list_t   *client_list,
+                                    dbus_uint64_t  id);
+
+#else /* !HAVE_JACK_DBUS */
+
+lash_list_t *
+jack_mgr_client_dup_uniq_patches(lash_list_t *jack_mgr_clients,
+                                 uuid_t       client_id);
+
+#endif
+
+#endif /* __LASHD_JACK_MGR_CLIENT_H__ */

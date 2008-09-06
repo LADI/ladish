@@ -1,8 +1,9 @@
 /*
  *   LASH
- *    
+ *
+ *   Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *   Copyright (C) 2002 Robert Ham <rah@bash.sh>
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -21,39 +22,49 @@
 #ifndef __LASHD_STORE_H__
 #define __LASHD_STORE_H__
 
-#include <lash/lash.h>
+#include <stdbool.h>
+#include <sys/types.h>
+#include <dbus/dbus.h>
+
+#include "common/klist.h"
+
+#include "types.h"
 
 /* When a store is created, it will load the data from a directory if one
  * exists, but it won't create it, or the directory.  It will create files
  * when told to write to disk.
  */
 
-typedef struct _store store_t;
-
 struct _store
 {
-  char *        dir;
-  lash_list_t *  keys;
-  unsigned long key_count;
-  lash_list_t *  unstored_configs;
-  lash_list_t *  removed_configs;
+	char             *dir;
+	unsigned long     num_keys;
+	struct list_head  keys;
+	struct list_head  removed_keys;
+	struct list_head  unstored_configs;
 };
 
-store_t *  store_new          ();
-void       store_destroy      (store_t * store);
+store_t *
+store_new(void);
 
-void         store_set_dir (store_t * store, const char * dir);
+void
+store_destroy(store_t *store);
 
+bool
+store_open(store_t *store);
 
+bool
+store_write(store_t *store);
 
-int store_open           (store_t * store);
-int store_write          (store_t * store);
+bool
+store_set_config(store_t    *store,
+                 const char *key_name,
+                 void       *value,
+                 size_t      size,
+                 int         type);
 
-void store_remove_config (store_t * store, const char * key);
-void store_set_config    (store_t * store, const lash_config_t * config);
-
-unsigned long  store_get_key_count (const store_t * store);
-lash_list_t *   store_get_keys      (store_t * store);
-lash_config_t * store_get_config    (store_t * store, const char * key);
+bool
+store_create_config_array(store_t         *store,
+                          DBusMessageIter *iter);
 
 #endif /* __LASHD_STORE_H__ */

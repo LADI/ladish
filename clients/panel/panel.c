@@ -16,11 +16,13 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
+#include <uuid/uuid.h>
 
-#include <lash/lash.h>
+#include "lash/lash.h"
 #include <gtk/gtk.h>
 
 #include "panel.h"
@@ -32,7 +34,8 @@
 void quit_cb(GtkButton * button, void *data);
 
 project_t *
-get_project(panel_t * panel, const char *const name)
+get_project(panel_t           *panel,
+            const char *const  name)
 {
 	project_t *project = NULL;
 	GtkTreeModel *tree_model = GTK_TREE_MODEL(panel->projects);
@@ -40,15 +43,16 @@ get_project(panel_t * panel, const char *const name)
 
 	if (gtk_tree_model_get_iter_first(tree_model, &iter))
 		do {
-			gtk_tree_model_get(tree_model, &iter, PROJECT_PROJECT_COLUMN,
-							   &project, -1);
+			gtk_tree_model_get(tree_model, &iter,
+			                   PROJECT_PROJECT_COLUMN,
+			                   &project, -1);
 
-			if (!strcmp(name, project->name))
+			if (strcmp(name, project->name) == 0)
 				return project;
 
 		} while (gtk_tree_model_iter_next(tree_model, &iter));
 
-	fprintf(stderr, "Error: Unable to find project '%s'!", name);
+	fprintf(stderr, "Error: Unable to find project '%s'!\n", name);
 	return NULL;
 }
 
@@ -100,10 +104,11 @@ server_disconnect(panel_t * panel)
 }
 
 void
-event_project_add(panel_t * panel, lash_event_t * event)
+event_project_add(panel_t    *panel,
+                  const char *name,
+                  const char *path)
 {
 	project_t *project = NULL;
-	const char *name = lash_event_get_string(event);
 	GtkTreeIter iter;
 
 	printf("Add project: %s\n", name);
@@ -116,19 +121,19 @@ event_project_add(panel_t * panel, lash_event_t * event)
 	project = project_create(panel->lash_client, name);
 
 	gtk_list_store_set(panel->projects, &iter,
-					   PROJECT_PROJECT_COLUMN, project, -1);
+	                   PROJECT_PROJECT_COLUMN, project, -1);
 
 	project->page_number =
-		gtk_notebook_append_page(GTK_NOTEBOOK(panel->project_notebook),
-								 project->box, project->tab_label);
+	  gtk_notebook_append_page(GTK_NOTEBOOK(panel->project_notebook),
+	                           project->box, project->tab_label);
 	
 	panel->num_projects++;
 }
 
 void
-event_project_remove(panel_t * panel, lash_event_t * event)
+event_project_remove(panel_t    *panel,
+                     const char *name)
 {
-	const char *name = lash_event_get_string(event);
 	project_t *project = get_project(panel, name);
 	GtkTreeModel *tree_model = GTK_TREE_MODEL(panel->projects);
 	GtkTreeIter iter;
@@ -137,19 +142,20 @@ event_project_remove(panel_t * panel, lash_event_t * event)
 
 	if (panel->num_projects == 1)
 		gtk_label_set_text(GTK_LABEL(panel->no_projects_label),
-			"(No projects open.  Start a LASH client, or load a project from the File menu)");
+		                   "(No projects open.  Start a LASH client, "
+		                   "or load a project from the File menu)");
 	
 	if (project != NULL)
 		if (gtk_tree_model_get_iter_first(tree_model, &iter))
 			do {
-				gtk_tree_model_get(tree_model, &iter, PROJECT_PROJECT_COLUMN,
-								   &project, -1);
+				gtk_tree_model_get(tree_model, &iter,
+				                   PROJECT_PROJECT_COLUMN,
+				                   &project, -1);
 
 				if (!strcmp(name, project->name)) {
 					gtk_list_store_remove(panel->projects, &iter);
-					gtk_notebook_remove_page(GTK_NOTEBOOK
-											 (panel->project_notebook),
-											 project->page_number);
+					gtk_notebook_remove_page(GTK_NOTEBOOK(panel->project_notebook),
+					                         project->page_number);
 					project_destroy(project);
 					break;
 				}
@@ -159,55 +165,55 @@ event_project_remove(panel_t * panel, lash_event_t * event)
 }
 
 void
-event_project_dir(panel_t * panel, lash_event_t * event)
+event_project_path(panel_t    *panel,
+                   const char *name,
+                   const char *path)
 {
-	const char *name = lash_event_get_project(event);
-	const char *dir = lash_event_get_string(event);
 	project_t *project = get_project(panel, name);
 
-	printf("Change project dir: %s = %s\n", name, dir);
+	printf("Change project path: %s = %s\n", name, path);
 
-	if (project != NULL) {
-		project_set_dir(project, dir);
-	}
+	if (project)
+		project_set_dir(project, path);
 }
 
 void
-event_project_name(panel_t * panel, lash_event_t * event)
+event_project_name(panel_t    *panel,
+                   const char *old_name,
+                   const char *new_name)
 {
-	const char *old_name = lash_event_get_project(event);
-	const char *new_name = lash_event_get_string(event);
 	project_t *project = get_project(panel, old_name);
 
 	printf("Change project name: %s = %s\n", old_name, new_name);
 
-	if (project != NULL)
+	if (project)
 		project_set_name(project, new_name);
 }
 
 void
-event_client_add(panel_t * panel, lash_event_t * event)
+event_client_add(panel_t    *panel,
+                 uuid_t      client_id,
+                 const char *project_name)
 {
-	const char *project_name = lash_event_get_project(event);
 	project_t *project = get_project(panel, project_name);
 	char *client_id_str = malloc(37);
 	char *search_id_str = NULL;
-	uuid_t client_id;
 	GtkTreeIter iter;
 	GtkTreeModel *tree_model;
 	int client_exists = FALSE;
 	
-	lash_event_get_client_id(event, client_id);
 	uuid_unparse(client_id, client_id_str);
 
 	printf("Add client (%s): %s\n", project_name, client_id_str);
 
-	if (client_id != NULL && project != NULL) {
+	if (!uuid_is_null(client_id) && project) {
 		tree_model = GTK_TREE_MODEL(project->clients);
 
 		if (gtk_tree_model_get_iter_first(tree_model, &iter)) {
 			do {
-				gtk_tree_model_get(tree_model, &iter, CLIENT_ID_COLUMN, &search_id_str, -1);
+				gtk_tree_model_get(tree_model, &iter,
+				                   CLIENT_ID_COLUMN,
+				                   &search_id_str, -1);
 
 				if (!strcmp(search_id_str, client_id_str)) {
 					client_exists = TRUE;
@@ -218,74 +224,94 @@ event_client_add(panel_t * panel, lash_event_t * event)
 		if (!client_exists) {
 			gtk_list_store_append(project->clients, &iter);
 			gtk_list_store_set(project->clients, &iter,
-							   CLIENT_ID_COLUMN, client_id_str, -1);
+			                   CLIENT_ID_COLUMN, client_id_str, -1);
 		}
 	}
 }
 
 void
-event_client_name(panel_t * panel, lash_event_t * event)
+event_client_name(panel_t    *panel,
+                  uuid_t      client_id,
+                  const char *client_name)
 {
-	const char *project_name = lash_event_get_project(event);
-	const char *client_name = lash_event_get_string(event);
-	project_t *project = get_project(panel, project_name);
-	GtkTreeModel *tree_model = NULL;
-	GtkTreeIter iter;
-	uuid_t client_id;
-	char *search_id_str = NULL;
-	char *client_id_str = malloc(37);
+	project_t *project;
+	const char *id_str;
+	uuid_t id;
+	GtkTreeModel *tree_model, *tree_model2;
+	GtkTreeIter iter, iter2;
 
-	lash_event_get_client_id(event, client_id);
-	uuid_unparse(client_id, client_id_str);
+	tree_model = GTK_TREE_MODEL(panel->projects);
 
-	printf("Change client name (%s): %s = %s\n", project_name, client_id_str,
-		   client_name);
+	if (gtk_tree_model_get_iter_first(tree_model, &iter)) {
+		do {
+			gtk_tree_model_get(tree_model, &iter,
+			                   PROJECT_PROJECT_COLUMN,
+			                   &project, -1);
 
-	if (project != NULL) {
-		tree_model = GTK_TREE_MODEL(project->clients);
+			tree_model2 = GTK_TREE_MODEL(project->clients);
 
-		if (gtk_tree_model_get_iter_first(tree_model, &iter))
-			do {
-				gtk_tree_model_get(tree_model, &iter, CLIENT_ID_COLUMN,
-								   &search_id_str, -1);
+			if (gtk_tree_model_get_iter_first(tree_model2, &iter2)) {
+				do {
+					gtk_tree_model_get(tree_model2, &iter2,
+					                   CLIENT_ID_COLUMN,
+					                   &id_str, -1);
 
-				if (!strcmp(search_id_str, client_id_str)) {
-					gtk_list_store_set(project->clients, &iter,
-									   CLIENT_NAME_COLUMN, client_name, -1);
-					break;
-				}
-			} while (gtk_tree_model_iter_next(tree_model, &iter));
+					if (id_str && uuid_parse(id_str, id) == 0
+					    && uuid_compare(client_id, id) == 0) {
+					
+						gtk_list_store_set(project->clients,
+						                   &iter2,
+						                   CLIENT_NAME_COLUMN,
+						                   client_name, -1);
+
+						printf("Change client name (%s): %s = %s\n",
+						       project->name, id_str, client_name);
+						return;
+					}
+
+				} while (gtk_tree_model_iter_next(tree_model2, &iter2));
+			}
+
+		} while (gtk_tree_model_iter_next(tree_model, &iter));
 	}
 }
 
 void
-deal_with_event(panel_t * panel, lash_event_t * event)
+deal_with_event(enum LASH_Event_Type  type,
+                const char           *string1,
+                const char           *string2,
+                uuid_t                client_id,
+                void                 *user_data)
 {
-	switch (lash_event_get_type(event)) {
+	panel_t *panel = user_data;
+
+	switch (type) {
 	case LASH_Project_Add:
-		event_project_add(panel, event);
+		event_project_add(panel, string1, string2);
 		break;
 	case LASH_Project_Remove:
-		event_project_remove(panel, event);
+		event_project_remove(panel, string1);
 		break;
 	case LASH_Project_Dir:
-		event_project_dir(panel, event);
+		event_project_path(panel, string1, string2);
 		break;
 	case LASH_Project_Name:
-		event_project_name(panel, event);
+		event_project_name(panel, string1, string2);
 		break;
 	case LASH_Client_Add:
-		event_client_add(panel, event);
+		event_client_add(panel, client_id, string1);
 		break;
 	case LASH_Client_Name:
-		event_client_name(panel, event);
+		event_client_name(panel, client_id, string1);
 		break;
+/*
 	case LASH_Jack_Client_Name:
 		break;
 	case LASH_Alsa_Client_ID:
 		break;
 	case LASH_Percentage:
 		break;
+*/
 	default:
 		break;
 	}
@@ -295,15 +321,11 @@ gboolean
 idle_cb(gpointer data)
 {
 	panel_t *panel;
-	lash_event_t *event;
-
 	/*lash_config_t * config; */
 
 	panel = (panel_t *) data;
 
-	while ((event = lash_get_event(panel->lash_client))) {
-		deal_with_event(panel, event);
-	}
+	lash_dispatch(panel->lash_client);
 
 	/*while ((config = lash_get_config(panel->lash_client)) ) {
 	 * add_config(panel, config);
@@ -324,27 +346,24 @@ open_cb(GtkButton * button, void *data)
 	panel_t *panel = (panel_t *) data;
 	int response = GTK_RESPONSE_NONE;
 	char *filename = NULL;
-	lash_event_t *event = NULL;
 
 	GtkWidget *open_dialog =
-		gtk_file_chooser_dialog_new("Open Project", GTK_WINDOW(panel->window),
-									GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
-									GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-									GTK_STOCK_OPEN, GTK_RESPONSE_OK, NULL);
+	  gtk_file_chooser_dialog_new("Open Project", GTK_WINDOW(panel->window),
+	                              GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+	                              GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+	                              GTK_STOCK_OPEN, GTK_RESPONSE_OK, NULL);
 	
 	char default_dir[256];
 	snprintf(default_dir, 256, "%s/%s", getenv("HOME"), DEFAULT_PROJECT_DIR);
 	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(open_dialog),
-		default_dir);
+	                                    default_dir);
 
 	response = gtk_dialog_run(GTK_DIALOG(open_dialog));
 
 	if (response == GTK_RESPONSE_OK) {
 		filename =
-			gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(open_dialog));
-		event = lash_event_new_with_type(LASH_Project_Add);
-		lash_event_set_string(event, filename);
-		lash_send_event(panel->lash_client, event);
+		  gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(open_dialog));
+		lash_control_load_project_path(panel->lash_client, filename);
 	}
 
 	gtk_widget_destroy(open_dialog);

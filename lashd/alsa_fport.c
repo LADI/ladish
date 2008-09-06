@@ -1,8 +1,8 @@
 /*
  *   LASH
- *    
+ *
  *   Copyright (C) 2002 Robert Ham <rah@bash.sh>
- *    
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
  *   the Free Software Foundation; either version 2 of the License, or
@@ -18,18 +18,20 @@
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <lash/lash.h>
-#include <lash/internal_headers.h>
-
 #include "alsa_fport.h"
 
+#ifdef HAVE_ALSA
+
+# include <stdlib.h>
+
+# include "common/safety.h"
 
 alsa_fport_t *
 alsa_fport_new()
 {
 	alsa_fport_t *fport;
 
-	fport = lash_malloc(sizeof(alsa_fport_t));
+	fport = lash_malloc(1, sizeof(alsa_fport_t));
 
 	fport->client = 0;
 	fport->port = 0;
@@ -80,16 +82,4 @@ alsa_fport_get_port(const alsa_fport_t * fport)
 	return fport->port;
 }
 
-/*void
-alsa_fport_lock (alsa_fport_t * fport)
-{
-  pthread_mutex_lock (&fport->lock);
-}
-
-void
-alsa_fport_unlock (alsa_fport_t * fport)
-{
-  pthread_mutex_unlock (&fport->lock);
-}*/
-
-/* EOF */
+#endif /* HAVE_ALSA */

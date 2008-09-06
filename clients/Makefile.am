@@ -1,5 +1,14 @@
-SUBDIRS = control save_button panel
+include $(top_srcdir)/common.am
 
-if WITH_ALSA
-SUBDIRS += simple_client synth 
+if LASH_OLD_API
+SUBDIRS = shell save_button panel
+if HAVE_ALSA
+SUBDIRS += simple_client synth
 endif
+else
+if HAVE_ALSA
+SUBDIRS = simple_client
+endif
+endif
+
+dist_bin_SCRIPTS = lash_control
