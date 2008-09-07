@@ -23,7 +23,7 @@ Package: flowcanvas-0
 Section: libs
 Architecture: any
 Pre-Depends: make
-Depends: ${shlibs:Depends}, librdf0, libgnomecanvasmm-2.6-1c2a
+Depends: ${shlibs:Depends}, libgnomecanvasmm-2.6-1c2a
 Description: An interactive graph canvas widget in C++ (Gtkmm)
  FlowCanvas is an interactive Gtkmm/Gnomecanvasmm widget for graph-based
  interfaces (patchers, modular synthesizers, finite state automata,
