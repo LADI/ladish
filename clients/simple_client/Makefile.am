@@ -14,7 +14,7 @@ lash_simple_client_LDADD = \
 	$(JACK_LIBS) \
 	$(ALSA_LIBS)
 
-bin_PROGRAMS = lash_simple_client_newapi
+bin_PROGRAMS += lash_simple_client_newapi
 
 lash_simple_client_newapi_SOURCES = \
 	simple_client_newapi.c
