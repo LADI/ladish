@@ -51,13 +51,13 @@ public:
 	
 	void refresh();
 
-	bool port_names(const PatchageEvent::PortRef& ref,
-	                std::string&                  module_name,
-	                std::string&                  port_name);
+	bool port_names(const PortID& id,
+	                std::string&  module_name,
+	                std::string&  port_name);
 
 	boost::shared_ptr<PatchagePort> create_port_view(
-			Patchage*                     patchage,
-			const PatchageEvent::PortRef& ref);
+			Patchage*     patchage,
+			const PortID& id);
 
 	bool connect(boost::shared_ptr<PatchagePort> src,
 	             boost::shared_ptr<PatchagePort> dst);

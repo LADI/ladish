@@ -141,16 +141,16 @@ JackDriver::destroy_all_ports()
 	
 
 boost::shared_ptr<PatchagePort>
-JackDriver::create_port_view(Patchage*                     patchage,
-                             const PatchageEvent::PortRef& ref)
+JackDriver::create_port_view(Patchage*     patchage,
+                             const PortID& id)
 {
 	jack_port_t* jack_port = NULL;
 
-	if (ref.type == PatchageEvent::PortRef::JACK_ID)
-		jack_port = jack_port_by_id(_client, ref.id.jack_id);
+	if (id.type == PortID::JACK_ID)
+		jack_port = jack_port_by_id(_client, id.id.jack_id);
 	
 	string module_name, port_name;
-	port_names(ref, module_name, port_name);
+	port_names(id, module_name, port_name);
 
 	ModuleType type = InputOutput;
 	if (_app->state_manager()->get_module_split(module_name,
@@ -351,14 +351,14 @@ JackDriver::refresh()
 
 
 bool
-JackDriver::port_names(const PatchageEvent::PortRef& ref,
-                       string&                       module_name,
-                       string&                       port_name)
+JackDriver::port_names(const PortID& id,
+                       string&       module_name,
+                       string&       port_name)
 {
 	jack_port_t* jack_port = NULL;
 
-	if (ref.type == PatchageEvent::PortRef::JACK_ID)
-		jack_port = jack_port_by_id(_client, ref.id.jack_id);
+	if (id.type == PortID::JACK_ID)
+		jack_port = jack_port_by_id(_client, id.id.jack_id);
 
 	if (!jack_port) {
 		module_name = "";

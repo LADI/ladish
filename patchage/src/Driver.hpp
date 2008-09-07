@@ -46,8 +46,8 @@ public:
 	virtual void refresh() = 0;
 	
 	virtual boost::shared_ptr<PatchagePort> create_port_view(
-			Patchage*                     patchage,
-			const PatchageEvent::PortRef& ref) = 0;
+			Patchage*     patchage,
+			const PortID& id) = 0;
 	
 	virtual bool connect(boost::shared_ptr<PatchagePort> src_port,
 	                     boost::shared_ptr<PatchagePort> dst_port) = 0;

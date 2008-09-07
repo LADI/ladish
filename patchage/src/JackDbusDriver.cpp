@@ -1128,7 +1128,7 @@ JackDriver::rewind_transport()
 
 
 boost::shared_ptr<PatchagePort>
-JackDriver::find_port_view(Patchage* patchage, const PatchageEvent::PortRef& ref)
+JackDriver::find_port_view(Patchage* patchage, const PortID& id)
 {
 	assert(false);  // we dont use events at all
 }
@@ -1137,7 +1137,7 @@ JackDriver::find_port_view(Patchage* patchage, const PatchageEvent::PortRef& ref
 boost::shared_ptr<PatchagePort>
 JackDriver::create_port_view(
 	Patchage * patchage,
-	const PatchageEvent::PortRef& ref)
+	const PortID& id)
 {
 	assert(false);  // we dont use events at all
 }

@@ -39,7 +39,7 @@ public:
 	PatchageCanvas(Patchage* _app, int width, int height);
 	
 	boost::shared_ptr<PatchageModule> find_module(const string& name, ModuleType type);
-	boost::shared_ptr<PatchagePort>   find_port(const PatchageEvent::PortRef& ref);
+	boost::shared_ptr<PatchagePort>   find_port(const PortID& id);
 	
 	void connect(boost::shared_ptr<Connectable> port1, boost::shared_ptr<Connectable> port2);
 	void disconnect(boost::shared_ptr<Connectable> port1, boost::shared_ptr<Connectable> port2);

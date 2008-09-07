@@ -18,6 +18,7 @@ patchage_SOURCES = \
 	PatchageEvent.hpp \
 	PatchageModule.hpp \
 	PatchagePort.hpp \
+	PortID.hpp \
 	StateManager.cpp  \
 	StateManager.hpp \
 	Widget.hpp \
