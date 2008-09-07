@@ -806,8 +806,10 @@ Canvas::canvas_event(GdkEvent* event)
 			scroll_x += scroll_increment;
 			break;
 		case GDK_Return:
-			if (_selected_ports.size() > 1)
+			if (_selected_ports.size() > 1) {
 				join_selection();
+				clear_selection();
+			}
 			break;
 		default: break;
 		}
