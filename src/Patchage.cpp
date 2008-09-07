@@ -545,8 +545,10 @@ void
 Patchage::set_lash_available(bool available)
 {
 	_project_list->set_lash_available(available);
-	if (!available)
+	if (!available) {
+		_menu_view_projects->set_active(false);
 		_session->clear();
+	}
 }
 #endif
 
