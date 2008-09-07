@@ -183,7 +183,7 @@ AM_CONDITIONAL(HAVE_DOXYGEN, [test "x$build_documentation" = "xyes"])
 
 # FlowCanvas
 AC_CONFIG_FILES([Makefile])
-AC_CONFIG_FILES([debian/Makefile])
+AC_CONFIG_FILES([debian-sid/Makefile])
 AC_CONFIG_FILES([doc/Makefile])
 AC_CONFIG_FILES([doc/reference.doxygen])
 AC_CONFIG_FILES([flowcanvas.pc])

@@ -10,8 +10,8 @@ dist-check-doxygen:
 	@false
 endif
 
-SUBDIRS = flowcanvas src $(DOC_DIR) debian
-DIST_SUBDIRS = flowcanvas src doc debian
+SUBDIRS = flowcanvas src $(DOC_DIR) debian-sid
+DIST_SUBDIRS = flowcanvas src doc debian-sid
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = flowcanvas.pc
@@ -22,4 +22,10 @@ docs:
 	cd doc && make docs
 
 deb:
-	dpkg-buildpackage -sn
+	if [ -e debian ]; then \
+		echo "ERROR: ./debian exists, you must move it out of the way."; \
+	else \
+		ln -s debian-sid debian; \
+		dpkg-buildpackage -sn; \
+		rm debian; \
+	fi

@@ -631,13 +631,13 @@ AC_CONFIG_FILES([omins/src/Makefile])
 
 # LV2 Core
 AC_CONFIG_FILES([lv2core/Makefile])
-AC_CONFIG_FILES([lv2core/debian/Makefile])
+AC_CONFIG_FILES([lv2core/debian-sid/Makefile])
 AC_CONFIG_FILES([lv2core/lv2core.lv2/Makefile])
 AC_CONFIG_FILES([lv2core/lv2core.pc])
 
 # SLV2
 AC_CONFIG_FILES([slv2/Makefile])
-AC_CONFIG_FILES([slv2/debian/Makefile])
+AC_CONFIG_FILES([slv2/debian-sid/Makefile])
 AC_CONFIG_FILES([slv2/doc/Makefile])
 AC_CONFIG_FILES([slv2/doc/reference.doxygen])
 AC_CONFIG_FILES([slv2/hosts/Makefile])
@@ -682,7 +682,7 @@ AC_CONFIG_FILES([redlandmm/tests/Makefile])
 
 # RAUL
 AC_CONFIG_FILES([raul/Makefile])
-AC_CONFIG_FILES([raul/debian/Makefile])
+AC_CONFIG_FILES([raul/debian-sid/Makefile])
 AC_CONFIG_FILES([raul/doc/Makefile])
 AC_CONFIG_FILES([raul/doc/reference.doxygen])
 AC_CONFIG_FILES([raul/raul.pc])
@@ -692,7 +692,7 @@ AC_CONFIG_FILES([raul/tests/Makefile])
 
 # FlowCanvas
 AC_CONFIG_FILES([flowcanvas/Makefile])
-AC_CONFIG_FILES([flowcanvas/debian/Makefile])
+AC_CONFIG_FILES([flowcanvas/debian-sid/Makefile])
 AC_CONFIG_FILES([flowcanvas/doc/Makefile])
 AC_CONFIG_FILES([flowcanvas/doc/reference.doxygen])
 AC_CONFIG_FILES([flowcanvas/flowcanvas.pc])
@@ -701,7 +701,7 @@ AC_CONFIG_FILES([flowcanvas/src/Makefile])
 
 # Patchage
 AC_CONFIG_FILES([patchage/Makefile])
-AC_CONFIG_FILES([patchage/debian/Makefile])
+AC_CONFIG_FILES([patchage/debian-sid/Makefile])
 AC_CONFIG_FILES([patchage/icons/16x16/Makefile])
 AC_CONFIG_FILES([patchage/icons/22x22/Makefile])
 AC_CONFIG_FILES([patchage/icons/24x24/Makefile])
