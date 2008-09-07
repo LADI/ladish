@@ -10,8 +10,8 @@ dist-check-doxygen:
 	@false
 endif
 
-SUBDIRS = raul src $(DOC_DIR) debian
-DIST_SUBDIRS = raul src tests doc debian
+SUBDIRS = raul src $(DOC_DIR) debian-sid
+DIST_SUBDIRS = raul src tests doc debian-sid
 
 if BUILD_UNIT_TESTS
 SUBDIRS += tests
@@ -26,4 +26,10 @@ docs:
 	cd doc && make docs
 
 deb:
-	dpkg-buildpackage -sn
+	if [ -e debian ]; then \
+		echo "ERROR: ./debian exists, you must move it out of the way. \
+	else \
+		ln -s debian-sid debian \
+		dpkg-buildpackage -sn \
+		rm debian
+	fi
