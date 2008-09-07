@@ -700,7 +700,6 @@ Canvas::port_event(GdkEvent* event, boost::weak_ptr<Port> weak_port)
 				port_dragging = true;
 			}
 		} else if (event->button.button == 3) {
-			select_port(port, true);
 			port->popup_menu(event->button.button, event->button.time);
 		} else {
 			handled = false;
