@@ -103,8 +103,8 @@ AlsaDriver::refresh()
 
 	
 boost::shared_ptr<PatchagePort>
-AlsaDriver::create_port_view(Patchage*                     patchage,
-                             const PatchageEvent::PortRef& ref)
+AlsaDriver::create_port_view(Patchage*     patchage,
+                             const PortID& id)
 {
 	return boost::shared_ptr<PatchagePort>();
 }
@@ -348,8 +348,8 @@ AlsaDriver::add_connections(boost::shared_ptr<PatchagePort> port)
 		if (!connected_addr)
 			continue;
 		
-		PatchageEvent::PortRef ref(*connected_addr, true);
-		connected_port = _app->canvas()->find_port(ref);
+		PortID id(*connected_addr, true);
+		connected_port = _app->canvas()->find_port(id);
 
 		if (connected_port && !port->is_connected_to(connected_port))
 			_app->canvas()->add_connection(port, connected_port, port->color() + 0x22222200);

@@ -75,13 +75,13 @@ public:
 
 	boost::shared_ptr<PatchagePort>
 	find_port_view(
-		Patchage * patchage,
-		const PatchageEvent::PortRef& ref);
+		Patchage*     patchage,
+		const PortID& ref);
 	
 	boost::shared_ptr<PatchagePort>
 	create_port_view(
-			Patchage * patchage,
-			const PatchageEvent::PortRef& ref);
+			Patchage*     patchage,
+			const PortID& ref);
 
 private:
 	void error_msg(const std::string& msg) const;

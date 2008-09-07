@@ -27,6 +27,7 @@
 #include <alsa/asoundlib.h>
 #endif
 #include "PatchagePort.hpp"
+#include "PortID.hpp"
 
 class Patchage;
 
@@ -74,37 +75,10 @@ public:
 
 	inline Type type() const { return (Type)_type; }
 	
-	struct PortRef {
-		PortRef() : type(NULL_PORT_REF) { memset(&id, 0, sizeof(id)); }
-
-#ifdef HAVE_JACK
-		PortRef(jack_port_id_t jack_id, bool ign=false)
-			: type(JACK_ID) { id.jack_id = jack_id; }
-#endif
-
-#ifdef HAVE_ALSA
-		PortRef(snd_seq_addr_t addr, bool in)
-			: type(ALSA_ADDR) { id.alsa_addr = addr; is_input = in; }
-		
-		bool is_input;
-#endif
-
-		enum { NULL_PORT_REF, JACK_ID, ALSA_ADDR } type;
-
-		union {
-#ifdef HAVE_JACK
-			jack_port_id_t jack_id;
-#endif
-#ifdef HAVE_ALSA
-			snd_seq_addr_t alsa_addr;
-#endif
-		} id;
-	};
-
 private:
 	char*   _str;
-	PortRef _port_1;
-	PortRef _port_2;
+	PortID  _port_1;
+	PortID  _port_2;
 	uint8_t _type;
 };
 

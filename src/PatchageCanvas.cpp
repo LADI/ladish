@@ -65,7 +65,7 @@ PatchageCanvas::find_module(const string& name, ModuleType type)
 
 
 boost::shared_ptr<PatchagePort>
-PatchageCanvas::find_port(const PatchageEvent::PortRef& ref)
+PatchageCanvas::find_port(const PortID& id)
 {
 	string       module_name;
 	string       port_name;
@@ -78,14 +78,14 @@ PatchageCanvas::find_port(const PatchageEvent::PortRef& ref)
 	boost::shared_ptr<PatchagePort> pp;
 
 	// TODO: filthy.  keep a port map and make this O(log(n))
-	switch (ref.type) {
+	switch (id.type) {
 #if defined(HAVE_JACK) && !defined(HAVE_JACK_DBUS)
-	case PatchageEvent::PortRef::JACK_ID:
-		jack_port = jack_port_by_id(_app->jack_driver()->client(), ref.id.jack_id);
+	case PortID::JACK_ID:
+		jack_port = jack_port_by_id(_app->jack_driver()->client(), id.id.jack_id);
 		if (!jack_port)
 			return boost::shared_ptr<PatchagePort>();
 	
-		_app->jack_driver()->port_names(ref, module_name, port_name);
+		_app->jack_driver()->port_names(id, module_name, port_name);
 	
 		module = find_module(module_name,
 				(jack_port_flags(jack_port) & JackPortIsInput) ? Input : Output);
@@ -99,7 +99,7 @@ PatchageCanvas::find_port(const PatchageEvent::PortRef& ref)
 #endif
 	
 #ifdef HAVE_ALSA
-	case PatchageEvent::PortRef::ALSA_ADDR:
+	case PortID::ALSA_ADDR:
 		for (ItemList::iterator m = _items.begin(); m != _items.end(); ++m) {
 			SharedPtr<PatchageModule> module = PtrCast<PatchageModule>(*m);
 			if (!module)
@@ -115,9 +115,9 @@ PatchageCanvas::find_port(const PatchageEvent::PortRef& ref)
 					  << (int)pp->alsa_addr()->port << endl;*/
 	
 					if (pp->alsa_addr()
-							&& pp->alsa_addr()->client == ref.id.alsa_addr.client
-							&& pp->alsa_addr()->port   == ref.id.alsa_addr.port) {
-						if (!ref.is_input && module->type() == Input) {
+							&& pp->alsa_addr()->client == id.id.alsa_addr.client
+							&& pp->alsa_addr()->port   == id.id.alsa_addr.port) {
+						if (!id.is_input && module->type() == Input) {
 							//cerr << "WRONG DIRECTION, SKIPPED PORT" << endl;
 						} else {
 							return pp;
