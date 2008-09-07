@@ -601,9 +601,17 @@ Canvas::join_selection()
 			outputs.push_back(*i);
 	}
 
-	size_t num_to_connect = min(inputs.size(), outputs.size());
-	for (size_t i = 0; i < num_to_connect; ++i) {
-		ports_joined(inputs[i], outputs[i]);
+	if (inputs.size() == 1) { // 1 -> n
+		for (size_t i = 0; i < outputs.size(); ++i)
+			ports_joined(inputs[0], outputs[i]);
+	} else if (outputs.size() == 1) { // n -> 1
+		for (size_t i = 0; i < inputs.size(); ++i)
+			ports_joined(inputs[i], outputs[0]);
+	} else { // n -> m
+		size_t num_to_connect = min(inputs.size(), outputs.size());
+		for (size_t i = 0; i < num_to_connect; ++i) {
+			ports_joined(inputs[i], outputs[i]);
+		}
 	}
 }
 
