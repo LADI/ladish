@@ -28,7 +28,31 @@
 #include <alsa/asoundlib.h>
 
 #include <lash/lash.h>
-#include <lash/internal_headers.h>
+
+char *
+catdup(
+	const char * str1,
+	const char * str2)
+{
+	char * str;
+	size_t str1_len;
+	size_t str2_len;
+
+	str1_len = strlen(str1);
+	str2_len = strlen(str2);
+
+	str = malloc(str1_len + str2_len + 1);
+	if (str == NULL)
+	{
+		return NULL;
+	}
+
+	memcpy(str, str1, str1_len);
+	memcpy(str + str1_len, str2, str2_len);
+	str[str1_len + str2_len] = 0;
+
+	return str;
+}
 
 int
 main(int argc, char **argv)
@@ -95,7 +119,7 @@ main(int argc, char **argv)
 	event = lash_event_new_with_type(LASH_Alsa_Client_ID);
 	client_name[0] = (char)snd_seq_client_id(aseq);
 	client_name[1] = '\0';
-	LASH_DEBUGARGS("alsa client id: %d", snd_seq_client_id(aseq));
+	printf("alsa client id: %d\n", snd_seq_client_id(aseq));
 	lash_event_set_string(event, client_name);
 	lash_send_event(client, event);
 
@@ -128,14 +152,14 @@ main(int argc, char **argv)
 			case LASH_Save_File:
 			{
 				FILE *config_file;
+				char *file_path;
 
-				config_file =
-					fopen(lash_get_fqn
-						  (lash_event_get_string(event),
-						   "simple-client.data"), "w");
+				file_path = catdup(lash_event_get_string(event), "simple-client.data");
+				config_file = fopen(file_path, "w");
+				free(file_path);
 				fprintf(config_file, "lash simple client data");
 				fclose(config_file);
-				LASH_PRINT_DEBUG("wrote config file");
+				printf("wrote config file\n");
 				lash_send_event(client, event);
 				break;
 			}
@@ -144,17 +168,17 @@ main(int argc, char **argv)
 				FILE *config_file;
 				char *buf = NULL;
 				size_t buf_size = 0;
+				char *file_path;
 
-				config_file =
-					fopen(lash_get_fqn
-						  (lash_event_get_string(event),
-						   "simple-client.data"), "r");
+				file_path = catdup(lash_event_get_string(event), "simple-client.data");
+				config_file = fopen(file_path, "r");
+				free(file_path);
 				if (config_file) {
 					getline(&buf, &buf_size, config_file);
 					fclose(config_file);
 				}
 
-				LASH_DEBUGARGS("read data from config file: '%s'", buf);
+				printf("read data from config file: '%s'\n", buf);
 				if (buf)
 					free(buf);
 
