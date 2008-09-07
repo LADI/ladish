@@ -177,7 +177,7 @@ PKG_CHECK_MODULES(FLOWCANVAS, flowcanvas >= 0.5.0)
 
 # Patchage
 AC_CONFIG_FILES([Makefile])
-AC_CONFIG_FILES([debian/Makefile])
+AC_CONFIG_FILES([debian-sid/Makefile])
 AC_CONFIG_FILES([icons/16x16/Makefile])
 AC_CONFIG_FILES([icons/22x22/Makefile])
 AC_CONFIG_FILES([icons/24x24/Makefile])
