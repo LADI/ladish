@@ -175,7 +175,7 @@ AM_CONDITIONAL(BUILD_UNIT_TESTS, [test "$build_unit_tests" = "yes"])
 
 # RAUL
 AC_CONFIG_FILES([Makefile])
-AC_CONFIG_FILES([debian/Makefile])
+AC_CONFIG_FILES([debian-sid/Makefile])
 AC_CONFIG_FILES([doc/Makefile])
 AC_CONFIG_FILES([doc/reference.doxygen])
 AC_CONFIG_FILES([raul.pc])

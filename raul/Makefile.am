@@ -27,9 +27,9 @@ docs:
 
 deb:
 	if [ -e debian ]; then \
-		echo "ERROR: ./debian exists, you must move it out of the way. \
+		echo "ERROR: ./debian exists, you must move it out of the way."; \
 	else \
-		ln -s debian-sid debian \
-		dpkg-buildpackage -sn \
-		rm debian
+		ln -s debian-sid debian; \
+		dpkg-buildpackage -sn; \
+		rm debian; \
 	fi
