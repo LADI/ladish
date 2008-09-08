@@ -17,6 +17,7 @@
  */
 
 #include <string.h>
+#include <dbus/dbus.h>
 
 #include "common.hpp"
 #include "lash_proxy.hpp"
@@ -24,6 +25,7 @@
 #include "project.hpp"
 #include "lash_client.hpp"
 #include "globals.hpp"
+#include "dbus_helpers.h"
 
 #define LASH_SERVICE       "org.nongnu.LASH"
 #define LASH_OBJECT        "/"
@@ -90,18 +92,18 @@ lash_proxy_impl::init()
 {
 	_server_responding = false;
 
-	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" DBUS_INTERFACE_DBUS "',member=NameOwnerChanged,arg0='" LASH_SERVICE "'", NULL);
-	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectAppeared", NULL);
-	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectDisappeared", NULL);
-	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectNameChanged", NULL);
-	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectModifiedStatusChanged", NULL);
-	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectDescriptionChanged", NULL);
-	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectNotesChanged", NULL);
-	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ClientAppeared", NULL);
-	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ClientDisappeared", NULL);
-	dbus_bus_add_match(g_app->_dbus_connection, "type='signal',interface='" LASH_IFACE_CONTROL "',member=ClientNameChanged", NULL);
+	patchage_dbus_add_match("type='signal',interface='" DBUS_INTERFACE_DBUS "',member=NameOwnerChanged,arg0='" LASH_SERVICE "'");
+	patchage_dbus_add_match("type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectAppeared");
+	patchage_dbus_add_match("type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectDisappeared");
+	patchage_dbus_add_match("type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectNameChanged");
+	patchage_dbus_add_match("type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectModifiedStatusChanged");
+	patchage_dbus_add_match("type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectDescriptionChanged");
+	patchage_dbus_add_match("type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectNotesChanged");
+	patchage_dbus_add_match("type='signal',interface='" LASH_IFACE_CONTROL "',member=ClientAppeared");
+	patchage_dbus_add_match("type='signal',interface='" LASH_IFACE_CONTROL "',member=ClientDisappeared");
+	patchage_dbus_add_match("type='signal',interface='" LASH_IFACE_CONTROL "',member=ClientNameChanged");
 
-	dbus_connection_add_filter(g_app->_dbus_connection, dbus_message_hook, this, NULL);
+	patchage_dbus_add_filter(dbus_message_hook, this);
 
 	// get initial list of projects
 	// calling any method to updates server responding status
@@ -152,14 +154,14 @@ lash_proxy_impl::dbus_message_hook(
 	if (dbus_message_is_signal(message, DBUS_INTERFACE_DBUS, "NameOwnerChanged"))
 	{
 		if (!dbus_message_get_args(
-			    message, &g_app->_dbus_error,
+			    message, &g_dbus_error,
 			    DBUS_TYPE_STRING, &object_name,
 			    DBUS_TYPE_STRING, &old_owner,
 			    DBUS_TYPE_STRING, &new_owner,
 			    DBUS_TYPE_INVALID))
 		{
-			error_msg(str(boost::format("dbus_message_get_args() failed to extract NameOwnerChanged signal arguments (%s)") % g_app->_dbus_error.message));
-			dbus_error_free(&g_app->_dbus_error);
+			error_msg(str(boost::format("dbus_message_get_args() failed to extract NameOwnerChanged signal arguments (%s)") % g_dbus_error.message));
+			dbus_error_free(&g_dbus_error);
 			return DBUS_HANDLER_RESULT_HANDLED;
 		}
 
@@ -184,12 +186,12 @@ lash_proxy_impl::dbus_message_hook(
 
 	if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "ProjectAppeared"))
 	{
-		if (!dbus_message_get_args( message, &g_app->_dbus_error,
+		if (!dbus_message_get_args( message, &g_dbus_error,
 					DBUS_TYPE_STRING, &project_name,
 					DBUS_TYPE_INVALID))
 		{
-			error_msg(str(boost::format("dbus_message_get_args() failed to extract ProjectAppeared signal arguments (%s)") % g_app->_dbus_error.message));
-			dbus_error_free(&g_app->_dbus_error);
+			error_msg(str(boost::format("dbus_message_get_args() failed to extract ProjectAppeared signal arguments (%s)") % g_dbus_error.message));
+			dbus_error_free(&g_dbus_error);
 			return DBUS_HANDLER_RESULT_HANDLED;
 		}
 
@@ -202,12 +204,12 @@ lash_proxy_impl::dbus_message_hook(
 	if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "ProjectDisappeared"))
 	{
 		if (!dbus_message_get_args(
-			    message, &g_app->_dbus_error,
+			    message, &g_dbus_error,
 			    DBUS_TYPE_STRING, &project_name,
 			    DBUS_TYPE_INVALID))
 		{
-			error_msg(str(boost::format("dbus_message_get_args() failed to extract ProjectDisappeared signal arguments (%s)") % g_app->_dbus_error.message));
-			dbus_error_free(&g_app->_dbus_error);
+			error_msg(str(boost::format("dbus_message_get_args() failed to extract ProjectDisappeared signal arguments (%s)") % g_dbus_error.message));
+			dbus_error_free(&g_dbus_error);
 			return DBUS_HANDLER_RESULT_HANDLED;
 		}
 
@@ -221,13 +223,13 @@ lash_proxy_impl::dbus_message_hook(
 	if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "ProjectNameChanged"))
 	{
 		if (!dbus_message_get_args(
-			    message, &g_app->_dbus_error,
+			    message, &g_dbus_error,
 			    DBUS_TYPE_STRING, &project_name,
 			    DBUS_TYPE_STRING, &new_project_name,
 			    DBUS_TYPE_INVALID))
 		{
-			error_msg(str(boost::format("dbus_message_get_args() failed to extract ProjectNameChanged signal arguments (%s)") % g_app->_dbus_error.message));
-			dbus_error_free(&g_app->_dbus_error);
+			error_msg(str(boost::format("dbus_message_get_args() failed to extract ProjectNameChanged signal arguments (%s)") % g_dbus_error.message));
+			dbus_error_free(&g_dbus_error);
 			return DBUS_HANDLER_RESULT_HANDLED;
 		}
 
@@ -245,13 +247,13 @@ lash_proxy_impl::dbus_message_hook(
 	if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "ProjectModifiedStatusChanged"))
 	{
 		if (!dbus_message_get_args(
-			    message, &g_app->_dbus_error,
+			    message, &g_dbus_error,
 			    DBUS_TYPE_STRING, &project_name,
 			    DBUS_TYPE_BOOLEAN, &modified_status,
 			    DBUS_TYPE_INVALID))
 		{
-			error_msg(str(boost::format("dbus_message_get_args() failed to extract ProjectModifiedStatusChanged signal arguments (%s)") % g_app->_dbus_error.message));
-			dbus_error_free(&g_app->_dbus_error);
+			error_msg(str(boost::format("dbus_message_get_args() failed to extract ProjectModifiedStatusChanged signal arguments (%s)") % g_dbus_error.message));
+			dbus_error_free(&g_dbus_error);
 			return DBUS_HANDLER_RESULT_HANDLED;
 		}
 
@@ -269,13 +271,13 @@ lash_proxy_impl::dbus_message_hook(
 	if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "ProjectDescriptionChanged"))
 	{
 		if (!dbus_message_get_args(
-			    message, &g_app->_dbus_error,
+			    message, &g_dbus_error,
 			    DBUS_TYPE_STRING, &project_name,
 			    DBUS_TYPE_STRING, &value_string,
 			    DBUS_TYPE_INVALID))
 		{
-			error_msg(str(boost::format("dbus_message_get_args() failed to extract ProjectDescriptionChanged signal arguments (%s)") % g_app->_dbus_error.message));
-			dbus_error_free(&g_app->_dbus_error);
+			error_msg(str(boost::format("dbus_message_get_args() failed to extract ProjectDescriptionChanged signal arguments (%s)") % g_dbus_error.message));
+			dbus_error_free(&g_dbus_error);
 			return DBUS_HANDLER_RESULT_HANDLED;
 		}
 
@@ -293,13 +295,13 @@ lash_proxy_impl::dbus_message_hook(
 	if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "ProjectNotesChanged"))
 	{
 		if (!dbus_message_get_args(
-			    message, &g_app->_dbus_error,
+			    message, &g_dbus_error,
 			    DBUS_TYPE_STRING, &project_name,
 			    DBUS_TYPE_STRING, &value_string,
 			    DBUS_TYPE_INVALID))
 		{
-			error_msg(str(boost::format("dbus_message_get_args() failed to extract ProjectNotesChanged signal arguments (%s)") % g_app->_dbus_error.message));
-			dbus_error_free(&g_app->_dbus_error);
+			error_msg(str(boost::format("dbus_message_get_args() failed to extract ProjectNotesChanged signal arguments (%s)") % g_dbus_error.message));
+			dbus_error_free(&g_dbus_error);
 			return DBUS_HANDLER_RESULT_HANDLED;
 		}
 
@@ -317,14 +319,14 @@ lash_proxy_impl::dbus_message_hook(
 	if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "ClientAppeared"))
 	{
 		if (!dbus_message_get_args(
-			    message, &g_app->_dbus_error,
+			    message, &g_dbus_error,
 			    DBUS_TYPE_STRING, &client_id,
 			    DBUS_TYPE_STRING, &project_name,
 			    DBUS_TYPE_STRING, &client_name,
 			    DBUS_TYPE_INVALID))
 		{
-			error_msg(str(boost::format("dbus_message_get_args() failed to extract ClientAppeared signal arguments (%s)") % g_app->_dbus_error.message));
-			dbus_error_free(&g_app->_dbus_error);
+			error_msg(str(boost::format("dbus_message_get_args() failed to extract ClientAppeared signal arguments (%s)") % g_dbus_error.message));
+			dbus_error_free(&g_dbus_error);
 			return DBUS_HANDLER_RESULT_HANDLED;
 		}
 
@@ -342,13 +344,13 @@ lash_proxy_impl::dbus_message_hook(
 	if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "ClientDisappeared"))
 	{
 		if (!dbus_message_get_args(
-			    message, &g_app->_dbus_error,
+			    message, &g_dbus_error,
 			    DBUS_TYPE_STRING, &client_id,
 			    DBUS_TYPE_STRING, &project_name,
 			    DBUS_TYPE_INVALID))
 		{
-			error_msg(str(boost::format("dbus_message_get_args() failed to extract ClientDisappeared signal arguments (%s)") % g_app->_dbus_error.message));
-			dbus_error_free(&g_app->_dbus_error);
+			error_msg(str(boost::format("dbus_message_get_args() failed to extract ClientDisappeared signal arguments (%s)") % g_dbus_error.message));
+			dbus_error_free(&g_dbus_error);
 			return DBUS_HANDLER_RESULT_HANDLED;
 		}
 
@@ -367,13 +369,13 @@ lash_proxy_impl::dbus_message_hook(
 	if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "ClientNameChanged"))
 	{
 		if (!dbus_message_get_args(
-			    message, &g_app->_dbus_error,
+			    message, &g_dbus_error,
 			    DBUS_TYPE_STRING, &client_id,
 			    DBUS_TYPE_STRING, &client_name,
 			    DBUS_TYPE_INVALID))
 		{
-			error_msg(str(boost::format("dbus_message_get_args() failed to extract ClientNameChanged signal arguments (%s)") % g_app->_dbus_error.message));
-			dbus_error_free(&g_app->_dbus_error);
+			error_msg(str(boost::format("dbus_message_get_args() failed to extract ClientNameChanged signal arguments (%s)") % g_dbus_error.message));
+			dbus_error_free(&g_dbus_error);
 			return DBUS_HANDLER_RESULT_HANDLED;
 		}
 
@@ -404,7 +406,7 @@ lash_proxy_impl::call(
 
 	va_start(ap, in_type);
 
-	_server_responding = g_app->dbus_call(
+	_server_responding = patchage_dbus_call_valist(
 		response_expected,
 		LASH_SERVICE,
 		LASH_OBJECT,

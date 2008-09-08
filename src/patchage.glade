@@ -19,11 +19,11 @@
                 <child>
                   <widget class="GtkMenu" id="file_menu_menu">
                     <child>
-                      <widget class="GtkImageMenuItem" id="menu_open_session">
+                      <widget class="GtkImageMenuItem" id="menu_load_project">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">_Open Project</property>
+                        <property name="label" translatable="yes">_Load Project</property>
                         <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_open_session_menuitem_activate"/>
+                        <signal name="activate" handler="on_load_project_menuitem_activate"/>
                         <accelerator key="O" modifiers="GDK_CONTROL_MASK" signal="activate"/>
                         <child internal-child="image">
                           <widget class="GtkImage" id="image823">
@@ -35,11 +35,11 @@
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkImageMenuItem" id="menu_save_session">
+                      <widget class="GtkImageMenuItem" id="menu_save_all_projects">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">_Save Project</property>
+                        <property name="label" translatable="yes">_Save All Projects</property>
                         <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_save_session_menuitem_activate"/>
+                        <signal name="activate" handler="on_save_all_projects_menuitem_activate"/>
                         <accelerator key="S" modifiers="GDK_CONTROL_MASK" signal="activate"/>
                         <child internal-child="image">
                           <widget class="GtkImage" id="image824">
@@ -51,27 +51,11 @@
                       </widget>
                     </child>
                     <child>
-                      <widget class="GtkImageMenuItem" id="menu_save_session_as">
+                      <widget class="GtkImageMenuItem" id="menu_close_all_projects">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">Save Project _As...</property>
+                        <property name="label" translatable="yes">_Close All Projects</property>
                         <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_save_session_as_menuitem_activate"/>
-                        <accelerator key="S" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK" signal="activate"/>
-                        <child internal-child="image">
-                          <widget class="GtkImage" id="image825">
-                            <property name="visible">True</property>
-                            <property name="stock">gtk-save-as</property>
-                            <property name="icon_size">1</property>
-                          </widget>
-                        </child>
-                      </widget>
-                    </child>
-                    <child>
-                      <widget class="GtkImageMenuItem" id="menu_close_session">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">_Close Project</property>
-                        <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_close_session_menuitem_activate"/>
+                        <signal name="activate" handler="on_close_all_projects_menuitem_activate"/>
                         <child internal-child="image">
                           <widget class="GtkImage" id="image826">
                             <property name="visible">True</property>
@@ -182,9 +166,18 @@
                       </widget>
                     </child>
                     <child>
+                      <widget class="GtkCheckMenuItem" id="menu_view_projects">
+                        <property name="visible">True</property>
+                        <property name="tooltip" translatable="yes">Show LASH projects list</property>
+                        <property name="label" translatable="yes">_Projects</property>
+                        <property name="use_underline">True</property>
+                        <accelerator key="P" modifiers="GDK_CONTROL_MASK" signal="activate"/>
+                      </widget>
+                    </child>
+                    <child>
                       <widget class="GtkCheckMenuItem" id="menu_view_messages">
                         <property name="visible">True</property>
-                        <property name="tooltip" translatable="yes">View "console" messages</property>
+                        <property name="tooltip" translatable="yes">View log messages</property>
                         <property name="label" translatable="yes">_Messages</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_messages1_activate"/>
@@ -436,11 +429,17 @@ The bar represents the percentage of available time used for audio processing (i
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
             <property name="position">204</property>
             <child>
-              <widget class="GtkTreeView" id="projects_list">
+              <widget class="GtkViewport" id="project_list_viewport">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                <property name="headers_clickable">True</property>
+                <property name="resize_mode">GTK_RESIZE_QUEUE</property>
+                <child>
+                  <widget class="GtkTreeView" id="projects_list">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                    <property name="headers_clickable">True</property>
+                  </widget>
+                </child>
               </widget>
               <packing>
                 <property name="resize">False</property>
@@ -480,9 +479,10 @@ The bar represents the percentage of available time used for audio processing (i
     <property name="destroy_with_parent">True</property>
     <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
     <property name="program_name">Patchage</property>
-    <property name="copyright" translatable="yes">© 2007 Dave Robillard
-© 2008 Nedko Arnaudov</property>
+    <property name="copyright" translatable="yes">(C) 2005-2008 Dave Robillard
+(C) 2008 Nedko Arnaudov</property>
     <property name="comments" translatable="yes">A LASH frontend.</property>
+    <property name="website">http://drobilla.net/software/patchage</property>
     <property name="license" translatable="yes">Patchage is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
@@ -637,7 +637,7 @@ Nedko Arnaudov &lt;nedko@arnaudov.name&gt;</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
             <property name="layout_style">GTK_BUTTONBOX_END</property>
             <child>
-              <widget class="GtkButton" id="cancel_button">
+              <widget class="GtkButton" id="load_project_cancel_button">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -648,7 +648,7 @@ Nedko Arnaudov &lt;nedko@arnaudov.name&gt;</property>
               </widget>
             </child>
             <child>
-              <widget class="GtkButton" id="ok_button">
+              <widget class="GtkButton" id="load_project_ok_button">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -799,7 +799,7 @@ Nedko Arnaudov &lt;nedko@arnaudov.name&gt;</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
             <property name="layout_style">GTK_BUTTONBOX_END</property>
             <child>
-              <widget class="GtkButton" id="cancel_button">
+              <widget class="GtkButton" id="project_properties_cancel_button">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -810,7 +810,7 @@ Nedko Arnaudov &lt;nedko@arnaudov.name&gt;</property>
               </widget>
             </child>
             <child>
-              <widget class="GtkButton" id="ok_buton">
+              <widget class="GtkButton" id="project_properties_ok_button">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>

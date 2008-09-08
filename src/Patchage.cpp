@@ -28,7 +28,6 @@
 #include CONFIG_H_PATH
 #include "common.hpp"
 #include "jack_proxy.hpp"
-#include "JackSettingsDialog.hpp"
 #include "Patchage.hpp"
 #include "PatchageCanvas.hpp"
 #include "StateManager.hpp"
@@ -38,13 +37,12 @@
 #include "globals.hpp"
 #include "a2j_proxy.hpp"
 #include "PatchageModule.hpp"
+#include "dbus_helpers.h"
 
 Patchage * g_app;
 
 //#define LOG_TO_STD
 #define LOG_TO_STATUS
-
-#define DBUS_CALL_DEFAULT_TIMEOUT 1000 // in milliseconds
 
 using namespace std;
 
@@ -82,13 +80,7 @@ gtkmm_set_width_for_given_text (Gtk::Widget &w, const gchar *text,
 #define INIT_WIDGET(x) x(g_xml, ((const char*)#x) + 1)
 
 Patchage::Patchage(int argc, char** argv)
-	: _dbus_connection(0)
-	, INIT_WIDGET(_menu_open_session)
-	, INIT_WIDGET(_menu_save_session)
-	, INIT_WIDGET(_menu_save_session_as)
-	, INIT_WIDGET(_menu_close_session)
-	, _state_manager(NULL)
-	, _max_dsp_load(0.0)
+	: _max_dsp_load(0.0)
 	, INIT_WIDGET(_about_win)
 	, INIT_WIDGET(_buffer_size_combo)
 	, INIT_WIDGET(_clear_load_but)
@@ -99,14 +91,19 @@ Patchage::Patchage(int argc, char** argv)
 	, INIT_WIDGET(_menu_help_about)
 	, INIT_WIDGET(_menu_jack_start)
 	, INIT_WIDGET(_menu_jack_stop)
+	, INIT_WIDGET(_menu_load_project)
+	, INIT_WIDGET(_menu_save_all_projects)
+	, INIT_WIDGET(_menu_close_all_projects)
 	, INIT_WIDGET(_menu_store_positions)
 	, INIT_WIDGET(_menu_view_arrange)
 	, INIT_WIDGET(_menu_view_messages)
+	, INIT_WIDGET(_menu_view_projects)
 	, INIT_WIDGET(_menu_view_refresh)
 	, INIT_WIDGET(_menu_view_toolbar)
-	, INIT_WIDGET(_messages_win)
 	, INIT_WIDGET(_messages_clear_but)
 	, INIT_WIDGET(_messages_close_but)
+	, INIT_WIDGET(_messages_win)
+	, INIT_WIDGET(_project_list_viewport)
 	, INIT_WIDGET(_sample_rate_label)
 	, INIT_WIDGET(_status_text)
 	, INIT_WIDGET(_toolbar)
@@ -130,18 +127,7 @@ Patchage::Patchage(int argc, char** argv)
 		argc--;
 	}
 
-	dbus_error_init(&_dbus_error);
-
-	// Connect to the bus
-	_dbus_connection = dbus_bus_get(DBUS_BUS_SESSION, &_dbus_error);
-	if (dbus_error_is_set(&_dbus_error)) {
-		error_msg("dbus_bus_get() failed");
-		error_msg(_dbus_error.message);
-		dbus_error_free(&_dbus_error);
-		return;
-	}
-
-	dbus_connection_setup_with_g_main(_dbus_connection, NULL);
+	patchage_dbus_init();
 
 	Glib::set_application_name("Patchage");
 	_about_win->property_program_name() = "Patchage";
@@ -169,11 +155,11 @@ Patchage::Patchage(int argc, char** argv)
 	_zoom_full_but->signal_clicked().connect(
 			sigc::mem_fun(_canvas.get(), &PatchageCanvas::zoom_full));
 
-	_menu_open_session->signal_activate().connect(
+	_menu_load_project->signal_activate().connect(
 			sigc::mem_fun(this, &Patchage::load_project_ask));
-	_menu_save_session->signal_activate().connect(
+	_menu_save_all_projects->signal_activate().connect(
 			sigc::mem_fun(this, &Patchage::save_all_projects));
-	_menu_close_session->signal_activate().connect(
+	_menu_close_all_projects->signal_activate().connect(
 			sigc::mem_fun(this, &Patchage::close_all_projects));
 
 	_menu_store_positions->signal_activate().connect(
@@ -188,6 +174,8 @@ Patchage::Patchage(int argc, char** argv)
 			sigc::mem_fun(this, &Patchage::on_view_toolbar));
 	_menu_view_messages->signal_toggled().connect(
 			sigc::mem_fun(this, &Patchage::on_show_messages));
+	_menu_view_projects->signal_toggled().connect(
+			sigc::mem_fun(this, &Patchage::on_show_projects));
 	_menu_help_about->signal_activate().connect(
 			sigc::mem_fun(this, &Patchage::on_help_about));
 	
@@ -253,7 +241,9 @@ Patchage::~Patchage()
 
 	_about_win.destroy();
 	_messages_win.destroy();
-	_main_win.destroy();
+	//_main_win.destroy();
+
+	patchage_dbus_uninit();
 }
 
 
@@ -361,7 +351,31 @@ Patchage::clear_load()
 
 
 void
-Patchage::status_message(const string& msg) 
+Patchage::error_msg(const std::string& msg)
+{
+#if defined(LOG_TO_STATUS)
+	status_msg(msg);
+#endif
+#if defined(LOG_TO_STD)
+	cerr << msg << endl;
+#endif
+}
+
+
+void
+Patchage::info_msg(const std::string& msg)
+{
+#if defined(LOG_TO_STATUS)
+	status_msg(msg);
+#endif
+#if defined(LOG_TO_STD)
+	cerr << msg << endl;
+#endif
+}
+
+
+void
+Patchage::status_msg(const string& msg) 
 {
 	if (_status_text->get_buffer()->size() > 0)
 		_status_text->get_buffer()->insert(_status_text->get_buffer()->end(), "\n");
@@ -389,18 +403,6 @@ Patchage::update_state()
 void
 Patchage::connect_widgets()
 {
-#if 0
-	_lash_driver->signal_attached.connect(sigc::bind(
-			sigc::mem_fun(*_menu_lash_connect, &Gtk::MenuItem::set_sensitive), false));
-	_lash_driver->signal_attached.connect(sigc::bind(
-			sigc::mem_fun(*_menu_lash_disconnect, &Gtk::MenuItem::set_sensitive), true));
-	
-	_lash_driver->signal_detached.connect(sigc::bind(
-			sigc::mem_fun(*_menu_lash_connect, &Gtk::MenuItem::set_sensitive), true));
-	_lash_driver->signal_detached.connect(sigc::bind(
-			sigc::mem_fun(*_menu_lash_disconnect, &Gtk::MenuItem::set_sensitive), false));
-#endif
-
 	_jack->signal_started.connect(
 		sigc::bind(sigc::mem_fun(this, &Patchage::jack_status_changed), true));
 	
@@ -480,6 +482,16 @@ Patchage::on_show_messages()
 		_messages_win->hide();
 }
 
+
+void
+Patchage::on_show_projects()
+{
+	if (_menu_view_projects->get_active())
+		_project_list_viewport->show();
+	else
+		_project_list_viewport->hide();
+}
+
 	
 void
 Patchage::on_store_positions() 
@@ -531,114 +543,13 @@ Patchage::buffer_size_changed()
 }
 
 void
-Patchage::error_msg(const std::string& msg)
-{
-#if defined(LOG_TO_STATUS)
-	status_message(msg);
-#endif
-
-#if defined(LOG_TO_STD)
-	cerr << msg << endl;
-#endif
-}
-
-void
-Patchage::info_msg(const std::string& msg)
-{
-#if defined(LOG_TO_STATUS)
-	status_message(msg);
-#endif
-
-#if defined(LOG_TO_STD)
-	cerr << msg << endl;
-#endif
-}
-
-bool
-Patchage::dbus_call(
-		bool response_expected,
-		const char * service,
-		const char * object,
-		const char * iface,
-		const char * method,
-		DBusMessage ** reply_ptr_ptr,
-		int in_type,
-		va_list ap)
-{
-	DBusMessage* request_ptr;
-	DBusMessage* reply_ptr;
-
-	request_ptr = dbus_message_new_method_call(
-		service,
-		object,
-		iface,
-		method);
-	if (!request_ptr) {
-		throw std::runtime_error("dbus_message_new_method_call() returned 0");
-	}
-
-	dbus_message_append_args_valist(request_ptr, in_type, ap);
-
-	// send message and get a handle for a reply
-	reply_ptr = dbus_connection_send_with_reply_and_block(
-		_dbus_connection,
-		request_ptr,
-		DBUS_CALL_DEFAULT_TIMEOUT,
-		&_dbus_error);
-
-	dbus_message_unref(request_ptr);
-
-	if (!reply_ptr) {
-		if (response_expected) {
-			error_msg(str(boost::format("no reply from server when calling method '%s'"
-					", error is '%s'") % method % _dbus_error.message));
-		}
-		dbus_error_free(&_dbus_error);
-	} else {
-		*reply_ptr_ptr = reply_ptr;
-	}
-
-	return reply_ptr;
-}
-
-bool
-Patchage::dbus_call(
-		bool response_expected,
-		const char * serivce,
-		const char * object,
-		const char * iface,
-		const char * method,
-		DBusMessage ** reply_ptr_ptr,
-		int in_type,
-		...)
-{
-	bool ret;
-	va_list ap;
-
-	va_start(ap, in_type);
-
-	ret = dbus_call(
-		response_expected,
-		serivce,
-		object,
-		iface,
-		method,
-		reply_ptr_ptr,
-		in_type,
-		ap);
-
-	va_end(ap);
-
-	return ap;
-}
-
-void
 Patchage::set_lash_availability(
 	bool lash_active)
 {
 	_project_list->set_lash_availability(lash_active);
 	if (!lash_active)
 	{
+		_menu_view_projects->set_active(false);
 		_session->clear();
 	}
 }
@@ -1055,7 +966,7 @@ Patchage::connect(
 	}
 	else
 	{
-		status_message("ERROR: Attempt to connect ports with mismatched types");
+		status_msg("ERROR: Attempt to connect ports with mismatched types");
 	}
 }
 
@@ -1082,7 +993,7 @@ Patchage::disconnect(
 	}
 	else
 	{
-		status_message("ERROR: Attempt to disconnect ports with mismatched types");
+		status_msg("ERROR: Attempt to disconnect ports with mismatched types");
 	}
 }
 

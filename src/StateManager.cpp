@@ -26,12 +26,10 @@ using namespace std;
 
 
 StateManager::StateManager()
+	: _window_location(0, 0)
+	, _window_size(640, 480)
+	, _zoom(1.0)
 {
-	_window_location.x = 0;
-	_window_location.y = 0;
-	_window_size.x = 640;
-	_window_size.y = 480;
-	_zoom = 1.0;
 }
 
 
@@ -40,30 +38,34 @@ StateManager::get_module_location(const string& name, ModuleType type, Coord& lo
 {
 	map<string, ModuleSettings>::const_iterator i = _module_settings.find(name);
 	if (i == _module_settings.end())
-	{
 		return false;
-	}
 
 	const ModuleSettings& settings = (*i).second;
-	switch (type)
-	{
+		
+	switch (type) {
 	case Input:
-		loc = settings.input_location;
-		goto check;
+		if (settings.input_location) {
+			loc = *settings.input_location;
+			return true;
+		}
+		break;
 	case Output:
-		loc = settings.output_location;
-		goto check;
+		if (settings.output_location) {
+			loc = *settings.output_location;
+			return true;
+		}
+		break;
 	case InputOutput:
-		loc = settings.inout_location;
-		goto check;
+		if (settings.inout_location) {
+			loc = *settings.inout_location;
+			return true;
+		}
+		break;
 	default:
 		throw std::runtime_error("Invalid module type");
 	}
 
 	return false;
-
-check:
-	return loc.x != UNINITIALIZED_COORD;
 }
 
 
@@ -72,8 +74,7 @@ StateManager::set_module_location(const string& name, ModuleType type, Coord loc
 {
 retry:
 	map<string, ModuleSettings>::iterator i = _module_settings.find(name);
-	if (i == _module_settings.end())
-	{
+	if (i == _module_settings.end()) {
 		// no mapping exists, insert new element and set its split type, then retry to retrieve reference to it
 		_module_settings[name].split = type != InputOutput;
 		goto retry;
@@ -81,8 +82,7 @@ retry:
 
 	ModuleSettings& settings_ref = (*i).second;
 
-	switch (type)
-	{
+	switch (type) {
 	case Input:
 		settings_ref.input_location = loc;
 		break;
@@ -108,9 +108,7 @@ StateManager::get_module_split(const string& name, bool default_val) const
 {
 	map<string, ModuleSettings>::const_iterator i = _module_settings.find(name);
 	if (i == _module_settings.end())
-	{
 		return default_val;
-	}
 
 	return (*i).second.split;
 }
@@ -208,9 +206,7 @@ StateManager::load(const string& filename)
 	is.close();
 }
 
-static
-inline
-void
+static inline void
 write_module_settings_entry(
 	std::ofstream& os,
 	const string& name,
@@ -235,14 +231,11 @@ StateManager::save(const string& filename)
 		const ModuleSettings& settings = (*i).second;
 		const string& name = (*i).first;
 
-		if (settings.split)
-		{
-			write_module_settings_entry(os, name, "input", settings.input_location);
-			write_module_settings_entry(os, name, "output", settings.output_location);
-		}
-		else
-		{
-			write_module_settings_entry(os, name, "inputoutput", settings.inout_location);
+		if (settings.split) {
+			write_module_settings_entry(os, name, "input", *settings.input_location);
+			write_module_settings_entry(os, name, "output", *settings.output_location);
+		} else {
+			write_module_settings_entry(os, name, "inputoutput", *settings.inout_location);
 		}
 	}
 
@@ -277,4 +270,4 @@ StateManager::get_port_color(PortType type)
 // 		return 0x4A8A0EC0;
 	else
 		return 0xFF0000FF;
-}	
+}

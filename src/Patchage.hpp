@@ -26,10 +26,6 @@
 #include CONFIG_H_PATH
 #include "Widget.hpp"
 
-#include <dbus/dbus.h>
-#include <dbus/dbus-glib.h>
-#include <dbus/dbus-glib-lowlevel.h>
-
 #include "PatchagePort.hpp"
 
 class PatchageCanvas;
@@ -38,7 +34,6 @@ class jack_proxy;
 class lash_proxy;
 class StateManager;
 class project_list;
-class PatchagePort;
 class session;
 
 class Patchage {
@@ -60,35 +55,12 @@ public:
 	void        refresh();
 
 	void clear_load();
-	void status_message(const std::string& msg);
+	void info_msg(const std::string& msg);
+	void error_msg(const std::string& msg);
+	void status_msg(const std::string& msg);
 	void update_state();
 	void store_window_location();
-
-	void error_msg(const std::string& msg);
-	void info_msg(const std::string& msg);
-
-	bool
-	dbus_call(
-		bool response_expected,
-		const char * service,
-		const char * object,
-		const char * iface,
-		const char * method,
-		DBusMessage ** reply_ptr_ptr,
-		int in_type,
-		va_list ap);
-
-	bool
-	dbus_call(
-		bool response_expected,
-		const char * service,
-		const char * object,
-		const char * iface,
-		const char * method,
-		DBusMessage ** reply_ptr_ptr,
-		int in_type,
-		...);
-
+	
 	void set_lash_availability(bool lash_active);
 
 	void load_project_ask();
@@ -131,9 +103,6 @@ public:
 	bool
 	is_canvas_empty();
 
-	DBusError _dbus_error;
-	DBusConnection* _dbus_connection;
-
 protected:
 	void connect_widgets();
 
@@ -144,6 +113,7 @@ protected:
 	bool on_messages_delete(GdkEventAny*);
 	void on_quit();
 	void on_show_messages();
+	void on_show_projects();
 	void on_store_positions();
 	void on_view_toolbar();
 	bool on_scroll(GdkEventScroll* ev);
@@ -168,19 +138,14 @@ protected:
 		const char * jack_client_name,
 		const char * jack_port_name);
 
-	Widget<Gtk::MenuItem> _menu_open_session;
-	Widget<Gtk::MenuItem> _menu_save_session;
-	Widget<Gtk::MenuItem> _menu_save_session_as;
-	Widget<Gtk::MenuItem> _menu_close_session;
-
 	boost::shared_ptr<PatchageCanvas> _canvas;
 
 	a2j_proxy * _a2j;
-	jack_proxy*         _jack;
+	jack_proxy * _jack;
 	session * _session;
 	lash_proxy * _lash;
 	project_list * _project_list;
-	StateManager*       _state_manager;
+	StateManager * _state_manager;
 
 	Gtk::Main* _gtk_main;
 
@@ -197,14 +162,19 @@ protected:
 	Widget<Gtk::MenuItem>       _menu_help_about;
 	Widget<Gtk::MenuItem>       _menu_jack_start;
 	Widget<Gtk::MenuItem>       _menu_jack_stop;
+	Widget<Gtk::MenuItem>       _menu_load_project;
+	Widget<Gtk::MenuItem>       _menu_save_all_projects;
+	Widget<Gtk::MenuItem>       _menu_close_all_projects;
  	Widget<Gtk::MenuItem>       _menu_store_positions;
 	Widget<Gtk::MenuItem>       _menu_view_arrange;
 	Widget<Gtk::CheckMenuItem>  _menu_view_messages;
+	Widget<Gtk::CheckMenuItem>  _menu_view_projects;
 	Widget<Gtk::MenuItem>       _menu_view_refresh;
 	Widget<Gtk::CheckMenuItem>  _menu_view_toolbar;
-	Widget<Gtk::Dialog>         _messages_win;
 	Widget<Gtk::Button>         _messages_clear_but;
 	Widget<Gtk::Button>         _messages_close_but;
+	Widget<Gtk::Dialog>         _messages_win;
+	Widget<Gtk::Viewport>       _project_list_viewport;
 	Widget<Gtk::Label>          _sample_rate_label;
 	Widget<Gtk::TextView>       _status_text;
 	Widget<Gtk::Toolbar>        _toolbar;

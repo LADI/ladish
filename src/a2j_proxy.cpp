@@ -22,6 +22,7 @@
 #include "a2j_proxy.hpp"
 #include "Patchage.hpp"
 #include "globals.hpp"
+#include "dbus_helpers.h"
 
 #define A2J_SERVICE       "org.gna.home.a2jmidid"
 #define A2J_OBJECT        "/"
@@ -105,7 +106,7 @@ a2j_proxy_impl::call(
 
 	va_start(ap, in_type);
 
-	_server_responding = g_app->dbus_call(
+	_server_responding = patchage_dbus_call_valist(
 		response_expected,
 		A2J_SERVICE,
 		A2J_OBJECT,
@@ -132,10 +133,10 @@ a2j_proxy_impl::get_jack_client_name(
 		return false;
 	}
 
-	if (!dbus_message_get_args(reply_ptr, &g_app->_dbus_error, DBUS_TYPE_STRING, &jack_client_name, DBUS_TYPE_INVALID))
+	if (!dbus_message_get_args(reply_ptr, &g_dbus_error, DBUS_TYPE_STRING, &jack_client_name, DBUS_TYPE_INVALID))
 	{
 		dbus_message_unref(reply_ptr);
-		dbus_error_free(&g_app->_dbus_error);
+		dbus_error_free(&g_dbus_error);
 		error_msg("decoding reply of get_jack_client_name failed.");
 		return false;
 	}
@@ -173,7 +174,7 @@ a2j_proxy::map_jack_port(
 
 	if (!dbus_message_get_args(
 				reply_ptr,
-				&g_app->_dbus_error,
+				&g_dbus_error,
 				DBUS_TYPE_UINT32,
 				&alsa_client_id,
 				DBUS_TYPE_UINT32,
@@ -185,7 +186,7 @@ a2j_proxy::map_jack_port(
 				DBUS_TYPE_INVALID))
 	{
 		dbus_message_unref(reply_ptr);
-		dbus_error_free(&g_app->_dbus_error);
+		dbus_error_free(&g_dbus_error);
 		error_msg("decoding reply of map_jack_port_to_alsa failed.");
 		return false;
 	}

@@ -34,12 +34,14 @@ def display_feature(msg, build):
 
 def set_options(opt):
     opt.tool_options('compiler_cxx')
+    opt.tool_options('compiler_cc')
 
     opt.add_option('--install-name', type='string', default=APPNAME, dest='app_install_name', help="Install name. [Default: '" + APPNAME + "']")
     opt.add_option('--app-human-name', type='string', default=APP_HUMAN_NAME, dest='app_human_name', help="Human name for app. [Default: '" + APP_HUMAN_NAME + "']")
 
 def configure(conf):
     conf.check_tool('compiler_cxx')
+    conf.check_tool('compiler_cc')
 
     conf.check_tool('misc')             # subst tool
 
@@ -70,6 +72,7 @@ def configure(conf):
 
 def build(bld):
     prog = bld.create_obj('cpp', 'program')
+    prog.features.append('cc')
     prog.defines = [
 	'CONFIG_H_PATH=\\"config.h\\"',
 	]
@@ -85,7 +88,8 @@ def build(bld):
 	'src/project_list.cpp',
 	'src/project_properties.cpp',
 	'src/session.cpp',
-	'src/a2j_proxy.cpp'
+	'src/a2j_proxy.cpp',
+	'src/dbus_helpers.c'
         ]
     prog.includes = 'src' # make waf dependency tracking work
     prog.target = bld.env()['APP_INSTALL_NAME']
