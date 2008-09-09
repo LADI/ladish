@@ -1,5 +1,5 @@
 AC_PREREQ(2.59)
-AC_INIT([patchage],[0.4.1],[dave@drobilla.net])
+AC_INIT([patchage],[0.4.2],[dave@drobilla.net])
 
 AC_CONFIG_AUX_DIR([config])
 
