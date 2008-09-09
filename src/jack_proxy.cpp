@@ -160,7 +160,6 @@ jack_proxy::dbus_message_hook(
 
 	assert(jack_driver);
 	jack_proxy* me = reinterpret_cast<jack_proxy*>(jack_driver);
-	assert(me->_app->_dbus_connection);
 
 	//me->info_msg("dbus_message_hook() called.");
 

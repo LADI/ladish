@@ -145,7 +145,6 @@ lash_proxy_impl::dbus_message_hook(
 
 	assert(proxy);
 	lash_proxy_impl * me = reinterpret_cast<lash_proxy_impl *>(proxy);
-	assert(g_app->_dbus_connection);
 
 	//info_msg("dbus_message_hook() called.");
 
