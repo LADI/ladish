@@ -62,6 +62,8 @@ install: build
 	dh_testroot
 	dh_clean -k 
 	dh_installdirs
+	dh_desktop
+	dh_icons
 
 	$(MAKE) DESTDIR=$(CURDIR)/debian/patchage install-exec install-data
 
