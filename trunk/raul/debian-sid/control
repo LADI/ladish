@@ -23,7 +23,7 @@ Package: raul-0
 Section: libs
 Architecture: any
 Pre-Depends: make
-Depends: ${shlibs:Depends}, librdf0, libjack0
+Depends: ${shlibs:Depends}, libjack0
 Description: A C++ library for realtime audio applications
  Raul (Realtime Audio Utility Library) is a lightweight C++ convenience
  library for realtime programming, with a bias towards audio applications
