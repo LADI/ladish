@@ -20,8 +20,6 @@
 
 #include <iostream>
 #include <boost/shared_ptr.hpp>
-#include <jack/jack.h>
-#include <jack/statistics.h>
 #include <dbus/dbus.h>
 
 #include "Patchage.hpp"
@@ -57,8 +55,8 @@ public:
 
 	void reset_xruns();
 
-	jack_nframes_t buffer_size();
-	bool set_buffer_size(jack_nframes_t size);
+	uint32_t buffer_size();
+	bool set_buffer_size(uint32_t size);
 
 	float sample_rate();
 

@@ -733,7 +733,7 @@ jack_proxy::disconnect(
 	return true;
 }
 
-jack_nframes_t
+uint32_t
 jack_proxy::buffer_size()
 {
 	DBusMessage* reply_ptr;
@@ -764,7 +764,7 @@ fail:
 
 
 bool
-jack_proxy::set_buffer_size(jack_nframes_t size)
+jack_proxy::set_buffer_size(uint32_t size)
 {
 	DBusMessage* reply_ptr;
 	dbus_uint32_t buffer_size;

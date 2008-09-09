@@ -527,7 +527,7 @@ Patchage::buffer_size_changed()
 	if (selected == -1) {
 		update_toolbar();
 	} else {
-		jack_nframes_t buffer_size = 1 << (selected+5);
+		uint32_t buffer_size = 1 << (selected+5);
 	
 		// this check is temporal workaround for jack bug
 		// we skip setting buffer size if it same as acutal one
