@@ -6,4 +6,4 @@ Exec=patchage
 Terminal=false
 Icon=patchage
 Type=Application
-Categories=Application;AudioVideo;Sound;Audio
+Categories=Application;AudioVideo;Audio
