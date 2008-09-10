@@ -1,0 +1,10 @@
+FlowCanvas
+----
+
+FlowCanvas is an interactive Gtkmm/Gnomecanvasmm widget for graph-based
+interfaces (patchers, modular synthesizers, finite state automata,
+interactive graphs, etc).
+
+For more information, see <http://drobilla.net/software/flowcanvas>.
+
+ -- Dave Robillard <dave@drobilla.net>

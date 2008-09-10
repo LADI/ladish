@@ -1,0 +1,9 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Patchage
+Comment=Connect audio and MIDI applications together and manage audio sessions
+Exec=patchage
+Terminal=false
+Icon=patchage
+Type=Application
+Categories=Application;AudioVideo;Audio

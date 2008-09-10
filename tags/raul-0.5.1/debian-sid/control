@@ -1,0 +1,39 @@
+Source: raul
+Priority: extra
+Maintainer: Dave Robillard <dave@drobilla.net>
+Build-Depends: debhelper (>= 5), autotools-dev
+Standards-Version: 3.7.3
+Section: libs
+
+Package: raul
+Depends: raul-0
+Architecture: any
+Description: A C++ library for realtime audio applications
+ Raul (Realtime Audio Utility Library) is a lightweight C++ convenience
+ library for realtime programming, with a bias towards audio applications
+ on GNU/Linux machines.
+
+Package: raul-dev
+Depends: raul-0-dev
+Architecture: any
+Description: Development files (headers) for Raul
+ Files required for compiling programs which use Raul.
+
+Package: raul-0
+Section: libs
+Architecture: any
+Pre-Depends: make
+Depends: ${shlibs:Depends}, libjack0
+Description: A C++ library for realtime audio applications
+ Raul (Realtime Audio Utility Library) is a lightweight C++ convenience
+ library for realtime programming, with a bias towards audio applications
+ on GNU/Linux machines.
+
+Package: raul-0-dev
+Section: libdevel
+Architecture: any
+Pre-Depends: make
+Depends: raul (= ${binary:Version}), libjack-dev
+Description: Development files (headers) for Raul
+ Files required for compiling programs which use Raul.
+

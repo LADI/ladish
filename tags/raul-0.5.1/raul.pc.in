@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: raul
+Version: @RAUL_VERSION@
+Description: A C++ convenience library for realtime audio applications
+Libs: -L${libdir} -lraul @GLIBMM_LIBS@ @GTHREAD_LIBS@ @JACK_LIBS@
+Cflags: -I${includedir} @GLIBMM_CFLAGS@ @GTHREAD_CFLAGS@ @JACK_CFLAGS@
