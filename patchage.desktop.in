@@ -6,4 +6,4 @@ Exec=@BINDIR@/@APP_INSTALL_NAME@
 Terminal=false
 Icon=@APP_INSTALL_NAME@
 Type=Application
-Categories=Application;AudioVideo;Sound;Audio
+Categories=Application;AudioVideo;Audio
