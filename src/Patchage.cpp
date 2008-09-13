@@ -93,6 +93,8 @@ Patchage::Patchage(int argc, char** argv)
 	, INIT_WIDGET(_menu_help_about)
 	, INIT_WIDGET(_menu_jack_start)
 	, INIT_WIDGET(_menu_jack_stop)
+	, INIT_WIDGET(_menu_a2j_start)
+	, INIT_WIDGET(_menu_a2j_stop)
 	, INIT_WIDGET(_menu_load_project)
 	, INIT_WIDGET(_menu_save_all_projects)
 	, INIT_WIDGET(_menu_close_all_projects)
@@ -219,6 +221,11 @@ Patchage::Patchage(int argc, char** argv)
  		sigc::mem_fun(_jack, &jack_proxy::start_server));
  	_menu_jack_stop->signal_activate().connect(
  		sigc::mem_fun(_jack, &jack_proxy::stop_server));
+
+ 	_menu_a2j_start->signal_activate().connect(
+ 		sigc::mem_fun(_a2j, &a2j_proxy::start_bridge));
+ 	_menu_a2j_stop->signal_activate().connect(
+ 		sigc::mem_fun(_a2j, &a2j_proxy::stop_bridge));
 
 	jack_status_changed(_jack->is_started());
 
@@ -573,16 +580,24 @@ Patchage::set_a2j_status(
 	{
 	case A2J_STATUS_NO_RESPONSE:
 		status_text = "A2J N/A";
+		_menu_a2j_start->set_sensitive(false);
+		_menu_a2j_stop->set_sensitive(false);
 		break;
 	case A2J_STATUS_BRIDGE_STOPPED:
 		status_text = "A2J bridge stopped";
+		_menu_a2j_start->set_sensitive(true);
+		_menu_a2j_stop->set_sensitive(false);
 		break;
 	case A2J_STATUS_BRIDGE_STARTED:
 		status_text = "A2J bridge started";
+		_menu_a2j_start->set_sensitive(false);
+		_menu_a2j_stop->set_sensitive(true);
 		break;
 	default:
 		error_msg(str(boost::format("Unknown A2J status %u") % status));
 		status_text = "Unknown A2J status";
+		_menu_a2j_start->set_sensitive(true);
+		_menu_a2j_stop->set_sensitive(true);
 		break;
 	}
 

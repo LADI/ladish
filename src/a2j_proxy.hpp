@@ -40,6 +40,12 @@ public:
 		string& alsa_client_name,
 		string& alsa_port_name);
 
+	void
+	start_bridge();
+
+	void
+	stop_bridge();
+
 private:
 	a2j_proxy_impl * _impl_ptr;
 };

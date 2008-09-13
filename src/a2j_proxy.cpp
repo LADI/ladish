@@ -310,3 +310,29 @@ a2j_proxy_impl::is_started()
 
 	return started;
 }
+
+void
+a2j_proxy::start_bridge()
+{
+	DBusMessage * reply_ptr;
+
+	if (!_impl_ptr->call(true, A2J_IFACE_CONTROL, "start", &reply_ptr, DBUS_TYPE_INVALID))
+	{
+		return;
+	}
+
+	dbus_message_unref(reply_ptr);
+}
+
+void
+a2j_proxy::stop_bridge()
+{
+	DBusMessage * reply_ptr;
+
+	if (!_impl_ptr->call(true, A2J_IFACE_CONTROL, "stop", &reply_ptr, DBUS_TYPE_INVALID))
+	{
+		return;
+	}
+
+	dbus_message_unref(reply_ptr);
+}

@@ -165,6 +165,8 @@ protected:
 	Widget<Gtk::MenuItem>       _menu_help_about;
 	Widget<Gtk::MenuItem>       _menu_jack_start;
 	Widget<Gtk::MenuItem>       _menu_jack_stop;
+	Widget<Gtk::MenuItem>       _menu_a2j_start;
+	Widget<Gtk::MenuItem>       _menu_a2j_stop;
 	Widget<Gtk::MenuItem>       _menu_load_project;
 	Widget<Gtk::MenuItem>       _menu_save_all_projects;
 	Widget<Gtk::MenuItem>       _menu_close_all_projects;
