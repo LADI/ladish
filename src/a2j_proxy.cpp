@@ -101,6 +101,8 @@ a2j_proxy_impl::init()
 	_server_responding = false;
 
 	patchage_dbus_add_match("type='signal',interface='" DBUS_INTERFACE_DBUS "',member=NameOwnerChanged,arg0='" A2J_SERVICE "'");
+	patchage_dbus_add_match("type='signal',interface='" A2J_IFACE_CONTROL "',member=bridge_started");
+	patchage_dbus_add_match("type='signal',interface='" A2J_IFACE_CONTROL "',member=bridge_stopped");
 
 	patchage_dbus_add_filter(dbus_message_hook, this);
 
@@ -174,6 +176,22 @@ a2j_proxy_impl::dbus_message_hook(
 			info_msg((string)"A2J deactivated.");
 			g_app->set_a2j_status(A2J_STATUS_NO_RESPONSE);
 		}
+
+		return DBUS_HANDLER_RESULT_HANDLED;
+	}
+
+	if (dbus_message_is_signal(message, A2J_IFACE_CONTROL, "bridge_started"))
+	{
+		info_msg("bridge started.");
+		g_app->set_a2j_status(A2J_STATUS_BRIDGE_STARTED);
+
+		return DBUS_HANDLER_RESULT_HANDLED;
+	}
+
+	if (dbus_message_is_signal(message, A2J_IFACE_CONTROL, "bridge_stopped"))
+	{
+		info_msg("bridge stopped.");
+		g_app->set_a2j_status(A2J_STATUS_BRIDGE_STOPPED);
 
 		return DBUS_HANDLER_RESULT_HANDLED;
 	}
