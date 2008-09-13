@@ -121,7 +121,7 @@
                         <child internal-child="image">
                           <widget class="GtkImage" id="image829">
                             <property name="visible">True</property>
-                            <property name="stock">gtk-connect</property>
+                            <property name="stock">gtk-media-play</property>
                             <property name="icon_size">1</property>
                           </widget>
                         </child>
@@ -138,7 +138,7 @@
                         <child internal-child="image">
                           <widget class="GtkImage" id="image830">
                             <property name="visible">True</property>
-                            <property name="stock">gtk-disconnect</property>
+                            <property name="stock">gtk-media-stop</property>
                             <property name="icon_size">1</property>
                           </widget>
                         </child>
