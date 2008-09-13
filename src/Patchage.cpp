@@ -549,9 +549,9 @@ Patchage::set_lash_availability(
 	bool lash_active)
 {
 	_project_list->set_lash_availability(lash_active);
+	_menu_view_projects->set_active(lash_active);
 	if (!lash_active)
 	{
-		_menu_view_projects->set_active(false);
 		_session->clear();
 		_main_lash_status_label->set_text("LASH N/A");
 		_project_list_viewport->hide();
