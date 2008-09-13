@@ -87,6 +87,8 @@ Patchage::Patchage(int argc, char** argv)
 	, INIT_WIDGET(_main_scrolledwin)
 	, INIT_WIDGET(_main_win)
 	, INIT_WIDGET(_main_xrun_progress)
+	, INIT_WIDGET(_main_a2j_status_label)
+	, INIT_WIDGET(_main_lash_status_label)
 	, INIT_WIDGET(_menu_file_quit)
 	, INIT_WIDGET(_menu_help_about)
 	, INIT_WIDGET(_menu_jack_start)
@@ -551,6 +553,27 @@ Patchage::set_lash_availability(
 	{
 		_menu_view_projects->set_active(false);
 		_session->clear();
+		_main_lash_status_label->set_text("LASH N/A");
+		_project_list_viewport->hide();
+	}
+	else
+	{
+		_main_lash_status_label->set_text("LASH active");
+		_project_list_viewport->show();
+	}
+}
+
+void
+Patchage::set_a2j_availability(
+	bool a2j_active)
+{
+	if (!a2j_active)
+	{
+		_main_a2j_status_label->set_text("A2J N/A");
+	}
+	else
+	{
+		_main_a2j_status_label->set_text("A2J available");
 	}
 }
 

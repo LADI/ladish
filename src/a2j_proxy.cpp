@@ -36,7 +36,6 @@ error_msg(
 	g_app->error_msg((string)"[A2J] " + msg);
 }
 
-#if 0
 static
 void
 info_msg(
@@ -44,12 +43,18 @@ info_msg(
 {
 	g_app->info_msg((string)"[A2J] " + msg);
 }
-#endif
 
 struct a2j_proxy_impl
 {
 	void
 	init();
+
+	static
+	DBusHandlerResult
+	dbus_message_hook(
+		DBusConnection * connection,
+		DBusMessage * message,
+		void * proxy);
 
 	bool
 	call(
@@ -90,7 +95,69 @@ a2j_proxy_impl::init()
 {
 	_server_responding = false;
 
+	patchage_dbus_add_match("type='signal',interface='" DBUS_INTERFACE_DBUS "',member=NameOwnerChanged,arg0='" A2J_SERVICE "'");
+
+	patchage_dbus_add_filter(dbus_message_hook, this);
+
+	// get jack client name
+	// calling any method to updates server responding status
+	// this also actiavtes a2j object if it not activated already
 	get_jack_client_name(_jack_client_name);
+
+	g_app->set_a2j_availability(_server_responding);
+}
+
+DBusHandlerResult
+a2j_proxy_impl::dbus_message_hook(
+	DBusConnection * connection,
+	DBusMessage * message,
+	void * proxy)
+{
+	const char * object_name;
+	const char * old_owner;
+	const char * new_owner;
+
+	assert(proxy);
+	a2j_proxy_impl * me = reinterpret_cast<a2j_proxy_impl *>(proxy);
+
+	//info_msg("dbus_message_hook() called.");
+
+	// Handle signals we have subscribed for in attach()
+
+	if (dbus_message_is_signal(message, DBUS_INTERFACE_DBUS, "NameOwnerChanged"))
+	{
+		if (!dbus_message_get_args(
+			    message, &g_dbus_error,
+			    DBUS_TYPE_STRING, &object_name,
+			    DBUS_TYPE_STRING, &old_owner,
+			    DBUS_TYPE_STRING, &new_owner,
+			    DBUS_TYPE_INVALID))
+		{
+			error_msg(str(boost::format("dbus_message_get_args() failed to extract NameOwnerChanged signal arguments (%s)") % g_dbus_error.message));
+			dbus_error_free(&g_dbus_error);
+			return DBUS_HANDLER_RESULT_HANDLED;
+		}
+
+		if ((string)object_name != A2J_SERVICE)
+		{
+			return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+		}
+
+		if (old_owner[0] == '\0')
+		{
+			info_msg((string)"A2J activated.");
+			g_app->set_a2j_availability(true);
+		}
+		else if (new_owner[0] == '\0')
+		{
+			info_msg((string)"A2J deactivated.");
+			g_app->set_a2j_availability(false);
+		}
+
+		return DBUS_HANDLER_RESULT_HANDLED;
+	}
+
+	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
 bool

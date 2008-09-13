@@ -62,6 +62,7 @@ public:
 	void store_window_location();
 	
 	void set_lash_availability(bool lash_active);
+	void set_a2j_availability(bool a2j_active);
 
 	void load_project_ask();
 	void load_project(const std::string& project_name);
@@ -158,6 +159,8 @@ protected:
 	Widget<Gtk::ScrolledWindow> _main_scrolledwin;
 	Widget<Gtk::Window>         _main_win;
 	Widget<Gtk::ProgressBar>    _main_xrun_progress;
+	Widget<Gtk::Label>          _main_a2j_status_label;
+	Widget<Gtk::Label>          _main_lash_status_label;
 	Widget<Gtk::MenuItem>       _menu_file_quit;
 	Widget<Gtk::MenuItem>       _menu_help_about;
 	Widget<Gtk::MenuItem>       _menu_jack_start;
