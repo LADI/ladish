@@ -45,6 +45,9 @@ public:
 	lash_proxy(session * session_ptr);
 	~lash_proxy();
 
+	bool is_active();
+	void try_activate();
+	void deactivate();
 	void get_available_projects(std::list<lash_project_info>& projects);
 	void load_project(const std::string& project_name);
 	void save_all_projects();

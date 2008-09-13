@@ -95,6 +95,8 @@ Patchage::Patchage(int argc, char** argv)
 	, INIT_WIDGET(_menu_jack_stop)
 	, INIT_WIDGET(_menu_a2j_start)
 	, INIT_WIDGET(_menu_a2j_stop)
+	, INIT_WIDGET(_menu_lash_activate)
+	, INIT_WIDGET(_menu_lash_deactivate)
 	, INIT_WIDGET(_menu_load_project)
 	, INIT_WIDGET(_menu_save_all_projects)
 	, INIT_WIDGET(_menu_close_all_projects)
@@ -226,6 +228,11 @@ Patchage::Patchage(int argc, char** argv)
  		sigc::mem_fun(_a2j, &a2j_proxy::start_bridge));
  	_menu_a2j_stop->signal_activate().connect(
  		sigc::mem_fun(_a2j, &a2j_proxy::stop_bridge));
+
+ 	_menu_lash_activate->signal_activate().connect(
+ 		sigc::mem_fun(_lash, &lash_proxy::try_activate));
+ 	_menu_lash_deactivate->signal_activate().connect(
+ 		sigc::mem_fun(_lash, &lash_proxy::deactivate));
 
 	jack_status_changed(_jack->is_started());
 
@@ -557,6 +564,8 @@ Patchage::set_lash_availability(
 {
 	_project_list->set_lash_availability(lash_active);
 	_menu_view_projects->set_active(lash_active);
+	_menu_lash_activate->set_sensitive(!lash_active);
+	_menu_lash_deactivate->set_sensitive(lash_active);
 	if (!lash_active)
 	{
 		_session->clear();

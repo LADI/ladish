@@ -69,6 +69,8 @@ struct lash_proxy_impl
 		string id,
 		string name);
 
+	void exit();
+
 	bool _server_responding;
 	session * _session_ptr;
 	lash_proxy * _interface_ptr;
@@ -111,6 +113,25 @@ lash_proxy_impl::init()
  	fetch_loaded_projects();
 
 	g_app->set_lash_availability(_server_responding);
+}
+
+bool
+lash_proxy::is_active()
+{
+	return _impl_ptr->_server_responding;
+}
+
+void
+lash_proxy::try_activate()
+{
+	list<lash_project_info> projects;
+	get_available_projects(projects);
+}
+
+void
+lash_proxy::deactivate()
+{
+	_impl_ptr->exit();
 }
 
 void
@@ -178,6 +199,7 @@ lash_proxy_impl::dbus_message_hook(
 		{
 			info_msg((string)"LASH deactivated.");
 			g_app->set_lash_availability(false);
+			me->_server_responding = false;
 		}
 
 		return DBUS_HANDLER_RESULT_HANDLED;
@@ -859,6 +881,24 @@ lash_proxy::project_set_notes(
 		    &reply_ptr,
 		    DBUS_TYPE_STRING, &project_name_cstr,
 		    DBUS_TYPE_STRING, &notes_cstr,
+		    DBUS_TYPE_INVALID))
+	{
+		return;
+	}
+
+	dbus_message_unref(reply_ptr);
+}
+
+void
+lash_proxy_impl::exit()
+{
+	DBusMessage * reply_ptr;
+
+	if (!call(
+		    true,
+		    LASH_IFACE_CONTROL,
+		    "Exit",
+		    &reply_ptr,
 		    DBUS_TYPE_INVALID))
 	{
 		return;
