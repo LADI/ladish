@@ -21,6 +21,10 @@
 
 struct a2j_proxy_impl;
 
+#define A2J_STATUS_NO_RESPONSE     0
+#define A2J_STATUS_BRIDGE_STOPPED  1
+#define A2J_STATUS_BRIDGE_STARTED  2
+
 class a2j_proxy
 {
 public:

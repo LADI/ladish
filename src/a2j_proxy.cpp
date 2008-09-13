@@ -69,6 +69,9 @@ struct a2j_proxy_impl
 	get_jack_client_name(
 		string& jack_client_name_ref);
 
+	bool
+	is_started();
+
 	bool _server_responding;
 	string _jack_client_name;
 };
@@ -93,6 +96,8 @@ a2j_proxy::get_jack_client_name()
 void
 a2j_proxy_impl::init()
 {
+	unsigned int status;
+
 	_server_responding = false;
 
 	patchage_dbus_add_match("type='signal',interface='" DBUS_INTERFACE_DBUS "',member=NameOwnerChanged,arg0='" A2J_SERVICE "'");
@@ -104,7 +109,23 @@ a2j_proxy_impl::init()
 	// this also actiavtes a2j object if it not activated already
 	get_jack_client_name(_jack_client_name);
 
-	g_app->set_a2j_availability(_server_responding);
+	if (is_started())
+	{
+		status = A2J_STATUS_BRIDGE_STARTED;
+	}
+	else
+	{
+		if (!_server_responding)
+		{
+			status = A2J_STATUS_NO_RESPONSE;
+		}
+		else
+		{
+			status = A2J_STATUS_BRIDGE_STOPPED;
+		}
+	}
+
+	g_app->set_a2j_status(status);
 }
 
 DBusHandlerResult
@@ -118,7 +139,7 @@ a2j_proxy_impl::dbus_message_hook(
 	const char * new_owner;
 
 	assert(proxy);
-	a2j_proxy_impl * me = reinterpret_cast<a2j_proxy_impl *>(proxy);
+	//a2j_proxy_impl * me = reinterpret_cast<a2j_proxy_impl *>(proxy);
 
 	//info_msg("dbus_message_hook() called.");
 
@@ -146,12 +167,12 @@ a2j_proxy_impl::dbus_message_hook(
 		if (old_owner[0] == '\0')
 		{
 			info_msg((string)"A2J activated.");
-			g_app->set_a2j_availability(true);
+			g_app->set_a2j_status(A2J_STATUS_BRIDGE_STOPPED);
 		}
 		else if (new_owner[0] == '\0')
 		{
 			info_msg((string)"A2J deactivated.");
-			g_app->set_a2j_availability(false);
+			g_app->set_a2j_status(A2J_STATUS_NO_RESPONSE);
 		}
 
 		return DBUS_HANDLER_RESULT_HANDLED;
@@ -264,4 +285,28 @@ a2j_proxy::map_jack_port(
 	dbus_message_unref(reply_ptr);
 
 	return true;
+}
+
+bool
+a2j_proxy_impl::is_started()
+{
+	DBusMessage * reply_ptr;
+	dbus_bool_t started;
+
+	if (!call(true, A2J_IFACE_CONTROL, "is_started", &reply_ptr, DBUS_TYPE_INVALID))
+	{
+		return false;
+	}
+
+	if (!dbus_message_get_args(reply_ptr, &g_dbus_error, DBUS_TYPE_BOOLEAN, &started, DBUS_TYPE_INVALID))
+	{
+		dbus_message_unref(reply_ptr);
+		dbus_error_free(&g_dbus_error);
+		error_msg("decoding reply of is_started failed.");
+		return false;
+	}
+
+	dbus_message_unref(reply_ptr);
+
+	return started;
 }

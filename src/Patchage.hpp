@@ -62,7 +62,7 @@ public:
 	void store_window_location();
 	
 	void set_lash_availability(bool lash_active);
-	void set_a2j_availability(bool a2j_active);
+	void set_a2j_status(unsigned int status);
 
 	void load_project_ask();
 	void load_project(const std::string& project_name);

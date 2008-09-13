@@ -564,17 +564,29 @@ Patchage::set_lash_availability(
 }
 
 void
-Patchage::set_a2j_availability(
-	bool a2j_active)
+Patchage::set_a2j_status(
+	unsigned int status)
 {
-	if (!a2j_active)
+	const char * status_text;
+
+	switch (status)
 	{
-		_main_a2j_status_label->set_text("A2J N/A");
+	case A2J_STATUS_NO_RESPONSE:
+		status_text = "A2J N/A";
+		break;
+	case A2J_STATUS_BRIDGE_STOPPED:
+		status_text = "A2J bridge stopped";
+		break;
+	case A2J_STATUS_BRIDGE_STARTED:
+		status_text = "A2J bridge started";
+		break;
+	default:
+		error_msg(str(boost::format("Unknown A2J status %u") % status));
+		status_text = "Unknown A2J status";
+		break;
 	}
-	else
-	{
-		_main_a2j_status_label->set_text("A2J available");
-	}
+
+	_main_a2j_status_label->set_text(status_text);
 }
 
 struct loadable_project_list_column_record : public Gtk::TreeModel::ColumnRecord
