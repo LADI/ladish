@@ -56,7 +56,7 @@ with polymorphic ports:
 
   * When connecting output polymorphic ports, the type field MAY be set
     to 0 to indicate the plugin may produce any (supported) type based
-    on the types of it's inputs.  The plugin MUST then set the type field
+    on the types of its inputs.  The plugin MUST then set the type field
     to the type it has chosen.  Otherwise, the type field MUST be set to
     the host expects to receive from the plugin.  If a port is :generic
     but a plugin cannot produce the requested output type, the plugin
