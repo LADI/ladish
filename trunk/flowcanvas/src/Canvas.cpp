@@ -690,7 +690,7 @@ Canvas::port_event(GdkEvent* event, boost::weak_ptr<Port> weak_port)
 
 					new_control *= (port->control_max() - port->control_min());
 					new_control += port->control_min();
-					if (new_control < port->control_min());
+					if (new_control < port->control_min())
 						new_control = port->control_min();
 					if (new_control > port->control_max())
 						new_control = port->control_max();
