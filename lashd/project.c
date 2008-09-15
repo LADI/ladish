@@ -1334,9 +1334,11 @@ project_client_task_completed(project_t *project,
 		switch (client->task_type) {
 		case LASH_Save_Data_Set: case LASH_Save_File:
 			lashd_dbus_signal_emit_project_saved(project->name);
+			lash_info("Project '%s' saved.", project->name);
 			break;
 		case LASH_Restore_File: case LASH_Restore_Data_Set:
 			lashd_dbus_signal_emit_project_loaded(project->name);
+			lash_info("Project '%s' loaded.", project->name);
 			break;
 		default:
 			return;
