@@ -1250,6 +1250,12 @@ project_unload(project_t *project)
 	}
 
 	lash_info("Project '%s' unloaded", project->name);
+
+	if (project->doc == NULL && lash_dir_exists(project->directory))
+	{
+		lash_info("Removing directory '%s' of closed newborn project '%s'", project->directory, project->name);
+		lash_remove_dir(project->directory);
+	}
 }
 
 void
