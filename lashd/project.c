@@ -148,6 +148,25 @@ project_get_client_by_id(struct list_head *client_list,
 	return NULL;
 }
 
+/* Set modified_status to new_status, emit signal if status changed */
+static void
+project_set_modified_status(project_t *project,
+                            bool       new_status)
+{
+	if (project->modified_status == new_status)
+		return;
+
+	dbus_bool_t value = new_status;
+	project->modified_status = new_status;
+
+	signal_new_valist(g_server->dbus_service,
+	                  "/", "org.nongnu.LASH.Control",
+	                  "ProjectModifiedStatusChanged",
+	                  DBUS_TYPE_STRING, &project->name,
+	                  DBUS_TYPE_BOOLEAN, &value,
+	                  DBUS_TYPE_INVALID);
+}
+
 static void
 project_name_client(project_t  *project,
                     client_t   *client,
@@ -209,6 +228,8 @@ project_new_client(project_t *project,
 
 	/* Give the client a unique name */
 	project_name_client(project, client, NULL);
+
+	project_set_modified_status(project, true);
 
 	// TODO: Swap 2nd and 3rd parameter of this signal
 	lashd_dbus_signal_emit_client_appeared(client->id_str, project->name,
@@ -1314,25 +1335,6 @@ project_client_progress(project_t *project,
 
 	uint8_t p = project->client_tasks_progress / project->client_tasks_total;
 	lashd_dbus_signal_emit_progress(p > 99 ? 99 : p);
-}
-
-/* Set modified_status to new_status, emit signal if status changed */
-static void
-project_set_modified_status(project_t *project,
-                            bool       new_status)
-{
-	if (project->modified_status == new_status)
-		return;
-
-	dbus_bool_t value = new_status;
-	project->modified_status = new_status;
-
-	signal_new_valist(g_server->dbus_service,
-	                  "/", "org.nongnu.LASH.Control",
-	                  "ProjectModifiedStatusChanged",
-	                  DBUS_TYPE_STRING, &project->name,
-	                  DBUS_TYPE_BOOLEAN, &value,
-	                  DBUS_TYPE_INVALID);
 }
 
 /* Send the appropriate signal(s) to signify that a client completed a task */
