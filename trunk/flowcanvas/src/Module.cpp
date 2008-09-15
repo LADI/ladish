@@ -52,6 +52,7 @@ Module::Module(boost::shared_ptr<Canvas> canvas, const string& name, double x, d
 	, _embed_width(0)
 	, _embed_height(0)
 	, _icon_size(16)
+	, _port_renamed(false)
 	, _widest_input(0)
 	, _widest_output(0)
 	, _module_box(*this, 0, 0, 0, 0) // w, h set later
@@ -422,10 +423,9 @@ Module::add_port(boost::shared_ptr<Port> p)
 		p->signal_event().connect(
 			sigc::bind(sigc::mem_fun(canvas.get(), &Canvas::port_event), p));
 	
-	p->signal_renamed.connect(sigc::mem_fun(this, &Module::resize));
+	p->signal_renamed.connect(sigc::mem_fun(this, &Module::port_renamed));
 }
 
-	
 
 /** Embed a widget on the module.
  *
@@ -484,11 +484,38 @@ Module::embed_size_request(Gtk::Requisition* r, bool force)
 }
 
 
+void
+Module::measure_ports()
+{
+	_widest_input = 0.0;
+	_widest_output = 0.0;
+	for (PortVector::iterator pi = _ports.begin(); pi != _ports.end(); ++pi) {
+		const boost::shared_ptr<Port> p = (*pi);
+		if (p->is_input()) {
+			_widest_input = 0.0;
+			for (PortVector::iterator pi = _ports.begin(); pi != _ports.end(); ++pi)
+				if ((*pi)->natural_width() > _widest_input)
+					_widest_input = (*pi)->natural_width();
+		} else {
+			_widest_output = 0.0;
+			for (PortVector::iterator pi = _ports.begin(); pi != _ports.end(); ++pi)
+				if ((*pi)->natural_width() > _widest_output)
+					_widest_output = (*pi)->natural_width();
+		}
+	}
+}
+
+
 /** Resize the module to fit its contents best.
  */
 void
 Module::resize()
 {
+	if (_port_renamed) {
+		measure_ports();
+		_port_renamed = false;
+	}
+
 	// The amount of space between a port edge and the module edge (on the
 	// side that the port isn't right on the edge).
 	const double hor_pad = (_title_visible ? 10.0 : 20.0);

@@ -85,6 +85,9 @@ protected:
 	virtual void set_height(double h);
 
 	void fit_canvas();
+	void measure_ports();
+	
+	void port_renamed() { _port_renamed = true; }
 	
 	void embed(Gtk::Container* widget);
 
@@ -93,6 +96,7 @@ protected:
 	double _embed_width;
 	double _embed_height;
 	double _icon_size;
+	bool   _port_renamed;
 	double _widest_input;
 	double _widest_output;
 
