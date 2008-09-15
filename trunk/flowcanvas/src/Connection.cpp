@@ -44,7 +44,7 @@ Connection::Connection(boost::shared_ptr<Canvas>      canvas,
 	, _handle_style(HANDLE_NONE)
 	, _handle(NULL)
 {
-	_bpath.property_width_units() = 1.0;
+	_bpath.property_width_units() = 2.0;
 	set_color(color);
 
 	update_location();	
