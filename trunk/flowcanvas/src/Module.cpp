@@ -410,9 +410,9 @@ Module::add_port(boost::shared_ptr<Port> p)
 	if (i != _ports.end()) // already added
 		return;            // so do nothing
 		
-	if (p->is_input() && p->width() > _widest_input)
+	if (p->is_input() && p->natural_width() > _widest_input)
 		_widest_input = p->width();
-	else if (p->is_output() && p->width() > _widest_output)
+	else if (p->is_output() && p->natural_width() > _widest_output)
 		_widest_output = p->width();
 	
 	_ports.push_back(p);
@@ -500,10 +500,16 @@ Module::resize()
 	if (_icon_box)
 		width += _icon_size + 2;
 
-	// Fit ports to module (or vice-versa)
-	double widest_in  = (_embed_item ? _widest_input  : std::max(_widest_input,  width - hor_pad));
-	double widest_out = (_embed_item ? _widest_output : std::max(_widest_output, width - hor_pad));
+	// Title is wide, put inputs and outputs beside each other
+	bool horiz = (_widest_input + _widest_output + 10.0 < std::max(width, _embed_width));
 	
+	// Fit ports to module (or vice-versa)
+	double widest_in  = _widest_input;
+	double widest_out = _widest_output;
+	double expand_w = (horiz ? (width / 2.0) : width) - hor_pad;
+	widest_in  = (_embed_item ? _widest_input  : std::max(_widest_input,  expand_w));
+	widest_out = (_embed_item ? _widest_output : std::max(_widest_output, expand_w));
+
 	const double widest = std::max(widest_in, widest_out);
 	const double title_height = _canvas_title.property_text_height();
 
@@ -525,7 +531,7 @@ Module::resize()
 	if (_ports.size() > 0)
 		above_h += _ports.size() * ((*_ports.begin())->height()+2.0);
 
-	double between_h = std::max(above_h, _embed_height);
+	//double between_h = std::max(above_h, _embed_height);
 	above_h += _embed_height;
 	
 	/*cerr << above_w << "x" << above_h << "(" << above_w * above_h << ") ? "
@@ -536,12 +542,10 @@ Module::resize()
 	//if (above_w * above_h >= between_w * between_h) { // minimize area
 	if (_embed_width < _embed_height * 2.0) {
 		embed_pos = BETWEEN;
-		height += between_h;
 		width = between_w;
 		if (_embed_item)
 			_embed_item->property_x() = widest_in;
 	} else {
-		height += above_h;
 		width = above_w;
 		if (_embed_item)
 			_embed_item->property_x() = 0.0f;
@@ -558,7 +562,6 @@ Module::resize()
 	
 	// Actually set width and height
 	set_width(width);
-	set_height(height);
 	
 	// Offset ports below embedded widget
 	if (embed_pos == ABOVE) {
@@ -567,22 +570,35 @@ Module::resize()
 	
 	// Move ports to appropriate locations
 	int i = 0;
-	for (PortVector::iterator pi = _ports.begin(); pi != _ports.end(); ++pi, ++i) {
+	bool last_was_input = false;
+	double y = 0.0;
+	double h = 0.0;
+	for (PortVector::iterator pi = _ports.begin(); pi != _ports.end(); ++pi) {
 		const boost::shared_ptr<Port> p = (*pi);
+		h = p->height();
 
-		const double y = header_height + (i * (p->height() + 2.0));
 		if (p->is_input()) {
+			y = header_height + (i * (h + 2.0));
+			++i;
 			p->set_width(widest_in);
 			p->property_x() = 0.5;
 			p->property_y() = y;
+			last_was_input = true;
 		} else {
+			if (!horiz || !last_was_input) {
+				y = header_height + (i * (h + 2.0));
+				++i;
+			}
 			p->set_width(widest_out);
 			p->property_x() = _width - p->width() - 0.5;
 			p->property_y() = y;
+			last_was_input = false;
 		}
 		
 		(*pi)->move_connections();
 	}
+	
+	set_height(y + h + 2.0);
 
 	// Center title
 	if (_icon_box)

@@ -178,6 +178,13 @@ Port::set_border_width(double w)
 }
 
 
+double
+Port::natural_width() const
+{
+	return _label->property_text_width();
+}
+
+
 void
 Port::set_name(const string& n)
 {
