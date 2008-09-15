@@ -287,6 +287,26 @@ server_find_client_by_pid(server_t *server,
 	return NULL;
 }
 
+client_t *
+server_find_lost_client_by_pid(
+	server_t * server,
+	pid_t pid)
+{
+	struct list_head *node;
+	project_t *project;
+	client_t *client;
+
+	list_for_each (node, &server->loaded_projects) {
+		project = list_entry(node, project_t, siblings_loaded);
+
+		client = find_client_in_list_by_pid(&project->lost_clients, pid);
+		if (client)
+			return client;
+	}
+
+	return NULL;
+}
+
 static const char *
 server_create_new_project_name(server_t   *server,
                                const char *suggestion)
@@ -420,11 +440,18 @@ server_add_client(server_t    *server,
 	project_t *project;
 	client_t *client;
 
-	lash_debug("Adding new client");
+	client = server_find_lost_client_by_pid(server, pid);
+	lash_info("Adding client with pid %u - %p", (unsigned int)pid, client);
+	if (client == NULL)
+	{
+		project = NULL;
+	}
+	else
+	{
+		project = client->project;
+	}
 
-	// TODO: Only allocate new client if there's no lost client to resume?
 	client = client_new();
-
 	client->pid = pid;
 	lash_strset(&client->dbus_name, dbus_name);
 	lash_strset(&client->class, class);
@@ -433,11 +460,12 @@ server_add_client(server_t    *server,
 	client->argc = argc;
 	client->argv = argv;
 
-	if (!list_empty(&server->loaded_projects)) {
-		project = list_entry(server->loaded_projects.next,
-		                     project_t, siblings_loaded);
+	if (project != NULL)
+	{
 		project_add_client(project, client);
-	} else {
+	}
+	else
+	{
 		lash_debug("Creating new project for client");
 		project = server_create_new_project(server, NULL);
 		project_new_client(project, client);
@@ -477,6 +505,7 @@ server_project_restore(server_t  *server,
 		project_rename(project, new_name);
 	}
 
+	lash_info("Adding project '%s' to project list", project->name);
 	list_add_tail(&project->siblings_loaded, &server->loaded_projects);
 
 	lashd_dbus_signal_emit_project_appeared(project->name, project->directory);
