@@ -1032,12 +1032,29 @@ project_load(project_t *project)
 	return true;
 }
 
+static
+__inline__
+bool
+project_update_last_modify_time(
+	project_t * project_ptr)
+{
+	struct stat st;
+
+	if (stat(project_ptr->directory, &st) != 0)
+	{
+		lash_error("failed to stat '%s', error is %d", project_ptr->directory, errno);
+		return false;
+	}
+
+	project_ptr->last_modify_time = st.st_mtime;
+	return true;
+}
+
 project_t *
 project_new_from_disk(const char *parent_dir,
                       const char *project_dir)
 {
 	project_t *project;
-	struct stat st;
 	char *filename = NULL;
 	xmlNodePtr projectnode, xmlnode;
 	xmlChar *content = NULL;
@@ -1050,10 +1067,8 @@ project_new_from_disk(const char *parent_dir,
 
 	project->directory = lash_dup_fqn(parent_dir, project_dir);
 
-	if (stat(project->directory, &st) == 0) {
-		project->last_modify_time = st.st_mtime;
-	} else {
-		lash_error("failed to stat '%s'", project->directory);
+	if (!project_update_last_modify_time(project))
+	{
 		goto fail;
 	}
 
@@ -1340,6 +1355,7 @@ project_client_task_completed(project_t *project,
 		switch (client->task_type) {
 		case LASH_Save_Data_Set: case LASH_Save_File:
 			lashd_dbus_signal_emit_project_saved(project->name);
+			project_update_last_modify_time(project);
 			lash_info("Project '%s' saved.", project->name);
 			break;
 		case LASH_Restore_File: case LASH_Restore_Data_Set:
