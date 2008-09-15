@@ -375,6 +375,28 @@ server_create_new_project(server_t   *server,
 	return project;
 }
 
+project_t *
+server_get_newborn_project(
+	server_t * server_ptr)
+{
+	struct list_head * node_ptr;
+	project_t * project_ptr;
+	client_t * client_ptr;
+
+	list_for_each(node_ptr, &server_ptr->loaded_projects)
+	{
+		project_ptr = list_entry(node_ptr, project_t, siblings_loaded);
+		if (project_ptr->doc == NULL)
+		{
+			return project_ptr;
+		}
+	}
+
+	lash_debug("Creating new project for client");
+
+	return server_create_new_project(server_ptr, NULL);
+}
+
 void
 server_close_project(server_t  *server,
                      project_t *project)
@@ -466,8 +488,7 @@ server_add_client(server_t    *server,
 	}
 	else
 	{
-		lash_debug("Creating new project for client");
-		project = server_create_new_project(server, NULL);
+		project = server_get_newborn_project(server);
 		project_new_client(project, client);
 	}
 
