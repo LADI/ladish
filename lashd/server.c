@@ -383,6 +383,8 @@ server_get_newborn_project(
 	project_t * project_ptr;
 	client_t * client_ptr;
 
+	project_ptr = NULL;
+
 	list_for_each(node_ptr, &server_ptr->loaded_projects)
 	{
 		project_ptr = list_entry(node_ptr, project_t, siblings_loaded);
@@ -390,6 +392,14 @@ server_get_newborn_project(
 		{
 			return project_ptr;
 		}
+	}
+
+	/* no unsaved project found */
+
+	if (project_ptr != NULL)
+	{
+		/* reuse last loaded project if any */
+		return project_ptr;
 	}
 
 	lash_debug("Creating new project for client");
