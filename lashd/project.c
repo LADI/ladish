@@ -1213,6 +1213,7 @@ project_lose_client(project_t *project,
 	client->pid = 0;
 
 	list_add(&client->siblings, &project->lost_clients);
+	project_set_modified_status(project, true);
 	lashd_dbus_signal_emit_client_disappeared(client->id_str, project->name);
 }
 
