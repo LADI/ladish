@@ -41,12 +41,6 @@ void
 lashd_jackdbus_mgr_destroy(lashd_jackdbus_mgr_t *mgr);
 
 void
-lashd_jackdbus_mgr_client_add(lashd_jackdbus_mgr_t *mgr,
-                              uuid_t                id,
-                              const char           *jack_client_name,
-                              lash_list_t          *jack_patches);
-
-void
 lashd_jackdbus_mgr_remove_client(lashd_jackdbus_mgr_t  *mgr,
                                  uuid_t                 id,
                                  lash_list_t          **backup_patches);

@@ -30,6 +30,7 @@
 #include "jack_patch.h"
 #include "jack_mgr_client.h"
 #include "server.h"
+#include "client.h"
 
 static lashd_jackdbus_mgr_t *g_jack_mgr_ptr = NULL;
 
@@ -37,6 +38,9 @@ static DBusHandlerResult
 lashd_jackdbus_handler(DBusConnection *connection,
                        DBusMessage    *message,
                        void           *data);
+
+static bool
+lashd_jackdbus_mgr_get_client_data(jack_mgr_client_t *client);
 
 lashd_jackdbus_mgr_t *
 lashd_jackdbus_mgr_new(server_t *server)
@@ -59,23 +63,38 @@ lashd_jackdbus_mgr_new(server_t *server)
 	dbus_error_init(&err);
 
 	dbus_bus_add_match(server->dbus_service->connection,
+			   "type='signal'"
+			   ",sender='org.jackaudio.service'"
+			   ",path='/org/jackaudio/Controller'"
+			   ",interface='org.jackaudio.JackPatchbay'"
+			   ",member='ClientAppeared'",
+			   &err);
+	if (dbus_error_is_set(&err)) {
+		lash_error("Failed to add D-Bus match rule: %s", err.message);
+		dbus_error_free(&err);
+		goto fail;
+	}
+
+	dbus_bus_add_match(server->dbus_service->connection,
 	                   "type='signal'"
 	                   ",sender='org.jackaudio.service'"
 	                   ",path='/org/jackaudio/Controller'"
 	                   ",interface='org.jackaudio.JackPatchbay'"
 	                   ",member='PortAppeared'",
 	                   &err);
-
-	if (!dbus_error_is_set(&err)) {
-		dbus_bus_add_match(server->dbus_service->connection,
-		                   "type='signal'"
-		                   ",sender='org.jackaudio.service'"
-		                   ",path='/org/jackaudio/Controller'"
-		                   ",interface='org.jackaudio.JackPatchbay'"
-		                   ",member='PortsConnected'",
-		                   &err);
+	if (dbus_error_is_set(&err)) {
+		lash_error("Failed to add D-Bus match rule: %s", err.message);
+		dbus_error_free(&err);
+		goto fail;
 	}
 
+	dbus_bus_add_match(server->dbus_service->connection,
+			   "type='signal'"
+			   ",sender='org.jackaudio.service'"
+			   ",path='/org/jackaudio/Controller'"
+			   ",interface='org.jackaudio.JackPatchbay'"
+			   ",member='PortsConnected'",
+			   &err);
 	if (dbus_error_is_set(&err)) {
 		lash_error("Failed to add D-Bus match rule: %s", err.message);
 		dbus_error_free(&err);
@@ -147,7 +166,7 @@ lashd_jackdbus_mgr_connect_ports(const char *client1_name,
                                  const char *client2_name,
                                  const char *port2_name)
 {
-	lash_debug("Attempting to resume patch '%s:%s' -> '%s:%s'",
+	lash_info("Attempting to resume patch '%s:%s' -> '%s:%s'",
 	           client1_name, port1_name, client2_name, port2_name);
 
 	/* Send a port connect request */
@@ -170,11 +189,115 @@ lashd_jackdbus_mgr_connect_ports(const char *client1_name,
 	                       DBUS_TYPE_INVALID);
 }
 
+static
+void
+lashd_jackdbus_get_client_pid_return_handler(
+	DBusPendingCall *pending,
+	void            *data)
+{
+	DBusMessage *msg = dbus_pending_call_steal_reply(pending);
+
+	if (msg) {
+		const char *err_str;
+
+		if (!method_return_verify(msg, &err_str))
+			lash_error("Failed to get client pid: %s", err_str);
+		else
+		{
+			DBusError err;
+			dbus_error_init(&err);
+
+			if (!dbus_message_get_args(msg, &err,
+						   DBUS_TYPE_INT64,
+						   data,
+						   DBUS_TYPE_INVALID)) {
+				lash_error("Cannot get message argument: %s", err.message);
+				dbus_error_free(&err);
+			}
+		}
+
+		dbus_message_unref(msg);
+	} else
+		lash_error("Cannot get method return from pending call");
+
+	dbus_pending_call_unref(pending);
+}
+
+static
+dbus_int64_t
+lashd_jackdbus_get_client_pid(
+	dbus_uint64_t client_id)
+{
+	dbus_int64_t pid = 0;
+
+	if (!method_call_new_valist(
+		g_server->dbus_service,
+		&pid,
+		lashd_jackdbus_get_client_pid_return_handler,
+		true,
+		"org.jackaudio.service",
+		"/org/jackaudio/Controller",
+		"org.jackaudio.JackPatchbay",
+		"GetClientPID",
+		DBUS_TYPE_UINT64,
+		&client_id,
+		DBUS_TYPE_INVALID))
+	{
+		return 0;
+	}
+
+	return pid;
+}
+
+static
+void
+lashd_jackdbus_on_client_appeared(
+	const char * client_name,
+	dbus_uint64_t client_id)
+{
+	dbus_int64_t pid;
+	client_t * client_ptr;
+	jack_mgr_client_t * jack_client_ptr;
+
+	pid = lashd_jackdbus_get_client_pid(client_id);
+
+	lash_info("client '%s' (%llu) appeared. pid is %lld", client_name, (unsigned long long)client_id, (long long)pid);
+
+	client_ptr = server_find_client_by_pid(g_server, pid);
+	lash_debug("client: %p", client_ptr);
+
+	if (client_ptr == NULL)
+	{
+		/* TODO: we need to create liblash-less client object here */
+		lash_info("Ignoring liblash-less client '%s'", client_name);
+		return;
+	}
+
+
+	jack_client_ptr = jack_mgr_client_new();
+
+	uuid_copy(jack_client_ptr->id, client_ptr->id);
+	jack_client_ptr->name = lash_strdup(client_name);
+	//client_ptr->jack_client_id = client_id;
+	jack_client_ptr->old_patches = client_ptr->jack_patches;
+	jack_client_ptr->backup_patches = jack_mgr_client_dup_patch_list(client_ptr->jack_patches);
+	client_ptr->jack_patches = NULL;
+
+	g_jack_mgr_ptr->clients = lash_list_append(g_jack_mgr_ptr->clients, jack_client_ptr);
+
+	/* Get the graph and extract the new client's data */
+	lashd_jackdbus_mgr_get_graph(g_jack_mgr_ptr);
+	if (!lashd_jackdbus_mgr_get_client_data(jack_client_ptr))
+		lash_error("Problem extracting client data from graph");
+
+	lash_debug("Client added");
+}
+
 static void
 lashd_jackdbus_mgr_new_foreign_port(const char *client_name,
                                     const char *port_name)
 {
-	lash_debug("'%s:%s'", client_name, port_name);
+	lash_debug("new foreign port '%s:%s'", client_name, port_name);
 
 	lash_list_t *node, *node2;
 	jack_mgr_client_t *client;
@@ -237,7 +360,7 @@ lashd_jackdbus_mgr_new_client_port(jack_mgr_client_t *client,
                                    const char        *client_name,
                                    const char        *port_name)
 {
-	lash_debug("'%s:%s'", client_name, port_name);
+	lash_debug("new client port '%s:%s'", client_name, port_name);
 
 	jack_mgr_client_t *other_client;
 	lash_list_t *node;
@@ -360,7 +483,21 @@ lashd_jackdbus_handler(DBusConnection *connection,
 
 	dbus_error_init(&err);
 
-	if (strcmp(member, "PortAppeared") == 0) {
+	if (strcmp(member, "ClientAppeared") == 0) {
+		jack_mgr_client_t *client;
+
+		lash_debug("Received ClientAppeared signal");
+
+		if (!dbus_message_get_args(message, &err,
+		                           DBUS_TYPE_UINT64, &dummy,
+		                           DBUS_TYPE_UINT64, &client1_id,
+		                           DBUS_TYPE_STRING, &client1_name,
+		                           DBUS_TYPE_INVALID)) {
+			goto fail;
+		}
+
+		lashd_jackdbus_on_client_appeared(client1_name, client1_id);
+	} else if (strcmp(member, "PortAppeared") == 0) {
 		jack_mgr_client_t *client;
 
 		lash_debug("Received PortAppeared signal");
@@ -618,7 +755,7 @@ lashd_jackdbus_mgr_get_client_data(jack_mgr_client_t *client)
 			goto fail;
 		}
 
-		lashd_jackdbus_mgr_new_client_port(client, client1_name, port1_name);
+		//lashd_jackdbus_mgr_new_client_port(client, client1_name, port1_name);
 
 		dbus_message_iter_next(&array_iter);
 	}
@@ -664,33 +801,6 @@ fail:
 	   we should remove it */
 	lashd_jackdbus_mgr_graph_free();
 	return false;
-}
-
-void
-lashd_jackdbus_mgr_client_add(lashd_jackdbus_mgr_t *mgr,
-                              uuid_t                id,
-                              const char           *jack_client_name,
-                              lash_list_t          *jack_patches)
-{
-	jack_mgr_client_t *client;
-
-	lash_debug("Adding client '%s'", jack_client_name);
-
-	client = jack_mgr_client_new();
-
-	uuid_copy(client->id, id);
-	client->name = lash_strdup(jack_client_name);
-	client->old_patches = jack_patches;
-	client->backup_patches = jack_mgr_client_dup_patch_list(jack_patches);
-
-	mgr->clients = lash_list_append(mgr->clients, client);
-
-	/* Get the graph and extract the new client's data */
-	lashd_jackdbus_mgr_get_graph(mgr);
-	if (!lashd_jackdbus_mgr_get_client_data(client))
-		lash_error("Problem extracting client data from graph");
-
-	lash_debug("Client added");
 }
 
 void
@@ -785,6 +895,8 @@ lashd_jackdbus_mgr_get_client_patches(lashd_jackdbus_mgr_t *mgr,
 			goto fail;
 		}
 
+		//lash_info("Connection %s:%s -> %s:%s", client1_name, port1_name, client2_name, port2_name);
+
 		/* Skip unwanted patches, deduce port direction */
 		if (client1_id == client->jackdbus_id) {
 			if (client2_id == client->jackdbus_id) {
@@ -799,6 +911,7 @@ lashd_jackdbus_mgr_get_client_patches(lashd_jackdbus_mgr_t *mgr,
 		} else if (client2_id != client->jackdbus_id) {
 			/* Patch does not involve the client */
 			dbus_message_iter_next(&array_iter);
+			//lash_info("skipping internal connection");
 			continue;
 		} else {
 			/* Client owns the patch's input port */
@@ -844,6 +957,8 @@ lashd_jackdbus_mgr_get_client_patches(lashd_jackdbus_mgr_t *mgr,
 
 		patch->src_port = lash_strdup(port1_name);
 		patch->dest_port = lash_strdup(port2_name);
+
+		//lash_info("Adding patch %s:%s -> %s:%s", patch->src_client, patch->src_port, patch->dest_client, patch->dest_port);
 
 		patches = lash_list_append(patches, patch);
 

@@ -160,18 +160,13 @@ lashd_dbus_jack_name(method_call_t *call)
 
 	lash_strset(&client->jack_client_name, jack_name);
 
-#ifdef HAVE_JACK_DBUS
-	lashd_jackdbus_mgr_client_add(g_server->jackdbus_mgr,
-	                              client->id, jack_name,
-	                              client->jack_patches);
-#else
+#ifndef HAVE_JACK_DBUS
 	jack_mgr_lock(g_server->jack_mgr);
 	jack_mgr_add_client(g_server->jack_mgr, client->id, jack_name,
 	                    client->jack_patches);
 	jack_mgr_unlock(g_server->jack_mgr);
-#endif
-
 	client->jack_patches = NULL;
+#endif
 
 	// TODO: Send ClientJackNameChanged signal
 }
