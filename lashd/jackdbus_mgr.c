@@ -360,7 +360,7 @@ lashd_jackdbus_mgr_new_client_port(jack_mgr_client_t *client,
                                    const char        *client_name,
                                    const char        *port_name)
 {
-	lash_debug("new client port '%s:%s'", client_name, port_name);
+	lash_info("new client port '%s:%s'", client_name, port_name);
 
 	jack_mgr_client_t *other_client;
 	lash_list_t *node;
