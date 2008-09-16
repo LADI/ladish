@@ -52,6 +52,7 @@ struct _project
 	xmlDocPtr         doc;
 
 	char             *name;
+	bool             move_on_close;
 	char             *directory;
 	char             *description;
 	char             *notes;

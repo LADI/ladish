@@ -557,7 +557,7 @@ project_move(project_t  *project,
 		lash_error("Cannot move project to %s: %s",
 		           new_dir, strerror(errno));
 	} else {
-		lash_info("Project '%s' moved from %s to %s",
+		lash_info("Project '%s' moved from '%s' to '%s'",
 		          project->name, project->directory, new_dir);
 
 		lash_strset(&project->directory, new_dir);
@@ -1286,6 +1286,26 @@ project_unload(project_t *project)
 		client_destroy(client);
 	}
 
+	if (project->move_on_close)
+	{
+		char * project_dir;
+		char * char_ptr;
+
+		project_dir = lash_dup_fqn(g_server->projects_dir, project->name);
+
+		/* replace bad chars so we dont save in other project dir for example */
+		/* i.e. make sure we do rename, not move into other dir */
+		char_ptr = project_dir + strlen(g_server->projects_dir) + 1;
+		while ((char_ptr = strpbrk(char_ptr, "/")) != NULL)
+		{
+			*char_ptr = ' ';
+			char_ptr++;
+		}
+		
+		project_move(project, project_dir);
+		free(project_dir);
+	}
+
 	lash_info("Project '%s' unloaded", project->name);
 
 	if (project->doc == NULL && lash_dir_exists(project->directory))
@@ -1381,6 +1401,12 @@ project_rename(project_t  *project,
                const char *new_name)
 {
 	char *old_name = project->name;
+
+	if (strcmp(project->name, new_name) != 0)
+	{
+		project->move_on_close = true;
+	}
+
 	project->name = lash_strdup(new_name);
 
 	lashd_dbus_signal_emit_project_name_changed(old_name, new_name);
