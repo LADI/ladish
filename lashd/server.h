@@ -91,6 +91,10 @@ client_t *
 server_find_client_by_pid(server_t *server,
                           pid_t     pid);
 
+client_t *
+server_find_client_by_id(
+	uuid_t id);
+
 void
 server_close_project(server_t  *server,
                      project_t *project);

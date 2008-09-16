@@ -149,7 +149,7 @@ project_get_client_by_id(struct list_head *client_list,
 }
 
 /* Set modified_status to new_status, emit signal if status changed */
-static void
+void
 project_set_modified_status(project_t *project,
                             bool       new_status)
 {

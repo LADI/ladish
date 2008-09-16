@@ -269,6 +269,25 @@ server_find_client_by_dbus_name(server_t   *server,
 }
 
 client_t *
+server_find_client_by_id(
+	uuid_t id)
+{
+	struct list_head *node;
+	project_t *project;
+	client_t *client;
+
+	list_for_each (node, &g_server->loaded_projects) {
+		project = list_entry(node, project_t, siblings_loaded);
+
+		client = project_get_client_by_id(&project->clients, id);
+		if (client)
+			return client;
+	}
+
+	return NULL;
+}
+
+client_t *
 server_find_client_by_pid(server_t *server,
                           pid_t     pid)
 {

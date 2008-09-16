@@ -153,4 +153,8 @@ project_rename_client(project_t  *project,
 void
 project_clear_id_dir(project_t *project);
 
+void
+project_set_modified_status(project_t *project,
+                            bool       new_status);
+
 #endif /* __LASHD_PROJECT_H__ */

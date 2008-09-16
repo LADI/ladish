@@ -101,6 +101,19 @@ lashd_jackdbus_mgr_new(server_t *server)
 		goto fail;
 	}
 
+	dbus_bus_add_match(server->dbus_service->connection,
+			   "type='signal'"
+			   ",sender='org.jackaudio.service'"
+			   ",path='/org/jackaudio/Controller'"
+			   ",interface='org.jackaudio.JackPatchbay'"
+			   ",member='PortsDisconnected'",
+			   &err);
+	if (dbus_error_is_set(&err)) {
+		lash_error("Failed to add D-Bus match rule: %s", err.message);
+		dbus_error_free(&err);
+		goto fail;
+	}
+
 	if (!dbus_connection_add_filter(server->dbus_service->connection,
 	                                lashd_jackdbus_handler,
 	                                NULL, NULL)) {
@@ -436,6 +449,42 @@ lashd_jackdbus_mgr_check_patches(jack_mgr_client_t *client,
                                  const char        *client2_name,
                                  const char        *port2_name);
 
+static
+void
+lashd_jackdbus_mgr_check_connection(
+	jack_mgr_client_t * jack_client_ptr,
+	dbus_uint64_t client1_id,
+	dbus_uint64_t client2_id)
+{
+	client_t * client_ptr;
+
+	if (client1_id == jack_client_ptr->jackdbus_id)
+	{
+		if (client2_id == jack_client_ptr->jackdbus_id)
+		{
+			/* Patch is an internal connection */
+			return;
+		}
+
+		/* An output port patch */
+	}
+	else if (client2_id == jack_client_ptr->jackdbus_id)
+	{
+		/* An input port patch */
+	}
+	else
+	{
+		/* Patch does not involve the client */
+		return;
+	}
+
+	client_ptr = server_find_client_by_id(jack_client_ptr->id);
+	if (client_ptr != NULL && client_ptr->project != NULL)
+	{
+		project_set_modified_status(client_ptr->project, true);
+	}
+}
+
 static void
 lashd_jackdbus_mgr_ports_connected(dbus_uint64_t  client1_id,
                                    const char    *client1_name,
@@ -449,18 +498,50 @@ lashd_jackdbus_mgr_ports_connected(dbus_uint64_t  client1_id,
 	client = jack_mgr_client_find_by_jackdbus_id(g_jack_mgr_ptr->clients,
 	                                             client1_id);
 	if (client)
+	{
 		lashd_jackdbus_mgr_check_patches(client, client1_id,
 		                                 client1_name, port1_name,
 		                                 client2_id, client2_name,
 		                                 port2_name);
 
+		lashd_jackdbus_mgr_check_connection(client, client1_id, client2_id);
+	}
+
 	client = jack_mgr_client_find_by_jackdbus_id(g_jack_mgr_ptr->clients,
 	                                             client2_id);
 	if (client)
+	{
 		lashd_jackdbus_mgr_check_patches(client, client1_id,
 		                                 client1_name, port1_name,
 		                                 client2_id, client2_name,
 		                                 port2_name);
+
+		lashd_jackdbus_mgr_check_connection(client, client1_id, client2_id);
+	}
+}
+
+static void
+lashd_jackdbus_mgr_ports_disconnected(
+	dbus_uint64_t client1_id,
+	const char * client1_name,
+	const char * port1_name,
+	dbus_uint64_t client2_id,
+	const char * client2_name,
+	const char * port2_name)
+{
+	jack_mgr_client_t *client;
+
+	client = jack_mgr_client_find_by_jackdbus_id(g_jack_mgr_ptr->clients, client1_id);
+	if (client)
+	{
+		lashd_jackdbus_mgr_check_connection(client, client1_id, client2_id);
+	}
+
+	client = jack_mgr_client_find_by_jackdbus_id(g_jack_mgr_ptr->clients, client2_id);
+	if (client)
+	{
+		lashd_jackdbus_mgr_check_connection(client, client1_id, client2_id);
+	}
 }
 
 static DBusHandlerResult
@@ -468,13 +549,16 @@ lashd_jackdbus_handler(DBusConnection *connection,
                        DBusMessage    *message,
                        void           *data)
 {
-	/* If the message isn't a signal the object path handler may use it */
-	if (dbus_message_get_type(message) != DBUS_MESSAGE_TYPE_SIGNAL)
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-
 	const char *member, *client1_name, *port1_name;
 	dbus_uint64_t dummy, client1_id;
 	DBusError err;
+	jack_mgr_client_t *client;
+	const char *client2_name, *port2_name;
+	dbus_uint64_t client2_id;
+
+	/* If the message isn't a signal the object path handler may use it */
+	if (dbus_message_get_type(message) != DBUS_MESSAGE_TYPE_SIGNAL)
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 
 	if (!(member = dbus_message_get_member(message))) {
 		lash_error("Received JACK signal with NULL member");
@@ -484,8 +568,6 @@ lashd_jackdbus_handler(DBusConnection *connection,
 	dbus_error_init(&err);
 
 	if (strcmp(member, "ClientAppeared") == 0) {
-		jack_mgr_client_t *client;
-
 		lash_debug("Received ClientAppeared signal");
 
 		if (!dbus_message_get_args(message, &err,
@@ -498,8 +580,6 @@ lashd_jackdbus_handler(DBusConnection *connection,
 
 		lashd_jackdbus_on_client_appeared(client1_name, client1_id);
 	} else if (strcmp(member, "PortAppeared") == 0) {
-		jack_mgr_client_t *client;
-
 		lash_debug("Received PortAppeared signal");
 
 		if (!dbus_message_get_args(message, &err,
@@ -524,9 +604,6 @@ lashd_jackdbus_handler(DBusConnection *connection,
 			                                    port1_name);
 
 	} else if (strcmp(member, "PortsConnected") == 0) {
-		const char *client2_name, *port2_name;
-		dbus_uint64_t client2_id;
-
 		lash_debug("Received PortsConnected signal");
 
 		if (!dbus_message_get_args(message, &err,
@@ -549,6 +626,30 @@ lashd_jackdbus_handler(DBusConnection *connection,
 		                                   client2_id,
 		                                   client2_name,
 		                                   port2_name);
+	} else if (strcmp(member, "PortsDisconnected") == 0) {
+		lash_debug("Received PortsDisconnected signal");
+
+		if (!dbus_message_get_args(message, &err,
+		                           DBUS_TYPE_UINT64, &dummy,
+		                           DBUS_TYPE_UINT64, &client1_id,
+		                           DBUS_TYPE_STRING, &client1_name,
+		                           DBUS_TYPE_UINT64, &dummy,
+		                           DBUS_TYPE_STRING, &port1_name,
+		                           DBUS_TYPE_UINT64, &client2_id,
+		                           DBUS_TYPE_STRING, &client2_name,
+		                           DBUS_TYPE_UINT64, &dummy,
+		                           DBUS_TYPE_STRING, &port2_name,
+		                           DBUS_TYPE_INVALID)) {
+			goto fail;
+		}
+
+		lashd_jackdbus_mgr_ports_disconnected(
+			client1_id,
+			client1_name,
+			port1_name,
+			client2_id,
+			client2_name,
+			port2_name);
 	}
 
 	return DBUS_HANDLER_RESULT_HANDLED;
