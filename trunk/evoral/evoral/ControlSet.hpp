@@ -33,10 +33,10 @@ class ControlList;
 class ControlEvent;
 class Transport;
 
-class Controllable {
+class ControlSet {
 public:
-	Controllable(const Transport& transport);
-	virtual ~Controllable() {}
+	ControlSet(const Transport& transport);
+	virtual ~ControlSet() {}
 
 	virtual boost::shared_ptr<Control> control(Parameter id, bool create_if_missing=false);
 	virtual boost::shared_ptr<const Control> control(Parameter id) const;

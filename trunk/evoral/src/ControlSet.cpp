@@ -17,7 +17,7 @@
  */
 
 #include <limits>
-#include <evoral/Controllable.hpp>
+#include <evoral/ControlSet.hpp>
 #include <evoral/ControlList.hpp>
 #include <evoral/Control.hpp>
 #include <evoral/Event.hpp>
@@ -27,16 +27,16 @@ using namespace std;
 namespace Evoral {
 
 
-nframes_t Controllable::_automation_interval = 0;
+nframes_t ControlSet::_automation_interval = 0;
 
-Controllable::Controllable(const Transport& transport)
+ControlSet::ControlSet(const Transport& transport)
 	: _transport(transport)
 	, _last_automation_snapshot(0)
 {}
 
 
 void
-Controllable::add_control(boost::shared_ptr<Control> ac)
+ControlSet::add_control(boost::shared_ptr<Control> ac)
 {
 	Parameter param = ac->parameter();
 
@@ -49,7 +49,7 @@ Controllable::add_control(boost::shared_ptr<Control> ac)
 }
 
 void
-Controllable::what_has_automation (set<Parameter>& s) const
+ControlSet::what_has_automation (set<Parameter>& s) const
 {
 	Glib::Mutex::Lock lm (_automation_lock);
 	Controls::const_iterator li;
@@ -61,7 +61,7 @@ Controllable::what_has_automation (set<Parameter>& s) const
 }
 
 void
-Controllable::what_has_visible_automation (set<Parameter>& s) const
+ControlSet::what_has_visible_automation (set<Parameter>& s) const
 {
 	Glib::Mutex::Lock lm (_automation_lock);
 	set<Parameter>::const_iterator li;
@@ -76,7 +76,7 @@ Controllable::what_has_visible_automation (set<Parameter>& s) const
  * for \a parameter does not exist.
  */
 boost::shared_ptr<Control>
-Controllable::control (Parameter parameter, bool create_if_missing)
+ControlSet::control (Parameter parameter, bool create_if_missing)
 {
 	Controls::iterator i = _controls.find(parameter);
 
@@ -96,7 +96,7 @@ Controllable::control (Parameter parameter, bool create_if_missing)
 }
 
 boost::shared_ptr<const Control>
-Controllable::control (Parameter parameter) const
+ControlSet::control (Parameter parameter) const
 {
 	Controls::const_iterator i = _controls.find(parameter);
 
@@ -109,13 +109,13 @@ Controllable::control (Parameter parameter) const
 }
 
 void
-Controllable::can_automate (Parameter what)
+ControlSet::can_automate (Parameter what)
 {
 	_can_automate_list.insert (what);
 }
 
 void
-Controllable::mark_automation_visible (Parameter what, bool yn)
+ControlSet::mark_automation_visible (Parameter what, bool yn)
 {
 	if (yn) {
 		_visible_controls.insert (what);
@@ -129,7 +129,7 @@ Controllable::mark_automation_visible (Parameter what, bool yn)
 }
 
 bool
-Controllable::find_next_event (nframes_t now, nframes_t end, ControlEvent& next_event) const
+ControlSet::find_next_event (nframes_t now, nframes_t end, ControlEvent& next_event) const
 {
 	Controls::const_iterator li;	
 
@@ -158,7 +158,7 @@ Controllable::find_next_event (nframes_t now, nframes_t end, ControlEvent& next_
 }
 
 void
-Controllable::clear_automation ()
+ControlSet::clear_automation ()
 {
 	Glib::Mutex::Lock lm (_automation_lock);
 
@@ -167,7 +167,7 @@ Controllable::clear_automation ()
 }
 	
 void
-Controllable::set_parameter_automation_state (Parameter param, AutoState s)
+ControlSet::set_parameter_automation_state (Parameter param, AutoState s)
 {
 	Glib::Mutex::Lock lm (_automation_lock);
 	
@@ -180,7 +180,7 @@ Controllable::set_parameter_automation_state (Parameter param, AutoState s)
 }
 
 AutoState
-Controllable::get_parameter_automation_state (Parameter param, bool lock)
+ControlSet::get_parameter_automation_state (Parameter param, bool lock)
 {
 	AutoState result = Off;
 
@@ -199,7 +199,7 @@ Controllable::get_parameter_automation_state (Parameter param, bool lock)
 }
 
 void
-Controllable::set_parameter_automation_style (Parameter param, AutoStyle s)
+ControlSet::set_parameter_automation_style (Parameter param, AutoStyle s)
 {
 	Glib::Mutex::Lock lm (_automation_lock);
 	
@@ -212,7 +212,7 @@ Controllable::set_parameter_automation_style (Parameter param, AutoStyle s)
 }
 
 AutoStyle
-Controllable::get_parameter_automation_style (Parameter param)
+ControlSet::get_parameter_automation_style (Parameter param)
 {
 	Glib::Mutex::Lock lm (_automation_lock);
 
@@ -226,7 +226,7 @@ Controllable::get_parameter_automation_style (Parameter param)
 }
 
 void
-Controllable::protect_automation ()
+ControlSet::protect_automation ()
 {
 	set<Parameter> automated_params;
 
@@ -250,7 +250,7 @@ Controllable::protect_automation ()
 }
 
 void
-Controllable::automation_snapshot (nframes_t now, bool force)
+ControlSet::automation_snapshot (nframes_t now, bool force)
 {
 	if (force || _last_automation_snapshot > now || (now - _last_automation_snapshot) > _automation_interval) {
 
@@ -265,7 +265,7 @@ Controllable::automation_snapshot (nframes_t now, bool force)
 }
 
 void
-Controllable::transport_stopped (nframes_t now)
+ControlSet::transport_stopped (nframes_t now)
 {
 	for (Controls::iterator li = _controls.begin(); li != _controls.end(); ++li) {
 		
@@ -284,7 +284,7 @@ Controllable::transport_stopped (nframes_t now)
  * special Control-derived objects for given types.
  */
 boost::shared_ptr<Control>
-Controllable::control_factory(boost::shared_ptr<ControlList> list)
+ControlSet::control_factory(boost::shared_ptr<ControlList> list)
 {
 	return boost::shared_ptr<Control>(new Control(_transport, list));
 }

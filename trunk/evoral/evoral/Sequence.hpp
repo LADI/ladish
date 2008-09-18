@@ -30,7 +30,7 @@
 #include <evoral/types.hpp>
 #include <evoral/Note.hpp>
 #include <evoral/Parameter.hpp>
-#include <evoral/Controllable.hpp>
+#include <evoral/ControlSet.hpp>
 
 namespace Evoral {
 
@@ -61,7 +61,7 @@ public:
  * notes (instead of just unassociated note on/off events) and controller data.
  * Controller data is represented as a list of time-stamped float values.
  */
-class Sequence : public boost::noncopyable, public Controllable {
+class Sequence : public boost::noncopyable, public ControlSet {
 public:
 	Sequence(const Transport& transport, size_t size);
 	

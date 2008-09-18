@@ -25,7 +25,7 @@
 #include <evoral/Sequence.hpp>
 #include <evoral/ControlList.hpp>
 #include <evoral/Control.hpp>
-#include <evoral/Controllable.hpp>
+#include <evoral/ControlSet.hpp>
 #include <evoral/EventSink.hpp>
 #include <evoral/MIDIParameters.hpp>
 
@@ -281,7 +281,7 @@ Sequence::const_iterator& Sequence::const_iterator::operator=(const const_iterat
 // Sequence
 
 Sequence::Sequence(const Transport& transport, size_t size)
-	: Controllable(transport)
+	: ControlSet(transport)
 	, _notes(size)
 	, _note_mode(Sustained)
 	, _writing(false)
