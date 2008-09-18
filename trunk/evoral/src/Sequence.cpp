@@ -262,7 +262,7 @@ Sequence::const_iterator& Sequence::const_iterator::operator=(const const_iterat
 		_seq->read_unlock();
 	}
 
-	_seq         = other._seq;
+	_seq           = other._seq;
 	_active_notes  = other._active_notes;
 	_is_end        = other._is_end;
 	_locked        = other._locked;
@@ -346,9 +346,8 @@ Sequence::control_to_midi_event(boost::shared_ptr<Event>& ev, const ControlItera
 		ev = boost::shared_ptr<Event>(new Event(0, 3, NULL, true));
 	}
 	
-#if 0
 	switch (iter.automation_list->parameter().type()) {
-	case MidiCCAutomation:
+	case midi_cc_type:
 		assert(iter.automation_list.get());
 		assert(iter.automation_list->parameter().channel() < 16);
 		assert(iter.automation_list->parameter().id() <= INT8_MAX);
@@ -361,7 +360,7 @@ Sequence::control_to_midi_event(boost::shared_ptr<Event>& ev, const ControlItera
 		ev->buffer()[2] = (uint8_t)iter.y;
 		break;
 
-	case MidiPgmChangeAutomation:
+	case midi_pc_type:
 		assert(iter.automation_list.get());
 		assert(iter.automation_list->parameter().channel() < 16);
 		assert(iter.automation_list->parameter().id() == 0);
@@ -373,7 +372,7 @@ Sequence::control_to_midi_event(boost::shared_ptr<Event>& ev, const ControlItera
 		ev->buffer()[1] = (uint8_t)iter.y;
 		break;
 
-	case MidiPitchBenderAutomation:
+	case midi_pb_type:
 		assert(iter.automation_list.get());
 		assert(iter.automation_list->parameter().channel() < 16);
 		assert(iter.automation_list->parameter().id() == 0);
@@ -384,10 +383,9 @@ Sequence::control_to_midi_event(boost::shared_ptr<Event>& ev, const ControlItera
 		ev->buffer()[0] = MIDI_CMD_BENDER + iter.automation_list->parameter().channel();
 		ev->buffer()[1] = uint16_t(iter.y) & 0x7F; // LSB
 		ev->buffer()[2] = (uint16_t(iter.y) >> 7) & 0x7F; // MSB
-		//cerr << "Pitch bender event: " << ev->to_string() << " value: " << ev->pitch_bender_value() << " original value: " << iter.y << std::endl;
 		break;
 
-	case MidiChannelAftertouchAutomation:
+	case midi_ca_type:
 		assert(iter.automation_list.get());
 		assert(iter.automation_list->parameter().channel() < 16);
 		assert(iter.automation_list->parameter().id() == 0);
@@ -395,15 +393,13 @@ Sequence::control_to_midi_event(boost::shared_ptr<Event>& ev, const ControlItera
 
 		ev->time() = iter.x;
 		ev->realloc(2);
-		ev->buffer()[0]
-				= MIDI_CMD_CHANNEL_PRESSURE + iter.automation_list->parameter().channel();
+		ev->buffer()[0] = MIDI_CMD_CHANNEL_PRESSURE + iter.automation_list->parameter().channel();
 		ev->buffer()[1] = (uint8_t)iter.y;
 		break;
 
 	default:
 		return false;
 	}
-#endif
 
 	return true;
 }

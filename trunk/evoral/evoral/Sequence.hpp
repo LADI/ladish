@@ -57,7 +57,7 @@ public:
 };
 
 
-/* This is a higher level view of events, with separate representations for
+/** This is a higher level view of events, with separate representations for
  * notes (instead of just unassociated note on/off events) and controller data.
  * Controller data is represented as a list of time-stamped float values.
  */
@@ -144,9 +144,9 @@ public:
 		
 		mutable ActiveNotes _active_notes;
 
-		bool                                       _is_end;
-		bool                                       _locked;
-		Notes::const_iterator                      _note_iter;
+		bool                                   _is_end;
+		bool                                   _locked;
+		Notes::const_iterator                  _note_iter;
 		std::vector<ControlIterator>           _control_iters;
 		std::vector<ControlIterator>::iterator _control_iter;
 	};
