@@ -27,10 +27,4 @@ typedef double timestamp_t;
 /** Duration of time in timestamp_t units */
 typedef timestamp_t timedur_t;
 
-/** Automation state of a control */
-enum AutoState { Off, Write, Touch, Play };
-
-/** Automation style of a control */
-enum AutoStyle { Absolute, Trim };
-
 #endif // EVORAL_TYPES_HPP

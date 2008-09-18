@@ -34,10 +34,10 @@ class Transport;
 class Control
 {
 public:
-	Control(const Transport& transport, boost::shared_ptr<ControlList>);
+	Control(boost::shared_ptr<ControlList>);
 
-	void  set_value(float val);
-	float get_value()  const;
+	void  set_value(float val, bool to_list=false, nframes_t frame=0);
+	float get_value(bool from_list=false, nframes_t frame=0) const;
 	float user_value() const;
 
 	void set_list(boost::shared_ptr<ControlList>);
@@ -48,7 +48,6 @@ public:
 	Parameter parameter() const;
 
 protected:
-	const Transport&               _transport;
 	boost::shared_ptr<ControlList> _list;
 	float                          _user_value;
 };

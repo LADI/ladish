@@ -19,13 +19,11 @@
 #include <iostream>
 #include <evoral/Control.hpp>
 #include <evoral/ControlList.hpp>
-#include <evoral/Transport.hpp>
 
 namespace Evoral {
 
-Control::Control(const Transport& transport, boost::shared_ptr<ControlList> list)
-	: _transport(transport)
-	, _list(list)
+Control::Control(boost::shared_ptr<ControlList> list)
+	: _list(list)
 	, _user_value(list->default_value())
 {
 }
@@ -34,22 +32,22 @@ Control::Control(const Transport& transport, boost::shared_ptr<ControlList> list
 /** Get the currently effective value (ie the one that corresponds to current output)
  */
 float
-Control::get_value() const
+Control::get_value(bool from_list, nframes_t frame) const
 {
-	if (_list->automation_playback())
-		return _list->eval(_transport.transport_frame());
+	if (from_list)
+		return _list->eval(frame);
 	else
 		return _user_value;
 }
 
 
 void
-Control::set_value(float value)
+Control::set_value(float value, bool to_list, nframes_t frame)
 {
 	_user_value = value;
 	
-	if (_transport.transport_stopped() && _list->automation_write())
-		_list->add(_transport.transport_frame(), value);
+	if (to_list)
+		_list->add(frame, value);
 
 	//Changed(); /* EMIT SIGNAL */
 }

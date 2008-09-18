@@ -123,21 +123,6 @@ public:
 
 	bool paste (ControlList&, double position, float times);
 	
-	void set_automation_state (AutoState);
-	AutoState automation_state() const { return _state; }
-	sigc::signal<void> automation_state_changed;
-
-	void set_automation_style (AutoStyle m);
-	AutoStyle automation_style() const { return _style; }
-	sigc::signal<void> automation_style_changed;
-	
-	bool automation_playback() const {
-		return (_state & Play) || ((_state & Touch) && !_touching);
-	}
-	bool automation_write () const {
-		return (_state & Write) || ((_state & Touch) && _touching);
-	}
-	
 	void start_touch ();
 	void stop_touch ();
 	bool touching() const { return _touching; }
@@ -271,8 +256,6 @@ private:
 	mutable Glib::Mutex _lock;
 	int8_t              _frozen;
 	bool                _changed_when_thawed;
-	AutoState           _state;
-	AutoStyle           _style;
 	bool                _touching;
 	bool                _new_touch;
 	double              _max_xval;

@@ -41,8 +41,6 @@ ControlList::ControlList (Parameter id)
 	_parameter = id;
 	_frozen = 0;
 	_changed_when_thawed = false;
-	_state = Off;
-	_style = Absolute;
 	_min_yval = id.min();
 	_max_yval = id.max();
 	_touching = false;
@@ -64,12 +62,10 @@ ControlList::ControlList (const ControlList& other)
 {
 	_frozen = 0;
 	_changed_when_thawed = false;
-	_style = other._style;
 	_min_yval = other._min_yval;
 	_max_yval = other._max_yval;
 	_max_xval = other._max_xval;
 	_default_value = other._default_value;
-	_state = other._state;
 	_touching = other._touching;
 	_rt_insertion_point = _events.end();
 	_lookup_cache.range.first = _events.end();
@@ -91,12 +87,10 @@ ControlList::ControlList (const ControlList& other, double start, double end)
 {
 	_frozen = 0;
 	_changed_when_thawed = false;
-	_style = other._style;
 	_min_yval = other._min_yval;
 	_max_yval = other._max_yval;
 	_max_xval = other._max_xval;
 	_default_value = other._default_value;
-	_state = other._state;
 	_touching = other._touching;
 	_rt_insertion_point = _events.end();
 	_lookup_cache.range.first = _events.end();
@@ -171,38 +165,6 @@ ControlList::maybe_signal_changed ()
 }
 
 void
-ControlList::set_automation_state (AutoState s)
-{
-	if (s != _state) {
-		_state = s;
-		automation_state_changed (); /* EMIT SIGNAL */
-	}
-}
-
-void
-ControlList::set_automation_style (AutoStyle s)
-{
-	if (s != _style) {
-		_style = s;
-		automation_style_changed (); /* EMIT SIGNAL */
-	}
-}
-
-void
-ControlList::start_touch ()
-{
-	_touching = true;
-	_new_touch = true;
-}
-
-void
-ControlList::stop_touch ()
-{
-	_touching = false;
-	_new_touch = false;
-}
-
-void
 ControlList::clear ()
 {
 	{
@@ -251,12 +213,6 @@ ControlList::reposition_for_rt_add (double when)
 void
 ControlList::rt_add (double when, double value)
 {
-	/* this is for automation recording */
-
-	if ((_state & Touch) && !_touching) {
-		return;
-	}
-
 	// cerr << "RT: alist @ " << this << " add " << value << " @ " << when << endl;
 
 	{

@@ -26,48 +26,26 @@ using namespace std;
 
 namespace Evoral {
 
-
-nframes_t ControlSet::_automation_interval = 0;
-
-ControlSet::ControlSet(const Transport& transport)
-	: _transport(transport)
-	, _last_automation_snapshot(0)
-{}
-
+ControlSet::ControlSet()
+{
+}
 
 void
 ControlSet::add_control(boost::shared_ptr<Control> ac)
 {
 	Parameter param = ac->parameter();
-
 	_controls[param] = ac;
-	
-	_can_automate_list.insert(param);
-
-	// Sync everything (derived classes) up to initial values
-	auto_state_changed(param);
 }
 
 void
-ControlSet::what_has_automation (set<Parameter>& s) const
+ControlSet::what_has_data (set<Parameter>& s) const
 {
-	Glib::Mutex::Lock lm (_automation_lock);
+	Glib::Mutex::Lock lm (_control_lock);
 	Controls::const_iterator li;
 	
 	// FIXME: correct semantics?
 	for (li = _controls.begin(); li != _controls.end(); ++li) {
 		s.insert  ((*li).first);
-	}
-}
-
-void
-ControlSet::what_has_visible_automation (set<Parameter>& s) const
-{
-	Glib::Mutex::Lock lm (_automation_lock);
-	set<Parameter>::const_iterator li;
-	
-	for (li = _visible_controls.begin(); li != _visible_controls.end(); ++li) {
-		s.insert  (*li);
 	}
 }
 
@@ -108,26 +86,6 @@ ControlSet::control (Parameter parameter) const
 	}
 }
 
-void
-ControlSet::can_automate (Parameter what)
-{
-	_can_automate_list.insert (what);
-}
-
-void
-ControlSet::mark_automation_visible (Parameter what, bool yn)
-{
-	if (yn) {
-		_visible_controls.insert (what);
-	} else {
-		set<Parameter>::iterator i;
-
-		if ((i = _visible_controls.find (what)) != _visible_controls.end()) {
-			_visible_controls.erase (i);
-		}
-	}
-}
-
 bool
 ControlSet::find_next_event (nframes_t now, nframes_t end, ControlEvent& next_event) const
 {
@@ -158,127 +116,14 @@ ControlSet::find_next_event (nframes_t now, nframes_t end, ControlEvent& next_ev
 }
 
 void
-ControlSet::clear_automation ()
+ControlSet::clear ()
 {
-	Glib::Mutex::Lock lm (_automation_lock);
+	Glib::Mutex::Lock lm (_control_lock);
 
 	for (Controls::iterator li = _controls.begin(); li != _controls.end(); ++li)
 		li->second->list()->clear();
 }
 	
-void
-ControlSet::set_parameter_automation_state (Parameter param, AutoState s)
-{
-	Glib::Mutex::Lock lm (_automation_lock);
-	
-	boost::shared_ptr<Control> c = control (param, true);
-
-	if (s != c->list()->automation_state()) {
-		c->list()->set_automation_state (s);
-		//_session.set_dirty ();
-	}
-}
-
-AutoState
-ControlSet::get_parameter_automation_state (Parameter param, bool lock)
-{
-	AutoState result = Off;
-
-	if (lock)
-		_automation_lock.lock();
-
-	boost::shared_ptr<Control> c = control(param);
-
-	if (c)
-		result = c->list()->automation_state();
-	
-	if (lock)
-		_automation_lock.unlock();
-
-	return result;
-}
-
-void
-ControlSet::set_parameter_automation_style (Parameter param, AutoStyle s)
-{
-	Glib::Mutex::Lock lm (_automation_lock);
-	
-	boost::shared_ptr<Control> c = control(param, true);
-
-	if (s != c->list()->automation_style()) {
-		c->list()->set_automation_style (s);
-		//_session.set_dirty ();
-	}
-}
-
-AutoStyle
-ControlSet::get_parameter_automation_style (Parameter param)
-{
-	Glib::Mutex::Lock lm (_automation_lock);
-
-	boost::shared_ptr<Control> c = control(param);
-
-	if (c) {
-		return c->list()->automation_style();
-	} else {
-		return Absolute; // whatever
-	}
-}
-
-void
-ControlSet::protect_automation ()
-{
-	set<Parameter> automated_params;
-
-	what_has_automation (automated_params);
-
-	for (set<Parameter>::iterator i = automated_params.begin(); i != automated_params.end(); ++i) {
-
-		boost::shared_ptr<Control> c = control(*i);
-
-		switch (c->list()->automation_state()) {
-		case Write:
-			c->list()->set_automation_state (Off);
-			break;
-		case Touch:
-			c->list()->set_automation_state (Play);
-			break;
-		default:
-			break;
-		}
-	}
-}
-
-void
-ControlSet::automation_snapshot (nframes_t now, bool force)
-{
-	if (force || _last_automation_snapshot > now || (now - _last_automation_snapshot) > _automation_interval) {
-
-		for (Controls::iterator i = _controls.begin(); i != _controls.end(); ++i) {
-			if (i->second->list()->automation_write()) {
-				i->second->list()->rt_add (now, i->second->user_value());
-			}
-		}
-		
-		_last_automation_snapshot = now;
-	}
-}
-
-void
-ControlSet::transport_stopped (nframes_t now)
-{
-	for (Controls::iterator li = _controls.begin(); li != _controls.end(); ++li) {
-		
-		boost::shared_ptr<Control> c = li->second;
-		
-		c->list()->reposition_for_rt_add (now);
-
-		if (c->list()->automation_state() != Off) {
-			c->set_value(c->list()->eval(now));
-		}
-	}
-}
-
 
 /* FIXME: Make this function a user parameter so the application can create
  * special Control-derived objects for given types.
@@ -286,7 +131,7 @@ ControlSet::transport_stopped (nframes_t now)
 boost::shared_ptr<Control>
 ControlSet::control_factory(boost::shared_ptr<ControlList> list)
 {
-	return boost::shared_ptr<Control>(new Control(_transport, list));
+	return boost::shared_ptr<Control>(new Control(list));
 }
 
 

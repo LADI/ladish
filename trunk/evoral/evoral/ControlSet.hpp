@@ -31,11 +31,10 @@ namespace Evoral {
 class Control;
 class ControlList;
 class ControlEvent;
-class Transport;
 
 class ControlSet {
 public:
-	ControlSet(const Transport& transport);
+	ControlSet();
 	virtual ~ControlSet() {}
 
 	virtual boost::shared_ptr<Control> control(Parameter id, bool create_if_missing=false);
@@ -49,53 +48,20 @@ public:
 
 	virtual void add_control(boost::shared_ptr<Control>);
 
-	virtual void automation_snapshot(nframes_t now, bool force);
-	inline bool should_snapshot(nframes_t now) {
-		return (_last_automation_snapshot > now
-				|| (now - _last_automation_snapshot) > _automation_interval);
-	}
-
-	virtual void transport_stopped(nframes_t now);
-
 	virtual bool find_next_event(nframes_t start, nframes_t end, ControlEvent& ev) const;
 	
 	virtual float default_parameter_value(Parameter param) { return 1.0f; }
 
-	virtual void clear_automation();
+	virtual void clear();
 
-	AutoState    get_parameter_automation_state(Parameter param, bool lock=true);
-	virtual void set_parameter_automation_state(Parameter param, AutoState);
+	void what_has_data(std::set<Parameter>&) const;
 	
-	AutoStyle get_parameter_automation_style(Parameter param);
-	void      set_parameter_automation_style(Parameter param, AutoStyle);
-
-	void protect_automation();
-
-	void what_has_automation(std::set<Parameter>&) const;
-	void what_has_visible_automation(std::set<Parameter>&) const;
-	const std::set<Parameter>& what_can_be_automated() const { return _can_automate_list; }
-
-	void mark_automation_visible(Parameter, bool);
-	
-	Glib::Mutex& automation_lock() const { return _automation_lock; }
-
-	static void set_automation_interval(nframes_t frames) { _automation_interval = frames; }
-	static nframes_t automation_interval() { return _automation_interval; }
+	Glib::Mutex& control_lock() const { return _control_lock; }
 
 protected:
-	void can_automate(Parameter);
-
-	virtual void auto_state_changed(Parameter which) {}
-
-	mutable Glib::Mutex _automation_lock;
-	
-	const Transport&    _transport;
+	mutable Glib::Mutex _control_lock;
 	Controls            _controls;
 	std::set<Parameter> _visible_controls;
-	std::set<Parameter> _can_automate_list;
-	nframes_t           _last_automation_snapshot;
-
-	static nframes_t _automation_interval;
 };
 
 } // namespace Evoral

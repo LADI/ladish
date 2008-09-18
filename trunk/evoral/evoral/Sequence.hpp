@@ -43,14 +43,14 @@ class ControlList;
  */
 class ControlIterator {
 public:
-	boost::shared_ptr<const ControlList> automation_list;
+	boost::shared_ptr<const ControlList> list;
 	double x;
 	double y;
 	
 	ControlIterator(boost::shared_ptr<const ControlList> a_list,
 			double a_x,
 			double a_y)
-		: automation_list(a_list)
+		: list(a_list)
 		, x(a_x)
 		, y(a_y)
 	{}
@@ -63,7 +63,7 @@ public:
  */
 class Sequence : public boost::noncopyable, public ControlSet {
 public:
-	Sequence(const Transport& transport, size_t size);
+	Sequence(size_t size);
 	
 	void write_lock();
 	void write_unlock();

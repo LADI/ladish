@@ -127,7 +127,7 @@ Sequence::const_iterator::const_iterator(const Sequence& seq, double t)
 	}
 	
 	// <=, because we probably would want to send control events first 
-	if (earliest_control.automation_list.get() && earliest_control.x <= time) {
+	if (earliest_control.list.get() && earliest_control.x <= time) {
 		seq.control_to_midi_event(_event, earliest_control);
 	} else {
 		_control_iter = _control_iters.end();
@@ -174,16 +174,16 @@ const Sequence::const_iterator& Sequence::const_iterator::operator++()
 	assert((_event->is_note() || _event->is_cc() || _event->is_pgm_change() || _event->is_pitch_bender() || _event->is_channel_aftertouch()));
 
 	// Increment past current control event
-	if (!_event->is_note() && _control_iter != _control_iters.end() && _control_iter->automation_list.get()) {
+	if (!_event->is_note() && _control_iter != _control_iters.end() && _control_iter->list.get()) {
 		double x = 0.0, y = 0.0;
-		const bool ret = _control_iter->automation_list->rt_safe_earliest_event_unlocked(
+		const bool ret = _control_iter->list->rt_safe_earliest_event_unlocked(
 				_control_iter->x, DBL_MAX, x, y, false);
 
 		if (ret) {
 			_control_iter->x = x;
 			_control_iter->y = y;
 		} else {
-			_control_iter->automation_list.reset();
+			_control_iter->list.reset();
 			_control_iter->x = DBL_MAX;
 		}
 	}
@@ -280,9 +280,8 @@ Sequence::const_iterator& Sequence::const_iterator::operator=(const const_iterat
 
 // Sequence
 
-Sequence::Sequence(const Transport& transport, size_t size)
-	: ControlSet(transport)
-	, _notes(size)
+Sequence::Sequence(size_t size)
+	: _notes(size)
 	, _note_mode(Sustained)
 	, _writing(false)
 	, _edited(false)
@@ -341,59 +340,59 @@ size_t Sequence::read(EventSink& dst, timestamp_t start, timestamp_t nframes, ti
 bool
 Sequence::control_to_midi_event(boost::shared_ptr<Event>& ev, const ControlIterator& iter) const
 {
-	assert(iter.automation_list.get());
+	assert(iter.list.get());
 	if (!ev) {
 		ev = boost::shared_ptr<Event>(new Event(0, 3, NULL, true));
 	}
 	
-	switch (iter.automation_list->parameter().type()) {
+	switch (iter.list->parameter().type()) {
 	case midi_cc_type:
-		assert(iter.automation_list.get());
-		assert(iter.automation_list->parameter().channel() < 16);
-		assert(iter.automation_list->parameter().id() <= INT8_MAX);
+		assert(iter.list.get());
+		assert(iter.list->parameter().channel() < 16);
+		assert(iter.list->parameter().id() <= INT8_MAX);
 		assert(iter.y <= INT8_MAX);
 		
 		ev->time() = iter.x;
 		ev->realloc(3);
-		ev->buffer()[0] = MIDI_CMD_CONTROL + iter.automation_list->parameter().channel();
-		ev->buffer()[1] = (uint8_t)iter.automation_list->parameter().id();
+		ev->buffer()[0] = MIDI_CMD_CONTROL + iter.list->parameter().channel();
+		ev->buffer()[1] = (uint8_t)iter.list->parameter().id();
 		ev->buffer()[2] = (uint8_t)iter.y;
 		break;
 
 	case midi_pc_type:
-		assert(iter.automation_list.get());
-		assert(iter.automation_list->parameter().channel() < 16);
-		assert(iter.automation_list->parameter().id() == 0);
+		assert(iter.list.get());
+		assert(iter.list->parameter().channel() < 16);
+		assert(iter.list->parameter().id() == 0);
 		assert(iter.y <= INT8_MAX);
 		
 		ev->time() = iter.x;
 		ev->realloc(2);
-		ev->buffer()[0] = MIDI_CMD_PGM_CHANGE + iter.automation_list->parameter().channel();
+		ev->buffer()[0] = MIDI_CMD_PGM_CHANGE + iter.list->parameter().channel();
 		ev->buffer()[1] = (uint8_t)iter.y;
 		break;
 
 	case midi_pb_type:
-		assert(iter.automation_list.get());
-		assert(iter.automation_list->parameter().channel() < 16);
-		assert(iter.automation_list->parameter().id() == 0);
+		assert(iter.list.get());
+		assert(iter.list->parameter().channel() < 16);
+		assert(iter.list->parameter().id() == 0);
 		assert(iter.y < (1<<14));
 		
 		ev->time() = iter.x;
 		ev->realloc(3);
-		ev->buffer()[0] = MIDI_CMD_BENDER + iter.automation_list->parameter().channel();
+		ev->buffer()[0] = MIDI_CMD_BENDER + iter.list->parameter().channel();
 		ev->buffer()[1] = uint16_t(iter.y) & 0x7F; // LSB
 		ev->buffer()[2] = (uint16_t(iter.y) >> 7) & 0x7F; // MSB
 		break;
 
 	case midi_ca_type:
-		assert(iter.automation_list.get());
-		assert(iter.automation_list->parameter().channel() < 16);
-		assert(iter.automation_list->parameter().id() == 0);
+		assert(iter.list.get());
+		assert(iter.list->parameter().channel() < 16);
+		assert(iter.list->parameter().id() == 0);
 		assert(iter.y <= INT8_MAX);
 
 		ev->time() = iter.x;
 		ev->realloc(2);
-		ev->buffer()[0] = MIDI_CMD_CHANNEL_PRESSURE + iter.automation_list->parameter().channel();
+		ev->buffer()[0] = MIDI_CMD_CHANNEL_PRESSURE + iter.list->parameter().channel();
 		ev->buffer()[1] = (uint8_t)iter.y;
 		break;
 
