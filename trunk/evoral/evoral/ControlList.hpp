@@ -83,9 +83,9 @@ public:
 	typedef EventList::reverse_iterator reverse_iterator;
 	typedef EventList::const_iterator const_iterator;
 
-	ControlList (Parameter id);
+	ControlList (const Parameter& id);
 	//ControlList (const XMLNode&, Parameter id);
-	~ControlList();
+	virtual ~ControlList();
 	
 	virtual boost::shared_ptr<ControlList> create(Parameter id);
 
@@ -97,8 +97,8 @@ public:
 	void freeze();
 	void thaw ();
 
-	const Parameter& parameter() const          { return _parameter; }
-	void             set_parameter(Parameter p) { _parameter = p; }
+	const Parameter& parameter() const                 { return _parameter; }
+	void             set_parameter(const Parameter& p) { _parameter = p; }
 
 	EventList::size_type size() const { return _events.size(); }
 	bool empty() const { return _events.empty(); }
