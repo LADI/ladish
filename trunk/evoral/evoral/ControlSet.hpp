@@ -37,10 +37,11 @@ public:
 	ControlSet();
 	virtual ~ControlSet() {}
 
-	virtual boost::shared_ptr<Control> control(Parameter id, bool create_if_missing=false);
-	virtual boost::shared_ptr<const Control> control(Parameter id) const;
+	virtual boost::shared_ptr<Control> control(Evoral::Parameter id, bool create_if_missing=false);
+	virtual boost::shared_ptr<const Control> control(Evoral::Parameter id) const;
 	
-	boost::shared_ptr<Control> control_factory(boost::shared_ptr<ControlList> list);
+	virtual boost::shared_ptr<Control> control_factory(boost::shared_ptr<ControlList> list) const;
+	virtual boost::shared_ptr<ControlList> control_list_factory(const Parameter& param) const;
 	
 	typedef std::map< Parameter, boost::shared_ptr<Control> > Controls;
 	Controls&       controls()       { return _controls; }
@@ -61,7 +62,6 @@ public:
 protected:
 	mutable Glib::Mutex _control_lock;
 	Controls            _controls;
-	std::set<Parameter> _visible_controls;
 };
 
 } // namespace Evoral

@@ -1,5 +1,6 @@
 /* This file is part of Evoral.
  * Copyright (C) 2008 Dave Robillard <http://drobilla.net>
+ * Copyright (C) 2000-2008 Paul Davis
  * 
  * Evoral is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -23,22 +24,26 @@ namespace MIDI {
 
 struct ContinuousController : public Parameter {
 	ContinuousController(uint32_t cc_type, uint32_t channel, uint32_t controller)
-	   : Parameter(cc_type, controller, channel, 0.0, 127.0) {}
+	   : Parameter(cc_type, controller, channel) { set_range(*this); }
+	static void set_range(Parameter& p) { p.set_range(0.0, 127.0, 0.0); }
 };
 
 struct ProgramChange : public Parameter {
 	ProgramChange(uint32_t pc_type, uint32_t channel)
-	   : Parameter(pc_type, 0, channel, 0.0, 127.0) {}
+	   : Parameter(pc_type, 0, channel) { set_range(*this); }
+	static void set_range(Parameter& p) { p.set_range(0.0, 127.0, 0.0); }
 };
 
 struct ChannelAftertouch : public Parameter {
 	ChannelAftertouch(uint32_t ca_type, uint32_t channel)
-	   : Parameter(ca_type, 0, channel, 0.0, 127.0) {}
+	   : Parameter(ca_type, 0, channel) { set_range(*this); }
+	static void set_range(Parameter& p) { p.set_range(0.0, 127.0, 0.0); }
 };
 
 struct PitchBender : public Parameter {
 	PitchBender(uint32_t pb_type, uint32_t channel)
-	   : Parameter(pb_type, 0, channel, 0.0, 16383.0) {}
+	   : Parameter(pb_type, 0, channel) { set_range(*this); }
+	static void set_range(Parameter& p) { p.set_range(0.0, 16383.0, 8192.0); }
 };
 
 } // namespace MIDI

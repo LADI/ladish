@@ -61,7 +61,7 @@ public:
  * notes (instead of just unassociated note on/off events) and controller data.
  * Controller data is represented as a list of time-stamped float values.
  */
-class Sequence : public boost::noncopyable, public ControlSet {
+class Sequence : public boost::noncopyable, virtual public ControlSet {
 public:
 	Sequence(size_t size);
 	
@@ -73,10 +73,8 @@ public:
 
 	void clear();
 
-	enum NoteMode { Sustained, Percussive };
-
-	NoteMode note_mode() const            { return _note_mode; }
-	void     set_note_mode(NoteMode mode) { _note_mode = mode; }
+	bool percussive() const     { return _percussive; }
+	void set_percussive(bool p) { _percussive = p; }
 
 	void start_write();
 	bool writing() const { return _writing; }
@@ -161,16 +159,22 @@ public:
 	Controls&       controls()       { return _controls; }
 	const Controls& controls() const { return _controls; }
 	
-private:
+	bool edited() const      { return _edited; }
+	void set_edited(bool yn) { _edited = yn; }
+	
+protected:
 	void add_note_unlocked(const boost::shared_ptr<Note> note);
 	void remove_note_unlocked(const boost::shared_ptr<const Note> note);
-
-	friend class const_iterator;
-
+	
+	mutable const_iterator _read_iter;
+	bool                   _edited;
 #ifndef NDEBUG
 	bool is_sorted() const;
 #endif
 
+private:
+	friend class const_iterator;
+	
 	void append_note_on_unlocked(uint8_t chan, double time, uint8_t note, uint8_t velocity);
 	void append_note_off_unlocked(uint8_t chan, double time, uint8_t note);
 	void append_control_unlocked(Parameter param, double time, double value);
@@ -179,19 +183,17 @@ private:
 
 	Notes    _notes;
 	Controls _controls;
-	NoteMode _note_mode;
 	
 	typedef std::vector<size_t> WriteNotes;
 	WriteNotes _write_notes[16];
 	bool       _writing;
-	bool       _edited;
 	
 	typedef std::vector< boost::shared_ptr<const ControlList> > ControlLists;
 	ControlLists _dirty_controls;
 
 	const   const_iterator _end_iter;
 	mutable nframes_t      _next_read;
-	mutable const_iterator _read_iter;
+	bool                   _percussive;
 
 	/** FIXME: Make fully dynamic, map to URIs */
 	enum EventTypes {

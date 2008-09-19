@@ -1,5 +1,6 @@
 /* This file is part of Evoral.
  * Copyright (C) 2008 Dave Robillard <http://drobilla.net>
+ * Copyright (C) 2000-2008 Paul Davis
  * 
  * Evoral is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -24,6 +25,9 @@
 #include <sstream>
 #include <assert.h>
 #include <evoral/midi_events.h>
+#ifdef EVENT_WITH_XML
+	#include <pbd/xml++.h>
+#endif
 
 /** If this is not defined, all methods of MidiEvent are RT safe
  * but MidiEvent will never deep copy and (depending on the scenario)
@@ -56,7 +60,7 @@ struct Event {
 #ifdef EVENT_WITH_XML
 	/** Event from XML ala http://www.midi.org/dtds/MIDIEvents10.dtd
 	 */
-	Event(const XMLNode &event);
+	Event(const XMLNode& event);
 	
 	/** Event to XML ala http://www.midi.org/dtds/MIDIEvents10.dtd
 	 */

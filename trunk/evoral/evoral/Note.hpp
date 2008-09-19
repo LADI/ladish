@@ -1,5 +1,6 @@
 /* This file is part of Evoral.
  * Copyright (C) 2008 Dave Robillard <http://drobilla.net>
+ * Copyright (C) 2000-2008 Paul Davis
  * 
  * Evoral is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -36,8 +37,8 @@ public:
 
 	const Note& operator=(const Note& copy);
 
-	inline bool operator==(const Note& other)
-	{ return time() == other.time() && 
+	inline bool operator==(const Note& other) {
+		return time() == other.time() && 
 	         note() == other.note() && 
 	         duration() == other.duration() &&
 	         velocity() == other.velocity() &&

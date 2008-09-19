@@ -61,4 +61,47 @@ Event::~Event() {
 
 #endif // EVENT_ALLOW_ALLOC
 
+#ifdef EVENT_WITH_XML
+
+Event::Event(const XMLNode& event)
+{
+	string name = event.name();
+	
+	if (name == "ControlChange") {
+		
+	} else if (name == "ProgramChange") {
+		
+	}
+}
+
+
+boost::shared_ptr<XMLNode> 
+Event::to_xml() const
+{
+	XMLNode *result = 0;
+	
+	switch (type()) {
+	case MIDI_CMD_CONTROL:
+		result = new XMLNode("ControlChange");
+		result->add_property("Channel", channel());
+		result->add_property("Control", cc_number());
+		result->add_property("Value",   cc_value());
+		break;
+			
+	case MIDI_CMD_PGM_CHANGE:
+		result = new XMLNode("ProgramChange");
+		result->add_property("Channel", channel());
+		result->add_property("Number",  pgm_number());
+		break;
+		
+	default:
+		// The implementation is continued as needed
+		break;
+	}
+	
+	return boost::shared_ptr<XMLNode>(result);
+}
+#endif // EVENT_WITH_XML
+
 } // namespace MIDI
+

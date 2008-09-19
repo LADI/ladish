@@ -35,6 +35,7 @@ class Control
 {
 public:
 	Control(boost::shared_ptr<ControlList>);
+	virtual ~Control() {}
 
 	void  set_value(float val, bool to_list=false, nframes_t frame=0);
 	float get_value(bool from_list=false, nframes_t frame=0) const;

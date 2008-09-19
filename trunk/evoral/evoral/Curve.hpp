@@ -16,16 +16,43 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef EVORAL_TYPES_HPP
-#define EVORAL_TYPES_HPP
+#ifndef EVORAL_CURVE_HPP
+#define EVORAL_CURVE_HPP
 
-/** Frame count (i.e. length of time in audio frames) */
-typedef uint32_t nframes_t;
+#include <inttypes.h>
+#include <boost/utility.hpp>
 
-/** Time-stamp of an event */
-typedef double timestamp_t;
+namespace Evoral {
 
-/** Duration of time in timestamp_t units */
-typedef timestamp_t timedur_t;
+class ControlList;
 
-#endif // EVORAL_TYPES_HPP
+class Curve : public boost::noncopyable
+{
+public:
+	Curve (const ControlList& cl);
+
+	bool rt_safe_get_vector (double x0, double x1, float *arg, int32_t veclen);
+	void get_vector (double x0, double x1, float *arg, int32_t veclen);
+
+	void solve ();
+	
+	void mark_dirty() const { _dirty = true; }
+
+private:
+	double unlocked_eval (double where);
+	double multipoint_eval (double x);
+
+	void _get_vector (double x0, double x1, float *arg, int32_t veclen);
+
+	mutable bool       _dirty;
+	const ControlList& _list;
+};
+
+} // namespace Evoral
+
+extern "C" {
+	void curve_get_vector_from_c (void *arg, double, double, float*, int32_t);
+}
+
+#endif // EVORAL_CURVE_HPP
+

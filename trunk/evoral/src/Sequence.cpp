@@ -35,10 +35,12 @@ namespace Evoral {
 
 void Sequence::write_lock() {
 	_lock.writer_lock();
+	_control_lock.lock();
 }
 
 void Sequence::write_unlock() {
 	_lock.writer_unlock();
+	_control_lock.unlock();
 }
 
 void Sequence::read_lock() const {
@@ -211,7 +213,7 @@ const Sequence::const_iterator& Sequence::const_iterator::operator++()
 	}
 
 	// Use the next earliest note off iff it's earlier than the note on
-	if (_seq->note_mode() == Sustained && (! _active_notes.empty())) {
+	if (!_seq->percussive() && (! _active_notes.empty())) {
 		if (type == NIL || _active_notes.top()->end_time() <= (*_note_iter)->time()) {
 			type = NOTE_OFF;
 			t = _active_notes.top()->end_time();
@@ -281,13 +283,13 @@ Sequence::const_iterator& Sequence::const_iterator::operator=(const const_iterat
 // Sequence
 
 Sequence::Sequence(size_t size)
-	: _notes(size)
-	, _note_mode(Sustained)
-	, _writing(false)
+	: _read_iter(*this, DBL_MAX)
 	, _edited(false)
+	, _notes(size)
+	, _writing(false)
 	, _end_iter(*this, DBL_MAX)
 	, _next_read(UINT32_MAX)
-	, _read_iter(*this, DBL_MAX)
+	, _percussive(false)
 {
 	assert(_end_iter._is_end);
 	assert( ! _end_iter._locked);
@@ -427,7 +429,7 @@ void Sequence::clear()
  */
 void Sequence::start_write()
 {
-	//cerr << "MM " << this << " START WRITE, MODE = " << enum_2_string(_note_mode) << endl;
+	//cerr << "MM " << this << " START WRITE, PERCUSSIVE = " << _percussive << endl;
 	write_lock();
 	_writing = true;
 	for (int i = 0; i < 16; ++i)
@@ -450,7 +452,7 @@ void Sequence::end_write(bool delete_stuck)
 
 	//cerr << "MM " << this << " END WRITE: " << _notes.size() << " NOTES\n";
 
-	if (_note_mode == Sustained && delete_stuck) {
+	if (!_percussive && delete_stuck) {
 		for (Notes::iterator n = _notes.begin(); n != _notes.end() ;) {
 			if ((*n)->duration() == 0) {
 				cerr << "WARNING: Stuck note lost: " << (*n)->note() << endl;
@@ -472,9 +474,7 @@ void Sequence::end_write(bool delete_stuck)
 	}
 
 	for (ControlLists::const_iterator i = _dirty_controls.begin(); i != _dirty_controls.end(); ++i) {
-		(*i)->Dirty.emit();
-		(*i)->lookup_cache().left = -1;
-		(*i)->search_cache().left = -1;
+		(*i)->mark_dirty();
 	}
 	
 	_writing = false;
@@ -537,7 +537,7 @@ void Sequence::append_note_on_unlocked(uint8_t chan, double time,
 
 	boost::shared_ptr<Note> new_note(new Note(chan, time, 0, note_num, velocity));
 	_notes.push_back(new_note);
-	if (_note_mode == Sustained) {
+	if (!_percussive) {
 		//cerr << "MM Sustained: Appending active note on " << (unsigned)(uint8_t)note_num << endl;
 		_write_notes[chan].push_back(_notes.size() - 1);
 	}/* else {
@@ -556,7 +556,7 @@ void Sequence::append_note_off_unlocked(uint8_t chan, double time,
 	assert(_writing);
 	_edited = true;
 
-	if (_note_mode == Percussive) {
+	if (_percussive) {
 		cerr << "Sequence Ignoring note off (percussive mode)" << endl;
 		return;
 	}

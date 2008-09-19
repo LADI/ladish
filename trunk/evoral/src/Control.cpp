@@ -48,8 +48,6 @@ Control::set_value(float value, bool to_list, nframes_t frame)
 	
 	if (to_list)
 		_list->add(frame, value);
-
-	//Changed(); /* EMIT SIGNAL */
 }
 
 
@@ -71,7 +69,6 @@ Control::set_list(boost::shared_ptr<ControlList> list)
 {
 	_list = list;
 	_user_value = list->default_value();
-	//Changed();  /* EMIT SIGNAL */
 }
 
 	

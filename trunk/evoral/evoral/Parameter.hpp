@@ -1,5 +1,6 @@
 /* This file is part of Evoral.
  * Copyright (C) 2008 Dave Robillard <http://drobilla.net>
+ * Copyright (C) 2000-2008 Paul Davis
  * 
  * Evoral is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -19,6 +20,7 @@
 #define EVORAL_PARAMETER_HPP
 
 #include <string>
+#include <boost/format.hpp>
 
 namespace Evoral {
 
@@ -98,14 +100,21 @@ public:
 	
 	inline operator bool() const { return (_type != 0); }
 	
-	inline const double min() const          { return _min; }
-	inline void         set_min(double m)    { _min = m; }
-	inline const double max() const          { return _max; }
-	inline void         set_max(double m)    { _max = m; }
-	inline const double normal() const       { return _normal; }
-	inline void         set_normal(double m) { _normal = m; }
+	virtual std::string symbol() const {
+		return (boost::format("%1%_c%2%_n%3%\n") % _type % _channel % _id).str();
+	}
+	
+	inline void set_range(double min, double max, double normal) {
+		_min = min;
+		_max = max;
+		_normal = normal;
+	}
+	
+	inline const double min()    const { return _min; }
+	inline const double max()    const { return _max; }
+	inline const double normal() const { return _normal; }
 
-private:
+protected:
 	// Default copy constructor is ok
 	
 	// ID (used in comparison)

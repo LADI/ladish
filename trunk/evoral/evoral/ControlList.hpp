@@ -1,5 +1,6 @@
 /* This file is part of Evoral.
  * Copyright (C) 2008 Dave Robillard <http://drobilla.net>
+ * Copyright (C) 2000-2008 Paul Davis
  * 
  * Evoral is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -22,9 +23,9 @@
 #include <boost/pool/pool.hpp>
 #include <boost/pool/pool_alloc.hpp>
 #include <glibmm/thread.h>
-#include <sigc++/signal.h>
 #include <evoral/types.hpp>
 #include <evoral/Parameter.hpp>
+#include <evoral/Curve.hpp>
 
 namespace Evoral {
 
@@ -40,13 +41,20 @@ struct ControlEvent {
 	    : when (other.when), value (other.value), coeff (0)
 	{
 		if (other.coeff) {
-			coeff = new double[4];
+			create_coeffs();
 			for (size_t i = 0; i < 4; ++i)
 				coeff[i] = other.coeff[i];
 		}
 	}
 
 	~ControlEvent() { if (coeff) delete[] coeff; }
+	
+	void create_coeffs() {
+		if (!coeff)
+			coeff = new double[4];
+	    
+		coeff[0] = coeff[1] = coeff[2] = coeff[3] = 0.0;
+	}
 
     double  when;
     double  value;
@@ -78,17 +86,19 @@ public:
 	ControlList (Parameter id);
 	//ControlList (const XMLNode&, Parameter id);
 	~ControlList();
+	
+	virtual boost::shared_ptr<ControlList> create(Parameter id);
 
 	ControlList (const ControlList&);
 	ControlList (const ControlList&, double start, double end);
 	ControlList& operator= (const ControlList&);
 	bool operator== (const ControlList&);
+	
+	void freeze();
+	void thaw ();
 
 	const Parameter& parameter() const          { return _parameter; }
 	void             set_parameter(Parameter p) { _parameter = p; }
-
-	void freeze();
-	void thaw ();
 
 	EventList::size_type size() const { return _events.size(); }
 	bool empty() const { return _events.empty(); }
@@ -105,6 +115,7 @@ public:
 	void reposition_for_rt_add (double when);
 	void rt_add (double when, double value);
 	void add (double when, double value);
+	void fast_simple_add (double when, double value);
 
 	void reset_range (double start, double end);
 	void erase_range (double start, double end);
@@ -113,20 +124,16 @@ public:
 	void move_range (iterator start, iterator end, double, double);
 	void modify (iterator, double, double);
 
-	ControlList* cut (double, double);
-	ControlList* copy (double, double);
+	boost::shared_ptr<ControlList> cut (double, double);
+	boost::shared_ptr<ControlList> copy (double, double);
 	void clear (double, double);
 
-	ControlList* cut (iterator, iterator);
-	ControlList* copy (iterator, iterator);
+	boost::shared_ptr<ControlList> cut (iterator, iterator);
+	boost::shared_ptr<ControlList> copy (iterator, iterator);
 	void clear (iterator, iterator);
 
 	bool paste (ControlList&, double position, float times);
 	
-	void start_touch ();
-	void stop_touch ();
-	bool touching() const { return _touching; }
-
 	void set_yrange (double min, double max) {
 		_min_yval = min;
 		_max_yval = max;
@@ -153,8 +160,6 @@ public:
 		Glib::Mutex::Lock lm (_lock);
 		(obj.*method)(*this);
 	}
-
-	sigc::signal<void> StateChanged;
 
 	void set_max_xval (double);
 	double get_max_xval() const { return _max_xval; }
@@ -194,14 +199,11 @@ public:
 		std::pair<ControlList::const_iterator,ControlList::const_iterator> range;
 	};
 
-	//static sigc::signal<void, ControlList*> ControlListCreated;
-
 	const EventList& events() const { return _events; }
-	double default_value() const { return _default_value; }
+	double default_value() const { return _parameter.normal(); }
 
-	// teeny const violations for Curve
-	mutable sigc::signal<void> Dirty;
-	Glib::Mutex& lock() const { return _lock; }
+	// FIXME: const violations for Curve
+	Glib::Mutex& lock()         const { return _lock; }
 	LookupCache& lookup_cache() const { return _lookup_cache; }
 	SearchCache& search_cache() const { return _search_cache; }
 
@@ -215,8 +217,10 @@ public:
 	bool rt_safe_earliest_event (double start, double end, double& x, double& y, bool start_inclusive=false) const;
 	bool rt_safe_earliest_event_unlocked (double start, double end, double& x, double& y, bool start_inclusive=false) const;
 
-	/*Curve&       curve()       { return *_curve; }
-	const Curve& curve() const { return *_curve; }*/
+	Curve&       curve()       { return *_curve; }
+	const Curve& curve() const { return *_curve; }
+	
+	virtual void mark_dirty () const;
 
 	enum InterpolationStyle {
 		Discrete,
@@ -227,24 +231,20 @@ public:
 	InterpolationStyle interpolation() const { return _interpolation; }
 	void set_interpolation(InterpolationStyle style) { _interpolation = style; }
 
-private:
+protected:
 
 	/** Called by unlocked_eval() to handle cases of 3 or more control points. */
 	double multipoint_eval (double x) const; 
-	
-	void fast_simple_add (double when, double value);
 
 	void build_search_cache_if_necessary(double start, double end) const;
 
 	bool rt_safe_earliest_event_discrete_unlocked (double start, double end, double& x, double& y, bool inclusive) const;
 	bool rt_safe_earliest_event_linear_unlocked (double start, double end, double& x, double& y, bool inclusive) const;
 
-	ControlList* cut_copy_clear (double, double, int op);
+	boost::shared_ptr<ControlList> cut_copy_clear (double, double, int op);
 
-	//int deserialize_events (const XMLNode&);
-
-	void maybe_signal_changed ();
-	void mark_dirty ();
+	virtual void maybe_signal_changed ();
+	
 	void _x_scale (double factor);
 
 	mutable LookupCache _lookup_cache;
@@ -256,8 +256,7 @@ private:
 	mutable Glib::Mutex _lock;
 	int8_t              _frozen;
 	bool                _changed_when_thawed;
-	bool                _touching;
-	bool                _new_touch;
+	bool                _new_value;
 	double              _max_xval;
 	double              _min_yval;
 	double              _max_yval;
@@ -266,7 +265,7 @@ private:
 	iterator            _rt_insertion_point;
 	double              _rt_pos;
 
-	//Curve* _curve;
+	Curve* _curve;
 };
 
 } // namespace Evoral

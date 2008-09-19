@@ -36,14 +36,12 @@ inline bool event_time_less_than (ControlEvent* a, ControlEvent* b)
 ControlList::ControlList (Parameter id)
 	: _parameter(id)
 	, _interpolation(Linear)
-	//, _curve(new Curve(*this))
+	, _curve(new Curve(*this))
 {	
-	_parameter = id;
 	_frozen = 0;
 	_changed_when_thawed = false;
 	_min_yval = id.min();
 	_max_yval = id.max();
-	_touching = false;
 	_max_xval = 0; // means "no limit" 
 	_rt_insertion_point = _events.end();
 	_lookup_cache.left = -1;
@@ -51,14 +49,12 @@ ControlList::ControlList (Parameter id)
 	_search_cache.left = -1;
 	_search_cache.range.first = _events.end();
 	_sort_pending = false;
-
-	//ControlListCreated(this);
 }
 
 ControlList::ControlList (const ControlList& other)
 	: _parameter(other._parameter)
 	, _interpolation(Linear)
-	//, _curve(new Curve(*this))
+	, _curve(new Curve(*this))
 {
 	_frozen = 0;
 	_changed_when_thawed = false;
@@ -66,7 +62,6 @@ ControlList::ControlList (const ControlList& other)
 	_max_yval = other._max_yval;
 	_max_xval = other._max_xval;
 	_default_value = other._default_value;
-	_touching = other._touching;
 	_rt_insertion_point = _events.end();
 	_lookup_cache.range.first = _events.end();
 	_search_cache.range.first = _events.end();
@@ -77,13 +72,12 @@ ControlList::ControlList (const ControlList& other)
 	}
 
 	mark_dirty ();
-	//ControlListCreated(this);
 }
 
 ControlList::ControlList (const ControlList& other, double start, double end)
 	: _parameter(other._parameter)
 	, _interpolation(Linear)
-	//, _curve(new Curve(*this))
+	, _curve(new Curve(*this))
 {
 	_frozen = 0;
 	_changed_when_thawed = false;
@@ -91,7 +85,6 @@ ControlList::ControlList (const ControlList& other, double start, double end)
 	_max_yval = other._max_yval;
 	_max_xval = other._max_xval;
 	_default_value = other._default_value;
-	_touching = other._touching;
 	_rt_insertion_point = _events.end();
 	_lookup_cache.range.first = _events.end();
 	_search_cache.range.first = _events.end();
@@ -99,7 +92,7 @@ ControlList::ControlList (const ControlList& other, double start, double end)
 
 	/* now grab the relevant points, and shift them back if necessary */
 
-	ControlList* section = const_cast<ControlList*>(&other)->copy (start, end);
+	boost::shared_ptr<ControlList> section = const_cast<ControlList*>(&other)->copy (start, end);
 
 	if (!section->empty()) {
 		for (iterator i = section->begin(); i != section->end(); ++i) {
@@ -107,21 +100,23 @@ ControlList::ControlList (const ControlList& other, double start, double end)
 		}
 	}
 
-	delete section;
-
 	mark_dirty ();
-
-	//ControlListCreated(this);
 }
 
 ControlList::~ControlList()
 {
-	//GoingAway ();
-	
 	for (EventList::iterator x = _events.begin(); x != _events.end(); ++x) {
 		delete (*x);
 	}
 }
+	
+
+boost::shared_ptr<ControlList>
+ControlList::create(Parameter id)
+{
+	return boost::shared_ptr<ControlList>(new ControlList(id));
+}
+
 
 bool
 ControlList::operator== (const ControlList& other)
@@ -156,12 +151,9 @@ void
 ControlList::maybe_signal_changed ()
 {
 	mark_dirty ();
-
-	if (_frozen) {
+	
+	if (_frozen)
 		_changed_when_thawed = true;
-	} else {
-		StateChanged ();
-	}
 }
 
 void
@@ -241,7 +233,7 @@ ControlList::rt_add (double when, double value)
 					++far;
 				}
 
-				if (_new_touch) {
+				if (_new_value) {
 					where = far;
 					_rt_insertion_point = where;
 
@@ -284,7 +276,7 @@ ControlList::rt_add (double when, double value)
 			_rt_insertion_point = _events.insert (where, new ControlEvent (when, value));
 		}
 		
-		_new_touch = false;
+		_new_value = false;
 		mark_dirty ();
 	}
 
@@ -535,6 +527,12 @@ ControlList::control_points_adjacent (double xval)
 }
 
 void
+ControlList::set_max_xval (double x)
+{
+	_max_xval = x;
+}
+
+void
 ControlList::freeze ()
 {
 	_frozen++;
@@ -543,8 +541,8 @@ ControlList::freeze ()
 void
 ControlList::thaw ()
 {
-	assert(_frozen != 0);
-	
+	assert(_frozen > 0);
+
 	if (--_frozen > 0) {
 		return;
 	}
@@ -557,24 +555,15 @@ ControlList::thaw ()
 			_sort_pending = false;
 		}
 	}
-
-	if (_changed_when_thawed) {
-		StateChanged(); /* EMIT SIGNAL */
-	}
-}
-
-void
-ControlList::set_max_xval (double x)
-{
-	_max_xval = x;
 }
 
 void 
-ControlList::mark_dirty ()
+ControlList::mark_dirty () const
 {
 	_lookup_cache.left = -1;
 	_search_cache.left = -1;
-	Dirty (); /* EMIT SIGNAL */
+	if (_curve)
+		_curve->mark_dirty();
 }
 
 void
@@ -1137,10 +1126,10 @@ ControlList::rt_safe_earliest_event_linear_unlocked (double start, double end, d
 	}
 }
 
-ControlList*
+boost::shared_ptr<ControlList>
 ControlList::cut (iterator start, iterator end)
 {
-	ControlList* nal = new ControlList (_parameter);
+	boost::shared_ptr<ControlList> nal = create (_parameter);
 
 	{
 		Glib::Mutex::Lock lm (_lock);
@@ -1167,10 +1156,10 @@ ControlList::cut (iterator start, iterator end)
 	return nal;
 }
 
-ControlList*
+boost::shared_ptr<ControlList>
 ControlList::cut_copy_clear (double start, double end, int op)
 {
-	ControlList* nal = new ControlList (_parameter);
+	boost::shared_ptr<ControlList> nal = create (_parameter);
 	iterator s, e;
 	ControlEvent cp (start, 0.0);
 	bool changed = false;
@@ -1229,10 +1218,10 @@ ControlList::cut_copy_clear (double start, double end, int op)
 
 }
 
-ControlList*
+boost::shared_ptr<ControlList>
 ControlList::copy (iterator start, iterator end)
 {
-	ControlList* nal = new ControlList (_parameter);
+	boost::shared_ptr<ControlList> nal = create (_parameter);
 
 	{
 		Glib::Mutex::Lock lm (_lock);
@@ -1252,13 +1241,13 @@ ControlList::copy (iterator start, iterator end)
 	return nal;
 }
 
-ControlList*
+boost::shared_ptr<ControlList>
 ControlList::cut (double start, double end)
 {
 	return cut_copy_clear (start, end, 0);
 }
 
-ControlList*
+boost::shared_ptr<ControlList>
 ControlList::copy (double start, double end)
 {
 	return cut_copy_clear (start, end, 1);

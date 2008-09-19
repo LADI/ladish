@@ -33,8 +33,7 @@ ControlSet::ControlSet()
 void
 ControlSet::add_control(boost::shared_ptr<Control> ac)
 {
-	Parameter param = ac->parameter();
-	_controls[param] = ac;
+	_controls[ac->parameter()] = ac;
 }
 
 void
@@ -62,7 +61,7 @@ ControlSet::control (Parameter parameter, bool create_if_missing)
 		return i->second;
 
 	} else if (create_if_missing) {
-		boost::shared_ptr<ControlList> al (new ControlList (parameter));
+		boost::shared_ptr<ControlList> al (control_list_factory(parameter));
 		boost::shared_ptr<Control> ac(control_factory(al));
 		add_control(ac);
 		return ac;
@@ -124,14 +123,16 @@ ControlSet::clear ()
 		li->second->list()->clear();
 }
 	
-
-/* FIXME: Make this function a user parameter so the application can create
- * special Control-derived objects for given types.
- */
 boost::shared_ptr<Control>
-ControlSet::control_factory(boost::shared_ptr<ControlList> list)
+ControlSet::control_factory(boost::shared_ptr<ControlList> list) const
 {
 	return boost::shared_ptr<Control>(new Control(list));
+}
+
+boost::shared_ptr<ControlList>
+ControlSet::control_list_factory(const Parameter& param) const
+{
+	return boost::shared_ptr<ControlList>(new ControlList(param));
 }
 
 

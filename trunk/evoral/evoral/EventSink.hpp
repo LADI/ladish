@@ -1,12 +1,13 @@
 /* This file is part of Evoral.
  * Copyright (C) 2008 Dave Robillard <http://drobilla.net>
+ * Copyright (C) 2000-2008 Paul Davis
  * 
- * Raul is free software; you can redistribute it and/or modify it under the
+ * Evoral is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
  * Foundation; either version 2 of the License, or (at your option) any later
  * version.
  * 
- * Raul is distributed in the hope that it will be useful, but WITHOUT ANY
+ * Evoral is distributed in the hope that it will be useful, but WITHOUT ANY
  * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for details.
  * 
@@ -18,7 +19,7 @@
 #ifndef EVORAL_EVENT_SINK_HPP
 #define EVORAL_EVENT_SINK_HPP
 
-#include <stdexcept>
+#include <evoral/types.hpp>
 
 namespace Evoral {
 
@@ -27,13 +28,13 @@ namespace Evoral {
  */
 class EventSink {
 public:
-	virtual void write(timestamp_t    time,
-	                   uint32_t       size,
-	                   const uint8_t* buf) throw (std::logic_error) = 0;
+	virtual size_t write(timestamp_t    time,
+	                     uint32_t       size,
+	                     const uint8_t* buf) = 0;
 };
 
 
-} // namespace Raul
+} // namespace Evoral
 
 #endif // EVORAL_EVENT_SINK_HPP
 
