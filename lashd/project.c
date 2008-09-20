@@ -1372,7 +1372,7 @@ void
 project_destroy(project_t *project)
 {
 	if (project) {
-		lash_info("Destroying project '%s'", project->name);
+		lash_debug("Destroying project '%s'", project->name);
 
 		if (project_is_loaded(project))
 			project_unload(project);
