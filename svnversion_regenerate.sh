@@ -18,7 +18,28 @@ else
   DEFINE=SVN_VERSION
 fi
 
-echo "#define ${DEFINE} \""`svnversion`"\"" > ${TEMP_FILE}
+if test -d .svn
+then
+  SVNVERSION=`svnversion`
+else
+  if test -d .git
+  then
+    SVNVERSION=`git show | grep git-svn-id: | sed 's/.*@\([0-9]*\) .*/\1/'`
+    if test ${SVNVERSION}
+    then
+      test -z "$(git diff-index --name-only HEAD)" || SVNVERSION="${SVNVERSION}M"
+    else
+      SVNVERSION=git
+    fi
+  fi
+fi
+
+if test -z ${SVNVERSION}
+then
+  SVNVERSION=exported
+fi
+
+echo "#define ${DEFINE} \"${SVNVERSION}\"" > ${TEMP_FILE}
 if test ! -f ${OUTPUT_FILE}
 then
   echo "Generated ${OUTPUT_FILE}"

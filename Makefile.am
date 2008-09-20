@@ -21,11 +21,11 @@ buildcheck:
 	rm -rf $(top_srcdir)/buildcheck
 	cd $(top_srcdir) && ./autogen.sh
 
-pacoinstall:
-	test `whoami` == root # test for root
-	-paco -rvB lash
-	-paco -lE `pwd` -p lash-`svnversion` "make install"
-	-paco -i lash
+pacoinstall: svnversion.h # SVNONLY
+	test `whoami` == root # test for root SVNONLY
+	-paco -rvB lash # SVNONLY
+	-paco -lE `pwd` -p lash-$(shell $(top_srcdir)/svnversion.sh $(top_srcdir)) "make install" # SVNONLY
+	-paco -i lash # SVNONLY
 
 svnversion.h:: # SVNONLY
 	@if test -d $(top_srcdir)/.svn; then $(top_srcdir)/svnversion_regenerate.sh $@; fi # SVNONLY
