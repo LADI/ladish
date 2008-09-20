@@ -373,8 +373,21 @@ lash_client_open(const char  *class,
 {
 	lash_client_t *client = NULL;
 
-	if (!class || !class[0] || !argc || !argv || !argv[0] || !argv[0][0]) {
-		lash_error("Invalid arguments");
+	if (class == NULL)
+	{
+		lash_error("Invalid arguments to lash_client_open() - class is NULL");
+		goto end;
+	}
+
+	if (class[0] == '\0')
+	{
+		lash_error("Invalid arguments to lash_client_open() - class is empty string");
+		goto end;
+	}
+
+	if (!argc || !argv || !argv[0] || !argv[0][0])
+	{
+		lash_error("Invalid arguments to lash_client_open()");
 		goto end;
 	}
 
