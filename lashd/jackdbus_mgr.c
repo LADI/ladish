@@ -277,6 +277,13 @@ lashd_jackdbus_on_client_appeared(
 	lash_info("client '%s' (%llu) appeared. pid is %lld", client_name, (unsigned long long)client_id, (long long)pid);
 
 	client_ptr = server_find_client_by_pid(g_server, pid);
+
+	if (client_ptr == NULL)
+	{
+		// when clients are restored then start in lost state
+		client_ptr = server_find_lost_client_by_pid(g_server, pid);
+	}
+
 	lash_debug("client: %p", client_ptr);
 
 	if (client_ptr == NULL)

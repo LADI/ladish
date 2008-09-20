@@ -92,6 +92,11 @@ server_find_client_by_pid(server_t *server,
                           pid_t     pid);
 
 client_t *
+server_find_lost_client_by_pid(
+	server_t * server,
+	pid_t pid);
+
+client_t *
 server_find_client_by_id(
 	uuid_t id);
 
