@@ -24,12 +24,14 @@ then
 else
   if test -d .git
   then
-    SVNVERSION=`git show | grep git-svn-id: | sed 's/.*@\([0-9]*\) .*/\1/'`
+    git status >/dev/null # updates dirty state
+    SVNVERSION=`git show | grep '^ *git-svn-id:' | sed 's/.*@\([0-9]*\) .*/\1/'`
     if test ${SVNVERSION}
     then
       test -z "$(git diff-index --name-only HEAD)" || SVNVERSION="${SVNVERSION}M"
     else
-      SVNVERSION=git
+      SVNVERSION=0+`git rev-parse HEAD`
+      test -z "$(git diff-index --name-only HEAD)" || SVNVERSION="${SVNVERSION}-dirty"
     fi
   fi
 fi
