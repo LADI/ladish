@@ -34,6 +34,7 @@ struct project_list_column_record : public Gtk::TreeModel::ColumnRecord
 {
 	Gtk::TreeModelColumn<Glib::ustring> name;
 	Gtk::TreeModelColumn<shared_ptr<project> > project_ptr;
+	Gtk::TreeModelColumn<shared_ptr<lash_client> > client_ptr;
 };
 
 struct project_list_impl : public sigc::trackable
@@ -53,6 +54,7 @@ struct project_list_impl : public sigc::trackable
 	void project_renamed(Gtk::TreeModel::iterator iter);
 	void client_added(shared_ptr<lash_client> client_ptr, Gtk::TreeModel::iterator iter);
 	void client_removed(shared_ptr<lash_client> client_ptr, Gtk::TreeModel::iterator iter);
+	void client_renamed(Gtk::TreeModel::iterator iter);
 
 	bool on_button_press_event(GdkEventButton * event);
 
@@ -87,6 +89,7 @@ project_list_impl::project_list_impl(
 
 	_columns.add(_columns.name);
 	_columns.add(_columns.project_ptr);
+	_columns.add(_columns.client_ptr);
 
 	_model = Gtk::TreeStore::create(_columns);
 	_widget->set_model(_model);
@@ -308,8 +311,26 @@ project_list_impl::client_added(
 	iter = _model->append(row.children());
 	row = *iter;
 	row[_columns.name] = name;
+	row[_columns.client_ptr] = client_ptr;
+
+	client_ptr->_signal_renamed.connect(bind(mem_fun(this, &project_list_impl::client_renamed), iter));
 
 	_widget->expand_row(path, false);
+}
+
+void
+project_list_impl::client_renamed(
+	Gtk::TreeModel::iterator iter)
+{
+	shared_ptr<lash_client> client_ptr;
+	string client_name;
+
+	Gtk::TreeModel::Row row = *iter;
+
+	client_ptr = row[_columns.client_ptr];
+	client_ptr->get_name(client_name);
+
+	row[_columns.name] = client_name;
 }
 
 void
