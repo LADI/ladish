@@ -28,7 +28,7 @@ pacoinstall: svnversion.h # SVNONLY
 	-paco -i lash # SVNONLY
 
 svnversion.h:: # SVNONLY
-	@if test -d $(top_srcdir)/.svn; then $(top_srcdir)/svnversion_regenerate.sh $@; fi # SVNONLY
+	@if test -d $(top_srcdir)/.svn -o -d $(top_srcdir)/.git; then $(top_srcdir)/svnversion_regenerate.sh $@; fi # SVNONLY
 
 DISTCLEANFILES = svnversion.h # SVNONLY
 BUILT_SOURCES = svnversion.h # SVNONLY
