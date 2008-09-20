@@ -298,6 +298,7 @@ lashd_jackdbus_on_client_appeared(
 
 	uuid_copy(jack_client_ptr->id, client_ptr->id);
 	jack_client_ptr->name = lash_strdup(client_name);
+	lash_strset(&client_ptr->jack_client_name, client_name);
 	//client_ptr->jack_client_id = client_id;
 	jack_client_ptr->old_patches = client_ptr->jack_patches;
 	jack_client_ptr->backup_patches = jack_mgr_client_dup_patch_list(client_ptr->jack_patches);
