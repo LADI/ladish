@@ -647,12 +647,13 @@ project_save_clients(project_t *project)
 	list_for_each (node, &project->clients) {
 		client = list_entry(node, client_t, siblings);
 
-		client->pending_task = g_server->task_iter;
-		client->task_type = (CLIENT_CONFIG_FILE(client))
-		                    ? LASH_Save_File
-		                    : LASH_Save_Data_Set;
-		client->task_progress = 0;
-		++project->client_tasks_total;
+		if (CLIENT_HAS_INTERNAL_STATE(client))
+		{
+			client->pending_task = g_server->task_iter;
+			client->task_type = (CLIENT_CONFIG_FILE(client)) ? LASH_Save_File : LASH_Save_Data_Set;
+			client->task_progress = 0;
+			++project->client_tasks_total;
+		}
 	}
 
 	project->client_tasks_pending = project->client_tasks_total;

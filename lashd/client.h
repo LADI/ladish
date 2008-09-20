@@ -74,12 +74,13 @@ enum
 	LASH_Saved = 0x01000000  /* Client has been saved */
 };
 
-#define CLIENT_CONFIG_DATA_SET(x)   (((x)->flags) & LASH_Config_Data_Set)
-#define CLIENT_CONFIG_FILE(x)       (((x)->flags) & LASH_Config_File)
-#define CLIENT_SERVER_INTERFACE(x)  (((x)->flags) & LASH_Server_Interface)
-#define CLIENT_NO_AUTORESUME(x)     (((x)->flags) & LASH_No_Autoresume)
-#define CLIENT_TERMINAL(x)          (((x)->flags) & LASH_Terminal)
-#define CLIENT_SAVED(x)             (((x)->flags) & LASH_Saved)
+#define CLIENT_CONFIG_DATA_SET(x)    (((x)->flags) & LASH_Config_Data_Set)
+#define CLIENT_CONFIG_FILE(x)        (((x)->flags) & LASH_Config_File)
+#define CLIENT_HAS_INTERNAL_STATE(x) (((x)->flags) & (LASH_Config_Data_Set | LASH_Config_File))
+#define CLIENT_SERVER_INTERFACE(x)   (((x)->flags) & LASH_Server_Interface)
+#define CLIENT_NO_AUTORESUME(x)      (((x)->flags) & LASH_No_Autoresume)
+#define CLIENT_TERMINAL(x)           (((x)->flags) & LASH_Terminal)
+#define CLIENT_SAVED(x)              (((x)->flags) & LASH_Saved)
 
 client_t *
 client_new(void);
