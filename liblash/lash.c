@@ -100,6 +100,8 @@ lash_server_signal_handler(lash_client_t *client,
 			return;
 		}
 
+		//lash_info("Save signal for project '%s' received.", project_name);
+
 		/* Silently return if this signal doesn't concern our project */
 		if (!client->project_name
 		    || strcmp(client->project_name, project_name) != 0)
@@ -108,12 +110,14 @@ lash_server_signal_handler(lash_client_t *client,
 		if (!client->pending_task) {
 			if ((client->flags & LASH_Config_Data_Set))
 				lash_new_save_data_set_task(client, task_id);
-			else
+			else if ((client->flags & LASH_Config_File))
 				lash_new_save_task(client, task_id);
 		} else {
 			lash_dbus_error("Task %llu is unfinished",
 			                client->pending_task);
 		}
+
+		//lash_info("Save signal for project '%s' processed.", project_name); fflush(stdout);
 
 	} else if (strcmp(member, "Quit") == 0) {
 		if (!dbus_message_get_args(message, &err,
