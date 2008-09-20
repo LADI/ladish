@@ -129,8 +129,22 @@ cd $srcdir
 abs_srcdir=`pwd`
 cd $builddir
 
-REDLANDMM_CFLAGS="-I$abs_srcdir/redlandmm"
-REDLANDMM_LIBS="$builddir/redlandmm/src/.libs/libredlandmm.la"
+# Check for Redland
+build_redland="no"
+AC_CHECK_PROG(REDLAND_CONFIG, redland-config, redland-config)
+if test "X$REDLAND_CONFIG" = X; then
+  AC_MSG_ERROR([This software requires Redland (librdf), but redland-config not found.])
+else
+  build_redland="yes"
+  REDLAND_CFLAGS=`$REDLAND_CONFIG --cflags`
+  REDLAND_LIBS=`$REDLAND_CONFIG --libs`
+  AC_SUBST(REDLAND_CFLAGS)
+  AC_SUBST(REDLAND_LIBS)
+fi
+AM_CONDITIONAL(WITH_REDLAND, [test "$build_redland" = "yes"])
+
+REDLANDMM_CFLAGS="$REDLAND_CFLAGS -I$abs_srcdir/redlandmm"
+REDLANDMM_LIBS="$REDLAND_LIBS $builddir/redlandmm/src/.libs/libredlandmm.la"
 REDLANDMM_SRCDIR="$abs_srcdir/redlandmm"
 AC_SUBST(REDLANDMM_CFLAGS)
 AC_SUBST(REDLANDMM_LIBS)
@@ -536,23 +550,6 @@ AM_CONDITIONAL(BUILD_CLIENT_LIB, [test "$build_ingen_clients" = "yes" -o "$build
 PKG_CHECK_MODULES(GTKMM, gtkmm-2.4)
 PKG_CHECK_MODULES(GNOMECANVASMM, libgnomecanvasmm-2.6)
 PKG_CHECK_MODULES(LIBGLADEMM, libglademm-2.4)
-
-################ SLV2 / Redlandmm
-
-# Check for Redland
-build_redland="no"
-AC_CHECK_PROG(REDLAND_CONFIG, redland-config, redland-config)
-if test "X$REDLAND_CONFIG" = X; then
-  AC_MSG_ERROR([This software requires Redland (librdf), but redland-config not found.])
-else
-  build_redland="yes"
-  REDLAND_CFLAGS=`$REDLAND_CONFIG --cflags`
-  REDLAND_LIBS=`$REDLAND_CONFIG --libs`
-  AC_SUBST(REDLAND_CFLAGS)
-  AC_SUBST(REDLAND_LIBS)
-fi
-AM_CONDITIONAL(WITH_REDLAND, [test "$build_redland" = "yes"])
-
 
 ################## RAUL
 
