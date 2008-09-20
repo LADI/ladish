@@ -695,7 +695,10 @@ project_create_client_jack_patch_xml(project_t  *project,
 #endif
 
 	if (!patches)
+	{
+		lash_info("client '%s' has no patches to save", client_get_identity(client));
 		return;
+	}
 
 	jack_patch_set =
 		xmlNewChild(clientxml, NULL, BAD_CAST "jack_patch_set", NULL);
@@ -703,6 +706,7 @@ project_create_client_jack_patch_xml(project_t  *project,
 	for (node = patches; node; node = lash_list_next(node)) {
 		patch = (jack_patch_t *) node->data;
 
+		lash_info("Saving client '%s' patch %s -> %s", client_get_identity(client), patch->src_desc, patch->dest_desc);
 		jack_patch_create_xml(patch, jack_patch_set);
 
 		jack_patch_destroy(patch);
@@ -821,6 +825,10 @@ project_create_xml(project_t *project)
 		if (client->jack_client_name)
 			project_create_client_jack_patch_xml(project, client,
 			                                     clientxml);
+		else
+		{
+			lash_info("client '%s' (%p) has no jack client name", client_get_identity(client), client);
+		}
 #ifdef HAVE_ALSA
 		if (client->alsa_client_id)
 			project_create_client_alsa_patch_xml(project, client,
