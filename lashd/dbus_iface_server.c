@@ -149,6 +149,7 @@ lashd_dbus_jack_name(method_call_t *call)
 		return;
 	}
 
+#ifndef HAVE_JACK_DBUS
 	lash_debug("Received JACK name '%s' from '%s'",
 	           jack_name, client_get_identity(client));
 
@@ -160,7 +161,6 @@ lashd_dbus_jack_name(method_call_t *call)
 
 	lash_strset(&client->jack_client_name, jack_name);
 
-#ifndef HAVE_JACK_DBUS
 	jack_mgr_lock(g_server->jack_mgr);
 	jack_mgr_add_client(g_server->jack_mgr, client->id, jack_name,
 	                    client->jack_patches);
