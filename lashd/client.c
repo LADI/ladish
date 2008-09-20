@@ -338,4 +338,49 @@ client_parse_xml(project_t  *project,
 	lash_debug("Parsed client %s of class %s", client->name, client->class);
 }
 
+void
+client_maybe_fill_class(
+	client_t * client_ptr)
+{
+	const char * client_name;
+#ifdef HAVE_ALSA
+	snd_seq_client_info_t * client_info_ptr;
+
+	snd_seq_client_info_alloca(&client_info_ptr);
+#endif
+
+	if (client_ptr->class[0] != '\0')
+	{
+		/* no need to fill class */
+		return;
+	}
+
+	lash_info("Client class string is empty");
+	lash_info("JACK client name '%s'", client_ptr->jack_client_name);
+	lash_info("ALSA ID %u", client_ptr->alsa_client_id);
+
+	client_name = NULL;
+
+	if (client_ptr->jack_client_name != NULL &&
+	    client_ptr->jack_client_name[0] != '\0')
+	{
+		client_name = client_ptr->jack_client_name;
+	}
+
+#ifdef HAVE_ALSA
+	if (client_ptr->alsa_client_id != 0 &&
+	    snd_seq_get_any_client_info(g_server->alsa_mgr->seq, client_ptr->alsa_client_id, client_info_ptr) >= 0)
+	{
+		client_name = snd_seq_client_info_get_name(client_info_ptr);
+	}
+#endif
+
+	if (client_name != NULL)
+	{
+		lash_info("Changing client class and name to '%s'", client_name);
+		lash_strset(&client_ptr->class, client_name);
+		project_rename_client(client_ptr->project, client_ptr, client_name);
+	}
+}
+
 /* EOF */

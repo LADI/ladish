@@ -306,6 +306,8 @@ lashd_jackdbus_on_client_appeared(
 
 	g_jack_mgr_ptr->clients = lash_list_append(g_jack_mgr_ptr->clients, jack_client_ptr);
 
+	client_maybe_fill_class(client_ptr);
+
 	/* Get the graph and extract the new client's data */
 	lashd_jackdbus_mgr_get_graph(g_jack_mgr_ptr);
 	if (!lashd_jackdbus_mgr_get_client_data(jack_client_ptr))

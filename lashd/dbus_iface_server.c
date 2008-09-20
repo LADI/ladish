@@ -149,6 +149,8 @@ lashd_dbus_jack_name(method_call_t *call)
 		return;
 	}
 
+	client_maybe_fill_class(client);
+
 #ifndef HAVE_JACK_DBUS
 	lash_debug("Received JACK name '%s' from '%s'",
 	           jack_name, client_get_identity(client));
@@ -205,6 +207,8 @@ lashd_dbus_alsa_id(method_call_t *call)
 	}
 
 	client->alsa_client_id = alsa_id;
+
+	client_maybe_fill_class(client);
 
 	alsa_mgr_lock(g_server->alsa_mgr);
 	alsa_mgr_add_client(g_server->alsa_mgr, client->id,

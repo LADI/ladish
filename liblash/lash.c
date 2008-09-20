@@ -379,11 +379,15 @@ lash_client_open(const char  *class,
 		goto end;
 	}
 
+	/* seq24 usually supplies no class name and we should be able to handle this situation anyway,
+	   to support liblash-less clients */
+#if 0
 	if (class[0] == '\0')
 	{
 		lash_error("Invalid arguments to lash_client_open() - class is empty string");
 		goto end;
 	}
+#endif
 
 	if (!argc || !argv || !argv[0] || !argv[0][0])
 	{
