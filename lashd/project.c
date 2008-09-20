@@ -968,6 +968,11 @@ project_saved(
 	lashd_dbus_signal_emit_project_saved(project_ptr->name);
 	project_update_last_modify_time(project_ptr);
 	lash_info("Project '%s' saved.", project_ptr->name);
+
+	project_set_modified_status(project_ptr, false);
+
+	/* Reset the controllers' progress display */
+	lashd_dbus_signal_emit_progress(0);
 }
 
 static
@@ -978,6 +983,11 @@ project_loaded(
 {
 	lashd_dbus_signal_emit_project_loaded(project_ptr->name);
 	lash_info("Project '%s' loaded.", project_ptr->name);
+
+	project_set_modified_status(project_ptr, false);
+
+	/* Reset the controllers' progress display */
+	lashd_dbus_signal_emit_progress(0);
 }
 
 void
@@ -1444,11 +1454,6 @@ project_client_task_completed(project_t *project,
 		default:
 			return;
 		}
-
-		project_set_modified_status(project, false);
-
-		/* Reset the controllers' progress display */
-		lashd_dbus_signal_emit_progress(0);
 	}
 }
 
