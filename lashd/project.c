@@ -264,7 +264,7 @@ static __inline__ void
 project_load_file(project_t *project,
                   client_t  *client)
 {
-	lash_debug("Requesting client '%s' to load data from disk",
+	lash_info("Requesting client '%s' to load data from disk",
 	           client_get_identity(client));
 
 	client->pending_task = (++g_server->task_iter);
@@ -294,7 +294,7 @@ project_load_data_set(project_t *project,
 		return;
 	}
 
-	lash_debug("Sending client '%s' its data set",
+	lash_info("Sending client '%s' its data set",
 	           client_get_identity(client));
 
 	if (list_empty(&client->store->keys)) {
@@ -410,8 +410,14 @@ project_resume_client(project_t *project,
 			project_load_file(project, client);
 		else if (CLIENT_CONFIG_DATA_SET(client))
 			project_load_data_set(project, client);
+		else
+		{
+			/* this is a workaround for projects saved with wrong flags */
+			lash_info("Client '%s' has no data to load (but flagged)", client_get_identity(client));
+			project_client_task_completed(project, client);	/* Signal progress to controllers */
+		}
 	} else
-		lash_debug("Client '%s' has no data to load", client_get_identity(client));
+		lash_info("Client '%s' has no data to load", client_get_identity(client));
 
 	client->project = project;
 	list_add(&client->siblings, &project->clients);
@@ -646,11 +652,14 @@ project_save_clients(project_t *project)
 		                    ? LASH_Save_File
 		                    : LASH_Save_Data_Set;
 		client->task_progress = 0;
-		client->flags |= LASH_Saved;
 		++project->client_tasks_total;
 	}
 
 	project->client_tasks_pending = project->client_tasks_total;
+	if (project->client_tasks_total == 0)
+	{
+		project->task_type = 0;
+	}
 }
 
 static void
@@ -916,7 +925,8 @@ void
 project_save(project_t *project)
 {
 	if (project->task_type) {
-		lash_error("Another task is in progress, cannot save right now");
+		lash_error("Another task (type %d) is in progress, cannot save right now", project->task_type);
+		lash_error("%" PRIu32 " pending client tasks.", project->client_tasks_pending);
 		return;
 	}
 
