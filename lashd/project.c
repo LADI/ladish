@@ -364,6 +364,7 @@ project_resume_client(project_t *project,
 {
 	lash_event_t *event;
 	char *name;
+	bool stateless_client;
 
 	lash_debug("Attempting to resume client of class '%s'",
 	           lost_client->class);
@@ -402,6 +403,8 @@ project_resume_client(project_t *project,
 	list_del(&lost_client->siblings);
 	client_destroy(lost_client);
 
+	stateless_client = false;
+
 	/* Tell the client to load its state if it was saved previously */
 	if (CLIENT_SAVED(client)) {
 		// TODO: Implement task queue so that we can
@@ -414,10 +417,12 @@ project_resume_client(project_t *project,
 		{
 			/* this is a workaround for projects saved with wrong flags */
 			lash_info("Client '%s' has no data to load (but flagged)", client_get_identity(client));
-			project_client_task_completed(project, client);	/* Signal progress to controllers */
+			stateless_client = true;
 		}
-	} else
+	} else {
 		lash_info("Client '%s' has no data to load", client_get_identity(client));
+		stateless_client = true;
+	}
 
 	client->project = project;
 	list_add(&client->siblings, &project->clients);
@@ -434,8 +439,14 @@ project_resume_client(project_t *project,
 
 	/* Clients with nothing to load need to notify about
 	   their completion as soon as they appear */
-	if (!CLIENT_SAVED(client))
+	if (stateless_client)
+	{
+		/* Nasty way to make project_client_task_completed() eventually call project_loaded() */
+		client->task_type = LASH_Restore_Data_Set;
+
 		project_client_task_completed(project, client);
+		client->task_type = 0;
+	}
 }
 
 void
@@ -922,6 +933,45 @@ exit:
 	return ret;
 }
 
+static
+__inline__
+bool
+project_update_last_modify_time(
+	project_t * project_ptr)
+{
+	struct stat st;
+
+	if (stat(project_ptr->directory, &st) != 0)
+	{
+		lash_error("failed to stat '%s', error is %d", project_ptr->directory, errno);
+		return false;
+	}
+
+	project_ptr->last_modify_time = st.st_mtime;
+	return true;
+}
+
+static
+__inline__
+void
+project_saved(
+	project_t * project_ptr)
+{
+	lashd_dbus_signal_emit_project_saved(project_ptr->name);
+	project_update_last_modify_time(project_ptr);
+	lash_info("Project '%s' saved.", project_ptr->name);
+}
+
+static
+__inline__
+void
+project_loaded(
+	project_t * project_ptr)
+{
+	lashd_dbus_signal_emit_project_loaded(project_ptr->name);
+	lash_info("Project '%s' loaded.", project_ptr->name);
+}
+
 void
 project_save(project_t *project)
 {
@@ -962,6 +1012,16 @@ project_save(project_t *project)
 		lash_error("Error writing notes file for project '%s'", project->name);
 
 	project_clear_lost_clients(project);
+
+	/* in project_save_clients we tell clients then to save and save completes when there are no pending tasks,
+	   as detected in project_client_task_completed()
+	   However, when there are not clients with internal state, project_client_task_completed() is not called at all.
+	   OTOH save is complete at this point.
+	*/
+	if (project->client_tasks_total == 0) /* check for project with stateless clients only */
+	{
+		project_saved(project);
+	}
 }
 
 bool
@@ -1061,24 +1121,6 @@ project_load(project_t *project)
 
 	project->modified_status = false;
 
-	return true;
-}
-
-static
-__inline__
-bool
-project_update_last_modify_time(
-	project_t * project_ptr)
-{
-	struct stat st;
-
-	if (stat(project_ptr->directory, &st) != 0)
-	{
-		lash_error("failed to stat '%s', error is %d", project_ptr->directory, errno);
-		return false;
-	}
-
-	project_ptr->last_modify_time = st.st_mtime;
 	return true;
 }
 
@@ -1379,8 +1421,6 @@ project_client_task_completed(project_t *project,
 
 	/* If the project task is finished emit the appropriate signals */
 	if (project->client_tasks_pending && (--project->client_tasks_pending) == 0) {
-		uint8_t x;
-
 		project->task_type = 0;
 		project->client_tasks_total = 0;
 		project->client_tasks_progress = 0;
@@ -1388,13 +1428,10 @@ project_client_task_completed(project_t *project,
 		/* Send ProjectSaved or ProjectLoaded signal, or return if the task was neither */
 		switch (client->task_type) {
 		case LASH_Save_Data_Set: case LASH_Save_File:
-			lashd_dbus_signal_emit_project_saved(project->name);
-			project_update_last_modify_time(project);
-			lash_info("Project '%s' saved.", project->name);
+			project_saved(project);
 			break;
 		case LASH_Restore_File: case LASH_Restore_Data_Set:
-			lashd_dbus_signal_emit_project_loaded(project->name);
-			lash_info("Project '%s' loaded.", project->name);
+			project_loaded(project);
 			break;
 		default:
 			return;
