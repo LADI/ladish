@@ -2,7 +2,7 @@ The various components here can be built individually inside their own
 directories, or the entire tree can be built at once, using the typical
 ./configure; make; make install routine.
 
-If you build individuall, get the build order right!  Things will NOT
+If you build individually, get the build order right!  Things will NOT
 compile against the included versions this way.
 
 You're much better off building everything from the top level.
