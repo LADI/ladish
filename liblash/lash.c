@@ -693,10 +693,11 @@ lash_dispatch(lash_client_t *client)
 	if (!client || !client->dbus_service)
 		return;
 
-	while (dbus_connection_get_dispatch_status(client->dbus_service->connection)
-	       == DBUS_DISPATCH_DATA_REMAINS) {
+	do
+	{
 		dbus_connection_read_write_dispatch(client->dbus_service->connection, 0);
 	}
+	while (dbus_connection_get_dispatch_status(client->dbus_service->connection) == DBUS_DISPATCH_DATA_REMAINS);
 }
 
 bool
