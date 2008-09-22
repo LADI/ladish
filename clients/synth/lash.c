@@ -45,6 +45,7 @@ save_data()
 	config = lash_config_new_with_key("attack");
 	lash_config_set_value_double(config, attack);
 	lash_send_config(lash_client, config);
+	//printf("attack saved as %f\n", attack);
 
 	config = lash_config_new_with_key("decay");
 	lash_config_set_value_double(config, decay);
@@ -65,6 +66,7 @@ save_data()
 	config = lash_config_new_with_key("harmonic");
 	lash_config_set_value_int(config, harmonic);
 	lash_send_config(lash_client, config);
+	//printf("harmonic saved as %d\n", harmonic);
 
 	config = lash_config_new_with_key("subharmonic");
 	lash_config_set_value_int(config, subharmonic);
@@ -90,6 +92,7 @@ restore_data(lash_config_t * config)
 
 	if (strcmp(key, "attack") == 0) {
 		attack = lash_config_get_value_double(config);
+		//printf("attack restored to %f\n", attack);
 		return;
 	}
 
@@ -115,6 +118,7 @@ restore_data(lash_config_t * config)
 
 	if (strcmp(key, "harmonic") == 0) {
 		harmonic = lash_config_get_value_int(config);
+		//printf("harmonic restored to %d\n", harmonic);
 		return;
 	}
 
@@ -139,20 +143,24 @@ lash_main()
 	while ((event = lash_get_event(lash_client))) {
 		switch (lash_event_get_type(event)) {
 		case LASH_Quit:
+			printf("LASH ordered to quit\n");
 			quit = 1;
 			lash_event_destroy(event);
 			break;
 		case LASH_Restore_Data_Set:
+			printf("LASH ordered to restore data set\n");
 			lash_send_event(lash_client, event);
 			break;
 		case LASH_Save_Data_Set:
+			printf("LASH ordered to save data set\n");
 			save_data();
 			lash_send_event(lash_client, event);
 			break;
 		case LASH_Server_Lost:
+			printf("LASH server lost\n");
 			return 1;
 		default:
-			printf("%s: receieved unknown LASH event of type %d",
+			printf("%s: receieved unknown LASH event of type %d\n",
 				   __FUNCTION__, lash_event_get_type(event));
 			lash_event_destroy(event);
 			break;
