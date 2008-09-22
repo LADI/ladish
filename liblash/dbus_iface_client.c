@@ -495,11 +495,11 @@ lash_dbus_load_data_set(method_call_t *call)
 
 			if (type == LASH_TYPE_DOUBLE)
 				lash_config_set_value_double(config, value.d);
-			else if (type = LASH_TYPE_INTEGER)
+			else if (type == LASH_TYPE_INTEGER)
 				lash_config_set_value_int(config, value.u);
-			else if (type = LASH_TYPE_STRING)
+			else if (type == LASH_TYPE_STRING)
 				lash_config_set_value_string(config, value.s);
-			else if (type = LASH_TYPE_RAW)
+			else if (type == LASH_TYPE_RAW)
 				lash_config_set_value(config, value.v, (size_t) ret);
 			else {
 				lash_error("Unknown config type '%c'", type);
