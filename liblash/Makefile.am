@@ -7,7 +7,8 @@ liblash_la_SOURCES = \
 	lash.c \
 	client.c \
 	dbus_service.c \
-	dbus_iface_client.c
+	dbus_iface_client.c \
+	../lashd/file.c
 
 if LASH_OLD_API
 liblash_la_SOURCES += \
