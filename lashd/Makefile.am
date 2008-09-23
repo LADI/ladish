@@ -20,14 +20,8 @@ lashd_SOURCES = \
 	appdb.c appdb.h \
 	sigsegv.c sigsegv.h \
 	proctitle.c proctitle.h \
-	types.h
-
-# Include safemem code
-nodist_lashd_SOURCES = safety.c
-BUILT_SOURCES = safety.c
-CLEANFILES = safety.c
-safety.c: Makefile
-	cp $(top_srcdir)/common/safety.c .
+	types.h \
+	$(top_srcdir)/common/safety.c
 
 if HAVE_JACK_DBUS
 lashd_SOURCES += \
@@ -54,7 +48,7 @@ lashd_LDADD = \
 	$(top_builddir)/dbus/liblashdbus.a \
 	-lstdc++ -lutil
 
-lashd_CFLAGS = \
+AM_CFLAGS = \
 	$(LASH_CFLAGS) \
 	$(ALSA_CFLAGS) \
 	$(XML2_CFLAGS) \
@@ -63,7 +57,7 @@ lashd_CFLAGS = \
 
 if !HAVE_JACK_DBUS
 lashd_LDADD += $(JACK_LIBS)
-lashd_CFLAGS += $(JACK_CFLAGS)
+AM_CFLAGS += $(JACK_CFLAGS)
 endif
 
 if HAVE_ALSA
@@ -81,7 +75,7 @@ service_in_files = org.nongnu.lash.service.in
 service_DATA = $(service_in_files:.service.in=.service)
 
 EXTRA_DIST += $(service_in_files)
-CLEANFILES += $(service_DATA)
+CLEANFILES = $(service_DATA)
 
 # Rule to make the service file with bindir expanded
 $(service_DATA): $(service_in_files) Makefile

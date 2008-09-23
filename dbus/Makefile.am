@@ -10,15 +10,9 @@ liblashdbus_a_SOURCES = \
 	interface.c interface.h \
 	object_path.c object_path.h \
 	introspection.c introspection.h \
-	service.c service.h
+	service.c service.h \
+	$(top_srcdir)/common/safety.c
 
-# Include safemem code
-nodist_liblashdbus_a_SOURCES = safety.c
-BUILT_SOURCES = safety.c
-CLEANFILES = safety.c
-safety.c: Makefile
-	cp $(top_srcdir)/common/safety.c .
-
-liblashdbus_a_CFLAGS = \
+AM_CFLAGS = \
 	$(LASH_CFLAGS) \
 	$(DBUS_CFLAGS)

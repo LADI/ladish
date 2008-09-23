@@ -12,17 +12,10 @@ lash_shell_SOURCES = \
 	lash_control.h \
 	client.c client.h \
 	project.c \
-	project.h
+	project.h \
+	$(top_srcdir)/common/safety.c
 
-# Include safemem code
-nodist_lash_shell_SOURCES = safety.c
-BUILT_SOURCES = safety.c
-CLEANFILES = safety.c
-safety.c: Makefile
-	cp $(top_srcdir)/common/safety.c .
-
-lash_shell_CFLAGS = \
-	-DDEBUG_OUTPUT_TERMINAL
+AM_CFLAGS = -DDEBUG_OUTPUT_TERMINAL
 
 lash_shell_LDADD = \
 	$(top_builddir)/liblash/liblash.la \

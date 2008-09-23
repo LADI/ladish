@@ -2,13 +2,21 @@ include $(top_srcdir)/common.am
 
 lib_LTLIBRARIES = liblash.la
 
-liblash_la_SOURCES = \
-	lash_config.c \
-	lash.c \
-	client.c \
-	dbus_service.c \
-	dbus_iface_client.c \
-	../lashd/file.c
+liblash_la_SOURCES  = lash.c
+liblash_la_SOURCES += lash_config.c
+liblash_la_SOURCES += client.c
+liblash_la_SOURCES += dbus_service.c
+liblash_la_SOURCES += dbus_iface_client.c
+
+liblash_la_SOURCES += $(top_srcdir)/common/safety.c
+liblash_la_SOURCES += $(top_srcdir)/dbus/error.c
+liblash_la_SOURCES += $(top_srcdir)/dbus/method.c
+liblash_la_SOURCES += $(top_srcdir)/dbus/signal.c
+liblash_la_SOURCES += $(top_srcdir)/dbus/interface.c
+liblash_la_SOURCES += $(top_srcdir)/dbus/object_path.c
+liblash_la_SOURCES += $(top_srcdir)/dbus/introspection.c
+liblash_la_SOURCES += $(top_srcdir)/dbus/service.c
+liblash_la_SOURCES += $(top_srcdir)/lashd/file.c
 
 if LASH_OLD_API
 liblash_la_SOURCES += \
@@ -17,48 +25,7 @@ liblash_la_SOURCES += \
 	args.c
 endif
 
-# Include code from other subdirs
-nodist_liblash_la_SOURCES = \
-	safety.c \
-	error.c \
-	method.c \
-	signal.c \
-	interface.c \
-	object_path.c \
-	introspection.c \
-	service.c
-
-BUILT_SOURCES = $(nodist_liblash_la_SOURCES)
-CLEANFILES = $(nodist_liblash_la_SOURCES)
-
-safety.c: Makefile
-	cp $(top_srcdir)/common/safety.c .
-
-error.c: Makefile
-	cp $(top_srcdir)/dbus/error.c .
-
-method.c: Makefile
-	cp $(top_srcdir)/dbus/method.c .
-
-signal.c: Makefile
-	cp $(top_srcdir)/dbus/signal.c .
-
-interface.c: Makefile
-	cp $(top_srcdir)/dbus/interface.c .
-
-object_path.c: Makefile
-	cp $(top_srcdir)/dbus/object_path.c .
-
-introspection.c: Makefile
-	cp $(top_srcdir)/dbus/introspection.c .
-
-service.c: Makefile
-	cp $(top_srcdir)/dbus/service.c .
-
-liblash_la_CFLAGS = \
-	$(LASH_CFLAGS) \
-	$(DBUS_CFLAGS) \
-	-DDEBUG_OUTPUT_TERMINAL
+AM_CFLAGS = $(LASH_CFLAGS) $(DBUS_CFLAGS) -DDEBUG_OUTPUT_TERMINAL
 
 liblash_la_LIBADD = \
 	$(UUID_LIBS) \
