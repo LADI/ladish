@@ -1,7 +1,6 @@
 /*
  *   LASH
  *
- *   Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *   Copyright (C) 2002 Robert Ham <rah@bash.sh>
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -31,143 +30,6 @@ extern "C" {
 #endif
 
 #define lash_enabled(client)  ((client) && lash_server_connected (client))
-
-lash_client_t *
-lash_client_open(const char  *client_class,
-                 int          flags,
-                 int          argc,
-                 char       **argv);
-
-const char *
-lash_get_client_name(lash_client_t *client);
-
-const char *
-lash_get_project_name(lash_client_t *client);
-
-/**
- * Tell the server the client's JACK client name.
- */
-void
-lash_jack_client_name(lash_client_t *client,
-                      const char    *name);
-
-/**
- * Tell the server the client's ALSA client ID.
- */
-void
-lash_alsa_client_id(lash_client_t *client,
-                    unsigned char  id);
-
-/**
- * Set the Save callback function.
- */
-bool
-lash_set_save_callback(lash_client_t     *client,
-                       LashEventCallback  callback,
-                       void              *user_data);
-
-/**
- * Set the Load callback function.
- */
-bool
-lash_set_load_callback(lash_client_t     *client,
-                       LashEventCallback  callback,
-                       void              *user_data);
-
-/**
- * Set the SaveDataSet callback function.
- */
-bool
-lash_set_save_data_set_callback(lash_client_t      *client,
-                                LashConfigCallback  callback,
-                                void               *user_data);
-
-/**
- * Set the LoadDataSet callback function.
- */
-bool
-lash_set_load_data_set_callback(lash_client_t      *client,
-                                LashConfigCallback  callback,
-                                void               *user_data);
-
-/**
- * Set the Quit callback function
- */
-bool
-lash_set_quit_callback(lash_client_t     *client,
-                       LashEventCallback  callback,
-                       void              *user_data);
-
-/**
- * Set the ClientNameChanged callback function
- */
-bool
-lash_set_name_change_callback(lash_client_t     *client,
-                              LashEventCallback  callback,
-                              void              *user_data);
-
-/**
- * Set the ProjectChange callback function
- */
-bool
-lash_set_project_change_callback(lash_client_t     *client,
-                                 LashEventCallback  callback,
-                                 void              *user_data);
-
-/**
- * Set the PathChange callback function
- */
-bool
-lash_set_path_change_callback(lash_client_t     *client,
-                              LashEventCallback  callback,
-                              void              *user_data);
-
-void
-lash_wait(lash_client_t *client);
-
-void
-lash_dispatch(lash_client_t *client);
-
-bool
-lash_dispatch_once(lash_client_t *client);
-
-void
-lash_notify_progress(lash_client_t *client,
-                     uint8_t        percentage);
-
-lash_client_t *
-lash_client_open_controller(void);
-
-/**
- * Set the controller callback function.
- */
-bool
-lash_set_control_callback(lash_client_t       *client,
-                          LashControlCallback  callback,
-                          void                *user_data);
-
-void
-lash_control_load_project_path(lash_client_t *client,
-                               const char    *project_path);
-
-void
-lash_control_name_project(lash_client_t *client,
-                          const char    *project_name,
-                          const char    *new_name);
-
-void
-lash_control_move_project(lash_client_t *client,
-                          const char    *project_name,
-                          const char    *new_path);
-
-void
-lash_control_save_project(lash_client_t *client,
-                          const char    *project_name);
-
-void
-lash_control_close_project(lash_client_t *client,
-                           const char    *project_name);
-
 
 /**
  * Extract lash-specific arguments from argc/argv.
@@ -253,6 +115,20 @@ lash_send_config(lash_client_t *client,
  */
 int
 lash_server_connected(lash_client_t *client);
+
+/**
+ * Tell the server the client's JACK client name.
+ */
+void
+lash_jack_client_name(lash_client_t *client,
+                      const char    *name);
+
+/**
+ * Tell the server the client's ALSA client ID.
+ */
+void
+lash_alsa_client_id(lash_client_t *client,
+                    unsigned char  id);
 
 #ifdef __cplusplus
 }

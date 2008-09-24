@@ -26,5 +26,6 @@
 #include <lash/config.h>
 #include <lash/protocol.h>
 #include <lash/client_interface.h>
+#include <lash/client_interface_new.h>
 
 #endif /* __LASH_H__ */
