@@ -1147,7 +1147,7 @@ void
 JackDriver::error_msg(const std::string& msg) const
 {
 #if defined(LOG_TO_STATUS)
-	_app->status_message((std::string)"[JACKDBUS] " + msg);
+	_app->status_msg((std::string)"[JACKDBUS] " + msg);
 #endif
 
 #if defined(LOG_TO_STD)
@@ -1160,7 +1160,7 @@ void
 JackDriver::info_msg(const std::string& msg) const
 {
 #if defined(LOG_TO_STATUS)
-	_app->status_message((std::string)"[JACKDBUS] " + msg);
+	_app->status_msg((std::string)"[JACKDBUS] " + msg);
 #endif
 
 #if defined(LOG_TO_STD)
