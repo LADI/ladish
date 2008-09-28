@@ -183,7 +183,7 @@ conforming to the 32bit IEEE-754 floating point specification.
     rdfs:label   "index" ;
     rdfs:comment """
 Specifies the index of the port, passed as an argument to the connect port
-function. This number uniqely identifies the port within the plugin.
+function. This number uniquely identifies the port within the plugin.
 
 The plugin author MUST change the plugin URI if a port index is changed.
 """ .
@@ -193,7 +193,7 @@ The plugin author MUST change the plugin URI if a port index is changed.
     rdfs:comment """
 A short name used as a machine and human readable identifier.
 
-The first character must be one of _, a-z or A-Z and subsequenct characters can
+The first character must be one of _, a-z or A-Z and subsequent characters can
 be from _, a-z, A-Z and 0-9.
 
 A language tag MUST NOT be used on this property.  The plugin author MUST change
