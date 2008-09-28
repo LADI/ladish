@@ -1,6 +1,7 @@
 /*
  *   LASH
  *
+ *   Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
  *   Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -28,6 +29,7 @@
 #include "dbus_iface_control.h"
 #include "common/debug.h"
 #include "dbus/object_path.h"
+#include "client.h"
 
 static DBusHandlerResult
 lashd_client_disconnect_handler(DBusConnection *conn,
@@ -124,9 +126,15 @@ lashd_client_disconnect_handler(DBusConnection *connection,
 
 	client = server_find_client_by_dbus_name(g_server, old_name);
 	if (client)
+	{
 		client_disconnected(client);
+		return DBUS_HANDLER_RESULT_HANDLED;
+	}
 
-	return DBUS_HANDLER_RESULT_HANDLED;
+	else
+	{
+		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+	}
 }
 
 /* EOF */
