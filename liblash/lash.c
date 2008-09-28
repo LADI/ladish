@@ -1028,11 +1028,27 @@ lash_init(const lash_args_t *args,
 	return lash_client_open(class, client_flags, args->argc, args->argv);
 }
 
+static lash_event_t * g_pending_event = NULL;
+
+static
+void
+lash_handle_pending_event(
+	lash_client_t *client)
+{
+	if (g_pending_event != NULL)
+	{
+		lash_error("Application didnt sent event of type %d back to LASH, trying to workaround", g_pending_event->type);
+		lash_send_event(client, g_pending_event);
+	}
+}
+
 unsigned int
 lash_get_pending_event_count(lash_client_t *client)
 {
 	if (!lash_enabled(client))
 		return 0;
+
+	lash_handle_pending_event(client);
 
 	lash_dispatch(client);
 
@@ -1056,6 +1072,8 @@ lash_get_event(lash_client_t *client)
 	if (!lash_enabled(client))
 		return NULL;
 
+	lash_handle_pending_event(client);
+
 	lash_event_t *event = NULL;
 
 	lash_dispatch_once(client);
@@ -1064,6 +1082,17 @@ lash_get_event(lash_client_t *client)
 		event = (lash_event_t *) client->events_in->data;
 		client->events_in = lash_list_remove(client->events_in, event);
 		--client->num_events_in;
+	}
+
+	if (event != NULL)
+	{
+		if (event->type == LASH_Save_File ||
+		    event->type == LASH_Restore_File ||
+		    event->type == LASH_Save_Data_Set ||
+		    event->type == LASH_Restore_Data_Set)
+		{
+			g_pending_event = event;
+		}
 	}
 
 	return event;
@@ -1092,6 +1121,11 @@ void
 lash_send_event(lash_client_t *client,
                 lash_event_t  *event)
 {
+	if (g_pending_event != NULL && event != NULL && g_pending_event->type == event->type)
+	{
+		g_pending_event = NULL;
+	}
+
 	if (!client || !event)
 		lash_error("Invalid arguments");
 	else if (lash_enabled(client) && event->ctor)
