@@ -453,9 +453,9 @@ void
 project_launch_client(project_t *project,
                       client_t  *client)
 {
-	lash_debug("Launching client %s", client->id_str);
+	lash_debug("Launching client %s (flags 0x%08X)", client->id_str, client->flags);
 
-	loader_execute(client, false);
+	loader_execute(client, client->flags & LASH_Terminal);
 
 	dbus_free_string_array(client->argv);
 	client->argv = NULL;
