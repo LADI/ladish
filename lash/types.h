@@ -54,6 +54,8 @@ enum LASH_Client_Flag
 
 enum LASH_Event_Type
 {
+  LASH_Event_Unknown = 0,
+
   /* for normal clients */
   LASH_Client_Name = 1,  /* set the client's user-visible name */
   LASH_Jack_Client_Name, /* tell the server what name the client is connected to jack with */

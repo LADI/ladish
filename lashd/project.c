@@ -46,6 +46,7 @@
 #include "file.h"
 #include "jack_patch.h"
 #include "server.h"
+#include "loader.h"
 #include "dbus_iface_control.h"
 #include "common/safety.h"
 #include "common/debug.h"
@@ -362,7 +363,6 @@ project_resume_client(project_t *project,
                       client_t  *client,
                       client_t  *lost_client)
 {
-	lash_event_t *event;
 	char *name;
 	bool stateless_client;
 
@@ -591,6 +591,7 @@ project_move(project_t  *project,
 	}
 }
 
+#if 0
 /* This is the handler to use when calling a client's Save method.
    At the moment it isn't used but it will be, so don't delete. */
 static void
@@ -626,6 +627,7 @@ project_save_client_handler(DBusPendingCall *pending,
 
 	dbus_pending_call_unref(pending);
 }
+#endif
 
 static __inline__ void
 project_save_clients(project_t *project)

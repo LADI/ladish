@@ -36,6 +36,7 @@
 #include "dbus/interface.h"
 #include "dbus/error.h"
 #include "lash/types.h"
+#include "store.h"
 
 static void
 lashd_dbus_ping(method_call_t *call)
@@ -274,6 +275,7 @@ lashd_dbus_get_alsa_id(method_call_t *call)
 	method_return_new_single(call, DBUS_TYPE_BYTE, &client->alsa_client_id);
 }
 
+#if 0
 static void
 lashd_dbus_save_project(method_call_t *call)
 {
@@ -315,6 +317,7 @@ lashd_dbus_close_project(method_call_t *call)
 
 	server_close_project(g_server, client->project);
 }
+#endif
 
 static bool
 check_tasks(method_call_t   *call,

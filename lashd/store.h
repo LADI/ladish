@@ -59,7 +59,7 @@ store_write(store_t *store);
 bool
 store_set_config(store_t    *store,
                  const char *key_name,
-                 void       *value,
+                 const void *value,
                  size_t      size,
                  int         type);
 

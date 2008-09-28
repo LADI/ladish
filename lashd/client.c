@@ -33,6 +33,8 @@
 #include "jack_patch.h"
 #include "alsa_patch.h"
 #include "store.h"
+#include "dbus_iface_control.h"
+#include "file.h"
 
 client_t *
 client_new(void)

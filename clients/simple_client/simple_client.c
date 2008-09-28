@@ -144,8 +144,7 @@ main(int argc, char **argv)
 					printf("%s: got config with key '%s', value_size %d\n",
 					       __FUNCTION__, lash_config_get_key(config),
 					       lash_config_get_value_size(config));
-					lash_config_free(config);
-					free(config);
+					lash_config_destroy(config);
 				}
 				lash_send_event(client, event);
 				break;

@@ -400,7 +400,6 @@ server_get_newborn_project(
 {
 	struct list_head * node_ptr;
 	project_t * project_ptr;
-	client_t * client_ptr;
 
 	project_ptr = NULL;
 

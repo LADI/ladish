@@ -544,7 +544,7 @@ lash_appdb_load_dir(
 fail_free_path:
 	free(directory_path);
 
-fail:
+//fail:
 	return ret;
 }
 

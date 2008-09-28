@@ -390,6 +390,7 @@ fail:
 	client->pending_task = 0;
 }
 
+#if 0
 static void
 lash_dbus_save_data_set(method_call_t *call)
 {
@@ -406,6 +407,7 @@ lash_dbus_save_data_set(method_call_t *call)
 
 	lash_new_save_data_set_task(client_ptr, task_id);
 }
+#endif
 
 static void
 lash_dbus_load_data_set(method_call_t *call)
@@ -517,7 +519,7 @@ void
 lash_new_quit_task(lash_client_t *client)
 {
 	if (client->pending_task)
-		lash_error("Warning: Task %llu is unfinished, quitting anyway");
+		lash_error("Warning: Task %llu is unfinished, quitting anyway", client->pending_task);
 
 	/* Check if a quit callback has been registered */
 	if (client->cb.quit) {

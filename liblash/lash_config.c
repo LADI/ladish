@@ -29,6 +29,8 @@
 
 #include "lash_config.h"
 
+#include "dbus/method.h"
+
 bool
 lash_config_write(lash_config_handle_t *handle,
                   const char           *key,

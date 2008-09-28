@@ -33,6 +33,8 @@
 #include "event.h"
 #include "client.h"
 
+#include "lash/client_interface.h"
+
 #define set_string_property(property, value) \
   do {                               \
     if (property)                    \
@@ -347,6 +349,8 @@ lash_event_get_type(const lash_event_t *event)
 {
 	if (event)
 		return event->type;
+
+	return LASH_Event_Unknown;
 }
 
 void
@@ -367,6 +371,8 @@ lash_event_get_string(const lash_event_t *event)
 {
 	if (event)
 		return event->string;
+
+	return NULL;
 }
 
 void
@@ -382,6 +388,8 @@ lash_event_get_project(const lash_event_t *event)
 {
 	if (event)
 		return event->project;
+
+	return NULL;
 }
 
 void
@@ -425,6 +433,8 @@ lash_event_get_alsa_client_id(const lash_event_t *event)
 {
 	if (event)
 		return lash_str_get_alsa_client_id(event->string);
+
+	return 0;
 }
 
 void

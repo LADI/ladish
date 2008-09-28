@@ -46,6 +46,9 @@
 #include "client.h"
 #include "lash_config.h"
 
+#include "dbus_iface_client.h"
+
+#if 0
 static void
 ping_handler(DBusPendingCall *pending,
              void            *data)
@@ -56,6 +59,7 @@ ping_handler(DBusPendingCall *pending,
 	dbus_pending_call_unref(pending);
 	fprintf(stderr, "Server replied: Pong!\n");
 }
+#endif
 
 static lash_client_t *
 lash_client_new_with_service(void)
@@ -113,7 +117,7 @@ lash_server_signal_handler(lash_client_t *client,
 			else if ((client->flags & LASH_Config_File))
 				lash_new_save_task(client, task_id);
 		} else {
-			lash_dbus_error("Task %llu is unfinished",
+			lash_error("Task %llu is unfinished",
 			                client->pending_task);
 		}
 
@@ -468,8 +472,7 @@ lash_client_open(const char  *class,
 	}
 
 	if (dbus_error_is_set(&err)) {
-		lash_error("Failed to add D-Bus match rule: %s"
-		           "%s", err.message);
+		lash_error("Failed to add D-Bus match rule: %s", err.message);
 		dbus_error_free(&err);
 		lash_client_destroy(client);
 		client = NULL;
@@ -1150,7 +1153,6 @@ lash_send_config(lash_client_t *client,
 		                      config->value, config->value_size);
 	}
 
-end:
 	lash_config_destroy(config);
 }
 

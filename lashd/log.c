@@ -129,7 +129,7 @@ void lash_log_init()
 free_log_dir:
 	free(lash_log_dir);
 
-free_log_home:
+//free_log_home:
 	free(xdg_log_home);
 
 exit:

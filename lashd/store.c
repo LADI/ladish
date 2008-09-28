@@ -19,6 +19,8 @@
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdint.h>
 #include <fcntl.h>
@@ -76,8 +78,6 @@ void
 store_destroy(store_t *store)
 {
 	if (store) {
-		struct list_head *node, *next;
-
 		lash_free(&store->dir);
 		store_destroy_key_list(&store->keys);
 		store_destroy_key_list(&store->removed_keys);
@@ -433,7 +433,7 @@ store_write(store_t *store)
 bool
 store_set_config(store_t    *store,
                  const char *key_name,
-                 void       *value,
+                 const void *value,
                  size_t      size,
                  int         type)
 {
