@@ -57,7 +57,6 @@ public:
 	}
 
 	size_t write_space() const {
-		
 		const size_t w = g_atomic_int_get(&_write_ptr);
 		const size_t r = g_atomic_int_get(&_read_ptr);
 		
@@ -71,7 +70,6 @@ public:
 	}
 	
 	size_t read_space() const {
-		
 		const size_t w = g_atomic_int_get(&_write_ptr);
 		const size_t r = g_atomic_int_get(&_read_ptr);
 		

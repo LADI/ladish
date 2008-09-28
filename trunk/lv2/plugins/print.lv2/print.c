@@ -56,7 +56,7 @@ osc_print_cleanup(LV2_Handle instance)
 }
 	
 
-static LV2BlockingContext osc_print_message_context_data;
+static LV2MessageContext osc_print_message_context_data;
 
 
 static const void*
@@ -84,7 +84,7 @@ osc_print_connect_port(LV2_Handle instance, uint32_t port, void* data)
 
 
 static bool
-osc_print_blocking_run(LV2_Handle instance, uint8_t* outputs_written)
+osc_print_message_run(LV2_Handle instance, uint32_t* outputs_written)
 {
 	Print* plugin = (Print*)instance;
 
@@ -127,8 +127,8 @@ init_descriptor()
 	osc_print_descriptor->run = NULL;
 	osc_print_descriptor->extension_data = osc_print_extension_data;
 
-	osc_print_message_context_data.blocking_run = osc_print_blocking_run;
-	osc_print_message_context_data.connect_port = NULL;
+	osc_print_message_context_data.message_run = osc_print_message_run;
+	osc_print_message_context_data.message_connect_port = NULL;
 }
 
 

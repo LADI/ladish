@@ -67,7 +67,16 @@ bang_ui_instantiate(const struct _LV2UI_Descriptor* descriptor,
 
 	return (LV2UI_Handle)ui;
 }
-
+  
+void
+bang_ui_port_event(LV2UI_Handle ui,
+                   uint32_t     port_index,
+                   uint32_t     buffer_size,
+                   uint32_t     format,
+                   const void*  buffer)
+{
+	printf("PORT EVENT!\n");
+}
 
 void
 bang_ui_cleanup(LV2UI_Handle ui)
@@ -90,7 +99,7 @@ init_descriptor()
 	bang_ui_descriptor->URI = "http://drobilla.net/lv2_plugins/dev/bang_ui";
 	bang_ui_descriptor->instantiate = bang_ui_instantiate;
 	bang_ui_descriptor->cleanup = bang_ui_cleanup;
-	bang_ui_descriptor->port_event = NULL;
+	bang_ui_descriptor->port_event = bang_ui_port_event;
 	bang_ui_descriptor->extension_data = NULL;
 }
 

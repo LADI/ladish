@@ -13,6 +13,7 @@ uninstall-hook:
 	rm -rf $(plugindir)/
 
 plugin_LTLIBRARIES = bang.la bang_ui.la
+
 bang_la_SOURCES = bang.c
 bang_la_LIBS = @LV2_OSC_LIBS@
 

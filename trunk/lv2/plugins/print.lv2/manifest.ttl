@@ -1,16 +1,9 @@
 @prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix lv2:     <http://lv2plug.in/ns/lv2core#> .
-@prefix guiext:  <http://ll-plugins.nongnu.org/lv2/ext/gui/dev/1#> .
 @prefix drobins: <http://drobilla.net/lv2_plugins/dev/> .
 
 drobins:print
-  a lv2:Plugin, lv2:UtilityPlugin ;
-  lv2:binary <print.so> ;
-  rdfs:seeAlso <print.ttl> ;
-  guiext:gui drobins:print_ui .
-
-drobins:print_ui
-  a guiext:GtkGUI ;
-  guiext:binary <print_ui.so> .
-
+	a lv2:Plugin, lv2:UtilityPlugin ;
+	lv2:binary <print.so> ;
+	rdfs:seeAlso <print.ttl> .
 

@@ -24,19 +24,19 @@
 #define LV2_CONTEXT_MESSAGE "http://lv2plug.in/ns/ext/context#MessageContext"
 
 #define LV2_CONTEXTS_SET_OUTPUT_WRITTEN(flags, index) \
-	(flags)[(index) / 8] |= 1 << ((index) % 8)
+	((uint8_t*)flags)[(index) / 8] |= 1 << ((index) % 8)
 
 #define LV2_CONTEXTS_UNSET_OUTPUT_WRITTEN(flags, index) \
-	(flags)[(index) / 8] &= ~(1 << ((index) % 8))
+	((uint8_t*)flags)[(index) / 8] &= ~(1 << ((index) % 8))
 
 #include "lv2.h"
 #include <stdbool.h>
 
 
 typedef struct {
-	bool (*blocking_run)(LV2_Handle instance, uint8_t* outputs_written);
-	void (*connect_port)(LV2_Handle instance, uint32_t port, void* data);
-} LV2BlockingContext;
+	bool (*message_run)(LV2_Handle instance, uint32_t* outputs_written);
+	void (*message_connect_port)(LV2_Handle instance, uint32_t port, void* data);
+} LV2MessageContext;
 
 
 #endif // LV2_CONTEXTS_H

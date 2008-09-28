@@ -56,10 +56,9 @@ bang_cleanup(LV2_Handle instance)
 }
 	
 
-//static LV2BlockingContext bang_message_context_data;
+static LV2MessageContext bang_message_context_data;
 
 
-#if 0
 static const void*
 bang_extension_data(const char* uri)
 {
@@ -69,7 +68,6 @@ bang_extension_data(const char* uri)
 		return NULL;
 	}
 }
-#endif
 
 
 static void
@@ -87,9 +85,9 @@ bang_connect_port(LV2_Handle instance, uint32_t port, void* data)
 	}
 }
 
-#if 0
+
 static bool
-bang_msg_run(LV2_Handle instance, uint8_t* outputs_written)
+bang_message_run(LV2_Handle instance, uint32_t* outputs_written)
 {
 	printf("BANG MESSAGE RUN\n");
 	/*
@@ -116,13 +114,12 @@ bang_msg_run(LV2_Handle instance, uint8_t* outputs_written)
 	*/
 	return false;
 }
-#endif
 
 	
 static void
 bang_run(LV2_Handle instance, uint32_t nframes)
 {
-	Bang* plugin = (Bang*)instance;
+	/*Bang* plugin = (Bang*)instance;
 
 	if (plugin->input_buffer && plugin->output_buffer) {
 		LV2_Event_Iterator in;
@@ -140,6 +137,7 @@ bang_run(LV2_Handle instance, uint32_t nframes)
 			lv2_event_increment(&in);
 		}
 	}
+	*/
 }
 
 /* Library */
@@ -160,10 +158,10 @@ init_descriptor()
 	bang_descriptor->deactivate = NULL;
 	bang_descriptor->instantiate = bang_instantiate;
 	bang_descriptor->run = bang_run;
-	bang_descriptor->extension_data = NULL; /*bang_extension_data;
+	bang_descriptor->extension_data = bang_extension_data;
 
-	bang_message_context_data.blocking_run = bang_blocking_run;
-	bang_message_context_data.connect_port = bang_blocking_connect_port;*/
+	bang_message_context_data.message_run = bang_message_run;
+	bang_message_context_data.message_connect_port = bang_connect_port;
 }
 
 
