@@ -119,8 +119,11 @@ bang_message_run(LV2_Handle instance, uint32_t* outputs_written)
 static void
 bang_run(LV2_Handle instance, uint32_t nframes)
 {
-	/*Bang* plugin = (Bang*)instance;
+	Bang* plugin = (Bang*)instance;
 
+	LV2_Event write_ev;
+	write_ev.type = 0xdead; // FIXME
+	write_ev.size = 0;
 	if (plugin->input_buffer && plugin->output_buffer) {
 		LV2_Event_Iterator in;
 		LV2_Event_Iterator out;
@@ -129,15 +132,16 @@ bang_run(LV2_Handle instance, uint32_t nframes)
 		lv2_event_begin(&in, plugin->input_buffer);
 		lv2_event_begin(&out, plugin->output_buffer);
 
-		// Copy input events directly to output
-		// FIXME: Not really what this plugin should do....
+		// Write a bang event out for every event received (with equal times)
 		while (lv2_event_is_valid(&in)) {
 			const LV2_Event* ev = lv2_event_get(&in, &data);
-			lv2_event_write_event(&out, ev, data);
+			printf("bang: Received event of type %u\n", ev->type);
+			write_ev.frames    = ev->frames;
+			write_ev.subframes = ev->subframes;
+			lv2_event_write_event(&out, &write_ev, NULL);
 			lv2_event_increment(&in);
 		}
 	}
-	*/
 }
 
 /* Library */

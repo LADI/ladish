@@ -84,7 +84,7 @@ typedef struct {
 	 * There are special rules which must be followed depending on the type
 	 * of an event.  If the plugin recognizes an event type, the definition
 	 * of that event type will describe how to interpret the event, and
-	 * any required behaviour.  Otherwise, if the type is 0,this event is a
+	 * any required behaviour.  Otherwise, if the type is 0, this event is a
 	 * non-POD event and lv2_event_unref MUST be called if the event is
 	 * 'dropped' (see above).  Even if the plugin does not understand an event,
 	 * it may pass the event through to an output by simply copying (and NOT

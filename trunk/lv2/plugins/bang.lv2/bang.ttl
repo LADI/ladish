@@ -1,5 +1,5 @@
 @prefix lv2:     <http://lv2plug.in/ns/lv2core#> .
-@prefix lv2ctx:  <http://drobilla.net/ns/lv2ext/contexts#> .
+@prefix lv2ctx:  <http://lv2plug.in/ns/dev/contexts#> .
 @prefix lv2ev:   <http://lv2plug.in/ns/ext/event#> .
 @prefix lv2ui:   <http://lv2plug.in/ns/extensions/ui#> .
 @prefix drobins: <http://drobilla.net/lv2_plugins/dev/> .
