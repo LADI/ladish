@@ -65,6 +65,7 @@ bang_extension_data(const char* uri)
 	if (!strcmp(uri, LV2_CONTEXT_MESSAGE)) {
 		return &bang_message_context_data;
 	} else {
+		printf("Bang: Unknown extension %s\n", uri);
 		return NULL;
 	}
 }
