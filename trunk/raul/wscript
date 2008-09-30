@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 import Params
+import autowaf
+
+# Version of this package (even if built as a child)
+RAUL_VERSION = '0.5.1'
 
 # Variables for 'waf dist'
-VERSION = '0.5.1'
 APPNAME = 'raul'
+VERSION = RAUL_VERSION
 
 # Mandatory variables
 srcdir = '.'
@@ -23,12 +27,14 @@ def configure(conf):
 		conf.check_pkg('jack', destvar='JACK', vnum='0.107.0', mandatory=True)
 
 def build(bld):
-	bld.add_subdirs('tests')
-	
-	# Headers (raul)
+	# Headers
 	install_files('PREFIX', 'include/raul', 'raul/*.hpp')
+	install_files('PREFIX', 'include/raul', 'raul/*.h')
 	
-	# Library (src)
+	# Pkgconfig file
+	autowaf.build_pc(bld, 'RAUL', RAUL_VERSION, 'GLIBMM GTHREAD JACK')
+	
+	# Library
 	obj = bld.create_obj('cpp', 'shlib')
 	obj.source = '''
 		src/Maid.cpp
@@ -43,3 +49,6 @@ def build(bld):
 	obj.target   = 'raul'
 	obj.uselib   = 'GLIBMM GTHREAD'
 	obj.vnum     = '1.0.0'
+	
+	# Unit tests
+	bld.add_subdirs('tests')

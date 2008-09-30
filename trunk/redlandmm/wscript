@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 import Params
+import autowaf
+
+# Version of this package (even if built as a child)
+REDLANDMM_VERSION = '0.0.0'
 
 # Variables for 'waf dist'
-VERSION = '0.0.0'
+VERSION = REDLANDMM_VERSION
 APPNAME = 'redlandmm'
 
 # Mandatory variables
@@ -23,10 +27,13 @@ def configure(conf):
 		conf.check_tool('compiler_cxx')
 
 def build(bld):
-	# Headers (redlandmm)
+	# Headers
 	install_files('PREFIX', 'include/redlandmm', 'redlandmm/*.hpp')
 	
-	# Library (src)
+	# Pkgconfig file
+	autowaf.build_pc(bld, 'REDLANDMM', REDLANDMM_VERSION, 'GLIBMM GTHREAD REDLAND')
+	
+	# Library
 	obj = bld.create_obj('cpp', 'shlib')
 	obj.source = '''
 		src/Model.cpp
@@ -41,7 +48,7 @@ def build(bld):
 	obj.uselib   = 'REDLAND GLIBMM GTHREAD'
 	obj.vnum     = '1.0.0'
 
-	# Test (test)
+	# Unit tests
 	obj = bld.create_obj('cpp', 'program')
 	obj.source       = 'tests/rdf_test.cpp'
 	obj.includes     = '..'

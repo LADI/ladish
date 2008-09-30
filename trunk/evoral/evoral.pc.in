@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: libslv2
+Version: @EVORAL_VERSION@
+Description: Sequencing library for musical events and controls (e.g. MIDI)
+Libs: @GLIBMM_LIBS@ @GTHREAD_LIBS@ -L${libdir} -levoral
+Cflags: @GLIBMM_CFLAGS@ @GTHREAD_CFLAGS@ -I${includedir}

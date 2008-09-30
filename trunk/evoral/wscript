@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 import Params
+import autowaf
+
+# Version of this package (even if built as a child)
+EVORAL_VERSION = '0.0.0'
 
 # Variables for 'waf dist'
-VERSION = '0.0.1'
 APPNAME = 'evoral'
+VERSION = EVORAL_VERSION
 
 # Mandatory variables
 srcdir = '.'
@@ -13,18 +17,22 @@ def set_options(opt):
 	opt.tool_options('compiler_cxx')
 
 def configure(conf):
+	if not conf.env['CXX']:
+		conf.check_tool('compiler_cxx')
 	if not conf.env['GLIBMM']:
 		conf.check_pkg('glibmm-2.4', destvar='GLIBMM', vnum='2.16.0', mandatory=True)
 	if not conf.env['GTHREAD']:
 		conf.check_pkg('gthread-2.0', destvar='GTHREAD', vnum='2.16.0', mandatory=True)
-	if not conf.env['CXX']:
-		conf.check_tool('compiler_cxx')
 
 def build(bld):
-	# Headers (evoral)
+	# Headers
+	install_files('PREFIX', 'include/evoral', 'evoral/*.h')
 	install_files('PREFIX', 'include/evoral', 'evoral/*.hpp')
 	
-	# Library (src)
+	# Pkgconfig file
+	autowaf.build_pc(bld, 'EVORAL', EVORAL_VERSION, 'GLIBMM GTHREAD')
+	
+	# Library
 	obj = bld.create_obj('cpp', 'shlib')
 	obj.source = '''
 		src/Control.cpp
@@ -44,8 +52,8 @@ def build(bld):
 	obj.uselib   = 'GLIBMM GTHREAD'
 	obj.vnum     = '0.0.0'
 	
-	# Test (test)
-	obj = bld.create_obj('cpp', 'program')
+	# Unit tests
+	obj              = bld.create_obj('cpp', 'program')
 	obj.source       = 'test/sequence.cpp'
 	obj.includes     = '..'
 	obj.uselib_local = 'libevoral'
