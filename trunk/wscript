@@ -17,7 +17,7 @@ def set_options(opt):
 def configure(conf):
 	conf.sub_config('lv2core')
 	conf.env['HAVE_LV2CORE'] = True
-	conf.env.append_value('CCFLAGS_LV2CORE', '-I/home/dave/files/code/lad/trunk/lv2core')
+	conf.env.append_value('CCFLAGS_LV2CORE', '-I' + srcdir + '/lv2core')
 	
 	conf.sub_config('slv2')
 	conf.sub_config('evoral')
