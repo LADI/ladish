@@ -47,6 +47,6 @@ def build(bld):
 	obj.includes = '..'
 	obj.name     = 'libflowcanvas'
 	obj.target   = 'flowcanvas'
-	obj.uselib   = 'GTKMM GNOMECANVASMM'
+	obj.uselib   = 'GTKMM GNOMECANVASMM AGRAPH'
 	obj.vnum     = '1.0.0'
 
