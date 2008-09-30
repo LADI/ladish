@@ -1,0 +1,23 @@
+#!/usr/bin/env python
+import Params
+
+# Variables for 'waf dist'
+VERSION='0.0.1'
+APPNAME='drobillad'
+
+# Mandatory variables
+srcdir = '.'
+blddir = 'build'
+
+def set_options(opt):
+	opt.tool_options('compiler_cxx')
+	opt.tool_options('compiler_cc')
+
+def configure(conf):
+	conf.sub_config('evoral')
+	conf.sub_config('raul')
+	conf.sub_config('flowcanvas')
+
+def build(bld):
+	bld.add_subdirs('raul evoral flowcanvas')
+
