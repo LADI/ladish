@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 import Params
+import autowaf
+
+# Version of this package (even if built as a child)
+LV2CORE_VERSION = '2.0'
 
 # Variables for 'waf dist'
 VERSION = '2.0'
-APPNAME = 'lv2core'
+VERSION = LV2CORE_VERSION
 
 # Mandatory variables
 srcdir = '.'
@@ -14,13 +18,16 @@ def set_options(opt):
 			help="Bundle install directory [Default: PREFIX/lib/lv2]")
 
 def configure(conf):
-	return
+	autowaf.configure(conf)
 
 def build(bld):
 	# Header
 	install_files('PREFIX', 'include', 'lv2.h')
+	
+	# Pkgconfig file
+	autowaf.build_pc(bld, 'LV2CORE', LV2CORE_VERSION, [])
 
-	# Bundle
+	# Bundle (data)
 	dir = Params.g_options.bundle_dir
 	if dir == None:
 		dir = bld.env()['PREFIX'] + 'lib/lv2'

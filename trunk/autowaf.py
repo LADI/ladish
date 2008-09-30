@@ -2,6 +2,9 @@
 # Waf utilities for easily building standard unixey packages/libraries
 # Coyright (C) 2008 Dave Robillard (see COPYING file for details)
 
+def configure(conf):
+	conf.check_tool('misc')
+
 def link_flags(env, lib):
 	return ' '.join(map(lambda x: env['LIB_ST'] % x, env['LIB_' + lib]))
 
