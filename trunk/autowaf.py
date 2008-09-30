@@ -12,6 +12,11 @@ def compile_flags(env, lib):
 	return ' '.join(map(lambda x: env['CPPPATH_ST'] % x, env['CPPPATH_' + lib]))
 
 def build_pc(bld, name, version, libs):
+	'''Build a pkg-config file for a library.
+	name    -- uppercase variable name     (e.g. 'SOMENAME')
+	version -- version string              (e.g. '1.2.3')
+	libs    -- string/list of dependencies (e.g. 'LIBFOO GLIB')
+	'''
 	obj          = bld.create_obj('subst')
 	obj.source   = name.lower() + '.pc.in'
 	obj.target   = name.lower() + '.pc'
