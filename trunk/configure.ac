@@ -31,13 +31,24 @@ AC_SUBST(SLV2_VERSION)
 # Redlandmm
 AC_CONFIG_SRCDIR([redlandmm/redlandmm/Model.h])
 AC_CONFIG_SRCDIR([redlandmm/src/Model.cpp])
+REDLANDMM_VERSION="0.0.0"
+REDLANDMM_API_CURRENT="0"
+REDLANDMM_API_REVISION="0"
+REDLANDMM_API_AGE="0"
+
+AC_SUBST(REDLANDMM_API_CURRENT)
+AC_SUBST(REDLANDMM_API_REVISION)
+AC_SUBST(REDLANDMM_API_AGE)
+REDLANDMM_SO_VERSION="${REDLANDMM_API_CURRENT}:${REDLANDMM_API_REVISION}:${REDLANDMM_API_AGE}"
+AC_SUBST(REDLANDMM_SO_VERSION)
+AC_SUBST(REDLANDMM_VERSION)
 
 # Raul
 AC_CONFIG_SRCDIR([raul/raul/Semaphore.h])
 
 # See raul/configure.ac for versioning info/history
-RAUL_VERSION="0.5.0"
-RAUL_API_CURRENT="0"
+RAUL_VERSION="0.5.1"
+RAUL_API_CURRENT="2"
 RAUL_API_REVISION="0"
 RAUL_API_AGE="0"
 
@@ -53,8 +64,8 @@ AC_CONFIG_SRCDIR([flowcanvas/src/Canvas.cpp])
 AC_CONFIG_SRCDIR([flowcanvas/flowcanvas/Canvas.hpp])
 
 # See flowcanvas/configure.ac for versioning info/history
-FLOWCANVAS_VERSION="0.5.0"
-FLOWCANVAS_API_CURRENT="1"
+FLOWCANVAS_VERSION="0.5.1"
+FLOWCANVAS_API_CURRENT="2"
 FLOWCANVAS_API_REVISION="0"
 FLOWCANVAS_API_AGE="0"
 
@@ -72,15 +83,15 @@ AC_CONFIG_SRCDIR([src/main.cpp])
 AC_CONFIG_SRCDIR([omins/src/hz_voct_4200.c])
 
 # Ingen
+AC_CONFIG_SRCDIR([ingen/src/client/OSCController.cpp])
 AC_CONFIG_SRCDIR([ingen/src/common/interface/EngineInterface.hpp])
 AC_CONFIG_SRCDIR([ingen/src/common/lv2ext/lv2-miditype.h])
-AC_CONFIG_SRCDIR([ingen/src/libs/module/Module.cpp])
-AC_CONFIG_SRCDIR([ingen/src/libs/shared/LV2URIMap.cpp])
-AC_CONFIG_SRCDIR([ingen/src/libs/engine/JackAudioDriver.cpp])
-AC_CONFIG_SRCDIR([ingen/src/libs/serialisation/Loader.cpp])
-AC_CONFIG_SRCDIR([ingen/src/libs/client/OSCController.cpp])
-AC_CONFIG_SRCDIR([ingen/src/libs/gui/App.cpp])
-AC_CONFIG_SRCDIR([ingen/src/progs/ingen/main.cpp])
+AC_CONFIG_SRCDIR([ingen/src/engine/JackAudioDriver.cpp])
+AC_CONFIG_SRCDIR([ingen/src/gui/App.cpp])
+AC_CONFIG_SRCDIR([ingen/src/ingen/main.cpp])
+AC_CONFIG_SRCDIR([ingen/src/module/Module.cpp])
+AC_CONFIG_SRCDIR([ingen/src/serialisation/Loader.cpp])
+AC_CONFIG_SRCDIR([ingen/src/shared/LV2URIMap.cpp])
 
 # Machina
 AC_CONFIG_SRCDIR([machina/src/main.cpp])
@@ -143,6 +154,7 @@ else
 fi
 AM_CONDITIONAL(WITH_REDLAND, [test "$build_redland" = "yes"])
 
+REDLAND_
 REDLANDMM_CFLAGS="$REDLAND_CFLAGS -I$abs_srcdir/redlandmm"
 REDLANDMM_LIBS="$REDLAND_LIBS $builddir/redlandmm/src/.libs/libredlandmm.la"
 REDLANDMM_SRCDIR="$abs_srcdir/redlandmm"
@@ -712,27 +724,26 @@ AC_CONFIG_FILES([patchage/src/Makefile])
 
 # Ingen
 AC_CONFIG_FILES([ingen/Makefile])
+AC_CONFIG_FILES([ingen/doc/Doxyfile])
+AC_CONFIG_FILES([ingen/patches/Makefile])
 AC_CONFIG_FILES([ingen/src/Makefile])
+AC_CONFIG_FILES([ingen/src/bindings/Makefile])
+AC_CONFIG_FILES([ingen/src/client/Makefile])
 AC_CONFIG_FILES([ingen/src/common/Makefile])
 AC_CONFIG_FILES([ingen/src/common/interface/Makefile])
 AC_CONFIG_FILES([ingen/src/common/lv2ext/Makefile])
-AC_CONFIG_FILES([ingen/src/libs/Makefile])
-AC_CONFIG_FILES([ingen/src/libs/module/Makefile])
-AC_CONFIG_FILES([ingen/src/libs/shared/Makefile])
-AC_CONFIG_FILES([ingen/src/libs/engine/Makefile])
-AC_CONFIG_FILES([ingen/src/libs/engine/events/Makefile])
-AC_CONFIG_FILES([ingen/src/libs/serialisation/Makefile])
-AC_CONFIG_FILES([ingen/src/libs/client/Makefile])
-AC_CONFIG_FILES([ingen/src/libs/gui/Makefile])
-AC_CONFIG_FILES([ingen/src/bindings/Makefile])
-AC_CONFIG_FILES([ingen/src/progs/Makefile])
-AC_CONFIG_FILES([ingen/src/progs/ingen/Makefile])
-AC_CONFIG_FILES([ingen/src/progs/supercollider/Makefile])
-AC_CONFIG_FILES([ingen/src/progs/python/Makefile])
-AC_CONFIG_FILES([ingen/src/progs/python/scripts/Makefile])
-AC_CONFIG_FILES([ingen/src/progs/ingen/ingen.desktop])
-AC_CONFIG_FILES([ingen/patches/Makefile])
-AC_CONFIG_FILES([ingen/doc/Doxyfile])
+AC_CONFIG_FILES([ingen/src/engine/Makefile])
+AC_CONFIG_FILES([ingen/src/engine/events/Makefile])
+AC_CONFIG_FILES([ingen/src/gui/Makefile])
+AC_CONFIG_FILES([ingen/src/ingen/Makefile])
+AC_CONFIG_FILES([ingen/src/ingen/ingen.desktop])
+AC_CONFIG_FILES([ingen/src/module/Makefile])
+AC_CONFIG_FILES([ingen/src/scripts/Makefile])
+AC_CONFIG_FILES([ingen/src/scripts/python/Makefile])
+AC_CONFIG_FILES([ingen/src/scripts/python/scripts/Makefile])
+AC_CONFIG_FILES([ingen/src/scripts/supercollider/Makefile])
+AC_CONFIG_FILES([ingen/src/serialisation/Makefile])
+AC_CONFIG_FILES([ingen/src/shared/Makefile])
 
 # Machina
 AC_CONFIG_FILES([machina/Makefile])

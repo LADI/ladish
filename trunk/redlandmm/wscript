@@ -2,7 +2,7 @@
 import Params
 
 # Variables for 'waf dist'
-VERSION = 'svn'
+VERSION = '0.0.0'
 APPNAME = 'redlandmm'
 
 # Mandatory variables

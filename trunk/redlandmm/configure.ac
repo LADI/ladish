@@ -1,5 +1,5 @@
 AC_PREREQ(2.59)
-AC_INIT([redlandmm],[svn],[dave@drobilla.net])
+AC_INIT([redlandmm],[0.0.0],[dave@drobilla.net])
 
 AC_CONFIG_AUX_DIR([config])
 
@@ -13,6 +13,11 @@ AC_CONFIG_SRCDIR([src/Model.cpp])
 AC_CONFIG_HEADER([config/config.h])
 
 AM_INIT_AUTOMAKE
+
+REDLANDMM_VERSION="0.0.0"
+REDLANDMM_API_CURRENT="0"
+REDLANDMM_API_REVISION="0"
+REDLANDMM_API_AGE="0"
 
 #################### ENVIRONMENT
 
