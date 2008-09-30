@@ -2,6 +2,8 @@
 # Waf utilities for easily building standard unixey packages/libraries
 # Coyright (C) 2008 Dave Robillard (see COPYING file for details)
 
+import misc
+
 def configure(conf):
 	conf.check_tool('misc')
 

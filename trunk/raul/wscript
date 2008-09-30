@@ -44,10 +44,12 @@ def build(bld):
 		src/Symbol.cpp
 		src/Thread.cpp
 	'''
+	if bld.env()['HAVE_JACK']:
+		obj.source += ' src/JackDriver.cpp '
 	obj.includes = '..'
 	obj.name     = 'libraul'
 	obj.target   = 'raul'
-	obj.uselib   = 'GLIBMM GTHREAD'
+	obj.uselib   = 'GLIBMM GTHREAD JACK'
 	obj.vnum     = '1.0.0'
 	
 	# Unit tests
