@@ -14,7 +14,6 @@ def build(bld):
 		smf_test 
 		table_test
 	'''
-
 	for i in tests.split():
 		obj = bld.create_obj('cpp', 'program')
 		obj.source       = i + '.cpp'
