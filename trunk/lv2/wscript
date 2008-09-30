@@ -29,9 +29,15 @@ def configure(conf):
 def build_plugin(bld, lang, name):
 	bundle_path = 'lib/lv2/' + name + '.lv2'
 
+	pat = bld.env()['shlib_PATTERN']
+	ext = pat[pat.rfind('.'):]
+	penv = bld.env().copy()
+	penv['shlib_PATTERN'] = '%s' + ext
+
 	# Library
 	ext = 'c' if lang == 'cc' else lang
 	obj          = bld.create_obj(lang, 'shlib')
+	obj.env      = penv
 	obj.source   = 'plugins/%s.lv2/%s.%s' % (name, name, ext)
 	obj.includes = '.'
 	obj.name     = name
