@@ -1,1 +1,1 @@
-SUBDIRS = lv2 plugins
+SUBDIRS = ext plugins
