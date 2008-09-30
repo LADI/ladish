@@ -19,8 +19,8 @@
 #include <string.h>
 #include <assert.h>
 #include <gtk/gtk.h>
-#include "lv2/ui/lv2_ui.h"
-#include "lv2/osc/lv2_osc.h"
+#include "ext/ui/lv2_ui.h"
+#include "ext/osc/lv2_osc.h"
 
 /* UI */
 

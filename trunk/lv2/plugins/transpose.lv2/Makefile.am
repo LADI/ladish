@@ -12,5 +12,5 @@ uninstall-hook:
 
 plugin_LTLIBRARIES = transpose.la
 transpose_la_SOURCES = transpose.cpp
-transpose_la_SOURCES += ../../lv2/lv2plugin.cpp
+transpose_la_SOURCES += ../../ext/lv2plugin.cpp
 

@@ -100,7 +100,7 @@ AC_CONFIG_SRCDIR([machina/src/engine/machina/Machine.hpp])
 AC_CONFIG_SRCDIR([machina/src/gui/main.cpp])
 
 # LV2 stuff
-AC_CONFIG_SRCDIR([lv2/lv2/osc/lv2_osc.h])
+AC_CONFIG_SRCDIR([lv2/ext/osc/lv2_osc.h])
 
 # LV2 plugin install
 AC_MSG_CHECKING([where to install LV2 plugins])
@@ -186,8 +186,8 @@ DROBINS_SRCDIR="$abs_srcdir/lv2"
 AC_SUBST(DROBINS_CFLAGS)
 AC_SUBST(DROBINS_SRCDIR)
 
-LV2_OSC_CFLAGS="$LV2CORE_CFLAGS -I$abs_srcdir/lv2 -I$abs_srcdir/lv2/lv2/event"
-LV2_OSC_LIBS="$builddir/lv2/lv2/osc/.libs/liblv2_osc.la"
+LV2_OSC_CFLAGS="$LV2CORE_CFLAGS -I$abs_srcdir/lv2 -I$abs_srcdir/lv2/ext/event"
+LV2_OSC_LIBS="$builddir/lv2/ext/osc/.libs/liblv2_osc.la"
 AC_SUBST(LV2_OSC_CFLAGS)
 AC_SUBST(LV2_OSC_LIBS)
 
@@ -661,20 +661,20 @@ AC_CONFIG_FILES([slv2/utils/Makefile])
 
 # LV2 Stuff
 AC_CONFIG_FILES([lv2/Makefile])
-AC_CONFIG_FILES([lv2/lv2/Makefile])
-AC_CONFIG_FILES([lv2/lv2/contexts/Makefile])
-AC_CONFIG_FILES([lv2/lv2/data_access/Makefile])
-AC_CONFIG_FILES([lv2/lv2/event/Makefile])
-AC_CONFIG_FILES([lv2/lv2/event/lv2_event.pc])
-AC_CONFIG_FILES([lv2/lv2/instance_access/Makefile])
-AC_CONFIG_FILES([lv2/lv2/midi/Makefile])
-AC_CONFIG_FILES([lv2/lv2/object/Makefile])
-AC_CONFIG_FILES([lv2/lv2/osc/Makefile])
-AC_CONFIG_FILES([lv2/lv2/osc/lv2_osc.pc])
-AC_CONFIG_FILES([lv2/lv2/polymorphic_port/Makefile])
-AC_CONFIG_FILES([lv2/lv2/ui/Makefile])
-AC_CONFIG_FILES([lv2/lv2/uri_map/Makefile])
-AC_CONFIG_FILES([lv2/lv2/variables/Makefile])
+AC_CONFIG_FILES([lv2/ext/Makefile])
+AC_CONFIG_FILES([lv2/ext/contexts/Makefile])
+AC_CONFIG_FILES([lv2/ext/data_access/Makefile])
+AC_CONFIG_FILES([lv2/ext/event/Makefile])
+AC_CONFIG_FILES([lv2/ext/event/lv2_event.pc])
+AC_CONFIG_FILES([lv2/ext/instance_access/Makefile])
+AC_CONFIG_FILES([lv2/ext/midi/Makefile])
+AC_CONFIG_FILES([lv2/ext/object/Makefile])
+AC_CONFIG_FILES([lv2/ext/osc/Makefile])
+AC_CONFIG_FILES([lv2/ext/osc/lv2_osc.pc])
+AC_CONFIG_FILES([lv2/ext/polymorphic_port/Makefile])
+AC_CONFIG_FILES([lv2/ext/ui/Makefile])
+AC_CONFIG_FILES([lv2/ext/uri_map/Makefile])
+AC_CONFIG_FILES([lv2/ext/variables/Makefile])
 AC_CONFIG_FILES([lv2/plugins/Makefile])
 AC_CONFIG_FILES([lv2/plugins/bang.lv2/Makefile])
 AC_CONFIG_FILES([lv2/plugins/metro.lv2/Makefile])
