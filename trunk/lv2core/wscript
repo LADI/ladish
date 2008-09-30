@@ -1,0 +1,28 @@
+#!/usr/bin/env python
+import Params
+
+# Variables for 'waf dist'
+VERSION = '2.0'
+APPNAME = 'lv2core'
+
+# Mandatory variables
+srcdir = '.'
+blddir = 'build'
+
+def configure(conf):
+	return
+
+def set_options(opt):
+    opt.add_option('--bundle-dir', type='string', dest='bundle_dir',
+			help="Bundle install directory [Default: PREFIX/lib/lv2]")
+
+def build(bld):
+	# Header
+	install_files('PREFIX', 'include', 'lv2.h')
+
+	# Bundle
+	dir = Params.g_options.bundle_dir
+	if dir == None:
+		dir = bld.env()['PREFIX'] + 'lib/lv2'
+	install_files(dir, 'lv2core.lv2', 'lv2core.lv2/lv2.ttl lv2core.lv2/manifest.ttl')
+

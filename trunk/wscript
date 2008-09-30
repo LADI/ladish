@@ -12,14 +12,19 @@ blddir = 'build'
 def set_options(opt):
 	opt.tool_options('compiler_cxx')
 	opt.tool_options('compiler_cc')
+	opt.sub_options('lv2core')
 
 def configure(conf):
+	conf.sub_config('lv2core')
+	conf.env['HAVE_LV2CORE'] = True
+	conf.env.append_value('CCFLAGS_LV2CORE', '-I/home/dave/files/code/lad/trunk/lv2core')
+	
+	conf.sub_config('slv2')
 	conf.sub_config('evoral')
 	conf.sub_config('raul')
 	conf.sub_config('flowcanvas')
 	conf.sub_config('redlandmm')
-	conf.sub_config('slv2')
 
 def build(bld):
-	bld.add_subdirs('raul evoral flowcanvas redlandmm slv2')
+	bld.add_subdirs('raul evoral flowcanvas redlandmm lv2core slv2')
 
