@@ -19,6 +19,7 @@ def set_options(opt):
 	opt.tool_options('compiler_cxx')
 	opt.tool_options('compiler_cc')
 	opt.sub_options('lv2core')
+	opt.sub_options('lv2')
 	opt.sub_options('slv2')
 	opt.sub_options('evoral')
 	opt.sub_options('raul')
@@ -39,6 +40,7 @@ def sub_config_and_use(conf, name, library = True):
 
 def configure(conf):
 	sub_config_and_use(conf, 'lv2core', False)
+	sub_config_and_use(conf, 'lv2', False)
 	sub_config_and_use(conf, 'slv2')
 	sub_config_and_use(conf, 'evoral')
 	sub_config_and_use(conf, 'raul')
@@ -47,5 +49,5 @@ def configure(conf):
 	sub_config_and_use(conf, 'ingen', False)
 
 def build(bld):
-	bld.add_subdirs('lv2core slv2 evoral raul flowcanvas redlandmm ingen')
+	bld.add_subdirs('lv2core lv2 slv2 evoral raul flowcanvas redlandmm ingen')
 

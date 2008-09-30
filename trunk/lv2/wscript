@@ -1,0 +1,70 @@
+#!/usr/bin/env python
+import Params
+import autowaf
+
+# Version of this package (even if built as a child)
+LV2EXT_VERSION = '0.0.0'
+
+# Variables for 'waf dist'
+APPNAME = 'lv2ext'
+VERSION = LV2EXT_VERSION
+
+# Mandatory variables
+srcdir = '.'
+blddir = 'build'
+
+def set_options(opt):
+	opt.tool_options('compiler_cc')
+	opt.tool_options('compiler_cxx')
+
+def configure(conf):
+	if not conf.env['CC']:
+		conf.check_tool('compiler_cc')
+	if not conf.env['CXX']:
+		conf.check_tool('compiler_cxx')
+	if not conf.env['HAVE_LV2CORE']:
+		conf.check_pkg('lv2core', destvar='LV2CORE', vnum='1', mandatory=True)
+	conf.env.append_value('CCFLAGS', '-std=c99')
+		
+def build_plugin(bld, lang, name):
+	# Library
+	obj = bld.create_obj(lang, 'shlib')
+	ext = 'c' if lang == 'cc' else lang
+	obj.source   = 'plugins/%s.lv2/%s.%s' % (name, name, ext)
+	obj.includes = '.'
+	obj.name     = name
+	obj.target   = name
+
+def build(bld):
+	# LV2 extensions
+	extensions = '''
+		contexts
+		data_access
+		event
+		instance_access
+		midi
+		object
+		osc
+		polymorphic_port
+		ui
+		uri_map
+		variables
+	'''
+	# These don't need to be installed, but the option might be nice...
+	#for i in extensions.split():
+	#	install_files('PREFIX', 'include/lv2/ext', 'ext/%s/lv2_%s*.h' % (i, i))
+
+	# LV2 plugins
+	c_plugins = '''
+		print
+		metro
+		bang
+	'''
+	for i in c_plugins.split():
+		build_plugin(bld, 'cc', i)
+	
+	cpp_plugins = '''
+		transpose
+	'''
+	for i in cpp_plugins.split():
+		build_plugin(bld, 'cpp', i)
