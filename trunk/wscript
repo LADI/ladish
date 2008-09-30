@@ -47,9 +47,5 @@ def configure(conf):
 	sub_config_and_use(conf, 'ingen', False)
 
 def build(bld):
-	print bld.get_curdir()
-#	if lib:
-#		conf.env.append_value('LINKFLAGS_' + tok,
-#				'-LXXXXXXXXXXXXXXXX' + absblddir + '/' + name + ' -l' + name)
 	bld.add_subdirs('lv2core slv2 evoral raul flowcanvas redlandmm ingen')
 
