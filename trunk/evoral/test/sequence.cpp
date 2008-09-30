@@ -1,4 +1,5 @@
 #include <evoral/Sequence.hpp>
+#include <evoral/TypeMap.hpp>
 
 using namespace Evoral;
 
@@ -7,6 +8,7 @@ main()
 {
 	Glib::thread_init();
 
-	Sequence s(100);
+	//TypeMap tm;
+	//Sequence s(tm, 100);
 	return 0;
 }
