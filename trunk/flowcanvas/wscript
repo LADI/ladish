@@ -2,8 +2,8 @@
 import Params
 
 # Variables for 'waf dist'
-VERSION='0.5.2'
-APPNAME='flowcanvas'
+VERSION = '0.5.2'
+APPNAME = 'flowcanvas'
 
 # Mandatory variables
 srcdir = '.'
@@ -18,14 +18,14 @@ def configure(conf):
 		conf.check_tool('compiler_cc')
 	if not conf.env['CXX']:
 		conf.check_tool('compiler_cxx')
-	conf.check_header('boost/shared_ptr.hpp')
-	conf.check_header('boost/weak_ptr.hpp')
 	if not conf.env['GNOMECANVASMM']:
 		conf.check_pkg('libgnomecanvasmm-2.6', destvar='GNOMECANVASMM', vnum='2.6.0', mandatory=True)
 	if not conf.env['GLIBMM']:
 		conf.check_pkg('gtkmm-2.4', destvar='GLIBMM', vnum='2.10.0', mandatory=True)
 	if not conf.env['AGRAPH']:
 		conf.check_pkg('libgvc', destvar='AGRAPH', vnum='2.8', mandatory=False)
+	conf.check_header('boost/shared_ptr.hpp')
+	conf.check_header('boost/weak_ptr.hpp')
 	conf.write_config_header('waf-config.h')
 	conf.env.append_value('CXXFLAGS', '-DCONFIG_H_PATH=\\\"waf-config.h\\\"')
 
@@ -35,7 +35,7 @@ def build(bld):
 	
 	# Library (src)
 	obj = bld.create_obj('cpp', 'shlib')
-	obj.source='''
+	obj.source = '''
 		src/Canvas.cpp 
 		src/Connectable.cpp 
 		src/Connection.cpp 
@@ -49,5 +49,4 @@ def build(bld):
 	obj.target   = 'flowcanvas'
 	obj.uselib   = 'GTKMM GNOMECANVASMM'
 	obj.vnum     = '1.0.0'
-
 

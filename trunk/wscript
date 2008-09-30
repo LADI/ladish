@@ -2,8 +2,8 @@
 import Params
 
 # Variables for 'waf dist'
-VERSION='0.0.1'
-APPNAME='drobillad'
+VERSION = '0.0.1'
+APPNAME = 'drobillad'
 
 # Mandatory variables
 srcdir = '.'
@@ -17,7 +17,8 @@ def configure(conf):
 	conf.sub_config('evoral')
 	conf.sub_config('raul')
 	conf.sub_config('flowcanvas')
+	conf.sub_config('redlandmm')
 
 def build(bld):
-	bld.add_subdirs('raul evoral flowcanvas')
+	bld.add_subdirs('raul evoral flowcanvas redlandmm')
 
