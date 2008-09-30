@@ -18,7 +18,8 @@ def configure(conf):
 	conf.sub_config('raul')
 	conf.sub_config('flowcanvas')
 	conf.sub_config('redlandmm')
+	conf.sub_config('slv2')
 
 def build(bld):
-	bld.add_subdirs('raul evoral flowcanvas redlandmm')
+	bld.add_subdirs('raul evoral flowcanvas redlandmm slv2')
 
