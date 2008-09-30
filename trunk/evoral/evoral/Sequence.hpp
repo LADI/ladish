@@ -25,46 +25,45 @@
 #include <map>
 #include <utility>
 #include <boost/shared_ptr.hpp>
-#include <boost/utility.hpp>
 #include <glibmm/thread.h>
 #include <evoral/types.hpp>
 #include <evoral/Note.hpp>
 #include <evoral/Parameter.hpp>
 #include <evoral/ControlSet.hpp>
+#include <evoral/ControlList.hpp>
 
 namespace Evoral {
 
+class TypeMap;
 class EventSink;
 class Note;
 class Event;
-class ControlList;
 
-/** This class keeps track of the current x and y for a control
+/** An iterator over (the x axis of) a 2-d double coordinate space.
  */
 class ControlIterator {
 public:
+	ControlIterator(boost::shared_ptr<const ControlList> al, double ax, double ay)
+		: list(al)
+		, x(ax)
+		, y(ay)
+	{}
+
 	boost::shared_ptr<const ControlList> list;
 	double x;
 	double y;
-	
-	ControlIterator(boost::shared_ptr<const ControlList> a_list,
-			double a_x,
-			double a_y)
-		: list(a_list)
-		, x(a_x)
-		, y(a_y)
-	{}
 };
 
 
 /** This is a higher level view of events, with separate representations for
  * notes (instead of just unassociated note on/off events) and controller data.
- * Controller data is represented as a list of time-stamped float values.
- */
-class Sequence : public boost::noncopyable, virtual public ControlSet {
+ * Controller data is represented as a list of time-stamped float values. */
+class Sequence : virtual public ControlSet {
 public:
-	Sequence(size_t size);
+	Sequence(const TypeMap& type_map, size_t size=0);
 	
+	bool read_locked() { return _read_iter.locked(); }
+
 	void write_lock();
 	void write_unlock();
 
@@ -92,10 +91,10 @@ public:
 	inline const boost::shared_ptr<Note>       note_at(unsigned i)       { return _notes[i]; }
 
 	inline size_t n_notes() const { return _notes.size(); }
-	inline bool   empty()   const { return _notes.size() == 0 && _controls.size() == 0; }
+	inline bool   empty()   const { return _notes.size() == 0 && ControlSet::empty(); }
 
-	inline static bool note_time_comparator(const boost::shared_ptr<const Note> a,
-	                                        const boost::shared_ptr<const Note> b) { 
+	inline static bool note_time_comparator(const boost::shared_ptr<const Note>& a,
+	                                        const boost::shared_ptr<const Note>& b) { 
 		return a->time() < b->time();
 	}
 
@@ -114,9 +113,10 @@ public:
 	/** Read iterator */
 	class const_iterator {
 	public:
-		const_iterator(const Sequence& seq, double t);
+		const_iterator(const Sequence& seq, EventTime t);
 		~const_iterator();
 
+		inline bool valid() const { return !_is_end && _event; }
 		inline bool locked() const { return _locked; }
 
 		const Event& operator*()  const { return *_event;  }
@@ -142,47 +142,53 @@ public:
 		
 		mutable ActiveNotes _active_notes;
 
-		bool                                   _is_end;
-		bool                                   _locked;
-		Notes::const_iterator                  _note_iter;
-		std::vector<ControlIterator>           _control_iters;
-		std::vector<ControlIterator>::iterator _control_iter;
+		typedef std::vector<ControlIterator> ControlIterators;
+
+		bool                       _is_end;
+		bool                       _locked;
+		Notes::const_iterator      _note_iter;
+		ControlIterators           _control_iters;
+		ControlIterators::iterator _control_iter;
 	};
 	
-	const_iterator        begin() const { return const_iterator(*this, 0); }
-	const const_iterator& end()   const { return _end_iter; }
+	const_iterator        begin(EventTime t=0) const { return const_iterator(*this, t); }
+	const const_iterator& end()                const { return _end_iter; }
 	
+	void      read_seek(EventTime t) { _read_iter = begin(t); }
+	EventTime read_time() const      { return _read_iter.valid() ? _read_iter->time() : 0.0; }
+
 	bool control_to_midi_event(boost::shared_ptr<Event>& ev,
 	                           const ControlIterator&    iter) const;
 	
-	typedef std::map< Parameter, boost::shared_ptr<Control> > Controls;
-	Controls&       controls()       { return _controls; }
-	const Controls& controls() const { return _controls; }
-	
 	bool edited() const      { return _edited; }
 	void set_edited(bool yn) { _edited = yn; }
-	
-protected:
-	void add_note_unlocked(const boost::shared_ptr<Note> note);
-	void remove_note_unlocked(const boost::shared_ptr<const Note> note);
-	
-	mutable const_iterator _read_iter;
-	bool                   _edited;
+
 #ifndef NDEBUG
 	bool is_sorted() const;
 #endif
+	
+	void add_note_unlocked(const boost::shared_ptr<Note> note);
+	void remove_note_unlocked(const boost::shared_ptr<const Note> note);
+	
+	uint8_t lowest_note()  const { return _lowest_note; }
+	uint8_t highest_note() const { return _highest_note; }
+	
+protected:
+	mutable const_iterator _read_iter;
+	bool                   _edited;
 
 private:
 	friend class const_iterator;
 	
-	void append_note_on_unlocked(uint8_t chan, double time, uint8_t note, uint8_t velocity);
-	void append_note_off_unlocked(uint8_t chan, double time, uint8_t note);
-	void append_control_unlocked(const Parameter& param, double time, double value);
+	void append_note_on_unlocked(uint8_t chan, EventTime time, uint8_t note, uint8_t velocity);
+	void append_note_off_unlocked(uint8_t chan, EventTime time, uint8_t note);
+	void append_control_unlocked(const Parameter& param, EventTime time, double value);
 
 	mutable Glib::RWLock _lock;
 
-	Notes    _notes;
-	Controls _controls;
+	const TypeMap& _type_map;
+	
+	Notes _notes;
 	
 	typedef std::vector<size_t> WriteNotes;
 	WriteNotes _write_notes[16];
@@ -195,19 +201,15 @@ private:
 	mutable nframes_t      _next_read;
 	bool                   _percussive;
 
-	/** FIXME: Make fully dynamic, map to URIs */
-	enum EventTypes {
-		midi_cc_type=1,
-		midi_pc_type,
-		midi_pb_type,
-		midi_ca_type
-	};
+	uint8_t _lowest_note;
+	uint8_t _highest_note;
 
 	typedef std::priority_queue<
 			boost::shared_ptr<Note>, std::deque< boost::shared_ptr<Note> >,
 			LaterNoteEndComparator>
 		ActiveNotes;
 };
+
 
 } // namespace Evoral
 

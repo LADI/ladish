@@ -109,14 +109,12 @@ ControlList::~ControlList()
 		delete (*x);
 	}
 }
-	
 
 boost::shared_ptr<ControlList>
 ControlList::create(Parameter id)
 {
 	return boost::shared_ptr<ControlList>(new ControlList(id));
 }
-
 
 bool
 ControlList::operator== (const ControlList& other)
@@ -205,7 +203,7 @@ ControlList::reposition_for_rt_add (double when)
 void
 ControlList::rt_add (double when, double value)
 {
-	// cerr << "RT: alist @ " << this << " add " << value << " @ " << when << endl;
+	//cerr << "RT: alist " << this << " add " << value << " @ " << when << endl;
 
 	{
 		Glib::Mutex::Lock lm (_lock);
@@ -638,6 +636,8 @@ ControlList::truncate_end (double last_coordinate)
 			   beyond the new last coordinate.
 			*/
 
+			// FIXME: SLOW! (size() == O(n))
+
 			uint32_t sz = _events.size();
 			
 			while (i != _events.rend() && sz > 2) {
@@ -777,7 +777,10 @@ ControlList::unlocked_eval (double x) const
 	double lval, uval;
 	double fraction;
 
-	npoints = _events.size();
+	const_iterator length_check_iter = _events.begin();
+	for (npoints = 0; npoints < 4; ++npoints, ++length_check_iter)
+		if (length_check_iter == _events.end())
+			break;
 
 	switch (npoints) {
 	case 0:
@@ -1024,9 +1027,10 @@ ControlList::rt_safe_earliest_event_linear_unlocked (double start, double end, d
 {
 	//cerr << "earliest_event(" << start << ", " << end << ", " << x << ", " << y << ", " << inclusive << endl;
 
-	if (_events.size() == 0)
+	const_iterator length_check_iter = _events.begin();
+	if (_events.empty()) // 0 events
 		return false;
-	else if (_events.size() == 1)
+	else if (_events.end() == ++length_check_iter) // 1 event
 		return rt_safe_earliest_event_discrete_unlocked(start, end, x, y, inclusive);
 
 	// Hack to avoid infinitely repeating the same event
@@ -1038,6 +1042,10 @@ ControlList::rt_safe_earliest_event_linear_unlocked (double start, double end, d
 
 		const ControlEvent* first = NULL;
 		const ControlEvent* next = NULL;
+
+		/* No events past start (maybe?) */
+		if (next && next->when < start)
+			return false;
 
 		/* Step is after first */
 		if (range.first == _events.begin() || (*range.first)->when == start) {
@@ -1060,10 +1068,11 @@ ControlList::rt_safe_earliest_event_linear_unlocked (double start, double end, d
 			 * (Optimize for immediate call this cycle within range) */
 			_search_cache.left = x;
 			//++_search_cache.range.first;
+			assert(inclusive ? x >= start : x > start);
 			return true;
 		}
 			
-		if (abs(first->value - next->value) <= 1) {
+		if (fabs(first->value - next->value) <= 1) {
 			if (next->when <= end && (!inclusive || next->when > start)) {
 				x = next->when;
 				y = next->value;
@@ -1071,6 +1080,7 @@ ControlList::rt_safe_earliest_event_linear_unlocked (double start, double end, d
 				 * (Optimize for immediate call this cycle within range) */
 				_search_cache.left = x;
 				//++_search_cache.range.first;
+				assert(inclusive ? x >= start : x > start);
 				return true;
 			} else {
 				return false;
@@ -1113,9 +1123,8 @@ ControlList::rt_safe_earliest_event_linear_unlocked (double start, double end, d
 			/* Move left of cache to this point
 			 * (Optimize for immediate call this cycle within range) */
 			_search_cache.left = x;
-
+			assert(inclusive ? x >= start : x > start);
 			return true;
-
 		} else {
 			return false;
 		}
