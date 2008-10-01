@@ -49,9 +49,11 @@ public:
 #ifdef HAVE_ALSA
 	AlsaDriver*   alsa_driver()   const { return _alsa_driver; }
 #endif
-#ifdef HAVE_DBUS
-	LashProxy*   lash_proxy()     const { return _lash_proxy; }
-	DBus*        dbus()           const { return _dbus; }
+#if defined(HAVE_LASH) || defined(HAVE_JACK_DBUS)
+	DBus*         dbus()          const { return _dbus; }
+#endif
+#ifdef HAVE_LASH
+	LashProxy*    lash_proxy()    const { return _lash_proxy; }
 	
 	void show_load_project_dialog();
 	void set_lash_available(bool available);
@@ -97,9 +99,12 @@ protected:
 	
 	Glib::RefPtr<Gnome::Glade::Xml> _xml;
 
-#ifdef HAVE_DBUS
+#if defined(HAVE_LASH) || defined(HAVE_JACK_DBUS)
+	DBus* _dbus;
+#endif
+
+#ifdef HAVE_LASH
 	LashProxy*   _lash_proxy;
-	DBus*        _dbus;
 	ProjectList* _project_list;
 	Session*     _session;
 #endif

@@ -24,6 +24,7 @@ def set_options(opt):
 	opt.sub_options('evoral')
 	opt.sub_options('raul')
 	opt.sub_options('flowcanvas')
+	opt.sub_options('patchage')
 	opt.sub_options('redlandmm')
 	opt.sub_options('ingen')
 
@@ -45,9 +46,10 @@ def configure(conf):
 	sub_config_and_use(conf, 'evoral')
 	sub_config_and_use(conf, 'raul')
 	sub_config_and_use(conf, 'flowcanvas')
+	sub_config_and_use(conf, 'patchage')
 	sub_config_and_use(conf, 'redlandmm')
 	sub_config_and_use(conf, 'ingen', False)
 
 def build(bld):
-	bld.add_subdirs('lv2core lv2 slv2 evoral raul flowcanvas redlandmm ingen')
+	bld.add_subdirs('lv2core lv2 slv2 evoral raul flowcanvas patchage redlandmm ingen')
 
