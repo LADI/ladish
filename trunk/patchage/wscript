@@ -64,8 +64,9 @@ def configure(conf):
 	conf.env['HAVE_JACK_DBUS'] = conf.env['HAVE_DBUS'] and not Params.g_options.no_jack_dbus
 	if conf.env['HAVE_JACK_DBUS']:
 		conf.define('HAVE_JACK_DBUS', True)
-	elif not conf.env['HAVE_JACK']:
-		conf.check_pkg('jack', destvar='JACK', vnum='0.107.0', mandatory=False)
+	else:
+		if not conf.env['HAVE_JACK']:
+			conf.check_pkg('jack', destvar='JACK', vnum='0.107.0', mandatory=False)
 		conf.define('USE_LIBJACK', conf.env['HAVE_JACK'])
 
 	# Use Alsa if present unless --no-alsa
@@ -97,6 +98,7 @@ def configure(conf):
 	conf.write_config_header('waf-config.h')
 	
 	print
+	print 'Patchage Configuration:'
 	display_msg("Install prefix", conf.env['PREFIX'], 'CYAN')
 	display_msg("Install name", "'" + conf.env['APP_INSTALL_NAME'] + "'", 'CYAN')
 	display_msg("App human name", "'" + conf.env['APP_HUMAN_NAME'] + "'", 'CYAN')
