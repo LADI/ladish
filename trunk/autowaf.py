@@ -5,6 +5,8 @@
 import os
 import misc
 
+g_is_child = False
+
 def configure(conf):
 	conf.check_tool('misc')
 
@@ -13,6 +15,14 @@ def link_flags(env, lib):
 
 def compile_flags(env, lib):
 	return ' '.join(map(lambda x: env['CPPPATH_ST'] % x, env['CPPPATH_' + lib]))
+
+def set_recursive():
+	global g_is_child
+	g_is_child = True
+
+def is_child():
+	global g_is_child
+	return g_is_child
 
 # Pkg-config file
 def build_pc(bld, name, version, libs):
@@ -44,10 +54,15 @@ def build_dox(bld, name, version, srcdir, blddir):
 	obj = bld.create_obj('subst')
 	obj.source = 'doc/reference.doxygen.in'
 	obj.target = 'doc/reference.doxygen'
-	doc_dir = blddir + '/default/' + name.lower() + '/doc'
+	if is_child():
+		src_dir = srcdir + '/' + name.lower()
+		doc_dir = blddir + '/default/' + name.lower() + '/doc'
+	else:
+		src_dir = srcdir
+		doc_dir = blddir + '/default/doc'
 	obj.dict = {
 		name + '_VERSION' : version,
-		name + '_SRCDIR'  : os.path.abspath(srcdir) + '/' + name.lower(),
+		name + '_SRCDIR'  : os.path.abspath(src_dir),
 		name + '_DOC_DIR' : os.path.abspath(doc_dir)
 	}
 	obj.inst_var = 0
@@ -55,7 +70,6 @@ def build_dox(bld, name, version, srcdir, blddir):
 	out1.stdout = '/doc/doxygen.out'
 	out1.stdin = '/doc/reference.doxygen' # whatever..
 	out1.command = 'doxygen'
-	#out1.argv = [os.path.abspath(blddir) + '/default/doc/reference.doxygen']
 	out1.argv = [os.path.abspath(doc_dir) + '/reference.doxygen']
 	out1.command_is_external = True
 

@@ -2,6 +2,7 @@
 import string
 import os
 import Params
+import autowaf
 
 # Variables for 'waf dist'
 VERSION = '0.0.1'
@@ -40,6 +41,7 @@ def sub_config_and_use(conf, name, library = True):
 		conf.env.append_value('LINKFLAGS', '-L' + absblddir + '/default/' + name)
 
 def configure(conf):
+	autowaf.set_recursive()
 	sub_config_and_use(conf, 'lv2core', False)
 	sub_config_and_use(conf, 'lv2', False)
 	sub_config_and_use(conf, 'slv2')
@@ -51,5 +53,6 @@ def configure(conf):
 	sub_config_and_use(conf, 'ingen', False)
 
 def build(bld):
+	autowaf.set_recursive()
 	bld.add_subdirs('lv2core lv2 slv2 evoral raul flowcanvas patchage redlandmm ingen')
 
