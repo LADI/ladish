@@ -21,7 +21,7 @@
 #include "Patchage.hpp"
 #if defined(HAVE_JACK_DBUS)
 #include "JackDbusDriver.hpp"
-#elif defined(HAVE_JACK)
+#elif defined(USE_LIBJACK)
 #include "JackDriver.hpp"
 #endif
 #include "PatchageModule.hpp"
@@ -70,7 +70,7 @@ PatchageCanvas::find_port(const PortID& id)
 	string       module_name;
 	string       port_name;
 
-#if defined(HAVE_JACK) || defined(HAVE_JACK_DBUS)
+#if defined(USE_LIBJACK) || defined(HAVE_JACK_DBUS)
 	jack_port_t* jack_port = NULL;
 #endif
 	
@@ -79,7 +79,7 @@ PatchageCanvas::find_port(const PortID& id)
 
 	// TODO: filthy.  keep a port map and make this O(log(n))
 	switch (id.type) {
-#if defined(HAVE_JACK) && !defined(HAVE_JACK_DBUS)
+#if defined(USE_LIBJACK) && !defined(HAVE_JACK_DBUS)
 	case PortID::JACK_ID:
 		jack_port = jack_port_by_id(_app->jack_driver()->client(), id.id.jack_id);
 		if (!jack_port)
@@ -145,7 +145,7 @@ PatchageCanvas::connect(boost::shared_ptr<Connectable> port1, boost::shared_ptr<
 
 	if ((p1->type() == JACK_AUDIO && p2->type() == JACK_AUDIO)
 			|| ((p1->type() == JACK_MIDI && p2->type() == JACK_MIDI))) {
-#if defined(HAVE_JACK) || defined(HAVE_JACK_DBUS)
+#if defined(USE_LIBJACK) || defined(HAVE_JACK_DBUS)
 		_app->jack_driver()->connect(p1, p2);
 #endif
 #ifdef HAVE_ALSA
@@ -183,7 +183,7 @@ PatchageCanvas::disconnect(boost::shared_ptr<Connectable> port1, boost::shared_p
 	
 	if ((input->type() == JACK_AUDIO && output->type() == JACK_AUDIO)
 			|| (input->type() == JACK_MIDI && output->type() == JACK_MIDI)) {
-#if defined(HAVE_JACK) || defined(HAVE_JACK_DBUS)
+#if defined(USE_LIBJACK) || defined(HAVE_JACK_DBUS)
 		_app->jack_driver()->disconnect(output, input);
 #endif
 #ifdef HAVE_ALSA
