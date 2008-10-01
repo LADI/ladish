@@ -5,9 +5,19 @@ import autowaf
 # Version of this package (even if built as a child)
 FLOWCANVAS_VERSION = '0.5.2'
 
+# Library version (UNIX style major, minor, micro)
+# major increment <=> incompatible changes
+# minor increment <=> compatible changes (additions)
+# micro increment <=> no interface changes
+# Version history:
+#   0.4.0 = 0,0,0
+#   0.5.0 = 1,0,0
+#   0.5.1 = 2,0,0
+FLOWCANVAS_LIB_VERSION = '2.0.0'
+
 # Variables for 'waf dist'
-VERSION = FLOWCANVAS_VERSION
 APPNAME = 'flowcanvas'
+VERSION = FLOWCANVAS_VERSION
 
 # Mandatory variables
 srcdir = '.'
@@ -56,5 +66,9 @@ def build(bld):
 	obj.name     = 'libflowcanvas'
 	obj.target   = 'flowcanvas'
 	obj.uselib   = 'GTKMM GNOMECANVASMM AGRAPH'
-	obj.vnum     = '1.0.0'
+	obj.vnum     = FLOWCANVAS_LIB_VERSION
+	
+	# Documentation
+	autowaf.build_dox(bld, 'FLOWCANVAS', FLOWCANVAS_VERSION, srcdir, blddir)
+	install_files('PREFIX', 'share/doc/flowcanvas', blddir + '/default/doc/html/*')
 

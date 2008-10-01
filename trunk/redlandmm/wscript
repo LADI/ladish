@@ -48,7 +48,7 @@ def build(bld):
 	obj.name     = 'libredlandmm'
 	obj.target   = 'redlandmm'
 	obj.uselib   = 'REDLAND GLIBMM GTHREAD'
-	obj.vnum     = '1.0.0'
+	obj.vnum     = REDLANDMM_LIB_VERSION
 
 	# Unit tests
 	obj = bld.create_obj('cpp', 'program')

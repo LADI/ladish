@@ -5,6 +5,14 @@ import autowaf
 # Version of this package (even if built as a child)
 EVORAL_VERSION = '0.0.0'
 
+# Library version (UNIX style major, minor, micro)
+# major increment <=> incompatible changes
+# minor increment <=> compatible changes (additions)
+# micro increment <=> no interface changes
+# Version history:
+#   0.0.0 = 0,0,0
+EVORAL_LIB_VERSION = '0.0.0'
+
 # Variables for 'waf dist'
 APPNAME = 'evoral'
 VERSION = EVORAL_VERSION
@@ -50,7 +58,7 @@ def build(bld):
 	obj.name     = 'libevoral'
 	obj.target   = 'evoral'
 	obj.uselib   = 'GLIBMM GTHREAD'
-	obj.vnum     = '0.0.0'
+	obj.vnum     = EVORAL_LIB_VERSION
 	
 	# Unit tests
 	obj              = bld.create_obj('cpp', 'program')

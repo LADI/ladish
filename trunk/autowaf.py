@@ -44,17 +44,19 @@ def build_dox(bld, name, version, srcdir, blddir):
 	obj = bld.create_obj('subst')
 	obj.source = 'doc/reference.doxygen.in'
 	obj.target = 'doc/reference.doxygen'
+	doc_dir = blddir + '/default/' + name.lower() + '/doc'
 	obj.dict = {
 		name + '_VERSION' : version,
-		name + '_SRCDIR'  : os.path.abspath(srcdir),
-		name + '_DOC_DIR' : os.path.abspath(blddir + '/default/doc')
+		name + '_SRCDIR'  : os.path.abspath(srcdir) + '/' + name.lower(),
+		name + '_DOC_DIR' : os.path.abspath(doc_dir)
 	}
 	obj.inst_var = 0
 	out1 = bld.create_obj('command-output')
 	out1.stdout = '/doc/doxygen.out'
 	out1.stdin = '/doc/reference.doxygen' # whatever..
 	out1.command = 'doxygen'
-	out1.argv = [os.path.abspath(blddir) + '/default/doc/reference.doxygen']
+	#out1.argv = [os.path.abspath(blddir) + '/default/doc/reference.doxygen']
+	out1.argv = [os.path.abspath(doc_dir) + '/reference.doxygen']
 	out1.command_is_external = True
 
 
