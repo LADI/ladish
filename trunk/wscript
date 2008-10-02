@@ -53,7 +53,6 @@ def configure(conf):
 	sub_config_and_use(conf, 'patchage')
 	sub_config_and_use(conf, 'redlandmm')
 	sub_config_and_use(conf, 'ingen', False)
-	autowaf.print_summary(conf)
 
 def build(bld):
 	autowaf.set_recursive()

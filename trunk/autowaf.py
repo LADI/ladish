@@ -8,6 +8,7 @@ import misc
 import Params
 import Configure
 
+Configure.g_maxlen = 55
 g_is_child = False
 
 # Only run autowaf hooks once (even if sub projects call several times)
