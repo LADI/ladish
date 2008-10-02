@@ -35,12 +35,8 @@ def configure(conf):
 		conf.check_pkg('glibmm-2.4', destvar='GLIBMM', vnum='2.16.0', mandatory=True)
 	if not conf.env['HAVE_GTHREAD']:
 		conf.check_pkg('gthread-2.0', destvar='GTHREAD', vnum='2.16.0', mandatory=True)
-	if not conf.env['HAVE_JACK']:
-		conf.check_pkg('jack', destvar='JACK', vnum='0.107.0', mandatory=False)
 	
 	autowaf.print_summary(conf)
-	autowaf.display_header('Raul Configuration')
-	autowaf.display_msg("Jack", str(bool(conf.env['HAVE_JACK'])), 'YELLOW')
 	print
 
 def build(bld):
@@ -49,7 +45,7 @@ def build(bld):
 	install_files('PREFIX', 'include/raul', 'raul/*.h')
 	
 	# Pkgconfig file
-	autowaf.build_pc(bld, 'RAUL', RAUL_VERSION, 'GLIBMM GTHREAD JACK')
+	autowaf.build_pc(bld, 'RAUL', RAUL_VERSION, 'GLIBMM GTHREAD')
 	
 	# Library
 	obj = bld.create_obj('cpp', 'shlib')
@@ -61,12 +57,10 @@ def build(bld):
 		src/Symbol.cpp
 		src/Thread.cpp
 	'''
-	if bld.env()['HAVE_JACK']:
-		obj.source += ' src/JackDriver.cpp '
 	obj.includes = '..'
 	obj.name     = 'libraul'
 	obj.target   = 'raul'
-	obj.uselib   = 'GLIBMM GTHREAD JACK'
+	obj.uselib   = 'GLIBMM GTHREAD'
 	obj.vnum     = RAUL_LIB_VERSION
 	
 	# Unit tests
