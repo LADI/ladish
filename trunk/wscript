@@ -17,6 +17,7 @@ abssrcdir = os.path.abspath(srcdir)
 absblddir = os.path.abspath(blddir)
 
 def set_options(opt):
+	autowaf.set_options(opt)
 	opt.tool_options('compiler_cxx')
 	opt.tool_options('compiler_cc')
 	opt.sub_options('lv2core')
@@ -42,6 +43,7 @@ def sub_config_and_use(conf, name, library = True):
 
 def configure(conf):
 	autowaf.set_recursive()
+	autowaf.configure(conf)
 	sub_config_and_use(conf, 'lv2core', False)
 	sub_config_and_use(conf, 'lv2', False)
 	sub_config_and_use(conf, 'slv2')
@@ -51,6 +53,7 @@ def configure(conf):
 	sub_config_and_use(conf, 'patchage')
 	sub_config_and_use(conf, 'redlandmm')
 	sub_config_and_use(conf, 'ingen', False)
+	autowaf.print_summary(conf)
 
 def build(bld):
 	autowaf.set_recursive()

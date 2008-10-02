@@ -1,14 +1,39 @@
 #!/usr/bin/env python
 # Waf utilities for easily building standard unixey packages/libraries
 # Coyright (C) 2008 Dave Robillard (see COPYING file for details)
+# Copyright (C) 2008 Nedko Arnaudov (FIXME: verify license)
 
 import os
 import misc
+import Params
+from Configure import g_maxlen
 
 g_is_child = False
 
+def set_options(opt):
+	opt.add_option('--build-docs', action='store_true', default=False, dest='build_docs',
+			help="Build documentation - requires doxygen [Default: False]")
+	opt.tool_options('compiler_cxx')
+
 def configure(conf):
 	conf.check_tool('misc')
+	conf.env['BUILD_DOCS'] = Params.g_options.build_docs
+	
+def display_msg(msg, status = None, color = None):
+	global g_maxlen
+	g_maxlen = max(g_maxlen, len(msg))
+	if status:
+		print "%s :" % msg.ljust(g_maxlen),
+		Params.pprint(color, status)
+	else:
+		print "%s" % msg.ljust(g_maxlen)
+
+def print_summary(conf):
+	print
+	print "Global configuration:"
+	display_msg("Install prefix", conf.env['PREFIX'], 'CYAN')
+	display_msg("Build documentation", str(Params.g_options.build_docs), 'CYAN')
+	print
 
 def link_flags(env, lib):
 	return ' '.join(map(lambda x: env['LIB_ST'] % x, env['LIB_' + lib]))
@@ -51,6 +76,8 @@ def build_pc(bld, name, version, libs):
 
 # Doxygen API documentation
 def build_dox(bld, name, version, srcdir, blddir):
+	if not Params.g_options.build_docs:
+		return
 	obj = bld.create_obj('subst')
 	obj.source = 'doc/reference.doxygen.in'
 	obj.target = 'doc/reference.doxygen'
