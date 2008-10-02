@@ -6,7 +6,7 @@
 import os
 import misc
 import Params
-from Configure import g_maxlen
+import Configure
 
 g_is_child = False
 
@@ -20,13 +20,12 @@ def configure(conf):
 	conf.env['BUILD_DOCS'] = Params.g_options.build_docs
 	
 def display_msg(msg, status = None, color = None):
-	global g_maxlen
-	g_maxlen = max(g_maxlen, len(msg))
+	Configure.g_maxlen = max(Configure.g_maxlen, len(msg))
 	if status:
-		print "%s :" % msg.ljust(g_maxlen),
+		print "%s :" % msg.ljust(Configure.g_maxlen),
 		Params.pprint(color, status)
 	else:
-		print "%s" % msg.ljust(g_maxlen)
+		print "%s" % msg.ljust(Configure.g_maxlen)
 
 def print_summary(conf):
 	print
