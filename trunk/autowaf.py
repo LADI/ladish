@@ -48,7 +48,7 @@ def configure(conf):
 	g_step = 2
 	
 def display_header(title):
-	print "=", title, "="
+	Params.pprint('BOLD', title)
 
 def display_msg(msg, status = None, color = None):
 	Configure.g_maxlen = max(Configure.g_maxlen, len(msg))
@@ -65,7 +65,7 @@ def print_summary(conf):
 		return
 	e = conf.env
 	print
-	print "= Global configuration ="
+	display_header('Global configuration')
 	display_msg("Install prefix", conf.env['PREFIX'], 'CYAN')
 	display_msg("Debuggable build", str(conf.env['DEBUG']), 'YELLOW')
 	display_msg("Build documentation", str(Params.g_options.build_docs), 'YELLOW')
