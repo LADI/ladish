@@ -50,7 +50,7 @@ def configure(conf):
 	conf.env['ANTI_ALIAS'] = bool(Params.g_options.anti_alias)
 	
 	autowaf.print_summary(conf)
-	print '= FlowCanvas Configuration ='
+	autowaf.display_header('FlowCanvas Configuration')
 	autowaf.display_msg("Auto-arrange", str(bool(conf.env['HAVE_AGRAPH'])), 'YELLOW')
 	autowaf.display_msg("Anti-Aliasing", str(bool(conf.env['ANTI_ALIAS'])), 'YELLOW')
 	print

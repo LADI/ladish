@@ -47,6 +47,9 @@ def configure(conf):
 	append_cxx_flags('-DCONFIG_H_PATH=\\\"waf-config.h\\\"')
 	g_step = 2
 	
+def display_header(title):
+	print "=", title, "="
+
 def display_msg(msg, status = None, color = None):
 	Configure.g_maxlen = max(Configure.g_maxlen, len(msg))
 	if status:

@@ -39,7 +39,7 @@ def configure(conf):
 		conf.check_pkg('jack', destvar='JACK', vnum='0.107.0', mandatory=False)
 	
 	autowaf.print_summary(conf)
-	print '= Raul Configuration ='
+	autowaf.display_header('Raul Configuration')
 	autowaf.display_msg("Jack", str(bool(conf.env['HAVE_JACK'])), 'YELLOW')
 	print
 

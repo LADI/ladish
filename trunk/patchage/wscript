@@ -91,7 +91,7 @@ def configure(conf):
 	conf.write_config_header('waf-config.h')
 	
 	autowaf.print_summary(conf)
-	print '= Patchage Configuration ='
+	autowaf.display_header('Patchage Configuration')
 	autowaf.display_msg("Install name", "'" + conf.env['APP_INSTALL_NAME'] + "'", 'CYAN')
 	autowaf.display_msg("App human name", "'" + conf.env['APP_HUMAN_NAME'] + "'", 'CYAN')
 	autowaf.display_msg("Jack (D-Bus)", str(bool(conf.env['HAVE_JACK_DBUS'])), 'YELLOW')
