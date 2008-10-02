@@ -24,9 +24,11 @@ srcdir = '.'
 blddir = 'build'
 
 def set_options(opt):
+	autowaf.set_options(opt)
 	opt.tool_options('compiler_cxx')
 
 def configure(conf):
+	autowaf.configure(conf)
 	if not conf.env['CXX']:
 		conf.check_tool('compiler_cxx')
 	if not conf.env['HAVE_GLIBMM']:
@@ -34,7 +36,12 @@ def configure(conf):
 	if not conf.env['HAVE_GTHREAD']:
 		conf.check_pkg('gthread-2.0', destvar='GTHREAD', vnum='2.16.0', mandatory=True)
 	if not conf.env['HAVE_JACK']:
-		conf.check_pkg('jack', destvar='JACK', vnum='0.107.0', mandatory=True)
+		conf.check_pkg('jack', destvar='JACK', vnum='0.107.0', mandatory=False)
+	
+	autowaf.print_summary(conf)
+	print '= Raul Configuration ='
+	autowaf.display_msg("Jack", str(bool(conf.env['HAVE_JACK'])), 'YELLOW')
+	print
 
 def build(bld):
 	# Headers

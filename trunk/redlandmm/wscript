@@ -16,9 +16,11 @@ srcdir = '.'
 blddir = 'build'
 
 def set_options(opt):
+	autowaf.set_options(opt)
 	opt.tool_options('compiler_cxx')
 
 def configure(conf):
+	autowaf.configure(conf)
 	if not conf.env['HAVE_GLIBMM']:
 		conf.check_pkg('glibmm-2.4', destvar='GLIBMM', vnum='2.16.0', mandatory=True)
 	if not conf.env['HAVE_GTHREAD']:

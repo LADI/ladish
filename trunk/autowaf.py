@@ -10,14 +10,41 @@ import Configure
 
 g_is_child = False
 
+# Only run autowaf hooks once (even if sub projects call several times)
+global g_step
+g_step = 0
+
 def set_options(opt):
+	global g_step
+	if g_step > 0:
+		return
 	opt.add_option('--build-docs', action='store_true', default=False, dest='build_docs',
 			help="Build documentation - requires doxygen [Default: False]")
+	opt.add_option('--debug', action='store_true', default=False, dest='debug',
+			help="Build debuggable binaries [Default: False]")
+	opt.add_option('--strict', action='store_true', default=False, dest='strict',
+			help="Use strict compiler flags and show all warnings [Default: False]")
 	opt.tool_options('compiler_cxx')
+	g_step = 1
 
 def configure(conf):
+	global g_step
+	if g_step > 1:
+		return
+	e = conf.env
+	def append_cxx_flags(val):
+		e.append_value('CCFLAGS', val)
+		e.append_value('CXXFLAGS', val)
 	conf.check_tool('misc')
 	conf.env['BUILD_DOCS'] = Params.g_options.build_docs
+	conf.env['DEBUG'] = Params.g_options.debug
+	if Params.g_options.debug:
+		e['CCFLAGS'] = '-O0 -g -std=c99'
+		e['CXXFLAGS'] = '-O0 -g'
+	if Params.g_options.strict:
+		append_cxx_flags('-Wall') # evoral currently -pedantic broken
+	append_cxx_flags('-DCONFIG_H_PATH=\\\"waf-config.h\\\"')
+	g_step = 2
 	
 def display_msg(msg, status = None, color = None):
 	Configure.g_maxlen = max(Configure.g_maxlen, len(msg))
@@ -28,11 +55,18 @@ def display_msg(msg, status = None, color = None):
 		print "%s" % msg.ljust(Configure.g_maxlen)
 
 def print_summary(conf):
+	global g_step
+	if g_step > 2:
+		print
+		return
+	e = conf.env
 	print
-	print "Global configuration:"
+	print "= Global configuration ="
 	display_msg("Install prefix", conf.env['PREFIX'], 'CYAN')
-	display_msg("Build documentation", str(Params.g_options.build_docs), 'CYAN')
+	display_msg("Debuggable build", str(conf.env['DEBUG']), 'YELLOW')
+	display_msg("Build documentation", str(Params.g_options.build_docs), 'YELLOW')
 	print
+	g_step = 3
 
 def link_flags(env, lib):
 	return ' '.join(map(lambda x: env['LIB_ST'] % x, env['LIB_' + lib]))

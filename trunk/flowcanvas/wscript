@@ -24,10 +24,14 @@ srcdir = '.'
 blddir = 'build'
 
 def set_options(opt):
+	autowaf.set_options(opt)
 	opt.tool_options('compiler_cxx')
 	opt.tool_options('compiler_cc')
+	opt.add_option('--anti-alias', action='store_false', default=True, dest='anti_alias',
+			help="Anti-alias canvas (much prettier butslower) [Default: True]")
 
 def configure(conf):
+	autowaf.configure(conf)
 	if not conf.env['CC']:
 		conf.check_tool('compiler_cc')
 	if not conf.env['CXX']:
@@ -43,6 +47,13 @@ def configure(conf):
 	conf.check_header('boost/weak_ptr.hpp')
 	conf.write_config_header('waf-config.h')
 	conf.env.append_value('CXXFLAGS', '-DCONFIG_H_PATH=\\\"waf-config.h\\\"')
+	conf.env['ANTI_ALIAS'] = bool(Params.g_options.anti_alias)
+	
+	autowaf.print_summary(conf)
+	print '= FlowCanvas Configuration ='
+	autowaf.display_msg("Auto-arrange", str(bool(conf.env['HAVE_AGRAPH'])), 'YELLOW')
+	autowaf.display_msg("Anti-Aliasing", str(bool(conf.env['ANTI_ALIAS'])), 'YELLOW')
+	print
 
 def build(bld):
 	# Headers

@@ -22,9 +22,11 @@ srcdir = '.'
 blddir = 'build'
 
 def set_options(opt):
+	autowaf.set_options(opt)
 	opt.tool_options('compiler_cxx')
 
 def configure(conf):
+	autowaf.configure(conf)
 	if not conf.env['CXX']:
 		conf.check_tool('compiler_cxx')
 	if not conf.env['GLIBMM']:
