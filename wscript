@@ -58,8 +58,9 @@ def configure(conf):
 
 	if conf.env['HAVE_JACK_DBUS']:
 		conf.define('HAVE_JACK_DBUS', conf.env['HAVE_JACK_DBUS'])
-	if not conf.env['HAVE_JACK_DBUS'] and not conf.env['HAVE_JACK']:
-		conf.check_pkg('jack', destvar='JACK', vnum='0.107.0', mandatory=False)
+	if not conf.env['HAVE_JACK_DBUS']:
+		if not conf.env['HAVE_JACK']:
+			conf.check_pkg('jack', destvar='JACK', vnum='0.107.0', mandatory=False)
 		conf.define('USE_LIBJACK', conf.env['HAVE_JACK'])
 
 	# Use Alsa if present unless --no-alsa
