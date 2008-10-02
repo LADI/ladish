@@ -62,6 +62,8 @@ def configure(conf):
 		if not conf.env['HAVE_JACK']:
 			conf.check_pkg('jack', destvar='JACK', vnum='0.107.0', mandatory=False)
 		conf.define('USE_LIBJACK', conf.env['HAVE_JACK'])
+	
+	conf.define('HAVE_JACK_MIDI', conf.env['HAVE_JACK'] or conf.env['HAVE_JACK_DBUS'])
 
 	# Use Alsa if present unless --no-alsa
 	if not Params.g_options.no_alsa and not conf.env['HAVE_ALSA']:
