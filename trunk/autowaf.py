@@ -82,7 +82,7 @@ def print_summary(conf):
 	display_header('Global configuration')
 	display_msg("Install prefix", conf.env['PREFIX'], 'CYAN')
 	display_msg("Debuggable build", str(conf.env['DEBUG']), 'YELLOW')
-	display_msg("Build documentation", str(Params.g_options.build_docs), 'YELLOW')
+	display_msg("Build documentation", str(conf.env['BUILD_DOCS']), 'YELLOW')
 	print
 	g_step = 3
 
@@ -127,7 +127,7 @@ def build_pc(bld, name, version, libs):
 
 # Doxygen API documentation
 def build_dox(bld, name, version, srcdir, blddir):
-	if not Params.g_options.build_docs:
+	if not bld.env()['BUILD_DOCS']:
 		return
 	obj = bld.create_obj('subst')
 	obj.source = 'doc/reference.doxygen.in'
