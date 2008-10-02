@@ -2,7 +2,7 @@
 # Parts from LADI Patchage by Nedko Arnaudov
 import os
 import Params
-from Configure import g_maxlen
+import autowaf
 
 # Version of this package (even if built as a child)
 PATCHAGE_VERSION = '0.4.2'
@@ -28,15 +28,6 @@ def set_options(opt):
 			help="Do not build Lash support")
 	opt.add_option('--no-alsa', action='store_true', default=False, dest='no_alsa',
 			help="Do not build Alsa Sequencer support")
-
-def display_msg(msg, status = None, color = None):
-	global g_maxlen
-	g_maxlen = max(g_maxlen, len(msg))
-	if status:
-		print "%s :" % msg.ljust(g_maxlen),
-		Params.pprint(color, status)
-	else:
-		print "%s" % msg.ljust(g_maxlen)
 
 def configure(conf):
 	if not conf.env['CXX']:
@@ -97,15 +88,15 @@ def configure(conf):
 	
 	conf.write_config_header('waf-config.h')
 	
-	print
+	autowaf.print_summary(conf)
+	
 	print 'Patchage Configuration:'
-	display_msg("Install prefix", conf.env['PREFIX'], 'CYAN')
-	display_msg("Install name", "'" + conf.env['APP_INSTALL_NAME'] + "'", 'CYAN')
-	display_msg("App human name", "'" + conf.env['APP_HUMAN_NAME'] + "'", 'CYAN')
-	display_msg("Jack (D-Bus)", str(bool(conf.env['HAVE_JACK_DBUS'])), 'YELLOW')
-	display_msg("LASH (D-Bus)", str(bool(conf.env['HAVE_LASH'])), 'YELLOW')
-	display_msg("Jack (libjack)", str(bool(conf.env['USE_LIBJACK'])), 'YELLOW')
-	display_msg("Alsa Sequencer", str(bool(conf.env['HAVE_ALSA'])), 'YELLOW')
+	autowaf.display_msg("Install name", "'" + conf.env['APP_INSTALL_NAME'] + "'", 'CYAN')
+	autowaf.display_msg("App human name", "'" + conf.env['APP_HUMAN_NAME'] + "'", 'CYAN')
+	autowaf.display_msg("Jack (D-Bus)", str(bool(conf.env['HAVE_JACK_DBUS'])), 'YELLOW')
+	autowaf.display_msg("LASH (D-Bus)", str(bool(conf.env['HAVE_LASH'])), 'YELLOW')
+	autowaf.display_msg("Jack (libjack)", str(bool(conf.env['USE_LIBJACK'])), 'YELLOW')
+	autowaf.display_msg("Alsa Sequencer", str(bool(conf.env['HAVE_ALSA'])), 'YELLOW')
 	print
 
 def build(bld):
