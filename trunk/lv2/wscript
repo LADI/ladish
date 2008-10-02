@@ -25,12 +25,14 @@ def configure(conf):
 	if not conf.env['HAVE_LV2CORE']:
 		conf.check_pkg('lv2core', destvar='LV2CORE', vnum='1', mandatory=True)
 	conf.env.append_value('CCFLAGS', '-std=c99')
+	pat = conf.env['shlib_PATTERN']
+	ext = pat[pat.rfind('.'):]
+	conf.env.append_value('shlib_EXTENSION', ext)
 		
 def build_plugin(bld, lang, name):
 	bundle_path = 'lib/lv2/' + name + '.lv2'
+	ext = str(bld.env()['shlib_EXTENSION'])
 
-	pat = bld.env()['shlib_PATTERN']
-	ext = pat[pat.rfind('.'):]
 	penv = bld.env().copy()
 	penv['shlib_PATTERN'] = '%s' + ext
 
