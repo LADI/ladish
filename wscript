@@ -32,26 +32,16 @@ def set_options(opt):
 
 def configure(conf):
 	autowaf.configure(conf)
-	if not conf.env['CXX']:
-		conf.check_tool('compiler_cxx')
-	if not conf.env['HAVE_DBUS']:
-		conf.check_pkg('dbus-1', destvar='DBUS', mandatory=False)
-	if not conf.env['HAVE_DBUS_GLIB']:
-		conf.check_pkg('dbus-glib-1', destvar='DBUS_GLIB', mandatory=False)
-	if not conf.env['HAVE_FLOWCANVAS']:
-		conf.check_pkg('flowcanvas', destvar='FLOWCANVAS', vnum='0.5.1', mandatory=True)
-	if not conf.env['HAVE_GLADEMM']:
-		conf.check_pkg('libglademm-2.4', destvar='GLADEMM', vnum='2.6.0', mandatory=True)
-	if not conf.env['HAVE_GLIBMM']:
-		conf.check_pkg('glibmm-2.4', destvar='GLIBMM', vnum='2.16.0', mandatory=True)
-	if not conf.env['HAVE_GNOMECANVASMM']:
-		conf.check_pkg('libgnomecanvasmm-2.6', destvar='GNOMECANVASMM', mandatory=True)
-	if not conf.env['HAVE_GTHREAD']:
-		conf.check_pkg('gthread-2.0', destvar='GTHREAD', vnum='2.16.0', mandatory=True)
-	if not conf.env['HAVE_GTKMM']:
-		conf.check_pkg('gtkmm-2.4', destvar='GTKMM', vnum='2.11.12', mandatory=True)
-	if not conf.env['HAVE_RAUL']:
-		conf.check_pkg('raul', destvar='RAUL', vnum='0.5.1', mandatory=True)
+	autowaf.check_tool(conf, 'compiler_cxx')
+	autowaf.check_pkg(conf, 'dbus-1', destvar='DBUS', mandatory=False)
+	autowaf.check_pkg(conf, 'dbus-glib-1', destvar='DBUS_GLIB', mandatory=False)
+	autowaf.check_pkg(conf, 'flowcanvas', destvar='FLOWCANVAS', vnum='0.5.1', mandatory=True)
+	autowaf.check_pkg(conf, 'libglademm-2.4', destvar='GLADEMM', vnum='2.6.0', mandatory=True)
+	autowaf.check_pkg(conf, 'glibmm-2.4', destvar='GLIBMM', vnum='2.16.0', mandatory=True)
+	autowaf.check_pkg(conf, 'libgnomecanvasmm-2.6', destvar='GNOMECANVASMM', mandatory=True)
+	autowaf.check_pkg(conf, 'gthread-2.0', destvar='GTHREAD', vnum='2.16.0', mandatory=True)
+	autowaf.check_pkg(conf, 'gtkmm-2.4', destvar='GTKMM', vnum='2.11.12', mandatory=True)
+	autowaf.check_pkg(conf, 'raul', destvar='RAUL', vnum='0.5.1', mandatory=True)
 	
 	# Use Jack D-Bus if requested (only one jack driver is allowed)
 	conf.env['HAVE_JACK_DBUS'] = conf.env['HAVE_DBUS'] and Params.g_options.jack_dbus
@@ -59,8 +49,7 @@ def configure(conf):
 	if conf.env['HAVE_JACK_DBUS']:
 		conf.define('HAVE_JACK_DBUS', conf.env['HAVE_JACK_DBUS'])
 	if not conf.env['HAVE_JACK_DBUS']:
-		if not conf.env['HAVE_JACK']:
-			conf.check_pkg('jack', destvar='JACK', vnum='0.107.0', mandatory=False)
+		autowaf.check_pkg(conf, 'jack', destvar='JACK', vnum='0.107.0', mandatory=False)
 		conf.define('USE_LIBJACK', conf.env['HAVE_JACK'])
 	
 	conf.define('HAVE_JACK_MIDI', conf.env['HAVE_JACK'] or conf.env['HAVE_JACK_DBUS'])
@@ -79,8 +68,8 @@ def configure(conf):
 	conf.check_tool('misc') # subst tool
 	
 	# Boost headers (e.g. libboost-dev)
-	conf.check_header('boost/shared_ptr.hpp', mandatory=True)
-	conf.check_header('boost/weak_ptr.hpp', mandatory=True)
+	autowaf.check_header(conf, 'boost/shared_ptr.hpp', mandatory=True)
+	autowaf.check_header(conf, 'boost/weak_ptr.hpp', mandatory=True)
 	
 	conf.env['PATCHAGE_VERSION'] = PATCHAGE_VERSION
 	conf.env.append_value('CCFLAGS', '-DCONFIG_H_PATH=\\\"waf-config.h\\\"')
