@@ -23,8 +23,8 @@ def set_options(opt):
 			help="Install name. [Default: '" + APPNAME + "']")
 	opt.add_option('--app-human-name', type='string', default=APP_HUMAN_NAME, dest='app_human_name',
 			help="Human name for app. [Default: '" + APP_HUMAN_NAME + "']")
-	opt.add_option('--no-jack-dbus', action='store_true', default=False, dest='no_jack_dbus',
-			help="Do not build Jack via D-Bus support")
+	opt.add_option('--jack-dbus', action='store_true', default=False, dest='jack_dbus',
+			help="Use Jack via D-Bus")
 	opt.add_option('--no-lash', action='store_true', default=False, dest='no_lash',
 			help="Do not build Lash support")
 	opt.add_option('--no-alsa', action='store_true', default=False, dest='no_alsa',
@@ -53,13 +53,13 @@ def configure(conf):
 	if not conf.env['HAVE_RAUL']:
 		conf.check_pkg('raul', destvar='RAUL', vnum='0.5.1', mandatory=True)
 	
-	# Use Jack D-Bus unless --no-jack-dbus (only one jack driver is allowed)
-	conf.env['HAVE_JACK_DBUS'] = conf.env['HAVE_DBUS'] and not Params.g_options.no_jack_dbus
+	# Use Jack D-Bus if requested (only one jack driver is allowed)
+	conf.env['HAVE_JACK_DBUS'] = conf.env['HAVE_DBUS'] and Params.g_options.jack_dbus
+
 	if conf.env['HAVE_JACK_DBUS']:
-		conf.define('HAVE_JACK_DBUS', True)
-	else:
-		if not conf.env['HAVE_JACK']:
-			conf.check_pkg('jack', destvar='JACK', vnum='0.107.0', mandatory=False)
+		conf.define('HAVE_JACK_DBUS', conf.env['HAVE_JACK_DBUS'])
+	if not conf.env['HAVE_JACK_DBUS'] and not conf.env['HAVE_JACK']:
+		conf.check_pkg('jack', destvar='JACK', vnum='0.107.0', mandatory=False)
 		conf.define('USE_LIBJACK', conf.env['HAVE_JACK'])
 
 	# Use Alsa if present unless --no-alsa
