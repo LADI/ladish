@@ -18,12 +18,9 @@ def set_options(opt):
 	opt.tool_options('compiler_cxx')
 
 def configure(conf):
-	if not conf.env['CC']:
-		conf.check_tool('compiler_cc')
-	if not conf.env['CXX']:
-		conf.check_tool('compiler_cxx')
-	if not conf.env['HAVE_LV2CORE']:
-		conf.check_pkg('lv2core', destvar='LV2CORE', vnum='1', mandatory=True)
+	autowaf.check_tool(conf, 'compiler_cc')
+	autowaf.check_tool(conf, 'compiler_cxx')
+	autowaf.check_pkg(conf, 'lv2core', destvar='LV2CORE', vnum='1', mandatory=True)
 	conf.env.append_value('CCFLAGS', '-std=c99')
 	pat = conf.env['shlib_PATTERN']
 	ext = pat[pat.rfind('.'):]

@@ -21,14 +21,10 @@ def set_options(opt):
 
 def configure(conf):
 	autowaf.configure(conf)
-	if not conf.env['HAVE_GLIBMM']:
-		conf.check_pkg('glibmm-2.4', destvar='GLIBMM', vnum='2.16.0', mandatory=True)
-	if not conf.env['HAVE_GTHREAD']:
-		conf.check_pkg('gthread-2.0', destvar='GTHREAD', vnum='2.16.0', mandatory=True)
-	if not conf.env['HAVE_REDLAND']:
-		conf.check_pkg('redland', destvar='REDLAND', vnum='1.0.8', mandatory=True)
-	if not conf.env['CXX']:
-		conf.check_tool('compiler_cxx')
+	autowaf.check_pkg(conf, 'glibmm-2.4', destvar='GLIBMM', vnum='2.16.0', mandatory=True)
+	autowaf.check_pkg(conf, 'gthread-2.0', destvar='GTHREAD', vnum='2.16.0', mandatory=True)
+	autowaf.check_pkg(conf, 'redland', destvar='REDLAND', vnum='1.0.8', mandatory=True)
+	autowaf.check_tool(conf, 'compiler_cxx')
 
 def build(bld):
 	# Headers

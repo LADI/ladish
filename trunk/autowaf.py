@@ -16,6 +16,7 @@ global g_step
 g_step = 0
 
 def set_options(opt):
+	"Add standard autowaf options if they havn't been added yet"
 	global g_step
 	if g_step > 0:
 		return
@@ -27,6 +28,31 @@ def set_options(opt):
 			help="Use strict compiler flags and show all warnings [Default: False]")
 	opt.tool_options('compiler_cxx')
 	g_step = 1
+
+def check_header(conf, name, define='', **args):
+	"Check for a header iff it hasn't been checked for yet"
+	if type(conf.env['AUTOWAF_HEADERS']) != dict:
+		conf.env['AUTOWAF_HEADERS'] = {}
+
+	checked = conf.env['AUTOWAF_HEADERS']
+	if not name in checked:
+		conf.check_header(name, define, **args)
+		checked[name] = True
+
+def check_tool(conf, name):
+	"Check for a tool iff it hasn't been checked for yet"
+	if type(conf.env['AUTOWAF_TOOLS']) != dict:
+		conf.env['AUTOWAF_TOOLS'] = {}
+
+	checked = conf.env['AUTOWAF_TOOLS']
+	if not name in checked:
+		conf.check_tool(name)
+		checked[name] = True
+
+def check_pkg(conf, name, **args):
+	"Check for a package iff it hasn't been checked for yet"
+	if not conf.env['HAVE_' + args['destvar']]:
+		conf.check_pkg(name, **args)
 
 def configure(conf):
 	global g_step

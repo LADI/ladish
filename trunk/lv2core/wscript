@@ -18,7 +18,7 @@ def set_options(opt):
 			help="Bundle install directory [Default: PREFIX/lib/lv2]")
 
 def configure(conf):
-	autowaf.configure(conf)
+	pass
 
 def build(bld):
 	# Header
