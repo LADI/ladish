@@ -31,7 +31,7 @@ def configure(conf):
 		
 def build_plugin(bld, lang, name):
 	bundle_path = 'lib/lv2/' + name + '.lv2'
-	ext = str(bld.env()['shlib_EXTENSION'])
+	ext = bld.env()['shlib_EXTENSION'][0]
 
 	penv = bld.env().copy()
 	penv['shlib_PATTERN'] = '%s' + ext
