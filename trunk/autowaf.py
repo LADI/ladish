@@ -47,6 +47,20 @@ def configure(conf):
 	append_cxx_flags('-DCONFIG_H_PATH=\\\"waf-config.h\\\"')
 	g_step = 2
 	
+def set_local_lib(conf, name):
+	if not type(conf.env['AUTOWAF_LOCAL_LIBS']) == dict:
+		conf.env['AUTOWAF_LOCAL_LIBS'] = {}
+		
+	conf.env['AUTOWAF_LOCAL_LIBS'][name.lower()] = True
+
+def use_lib(bld, obj, libs):
+	libs_list = libs.split()
+	for l in libs_list:
+		if l.lower() in bld.env()['AUTOWAF_LOCAL_LIBS']:
+			obj.uselib_local += ' lib' + l.lower() + ' '
+		else:
+			obj.uselib += ' ' + l.upper() + ' '
+
 def display_header(title):
 	Params.pprint('BOLD', title)
 

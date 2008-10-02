@@ -105,7 +105,7 @@ def build(bld):
 	prog = bld.create_obj('cpp', 'program')
 	prog.includes = 'src' # make waf dependency tracking work
 	prog.target = bld.env()['APP_INSTALL_NAME']
-	prog.uselib = 'DBUS FLOWCANVAS GLADEMM DBUS_GLIB GNOMECANVASMM GTHREAD RAUL'
+	autowaf.use_lib(bld, prog, 'DBUS FLOWCANVAS GLADEMM DBUS_GLIB GNOMECANVASMM GTHREAD RAUL')
 	prog.source = '''
 		src/LashClient.cpp
 		src/Patchage.cpp

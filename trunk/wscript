@@ -38,6 +38,7 @@ def sub_config_and_use(conf, name, library = True):
 	conf.env.append_value('CCFLAGS_' + tok, '-I' + abssrcdir + '/' + name)
 	conf.env.append_value('CXXFLAGS_' + tok, '-I' + abssrcdir + '/' + name)
 	if library:
+		autowaf.set_local_lib(conf, name)
 		conf.env.append_value('LINKFLAGS_' + tok, '-l' + name)
 		conf.env.append_value('LINKFLAGS', '-L' + absblddir + '/default/' + name)
 
