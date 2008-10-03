@@ -18,7 +18,7 @@
 #ifndef MACHINA_MACHINE_MUTATION_HPP
 #define MACHINA_MACHINE_MUTATION_HPP
 
-#include CONFIG_H_PATH
+#include "config.h"
 
 #if HAVE_EUGENE
 	#include <eugene/core/Mutation.hpp>

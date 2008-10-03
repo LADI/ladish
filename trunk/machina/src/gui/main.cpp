@@ -20,7 +20,7 @@
 #include <string>
 #include <libgnomecanvasmm.h>
 #include <redlandmm/World.hpp>
-#include CONFIG_H_PATH
+#include "config.h"
 #include "machina/Machine.hpp"
 #include "machina/Loader.hpp"
 #include "machina/SMFDriver.hpp"

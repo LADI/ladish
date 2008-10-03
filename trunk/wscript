@@ -30,12 +30,9 @@ def set_options(opt):
 	opt.sub_options('redlandmm')
 	opt.sub_options('ingen')
 
-def sub_config_and_use(conf, name, library = True):
+def sub_config_and_use(conf, name, has_objects = True):
 	conf.sub_config(name)
-	tok = string.upper(name)
-	conf.define('HAVE_' + tok, True)
-	if library:
-		autowaf.set_local_lib(conf, name)
+	autowaf.set_local_lib(conf, name, has_objects)
 
 def configure(conf):
 	autowaf.set_recursive()

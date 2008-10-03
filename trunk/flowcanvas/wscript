@@ -39,8 +39,7 @@ def configure(conf):
 
 	autowaf.check_header(conf, 'boost/shared_ptr.hpp')
 	autowaf.check_header(conf, 'boost/weak_ptr.hpp')
-	conf.write_config_header('waf-config.h')
-	conf.env.append_value('CXXFLAGS', '-DCONFIG_H_PATH=\\\"waf-config.h\\\"')
+	conf.write_config_header('config.h')
 	conf.env['ANTI_ALIAS'] = bool(Params.g_options.anti_alias)
 	
 	autowaf.print_summary(conf)

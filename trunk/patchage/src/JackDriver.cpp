@@ -20,7 +20,7 @@
 #include <string>
 #include <set>
 #include <iostream>
-#include CONFIG_H_PATH
+#include "config.h"
 #include <jack/jack.h>
 #include <jack/statistics.h>
 #include <jack/thread.h>

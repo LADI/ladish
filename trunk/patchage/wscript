@@ -72,15 +72,13 @@ def configure(conf):
 	autowaf.check_header(conf, 'boost/weak_ptr.hpp', mandatory=True)
 	
 	conf.env['PATCHAGE_VERSION'] = PATCHAGE_VERSION
-	conf.env.append_value('CCFLAGS', '-DCONFIG_H_PATH=\\\"waf-config.h\\\"')
-	conf.env.append_value('CXXFLAGS', '-DCONFIG_H_PATH=\\\"waf-config.h\\\"')
 
 	conf.env['APP_INSTALL_NAME'] = Params.g_options.app_install_name
 	conf.env['APP_HUMAN_NAME'] = Params.g_options.app_human_name
 	conf.define('DATA_DIR', os.path.normpath(
 			conf.env['PREFIX'] + '/share/' + conf.env['APP_INSTALL_NAME']))
 	
-	conf.write_config_header('waf-config.h')
+	conf.write_config_header('config.h')
 	
 	autowaf.print_summary(conf)
 	autowaf.display_header('Patchage Configuration')

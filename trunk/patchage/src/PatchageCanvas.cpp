@@ -16,7 +16,7 @@
  */
 
 #include <raul/SharedPtr.hpp>
-#include CONFIG_H_PATH
+#include "config.h"
 #include "PatchageCanvas.hpp"
 #include "Patchage.hpp"
 #if defined(HAVE_JACK_DBUS)

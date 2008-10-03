@@ -18,7 +18,7 @@
 #ifndef MACHINA_PROBLEM_HPP
 #define MACHINA_PROBLEM_HPP
 
-#include CONFIG_H_PATH
+#include "config.h"
 
 #include <map>
 #include <raul/MIDISink.hpp>

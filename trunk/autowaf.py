@@ -70,22 +70,36 @@ def configure(conf):
 		e['CXXFLAGS'] = '-O0 -g'
 	if Params.g_options.strict:
 		append_cxx_flags('-Wall') # evoral currently -pedantic broken
-	append_cxx_flags('-DCONFIG_H_PATH=\\\"waf-config.h\\\"')
 	g_step = 2
 	
-def set_local_lib(conf, name):
-	if not type(conf.env['AUTOWAF_LOCAL_LIBS']) == dict:
-		conf.env['AUTOWAF_LOCAL_LIBS'] = {}
-		
-	conf.env['AUTOWAF_LOCAL_LIBS'][name.lower()] = True
+def set_local_lib(conf, name, has_objects):
+	conf.define('HAVE_' + name.upper(), True)
+	if has_objects:
+		if type(conf.env['AUTOWAF_LOCAL_LIBS']) != dict:
+			conf.env['AUTOWAF_LOCAL_LIBS'] = {}
+		conf.env['AUTOWAF_LOCAL_LIBS'][name.lower()] = True
+	else:
+		if type(conf.env['AUTOWAF_LOCAL_HEADERS']) != dict:
+			conf.env['AUTOWAF_LOCAL_HEADERS'] = {}
+		conf.env['AUTOWAF_LOCAL_HEADERS'][name.lower()] = True
 
 def use_lib(bld, obj, libs):
+	abssrcdir = os.path.abspath('.')
 	libs_list = libs.split()
 	for l in libs_list:
-		if l.lower() in bld.env()['AUTOWAF_LOCAL_LIBS']:
+		in_headers = l.lower() in bld.env()['AUTOWAF_LOCAL_HEADERS']
+		in_libs    = l.lower() in bld.env()['AUTOWAF_LOCAL_LIBS']
+		if in_libs:
 			obj.uselib_local += ' lib' + l.lower() + ' '
+		
+		if in_headers or in_libs:
+			inc_flag = '-I' + abssrcdir + '/' + l.lower()
+			for f in ['CCFLAGS', 'CXXFLAGS']:
+				if not inc_flag in bld.env()[f]:
+					bld.env().prepend_value(f, inc_flag)
 		else:
-			obj.uselib += ' ' + l.upper() + ' '
+			obj.uselib += ' ' + l
+
 
 def display_header(title):
 	Params.pprint('BOLD', title)
