@@ -22,7 +22,7 @@
 #include <boost/shared_ptr.hpp>
 #include <libgnomecanvasmm.h>
 #include <libglademm/xml.h>
-#include CONFIG_H_PATH
+#include "config.h"
 #include "Widget.hpp"
 
 class PatchageCanvas;

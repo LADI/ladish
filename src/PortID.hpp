@@ -18,7 +18,7 @@
 #ifndef PATCHAGE_PORTID_HPP
 #define PATCHAGE_PORTID_HPP
 
-#include CONFIG_H_PATH
+#include "config.h"
 
 #include <cstring>
 #ifdef HAVE_JACK

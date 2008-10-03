@@ -22,7 +22,7 @@
 #ifdef HAVE_JACK
 #include <jack/jack.h>
 #endif
-#include CONFIG_H_PATH
+#include "config.h"
 #ifdef HAVE_ALSA
 #include <alsa/asoundlib.h>
 #endif
