@@ -1,14 +1,23 @@
 The various components here can be built individually inside their own
-directories, or the entire tree can be built at once, using the typical
-./configure; make; make install routine.
+directories, or the entire tree can be built at once.
+
+This software uses waf, which is included.  Basically:
+
+./waf configure --prefix=/foo/bar
+./waf
+./waf install
+
+The default install prefix is /usr/local (just './waf configure' is OK).
+The build step takes a -j parameter for parallel building, like make.
+The install step obeys the DESTDIR environment variable.
+
+See ./waf --help for more information.
 
 If you build individually, get the build order right!  Things will NOT
 compile against the included versions this way.
 
-You're much better off building everything from the top level.
+*** IMPORTANT ***
 
-So much better off that you had better not come bother me on IRC with
-broken builds because you screwed it up, or I won't be very nice ;).
-
-Switching back and forth between each method requires a new autogen.sh
-in whatever dir you plan to build from.
+You MUST clean your build if you want to switch between building the
+whole tree and configuring each project separately.  If you mix the
+two processes without cleaning BAD THINGS WILL HAPPEN.
