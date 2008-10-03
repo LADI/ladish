@@ -25,8 +25,6 @@
 #include <sstream>
 #include <iostream>
 
-#include CONFIG_H_PATH
-
 #define CUC(x) ((const unsigned char*)(x))
 
 namespace Raul {

@@ -22,8 +22,6 @@
 #include <string>
 #include <sstream>
 
-#include CONFIG_H_PATH
-
 #include <redlandmm/Node.hpp>
 #include <redlandmm/World.hpp>
 
