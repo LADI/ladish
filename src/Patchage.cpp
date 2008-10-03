@@ -89,8 +89,8 @@ gtkmm_set_width_for_given_text (Gtk::Widget &w, const gchar *text,
 Patchage::Patchage(int argc, char** argv)
 	: _xml(GladeFile::open("patchage"))
 #ifdef HAVE_LASH
-	, _lash_proxy(NULL)
 	, _dbus(NULL)
+	, _lash_proxy(NULL)
 	, _project_list(NULL)
 	, _session(NULL)
 #endif
