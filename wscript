@@ -24,11 +24,11 @@ def set_options(opt):
 	opt.add_option('--app-human-name', type='string', default=APP_HUMAN_NAME, dest='app_human_name',
 			help="Human name for app. [Default: '" + APP_HUMAN_NAME + "']")
 	opt.add_option('--jack-dbus', action='store_true', default=False, dest='jack_dbus',
-			help="Use Jack via D-Bus")
+			help="Use Jack via D-Bus [Default: False (without Jack D-Bus support)]")
 	opt.add_option('--no-lash', action='store_true', default=False, dest='no_lash',
-			help="Do not build Lash support")
+			help="Do not build Lash support [Default: False (with Lash support)]")
 	opt.add_option('--no-alsa', action='store_true', default=False, dest='no_alsa',
-			help="Do not build Alsa Sequencer support")
+			help="Do not build Alsa Sequencer support [Default: False (with Alsa support)")
 
 def configure(conf):
 	autowaf.configure(conf)
