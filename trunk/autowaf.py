@@ -58,16 +58,17 @@ def configure(conf):
 	global g_step
 	if g_step > 1:
 		return
-	e = conf.env
 	def append_cxx_flags(val):
-		e.append_value('CCFLAGS', val)
-		e.append_value('CXXFLAGS', val)
-	conf.check_tool('misc')
+		conf.env.append_value('CCFLAGS', val)
+		conf.env.append_value('CXXFLAGS', val)
+	check_tool(conf, 'misc')
+	check_tool(conf, 'compiler_cc')
+	check_tool(conf, 'compiler_cxx')
 	conf.env['BUILD_DOCS'] = Params.g_options.build_docs
 	conf.env['DEBUG'] = Params.g_options.debug
 	if Params.g_options.debug:
-		e['CCFLAGS'] = '-O0 -g -std=c99'
-		e['CXXFLAGS'] = '-O0 -g'
+		conf.env['CCFLAGS'] = '-O0 -g -std=c99'
+		conf.env['CXXFLAGS'] = '-O0 -g -ansi'
 	if Params.g_options.strict:
 		append_cxx_flags('-Wall') # evoral currently -pedantic broken
 	g_step = 2
