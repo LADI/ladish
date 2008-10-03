@@ -1,24 +1,11 @@
-This is not a "project", but an entire repository of code containing many
-projects (checked out from http://drobilla.net).  Most things in here have
-interdependencies, so it is much simpler to follow a single repository in
-this style than have to keep n separate ones in sync.
+This repository contains several projects.  Most are related, and many have
+direct dependencies.  They all share a unified build system (based on waf)
+that can be used to build the entire repository at once, or each project
+separately.  See INSTALL file for details.
 
-There are build scripts in this directory for convenience, but every
-subdirectory can be used individually as an independent (autotoolized)
-project.
+*** IMPORTANT ***
 
-'./configure --help=recursive' will give you a (horribly large and bloated)
-listing of all configure options which you can pass to the top level
-configure script to build everything however you like.
+You MUST clean your build if you want to switch between building the whole
+repository and configuring each project separately.  If you mix the two
+processes without cleaning BAD THINGS WILL HAPPEN.
 
-NOTE: if you use the top-level configure/make, everything should be built
-against the local copies in this tree, but if you compile the packages
-yourself in their own directories, they will build against the libraries
-installed on your system.
-
-Most of this code is in active development.  Please reports any bugs or
-requests at http://dev.drobilla.net/
-
-Share and Enjoy,
-
- - Dave

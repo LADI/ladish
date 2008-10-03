@@ -1,23 +1,35 @@
-The various components here can be built individually inside their own
-directories, or the entire tree can be built at once.
+This software requires only Python to build.
 
-This software uses waf, which is included.  Basically:
+Like an auto* project, building has three phases:
 
-./waf configure --prefix=/foo/bar
-./waf
-./waf install
 
-The default install prefix is /usr/local (just './waf configure' is OK).
-The build step takes a -j parameter for parallel building, like make.
-The install step obeys the DESTDIR environment variable.
+* Configure:       ./waf configure [OPTIONS]
 
-See ./waf --help for more information.
+  Example:
+    ./waf configure --prefix=/some/where --debug --strict
 
-If you build individually, get the build order right!  Things will NOT
-compile against the included versions this way.
+  If --debug is not given, the flags from the environment variables
+  CFLAGS and CXXFLAGS will be used.
 
-*** IMPORTANT ***
+  The default prefix is /usr/local
 
-You MUST clean your build if you want to switch between building the
-whole tree and configuring each project separately.  If you mix the
-two processes without cleaning BAD THINGS WILL HAPPEN.
+
+* Build:           ./waf [OPTIONS]
+
+  Example:
+    ./waf -j4
+
+
+* Install:         ./waf install [OPTIONS]
+
+  The environment variable DESTDIR can be used to add any prefix to
+  the install paths (useful for packaging).  Example:
+
+  DESTDIR=/home/drobilla/packages ./waf install
+
+
+*** IMPORTANT: You must use absolute paths everywhere
+
+
+Run './waf --help' for detailed option information.
+
