@@ -33,11 +33,11 @@ def configure(conf):
 
 def build(bld):
 	# Headers
-	install_files('PREFIX', 'include/evoral', 'evoral/*.h')
-	install_files('PREFIX', 'include/evoral', 'evoral/*.hpp')
+	#install_files('PREFIX', 'include/evoral', 'evoral/*.h')
+	#install_files('PREFIX', 'include/evoral', 'evoral/*.hpp')
 	
 	# Pkgconfig file
-	autowaf.build_pc(bld, 'EVORAL', EVORAL_VERSION, 'GLIBMM GTHREAD')
+	#autowaf.build_pc(bld, 'EVORAL', EVORAL_VERSION, 'GLIBMM GTHREAD')
 	
 	# Library
 	obj = bld.create_obj('cpp', 'shlib')
@@ -58,6 +58,7 @@ def build(bld):
 	obj.target   = 'evoral'
 	obj.uselib   = 'GLIBMM GTHREAD'
 	obj.vnum     = EVORAL_LIB_VERSION
+	obj.inst_var = 0
 	
 	# Unit tests
 	obj              = bld.create_obj('cpp', 'program')
