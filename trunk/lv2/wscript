@@ -34,7 +34,10 @@ def build_plugin(bld, lang, name):
 	penv['shlib_PATTERN'] = '%s' + ext
 
 	# Library
-	ext = 'c' if lang == 'cc' else lang
+	ext = 'c'
+	if lang != 'cc':
+		ext = 'cpp'
+	
 	obj          = bld.create_obj(lang, 'shlib')
 	obj.env      = penv
 	obj.source   = 'plugins/%s.lv2/%s.%s' % (name, name, ext)

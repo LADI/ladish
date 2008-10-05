@@ -53,10 +53,8 @@ def check_pkg(conf, name, **args):
 	"Check for a package iff it hasn't been checked for yet"
 	if not 'HAVE_' + args['destvar'] in conf.env:
 		if not conf.check_pkg(name, **args):
-			print "NO"
 			conf.env['HAVE_' + args['destvar']] = False
 		else:
-			print "YES"
 			conf.env['HAVE_' + args['destvar']] = True
 
 def configure(conf):
