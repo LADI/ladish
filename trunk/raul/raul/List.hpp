@@ -144,6 +144,9 @@ public:
 	const_iterator begin() const;
 	const iterator end()   const;
 
+	T&       front()       { return *begin(); }
+	const T& front() const { return *begin(); }
+
 private:
 	AtomicPtr<Node> _head;
 	AtomicPtr<Node> _tail; ///< writer only
