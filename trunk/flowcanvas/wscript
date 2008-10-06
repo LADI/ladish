@@ -66,7 +66,7 @@ def build(bld):
 		src/Module.cpp 
 		src/Port.cpp
 	'''
-	obj.includes = '..'
+	obj.includes = ['.']
 	obj.name     = 'libflowcanvas'
 	obj.target   = 'flowcanvas'
 	obj.uselib   = 'GTKMM GNOMECANVASMM AGRAPH'

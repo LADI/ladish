@@ -52,7 +52,7 @@ def build(bld):
 		src/Symbol.cpp
 		src/Thread.cpp
 	'''
-	obj.includes = './raul'
+	obj.includes = '.'
 	obj.name     = 'libraul'
 	obj.target   = 'raul'
 	obj.uselib   = 'GLIBMM GTHREAD'

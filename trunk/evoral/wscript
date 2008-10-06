@@ -53,7 +53,7 @@ def build(bld):
 		src/SMFReader.cpp
 		src/Sequence.cpp
 	'''
-	obj.includes = '..'
+	obj.includes = ['.']
 	obj.name     = 'libevoral'
 	obj.target   = 'evoral'
 	obj.uselib   = 'GLIBMM GTHREAD'
