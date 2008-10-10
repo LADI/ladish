@@ -78,6 +78,10 @@ Item::on_event(GdkEvent* event)
 	switch (event->type) {
 
 	case GDK_2BUTTON_PRESS:
+		if (dragging) {
+			ungrab(event->button.time);
+			dragging = false;
+		}
 		on_double_click(&event->button);
 		double_click = true;
 		break;
@@ -127,7 +131,7 @@ Item::on_event(GdkEvent* event)
 			} else if (!double_click) {
 				on_click(&event->button);
 			}
-		} else {
+		} else if (!double_click) {
 			on_click(&event->button);
 		}
 		double_click = false;
