@@ -4,9 +4,13 @@ lib_LTLIBRARIES = liblash.la
 
 liblash_la_SOURCES  = lash.c
 liblash_la_SOURCES += lash_config.c
+liblash_la_SOURCES += lash_config.h
 liblash_la_SOURCES += client.c
+liblash_la_SOURCES += client.h
 liblash_la_SOURCES += dbus_service.c
+liblash_la_SOURCES += dbus_service.h
 liblash_la_SOURCES += dbus_iface_client.c
+liblash_la_SOURCES += dbus_iface_client.h
 
 liblash_la_SOURCES += $(top_srcdir)/common/safety.c
 liblash_la_SOURCES += $(top_srcdir)/dbus/error.c
@@ -19,10 +23,11 @@ liblash_la_SOURCES += $(top_srcdir)/dbus/service.c
 liblash_la_SOURCES += $(top_srcdir)/lashd/file.c
 
 if LASH_OLD_API
-liblash_la_SOURCES += \
-	protocol.c \
-	event.c \
-	args.c
+liblash_la_SOURCES += protocol.c
+liblash_la_SOURCES += event.c
+liblash_la_SOURCES += event.h
+liblash_la_SOURCES += args.c
+liblash_la_SOURCES += args.h
 endif
 
 AM_CFLAGS = $(LASH_CFLAGS) $(DBUS_CFLAGS) -DDEBUG_OUTPUT_TERMINAL
