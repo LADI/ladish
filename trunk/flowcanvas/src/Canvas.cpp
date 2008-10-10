@@ -124,6 +124,9 @@ Canvas::scroll_to_center()
 void
 Canvas::zoom_full()
 {
+	if (_items.empty())
+		return;
+
 	int win_width, win_height;
 	Glib::RefPtr<Gdk::Window> win = get_window();
 	win->get_size(win_width, win_height);
