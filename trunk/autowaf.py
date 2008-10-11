@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # Waf utilities for easily building standard unixey packages/libraries
-# Coyright (C) 2008 Dave Robillard (see COPYING file for details)
-# Copyright (C) 2008 Nedko Arnaudov (FIXME: verify license)
+# Licensed under the GNU GPL v2 or later, see COPYING file for details.
+# Copyright (C) 2008 Dave Robillard
+# Copyright (C) 2008 Nedko Arnaudov
 
 import os
 import misc
