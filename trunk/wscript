@@ -51,3 +51,9 @@ def build(bld):
 	autowaf.set_recursive()
 	bld.add_subdirs('lv2core lv2 slv2 evoral raul flowcanvas patchage redlandmm ingen')
 
+def shutdown():
+	# This isn't really correct (for packaging), but people asking is annoying
+	if Params.g_commands['install']:
+		try: os.popen("/sbin/ldconfig")
+		except: pass
+
