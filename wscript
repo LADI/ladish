@@ -164,3 +164,6 @@ def build(bld):
 			bld.env()['APP_INSTALL_NAME'] + '.png',
 			'icons/' + s + '/patchage.png')
 
+def shutdown():
+	autowaf.shutdown()
+
