@@ -18,6 +18,7 @@ blddir = 'build'
 
 def set_options(opt):
 	autowaf.set_options(opt)
+	opt.tool_options('compiler_cc')
 	opt.tool_options('compiler_cxx')
 	opt.add_option('--install-name', type='string', default=APPNAME, dest='app_install_name',
 			help="Install name. [Default: '" + APPNAME + "']")
