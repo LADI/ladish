@@ -42,15 +42,17 @@ Path::is_valid(const std::basic_string<char>& path)
 	if (path.find("//") != string::npos)
 		return false;
 
-	// All characters must be _, a-z, A-Z, 0-9
+
 	for (size_t i=0; i < path.length(); ++i)
-		if ( path[i] != '/' && path[i] != '_'
+		// All contained symbols must not start with a digit
+		if (i > 0 && path[i-1] == '/' && isdigit(path[i]))
+			return false;
+		// All characters must be _, a-z, A-Z, 0-9
+		else if ( path[i] != '/' && path[i] != '_'
 				&& (path[i] < 'a' || path[i] > 'z')
 				&& (path[i] < 'A' || path[i] > 'Z')
 				&& (path[i] < '0' || path[i] > '9') )
 			return false;
-
-	// FIXME: first character can't be number?
 
 #if 0
 	// Disallowed characters
@@ -155,9 +157,14 @@ Path::replace_invalid_chars(string& str, bool replace_slash)
 			str = str.substr(0, i) + '_' + str.substr(i);
 	}
 #endif
+
+	if (isdigit(str[0]))
+		str = string("_").append(str);
 	
 	for (size_t i=0; i < str.length(); ++i) {
-		if (str[i] == '\'') {
+		if (i > 0 && str[i-1] == '/' && isdigit(str[i])) {
+			str = str.substr(0, i) + "_" + str.substr(i);
+		} else if (str[i] == '\'') {
 			str = str.substr(0, i) + str.substr(i+1);
 #ifdef STRICT_SYMBOLS
 		} else if (str[i] >= 'A' && str[i] <= 'Z') {
