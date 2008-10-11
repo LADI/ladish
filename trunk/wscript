@@ -18,8 +18,8 @@ absblddir = os.path.abspath(blddir)
 
 def set_options(opt):
 	autowaf.set_options(opt)
-	opt.tool_options('compiler_cxx')
 	opt.tool_options('compiler_cc')
+	opt.tool_options('compiler_cxx')
 	opt.sub_options('lv2core')
 	opt.sub_options('lv2')
 	opt.sub_options('slv2')
