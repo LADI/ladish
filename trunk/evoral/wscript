@@ -69,3 +69,6 @@ def build(bld):
 	obj.target       = 'sequence'
 	obj.inst_var     = 0
 
+def shutdown():
+	autowaf.shutdown()
+

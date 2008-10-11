@@ -66,3 +66,6 @@ def build(bld):
 	autowaf.build_dox(bld, 'RAUL', RAUL_VERSION, srcdir, blddir)
 	install_files('PREFIX', 'share/doc/raul', blddir + '/default/doc/html/*')
 
+def shutdown():
+	autowaf.shutdown()
+

@@ -195,4 +195,9 @@ def build_dox(bld, name, version, srcdir, blddir):
 	out1.argv = [os.path.abspath(doc_dir) + '/reference.doxygen']
 	out1.command_is_external = True
 
+def shutdown():
+	# This isn't really correct (for packaging), but people asking is annoying
+	if Params.g_commands['install']:
+		try: os.popen("/sbin/ldconfig")
+		except: pass
 

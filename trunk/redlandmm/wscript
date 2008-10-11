@@ -61,3 +61,6 @@ def build(bld):
 	autowaf.build_dox(bld, 'REDLANDMM', REDLANDMM_VERSION, srcdir, blddir)
 	install_files('PREFIX', 'share/doc/redlandmm', blddir + '/default/doc/html/*')
 
+def shutdown():
+	autowaf.shutdown()
+
