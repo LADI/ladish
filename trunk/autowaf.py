@@ -75,6 +75,7 @@ def configure(conf):
 		conf.env['CXXFLAGS'] = '-O0 -g -ansi'
 	if Params.g_options.strict:
 		append_cxx_flags('-Wall') # evoral currently -pedantic broken
+	append_cxx_flags('-fPIC -DPIC')
 	g_step = 2
 	
 def set_local_lib(conf, name, has_objects):
