@@ -20,7 +20,6 @@
 
 #include <cassert>
 #include <cstdlib>
-#include "types.hpp"
 #include "Deletable.hpp"
 
 namespace Raul {
