@@ -625,6 +625,9 @@ Module::resize()
 		(*pi)->move_connections();
 	}
 	
+	if (_ports.empty())
+		h += header_height;
+
 	set_height(y + h + 2.0);
 
 	// Center title
