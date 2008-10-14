@@ -22,7 +22,7 @@ namespace Raul {
 
 
 Maid::Maid(size_t size)
-: _objects(size)
+	: _objects(size)
 {
 }
 
