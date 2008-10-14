@@ -75,7 +75,7 @@ public:
 		{ return g_atomic_int_dec_and_test(&_val); }
 
 private:
-	volatile int _val;
+	volatile mutable int _val;
 };
 
 
