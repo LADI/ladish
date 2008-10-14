@@ -74,7 +74,8 @@ def configure(conf):
 		conf.env['CCFLAGS'] = '-O0 -g -std=c99'
 		conf.env['CXXFLAGS'] = '-O0 -g -ansi'
 	if Params.g_options.strict:
-		append_cxx_flags('-Wall') # evoral currently -pedantic broken
+		conf.env['CCFLAGS'] = '-O0 -g -std=c99 -pedantic'
+		append_cxx_flags('-Wall -Wextra -Wno-unused-parameter')
 	append_cxx_flags('-fPIC -DPIC')
 	g_step = 2
 	
