@@ -44,7 +44,7 @@ public:
 		{ return g_atomic_pointer_compare_and_exchange(&_val, oldval, newval); }
 
 private:
-	mutable T* _val;
+	mutable T volatile* _val;
 };
 
 
