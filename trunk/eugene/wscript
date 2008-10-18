@@ -30,7 +30,7 @@ def configure(conf):
 	autowaf.configure(conf)
 	autowaf.check_tool(conf, 'compiler_cxx')
 	autowaf.check_pkg(conf, 'flowcanvas', destvar='FLOWCANVAS', vnum='0.5.1', mandatory=True)
-	autowaf.check_pkg(conf, 'glibmm-2.4', destvar='GLIBMM', vnum='2.16.0', mandatory=True)
+	autowaf.check_pkg(conf, 'glibmm-2.4', destvar='GLIBMM', vnum='2.14.0', mandatory=True)
 	autowaf.check_pkg(conf, 'gthread-2.0', destvar='GTHREAD', vnum='2.16.0', mandatory=True)
 	autowaf.check_pkg(conf, 'gtkmm-2.4', destvar='GTKMM', vnum='2.11.12', mandatory=True)
 	autowaf.check_pkg(conf, 'libglademm-2.4', destvar='GLADEMM', vnum='2.6.0', mandatory=True)

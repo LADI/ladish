@@ -3,14 +3,18 @@
 #include <utility>
 #include <map>
 #include <set>
-#include <tr1/unordered_map>
 #include <sys/time.h>
 #include <raul/PathTable.hpp>
 #include <raul/Table.hpp>
 #include <raul/TableImpl.hpp>
 
-#define BOOST_MULTI_INDEX_DISABLE_SERIALIZATION 1
-#include <boost/functional/hash.hpp>
+//#define WITH_TR1 1
+
+#ifdef WITH_TR1
+	#define BOOST_MULTI_INDEX_DISABLE_SERIALIZATION 1
+	#include <boost/functional/hash.hpp>
+	#include <tr1/unordered_map>
+#endif
 
 using namespace Raul;
 using namespace std;
@@ -347,6 +351,7 @@ benchmark(size_t n)
 	cout << "Raul::Table time to lookup " << n << " values: \t" << delta_t << endl;
 	
 	
+#ifdef WITH_TR1
 	/** boost::hash && std::unordered_map **/
 	
 	tr1::unordered_map<string, int, boost::hash<string> > um;
@@ -374,5 +379,6 @@ benchmark(size_t n)
 	delta_t = (t2.tv_sec - t1.tv_sec) + (t2.tv_usec - t1.tv_usec) * 0.000001f;
 
 	cout << "tr1::unordered_map + boost::hash time to lookup " << n << " values: \t" << delta_t << endl;
+#endif
 }
 
