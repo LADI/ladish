@@ -15,8 +15,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <raul/Symbol.hpp>
-#include <raul/Path.hpp>
+#include "raul/Symbol.hpp"
+#include "raul/Path.hpp"
 
 using namespace std;
 

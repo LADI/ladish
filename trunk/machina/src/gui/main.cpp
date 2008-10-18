@@ -19,7 +19,7 @@
 #include <iostream>
 #include <string>
 #include <libgnomecanvasmm.h>
-#include <redlandmm/World.hpp>
+#include "redlandmm/World.hpp"
 #include "config.h"
 #include "machina/Machine.hpp"
 #include "machina/Loader.hpp"

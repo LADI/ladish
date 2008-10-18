@@ -20,7 +20,7 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
-#include <eugene/LABS.hpp>
+#include "eugene/LABS.hpp"
 
 using namespace std;
 

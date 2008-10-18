@@ -21,9 +21,9 @@
 #include <cstdlib>
 #include <cassert>
 #include <cmath>
-#include <flowcanvas/Item.hpp>
-#include <flowcanvas/Ellipse.hpp>
-#include <flowcanvas/Canvas.hpp>
+#include "flowcanvas/Item.hpp"
+#include "flowcanvas/Ellipse.hpp"
+#include "flowcanvas/Canvas.hpp"
 using std::string;
 
 namespace FlowCanvas {

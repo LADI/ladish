@@ -19,7 +19,7 @@
 #include <map>
 #include <cmath>
 #include <glibmm/ustring.h>
-#include <redlandmm/Query.hpp>
+#include "redlandmm/Query.hpp"
 #include "machina/Loader.hpp"
 #include "machina/Node.hpp"
 #include "machina/Edge.hpp"

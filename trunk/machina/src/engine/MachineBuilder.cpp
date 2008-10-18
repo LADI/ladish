@@ -16,8 +16,8 @@
  */
 
 #include <algorithm>
-#include <raul/midi_events.h>
-#include <raul/Quantizer.hpp>
+#include "raul/midi_events.h"
+#include "raul/Quantizer.hpp"
 #include "machina/MachineBuilder.hpp"
 #include "machina/Machine.hpp"
 #include "machina/Node.hpp"

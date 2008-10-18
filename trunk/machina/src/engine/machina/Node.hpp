@@ -18,10 +18,10 @@
 #ifndef MACHINA_NODE_HPP
 #define MACHINA_NODE_HPP
 
-#include <raul/SharedPtr.hpp>
-#include <raul/List.hpp>
-#include <raul/Stateful.hpp>
-#include <raul/MIDISink.hpp>
+#include "raul/SharedPtr.hpp"
+#include "raul/List.hpp"
+#include "raul/Stateful.hpp"
+#include "raul/MIDISink.hpp"
 #include "Action.hpp"
 #include "Schrodinbit.hpp"
 

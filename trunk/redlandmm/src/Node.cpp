@@ -19,8 +19,8 @@
 #include <cassert>
 #include <cstring>
 #include <sstream>
-#include <redlandmm/World.hpp>
-#include <redlandmm/Node.hpp>
+#include "redlandmm/World.hpp"
+#include "redlandmm/Node.hpp"
 
 using namespace std;
 

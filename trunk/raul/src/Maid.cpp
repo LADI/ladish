@@ -15,8 +15,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <raul/Maid.hpp>
-#include <raul/Deletable.hpp>
+#include "raul/Maid.hpp"
+#include "raul/Deletable.hpp"
 
 namespace Raul {
 

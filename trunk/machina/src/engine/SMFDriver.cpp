@@ -18,10 +18,10 @@
 #include <list>
 #include <iostream>
 #include <glibmm/convert.h>
-#include <raul/Quantizer.hpp>
-#include <raul/SharedPtr.hpp>
-#include <raul/SMFWriter.hpp>
-#include <raul/SMFReader.hpp>
+#include "raul/Quantizer.hpp"
+#include "raul/SharedPtr.hpp"
+#include "raul/SMFWriter.hpp"
+#include "raul/SMFReader.hpp"
 #include "machina/Machine.hpp"
 #include "machina/Edge.hpp"
 #include "machina/SMFDriver.hpp"

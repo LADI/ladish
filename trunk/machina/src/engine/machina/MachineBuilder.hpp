@@ -19,7 +19,7 @@
 #define MACHINA_MACHINEBUILDER_HPP
 
 #include <list>
-#include <raul/SharedPtr.hpp>
+#include "raul/SharedPtr.hpp"
 
 namespace Machina {
 

@@ -21,8 +21,8 @@
 #include "config.h"
 #include <string>
 #include <boost/shared_ptr.hpp>
-#include <flowcanvas/Port.hpp>
-#include <flowcanvas/Module.hpp>
+#include "flowcanvas/Port.hpp"
+#include "flowcanvas/Module.hpp"
 
 #ifdef HAVE_ALSA
 #include <alsa/asoundlib.h>

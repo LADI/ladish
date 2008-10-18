@@ -18,7 +18,7 @@
 #ifndef MACHINA_EDGEVIEW_H
 #define MACHINA_EDGEVIEW_H
 
-#include <flowcanvas/Connection.hpp>
+#include "flowcanvas/Connection.hpp"
 
 namespace Machina { class Edge; }
 class NodeView;

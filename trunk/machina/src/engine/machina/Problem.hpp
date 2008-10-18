@@ -21,8 +21,8 @@
 #include "config.h"
 
 #include <map>
-#include <raul/MIDISink.hpp>
-#include <machina/Machine.hpp>
+#include "raul/MIDISink.hpp"
+#include "machina/Machine.hpp"
 
 namespace Machina {
 

@@ -18,8 +18,8 @@
 #include <iostream>
 #include <cassert>
 #include <cstring>
-#include <redlandmm/Query.hpp>
-#include <redlandmm/Model.hpp>
+#include "redlandmm/Query.hpp"
+#include "redlandmm/Model.hpp"
 
 using namespace std;
 

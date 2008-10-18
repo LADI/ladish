@@ -17,8 +17,8 @@
 
 #include <sstream>
 #include <cassert>
-#include <redlandmm/World.hpp>
-#include <redlandmm/Node.hpp>
+#include "redlandmm/World.hpp"
+#include "redlandmm/Node.hpp"
 
 #define U(x) ((const unsigned char*)(x))
 

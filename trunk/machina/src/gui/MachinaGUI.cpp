@@ -24,10 +24,10 @@
 #include <pthread.h>
 #include <libgnomecanvasmm.h>
 #include <libglademm/xml.h>
-#include <redlandmm/Model.hpp>
-#include <machina/Machine.hpp>
-#include <machina/Mutation.hpp>
-#include <machina/SMFDriver.hpp>
+#include "redlandmm/Model.hpp"
+#include "machina/Machine.hpp"
+#include "machina/Mutation.hpp"
+#include "machina/SMFDriver.hpp"
 #include "GladeXml.hpp"
 #include "MachinaGUI.hpp"
 #include "MachinaCanvas.hpp"
@@ -35,7 +35,7 @@
 #include "EdgeView.hpp"
 
 #ifdef HAVE_EUGENE
-#include <machina/Evolver.hpp>
+#include "machina/Evolver.hpp"
 #endif
 
 using namespace Machina;

@@ -19,10 +19,10 @@
 #define MACHINA_GUI_H
 
 #include <string>
-#include <raul/SharedPtr.hpp>
-#include <raul/Maid.hpp>
 #include <libgnomecanvasmm.h>
-#include <machina/Engine.hpp>
+#include "raul/SharedPtr.hpp"
+#include "raul/Maid.hpp"
+#include "machina/Engine.hpp"
 
 using namespace std;
 

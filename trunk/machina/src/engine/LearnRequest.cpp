@@ -15,8 +15,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <raul/Quantizer.hpp>
-#include <machina/LearnRequest.hpp>
+#include "raul/Quantizer.hpp"
+#include "machina/LearnRequest.hpp"
 
 namespace Machina {
 

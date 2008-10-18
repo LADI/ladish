@@ -23,7 +23,7 @@
 #include <jack/jack.h>
 #include <jack/statistics.h>
 #include <glibmm/thread.h>
-#include <raul/AtomicPtr.hpp>
+#include "raul/AtomicPtr.hpp"
 #include <dbus/dbus.h>
 
 #include "Driver.hpp"

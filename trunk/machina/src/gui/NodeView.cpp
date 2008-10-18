@@ -16,7 +16,7 @@
  */
 
 #include <iostream>
-#include <machina/MidiAction.hpp>
+#include "machina/MidiAction.hpp"
 #include "NodeView.hpp"
 #include "NodePropertiesWindow.hpp"
 

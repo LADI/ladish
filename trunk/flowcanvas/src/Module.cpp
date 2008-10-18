@@ -21,9 +21,9 @@
 #include <cstdlib>
 #include <cassert>
 #include <cmath>
-#include <flowcanvas/Item.hpp>
-#include <flowcanvas/Module.hpp>
-#include <flowcanvas/Canvas.hpp>
+#include "flowcanvas/Item.hpp"
+#include "flowcanvas/Module.hpp"
+#include "flowcanvas/Canvas.hpp"
 
 using namespace std;
 

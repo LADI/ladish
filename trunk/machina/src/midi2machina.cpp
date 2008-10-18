@@ -17,7 +17,7 @@
 
 #include <iostream>
 #include <signal.h>
-#include <redlandmm/Model.hpp>
+#include "redlandmm/Model.hpp"
 #include "machina/Engine.hpp"
 #include "machina/Machine.hpp"
 #include "machina/Node.hpp"

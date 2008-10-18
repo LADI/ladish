@@ -16,9 +16,9 @@
  */
 
 #include <cstdlib>
-#include <raul/SharedPtr.hpp>
-#include <redlandmm/Model.hpp>
-#include <redlandmm/World.hpp>
+#include "raul/SharedPtr.hpp"
+#include "redlandmm/Model.hpp"
+#include "redlandmm/World.hpp"
 #include "machina/Edge.hpp"
 #include "machina/Machine.hpp"
 #include "machina/MidiAction.hpp"

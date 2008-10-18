@@ -24,7 +24,7 @@
 #include <jack/jack.h>
 #include <jack/statistics.h>
 #include <jack/thread.h>
-#include <raul/SharedPtr.hpp>
+#include "raul/SharedPtr.hpp"
 #include "PatchageCanvas.hpp"
 #include "PatchageEvent.hpp"
 #include "JackDriver.hpp"

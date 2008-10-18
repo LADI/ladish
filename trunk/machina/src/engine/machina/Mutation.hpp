@@ -21,7 +21,7 @@
 #include "config.h"
 
 #if HAVE_EUGENE
-	#include <eugene/core/Mutation.hpp>
+	#include "eugene/core/Mutation.hpp"
 	#define SUPER : public Eugene::Mutation<Machine>
 #else
 	#define SUPER

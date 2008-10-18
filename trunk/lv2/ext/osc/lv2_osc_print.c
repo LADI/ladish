@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "lv2_osc_print.h"
 #include <stdio.h>
+#include "lv2_osc_print.h"
 
 void
 lv2_osc_argument_print(char type, const LV2_OSC_Argument* arg)

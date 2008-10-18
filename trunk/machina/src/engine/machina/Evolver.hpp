@@ -18,9 +18,9 @@
 #ifndef MACHINA_EVOLVER_HPP
 #define MACHINA_EVOLVER_HPP
 
-#include <raul/SharedPtr.hpp>
-#include <raul/Thread.hpp>
-#include <eugene/core/GAImpl.hpp>
+#include "raul/SharedPtr.hpp"
+#include "raul/Thread.hpp"
+#include "eugene/core/GAImpl.hpp"
 #include "Schrodinbit.hpp"
 
 namespace Eugene { template <typename G> class HybridMutation; }

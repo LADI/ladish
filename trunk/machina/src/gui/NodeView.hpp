@@ -18,7 +18,7 @@
 #ifndef MACHINA_NODEVIEW_H
 #define MACHINA_NODEVIEW_H
 
-#include <flowcanvas/Ellipse.hpp>
+#include "flowcanvas/Ellipse.hpp"
 #include "machina/Node.hpp"
 
 

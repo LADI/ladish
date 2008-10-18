@@ -20,7 +20,7 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
-#include <eugene/Sphere.hpp>
+#include "eugene/Sphere.hpp"
 
 using namespace std;
 

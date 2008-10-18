@@ -16,13 +16,13 @@
  */
 
 #include <cassert>
-#include <raul/Atom.hpp>
-#include <raul/AtomRDF.hpp>
-#include <redlandmm/World.hpp>
-#include <redlandmm/Model.hpp>
-#include <machina/Node.hpp>
-#include <machina/Edge.hpp>
-#include <machina/ActionFactory.hpp>
+#include "raul/Atom.hpp"
+#include "raul/AtomRDF.hpp"
+#include "redlandmm/World.hpp"
+#include "redlandmm/Model.hpp"
+#include "machina/Node.hpp"
+#include "machina/Edge.hpp"
+#include "machina/ActionFactory.hpp"
 
 using namespace Raul;
 

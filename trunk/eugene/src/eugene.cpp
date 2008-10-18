@@ -23,26 +23,26 @@
 #include <cstring>
 #include <fstream>
 #include <ctime>
-#include <eugene/Gene.hpp>
-#include <eugene/GA.hpp>
-#include <eugene/GAImpl.hpp>
-#include <eugene/ESImpl.hpp>
-#include <eugene/Crossover.hpp>
-#include <eugene/OnePointCrossover.hpp>
-#include <eugene/TwoPointCrossover.hpp>
-#include <eugene/UniformCrossover.hpp>
-#include <eugene/PartiallyMappedCrossover.hpp>
-#include <eugene/OrderCrossover.hpp>
-#include <eugene/PositionBasedCrossover.hpp>
-#include <eugene/Problem.hpp>
-#include <eugene/Mutation.hpp>
-#include <eugene/RouletteSelection.hpp>
-#include <eugene/TournamentSelection.hpp>
-#include <eugene/TSP.hpp>
-#include <eugene/LABS.hpp>
-#include <eugene/Sphere.hpp>
-#include <eugene/Mutation.hpp>
-#include <eugene/ESMutation.hpp>
+#include "eugene/Gene.hpp"
+#include "eugene/GA.hpp"
+#include "eugene/GAImpl.hpp"
+#include "eugene/ESImpl.hpp"
+#include "eugene/Crossover.hpp"
+#include "eugene/OnePointCrossover.hpp"
+#include "eugene/TwoPointCrossover.hpp"
+#include "eugene/UniformCrossover.hpp"
+#include "eugene/PartiallyMappedCrossover.hpp"
+#include "eugene/OrderCrossover.hpp"
+#include "eugene/PositionBasedCrossover.hpp"
+#include "eugene/Problem.hpp"
+#include "eugene/Mutation.hpp"
+#include "eugene/RouletteSelection.hpp"
+#include "eugene/TournamentSelection.hpp"
+#include "eugene/TSP.hpp"
+#include "eugene/LABS.hpp"
+#include "eugene/Sphere.hpp"
+#include "eugene/Mutation.hpp"
+#include "eugene/ESMutation.hpp"
 
 using namespace std;
 using namespace Eugene;

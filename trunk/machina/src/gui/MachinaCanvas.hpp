@@ -19,9 +19,9 @@
 #define MACHINA_CANVAS_HPP_H
 
 #include <string>
-#include <raul/SharedPtr.hpp>
-#include <raul/WeakPtr.hpp>
-#include <flowcanvas/Canvas.hpp>
+#include "raul/SharedPtr.hpp"
+#include "raul/WeakPtr.hpp"
+#include "flowcanvas/Canvas.hpp"
 
 using namespace FlowCanvas;
 

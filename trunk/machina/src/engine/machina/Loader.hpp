@@ -19,9 +19,9 @@
 #define MACHINA_LOADER_HPP
 
 #include <glibmm/ustring.h>
-#include <raul/SharedPtr.hpp>
-#include <raul/Path.hpp>
-#include <redlandmm/World.hpp>
+#include "raul/SharedPtr.hpp"
+#include "raul/Path.hpp"
+#include "redlandmm/World.hpp"
 
 using Redland::Namespaces;
 

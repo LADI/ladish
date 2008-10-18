@@ -18,7 +18,7 @@
 #ifndef MACHINA_DRIVER_HPP
 #define MACHINA_DRIVER_HPP
 
-#include <raul/MIDISink.hpp>
+#include "raul/MIDISink.hpp"
 
 namespace Machina {
 

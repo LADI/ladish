@@ -18,8 +18,8 @@
 #ifndef MACHINA_LEARNREQUEST_HPP
 #define MACHINA_LEARNREQUEST_HPP
 
-#include <raul/Maid.hpp>
-#include <raul/SharedPtr.hpp>
+#include "raul/Maid.hpp"
+#include "raul/SharedPtr.hpp"
 #include "types.hpp"
 #include "Node.hpp"
 #include "MidiAction.hpp"

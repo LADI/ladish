@@ -17,7 +17,7 @@
 
 #include <iostream>
 #include <cstring>
-#include <raul/Thread.hpp>
+#include "raul/Thread.hpp"
 
 using namespace std;
 

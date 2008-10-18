@@ -16,12 +16,12 @@
  */
 
 #include <iostream>
-#include <eugene/core/Mutation.hpp>
-#include <eugene/core/HybridMutation.hpp>
-#include <eugene/core/TournamentSelection.hpp>
-#include <machina/Evolver.hpp>
-#include <machina/Mutation.hpp>
-#include <machina/Problem.hpp>
+#include "eugene/core/Mutation.hpp"
+#include "eugene/core/HybridMutation.hpp"
+#include "eugene/core/TournamentSelection.hpp"
+#include "machina/Evolver.hpp"
+#include "machina/Mutation.hpp"
+#include "machina/Problem.hpp"
 
 using namespace std;
 using namespace Eugene;

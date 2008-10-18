@@ -15,10 +15,10 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <raul/Atom.hpp>
-#include <raul/AtomRDF.hpp>
-#include <redlandmm/World.hpp>
-#include <redlandmm/Model.hpp>
+#include "raul/Atom.hpp"
+#include "raul/AtomRDF.hpp"
+#include "redlandmm/World.hpp"
+#include "redlandmm/Model.hpp"
 #include "machina/Node.hpp"
 #include "machina/Edge.hpp"
 

@@ -18,8 +18,8 @@
 #ifndef MACHINA_MIDIACTION_HPP
 #define MACHINA_MIDIACTION_HPP
 
-#include <raul/AtomicPtr.hpp>
-#include <raul/TimeSlice.hpp>
+#include "raul/AtomicPtr.hpp"
+#include "raul/TimeSlice.hpp"
 #include "types.hpp"
 #include "Action.hpp"
 

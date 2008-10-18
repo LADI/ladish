@@ -100,7 +100,7 @@ def use_lib(bld, obj, libs):
 			obj.uselib_local += ' lib' + l.lower() + ' '
 		
 		if in_headers or in_libs:
-			inc_flag = '-I' + abssrcdir + '/' + l.lower()
+			inc_flag = '-iquote' + abssrcdir + '/' + l.lower()
 			for f in ['CCFLAGS', 'CXXFLAGS']:
 				if not inc_flag in bld.env()[f]:
 					bld.env().prepend_value(f, inc_flag)

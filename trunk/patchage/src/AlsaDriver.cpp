@@ -19,7 +19,7 @@
 #include <set>
 #include <iostream>
 #include <cassert>
-#include <raul/SharedPtr.hpp>
+#include "raul/SharedPtr.hpp"
 #include "PatchageCanvas.hpp"
 #include "AlsaDriver.hpp"
 #include "Patchage.hpp"

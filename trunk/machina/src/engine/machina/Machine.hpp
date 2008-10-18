@@ -20,11 +20,11 @@
 
 #include <vector>
 #include <boost/utility.hpp>
-#include <raul/SharedPtr.hpp>
-#include <raul/WeakPtr.hpp>
-#include <raul/List.hpp>
-#include <raul/TimeSlice.hpp>
-#include <redlandmm/Model.hpp> 
+#include "raul/SharedPtr.hpp"
+#include "raul/WeakPtr.hpp"
+#include "raul/List.hpp"
+#include "raul/TimeSlice.hpp"
+#include "redlandmm/Model.hpp" 
 #include "types.hpp"
 #include "LearnRequest.hpp"
 #include "Node.hpp"

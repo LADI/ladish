@@ -20,7 +20,7 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
-#include <eugene/TSP.hpp>
+#include "eugene/TSP.hpp"
 
 using namespace std;
 
