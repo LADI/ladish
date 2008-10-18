@@ -30,7 +30,7 @@
 #include <dbus/dbus-glib-lowlevel.h>
 
 #include <boost/format.hpp>
-#include <raul/SharedPtr.hpp>
+#include "raul/SharedPtr.hpp"
 
 #include "PatchageCanvas.hpp"
 #include "PatchageEvent.hpp"

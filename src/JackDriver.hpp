@@ -23,7 +23,7 @@
 #include <jack/jack.h>
 #include <jack/statistics.h>
 #include <glibmm/thread.h>
-#include <raul/AtomicPtr.hpp>
+#include "raul/AtomicPtr.hpp"
 #include "Driver.hpp"
 class Patchage;
 class PatchageEvent;

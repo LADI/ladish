@@ -16,7 +16,7 @@
  */
 
 #include "config.h"
-#include <raul/SharedPtr.hpp>
+#include "raul/SharedPtr.hpp"
 #include "Patchage.hpp"
 #include "PatchageCanvas.hpp"
 #include "PatchageModule.hpp"

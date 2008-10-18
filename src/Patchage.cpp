@@ -22,7 +22,7 @@
 #include <libgnomecanvasmm.h>
 #include <libglademm/xml.h>
 #include <gtk/gtkwindow.h>
-#include <raul/SharedPtr.hpp>
+#include "raul/SharedPtr.hpp"
 
 #include "config.h"
 #include "GladeFile.hpp"

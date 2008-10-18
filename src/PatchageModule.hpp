@@ -23,8 +23,8 @@
 #ifdef HAVE_ALSA
 #include <alsa/asoundlib.h>
 #endif
-#include <flowcanvas/Canvas.hpp>
-#include <flowcanvas/Module.hpp>
+#include "flowcanvas/Canvas.hpp"
+#include "flowcanvas/Module.hpp"
 #include "PatchageCanvas.hpp"
 #include "StateManager.hpp"
 #include "PatchagePort.hpp"
