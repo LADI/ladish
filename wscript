@@ -38,25 +38,25 @@ def configure(conf):
 	autowaf.check_pkg(conf, 'dbus-glib-1', destvar='DBUS_GLIB', mandatory=False)
 	autowaf.check_pkg(conf, 'flowcanvas', destvar='FLOWCANVAS', vnum='0.5.1', mandatory=True)
 	autowaf.check_pkg(conf, 'libglademm-2.4', destvar='GLADEMM', vnum='2.6.0', mandatory=True)
-	autowaf.check_pkg(conf, 'glibmm-2.4', destvar='GLIBMM', vnum='2.16.0', mandatory=True)
+	autowaf.check_pkg(conf, 'glibmm-2.4', destvar='GLIBMM', vnum='2.14.0', mandatory=True)
 	autowaf.check_pkg(conf, 'libgnomecanvasmm-2.6', destvar='GNOMECANVASMM', mandatory=True)
-	autowaf.check_pkg(conf, 'gthread-2.0', destvar='GTHREAD', vnum='2.16.0', mandatory=True)
+	autowaf.check_pkg(conf, 'gthread-2.0', destvar='GTHREAD', vnum='2.14.0', mandatory=True)
 	autowaf.check_pkg(conf, 'gtkmm-2.4', destvar='GTKMM', vnum='2.11.12', mandatory=True)
 	autowaf.check_pkg(conf, 'raul', destvar='RAUL', vnum='0.5.1', mandatory=True)
 	
 	# Use Jack D-Bus if requested (only one jack driver is allowed)
-	conf.env['HAVE_JACK_DBUS'] = conf.env['HAVE_DBUS'] and Params.g_options.jack_dbus
+	conf.env['HAVE_JACK_DBUS'] = conf.env['HAVE_DBUS'] == 1 and Params.g_options.jack_dbus
 
 	if conf.env['HAVE_JACK_DBUS']:
 		conf.define('HAVE_JACK_DBUS', conf.env['HAVE_JACK_DBUS'])
-	if not conf.env['HAVE_JACK_DBUS']:
+	else:
 		autowaf.check_pkg(conf, 'jack', destvar='JACK', vnum='0.107.0', mandatory=False)
-		conf.define('USE_LIBJACK', conf.env['HAVE_JACK'])
+		conf.define('USE_LIBJACK', conf.env['HAVE_JACK'] == 1)
 	
-	conf.define('HAVE_JACK_MIDI', conf.env['HAVE_JACK'] or conf.env['HAVE_JACK_DBUS'])
+	conf.define('HAVE_JACK_MIDI', conf.env['HAVE_JACK'] == 1 or conf.env['HAVE_JACK_DBUS'] == 1)
 
 	# Use Alsa if present unless --no-alsa
-	if not Params.g_options.no_alsa and not conf.env['HAVE_ALSA']:
+	if not Params.g_options.no_alsa and conf.env['HAVE_ALSA'] != 1:
 		conf.check_pkg('alsa', destvar='ALSA', mandatory=False)
 	
 	# Use LASH if we have DBUS unless --no-lash
@@ -85,10 +85,10 @@ def configure(conf):
 	autowaf.display_header('Patchage Configuration')
 	autowaf.display_msg("Install name", "'" + conf.env['APP_INSTALL_NAME'] + "'", 'CYAN')
 	autowaf.display_msg("App human name", "'" + conf.env['APP_HUMAN_NAME'] + "'", 'CYAN')
-	autowaf.display_msg("Jack (D-Bus)", str(bool(conf.env['HAVE_JACK_DBUS'])), 'YELLOW')
-	autowaf.display_msg("LASH (D-Bus)", str(bool(conf.env['HAVE_LASH'])), 'YELLOW')
-	autowaf.display_msg("Jack (libjack)", str(bool(conf.env['USE_LIBJACK'])), 'YELLOW')
-	autowaf.display_msg("Alsa Sequencer", str(bool(conf.env['HAVE_ALSA'])), 'YELLOW')
+	autowaf.display_msg("Jack (D-Bus)", str(conf.env['HAVE_JACK_DBUS']), 'YELLOW')
+	autowaf.display_msg("LASH (D-Bus)", str(conf.env['HAVE_LASH'] == 1), 'YELLOW')
+	autowaf.display_msg("Jack (libjack)", str(conf.env['USE_LIBJACK']), 'YELLOW')
+	autowaf.display_msg("Alsa Sequencer", str(conf.env['HAVE_ALSA'] == 1), 'YELLOW')
 	print
 
 def build(bld):
@@ -123,7 +123,7 @@ def build(bld):
 	if bld.env()['USE_LIBJACK']:
 		prog.source += ' src/JackDriver.cpp '
 		prog.uselib += ' JACK '
-	if bld.env()['HAVE_ALSA']:
+	if bld.env()['HAVE_ALSA'] == 1:
 		prog.source += ' src/AlsaDriver.cpp '
 		prog.uselib += ' ALSA '
 	
