@@ -32,7 +32,7 @@ main()
 	
     cerr << endl << endl << "Descendants..." << endl;
     cerr << "/     /foo     " << Path::descendant_comparator("/", "/foo") << endl;
-    cerr << "/foo  /foo/bar " <<  Path::descendant_comparator("/foo", "/foo/bar") << endl;
+    cerr << "/foo  /foo/bar " << Path::descendant_comparator("/foo", "/foo/bar") << endl;
     cerr << "/foo  /foo     " << Path::descendant_comparator("/foo", "/foo") << endl;
     cerr << "/     /        " << Path::descendant_comparator("/", "/") << endl;
     cerr << "/baz  /        " << Path::descendant_comparator("/baz", "/") << endl;
