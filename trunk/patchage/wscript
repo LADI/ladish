@@ -78,8 +78,8 @@ def configure(conf):
 
 	conf.env['APP_INSTALL_NAME'] = Params.g_options.app_install_name
 	conf.env['APP_HUMAN_NAME'] = Params.g_options.app_human_name
-	conf.define('DATA_DIR', os.path.normpath(
-			conf.env['PREFIX'] + '/share/' + conf.env['APP_INSTALL_NAME']))
+	conf.define('PATCHAGE_DATA_DIR', os.path.normpath(
+			conf.env['DATADIR'] + conf.env['APP_INSTALL_NAME']))
 	
 	conf.write_config_header('config.h')
 	
