@@ -18,11 +18,12 @@
 
 #include "common.hpp"
 #include "lash_proxy.hpp"
-#include "LoadProjectDialog.hpp"
+#include "load_projects_dialog.hpp"
 #include "Patchage.hpp"
 #include "globals.hpp"
 
-struct LoadProjectDialog {
+struct LoadProjectDialog
+{
 	LoadProjectDialog();
 
 	void run(std::list<lash_project_info>& projects);
@@ -31,23 +32,25 @@ struct LoadProjectDialog {
 	bool on_button_press_event(GdkEventButton* event_ptr);
 	bool on_key_press_event(GdkEventKey* event_ptr);
 
-	struct Record : public Gtk::TreeModel::ColumnRecord {
+	struct Record : public Gtk::TreeModel::ColumnRecord
+	{
 		Gtk::TreeModelColumn<Glib::ustring> name;
 		Gtk::TreeModelColumn<Glib::ustring> modified;
 		Gtk::TreeModelColumn<Glib::ustring> description;
 	};
 
-	Patchage*                    _app;
-	Widget<Gtk::Dialog>          _dialog;
-	Widget<Gtk::TreeView>        _widget;
-	Record                       _columns;
+	Patchage * _app;
+	Widget<Gtk::Dialog> _dialog;
+	Widget<Gtk::TreeView> _widget;
+	Record _columns;
 	Glib::RefPtr<Gtk::ListStore> _model;
 };
 
-static void
+static
+void
 convert_timestamp_to_string(
-    const time_t timestamp,
-    std::string& timestamp_string)
+	const time_t timestamp,
+	std::string& timestamp_string)
 {
 	GDate mtime, now;
 	gint days_diff;
@@ -56,7 +59,8 @@ convert_timestamp_to_string(
 	const gchar *format;
 	gchar buf[256];
 
-	if (timestamp == 0) {
+	if (timestamp == 0)
+	{
 		timestamp_string = "Unknown";
 		return;
 	}
@@ -69,21 +73,32 @@ convert_timestamp_to_string(
 
 	days_diff = g_date_get_julian(&now) - g_date_get_julian(&mtime);
 
-	if (days_diff == 0) {
+	if (days_diff == 0)
+	{
 		format = "Today at %H:%M";
-	} else if (days_diff == 1) {
+	}
+	else if (days_diff == 1)
+	{
 		format = "Yesterday at %H:%M";
-	} else {
-		if (days_diff > 1 && days_diff < 7) {
+	}
+	else
+	{
+		if (days_diff > 1 && days_diff < 7)
+		{
 			format = "%A"; /* Days from last week */
-		} else {
+		}
+		else
+		{
 			format = "%x"; /* Any other date */
 		}
 	}
 
-	if (strftime(buf, sizeof(buf), format, &tm_mtime) != 0) {
+	if (strftime(buf, sizeof(buf), format, &tm_mtime) != 0)
+	{
 		timestamp_string = buf;
-	} else {
+	}
+	else
+	{
 		timestamp_string = "Unknown";
 	}
 }
@@ -93,6 +108,9 @@ LoadProjectDialog::LoadProjectDialog()
 	: _dialog(g_xml, "load_project_dialog")
 	, _widget(g_xml, "loadable_projects_list")
 {
+	_dialog.init(g_xml, "load_project_dialog");
+	_widget.init(g_xml, "loadable_projects_list");
+
 	_columns.add(_columns.name);
 	_columns.add(_columns.modified);
 	_columns.add(_columns.description);
@@ -113,7 +131,8 @@ LoadProjectDialog::run(std::list<lash_project_info>& projects)
 	Gtk::TreeModel::Row row;
 	int result;
 
-	for (std::list<lash_project_info>::iterator iter = projects.begin(); iter != projects.end(); iter++) {
+	for (std::list<lash_project_info>::iterator iter = projects.begin(); iter != projects.end(); iter++)
+	{
 		std::string str;
 		row = *(_model->append());
 		row[_columns.name] = iter->name;
@@ -128,11 +147,14 @@ LoadProjectDialog::run(std::list<lash_project_info>& projects)
 loop:
 	result = _dialog->run();
 
-	if (result == 2) {
+	if (result == 2)
+	{
 		Glib::RefPtr<Gtk::TreeView::Selection> selection = _widget->get_selection();
 		Gtk::TreeIter iter = selection->get_selected();
 		if (!iter)
+		{
 			goto loop;
+		}
 
 		Glib::ustring project_name = (*iter)[_columns.name];
 		_app->load_project(project_name);
@@ -155,7 +177,8 @@ LoadProjectDialog::load_selected_project()
 bool
 LoadProjectDialog::on_button_press_event(GdkEventButton * event_ptr)
 {
-	if (event_ptr->type == GDK_2BUTTON_PRESS && event_ptr->button == 1) {
+	if (event_ptr->type == GDK_2BUTTON_PRESS && event_ptr->button == 1)
+	{
 		load_selected_project();
 		return true;
 	}
@@ -167,11 +190,13 @@ bool
 LoadProjectDialog::on_key_press_event(GdkEventKey * event_ptr)
 {
 	if (event_ptr->type == GDK_KEY_PRESS &&
-	        (event_ptr->keyval == GDK_Return ||
-	         event_ptr->keyval == GDK_KP_Enter)) {
+			(event_ptr->keyval == GDK_Return ||
+			 event_ptr->keyval == GDK_KP_Enter))
+	{
 		load_selected_project();
 		return true;
 	}
+
 	return false;
 }
 
