@@ -171,13 +171,17 @@ def build_pc(bld, name, version, libs):
 	version -- version string              (e.g. '1.2.3')
 	libs    -- string/list of dependencies (e.g. 'LIBFOO GLIB')
 	'''
+
 	obj          = bld.create_obj('subst')
 	obj.source   = name.lower() + '.pc.in'
 	obj.target   = name.lower() + '.pc'
 	obj.inst_var = 'PREFIX'
 	obj.inst_dir = 'lib/pkgconfig'
+	pkg_prefix   = bld.env()['PREFIX'] 
+	if pkg_prefix[-1] == '/':
+		pkg_prefix = pkg_prefix[:-1]
 	obj.dict     = {
-		'prefix'           : bld.env()['PREFIX'][:-1],
+		'prefix'           : pkg_prefix,
 		'exec_prefix'      : '${prefix}',
 		'libdir'           : '${exec_prefix}/lib',
 		'includedir'       : '${prefix}/include',

@@ -1,9 +1,7 @@
 #!/usr/bin/env python
-#
+# Licensed under the GNU GPL v2 or later, see COPYING file for details.
 # Copyright (C) 2008 Dave Robillard
 # Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
-#
-
 import os
 import Params
 import autowaf
