@@ -8,6 +8,7 @@ import os
 import misc
 import Params
 import Configure
+import Utils
 
 Configure.g_maxlen = 55
 g_is_child = False
@@ -21,13 +22,19 @@ def set_options(opt):
 	global g_step
 	if g_step > 0:
 		return
-	opt.add_option('--build-docs', action='store_true', default=False, dest='build_docs',
-			help="Build documentation - requires doxygen [Default: False]")
+	opt.tool_options('compiler_cxx')
 	opt.add_option('--debug', action='store_true', default=False, dest='debug',
 			help="Build debuggable binaries [Default: False]")
 	opt.add_option('--strict', action='store_true', default=False, dest='strict',
 			help="Use strict compiler flags and show all warnings [Default: False]")
-	opt.tool_options('compiler_cxx')
+	opt.add_option('--build-docs', action='store_true', default=False, dest='build_docs',
+			help="Build documentation - requires doxygen [Default: False]")
+	opt.add_option('--bindir', type='string', help="Executable programs [Default: PREFIX/bin]")
+	opt.add_option('--libdir', type='string', help="Libraries [Default: PREFIX/lib]")
+	opt.add_option('--includedir', type='string', help="Header files [Default: PREFIX/include]")
+	opt.add_option('--datadir', type='string', help="Shared data [Default: PREFIX/share]")
+	opt.add_option('--mandir', type='string', help="Manual pages [Default: DATADIR/man]")
+	opt.add_option('--htmldir', type='string', help="HTML documentation [Default: DATADIR/doc/PACKAGE]")
 	g_step = 1
 
 def check_header(conf, name, define='', **args):
@@ -70,6 +77,26 @@ def configure(conf):
 	check_tool(conf, 'compiler_cxx')
 	conf.env['BUILD_DOCS'] = Params.g_options.build_docs
 	conf.env['DEBUG'] = Params.g_options.debug
+	if Params.g_options.bindir:
+		conf.env['BINDIR'] = Params.g_options.bindir
+	else:
+		conf.env['BINDIR'] = conf.env['PREFIX'] + 'bin/'
+	if Params.g_options.libdir:
+		conf.env['LIBDIR'] = Params.g_options.libdir
+	else:
+		conf.env['LIBDIR'] = conf.env['PREFIX'] + 'lib/'
+	if Params.g_options.datadir:
+		conf.env['DATADIR'] = Params.g_options.datadir
+	else:
+		conf.env['DATADIR'] = conf.env['PREFIX'] + 'share/'
+	if Params.g_options.htmldir:
+		conf.env['HTMLDIR'] = Params.g_options.htmldir
+	else:
+		conf.env['HTMLDIR'] = conf.env['DATADIR'] + 'doc/' + Utils.g_module.APPNAME + '/'
+	if Params.g_options.mandir:
+		conf.env['MANDIR'] = Params.g_options.mandir
+	else:
+		conf.env['MANDIR'] = conf.env['DATADIR'] + 'man/'
 	if Params.g_options.debug:
 		conf.env['CCFLAGS'] = '-O0 -g -std=c99'
 		conf.env['CXXFLAGS'] = '-O0 -g -ansi'
