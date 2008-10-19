@@ -19,35 +19,6 @@
 #ifndef PATCHAGE_LOAD_PROJECT_DIALOG_H
 #define PATCHAGE_LOAD_PROJECT_DIALOG_H
 
-#include <list>
-#include <gtkmm.h>
-#include "Widget.hpp"
-
-class Patchage;
-class ProjectInfo;
-
-class LoadProjectDialog {
-public:
-	LoadProjectDialog(Patchage* app);
-
-	void run(std::list<ProjectInfo>& projects);
-
-private:
-	struct Record : public Gtk::TreeModel::ColumnRecord {
-		Gtk::TreeModelColumn<Glib::ustring> name;
-		Gtk::TreeModelColumn<Glib::ustring> modified;
-		Gtk::TreeModelColumn<Glib::ustring> description;
-	};
-
-	void load_selected_project();
-	bool on_button_press_event(GdkEventButton* event_ptr);
-	bool on_key_press_event(GdkEventKey* event_ptr);
-
-	Patchage*                    _app;
-	Widget<Gtk::Dialog>          _dialog;
-	Widget<Gtk::TreeView>        _widget;
-	Record                       _columns;
-	Glib::RefPtr<Gtk::ListStore> _model;
-};
+void run_load_project_dialog(std::list<lash_project_info>& projects);
 
 #endif // PATCHAGE_LOAD_PROJECT_DIALOG_H

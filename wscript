@@ -72,7 +72,7 @@ def build(bld):
 	    'src/jack_proxy.cpp',
 	    'src/lash_client.cpp',
 	    'src/lash_proxy.cpp',
-	    #'src/LoadProjectDialog.cpp',
+	    'src/LoadProjectDialog.cpp',
 	    'src/project.cpp',
 	    'src/project_list.cpp',
 	    'src/project_properties.cpp',

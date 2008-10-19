@@ -16,9 +16,33 @@
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include "common.hpp"
+#include "lash_proxy.hpp"
 #include "LoadProjectDialog.hpp"
 #include "Patchage.hpp"
-#include "LashProxy.hpp"
+#include "globals.hpp"
+
+struct LoadProjectDialog {
+	LoadProjectDialog();
+
+	void run(std::list<lash_project_info>& projects);
+
+	void load_selected_project();
+	bool on_button_press_event(GdkEventButton* event_ptr);
+	bool on_key_press_event(GdkEventKey* event_ptr);
+
+	struct Record : public Gtk::TreeModel::ColumnRecord {
+		Gtk::TreeModelColumn<Glib::ustring> name;
+		Gtk::TreeModelColumn<Glib::ustring> modified;
+		Gtk::TreeModelColumn<Glib::ustring> description;
+	};
+
+	Patchage*                    _app;
+	Widget<Gtk::Dialog>          _dialog;
+	Widget<Gtk::TreeView>        _widget;
+	Record                       _columns;
+	Glib::RefPtr<Gtk::ListStore> _model;
+};
 
 static void
 convert_timestamp_to_string(
@@ -65,10 +89,9 @@ convert_timestamp_to_string(
 }
 
 
-LoadProjectDialog::LoadProjectDialog(Patchage* app)
-	: _app(app)
-	, _dialog(app->xml(), "load_project_dialog")
-	, _widget(app->xml(), "loadable_projects_list")
+LoadProjectDialog::LoadProjectDialog()
+	: _dialog(g_xml, "load_project_dialog")
+	, _widget(g_xml, "loadable_projects_list")
 {
 	_columns.add(_columns.name);
 	_columns.add(_columns.modified);
@@ -85,12 +108,12 @@ LoadProjectDialog::LoadProjectDialog(Patchage* app)
 
 
 void
-LoadProjectDialog::run(std::list<ProjectInfo>& projects)
+LoadProjectDialog::run(std::list<lash_project_info>& projects)
 {
 	Gtk::TreeModel::Row row;
 	int result;
 
-	for (std::list<ProjectInfo>::iterator iter = projects.begin(); iter != projects.end(); iter++) {
+	for (std::list<lash_project_info>::iterator iter = projects.begin(); iter != projects.end(); iter++) {
 		std::string str;
 		row = *(_model->append());
 		row[_columns.name] = iter->name;
@@ -112,7 +135,7 @@ loop:
 			goto loop;
 
 		Glib::ustring project_name = (*iter)[_columns.name];
-		_app->lash_proxy()->load_project(project_name);
+		_app->load_project(project_name);
 	}
 
 	_dialog->hide();
@@ -124,7 +147,7 @@ LoadProjectDialog::load_selected_project()
 {
 	Glib::RefPtr<Gtk::TreeView::Selection> selection = _widget->get_selection();
 	Glib::ustring name = (*selection->get_selected())[_columns.name];
-	_app->lash_proxy()->load_project(name);
+	_app->load_project(name);
 	_dialog->hide();
 }
 
@@ -152,3 +175,8 @@ LoadProjectDialog::on_key_press_event(GdkEventKey * event_ptr)
 	return false;
 }
 
+void run_load_project_dialog(std::list<lash_project_info>& projects)
+{
+	LoadProjectDialog dialog;
+	dialog.run(projects);
+}
