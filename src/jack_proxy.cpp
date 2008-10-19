@@ -21,7 +21,7 @@
 #include <set>
 #include <iostream>
 
-#include CONFIG_H_PATH
+#include "config.h"
 
 #include <glib.h>
 #include <dbus/dbus.h>

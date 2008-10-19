@@ -25,7 +25,7 @@
 #include <gtk/gtkwindow.h>
 #include <boost/format.hpp>
 
-#include CONFIG_H_PATH
+#include "config.h"
 #include "common.hpp"
 #include "jack_proxy.hpp"
 #include "Patchage.hpp"
