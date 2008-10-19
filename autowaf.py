@@ -16,13 +16,18 @@ g_is_child = False
 global g_step
 g_step = 0
 
-def set_options(opt):
+global g_docs_available
+
+def set_options(opt, docs_available = True):
 	"Add standard autowaf options if they havn't been added yet"
 	global g_step
+	global g_docs_available
 	if g_step > 0:
 		return
-	opt.add_option('--build-docs', action='store_true', default=False, dest='build_docs',
-			help="Build documentation - requires doxygen [Default: False]")
+	g_docs_available = docs_available
+	if docs_available:
+		opt.add_option('--build-docs', action='store_true', default=False, dest='build_docs',
+			       help="Build documentation - requires doxygen [Default: False]")
 	opt.add_option('--debug', action='store_true', default=False, dest='debug',
 			help="Build debuggable binaries [Default: False]")
 	opt.add_option('--strict', action='store_true', default=False, dest='strict',
@@ -60,6 +65,7 @@ def check_pkg(conf, name, **args):
 
 def configure(conf):
 	global g_step
+	global g_docs_available
 	if g_step > 1:
 		return
 	def append_cxx_flags(val):
@@ -68,7 +74,10 @@ def configure(conf):
 	check_tool(conf, 'misc')
 	check_tool(conf, 'compiler_cc')
 	check_tool(conf, 'compiler_cxx')
-	conf.env['BUILD_DOCS'] = Params.g_options.build_docs
+	if g_docs_available:
+		conf.env['BUILD_DOCS'] = Params.g_options.build_docs
+	else:
+		conf.env['BUILD_DOCS'] = False
 	conf.env['DEBUG'] = Params.g_options.debug
 	if Params.g_options.debug:
 		conf.env['CCFLAGS'] = '-O0 -g -std=c99'
@@ -127,6 +136,7 @@ def display_feature(msg, build):
 
 def print_summary(conf):
 	global g_step
+	global g_docs_available
 	if g_step > 2:
 		print
 		return
@@ -135,7 +145,8 @@ def print_summary(conf):
 	display_header('Global configuration')
 	display_msg("Install prefix", conf.env['PREFIX'], 'CYAN')
 	display_msg("Debuggable build", str(conf.env['DEBUG']), 'YELLOW')
-	display_msg("Build documentation", str(conf.env['BUILD_DOCS']), 'YELLOW')
+	if g_docs_available:
+		display_msg("Build documentation", str(conf.env['BUILD_DOCS']), 'YELLOW')
 	print
 	g_step = 3
 
