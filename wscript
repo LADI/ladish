@@ -21,6 +21,7 @@ srcdir = '.'
 blddir = 'build'
 
 def set_options(opt):
+	autowaf.set_options(opt, False)
 	opt.tool_options('compiler_cc')
 	opt.tool_options('compiler_cxx')
 
@@ -54,7 +55,7 @@ def configure(conf):
 	conf.write_config_header('config.h')
 
 	print
-	display_msg("Install prefix", conf.env['PREFIX'], 'CYAN')
+	autowaf.display_msg("Install prefix", conf.env['PREFIX'], 'CYAN')
 	autowaf.display_msg("Install name", "'" + conf.env['APP_INSTALL_NAME'] + "'", 'CYAN')
 	autowaf.display_msg("App human name", "'" + conf.env['APP_HUMAN_NAME'] + "'", 'CYAN')
 	print
@@ -73,7 +74,7 @@ def build(bld):
 	    'src/jack_proxy.cpp',
 	    'src/lash_client.cpp',
 	    'src/lash_proxy.cpp',
-	    'src/LoadProjectDialog.cpp',
+	    #'src/LoadProjectDialog.cpp',
 	    'src/project.cpp',
 	    'src/project_list.cpp',
 	    'src/project_properties.cpp',
