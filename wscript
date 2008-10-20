@@ -20,8 +20,6 @@ blddir = 'build'
 
 def set_options(opt):
 	autowaf.set_options(opt)
-	opt.tool_options('compiler_cc')
-	opt.tool_options('compiler_cxx')
 	opt.add_option('--install-name', type='string', default=APPNAME, dest='app_install_name',
 			help="Install name. [Default: '" + APPNAME + "']")
 	opt.add_option('--app-human-name', type='string', default=APP_HUMAN_NAME, dest='app_human_name',
@@ -63,8 +61,8 @@ def configure(conf):
 	
 	# Use LASH if we have DBUS unless --no-lash
 	if not Params.g_options.no_lash and conf.env['HAVE_DBUS_GLIB']:
-		conf.env['HAVE_LASH'] = True
-		conf.define('HAVE_LASH', True)
+		conf.env['HAVE_LASH'] = 1
+		conf.define('HAVE_LASH', 1)
 	else:
 		conf.env['HAVE_LASH'] = False
 	
@@ -98,6 +96,7 @@ def build(bld):
 	prog = bld.create_obj('cpp', 'program')
 	prog.includes = 'src' # make waf dependency tracking work
 	prog.target = bld.env()['APP_INSTALL_NAME']
+	prog.inst_dir = bld.env()['BINDIRNAME']
 	autowaf.use_lib(bld, prog, 'DBUS FLOWCANVAS GLADEMM DBUS_GLIB GNOMECANVASMM GTHREAD RAUL')
 	prog.source = '''
 		src/LashClient.cpp
@@ -130,19 +129,19 @@ def build(bld):
 		prog.uselib += ' ALSA '
 	
 	# Glade UI definitions (XML)
-	install_files('PREFIX', '/share/' + bld.env()['APP_INSTALL_NAME'], 'src/patchage.glade')
+	install_files('DATADIR', bld.env()['APP_INSTALL_NAME'], 'src/patchage.glade')
 	
 	# 'Desktop' file (menu entry, icon, etc)
 	obj = bld.create_obj('subst')
 	obj.source = 'patchage.desktop.in'
 	obj.target = 'patchage.desktop'
 	obj.dict = {
-		'BINDIR'           : bld.env()['PREFIX'] + '/bin',
+		'BINDIR'           : bld.env()['BINDIR'],
 		'APP_INSTALL_NAME' : bld.env()['APP_INSTALL_NAME'],
 		'APP_HUMAN_NAME'   : bld.env()['APP_HUMAN_NAME'],
 	}
 	obj.inst_var = 'PREFIX'
-	obj.inst_dir = '/share/applications'
+	obj.inst_dir = bld.env()['DATADIRNAME'] + 'applications'
 	
 	# Icons
 	#
@@ -162,7 +161,7 @@ def build(bld):
 	icon_sizes = ['16x16', '22x22', '24x24', '32x32', '48x48']
 	for s in icon_sizes:
 		install_as(
-			os.path.normpath(bld.env()['PREFIX'] + '/share/icons/hicolor/' + s + '/apps/'),
+			os.path.normpath(bld.env()['DATADIR'] + '/icons/hicolor/' + s + '/apps/'),
 			bld.env()['APP_INSTALL_NAME'] + '.png',
 			'icons/' + s + '/patchage.png')
 
