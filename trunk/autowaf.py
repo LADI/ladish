@@ -261,6 +261,7 @@ def build_wrapper(bld, template, prog):
 	if not bld.env()['BUNDLE']:
 		return
 	obj          = bld.create_obj('subst')
+	obj.chmod    = 0755
 	obj.source   = template
 	obj.inst_var = 'PREFIX'
 	obj.inst_dir = '/'
