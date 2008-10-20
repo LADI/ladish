@@ -21,6 +21,10 @@ Application authors aren't required to depend on this package (including lv2.h
 in source distributions is acceptable) but any system with LV2 plugins should
 have the LV2 bundle contained in this package installed somewhere in the LV2
 path (it contains plugin classes and other useful information).
+
+Please see README file for installation instructions (this package doesn't
+really fit into the usual 'library', 'program', etc. categories).
+
 Distributions are encouraged to include this package.
 
  -- Dave Robillard <dave@drobilla.net>

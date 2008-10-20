@@ -9,6 +9,7 @@ import misc
 import Params
 import Configure
 import Utils
+import sys
 
 Configure.g_maxlen = 55
 g_is_child = False
@@ -38,7 +39,12 @@ def set_options(opt):
 	opt.add_option('--datadir', type='string', help="Shared data [Default: PREFIX/share]")
 	opt.add_option('--mandir', type='string', help="Manual pages [Default: DATADIR/man]")
 	opt.add_option('--htmldir', type='string', help="HTML documentation [Default: DATADIR/doc/PACKAGE]")
-	opt.add_option('--lv2dir', type='string', help="LV2 bundles [Default: LIBDIR/lv2]")
+	if sys.platform == "darwin":
+		opt.add_option('--lv2dir', type='string', help="LV2 bundles [Default: /Library/Audio/Plug-Ins/LV2]")
+	else:
+		opt.add_option('--lv2dir', type='string', help="LV2 bundles [Default: LIBDIR/lv2]")
+	opt.add_option('--lv2-user', action='store_true', default=False, dest='lv2_user',
+			help="Install LV2 bundles to user-local location [Default: False]")
 	g_step = 1
 
 def check_header(conf, name, define='', **args):
@@ -126,9 +132,18 @@ def configure(conf):
 		else:
 			conf.env['MANDIR'] = conf.env['DATADIR'] + 'man/'
 		if Params.g_options.lv2dir:
-			conf.env['LV2DIR'] = Params.g_options.mandir
+			conf.env['LV2DIR'] = Params.g_options.lv2dir
 		else:
-			conf.env['LV2DIR'] = conf.env['LIBDIR'] + 'lv2/'
+			if Params.g_options.lv2_user:
+				if sys.platform == "darwin":
+					conf.env['LV2DIR'] = os.getenv('HOME') + '/Library/Audio/Plug-Ins/LV2'
+				else:
+					conf.env['LV2DIR'] = os.getenv('HOME') + '/.lv2'
+			else:
+				if sys.platform == "darwin":
+					conf.env['LV2DIR'] = '/Library/Audio/Plug-Ins/LV2'
+				else:
+					conf.env['LV2DIR'] = conf.env['LIBDIR'] + 'lv2/'
 		
 	conf.env['BINDIRNAME'] = chop_prefix(conf, 'BINDIR')
 	conf.env['LIBDIRNAME'] = chop_prefix(conf, 'LIBDIR')
