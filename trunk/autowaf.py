@@ -31,7 +31,7 @@ def set_options(opt):
 	opt.add_option('--build-docs', action='store_true', default=False, dest='build_docs',
 			help="Build documentation - requires doxygen [Default: False]")
 	opt.add_option('--bundle', action='store_true', default=False,
-			help="Build a self-contained bundle (also sets default PREFIX to /opt) [Default: False]")
+			help="Build a self-contained bundle [Default: False]")
 	opt.add_option('--bindir', type='string', help="Executable programs [Default: PREFIX/bin]")
 	opt.add_option('--libdir', type='string', help="Libraries [Default: PREFIX/lib]")
 	opt.add_option('--includedir', type='string', help="Header files [Default: PREFIX/include]")
@@ -92,7 +92,6 @@ def configure(conf):
 	if Params.g_options.bundle:
 		conf.env['BUNDLE'] = True
 		conf.define('BUNDLE', 1)
-		conf.env['PREFIX'] = '/opt/' + Utils.g_module.APPNAME + '/'
 		conf.env['BINDIR'] = conf.env['PREFIX']
 		conf.env['INCLUDEDIR'] = conf.env['PREFIX'] + 'Headers/'
 		conf.env['LIBDIR'] = conf.env['PREFIX'] + 'Libraries/'
@@ -241,6 +240,20 @@ def build_pc(bld, name, version, libs):
 	for i in libs:
 		obj.dict[i + '_LIBS']   = link_flags(bld.env(), i)
 		obj.dict[i + '_CFLAGS'] = compile_flags(bld.env(), i)
+
+# Wrapper script (for bundle)
+def build_wrapper(bld, template, prog):
+	if not bld.env()['BUNDLE']:
+		return
+	obj          = bld.create_obj('subst')
+	obj.source   = template
+	obj.inst_var = 'PREFIX'
+	obj.inst_dir = '/'
+	obj.dict     = {
+		'EXECUTABLE'   : prog.target + ".bin",
+		'LIB_DIR_NAME' : bld.env()['LIBDIRNAME']
+	}
+	prog.target = prog.target + '.bin'
 
 # Doxygen API documentation
 def build_dox(bld, name, version, srcdir, blddir):

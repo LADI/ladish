@@ -132,6 +132,9 @@ def build(bld):
 		prog.source += ' src/AlsaDriver.cpp '
 		prog.uselib += ' ALSA '
 	
+	# Executable wrapper script (if building a bundle)
+	autowaf.build_wrapper(bld, 'patchage.in', prog)
+
 	# Glade UI definitions (XML)
 	install_files('DATADIR', bld.env()['APP_INSTALL_NAME'], 'src/patchage.glade')
 	
