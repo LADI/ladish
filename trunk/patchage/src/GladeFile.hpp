@@ -23,26 +23,30 @@
 #include <sstream>
 #include <stdexcept>
 #include <libglademm/xml.h>
+#include "config.h"
+#include "binary_location.h"
 
 class GladeFile {
 public:
 	static Glib::RefPtr<Gnome::Glade::Xml> open(const std::string& base_name) {
-		// Check for the .glade file in current directory
-		std::string glade_filename = std::string("./").append(base_name).append(".glade");
+		std::string glade_filename;
+#ifdef BUNDLE
+		char* loc = binary_location();
+		std::string bundle = loc;
+		bundle = bundle.substr(0, bundle.find_last_of("/"));
+		glade_filename = bundle + "/" + PATCHAGE_DATA_DIR + "/" + base_name + ".glade";
+		free(loc);
+#else
+		glade_filename = std::string(PATCHAGE_DATA_DIR) + "/" + base_name + ".glade";
+#endif
 		std::ifstream fs(glade_filename.c_str());
-		if (fs.fail()) { // didn't find it, check DATA_PATH
-			fs.clear();
-			glade_filename = std::string(PATCHAGE_DATA_DIR).append("/").append(base_name).append(".glade");
-
-			fs.open(glade_filename.c_str());
-			if (fs.fail()) {
-				std::ostringstream ss;
-				ss << "Unable to find " << base_name << "glade in current directory or "
-					<< PATCHAGE_DATA_DIR << std::endl;
-				throw std::runtime_error(ss.str());
-			}
-			fs.close();
+		if (fs.fail()) {
+			std::ostringstream ss;
+			ss << "Unable to find " << base_name << ".glade in " << PATCHAGE_DATA_DIR << std::endl;
+			throw std::runtime_error(ss.str());
 		}
+		
+		fs.close();
 
 		return Gnome::Glade::Xml::create(glade_filename);
 	}

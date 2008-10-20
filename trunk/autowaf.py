@@ -90,6 +90,8 @@ def configure(conf):
 	conf.env['BUILD_DOCS'] = Params.g_options.build_docs
 	conf.env['DEBUG'] = Params.g_options.debug
 	if Params.g_options.bundle:
+		conf.env['BUNDLE'] = True
+		conf.define('BUNDLE', 1)
 		conf.env['PREFIX'] = '/opt/' + Utils.g_module.APPNAME + '/'
 		conf.env['BINDIR'] = conf.env['PREFIX']
 		conf.env['INCLUDEDIR'] = conf.env['PREFIX'] + 'Headers/'
@@ -99,6 +101,7 @@ def configure(conf):
 		conf.env['MANDIR'] = conf.env['PREFIX'] + 'Resources/Man/'
 		conf.env['LV2DIR'] = conf.env['PREFIX'] + 'PlugIns/'
 	else:
+		conf.env['BUNDLE'] = False
 		if Params.g_options.bindir:
 			conf.env['BINDIR'] = Params.g_options.bindir
 		else:
