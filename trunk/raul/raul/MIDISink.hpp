@@ -19,8 +19,8 @@
 #define RAUL_MIDI_SINK_HPP
 
 #include <stdexcept>
-#include <raul/TimeStamp.hpp>
-#include <raul/Deletable.hpp>
+#include "raul/TimeStamp.hpp"
+#include "raul/Deletable.hpp"
 
 namespace Raul {
 

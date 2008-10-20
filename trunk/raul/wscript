@@ -25,8 +25,6 @@ blddir = 'build'
 
 def set_options(opt):
 	autowaf.set_options(opt)
-	opt.tool_options('compiler_cc')
-	opt.tool_options('compiler_cxx')
 
 def configure(conf):
 	autowaf.configure(conf)
@@ -37,8 +35,8 @@ def configure(conf):
 
 def build(bld):
 	# Headers
-	install_files('PREFIX', 'include/raul', 'raul/*.hpp')
-	install_files('PREFIX', 'include/raul', 'raul/*.h')
+	install_files('INCLUDEDIR', 'raul', 'raul/*.hpp')
+	install_files('INCLUDEDIR', 'raul', 'raul/*.h')
 	
 	# Pkgconfig file
 	autowaf.build_pc(bld, 'RAUL', RAUL_VERSION, 'GLIBMM GTHREAD')
@@ -57,6 +55,7 @@ def build(bld):
 	obj.name     = 'libraul'
 	obj.target   = 'raul'
 	obj.uselib   = 'GLIBMM GTHREAD'
+	obj.inst_dir = bld.env()['LIBDIRNAME']
 	obj.vnum     = RAUL_LIB_VERSION
 	
 	# Unit tests
@@ -64,7 +63,7 @@ def build(bld):
 	
 	# Documentation
 	autowaf.build_dox(bld, 'RAUL', RAUL_VERSION, srcdir, blddir)
-	install_files('PREFIX', 'share/doc/raul', blddir + '/default/doc/html/*')
+	install_files('HTMLDIR', '', blddir + '/default/doc/html/*')
 
 def shutdown():
 	autowaf.shutdown()

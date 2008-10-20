@@ -19,8 +19,8 @@
 #define RAUL_SMF_WRITER_HPP
 
 #include <stdexcept>
-#include <raul/MIDISink.hpp>
-#include <raul/TimeStamp.hpp>
+#include "raul/MIDISink.hpp"
+#include "raul/TimeStamp.hpp"
 
 namespace Raul {
 

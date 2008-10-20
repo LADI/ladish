@@ -18,7 +18,7 @@
 #ifndef RAUL_COMMAND_HPP
 #define RAUL_COMMAND_HPP
 
-#include <raul/Semaphore.hpp>
+#include "raul/Semaphore.hpp"
 #include <boost/utility.hpp>
 
 namespace Raul {

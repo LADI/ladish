@@ -18,13 +18,13 @@
 #ifndef FLOWCANVAS_FLOWCANVAS_HPP
 #define FLOWCANVAS_FLOWCANVAS_HPP
 
-#include <flowcanvas/Canvas.hpp>
-#include <flowcanvas/Connectable.hpp>
-#include <flowcanvas/Connection.hpp>
-#include <flowcanvas/Ellipse.hpp>
-#include <flowcanvas/Item.hpp>
-#include <flowcanvas/Module.hpp>
-#include <flowcanvas/Port.hpp>
+#include "flowcanvas/Canvas.hpp"
+#include "flowcanvas/Connectable.hpp"
+#include "flowcanvas/Connection.hpp"
+#include "flowcanvas/Ellipse.hpp"
+#include "flowcanvas/Item.hpp"
+#include "flowcanvas/Module.hpp"
+#include "flowcanvas/Port.hpp"
 
 #endif // FLOWCANVAS_FLOWCANVAS_HPP
 

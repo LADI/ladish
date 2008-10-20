@@ -22,7 +22,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <iostream>
-#include <raul/Table.hpp>
+#include "raul/Table.hpp"
 
 namespace Raul {
 

@@ -23,8 +23,6 @@ blddir = 'build'
 
 def set_options(opt):
 	autowaf.set_options(opt)
-	opt.tool_options('compiler_cc')
-	opt.tool_options('compiler_cxx')
 
 def configure(conf):
 	autowaf.configure(conf)
@@ -34,8 +32,8 @@ def configure(conf):
 
 def build(bld):
 	# Headers
-	#install_files('PREFIX', 'include/evoral', 'evoral/*.h')
-	#install_files('PREFIX', 'include/evoral', 'evoral/*.hpp')
+	#install_files('INCLUDEDIR', 'evoral', 'evoral/*.h')
+	#install_files('INCLUDEDIR', 'evoral', 'evoral/*.hpp')
 	
 	# Pkgconfig file
 	#autowaf.build_pc(bld, 'EVORAL', EVORAL_VERSION, 'GLIBMM GTHREAD')
@@ -59,6 +57,7 @@ def build(bld):
 	obj.target   = 'evoral'
 	obj.uselib   = 'GLIBMM GTHREAD'
 	obj.vnum     = EVORAL_LIB_VERSION
+	#obj.inst_dir = bld.env()['LIBDIRNAME']
 	obj.inst_var = 0
 	
 	# Unit tests

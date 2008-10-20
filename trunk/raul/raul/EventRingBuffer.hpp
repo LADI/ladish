@@ -21,8 +21,8 @@
 #include <cassert>
 #include <algorithm>
 #include <glib.h>
-#include <raul/RingBuffer.hpp>
-#include <raul/TimeStamp.hpp>
+#include "raul/RingBuffer.hpp"
+#include "raul/TimeStamp.hpp"
 
 namespace Raul {
 

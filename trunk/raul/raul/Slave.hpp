@@ -19,8 +19,8 @@
 #define RAUL_SLAVE_HPP
 
 #include <pthread.h>
-#include <raul/Semaphore.hpp>
-#include <raul/Thread.hpp>
+#include "raul/Semaphore.hpp"
+#include "raul/Thread.hpp"
 
 namespace Raul {
 

@@ -21,8 +21,8 @@
 #include <cassert>
 #include <cmath>
 #include <boost/utility.hpp>
-#include <raul/TimeStamp.hpp>
-#include <raul/lv2_event.h>
+#include "raul/TimeStamp.hpp"
+#include "raul/lv2_event.h"
 
 namespace Raul {
 

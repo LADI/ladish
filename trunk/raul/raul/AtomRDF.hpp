@@ -22,8 +22,8 @@
 #include <string>
 #include <sstream>
 
-#include <redlandmm/Node.hpp>
-#include <redlandmm/World.hpp>
+#include "redlandmm/Node.hpp"
+#include "redlandmm/World.hpp"
 
 #define CUC(x) ((const unsigned char*)(x))
 

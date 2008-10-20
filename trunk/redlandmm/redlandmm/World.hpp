@@ -24,9 +24,9 @@
 #include <librdf.h>
 #include <boost/utility.hpp>
 #include <glibmm/thread.h>
-#include <redlandmm/Wrapper.hpp>
-#include <redlandmm/Namespaces.hpp>
-#include <redlandmm/Node.hpp>
+#include "redlandmm/Wrapper.hpp"
+#include "redlandmm/Namespaces.hpp"
+#include "redlandmm/Node.hpp"
 
 namespace Redland {
 

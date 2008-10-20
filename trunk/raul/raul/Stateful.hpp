@@ -18,7 +18,7 @@
 #ifndef STATEFUL_H
 #define STATEFUL_H
 
-#include <redlandmm/Model.hpp>
+#include "redlandmm/Model.hpp"
 
 namespace Raul {
 

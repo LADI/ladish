@@ -24,7 +24,7 @@
 #include <cstring>
 #include <cassert>
 
-#include <raul/Symbol.hpp>
+#include "raul/Symbol.hpp"
 
 namespace Raul {
 

@@ -17,8 +17,6 @@ blddir = 'build'
 
 def set_options(opt):
 	autowaf.set_options(opt)
-	opt.tool_options('compiler_cc')
-	opt.tool_options('compiler_cxx')
 
 def configure(conf):
 	autowaf.configure(conf)
@@ -29,7 +27,7 @@ def configure(conf):
 
 def build(bld):
 	# Headers
-	install_files('PREFIX', 'include/redlandmm', 'redlandmm/*.hpp')
+	install_files('INCLUDEDIR', 'redlandmm', 'redlandmm/*.hpp')
 	
 	# Pkgconfig file
 	autowaf.build_pc(bld, 'REDLANDMM', REDLANDMM_VERSION, 'GLIBMM GTHREAD REDLAND')
@@ -48,6 +46,7 @@ def build(bld):
 	obj.target   = 'redlandmm'
 	obj.uselib   = 'REDLAND GLIBMM GTHREAD'
 	obj.vnum     = REDLANDMM_LIB_VERSION
+	obj.inst_dir = bld.env()['LIBDIRNAME']
 
 	# Unit tests
 	obj = bld.create_obj('cpp', 'program')
@@ -59,7 +58,7 @@ def build(bld):
 
 	# Documentation
 	autowaf.build_dox(bld, 'REDLANDMM', REDLANDMM_VERSION, srcdir, blddir)
-	install_files('PREFIX', 'share/doc/redlandmm', blddir + '/default/doc/html/*')
+	install_files('HTMLDIR', '', blddir + '/default/doc/html/*')
 
 def shutdown():
 	autowaf.shutdown()

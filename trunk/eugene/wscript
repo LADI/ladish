@@ -23,8 +23,6 @@ blddir = 'build'
 
 def set_options(opt):
 	autowaf.set_options(opt)
-	opt.tool_options('compiler_cc')
-	opt.tool_options('compiler_cxx')
 
 def configure(conf):
 	autowaf.configure(conf)
@@ -46,8 +44,8 @@ def configure(conf):
 
 def build(bld):
 	# Headers
-	#install_files('PREFIX', 'include/eugene', 'evoral/*.h')
-	#install_files('PREFIX', 'include/eugene', 'evoral/*.hpp')
+	#install_files('INCLUDEDIR', 'eugene', 'eugene/*.h')
+	#install_files('INCLUDEDIR', 'eugene', 'eugene/*.hpp')
 	
 	# Pkgconfig file
 	autowaf.build_pc(bld, 'EUGENE', EUGENE_VERSION, 'GLIBMM GTHREAD')
@@ -64,6 +62,7 @@ def build(bld):
 	obj.target   = 'eugene'
 	obj.uselib   = 'GLIBMM GTHREAD'
 	obj.vnum     = EUGENE_LIB_VERSION
+	obj.inst_dir = bld.env()['LIBDIRNAME']
 	
 	# Console app
 	prog = bld.create_obj('cpp', 'program')
@@ -71,6 +70,7 @@ def build(bld):
 	obj.includes      = ['.']
 	prog.uselib_local = 'libeugene'
 	prog.target       = 'src/eugene'
+	prog.inst_dir     = bld.env()['BINDIRNAME']
 
 	# GUI app
 	prog = bld.create_obj('cpp', 'program')
@@ -83,6 +83,7 @@ def build(bld):
 	prog.uselib_local = 'libeugene'
 	prog.uselib       = 'GTKMM GLADEMM GTHREAD GNOMECANVASMM FLOWCANVAS'
 	prog.target       = 'gui/eugene_tsp_gui'
+	prog.inst_dir     = bld.env()['BINDIRNAME']
 	
 	install_files('PREFIX', 'share/eugene', 'gui/eugene_tsp_gui.glade')
 	

@@ -23,8 +23,8 @@
 #include <librdf.h>
 #include <glibmm/ustring.h>
 #include <boost/utility.hpp>
-#include <redlandmm/Namespaces.hpp>
-#include <redlandmm/Node.hpp>
+#include "redlandmm/Namespaces.hpp"
+#include "redlandmm/Node.hpp"
 
 namespace Redland {
 

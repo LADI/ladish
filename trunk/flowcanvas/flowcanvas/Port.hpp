@@ -25,7 +25,7 @@
 #include <libgnomecanvasmm.h>
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
-#include <flowcanvas/Connectable.hpp>
+#include "flowcanvas/Connectable.hpp"
 
 namespace FlowCanvas {
 	

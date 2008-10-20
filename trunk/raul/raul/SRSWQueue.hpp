@@ -21,7 +21,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <boost/utility.hpp>
-#include <raul/AtomicInt.hpp>
+#include "raul/AtomicInt.hpp"
 
 namespace Raul {
 

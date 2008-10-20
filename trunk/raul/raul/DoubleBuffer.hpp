@@ -18,8 +18,8 @@
 #ifndef RAUL_DOUBLE_BUFFER_HPP
 #define RAUL_DOUBLE_BUFFER_HPP
 
-#include <raul/AtomicInt.hpp>
-#include <raul/AtomicPtr.hpp>
+#include "raul/AtomicInt.hpp"
+#include "raul/AtomicPtr.hpp"
 
 namespace Raul {
 

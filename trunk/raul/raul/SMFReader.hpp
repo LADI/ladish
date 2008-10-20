@@ -21,7 +21,7 @@
 #include <stdexcept>
 #include <string>
 #include <inttypes.h>
-#include <raul/TimeStamp.hpp>
+#include "raul/TimeStamp.hpp"
 
 namespace Raul {
 

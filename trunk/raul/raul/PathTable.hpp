@@ -18,8 +18,8 @@
 #ifndef RAUL_PATH_TABLE_HPP
 #define RAUL_PATH_TABLE_HPP
 
-#include <raul/Path.hpp>
-#include <raul/Table.hpp>
+#include "raul/Path.hpp"
+#include "raul/Table.hpp"
 
 namespace Raul {
 

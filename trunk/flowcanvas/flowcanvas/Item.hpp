@@ -24,7 +24,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <libgnomecanvasmm.h>
-#include <flowcanvas/Port.hpp>
+#include "flowcanvas/Port.hpp"
 
 namespace FlowCanvas {
 	

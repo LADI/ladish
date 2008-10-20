@@ -27,7 +27,7 @@ def configure(conf):
 	conf.env.append_value('shlib_EXTENSION', ext)
 		
 def build_plugin(bld, lang, name):
-	bundle_path = 'lib/lv2/' + name + '.lv2'
+	bundle_path = bld.env()['LV2DIRNAME'] + name + '.lv2'
 	ext = bld.env()['shlib_EXTENSION'][0]
 
 	penv = bld.env().copy()
@@ -45,13 +45,13 @@ def build_plugin(bld, lang, name):
 	obj.name     = name
 	obj.target   = name
 	obj.inst_var = 'PREFIX'
-	obj.inst_dir = bundle_path
+	obj.inst_dir = bld.env()['LV2DIRNAME'] + name + '.lv2'
 
 	# Data
 	data_file     = 'plugins/%s.lv2/%s.ttl' % (name, name)
 	manifest_file = 'plugins/%s.lv2/manifest.ttl' % (name)
-	install_files('PREFIX', bundle_path, data_file)
-	install_files('PREFIX', bundle_path, manifest_file)
+	install_files('LV2DIR', name + '.lv2', data_file)
+	install_files('LV2DIR', name + '.lv2', manifest_file)
 
 def build(bld):
 	# LV2 extensions

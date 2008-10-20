@@ -22,8 +22,8 @@
 #include <algorithm>
 #include <boost/shared_ptr.hpp>
 #include <libgnomecanvasmm.h>
-#include <flowcanvas/Port.hpp>
-#include <flowcanvas/Item.hpp>
+#include "flowcanvas/Port.hpp"
+#include "flowcanvas/Item.hpp"
 
 namespace FlowCanvas {
 	

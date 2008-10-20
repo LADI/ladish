@@ -19,7 +19,7 @@
 #define RAUL_QUANTIZER_HPP
 
 #include <cmath>
-#include <raul/TimeStamp.hpp>
+#include "raul/TimeStamp.hpp"
 
 namespace Raul {
 

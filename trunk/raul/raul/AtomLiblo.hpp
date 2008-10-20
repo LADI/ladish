@@ -20,7 +20,7 @@
 
 #include <iostream>
 #include <lo/lo.h>
-#include <raul/Atom.hpp>
+#include "raul/Atom.hpp"
 
 namespace Raul {
 

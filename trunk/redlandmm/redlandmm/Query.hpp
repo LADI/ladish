@@ -21,8 +21,8 @@
 #include <map>
 #include <list>
 #include <glibmm/ustring.h>
-#include <redlandmm/World.hpp>
-#include <redlandmm/Namespaces.hpp>
+#include "redlandmm/World.hpp"
+#include "redlandmm/Namespaces.hpp"
 
 namespace Redland {
 

@@ -21,7 +21,7 @@
 #include <string>
 #include <stdexcept>
 #include <librdf.h>
-#include <redlandmm/Wrapper.hpp>
+#include "redlandmm/Wrapper.hpp"
 
 namespace Redland {
 

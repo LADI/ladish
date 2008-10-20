@@ -22,7 +22,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <boost/utility.hpp>
-#include <raul/AtomicInt.hpp>
+#include "raul/AtomicInt.hpp"
 
 #include <iostream>
 using namespace std;
