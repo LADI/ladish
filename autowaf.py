@@ -110,6 +110,7 @@ def configure(conf):
 	else:
 		conf.env['BUILD_DOCS'] = False
 	conf.env['DEBUG'] = Params.g_options.debug
+	conf.env['PREFIX'] = os.path.abspath(os.path.expanduser(os.path.normpath(conf.env['PREFIX'])))
 	if Params.g_options.bundle:
 		conf.env['BUNDLE'] = True
 		conf.define('BUNDLE', 1)
