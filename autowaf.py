@@ -8,6 +8,8 @@ import os
 import misc
 import Params
 import Configure
+import Utils
+import sys
 
 Configure.g_maxlen = 55
 g_is_child = False
@@ -24,15 +26,30 @@ def set_options(opt, docs_available = True):
 	global g_docs_available
 	if g_step > 0:
 		return
-	g_docs_available = docs_available
-	if docs_available:
-		opt.add_option('--build-docs', action='store_true', default=False, dest='build_docs',
-			       help="Build documentation - requires doxygen [Default: False]")
+	opt.tool_options('compiler_cc')
+	opt.tool_options('compiler_cxx')
 	opt.add_option('--debug', action='store_true', default=False, dest='debug',
 			help="Build debuggable binaries [Default: False]")
 	opt.add_option('--strict', action='store_true', default=False, dest='strict',
 			help="Use strict compiler flags and show all warnings [Default: False]")
-	opt.tool_options('compiler_cxx')
+	g_docs_available = docs_available
+	if docs_available:
+		opt.add_option('--build-docs', action='store_true', default=False, dest='build_docs',
+			       help="Build documentation - requires doxygen [Default: False]")
+	opt.add_option('--bundle', action='store_true', default=False,
+			help="Build a self-contained bundle [Default: False]")
+	opt.add_option('--bindir', type='string', help="Executable programs [Default: PREFIX/bin]")
+	opt.add_option('--libdir', type='string', help="Libraries [Default: PREFIX/lib]")
+	opt.add_option('--includedir', type='string', help="Header files [Default: PREFIX/include]")
+	opt.add_option('--datadir', type='string', help="Shared data [Default: PREFIX/share]")
+	opt.add_option('--mandir', type='string', help="Manual pages [Default: DATADIR/man]")
+	opt.add_option('--htmldir', type='string', help="HTML documentation [Default: DATADIR/doc/PACKAGE]")
+	if sys.platform == "darwin":
+		opt.add_option('--lv2dir', type='string', help="LV2 bundles [Default: /Library/Audio/Plug-Ins/LV2]")
+	else:
+		opt.add_option('--lv2dir', type='string', help="LV2 bundles [Default: LIBDIR/lv2]")
+	opt.add_option('--lv2-user', action='store_true', default=False, dest='lv2_user',
+			help="Install LV2 bundles to user-local location [Default: False]")
 	g_step = 1
 
 def check_header(conf, name, define='', **args):
@@ -61,7 +78,15 @@ def check_pkg(conf, name, **args):
 		if not conf.check_pkg(name, **args):
 			conf.env['HAVE_' + args['destvar']] = False
 		else:
-			conf.env['HAVE_' + args['destvar']] = True
+			conf.env['HAVE_' + args['destvar']] = 1
+
+def chop_prefix(conf, var):
+	name = conf.env[var][len(conf.env['PREFIX']):]
+	if len(name) > 0 and name[0] == '/':
+		name = name[1:]
+	if name == "":
+		name = "/"
+	return name;
 
 def configure(conf):
 	global g_step
@@ -72,13 +97,66 @@ def configure(conf):
 		conf.env.append_value('CCFLAGS', val)
 		conf.env.append_value('CXXFLAGS', val)
 	check_tool(conf, 'misc')
-	check_tool(conf, 'compiler_cc')
-	check_tool(conf, 'compiler_cxx')
 	if g_docs_available:
 		conf.env['BUILD_DOCS'] = Params.g_options.build_docs
 	else:
 		conf.env['BUILD_DOCS'] = False
 	conf.env['DEBUG'] = Params.g_options.debug
+	if Params.g_options.bundle:
+		conf.env['BUNDLE'] = True
+		conf.define('BUNDLE', 1)
+		conf.env['BINDIR'] = conf.env['PREFIX']
+		conf.env['INCLUDEDIR'] = conf.env['PREFIX'] + 'Headers/'
+		conf.env['LIBDIR'] = conf.env['PREFIX'] + 'Libraries/'
+		conf.env['DATADIR'] = conf.env['PREFIX'] + 'Resources/'
+		conf.env['HTMLDIR'] = conf.env['PREFIX'] + 'Resources/Documenation/'
+		conf.env['MANDIR'] = conf.env['PREFIX'] + 'Resources/Man/'
+		conf.env['LV2DIR'] = conf.env['PREFIX'] + 'PlugIns/'
+	else:
+		conf.env['BUNDLE'] = False
+		if Params.g_options.bindir:
+			conf.env['BINDIR'] = Params.g_options.bindir
+		else:
+			conf.env['BINDIR'] = conf.env['PREFIX'] + 'bin/'
+		if Params.g_options.includedir:
+			conf.env['INCLUDEDIR'] = Params.g_options.includedir
+		else:
+			conf.env['INCLUDEDIR'] = conf.env['PREFIX'] + 'include/'
+		if Params.g_options.libdir:
+			conf.env['LIBDIR'] = Params.g_options.libdir
+		else:
+			conf.env['LIBDIR'] = conf.env['PREFIX'] + 'lib/'
+		if Params.g_options.datadir:
+			conf.env['DATADIR'] = Params.g_options.datadir
+		else:
+			conf.env['DATADIR'] = conf.env['PREFIX'] + 'share/'
+		if Params.g_options.htmldir:
+			conf.env['HTMLDIR'] = Params.g_options.htmldir
+		else:
+			conf.env['HTMLDIR'] = conf.env['DATADIR'] + 'doc/' + Utils.g_module.APPNAME + '/'
+		if Params.g_options.mandir:
+			conf.env['MANDIR'] = Params.g_options.mandir
+		else:
+			conf.env['MANDIR'] = conf.env['DATADIR'] + 'man/'
+		if Params.g_options.lv2dir:
+			conf.env['LV2DIR'] = Params.g_options.lv2dir
+		else:
+			if Params.g_options.lv2_user:
+				if sys.platform == "darwin":
+					conf.env['LV2DIR'] = os.getenv('HOME') + '/Library/Audio/Plug-Ins/LV2'
+				else:
+					conf.env['LV2DIR'] = os.getenv('HOME') + '/.lv2'
+			else:
+				if sys.platform == "darwin":
+					conf.env['LV2DIR'] = '/Library/Audio/Plug-Ins/LV2'
+				else:
+					conf.env['LV2DIR'] = conf.env['LIBDIR'] + 'lv2/'
+		
+	conf.env['BINDIRNAME'] = chop_prefix(conf, 'BINDIR')
+	conf.env['LIBDIRNAME'] = chop_prefix(conf, 'LIBDIR')
+	conf.env['DATADIRNAME'] = chop_prefix(conf, 'DATADIR')
+	conf.env['LV2DIRNAME'] = chop_prefix(conf, 'LV2DIR')
+	
 	if Params.g_options.debug:
 		conf.env['CCFLAGS'] = '-O0 -g -std=c99'
 		conf.env['CXXFLAGS'] = '-O0 -g -ansi'
@@ -109,7 +187,7 @@ def use_lib(bld, obj, libs):
 			obj.uselib_local += ' lib' + l.lower() + ' '
 		
 		if in_headers or in_libs:
-			inc_flag = '-iquote' + abssrcdir + '/' + l.lower()
+			inc_flag = '-iquote ' + abssrcdir + '/' + l.lower()
 			for f in ['CCFLAGS', 'CXXFLAGS']:
 				if not inc_flag in bld.env()[f]:
 					bld.env().prepend_value(f, inc_flag)
@@ -176,7 +254,7 @@ def build_pc(bld, name, version, libs):
 	obj.source   = name.lower() + '.pc.in'
 	obj.target   = name.lower() + '.pc'
 	obj.inst_var = 'PREFIX'
-	obj.inst_dir = 'lib/pkgconfig'
+	obj.inst_dir = bld.env()['LIBDIRNAME'] + 'pkgconfig'
 	pkg_prefix   = bld.env()['PREFIX'] 
 	if pkg_prefix[-1] == '/':
 		pkg_prefix = pkg_prefix[:-1]
@@ -192,6 +270,21 @@ def build_pc(bld, name, version, libs):
 	for i in libs:
 		obj.dict[i + '_LIBS']   = link_flags(bld.env(), i)
 		obj.dict[i + '_CFLAGS'] = compile_flags(bld.env(), i)
+
+# Wrapper script (for bundle)
+def build_wrapper(bld, template, prog):
+	if not bld.env()['BUNDLE']:
+		return
+	obj          = bld.create_obj('subst')
+	obj.chmod    = 0755
+	obj.source   = template
+	obj.inst_var = 'PREFIX'
+	obj.inst_dir = '/'
+	obj.dict     = {
+		'EXECUTABLE'   : prog.target + ".bin",
+		'LIB_DIR_NAME' : bld.env()['LIBDIRNAME']
+	}
+	prog.target = prog.target + '.bin'
 
 # Doxygen API documentation
 def build_dox(bld, name, version, srcdir, blddir):

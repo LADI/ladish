@@ -23,6 +23,8 @@
 #include <sstream>
 #include <stdexcept>
 #include <libglademm/xml.h>
+#include "config.h"
+#include "binary_location.h"
 
 class GladeFile {
 public:
@@ -32,13 +34,21 @@ public:
 		std::ifstream fs(glade_filename.c_str());
 		if (fs.fail()) { // didn't find it, check DATA_PATH
 			fs.clear();
-			glade_filename = std::string(DATA_DIR).append("/").append(base_name).append(".glade");
+
+#ifdef BUNDLE
+			char* loc = binary_location();
+			std::string bundle = loc;
+			bundle = bundle.substr(0, bundle.find_last_of("/"));
+			glade_filename = bundle + "/" + PATCHAGE_DATA_DIR + "/" + base_name + ".glade";
+			free(loc);
+#else
+			glade_filename = std::string(PATCHAGE_DATA_DIR) + "/" + base_name + ".glade";
+#endif
 
 			fs.open(glade_filename.c_str());
 			if (fs.fail()) {
 				std::ostringstream ss;
-				ss << "Unable to find " << base_name << "glade in current directory or "
-					<< DATA_DIR << std::endl;
+				ss << "Unable to find " << base_name << "glade in current directory or " << PATCHAGE_DATA_DIR << std::endl;
 				throw std::runtime_error(ss.str());
 			}
 			fs.close();
