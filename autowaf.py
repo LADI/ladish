@@ -18,38 +18,46 @@ g_is_child = False
 global g_step
 g_step = 0
 
-global g_docs_available
+global g_features
 
-def set_options(opt, docs_available = True):
+def set_options(opt, docs_available = True, dev_available = True, lv2_available = True):
 	"Add standard autowaf options if they havn't been added yet"
 	global g_step
-	global g_docs_available
+	global g_features
 	if g_step > 0:
 		return
+
+	g_features = {}
+	g_features['docs'] = docs_available
+	g_features['dev'] = dev_available
+	g_features['lv2'] = lv2_available
+
 	opt.tool_options('compiler_cc')
 	opt.tool_options('compiler_cxx')
 	opt.add_option('--debug', action='store_true', default=False, dest='debug',
 			help="Build debuggable binaries [Default: False]")
 	opt.add_option('--strict', action='store_true', default=False, dest='strict',
 			help="Use strict compiler flags and show all warnings [Default: False]")
-	g_docs_available = docs_available
-	if docs_available:
+	if g_features['docs']:
 		opt.add_option('--build-docs', action='store_true', default=False, dest='build_docs',
 			       help="Build documentation - requires doxygen [Default: False]")
 	opt.add_option('--bundle', action='store_true', default=False,
 			help="Build a self-contained bundle [Default: False]")
 	opt.add_option('--bindir', type='string', help="Executable programs [Default: PREFIX/bin]")
-	opt.add_option('--libdir', type='string', help="Libraries [Default: PREFIX/lib]")
-	opt.add_option('--includedir', type='string', help="Header files [Default: PREFIX/include]")
+	if g_features['dev']:
+		opt.add_option('--libdir', type='string', help="Libraries [Default: PREFIX/lib]")
+		opt.add_option('--includedir', type='string', help="Header files [Default: PREFIX/include]")
 	opt.add_option('--datadir', type='string', help="Shared data [Default: PREFIX/share]")
-	opt.add_option('--mandir', type='string', help="Manual pages [Default: DATADIR/man]")
-	opt.add_option('--htmldir', type='string', help="HTML documentation [Default: DATADIR/doc/PACKAGE]")
-	if sys.platform == "darwin":
-		opt.add_option('--lv2dir', type='string', help="LV2 bundles [Default: /Library/Audio/Plug-Ins/LV2]")
-	else:
-		opt.add_option('--lv2dir', type='string', help="LV2 bundles [Default: LIBDIR/lv2]")
-	opt.add_option('--lv2-user', action='store_true', default=False, dest='lv2_user',
-			help="Install LV2 bundles to user-local location [Default: False]")
+	if g_features['docs']:
+		opt.add_option('--mandir', type='string', help="Manual pages [Default: DATADIR/man]")
+		opt.add_option('--htmldir', type='string', help="HTML documentation [Default: DATADIR/doc/PACKAGE]")
+	if g_features['lv2']:
+		if sys.platform == "darwin":
+			opt.add_option('--lv2dir', type='string', help="LV2 bundles [Default: /Library/Audio/Plug-Ins/LV2]")
+		else:
+			opt.add_option('--lv2dir', type='string', help="LV2 bundles [Default: LIBDIR/lv2]")
+		opt.add_option('--lv2-user', action='store_true', default=False, dest='lv2_user',
+			       help="Install LV2 bundles to user-local location [Default: False]")
 	g_step = 1
 
 def check_header(conf, name, define='', **args):
@@ -90,14 +98,14 @@ def chop_prefix(conf, var):
 
 def configure(conf):
 	global g_step
-	global g_docs_available
+	global g_features
 	if g_step > 1:
 		return
 	def append_cxx_flags(val):
 		conf.env.append_value('CCFLAGS', val)
 		conf.env.append_value('CXXFLAGS', val)
 	check_tool(conf, 'misc')
-	if g_docs_available:
+	if g_features['docs']:
 		conf.env['BUILD_DOCS'] = Params.g_options.build_docs
 	else:
 		conf.env['BUILD_DOCS'] = False
@@ -106,56 +114,65 @@ def configure(conf):
 		conf.env['BUNDLE'] = True
 		conf.define('BUNDLE', 1)
 		conf.env['BINDIR'] = conf.env['PREFIX']
-		conf.env['INCLUDEDIR'] = conf.env['PREFIX'] + '/Headers/'
-		conf.env['LIBDIR'] = conf.env['PREFIX'] + '/Libraries/'
+		if g_features['dev']:
+			conf.env['INCLUDEDIR'] = conf.env['PREFIX'] + '/Headers/'
+			conf.env['LIBDIR'] = conf.env['PREFIX'] + '/Libraries/'
 		conf.env['DATADIR'] = conf.env['PREFIX'] + '/Resources/'
-		conf.env['HTMLDIR'] = conf.env['PREFIX'] + '/Resources/Documenation/'
-		conf.env['MANDIR'] = conf.env['PREFIX'] + '/Resources/Man/'
-		conf.env['LV2DIR'] = conf.env['PREFIX'] + '/PlugIns/'
+		if g_features['docs']:
+			conf.env['HTMLDIR'] = conf.env['PREFIX'] + '/Resources/Documenation/'
+			conf.env['MANDIR'] = conf.env['PREFIX'] + '/Resources/Man/'
+		if g_features['lv2']:
+			conf.env['LV2DIR'] = conf.env['PREFIX'] + '/PlugIns/'
 	else:
 		conf.env['BUNDLE'] = False
 		if Params.g_options.bindir:
 			conf.env['BINDIR'] = Params.g_options.bindir
 		else:
 			conf.env['BINDIR'] = conf.env['PREFIX'] + '/bin/'
-		if Params.g_options.includedir:
-			conf.env['INCLUDEDIR'] = Params.g_options.includedir
-		else:
-			conf.env['INCLUDEDIR'] = conf.env['PREFIX'] + '/include/'
-		if Params.g_options.libdir:
-			conf.env['LIBDIR'] = Params.g_options.libdir
+		if g_features['dev']:
+			if Params.g_options.includedir:
+				conf.env['INCLUDEDIR'] = Params.g_options.includedir
+			else:
+				conf.env['INCLUDEDIR'] = conf.env['PREFIX'] + '/include/'
+			if Params.g_options.libdir:
+				conf.env['LIBDIR'] = Params.g_options.libdir
+			else:
+				conf.env['LIBDIR'] = conf.env['PREFIX'] + '/lib/'
 		else:
 			conf.env['LIBDIR'] = conf.env['PREFIX'] + '/lib/'
 		if Params.g_options.datadir:
 			conf.env['DATADIR'] = Params.g_options.datadir
 		else:
 			conf.env['DATADIR'] = conf.env['PREFIX'] + '/share/'
-		if Params.g_options.htmldir:
-			conf.env['HTMLDIR'] = Params.g_options.htmldir
-		else:
-			conf.env['HTMLDIR'] = conf.env['DATADIR'] + 'doc/' + Utils.g_module.APPNAME + '/'
-		if Params.g_options.mandir:
-			conf.env['MANDIR'] = Params.g_options.mandir
-		else:
-			conf.env['MANDIR'] = conf.env['DATADIR'] + 'man/'
-		if Params.g_options.lv2dir:
-			conf.env['LV2DIR'] = Params.g_options.lv2dir
-		else:
-			if Params.g_options.lv2_user:
-				if sys.platform == "darwin":
-					conf.env['LV2DIR'] = os.getenv('HOME') + '/Library/Audio/Plug-Ins/LV2'
-				else:
-					conf.env['LV2DIR'] = os.getenv('HOME') + '/.lv2'
+		if g_features['docs']:
+			if Params.g_options.htmldir:
+				conf.env['HTMLDIR'] = Params.g_options.htmldir
 			else:
-				if sys.platform == "darwin":
-					conf.env['LV2DIR'] = '/Library/Audio/Plug-Ins/LV2'
+				conf.env['HTMLDIR'] = conf.env['DATADIR'] + 'doc/' + Utils.g_module.APPNAME + '/'
+			if Params.g_options.mandir:
+				conf.env['MANDIR'] = Params.g_options.mandir
+			else:
+				conf.env['MANDIR'] = conf.env['DATADIR'] + 'man/'
+		if g_features['lv2']:
+			if Params.g_options.lv2dir:
+				conf.env['LV2DIR'] = Params.g_options.lv2dir
+			else:
+				if Params.g_options.lv2_user:
+					if sys.platform == "darwin":
+						conf.env['LV2DIR'] = os.getenv('HOME') + '/Library/Audio/Plug-Ins/LV2'
+					else:
+						conf.env['LV2DIR'] = os.getenv('HOME') + '/.lv2'
 				else:
-					conf.env['LV2DIR'] = conf.env['LIBDIR'] + 'lv2/'
+					if sys.platform == "darwin":
+						conf.env['LV2DIR'] = '/Library/Audio/Plug-Ins/LV2'
+					else:
+						conf.env['LV2DIR'] = conf.env['LIBDIR'] + 'lv2/'
 		
 	conf.env['BINDIRNAME'] = chop_prefix(conf, 'BINDIR')
 	conf.env['LIBDIRNAME'] = chop_prefix(conf, 'LIBDIR')
 	conf.env['DATADIRNAME'] = chop_prefix(conf, 'DATADIR')
-	conf.env['LV2DIRNAME'] = chop_prefix(conf, 'LV2DIR')
+	if g_features['lv2']:
+		conf.env['LV2DIRNAME'] = chop_prefix(conf, 'LV2DIR')
 	
 	if Params.g_options.debug:
 		conf.env['CCFLAGS'] = '-O0 -g -std=c99'
@@ -214,7 +231,7 @@ def display_feature(msg, build):
 
 def print_summary(conf):
 	global g_step
-	global g_docs_available
+	global g_features
 	if g_step > 2:
 		print
 		return
@@ -223,7 +240,7 @@ def print_summary(conf):
 	display_header('Global configuration')
 	display_msg("Install prefix", conf.env['PREFIX'], 'CYAN')
 	display_msg("Debuggable build", str(conf.env['DEBUG']), 'YELLOW')
-	if g_docs_available:
+	if g_features['docs']:
 		display_msg("Build documentation", str(conf.env['BUILD_DOCS']), 'YELLOW')
 	print
 	g_step = 3

@@ -19,7 +19,7 @@ srcdir = '.'
 blddir = 'build'
 
 def set_options(opt):
-	autowaf.set_options(opt, False)
+	autowaf.set_options(opt, False, False, False)
 	opt.add_option('--install-name', type='string', default=APPNAME, dest='app_install_name', help="Install name. [Default: '" + APPNAME + "']")
 	opt.add_option('--app-human-name', type='string', default=APP_HUMAN_NAME, dest='app_human_name', help="Human name for app. [Default: '" + APP_HUMAN_NAME + "']")
 
