@@ -95,34 +95,35 @@ def configure(conf):
 	check_tool(conf, 'compiler_cxx')
 	conf.env['BUILD_DOCS'] = Params.g_options.build_docs
 	conf.env['DEBUG'] = Params.g_options.debug
+	conf.env['PREFIX'] = os.path.abspath(os.path.expanduser(os.path.normpath(conf.env['PREFIX'])))
 	if Params.g_options.bundle:
 		conf.env['BUNDLE'] = True
 		conf.define('BUNDLE', 1)
 		conf.env['BINDIR'] = conf.env['PREFIX']
-		conf.env['INCLUDEDIR'] = conf.env['PREFIX'] + 'Headers/'
-		conf.env['LIBDIR'] = conf.env['PREFIX'] + 'Libraries/'
-		conf.env['DATADIR'] = conf.env['PREFIX'] + 'Resources/'
-		conf.env['HTMLDIR'] = conf.env['PREFIX'] + 'Resources/Documenation/'
-		conf.env['MANDIR'] = conf.env['PREFIX'] + 'Resources/Man/'
-		conf.env['LV2DIR'] = conf.env['PREFIX'] + 'PlugIns/'
+		conf.env['INCLUDEDIR'] = conf.env['PREFIX'] + '/Headers/'
+		conf.env['LIBDIR'] = conf.env['PREFIX'] + '/Libraries/'
+		conf.env['DATADIR'] = conf.env['PREFIX'] + '/Resources/'
+		conf.env['HTMLDIR'] = conf.env['PREFIX'] + '/Resources/Documenation/'
+		conf.env['MANDIR'] = conf.env['PREFIX'] + '/Resources/Man/'
+		conf.env['LV2DIR'] = conf.env['PREFIX'] + '/PlugIns/'
 	else:
 		conf.env['BUNDLE'] = False
 		if Params.g_options.bindir:
 			conf.env['BINDIR'] = Params.g_options.bindir
 		else:
-			conf.env['BINDIR'] = conf.env['PREFIX'] + 'bin/'
+			conf.env['BINDIR'] = conf.env['PREFIX'] + '/bin/'
 		if Params.g_options.includedir:
 			conf.env['INCLUDEDIR'] = Params.g_options.includedir
 		else:
-			conf.env['INCLUDEDIR'] = conf.env['PREFIX'] + 'include/'
+			conf.env['INCLUDEDIR'] = conf.env['PREFIX'] + '/include/'
 		if Params.g_options.libdir:
 			conf.env['LIBDIR'] = Params.g_options.libdir
 		else:
-			conf.env['LIBDIR'] = conf.env['PREFIX'] + 'lib/'
+			conf.env['LIBDIR'] = conf.env['PREFIX'] + '/lib/'
 		if Params.g_options.datadir:
 			conf.env['DATADIR'] = Params.g_options.datadir
 		else:
-			conf.env['DATADIR'] = conf.env['PREFIX'] + 'share/'
+			conf.env['DATADIR'] = conf.env['PREFIX'] + '/share/'
 		if Params.g_options.htmldir:
 			conf.env['HTMLDIR'] = Params.g_options.htmldir
 		else:
