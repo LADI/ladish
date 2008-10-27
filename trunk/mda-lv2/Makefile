@@ -71,6 +71,7 @@ gui_libs: bundle pixmaps \
 
 data: libs gui_libs lvz/gendata
 	cd ./mda.lv2 && ../lvz/gendata ./*.so > manifest.ttl
+	@echo "*** Ignore the above non-error about loading images! ***"
 
 install:
 	if [ "x$(INSTALL_DIR)" = "x" ]; then \
