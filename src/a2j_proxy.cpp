@@ -258,7 +258,8 @@ bool
 a2j_proxy::map_jack_port(
 	const char * jack_port_name,
 	string& alsa_client_name_ref,
-	string& alsa_port_name_ref)
+	string& alsa_port_name_ref,
+	uint32_t& alsa_client_id_ref)
 {
 	DBusMessage * reply_ptr;
 	dbus_uint32_t alsa_client_id;
@@ -299,6 +300,7 @@ a2j_proxy::map_jack_port(
 
 	alsa_client_name_ref = alsa_client_name;
 	alsa_port_name_ref = alsa_port_name;
+	alsa_client_id_ref = alsa_client_id;
 
 	dbus_message_unref(reply_ptr);
 

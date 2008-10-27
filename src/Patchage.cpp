@@ -667,15 +667,18 @@ Patchage::on_port_added(
 	bool is_a2j_mapped;
 	string canvas_client_name;
 	string canvas_port_name;
+	uint32_t alsa_client_id;
+	boost::shared_ptr<PatchageModule> module;
 
 	is_a2j_mapped = strcmp(_a2j->get_jack_client_name(), jack_client_name) == 0;
-
 	if (is_a2j_mapped)
 	{
-		if (!_a2j->map_jack_port(jack_port_name, canvas_client_name, canvas_port_name))
+		if (!_a2j->map_jack_port(jack_port_name, canvas_client_name, canvas_port_name, alsa_client_id))
 		{
 			return;
 		}
+
+		canvas_port_name = str(boost::format(canvas_port_name + " [a2j:%u]") % alsa_client_id);
 	}
 	else
 	{
@@ -692,8 +695,7 @@ Patchage::on_port_added(
 		}
 	}
 
-	boost::shared_ptr<PatchageModule> module = _canvas->find_module(canvas_client_name, module_type);
-
+	module = _canvas->find_module(canvas_client_name, module_type);
 	if (!module) {
 		module = boost::shared_ptr<PatchageModule>(new PatchageModule(this, canvas_client_name, module_type));
 		module->load_location();
