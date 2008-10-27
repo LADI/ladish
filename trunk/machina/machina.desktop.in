@@ -1,9 +1,0 @@
-[Desktop Entry]
-Encoding=UTF-8
-Name=Machina
-Comment=MIDI sequencer based on probabilistic finite-state automata.
-Exec=machina_gui
-Terminal=false
-Icon=machina.svg
-Type=Application
-Categories=Application;AudioVideo;Sound;Audio
