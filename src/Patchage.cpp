@@ -120,7 +120,7 @@ Patchage::Patchage(int argc, char** argv)
 	g_app = this;
 
 	_settings_filename = getenv("HOME");
-	_settings_filename += "/.patchagerc";
+	_settings_filename += "/." PATCHAGE_APPNAME "rc";
 	_state_manager = new StateManager();
 	_canvas = boost::shared_ptr<PatchageCanvas>(new PatchageCanvas(this, 1600*2, 1200*2));
 
@@ -138,8 +138,8 @@ Patchage::Patchage(int argc, char** argv)
 
 	Glib::set_application_name("Patchage");
 	_about_win->property_program_name() = "Patchage";
-	_about_win->property_logo_icon_name() = "patchage";
-	gtk_window_set_default_icon_name("patchage");
+	_about_win->property_logo_icon_name() = PATCHAGE_APPNAME;
+	gtk_window_set_default_icon_name(PATCHAGE_APPNAME);
 	
 	gtkmm_set_width_for_given_text(*_buffer_size_combo, "4096 frames", 40);
 

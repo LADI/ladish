@@ -43,6 +43,7 @@ def configure(conf):
 
 	conf.check_pkg('flowcanvas', mandatory=True, vnum='0.4.0')
 
+	conf.define('PATCHAGE_APPNAME', APPNAME)
 	conf.env['PATCHAGE_VERSION'] = PATCHAGE_VERSION
 	conf.env['APP_INSTALL_NAME'] = Params.g_options.app_install_name
 	conf.env['APP_HUMAN_NAME'] = Params.g_options.app_human_name
