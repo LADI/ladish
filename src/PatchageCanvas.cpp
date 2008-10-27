@@ -47,7 +47,7 @@ PatchageCanvas::find_module(const string& name, ModuleType type)
 {
 	for (ItemList::iterator m = _items.begin(); m != _items.end(); ++m) {
 		boost::shared_ptr<PatchageModule> pm = boost::dynamic_pointer_cast<PatchageModule>(*m);
-		if (pm && pm->name() == name && (pm->type() == type || pm->type() == InputOutput)) {
+		if (pm && pm->identify(name, type)) {
 			return pm;
 		}
 	}

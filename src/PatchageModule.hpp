@@ -31,8 +31,8 @@ using namespace FlowCanvas;
 class PatchageModule : public Module
 {
 public:
-	PatchageModule(Patchage* app, const std::string& title, ModuleType type, double x=0, double y=0)
-		: Module(app->canvas(), title, x, y)
+	PatchageModule(Patchage* app, const std::string& name, ModuleType type, double x=0, double y=0)
+		: Module(app->canvas(), name, x, y)
 		, _app(app)
 		, _type(type)
 	{
@@ -40,6 +40,12 @@ public:
 	}
 
 	virtual ~PatchageModule() { delete _menu; _menu = NULL; }
+
+	bool
+	identify(const std::string& name, ModuleType type)
+	{
+		return _name == name && (_type == type || _type == InputOutput);
+	}
 
 	void create_menu() {
 		_menu = new Gtk::Menu();
@@ -97,8 +103,6 @@ public:
 		for (PortVector::iterator p = _ports.begin(); p != _ports.end(); ++p)
 			(*p)->disconnect_all();
 	}
-
-	ModuleType type() { return _type; }
 
 protected:
 	Patchage*  _app;
