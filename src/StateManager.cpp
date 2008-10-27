@@ -240,6 +240,8 @@ StateManager::save(const string& filename)
 	}
 
 	os.close();
+
+	cerr << "Saved configuration file " << filename << endl;
 }
 
 
