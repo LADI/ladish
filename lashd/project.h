@@ -51,8 +51,12 @@ struct _project
 
 	xmlDocPtr         doc;
 
+	/** user-visible name */
 	char             *name;
+	/** invoke project_move on project_unload */
 	bool             move_on_close;
+	
+	/** absolute path to project directory */
 	char             *directory;
 	char             *description;
 	char             *notes;
@@ -69,34 +73,87 @@ struct _project
 	uint32_t          client_tasks_progress; // Min is 0, max is client_tasks_total*100
 };
 
-
+/** Create a new, empty project object, without setting the directory. Initializes
+ * all fields to zero, except for clients and lost_clients lists. */
 project_t *
 project_new(void);
 
+/** Load project header from disk. Must be followed by project_load.
+ * @arg parent_dir    directory where projects generally reside (like $HOME/audio_projects)
+ * @arg project_dir   directory name (relative to parent_dir) where the given project resides
+ */
 project_t *
 project_new_from_disk(const char *parent_dir,
                       const char *project_dir);
 
+/** Destroy the project, by unloading it (if it's loaded) and freeing data structures
+ * associated with the project. 
+ * @todo Free client lists
+ */
 void
 project_destroy(project_t *project);
 
+/** Unload the project. Steps involved:
+ * - send a Quit server message
+ * - for all clients:
+ *   - call jack_mgr_remove_client (under a lock)
+ *   - call jack_patch_destroy on all JACK patches and free JACK patch list
+ *   - call alsa_mgr_remove_client (under a lock)
+ *   - call alsa_patch_destroy on all JACK patches and free ALSA patch list
+ *   - unlink and delete the client
+ * - delete all lost_clients
+ * - if move_on_close is set, do project_move on the project
+ * - if project directory exists but doc == NULL (orphaned newly-created project),
+ *   remove the directory
+ */
 void
 project_unload(project_t *project);
 
+/** Load some of the internal data of the project. Steps involved:
+ * - create stub clients (fill the client info based on XML) and add them to lost_clients list
+ * - load project notes
+ * - print a debug header when compiled with LASH_DEBUG defined
+ * - set modified state to false
+ * Does not handle any further steps (dependency checking, starting clients, notifying about
+ * newly appeared project, tracking progress etc.) - those are handled by server_project_restore.
+ * @arg project   Project pointer - must be created by project_new_from_disk?
+ */
 bool
 project_load(project_t *project);
 
+/** Checks if project has been loaded from disk (if there was any client to load).
+ */
 bool
 project_is_loaded(project_t *project);
 
+/** Retrieve a client from client_list based on UUID value.
+ * @arg client_list    a list of clients (project->clients, project->lost_clients etc.)
+ * @arg id             UUID to search for
+ */
 client_t *
 project_get_client_by_id(struct list_head *client_list,
                          uuid_t            id);
 
+/** Rename the project directory to new_dir. Calls client_store_close on all 
+ * clients before renaming, and client_store_open after renaming. Also, calls
+ * lashd_dbus_signal_emit_project_path_changed with the new directory between
+ * renaming and calling client_store_open.
+ *
+ * @arg project    project pointer
+ * @arg new_dir    new directory (absolute path)
+ */
 void
 project_move(project_t  *project,
              const char *new_dir);
 
+/** Set the client's completion percentage to a given value, and update the
+ * overall completion percentage accordingly. Calls 
+ * lashd_dbus_signal_emit_progress to communicate the new overall percentage.
+ * 
+ * @arg project    project that the percentage change occured in
+ * @arg client     the client for which a percentage value needs to be set
+ * @arg percentage the current value of client's percentage
+ */
 void
 project_client_progress(project_t *project,
                         client_t  *client,
