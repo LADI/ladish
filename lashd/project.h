@@ -195,14 +195,6 @@ project_set_notes(project_t  *project,
                   const char *notes);
 
 void
-project_set_description(project_t  *project,
-                        const char *description);
-
-void
-project_set_notes(project_t  *project,
-                  const char *notes);
-
-void
 project_rename_client(project_t  *project,
                       client_t   *client,
                       const char *name);
