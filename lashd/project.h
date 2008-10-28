@@ -63,7 +63,10 @@ struct _project
 	bool              modified_status;
 	time_t            last_modify_time;
 
+	/** Clients that are running in a session */
 	struct list_head  clients;
+	/** Clients that are supposed to be running in a session, but don't (because they haven't been
+	 * loaded yet, or failed to run, or dropped out of the session */
 	struct list_head  lost_clients;
 
 	/* For task progress feedback (LASH_Percentage) */
@@ -79,6 +82,7 @@ project_t *
 project_new(void);
 
 /** Load project header from disk. Must be followed by project_load.
+ *
  * @arg parent_dir    directory where projects generally reside (like $HOME/audio_projects)
  * @arg project_dir   directory name (relative to parent_dir) where the given project resides
  */
@@ -116,6 +120,7 @@ project_unload(project_t *project);
  * - set modified state to false
  * Does not handle any further steps (dependency checking, starting clients, notifying about
  * newly appeared project, tracking progress etc.) - those are handled by server_project_restore.
+ *
  * @arg project   Project pointer - must be created by project_new_from_disk?
  */
 bool
@@ -159,18 +164,47 @@ project_client_progress(project_t *project,
                         client_t  *client,
                         uint8_t    percentage);
 
+/** Set client's percentage to 100% and, if this was the last client performing
+ * the task, perform task finalization:
+ * - reset the task-related fields in project struct
+ * - call project_save or project_load (depending on a task)
+ *
+ * @arg project    project that the change occured in
+ * @arg client     the client which completed the task
+ */
 void
 project_client_task_completed(project_t *project,
                               client_t  *client);
 
+/** Set human-readable name for a project, call 
+ * lashd_dbus_signal_emit_project_name_changed to notify about name change, and
+ * set the modified state to true. Does not affect the project path.
+ *
+ * @arg project    project to rename
+ * @arg new_name   new human-readable name
+ */
 void
 project_rename(project_t  *project,
                const char *new_name);
 
+/** Use loader_execute to run a client - then free/zero the argv/argc in the client.
+ * @warning Does not check if the operation succeeded before clearing argc/argv.
+ *
+ * @arg project    project the client belongs to
+ * @arg client     client to run
+ */
 void
 project_launch_client(project_t *project,
                       client_t  *client);
 
+/** Attaches the new client to the project. If the client is one of the lost or
+ * recovering clients, it is reattached via project_resume_client (which attempts
+ * to restore client's old data). Otherwise, it is added as new via 
+ * project_new_client.
+ *
+ * @arg project    project to attach to
+ * @arg client     client to attach
+ */
 void
 project_add_client(project_t *project,
                   client_t   *client);
