@@ -209,10 +209,29 @@ void
 project_add_client(project_t *project,
                   client_t   *client);
 
+/** Called after client has disappeared. If client has left any data (keys), it calls
+ * store_write to save them. If there are no data for the client, the client directory
+ * is removed. If the project gets empty, its directory is removed, too. JACK and ALSA
+ * "backup" patches are retrieved and stored in client's structure. Client instance
+ * data (argc, argv and pid) are cleared. The modified flag is set.
+ * lashd_dbus_signal_emit_client_disappeared is called to notify about client
+ * disappearance.
+ *
+ * @arg project    project the client has disappeared from
+ * @arg client     client that has disappeared
+ */
 void
 project_lose_client(project_t *project,
                     client_t  *client);
 
+/** Initiate the process of saving the project. Steps involved:
+ * - add the project to project list (if it's new)
+ * - create the project directory
+ * - notify the clients to save their state
+ * - write project metadata
+ * - call project_clear_lost_clients(?)
+ * - if no clients need to be saved, the save is complete, so project_saved is called.
+ */
 void
 project_save(project_t *project);
 
