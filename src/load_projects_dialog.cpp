@@ -39,7 +39,6 @@ struct LoadProjectDialog
 		Gtk::TreeModelColumn<Glib::ustring> description;
 	};
 
-	Patchage * _app;
 	Widget<Gtk::Dialog> _dialog;
 	Widget<Gtk::TreeView> _widget;
 	Record _columns;
@@ -157,7 +156,7 @@ loop:
 		}
 
 		Glib::ustring project_name = (*iter)[_columns.name];
-		_app->load_project(project_name);
+		g_app->load_project(project_name);
 	}
 
 	_dialog->hide();
@@ -169,7 +168,7 @@ LoadProjectDialog::load_selected_project()
 {
 	Glib::RefPtr<Gtk::TreeView::Selection> selection = _widget->get_selection();
 	Glib::ustring name = (*selection->get_selected())[_columns.name];
-	_app->load_project(name);
+	g_app->load_project(name);
 	_dialog->hide();
 }
 
