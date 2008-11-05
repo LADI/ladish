@@ -27,7 +27,7 @@
  * <http://lv2plug.in/ns/ext/data-access>.
  *
  * This extension defines a method for (e.g.) plugin UIs to have (possibly
- * marshalled) access to the data_access function on a plugin instance.
+ * marshalled) access to the extension_data function on a plugin instance.
  */
 	
 
