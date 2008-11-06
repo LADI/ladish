@@ -48,12 +48,10 @@ Port::Port(boost::shared_ptr<Module> module, const string& name, bool is_input, 
 	, _control_rect(NULL)
 	, _menu(NULL)
 {
-	const float z = module->canvas().lock()->get_zoom();
-	// Create label first (and find size)
+	// Create label first and zoom (to find size correctly)
 	_label = new Gnome::Canvas::Text(*this, 0, 0, _name);
-	if (z != 1.0)
-		zoom(z);
-		
+	zoom(module->canvas().lock()->get_zoom());
+
 	const double text_width = _label->property_text_width();
 	_width = text_width + 6.0;
 	_height = _label->property_text_height();

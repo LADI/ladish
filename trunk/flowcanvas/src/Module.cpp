@@ -74,8 +74,8 @@ Module::Module(boost::shared_ptr<Canvas> canvas, const string& name, double x, d
 		_canvas_title.property_size() = 9000;
 		_canvas_title.property_weight_set() = true;
 		_canvas_title.property_weight() = 400; */
-		if (canvas->get_zoom() != 1.0)
-			zoom(canvas->get_zoom());
+		//if (canvas->get_zoom() != 1.0)
+		zoom(canvas->get_zoom());
 		_canvas_title.property_fill_color_rgba() = MODULE_TITLE_COLOUR;
 	} else {
 		_canvas_title.hide();
@@ -175,7 +175,7 @@ Module::on_drop(double new_x, double new_y)
 void
 Module::zoom(double z)
 {
-	_canvas_title.property_size() = static_cast<int>(floor(8000.0f * z));
+	_canvas_title.property_size() = static_cast<int>(floor(9000.0f * z));
 	for (PortVector::iterator p = _ports.begin(); p != _ports.end(); ++p)
 		(*p)->zoom(z);
 }
