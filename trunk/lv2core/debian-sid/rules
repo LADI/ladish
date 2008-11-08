@@ -25,24 +25,16 @@ version=`ls src/.libs/lib*.so.* | \
 major=`ls src/.libs/lib*.so.* | \
  awk '{if (match($$0,/\.so\.[0-9]+$$/)) print substr($$0,RSTART+4)}'`
 
-config.status: configure
+config:
 	dh_testdir
-	# Add here commands to configure the package.
-ifneq "$(wildcard /usr/share/misc/config.sub)" ""
-	cp -f /usr/share/misc/config.sub config.sub
-endif
-ifneq "$(wildcard /usr/share/misc/config.guess)" ""
-	cp -f /usr/share/misc/config.guess config.guess
-endif
-	./configure --host=$(DEB_HOST_GNU_TYPE) --build=$(DEB_BUILD_GNU_TYPE) --prefix=/usr --mandir=\$${prefix}/share/man --infodir=\$${prefix}/share/info CFLAGS="$(CFLAGS)" LDFLAGS="-Wl,-z,defs"
-
+	./waf configure --prefix=/usr --mandir=\$${prefix}/share/man
 
 build: build-stamp
-build-stamp:  config.status
+build-stamp: config
 	dh_testdir
 
 	# Add here commands to compile the package.
-	$(MAKE)
+	./waf
 
 	touch $@
 
@@ -52,8 +44,7 @@ clean:
 	rm -f build-stamp 
 
 	# Add here commands to clean up after the build process.
-	$(MAKE) distclean
-	rm -f config.sub config.guess
+	./waf distclean
 
 	dh_clean 
 
@@ -63,7 +54,7 @@ install: build
 	dh_clean -k 
 	dh_installdirs
 
-	$(MAKE) DESTDIR=$(CURDIR)/debian/lv2core install
+	DESTDIR=$(CURDIR)/debian/lv2core ./waf install
 
 
 # Build architecture-independent files here.
