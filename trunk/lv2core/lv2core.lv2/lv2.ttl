@@ -1,5 +1,5 @@
 # RDF Schema for LV2 plugins
-# Revision 2
+# Revision 3
 #
 # This document describes the classes and properties that are defined by the
 # core LV2 specification.  See <http://lv2plug.in> for more information.
@@ -49,8 +49,8 @@ See http://lv2plug.in/docs for more details.
     doap:shortdesc "An audio processing plugin specification" ;
     doap:programming-language "C" ;
     doap:release [
-        doap:revision "2" ;
-        doap:created "2008-01-30"
+        doap:revision "3" ;
+        doap:created "2008-10-08"
     ] ;
     doap:maintainer [
         a foaf:Person ;
@@ -61,7 +61,7 @@ See http://lv2plug.in/docs for more details.
         a foaf:Person ;
         foaf:name "Dave Robillard" ;
         foaf:homepage <http://drobilla.net/> ;
-        rdfs:seeAlso <http://drobilla.net/drobilla.xrdf>
+        rdfs:seeAlso <http://drobilla.net/drobilla.rdf>
     ] .
 
 
@@ -74,7 +74,7 @@ See http://lv2plug.in/docs for more details.
     rdfs:comment """
 The class which represents an LV2 plugin.
 
-To be used by a host a Plugin must have at least the following properties:
+To be used by a host a Plugin MUST have at least the following properties:
     rdf:type (with object :Plugin)
     doap:name (one without language tag)
     doap:license
@@ -96,7 +96,7 @@ doap:description for more detailed descriptions.
     rdfs:comment """
 The class which represents an LV2 port.
 
-In order for it to be used by a host it must have at least 
+In order for it to be used by a host it MUST have at least 
 the following properties:
     rdf:type (with object one of :Port, :InputPort, :OutputPort)
     rdf:type (more specific port class, see below)
@@ -116,6 +116,13 @@ in plugins to insert in a certain signal path (e.g. stereo audio), it SHOULD
 consider all the classes of a port to determine which ports are most suitable
 for connection (e.g. by ignoring ports with additional classes the host does
 not recognize).
+
+A port has two identifiers - a (numeric) index, and a (textual) symbol.
+The index can be used as an identifier at run-time, but persistent references
+to ports (e.g. in a saved preset) MUST use the symbol.  A symbol is guaranteed
+to refer to the same port on all plugins with a given URI.  An index does NOT
+necessarily refer to the same port on all plugins with a given URI (i.e. the
+index for a port may differ between plugin binaries).
 """ .
 
 :InputPort a rdfs:Class ;
@@ -169,7 +176,10 @@ conforming to the 32bit IEEE-754 floating point specification.
 :documentation a rdf:Property ;
     rdfs:domain  :Plugin ;
     rdfs:label   "documentation" ;
-    rdfs:comment "Relates a Plugin to some text/audio/video documentation either online or included with the plugin package" .
+    rdfs:comment """
+Relates a Plugin to some text/audio/video documentation either online
+or included with the plugin package.
+""" .
 
 
 
@@ -183,9 +193,7 @@ conforming to the 32bit IEEE-754 floating point specification.
     rdfs:label   "index" ;
     rdfs:comment """
 Specifies the index of the port, passed as an argument to the connect port
-function. This number uniqely identifies the port within the plugin.
-
-The plugin author MUST change the plugin URI if a port index is changed.
+function. The index uniqely identifies the port on an instance of the plugin.
 """ .
 
 :symbol a rdf:Property ;
@@ -196,8 +204,9 @@ A short name used as a machine and human readable identifier.
 The first character must be one of _, a-z or A-Z and subsequenct characters can
 be from _, a-z, A-Z and 0-9.
 
-A language tag MUST NOT be used on this property.  The plugin author MUST change
-the plugin URI if a port symbol is changed.
+A language tag MUST NOT be used on this property.  The symbol uniquely
+identifies the port on a plugin with a given URI (i.e. the plugin author MUST
+change the plugin URI if a port symbol is changed or removed).
 """ .
 
 :name a rdf:Property ;
@@ -220,8 +229,8 @@ property without changing the Plugin URI.
 :Point a rdfs:Class ;
    rdfs:label   "Port value point" ;
    rdfs:comment """
-Used to describe interesting values in a Port's range.  To be valid it requires
-two rdf:properties, rdfs:label and rdf:value.
+Used to describe interesting values in a Port's range.  To be valid it
+requires two rdf:properties, rdfs:label and rdf:value.
 
 There are 3 specially defined Points in the LV2 specification (default,
 minimum, and maximum), though future extensions may define more.
@@ -271,7 +280,7 @@ values in the range of :float.
 
 :Feature a rdfs:Class ;
     rdfs:label   "Feature" ;
-    rdfs:comment "An additional feature which a plugin may use (possibly require).".
+    rdfs:comment "An additional feature which a plugin may use or require.".
 
 :optionalFeature a rdf:Property ;
     rdfs:domain  :Plugin ;
@@ -335,18 +344,18 @@ and calls to the run method should be done in rapid succession.
     rdfs:label   "in-place broken" ;
     rdfs:comment """
 Indicates that the plugin may cease to work correctly if the host elects to use
-the same data location for both audio input and audio output.  Plugins that will 
-fail to work correctly if ANY input buffer for a port of the class :AudioPort 
+the same data location for both audio input and audio output.  Plugins that will
+fail to work correctly if ANY input buffer for a port of the class :AudioPort
 is set to the same location as ANY output buffer for a port of the same class
-(with connect_port()) MUST require this Feature.  Doing so should be avoided as it
-makes it impossible for hosts to use the plugin to process audio "in-place".
+(with connect_port()) MUST require this Feature.  Doing so should be avoided as
+it makes it impossible for hosts to use the plugin to process audio "in-place".
 """ .
 
 :hardRTCapable a :Feature ;
     rdfs:label   "Hard realtime capable" ;
     rdfs:comment """
 Indicates that the plugin is capable of running not only in a conventional host
-but also in a "hard real-time" environment. To qualify for this the plugin must
+but also in a "hard real-time" environment. To qualify for this the plugin MUST
 satisfy all of the following:
 
     (1) The plugin must not use malloc(), free() or other heap memory
@@ -412,8 +421,8 @@ zero should be considered "on" or "true".
 Indicates that any bounds specified should be interpreted as multiples of the
 sample rate. For instance, a frequency range from 0Hz to the Nyquist frequency
 (half the sample rate) could be requested by this property in conjunction with
-:minimum 0.0 and :maximum 0.5. Hosts that support bounds at all must support
-this property to retain meaning.
+:minimum 0.0 and :maximum 0.5.
+Hosts that support bounds at all MUST support this property.
 """ .
 
 :integer a :PortProperty ;

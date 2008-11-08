@@ -50,7 +50,7 @@ See http://lv2plug.in/docs for more details.
     doap:programming-language "C" ;
     doap:release [
         doap:revision "3" ;
-        doap:created "2008-09-28"
+        doap:created "2008-10-08"
     ] ;
     doap:maintainer [
         a foaf:Person ;
@@ -61,7 +61,7 @@ See http://lv2plug.in/docs for more details.
         a foaf:Person ;
         foaf:name "Dave Robillard" ;
         foaf:homepage <http://drobilla.net/> ;
-        rdfs:seeAlso <http://drobilla.net/drobilla.xrdf>
+        rdfs:seeAlso <http://drobilla.net/drobilla.rdf>
     ] .
 
 
@@ -119,10 +119,10 @@ not recognize).
 
 A port has two identifiers - a (numeric) index, and a (textual) symbol.
 The index can be used as an identifier at run-time, but persistent references
-to ports (e.g. in a saved preset) MUST use the symbol unless it is somehow
-guaranteed that any possible user of the index uses it to refer to the
-same port.  Symbols are guaranteed to refer to the same port for any plugin
-with a given URI.
+to ports (e.g. in a saved preset) MUST use the symbol.  A symbol is guaranteed
+to refer to the same port on all plugins with a given URI.  An index does NOT
+necessarily refer to the same port on all plugins with a given URI (i.e. the
+index for a port may differ between plugin binaries).
 """ .
 
 :InputPort a rdfs:Class ;
@@ -205,8 +205,8 @@ The first character must be one of _, a-z or A-Z and subsequenct characters can
 be from _, a-z, A-Z and 0-9.
 
 A language tag MUST NOT be used on this property.  The symbol uniquely
-identifies the port on a plugin with a given URI.  The plugin author MUST
-change the plugin URI if a port symbol is changed or removed.
+identifies the port on a plugin with a given URI (i.e. the plugin author MUST
+change the plugin URI if a port symbol is changed or removed).
 """ .
 
 :name a rdf:Property ;
