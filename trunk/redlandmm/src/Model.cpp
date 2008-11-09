@@ -131,7 +131,7 @@ Model::set_base_uri(const Glib::ustring& uri)
 	Glib::Mutex::Lock lock(_world.mutex());
 
 	assert(uri.find(":") != string::npos);
-	assert(uri.substr(uri.find(":")+1).find(":") == string::npos);
+	//assert(uri.substr(uri.find(":")+1).find(":") == string::npos);
 	cout << "[Model] Base URI = " << uri << endl;
 	_base = Node(_world, Node::RESOURCE, uri);
 }
