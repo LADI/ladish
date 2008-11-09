@@ -41,6 +41,7 @@ public:
 		INT,
 		FLOAT,
 		BOOL,
+		URI,
 		STRING,
 		BLOB
 	};
@@ -50,7 +51,8 @@ public:
 	Atom(float val)              : _type(FLOAT),  _float_val(val)                  {}
 	Atom(bool val)               : _type(BOOL),   _bool_val(val)                   {}
 	Atom(const char* val)        : _type(STRING), _string_val(strdup(val))         {}
-	Atom(const std::string& val) : _type(STRING), _string_val(strdup(val.c_str())) {}
+	
+	Atom(Type t, const std::string& val) : _type(t), _string_val(strdup(val.c_str())) {}
 	
 	Atom(const char* type_uri, size_t size, void* val) : _type(BLOB) {
 		_blob_type_length = strlen(type_uri) + 1; // + 1 for \0
@@ -61,7 +63,7 @@ public:
 	}
 
 	~Atom() {
-		if (_type == STRING)
+		if (_type == URI || _type == STRING)
 			free(_string_val);
 		else if (_type == BLOB)
 			free(_blob_val);
@@ -77,6 +79,7 @@ public:
 		case INT:    _int_val    = copy._int_val;            break;
 		case FLOAT:  _float_val  = copy._float_val;          break;
 		case BOOL:   _bool_val   = copy._bool_val;           break;
+		case URI:
 		case STRING: _string_val = strdup(copy._string_val); break;
 		case BLOB:   _blob_size = copy._blob_size;
 		             _blob_type_length = copy._blob_type_length;
@@ -99,6 +102,7 @@ public:
 		case INT:    _int_val    = other._int_val;            break;
 		case FLOAT:  _float_val  = other._float_val;          break;
 		case BOOL:   _bool_val   = other._bool_val;           break;
+		case URI:
 		case STRING: _string_val = strdup(other._string_val); break;
 		case BLOB:   _blob_size = other._blob_size;
 		             _blob_type_length = other._blob_type_length;
@@ -116,6 +120,7 @@ public:
 			case INT:    return _int_val    == other._int_val;
 			case FLOAT:  return _float_val  == other._float_val;
 			case BOOL:   return _bool_val   == other._bool_val;
+			case URI:
 			case STRING: return strcmp(_string_val, other._string_val) == 0;
 			case BLOB:   return _blob_val == other._blob_val;
 			}
@@ -132,6 +137,7 @@ public:
 			case INT:    return _int_val    < other._int_val;
 			case FLOAT:  return _float_val  < other._float_val;
 			case BOOL:   return _bool_val   < other._bool_val;
+			case URI:
 			case STRING: return strcmp(_string_val, other._string_val) < 0;
 			case BLOB:   return _blob_val   < other._blob_val;
 			}
@@ -145,6 +151,7 @@ public:
 		case INT:    return sizeof(uint32_t);
 		case FLOAT:  return sizeof(float);
 		case BOOL:   return sizeof(bool);
+		case URI:
 		case STRING: return strlen(_string_val);
 		case BLOB:   return _blob_size;
 		}
@@ -162,6 +169,7 @@ public:
 	inline float       get_float()  const { assert(_type == FLOAT);  return _float_val; }
 	inline bool        get_bool()   const { assert(_type == BOOL);   return _bool_val; }
 	inline const char* get_string() const { assert(_type == STRING); return _string_val; }
+	inline const char* get_uri()    const { assert(_type == URI);    return _string_val; }
 	
 	inline const char* get_blob_type() const { assert(_type == BLOB); return (const char*)_blob_val; }
 	inline const void* get_blob()      const { assert(_type == BLOB); return (const char*)_blob_val + _blob_type_length; }
