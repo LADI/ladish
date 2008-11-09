@@ -64,9 +64,13 @@ struct loader_child
 	bool              terminal;
 	int               stdout;
 	char              stdout_buffer[CLIENT_OUTPUT_BUFFER_SIZE];
+	char              stdout_last_line[CLIENT_OUTPUT_BUFFER_SIZE];
+	unsigned int      stdout_last_line_repeat_count;
 	char             *stdout_buffer_ptr;
 	int               stderr;
 	char              stderr_buffer[CLIENT_OUTPUT_BUFFER_SIZE];
+	char              stderr_last_line[CLIENT_OUTPUT_BUFFER_SIZE];
+	unsigned int      stderr_last_line_repeat_count;
 	char             *stderr_buffer_ptr;
 };
 
@@ -89,6 +93,27 @@ loader_child_find_and_mark_dead(pid_t pid)
 	return NULL;
 }
 
+static
+void
+loader_check_line_repeat_end(
+	char * project,
+	char * argv0,
+	bool error,
+	unsigned int last_line_repeat_count)
+{
+	if (last_line_repeat_count >= 2)
+	{
+		if (error)
+		{
+			lash_error_plain("%s:%s: stderr line repeated %u times", project, argv0, last_line_repeat_count);
+		}
+		else
+		{
+			lash_info("%s:%s: stdout line repeated %u times", project, argv0, last_line_repeat_count);
+		}
+	}
+}
+
 static void
 loader_childs_bury(void)
 {
@@ -99,6 +124,17 @@ loader_childs_bury(void)
 	list_for_each_safe (node_ptr, next_ptr, &g_childs_list) {
 		child_ptr = list_entry(node_ptr, struct loader_child, siblings);
 		if (child_ptr->dead) {
+			loader_check_line_repeat_end(
+				child_ptr->project,
+				child_ptr->argv0,
+				false,
+				child_ptr->stdout_last_line_repeat_count);
+			loader_check_line_repeat_end(
+				child_ptr->project,
+				child_ptr->argv0,
+				true,
+				child_ptr->stderr_last_line_repeat_count);
+
 			lash_debug("Bury child '%s' with PID %u",
 			           child_ptr->argv0, (unsigned int) child_ptr->pid);
 
@@ -252,65 +288,102 @@ loader_exec_program(client_t *client,
 }
 
 static void
-loader_read_child_output(char  *project,
-                         char  *argv0,
-                         int    fd,
-                         bool   error,
-                         char  *buffer_ptr,
-                         char **buffer_ptr_ptr)
+loader_read_child_output(
+	char  *project,
+	char  *argv0,
+	int    fd,
+	bool   error,
+	char  *buffer_ptr,
+	char **buffer_ptr_ptr,
+	char  *last_line,
+	unsigned int * last_line_repeat_count)
 {
 	ssize_t ret;
 	char *char_ptr;
 	char *eol_ptr;
 	size_t left;
+	size_t max_read;
 
-	do {
-		char_ptr = *buffer_ptr_ptr;
-		ret = read(fd, char_ptr, CLIENT_OUTPUT_BUFFER_SIZE - 1);
-		if (ret > 0) {
-			char_ptr[ret] = 0;
+	do
+	{
+		max_read = CLIENT_OUTPUT_BUFFER_SIZE - 1 - (*buffer_ptr_ptr - buffer_ptr);
+		ret = read(fd, *buffer_ptr_ptr, max_read);
+		if (ret > 0)
+		{
+			(*buffer_ptr_ptr)[ret] = 0;
+			char_ptr = buffer_ptr;
 
-			while ((eol_ptr = strchr(char_ptr, '\n'))) {
+			while ((eol_ptr = strchr(char_ptr, '\n')) != NULL)
+			{
 				*eol_ptr = 0;
 
-				if (error) {
-					lash_error_plain("%s:%s: %s", project,
-					                 argv0, char_ptr);
-				} else {
-					lash_info("%s:%s: %s", project, argv0,
-					          char_ptr);
+				if (*last_line_repeat_count > 0 && strcmp(last_line, char_ptr) == 0)
+				{
+					if (*last_line_repeat_count == 1)
+					{
+						if (error)
+						{
+							lash_error_plain("%s:%s: last stderr line repeating..", project, argv0);
+						}
+						else
+						{
+							lash_info("%s:%s: last stdout line repeating...", project, argv0);
+						}
+					}
+
+					(*last_line_repeat_count)++;
+				}
+				else
+				{
+					loader_check_line_repeat_end(project, argv0, error, *last_line_repeat_count);
+
+					strcpy(last_line, char_ptr);
+					*last_line_repeat_count = 1;
+
+					if (error)
+					{
+						lash_error_plain("%s:%s: %s", project, argv0, char_ptr);
+					}
+					else
+					{
+						lash_info("%s:%s: %s", project, argv0, char_ptr);
+					}
 				}
 
 				char_ptr = eol_ptr + 1;
 			}
 
 			left = ret - (char_ptr - *buffer_ptr_ptr);
-			if (left != 0) {
-				if ((*buffer_ptr_ptr - buffer_ptr) + ret
-				    == CLIENT_OUTPUT_BUFFER_SIZE - 1) {
-					if (error) {
-						lash_error_plain("%s:%s: %s "
-						                 ANSI_RESET ANSI_COLOR_RED
-						                 "(truncated) " ANSI_RESET,
-						                 project, argv0,
-						                 char_ptr);
-					} else {
-						lash_info("%s:%s: %s "
-						          ANSI_RESET ANSI_COLOR_RED
-						          "(truncated) " ANSI_RESET,
-						          project, argv0,
-						          char_ptr);
+			if (left != 0)
+			{
+				/* last line does not end with newline */
+
+				if (left == CLIENT_OUTPUT_BUFFER_SIZE - 1)
+				{
+					/* line is too long to fit in buffer */
+					/* print it like it is, rest (or more) of it will be logged on next interation */
+
+					if (error)
+					{
+						lash_error_plain("%s:%s: %s " ANSI_RESET ANSI_COLOR_RED "(truncated) " ANSI_RESET, project, argv0, char_ptr);
+					}
+					else
+					{
+						lash_info("%s:%s: %s " ANSI_RESET ANSI_COLOR_RED "(truncated) " ANSI_RESET, project, argv0, char_ptr);
 					}
 
 					left = 0;
-				} else {
+				}
+				else
+				{
 					memmove(buffer_ptr, char_ptr, left);
 				}
 			}
 
 			*buffer_ptr_ptr = buffer_ptr + left;
 		}
-	} while (ret == CLIENT_OUTPUT_BUFFER_SIZE - 1);
+	}
+	while (ret == max_read);			/* if we have read everything as much as we can, then maybe there is more to read */
 }
 
 static void
@@ -322,20 +395,27 @@ loader_read_childs_output(void)
 	list_for_each (node_ptr, &g_childs_list) {
 		child_ptr = list_entry(node_ptr, struct loader_child, siblings);
 
-		if (!child_ptr->dead && !child_ptr->terminal) {
-			loader_read_child_output(child_ptr->project,
-			                         child_ptr->argv0,
-			                         child_ptr->stdout,
-			                         false,
-			                         child_ptr->stdout_buffer,
-			                         &child_ptr->stdout_buffer_ptr);
+		if (!child_ptr->dead && !child_ptr->terminal)
+		{
+			loader_read_child_output(
+				child_ptr->project,
+				child_ptr->argv0,
+				child_ptr->stdout,
+				false,
+				child_ptr->stdout_buffer,
+				&child_ptr->stdout_buffer_ptr,
+				child_ptr->stdout_last_line,
+				&child_ptr->stdout_last_line_repeat_count);
 
-			loader_read_child_output(child_ptr->project,
-			                         child_ptr->argv0,
-			                         child_ptr->stderr,
-			                         true,
-			                         child_ptr->stderr_buffer,
-			                         &child_ptr->stderr_buffer_ptr);
+			loader_read_child_output(
+				child_ptr->project,
+				child_ptr->argv0,
+				child_ptr->stderr,
+				true,
+				child_ptr->stderr_buffer,
+				&child_ptr->stderr_buffer_ptr,
+				child_ptr->stderr_last_line,
+				&child_ptr->stderr_last_line_repeat_count);
 		}
 	}
 }
@@ -366,6 +446,8 @@ loader_execute(client_t *client,
 	child_ptr->terminal = run_in_terminal;
 	child_ptr->stdout_buffer_ptr = child_ptr->stdout_buffer;
 	child_ptr->stderr_buffer_ptr = child_ptr->stderr_buffer;
+	child_ptr->stdout_last_line_repeat_count = 0;
+	child_ptr->stderr_last_line_repeat_count = 0;
 
 	if (!child_ptr->terminal) {
 		if (pipe(stderr_pipe) == -1) {
