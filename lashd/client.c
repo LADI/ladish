@@ -140,6 +140,8 @@ client_task_progressed(client_t *client,
                        uint8_t   percentage)
 {
 	project_t *project = client->project;
+
+	//lash_info("%s:%s task progressed to %u", project->name, client->name, (unsigned int)percentage);
 	
 	if (!project) {
 		lash_error("Client's project pointer is NULL");
@@ -180,6 +182,8 @@ client_task_completed(client_t *client,
 		lash_error("Client's project pointer is NULL");
 		goto end;
 	}
+
+	//lash_info("%s:%s task completed %s", project->name, client->name, was_succesful ? "successfully" : "with fail");
 
 	switch (client->task_type) {
 	case LASH_Save_Data_Set:

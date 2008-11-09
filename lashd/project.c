@@ -964,12 +964,24 @@ project_update_last_modify_time(
 static
 __inline__
 void
-project_saved(
+project_clients_save_complete(
 	project_t * project_ptr)
 {
+	bool success;
+
+	success = project_write_info(project_ptr);
+
 	lashd_dbus_signal_emit_project_saved(project_ptr->name);
 	project_update_last_modify_time(project_ptr);
-	lash_info("Project '%s' saved.", project_ptr->name);
+
+	if (success)
+	{
+		lash_info("Project '%s' saved.", project_ptr->name);
+	}
+	else
+	{
+		lash_error("Error writing info file for project '%s'", project_ptr->name);
+	}
 
 	project_set_modified_status(project_ptr, false);
 
@@ -1022,25 +1034,19 @@ project_save(project_t *project)
 	lashd_jackdbus_mgr_get_graph(g_server->jackdbus_mgr);
 #endif
 
-	if (!project_write_info(project)) {
-		lash_error("Error writing info file for project '%s'; "
-		           "aborting save", project->name);
-		return;
-	}
-
 	if (!project_save_notes(project))
 		lash_error("Error writing notes file for project '%s'", project->name);
 
 	project_clear_lost_clients(project);
 
-	/* in project_save_clients we tell clients then to save and save completes when there are no pending tasks,
+	/* in project_save_clients we tell clients to save and save completes when there are no pending tasks,
 	   as detected in project_client_task_completed()
 	   However, when there are not clients with internal state, project_client_task_completed() is not called at all.
 	   OTOH save is complete at this point.
 	*/
 	if (project->client_tasks_total == 0) /* check for project with stateless clients only */
 	{
-		project_saved(project);
+		project_clients_save_complete(project);
 	}
 }
 
@@ -1448,7 +1454,7 @@ project_client_task_completed(project_t *project,
 		/* Send ProjectSaved or ProjectLoaded signal, or return if the task was neither */
 		switch (client->task_type) {
 		case LASH_Save_Data_Set: case LASH_Save_File:
-			project_saved(project);
+			project_clients_save_complete(project);
 			break;
 		case LASH_Restore_File: case LASH_Restore_Data_Set:
 			project_loaded(project);
