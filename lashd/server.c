@@ -644,7 +644,7 @@ void
 server_main(server_t *server)
 {
 	while (!server->quit) {
-		dbus_connection_read_write_dispatch(server->dbus_service->connection, 333);
+		dbus_connection_read_write_dispatch(server->dbus_service->connection, 50);
 
 		loader_run();
 
