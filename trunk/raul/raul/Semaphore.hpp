@@ -26,14 +26,6 @@ namespace Raul {
 
 /** Trivial wrapper around POSIX semaphores (zero memory overhead).
  *
- * This was created to provide an alternative debuggable implementation of
- * semaphores based on a cond/mutex pair because semaphore's appeared not to
- * work in GDB.  Turns out sem_wait can fail when run in GDB, and Debian
- * really needs to update it's man pages.
- *
- * This class remains as a trivial (yet pretty) wrapper/abstraction, because
- * Glib (idiotically) doesn't have a Semaphore class.
- *
  * \ingroup raul
  */
 class Semaphore : boost::noncopyable {
