@@ -187,7 +187,7 @@ Path::replace_invalid_chars(string& str, bool replace_slash)
 		}
 	}
 	
-	if (str[str.length()-1] == '_')
+	if (str.length() != 1 && str[str.length()-1] == '_')
 		str = str.substr(0, str.length()-1);
 }
 
