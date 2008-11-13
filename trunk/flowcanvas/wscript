@@ -26,7 +26,7 @@ blddir = 'build'
 def set_options(opt):
 	autowaf.set_options(opt)
 	opt.add_option('--anti-alias', action='store_false', default=True, dest='anti_alias',
-			help="Anti-alias canvas (much prettier butslower) [Default: True]")
+			help="Anti-alias canvas (much prettier but slower) [Default: True]")
 
 def configure(conf):
 	autowaf.configure(conf)
