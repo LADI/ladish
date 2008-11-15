@@ -89,8 +89,7 @@ private:
 	}
 
 	/** Allocate thread-specific data key */
-	static void thread_key_alloc()
-	{
+	static void thread_key_alloc() {
 		pthread_key_create(&_thread_key, NULL);
 	}
 
