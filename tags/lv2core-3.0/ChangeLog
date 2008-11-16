@@ -1,0 +1,8 @@
+lv2core (3.0) unstable; urgency=low
+
+  * Require that serialisations refer to ports by symbol rather than index.
+  * Minor stylistic changes to lv2.ttl
+  * No header changes
+ 
+ -- Dave Robillard <dave@drobilla.net>  Sat, 08 Nov 2008 14:27:10 -0500
+
