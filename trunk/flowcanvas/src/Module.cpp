@@ -235,18 +235,6 @@ Module::port_at(double x, double y)
 }
 
 
-boost::shared_ptr<Port>
-Module::remove_port(const string& name)
-{
-	boost::shared_ptr<Port> ret = get_port(name);
-
-	if (ret)
-		remove_port(ret);
-	
-	return ret;
-}
-
-
 void
 Module::remove_port(boost::shared_ptr<Port> port)
 {
@@ -273,6 +261,8 @@ Module::remove_port(boost::shared_ptr<Port> port)
 		}
 
 		resize();
+		port->hide();
+		port.reset();
 
 	} else {
 		std::cerr << "Unable to find port " << port->name() << " to remove." << std::endl;

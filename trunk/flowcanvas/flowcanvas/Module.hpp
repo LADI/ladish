@@ -51,7 +51,6 @@ public:
 	
 	void                    add_port(boost::shared_ptr<Port> port);
 	void                    remove_port(boost::shared_ptr<Port> port);
-	boost::shared_ptr<Port> remove_port(const std::string& name);
 	boost::shared_ptr<Port> port_at(double x, double y);
 
 	void zoom(double z);
