@@ -23,7 +23,7 @@ def configure(conf):
 	autowaf.configure(conf)
 
 def build(bld):
-	if Params.g_options.bundle_only != False:
+	if not Params.g_options.bundle_only:
 		# Header
 		install_files('INCLUDEDIR', '', 'lv2.h')
 	
