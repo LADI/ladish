@@ -27,22 +27,22 @@ class AtomicInt {
 public:
 	
 	inline AtomicInt(int val)
-		{ g_atomic_int_set(&_val, val); }
+		{ g_atomic_int_set(static_cast<volatile gint*>(&_val), (gint)val); }
 
 	inline AtomicInt(const AtomicInt& copy)
-		{ g_atomic_int_set(&_val, copy.get()); }
+		{ g_atomic_int_set(static_cast<volatile gint*>(&_val), (gint)copy.get()); }
 	
 	inline int get() const
-		{ return g_atomic_int_get(&_val); }
+		{ return g_atomic_int_get(static_cast<volatile gint*>(&_val)); }
 
 	inline void operator=(int val)
-		{ g_atomic_int_set(&_val, val); }
+		{ g_atomic_int_set(static_cast<volatile gint*>(&_val), (gint)val); }
 
 	inline void operator+=(int val)
-		{ g_atomic_int_add(&_val, val); }
+		{ g_atomic_int_add(static_cast<volatile gint*>(&_val), (gint)val); }
 	
 	inline void operator-=(int val)
-		{ g_atomic_int_add(&_val, -val); }
+		{ g_atomic_int_add(static_cast<volatile gint*>(&_val), (gint)-val); }
 	
 	inline bool operator==(int val) const
 		{ return get() == val; }
@@ -51,28 +51,28 @@ public:
 		{ return get() + val; }
 
 	inline AtomicInt& operator++() // prefix
-		{ g_atomic_int_inc(&_val); return *this; }
+		{ g_atomic_int_inc(static_cast<volatile gint*>(&_val)); return *this; }
 	
 	inline AtomicInt& operator--() // prefix
-		{ g_atomic_int_add(&_val, -1); return *this; }
+		{ g_atomic_int_add(static_cast<volatile gint*>(&_val), -1); return *this; }
 	
-	/** Set value to newval iff current value is oldval.
-	 * @return whether set succeeded.
+	/** Set value to @a val iff current value is @a old.
+	 * @return true iff set succeeded.
 	 */
-	inline bool compare_and_exchange(int oldval, int newval)
-		{ return g_atomic_int_compare_and_exchange(&_val, oldval, newval); }
+	inline bool compare_and_exchange(int old, int val)
+		{ return g_atomic_int_compare_and_exchange(static_cast<volatile gint*>(&_val), old, val); }
 
 	/** Add val to value.
 	 * @return value immediately before addition took place.
 	 */
 	inline int exchange_and_add(int val)
-		{ return g_atomic_int_exchange_and_add(&_val, val); }
+		{ return g_atomic_int_exchange_and_add(static_cast<volatile gint*>(&_val), val); }
 
 	/** Decrement value.
 	 * @return true if value is now 0, otherwise false.
 	 */
 	inline bool decrement_and_test()
-		{ return g_atomic_int_dec_and_test(&_val); }
+		{ return g_atomic_int_dec_and_test(static_cast<volatile gint*>(&_val)); }
 
 private:
 	volatile mutable int _val;
