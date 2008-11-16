@@ -618,7 +618,11 @@ Module::resize()
 	if (_ports.empty())
 		h += header_height;
 
-	set_height(y + h + 2.0);
+	height = y + h + 2.0;
+	if (_embed_item && embed_pos == BETWEEN)
+		height = std::max(height, _embed_height + header_height + 2.0);
+
+	set_height(height);
 
 	// Center title
 	if (_icon_box)
