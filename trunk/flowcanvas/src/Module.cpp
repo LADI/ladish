@@ -595,19 +595,19 @@ Module::resize()
 		h = p->height();
 
 		if (p->is_input()) {
-			y = header_height + (i * (h + 2.0));
+			y = header_height + (i * (h + 1.0));
 			++i;
 			p->set_width(widest_in);
-			p->property_x() = 0.5;
+			p->property_x() = -0.5;
 			p->property_y() = y;
 			last_was_input = true;
 		} else {
 			if (!horiz || !last_was_input) {
-				y = header_height + (i * (h + 2.0));
+				y = header_height + (i * (h + 1.0));
 				++i;
 			}
 			p->set_width(widest_out);
-			p->property_x() = _width - p->width() - 0.5;
+			p->property_x() = _width - p->width() + 0.5;
 			p->property_y() = y;
 			last_was_input = false;
 		}

@@ -139,7 +139,6 @@ Item::on_event(GdkEvent* event)
 
 	case GDK_ENTER_NOTIFY:
 		signal_pointer_entered.emit();
-		//set_highlighted(true);
 		raise_to_top();
 		break;
 
@@ -213,6 +212,5 @@ Item::on_drag(double dx, double dy)
 
 	signal_dragged.emit(dx, dy);
 }
-
 
 } // namespace FlowCanvas

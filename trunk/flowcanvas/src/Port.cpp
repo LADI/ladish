@@ -83,9 +83,9 @@ void
 Port::show_control()
 {
 	if (!_control_rect) {
-		_control_rect = new Gnome::Canvas::Rect(*this, 0, 0, 0, _height);
-		_control_rect->property_outline_color_rgba() = 0xFFFFFCC;
-		_control_rect->property_fill_color_rgba() = 0xFFFFFF55;
+		_control_rect = new Gnome::Canvas::Rect(*this, 0.5, 0.5, 0.0, _height - 0.5);
+		_control_rect->property_outline_color_rgba() = 0xFFFFFF45;
+		_control_rect->property_fill_color_rgba() = 0xFFFFFF40;
 		_control_rect->show();
 	}
 }
@@ -141,7 +141,7 @@ Port::set_control(float value, bool signal)
 
 	//cerr << w << " / " << _width << endl;
 	
-	_control_rect->property_x2() = _control_rect->property_x1() + w;
+	_control_rect->property_x2() = _control_rect->property_x1() + std::max(0.0, w-1.0);
 	if (signal && _control_value == value)
 		signal = false;
 
@@ -171,8 +171,6 @@ Port::set_border_width(double w)
 {
 	_border_width = w;
 	_rect->property_width_units() = w;
-	if (_control_rect)
-		_control_rect->property_width_units() = w;
 }
 
 
@@ -197,8 +195,8 @@ Port::set_name(const string& n)
 		_rect->property_x2() = _width;	
 		_rect->property_y2() = _height;
 		if (_control_rect) {
-			_control_rect->property_x2() = _control_rect->property_x1() + (_control_value * _width);
-			_control_rect->property_y2() = _height;
+			_control_rect->property_x2() = _control_rect->property_x1() + (_control_value * (_width-1));
+			_control_rect->property_y2() = _height - 0.5;
 		}
 		_label->property_x() = text_width / 2 + 1;
 		_label->property_y() = _height / 2;
@@ -307,7 +305,7 @@ Port::set_highlighted(bool b, bool highlight_parent, bool highlight_connections,
 Gnome::Art::Point
 Port::src_connection_point()
 {
-	double x = (is_input()) ? _rect->property_x1()-1.0 : _rect->property_x2()+1.0;
+	double x = (is_input()) ? _rect->property_x1() : _rect->property_x2();
 	double y = _rect->property_y1() + _height / 2.0;
 	
 	i2w(x, y); // convert to world-relative coords
@@ -321,7 +319,7 @@ Port::src_connection_point()
 Gnome::Art::Point
 Port::dst_connection_point(const Gnome::Art::Point& src)
 {
-	double x = (is_input()) ? _rect->property_x1()-1.0 : _rect->property_x2()+1.0;
+	double x = (is_input()) ? _rect->property_x1() : _rect->property_x2();
 	double y = _rect->property_y1() + _height / 2.0;
 	
 	i2w(x, y); // convert to world-relative coords
