@@ -840,10 +840,10 @@ Canvas::frame_event(GdkEvent* ev)
 	// Zoom
 	if (ev->type == GDK_SCROLL && (ev->scroll.state & GDK_CONTROL_MASK)) {
 		if (ev->scroll.direction == GDK_SCROLL_UP) {
-			set_zoom(_zoom + 0.1);
+			set_zoom(_zoom * 1.25);
 			handled = true;
 		} else if (ev->scroll.direction == GDK_SCROLL_DOWN) {
-			set_zoom(_zoom - 0.1);
+			set_zoom(_zoom * 0.75);
 			handled = true;
 		}
 	}
