@@ -58,7 +58,12 @@ AddNode::mutate(Machine& machine)
 	SharedPtr<Node> note_node = machine.random_node();
 	if (!note_node)
 		return;
-	uint8_t note = PtrCast<MidiAction>(note_node->enter_action())->event()[1];
+
+	uint8_t note = rand() % 128;
+
+	SharedPtr<MidiAction> enter_action = PtrCast<MidiAction>(note_node->enter_action());
+	if (enter_action)
+		note = enter_action->event()[1];
 
 	node->set_enter_action(ActionFactory::note_on(note));
 	node->set_exit_action(ActionFactory::note_off(note));
