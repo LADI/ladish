@@ -34,7 +34,7 @@ Machine::Machine(TimeUnit unit)
 	: _active_nodes(MAX_ACTIVE_NODES, SharedPtr<Node>())
 	, _is_activated(false)
 	, _is_finished(false)
-	, _time(unit)
+	, _time(unit, 0, 0)
 {
 }
 
@@ -49,7 +49,7 @@ Machine::Machine(const Machine& copy)
 	, _active_nodes(MAX_ACTIVE_NODES, SharedPtr<Node>())
 	, _is_activated(false)
 	, _is_finished(false)
-	, _time(copy.time().unit())
+	, _time(copy.time())
 	, _sink(copy._sink)
 {
 	map< SharedPtr<Node>, SharedPtr<Node> > replacements;
@@ -76,7 +76,7 @@ Machine::operator=(const Machine& other)
 	_active_nodes = std::vector< SharedPtr<Node> >(MAX_ACTIVE_NODES, SharedPtr<Node>());
 	_is_activated = false;
 	_is_finished = false;
-	_time = 0;
+	_time = other._time;
 	_pending_learn = SharedPtr<LearnRequest>();
 	_sink = other._sink;
 	_nodes.clear();
@@ -181,7 +181,7 @@ Machine::reset(Raul::TimeStamp time)
 			_active_nodes.at(i).reset();
 	}
 
-	_time = 0;
+	_time = TimeStamp(_time.unit(), 0, 0);
 	_is_finished = false;
 }
 
@@ -307,7 +307,8 @@ Machine::run(const Raul::TimeSlice& time)
 
 	SharedPtr<Raul::MIDISink> sink = _sink.lock();
 
-	const TimeStamp cycle_end = time.start_ticks() + time.length_ticks();
+	const TimeStamp cycle_end_frames = time.start_ticks() + time.length_ticks();
+	const TimeStamp cycle_end = time.ticks_to_beats(cycle_end_frames);
 
 	assert(_is_activated);
 
@@ -349,16 +350,15 @@ Machine::run(const Raul::TimeSlice& time)
 			break;
 
 		// Earliest active state ends this cycle
-		} else if (time.beats_to_ticks(earliest->exit_time()) <= cycle_end) {
+		} else if (earliest->exit_time() <= cycle_end) {
 			this_time += earliest->exit_time() - _time;
-			_time = time.ticks_to_beats(
-					time.beats_to_ticks(earliest->exit_time()));
+			_time = earliest->exit_time();
 			exit_node(sink, earliest);
 
 		// Earliest active state ends in the future, done this cycle
 		} else {
 			_time = cycle_end;
-			this_time = time.length_beats(); // ran the entire cycle
+			this_time = cycle_end; // ran the entire cycle
 			break;
 		}
 

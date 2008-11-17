@@ -10,7 +10,7 @@ int
 main()
 {
 	TimeUnit  unit(TimeUnit::BEATS, 19200);
-	TimeSlice ts(48000, 120);
+	TimeSlice ts(48000, 19200, 120.0);
 
 	double in_double;
 	cout << "Beats: ";

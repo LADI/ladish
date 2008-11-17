@@ -49,13 +49,13 @@ namespace Raul {
  */
 class TimeSlice : public boost::noncopyable {
 public:
-	TimeSlice(uint32_t rate, double bpm)
+	TimeSlice(uint32_t rate, uint32_t ppqn, double bpm)
 		: _tick_rate(rate)
 		, _beat_rate(60.0/bpm)
 		, _start_ticks(Raul::TimeUnit(Raul::TimeUnit::FRAMES, rate), 0, 0)
 		, _length_ticks(TimeUnit(TimeUnit::FRAMES, rate), 0, 0)
-		, _start_beats(TimeUnit(TimeUnit::BEATS, LV2_EVENT_PPQN), 0, 0)
-		, _length_beats(TimeUnit(TimeUnit::BEATS, LV2_EVENT_PPQN), 0, 0)
+		, _start_beats(TimeUnit(TimeUnit::BEATS, ppqn), 0, 0)
+		, _length_beats(TimeUnit(TimeUnit::BEATS, ppqn), 0, 0)
 		, _offset_ticks(TimeUnit(TimeUnit::FRAMES, rate), 0, 0)
 	{}
 

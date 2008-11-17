@@ -141,7 +141,7 @@ void
 SMFDriver::run(SharedPtr<Machine> machine, Raul::TimeStamp max_time)
 {
 	// FIXME: unit kludge (tempo only)
-	Raul::TimeSlice time(1.0/(double)_writer->unit().ppt(), 120);
+	Raul::TimeSlice time(machine->time().unit().ppt(), _writer->unit().ppt(), 120.0);
 	time.set_slice(TimeStamp(max_time.unit(), 0, 0), time.beats_to_ticks(max_time));
 	machine->set_sink(shared_from_this());
 	machine->run(time);

@@ -91,7 +91,7 @@ Problem::fitness(const Machine& const_machine) const
 	// FIXME: timing stuff here isn't right at all...
 	
 	static const unsigned ppqn = 19200;
-	Raul::TimeSlice time(1.0/(double)ppqn, 120);
+	Raul::TimeSlice time(ppqn, ppqn, 120.0);
 	time.set_slice(TimeStamp(_unit, 0, 0), TimeDuration(_unit, 2*ppqn));
 		
 	machine.run(time);
