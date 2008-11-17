@@ -60,8 +60,8 @@ public:
 	                 size_t               size,
 	                 const unsigned char* event) throw (std::logic_error);
 	
-	void set_bpm(double bpm)                 { _bpm.set(bpm); }
-	void set_quantization(Raul::TimeStamp q) { _quantization.set(q); }
+	void set_bpm(double bpm)        { _bpm.set(bpm); }
+	void set_quantization(double q) { _quantization.set(q); }
 
 	void stop();
 
@@ -81,10 +81,11 @@ private:
 	jack_port_t* _input_port;
 	jack_port_t* _output_port;
 	
+	Raul::TimeUnit  _frames_unit;
 	Raul::TimeSlice _cycle_time;
 
-	Raul::DoubleBuffer<double>          _bpm;
-	Raul::DoubleBuffer<Raul::TimeStamp> _quantization;
+	Raul::DoubleBuffer<double> _bpm;
+	Raul::DoubleBuffer<double> _quantization;
 
 	Raul::Command _stop;
 

@@ -45,6 +45,7 @@ main(int argc, char** argv)
 	SharedPtr<Machina::Machine> machine;
 
 	// Load machine, if given
+#if 0
 	if (argc >= 2) {
 		const string filename = argv[1];
 		cout << "Building machine from MIDI file " << filename << endl;
@@ -64,9 +65,10 @@ main(int argc, char** argv)
 			machine = Loader(rdf_world).load(filename);
 		}
 	}
+#endif
 
 	if (!machine)
-		machine = SharedPtr<Machine>(new Machine());
+		machine = SharedPtr<Machine>(new Machine(TimeUnit(TimeUnit::BEATS, 0)));
 
 	// Build engine
 	SharedPtr<Driver> driver;

@@ -43,7 +43,7 @@ public:
 		return ret;
 	}
 
-	void start(TimeStamp q, Raul::TimeStamp time)
+	void start(double q, Raul::TimeStamp time)
 		{ _started = true; _start_time = time; _quantization = q; }
 	
 	void finish(TimeStamp time);
@@ -58,7 +58,7 @@ private:
 	LearnRequest(SharedPtr<Raul::Maid> maid, SharedPtr<Node> node)
 		: _started(false)
 		, _start_time(TimeUnit(TimeUnit::BEATS, 19200), 0, 0) // irrelevant
-		, _quantization(TimeUnit(TimeUnit::BEATS, 19200), 1, 0) // irrelevant
+		, _quantization(0) // irrelevant
 		, _node(node)
 		, _enter_action(new MidiAction(4, NULL))
 		, _exit_action(new MidiAction(4, NULL))
@@ -69,7 +69,7 @@ private:
 
 	bool                  _started;
 	TimeStamp             _start_time;
-	TimeStamp             _quantization;
+	double                _quantization;
 	SharedPtr<Node>       _node;
 	SharedPtr<MidiAction> _enter_action;
 	SharedPtr<MidiAction> _exit_action;

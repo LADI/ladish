@@ -17,6 +17,7 @@
 
 #include <map>
 #include "raul/SharedPtr.hpp"
+#include "raul/TimeStamp.hpp"
 #include "machina/Node.hpp"
 #include "machina/Machine.hpp"
 #include "machina/Action.hpp"
@@ -27,6 +28,7 @@
 #include "NodeView.hpp"
 #include "EdgeView.hpp"
 
+using namespace Raul;
 using namespace FlowCanvas;
 
 
@@ -57,11 +59,12 @@ MachinaCanvas::node_clicked(WeakPtr<NodeView> item, GdkEventButton* event)
 		SharedPtr<NodeView> last = _last_clicked.lock();
 
 		if (last) {
-			if (node != last)
+			if (node != last) {
 				if (get_connection(last, node))
 					disconnect_node(last, node);
 				else
 					connect_node(last, node);
+			}
 
 			last->set_default_base_color();
 			_last_clicked.reset();
@@ -78,7 +81,7 @@ bool
 MachinaCanvas::canvas_event(GdkEvent* event)
 {
 	static int last = 0;
-	
+
 	SharedPtr<Machina::Machine> machine = _app->machine();
 	if (!machine)
 		return false;
@@ -92,7 +95,8 @@ MachinaCanvas::canvas_event(GdkEvent* event)
 
 		string name = string("Note")+(char)(last++ +'0');
 
-		SharedPtr<Machina::Node> node(new Machina::Node(1.0, false));
+		TimeDuration dur(TimeUnit(TimeUnit::BEATS, 0), 1.0);
+		SharedPtr<Machina::Node> node(new Machina::Node(dur, false));
 		SharedPtr<NodeView> view(new NodeView(_app->window(), shared_from_this(), node,
 					name, x, y));
 

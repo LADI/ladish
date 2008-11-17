@@ -28,9 +28,9 @@ LearnRequest::finish(TimeStamp time)
 	_node->set_enter_action(_enter_action);
 	_node->set_exit_action(_exit_action);
 
-	TimeDuration duration = Raul::Quantizer::quantize(_quantization, time - _start_time);
+	//TimeDuration duration = Raul::Quantizer::quantize(_quantization, time - _start_time);
 	
-	_node->set_duration(duration);
+	//_node->set_duration(duration);
 }
 
 

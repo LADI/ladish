@@ -30,7 +30,7 @@ class Node;
 class MachineBuilder {
 public:
 	MachineBuilder(SharedPtr<Machine> machine,
-	               Raul::TimeStamp    quantization);
+	               double             quantization);
 
 	void set_time(Raul::TimeStamp time) { _time = time; }
 
@@ -43,7 +43,7 @@ public:
 
 private:
 	bool is_delay_node(SharedPtr<Node> node) const;
-	void set_node_duration(SharedPtr<Node> node, Raul::TimeStamp d) const;
+	void set_node_duration(SharedPtr<Node> node, Raul::TimeDuration d) const;
 
 	SharedPtr<Node>
 	connect_nodes(SharedPtr<Machine> m,
@@ -56,7 +56,7 @@ private:
 	typedef std::list<std::pair<Raul::TimeStamp, SharedPtr<Node> > > PolyList;
 	PolyList _poly_nodes;
 
-	Raul::TimeStamp    _quantization;
+	double             _quantization;
 	Raul::TimeStamp    _time;
 
 	SharedPtr<Machine> _machine;

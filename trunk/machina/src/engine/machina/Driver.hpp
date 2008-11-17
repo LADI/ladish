@@ -34,7 +34,7 @@ public:
 	virtual void set_machine(SharedPtr<Machine> machine) { _machine = machine; }
 	
 	virtual void set_bpm(double bpm) = 0;
-	virtual void set_quantization(Raul::TimeStamp q) = 0;
+	virtual void set_quantization(double q) = 0;
 	
 	virtual void activate() {}
 	virtual void deactivate() {}

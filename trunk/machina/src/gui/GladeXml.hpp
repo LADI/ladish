@@ -19,6 +19,7 @@
 #include <string>
 #include <gtkmm.h>
 #include <libglademm/xml.h>
+#include "config.h"
 
 class GladeXml
 {
@@ -31,13 +32,13 @@ public:
 		std::ifstream fs(glade_filename.c_str());
 		if (fs.fail()) { // didn't find it, check PKGDATADIR
 			fs.clear();
-			glade_filename = PKGDATADIR;
+			glade_filename = MACHINA_DATA_DIR;
 			glade_filename += "/machina.glade";
 
 			fs.open(glade_filename.c_str());
 			if (fs.fail()) {
 				std::cerr << "Unable to find machina.glade in current directory or "
-					<< PKGDATADIR << "." << std::endl;
+					<< MACHINA_DATA_DIR << "." << std::endl;
 				exit(EXIT_FAILURE);
 			}
 			fs.close();

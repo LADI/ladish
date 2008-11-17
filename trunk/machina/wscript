@@ -1,0 +1,66 @@
+#!/usr/bin/env python
+import os
+import Params
+import autowaf
+
+# Version of this package (even if built as a child)
+MACHINA_VERSION = '0.5.0'
+
+# Variables for 'waf dist'
+APPNAME = 'machina'
+VERSION = MACHINA_VERSION
+
+# Mandatory variables
+srcdir = '.'
+blddir = 'build'
+
+def set_options(opt):
+	autowaf.set_options(opt)
+
+def configure(conf):
+	autowaf.configure(conf)
+	autowaf.check_tool(conf, 'compiler_cxx')
+	autowaf.check_pkg(conf, 'glibmm-2.4', destvar='GLIBMM', vnum='2.14.0', mandatory=True)
+	autowaf.check_pkg(conf, 'gthread-2.0', destvar='GTHREAD', vnum='2.14.0', mandatory=True)
+	autowaf.check_pkg(conf, 'gtkmm-2.4', destvar='GTKMM', vnum='2.11.12', mandatory=False)
+	autowaf.check_pkg(conf, 'jack', destvar='JACK', vnum='0.109.0', mandatory=True)
+	autowaf.check_pkg(conf, 'raul', destvar='RAUL', vnum='0.5.1', mandatory=True)
+	autowaf.check_pkg(conf, 'flowcanvas', destvar='FLOWCANVAS', vnum='0.5.1', mandatory=False)
+	autowaf.check_pkg(conf, 'libglademm-2.4', destvar='GLADEMM', vnum='2.6.0', mandatory=False)
+	autowaf.check_pkg(conf, 'redlandmm', destvar='REDLANDMM', vnum='0.0.0', mandatory=False)
+	autowaf.check_pkg(conf, 'eugene', destvar='EUGENE', vnum='0.0.0', mandatory=True)
+
+	# Check for posix_memalign (OSX, amazingly, doesn't have it)
+	fe = conf.create_function_enumerator()
+	fe.headers = ['stdlib.h']
+	fe.function = 'posix_memalign'
+	fe.define = 'HAVE_POSIX_MEMALIGN'
+	fe.run()
+
+	build_gui = conf.env['HAVE_GLADEMM'] == 1 and conf.env['HAVE_FLOWCANVAS'] == 1
+
+	conf.define('MACHINA_VERSION', MACHINA_VERSION)
+	conf.define('BUILD_GUI', build_gui)
+	if conf.env['BUNDLE']:
+		conf.define('MACHINA_DATA_DIR', os.path.normpath(
+				conf.env['DATADIRNAME'] + 'machina'))
+	else:
+		conf.define('MACHINA_DATA_DIR', os.path.normpath(
+				conf.env['DATADIR'] + 'machina'))
+	
+	conf.write_config_header('config.h')
+	
+	autowaf.print_summary(conf)
+	autowaf.display_header('Machina Configuration')
+	autowaf.display_msg("Jack", str(conf.env['HAVE_JACK'] == 1), 'YELLOW')
+	autowaf.display_msg("Build GUI", str(conf.env['BUILD_GUI'] == 1), 'YELLOW')
+	print
+
+def build(bld):
+	bld.add_subdirs('src/engine')
+
+	if bld.env()['BUILD_GUI']:
+		bld.add_subdirs('src/gui')
+
+	#bld.add_subdirs('src/machina')
+	

@@ -27,15 +27,16 @@
 #include "machina/Edge.hpp"
 #include "raul/SMFReader.hpp"
 #include "raul/midi_events.h"
-#include "eugene/core/Problem.hpp"
+#include "eugene/Problem.hpp"
 
 using namespace std;
 
 namespace Machina {
 
 	
-Problem::Problem(const std::string& target_midi, SharedPtr<Machine> seed)
-	: _target(*this)
+Problem::Problem(TimeUnit unit, const std::string& target_midi, SharedPtr<Machine> seed)
+	: _unit(unit)
+	, _target(*this)
 	, _seed(new Machine(*seed.get()))
 {
 	Raul::SMFReader smf;
@@ -49,7 +50,7 @@ Problem::Problem(const std::string& target_midi, SharedPtr<Machine> seed)
 	uint32_t delta_time;
 	while (smf.read_event(4, buf, &ev_size, &delta_time) >= 0) {
 		// time ignored
-		_target.write_event(0, ev_size, buf);
+//		_target.write_event(0, ev_size, buf);
 #if 0
 		//_target._length += delta_time / (double)smf.ppqn();
 		if ((buf[0] & 0xF0) == MIDI_CMD_NOTE_ON) {
@@ -82,7 +83,7 @@ Problem::fitness(const Machine& const_machine) const
 	
 	SharedPtr<Evaluator> eval(new Evaluator(*this));
 
-	machine.reset(0.0f);
+	//machine.reset();
 	machine.deactivate();
 	machine.activate();
 	machine.set_sink(eval);
@@ -91,20 +92,21 @@ Problem::fitness(const Machine& const_machine) const
 	
 	static const unsigned ppqn = 19200;
 	Raul::TimeSlice time(1.0/(double)ppqn, 120);
-	time.set_start(0);
-	time.set_length(2*ppqn);
+	time.set_start(TimeStamp(_unit, 0, 0));
+	time.set_length(TimeDuration(_unit, 2*ppqn));
 		
 	machine.run(time);
 	if (eval->n_notes() == 0)
 		return 0.0f; // bad dog
 	
-	time.set_start(time.start_ticks() + 2*ppqn);
+	TimeStamp end(_unit, time.start_ticks().ticks() + 2*ppqn);
+	time.set_start(end);
 
 	while (eval->n_notes() < _target.n_notes()) {
 		machine.run(time);
 		if (machine.is_finished())
 			machine.reset(time.start_ticks());
-		time.set_start(time.start_ticks() + 2*ppqn);
+		time.set_start(end);
 	}
 
 	eval->compute();
@@ -158,9 +160,9 @@ Problem::fitness(const Machine& const_machine) const
 	
 
 void
-Problem::Evaluator::write_event(Raul::BeatTime time,
-                                size_t         ev_size,
-                                const uint8_t* ev) throw (std::logic_error)
+Problem::Evaluator::write_event(Raul::TimeStamp time,
+                                size_t          ev_size,
+                                const uint8_t*  ev) throw (std::logic_error)
 {
 	if ((ev[0] & 0xF0) == MIDI_CMD_NOTE_ON) {
 
@@ -217,11 +219,11 @@ Problem::initial_population(size_t gene_size, size_t pop_size) const
 
 	// FIXME: ignores _seed and builds based on MIDI
 	// evolution of the visible machine would be nice..
-	SharedPtr<Machine> base = SharedPtr<Machine>(new Machine());
+	SharedPtr<Machine> base = SharedPtr<Machine>(new Machine(_unit));
 	for (uint8_t i=0; i < 128; ++i) {
 		if (_target._counts[i] > 0) {
 			//cout << "Initial note: " << (int)i << endl;
-			SharedPtr<Node> node(new Node(1/2.0));
+			SharedPtr<Node> node(new Node(TimeDuration(_unit, 1/2.0)));
 			node->set_enter_action(ActionFactory::note_on(i));
 			node->set_exit_action(ActionFactory::note_off(i));
 			node->set_selector(true);

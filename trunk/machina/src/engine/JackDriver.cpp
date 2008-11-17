@@ -33,9 +33,10 @@ JackDriver::JackDriver(SharedPtr<Machine> machine)
 	, _machine_changed(0)
 	, _input_port(NULL)
 	, _output_port(NULL)
+	, _frames_unit(TimeUnit::FRAMES, 48000.0)
 	, _cycle_time(1/48000.0, 120.0)
 	, _bpm(120.0)
-	, _quantization(machine->time().unit())
+	, _quantization(0.0f)
 	, _record_time(machine->time().unit())
 	, _recording(0)
 {
@@ -55,7 +56,7 @@ JackDriver::attach(const std::string& client_name)
 
 	if (jack_client()) {
 
-		_cycle_time.set_tick_rate(1/(double)sample_rate());
+		//_cycle_time.set_tick_rate(1/(double)sample_rate());
 		
 		_input_port = jack_port_register(jack_client(),
 			"in",
@@ -187,6 +188,7 @@ JackDriver::write_event(Raul::TimeStamp time,
                         size_t          size,
                         const byte*     event) throw (std::logic_error)
 {
+#if 0
 	if (!_output_port)
 		return;
 
@@ -225,17 +227,20 @@ JackDriver::write_event(Raul::TimeStamp time,
 				event, size);
 #endif
 	}
+#endif
 }
 
 
 void
 JackDriver::on_process(jack_nframes_t nframes)
 {
+#if 0
 	_cycle_time.set_bpm(_bpm.get());
 
-	// (N.B. start time set at end of previous cycle)
-	_cycle_time.set_offset(0);
-	_cycle_time.set_length(nframes);
+	TimeStamp    start(TimeUnit(TimeUnit::FRAMES, 0));
+	TimeDuration length(TimeUnit(TimeUnit::FRAMES, nframes));
+	_cycle_time.set_offset(start);
+	_cycle_time.set_length(length);
 
 	assert(_output_port);
 #ifdef JACK_MIDI_NEEDS_NFRAMES
@@ -256,7 +261,7 @@ JackDriver::on_process(jack_nframes_t nframes)
 			_last_machine->reset(_last_machine->time()); // Exit all active states
 			_last_machine.reset(); // Cut our reference
 		}
-		_cycle_time.set_start(0);
+		_cycle_time.set_start(start);
 		_machine_changed.post(); // Signal we're done with it
 	}
 	
@@ -268,7 +273,7 @@ JackDriver::on_process(jack_nframes_t nframes)
 	machine->set_sink(shared_from_this());
 	
 	if (_recording.get())
-		_record_time += nframes;
+		_record_time += length;
 
 	if (_stop.pending())
 		machine->reset(_cycle_time.start_beats());
@@ -280,31 +285,31 @@ JackDriver::on_process(jack_nframes_t nframes)
 
 	while (true) {
 	
-		const BeatCount run_dur_beats = machine->run(_cycle_time);
-		const TickCount run_dur_ticks = _cycle_time.beats_to_ticks(run_dur_beats);
+		const TimeDuration run_dur_beats = machine->run(_cycle_time);
+		const TimeDuration run_dur_ticks = _cycle_time.beats_to_ticks(run_dur_beats);
 
 		// Machine didn't run at all (empty, or no initial states)
-		if (run_dur_beats == 0) {
+		if (run_dur_beats == TimeDuration(_frames_unit, 0, 0)) {
 			machine->reset(machine->time()); // Try again next cycle
-			_cycle_time.set_start(0);
+			_cycle_time.set_start(TimeStamp(_frames_unit, 0, 0));
 			goto end;
 
 		// Machine ran for portion of cycle (finished)
 		} else if (run_dur_ticks < _cycle_time.length_ticks()) {
-			const TickCount finish_offset = _cycle_time.offset_ticks() + run_dur_ticks;
-			assert(finish_offset < nframes);
+			const TimeStamp finish_offset = _cycle_time.offset_ticks() + run_dur_ticks;
+			assert(finish_offset < length);
 			
 			machine->reset(machine->time());
 
-			_cycle_time.set_start(0);
-			_cycle_time.set_length(nframes - finish_offset);
+			_cycle_time.set_start(TimeStamp(_frames_unit, 0, 0));
+			_cycle_time.set_length(TimeDuration(_frames_unit, nframes - finish_offset.ticks()));
 			_cycle_time.set_offset(finish_offset);
 		
 		// Machine ran for entire cycle
 		} else {
 			if (machine->is_finished()) {
 				machine->reset(machine->time());
-				_cycle_time.set_start(0);
+				_cycle_time.set_start(TimeStamp(_frames_unit, 0, 0));
 			} else {
 				_cycle_time.set_start(
 						_cycle_time.start_ticks() + _cycle_time.length_ticks());
@@ -321,9 +326,10 @@ end:
 	_last_machine = machine;
 	
 	if (_stop.pending()) {
-		_cycle_time.set_start(0);
+		_cycle_time.set_start(TimeStamp(_frames_unit, 0, 0));
 		_stop.finish();
 	}
+#endif
 }
 
 
@@ -342,11 +348,10 @@ void
 JackDriver::start_record()
 {
 	// FIXME: Choose an appropriate maximum ringbuffer size
-	_recorder = SharedPtr<Recorder>(new Recorder(
-				1024, (1.0/(double)sample_rate()) * (_bpm.get() / 60.0), _quantization.get()));
+	/*_recorder = SharedPtr<Recorder>(new Recorder(1024, _frames_unit, _quantization.get()));
 	_recorder->start();
 	_record_time = 0;
-	_recording = 1;
+	_recording = 1;*/
 }
 
 

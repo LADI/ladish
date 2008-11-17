@@ -23,13 +23,14 @@
 #include <map>
 #include "raul/MIDISink.hpp"
 #include "machina/Machine.hpp"
+#include "eugene/Problem.hpp"
 
 namespace Machina {
 
 
 class Problem : public Eugene::Problem<Machine> {
 public:
-	Problem(const std::string& target_midi, SharedPtr<Machine> seed = SharedPtr<Machine>());
+	Problem(TimeUnit unit, const std::string& target_midi, SharedPtr<Machine> seed = SharedPtr<Machine>());
 
 	void seed(SharedPtr<Machine> parent) { _seed = parent; }
 
@@ -86,7 +87,7 @@ private:
 			for (uint8_t i=0; i < 128; ++i)
 				_counts[i] = 0;
 		}
-		void write_event(Raul::BeatTime time,
+		void write_event(TimeStamp      time,
 		                 size_t         ev_size,
 		                 const uint8_t* ev) throw (std::logic_error);
 		void compute();
@@ -105,6 +106,8 @@ private:
 		size_t   _n_notes;
 		uint8_t  _first_note;
 	};
+
+	TimeUnit           _unit;
 
 	Evaluator          _target;
 	SharedPtr<Machine> _seed;

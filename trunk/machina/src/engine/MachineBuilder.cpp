@@ -29,7 +29,7 @@ using namespace Raul;
 namespace Machina {
 
 
-MachineBuilder::MachineBuilder(SharedPtr<Machine> machine, Raul::TimeStamp q)
+MachineBuilder::MachineBuilder(SharedPtr<Machine> machine, double q)
 	: _quantization(q)
 	, _time(machine->time().unit()) // = 0
 	, _machine(machine)
@@ -63,8 +63,9 @@ MachineBuilder::is_delay_node(SharedPtr<Node> node) const
 /** Set the duration of a node, with quantization.
  */
 void
-MachineBuilder::set_node_duration(SharedPtr<Node> node, Raul::TimeStamp d) const
+MachineBuilder::set_node_duration(SharedPtr<Node> node, Raul::TimeDuration d) const
 {
+#if 0
 	Raul::TimeStamp q_dur = Quantizer::quantize(_quantization, d);
 
 	// Never quantize a note to duration 0
@@ -72,6 +73,7 @@ MachineBuilder::set_node_duration(SharedPtr<Node> node, Raul::TimeStamp d) const
 		q_dur = _quantization; // Round up
 
 	node->set_duration(q_dur);
+#endif
 }
 
 

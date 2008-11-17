@@ -26,7 +26,7 @@ using namespace Raul;
 namespace Machina {
 
 
-Recorder::Recorder(size_t buffer_size, TimeUnit unit, TimeStamp q)
+Recorder::Recorder(size_t buffer_size, TimeUnit unit, double q)
 	: _unit(unit)
 	, _record_buffer(buffer_size)
 	, _builder(new MachineBuilder(SharedPtr<Machine>(new Machine(unit)), q))

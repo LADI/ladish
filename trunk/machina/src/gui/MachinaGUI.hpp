@@ -90,10 +90,12 @@ protected:
 
 	string _save_uri;
 	string _target_filename;
+	
+	Raul::TimeUnit _unit;
 
 	boost::shared_ptr<MachinaCanvas>   _canvas;
 	boost::shared_ptr<Machina::Engine> _engine;
-	
+
 	SharedPtr<Raul::Maid>       _maid;
 	SharedPtr<Machina::Evolver> _evolver;
 

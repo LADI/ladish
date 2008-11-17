@@ -64,7 +64,8 @@ NodePropertiesWindow::apply_clicked()
 		action->event()[1] = note;
 	}
 
-	double duration = _duration_spinbutton->get_value();
+	double duration_dbl = _duration_spinbutton->get_value();
+	TimeStamp duration(TimeUnit(TimeUnit::BEATS, 19200), duration_dbl);
 	_node->set_duration(duration);
 	_node->set_changed();
 }
@@ -102,7 +103,7 @@ NodePropertiesWindow::set_node(SharedPtr<Machina::Node> node)
 	} else {
 		_note_spinbutton->hide();
 	}
-	_duration_spinbutton->set_value(node->duration());
+	_duration_spinbutton->set_value(node->duration().to_double());
 }
 
 

@@ -39,12 +39,12 @@ public:
 	SMFDriver(SharedPtr<Machine> machine = SharedPtr<Machine>());
 
 	SharedPtr<Machine> learn(const std::string& filename,
-	                         Raul::TimeStamp    q,
+	                         double             q,
 	                         Raul::TimeDuration max_duration);
 
 	SharedPtr<Machine> learn(const std::string& filename,
 	                         unsigned           track,
-	                         Raul::TimeStamp    q,
+	                         double             q,
 	                         Raul::TimeDuration max_duration);
 
 	void run(SharedPtr<Machine> machine, Raul::TimeStamp max_time);
@@ -65,7 +65,7 @@ private:
 	void learn_track(SharedPtr<MachineBuilder> builder,
 	                 Raul::SMFReader&          reader,
 	                 unsigned                  track,
-	                 Raul::TimeStamp           q,
+	                 double                    q,
 	                 Raul::TimeDuration        max_duration);
 };
 

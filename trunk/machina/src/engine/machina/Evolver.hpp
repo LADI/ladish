@@ -20,7 +20,8 @@
 
 #include "raul/SharedPtr.hpp"
 #include "raul/Thread.hpp"
-#include "eugene/core/GAImpl.hpp"
+#include "raul/TimeStamp.hpp"
+#include "eugene/GAImpl.hpp"
 #include "Schrodinbit.hpp"
 
 namespace Eugene { template <typename G> class HybridMutation; }
@@ -33,7 +34,7 @@ class Problem;
 
 class Evolver : public Raul::Thread {
 public:
-	Evolver(const string& target_midi, SharedPtr<Machine> seed);
+	Evolver(Raul::TimeUnit unit, const string& target_midi, SharedPtr<Machine> seed);
 	
 	void seed(SharedPtr<Machine> parent);
 	bool improvement() { return _improvement; }

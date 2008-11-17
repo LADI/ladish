@@ -44,7 +44,7 @@ public:
 
 	SharedPtr<Machine> load_machine(const Glib::ustring& uri);
 	SharedPtr<Machine> import_machine(const Glib::ustring& uri);
-	SharedPtr<Machine> import_midi(const Glib::ustring& uri, Raul::TimeStamp q, Raul::TimeDuration d);
+	SharedPtr<Machine> import_midi(const Glib::ustring& uri, double q, Raul::TimeDuration d);
 
 	void set_bpm(double bpm);
 	void set_quantization(double beat_fraction);

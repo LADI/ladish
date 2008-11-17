@@ -30,7 +30,7 @@ class MachineBuilder;
 
 class Recorder : public Raul::Slave {
 public:
-	Recorder(size_t buffer_size, TimeUnit unit, TimeStamp q);
+	Recorder(size_t buffer_size, TimeUnit unit, double q);
 
 	inline void write(Raul::TimeStamp time, size_t size, const unsigned char* buf) {
 		_record_buffer.write(time, size, buf);

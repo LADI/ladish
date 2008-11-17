@@ -75,7 +75,7 @@ EdgeView::EdgeView(SharedPtr<Canvas>        canvas,
 double
 EdgeView::length_hint() const
 {
-	return _edge->tail().lock()->duration() * 10;
+	return _edge->tail().lock()->duration().ticks() * 10;
 }
 
 

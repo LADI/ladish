@@ -44,6 +44,7 @@ using namespace Machina;
 MachinaGUI::MachinaGUI(SharedPtr<Machina::Engine> engine)
 	: _refresh(false)
 	, _evolve(false)
+	, _unit(TimeUnit::BEATS, 19200)
 	, _engine(engine)
 	, _maid(new Raul::Maid(32))
 {
@@ -285,7 +286,7 @@ void
 MachinaGUI::evolve_toggled()
 {
 	if (_evolve_button->get_active()) {
-		_evolver = SharedPtr<Evolver>(new Evolver(_target_filename, _engine->machine()));
+		_evolver = SharedPtr<Evolver>(new Evolver(_unit, _target_filename, _engine->machine()));
 		_evolve = true;
 		stop_clicked();
 		_engine->driver()->set_machine(SharedPtr<Machine>());
@@ -535,7 +536,8 @@ MachinaGUI::menu_import_midi()
 	if (result == Gtk::RESPONSE_OK) {
 		SharedPtr<Machina::SMFDriver> file_driver(new Machina::SMFDriver());
 		
-		double length = length_sb->get_value_as_int();
+		double length_dbl = length_sb->get_value_as_int();
+		Raul::TimeStamp length(_unit, length_dbl);
 
 		SharedPtr<Machina::Machine> machine = file_driver->learn(dialog.get_filename(), 0.0, length);
 		
@@ -574,8 +576,8 @@ MachinaGUI::menu_export_midi()
 		_engine->driver()->deactivate();
 		const SharedPtr<Machina::Machine> m = _engine->machine();
 		m->set_sink(file_driver->writer());
-		file_driver->writer()->start(dialog.get_filename());
-		file_driver->run(m, 32); // TODO: solve halting problem
+		file_driver->writer()->start(dialog.get_filename(), TimeStamp(_unit, 0.0));
+		file_driver->run(m, TimeStamp(_unit, 32.0)); // TODO: solve halting problem
 		m->set_sink(_engine->driver());
 		m->reset(m->time());
 		file_driver->writer()->finish();

@@ -46,9 +46,9 @@ SMFDriver::SMFDriver(SharedPtr<Machine> machine)
  * @return the resulting machine.
  */
 SharedPtr<Machine>
-SMFDriver::learn(const string& filename, unsigned track, Raul::TimeStamp q, Raul::TimeDuration max_duration)
+SMFDriver::learn(const string& filename, unsigned track, double q, Raul::TimeDuration max_duration)
 {
-	assert(q.unit() == max_duration.unit());
+	//assert(q.unit() == max_duration.unit());
 	SharedPtr<Machine> m(new Machine(max_duration.unit()));
 	SharedPtr<MachineBuilder> builder = SharedPtr<MachineBuilder>(new MachineBuilder(m, q));
 	Raul::SMFReader reader;
@@ -77,8 +77,9 @@ SMFDriver::learn(const string& filename, unsigned track, Raul::TimeStamp q, Raul
  * This will result in one disjoint subgraph in the machine for each track.
  */
 SharedPtr<Machine>
-SMFDriver::learn(const string& filename, Raul::TimeStamp q, Raul::TimeStamp max_duration)
+SMFDriver::learn(const string& filename, double q, Raul::TimeStamp max_duration)
 {
+#if 0
 	SharedPtr<Machine> m(new Machine(q.unit()));
 	SharedPtr<MachineBuilder> builder = SharedPtr<MachineBuilder>(new MachineBuilder(m, q));
 	Raul::SMFReader reader;
@@ -98,6 +99,7 @@ SMFDriver::learn(const string& filename, Raul::TimeStamp q, Raul::TimeStamp max_
 	if (m->nodes().size() > 1)
 		return m;
 	else
+#endif
 		return SharedPtr<Machine>();
 }
 
@@ -106,20 +108,22 @@ void
 SMFDriver::learn_track(SharedPtr<MachineBuilder> builder,
                        Raul::SMFReader&          reader,
                        unsigned                  track,
-                       Raul::TimeStamp           q,
+                       double                    q,
                        Raul::TimeDuration        max_duration)
 {
 	const bool found_track = reader.seek_to_track(track);
 	if (!found_track)
 		return;
+#if 0
+	uint8_5  buf[4];
+	uint32_t ev_size;
+	uint32_t ev_delta_time;
+	
+	uint64_t t = 0;
+	uint64_t unquantized_t = 0;
 
-	Raul::TimeStamp unquantized_t(q.unit(), 0, 0);
-	Raul::TimeStamp t(q.unit(), 0, 0);
-	unsigned char   buf[4];
-	uint32_t        ev_size;
-	Raul::TimeStamp ev_time(q.unit());
-	while (reader.read_event(4, buf, &ev_size, &ev_time) >= 0) {
-		unquantized_t += ev_time;
+	while (reader.read_event(4, buf, &ev_size, &ev_delta_time) >= 0) {
+		unquantized_t += ev_delta_time;
 		t = Raul::Quantizer::quantize(q, unquantized_t);
 
 		builder->set_time(t);
@@ -130,6 +134,7 @@ SMFDriver::learn_track(SharedPtr<MachineBuilder> builder,
 		if (ev_size > 0)
 			builder->event(TimeStamp(t.unit(), 0, 0), ev_size, buf);
 	}
+#endif
 
 	builder->resolve();
 }

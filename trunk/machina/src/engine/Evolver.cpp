@@ -16,9 +16,9 @@
  */
 
 #include <iostream>
-#include "eugene/core/Mutation.hpp"
-#include "eugene/core/HybridMutation.hpp"
-#include "eugene/core/TournamentSelection.hpp"
+#include "eugene/Mutation.hpp"
+#include "eugene/HybridMutation.hpp"
+#include "eugene/TournamentSelection.hpp"
 #include "machina/Evolver.hpp"
 #include "machina/Mutation.hpp"
 #include "machina/Problem.hpp"
@@ -30,8 +30,8 @@ using namespace boost;
 namespace Machina {
 
 
-Evolver::Evolver(const string& target_midi, SharedPtr<Machine> seed)
-	: _problem(new Problem(target_midi, seed))
+Evolver::Evolver(TimeUnit unit, const string& target_midi, SharedPtr<Machine> seed)
+	: _problem(new Problem(unit, target_midi, seed))
 	, _seed_fitness(-FLT_MAX)
 {	
 	SharedPtr<Eugene::HybridMutation<Machine> > m(new HybridMutation<Machine>());
