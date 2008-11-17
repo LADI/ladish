@@ -79,8 +79,7 @@ SMFDriver::learn(const string& filename, unsigned track, double q, Raul::TimeDur
 SharedPtr<Machine>
 SMFDriver::learn(const string& filename, double q, Raul::TimeStamp max_duration)
 {
-#if 0
-	SharedPtr<Machine> m(new Machine(q.unit()));
+	SharedPtr<Machine> m(new Machine(max_duration.unit()));
 	SharedPtr<MachineBuilder> builder = SharedPtr<MachineBuilder>(new MachineBuilder(m, q));
 	Raul::SMFReader reader;
 	
@@ -99,7 +98,6 @@ SMFDriver::learn(const string& filename, double q, Raul::TimeStamp max_duration)
 	if (m->nodes().size() > 1)
 		return m;
 	else
-#endif
 		return SharedPtr<Machine>();
 }
 
@@ -114,27 +112,26 @@ SMFDriver::learn_track(SharedPtr<MachineBuilder> builder,
 	const bool found_track = reader.seek_to_track(track);
 	if (!found_track)
 		return;
-#if 0
-	uint8_5  buf[4];
+	
+	uint8_t  buf[4];
 	uint32_t ev_size;
 	uint32_t ev_delta_time;
 	
 	uint64_t t = 0;
-	uint64_t unquantized_t = 0;
+	double   unquantized_t = 0;
 
 	while (reader.read_event(4, buf, &ev_size, &ev_delta_time) >= 0) {
 		unquantized_t += ev_delta_time;
 		t = Raul::Quantizer::quantize(q, unquantized_t);
 
-		builder->set_time(t);
+		builder->set_time(TimeStamp(max_duration.unit(), (double)t));
 
-		if ((!max_duration.is_zero()) && t > max_duration)
+		if ((!max_duration.is_zero()) && t > max_duration.to_double())
 			break;
 
 		if (ev_size > 0)
-			builder->event(TimeStamp(t.unit(), 0, 0), ev_size, buf);
+			builder->event(TimeStamp(max_duration.unit(), 0, 0), ev_size, buf);
 	}
-#endif
 
 	builder->resolve();
 }
@@ -145,7 +142,7 @@ SMFDriver::run(SharedPtr<Machine> machine, Raul::TimeStamp max_time)
 {
 	// FIXME: unit kludge (tempo only)
 	Raul::TimeSlice time(1.0/(double)_writer->unit().ppt(), 120);
-	time.set_length(time.beats_to_ticks(max_time));
+	time.set_slice(TimeStamp(max_time.unit(), 0, 0), time.beats_to_ticks(max_time));
 	machine->set_sink(shared_from_this());
 	machine->run(time);
 }

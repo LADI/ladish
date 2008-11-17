@@ -33,8 +33,9 @@ JackDriver::JackDriver(SharedPtr<Machine> machine)
 	, _machine_changed(0)
 	, _input_port(NULL)
 	, _output_port(NULL)
-	, _frames_unit(TimeUnit::FRAMES, 48000.0)
-	, _cycle_time(1/48000.0, 120.0)
+	, _frames_unit(TimeUnit::FRAMES, 48000)
+	, _beats_unit(TimeUnit::BEATS, 19200)
+	, _cycle_time(48000, 120.0)
 	, _bpm(120.0)
 	, _quantization(0.0f)
 	, _record_time(machine->time().unit())
@@ -188,7 +189,6 @@ JackDriver::write_event(Raul::TimeStamp time,
                         size_t          size,
                         const byte*     event) throw (std::logic_error)
 {
-#if 0
 	if (!_output_port)
 		return;
 
@@ -205,8 +205,8 @@ JackDriver::write_event(Raul::TimeStamp time,
 		return;
 	}
 
-	const TickCount nframes = _cycle_time.length_ticks();
-	const TickCount offset  = _cycle_time.beats_to_ticks(time)
+	const TimeDuration nframes = _cycle_time.length_ticks();
+	const TimeStamp    offset  = _cycle_time.beats_to_ticks(time)
 		+ _cycle_time.offset_ticks() - _cycle_time.start_ticks();
 
 	if ( ! (offset < _cycle_time.offset_ticks() + nframes)) {
@@ -223,24 +223,21 @@ JackDriver::write_event(Raul::TimeStamp time,
 				event, size, nframes);
 #else
 		jack_midi_event_write(
-				jack_port_get_buffer(_output_port, nframes), offset,
+				jack_port_get_buffer(_output_port, nframes.ticks()), offset.ticks(),
 				event, size);
 #endif
 	}
-#endif
 }
 
 
 void
 JackDriver::on_process(jack_nframes_t nframes)
 {
-#if 0
 	_cycle_time.set_bpm(_bpm.get());
 
-	TimeStamp    start(TimeUnit(TimeUnit::FRAMES, 0));
-	TimeDuration length(TimeUnit(TimeUnit::FRAMES, nframes));
-	_cycle_time.set_offset(start);
-	_cycle_time.set_length(length);
+	TimeStamp    start(_cycle_time.ticks_unit(), 0, 0);
+	TimeDuration length(_cycle_time.ticks_unit(), nframes, 0);
+	_cycle_time.set_slice(start, length);
 
 	assert(_output_port);
 #ifdef JACK_MIDI_NEEDS_NFRAMES
@@ -261,7 +258,6 @@ JackDriver::on_process(jack_nframes_t nframes)
 			_last_machine->reset(_last_machine->time()); // Exit all active states
 			_last_machine.reset(); // Cut our reference
 		}
-		_cycle_time.set_start(start);
 		_machine_changed.post(); // Signal we're done with it
 	}
 	
@@ -291,7 +287,7 @@ JackDriver::on_process(jack_nframes_t nframes)
 		// Machine didn't run at all (empty, or no initial states)
 		if (run_dur_beats == TimeDuration(_frames_unit, 0, 0)) {
 			machine->reset(machine->time()); // Try again next cycle
-			_cycle_time.set_start(TimeStamp(_frames_unit, 0, 0));
+			_cycle_time.set_slice(TimeStamp(_frames_unit, 0, 0), run_dur_ticks);
 			goto end;
 
 		// Machine ran for portion of cycle (finished)
@@ -301,18 +297,20 @@ JackDriver::on_process(jack_nframes_t nframes)
 			
 			machine->reset(machine->time());
 
-			_cycle_time.set_start(TimeStamp(_frames_unit, 0, 0));
-			_cycle_time.set_length(TimeDuration(_frames_unit, nframes - finish_offset.ticks()));
+			_cycle_time.set_slice(TimeStamp(_frames_unit, 0, 0),
+			                      TimeDuration(_frames_unit, nframes - finish_offset.ticks()));
 			_cycle_time.set_offset(finish_offset);
 		
 		// Machine ran for entire cycle
 		} else {
 			if (machine->is_finished()) {
 				machine->reset(machine->time());
-				_cycle_time.set_start(TimeStamp(_frames_unit, 0, 0));
+				_cycle_time.set_slice(TimeStamp(_frames_unit, 0, 0),
+				                      TimeStamp(_frames_unit, 0, 0));
 			} else {
-				_cycle_time.set_start(
-						_cycle_time.start_ticks() + _cycle_time.length_ticks());
+				_cycle_time.set_slice(
+						_cycle_time.start_ticks() + _cycle_time.length_ticks(),
+						TimeStamp(_frames_unit, 0, 0));
 			}
 
 			break;
@@ -326,10 +324,10 @@ end:
 	_last_machine = machine;
 	
 	if (_stop.pending()) {
-		_cycle_time.set_start(TimeStamp(_frames_unit, 0, 0));
+		_cycle_time.set_slice(TimeStamp(_frames_unit, 0, 0),
+		                      TimeStamp(_frames_unit, 0, 0));
 		_stop.finish();
 	}
-#endif
 }
 
 

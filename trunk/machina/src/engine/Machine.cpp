@@ -349,7 +349,7 @@ Machine::run(const Raul::TimeSlice& time)
 			break;
 
 		// Earliest active state ends this cycle
-		} else if (earliest->exit_time() <= cycle_end) {
+		} else if (time.beats_to_ticks(earliest->exit_time()) <= cycle_end) {
 			this_time += earliest->exit_time() - _time;
 			_time = time.ticks_to_beats(
 					time.beats_to_ticks(earliest->exit_time()));

@@ -33,6 +33,12 @@ public:
 		const double td = t.to_double();
 		return TimeStamp(t.unit(), (qd > 0) ? lrint(td / qd) * qd : td);
 	}
+	
+	inline static double quantize(double q, double t) {
+		return (q > 0)
+			? lrint(t / q) * q
+			: t;
+	}
 };
 
 

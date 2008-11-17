@@ -19,6 +19,7 @@
 #define RAUL_RING_BUFFER_HPP
 
 #include <cassert>
+#include <cstring>
 #include <iostream>
 #include <glib.h>
 

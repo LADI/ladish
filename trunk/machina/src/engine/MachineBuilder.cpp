@@ -65,15 +65,13 @@ MachineBuilder::is_delay_node(SharedPtr<Node> node) const
 void
 MachineBuilder::set_node_duration(SharedPtr<Node> node, Raul::TimeDuration d) const
 {
-#if 0
-	Raul::TimeStamp q_dur = Quantizer::quantize(_quantization, d);
+	Raul::TimeStamp q_dur = Quantizer::quantize(TimeStamp(d.unit(), _quantization), d);
 
 	// Never quantize a note to duration 0
 	if (q_dur.is_zero() && ( node->enter_action() || node->exit_action() ))
 		q_dur = _quantization; // Round up
 
 	node->set_duration(q_dur);
-#endif
 }
 
 

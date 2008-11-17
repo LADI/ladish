@@ -71,9 +71,12 @@ public:
 		update_beat_time();
 	}
 
-	void set_start(TimeStamp time) { _start_ticks = time; update_beat_time(); }
-
-	void set_length(TimeDuration length) { _length_ticks = length; update_beat_time(); }
+	void set_slice(TimeStamp start, TimeDuration length) {
+		assert(start.unit() == length.unit());
+		_start_ticks = start;
+		_length_ticks = length;
+		update_beat_time();
+	}
 
 	bool contains(TimeStamp time) {
 		return (time >= start_ticks() && time < start_ticks() + length_ticks());
@@ -93,26 +96,20 @@ public:
 		update_beat_time();
 	}
 	
-	// FIXME
-	
 	inline TimeStamp beats_to_seconds(TimeStamp beats) const {
-		//return (beats * _beat_rate);
-		throw;
+		return TimeStamp(real_unit(), beats.to_double() * 1/(double)_beat_rate);
 	}
 
 	inline TimeStamp beats_to_ticks(TimeStamp beats) const {
-		//return static_cast<TimeStamp>(floor(beats_to_seconds(beats) / _tick_rate)); 
-		throw;
+		return TimeStamp(ticks_unit(), beats.to_double() / (double)_beat_rate * _tick_rate);
 	}
 		
 	inline TimeStamp ticks_to_seconds(TimeStamp ticks) const {
-		//return (ticks * _tick_rate);
-		throw;
+		return TimeStamp(real_unit(), ticks.ticks() * 1/(double)_tick_rate);
 	}
 
 	inline TimeStamp ticks_to_beats(TimeStamp ticks) const {
-		//return ticks_to_seconds(ticks) / _beat_rate;
-		throw;
+		return TimeStamp(beats_unit(), ticks.ticks() * 1/(double)_tick_rate * _beat_rate);
 	}
 	
 	/** Start of current sub-cycle in ticks */
@@ -132,9 +129,12 @@ public:
 
 	/** Offset relative to external (e.g Jack) time */
 	inline TimeDuration offset_ticks() const { return _offset_ticks; }
+	
+	inline TimeUnit beats_unit() const { return _start_beats.unit(); }
+	inline TimeUnit ticks_unit() const { return _start_ticks.unit(); }
+	inline TimeUnit real_unit()  const { return TimeUnit(TimeUnit::SECONDS, 0); }
 
 private:
-
 	inline void update_beat_time() {
 		_start_beats  = ticks_to_beats(_start_ticks);
 		_length_beats = ticks_to_beats(_length_ticks);

@@ -41,6 +41,7 @@ public:
 	 *         PPQN for BEATS, and ignored for SECONDS.
 	 */
 	inline TimeUnit(Type type, uint32_t ppt) {
+		assert(type == SECONDS || ppt != 0);
 		_type = type;
 		_ppt = ppt;
 	}
@@ -106,7 +107,7 @@ public:
 	}
 
 	inline TimeStamp& operator=(const TimeStamp& rhs) {
-		assert(_unit == rhs._unit);
+		//assert(_unit == rhs._unit);
 		_ticks = rhs._ticks;
 		_subticks = rhs._subticks;
 		//_unit = rhs._unit;

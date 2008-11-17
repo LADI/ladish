@@ -68,7 +68,7 @@ main(int argc, char** argv)
 #endif
 
 	if (!machine)
-		machine = SharedPtr<Machine>(new Machine(TimeUnit(TimeUnit::BEATS, 0)));
+		machine = SharedPtr<Machine>(new Machine(TimeUnit(TimeUnit::BEATS, 19200)));
 
 	// Build engine
 	SharedPtr<Driver> driver;

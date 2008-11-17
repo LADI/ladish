@@ -82,6 +82,7 @@ private:
 	jack_port_t* _output_port;
 	
 	Raul::TimeUnit  _frames_unit;
+	Raul::TimeUnit  _beats_unit;
 	Raul::TimeSlice _cycle_time;
 
 	Raul::DoubleBuffer<double> _bpm;

@@ -95,7 +95,7 @@ MachinaCanvas::canvas_event(GdkEvent* event)
 
 		string name = string("Note")+(char)(last++ +'0');
 
-		TimeDuration dur(TimeUnit(TimeUnit::BEATS, 0), 1.0);
+		TimeDuration dur(machine->time().unit(), 1.0);
 		SharedPtr<Machina::Node> node(new Machina::Node(dur, false));
 		SharedPtr<NodeView> view(new NodeView(_app->window(), shared_from_this(), node,
 					name, x, y));

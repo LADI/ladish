@@ -50,7 +50,7 @@ Problem::Problem(TimeUnit unit, const std::string& target_midi, SharedPtr<Machin
 	uint32_t delta_time;
 	while (smf.read_event(4, buf, &ev_size, &delta_time) >= 0) {
 		// time ignored
-//		_target.write_event(0, ev_size, buf);
+		_target.write_event(TimeStamp(_unit, 0.0), ev_size, buf);
 #if 0
 		//_target._length += delta_time / (double)smf.ppqn();
 		if ((buf[0] & 0xF0) == MIDI_CMD_NOTE_ON) {
@@ -92,21 +92,20 @@ Problem::fitness(const Machine& const_machine) const
 	
 	static const unsigned ppqn = 19200;
 	Raul::TimeSlice time(1.0/(double)ppqn, 120);
-	time.set_start(TimeStamp(_unit, 0, 0));
-	time.set_length(TimeDuration(_unit, 2*ppqn));
+	time.set_slice(TimeStamp(_unit, 0, 0), TimeDuration(_unit, 2*ppqn));
 		
 	machine.run(time);
 	if (eval->n_notes() == 0)
 		return 0.0f; // bad dog
 	
 	TimeStamp end(_unit, time.start_ticks().ticks() + 2*ppqn);
-	time.set_start(end);
+	time.set_slice(end, TimeStamp(_unit, 0, 0));
 
 	while (eval->n_notes() < _target.n_notes()) {
 		machine.run(time);
 		if (machine.is_finished())
 			machine.reset(time.start_ticks());
-		time.set_start(end);
+		time.set_slice(end, TimeStamp(end.unit(), 0, 0));
 	}
 
 	eval->compute();
