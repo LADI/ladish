@@ -36,7 +36,6 @@ def configure(conf):
 	
 	conf.env.append_value('CXXFLAGS', '-fopenmp')
 	conf.env.append_value('LINKFLAGS', '-fopenmp')
-	print conf.env
 	conf.define('DATA_DIR', os.path.normpath(conf.env['PREFIX'] + '/share/eugene'))
 	conf.write_config_header('config.h')
 	
@@ -44,8 +43,8 @@ def configure(conf):
 
 def build(bld):
 	# Headers
-	#install_files('INCLUDEDIR', 'eugene', 'eugene/*.h')
-	#install_files('INCLUDEDIR', 'eugene', 'eugene/*.hpp')
+	install_files('INCLUDEDIR', 'eugene', 'eugene/*.h')
+	install_files('INCLUDEDIR', 'eugene', 'eugene/*.hpp')
 	
 	# Pkgconfig file
 	autowaf.build_pc(bld, 'EUGENE', EUGENE_VERSION, 'GLIBMM GTHREAD')
