@@ -441,7 +441,7 @@ lash_client_open(const char  *class,
 			lash_info("Attempting to auto-start LASH server");
 		else {
 			lash_info("Not attempting to auto-start LASH server");
-			goto end;
+			goto fail;
 		}
 	}
 
@@ -473,13 +473,17 @@ lash_client_open(const char  *class,
 
 	if (dbus_error_is_set(&err)) {
 		lash_error("Failed to add D-Bus match rule: %s", err.message);
-		dbus_error_free(&err);
-		lash_client_destroy(client);
-		client = NULL;
-		goto end;
+		goto fail;
 	}
 
 	lash_client_add_filter(&client);
+
+	goto end;
+
+fail:
+	dbus_error_free(&err);
+	lash_client_destroy(client);
+	client = NULL;
 
 end:
 	/* Make sure that no forked client process inherits the id */
