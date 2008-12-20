@@ -32,11 +32,14 @@ struct LoadProjectDialog
 	bool on_button_press_event(GdkEventButton* event_ptr);
 	bool on_key_press_event(GdkEventKey* event_ptr);
 
+	int mtime_sorter(Gtk::TreeModel::iterator a, Gtk::TreeModel::iterator b);
+
 	struct Record : public Gtk::TreeModel::ColumnRecord
 	{
 		Gtk::TreeModelColumn<Glib::ustring> name;
 		Gtk::TreeModelColumn<Glib::ustring> modified;
 		Gtk::TreeModelColumn<Glib::ustring> description;
+		Gtk::TreeModelColumn<time_t> mtime;
 	};
 
 	Widget<Gtk::Dialog> _dialog;
@@ -113,16 +116,33 @@ LoadProjectDialog::LoadProjectDialog()
 	_columns.add(_columns.name);
 	_columns.add(_columns.modified);
 	_columns.add(_columns.description);
+	_columns.add(_columns.mtime);
 
 	_model = Gtk::ListStore::create(_columns);
 	_widget->set_model(_model);
 
 	_widget->remove_all_columns();
+
 	_widget->append_column("Project Name", _columns.name);
+	_widget->get_column(0)->set_sort_column(_columns.name);
+
 	_widget->append_column("Modified", _columns.modified);
+	_model->set_sort_func(_columns.modified, sigc::mem_fun(this, &LoadProjectDialog::mtime_sorter));
+	_widget->get_column(1)->set_sort_column(_columns.modified);
+	_model->set_sort_column(_columns.modified, Gtk::SORT_ASCENDING);
+
 	_widget->append_column("Description", _columns.description);
+	_widget->get_column(2)->set_sort_column(_columns.description);
 }
 
+int
+LoadProjectDialog::mtime_sorter(Gtk::TreeModel::iterator a, Gtk::TreeModel::iterator b)
+{
+	time_t ta = (*a)[_columns.mtime];
+	time_t tb = (*b)[_columns.mtime];
+
+	return ta > tb ? -1 : (ta == tb ? 0 : 1);
+}
 
 void
 LoadProjectDialog::run(std::list<lash_project_info>& projects)
@@ -138,6 +158,7 @@ LoadProjectDialog::run(std::list<lash_project_info>& projects)
 		convert_timestamp_to_string(iter->modification_time, str);
 		row[_columns.modified] = str;
 		row[_columns.description] = iter->description;
+		row[_columns.mtime] = iter->modification_time;
 	}
 
 	_widget->signal_button_press_event().connect(sigc::mem_fun(*this, &LoadProjectDialog::on_button_press_event), false);
