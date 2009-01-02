@@ -24,13 +24,15 @@
 
 #include <uuid/uuid.h>
 
+#include "common/klist.h"
 #include "lash/types.h"
 
 typedef void (*LASHEventConstructor) (lash_client_t *, lash_event_t *);
 
 struct _lash_event
 {
-  enum LASH_Event_Type   type;
+  struct list_head      siblings;
+  enum LASH_Event_Type  type;
   char                 *string;
   char                 *project;
   uuid_t                client_id;

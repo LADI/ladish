@@ -37,13 +37,15 @@ struct _lash_config_handle
 
 #ifdef LASH_OLD_API
 # include <sys/types.h>
+# include "common/klist.h"
 
 struct _lash_config
 {
-	char   *key;
-	void   *value;
-	size_t  value_size;
-	int     value_type;
+	struct list_head  siblings;
+	char             *key;
+	void             *value;
+	size_t            value_size;
+	int               value_type;
 };
 
 #endif /* LASH_OLD_API */

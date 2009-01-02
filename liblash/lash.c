@@ -1085,9 +1085,9 @@ lash_get_event(lash_client_t *client)
 
 	lash_dispatch_once(client);
 
-	if (client->events_in) {
-		event = (lash_event_t *) client->events_in->data;
-		client->events_in = lash_list_remove(client->events_in, event);
+	if (!list_empty(&client->events_in)) {
+		event = list_entry(client->events_in.next, lash_event_t, siblings);
+		list_del(&event->siblings);
 		--client->num_events_in;
 	}
 
@@ -1115,9 +1115,9 @@ lash_get_config(lash_client_t *client)
 
 	lash_dispatch_once(client);
 
-	if (client->configs_in) {
-		config = (lash_config_t *) client->configs_in->data;
-		client->configs_in = lash_list_remove(client->configs_in, config);
+	if (!list_empty(&client->configs_in)) {
+		config = list_entry(client->configs_in.next, lash_config_t, siblings);
+		list_del(&config->siblings);
 		--client->num_configs_in;
 	}
 

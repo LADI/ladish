@@ -34,7 +34,7 @@
 #include "lash/types.h"
 
 #ifdef LASH_OLD_API
-# include "common/list.h"
+# include "common/klist.h"
 #endif
 
 struct _lash_client
@@ -84,10 +84,10 @@ struct _lash_client
 	} ctx;
 
 #ifdef LASH_OLD_API
-	lash_list_t     *events_in;
+	struct list_head events_in;
 	uint32_t         num_events_in;
 
-	lash_list_t     *configs_in;
+	struct list_head configs_in;
 	uint32_t         num_configs_in;
 
 	method_msg_t     unsent_configs;

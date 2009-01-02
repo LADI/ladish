@@ -28,7 +28,16 @@
 lash_client_t *
 lash_client_new(void)
 {
+#ifdef LASH_OLD_API
+	lash_client_t *client;
+	if ((client = lash_calloc(1, sizeof(lash_client_t)))) {
+		INIT_LIST_HEAD(&client->events_in);
+		INIT_LIST_HEAD(&client->configs_in);
+	}
+	return client;
+#else
 	return lash_calloc(1, sizeof(lash_client_t));
+#endif
 }
 
 void
@@ -51,12 +60,14 @@ lash_client_destroy(lash_client_t * client)
 }
 
 #ifdef LASH_OLD_API
+# include "event.h"
+# include "lash_config.h"
 void
 lash_client_add_event(lash_client_t *client,
                       lash_event_t  *event)
 {
 	if (client && event) {
-		client->events_in = lash_list_append(client->events_in, event);
+		list_add_tail(&event->siblings, &client->events_in);
 		++client->num_events_in;
 	}
 }
@@ -66,7 +77,7 @@ lash_client_add_config(lash_client_t *client,
                        lash_config_t *config)
 {
 	if (client && config) {
-		client->configs_in = lash_list_append(client->configs_in, config);
+		list_add_tail(&config->siblings, &client->configs_in);
 		++client->num_configs_in;
 	}
 }
