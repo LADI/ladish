@@ -197,16 +197,16 @@ jack_patch_dup(const jack_patch_t *other)
  * the supplied name, and assign the given id to it.
  */
 static void
-jack_patch_set_client_id(lash_list_t *jack_mgr_clients,
-                         const char  *patch_client_name,
-                         uuid_t       id)
+jack_patch_set_client_id(struct list_head *jack_mgr_clients,
+                         const char       *patch_client_name,
+                         uuid_t            id)
 {
+	struct list_head *node;
 	jack_mgr_client_t *client;
 
 	/* find the client */
-	for (; jack_mgr_clients;
-	     jack_mgr_clients = lash_list_next(jack_mgr_clients)) {
-		client = (jack_mgr_client_t *) jack_mgr_clients->data;
+	list_for_each (node, jack_mgr_clients) {
+		client = list_entry(node, jack_mgr_client_t, siblings);
 
 		if (strcmp(client->name, patch_client_name) == 0) {
 			uuid_copy(id, client->id);
@@ -216,8 +216,8 @@ jack_patch_set_client_id(lash_list_t *jack_mgr_clients,
 }
 
 void
-jack_patch_set(jack_patch_t *patch,
-               lash_list_t  *jack_mgr_clients)
+jack_patch_set(jack_patch_t     *patch,
+               struct list_head *jack_mgr_clients)
 {
 	jack_patch_set_client_id(jack_mgr_clients, patch->src_client,
 	                         patch->src_client_id);
@@ -226,17 +226,17 @@ jack_patch_set(jack_patch_t *patch,
 }
 
 static bool
-jack_patch_unset_client_id(jack_patch_t  *patch,
-                           lash_list_t   *jack_mgr_clients,
-                           uuid_t         patch_client_id,
-                           char         **client_name_pptr)
+jack_patch_unset_client_id(jack_patch_t      *patch,
+                           struct list_head  *jack_mgr_clients,
+                           uuid_t             patch_client_id,
+                           char             **client_name_pptr)
 {
+	struct list_head *node;
 	jack_mgr_client_t *client;
 
 	/* find the client */
-	for (; jack_mgr_clients;
-		 jack_mgr_clients = lash_list_next(jack_mgr_clients)) {
-		client = (jack_mgr_client_t *) jack_mgr_clients->data;
+	list_for_each (node, jack_mgr_clients) {
+		client = list_entry(node, jack_mgr_client_t, siblings);
 
 		if (uuid_compare(patch_client_id, client->id) == 0)
 			break;
@@ -251,8 +251,8 @@ jack_patch_unset_client_id(jack_patch_t  *patch,
 }
 
 bool
-jack_patch_unset(jack_patch_t *patch,
-                 lash_list_t  *jack_mgr_clients)
+jack_patch_unset(jack_patch_t     *patch,
+                 struct list_head *jack_mgr_clients)
 {
 	int retval = true;
 

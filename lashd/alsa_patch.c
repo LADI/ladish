@@ -119,14 +119,14 @@ alsa_patch_set_sub_from_query(alsa_patch_t * patch,
 }
 
 static void
-alsa_patch_set_client_id(lash_list_t * alsa_mgr_clients,
+alsa_patch_set_client_id(struct list_head * alsa_mgr_clients,
 						 unsigned char alsa_client_id, uuid_t patch_client_id)
 {
+	struct list_head *node;
 	alsa_client_t *client;
 
-	for (; alsa_mgr_clients;
-		 alsa_mgr_clients = lash_list_next(alsa_mgr_clients)) {
-		client = (alsa_client_t *) alsa_mgr_clients->data;
+	list_for_each (node, alsa_mgr_clients) {
+		client = list_entry(node, alsa_client_t, siblings);
 
 		if (client->client_id == alsa_client_id) {
 			uuid_copy(patch_client_id, client->id);
@@ -136,7 +136,7 @@ alsa_patch_set_client_id(lash_list_t * alsa_mgr_clients,
 }
 
 void
-alsa_patch_set(alsa_patch_t * patch, lash_list_t * alsa_mgr_clients)
+alsa_patch_set(alsa_patch_t * patch, struct list_head * alsa_mgr_clients)
 {
 	const snd_seq_addr_t *addr;
 
@@ -155,16 +155,16 @@ typedef void (*alsa_patch_set_sub_addr_func) (snd_seq_port_subscribe_t * info,
 
 int
 alsa_patch_unset_client_id(alsa_patch_t * patch,
-						   lash_list_t * alsa_mgr_clients,
+						   struct list_head * alsa_mgr_clients,
 						   uuid_t patch_client_id,
 						   alsa_patch_get_sub_addr_func get_sub_addr,
 						   alsa_patch_set_sub_addr_func set_sub_addr)
 {
+	struct list_head *node;
 	alsa_client_t *client;
 
-	for (; alsa_mgr_clients;
-		 alsa_mgr_clients = lash_list_next(alsa_mgr_clients)) {
-		client = (alsa_client_t *) alsa_mgr_clients->data;
+	list_for_each (node, alsa_mgr_clients) {
+		client = list_entry(node, alsa_client_t, siblings);
 
 		if (uuid_compare(patch_client_id, client->id) == 0) {
 			snd_seq_addr_t addr;
@@ -199,7 +199,7 @@ alsa_patch_unset_client_id(alsa_patch_t * patch,
 }
 
 int
-alsa_patch_unset(alsa_patch_t * patch, lash_list_t * alsa_mgr_clients)
+alsa_patch_unset(alsa_patch_t * patch, struct list_head * alsa_mgr_clients)
 {
 	int err;
 	int not_found = 0;

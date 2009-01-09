@@ -166,9 +166,8 @@ lashd_dbus_jack_name(method_call_t *call)
 
 	jack_mgr_lock(g_server->jack_mgr);
 	jack_mgr_add_client(g_server->jack_mgr, client->id, jack_name,
-	                    client->jack_patches);
+	                    &client->jack_patches);
 	jack_mgr_unlock(g_server->jack_mgr);
-	client->jack_patches = NULL;
 #endif
 
 	// TODO: Send ClientJackNameChanged signal
@@ -213,9 +212,8 @@ lashd_dbus_alsa_id(method_call_t *call)
 
 	alsa_mgr_lock(g_server->alsa_mgr);
 	alsa_mgr_add_client(g_server->alsa_mgr, client->id,
-	                    alsa_id, client->alsa_patches);
+	                    alsa_id, &client->alsa_patches);
 	alsa_mgr_unlock(g_server->alsa_mgr);
-	client->alsa_patches = NULL;
 	// TODO: Send ClientAlsaIdChanged signal
 #else
 	lash_debug("Received ALSA ID %u from '%s'; ALSA support is not "

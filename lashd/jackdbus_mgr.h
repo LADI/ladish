@@ -21,17 +21,18 @@
 #ifndef __LASHD_JACKDBUS_MGR_H__
 #define __LASHD_JACKDBUS_MGR_H__
 
+#include <stdbool.h>
 #include <uuid/uuid.h>
 #include <dbus/dbus.h>
 
-#include "common/list.h"
+#include "common/klist.h"
 #include "types.h"
 
 struct _lashd_jackdbus_mgr
 {
-	lash_list_t   *clients;
-	DBusMessage   *graph;
-	dbus_uint64_t  graph_version;
+	struct list_head  clients;
+	DBusMessage      *graph;
+	dbus_uint64_t     graph_version;
 };
 
 lashd_jackdbus_mgr_t *
@@ -40,14 +41,23 @@ lashd_jackdbus_mgr_new(server_t *server);
 void
 lashd_jackdbus_mgr_destroy(lashd_jackdbus_mgr_t *mgr);
 
-void
-lashd_jackdbus_mgr_remove_client(lashd_jackdbus_mgr_t  *mgr,
-                                 uuid_t                 id,
-                                 lash_list_t          **backup_patches);
+bool
+lashd_jackdbus_mgr_remove_client(lashd_jackdbus_mgr_t *mgr,
+                                 uuid_t                id,
+                                 struct list_head     *backup_patches);
 
-lash_list_t *
+/** Find client with UUID @a id in jackdbus manager @a mgr and append its
+ * patches to @a list. \a list must be properly initialized before calling.
+ * If the operation fails the contents of \a list is undefined.
+ * @param mgr Pointer to JACK D-Bus manager.
+ * @param id UUID of client.
+ * @param dest Pointer to target list head. Must be initialized.
+ * @return True on success, false otherwise.
+ */
+bool
 lashd_jackdbus_mgr_get_client_patches(lashd_jackdbus_mgr_t *mgr,
-                                      uuid_t                id);
+                                      uuid_t                id,
+                                      struct list_head     *dest);
 
 void
 lashd_jackdbus_mgr_get_graph(lashd_jackdbus_mgr_t *mgr);

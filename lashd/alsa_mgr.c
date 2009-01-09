@@ -117,6 +117,8 @@ alsa_mgr_new(void)
 		free(alsa_mgr);
 		return NULL;
 	} else {
+		INIT_LIST_HEAD(&alsa_mgr->clients);
+		INIT_LIST_HEAD(&alsa_mgr->foreign_ports);
 		pthread_create(&alsa_mgr->event_thread, NULL, alsa_mgr_event_run,
 				alsa_mgr);
 		return alsa_mgr;
@@ -155,11 +157,11 @@ alsa_mgr_destroy(alsa_mgr_t * alsa_mgr)
 static alsa_client_t *
 alsa_mgr_get_client(alsa_mgr_t * alsa_mgr, uuid_t id)
 {
-	lash_list_t *list;
+	struct list_head *node;
 	alsa_client_t *client;
 
-	for (list = alsa_mgr->clients; list; list = lash_list_next(list)) {
-		client = (alsa_client_t *) list->data;
+	list_for_each (node, &alsa_mgr->clients) {
+		client = list_entry(node, alsa_client_t, siblings);
 
 		if (uuid_compare(client->id, id) == 0) {
 			return client;
@@ -172,7 +174,7 @@ alsa_mgr_get_client(alsa_mgr_t * alsa_mgr, uuid_t id)
 static void
 alsa_mgr_check_client_fports(alsa_mgr_t * alsa_mgr, uuid_t client_id)
 {
-	lash_list_t *list;
+	struct list_head *node, *next;
 	alsa_fport_t *fport;
 	unsigned char alsa_id;
 	alsa_client_t *client;
@@ -185,9 +187,8 @@ alsa_mgr_check_client_fports(alsa_mgr_t * alsa_mgr, uuid_t client_id)
 
 	alsa_id = alsa_client_get_client_id(client);
 
-	for (list = alsa_mgr->foreign_ports; list;) {
-		fport = (alsa_fport_t *) list->data;
-		list = lash_list_next(list);
+	list_for_each_safe (node, next, &alsa_mgr->foreign_ports) {
+		fport = list_entry(node, alsa_fport_t, siblings);
 
 		if (alsa_fport_get_client(fport) == alsa_id) {
 			lash_debug("resuming previously foreign port %d on client %d",
@@ -201,8 +202,7 @@ alsa_mgr_check_client_fports(alsa_mgr_t * alsa_mgr, uuid_t client_id)
 			           alsa_fport_get_port(fport),
 			           alsa_fport_get_client(fport));
 
-			alsa_mgr->foreign_ports =
-				lash_list_remove(alsa_mgr->foreign_ports, fport);
+			list_del(&fport->siblings);
 			alsa_fport_destroy(fport);
 		}
 	}
@@ -212,7 +212,7 @@ alsa_mgr_check_client_fports(alsa_mgr_t * alsa_mgr, uuid_t client_id)
 
 void
 alsa_mgr_add_client(alsa_mgr_t * alsa_mgr, uuid_t id,
-					unsigned char alsa_client_id, lash_list_t * alsa_patches)
+                    unsigned char alsa_client_id, struct list_head * alsa_patches)
 {
 	alsa_client_t *client;
 
@@ -221,23 +221,19 @@ alsa_mgr_add_client(alsa_mgr_t * alsa_mgr, uuid_t id,
 	client = alsa_client_new();
 	alsa_client_set_client_id(client, alsa_client_id);
 	alsa_client_set_id(client, id);
-	client->old_patches = alsa_patches;
+	list_splice_init(alsa_patches, &client->old_patches);
 
-	alsa_mgr->clients = lash_list_append(alsa_mgr->clients, client);
+	list_add_tail(&client->siblings, &alsa_mgr->clients);
 
 # ifdef LASH_DEBUG
 	{
-		lash_list_t *list;
-		alsa_patch_t *patch;
+		struct list_head *node;
 
 		lash_debug("added client with alsa client id '%d' and patches:",
 		           alsa_client_id);
 
-		for (list = alsa_patches; list; list = lash_list_next(list)) {
-			patch = (alsa_patch_t *) list->data;
-
-			lash_debug("  %s", alsa_patch_get_desc(patch));
-		}
+		list_for_each (node, &client->old_patches)
+			lash_debug("  %s", alsa_patch_get_desc(list_entry(node, alsa_patch_t, siblings)));
 	}
 # endif
 
@@ -246,89 +242,60 @@ alsa_mgr_add_client(alsa_mgr_t * alsa_mgr, uuid_t id,
 	lash_debug("end");
 }
 
-static alsa_client_t *
-alsa_mgr_find_client(alsa_mgr_t * alsa_mgr, uuid_t id)
-{
-	lash_list_t *list;
-	alsa_client_t *client;
-
-	for (list = alsa_mgr->clients; list; list = lash_list_next(list)) {
-		client = (alsa_client_t *) list->data;
-
-		if (uuid_compare(client->id, id) == 0)
-			return client;
-	}
-
-	return NULL;
-}
-
-lash_list_t *
-alsa_mgr_remove_client(alsa_mgr_t * alsa_mgr, uuid_t id)
+void
+alsa_mgr_remove_client(alsa_mgr_t * alsa_mgr, uuid_t id,
+                       struct list_head * backup_patches)
 {
 	alsa_client_t *client;
-	lash_list_t *backup_patches;
 
-	client = alsa_mgr_find_client(alsa_mgr, id);
-	if (client) {
-		alsa_mgr->clients = lash_list_remove(alsa_mgr->clients, client);
-	}
-
+	client = alsa_mgr_get_client(alsa_mgr, id);
 	if (!client) {
 		lash_debug("could not remove unknown client");
-		return NULL;
+		return;
 	}
 
+	list_del(&client->siblings);
 	lash_debug("removed client with alsa client id %d",
 	           client->client_id);
 
-	backup_patches = client->backup_patches;
-	client->backup_patches = NULL;
-	alsa_client_destroy(client);
+	if (backup_patches)
+		list_splice(&client->backup_patches, backup_patches);
 
-	return backup_patches;
+	alsa_client_destroy(client);
 }
 
-lash_list_t *
-alsa_mgr_get_client_patches(alsa_mgr_t * alsa_mgr, uuid_t id)
+void
+alsa_mgr_get_client_patches(alsa_mgr_t * alsa_mgr, uuid_t id, struct list_head * dest)
 {
 	alsa_client_t *client;
-	lash_list_t *patches;
-	lash_list_t *node;
-	lash_list_t *uniq_patches = NULL;
-	lash_list_t *uniq_node;
+	struct list_head *node, *next, *node2;
 	alsa_patch_t *patch;
-	alsa_patch_t *uniq_patch;
 
-	client = alsa_mgr_find_client(alsa_mgr, id);
+	LIST_HEAD(patches);
+
+	client = alsa_mgr_get_client(alsa_mgr, id);
 	if (!client) {
 		lash_debug("couldn't get patches for unknown unknown client");
-		return NULL;
+		return;
 	}
 
-	patches = alsa_client_dup_patches(client);
+	alsa_client_dup_patches(client, &patches);
 
-	for (node = patches; node; node = lash_list_next(node)) {
-		patch = (alsa_patch_t *) node->data;
+	list_for_each_safe (node, next, &patches) {
+		patch = list_entry(node, alsa_patch_t, siblings);
+		alsa_patch_set(patch, &alsa_mgr->clients);
 
-		alsa_patch_set(patch, alsa_mgr->clients);
-
-		for (uniq_node = uniq_patches; uniq_node;
-			 uniq_node = lash_list_next(uniq_node)) {
-			uniq_patch = (alsa_patch_t *) uniq_node->data;
-
-			if (alsa_patch_compare(patch, uniq_patch) == 0)
-				break;
+		list_for_each (node2, dest) {
+			if (alsa_patch_compare(patch, list_entry(node2, alsa_patch_t, siblings)) == 0) {
+				alsa_patch_destroy(patch);
+				goto loop;
+			}
 		}
 
-		if (uniq_node)
-			alsa_patch_destroy(patch);
-		else
-			uniq_patches = lash_list_append(uniq_patches, patch);
+		list_add_tail(&patch->siblings, dest);
+	loop:
+		continue; /* fix "label at end of compound statement" */
 	}
-
-	lash_list_free(patches);
-
-	return uniq_patches;
 }
 
 static int
@@ -359,7 +326,7 @@ alsa_mgr_new_client_port(alsa_mgr_t * alsa_mgr, uuid_t client_id,
 						 unsigned char port)
 {
 	alsa_client_t *client;
-	lash_list_t *list;
+	struct list_head *node, *next;
 	alsa_patch_t *patch;
 	alsa_patch_t *unset_patch;
 	int err;
@@ -370,18 +337,16 @@ alsa_mgr_new_client_port(alsa_mgr_t * alsa_mgr, uuid_t client_id,
 	if (!client)
 		return;
 
-	for (list = client->old_patches; list;) {
-		patch = (alsa_patch_t *) list->data;
-		list = lash_list_next(list);
+	list_for_each_safe (node, next, &client->old_patches) {
+		patch = list_entry(node, alsa_patch_t, siblings);
 
 		unset_patch = alsa_patch_dup(patch);
-		err = alsa_patch_unset(unset_patch, alsa_mgr->clients);
+		err = alsa_patch_unset(unset_patch, &alsa_mgr->clients);
 		if (err) {
 			lash_debug("could not resume patch '%s' because "
 			           "the other client has not registered\n",
 			           alsa_patch_get_desc(unset_patch));
-			client->old_patches =
-				lash_list_remove(client->old_patches, patch);
+			list_del(&patch->siblings);
 			alsa_patch_destroy(patch);
 			alsa_patch_destroy(unset_patch);
 			continue;
@@ -396,8 +361,7 @@ alsa_mgr_new_client_port(alsa_mgr_t * alsa_mgr, uuid_t client_id,
 			           client->client_id);
 			err = alsa_mgr_resume_patch(alsa_mgr, unset_patch);
 			if (!err) {
-				client->old_patches =
-					lash_list_remove(client->old_patches, patch);
+				list_del(&patch->siblings);
 				alsa_patch_destroy(patch);
 			}
 		}
@@ -414,33 +378,26 @@ void
 alsa_mgr_new_port(alsa_mgr_t * alsa_mgr, unsigned char client,
 				  unsigned char port)
 {
-	lash_list_t *list;
+	struct list_head *node;
 	alsa_client_t *alsa_client;
 	uuid_t id;
 
-	for (list = alsa_mgr->clients; list; list = lash_list_next(list)) {
-		alsa_client = (alsa_client_t *) list->data;
+	list_for_each (node, &alsa_mgr->clients) {
+		alsa_client = list_entry(node, alsa_client_t, siblings);
 
-		if (alsa_client_get_client_id(alsa_client) == client)
-			break;
+		if (alsa_client_get_client_id(alsa_client) == client) {
+			alsa_client_get_id(alsa_client, id);
+			alsa_mgr_new_client_port(alsa_mgr, id, port);
+			return;
+		}
 	}
 
-	if (!list) {				/* client wasn't found *//* create a new fport */
-		alsa_fport_t *fport;
+	/* client wasn't found */
 
-		lash_debug("adding foreign port %d on client %d", port, client);
+	lash_debug("adding foreign port %d on client %d", port, client);
 
-		fport = alsa_fport_new_with_all(client, port);
-
-		alsa_mgr->foreign_ports =
-			lash_list_append(alsa_mgr->foreign_ports, fport);
-
-		return;
-	}
-
-	alsa_client_get_id(alsa_client, id);
-
-	alsa_mgr_new_client_port(alsa_mgr, id, port);
+	list_add_tail(&(alsa_fport_new_with_all(client, port))->siblings,
+	              &alsa_mgr->foreign_ports);
 }
 
 /* check the foreign ports */
@@ -448,11 +405,11 @@ void
 alsa_mgr_port_removed(alsa_mgr_t * alsa_mgr, unsigned char client,
 					  unsigned char port)
 {
-	lash_list_t *list;
+	struct list_head *node;
 	alsa_fport_t *fport;
 
-	for (list = alsa_mgr->foreign_ports; list; list = lash_list_next(list)) {
-		fport = (alsa_fport_t *) list->data;
+	list_for_each (node, &alsa_mgr->foreign_ports) {
+		fport = list_entry(node, alsa_fport_t, siblings);
 
 		if (fport->client == client && fport->port == port) {
 			/* remove the fport */
@@ -460,8 +417,7 @@ alsa_mgr_port_removed(alsa_mgr_t * alsa_mgr, unsigned char client,
 			lash_debug("removing foreign port with port %d and client %d",
 			           client, port);
 
-			alsa_mgr->foreign_ports =
-				lash_list_remove(alsa_mgr->foreign_ports, fport);
+			list_del(&fport->siblings);
 
 			alsa_fport_destroy(fport);
 
@@ -486,7 +442,7 @@ alsa_mgr_get_alsa_patches_with_port(alsa_mgr_t * alsa_mgr,
 
 	while (snd_seq_query_port_subscribers(alsa_mgr->seq, query_base) >= 0) {
 		patch = alsa_patch_new_with_query(query_base);
-		client->patches = lash_list_append(client->patches, patch);
+		list_add_tail(&patch->siblings, &client->patches);
 		if (type == SND_SEQ_QUERY_SUBS_WRITE)
 			alsa_patch_switch_clients(patch);
 
@@ -515,16 +471,15 @@ alsa_mgr_redo_client_patches(alsa_mgr_t * alsa_mgr, alsa_client_t * client)
 
 # ifdef LASH_DEBUG
 	{
-		lash_list_t *list;
+		struct list_head *node;
 		alsa_patch_t *patch;
 
-		list = client->patches;
-		if (list) {
+		if (!list_empty(&client->patches)) {
 			lash_debug("got alsa patches for client "
 			           "with alsa client id %d:",
 			           alsa_client_get_client_id(client));
-			for (; list; list = lash_list_next(list)) {
-				patch = (alsa_patch_t *) list->data;
+			list_for_each (node, &client->patches) {
+				patch = list_entry(node, alsa_patch_t, siblings);
 
 				lash_debug("  %s", alsa_patch_get_desc(patch));
 			}
@@ -540,16 +495,17 @@ alsa_mgr_redo_client_patches(alsa_mgr_t * alsa_mgr, alsa_client_t * client)
 void
 alsa_mgr_redo_patches(alsa_mgr_t * alsa_mgr)
 {
-	lash_list_t *list;
+	struct list_head *node;
 	alsa_client_t *client;
 
 	lash_debug("start");
 
-	for (list = alsa_mgr->clients; list; list = lash_list_next(list)) {
-		lash_debug("list: %p", (void *)list);
-		client = (alsa_client_t *) list->data;
+	list_for_each (node, &alsa_mgr->clients) {
+		lash_debug("node: %p", (void *)node);
+		client = list_entry(node, alsa_client_t, siblings);
 
 		alsa_client_free_patches(client);
+		INIT_LIST_HEAD(&client->patches);
 		alsa_mgr_redo_client_patches(alsa_mgr, client);
 	}
 	lash_debug("end");
@@ -560,7 +516,7 @@ alsa_mgr_backup_patches(alsa_mgr_t * alsa_mgr)
 {
 	static time_t last_backup = 0;
 	time_t now;
-	lash_list_t *list, *patches;
+	struct list_head *node, *node2;
 	alsa_client_t *client;
 
 	now = time(NULL);
@@ -568,15 +524,16 @@ alsa_mgr_backup_patches(alsa_mgr_t * alsa_mgr)
 	if (now - last_backup < BACKUP_TIMEOUT)
 		return;
 
-	for (list = alsa_mgr->clients; list; list = lash_list_next(list)) {
-		client = (alsa_client_t *) list->data;
+	list_for_each (node, &alsa_mgr->clients) {
+		client = list_entry(node, alsa_client_t, siblings);
 
 		alsa_client_free_backup_patches(client);
-		client->backup_patches = alsa_client_dup_patches(client);
+		INIT_LIST_HEAD(&client->backup_patches);
+		alsa_client_dup_patches(client, &client->backup_patches);
 
-		for (patches = client->backup_patches; patches;
-			 patches = lash_list_next(patches))
-			alsa_patch_set((alsa_patch_t *) patches->data, alsa_mgr->clients);
+		list_for_each (node2, &client->backup_patches)
+			alsa_patch_set(list_entry(node2, alsa_patch_t, siblings),
+			               &alsa_mgr->clients);
 	}
 
 	last_backup = now;

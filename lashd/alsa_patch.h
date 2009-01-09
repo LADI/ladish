@@ -30,10 +30,11 @@
 # include <libxml/tree.h>
 
 # include "types.h"
-# include "common/list.h"
+# include "common/klist.h"
 
 struct _alsa_patch
 {
+  struct list_head siblings;
   uuid_t src_id;
   uuid_t dest_id;
   snd_seq_port_subscribe_t * sub;
@@ -56,8 +57,8 @@ int  alsa_patch_dest_id_is_null (alsa_patch_t * patch);
 void alsa_patch_set_sub            (alsa_patch_t * patch, const snd_seq_port_subscribe_t * sub);
 void alsa_patch_set_sub_from_query (alsa_patch_t * patch, const snd_seq_query_subscribe_t * query);
 
-void alsa_patch_set   (alsa_patch_t * patch, lash_list_t * alsa_mgr_clients);
-int  alsa_patch_unset (alsa_patch_t * patch, lash_list_t * alsa_mgr_clients);
+void alsa_patch_set   (alsa_patch_t * patch, struct list_head * alsa_mgr_clients);
+int  alsa_patch_unset (alsa_patch_t * patch, struct list_head * alsa_mgr_clients);
 
 const snd_seq_port_subscribe_t * query_to_sub (const snd_seq_query_subscribe_t * query);
 

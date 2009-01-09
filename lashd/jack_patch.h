@@ -32,18 +32,19 @@
 #endif
 
 #include "types.h"
-#include "common/list.h"
+#include "common/klist.h"
 
 struct _jack_patch
 {
-	char   *src_client;
-	char   *src_port;
-	char   *dest_client;
-	char   *dest_port;
-	char   *src_desc;
-	char   *dest_desc;
-	uuid_t  src_client_id;
-	uuid_t  dest_client_id;
+	struct list_head  siblings;
+	char             *src_client;
+	char             *src_port;
+	char             *dest_client;
+	char             *dest_port;
+	char             *src_desc;
+	char             *dest_desc;
+	uuid_t            src_client_id;
+	uuid_t            dest_client_id;
 };
 
 jack_patch_t *
@@ -66,12 +67,13 @@ jack_patch_dup(const jack_patch_t *patch);
 #ifdef LASH_DEBUG
 # include "common/debug.h"
 static __inline__ void
-jack_patch_list(lash_list_t *list)
+jack_patch_list(struct list_head *list)
 {
-	for (; list; list = lash_list_next(list))
-		lash_debug("%s -> %s",
-		           ((jack_patch_t *) list->data)->src_desc,
-		           ((jack_patch_t *) list->data)->dest_desc);
+	struct list_head *node;
+	list_for_each (node, list) {
+		jack_patch_t *p = list_entry(node, jack_patch_t, siblings);
+		lash_debug("%s -> %s", p->src_desc, p->dest_desc);
+	}
 }
 #endif
 
@@ -79,12 +81,12 @@ jack_patch_list(lash_list_t *list)
 
 /* set/unset the lash IDs */
 void
-jack_patch_set(jack_patch_t *patch,
-               lash_list_t  *jack_mgr_clients);
+jack_patch_set(jack_patch_t     *patch,
+               struct list_head *jack_mgr_clients);
 
 bool
-jack_patch_unset(jack_patch_t *patch,
-                 lash_list_t  *jack_mgr_clients);
+jack_patch_unset(jack_patch_t     *patch,
+                 struct list_head *jack_mgr_clients);
 
 void
 jack_patch_switch_clients(jack_patch_t *patch);

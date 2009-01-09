@@ -28,15 +28,16 @@
 # include <uuid/uuid.h>
 
 # include "types.h"
-# include "common/list.h"
+# include "common/klist.h"
 
 struct _alsa_client
 {
+  struct list_head siblings;
   unsigned char   client_id;
   uuid_t          id;
-  lash_list_t *    patches;
-  lash_list_t *    old_patches;
-  lash_list_t *    backup_patches;
+  struct list_head patches;
+  struct list_head old_patches;
+  struct list_head backup_patches;
 };
 
 alsa_client_t * alsa_client_new ();
@@ -45,8 +46,8 @@ void            alsa_client_destroy (alsa_client_t * client);
 void alsa_client_set_id          (alsa_client_t * client, uuid_t id);
 void alsa_client_set_client_id   (alsa_client_t * client, unsigned char client_id);
 
-lash_list_t *  alsa_client_dup_patches     (const alsa_client_t * client);
-lash_list_t *  alsa_client_get_patches     (alsa_client_t * client);
+void               alsa_client_dup_patches     (const alsa_client_t * client, struct list_head * dest);
+struct list_head * alsa_client_get_patches     (alsa_client_t * client);
 unsigned char alsa_client_get_client_id   (const alsa_client_t * client);
 void          alsa_client_get_id          (const alsa_client_t * client, uuid_t id);
 

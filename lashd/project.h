@@ -28,7 +28,6 @@
 #include <libxml/tree.h>
 
 #include "common/klist.h"
-#include "common/list.h"
 
 #include "types.h"
 

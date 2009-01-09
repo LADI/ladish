@@ -43,6 +43,8 @@ client_new(void)
 
 	client = lash_calloc(1, sizeof(client_t));
 
+	INIT_LIST_HEAD(&client->jack_patches);
+	INIT_LIST_HEAD(&client->alsa_patches);
 	INIT_LIST_HEAD(&client->dependencies);
 	INIT_LIST_HEAD(&client->unsatisfied_deps);
 
@@ -300,9 +302,7 @@ client_parse_xml(project_t  *project,
 					jack_patch = jack_patch_new();
 					jack_patch_parse_xml(jack_patch,
 					                     argnode);
-					client->jack_patches =
-					  lash_list_append(client->jack_patches,
-					                   jack_patch);
+					list_add_tail(&jack_patch->siblings, &client->jack_patches);
 				}
 		} else if (strcmp((const char*) xmlnode->name,
 		                  "alsa_patch_set") == 0) {
@@ -314,9 +314,7 @@ client_parse_xml(project_t  *project,
 					alsa_patch = alsa_patch_new();
 					alsa_patch_parse_xml(alsa_patch,
 					                     argnode);
-					client->alsa_patches =
-					  lash_list_append(client->alsa_patches,
-					                   alsa_patch);
+					list_add_tail(&alsa_patch->siblings, &client->alsa_patches);
 				}
 			}
 #else

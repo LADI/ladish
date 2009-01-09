@@ -372,10 +372,8 @@ project_resume_client(project_t *project,
 	/* Get all the necessary data from the lost client */
 	name = lost_client->name;
 	lost_client->name = NULL;
-	client->alsa_patches = lost_client->alsa_patches;
-	lost_client->alsa_patches = NULL;
-	client->jack_patches = lost_client->jack_patches;
-	lost_client->jack_patches = NULL;
+	list_splice_init(&lost_client->alsa_patches, &client->alsa_patches);
+	list_splice_init(&lost_client->jack_patches, &client->jack_patches);
 	client->flags = lost_client->flags;
 	uuid_copy(client->id, lost_client->id);
 	memcpy(client->id_str, lost_client->id_str, 37);
@@ -682,22 +680,20 @@ project_create_client_jack_patch_xml(project_t  *project,
                                      xmlNodePtr  clientxml)
 {
 	xmlNodePtr jack_patch_set;
-	lash_list_t *patches, *node;
+	struct list_head *node, *next;
 	jack_patch_t *patch;
 
+	LIST_HEAD(patches);
+
 #ifdef HAVE_JACK_DBUS
-	patches =
-	  lashd_jackdbus_mgr_get_client_patches(g_server->jackdbus_mgr,
-	                                        client->id);
+	if (!lashd_jackdbus_mgr_get_client_patches(g_server->jackdbus_mgr,
+	                                           client->id, &patches)) {
 #else
 	jack_mgr_lock(g_server->jack_mgr);
-	patches =
-	  jack_mgr_get_client_patches(g_server->jack_mgr, client->id);
+	jack_mgr_get_client_patches(g_server->jack_mgr, client->id, &patches);
 	jack_mgr_unlock(g_server->jack_mgr);
+	if (list_empty(&patches)) {
 #endif
-
-	if (!patches)
-	{
 		lash_info("client '%s' has no patches to save", client_get_identity(client));
 		return;
 	}
@@ -705,16 +701,14 @@ project_create_client_jack_patch_xml(project_t  *project,
 	jack_patch_set =
 		xmlNewChild(clientxml, NULL, BAD_CAST "jack_patch_set", NULL);
 
-	for (node = patches; node; node = lash_list_next(node)) {
-		patch = (jack_patch_t *) node->data;
+	list_for_each_safe (node, next, &patches) {
+		patch = list_entry(node, jack_patch_t, siblings);
 
 		lash_info("Saving client '%s' patch %s:%s -> %s:%s", client_get_identity(client), patch->src_client, patch->src_port, patch->dest_client, patch->dest_port);
 		jack_patch_create_xml(patch, jack_patch_set);
 
 		jack_patch_destroy(patch);
 	}
-
-	lash_list_free(patches);
 }
 
 #ifdef HAVE_ALSA
@@ -724,29 +718,25 @@ project_create_client_alsa_patch_xml(project_t  *project,
                                      xmlNodePtr  clientxml)
 {
 	xmlNodePtr alsa_patch_set;
-	lash_list_t *patches, *node;
+	struct list_head *node, *next;
 	alsa_patch_t *patch;
 
-	alsa_mgr_lock(g_server->alsa_mgr);
-	patches =
-		alsa_mgr_get_client_patches(g_server->alsa_mgr, client->id);
-	alsa_mgr_unlock(g_server->alsa_mgr);
+	LIST_HEAD(patches);
 
-	if (!patches)
+	alsa_mgr_lock(g_server->alsa_mgr);
+	alsa_mgr_get_client_patches(g_server->alsa_mgr, client->id, &patches);
+	alsa_mgr_unlock(g_server->alsa_mgr);
+	if (list_empty(&patches))
 		return;
 
 	alsa_patch_set =
 		xmlNewChild(clientxml, NULL, BAD_CAST "alsa_patch_set", NULL);
 
-	for (node = patches; node; node = lash_list_next(node)) {
-		patch = (alsa_patch_t *) node->data;
-
+	list_for_each_safe (node, next, &patches) {
+		patch = list_entry(node, alsa_patch_t, siblings);
 		alsa_patch_create_xml(patch, alsa_patch_set);
-
 		alsa_patch_destroy(patch);
 	}
-
-	lash_list_free(patches);
 }
 #endif
 
@@ -1099,9 +1089,8 @@ project_load(project_t *project)
 
 #ifdef LASH_DEBUG
 	{
-		struct list_head *node;
+		struct list_head *node, *node2;
 		client_t *client;
-		lash_list_t *list;
 		int i;
 
 		lash_debug("Restored project with:");
@@ -1122,22 +1111,21 @@ project_load(project_t *project)
 				lash_debug("      %d: '%s'", i, client->argv[i]);
 			}
 #ifdef HAVE_ALSA
-			if (client->alsa_patches) {
+			if (!list_empty(&client->alsa_patches)) {
 				lash_debug("    alsa patches:");
-				for (list = client->alsa_patches; list; list = list->next) {
+				list_for_each (node2, &client->alsa_patches) {
 					lash_debug("      %s",
-					           alsa_patch_get_desc((alsa_patch_t *) list->data));
+					           alsa_patch_get_desc(list_entry(node2, alsa_patch_t, siblings)));
 				}
 			} else
 				lash_debug("    no alsa patches");
 #endif
 
-			if (client->jack_patches) {
+			if (!list_empty(&client->jack_patches)) {
 				lash_debug("    jack patches:");
-				for (list = client->jack_patches; list; list = list->next) {
-					lash_debug("      '%s' -> '%s'",
-					           ((jack_patch_t *)list->data)->src_desc,
-					           ((jack_patch_t *)list->data)->dest_desc);
+				list_for_each (node2, &client->jack_patches) {
+					jack_patch_t *p = list_entry(node2, jack_patch_t, siblings);
+					lash_debug("      '%s' -> '%s'", p->src_desc, p->dest_desc);
 				}
 			} else
 				lash_debug("    no jack patches");
@@ -1236,7 +1224,7 @@ void
 project_lose_client(project_t *project,
                     client_t  *client)
 {
-	lash_list_t *patches;
+	LIST_HEAD(patches);
 
 	lash_info("Losing client '%s'", client_get_identity(client));
 
@@ -1259,18 +1247,18 @@ project_lose_client(project_t *project,
 
 	if (client->jack_client_name) {
 #ifdef HAVE_JACK_DBUS
-		lashd_jackdbus_mgr_remove_client(g_server->jackdbus_mgr,
-		                                 client->id, &patches);
+		if (lashd_jackdbus_mgr_remove_client(g_server->jackdbus_mgr,
+		                                     client->id, &patches)) {
 #else
 		jack_mgr_lock(g_server->jack_mgr);
-		patches = jack_mgr_remove_client(g_server->jack_mgr, client->id);
+		jack_mgr_remove_client(g_server->jack_mgr, client->id, &patches);
 		jack_mgr_unlock(g_server->jack_mgr);
+		if (!list_empty(&patches)) {
 #endif
-		if (patches) {
-			client->jack_patches = lash_list_concat(client->jack_patches, patches);
+			list_splice(&patches, &client->jack_patches);
 #ifdef LASH_DEBUG
 			lash_debug("Backed-up JACK patches:");
-			jack_patch_list(client->jack_patches);
+			jack_patch_list(&client->jack_patches);
 #endif
 		}
 	}
@@ -1278,10 +1266,11 @@ project_lose_client(project_t *project,
 #ifdef HAVE_ALSA
 	if (client->alsa_client_id) {
 		alsa_mgr_lock(g_server->alsa_mgr);
-		patches = alsa_mgr_remove_client(g_server->alsa_mgr, client->id);
+		INIT_LIST_HEAD(&patches);
+		alsa_mgr_remove_client(g_server->alsa_mgr, client->id, &patches);
 		alsa_mgr_unlock(g_server->alsa_mgr);
-		if (patches)
-			client->alsa_patches = lash_list_concat(client->alsa_patches, patches);
+		if (!list_empty(&patches))
+			list_splice(&patches, &client->alsa_patches);
 	}
 #endif
 
@@ -1299,9 +1288,10 @@ project_lose_client(project_t *project,
 void
 project_unload(project_t *project)
 {
-	struct list_head *head, *node;
-	lash_list_t *patches, *pnode;
+	struct list_head *node, *next, *node2, *next2;
 	client_t *client;
+
+	LIST_HEAD(patches);
 
 	list_del_init(&project->siblings_loaded);
 
@@ -1312,12 +1302,8 @@ project_unload(project_t *project)
 	                  "/", "org.nongnu.LASH.Server", "Quit",
 	                  DBUS_TYPE_STRING, &project->name);
 
-	head = &project->clients;
-	node = head->next;
-
-	while (node != head) {
+	list_for_each_safe (node, next, &project->clients) {
 		client = list_entry(node, client_t, siblings);
-		node = node->next;
 
 		if (client->jack_client_name) {
 #ifdef HAVE_JACK_DBUS
@@ -1325,27 +1311,17 @@ project_unload(project_t *project)
 			                                 client->id, NULL);
 #else
 			jack_mgr_lock(g_server->jack_mgr);
-			patches =
-			  jack_mgr_remove_client(g_server->jack_mgr,
-			                         client->id);
+			jack_mgr_remove_client(g_server->jack_mgr,
+			                       client->id, NULL);
 			jack_mgr_unlock(g_server->jack_mgr);
-
-			for (pnode = patches; pnode; pnode = lash_list_next(pnode))
-				jack_patch_destroy((jack_patch_t *) pnode->data);
-			lash_list_free(patches);
 #endif
 		}
 
 #ifdef HAVE_ALSA
 		if (client->alsa_client_id) {
 			alsa_mgr_lock(g_server->alsa_mgr);
-			patches =
-			  alsa_mgr_remove_client(g_server->alsa_mgr, client->id);
+			alsa_mgr_remove_client(g_server->alsa_mgr, client->id, NULL);
 			alsa_mgr_unlock(g_server->alsa_mgr);
-
-			for (pnode = patches; pnode; pnode = lash_list_next(pnode))
-				alsa_patch_destroy((alsa_patch_t *) pnode->data);
-			lash_list_free(patches);
 		}
 #endif
 
@@ -1353,12 +1329,8 @@ project_unload(project_t *project)
 		client_destroy(client);
 	}
 
-	head = &project->lost_clients;
-	node = head->next;
-
-	while (node != head) {
+	list_for_each_safe (node, next, &project->lost_clients) {
 		client = list_entry(node, client_t, siblings);
-		node = node->next;
 		list_del(&client->siblings);
 		// TODO: Do lost clients also need to have their
 		//       JACK and ALSA patches destroyed?

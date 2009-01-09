@@ -26,9 +26,11 @@
 #ifdef HAVE_ALSA
 
 # include "types.h"
+# include "common/klist.h"
 
 struct _alsa_fport
 {
+  struct list_head siblings;
   unsigned char   client;
   unsigned char   port;
 };

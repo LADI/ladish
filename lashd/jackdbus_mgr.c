@@ -20,7 +20,6 @@
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <stdbool.h>
 #include <string.h>
 #include <dbus/dbus.h>
 
@@ -164,6 +163,7 @@ lashd_jackdbus_mgr_new(server_t *server)
 		goto fail;
 	}
 
+	INIT_LIST_HEAD(&mgr->clients);
 	g_jack_mgr_ptr = mgr;
 	return mgr;
 
@@ -187,8 +187,7 @@ void
 lashd_jackdbus_mgr_destroy(lashd_jackdbus_mgr_t *mgr)
 {
 	if (mgr) {
-		// TODO: also destroy the objects from the list
-		lash_list_free(mgr->clients);
+		// TODO: destroy mgr->clients
 		lashd_jackdbus_mgr_graph_free();
 		free(mgr);
 		g_jack_mgr_ptr = NULL;
@@ -327,8 +326,6 @@ lashd_jackdbus_on_client_appeared(
 		client_ptr = server_find_lost_client_by_pid(g_server, pid);
 	}
 
-	lash_debug("client: %p", client_ptr);
-
 	if (client_ptr == NULL)
 	{
 		/* TODO: we need to create liblash-less client object here */
@@ -343,11 +340,10 @@ lashd_jackdbus_on_client_appeared(
 	jack_client_ptr->name = lash_strdup(client_name);
 	lash_strset(&client_ptr->jack_client_name, client_name);
 	//client_ptr->jack_client_id = client_id;
-	jack_client_ptr->old_patches = client_ptr->jack_patches;
-	jack_client_ptr->backup_patches = jack_mgr_client_dup_patch_list(client_ptr->jack_patches);
-	client_ptr->jack_patches = NULL;
+	list_splice_init(&client_ptr->jack_patches, &jack_client_ptr->old_patches);
+	jack_mgr_client_dup_patch_list(&jack_client_ptr->old_patches, &jack_client_ptr->backup_patches);
 
-	g_jack_mgr_ptr->clients = lash_list_append(g_jack_mgr_ptr->clients, jack_client_ptr);
+	list_add_tail(&jack_client_ptr->siblings, &g_jack_mgr_ptr->clients);
 
 	client_maybe_fill_class(client_ptr);
 
@@ -365,20 +361,18 @@ lashd_jackdbus_mgr_new_foreign_port(const char *client_name,
 {
 	lash_debug("new foreign port '%s:%s'", client_name, port_name);
 
-	lash_list_t *node, *node2;
+	struct list_head *node, *node2;
 	jack_mgr_client_t *client;
 	jack_patch_t *patch;
 	const char *foreign_client, *foreign_port;
 	bool port_is_input;
 	const char *client1_name, *port1_name, *client2_name, *port2_name;
 
-	for (node = g_jack_mgr_ptr->clients; node;
-	     node = lash_list_next(node)) {
-		client = node->data;
+	list_for_each (node, &g_jack_mgr_ptr->clients) {
+		client = list_entry(node, jack_mgr_client_t, siblings);
 
-		for (node2 = client->old_patches; node2;) {
-		     patch = node2->data;
-		     node2 = lash_list_next(node2);
+		list_for_each (node2, &client->old_patches) {
+			patch = list_entry(node2, jack_patch_t, siblings);
 
 			if (uuid_compare(patch->src_client_id,
 			                 client->id) == 0) {
@@ -429,7 +423,7 @@ lashd_jackdbus_mgr_new_client_port(jack_mgr_client_t *client,
 	lash_info("new client port '%s:%s'", client_name, port_name);
 
 	jack_mgr_client_t *other_client;
-	lash_list_t *node;
+	struct list_head *node;
 	jack_patch_t *patch;
 	bool port_is_input;
 	uuid_t *other_id;
@@ -437,9 +431,8 @@ lashd_jackdbus_mgr_new_client_port(jack_mgr_client_t *client,
 
 	/* Iterate the client's old patches and try to connect those which
 	   contain the new port */
-	for (node = client->old_patches; node;) {
-		patch = (jack_patch_t *) node->data;
-		node = lash_list_next(node);
+	list_for_each (node, &client->old_patches) {
+		patch = list_entry(node, jack_patch_t, siblings);
 
 		/* See which port the client owns, and check
 		   whether it's the one that just appeared */
@@ -469,7 +462,7 @@ lashd_jackdbus_mgr_new_client_port(jack_mgr_client_t *client,
 
 		/* Check if the patch's other port belongs to a client */
 		if (!uuid_is_null(*other_id))
-			other_client = jack_mgr_client_find_by_id(g_jack_mgr_ptr->clients,
+			other_client = jack_mgr_client_find_by_id(&g_jack_mgr_ptr->clients,
 			                                          *other_id);
 		else
 			other_client = NULL;
@@ -548,7 +541,7 @@ lashd_jackdbus_mgr_ports_connected(dbus_uint64_t  client1_id,
 {
 	jack_mgr_client_t *client;
 
-	client = jack_mgr_client_find_by_jackdbus_id(g_jack_mgr_ptr->clients,
+	client = jack_mgr_client_find_by_jackdbus_id(&g_jack_mgr_ptr->clients,
 	                                             client1_id);
 	if (client)
 	{
@@ -560,7 +553,7 @@ lashd_jackdbus_mgr_ports_connected(dbus_uint64_t  client1_id,
 		lashd_jackdbus_mgr_check_connection(client, client1_id, client2_id);
 	}
 
-	client = jack_mgr_client_find_by_jackdbus_id(g_jack_mgr_ptr->clients,
+	client = jack_mgr_client_find_by_jackdbus_id(&g_jack_mgr_ptr->clients,
 	                                             client2_id);
 	if (client)
 	{
@@ -584,13 +577,13 @@ lashd_jackdbus_mgr_ports_disconnected(
 {
 	jack_mgr_client_t *client;
 
-	client = jack_mgr_client_find_by_jackdbus_id(g_jack_mgr_ptr->clients, client1_id);
+	client = jack_mgr_client_find_by_jackdbus_id(&g_jack_mgr_ptr->clients, client1_id);
 	if (client)
 	{
 		lashd_jackdbus_mgr_check_connection(client, client1_id, client2_id);
 	}
 
-	client = jack_mgr_client_find_by_jackdbus_id(g_jack_mgr_ptr->clients, client2_id);
+	client = jack_mgr_client_find_by_jackdbus_id(&g_jack_mgr_ptr->clients, client2_id);
 	if (client)
 	{
 		lashd_jackdbus_mgr_check_connection(client, client1_id, client2_id);
@@ -656,8 +649,8 @@ lashd_jackdbus_handle_patchbay_signal(
 		}
 
 		/* Check if the new port belongs to a known client */
-		client = jack_mgr_client_find_by_jackdbus_id(g_jack_mgr_ptr->clients, client1_id);
-		if (client && client->old_patches)
+		client = jack_mgr_client_find_by_jackdbus_id(&g_jack_mgr_ptr->clients, client1_id);
+		if (client && !list_empty(&client->old_patches))
 		{
 			lashd_jackdbus_mgr_new_client_port(client, client1_name, port1_name);
 		}
@@ -884,7 +877,7 @@ lashd_jackdbus_mgr_check_patches(jack_mgr_client_t *client,
 	jack_mgr_client_t *other_client;
 	const char *other_client_name;
 	const char *this_port_name, *other_port_name;
-	lash_list_t *node;
+	struct list_head *node, *next;
 	jack_patch_t *patch;
 	uuid_t *uuid_ptr;
 	char *name, *this_port, *that_port;
@@ -912,7 +905,7 @@ lashd_jackdbus_mgr_check_patches(jack_mgr_client_t *client,
 	// TODO: Perhaps find out the "other client" beforehand and pass its
 	//       pointer to us?
 	other_client =
-	  jack_mgr_client_find_by_jackdbus_id(g_jack_mgr_ptr->clients,
+	  jack_mgr_client_find_by_jackdbus_id(&g_jack_mgr_ptr->clients,
 	                                      other_id);
 	if (other_client) {
 		other_client_name = NULL;
@@ -923,9 +916,8 @@ lashd_jackdbus_mgr_check_patches(jack_mgr_client_t *client,
 			other_client_name = client2_name;
 	}
 
-	for (node = client->old_patches; node;) {
-		patch = (jack_patch_t *) node->data;
-		node = lash_list_next(node);
+	list_for_each_safe (node, next, &client->old_patches) {
+		patch = list_entry(node, jack_patch_t, siblings);
 
 		uuid_ptr = NULL;
 		name = NULL;
@@ -961,11 +953,10 @@ lashd_jackdbus_mgr_check_patches(jack_mgr_client_t *client,
 		           "of client '%s'; removing from list", client1_name,
 		           port1_name, client2_name, port2_name, client->name);
 
-		client->old_patches = lash_list_remove(client->old_patches,
-		                                       patch);
+		list_del(&patch->siblings);
 		jack_patch_destroy(patch);
 #ifdef LASH_DEBUG
-		if (!client->old_patches)
+		if (list_empty(&client->old_patches))
 			lash_debug("All old patches of client '%s' have "
 			           "now been connected", client->name);
 #endif
@@ -1034,7 +1025,7 @@ lashd_jackdbus_mgr_get_client_data(jack_mgr_client_t *client)
 		goto fail;
 	}
 
-	if (!client->old_patches) {
+	if (list_empty(&client->old_patches)) {
 		lash_debug("Client '%s' has no old patches to check",
 		           client->name);
 		return true;
@@ -1109,44 +1100,43 @@ fail:
 	return false;
 }
 
-void
-lashd_jackdbus_mgr_remove_client(lashd_jackdbus_mgr_t  *mgr,
-                                 uuid_t                 id,
-                                 lash_list_t          **backup_patches)
+bool
+lashd_jackdbus_mgr_remove_client(lashd_jackdbus_mgr_t *mgr,
+                                 uuid_t                id,
+                                 struct list_head     *backup_patches)
 {
 	jack_mgr_client_t *client;
 
-	client = jack_mgr_client_find_by_id(mgr->clients, id);
+	client = jack_mgr_client_find_by_id(&mgr->clients, id);
 	if (!client) {
 		lash_error("Unknown client");
-		return;
+		return false;
 	}
 
 	lash_debug("Removing client '%s'", client->name);
 
-	mgr->clients = lash_list_remove(mgr->clients, client);
+	list_del(&client->siblings);
 
-	if (backup_patches) {
-		*backup_patches = client->backup_patches;
-		client->backup_patches = NULL;
-	}
+	if (backup_patches)
+		list_splice(&client->backup_patches, backup_patches);
 
 	jack_mgr_client_destroy(client);
+
+	return true;
 }
 
-/* Return a list of the given client's patches. */
-lash_list_t *
+bool
 lashd_jackdbus_mgr_get_client_patches(lashd_jackdbus_mgr_t *mgr,
-                                      uuid_t                id)
+                                      uuid_t                id,
+                                      struct list_head     *dest)
 {
 	if (!mgr) {
 		lash_error("JACK manager pointer is NULL");
-		return NULL;
+		return false;
 	}
 
 	jack_mgr_client_t *client, *other_client;
 	jack_patch_t *patch;
-	lash_list_t *patches = NULL;
 	DBusMessageIter iter, array_iter, struct_iter;
 	dbus_uint64_t client1_id, client2_id, other_id;
 	const char *client1_name, *port1_name, *client2_name, *port2_name, *other_name;
@@ -1155,15 +1145,15 @@ lashd_jackdbus_mgr_get_client_patches(lashd_jackdbus_mgr_t *mgr,
 
 	if (!mgr->graph) {
 		lash_error("Cannot find graph");
-		return NULL;
+		return false;
 	}
 
-	client = jack_mgr_client_find_by_id(mgr->clients, id);
+	client = jack_mgr_client_find_by_id(&mgr->clients, id);
 	if (!client) {
 		char id_str[37];
 		uuid_unparse(id, id_str);
 		lash_error("Cannot find client %s", id_str);
-		return NULL;
+		return false;
 	}
 
 	lash_debug("Getting patches for client '%s'", client->name);
@@ -1226,7 +1216,7 @@ lashd_jackdbus_mgr_get_client_patches(lashd_jackdbus_mgr_t *mgr,
 		}
 
 		other_client =
-		  jack_mgr_client_find_by_jackdbus_id(mgr->clients, other_id);
+		  jack_mgr_client_find_by_jackdbus_id(&mgr->clients, other_id);
 
 		if (other_client) {
 			other_uuid = &other_client->id;
@@ -1266,24 +1256,24 @@ lashd_jackdbus_mgr_get_client_patches(lashd_jackdbus_mgr_t *mgr,
 
 		//lash_info("Adding patch %s:%s -> %s:%s", patch->src_client, patch->src_port, patch->dest_client, patch->dest_port);
 
-		patches = lash_list_append(patches, patch);
+		list_add_tail(&patch->siblings, dest);
 
 		dbus_message_iter_next(&array_iter);
 	}
 
 	/* Make a fresh backup of the newly acquired patch list */
-	jack_mgr_client_free_patch_list(client->backup_patches);
-	client->backup_patches = (patches
-	                          ? jack_mgr_client_dup_patch_list(patches)
-	                          : NULL);
+	jack_mgr_client_free_patch_list(&client->backup_patches);
+	INIT_LIST_HEAD(&client->backup_patches);
+	if (!list_empty(dest))
+		jack_mgr_client_dup_patch_list(dest, &client->backup_patches);
 
-	return patches;
+	return true;
 
 fail:
 	/* If we're here there was something rotten in the graph message,
 	   we should remove it */
 	lashd_jackdbus_mgr_graph_free();
-	return NULL;
+	return false;
 
 }
 

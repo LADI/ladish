@@ -32,7 +32,17 @@
 jack_mgr_client_t *
 jack_mgr_client_new(void)
 {
-	return lash_calloc(1, sizeof(jack_mgr_client_t));
+	jack_mgr_client_t *client;
+
+	if ((client = lash_calloc(1, sizeof(jack_mgr_client_t)))) {
+		INIT_LIST_HEAD(&client->old_patches);
+		INIT_LIST_HEAD(&client->backup_patches);
+#ifndef HAVE_JACK_DBUS
+		INIT_LIST_HEAD(&client->patches);
+#endif
+	}
+
+	return client;
 }
 
 void
@@ -40,52 +50,47 @@ jack_mgr_client_destroy(jack_mgr_client_t *client)
 {
 	if (client) {
 		lash_free(&client->name);
-		jack_mgr_client_free_patch_list(client->old_patches);
-		jack_mgr_client_free_patch_list(client->backup_patches);
+		jack_mgr_client_free_patch_list(&client->old_patches);
+		jack_mgr_client_free_patch_list(&client->backup_patches);
 #ifndef HAVE_JACK_DBUS
-		jack_mgr_client_free_patch_list(client->patches);
+		jack_mgr_client_free_patch_list(&client->patches);
 #endif
 		free(client);
 	}
 }
 
-lash_list_t *
-jack_mgr_client_dup_patch_list(lash_list_t *patch_list)
+void
+jack_mgr_client_dup_patch_list(struct list_head *src,
+                               struct list_head *dest)
 {
-	lash_list_t *node, *new_list = NULL;
-	jack_patch_t *new_patch;
+	struct list_head *node;
+	jack_patch_t *patch;
 
-	for (node = patch_list; node; node = lash_list_next(node)) {
-		new_patch = jack_patch_dup((jack_patch_t *) node->data);
-		new_list = lash_list_append(new_list, new_patch);
+	list_for_each(node, src) {
+		patch = jack_patch_dup(list_entry(node, jack_patch_t, siblings));
+		list_add_tail(&patch->siblings, dest);
 	}
-
-	return new_list;
 }
 
 void
-jack_mgr_client_free_patch_list(lash_list_t *patch_list)
+jack_mgr_client_free_patch_list(struct list_head *patch_list)
 {
-	if (patch_list) {
-		lash_list_t *node;
+	struct list_head *node, *next;
 
-		for (node = patch_list; node; node = lash_list_next(node))
-			jack_patch_destroy((jack_patch_t *) node->data);
-
-		lash_list_free(patch_list);
-	}
+	list_for_each_safe(node, next, patch_list)
+		jack_patch_destroy(list_entry(node, jack_patch_t, siblings));
 }
 
 jack_mgr_client_t *
-jack_mgr_client_find_by_id(lash_list_t *client_list,
-                           uuid_t       id)
+jack_mgr_client_find_by_id(struct list_head *client_list,
+                           uuid_t            id)
 {
 	if (client_list) {
-		lash_list_t *node;
+		struct list_head *node;
 		jack_mgr_client_t *client;
 
-		for (node = client_list; node; node = lash_list_next(node)) {
-			client = (jack_mgr_client_t *) node->data;
+		list_for_each (node, client_list) {
+			client = list_entry(node, jack_mgr_client_t, siblings);
 
 			if (uuid_compare(id, client->id) == 0)
 				return client;
@@ -98,15 +103,15 @@ jack_mgr_client_find_by_id(lash_list_t *client_list,
 #ifdef HAVE_JACK_DBUS
 
 jack_mgr_client_t *
-jack_mgr_client_find_by_jackdbus_id(lash_list_t   *client_list,
-                                    dbus_uint64_t  id)
+jack_mgr_client_find_by_jackdbus_id(struct list_head   *client_list,
+                                    dbus_uint64_t       id)
 {
 	if (client_list) {
-		lash_list_t *node;
+		struct list_head *node;
 		jack_mgr_client_t *client;
 
-		for (node = client_list; node; node = lash_list_next(node)) {
-			client = (jack_mgr_client_t *) node->data;
+		list_for_each (node, client_list) {
+			client = list_entry(node, jack_mgr_client_t, siblings);
 
 			if (client->jackdbus_id == id)
 				return client;
@@ -118,32 +123,34 @@ jack_mgr_client_find_by_jackdbus_id(lash_list_t   *client_list,
 
 #else /* !HAVE_JACK_DBUS */
 
-lash_list_t *
-jack_mgr_client_dup_uniq_patches(lash_list_t *jack_mgr_clients,
-                                 uuid_t       client_id)
+void
+jack_mgr_client_dup_uniq_patches(struct list_head *jack_mgr_clients,
+                                 uuid_t            client_id,
+                                 struct list_head *dest)
 {
 	jack_mgr_client_t *client;
-	lash_list_t *node, *uniq_node, *patches, *uniq_patches = NULL;
+	struct list_head *node, *next, *node2;
 	jack_patch_t *patch, *uniq_patch;
+
+	LIST_HEAD(patches);
 
 	client = jack_mgr_client_find_by_id(jack_mgr_clients, client_id);
 	if (!client) {
 		char id_str[37];
 		uuid_unparse(client_id, id_str);
 		lash_error("Unknown client %s", id_str);
-		return NULL;
+		return;
 	}
 
-	patches = jack_mgr_client_dup_patch_list(client->patches);
+	jack_mgr_client_dup_patch_list(&client->patches, &patches);
 
-	for (node = patches; node; node = lash_list_next(node)) {
-		patch = (jack_patch_t *) node->data;
+	list_for_each_safe (node, next, &patches) {
+		patch = list_entry(node, jack_patch_t, siblings);
 
 		jack_patch_set(patch, jack_mgr_clients);
 
-		for (uniq_node = uniq_patches; uniq_node;
-		     uniq_node = lash_list_next(uniq_node)) {
-			uniq_patch = (jack_patch_t *) uniq_node->data;
+		list_for_each (node2, dest) {
+			uniq_patch = list_entry(node2, jack_patch_t, siblings);
 
 			if (strcmp(patch->src_client,
 			           uniq_patch->src_client) == 0
@@ -152,19 +159,16 @@ jack_mgr_client_dup_uniq_patches(lash_list_t *jack_mgr_clients,
 			    && strcmp(patch->dest_client,
 			              uniq_patch->dest_client) == 0
 			    && strcmp(patch->dest_port,
-			              uniq_patch->dest_port) == 0)
-				break;
+			              uniq_patch->dest_port) == 0) {
+				jack_patch_destroy(patch);
+				goto loop;
+			}
 		}
 
-		if (uniq_node)
-			jack_patch_destroy(patch);
-		else
-			uniq_patches = lash_list_append(uniq_patches, patch);
+		list_add_tail(&patch->siblings, dest);
+	loop:
+		continue; /* fix "label at end of compound statement" */
 	}
-
-	lash_list_free(patches);
-
-	return uniq_patches;
 }
 
 #endif

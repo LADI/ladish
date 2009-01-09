@@ -142,8 +142,8 @@ jack_mgr_new(void)
 
 	jack_mgr = lash_malloc(1, sizeof(jack_mgr_t));
 	jack_mgr->quit = 0;
-	jack_mgr->clients = NULL;
-	jack_mgr->foreign_ports = NULL;
+	INIT_LIST_HEAD(&jack_mgr->clients);
+	INIT_LIST_HEAD(&jack_mgr->foreign_ports);
 
 	pthread_mutex_init(&jack_mgr->lock, NULL);
 
@@ -215,12 +215,11 @@ void
 jack_mgr_check_client_ports(jack_mgr_t        *jack_mgr,
                             jack_mgr_client_t *client)
 {
-	lash_list_t *list;
+	struct list_head *node, *next;
 	jack_fport_t *fport;
 
-	for (list = jack_mgr->foreign_ports; list;) {
-		fport = (jack_fport_t *) list->data;
-		list = lash_list_next(list);
+	list_for_each_safe (node, next, &jack_mgr->foreign_ports) {
+		fport = list_entry(node, jack_fport_t, siblings);
 
 		if (strcmp(client->name, fport->client_name) == 0) {
 			lash_debug("Resuming previously foreign port '%s'",
@@ -228,18 +227,17 @@ jack_mgr_check_client_ports(jack_mgr_t        *jack_mgr,
 			jack_mgr_new_client_port(jack_mgr, fport->port_name,
 			                         client);
 
-			jack_mgr->foreign_ports =
-			  lash_list_remove(jack_mgr->foreign_ports, fport);
+			list_del(&fport->siblings);
 			jack_fport_destroy(fport);
 		}
 	}
 }
 
 void
-jack_mgr_add_client(jack_mgr_t  *jack_mgr,
-                    uuid_t       id,
-                    const char  *jack_client_name,
-                    lash_list_t *jack_patches)
+jack_mgr_add_client(jack_mgr_t       *jack_mgr,
+                    uuid_t            id,
+                    const char       *jack_client_name,
+                    struct list_head *jack_patches)
 {
 	jack_mgr_client_t *client;
 
@@ -248,9 +246,9 @@ jack_mgr_add_client(jack_mgr_t  *jack_mgr,
 	if ((client = jack_mgr_client_new())) {
 		uuid_copy(client->id, id);
 		lash_strset(&client->name, jack_client_name);
-		client->old_patches = jack_patches;
+		list_splice_init(jack_patches, &client->old_patches);
 
-		jack_mgr->clients = lash_list_append(jack_mgr->clients, client);
+		list_add_tail(&client->siblings, &jack_mgr->clients);
 
 		/* check if it's registered some ports already */
 		jack_mgr_check_client_ports(jack_mgr, client);
@@ -260,39 +258,38 @@ jack_mgr_add_client(jack_mgr_t  *jack_mgr,
 		lash_error("Failed to add client");
 }
 
-lash_list_t *
-jack_mgr_remove_client(jack_mgr_t *jack_mgr,
-                       uuid_t      id)
+void
+jack_mgr_remove_client(jack_mgr_t       *jack_mgr,
+                       uuid_t            id,
+                       struct list_head *backup_patches)
 {
 	jack_mgr_client_t *client;
-	lash_list_t *backup_patches;
 
 	lash_debug("Removing client");
 
-	client = jack_mgr_client_find_by_id(jack_mgr->clients, id);
+	client = jack_mgr_client_find_by_id(&jack_mgr->clients, id);
 	if (!client) {
 		lash_error("Unknown client");
-		return NULL;
+		return;
 	}
 
-	jack_mgr->clients = lash_list_remove(jack_mgr->clients, client);
+	list_del(&client->siblings);
 
 	lash_debug("Removed client '%s'", client->name);
 
-	backup_patches = client->backup_patches;
-	client->backup_patches = NULL;
+	if (backup_patches)
+		list_splice(&client->backup_patches, backup_patches);
 
 	jack_mgr_client_destroy(client);
-
-	return backup_patches;
 }
 
 /* Return a list of the given client's patches. */
-lash_list_t *
-jack_mgr_get_client_patches(jack_mgr_t *jack_mgr,
-                            uuid_t      id)
+void
+jack_mgr_get_client_patches(jack_mgr_t       *jack_mgr,
+                            uuid_t            id,
+                            struct list_head *dest)
 {
-	return jack_mgr_client_dup_uniq_patches(jack_mgr->clients, id);
+	jack_mgr_client_dup_uniq_patches(&jack_mgr->clients, id, dest);
 }
 
 /* caller must hold client lock */
@@ -300,16 +297,14 @@ static void
 jack_mgr_remove_foreign_port(jack_mgr_t     *jack_mgr,
                              jack_port_id_t  id)
 {
+	struct list_head *node;
 	jack_fport_t *port;
-	lash_list_t *list;
 
-	for (list = jack_mgr->foreign_ports; list;
-	     list = lash_list_next(list)) {
-		port = (jack_fport_t *) list->data;
+	list_for_each (node, &jack_mgr->foreign_ports) {
+		port = list_entry(node, jack_fport_t, siblings);
 
 		if (id == port->id) {
-			jack_mgr->foreign_ports =
-			  lash_list_remove(jack_mgr->foreign_ports, port);
+			list_del(&port->siblings);
 
 			lash_debug("removed foreign port '%s'", port->name);
 			jack_fport_destroy(port);
@@ -347,24 +342,22 @@ jack_mgr_new_client_port(jack_mgr_t        *jack_mgr,
                          const char        *port,
                          jack_mgr_client_t *client)
 {
-	lash_list_t *node;
+	struct list_head *node, *next;
 	jack_patch_t *patch, *unset_patch = NULL;
 
-	for (node = client->old_patches; node;) {
-		patch = (jack_patch_t *) node->data;
-		node = lash_list_next(node);
+	list_for_each_safe (node, next, &client->old_patches) {
+		patch = list_entry(node, jack_patch_t, siblings);
 
 		lash_debug("Checking patch '%s' -> '%s'",
 		           patch->src_desc, patch->dest_desc);
 
 		unset_patch = jack_patch_dup(patch);
 
-		if (!jack_patch_unset(unset_patch, jack_mgr->clients)) {
+		if (!jack_patch_unset(unset_patch, &jack_mgr->clients)) {
 			lash_debug("Could not resume jack patch '%s' -> '%s' "
 			           "as the other client hasn't registered yet",
 			           patch->src_desc, patch->dest_desc);
-			client->old_patches =
-			  lash_list_remove(client->old_patches, patch);
+			list_del(&patch->siblings);
 			jack_patch_destroy(patch);
 			jack_patch_destroy(unset_patch);
 			continue;
@@ -378,8 +371,7 @@ jack_mgr_new_client_port(jack_mgr_t        *jack_mgr,
 			           unset_patch->src_desc,
 			           unset_patch->dest_desc);
 			if (jack_mgr_resume_patch(jack_mgr, unset_patch)) {
-				client->old_patches =
-				  lash_list_remove(client->old_patches, patch);
+				list_del(&patch->siblings);
 				jack_patch_destroy(patch);
 			}
 		}
@@ -395,7 +387,7 @@ jack_mgr_port_notification(jack_mgr_t     *jack_mgr,
 	jack_mgr_client_t *client;
 	jack_port_t *jack_port;
 	char *client_name, *ptr;
-	lash_list_t *list;
+	struct list_head *node;
 
 	/* get the client name */
 	jack_port = jack_port_by_id(jack_mgr->jack_client, port_id);
@@ -413,47 +405,40 @@ jack_mgr_port_notification(jack_mgr_t     *jack_mgr,
 	if (!ptr) {
 		lash_error("Port name '%s' contains no client name/port "
 		           "name separator", client_name);
-		return;
+		goto end;
 	}
 	*ptr = '\0';
 
-	for (list = jack_mgr->clients; list; list = lash_list_next(list)) {
-		client = (jack_mgr_client_t *) list->data;
+	list_for_each (node, &jack_mgr->clients) {
+		client = list_entry(node, jack_mgr_client_t, siblings);
 
-		if (strcmp(client->name, client_name) == 0)
-			break;
+		if (strcmp(client->name, client_name) == 0) {
+			jack_mgr_new_client_port(jack_mgr, ++ptr, client);
+			goto end;
+		}
 	}
 
-	if (!list) {
-		jack_fport_t *fport;
+	jack_fport_t *fport;
 
-		lash_debug("Adding foreign port '%s'",
-		           jack_port_name(jack_port));
-		fport = jack_fport_new(port_id, jack_port_name(jack_port));
+	lash_debug("Adding foreign port '%s'",
+	           jack_port_name(jack_port));
+	fport = jack_fport_new(port_id, jack_port_name(jack_port));
 
-		jack_mgr->foreign_ports =
-		  lash_list_append(jack_mgr->foreign_ports,
-		                   fport);
-
-		return;
-	}
-
-	ptr++;
-	jack_mgr_new_client_port(jack_mgr, ptr, client);
-
+	list_add_tail(&fport->siblings, &jack_mgr->foreign_ports);
+end:
 	free(client_name);
 }
 
-lash_list_t *
-jack_mgr_get_patches_with_type(const char    *client_name,
-                               jack_client_t *jack_client,
-                               int            type_flags)
+static void
+jack_mgr_get_patches_with_type(const char       *client_name,
+                               jack_client_t    *jack_client,
+                               int               type_flags,
+                               struct list_head *dest)
 {
 	jack_patch_t *patch;
 	char *port_name_regex, **port_names, **connected_port_names;
 	jack_port_t *port;
 	int i, j;
-	lash_list_t *list = NULL;
 
 	port_name_regex = lash_malloc(1, strlen(client_name) + 4);
 	sprintf(port_name_regex, "%s:.*", client_name);
@@ -464,7 +449,7 @@ jack_mgr_get_patches_with_type(const char    *client_name,
 	free(port_name_regex);
 
 	if (!port_names)
-		return NULL;
+		return;
 
 	for (i = 0; port_names[i]; i++) {
 		port = jack_port_by_name(jack_client, port_names[i]);
@@ -483,7 +468,7 @@ jack_mgr_get_patches_with_type(const char    *client_name,
 			if (type_flags & JackPortIsInput)
 				jack_patch_switch_clients(patch);
 
-			list = lash_list_append(list, patch);
+			list_add_tail(&patch->siblings, dest);
 			lash_debug("Found patch: '%s' -> '%s'",
 			           patch->src_desc, patch->dest_desc);
 		}
@@ -492,47 +477,48 @@ jack_mgr_get_patches_with_type(const char    *client_name,
 	}
 
 /*  free (port_names); */
-
-	return list;
 }
 
 static void
 jack_mgr_get_patches(jack_mgr_t        *jack_mgr,
                      jack_mgr_client_t *client)
 {
-	lash_list_t *patches;
+	LIST_HEAD(patches);
 
-	patches = jack_mgr_get_patches_with_type(client->name,
-	                                         jack_mgr->jack_client,
-	                                         JackPortIsInput);
+	jack_mgr_get_patches_with_type(client->name,
+	                               jack_mgr->jack_client,
+	                               JackPortIsOutput,
+	                               &patches);
 
-	jack_mgr_client_free_patch_list(client->patches);
-	client->patches = patches;
+	if (!list_empty(&client->patches)) {
+		jack_mgr_client_free_patch_list(&client->patches);
+		INIT_LIST_HEAD(&client->patches);
+	}
+	list_splice_init(&patches, &client->patches);
 
-	patches = jack_mgr_get_patches_with_type(client->name,
-	                                         jack_mgr->jack_client,
-	                                         JackPortIsOutput);
+	jack_mgr_get_patches_with_type(client->name,
+	                               jack_mgr->jack_client,
+	                               JackPortIsInput,
+	                               &patches);
 
-	client->patches = lash_list_concat(client->patches, patches);
+	list_splice(&patches, &client->patches);
 }
 
 static void
 jack_mgr_check_foreign_ports(jack_mgr_t *jack_mgr)
 {
-	lash_list_t *list;
+	struct list_head *node, *next;
 	jack_fport_t *fport;
 	jack_port_t *port;
 
-	for (list = jack_mgr->foreign_ports; list;) {
-		fport = (jack_fport_t *) list->data;
-		list = lash_list_next(list);
+	list_for_each_safe (node, next, &jack_mgr->foreign_ports) {
+		fport = list_entry(node, jack_fport_t, siblings);
 
 		port = jack_port_by_id(jack_mgr->jack_client,
 		                       fport->id);
 
 		if (!port) {
-			jack_mgr->foreign_ports =
-			  lash_list_remove(jack_mgr->foreign_ports, fport);
+			list_del(&fport->siblings);
 			lash_debug("Removed foreign port '%s'", fport->name);
 
 			jack_fport_destroy(fport);
@@ -543,11 +529,11 @@ jack_mgr_check_foreign_ports(jack_mgr_t *jack_mgr)
 static void
 jack_mgr_graph_reorder_notification(jack_mgr_t *jack_mgr)
 {
-	lash_list_t *list;
+	struct list_head *node;
 	jack_mgr_client_t *client;
 
-	for (list = jack_mgr->clients; list; list = lash_list_next(list)) {
-		client = (jack_mgr_client_t *) list->data;
+	list_for_each (node, &jack_mgr->clients) {
+		client = list_entry(node, jack_mgr_client_t, siblings);
 
 		jack_mgr_get_patches(jack_mgr, client);
 	}
@@ -594,26 +580,24 @@ jack_mgr_backup_patches(jack_mgr_t *jack_mgr)
 {
 	static time_t last_backup = 0;
 	time_t now;
-	lash_list_t *list, *patches;
+	struct list_head *node, *node2;
 	jack_mgr_client_t *client;
-	jack_patch_t *patch;
 
 	now = time(NULL);
 
 	if (now - last_backup < BACKUP_INTERVAL)
 		return;
 
-	for (list = jack_mgr->clients; list; list = lash_list_next(list)) {
-		client = (jack_mgr_client_t *) list->data;
+	list_for_each (node, &jack_mgr->clients) {
+		client = list_entry(node, jack_mgr_client_t, siblings);
 
-		jack_mgr_client_free_patch_list(client->backup_patches);
-		client->backup_patches = jack_mgr_client_dup_patch_list(client->patches);
+		jack_mgr_client_free_patch_list(&client->backup_patches);
+		INIT_LIST_HEAD(&client->backup_patches);
+		jack_mgr_client_dup_patch_list(&client->patches, &client->backup_patches);
 
-		for (patches = client->backup_patches; patches;
-		     patches = lash_list_next(patches)) {
-			patch = (jack_patch_t *) patches->data;
-
-			jack_patch_set(patch, jack_mgr->clients);
+		list_for_each (node2, &client->backup_patches) {
+			jack_patch_set(list_entry(node2, jack_patch_t, siblings),
+			               &jack_mgr->clients);
 		}
 	}
 

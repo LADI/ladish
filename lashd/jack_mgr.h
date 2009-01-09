@@ -26,7 +26,7 @@
 #include <uuid/uuid.h>
 #include <jack/jack.h>
 
-#include "common/list.h"
+#include "common/klist.h"
 
 #include "types.h"
 
@@ -37,8 +37,8 @@ struct _jack_mgr
 	pthread_t        callback_thread;
 	int              callback_write_socket;
 	int              callback_read_socket;
-	lash_list_t     *clients;
-	lash_list_t     *foreign_ports;
+	struct list_head clients;
+	struct list_head foreign_ports;
 	int              quit;
 };
 
@@ -55,17 +55,19 @@ void
 jack_mgr_unlock(jack_mgr_t *jack_mgr);
 
 void
-jack_mgr_add_client(jack_mgr_t  *jack_mgr,
-                    uuid_t       id,
-                    const char  *jack_client_name,
-                    lash_list_t *jack_patches);
+jack_mgr_add_client(jack_mgr_t       *jack_mgr,
+                    uuid_t            id,
+                    const char       *jack_client_name,
+                    struct list_head *jack_patches);
 
-lash_list_t *
-jack_mgr_remove_client(jack_mgr_t *jack_mgr,
-                       uuid_t      id);
+void
+jack_mgr_remove_client(jack_mgr_t       *jack_mgr,
+                       uuid_t            id,
+                       struct list_head *backup_patches);
 
-lash_list_t *
-jack_mgr_get_client_patches(jack_mgr_t *jack_mgr,
-                            uuid_t      id);
+void
+jack_mgr_get_client_patches(jack_mgr_t       *jack_mgr,
+                            uuid_t            id,
+                            struct list_head *dest);
 
 #endif /* __LASHD_JACK_MGR_H__ */

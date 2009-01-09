@@ -30,7 +30,7 @@
 # include <alsa/asoundlib.h>
 
 # include "types.h"
-# include "common/list.h"
+# include "common/klist.h"
 
 struct _alsa_mgr
 {
@@ -40,8 +40,8 @@ struct _alsa_mgr
 
   pthread_t        event_thread;
   
-  lash_list_t *     clients;
-  lash_list_t *     foreign_ports;
+  struct list_head clients;
+  struct list_head foreign_ports;
 };
 
 alsa_mgr_t * alsa_mgr_new     (void);
@@ -50,9 +50,11 @@ void         alsa_mgr_destroy (alsa_mgr_t * alsa_mgr);
 void         alsa_mgr_add_client         (alsa_mgr_t * alsa_mgr,
                                           uuid_t id,
                                           unsigned char alsa_client_id,
-                                          lash_list_t * alsa_patches);
-lash_list_t * alsa_mgr_remove_client      (alsa_mgr_t * alsa_mgr, uuid_t id);
-lash_list_t * alsa_mgr_get_client_patches (alsa_mgr_t * alsa_mgr, uuid_t id);
+                                          struct list_head * alsa_patches);
+void         alsa_mgr_remove_client      (alsa_mgr_t * alsa_mgr, uuid_t id,
+                                          struct list_head * backup_patches);
+void         alsa_mgr_get_client_patches (alsa_mgr_t * alsa_mgr, uuid_t id,
+                                          struct list_head * dest);
 
 void alsa_mgr_lock (alsa_mgr_t * alsa_mgr);
 void alsa_mgr_unlock (alsa_mgr_t * alsa_mgr);

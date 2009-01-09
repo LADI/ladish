@@ -30,19 +30,20 @@
 # include <dbus/dbus.h>
 #endif
 
-#include "common/list.h"
+#include "common/klist.h"
 #include "lashd/types.h"
 
 struct _jack_mgr_client
 {
-	char          *name;
-	uuid_t         id;
-	lash_list_t   *old_patches;
-	lash_list_t   *backup_patches;
+	struct list_head  siblings;
+	char             *name;
+	uuid_t            id;
+	struct list_head  old_patches;
+	struct list_head  backup_patches;
 #ifndef HAVE_JACK_DBUS
-	lash_list_t   *patches;
+	struct list_head  patches;
 #else
-	dbus_uint64_t  jackdbus_id;
+	dbus_uint64_t     jackdbus_id;
 #endif
 };
 
@@ -52,27 +53,29 @@ jack_mgr_client_new(void);
 void
 jack_mgr_client_destroy(jack_mgr_client_t *client);
 
-lash_list_t *
-jack_mgr_client_dup_patch_list(lash_list_t *patch_list);
+void
+jack_mgr_client_dup_patch_list(struct list_head *src,
+                               struct list_head *dest);
 
 void
-jack_mgr_client_free_patch_list(lash_list_t *patch_list);
+jack_mgr_client_free_patch_list(struct list_head *patch_list);
 
 jack_mgr_client_t *
-jack_mgr_client_find_by_id(lash_list_t *client_list,
-                           uuid_t       id);
+jack_mgr_client_find_by_id(struct list_head *client_list,
+                           uuid_t            id);
 
 #ifdef HAVE_JACK_DBUS
 
 jack_mgr_client_t *
-jack_mgr_client_find_by_jackdbus_id(lash_list_t   *client_list,
-                                    dbus_uint64_t  id);
+jack_mgr_client_find_by_jackdbus_id(struct list_head *client_list,
+                                    dbus_uint64_t     id);
 
 #else /* !HAVE_JACK_DBUS */
 
-lash_list_t *
-jack_mgr_client_dup_uniq_patches(lash_list_t *jack_mgr_clients,
-                                 uuid_t       client_id);
+void
+jack_mgr_client_dup_uniq_patches(struct list_head *jack_mgr_clients,
+                                 uuid_t            client_id,
+                                 struct list_head *dest);
 
 #endif
 

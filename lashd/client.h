@@ -32,7 +32,6 @@
 #include "common/klist.h"
 
 #include "lash/types.h"
-#include "common/list.h"
 
 #include "types.h"
 
@@ -59,9 +58,9 @@ struct _client
 	uint8_t                 task_progress;
 
 	char                   *jack_client_name;
-	lash_list_t *           jack_patches;
+	struct list_head        jack_patches;
 	unsigned char           alsa_client_id;
-	lash_list_t            *alsa_patches;
+	struct list_head        alsa_patches;
 
 	struct list_head        dependencies;
 	struct list_head        unsatisfied_deps;

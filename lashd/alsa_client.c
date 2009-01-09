@@ -34,36 +34,25 @@ void
 alsa_client_init(alsa_client_t * client)
 {
 	client->client_id = 0;
-	client->patches = NULL;
-	client->old_patches = NULL;
-	client->backup_patches = NULL;
+	INIT_LIST_HEAD(&client->patches);
+	INIT_LIST_HEAD(&client->old_patches);
+	INIT_LIST_HEAD(&client->backup_patches);
 
 	uuid_clear(client->id);
 }
 
 static void
-alsa_client_free_patch_list(lash_list_t ** list_ptr)
+alsa_client_free_patch_list(struct list_head * list)
 {
-	lash_list_t *list;
-	alsa_patch_t *patch;
-
-	for (list = *list_ptr; list; list = lash_list_next(list)) {
-		patch = (alsa_patch_t *) list->data;
-		if (!patch) {
-			lash_debug("NULL patch!");
-		} else
-			alsa_patch_destroy(patch);
-	}
-
-	lash_list_free(*list_ptr);
-
-	*list_ptr = NULL;
+	struct list_head *node, *next;
+	list_for_each_safe (node, next, list)
+		alsa_patch_destroy(list_entry(node, alsa_patch_t, siblings));
 }
 
 void
 alsa_client_free_patches(alsa_client_t * client)
 {
-	if (!client->patches)
+	if (list_empty(&client->patches))
 		return;
 
 	alsa_client_free_patch_list(&client->patches);
@@ -72,7 +61,7 @@ alsa_client_free_patches(alsa_client_t * client)
 void
 alsa_client_free_backup_patches(alsa_client_t * client)
 {
-	if (!client->backup_patches)
+	if (list_empty(&client->backup_patches))
 		return;
 
 	alsa_client_free_patch_list(&client->backup_patches);
@@ -89,6 +78,7 @@ alsa_client_free(alsa_client_t * client)
 {
 	alsa_client_free_patches(client);
 	alsa_client_free_old_patches(client);
+	alsa_client_free_backup_patches(client);
 }
 
 alsa_client_t *
@@ -120,24 +110,22 @@ alsa_client_set_client_id(alsa_client_t * client, unsigned char id)
 	client->client_id = id;
 }
 
-lash_list_t *
-alsa_client_dup_patches(const alsa_client_t * client)
+void
+alsa_client_dup_patches(const alsa_client_t * client, struct list_head * dest)
 {
-	lash_list_t *list = NULL, *exlist;
+	struct list_head *node;
 	alsa_patch_t *patch;
 
-	for (exlist = client->patches; exlist; exlist = lash_list_next(exlist)) {
-		patch = alsa_patch_dup((alsa_patch_t *) exlist->data);
-		list = lash_list_append(list, patch);
+	list_for_each (node, &client->patches) {
+		patch = alsa_patch_dup(list_entry(node, alsa_patch_t, siblings));
+		list_add_tail(&patch->siblings, dest);
 	}
-
-	return list;
 }
 
-lash_list_t *
+struct list_head *
 alsa_client_get_patches(alsa_client_t * client)
 {
-	return client->patches;
+	return &client->patches;
 }
 
 unsigned char

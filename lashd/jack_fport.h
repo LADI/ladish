@@ -24,14 +24,16 @@
 
 #include <jack/jack.h>
 
+#include "common/klist.h"
 #include "lashd/types.h"
 
 struct _jack_fport
 {
-	jack_port_id_t  id;
-	char           *name;
-	char           *client_name;
-	char           *port_name;
+	struct list_head  siblings;
+	jack_port_id_t    id;
+	char             *name;
+	char             *client_name;
+	char             *port_name;
 };
 
 jack_fport_t *
