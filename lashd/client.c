@@ -353,7 +353,7 @@ client_maybe_fill_class(
 	snd_seq_client_info_alloca(&client_info_ptr);
 #endif
 
-	if (client_ptr->class[0] != '\0')
+	if (client_ptr->class && client_ptr->class[0] != '\0')
 	{
 		/* no need to fill class */
 		return;
