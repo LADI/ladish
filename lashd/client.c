@@ -343,47 +343,38 @@ client_parse_xml(project_t  *project,
 }
 
 void
-client_maybe_fill_class(
-	client_t * client_ptr)
+client_maybe_fill_class(client_t *client)
 {
-	const char * client_name;
+	const char *name;
 #ifdef HAVE_ALSA
-	snd_seq_client_info_t * client_info_ptr;
+	snd_seq_client_info_t *info;
 
-	snd_seq_client_info_alloca(&client_info_ptr);
+	snd_seq_client_info_alloca(&info);
 #endif
 
-	if (client_ptr->class && client_ptr->class[0] != '\0')
-	{
-		/* no need to fill class */
-		return;
-	}
+	if (client->class && client->class[0])
+		return; /* no need to fill class */
 
 	lash_info("Client class string is empty");
-	lash_info("JACK client name '%s'", client_ptr->jack_client_name);
-	lash_info("ALSA ID %u", client_ptr->alsa_client_id);
+	lash_info("JACK client name '%s'", client->jack_client_name);
+	lash_info("ALSA ID %u", client->alsa_client_id);
 
-	client_name = NULL;
+	name = NULL;
 
-	if (client_ptr->jack_client_name != NULL &&
-	    client_ptr->jack_client_name[0] != '\0')
-	{
-		client_name = client_ptr->jack_client_name;
-	}
+	if (client->jack_client_name && client->jack_client_name[0])
+		name = client->jack_client_name;
 
 #ifdef HAVE_ALSA
-	if (client_ptr->alsa_client_id != 0 &&
-	    snd_seq_get_any_client_info(g_server->alsa_mgr->seq, client_ptr->alsa_client_id, client_info_ptr) >= 0)
-	{
-		client_name = snd_seq_client_info_get_name(client_info_ptr);
-	}
+	if (client->alsa_client_id != 0
+	    && snd_seq_get_any_client_info(g_server->alsa_mgr->seq,
+	                                   client->alsa_client_id, info) >= 0)
+		name = snd_seq_client_info_get_name(info);
 #endif
 
-	if (client_name != NULL)
-	{
-		lash_info("Changing client class and name to '%s'", client_name);
-		lash_strset(&client_ptr->class, client_name);
-		project_rename_client(client_ptr->project, client_ptr, client_name);
+	if (name) {
+		lash_info("Changing client class and name to '%s'", name);
+		lash_strset(&client->class, name);
+		project_rename_client(client->project, client, name);
 	}
 }
 

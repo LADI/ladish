@@ -114,7 +114,6 @@ client_parse_xml(project_t  *project,
                  xmlNodePtr  parent);
 
 void
-client_maybe_fill_class(
-	client_t * client_ptr);
+client_maybe_fill_class(client_t *client);
 
 #endif /* __LASHD_CLIENT_H__ */
