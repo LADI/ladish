@@ -121,6 +121,25 @@ jack_mgr_client_find_by_jackdbus_id(struct list_head   *client_list,
 	return NULL;
 }
 
+jack_mgr_client_t *
+jack_mgr_client_find_by_pid(struct list_head *client_list,
+                            pid_t             pid)
+{
+	if (client_list) {
+		struct list_head *node;
+		jack_mgr_client_t *client;
+
+		list_for_each (node, client_list) {
+			client = list_entry(node, jack_mgr_client_t, siblings);
+
+			if (client->pid == pid)
+				return client;
+		}
+	}
+
+	return NULL;
+}
+
 #else /* !HAVE_JACK_DBUS */
 
 void

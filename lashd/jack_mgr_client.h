@@ -24,6 +24,7 @@
 
 #include "../config.h"
 
+#include <sys/types.h>
 #include <uuid/uuid.h>
 
 #ifdef HAVE_JACK_DBUS
@@ -44,6 +45,7 @@ struct _jack_mgr_client
 	struct list_head  patches;
 #else
 	dbus_uint64_t     jackdbus_id;
+	pid_t             pid; /**< Client PID. */
 #endif
 };
 
@@ -69,6 +71,15 @@ jack_mgr_client_find_by_id(struct list_head *client_list,
 jack_mgr_client_t *
 jack_mgr_client_find_by_jackdbus_id(struct list_head *client_list,
                                     dbus_uint64_t     id);
+
+/** Find a JACK client in \a client_list whose PID matches \a pid.
+ * @param client_list List of type \ref jack_mgr_client_t.
+ * @param pid PID to search for.
+ * @return Pointer to JACK client, or NULL if no matches were found.
+ */
+jack_mgr_client_t *
+jack_mgr_client_find_by_pid(struct list_head *client_list,
+                            pid_t             pid);
 
 #else /* !HAVE_JACK_DBUS */
 

@@ -31,6 +31,7 @@
 struct _lashd_jackdbus_mgr
 {
 	struct list_head  clients;
+	struct list_head  unknown_clients; /**< List of JACK clients not known to be LASH clients. */
 	DBusMessage      *graph;
 	dbus_uint64_t     graph_version;
 };
@@ -45,6 +46,16 @@ bool
 lashd_jackdbus_mgr_remove_client(lashd_jackdbus_mgr_t *mgr,
                                  uuid_t                id,
                                  struct list_head     *backup_patches);
+
+/** Bind (associate) an unknown JACK client with a known LASH client.
+ * After this function has executed the JACK client pointed to by \a client
+ * will be treated as belonging to the LASH client pointed to by \a lash_client.
+ * @param client Pointer to JACK client to associate with \a lash_client.
+ * @param lash_client Pointer to LASH client to associate with \a client.
+ */
+void
+lashd_jackdbus_mgr_bind_client(jack_mgr_client_t *client,
+                               client_t          *lash_client);
 
 /** Find client with UUID @a id in jackdbus manager @a mgr and append its
  * patches to @a list. \a list must be properly initialized before calling.

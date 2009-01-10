@@ -520,6 +520,13 @@ server_add_client(server_t    *server,
 		project_new_client(project, client);
 	}
 
+#ifdef HAVE_JACK_DBUS
+	/* Try to find an unknown JACK client whose PID matches the newly
+	   added LASH client's, if succesful bind them together */
+	jack_mgr_client_t *jack_client;
+	if ((jack_client = jack_mgr_client_find_by_pid(&(server->jackdbus_mgr->unknown_clients), pid)))
+		lashd_jackdbus_mgr_bind_client(jack_client, client);
+#endif
 
 	return client;
 }

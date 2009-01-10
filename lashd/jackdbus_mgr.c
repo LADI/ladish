@@ -86,6 +86,19 @@ lashd_jackdbus_mgr_new(server_t *server)
 	                   ",sender='" JACKDBUS_SERVICE "'"
 	                   ",path='" JACKDBUS_OBJECT "'"
 	                   ",interface='" JACKDBUS_IFACE_PATCHBAY "'"
+	                   ",member='ClientDisappeared'",
+	                   &err);
+	if (dbus_error_is_set(&err)) {
+		lash_error("Failed to add D-Bus match rule: %s", err.message);
+		dbus_error_free(&err);
+		goto fail;
+	}
+
+	dbus_bus_add_match(server->dbus_service->connection,
+	                   "type='signal'"
+	                   ",sender='" JACKDBUS_SERVICE "'"
+	                   ",path='" JACKDBUS_OBJECT "'"
+	                   ",interface='" JACKDBUS_IFACE_PATCHBAY "'"
 	                   ",member='PortAppeared'",
 	                   &err);
 	if (dbus_error_is_set(&err)) {
@@ -164,6 +177,7 @@ lashd_jackdbus_mgr_new(server_t *server)
 	}
 
 	INIT_LIST_HEAD(&mgr->clients);
+	INIT_LIST_HEAD(&mgr->unknown_clients);
 	g_jack_mgr_ptr = mgr;
 	return mgr;
 
@@ -188,10 +202,43 @@ lashd_jackdbus_mgr_destroy(lashd_jackdbus_mgr_t *mgr)
 {
 	if (mgr) {
 		// TODO: destroy mgr->clients
+		struct list_head *node, *next;
+		list_for_each_safe (node, next, &mgr->unknown_clients)
+			jack_mgr_client_destroy(list_entry(node, jack_mgr_client_t, siblings));
 		lashd_jackdbus_mgr_graph_free();
 		free(mgr);
 		g_jack_mgr_ptr = NULL;
 	}
+}
+
+void
+lashd_jackdbus_mgr_bind_client(jack_mgr_client_t *client,
+                               client_t          *lash_client)
+{
+	lash_debug("Associating previously unknown JACK client '%s' with '%s'",
+	           client->name, lash_client->name);
+
+	/* Unlink JACK client from its current list, if any */
+	list_del(&client->siblings);
+
+	/* Copy UUID and move JACK patches from LASH client to JACK client */
+	uuid_copy(client->id, lash_client->id);
+	jack_mgr_client_free_patch_list(&client->old_patches);
+	INIT_LIST_HEAD(&client->old_patches);
+	list_splice_init(&lash_client->jack_patches, &client->old_patches);
+	jack_mgr_client_dup_patch_list(&client->old_patches, &client->backup_patches);
+
+	/* Add JACK client to the active client list */
+	list_add_tail(&client->siblings, &g_jack_mgr_ptr->clients);
+
+	/* Extract JACK client's data from latest graph */
+	lashd_jackdbus_mgr_get_graph(g_jack_mgr_ptr);
+	if (!lashd_jackdbus_mgr_get_client_data(client))
+		lash_error("Problem extracting client data from graph");
+
+	/* Copy JACK client name to LASH client, make sure it has a class string */
+	lash_strset(&lash_client->jack_client_name, client->name);
+	client_maybe_fill_class(lash_client);
 }
 
 static void
@@ -316,43 +363,43 @@ lashd_jackdbus_on_client_appeared(
 
 	pid = lashd_jackdbus_get_client_pid(client_id);
 
-	lash_info("client '%s' (%llu) appeared. pid is %lld", client_name, (unsigned long long)client_id, (long long)pid);
+	lash_debug("New JACK client '%s' with id %llu, pid %lld",
+	           client_name, (unsigned long long)client_id, (long long)pid);
 
-	client_ptr = server_find_client_by_pid(g_server, pid);
+	jack_client_ptr = jack_mgr_client_new();
+	jack_client_ptr->name = lash_strdup(client_name);
+	jack_client_ptr->jackdbus_id = client_id;
+	jack_client_ptr->pid = (pid_t) pid;
 
-	if (client_ptr == NULL)
-	{
-		// when clients are restored then start in lost state
-		client_ptr = server_find_lost_client_by_pid(g_server, pid);
-	}
-
-	if (client_ptr == NULL)
-	{
+	if (!(client_ptr = server_find_client_by_pid(g_server, pid))
+	    && !(client_ptr = server_find_lost_client_by_pid(g_server, pid))) {
+		/* None of the known LASH clients have the same PID */
+		lash_debug("Storing unknown JACK client '%s'", client_name);
+		list_add_tail(&jack_client_ptr->siblings, &g_jack_mgr_ptr->unknown_clients);
 		/* TODO: we need to create liblash-less client object here */
-		lash_info("Ignoring liblash-less client '%s'", client_name);
 		return;
 	}
 
-
-	jack_client_ptr = jack_mgr_client_new();
-
-	uuid_copy(jack_client_ptr->id, client_ptr->id);
-	jack_client_ptr->name = lash_strdup(client_name);
-	lash_strset(&client_ptr->jack_client_name, client_name);
-	//client_ptr->jack_client_id = client_id;
-	list_splice_init(&client_ptr->jack_patches, &jack_client_ptr->old_patches);
-	jack_mgr_client_dup_patch_list(&jack_client_ptr->old_patches, &jack_client_ptr->backup_patches);
-
-	list_add_tail(&jack_client_ptr->siblings, &g_jack_mgr_ptr->clients);
-
-	client_maybe_fill_class(client_ptr);
-
-	/* Get the graph and extract the new client's data */
-	lashd_jackdbus_mgr_get_graph(g_jack_mgr_ptr);
-	if (!lashd_jackdbus_mgr_get_client_data(jack_client_ptr))
-		lash_error("Problem extracting client data from graph");
+	/* The new JACK client's PID matches a known LASH client, associate them */
+	lashd_jackdbus_mgr_bind_client(jack_client_ptr, client_ptr);
 
 	lash_debug("Client added");
+}
+
+/** Remove the unknown client whose id parameter matches \a client_id.
+ * @param client_id The disappeared client's JACK D-Bus ID.
+ */
+static void
+lashd_jackdbus_on_client_disappeared(dbus_uint64_t client_id)
+{
+	jack_mgr_client_t *client;
+
+	if (!(client = jack_mgr_client_find_by_jackdbus_id(&g_jack_mgr_ptr->unknown_clients, client_id)))
+		return;
+
+	lash_debug("Removing unknown JACK client '%s'", client->name);
+	list_del(&client->siblings);
+	jack_mgr_client_destroy(client);
 }
 
 static void
@@ -628,6 +675,20 @@ lashd_jackdbus_handle_patchbay_signal(
 		}
 
 		lashd_jackdbus_on_client_appeared(client1_name, client1_id);
+		return;
+	}
+
+	if (strcmp(signal_name, "ClientDisappeared") == 0) {
+		lash_debug("Received ClientDisappeared signal");
+
+		if (!dbus_message_get_args(message_ptr, &err,
+		                           DBUS_TYPE_UINT64, &dummy,
+		                           DBUS_TYPE_UINT64, &client1_id,
+		                           DBUS_TYPE_STRING, &client1_name,
+		                           DBUS_TYPE_INVALID))
+			goto fail;
+
+		lashd_jackdbus_on_client_disappeared(client1_id);
 		return;
 	}
 
