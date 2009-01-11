@@ -381,6 +381,8 @@ lashd_jackdbus_on_client_appeared(
 	}
 
 	/* The new JACK client's PID matches a known LASH client, associate them */
+
+	INIT_LIST_HEAD(&jack_client_ptr->siblings);
 	lashd_jackdbus_mgr_bind_client(jack_client_ptr, client_ptr);
 
 	lash_debug("Client added");
