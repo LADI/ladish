@@ -884,42 +884,44 @@ lashd_jackdbus_handle_bus_signal(
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
+/** This is jackdbus_mgr's D-Bus message handler. It intercepts signals from
+ * jackdbus and the session bus and calls the appropriate handlers. Messages
+ * not relevant to jackdbus pass through untouched.
+ * @param connection The D-Bus connection.
+ * @param message The intercepted message.
+ * @param data User data.
+ * @return Whether the message was handled or not.
+ * 
+ */
 static DBusHandlerResult
-lashd_jackdbus_handler(
-	DBusConnection * connection_ptr,
-	DBusMessage * message_ptr,
-	void * data)
+lashd_jackdbus_handler(DBusConnection *connection,
+                       DBusMessage    *message,
+                       void           *data)
 {
 	const char *path, *interface;
 
-	/* If the message isn't a signal the object path handler may use it */
-	if (dbus_message_get_type(message_ptr) != DBUS_MESSAGE_TYPE_SIGNAL)
-	{
+	/* Let non-signal messages and signals with no interface pass through */
+	if (dbus_message_get_type(message) != DBUS_MESSAGE_TYPE_SIGNAL
+	    || !(interface = dbus_message_get_interface(message)))
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+
+	/* Handle JACK patchbay and control interface signals */
+	if ((path = dbus_message_get_path(message))
+	    && strcmp(path, JACKDBUS_OBJECT) == 0) {
+		if (strcmp(interface, JACKDBUS_IFACE_PATCHBAY) == 0) {
+			lashd_jackdbus_handle_patchbay_signal(message);
+			return DBUS_HANDLER_RESULT_HANDLED;
+		} else if (strcmp(interface, JACKDBUS_IFACE_CONTROL) == 0) {
+			lashd_jackdbus_handle_control_signal(message);
+			return DBUS_HANDLER_RESULT_HANDLED;
+		}
 	}
 
-	path = dbus_message_get_path(message_ptr);
-	interface = dbus_message_get_interface(message_ptr);
+	/* Handle session bus signals to track JACK service alive state */
+	if (strcmp(interface, DBUS_INTERFACE_DBUS) == 0)
+		return lashd_jackdbus_handle_bus_signal(message);
 
-	if (path != NULL && strcmp(path, JACKDBUS_OBJECT) == 0 &&
-	    interface != NULL && strcmp(interface, JACKDBUS_IFACE_PATCHBAY) == 0)
-	{
-		lashd_jackdbus_handle_patchbay_signal(message_ptr);
-		return DBUS_HANDLER_RESULT_HANDLED;
-	}
-
-	if (path != NULL && strcmp(path, JACKDBUS_OBJECT) == 0 &&
-	    interface != NULL && strcmp(interface, JACKDBUS_IFACE_CONTROL) == 0)
-	{
-		lashd_jackdbus_handle_control_signal(message_ptr);
-		return DBUS_HANDLER_RESULT_HANDLED;
-	}
-
-	if (interface != NULL && strcmp(interface, DBUS_INTERFACE_DBUS) == 0)
-	{
-		return lashd_jackdbus_handle_bus_signal(message_ptr);
-	}
-
+	/* Let everything else pass through */
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
