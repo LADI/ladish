@@ -1279,6 +1279,9 @@ project_lose_client(project_t *project,
 	client->argc = 0;
 	client->argv = NULL;
 
+	/* Pid is only stored for clients who were recently launched so that
+	   lashd can tell launched clients from recovering ones. All lost
+	   clients must have valid project pointers. */
 	client->pid = 0;
 	client->project = project;
 
