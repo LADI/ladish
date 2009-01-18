@@ -1070,6 +1070,7 @@ project_load(project_t *project)
 			client_t *client;
 
 			client = client_new();
+			client->project = project;
 			client_parse_xml(project, client, xmlnode);
 
 			// TODO: reject client if its data doesn't contain
@@ -1279,6 +1280,7 @@ project_lose_client(project_t *project,
 	client->argv = NULL;
 
 	client->pid = 0;
+	client->project = project;
 
 	list_add(&client->siblings, &project->lost_clients);
 	project_set_modified_status(project, true);
