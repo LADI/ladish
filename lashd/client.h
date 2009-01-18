@@ -116,4 +116,12 @@ client_parse_xml(project_t  *project,
 void
 client_maybe_fill_class(client_t *client);
 
+/** (Re)activate a client that already belongs to a project but is in the
+ * lost_clients list. This function assumes that @a client->project is set
+ * and that @a client->project->lost_clients contains @a client.
+ * @param client The client to (re)activate.
+ */
+void
+client_resume_project(client_t *client);
+
 #endif /* __LASHD_CLIENT_H__ */

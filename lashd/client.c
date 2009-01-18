@@ -378,4 +378,64 @@ client_maybe_fill_class(client_t *client)
 	}
 }
 
+void
+client_resume_project(client_t *client)
+{
+	bool stateless_client;
+
+	lash_debug("Attempting to resume client of class '%s'",
+	           client->class);
+
+	/* Set default data path if necessary */
+	if (!client->data_path || !client->data_path[0])
+		lash_strset(&client->data_path, project_get_client_dir(client->project,
+		                                                       client));
+
+	/* Create the data path if necessary */
+	if (CLIENT_CONFIG_FILE(client) || CLIENT_CONFIG_DATA_SET(client))
+		lash_create_dir(client->data_path);
+
+	/* Unlink client from project's lost_clients list */
+	list_del(&client->siblings);
+
+	stateless_client = false;
+
+	/* Tell the client to load its state if it was saved previously */
+	if (CLIENT_SAVED(client)) {
+		if (CLIENT_CONFIG_FILE(client))
+			project_load_file(client->project, client);
+		else if (CLIENT_CONFIG_DATA_SET(client))
+			project_load_data_set(client->project, client);
+		else {
+			/* this is a workaround for projects saved with wrong flags */
+			lash_warn("Client '%s' has no data to load even though "
+			          "it claims to have", client_get_identity(client));
+			stateless_client = true;
+		}
+	} else {
+		lash_debug("Client '%s' has no data to load", client_get_identity(client));
+		stateless_client = true;
+	}
+
+	/* Link client to project's clients list */
+	list_add(&client->siblings, &client->project->clients);
+
+	// TODO: Need to check if the client's name is still ok?
+
+	lash_info("Resumed client %s of class '%s' in project '%s'",
+	          client->id_str, client->class, client->project->name);
+
+	lashd_dbus_signal_emit_client_appeared(client->id_str, client->project->name,
+	                                       client->name);
+
+	/* Clients with nothing to load need to notify about
+	   their completion as soon as they appear */
+	if (stateless_client) {
+		/* Nasty way to make project_client_task_completed() eventually call project_loaded() */
+		client->task_type = LASH_Restore_Data_Set;
+		project_client_task_completed(client->project, client);
+		client->task_type = 0;
+	}
+}
+
 /* EOF */

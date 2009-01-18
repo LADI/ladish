@@ -487,36 +487,32 @@ server_add_client(server_t    *server,
                   int          argc,
                   char       **argv)
 {
-	project_t *project;
 	client_t *client;
 
-	client = server_find_lost_client_by_pid(server, pid);
-	lash_info("Adding client with pid %u - %p", (unsigned int)pid, client);
-	if (client == NULL)
-	{
-		project = NULL;
-	}
-	else
-	{
-		project = client->project;
-	}
+	/* See if we launched this client */
+	if (pid && (client = server_find_lost_client_by_pid(server, pid)))
+		goto resume;
 
-	client = client_new();
-	client->pid = pid;
-	lash_strset(&client->dbus_name, dbus_name);
-	lash_strset(&client->class, class);
-	client->flags = flags;
-	lash_strset(&client->working_dir, working_dir);
-	client->argc = argc;
-	client->argv = argv;
+	project_t *project = server_get_newborn_project(server);
 
-	if (project != NULL)
-	{
-		project_add_client(project, client);
-	}
-	else
-	{
-		project = server_get_newborn_project(server);
+	/* See if this is a recovering client */
+	if (!(flags & LASH_No_Autoresume) && class
+	    && (client = project_find_lost_client_by_class(project, class))) {
+		client->pid = pid;
+	resume:
+		lash_strset(&client->dbus_name, dbus_name);
+		client_resume_project(client);
+
+	/* Otherwise add a new client */
+	} else {
+		client = client_new();
+		client->pid = pid;
+		lash_strset(&client->class, class);
+		client->flags = flags;
+		client->argc = argc;
+		client->argv = argv;
+		lash_strset(&client->dbus_name, dbus_name);
+		lash_strset(&client->working_dir, working_dir);
 		project_new_client(project, client);
 	}
 

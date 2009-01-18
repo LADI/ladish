@@ -63,10 +63,6 @@
 #endif
 
 static const char *
-project_get_client_dir(project_t *project,
-                       client_t  *client);
-
-static const char *
 project_get_client_config_dir(project_t *project,
                               client_t  *client);
 
@@ -170,33 +166,18 @@ project_set_modified_status(project_t *project,
 
 static void
 project_name_client(project_t  *project,
-                    client_t   *client,
-                    const char *name)
+                    client_t   *client)
 {
-	char *unique_name = NULL;
+	char *name;
 
-	/* If no name was supplied we'll assume that
-	   the caller wants a new unique name. */
-	if (!name) {
-		unique_name = project_get_unique_client_name(project, client);
-		if (!unique_name)
-			return;
-		name = (const char *) unique_name;
-	}
-
-	lash_debug("Attempting to give client %s the name '%s'",
-	           client->id_str, name);
-
-	/* Check if the client already has the requested name */
-	if (client->name && strcmp(name, client->name) == 0) {
-		lash_debug("Client %s is already named '%s'; no need to rename",
-		           client->id_str, name);
-		lash_free(&unique_name);
+	if (!(name = project_get_unique_client_name(project, client))) {
+		lash_error("Cannot name client");
 		return;
 	}
 
-	lash_strset(&client->name, name);
-	lash_free(&unique_name);
+	if (client->name)
+		free(client->name);
+	client->name = name;
 
 	lash_info("Client %s set its name to '%s'", client->id_str, client->name);
 }
@@ -228,7 +209,7 @@ project_new_client(project_t *project,
 	lash_create_dir(client->data_path);
 
 	/* Give the client a unique name */
-	project_name_client(project, client, NULL);
+	project_name_client(project, client);
 
 	project_set_modified_status(project, true);
 
@@ -261,7 +242,7 @@ project_satisfy_client_dependency(project_t *project,
 	}
 }
 
-static __inline__ void
+void
 project_load_file(project_t *project,
                   client_t  *client)
 {
@@ -284,7 +265,7 @@ project_load_file(project_t *project,
 }
 
 /* Send a LoadDataSet method call to the client */
-static __inline__ void
+void
 project_load_data_set(project_t *project,
                       client_t  *client)
 {
@@ -358,162 +339,28 @@ fail:
 	dbus_message_unref(new_call.message);
 }
 
-static __inline__ void
-project_resume_client(project_t *project,
-                      client_t  *client,
-                      client_t  *lost_client)
-{
-	char *name;
-	bool stateless_client;
-
-	lash_debug("Attempting to resume client of class '%s'",
-	           lost_client->class);
-
-	/* Get all the necessary data from the lost client */
-	name = lost_client->name;
-	lost_client->name = NULL;
-	list_splice_init(&lost_client->alsa_patches, &client->alsa_patches);
-	list_splice_init(&lost_client->jack_patches, &client->jack_patches);
-	client->flags = lost_client->flags;
-	uuid_copy(client->id, lost_client->id);
-	memcpy(client->id_str, lost_client->id_str, 37);
-	lash_free(&client->working_dir);
-	client->working_dir = lost_client->working_dir;
-	lost_client->working_dir = NULL;
-
-	/* Set the client's data path */
-	if (lost_client->data_path) {
-		client->data_path = lost_client->data_path;
-		lost_client->data_path = NULL;
-	} else {
-		lash_strset(&client->data_path,
-		            project_get_client_dir(project, client));
-	}
-
-	/* Create the data path if necessary */
-	if (CLIENT_CONFIG_FILE(client) || CLIENT_CONFIG_DATA_SET(client))
-		lash_create_dir(client->data_path);
-
-	/* Steal the dependencies from the lost client */
-	list_splice_init(&lost_client->dependencies, &client->dependencies);
-
-	/* Kill the lost client */
-	list_del(&lost_client->siblings);
-	client_destroy(lost_client);
-
-	stateless_client = false;
-
-	/* Tell the client to load its state if it was saved previously */
-	if (CLIENT_SAVED(client)) {
-		// TODO: Implement task queue so that we can
-		//       give a client both tasks
-		if (CLIENT_CONFIG_FILE(client))
-			project_load_file(project, client);
-		else if (CLIENT_CONFIG_DATA_SET(client))
-			project_load_data_set(project, client);
-		else
-		{
-			/* this is a workaround for projects saved with wrong flags */
-			lash_info("Client '%s' has no data to load (but flagged)", client_get_identity(client));
-			stateless_client = true;
-		}
-	} else {
-		lash_info("Client '%s' has no data to load", client_get_identity(client));
-		stateless_client = true;
-	}
-
-	client->project = project;
-	list_add(&client->siblings, &project->clients);
-
-	/* Name the resumed client */
-	project_name_client(project, client, name);
-	lash_free(&name);
-
-	lash_info("Resumed client %s of class '%s' in project '%s'",
-	          client->id_str, client->class, project->name);
-
-	lashd_dbus_signal_emit_client_appeared(client->id_str, project->name,
-	                                       client->name);
-
-	/* Clients with nothing to load need to notify about
-	   their completion as soon as they appear */
-	if (stateless_client)
-	{
-		/* Nasty way to make project_client_task_completed() eventually call project_loaded() */
-		client->task_type = LASH_Restore_Data_Set;
-
-		project_client_task_completed(project, client);
-		client->task_type = 0;
-	}
-}
-
 void
 project_launch_client(project_t *project,
                       client_t  *client)
 {
 	lash_debug("Launching client %s (flags 0x%08X)", client->id_str, client->flags);
-
 	loader_execute(client, client->flags & LASH_Terminal);
-
-	dbus_free_string_array(client->argv);
-	client->argv = NULL;
-	client->argc = 0;
 }
 
-void
-project_add_client(project_t *project,
-                  client_t   *client)
+client_t *
+project_find_lost_client_by_class(project_t  *project,
+                                  const char *class)
 {
 	struct list_head *node;
-	client_t *lost_client;
-
-	lash_debug("Adding client to project '%s'", project->name);
-
-	if (CLIENT_NO_AUTORESUME(client) || list_empty(&project->lost_clients))
-		goto new_client;
-
-	/*
-	 * Try and find a client we can resume
-	 */
-
-	/* See if this is a launched client */
 	list_for_each (node, &project->lost_clients) {
-		lost_client = list_entry(node, client_t, siblings);
-
-		lash_debug("Checking client with PID %u "
-		           "against lost client with PID %u",
-		           client->pid, lost_client->pid);
-
-		if (lost_client->pid && client->pid == lost_client->pid)
-			goto resume_client;
+		client_t *client = list_entry(node, client_t, siblings);
+		if (strcmp(client->class, class) == 0)
+			return client;
 	}
-
-	lash_debug("Cannot match PID %u with any lost client, "
-	           "trying to match client class instead");
-
-	/* See if this is a recovering client */
-	list_for_each (node, &project->lost_clients) {
-		lost_client = list_entry(node, client_t, siblings);
-
-		lash_debug("Checking client of class '%s' "
-		           "against lost client of class '%s'",
-		           client->class, lost_client->class);
-
-		if (strcmp(client->class, lost_client->class) == 0)
-			goto resume_client;
-	}
-
-	lash_debug("Could not resume client, adding as new client");
-
-new_client:
-	project_new_client(project, client);
-	return;
-
-resume_client:
-	project_resume_client(project, client, lost_client);
+	return NULL;
 }
 
-static const char *
+const char *
 project_get_client_dir(project_t *project,
                        client_t  *client)
 {
@@ -1274,10 +1121,6 @@ project_lose_client(project_t *project,
 			list_splice(&patches, &client->alsa_patches);
 	}
 #endif
-
-	dbus_free_string_array(client->argv);
-	client->argc = 0;
-	client->argv = NULL;
 
 	/* Pid is only stored for clients who were recently launched so that
 	   lashd can tell launched clients from recovering ones. All lost

@@ -186,6 +186,14 @@ void
 project_rename(project_t  *project,
                const char *new_name);
 
+void
+project_load_file(project_t *project,
+                  client_t  *client);
+
+void
+project_load_data_set(project_t *project,
+                      client_t  *client);
+
 /** Use loader_execute to run a client - then free/zero the argv/argc in the client.
  * @warning Does not check if the operation succeeded before clearing argc/argv.
  *
@@ -195,18 +203,6 @@ project_rename(project_t  *project,
 void
 project_launch_client(project_t *project,
                       client_t  *client);
-
-/** Attaches the new client to the project. If the client is one of the lost or
- * recovering clients, it is reattached via project_resume_client (which attempts
- * to restore client's old data). Otherwise, it is added as new via 
- * project_new_client.
- *
- * @arg project    project to attach to
- * @arg client     client to attach
- */
-void
-project_add_client(project_t *project,
-                  client_t   *client);
 
 /** Called after client has disappeared. If client has left any data (keys), it calls
  * store_write to save them. If there are no data for the client, the client directory
@@ -222,6 +218,14 @@ project_add_client(project_t *project,
 void
 project_lose_client(project_t *project,
                     client_t  *client);
+
+client_t *
+project_find_lost_client_by_class(project_t  *project,
+                                  const char *class);
+
+const char *
+project_get_client_dir(project_t *project,
+                       client_t  *client);
 
 /** Initiate the process of saving the project. Steps involved:
  * - add the project to project list (if it's new)
