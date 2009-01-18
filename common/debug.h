@@ -25,6 +25,7 @@
 #define ANSI_BOLD_ON    "\033[1m"
 #define ANSI_BOLD_OFF   "\033[22m"
 #define ANSI_COLOR_RED  "\033[31m"
+#define ANSI_COLOR_YELLOW "\033[33m"
 #define ANSI_RESET      "\033[0m"
 
 #include <stdio.h>
@@ -45,8 +46,9 @@
 
 # define LASH_LOG_LEVEL_DEBUG        0
 # define LASH_LOG_LEVEL_INFO         1
-# define LASH_LOG_LEVEL_ERROR        2
-# define LASH_LOG_LEVEL_ERROR_PLAIN  3
+# define LASH_LOG_LEVEL_WARN         2
+# define LASH_LOG_LEVEL_ERROR        3
+# define LASH_LOG_LEVEL_ERROR_PLAIN  4
 
 void
 lash_log(unsigned int  level,
@@ -61,6 +63,7 @@ lash_log(unsigned int  level,
 # endif /* LASH_DEBUG */
 
 # define lash_info(fmt, args...) lash_log(LASH_LOG_LEVEL_INFO, fmt "\n", ## args)
+# define lash_warn(fmt, args...) lash_log(LASH_LOG_LEVEL_WARN, ANSI_COLOR_YELLOW "WARNING: " ANSI_RESET "%s: " fmt "\n", __func__, ## args)
 # define lash_error(fmt, args...) lash_log(LASH_LOG_LEVEL_ERROR, ANSI_COLOR_RED "ERROR: " ANSI_RESET "%s: " fmt "\n", __func__, ## args)
 # define lash_error_plain(fmt, args...) lash_log(LASH_LOG_LEVEL_ERROR_PLAIN, ANSI_COLOR_RED "ERROR: " ANSI_RESET fmt "\n", ## args)
 
@@ -74,6 +77,7 @@ lash_log(unsigned int  level,
 # endif /* LASH_DEBUG */
 
 # define lash_info(fmt, args...) printf(fmt "\n", ## args)
+# define lash_warn(fmt, args...) printf(fmt "\n", ## args)
 # define lash_error(fmt, args...) fprintf(stderr, "%s: " fmt "\n", __func__, ## args)
 # define lash_error_plain(fmt, args...) fprintf(stderr, fmt "\n", ## args)
 

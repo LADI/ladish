@@ -168,6 +168,7 @@ lash_log(
 		case LASH_LOG_LEVEL_INFO:
 			stream = stdout;
 			break;
+		case LASH_LOG_LEVEL_WARN:
 		case LASH_LOG_LEVEL_ERROR:
 		case LASH_LOG_LEVEL_ERROR_PLAIN:
 		default:
