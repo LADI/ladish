@@ -1117,7 +1117,7 @@ lashd_jackdbus_mgr_get_client_data(jack_mgr_client_t *client)
 			goto fail;
 		}
 
-		//lashd_jackdbus_mgr_new_client_port(client, client1_name, port1_name);
+		lashd_jackdbus_mgr_new_client_port(client, client1_name, port1_name);
 
 		dbus_message_iter_next(&array_iter);
 	}
