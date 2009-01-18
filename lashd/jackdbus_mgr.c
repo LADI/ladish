@@ -1183,7 +1183,7 @@ lashd_jackdbus_mgr_remove_client(lashd_jackdbus_mgr_t *mgr,
 	list_del(&client->siblings);
 
 	if (backup_patches)
-		list_splice(&client->backup_patches, backup_patches);
+		list_splice_init(&client->backup_patches, backup_patches);
 
 	jack_mgr_client_destroy(client);
 
