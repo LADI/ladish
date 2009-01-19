@@ -140,8 +140,7 @@ main(int    argc,
 
 	loader_init();
 
-	g_server = server_new(default_dir);
-	if (g_server == NULL)
+	if (!server_start(default_dir))
 	{
 		goto uninit_loader;
 	}
@@ -164,13 +163,12 @@ main(int    argc,
 	/* setup our SIGSEGV magic that prints nice stack in our logfile */ 
 	setup_sigsegv();
 
-	server_main(g_server);
+	server_main();
 
 	lash_debug("Finished, cleaning up");
 	printf("Cleaning up\n");
 
-	server_destroy(g_server);
-	g_server = NULL;
+	server_stop();
 
 uninit_loader:
 	loader_uninit();

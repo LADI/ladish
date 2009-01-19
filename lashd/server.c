@@ -54,8 +54,11 @@ server_t *g_server = NULL;
 static void
 server_fill_projects(server_t *server);
 
-server_t *
-server_new(const char *default_dir)
+static void
+server_destroy(server_t *server);
+
+bool
+server_start(const char *default_dir)
 {
 	server_t *server;
 
@@ -69,7 +72,7 @@ server_new(const char *default_dir)
 	if (!lash_appdb_load(&server->appdb)) {
 		lash_error("Failed to load application database");
 		free(server);
-		return NULL;
+		return false;
 	}
 
 #ifdef LASH_DEBUG
@@ -98,6 +101,7 @@ server_new(const char *default_dir)
 		lash_debug("Failed to launch D-Bus service");
 		goto fail;
 	}
+	g_server = server;
 
 #ifdef HAVE_JACK_DBUS
 	server->jackdbus_mgr = lashd_jackdbus_mgr_new(server);
@@ -109,14 +113,14 @@ server_new(const char *default_dir)
 
 	lash_debug("Server running");
 
-	return server;
+	return true;
 
 fail:
 	server_destroy(server);
-	return NULL;
+	return false;
 }
 
-void
+static void
 server_destroy(server_t *server)
 {
 	struct list_head *node;
@@ -156,6 +160,15 @@ server_destroy(server_t *server)
 	lash_free(&server);
 
 	lash_debug("Server destroyed");
+}
+
+void
+server_stop(void)
+{
+	if (g_server) {
+		server_destroy(g_server);
+		g_server = NULL;
+	}
 }
 
 static void
@@ -644,13 +657,13 @@ server_project_save_by_name(server_t   *server,
 }
 
 void
-server_main(server_t *server)
+server_main(void)
 {
-	while (!server->quit) {
-		dbus_connection_read_write_dispatch(server->dbus_service->connection, 50);
+	while (!g_server->quit) {
+		dbus_connection_read_write_dispatch(g_server->dbus_service->connection, 50);
 
 		loader_run();
-
+		// TODO: wtf?
 		loader_run();
 	}
 

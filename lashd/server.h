@@ -60,14 +60,14 @@ struct _server
 	bool                  quit;
 };
 
-server_t *
-server_new(const char *default_dir);
+bool
+server_start(const char *default_dir);
 
 void
-server_destroy(server_t *server);
+server_stop(void);
 
 void
-server_main(server_t *server);
+server_main(void);
 
 project_t *
 server_find_project_by_name(server_t   *server,
