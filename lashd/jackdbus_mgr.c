@@ -371,8 +371,8 @@ lashd_jackdbus_on_client_appeared(
 	jack_client_ptr->jackdbus_id = client_id;
 	jack_client_ptr->pid = (pid_t) pid;
 
-	if (!(client_ptr = server_find_client_by_pid(g_server, pid))
-	    && !(client_ptr = server_find_lost_client_by_pid(g_server, pid))) {
+	if (!(client_ptr = server_find_client_by_pid(pid))
+	    && !(client_ptr = server_find_lost_client_by_pid(pid))) {
 		/* None of the known LASH clients have the same PID */
 		lash_debug("Storing unknown JACK client '%s'", client_name);
 		list_add_tail(&jack_client_ptr->siblings, &g_jack_mgr_ptr->unknown_clients);

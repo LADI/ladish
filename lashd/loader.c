@@ -148,8 +148,7 @@ loader_childs_bury(void)
 				close(child_ptr->stderr);
 			}
 
-			client_disconnected(server_find_client_by_pid(g_server,
-			                                              child_ptr->pid));
+			client_disconnected(server_find_client_by_pid(child_ptr->pid));
 			free(child_ptr);
 		}
 	}

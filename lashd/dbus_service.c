@@ -124,7 +124,7 @@ lashd_client_disconnect_handler(DBusConnection *connection,
 		return DBUS_HANDLER_RESULT_HANDLED;
 	}
 
-	client = server_find_client_by_dbus_name(g_server, old_name);
+	client = server_find_client_by_dbus_name(old_name);
 	if (client)
 	{
 		client_disconnected(client);

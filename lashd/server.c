@@ -209,8 +209,7 @@ server_fill_projects(server_t *server)
  *****************************/
 
 project_t *
-server_find_project_by_name(server_t   *server,
-                            const char *project_name)
+server_find_project_by_name(const char *project_name)
 {
 	struct list_head *node;
 	project_t *project;
@@ -218,7 +217,7 @@ server_find_project_by_name(server_t   *server,
 	if (!project_name)
 		return NULL;
 
-	list_for_each (node, &server->loaded_projects) {
+	list_for_each (node, &g_server->loaded_projects) {
 		project = list_entry(node, project_t, siblings_loaded);
 		if (strcmp(project->name, project_name) == 0)
 			return project;
@@ -262,14 +261,13 @@ find_client_in_list_by_pid(struct list_head *client_list,
 }
 
 client_t *
-server_find_client_by_dbus_name(server_t   *server,
-                                const char *dbus_name)
+server_find_client_by_dbus_name(const char *dbus_name)
 {
 	struct list_head *node;
 	project_t *project;
 	client_t *client;
 
-	list_for_each (node, &server->loaded_projects) {
+	list_for_each (node, &g_server->loaded_projects) {
 		project = list_entry(node, project_t, siblings_loaded);
 
 		client = find_client_in_list_by_dbus_name(&project->clients,
@@ -282,8 +280,7 @@ server_find_client_by_dbus_name(server_t   *server,
 }
 
 client_t *
-server_find_client_by_id(
-	uuid_t id)
+server_find_client_by_id(uuid_t id)
 {
 	struct list_head *node;
 	project_t *project;
@@ -301,14 +298,13 @@ server_find_client_by_id(
 }
 
 client_t *
-server_find_client_by_pid(server_t *server,
-                          pid_t     pid)
+server_find_client_by_pid(pid_t pid)
 {
 	struct list_head *node;
 	project_t *project;
 	client_t *client;
 
-	list_for_each (node, &server->loaded_projects) {
+	list_for_each (node, &g_server->loaded_projects) {
 		project = list_entry(node, project_t, siblings_loaded);
 
 		client = find_client_in_list_by_pid(&project->clients, pid);
@@ -320,15 +316,13 @@ server_find_client_by_pid(server_t *server,
 }
 
 client_t *
-server_find_lost_client_by_pid(
-	server_t * server,
-	pid_t pid)
+server_find_lost_client_by_pid(pid_t pid)
 {
 	struct list_head *node;
 	project_t *project;
 	client_t *client;
 
-	list_for_each (node, &server->loaded_projects) {
+	list_for_each (node, &g_server->loaded_projects) {
 		project = list_entry(node, project_t, siblings_loaded);
 
 		client = find_client_in_list_by_pid(&project->lost_clients, pid);
@@ -340,8 +334,7 @@ server_find_lost_client_by_pid(
 }
 
 static const char *
-server_create_new_project_name(server_t   *server,
-                               const char *suggestion)
+server_create_new_project_name(const char *suggestion)
 {
 	static char new_name[1034];
 	const char *info_file;
@@ -359,8 +352,8 @@ server_create_new_project_name(server_t   *server,
 
 	/* Yes, arbitrary limits suck, but I suppose this one is acceptable */
 	for (i = 2; i <= 1000000000; ++i) {
-		if (!server_find_project_by_name(server, new_name)) {
-			info_file = lash_get_fqn(lash_get_fqn(server->projects_dir,
+		if (!server_find_project_by_name(new_name)) {
+			info_file = lash_get_fqn(lash_get_fqn(g_server->projects_dir,
 			                                      new_name),
 			                         PROJECT_INFO_FILE);
 			if (access(info_file, F_OK) != 0)
@@ -378,24 +371,23 @@ server_create_new_project_name(server_t   *server,
 }
 
 static __inline__ project_t *
-server_create_new_project(server_t   *server,
-                          const char *name)
+server_create_new_project(const char *name)
 {
 	project_t *project;
 
 	lash_debug("Creating a new project");
 
 	project = project_new();
-	lash_strset(&project->name, server_create_new_project_name(server, name));
+	lash_strset(&project->name, server_create_new_project_name(name));
 
 	lash_debug("The new project's name is '%s'", project->name);
 
 	lash_strset(&project->directory,
-	            lash_get_fqn(server->projects_dir, project->name));
+	            lash_get_fqn(g_server->projects_dir, project->name));
 
 	project_clear_id_dir(project);
 
-	list_add_tail(&project->siblings_loaded, &server->loaded_projects);
+	list_add_tail(&project->siblings_loaded, &g_server->loaded_projects);
 
 	/* if we save the project later we will add it to available for loading list */
 	INIT_LIST_HEAD(&project->siblings_all);
@@ -408,15 +400,14 @@ server_create_new_project(server_t   *server,
 }
 
 project_t *
-server_get_newborn_project(
-	server_t * server_ptr)
+server_get_newborn_project()
 {
 	struct list_head * node_ptr;
 	project_t * project_ptr;
 
 	project_ptr = NULL;
 
-	list_for_each(node_ptr, &server_ptr->loaded_projects)
+	list_for_each(node_ptr, &g_server->loaded_projects)
 	{
 		project_ptr = list_entry(node_ptr, project_t, siblings_loaded);
 		if (project_ptr->doc == NULL)
@@ -435,12 +426,12 @@ server_get_newborn_project(
 
 	lash_debug("Creating new project for client");
 
-	return server_create_new_project(server_ptr, NULL);
+	return server_create_new_project(NULL);
 }
 
+// TODO: This belongs in project.c and should be called project_close()
 void
-server_close_project(server_t  *server,
-                     project_t *project)
+server_close_project(project_t *project)
 {
 	project_unload(project);
 
@@ -450,49 +441,47 @@ server_close_project(server_t  *server,
 }
 
 bool
-server_project_close_by_name(server_t   *server,
-                             const char *project_name)
+server_project_close_by_name(const char *project_name)
 {
 	project_t *project;
 
-	project = server_find_project_by_name(server, project_name);
+	project = server_find_project_by_name(project_name);
 	if (!project)
 		return false;
 
-	server_close_project(server, project);
+	server_close_project(project);
 
 	return true;
 }
 
 void
-server_close_all_projects(server_t *server)
+server_close_all_projects(void)
 {
 	struct list_head *node;
 	project_t *project;
 
-	while (!list_empty(&server->loaded_projects)) {
-		node = server->loaded_projects.next;
+	while (!list_empty(&g_server->loaded_projects)) {
+		node = g_server->loaded_projects.next;
 		project = list_entry(node, project_t, siblings_loaded);
 
-		server_close_project(server, project); /* Removes from list */
+		server_close_project(project); /* Removes from list */
 	}
 }
 
 void
-server_save_all_projects(server_t *server)
+server_save_all_projects(void)
 {
 	struct list_head *node;
 	project_t *project;
 
-	list_for_each (node, &server->loaded_projects) {
+	list_for_each (node, &g_server->loaded_projects) {
 		project = list_entry(node, project_t, siblings_loaded);
 		project_save(project);
 	}
 }
 
 client_t *
-server_add_client(server_t    *server,
-                  const char  *dbus_name,
+server_add_client(const char  *dbus_name,
                   pid_t        pid,
                   const char  *class,
                   int          flags,
@@ -503,10 +492,10 @@ server_add_client(server_t    *server,
 	client_t *client;
 
 	/* See if we launched this client */
-	if (pid && (client = server_find_lost_client_by_pid(server, pid)))
+	if (pid && (client = server_find_lost_client_by_pid(pid)))
 		goto resume;
 
-	project_t *project = server_get_newborn_project(server);
+	project_t *project = server_get_newborn_project();
 
 	/* See if this is a recovering client */
 	if (!(flags & LASH_No_Autoresume) && class
@@ -533,7 +522,7 @@ server_add_client(server_t    *server,
 	/* Try to find an unknown JACK client whose PID matches the newly
 	   added LASH client's, if succesful bind them together */
 	jack_mgr_client_t *jack_client;
-	if ((jack_client = jack_mgr_client_find_by_pid(&(server->jackdbus_mgr->unknown_clients), pid)))
+	if ((jack_client = jack_mgr_client_find_by_pid(&(g_server->jackdbus_mgr->unknown_clients), pid)))
 		lashd_jackdbus_mgr_bind_client(jack_client, client);
 #endif
 
@@ -541,8 +530,7 @@ server_add_client(server_t    *server,
 }
 
 static bool
-server_project_restore(server_t  *server,
-                       project_t *project)
+server_project_restore(project_t *project)
 {
 	struct list_head *node;
 	client_t *client;
@@ -560,10 +548,9 @@ server_project_restore(server_t  *server,
 		return false;
 	}
 
-	// TODO: Shouldn't this check server->all_projects instead?
-	if (server_find_project_by_name(server, project->name)) {
-		const char *new_name = server_create_new_project_name(server,
-		                                                      project->name);
+	// TODO: Shouldn't this check g_server->all_projects instead?
+	if (server_find_project_by_name(project->name)) {
+		const char *new_name = server_create_new_project_name(project->name);
 		lash_info("Changing restored project's name from '%s' to '%s' "
 		          "to avoid clashing with an existing project",
 		          project->name, new_name);
@@ -571,7 +558,7 @@ server_project_restore(server_t  *server,
 	}
 
 	lash_info("Adding project '%s' to project list", project->name);
-	list_add_tail(&project->siblings_loaded, &server->loaded_projects);
+	list_add_tail(&project->siblings_loaded, &g_server->loaded_projects);
 
 	lashd_dbus_signal_emit_project_appeared(project->name, project->directory);
 
@@ -608,46 +595,43 @@ server_project_restore(server_t  *server,
 }
 
 bool
-server_project_restore_by_name(server_t   *server,
-                               const char *project_name)
+server_project_restore_by_name(const char *project_name)
 {
 	struct list_head *node;
 	project_t *project;
 
-	list_for_each (node, &server->all_projects) {
+	list_for_each (node, &g_server->all_projects) {
 		project = list_entry(node, project_t, siblings_all);
 
 		if (strcmp(project->name, project_name) == 0)
-			return server_project_restore(server, project);
+			return server_project_restore(project);
 	}
 
 	return false;
 }
 
 bool
-server_project_restore_by_dir(server_t   *server,
-                              const char *directory)
+server_project_restore_by_dir(const char *directory)
 {
 	struct list_head *node;
 	project_t *project;
 
-	list_for_each (node, &server->all_projects) {
+	list_for_each (node, &g_server->all_projects) {
 		project = list_entry(node, project_t, siblings_all);
 
 		if (strcmp(project->directory, directory) == 0)
-			return server_project_restore(server, project);
+			return server_project_restore(project);
 	}
 
 	return false;
 }
 
 bool
-server_project_save_by_name(server_t   *server,
-                            const char *project_name)
+server_project_save_by_name(const char *project_name)
 {
 	project_t *project;
 
-	project = server_find_project_by_name(server, project_name);
+	project = server_find_project_by_name(project_name);
 	if (!project)
 		return false;
 

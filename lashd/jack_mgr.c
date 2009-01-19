@@ -126,7 +126,7 @@ jack_mgr_init_jack(jack_mgr_t * jack_mgr)
 		abort();
 	}
 
-	jack_on_shutdown(jack_mgr->jack_client, jack_mgr_shutdown_cb, g_server);
+	jack_on_shutdown(jack_mgr->jack_client, jack_mgr_shutdown_cb, NULL);
 
 	if (jack_activate(jack_mgr->jack_client) != 0) {
 		lash_error("Could not activate JACK client");

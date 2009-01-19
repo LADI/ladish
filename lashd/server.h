@@ -70,12 +70,10 @@ void
 server_main(void);
 
 project_t *
-server_find_project_by_name(server_t   *server,
-                            const char *project_name);
+server_find_project_by_name(const char *project_name);
 
 client_t *
-server_add_client(server_t    *server,
-                  const char  *dbus_name,
+server_add_client(const char  *dbus_name,
                   pid_t        pid,
                   const char  *class,
                   int          flags,
@@ -84,46 +82,36 @@ server_add_client(server_t    *server,
                   char       **argv);
 
 client_t *
-server_find_client_by_dbus_name(server_t   *server,
-                                const char *dbus_name);
+server_find_client_by_dbus_name(const char *dbus_name);
 
 client_t *
-server_find_client_by_pid(server_t *server,
-                          pid_t     pid);
+server_find_client_by_pid(pid_t pid);
 
 client_t *
-server_find_lost_client_by_pid(
-	server_t * server,
-	pid_t pid);
+server_find_lost_client_by_pid(pid_t pid);
 
 client_t *
-server_find_client_by_id(
-	uuid_t id);
+server_find_client_by_id(uuid_t id);
 
 void
-server_close_project(server_t  *server,
-                     project_t *project);
+server_close_project(project_t *project);
 
 void
-server_save_all_projects(server_t *server);
+server_save_all_projects(void);
 
 void
-server_close_all_projects(server_t *server);
+server_close_all_projects(void);
 
 bool
-server_project_close_by_name(server_t   *server,
-                             const char *project_name);
+server_project_close_by_name(const char *project_name);
 
 bool
-server_project_restore_by_dir(server_t   *server,
-                              const char *directory);
+server_project_restore_by_dir(const char *directory);
 
 bool
-server_project_restore_by_name(server_t   *server,
-                               const char *project_name);
+server_project_restore_by_name(const char *project_name);
 
 bool
-server_project_save_by_name(server_t   *server,
-                            const char *project_name);
+server_project_save_by_name(const char *project_name);
 
 #endif /* __LASHD_SERVER_H__ */

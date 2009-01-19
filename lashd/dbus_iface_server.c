@@ -87,7 +87,7 @@ lashd_dbus_connect(method_call_t *call)
 
 	lash_debug("Connected client PID is %u", pid);
 
-	client = server_add_client(g_server, sender, (pid_t) pid, class,
+	client = server_add_client(sender, (pid_t) pid, class,
 	                           (int) flags, wd, argc, argv);
 
 	id_str = (const char *) client->id_str;
@@ -117,7 +117,7 @@ get_message_sender(method_call_t  *call,
 		return false;
 	}
 
-	*client = server_find_client_by_dbus_name(g_server, *sender);
+	*client = server_find_client_by_dbus_name(*sender);
 	if (!*client) {
 		lash_dbus_error(call, LASH_DBUS_ERROR_UNKNOWN_CLIENT,
 		                "Sender %s is not a LASH client",
@@ -313,7 +313,7 @@ lashd_dbus_close_project(method_call_t *call)
 	lash_debug("Closing project '%s' by request of client '%s'",
 	           client->project->name, client_get_identity(client));
 
-	server_close_project(g_server, client->project);
+	server_close_project(client->project);
 }
 #endif
 

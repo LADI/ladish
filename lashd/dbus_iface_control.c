@@ -190,7 +190,7 @@ lashd_dbus_project_open(method_call_t *call)
 	lash_info("Opening project '%s'", project_name);
 
 	// TODO: Evaluate return, send error return if necessary
-	server_project_restore_by_name(g_server, project_name);
+	server_project_restore_by_name(project_name);
 }
 
 static void
@@ -259,7 +259,7 @@ lashd_dbus_project_get_properties(
 		return;
 	}
 
-	project_ptr = server_find_project_by_name(g_server, project_name);
+	project_ptr = server_find_project_by_name(project_name);
 	if (project_ptr == NULL)
 	{
 		lash_dbus_error(
@@ -329,7 +329,7 @@ lashd_dbus_project_set_description(
 		return;
 	}
 
-	project_ptr = server_find_project_by_name(g_server, project_name);
+	project_ptr = server_find_project_by_name(project_name);
 	if (project_ptr == NULL)
 	{
 		lash_dbus_error(
@@ -371,7 +371,7 @@ lashd_dbus_project_set_notes(
 		return;
 	}
 
-	project_ptr = server_find_project_by_name(g_server, project_name);
+	project_ptr = server_find_project_by_name(project_name);
 	if (project_ptr == NULL)
 	{
 		lash_dbus_error(
@@ -415,7 +415,7 @@ lashd_dbus_project_get_clients(
 		return;
 	}
 
-	project_ptr = server_find_project_by_name(g_server, project_name);
+	project_ptr = server_find_project_by_name(project_name);
 	if (project_ptr == NULL)
 	{
 		lash_dbus_error(
@@ -557,7 +557,7 @@ lashd_dbus_client_get_dependencies(method_call_t *call)
 		return;
 	}
 
-	project = server_find_project_by_name(g_server, project_name);
+	project = server_find_project_by_name(project_name);
 	if (!project) {
 		lash_dbus_error(call, LASH_DBUS_ERROR_UNKNOWN_PROJECT,
 		                "Cannot find project \"%s\"",
@@ -682,7 +682,7 @@ lashd_dbus_get_client_dependency_modify_data(method_call_t  *call,
 		return false;
 	}
 
-	proj = server_find_project_by_name(g_server, project_name);
+	proj = server_find_project_by_name(project_name);
 	if (!proj) {
 		lash_dbus_error(call, LASH_DBUS_ERROR_UNKNOWN_PROJECT,
 		                "Cannot find project \"%s\"",
@@ -746,7 +746,7 @@ lashd_dbus_load_project_path(method_call_t *call)
 	lash_info("Loading project from %s", project_path);
 
 	// TODO: Evaluate return, send error return if necessary
-	server_project_restore_by_dir(g_server, project_path);
+	server_project_restore_by_dir(project_path);
 }
 
 static void
@@ -769,7 +769,7 @@ lashd_dbus_project_move(method_call_t *call)
 		return;
 	}
 
-	project = server_find_project_by_name(g_server, project_name);
+	project = server_find_project_by_name(project_name);
 
 	// TODO: Make project_move return bool so that we can return D-Bus error
 	if (project)
@@ -804,7 +804,7 @@ lashd_dbus_project_rename(
 		return;
 	}
 
-	project_ptr = server_find_project_by_name(g_server, old_project_name);
+	project_ptr = server_find_project_by_name(old_project_name);
 	if (project_ptr == NULL)
 	{
 		lash_dbus_error(
@@ -836,7 +836,7 @@ lashd_dbus_project_save(method_call_t *call)
 		return;
 	}
 
-	if (!server_project_save_by_name(g_server, project_name)) {
+	if (!server_project_save_by_name(project_name)) {
 		lash_dbus_error(call, LASH_DBUS_ERROR_UNKNOWN_PROJECT,
 		                "Cannot find project \"%s\"", project_name);
 	}
@@ -860,7 +860,7 @@ lashd_dbus_project_close(method_call_t *call)
 		return;
 	}
 
-	if (!server_project_close_by_name(g_server, project_name)) {
+	if (!server_project_close_by_name(project_name)) {
 		lash_dbus_error(call, LASH_DBUS_ERROR_UNKNOWN_PROJECT,
 		                "Cannot find project \"%s\"", project_name);
 	}
@@ -871,7 +871,7 @@ lashd_dbus_projects_save_all(method_call_t *call)
 {
 	lash_debug("Saving all projects");
 
-	server_save_all_projects(g_server);
+	server_save_all_projects();
 }
 
 static void
@@ -879,7 +879,7 @@ lashd_dbus_projects_close_all(method_call_t *call)
 {
 	lash_debug("Closing all projects");
 
-	server_close_all_projects(g_server);
+	server_close_all_projects();
 }
 
 static void
