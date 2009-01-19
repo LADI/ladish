@@ -37,7 +37,7 @@ struct _lashd_jackdbus_mgr
 };
 
 lashd_jackdbus_mgr_t *
-lashd_jackdbus_mgr_new(server_t *server);
+lashd_jackdbus_mgr_new(void);
 
 void
 lashd_jackdbus_mgr_destroy(lashd_jackdbus_mgr_t *mgr);

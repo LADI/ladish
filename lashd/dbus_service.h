@@ -25,7 +25,7 @@
 #include "types.h"
 
 service_t *
-lashd_dbus_service_new(server_t *server);
+lashd_dbus_service_new(void);
 
 /* The appropriate destructor is service_destroy() in dbus/service.c */
 

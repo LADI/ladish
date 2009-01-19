@@ -52,60 +52,51 @@
 server_t *g_server = NULL;
 
 static void
-server_fill_projects(server_t *server);
-
-static void
-server_destroy(server_t *server);
+server_fill_projects(void);
 
 bool
 server_start(const char *default_dir)
 {
-	server_t *server;
+	g_server = lash_calloc(1, sizeof(server_t));
 
-	server = lash_calloc(1, sizeof(server_t));
-
-	INIT_LIST_HEAD(&server->loaded_projects);
-	INIT_LIST_HEAD(&server->all_projects);
+	INIT_LIST_HEAD(&g_server->loaded_projects);
+	INIT_LIST_HEAD(&g_server->all_projects);
 
 	lash_debug("Starting server");
 
-	if (!lash_appdb_load(&server->appdb)) {
+	if (!lash_appdb_load(&g_server->appdb)) {
 		lash_error("Failed to load application database");
-		free(server);
-		return false;
+		goto fail;
 	}
 
 #ifdef LASH_DEBUG
 	struct list_head *node;
 	struct lash_appdb_entry *entry;
 
-	list_for_each (node, &server->appdb) {
+	list_for_each (node, &g_server->appdb) {
 		entry = list_entry(node, struct lash_appdb_entry, siblings);
 		lash_info("Application '%s'", entry->name);
 	}
 #endif
 
-	server->projects_dir = lash_dup_fqn(getenv("HOME"), default_dir);
+	g_server->projects_dir = lash_dup_fqn(getenv("HOME"), default_dir);
 
-	server_fill_projects(server);
+	server_fill_projects();
 
 #ifndef HAVE_JACK_DBUS
-	server->jack_mgr = jack_mgr_new();
+	g_server->jack_mgr = jack_mgr_new();
 #endif
 #ifdef HAVE_ALSA
-	server->alsa_mgr = alsa_mgr_new();
+	g_server->alsa_mgr = alsa_mgr_new();
 #endif
 
-	server->dbus_service = lashd_dbus_service_new(server);
-	if (!server->dbus_service) {
+	if (!(g_server->dbus_service = lashd_dbus_service_new())) {
 		lash_debug("Failed to launch D-Bus service");
 		goto fail;
 	}
-	g_server = server;
 
 #ifdef HAVE_JACK_DBUS
-	server->jackdbus_mgr = lashd_jackdbus_mgr_new(server);
-	if (!server->jackdbus_mgr) {
+	if (!(g_server->jackdbus_mgr = lashd_jackdbus_mgr_new())) {
 		lash_debug("Failed to launch JACK D-Bus manager");
 		goto fail;
 	}
@@ -116,74 +107,69 @@ server_start(const char *default_dir)
 	return true;
 
 fail:
-	server_destroy(server);
+	server_stop();
 	return false;
 }
 
-static void
-server_destroy(server_t *server)
+void
+server_stop(void)
 {
 	struct list_head *node;
 	project_t *project;
 
-	while (!list_empty(&server->all_projects)) {
-		node = server->all_projects.next;
+	if (!g_server)
+		return;
+
+	while (!list_empty(&g_server->all_projects)) {
+		node = g_server->all_projects.next;
 		list_del(node);
 		project = list_entry(node, project_t, siblings_all);
 		project_destroy(project);
 	}
 
 	lash_debug("Destroying D-Bus service");
-	service_destroy(server->dbus_service);
-	server->dbus_service = NULL;
+	service_destroy(g_server->dbus_service);
+	g_server->dbus_service = NULL;
 
 #ifdef HAVE_JACK_DBUS
 	lash_debug("Destroying JACK D-Bus manager");
-	lashd_jackdbus_mgr_destroy(server->jackdbus_mgr);
+	lashd_jackdbus_mgr_destroy(g_server->jackdbus_mgr);
 #else
 	lash_debug("Destroying JACK manager");
-	jack_mgr_lock(server->jack_mgr);
-	jack_mgr_destroy(server->jack_mgr);
+	jack_mgr_lock(g_server->jack_mgr);
+	jack_mgr_destroy(g_server->jack_mgr);
 #endif
 
 #ifdef HAVE_ALSA
 	lash_debug("Destroying ALSA manager");
-	alsa_mgr_lock(server->alsa_mgr);
-	alsa_mgr_destroy(server->alsa_mgr);
+	alsa_mgr_lock(g_server->alsa_mgr);
+	alsa_mgr_destroy(g_server->alsa_mgr);
 #endif
 
-	lash_free(&server->projects_dir);
+	lash_free(&g_server->projects_dir);
 
 	lash_debug("Destroying application database");
-	lash_appdb_free(&server->appdb);
+	lash_appdb_free(&g_server->appdb);
 
-	lash_free(&server);
+	free(g_server);
+	g_server = NULL;
 
 	lash_debug("Server destroyed");
 }
 
-void
-server_stop(void)
-{
-	if (g_server) {
-		server_destroy(g_server);
-		g_server = NULL;
-	}
-}
-
 static void
-server_fill_projects(server_t *server)
+server_fill_projects(void)
 {
 	DIR *dir;
 	struct dirent *dentry;
 	project_t *project;
 
-	lash_debug("Getting projects from directory '%s'", server->projects_dir);
+	lash_debug("Getting projects from directory '%s'", g_server->projects_dir);
 
-	dir = opendir(server->projects_dir);
+	dir = opendir(g_server->projects_dir);
 	if (!dir) {
 		lash_error("Cannot open directory '%s': %s",
-		           server->projects_dir, strerror(errno));
+		           g_server->projects_dir, strerror(errno));
 		return;
 	}
 
@@ -195,10 +181,10 @@ server_fill_projects(server_t *server)
 		if (dentry->d_name[0] == '.')
 			continue;
 
-		project = project_new_from_disk(server->projects_dir, dentry->d_name);
+		project = project_new_from_disk(g_server->projects_dir, dentry->d_name);
 		if (project)
 			list_add_tail(&project->siblings_all,
-			              &server->all_projects);
+			              &g_server->all_projects);
 	}
 
 	closedir(dir);

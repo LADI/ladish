@@ -49,10 +49,10 @@ static bool
 lashd_jackdbus_mgr_get_client_data(jack_mgr_client_t *client);
 
 lashd_jackdbus_mgr_t *
-lashd_jackdbus_mgr_new(server_t *server)
+lashd_jackdbus_mgr_new(void)
 {
-	if (!server || !server->dbus_service
-	    || !server->dbus_service->connection) {
+	if (!g_server || !g_server->dbus_service
+	    || !g_server->dbus_service->connection) {
 		lash_error("NULL server pointer or no D-Bus connection");
 		return NULL;
 	}
@@ -68,7 +68,7 @@ lashd_jackdbus_mgr_new(server_t *server)
 
 	dbus_error_init(&err);
 
-	dbus_bus_add_match(server->dbus_service->connection,
+	dbus_bus_add_match(g_server->dbus_service->connection,
 			   "type='signal'"
 			   ",sender='" JACKDBUS_SERVICE "'"
 			   ",path='" JACKDBUS_OBJECT "'"
@@ -81,7 +81,7 @@ lashd_jackdbus_mgr_new(server_t *server)
 		goto fail;
 	}
 
-	dbus_bus_add_match(server->dbus_service->connection,
+	dbus_bus_add_match(g_server->dbus_service->connection,
 	                   "type='signal'"
 	                   ",sender='" JACKDBUS_SERVICE "'"
 	                   ",path='" JACKDBUS_OBJECT "'"
@@ -94,7 +94,7 @@ lashd_jackdbus_mgr_new(server_t *server)
 		goto fail;
 	}
 
-	dbus_bus_add_match(server->dbus_service->connection,
+	dbus_bus_add_match(g_server->dbus_service->connection,
 	                   "type='signal'"
 	                   ",sender='" JACKDBUS_SERVICE "'"
 	                   ",path='" JACKDBUS_OBJECT "'"
@@ -107,7 +107,7 @@ lashd_jackdbus_mgr_new(server_t *server)
 		goto fail;
 	}
 
-	dbus_bus_add_match(server->dbus_service->connection,
+	dbus_bus_add_match(g_server->dbus_service->connection,
 			   "type='signal'"
 			   ",sender='" JACKDBUS_SERVICE "'"
 			   ",path='" JACKDBUS_OBJECT "'"
@@ -120,7 +120,7 @@ lashd_jackdbus_mgr_new(server_t *server)
 		goto fail;
 	}
 
-	dbus_bus_add_match(server->dbus_service->connection,
+	dbus_bus_add_match(g_server->dbus_service->connection,
 			   "type='signal'"
 			   ",sender='" JACKDBUS_SERVICE "'"
 			   ",path='" JACKDBUS_OBJECT "'"
@@ -134,7 +134,7 @@ lashd_jackdbus_mgr_new(server_t *server)
 	}
 
 	dbus_bus_add_match(
-		server->dbus_service->connection,
+		g_server->dbus_service->connection,
 		"type='signal',interface='" DBUS_INTERFACE_DBUS "',member=NameOwnerChanged,arg0='" JACKDBUS_SERVICE "'",
 		&err);
 	if (dbus_error_is_set(&err)) {
@@ -143,7 +143,7 @@ lashd_jackdbus_mgr_new(server_t *server)
 		goto fail;
 	}
 
-	dbus_bus_add_match(server->dbus_service->connection,
+	dbus_bus_add_match(g_server->dbus_service->connection,
 			   "type='signal'"
 			   ",sender='" JACKDBUS_SERVICE "'"
 			   ",path='" JACKDBUS_OBJECT "'"
@@ -156,7 +156,7 @@ lashd_jackdbus_mgr_new(server_t *server)
 		goto fail;
 	}
 
-	dbus_bus_add_match(server->dbus_service->connection,
+	dbus_bus_add_match(g_server->dbus_service->connection,
 			   "type='signal'"
 			   ",sender='" JACKDBUS_SERVICE "'"
 			   ",path='" JACKDBUS_OBJECT "'"
@@ -169,7 +169,7 @@ lashd_jackdbus_mgr_new(server_t *server)
 		goto fail;
 	}
 
-	if (!dbus_connection_add_filter(server->dbus_service->connection,
+	if (!dbus_connection_add_filter(g_server->dbus_service->connection,
 	                                lashd_jackdbus_handler,
 	                                NULL, NULL)) {
 		lash_error("Failed to add D-Bus filter");

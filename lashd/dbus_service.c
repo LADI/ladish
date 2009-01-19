@@ -38,18 +38,13 @@ lashd_client_disconnect_handler(DBusConnection *conn,
 
 /* The appropriate destructor is service_destroy() in dbus/service.c */
 service_t *
-lashd_dbus_service_new(server_t *server)
+lashd_dbus_service_new(void)
 {
-	if (!server) {
-		lash_debug("NULL server parameter");
-		return NULL;
-	}
-
 	service_t *service;
 	DBusError err;
 
 	                   // TODO: move service name into public header
-	service = service_new("org.nongnu.LASH", &server->quit,
+	service = service_new("org.nongnu.LASH", &g_server->quit,
 	                      1,
 	                      object_path_new("/", NULL, 2,
 	                                      &g_lashd_interface_server,
