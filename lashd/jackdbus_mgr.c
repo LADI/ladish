@@ -45,6 +45,9 @@ lashd_jackdbus_handler(DBusConnection *connection,
                        DBusMessage    *message,
                        void           *data);
 
+static void
+lashd_jackdbus_mgr_get_unknown_clients(lashd_jackdbus_mgr_t *mgr);
+
 static bool
 lashd_jackdbus_mgr_get_client_data(jack_mgr_client_t *client);
 
@@ -179,6 +182,11 @@ lashd_jackdbus_mgr_new(void)
 	INIT_LIST_HEAD(&mgr->clients);
 	INIT_LIST_HEAD(&mgr->unknown_clients);
 	g_jack_mgr_ptr = mgr;
+
+	/* Get list of unknown JACK clients */
+	lashd_jackdbus_mgr_get_graph(mgr);
+	lashd_jackdbus_mgr_get_unknown_clients(mgr);
+
 	return mgr;
 
 fail:
@@ -195,6 +203,133 @@ lashd_jackdbus_mgr_graph_free(void)
 		dbus_message_unref(g_jack_mgr_ptr->graph);
 		g_jack_mgr_ptr->graph = NULL;
 	}
+}
+
+static
+void
+lashd_jackdbus_get_client_pid_return_handler(
+	DBusPendingCall *pending,
+	void            *data)
+{
+	DBusMessage *msg = dbus_pending_call_steal_reply(pending);
+
+	if (msg) {
+		const char *err_str;
+
+		if (!method_return_verify(msg, &err_str))
+			lash_error("Failed to get client pid: %s", err_str);
+		else
+		{
+			DBusError err;
+			dbus_error_init(&err);
+
+			if (!dbus_message_get_args(msg, &err,
+						   DBUS_TYPE_INT64,
+						   data,
+						   DBUS_TYPE_INVALID)) {
+				lash_error("Cannot get message argument: %s", err.message);
+				dbus_error_free(&err);
+			}
+		}
+
+		dbus_message_unref(msg);
+	} else
+		lash_error("Cannot get method return from pending call");
+
+	dbus_pending_call_unref(pending);
+}
+
+static
+dbus_int64_t
+lashd_jackdbus_get_client_pid(
+	dbus_uint64_t client_id)
+{
+	dbus_int64_t pid = 0;
+
+	if (!method_call_new_valist(
+		g_server->dbus_service,
+		&pid,
+		lashd_jackdbus_get_client_pid_return_handler,
+		true,
+		JACKDBUS_SERVICE,
+		JACKDBUS_OBJECT,
+		JACKDBUS_IFACE_PATCHBAY,
+		"GetClientPID",
+		DBUS_TYPE_UINT64,
+		&client_id,
+		DBUS_TYPE_INVALID))
+	{
+		return 0;
+	}
+
+	return pid;
+}
+
+/** Fill @a mgr 's unknown_clients list with one @a jack_mgr_client_t object per
+ * each currently running JACK client. This is done in @a lashd_jackdbus_mgr_new
+ * for @a mgr to be able to later on match JACK client PIDs against LASH clients.
+ * @a mgr must be properly initialized, contain a valid graph, and its
+ * unknown_clients list must be empty.
+ * @param mgr Pointer to JACK D-Bus manager.
+ */
+static void
+lashd_jackdbus_mgr_get_unknown_clients(lashd_jackdbus_mgr_t *mgr)
+{
+	lash_debug("Getting unknown JACK clients from graph");
+
+	DBusMessageIter iter, array_iter, struct_iter;
+	dbus_uint64_t client_id;
+	const char *client_name;
+	jack_mgr_client_t *jack_client;
+
+	if (!mgr->graph) {
+		lash_error("Cannot find graph");
+		return;
+	}
+
+	/* The graph message has already been checked, this should be safe */
+	dbus_message_iter_init(mgr->graph, &iter);
+
+	/* Skip over the graph version argument */
+	dbus_message_iter_next(&iter);
+
+	/* Check that we're getting the client array as expected */
+	if (dbus_message_iter_get_arg_type(&iter) != DBUS_TYPE_ARRAY) {
+		lash_error("Cannot find client array in graph");
+		goto fail;
+	}
+
+	/* Iterate the client array and store clients as unknown */
+	dbus_message_iter_recurse(&iter, &array_iter);
+	while (dbus_message_iter_get_arg_type(&array_iter) == DBUS_TYPE_STRUCT) {
+		dbus_message_iter_recurse(&array_iter, &struct_iter);
+
+		/* Get client's data from array */
+		if (!method_iter_get_args(&struct_iter,
+		                          DBUS_TYPE_UINT64, &client_id,
+		                          DBUS_TYPE_STRING, &client_name,
+		                          DBUS_TYPE_INVALID)) {
+			lash_error("Failed to parse client array in graph");
+			goto fail;
+		}
+
+		/* Create JACK client and store in mgr->unknown_clients */
+		jack_client = jack_mgr_client_new();
+		jack_client->name = lash_strdup(client_name);
+		jack_client->jackdbus_id = client_id;
+		jack_client->pid = (pid_t) lashd_jackdbus_get_client_pid(client_id);
+		lash_debug("Storing unknown JACK client '%s'", client_name);
+		list_add_tail(&jack_client->siblings, &mgr->unknown_clients);
+
+		dbus_message_iter_next(&array_iter);
+	}
+
+	return;
+
+fail:
+	/* If we're here there was something rotten in the graph message,
+	   we should remove it */
+	lashd_jackdbus_mgr_graph_free();
 }
 
 void
@@ -289,66 +424,6 @@ lashd_jackdbus_mgr_connect_ports(const char *client1_name,
 	                       DBUS_TYPE_STRING,
 	                       &port2_name,
 	                       DBUS_TYPE_INVALID);
-}
-
-static
-void
-lashd_jackdbus_get_client_pid_return_handler(
-	DBusPendingCall *pending,
-	void            *data)
-{
-	DBusMessage *msg = dbus_pending_call_steal_reply(pending);
-
-	if (msg) {
-		const char *err_str;
-
-		if (!method_return_verify(msg, &err_str))
-			lash_error("Failed to get client pid: %s", err_str);
-		else
-		{
-			DBusError err;
-			dbus_error_init(&err);
-
-			if (!dbus_message_get_args(msg, &err,
-						   DBUS_TYPE_INT64,
-						   data,
-						   DBUS_TYPE_INVALID)) {
-				lash_error("Cannot get message argument: %s", err.message);
-				dbus_error_free(&err);
-			}
-		}
-
-		dbus_message_unref(msg);
-	} else
-		lash_error("Cannot get method return from pending call");
-
-	dbus_pending_call_unref(pending);
-}
-
-static
-dbus_int64_t
-lashd_jackdbus_get_client_pid(
-	dbus_uint64_t client_id)
-{
-	dbus_int64_t pid = 0;
-
-	if (!method_call_new_valist(
-		g_server->dbus_service,
-		&pid,
-		lashd_jackdbus_get_client_pid_return_handler,
-		true,
-		JACKDBUS_SERVICE,
-		JACKDBUS_OBJECT,
-		JACKDBUS_IFACE_PATCHBAY,
-		"GetClientPID",
-		DBUS_TYPE_UINT64,
-		&client_id,
-		DBUS_TYPE_INVALID))
-	{
-		return 0;
-	}
-
-	return pid;
 }
 
 static
