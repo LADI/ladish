@@ -998,9 +998,17 @@ lashd_jackdbus_handler(DBusConnection *connection,
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
-// TODO: This is messy, there's gotta be something that can be done. This is
-//       also used by lashd_jackdbus_mgr_ports_connected(), and there's some
-//       redundancy going on.
+/** Check if the patch described by @a client1_id, @a client1_name, @a port1_name,
+ * @a client2_id, @a client2_name, and @a port2_name is an old patch of @a client.
+ * If it is remove it from @a client 's old_patches list.
+ * @param client Pointer to client whose old patches to check.
+ * @param client1_id Patch source client ID.
+ * @param client1_name Patch source client name.
+ * @param port1_name Patch source port name.
+ * @param client2_id Patch destination client ID.
+ * @param client2_name Patch destination client name.
+ * @param port2_name Patch destination port name.
+ */
 static void
 lashd_jackdbus_mgr_check_patches(jack_mgr_client_t *client,
                                  dbus_uint64_t      client1_id,
