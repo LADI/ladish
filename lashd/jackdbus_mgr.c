@@ -205,11 +205,13 @@ lashd_jackdbus_mgr_graph_free(void)
 	}
 }
 
-static
-void
-lashd_jackdbus_get_client_pid_return_handler(
-	DBusPendingCall *pending,
-	void            *data)
+/** Return handler for GetClientPid method call in @ref lashd_jackdbus_get_client_pid.
+ * @param pending Pointer to D-Bus pending call.
+ * @param data Pointer to memory location in which to store the PID.
+ */
+static void
+lashd_jackdbus_get_client_pid_return_handler(DBusPendingCall *pending,
+                                             void            *data)
 {
 	DBusMessage *msg = dbus_pending_call_steal_reply(pending);
 
@@ -218,15 +220,13 @@ lashd_jackdbus_get_client_pid_return_handler(
 
 		if (!method_return_verify(msg, &err_str))
 			lash_error("Failed to get client pid: %s", err_str);
-		else
-		{
+		else {
 			DBusError err;
 			dbus_error_init(&err);
 
 			if (!dbus_message_get_args(msg, &err,
-						   DBUS_TYPE_INT64,
-						   data,
-						   DBUS_TYPE_INVALID)) {
+			                           DBUS_TYPE_INT64, data,
+			                           DBUS_TYPE_INVALID)) {
 				lash_error("Cannot get message argument: %s", err.message);
 				dbus_error_free(&err);
 			}
@@ -239,28 +239,26 @@ lashd_jackdbus_get_client_pid_return_handler(
 	dbus_pending_call_unref(pending);
 }
 
-static
-dbus_int64_t
-lashd_jackdbus_get_client_pid(
-	dbus_uint64_t client_id)
+/** Get the PID of the JACK client whose JACK ID matches @a client_id.
+ * @param client_id ID of JACK client whose PID to get.
+ * @return PID of JACK client whose ID matches @a client_id, or 0 if no such
+ *         client exists.
+ */
+static dbus_int64_t
+lashd_jackdbus_get_client_pid(dbus_uint64_t client_id)
 {
-	dbus_int64_t pid = 0;
+	dbus_int64_t pid;
 
-	if (!method_call_new_valist(
-		g_server->dbus_service,
-		&pid,
-		lashd_jackdbus_get_client_pid_return_handler,
-		true,
-		JACKDBUS_SERVICE,
-		JACKDBUS_OBJECT,
-		JACKDBUS_IFACE_PATCHBAY,
-		"GetClientPID",
-		DBUS_TYPE_UINT64,
-		&client_id,
-		DBUS_TYPE_INVALID))
-	{
-		return 0;
-	}
+	if (!method_call_new_valist(g_server->dbus_service, &pid,
+	                            lashd_jackdbus_get_client_pid_return_handler,
+	                            true,
+	                            JACKDBUS_SERVICE,
+	                            JACKDBUS_OBJECT,
+	                            JACKDBUS_IFACE_PATCHBAY,
+	                            "GetClientPID",
+	                            DBUS_TYPE_UINT64, &client_id,
+	                            DBUS_TYPE_INVALID))
+		pid = 0;
 
 	return pid;
 }
