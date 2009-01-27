@@ -626,21 +626,8 @@ lashd_jackdbus_mgr_check_connection(
 {
 	client_t * client_ptr;
 
-	if (client1_id == jack_client_ptr->jackdbus_id)
-	{
-		if (client2_id == jack_client_ptr->jackdbus_id)
-		{
-			/* Patch is an internal connection */
-			return;
-		}
-
-		/* An output port patch */
-	}
-	else if (client2_id == jack_client_ptr->jackdbus_id)
-	{
-		/* An input port patch */
-	}
-	else
+	if (client1_id != jack_client_ptr->jackdbus_id
+	    && client2_id != jack_client_ptr->jackdbus_id)
 	{
 		/* Patch does not involve the client */
 		return;
