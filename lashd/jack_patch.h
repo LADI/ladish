@@ -79,6 +79,25 @@ jack_patch_list(struct list_head *list)
 
 #ifdef HAVE_JACK_DBUS
 
+/** Create a new JACK patch with the given parameters and return a pointer to it.
+ * The *_uuid and *_name parameters are mutually exclusive; for example if
+ * src_uuid is not NULL then src_name must be NULL, and vice versa.
+ * @param src_uuid Pointer to source client UUID, or NULL if \a src_name is given.
+ * @param dest_uuid Pointer to destination client UUID, or NULL if \a dest_name is given.
+ * @param src_name Source client name, or NULL if \a src_uuid is given.
+ * @param dest_name Destination client name, or NULL if \a dest_uuid is given.
+ * @param src_port Source port name.
+ * @param dest_port Destination port name.
+ * @return Pointer to newly allocated JACK patch.
+ */
+jack_patch_t *
+jack_patch_new_with_all(uuid_t     *src_uuid,
+                        uuid_t     *dest_uuid,
+                        const char  *src_name,
+                        const char  *dest_name,
+                        const char  *src_port,
+                        const char  *dest_port);
+
 /** Search for the patch described by @a src_uuid, @a src_name, @a src_port,
  * @a dest_uuid, @a dest_name, and @a dest_port in @a patch_list and
  * return a pointer to it, or NULL if the patch was not found.

@@ -193,6 +193,37 @@ jack_patch_dup(const jack_patch_t *other)
 #ifdef HAVE_JACK_DBUS
 
 jack_patch_t *
+jack_patch_new_with_all(uuid_t     *src_uuid,
+                        uuid_t     *dest_uuid,
+                        const char *src_name,
+                        const char *dest_name,
+                        const char *src_port,
+                        const char *dest_port)
+{
+	jack_patch_t *patch;
+
+	patch = lash_calloc(1, sizeof(jack_patch_t));
+
+	if (src_uuid)
+		uuid_copy(patch->src_client_id, *src_uuid);
+	else
+		patch->src_client = lash_strdup(src_name);
+
+	if (dest_uuid)
+		uuid_copy(patch->dest_client_id, *dest_uuid);
+	else
+		patch->dest_client = lash_strdup(dest_name);
+
+	patch->src_port = lash_strdup(src_port);
+	patch->dest_port = lash_strdup(dest_port);
+
+	jack_patch_set_src_desc(patch);
+	jack_patch_set_dest_desc(patch);
+
+	return patch;
+}
+
+jack_patch_t *
 jack_patch_find_by_description(struct list_head *patch_list,
                                uuid_t           *src_uuid,
                                const char       *src_name,
