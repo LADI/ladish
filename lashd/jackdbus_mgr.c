@@ -617,27 +617,20 @@ lashd_jackdbus_mgr_del_old_patch(jack_mgr_client_t *client,
                                  const char        *dest_name,
                                  const char        *dest_port);
 
-static
-void
-lashd_jackdbus_mgr_check_connection(
-	jack_mgr_client_t * jack_client_ptr,
-	dbus_uint64_t client1_id,
-	dbus_uint64_t client2_id)
+static void
+lashd_jackdbus_mgr_check_connection(jack_mgr_client_t *jack_client,
+                                    dbus_uint64_t      client1_id,
+                                    dbus_uint64_t      client2_id)
 {
-	client_t * client_ptr;
+	client_t *client;
 
-	if (client1_id != jack_client_ptr->jackdbus_id
-	    && client2_id != jack_client_ptr->jackdbus_id)
-	{
+	if (client1_id != jack_client->jackdbus_id 
+	    && client2_id != jack_client->jackdbus_id)
 		/* Patch does not involve the client */
 		return;
-	}
 
-	client_ptr = server_find_client_by_id(jack_client_ptr->id);
-	if (client_ptr != NULL && client_ptr->project != NULL)
-	{
-		project_set_modified_status(client_ptr->project, true);
-	}
+	if ((client = server_find_client_by_id(jack_client->id)) && client->project)
+		project_set_modified_status(client->project, true);
 }
 
 static void
