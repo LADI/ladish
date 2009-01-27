@@ -978,6 +978,47 @@ lashd_jackdbus_handler(DBusConnection *connection,
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
+/** If the JACK patch between clients with IDs @a src_id and @a dest_id  belongs
+ * to @a client fill in @a src_uuid and @a dest_uuid.
+ * @param client Pointer to client.
+ * @param src_id Patch source client ID.
+ * @param dest_id Patch destination client ID.
+ * @param src_uuid Pointer to pointer to source UUID.
+ * @param dest_uuid Pointer to pointer to destination UUID.
+ * @return False if the patch doesn't belong to @a client, true otherwise.
+ */
+static bool
+lashd_jackdbus_mgr_get_patch_uuids(jack_mgr_client_t  *client,
+                                   dbus_uint64_t       src_id,
+                                   dbus_uint64_t       dest_id,
+                                   uuid_t            **src_uuid,
+                                   uuid_t            **dest_uuid)
+{
+	jack_mgr_client_t *c;
+
+	/* Check if the described patch belongs to the client */
+	if (src_id != client->jackdbus_id && dest_id != client->jackdbus_id)
+		return false;
+
+	/* Grab pointer to UUID of source client if it is known */
+	*src_uuid = ((src_id == client->jackdbus_id)
+	             ? &client->id
+	             : ((c = jack_mgr_client_find_by_jackdbus_id(&g_jack_mgr_ptr->clients,
+	                                                         src_id))
+	                ? &c->id
+	                : NULL));
+
+	/* Grab pointer to UUID of destination client if it is known */
+	*dest_uuid = ((dest_id == client->jackdbus_id)
+	              ? &client->id
+	              : ((c = jack_mgr_client_find_by_jackdbus_id(&g_jack_mgr_ptr->clients,
+	                                                          dest_id))
+	                 ? &c->id
+	                 : NULL));
+
+	return true;
+}
+
 /** Delete the patch described by @a src_id, @a src_name, @a src_port,
  * @a dest_id, @a dest_name, and @a dest_port from @a client 's old_patches
  * list.
@@ -999,32 +1040,14 @@ lashd_jackdbus_mgr_del_old_patch(jack_mgr_client_t *client,
                                  const char        *dest_port)
 {
 	uuid_t *src_uuid, *dest_uuid;
-	jack_mgr_client_t *c;
 	jack_patch_t *patch;
 
-	/* Check if the described patch is associated with the client */
-	if (src_id != client->jackdbus_id && dest_id != client->jackdbus_id)
-		return;
-
-	/* Grab pointer to UUID of source client if it is known */
-	src_uuid = ((src_id == client->jackdbus_id)
-	            ? &client->id
-	            : ((c = jack_mgr_client_find_by_jackdbus_id(&g_jack_mgr_ptr->clients,
-	                                                        src_id))
-	               ? &c->id
-	               : NULL));
-
-	/* Grab pointer to UUID of destination client if it is known */
-	dest_uuid = ((dest_id == client->jackdbus_id)
-	             ? &client->id
-	             : ((c = jack_mgr_client_find_by_jackdbus_id(&g_jack_mgr_ptr->clients,
-	                                                         dest_id))
-	                ? &c->id
-	                : NULL));
-
-	if (!(patch = jack_patch_find_by_description(&client->old_patches,
-	                                             src_uuid, src_name, src_port,
-	                                             dest_uuid, dest_name, dest_port)))
+	/* If the patch belongs to the client try to get its pointer */
+	if (!lashd_jackdbus_mgr_get_patch_uuids(client, src_id, dest_id,
+	                                        &src_uuid, &dest_uuid)
+	    || !(patch = jack_patch_find_by_description(&client->old_patches,
+	                                                src_uuid, src_name, src_port,
+	                                                dest_uuid, dest_name, dest_port)))
 		return;
 
 	/* Patch was found and can be deleted */
@@ -1214,13 +1237,12 @@ lashd_jackdbus_mgr_get_client_patches(lashd_jackdbus_mgr_t *mgr,
 		return false;
 	}
 
-	jack_mgr_client_t *client, *other_client;
+	jack_mgr_client_t *client;
 	jack_patch_t *patch;
 	DBusMessageIter iter, array_iter, struct_iter;
-	dbus_uint64_t client1_id, client2_id, other_id;
-	const char *client1_name, *port1_name, *client2_name, *port2_name, *other_name;
-	bool port_is_input;
-	uuid_t *client1_uuid, *client2_uuid, *other_uuid;
+	dbus_uint64_t client1_id, client2_id;
+	const char *client1_name, *port1_name, *client2_name, *port2_name;
+	uuid_t *client1_uuid, *client2_uuid;
 
 	if (!mgr->graph) {
 		lash_error("Cannot find graph");
@@ -1270,71 +1292,17 @@ lashd_jackdbus_mgr_get_client_patches(lashd_jackdbus_mgr_t *mgr,
 			goto fail;
 		}
 
-		//lash_info("Connection %s:%s -> %s:%s", client1_name, port1_name, client2_name, port2_name);
-
-		/* Skip unwanted patches, deduce port direction */
-		if (client1_id == client->jackdbus_id) {
-			if (client2_id == client->jackdbus_id) {
-				/* Patch is an internal connection */
-				dbus_message_iter_next(&array_iter);
-				continue;
-			} else {
-				/* Client owns the patch's output port */
-				port_is_input = false;
-				other_id = client2_id;
-			}
-		} else if (client2_id != client->jackdbus_id) {
-			/* Patch does not involve the client */
+		/* Get patch UUIDs, skip patch if neither is the client's */
+		if (!lashd_jackdbus_mgr_get_patch_uuids(client, client1_id, client2_id,
+		                                        &client1_uuid, &client2_uuid)) {
 			dbus_message_iter_next(&array_iter);
-			//lash_info("skipping internal connection");
 			continue;
-		} else {
-			/* Client owns the patch's input port */
-			port_is_input = true;
-			other_id = client1_id;
 		}
 
-		other_client =
-		  jack_mgr_client_find_by_jackdbus_id(&mgr->clients, other_id);
-
-		if (other_client) {
-			other_uuid = &other_client->id;
-			other_name = NULL;
-		} else {
-			other_uuid = NULL;
-			other_name = port_is_input ? client1_name
-			                           : client2_name;
-		}
-
-		if (port_is_input) {
-			client1_name = other_name;
-			client1_uuid = other_uuid;
-			client2_name = client->name;
-			client2_uuid = &client->id;
-		} else {
-			client1_name = client->name;
-			client1_uuid = &client->id;
-			client2_name = other_name;
-			client2_uuid = other_uuid;
-		}
-
-		patch = jack_patch_new();
-
-		if (client1_uuid)
-			uuid_copy(patch->src_client_id, *client1_uuid);
-		else
-			patch->src_client = lash_strdup(client1_name);
-
-		if (client2_uuid)
-			uuid_copy(patch->dest_client_id, *client2_uuid);
-		else
-			patch->dest_client = lash_strdup(client2_name);
-
-		patch->src_port = lash_strdup(port1_name);
-		patch->dest_port = lash_strdup(port2_name);
-
-		//lash_info("Adding patch %s:%s -> %s:%s", patch->src_client, patch->src_port, patch->dest_client, patch->dest_port);
-
+		/* Create new patch object and append to the list */
+		patch = jack_patch_new_with_all(client1_uuid, client2_uuid,
+		                                client1_name, client2_name,
+		                                port1_name, port2_name);
 		list_add_tail(&patch->siblings, dest);
 
 		dbus_message_iter_next(&array_iter);
