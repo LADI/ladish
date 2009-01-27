@@ -609,13 +609,13 @@ lashd_jackdbus_mgr_new_client_port(jack_mgr_client_t *client,
 }
 
 static void
-lashd_jackdbus_mgr_check_patches(jack_mgr_client_t *client,
-                                 dbus_uint64_t      client1_id,
-                                 const char        *client1_name,
-                                 const char        *port1_name,
-                                 dbus_uint64_t      client2_id,
-                                 const char        *client2_name,
-                                 const char        *port2_name);
+lashd_jackdbus_mgr_del_old_patch(jack_mgr_client_t *client,
+                                 dbus_uint64_t      src_id,
+                                 const char        *src_name,
+                                 const char        *src_port,
+                                 dbus_uint64_t      dest_id,
+                                 const char        *dest_name,
+                                 const char        *dest_port);
 
 static
 void
@@ -667,7 +667,7 @@ lashd_jackdbus_mgr_ports_connected(dbus_uint64_t  client1_id,
 	                                             client1_id);
 	if (client)
 	{
-		lashd_jackdbus_mgr_check_patches(client, client1_id,
+		lashd_jackdbus_mgr_del_old_patch(client, client1_id,
 		                                 client1_name, port1_name,
 		                                 client2_id, client2_name,
 		                                 port2_name);
@@ -679,7 +679,7 @@ lashd_jackdbus_mgr_ports_connected(dbus_uint64_t  client1_id,
 	                                             client2_id);
 	if (client)
 	{
-		lashd_jackdbus_mgr_check_patches(client, client1_id,
+		lashd_jackdbus_mgr_del_old_patch(client, client1_id,
 		                                 client1_name, port1_name,
 		                                 client2_id, client2_name,
 		                                 port2_name);
@@ -998,116 +998,69 @@ lashd_jackdbus_handler(DBusConnection *connection,
 	return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
-/** Check if the patch described by @a client1_id, @a client1_name, @a port1_name,
- * @a client2_id, @a client2_name, and @a port2_name is an old patch of @a client.
- * If it is remove it from @a client 's old_patches list.
- * @param client Pointer to client whose old patches to check.
- * @param client1_id Patch source client ID.
- * @param client1_name Patch source client name.
- * @param port1_name Patch source port name.
- * @param client2_id Patch destination client ID.
- * @param client2_name Patch destination client name.
- * @param port2_name Patch destination port name.
+/** Delete the patch described by @a src_id, @a src_name, @a src_port,
+ * @a dest_id, @a dest_name, and @a dest_port from @a client 's old_patches
+ * list.
+ * @param client Pointer to client.
+ * @param src_id Patch source client ID.
+ * @param src_name Patch source client name.
+ * @param src_port Patch source port name.
+ * @param dest_id Patch destination client ID.
+ * @param dest_name Patch destination client name.
+ * @param dest_port Patch destination port name.
  */
 static void
-lashd_jackdbus_mgr_check_patches(jack_mgr_client_t *client,
-                                 dbus_uint64_t      client1_id,
-                                 const char        *client1_name,
-                                 const char        *port1_name,
-                                 dbus_uint64_t      client2_id,
-                                 const char        *client2_name,
-                                 const char        *port2_name)
+lashd_jackdbus_mgr_del_old_patch(jack_mgr_client_t *client,
+                                 dbus_uint64_t      src_id,
+                                 const char        *src_name,
+                                 const char        *src_port,
+                                 dbus_uint64_t      dest_id,
+                                 const char        *dest_name,
+                                 const char        *dest_port)
 {
-	bool port_is_input;
-	dbus_uint64_t other_id;
-	jack_mgr_client_t *other_client;
-	const char *other_client_name;
-	const char *this_port_name, *other_port_name;
-	struct list_head *node, *next;
+	uuid_t *src_uuid, *dest_uuid;
+	jack_mgr_client_t *c;
 	jack_patch_t *patch;
-	uuid_t *uuid_ptr;
-	char *name, *this_port, *that_port;
 
-	if (client1_id == client->jackdbus_id) {
-		if (client2_id == client->jackdbus_id)
-			/* Patch is an internal connection */
-			return;
-
-		/* An output port patch */
-		other_id = client2_id;
-		this_port_name = port1_name;
-		other_port_name = port2_name;
-		port_is_input = false;
-	} else if (client2_id == client->jackdbus_id) {
-		/* An input port patch */
-		other_id = client1_id;
-		this_port_name = port2_name;
-		other_port_name = port1_name;
-		port_is_input = true;
-	} else
-		/* Patch does not involve the client */
+	/* Check if the described patch is associated with the client */
+	if (src_id != client->jackdbus_id && dest_id != client->jackdbus_id)
 		return;
 
-	// TODO: Perhaps find out the "other client" beforehand and pass its
-	//       pointer to us?
-	other_client =
-	  jack_mgr_client_find_by_jackdbus_id(&g_jack_mgr_ptr->clients,
-	                                      other_id);
-	if (other_client) {
-		other_client_name = NULL;
-	} else {
-		if (port_is_input)
-			other_client_name = client1_name;
-		else
-			other_client_name = client2_name;
-	}
+	/* Grab pointer to UUID of source client if it is known */
+	src_uuid = ((src_id == client->jackdbus_id)
+	            ? &client->id
+	            : ((c = jack_mgr_client_find_by_jackdbus_id(&g_jack_mgr_ptr->clients,
+	                                                        src_id))
+	               ? &c->id
+	               : NULL));
 
-	list_for_each_safe (node, next, &client->old_patches) {
-		patch = list_entry(node, jack_patch_t, siblings);
+	/* Grab pointer to UUID of destination client if it is known */
+	dest_uuid = ((dest_id == client->jackdbus_id)
+	             ? &client->id
+	             : ((c = jack_mgr_client_find_by_jackdbus_id(&g_jack_mgr_ptr->clients,
+	                                                         dest_id))
+	                ? &c->id
+	                : NULL));
 
-		uuid_ptr = NULL;
-		name = NULL;
+	if (!(patch = jack_patch_find_by_description(&client->old_patches,
+	                                             src_uuid, src_name, src_port,
+	                                             dest_uuid, dest_name, dest_port)))
+		return;
 
-		if (port_is_input) {
-			this_port = patch->dest_port;
-			that_port = patch->src_port;
-			if (patch->src_client)
-				name = patch->src_client;
-			else
-				uuid_ptr = &patch->src_client_id;
-		} else {
-			this_port = patch->src_port;
-			that_port = patch->dest_port;
-			if (patch->dest_client)
-				name = patch->dest_client;
-			else
-				uuid_ptr = &patch->dest_client_id;
-		}
+	/* Patch was found and can be deleted */
 
-		if (other_client) {
-			if (!uuid_ptr || uuid_compare(*uuid_ptr,
-			                              other_client->id) != 0)
-				continue;
-		} else if (!name || strcmp(name, other_client_name) != 0)
-			continue;
+	lash_debug("Connected patch '%s:%s' -> '%s:%s' is an old patch "
+	           "of client '%s'; removing from list", src_name,
+	           src_port, dest_name, dest_port, client->name);
 
-		if (strcmp(this_port, this_port_name) != 0
-		    || strcmp(that_port, other_port_name) != 0)
-			continue;
+	list_del(&patch->siblings);
+	jack_patch_destroy(patch);
 
-		lash_debug("Connected patch '%s:%s' -> '%s:%s' is an old patch "
-		           "of client '%s'; removing from list", client1_name,
-		           port1_name, client2_name, port2_name, client->name);
-
-		list_del(&patch->siblings);
-		jack_patch_destroy(patch);
 #ifdef LASH_DEBUG
-		if (list_empty(&client->old_patches))
-			lash_debug("All old patches of client '%s' have "
-			           "now been connected", client->name);
+	if (list_empty(&client->old_patches))
+		lash_debug("All old patches of client '%s' have "
+		           "now been connected", client->name);
 #endif
-		break;
-	}
 }
 
 static bool
@@ -1229,7 +1182,7 @@ lashd_jackdbus_mgr_get_client_data(jack_mgr_client_t *client)
 			goto fail;
 		}
 
-		lashd_jackdbus_mgr_check_patches(client, client1_id,
+		lashd_jackdbus_mgr_del_old_patch(client, client1_id,
 		                                 client1_name, port1_name,
 		                                 client2_id, client2_name,
 		                                 port2_name);
