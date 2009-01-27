@@ -38,6 +38,7 @@ struct _jack_mgr_client
 {
 	struct list_head  siblings;
 	char             *name;
+	// TODO: Add pointer to parent LASH client object, use that to reference the UUID
 	uuid_t            id;
 	struct list_head  old_patches;
 	struct list_head  backup_patches;
