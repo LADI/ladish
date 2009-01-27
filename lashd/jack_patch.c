@@ -190,7 +190,52 @@ jack_patch_dup(const jack_patch_t *other)
 	return patch;
 }
 
-#ifndef HAVE_JACK_DBUS
+#ifdef HAVE_JACK_DBUS
+
+jack_patch_t *
+jack_patch_find_by_description(struct list_head *patch_list,
+                               uuid_t           *src_uuid,
+                               const char       *src_name,
+                               const char       *src_port,
+                               uuid_t           *dest_uuid,
+                               const char       *dest_name,
+                               const char       *dest_port)
+{
+	struct list_head *node;
+
+ 	/* Iterate the patch list looking for one that matches the desription */
+	list_for_each (node, patch_list) {
+		jack_patch_t *patch = list_entry(node, jack_patch_t, siblings);
+
+		/* Check if source and destination ports match */
+		if (strcmp(patch->src_port, src_port) != 0
+		    || strcmp(patch->dest_port, dest_port) != 0)
+			continue;
+
+		/* Check if source clients match */
+		if (src_uuid) {
+			if (uuid_is_null(patch->src_client_id)
+			    || uuid_compare(*src_uuid, patch->src_client_id) != 0)
+				continue;
+		} else if (strcmp(patch->src_client, src_name) != 0)
+			continue;
+
+		/* Check if destination clients match */
+		if (dest_uuid) {
+			if (uuid_is_null(patch->dest_client_id)
+			    || uuid_compare(*dest_uuid, patch->dest_client_id) != 0)
+				continue;
+		} else if (strcmp(patch->dest_client, dest_name) != 0)
+			continue;
+
+		/* Match found */
+		return patch;
+	}
+
+	return NULL;
+}
+
+#else /* !HAVE_JACK_DBUS */
 
 /*
  * Find a client in the JACK manager client list whose name matches

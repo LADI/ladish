@@ -77,7 +77,30 @@ jack_patch_list(struct list_head *list)
 }
 #endif
 
-#ifndef HAVE_JACK_DBUS
+#ifdef HAVE_JACK_DBUS
+
+/** Search for the patch described by @a src_uuid, @a src_name, @a src_port,
+ * @a dest_uuid, @a dest_name, and @a dest_port in @a patch_list and
+ * return a pointer to it, or NULL if the patch was not found.
+ * @param patch_list List of @ref jack_patch_t objects.
+ * @param src_uuid Pointer to patch source client UUID, or NULL if unknown.
+ * @param src_name Patch source client name.
+ * @param src_port Patch source port name.
+ * @param dest_uuid Pointer to patch destination client UUID, or NULL if unknown.
+ * @param dest_name Patch destination client name.
+ * @param dest_port Patch destination port name.
+ * @return Pointer to patch or NULL if not found.
+ */
+jack_patch_t *
+jack_patch_find_by_description(struct list_head *patch_list,
+                               uuid_t           *src_uuid,
+                               const char       *src__name,
+                               const char       *src_port,
+                               uuid_t           *dest_uuid,
+                               const char       *dest_name,
+                               const char       *dest_port);
+
+#else /* !HAVE_JACK_DBUS */
 
 /* set/unset the lash IDs */
 void
