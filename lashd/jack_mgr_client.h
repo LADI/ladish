@@ -82,6 +82,12 @@ jack_mgr_client_t *
 jack_mgr_client_find_by_pid(struct list_head *client_list,
                             pid_t             pid);
 
+/** Notify the world that @a client 's parameters were modified.
+ * @param client Pointer to JACK client.
+ */
+void
+jack_mgr_client_modified(jack_mgr_client_t *client);
+
 #else /* !HAVE_JACK_DBUS */
 
 void
