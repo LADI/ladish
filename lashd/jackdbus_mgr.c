@@ -477,21 +477,32 @@ lashd_jackdbus_on_client_disappeared(dbus_uint64_t client_id)
 	jack_mgr_client_destroy(client);
 }
 
+/** Search all known JACK clients for old patches that involve the foreign port
+ * described by @a client_name and @a port_name, attempt to reconnect all found
+ * patches.
+ * @param client_name Name of the client that the foreign port belongs to.
+ * @param port_name Name of the foreign port.
+ */
 static void
 lashd_jackdbus_mgr_new_foreign_port(const char *client_name,
                                     const char *port_name)
 {
-	lash_debug("new foreign port '%s:%s'", client_name, port_name);
+	lash_debug("New foreign port '%s:%s'", client_name, port_name);
 
 	struct list_head *node, *node2;
 	jack_mgr_client_t *client;
 	jack_patch_t *patch;
 
+	/* Iterate JACK clients */
 	list_for_each (node, &g_jack_mgr_ptr->clients) {
 		client = list_entry(node, jack_mgr_client_t, siblings);
 
+		/* Iterate client's old patches */
 		list_for_each (node2, &client->old_patches) {
 			patch = list_entry(node2, jack_patch_t, siblings);
+
+			/* If patch is a connection between client and new port
+			   reconnect it now */
 
 			if (uuid_compare(patch->src_client_id, client->id) == 0) {
 				if (!patch->dest_client
