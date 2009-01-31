@@ -599,6 +599,10 @@ lashd_jackdbus_mgr_ports_connected(dbus_uint64_t  client1_id,
 		                                 port2_name);
 
 		jack_mgr_client_modified(client);
+
+		/* If this is an internal connection we're done */
+		if (client1_id == client2_id)
+			return;
 	}
 
 	client = jack_mgr_client_find_by_jackdbus_id(&g_jack_mgr_ptr->clients,
@@ -629,6 +633,10 @@ lashd_jackdbus_mgr_ports_disconnected(
 	if (client)
 	{
 		jack_mgr_client_modified(client);
+
+		/* If this was an internal connection we're done */
+		if (client1_id == client2_id)
+			return;
 	}
 
 	client = jack_mgr_client_find_by_jackdbus_id(&g_jack_mgr_ptr->clients, client2_id);
