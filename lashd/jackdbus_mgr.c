@@ -486,9 +486,6 @@ lashd_jackdbus_mgr_new_foreign_port(const char *client_name,
 	struct list_head *node, *node2;
 	jack_mgr_client_t *client;
 	jack_patch_t *patch;
-	const char *foreign_client, *foreign_port;
-	bool port_is_input;
-	const char *client1_name, *port1_name, *client2_name, *port2_name;
 
 	list_for_each (node, &g_jack_mgr_ptr->clients) {
 		client = list_entry(node, jack_mgr_client_t, siblings);
@@ -496,42 +493,26 @@ lashd_jackdbus_mgr_new_foreign_port(const char *client_name,
 		list_for_each (node2, &client->old_patches) {
 			patch = list_entry(node2, jack_patch_t, siblings);
 
-			if (uuid_compare(patch->src_client_id,
-			                 client->id) == 0) {
-				if (!patch->dest_client)
+			if (uuid_compare(patch->src_client_id, client->id) == 0) {
+				if (!patch->dest_client
+				    || strcmp(patch->dest_client, client_name) != 0
+				    || strcmp(patch->dest_port, port_name) != 0)
 					continue;
 
-				foreign_client = patch->dest_client;
-				foreign_port = patch->dest_port;
-				port_is_input = false;
+				lashd_jackdbus_mgr_connect_ports(client->name,
+				                                 patch->src_port,
+				                                 client_name,
+				                                 port_name);
 			} else {
-				if (!patch->src_client)
+				if (!patch->src_client
+				    || strcmp(patch->src_client, client_name) != 0
+				    || strcmp(patch->src_port, port_name) != 0)
 					continue;
 
-				foreign_client = patch->src_client;
-				foreign_port = patch->src_port;
-				port_is_input = true;
-			}
-
-			if (strcmp(foreign_client, client_name) == 0
-			    && strcmp(foreign_port, port_name) == 0) {
-
-				if (port_is_input) {
-					client1_name = foreign_client;
-					port1_name = foreign_port;
-					client2_name = client->name;
-					port2_name = patch->dest_port;
-				} else {
-					client1_name = client->name;
-					port1_name = patch->src_port;
-					client2_name = foreign_client;
-					port2_name = foreign_port;
-				}
-
-				lashd_jackdbus_mgr_connect_ports(client1_name,
-				                                 port1_name,
-				                                 client2_name,
-				                                 port2_name);
+				lashd_jackdbus_mgr_connect_ports(client_name,
+				                                 port_name,
+				                                 client->name,
+				                                 patch->dest_port);
 			}
 		}
 	}
