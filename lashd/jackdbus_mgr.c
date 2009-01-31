@@ -580,22 +580,6 @@ lashd_jackdbus_mgr_del_old_patch(jack_mgr_client_t *client,
                                  const char        *dest_port);
 
 static void
-lashd_jackdbus_mgr_check_connection(jack_mgr_client_t *jack_client,
-                                    dbus_uint64_t      client1_id,
-                                    dbus_uint64_t      client2_id)
-{
-	client_t *client;
-
-	if (client1_id != jack_client->jackdbus_id 
-	    && client2_id != jack_client->jackdbus_id)
-		/* Patch does not involve the client */
-		return;
-
-	if ((client = server_find_client_by_id(jack_client->id)) && client->project)
-		project_set_modified_status(client->project, true);
-}
-
-static void
 lashd_jackdbus_mgr_ports_connected(dbus_uint64_t  client1_id,
                                    const char    *client1_name,
                                    const char    *port1_name,
@@ -614,7 +598,7 @@ lashd_jackdbus_mgr_ports_connected(dbus_uint64_t  client1_id,
 		                                 client2_id, client2_name,
 		                                 port2_name);
 
-		lashd_jackdbus_mgr_check_connection(client, client1_id, client2_id);
+		jack_mgr_client_modified(client);
 	}
 
 	client = jack_mgr_client_find_by_jackdbus_id(&g_jack_mgr_ptr->clients,
@@ -626,7 +610,7 @@ lashd_jackdbus_mgr_ports_connected(dbus_uint64_t  client1_id,
 		                                 client2_id, client2_name,
 		                                 port2_name);
 
-		lashd_jackdbus_mgr_check_connection(client, client1_id, client2_id);
+		jack_mgr_client_modified(client);
 	}
 }
 
@@ -644,13 +628,13 @@ lashd_jackdbus_mgr_ports_disconnected(
 	client = jack_mgr_client_find_by_jackdbus_id(&g_jack_mgr_ptr->clients, client1_id);
 	if (client)
 	{
-		lashd_jackdbus_mgr_check_connection(client, client1_id, client2_id);
+		jack_mgr_client_modified(client);
 	}
 
 	client = jack_mgr_client_find_by_jackdbus_id(&g_jack_mgr_ptr->clients, client2_id);
 	if (client)
 	{
-		lashd_jackdbus_mgr_check_connection(client, client1_id, client2_id);
+		jack_mgr_client_modified(client);
 	}
 }
 
