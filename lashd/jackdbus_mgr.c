@@ -536,67 +536,37 @@ lashd_jackdbus_mgr_new_client_port(jack_mgr_client_t *client,
 {
 	lash_debug("New client port '%s:%s'", client_name, port_name);
 
-	jack_mgr_client_t *other_client;
 	struct list_head *node;
 	jack_patch_t *patch;
-	bool port_is_input;
-	uuid_t *other_id;
-	const char *client1_name, *port1_name, *client2_name, *port2_name;
+	const char *ptr;
+	jack_mgr_client_t *c;
 
 	/* Iterate the client's old patches and try to connect those which
 	   contain the new port */
 	list_for_each (node, &client->old_patches) {
 		patch = list_entry(node, jack_patch_t, siblings);
 
-		/* See which port the client owns, and check
-		   whether it's the one that just appeared */
-		if (uuid_compare(patch->src_client_id, client->id) == 0) {
-			/* The client owns the patch's source port */
-			if (strcmp(patch->src_port, port_name) == 0) {
-				/* New port is the patch's source port */
-				client1_name = client->name;
-				port1_name = port_name;
-				port2_name = patch->dest_port;
-				other_id = &patch->dest_client_id;
-				port_is_input = false;
-			} else /* Not the correct port */
-				continue;
-		} else {
-			/* The client owns the patch's destination port */
-			if (strcmp(patch->dest_port, port_name) == 0) {
-				/* New port is the patch's destination port */
-				client2_name = client->name;
-				port1_name = patch->src_port;
-				port2_name = port_name;
-				other_id = &patch->src_client_id;
-				port_is_input = true;
-			} else /* Not the correct port */
-				continue;
+		if (uuid_compare(patch->src_client_id, client->id) == 0
+		    && strcmp(patch->src_port, port_name) == 0) {
+			ptr = (patch->dest_client
+			       ? patch->dest_client
+			       : ((c = jack_mgr_client_find_by_id(&g_jack_mgr_ptr->clients,
+			                                          patch->dest_client_id))
+			          ? (c->name ? c->name : "")
+			          : ""));
+			lashd_jackdbus_mgr_connect_ports(client_name, port_name,
+			                                 ptr, patch->dest_port);
+		} else if (uuid_compare(patch->dest_client_id, client->id) == 0
+		    && strcmp(patch->dest_port, port_name) == 0) {
+			ptr = (patch->src_client
+			       ? patch->src_client
+			       : ((c = jack_mgr_client_find_by_id(&g_jack_mgr_ptr->clients,
+			                                          patch->src_client_id))
+			          ? (c->name ? c->name : "")
+			          : ""));
+			lashd_jackdbus_mgr_connect_ports(ptr, patch->src_port,
+			                                 client_name, port_name);
 		}
-
-		/* Check if the patch's other port belongs to a client */
-		if (!uuid_is_null(*other_id))
-			other_client = jack_mgr_client_find_by_id(&g_jack_mgr_ptr->clients,
-			                                          *other_id);
-		else
-			other_client = NULL;
-
-		/* Set the correct name for the other client. If the name is
-		   NULL it means that the other client isn't ready yet. */
-		if (port_is_input) {
-			client1_name = other_client ? other_client->name
-			                            : patch->src_client;
-			if (!client1_name)
-				continue;
-		} else {
-			client2_name = other_client ? other_client->name
-			                            : patch->dest_client;
-			if (!client2_name)
-				continue;
-		}
-
-		lashd_jackdbus_mgr_connect_ports(client1_name, port1_name,
-		                                 client2_name, port2_name);
 	}
 }
 
