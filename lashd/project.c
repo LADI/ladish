@@ -164,7 +164,7 @@ project_set_modified_status(project_t *project,
 	                  DBUS_TYPE_INVALID);
 }
 
-static void
+void
 project_name_client(project_t  *project,
                     client_t   *client)
 {

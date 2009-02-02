@@ -263,6 +263,10 @@ project_set_modified_status(project_t *project,
                             bool       new_status);
 
 void
+project_name_client(project_t  *project,
+                    client_t   *client);
+
+void
 project_new_client(
 	project_t *project,
 	client_t  *client);

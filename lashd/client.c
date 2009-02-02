@@ -420,6 +420,9 @@ client_resume_project(client_t *client)
 	/* Link client to project's clients list */
 	list_add(&client->siblings, &client->project->clients);
 
+	if (!client->name || !client->name[0])
+		project_name_client(client->project, client);
+
 	// TODO: Need to check if the client's name is still ok?
 
 	lash_info("Resumed client %s of class '%s' in project '%s'",
