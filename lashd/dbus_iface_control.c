@@ -467,14 +467,12 @@ lashd_dbus_return_client_list(method_call_t *call,
 		return;
 	}
 
-	lash_debug("creating client list return");
 	lashd_dbus_create_client_list_return(call, project_name, want_lost_clients);
 }
 
 static void
 lashd_dbus_project_get_clients(method_call_t *call)
 {
-	lash_debug("getting client list");
 	lashd_dbus_return_client_list(call, false);
 }
 
