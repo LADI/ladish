@@ -478,19 +478,9 @@ server_add_client(const char  *dbus_name,
 	client_t *client;
 
 	/* See if we launched this client */
-	if (pid && (client = server_find_lost_client_by_pid(pid)))
-		goto resume;
-
-	project_t *project = server_get_newborn_project();
-
-	/* See if this is a recovering client */
-	if (!(flags & LASH_No_Autoresume) && class
-	    && (client = project_find_lost_client_by_class(project, class))) {
-		client->pid = pid;
-	resume:
+	if (pid && (client = server_find_lost_client_by_pid(pid))) {
 		lash_strset(&client->dbus_name, dbus_name);
 		client_resume_project(client);
-
 	/* Otherwise add a new client */
 	} else {
 		client = client_new();
@@ -501,7 +491,7 @@ server_add_client(const char  *dbus_name,
 		client->argv = argv;
 		lash_strset(&client->dbus_name, dbus_name);
 		lash_strset(&client->working_dir, working_dir);
-		project_new_client(project, client);
+		project_new_client(server_get_newborn_project(), client);
 	}
 
 #ifdef HAVE_JACK_DBUS
