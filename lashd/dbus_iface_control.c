@@ -385,49 +385,24 @@ lashd_dbus_project_set_notes(
 	project_set_notes(project_ptr, notes);
 }
 
-static
-void
-lashd_dbus_project_get_clients(
-	method_call_t * call)
+static void
+lashd_dbus_create_client_list_return(method_call_t *call,
+                                     const char    *project_name,
+                                     bool           want_lost_clients)
 {
 	DBusMessageIter iter, array_iter, struct_iter;
-	DBusError error;
-	const char *project_name;
-	project_t * project_ptr;
-	client_t * client_ptr;
-	struct list_head * node_ptr;
-	const char * value_string;
+	project_t *project;
+	client_t *client;
+	struct list_head *head, *node;
+	const char *str;
 
-	dbus_error_init(&error);
-
-	if (!dbus_message_get_args(
-		    call->message,
-		    &error,
-		    DBUS_TYPE_STRING, &project_name,
-		    DBUS_TYPE_INVALID))
-	{
-		lash_dbus_error(
-			call,
-			LASH_DBUS_ERROR_INVALID_ARGS,
-			"Invalid arguments to method \"%s\"",
-			call->method_name);
-		dbus_error_free(&error);
+	if (!(project = server_find_project_by_name(project_name))) {
+		lash_dbus_error(call, LASH_DBUS_ERROR_UNKNOWN_PROJECT,
+		                "Cannot find project \"%s\"", project_name);
 		return;
 	}
 
-	project_ptr = server_find_project_by_name(project_name);
-	if (project_ptr == NULL)
-	{
-		lash_dbus_error(
-			call,
-			LASH_DBUS_ERROR_UNKNOWN_PROJECT,
-			"Cannot find project \"%s\"",
-			project_name);
-		return;
-	}
-
-	call->reply = dbus_message_new_method_return(call->message);
-	if (!call->reply)
+	if (!(call->reply = dbus_message_new_method_return(call->message)))
 		goto fail;
 
 	dbus_message_iter_init_append(call->reply, &iter);
@@ -435,31 +410,32 @@ lashd_dbus_project_get_clients(
 	if (!dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "(ss)", &array_iter))
 		goto fail_unref;
 
-	list_for_each(node_ptr, &project_ptr->clients)
-	{
-		client_ptr = list_entry(node_ptr, client_t, siblings);
+	head = want_lost_clients ? &project->lost_clients : &project->clients;
+	list_for_each(node, head) {
+		client = list_entry(node, client_t, siblings);
 
 		if (!dbus_message_iter_open_container(&array_iter, DBUS_TYPE_STRUCT, NULL, &struct_iter))
-			goto fail_unref;
-
-		value_string = client_ptr->id_str;
-
-		if (!dbus_message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &value_string))
 			goto fail_close_array_iter;
 
-		value_string = client_ptr->name;
+		str = client->id_str;
+		if (!dbus_message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &str))
+			goto fail_close_struct_iter;
 
-		if (!dbus_message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &value_string))
-			goto fail_close_array_iter;
+		str = client->name;
+		if (!dbus_message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &str))
+			goto fail_close_struct_iter;
 
 		if (!dbus_message_iter_close_container(&array_iter, &struct_iter))
-			goto fail_unref;
+			goto fail_close_array_iter;
 	}
 
 	if (!dbus_message_iter_close_container(&iter, &array_iter))
 		goto fail_unref;
 
 	return;
+
+fail_close_struct_iter:
+	dbus_message_iter_close_container(&array_iter, &struct_iter);
 
 fail_close_array_iter:
 	dbus_message_iter_close_container(&iter, &array_iter);
@@ -470,6 +446,42 @@ fail_unref:
 
 fail:
 	lash_error("Ran out of memory trying to construct method return");
+}
+
+void
+lashd_dbus_return_client_list(method_call_t *call,
+                              bool           want_lost_clients)
+{
+	DBusError err;
+	const char *project_name;
+
+	dbus_error_init(&err);
+
+	if (!dbus_message_get_args(call->message, &err,
+	                           DBUS_TYPE_STRING, &project_name,
+	                           DBUS_TYPE_INVALID)) {
+		lash_dbus_error(call, LASH_DBUS_ERROR_INVALID_ARGS,
+		                "Invalid arguments to method \"%s\"",
+		                call->method_name);
+		dbus_error_free(&err);
+		return;
+	}
+
+	lash_debug("creating client list return");
+	lashd_dbus_create_client_list_return(call, project_name, want_lost_clients);
+}
+
+static void
+lashd_dbus_project_get_clients(method_call_t *call)
+{
+	lash_debug("getting client list");
+	lashd_dbus_return_client_list(call, false);
+}
+
+static void
+lashd_dbus_project_get_lost_clients(method_call_t *call)
+{
+	lashd_dbus_return_client_list(call, true);
 }
 
 static void
@@ -1042,6 +1054,11 @@ METHOD_ARGS_BEGIN(ProjectGetClients)
   METHOD_ARG_DESCRIBE("client_list", "a(ss)", DIRECTION_OUT)
 METHOD_ARGS_END
 
+METHOD_ARGS_BEGIN(ProjectGetLostClients)
+  METHOD_ARG_DESCRIBE("project_name", "s", DIRECTION_IN)
+  METHOD_ARG_DESCRIBE("client_list", "a(ss)", DIRECTION_OUT)
+METHOD_ARGS_END
+
 // TODO: GetProjectPath
 
 METHOD_ARGS_BEGIN(ApplicationsGet)
@@ -1104,6 +1121,7 @@ METHODS_BEGIN
   METHOD_DESCRIBE(ProjectSetDescription, lashd_dbus_project_set_description)
   METHOD_DESCRIBE(ProjectSetNotes, lashd_dbus_project_set_notes)
   METHOD_DESCRIBE(ProjectGetClients, lashd_dbus_project_get_clients)
+  METHOD_DESCRIBE(ProjectGetLostClients, lashd_dbus_project_get_lost_clients)
   METHOD_DESCRIBE(ApplicationsGet, lashd_dbus_applications_get)
   METHOD_DESCRIBE(ClientGetDependencies, lashd_dbus_client_get_dependencies)
   METHOD_DESCRIBE(ClientAddDependency, lashd_dbus_client_add_dependency)
