@@ -736,6 +736,54 @@ lashd_dbus_client_remove_dependency(method_call_t *call)
 }
 
 static void
+lashd_dbus_lost_client_launch(method_call_t *call)
+{
+	DBusError err;
+	const char *project_name, *client_id_str;
+	uuid_t client_id;
+	project_t *project;
+	client_t *client;
+
+	dbus_error_init(&err);
+
+	if (!dbus_message_get_args(call->message, &err,
+	                           DBUS_TYPE_STRING,
+	                           &project_name,
+	                           DBUS_TYPE_STRING,
+	                           &client_id_str,
+	                           DBUS_TYPE_INVALID)) {
+		lash_dbus_error(call, LASH_DBUS_ERROR_INVALID_ARGS,
+		                "Invalid arguments to method \"%s\"",
+		                call->method_name);
+		dbus_error_free(&err);
+		return;
+	}
+
+	if (uuid_parse((char *) client_id_str, client_id) != 0) {
+		lash_dbus_error(call, LASH_DBUS_ERROR_INVALID_CLIENT_ID,
+		                "Cannot parse client ID string \"%s\"",
+		                client_id_str);
+		return;
+	}
+
+	if (!(project = server_find_project_by_name(project_name))) {
+		lash_dbus_error(call, LASH_DBUS_ERROR_UNKNOWN_PROJECT,
+		                "Cannot find project \"%s\"",
+		                project_name);
+		return;
+	}
+
+	if (!(client = project_get_client_by_id(&project->lost_clients, client_id))) {
+		lash_dbus_error(call, LASH_DBUS_ERROR_UNKNOWN_CLIENT,
+		                "Cannot find client '%s'",
+		                client_id_str);
+		return;
+	}
+
+	project_launch_client(project, client);
+}
+
+static void
 lashd_dbus_load_project_path(method_call_t *call)
 {
 	DBusError err;
@@ -1080,6 +1128,11 @@ METHOD_ARGS_BEGIN(ClientRemoveDependency)
   METHOD_ARG_DESCRIBE("dependency_id", "s", DIRECTION_IN)
 METHOD_ARGS_END
 
+METHOD_ARGS_BEGIN(LostClientLaunch)
+  METHOD_ARG_DESCRIBE("project_name", "s", DIRECTION_IN)
+  METHOD_ARG_DESCRIBE("client_id", "s", DIRECTION_IN)
+METHOD_ARGS_END
+
 METHOD_ARGS_BEGIN(LoadProjectPath)
   METHOD_ARG_DESCRIBE("project_path", "s", DIRECTION_IN)
 METHOD_ARGS_END
@@ -1124,6 +1177,7 @@ METHODS_BEGIN
   METHOD_DESCRIBE(ClientGetDependencies, lashd_dbus_client_get_dependencies)
   METHOD_DESCRIBE(ClientAddDependency, lashd_dbus_client_add_dependency)
   METHOD_DESCRIBE(ClientRemoveDependency, lashd_dbus_client_remove_dependency)
+  METHOD_DESCRIBE(LostClientLaunch, lashd_dbus_lost_client_launch)
   METHOD_DESCRIBE(LoadProjectPath, lashd_dbus_load_project_path)
   METHOD_DESCRIBE(ProjectMove, lashd_dbus_project_move)
   METHOD_DESCRIBE(ProjectRename, lashd_dbus_project_rename)
