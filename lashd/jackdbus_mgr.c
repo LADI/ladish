@@ -720,9 +720,10 @@ lashd_jackdbus_handle_patchbay_signal(
 
 		/* Check if the new port belongs to a known client */
 		client = jack_mgr_client_find_by_jackdbus_id(&g_jack_mgr_ptr->clients, client1_id);
-		if (client && !list_empty(&client->old_patches))
+		if (client)
 		{
-			lashd_jackdbus_mgr_new_client_port(client, client1_name, port1_name);
+			if (!list_empty(&client->old_patches))
+				lashd_jackdbus_mgr_new_client_port(client, client1_name, port1_name);
 		}
 		else
 		{
