@@ -66,6 +66,10 @@ lashd_dbus_signal_emit_client_disappeared(const char *client_id,
                                           const char *project_name);
 
 void
+lashd_dbus_signal_emit_client_detached(const char *client_id,
+                                       const char *old_project_name);
+
+void
 lashd_dbus_signal_emit_client_name_changed(const char *client_id,
                                            const char *new_client_name);
 
