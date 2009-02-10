@@ -1050,17 +1050,6 @@ lashd_dbus_signal_emit_client_disappeared(const char *client_id,
 }
 
 void
-lashd_dbus_signal_emit_client_detached(const char *client_id,
-                                       const char *old_project_name)
-{
-	signal_new_valist(g_server->dbus_service,
-	                  "/", INTERFACE_NAME, "ClientDetached",
-	                  DBUS_TYPE_STRING, &client_id,
-	                  DBUS_TYPE_STRING, &old_project_name,
-	                  DBUS_TYPE_INVALID);
-}
-
-void
 lashd_dbus_signal_emit_client_name_changed(const char *client_id,
                                            const char *new_client_name)
 {
@@ -1256,11 +1245,6 @@ SIGNAL_ARGS_BEGIN(ClientDisappeared)
   SIGNAL_ARG_DESCRIBE("project_name", "s")
 SIGNAL_ARGS_END
 
-SIGNAL_ARGS_BEGIN(ClientDetached)
-  SIGNAL_ARG_DESCRIBE("client_id", "s")
-  SIGNAL_ARG_DESCRIBE("old_project_name", "s")
-SIGNAL_ARGS_END
-
 SIGNAL_ARGS_BEGIN(ClientNameChanged)
   SIGNAL_ARG_DESCRIBE("client_id", "s")
   SIGNAL_ARG_DESCRIBE("new_name", "s")
@@ -1283,7 +1267,6 @@ SIGNAL_ARGS_END
 SIGNALS_BEGIN
   SIGNAL_DESCRIBE(ProjectAppeared)
   SIGNAL_DESCRIBE(ProjectDisappeared)
-  SIGNAL_DESCRIBE(ProjectDetached)
   SIGNAL_DESCRIBE(ProjectModifiedStatusChanged)
   SIGNAL_DESCRIBE(ProjectNameChanged)
   SIGNAL_DESCRIBE(ProjectDescriptionChanged)
