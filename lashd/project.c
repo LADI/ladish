@@ -83,17 +83,10 @@ static client_t *
 project_get_client_by_name(project_t  *project,
                            const char *name)
 {
-	struct list_head *node;
 	client_t *client;
-
-	list_for_each(node, &project->clients) {
-		client = list_entry(node, client_t, siblings);
-
-		if (client && client->name
-		    && strcmp(client->name, name) == 0)
-			return client;
-	}
-
+	if ((client = client_find_by_name(&project->clients, name))
+	    || (client = client_find_by_name(&project->lost_clients, name)))
+		return client;
 	return NULL;
 }
 
