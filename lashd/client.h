@@ -124,4 +124,13 @@ client_maybe_fill_class(client_t *client);
 void
 client_resume_project(client_t *client);
 
+/** Find the client called @a client_name in list @a client_list.
+ * @param client_list List of @ref client_t type objects.
+ * @param client_name Name of client to find.
+ * @return Pointer to client or NULL if not found.
+ */
+client_t *
+client_find_by_name(struct list_head *client_list,
+                    const char       *client_name);
+
 #endif /* __LASHD_CLIENT_H__ */

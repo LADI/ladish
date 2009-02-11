@@ -441,4 +441,19 @@ client_resume_project(client_t *client)
 	}
 }
 
+client_t *
+client_find_by_name(struct list_head *client_list,
+                    const char       *client_name)
+{
+	struct list_head *node;
+	client_t *client;
+	list_for_each(node, client_list) {
+		if ((client = list_entry(node, client_t, siblings))
+		    && client->name && strcmp(client->name, client_name) == 0) {
+			return client;
+		}
+	}
+	return NULL;
+}
+
 /* EOF */
