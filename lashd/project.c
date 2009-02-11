@@ -164,8 +164,8 @@ project_name_client(project_t  *project,
 	char *name;
 
 	if (!(name = project_get_unique_client_name(project, client))) {
-		lash_error("Cannot name client");
-		return;
+		lash_error("Cannot get unique client name, using empty string");
+		name = lash_strdup("");
 	}
 
 	if (client->name)
