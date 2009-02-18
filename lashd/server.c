@@ -541,6 +541,9 @@ server_project_restore(project_t *project)
 	project->task_type = LASH_TASK_LOAD;
 	project->client_tasks_total = project->client_tasks_progress = 0;
 
+	/* Signal beginning of task */
+	lashd_dbus_signal_emit_progress(0);
+
 	list_for_each (node, &project->lost_clients) {
 		client = list_entry(node, client_t, siblings);
 		client->project = project;

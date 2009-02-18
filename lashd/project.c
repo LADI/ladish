@@ -801,7 +801,10 @@ project_clients_save_complete(
 
 	success = project_write_info(project_ptr);
 
+	/* Signal task completion */
+	lashd_dbus_signal_emit_progress(100);
 	lashd_dbus_signal_emit_project_saved(project_ptr->name);
+
 	project_update_last_modify_time(project_ptr);
 
 	if (success)
@@ -814,9 +817,6 @@ project_clients_save_complete(
 	}
 
 	project_set_modified_status(project_ptr, false);
-
-	/* Reset the controllers' progress display */
-	lashd_dbus_signal_emit_progress(0);
 }
 
 static
@@ -825,13 +825,12 @@ void
 project_loaded(
 	project_t * project_ptr)
 {
+	/* Signal task completion */
+	lashd_dbus_signal_emit_progress(100);
 	lashd_dbus_signal_emit_project_loaded(project_ptr->name);
+
 	lash_info("Project '%s' loaded.", project_ptr->name);
-
 	project_set_modified_status(project_ptr, false);
-
-	/* Reset the controllers' progress display */
-	lashd_dbus_signal_emit_progress(0);
 }
 
 void
@@ -845,7 +844,7 @@ project_save(project_t *project)
 
 	lash_info("Saving project '%s' ...", project->name);
 
-	/* Initialise the controllers' progress display */
+	/* Signal beginning of task */
 	lashd_dbus_signal_emit_progress(0);
 
 	if (list_empty(&project->siblings_all)) {
@@ -1230,7 +1229,13 @@ project_destroy(project_t *project)
 	}
 }
 
-/* Calculate a new overall progress reading for the project's current task */
+/** Update @a project 's and @a client 's progress readings based on  @a client 's
+ * updated progress reading @a percentage. Signal @a project 's updated progress
+ * reading to the outside world.
+ * @param project Project the client belongs to.
+ * @param client Client that has progressed.
+ * @param percentage Percentage at which @a client is now.
+ */
 void
 project_client_progress(project_t *project,
                         client_t  *client,
