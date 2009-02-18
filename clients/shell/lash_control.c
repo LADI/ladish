@@ -537,7 +537,7 @@ lash_control_main(lash_control_t * control)
 
 	prompt = lash_malloc(1, prompt_size);
 
-	printf("\nLASH Control %s\n\n", PACKAGE_VERSION);
+	printf("\nLASH Shell %s\n\n", PACKAGE_VERSION);
 
 #ifdef HAVE_READLINE_HISTORY
 	using_history();
