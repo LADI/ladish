@@ -758,7 +758,7 @@ bool
 lash_client_is_being_restored(lash_client_t *client)
 {
 	/* Client parameter isn't used here but we may need it some day */
-	char *str, *pid_str;
+	char *str, pid_str[21];
 	if ((str = getenv("LASH_CLIENT_IS_BEING_RESTORED"))) {
 		sprintf(pid_str, "%d", getpid());
 		if (strcmp(str, pid_str) == 0)
