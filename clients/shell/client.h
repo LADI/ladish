@@ -36,7 +36,7 @@ struct _client
   unsigned char alsa_client_id;
 };
 
-client_t * client_new ();
+client_t * client_new (uuid_t id);
 void       client_destroy (client_t * client);
 
 const char * client_get_identity (client_t * client);

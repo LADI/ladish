@@ -25,9 +25,11 @@
 #include "common/safety.h"
 
 client_t *
-client_new(void)
+client_new(uuid_t id)
 {
-	return lash_calloc(1, sizeof(client_t));
+	client_t *client = lash_calloc(1, sizeof(client_t));
+	uuid_copy(client->id, id);
+	return client;
 }
 
 void

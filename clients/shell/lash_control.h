@@ -38,6 +38,12 @@ struct _lash_control
 void lash_control_init (lash_control_t * control);
 void lash_control_free (lash_control_t * control);
 
+void lash_control_cb (enum LASH_Event_Type  type,
+                      const char           *str1,
+                      const char           *str2,
+                      uuid_t                client_id,
+                      void                 *data);
+
 void lash_control_main (lash_control_t * control);
 
 #endif /* __LASH_CONTROL_H__ */

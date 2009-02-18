@@ -52,7 +52,6 @@ int
 main(int argc, char **argv)
 {
 	lash_control_t control;
-	lash_args_t *lash_args;
 	lash_client_t *lash_client;
 	int opt;
 	const char *options = "h";
@@ -60,8 +59,6 @@ main(int argc, char **argv)
 		{"help", 0, NULL, 'h'},
 		{0, 0, 0, 0}
 	};
-
-	lash_args = lash_extract_args(&argc, &argv);
 
 	while ((opt = getopt_long(argc, argv, options, long_options, NULL)) != -1) {
 		switch (opt) {
@@ -81,12 +78,13 @@ main(int argc, char **argv)
 		}
 	}
 
-	lash_client =
-		lash_init(lash_args, "LASH Control",
-				  LASH_Server_Interface | LASH_Terminal, LASH_PROTOCOL(2, 0));
-
-	if (!lash_client) {
+	if (!(lash_client = lash_client_open_controller())) {
 		fprintf(stderr, "%s: could not initialise lash\n", __FUNCTION__);
+		exit(1);
+	}
+
+	if (!lash_set_control_callback(lash_client, lash_control_cb, &control)) {
+		fprintf(stderr, "%s: could not set control callback\n", __FUNCTION__);
 		exit(1);
 	}
 

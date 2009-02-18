@@ -184,7 +184,6 @@ command_project(lash_control_t * control, char *arg)
 static void
 command_dir(lash_control_t * control, char *arg)
 {
-	lash_event_t *event;
 	size_t len;
 
 	if (!control->cur_project) {
@@ -201,17 +200,14 @@ command_dir(lash_control_t * control, char *arg)
 	if (arg[len - 1] == '/')
 		arg[len - 1] = '\0';
 
-	event = lash_event_new_with_type(LASH_Project_Dir);
-	lash_event_set_project(event, control->cur_project->name);
-	lash_event_set_string(event, arg);
-	lash_send_event(control->client, event);
-
+	lash_control_move_project(control->client, control->cur_project->name, arg);
 	printf("  Told server to change directory to %s\n", arg);
 }
 
 static void
 command_remove(lash_control_t * control, char *arg)
 {
+/*
 	lash_event_t *event;
 	lash_list_t *node;
 	client_t *client;
@@ -245,30 +241,24 @@ command_remove(lash_control_t * control, char *arg)
 	lash_send_event(control->client, event);
 
 	printf("  Told server to remove client '%s'\n", arg);
+*/
 }
 
 static void
 command_restore(lash_control_t * control, char *arg)
 {
-	lash_event_t *event;
-
 	if (!arg) {
 		printf("  Command requires an argument\n");
 		return;
 	}
 
-	event = lash_event_new_with_type(LASH_Project_Add);
-	lash_event_set_string(event, arg);
-	lash_send_event(control->client, event);
-
+	lash_control_load_project_path(control->client, arg);
 	printf("  Told server to restore project in dir '%s'\n", arg);
 }
 
 static void
 command_name(lash_control_t * control, char *arg)
 {
-	lash_event_t *event;
-
 	if (!control->cur_project) {
 		printf("  No project selected\n");
 		return;
@@ -279,46 +269,31 @@ command_name(lash_control_t * control, char *arg)
 		return;
 	}
 
-	event = lash_event_new();
-	lash_event_set_type(event, LASH_Project_Name);
-	lash_event_set_project(event, control->cur_project->name);
-	lash_event_set_string(event, arg);
-	lash_send_event(control->client, event);
-
+	lash_control_name_project(control->client, control->cur_project->name, arg);
 	printf("  Told server to set project name to '%s'\n", arg);
 }
 
 static void
 command_save(lash_control_t * control)
 {
-	lash_event_t *event;
-
 	if (!control->cur_project) {
 		printf("  No project selected\n");
 		return;
 	}
 
-	event = lash_event_new_with_type(LASH_Save);
-	lash_event_set_project(event, control->cur_project->name);
-	lash_send_event(control->client, event);
-
+	lash_control_save_project(control->client, control->cur_project->name);
 	printf("  Told server to save project\n");
 }
 
 static void
 command_close(lash_control_t * control)
 {
-	lash_event_t *event;
-
 	if (!control->cur_project) {
 		printf("  No project selected\n");
 		return;
 	}
 
-	event = lash_event_new_with_type(LASH_Project_Remove);
-	lash_event_set_project(event, control->cur_project->name);
-	lash_send_event(control->client, event);
-
+	lash_control_close_project(control->client, control->cur_project->name);
 	printf("  Told server to close project\n");
 }
 
@@ -399,174 +374,155 @@ deal_with_command(lash_control_t * control, char *command)
 	return 0;
 }
 
-static void
-deal_with_events(lash_control_t * control)
+static project_t *
+find_project_by_name(lash_control_t *control,
+                     const char     *name)
 {
-	lash_event_t *event = NULL;
-	const char *event_str = NULL;
-	project_t *project = NULL;
-	client_t *client = NULL;
-	uuid_t client_id;
-	lash_list_t *node = NULL, *clnode = NULL;
+	lash_list_t *node;
+	project_t *project;
+	for (node = control->projects; node; node = lash_list_next(node)) {
+		project = (project_t *) node->data;
+		if (strcmp(name, project->name) == 0)
+			return project;
+	}
+	return NULL;
+}
 
-	if (lash_get_pending_event_count(control->client) == 0)
-		return;
+static client_t *
+find_project_client_by_id(project_t *project,
+                          uuid_t     id)
+{
+	lash_list_t *node;
+	client_t *client;
+	for (node = project->clients; node; node = lash_list_next(node)) {
+		client = (client_t *) node->data;
+		if (uuid_compare(client->id, id) == 0)
+			return client;
+	}
+	return NULL;
+}
 
-	while ((event = lash_get_event(control->client))) {
-		event_str = lash_event_get_string(event);
+static client_t *
+find_client_by_id(lash_control_t *control,
+                  uuid_t          id)
+{
+	lash_list_t *node;
+	client_t *client;
+	for (node = control->projects; node; node = lash_list_next(node)) {
+		if ((client = find_project_client_by_id((project_t *) node->data, id)))
+			return client;
+	}
+	return NULL;
+}
 
-		if (lash_event_get_project(event)) {
-			for (node = control->projects; node; node = lash_list_next(node)) {
-				project = (project_t *) node->data;
+void
+lash_control_cb(enum LASH_Event_Type  type,
+                const char           *str1,
+                const char           *str2,
+                uuid_t                client_id,
+                void                 *data)
+{
+	project_t *project;
+	client_t *client;
+	lash_control_t *control = data;
 
-				if (strcmp(project->name, lash_event_get_project(event)) == 0)
-					break;
-				else
-					project = NULL;
-			}
-		} else
-			project = NULL;
+	switch (type) {
+	case LASH_Project_Dir:
+		if ((project = find_project_by_name(control, str1))) {
+			printf("* Project '%s' changed to directory %s\n", str1, str2);
+			lash_strset(&project->dir, str2);
+		}
+		break;
 
-		lash_event_get_client_id(event, client_id);
-		if (!uuid_is_null(client_id)
-			&& lash_event_get_type(event) != LASH_Client_Add) {
-			for (node = control->projects; node; node = lash_list_next(node))
-				for (clnode = ((project_t *) node->data)->clients; clnode;
-					 clnode = lash_list_next(clnode)) {
-					client = (client_t *) clnode->data;
+	case LASH_Project_Name:
+		if ((project = find_project_by_name(control, str1))) {
+			printf("* Project '%s' changed name to '%s'\n", str1, str2);
+			lash_strset(&project->name, str2);
+		}
+		break;
 
-					if (uuid_compare(client->id, client_id) == 0)
-						break;
-					else
-						client = NULL;
-				}
+	case LASH_Project_Add:
+		printf("* New project '%s'\n", str1);
+		project_t *new_project = project_new(str1);
+		control->projects = lash_list_append(control->projects, new_project);
+		/* Set the current project if it's the only one - save user's wrists! */
+		if (lash_list_length(control->projects) == 1)
+			control->cur_project = new_project;
+		break;
 
-			if (!client) {
-				char id[37];
-
-				uuid_unparse(client_id, id);
-				printf("unknown client %s\n", id);
-				continue;
-			}
-		} else
-			client = NULL;
-
-		switch (lash_event_get_type(event)) {
-		case LASH_Project_Dir:
-			printf("* Project '%s' changed to directory %s\n", project->name,
-				   event_str);
-			lash_strset(&project->dir, event_str);
-			break;
-
-		case LASH_Project_Name:
-			printf("* Project '%s' changed name to '%s'\n", project->name,
-				   event_str);
-			lash_strset(&project->name, event_str);
-			break;
-
-		case LASH_Project_Add:
-			printf("* New project '%s'\n", event_str);
-			project_t *new_project = project_new(event_str);
-
-			control->projects =
-				lash_list_append(control->projects, new_project);
-			/* Set the current project if it's the only one - save user's wrists! */
-			if (lash_list_length(control->projects) == 1)
-				control->cur_project = new_project;
-			break;
-
-		case LASH_Project_Remove:
-			printf("* Project '%s' removed\n", project->name);
+	case LASH_Project_Remove:
+		if ((project = find_project_by_name(control, str1))) {
 			control->projects = lash_list_remove(control->projects, project);
 			if (control->cur_project == project)
 				control->cur_project = NULL;
+			printf("* Project '%s' removed\n", project->name);
 			project_destroy(project);
-			break;
+		}
+		break;
 
-		case LASH_Client_Add:
-			client = client_new();
-			lash_event_get_client_id(event, client->id);
+	case LASH_Client_Add:
+		if ((project = find_project_by_name(control, str1))) {
+			client = client_new(client_id);
 			printf("* New client '%s' in project '%s'\n",
-				   client_get_identity(client), project->name);
+			       client_get_identity(client), project->name);
 			project->clients = lash_list_append(project->clients, client);
-			break;
+		}
+		break;
 
-		case LASH_Client_Remove:
+	case LASH_Client_Remove:
+		if (!uuid_is_null(client_id)
+		    && (project = find_project_by_name(control, str1))
+		    && (client = find_project_client_by_id(project, client_id))) {
 			printf("* Client '%s' removed from project '%s'\n",
-				   client_get_identity(client), project->name);
+			       client_get_identity(client), project->name);
 			project->clients = lash_list_remove(project->clients, client);
 			client_destroy(client);
-			break;
+		}
+		break;
 
-			/*    case LASH_Client_Project:
-			 * {
-			 * project_t * new_project;
-			 * 
-			 * printf ("* Client '%s' moved from project '%s' to project '%s'\n",
-			 * client_get_identity (client), project->name, event_str);
-			 * 
-			 * for (node = control->projects; node; node = lash_list_next (node))
-			 * {
-			 * new_project = (project_t *) node->data;
-			 * 
-			 * if (strcmp (new_project->name, event_str) == 0)
-			 * break;
-			 * else
-			 * new_project = NULL;
-			 * }
-			 * 
-			 * if (!new_project)
-			 * {
-			 * fprintf (stderr, "Unknown project '%s'; cannot move client", event_str);
-			 * break;
-			 * }
-			 * 
-			 * new_project->clients = lash_list_append (new_project->clients, client);
-			 * project->clients = lash_list_remove (project->clients, client);
-			 * break;
-			 * } */
-
-		case LASH_Client_Name:
+	case LASH_Client_Name:
+		if (!uuid_is_null(client_id)
+		    && (client = find_client_by_id(control, client_id))) {
 			printf("* Client '%s' changed its name to '%s'\n",
-				   client_get_identity(client), event_str);
-			lash_strset(&client->name, event_str);
-			break;
+			       client_get_identity(client), str1);
+			lash_strset(&client->name, str1);
+		}
+		break;
 
-		case LASH_Jack_Client_Name:
+	case LASH_Jack_Client_Name:
+		if (!uuid_is_null(client_id)
+		    && (client = find_client_by_id(control, client_id))) {
 			printf("* Client '%s' set its JACK client name to '%s'\n",
-				   client_get_identity(client), event_str);
-			lash_strset(&client->jack_client_name, event_str);
-			break;
+			       client_get_identity(client), str1);
+			lash_strset(&client->jack_client_name, str1);
+		}
+		break;
 
-		case LASH_Alsa_Client_ID:
+	case LASH_Alsa_Client_ID:
+		if (!uuid_is_null(client_id)
+		    && (client = find_client_by_id(control, client_id))) {
 			printf("* Client '%s' set its ALSA client ID to '%u'\n",
-				   client_get_identity(client),
-				   lash_str_get_alsa_client_id(event_str));
-			client->alsa_client_id = lash_str_get_alsa_client_id(event_str);
-			break;
+			       client_get_identity(client), lash_str_get_alsa_client_id(str1));
+			client->alsa_client_id = lash_str_get_alsa_client_id(str1);
+		}
+		break;
 
-		case LASH_Server_Lost:
-			printf("* Server connection lost\n");
-			exit(0);
+	case LASH_Percentage:
+		switch ((int) str1[0]) {
+		case 0:
+			printf("* Operation commencing\n");
 			break;
-
-		case LASH_Percentage:
-			if (strcmp(event_str, "0") == 0) {
-				if (project->saving) {
-					printf("* Operation complete\n");
-					project->saving = 0;
-				} else {
-					printf("* Operation commencing\n");
-					project->saving = 1;
-				}
-			} else
-				printf("* Operation %s%% complete\n", event_str);
+		case 100:
+			printf("* Operation complete\n");
 			break;
 		default:
+			printf("* Operation %d%% complete\n", (int) str1[0]);
 			break;
 		}
+		break;
 
-		lash_event_destroy(event);
+	default:
+		break;
 	}
 }
 
@@ -581,9 +537,7 @@ lash_control_main(lash_control_t * control)
 
 	prompt = lash_malloc(1, prompt_size);
 
-	printf("\nLASH Control %s\n", PACKAGE_VERSION);
-	printf("\nConnected to server %s\n\n",
-		   lash_get_server_name(control->client));
+	printf("\nLASH Control %s\n\n", PACKAGE_VERSION);
 
 #ifdef HAVE_READLINE_HISTORY
 	using_history();
@@ -609,7 +563,7 @@ lash_control_main(lash_control_t * control)
 			return;
 		}
 
-		deal_with_events(control);
+		lash_dispatch(control->client);
 
 		if (strlen(command)) {
 			done = deal_with_command(control, command);
