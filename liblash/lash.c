@@ -754,6 +754,13 @@ lash_get_project_name(lash_client_t *client)
 	                       ? client->project_name : NULL);
 }
 
+// TODO
+bool
+lash_client_is_being_restored(lash_client_t *client)
+{
+	return false;
+}
+
 void
 lash_jack_client_name(lash_client_t *client,
                       const char    *name)

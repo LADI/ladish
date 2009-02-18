@@ -37,6 +37,9 @@ lash_get_client_name(lash_client_t *client);
 const char *
 lash_get_project_name(lash_client_t *client);
 
+bool
+lash_client_is_being_restored(lash_client_t *client);
+
 /**
  * Set the Save callback function.
  */
