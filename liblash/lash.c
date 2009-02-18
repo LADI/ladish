@@ -486,9 +486,6 @@ fail:
 	client = NULL;
 
 end:
-	/* Make sure that no forked client process inherits the id */
-	unsetenv("LASH_CLIENT_AUTOLAUNCH_ID");
-
 	return client;
 }
 
@@ -977,7 +974,6 @@ lash_extract_args(int *argc, char ***argv)
 		}
 
 		if (strncmp("--lash-id=", (*argv)[i], 10) == 0) {
-			/* the id is now extracted from an environment var */
 			lash_error("Dropping deprecated --lash-id flag");
 			(*argv)[i] = NULL;
 			continue;
