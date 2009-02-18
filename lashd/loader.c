@@ -480,6 +480,7 @@ loader_execute(client_t *client,
 	}
 
 	if (pid == 0) {
+		char pid_str[16];
 		/* Need to close all open file descriptors except the std ones */
 		struct rlimit max_fds;
 		rlim_t fd;
@@ -495,6 +496,10 @@ loader_execute(client_t *client,
 
 			dup2(stderr_pipe[1], fileno(stderr));
 		}
+
+		/* Let the client know it is being restored */
+		sprintf(pid_str, "%d", getpid());
+		setenv("LASH_CLIENT_IS_BEING_RESTORED", pid_str, 1);
 
 		loader_exec_program(client, run_in_terminal);
 

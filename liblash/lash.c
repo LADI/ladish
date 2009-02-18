@@ -486,6 +486,9 @@ fail:
 	client = NULL;
 
 end:
+	/* Make sure forked client processes don't inherit this */
+	unsetenv("LASH_CLIENT_IS_BEING_RESTORED");
+
 	return client;
 }
 
@@ -751,10 +754,16 @@ lash_get_project_name(lash_client_t *client)
 	                       ? client->project_name : NULL);
 }
 
-// TODO
 bool
 lash_client_is_being_restored(lash_client_t *client)
 {
+	/* Client parameter isn't used here but we may need it some day */
+	char *str, *pid_str;
+	if ((str = getenv("LASH_CLIENT_IS_BEING_RESTORED"))) {
+		sprintf(pid_str, "%d", getpid());
+		if (strcmp(str, pid_str) == 0)
+			return true;
+	}
 	return false;
 }
 
