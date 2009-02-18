@@ -21,6 +21,9 @@
 #ifndef __LASH_CLIENT_INTERFACE_NEW_H_
 #define __LASH_CLIENT_INTERFACE_NEW_H_
 
+#include <stdbool.h>
+#include <lash/types.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
