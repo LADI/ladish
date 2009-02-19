@@ -480,7 +480,7 @@ loader_execute(client_t *client,
 	}
 
 	if (pid == 0) {
-		char pid_str[16];
+		char pid_str[21];
 		/* Need to close all open file descriptors except the std ones */
 		struct rlimit max_fds;
 		rlim_t fd;
