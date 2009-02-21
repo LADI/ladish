@@ -55,6 +55,7 @@ lash_dbus_service_connect_handler(DBusPendingCall *pending,
 	DBusMessage *msg = dbus_pending_call_steal_reply(pending);
 	DBusError err;
 	const char *id_str, *client_name, *project_name, *data_path, *wd, *err_str;
+	dbus_int32_t flags;
 	lash_client_t *client = data;
 
 	if (!msg) {
@@ -74,6 +75,7 @@ lash_dbus_service_connect_handler(DBusPendingCall *pending,
 	                           DBUS_TYPE_STRING, &client_name,
 	                           DBUS_TYPE_STRING, &project_name,
 	                           DBUS_TYPE_STRING, &data_path,
+	                           DBUS_TYPE_INT32, &flags,
 	                           DBUS_TYPE_STRING, &wd,
 	                           DBUS_TYPE_INVALID)) {
 		lash_error("Cannot get message arguments: %s", err.message);
@@ -96,6 +98,7 @@ lash_dbus_service_connect_handler(DBusPendingCall *pending,
 	lash_strset(&client->name, client_name);
 	lash_strset(&client->project_name, project_name);
 	lash_strset(&client->data_path, data_path);
+	client->flags = flags;
 
 	/* Change working directory if the server so demands */
 	if (strcmp(wd, client->working_dir) != 0) {

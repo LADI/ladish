@@ -480,6 +480,7 @@ server_add_client(const char  *dbus_name,
 	/* See if we launched this client */
 	if (pid && (client = server_find_lost_client_by_pid(pid))) {
 		lash_strset(&client->dbus_name, dbus_name);
+		client->flags |= LASH_Restored;
 		client_resume_project(client);
 	/* Otherwise add a new client */
 	} else {

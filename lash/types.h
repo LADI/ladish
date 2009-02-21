@@ -48,7 +48,8 @@ enum LASH_Client_Flag
   LASH_No_Autoresume      =  0x00000008,  /* server shouldn't try to resume a lost client with this one */
   LASH_Terminal           =  0x00000010,   /* runs in a terminal */
 
-  LASH_No_Start_Server    =  0x00000020   /* do not attempt to automatically start server */
+  LASH_No_Start_Server    =  0x00000020,  /* do not attempt to automatically start server */
+  LASH_Restored           =  0x00000040   /* server adds this flag if the client is being restored */
 };
 
 

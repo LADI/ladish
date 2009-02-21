@@ -94,6 +94,7 @@ lashd_dbus_connect(method_call_t *call)
 	client_name = client->name ? client->name : "";
 	project_name = client->project ? client->project->name : "";
 	data_path = client->data_path ? client->data_path : "";
+	flags = client->flags;
 	wd = client->working_dir ? client->working_dir : "";
 
 	method_return_new_valist(call,
@@ -101,6 +102,7 @@ lashd_dbus_connect(method_call_t *call)
 	                         DBUS_TYPE_STRING, &client_name,
 	                         DBUS_TYPE_STRING, &project_name,
 	                         DBUS_TYPE_STRING, &data_path,
+	                         DBUS_TYPE_INT32, &flags,
 	                         DBUS_TYPE_STRING, &wd,
 	                         DBUS_TYPE_INVALID);
 }
@@ -518,6 +520,7 @@ METHOD_ARGS_BEGIN(Connect)
   METHOD_ARG_DESCRIBE("client_name", "s", DIRECTION_OUT)
   METHOD_ARG_DESCRIBE("project_name", "s", DIRECTION_OUT)
   METHOD_ARG_DESCRIBE("data_path", "s", DIRECTION_OUT)
+  METHOD_ARG_DESCRIBE("final_flags", "i", DIRECTION_OUT)
   METHOD_ARG_DESCRIBE("final_working_dir", "s", DIRECTION_OUT)
 METHOD_ARGS_END
 
