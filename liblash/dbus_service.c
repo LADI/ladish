@@ -23,6 +23,7 @@
 #include <string.h>
 #include <errno.h>
 
+#include "common/safety.h"
 #include "common/debug.h"
 
 #include "dbus/object_path.h"

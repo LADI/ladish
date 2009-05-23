@@ -22,8 +22,6 @@
 
 #ifdef HAVE_GTK2
 
-#  define _GNU_SOURCE
-
 #  include <unistd.h>
 
 #  include <gtk/gtk.h>

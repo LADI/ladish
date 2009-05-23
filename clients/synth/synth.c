@@ -5,8 +5,6 @@
 /* playback as proposed by Paul Davis on  */
 /* the linux-audio-dev mailinglist.       */
 
-#define _GNU_SOURCE
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <alsa/asoundlib.h>

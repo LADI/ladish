@@ -1128,7 +1128,7 @@ project_lose_client(project_t *project,
 void
 project_unload(project_t *project)
 {
-	struct list_head *node, *next, *node2, *next2;
+	struct list_head *node, *next;
 	struct lash_client *client;
 
 	LIST_HEAD(patches);
