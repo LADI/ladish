@@ -36,12 +36,12 @@
 #include "dbus_iface_control.h"
 #include "file.h"
 
-client_t *
+struct lash_client *
 client_new(void)
 {
-	client_t *client;
+	struct lash_client *client;
 
-	client = lash_calloc(1, sizeof(client_t));
+	client = lash_calloc(1, sizeof(struct lash_client));
 
 	INIT_LIST_HEAD(&client->jack_patches);
 	INIT_LIST_HEAD(&client->alsa_patches);
@@ -52,7 +52,7 @@ client_new(void)
 }
 
 void
-client_destroy(client_t *client)
+client_destroy(struct lash_client *client)
 {
 	if (client) {
 		lash_free(&client->name);
@@ -70,7 +70,7 @@ client_destroy(client_t *client)
 }
 
 void
-client_disconnected(client_t *client)
+client_disconnected(struct lash_client *client)
 {
 	if (!client)
 		return;
@@ -88,7 +88,7 @@ client_disconnected(client_t *client)
 }
 
 const char *
-client_get_identity(client_t *client)
+client_get_identity(struct lash_client *client)
 {
 	if (client) {
 		return (const char *)
@@ -99,7 +99,7 @@ client_get_identity(client_t *client)
 }
 
 bool
-client_store_open(client_t   *client,
+client_store_open(struct lash_client   *client,
                   const char *dir)
 {
 	if (client->store) {
@@ -122,7 +122,7 @@ client_store_open(client_t   *client,
 }
 
 bool
-client_store_close(client_t *client)
+client_store_close(struct lash_client *client)
 {
 	bool retval;
 
@@ -138,7 +138,7 @@ client_store_close(client_t *client)
 }
 
 void
-client_task_progressed(client_t *client,
+client_task_progressed(struct lash_client *client,
                        uint8_t   percentage)
 {
 	project_t *project = client->project;
@@ -175,7 +175,7 @@ client_task_progressed(client_t *client,
 }
 
 void
-client_task_completed(client_t *client,
+client_task_completed(struct lash_client *client,
                       bool      was_succesful)
 {
 	project_t *project = client->project;
@@ -231,7 +231,7 @@ end:
 
 void
 client_parse_xml(project_t  *project,
-                 client_t   *client,
+                 struct lash_client   *client,
                  xmlNodePtr  parent)
 {
 	xmlNodePtr xmlnode, argnode;
@@ -343,7 +343,7 @@ client_parse_xml(project_t  *project,
 }
 
 void
-client_maybe_fill_class(client_t *client)
+client_maybe_fill_class(struct lash_client *client)
 {
 	const char *name;
 #ifdef HAVE_ALSA
@@ -379,7 +379,7 @@ client_maybe_fill_class(client_t *client)
 }
 
 void
-client_resume_project(client_t *client)
+client_resume_project(struct lash_client *client)
 {
 	bool stateless_client;
 
@@ -441,14 +441,14 @@ client_resume_project(client_t *client)
 	}
 }
 
-client_t *
+struct lash_client *
 client_find_by_name(struct list_head *client_list,
                     const char       *client_name)
 {
 	struct list_head *node;
-	client_t *client;
+	struct lash_client *client;
 	list_for_each(node, client_list) {
-		if ((client = list_entry(node, client_t, siblings))
+		if ((client = list_entry(node, struct lash_client, siblings))
 		    && client->name && strcmp(client->name, client_name) == 0) {
 			return client;
 		}

@@ -26,6 +26,7 @@
 #include <stdbool.h>
 
 #include "types.h"
+#include "client.h"
 
 void
 loader_init(void);
@@ -34,7 +35,7 @@ void
 loader_uninit(void);
 
 void
-loader_execute(client_t *client,
+loader_execute(struct lash_client *client,
                bool      run_in_terminal);
 
 void

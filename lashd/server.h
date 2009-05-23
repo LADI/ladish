@@ -73,7 +73,7 @@ server_main(void);
 project_t *
 server_find_project_by_name(const char *project_name);
 
-client_t *
+struct lash_client *
 server_add_client(const char  *dbus_name,
                   pid_t        pid,
                   const char  *class,
@@ -82,16 +82,16 @@ server_add_client(const char  *dbus_name,
                   int          argc,
                   char       **argv);
 
-client_t *
+struct lash_client *
 server_find_client_by_dbus_name(const char *dbus_name);
 
-client_t *
+struct lash_client *
 server_find_client_by_pid(pid_t pid);
 
-client_t *
+struct lash_client *
 server_find_lost_client_by_pid(pid_t pid);
 
-client_t *
+struct lash_client *
 server_find_client_by_id(uuid_t id);
 
 void

@@ -96,7 +96,7 @@ lashd_client_disconnect_handler(DBusConnection *connection,
 		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 
 	const char *member, *name, *old_name;
-	client_t *client;
+	struct lash_client *client;
 	DBusError err;
 
 	if (!(member = dbus_message_get_member(message))) {

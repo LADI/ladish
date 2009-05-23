@@ -49,8 +49,6 @@ typedef struct _project project_t;
 
 typedef struct _store store_t;
 
-typedef struct _client client_t;
-
 typedef struct _client_dependency client_dependency_t;
 
 #endif /* __LASHD_TYPES_H__ */

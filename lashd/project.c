@@ -64,7 +64,7 @@
 
 static const char *
 project_get_client_config_dir(project_t *project,
-                              client_t  *client);
+                              struct lash_client  *client);
 
 project_t *
 project_new(void)
@@ -79,11 +79,11 @@ project_new(void)
 	return project;
 }
 
-static client_t *
+static struct lash_client *
 project_get_client_by_name(project_t  *project,
                            const char *name)
 {
-	client_t *client;
+	struct lash_client *client;
 	if ((client = client_find_by_name(&project->clients, name))
 	    || (client = client_find_by_name(&project->lost_clients, name)))
 		return client;
@@ -92,7 +92,7 @@ project_get_client_by_name(project_t  *project,
 
 static char *
 project_get_unique_client_name(project_t *project,
-                               client_t  *client)
+                               struct lash_client  *client)
 {
 	uint8_t i;
 	char *str = lash_malloc(1, strlen(client->class) + 4);
@@ -121,15 +121,15 @@ project_get_unique_client_name(project_t *project,
 	return NULL;
 }
 
-client_t *
+struct lash_client *
 project_get_client_by_id(struct list_head *client_list,
                          uuid_t            id)
 {
 	struct list_head *node;
-	client_t *client;
+	struct lash_client *client;
 
 	list_for_each(node, client_list) {
-		client = list_entry(node, client_t, siblings);
+		client = list_entry(node, struct lash_client, siblings);
 
 		if (uuid_compare(client->id, id) == 0)
 			return client;
@@ -159,7 +159,7 @@ project_set_modified_status(project_t *project,
 
 void
 project_name_client(project_t  *project,
-                    client_t   *client)
+                    struct lash_client   *client)
 {
 	char *name;
 
@@ -177,7 +177,7 @@ project_name_client(project_t  *project,
 
 void
 project_new_client(project_t *project,
-                   client_t  *client)
+                   struct lash_client  *client)
 {
 	uuid_generate(client->id);
 	uuid_unparse(client->id, client->id_str);
@@ -213,13 +213,13 @@ project_new_client(project_t *project,
 
 void
 project_satisfy_client_dependency(project_t *project,
-                                  client_t  *client)
+                                  struct lash_client  *client)
 {
 	struct list_head *node;
-	client_t *lost_client;
+	struct lash_client *lost_client;
 
 	list_for_each(node, &project->lost_clients) {
-		lost_client = list_entry(node, client_t, siblings);
+		lost_client = list_entry(node, struct lash_client, siblings);
 
 		if (!list_empty(&lost_client->unsatisfied_deps)) {
 			client_dependency_remove(&lost_client->unsatisfied_deps,
@@ -237,7 +237,7 @@ project_satisfy_client_dependency(project_t *project,
 
 void
 project_load_file(project_t *project,
-                  client_t  *client)
+                  struct lash_client  *client)
 {
 	lash_info("Requesting client '%s' to load data from disk",
 	           client_get_identity(client));
@@ -260,7 +260,7 @@ project_load_file(project_t *project,
 /* Send a LoadDataSet method call to the client */
 void
 project_load_data_set(project_t *project,
-                      client_t  *client)
+                      struct lash_client  *client)
 {
 	if (!client_store_open(client, project_get_client_config_dir(project,
 	                                                             client))) {
@@ -334,19 +334,19 @@ fail:
 
 void
 project_launch_client(project_t *project,
-                      client_t  *client)
+                      struct lash_client  *client)
 {
 	lash_debug("Launching client %s (flags 0x%08X)", client->id_str, client->flags);
 	loader_execute(client, client->flags & LASH_Terminal);
 }
 
-client_t *
+struct lash_client *
 project_find_lost_client_by_class(project_t  *project,
                                   const char *class)
 {
 	struct list_head *node;
 	list_for_each (node, &project->lost_clients) {
-		client_t *client = list_entry(node, client_t, siblings);
+		struct lash_client *client = list_entry(node, struct lash_client, siblings);
 		if (strcmp(client->class, class) == 0)
 			return client;
 	}
@@ -355,7 +355,7 @@ project_find_lost_client_by_class(project_t  *project,
 
 const char *
 project_get_client_dir(project_t *project,
-                       client_t  *client)
+                       struct lash_client  *client)
 {
 	get_store_and_return_fqn(lash_get_fqn(project->directory,
 	                                      PROJECT_ID_DIR),
@@ -364,7 +364,7 @@ project_get_client_dir(project_t *project,
 
 static const char *
 project_get_client_config_dir(project_t *project,
-                              client_t  *client)
+                              struct lash_client  *client)
 {
 	get_store_and_return_fqn(project_get_client_dir(project, client),
 	                         PROJECT_CONFIG_DIR);
@@ -378,7 +378,7 @@ project_move(project_t  *project,
              const char *new_dir)
 {
 	struct list_head *node;
-	client_t *client;
+	struct lash_client *client;
 	DIR *dir = NULL;
 
 	if (!new_dir || !new_dir[0]
@@ -401,7 +401,7 @@ project_move(project_t  *project,
 
 	/* close all the clients' stores */
 	list_for_each (node, &project->clients) {
-		client = list_entry(node, client_t, siblings);
+		client = list_entry(node, struct lash_client, siblings);
 		client_store_close(client);
 		/* FIXME: check for errors */
 	}
@@ -420,7 +420,7 @@ project_move(project_t  *project,
 
 		/* open all the clients' stores again */
 		list_for_each (node, &project->clients) {
-			client = list_entry(node, client_t, siblings);
+			client = list_entry(node, struct lash_client, siblings);
 			client_store_open(client,
 			                  project_get_client_config_dir(project,
 			                                                client));
@@ -437,7 +437,7 @@ project_save_client_handler(DBusPendingCall *pending,
                             void            *data)
 {
 	DBusMessage *msg = dbus_pending_call_steal_reply(pending);
-	client_t *client = data;
+	struct lash_client *client = data;
 
 	if (msg) {
 		const char *err_str;
@@ -471,10 +471,10 @@ static __inline__ void
 project_save_clients(project_t *project)
 {
 	struct list_head *node;
-	client_t *client;
+	struct lash_client *client;
 
 	list_for_each (node, &project->clients) {
-		client = list_entry(node, client_t, siblings);
+		client = list_entry(node, struct lash_client, siblings);
 		if (client->pending_task) {
 			lash_error("Clients have pending tasks, not sending "
 			           "save request");
@@ -496,7 +496,7 @@ project_save_clients(project_t *project)
 	                  DBUS_TYPE_INVALID);
 
 	list_for_each (node, &project->clients) {
-		client = list_entry(node, client_t, siblings);
+		client = list_entry(node, struct lash_client, siblings);
 
 		if (CLIENT_HAS_INTERNAL_STATE(client))
 		{
@@ -516,7 +516,7 @@ project_save_clients(project_t *project)
 
 static void
 project_create_client_jack_patch_xml(project_t  *project,
-                                     client_t   *client,
+                                     struct lash_client   *client,
                                      xmlNodePtr  clientxml)
 {
 	xmlNodePtr jack_patch_set;
@@ -554,7 +554,7 @@ project_create_client_jack_patch_xml(project_t  *project,
 #ifdef HAVE_ALSA
 static void
 project_create_client_alsa_patch_xml(project_t  *project,
-                                     client_t   *client,
+                                     struct lash_client   *client,
                                      xmlNodePtr  clientxml)
 {
 	xmlNodePtr alsa_patch_set;
@@ -581,7 +581,7 @@ project_create_client_alsa_patch_xml(project_t  *project,
 #endif
 
 static void
-project_create_client_dependencies_xml(client_t   *client,
+project_create_client_dependencies_xml(struct lash_client   *client,
                                        xmlNodePtr  parent)
 {
 	struct list_head *node;
@@ -605,7 +605,7 @@ project_create_xml(project_t *project)
 	xmlDocPtr doc;
 	xmlNodePtr lash_project, clientxml, arg_set;
 	struct list_head *node;
-	client_t *client;
+	struct lash_client *client;
 	char num[16];
 	int i;
 
@@ -629,7 +629,7 @@ project_create_xml(project_t *project)
 	            BAD_CAST project->description);
 
 	list_for_each (node, &project->clients) {
-		client = list_entry(node, client_t, siblings);
+		client = list_entry(node, struct lash_client, siblings);
 
 		clientxml = xmlNewChild(lash_project, NULL, BAD_CAST "client",
 		                        NULL);
@@ -701,13 +701,13 @@ static void
 project_clear_lost_clients(project_t *project)
 {
 	struct list_head *head, *node;
-	client_t *client;
+	struct lash_client *client;
 
 	head = &project->lost_clients;
 	node = head->next;
 
 	while (node != head) {
-		client = list_entry(node, client_t, siblings);
+		client = list_entry(node, struct lash_client, siblings);
 		node = node->next;
 
 		if (lash_dir_exists(client->data_path))
@@ -906,7 +906,7 @@ project_load(project_t *project)
 			lash_strset(&project->name, (const char *) content);
 			xmlFree(content);
 		} else if (strcmp((const char *) xmlnode->name, "client") == 0) {
-			client_t *client;
+			struct lash_client *client;
 
 			client = client_new();
 			client->project = project;
@@ -930,7 +930,7 @@ project_load(project_t *project)
 #ifdef LASH_DEBUG
 	{
 		struct list_head *node, *node2;
-		client_t *client;
+		struct lash_client *client;
 		int i;
 
 		lash_debug("Restored project with:");
@@ -938,7 +938,7 @@ project_load(project_t *project)
 		lash_debug("  name:      '%s'", project->name);
 		lash_debug("  clients:");
 		list_for_each (node, &project->lost_clients) {
-			client = list_entry(node, client_t, siblings);
+			client = list_entry(node, struct lash_client, siblings);
 
 			lash_debug("  ------");
 			lash_debug("    id:          '%s'", client->id_str);
@@ -1062,7 +1062,7 @@ project_is_loaded(project_t *project)
 
 void
 project_lose_client(project_t *project,
-                    client_t  *client)
+                    struct lash_client  *client)
 {
 	LIST_HEAD(patches);
 
@@ -1129,7 +1129,7 @@ void
 project_unload(project_t *project)
 {
 	struct list_head *node, *next, *node2, *next2;
-	client_t *client;
+	struct lash_client *client;
 
 	LIST_HEAD(patches);
 
@@ -1143,7 +1143,7 @@ project_unload(project_t *project)
 	                  DBUS_TYPE_STRING, &project->name);
 
 	list_for_each_safe (node, next, &project->clients) {
-		client = list_entry(node, client_t, siblings);
+		client = list_entry(node, struct lash_client, siblings);
 
 		if (client->jack_client_name) {
 #ifdef HAVE_JACK_DBUS
@@ -1170,7 +1170,7 @@ project_unload(project_t *project)
 	}
 
 	list_for_each_safe (node, next, &project->lost_clients) {
-		client = list_entry(node, client_t, siblings);
+		client = list_entry(node, struct lash_client, siblings);
 		list_del(&client->siblings);
 		// TODO: Do lost clients also need to have their
 		//       JACK and ALSA patches destroyed?
@@ -1238,7 +1238,7 @@ project_destroy(project_t *project)
  */
 void
 project_client_progress(project_t *project,
-                        client_t  *client,
+                        struct lash_client  *client,
                         uint8_t    percentage)
 {
 	if (client->task_progress)
@@ -1258,7 +1258,7 @@ project_client_progress(project_t *project,
 /* Send the appropriate signal(s) to signify that a client completed a task */
 void
 project_client_task_completed(project_t *project,
-                              client_t  *client)
+                              struct lash_client  *client)
 {
 	/* Calculate new progress reading and send Progress signal */
 	project_client_progress(project, client, 100);
@@ -1325,7 +1325,7 @@ project_set_notes(project_t  *project,
 
 void
 project_rename_client(project_t  *project,
-                      client_t   *client,
+                      struct lash_client   *client,
                       const char *name)
 {
 	if (strcmp(client->name, name) == 0)

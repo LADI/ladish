@@ -146,7 +146,7 @@ jack_mgr_client_find_by_pid(struct list_head *client_list,
 void
 jack_mgr_client_modified(jack_mgr_client_t *client)
 {
-	client_t *lash_client;
+	struct lash_client *lash_client;
 	if ((lash_client = server_find_client_by_id(client->id))
 	    && lash_client->project)
 		project_set_modified_status(lash_client->project, true);

@@ -27,6 +27,7 @@
 
 #include "common/klist.h"
 #include "types.h"
+#include "client.h"
 
 struct _lashd_jackdbus_mgr
 {
@@ -55,7 +56,7 @@ lashd_jackdbus_mgr_remove_client(lashd_jackdbus_mgr_t *mgr,
  */
 void
 lashd_jackdbus_mgr_bind_client(jack_mgr_client_t *client,
-                               client_t          *lash_client);
+                               struct lash_client          *lash_client);
 
 /** Find client with UUID @a id in jackdbus manager @a mgr and append its
  * patches to @a list. \a list must be properly initialized before calling.

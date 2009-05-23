@@ -392,7 +392,7 @@ lashd_dbus_create_client_list_return(method_call_t *call,
 {
 	DBusMessageIter iter, array_iter, struct_iter;
 	project_t *project;
-	client_t *client;
+	struct lash_client *client;
 	struct list_head *head, *node;
 	const char *str;
 
@@ -412,7 +412,7 @@ lashd_dbus_create_client_list_return(method_call_t *call,
 
 	head = want_lost_clients ? &project->lost_clients : &project->clients;
 	list_for_each(node, head) {
-		client = list_entry(node, client_t, siblings);
+		client = list_entry(node, struct lash_client, siblings);
 
 		if (!dbus_message_iter_open_container(&array_iter, DBUS_TYPE_STRUCT, NULL, &struct_iter))
 			goto fail_close_array_iter;
@@ -549,7 +549,7 @@ lashd_dbus_client_get_dependencies(method_call_t *call)
 	DBusMessageIter iter, array_iter, struct_iter, array_iter2;
 	const char *project_name;
 	project_t *project;
-	client_t *client;
+	struct lash_client *client;
 	client_dependency_t *dep;
 	struct list_head *cnode, *dnode;
 	char *id_str;
@@ -589,7 +589,7 @@ lashd_dbus_client_get_dependencies(method_call_t *call)
 	}
 
 	list_for_each (cnode, &project->clients) {
-		client = list_entry(cnode, client_t, siblings);
+		client = list_entry(cnode, struct lash_client, siblings);
 
 		if (list_empty(&client->dependencies))
 			continue;
@@ -651,7 +651,7 @@ fail:
 static bool
 lashd_dbus_get_client_dependency_modify_data(method_call_t  *call,
                                              project_t     **project,
-                                             client_t      **client,
+                                             struct lash_client      **client,
                                              uuid_t          dep_id)
 {
 	DBusError error;
@@ -716,7 +716,7 @@ static void
 lashd_dbus_client_add_dependency(method_call_t *call)
 {
 	project_t *project;
-	client_t *client;
+	struct lash_client *client;
 	uuid_t dep_id;
 
 	if (lashd_dbus_get_client_dependency_modify_data(call, &project,
@@ -727,7 +727,7 @@ lashd_dbus_client_add_dependency(method_call_t *call)
 static void
 lashd_dbus_client_remove_dependency(method_call_t *call)
 {
-	client_t *client;
+	struct lash_client *client;
 	uuid_t dep_id;
 
 	if (lashd_dbus_get_client_dependency_modify_data(call, NULL,
@@ -742,7 +742,7 @@ lashd_dbus_lost_client_launch(method_call_t *call)
 	const char *project_name, *client_id_str;
 	uuid_t client_id;
 	project_t *project;
-	client_t *client;
+	struct lash_client *client;
 
 	dbus_error_init(&err);
 

@@ -229,7 +229,7 @@ loader_exec_program_in_xterm(char **argv)
 }
 
 static void
-loader_exec_program(client_t *client,
+loader_exec_program(struct lash_client *client,
                     bool      run_in_terminal)
 {
 	/* for non terminal processes we use forkpty() that calls login_tty() that calls setsid() */
@@ -427,7 +427,7 @@ loader_run(void)
 }
 
 void
-loader_execute(client_t *client,
+loader_execute(struct lash_client *client,
                bool      run_in_terminal)
 {
 	pid_t pid;

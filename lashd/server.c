@@ -214,15 +214,15 @@ server_find_project_by_name(const char *project_name)
 	return NULL;
 }
 
-static __inline__ client_t *
+static __inline__ struct lash_client *
 find_client_in_list_by_dbus_name(struct list_head *client_list,
                                  const char       *dbus_name)
 {
 	struct list_head *node;
-	client_t *client;
+	struct lash_client *client;
 
 	list_for_each (node, client_list) {
-		client = list_entry(node, client_t, siblings);
+		client = list_entry(node, struct lash_client, siblings);
 
 		if (strcmp(client->dbus_name, dbus_name) == 0)
 			return client;
@@ -231,15 +231,15 @@ find_client_in_list_by_dbus_name(struct list_head *client_list,
 	return NULL;
 }
 
-static __inline__ client_t *
+static __inline__ struct lash_client *
 find_client_in_list_by_pid(struct list_head *client_list,
                            pid_t             pid)
 {
 	struct list_head *node;
-	client_t *client;
+	struct lash_client *client;
 
 	list_for_each (node, client_list) {
-		client = list_entry(node, client_t, siblings);
+		client = list_entry(node, struct lash_client, siblings);
 
 		if (client->pid == pid)
 			return client;
@@ -248,12 +248,12 @@ find_client_in_list_by_pid(struct list_head *client_list,
 	return NULL;
 }
 
-client_t *
+struct lash_client *
 server_find_client_by_dbus_name(const char *dbus_name)
 {
 	struct list_head *node;
 	project_t *project;
-	client_t *client;
+	struct lash_client *client;
 
 	list_for_each (node, &g_server->loaded_projects) {
 		project = list_entry(node, project_t, siblings_loaded);
@@ -267,12 +267,12 @@ server_find_client_by_dbus_name(const char *dbus_name)
 	return NULL;
 }
 
-client_t *
+struct lash_client *
 server_find_client_by_id(uuid_t id)
 {
 	struct list_head *node;
 	project_t *project;
-	client_t *client;
+	struct lash_client *client;
 
 	list_for_each (node, &g_server->loaded_projects) {
 		project = list_entry(node, project_t, siblings_loaded);
@@ -285,12 +285,12 @@ server_find_client_by_id(uuid_t id)
 	return NULL;
 }
 
-client_t *
+struct lash_client *
 server_find_client_by_pid(pid_t pid)
 {
 	struct list_head *node;
 	project_t *project;
-	client_t *client;
+	struct lash_client *client;
 
 	list_for_each (node, &g_server->loaded_projects) {
 		project = list_entry(node, project_t, siblings_loaded);
@@ -303,12 +303,12 @@ server_find_client_by_pid(pid_t pid)
 	return NULL;
 }
 
-client_t *
+struct lash_client *
 server_find_lost_client_by_pid(pid_t pid)
 {
 	struct list_head *node;
 	project_t *project;
-	client_t *client;
+	struct lash_client *client;
 
 	list_for_each (node, &g_server->loaded_projects) {
 		project = list_entry(node, project_t, siblings_loaded);
@@ -468,7 +468,7 @@ server_save_all_projects(void)
 	}
 }
 
-client_t *
+struct lash_client *
 server_add_client(const char  *dbus_name,
                   pid_t        pid,
                   const char  *class,
@@ -477,7 +477,7 @@ server_add_client(const char  *dbus_name,
                   int          argc,
                   char       **argv)
 {
-	client_t *client;
+	struct lash_client *client;
 
 	/* See if we launched this client */
 	if (pid && (client = server_find_lost_client_by_pid(pid))) {
@@ -512,7 +512,7 @@ static bool
 server_project_restore(project_t *project)
 {
 	struct list_head *node;
-	client_t *client;
+	struct lash_client *client;
 
 	lash_info("Restoring project '%s'", project->name);
 
@@ -548,7 +548,7 @@ server_project_restore(project_t *project)
 	lashd_dbus_signal_emit_progress(0);
 
 	list_for_each (node, &project->lost_clients) {
-		client = list_entry(node, client_t, siblings);
+		client = list_entry(node, struct lash_client, siblings);
 		client->project = project;
 
 		++project->client_tasks_total;

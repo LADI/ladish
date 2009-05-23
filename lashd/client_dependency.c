@@ -39,7 +39,7 @@ client_dependency_find_circular(struct list_head *client_list,
                                 uuid_t            orig_id,
                                 uuid_t            new_id)
 {
-	client_t *client = NULL;
+	struct lash_client *client = NULL;
 	struct list_head *node;
 	client_dependency_t *dep;
 
@@ -66,7 +66,7 @@ client_dependency_find_circular(struct list_head *client_list,
 
 void
 client_dependency_add(struct list_head *client_list,
-                      client_t         *client,
+                      struct lash_client         *client,
                       uuid_t            client_id)
 {
 	if (!client_list || !client) {
@@ -133,7 +133,7 @@ client_dependency_remove(struct list_head *head,
 
 void
 client_dependency_list_sanity_check(struct list_head *client_list,
-                                    client_t         *client)
+                                    struct lash_client         *client)
 {
 	if (!client_list || !client) {
 		lash_error("Invalid arguments");
@@ -166,7 +166,7 @@ client_dependency_list_sanity_check(struct list_head *client_list,
 }
 
 void
-client_dependency_init_unsatisfied(client_t *client)
+client_dependency_init_unsatisfied(struct lash_client *client)
 {
 	if (!client) {
 		lash_error("Client pointer is NULL");

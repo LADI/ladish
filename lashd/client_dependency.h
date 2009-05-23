@@ -26,6 +26,7 @@
 #include "common/klist.h"
 
 #include "types.h"
+#include "client.h"
 
 /**
  * A client dependency list entry.
@@ -47,7 +48,7 @@ struct _client_dependency
  */
 void
 client_dependency_add(struct list_head *client_list,
-                      client_t         *client,
+                      struct lash_client         *client,
                       uuid_t            client_id);
 
 /**
@@ -70,7 +71,7 @@ client_dependency_remove(struct list_head *head,
  */
 void
 client_dependency_list_sanity_check(struct list_head *client_list,
-                                    client_t         *client);
+                                    struct lash_client         *client);
 
 /**
  * Initialize a client's unsatisfied dependencies. Simply builds
@@ -79,7 +80,7 @@ client_dependency_list_sanity_check(struct list_head *client_list,
  * @param client The client whose unsatisfied dependencies to initialize.
  */
 void
-client_dependency_init_unsatisfied(client_t *client);
+client_dependency_init_unsatisfied(struct lash_client *client);
 
 /**
  * Remove all dependencies from a client's dependency list.

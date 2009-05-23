@@ -35,7 +35,7 @@
 
 #include "types.h"
 
-struct _client
+struct lash_client
 {
 	struct list_head        siblings;
 
@@ -81,40 +81,40 @@ enum
 #define CLIENT_TERMINAL(x)           (((x)->flags) & LASH_Terminal)
 #define CLIENT_SAVED(x)              (((x)->flags) & LASH_Saved)
 
-client_t *
+struct lash_client *
 client_new(void);
 
 void
-client_destroy(client_t *client);
+client_destroy(struct lash_client *client);
 
 const char *
-client_get_identity(client_t *client);
+client_get_identity(struct lash_client *client);
 
 void
-client_disconnected(client_t *client);
+client_disconnected(struct lash_client *client);
 
 bool
-client_store_open(client_t   *client,
+client_store_open(struct lash_client   *client,
                   const char *dir);
 
 bool
-client_store_close(client_t *client);
+client_store_close(struct lash_client *client);
 
 void
-client_task_progressed(client_t *client,
+client_task_progressed(struct lash_client *client,
                        uint8_t   percentage);
 
 void
-client_task_completed(client_t *client,
+client_task_completed(struct lash_client *client,
                       bool      was_succesful);
 
 void
 client_parse_xml(project_t  *project,
-                 client_t   *client,
+                 struct lash_client   *client,
                  xmlNodePtr  parent);
 
 void
-client_maybe_fill_class(client_t *client);
+client_maybe_fill_class(struct lash_client *client);
 
 /** (Re)activate a client that already belongs to a project but is in the
  * lost_clients list. This function assumes that @a client->project is set
@@ -122,14 +122,14 @@ client_maybe_fill_class(client_t *client);
  * @param client The client to (re)activate.
  */
 void
-client_resume_project(client_t *client);
+client_resume_project(struct lash_client *client);
 
 /** Find the client called @a client_name in list @a client_list.
- * @param client_list List of @ref client_t type objects.
+ * @param client_list List of @ref struct lash_client type objects.
  * @param client_name Name of client to find.
  * @return Pointer to client or NULL if not found.
  */
-client_t *
+struct lash_client *
 client_find_by_name(struct list_head *client_list,
                     const char       *client_name);
 

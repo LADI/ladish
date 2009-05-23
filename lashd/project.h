@@ -134,7 +134,7 @@ project_is_loaded(project_t *project);
  * @arg client_list    a list of clients (project->clients, project->lost_clients etc.)
  * @arg id             UUID to search for
  */
-client_t *
+struct lash_client *
 project_get_client_by_id(struct list_head *client_list,
                          uuid_t            id);
 
@@ -160,7 +160,7 @@ project_move(project_t  *project,
  */
 void
 project_client_progress(project_t *project,
-                        client_t  *client,
+                        struct lash_client  *client,
                         uint8_t    percentage);
 
 /** Set client's percentage to 100% and, if this was the last client performing
@@ -173,7 +173,7 @@ project_client_progress(project_t *project,
  */
 void
 project_client_task_completed(project_t *project,
-                              client_t  *client);
+                              struct lash_client  *client);
 
 /** Set human-readable name for a project, call 
  * lashd_dbus_signal_emit_project_name_changed to notify about name change, and
@@ -188,11 +188,11 @@ project_rename(project_t  *project,
 
 void
 project_load_file(project_t *project,
-                  client_t  *client);
+                  struct lash_client  *client);
 
 void
 project_load_data_set(project_t *project,
-                      client_t  *client);
+                      struct lash_client  *client);
 
 /** Use loader_execute to run a client - then free/zero the argv/argc in the client.
  * @warning Does not check if the operation succeeded before clearing argc/argv.
@@ -202,7 +202,7 @@ project_load_data_set(project_t *project,
  */
 void
 project_launch_client(project_t *project,
-                      client_t  *client);
+                      struct lash_client  *client);
 
 /** Called after client has disappeared. If client has left any data (keys), it calls
  * store_write to save them. If there are no data for the client, the client directory
@@ -217,15 +217,15 @@ project_launch_client(project_t *project,
  */
 void
 project_lose_client(project_t *project,
-                    client_t  *client);
+                    struct lash_client  *client);
 
-client_t *
+struct lash_client *
 project_find_lost_client_by_class(project_t  *project,
                                   const char *class);
 
 const char *
 project_get_client_dir(project_t *project,
-                       client_t  *client);
+                       struct lash_client  *client);
 
 /** Initiate the process of saving the project. Steps involved:
  * - add the project to project list (if it's new)
@@ -240,7 +240,7 @@ project_save(project_t *project);
 
 void
 project_satisfy_client_dependency(project_t *project,
-                                  client_t  *client);
+                                  struct lash_client  *client);
 
 void
 project_set_description(project_t  *project,
@@ -252,7 +252,7 @@ project_set_notes(project_t  *project,
 
 void
 project_rename_client(project_t  *project,
-                      client_t   *client,
+                      struct lash_client   *client,
                       const char *name);
 
 void
@@ -264,11 +264,11 @@ project_set_modified_status(project_t *project,
 
 void
 project_name_client(project_t  *project,
-                    client_t   *client);
+                    struct lash_client   *client);
 
 void
 project_new_client(
 	project_t *project,
-	client_t  *client);
+	struct lash_client  *client);
 
 #endif /* __LASHD_PROJECT_H__ */

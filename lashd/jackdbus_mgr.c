@@ -435,7 +435,7 @@ lashd_jackdbus_mgr_destroy(lashd_jackdbus_mgr_t *mgr)
 
 void
 lashd_jackdbus_mgr_bind_client(jack_mgr_client_t *client,
-                               client_t          *lash_client)
+                               struct lash_client          *lash_client)
 {
 	lash_debug("Associating previously unknown JACK client '%s' with '%s'",
 	           client->name, lash_client->name);
@@ -520,7 +520,7 @@ lashd_jackdbus_on_client_appeared(
 	dbus_uint64_t client_id)
 {
 	dbus_int64_t pid;
-	client_t * client_ptr;
+	struct lash_client * client_ptr;
 	jack_mgr_client_t * jack_client_ptr;
 
 	pid = lashd_jackdbus_get_client_pid(client_id);

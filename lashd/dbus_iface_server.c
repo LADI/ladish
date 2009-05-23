@@ -54,7 +54,7 @@ lashd_dbus_connect(method_call_t *call)
 	dbus_int32_t flags;
 	int argc;
 	char **argv;
-	client_t *client;
+	struct lash_client *client;
 
 	sender = dbus_message_get_sender(call->message);
 	if (!sender) {
@@ -110,7 +110,7 @@ lashd_dbus_connect(method_call_t *call)
 static bool
 get_message_sender(method_call_t  *call,
                    const char    **sender,
-                   client_t      **client)
+                   struct lash_client      **client)
 {
 	*sender = dbus_message_get_sender(call->message);
 	if (!*sender) {
@@ -134,7 +134,7 @@ static void
 lashd_dbus_jack_name(method_call_t *call)
 {
 	const char *sender, *jack_name;
-	client_t *client;
+	struct lash_client *client;
 	DBusError err;
 
 	if (!get_message_sender(call, &sender, &client))
@@ -180,7 +180,7 @@ lashd_dbus_alsa_id(method_call_t *call)
 {
 	const char *sender;
 	unsigned char alsa_id;
-	client_t *client;
+	struct lash_client *client;
 	DBusError err;
 
 	if (!get_message_sender(call, &sender, &client))
@@ -228,7 +228,7 @@ static void
 lashd_dbus_get_name(method_call_t *call)
 {
 	const char *sender, *name;
-	client_t *client;
+	struct lash_client *client;
 
 	if (!get_message_sender(call, &sender, &client))
 		return;
@@ -245,7 +245,7 @@ static void
 lashd_dbus_get_jack_name(method_call_t *call)
 {
 	const char *sender, *name;
-	client_t *client;
+	struct lash_client *client;
 
 	if (!get_message_sender(call, &sender, &client))
 		return;
@@ -264,7 +264,7 @@ static void
 lashd_dbus_get_alsa_id(method_call_t *call)
 {
 	const char *sender;
-	client_t *client;
+	struct lash_client *client;
 
 	if (!get_message_sender(call, &sender, &client))
 		return;
@@ -280,7 +280,7 @@ static void
 lashd_dbus_save_project(method_call_t *call)
 {
 	const char *sender;
-	client_t *client;
+	struct lash_client *client;
 
 	if (!get_message_sender(call, &sender, &client))
 		return;
@@ -301,7 +301,7 @@ static void
 lashd_dbus_close_project(method_call_t *call)
 {
 	const char *sender;
-	client_t *client;
+	struct lash_client *client;
 
 	if (!get_message_sender(call, &sender, &client))
 		return;
@@ -321,7 +321,7 @@ lashd_dbus_close_project(method_call_t *call)
 
 static bool
 check_tasks(method_call_t   *call,
-            client_t        *client,
+            struct lash_client        *client,
             DBusMessageIter *iter)
 {
 	DBusMessageIter xiter;
@@ -364,7 +364,7 @@ lashd_dbus_progress(method_call_t *call)
 	lash_debug("Progress");
 
 	const char *sender;
-	client_t *client;
+	struct lash_client *client;
 	uint8_t percentage;
 	DBusMessageIter iter;
 
@@ -395,7 +395,7 @@ lashd_dbus_commit_path_change(method_call_t *call)
 	lash_debug("CommitPathChange");
 
 	const char *sender;
-	client_t *client;
+	struct lash_client *client;
 
 	if (!get_message_sender(call, &sender, &client))
 		return;
@@ -455,7 +455,7 @@ lashd_dbus_commit_data_set(method_call_t *call)
 	lash_debug("CommitDataSet");
 
 	const char *sender;
-	client_t *client;
+	struct lash_client *client;
 	DBusMessageIter iter, array_iter;
 	bool was_successful = true;
 
