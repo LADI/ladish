@@ -20,6 +20,7 @@ lashd_SOURCES = \
 	appdb.c appdb.h \
 	sigsegv.c sigsegv.h \
 	proctitle.c proctitle.h \
+	procfs.c procfs.h \
 	types.h \
 	$(top_srcdir)/common/safety.c
 
