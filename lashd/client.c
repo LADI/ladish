@@ -21,6 +21,7 @@
 
 #include "../config.h"
 
+#include <string.h>
 #include <dbus/dbus.h>
 
 #include "common/safety.h"
