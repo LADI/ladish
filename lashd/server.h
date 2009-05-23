@@ -26,6 +26,7 @@
 #include <stdbool.h>
 #include <sys/types.h>
 #include <dbus/dbus.h>
+#include <uuid/uuid.h>
 
 #include "types.h"
 #include "dbus/service.h"
