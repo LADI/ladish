@@ -1,7 +1,8 @@
+/* -*- Mode: C ; indent-tabs-mode: t ; tab-width: 8 ; c-basic-offset: 8 -*- */
 /*
  *   LASH
  *
- *   Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
+ *   Copyright (C) 2008,2009 Nedko Arnaudov <nedko@arnaudov.name>
  *   Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *   Copyright (C) 2002 Robert Ham <rah@bash.sh>
  *
@@ -50,6 +51,78 @@ lashd_jackdbus_mgr_get_unknown_clients(lashd_jackdbus_mgr_t *mgr);
 
 static bool
 lashd_jackdbus_mgr_get_client_data(jack_mgr_client_t *client);
+
+static
+void
+lashd_jackdbus_mgr_is_server_started_return_handler(
+	DBusPendingCall * pending,
+	void * data)
+{
+	DBusMessage * msg;
+	const char * err_str;
+	DBusError err;
+	dbus_bool_t is_started;
+
+	msg = dbus_pending_call_steal_reply(pending);
+
+	if (msg == NULL)
+	{
+		lash_error("Cannot get method return from pending call");
+		goto unref_pending;
+	}
+
+	if (!method_return_verify(msg, &err_str))
+	{
+		lash_error("Failed to check whether JACK server is started: %s", err_str);
+		goto unref_msg;
+	}
+
+	dbus_error_init(&err);
+
+	if (!dbus_message_get_args(
+		msg,
+		&err,
+		DBUS_TYPE_BOOLEAN, &is_started,
+		DBUS_TYPE_INVALID))
+	{
+		lash_error("Cannot get message argument: %s", err.message);
+		dbus_error_free(&err);
+		goto unref_msg;
+	}
+
+	*(bool *)data = is_started ? true : false;
+
+unref_msg:
+	dbus_message_unref(msg);
+
+unref_pending:
+	dbus_pending_call_unref(pending);
+}
+
+static
+bool
+lashd_jackdbus_mgr_is_server_started()
+{
+	bool is_started;
+
+	is_started = false;
+
+	if (!method_call_new_void(
+		g_server->dbus_service,
+		&is_started,
+		lashd_jackdbus_mgr_is_server_started_return_handler,
+		true,
+		JACKDBUS_SERVICE,
+		JACKDBUS_OBJECT,
+		JACKDBUS_IFACE_CONTROL,
+		"IsStarted"))
+	{
+		lash_error("method_call_new_void() failed for IsStarted");
+		return false;
+	}
+
+	return is_started;
+}
 
 lashd_jackdbus_mgr_t *
 lashd_jackdbus_mgr_new(void)
@@ -184,8 +257,11 @@ lashd_jackdbus_mgr_new(void)
 	g_jack_mgr_ptr = mgr;
 
 	/* Get list of unknown JACK clients */
-	lashd_jackdbus_mgr_get_graph(mgr);
-	lashd_jackdbus_mgr_get_unknown_clients(mgr);
+	if (lashd_jackdbus_mgr_is_server_started())
+	{
+		lashd_jackdbus_mgr_get_graph(mgr);
+		lashd_jackdbus_mgr_get_unknown_clients(mgr);
+	}
 
 	return mgr;
 
@@ -331,14 +407,27 @@ fail:
 }
 
 void
+lashd_jackdbus_mgr_clear(
+	void)
+{
+	struct list_head * node;
+	struct list_head * next;
+
+	list_for_each_safe (node, next, &g_jack_mgr_ptr->unknown_clients)
+	{
+		jack_mgr_client_destroy(list_entry(node, jack_mgr_client_t, siblings));
+	}
+
+	lashd_jackdbus_mgr_graph_free();
+}
+
+void
 lashd_jackdbus_mgr_destroy(lashd_jackdbus_mgr_t *mgr)
 {
-	if (mgr) {
+	if (mgr)
+	{
 		// TODO: destroy mgr->clients
-		struct list_head *node, *next;
-		list_for_each_safe (node, next, &mgr->unknown_clients)
-			jack_mgr_client_destroy(list_entry(node, jack_mgr_client_t, siblings));
-		lashd_jackdbus_mgr_graph_free();
+		lashd_jackdbus_mgr_clear();
 		free(mgr);
 		g_jack_mgr_ptr = NULL;
 	}
@@ -821,13 +910,15 @@ lashd_jackdbus_handle_control_signal(
 	{
 		lash_info("JACK server start detected.");
 		g_jack_mgr_ptr->graph_version = 0;
+		lashd_jackdbus_mgr_get_graph(g_jack_mgr_ptr);
+		lashd_jackdbus_mgr_get_unknown_clients(g_jack_mgr_ptr);
 		return;
 	}
 
 	if (strcmp(signal_name, "ServerStopped") == 0)
 	{
 		lash_info("JACK server stop detected.");
-		g_jack_mgr_ptr->graph_version = 0;
+		lashd_jackdbus_mgr_clear();
 		return;
 	}
 }
