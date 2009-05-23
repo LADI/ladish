@@ -45,7 +45,7 @@ fi
 lash_old_api="yes"
 AC_MSG_CHECKING([whether to enable the old API])
 AC_ARG_ENABLE(old-api,
-  [AS_HELP_STRING(--enable-old-api, enable the old API [default=no])],
+  [AS_HELP_STRING(--enable-old-api, enable the old API [default=yes])],
   [case "$enableval" in
     "yes")
       ;;
