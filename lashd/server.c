@@ -43,6 +43,7 @@
 #include "common/safety.h"
 #include "common/debug.h"
 #include "common/klist.h"
+#include "jack_mgr_client.h"
 
 #ifdef HAVE_JACK_DBUS
 # include "jackdbus_mgr.h"
