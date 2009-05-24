@@ -440,33 +440,34 @@ lashd_jackdbus_mgr_destroy(lashd_jackdbus_mgr_t *mgr)
 }
 
 void
-lashd_jackdbus_mgr_bind_client(jack_mgr_client_t *client,
-                               struct lash_client          *lash_client)
+lashd_jackdbus_mgr_bind_client(
+	jack_mgr_client_t * jack_client_ptr,
+	struct lash_client * lash_client_ptr)
 {
 	lash_debug("Associating previously unknown JACK client '%s' with '%s'",
-	           client->name, lash_client->name);
+	           jack_client_ptr->name, lash_client_ptr->name);
 
 	/* Unlink JACK client from its current list, if any */
-	list_del(&client->siblings);
+	list_del(&jack_client_ptr->siblings);
 
 	/* Copy UUID and move JACK patches from LASH client to JACK client */
-	uuid_copy(client->id, lash_client->id);
-	jack_mgr_client_free_patch_list(&client->old_patches);
-	INIT_LIST_HEAD(&client->old_patches);
-	list_splice_init(&lash_client->jack_patches, &client->old_patches);
-	jack_mgr_client_dup_patch_list(&client->old_patches, &client->backup_patches);
+	uuid_copy(jack_client_ptr->id, lash_client_ptr->id);
+	jack_mgr_client_free_patch_list(&jack_client_ptr->old_patches);
+	INIT_LIST_HEAD(&jack_client_ptr->old_patches);
+	list_splice_init(&lash_client_ptr->jack_patches, &jack_client_ptr->old_patches);
+	jack_mgr_client_dup_patch_list(&jack_client_ptr->old_patches, &jack_client_ptr->backup_patches);
 
 	/* Add JACK client to the active client list */
-	list_add_tail(&client->siblings, &g_jack_mgr_ptr->clients);
+	list_add_tail(&jack_client_ptr->siblings, &g_jack_mgr_ptr->clients);
 
 	/* Extract JACK client's data from latest graph */
 	lashd_jackdbus_mgr_get_graph(g_jack_mgr_ptr);
-	if (!lashd_jackdbus_mgr_get_client_data(client))
+	if (!lashd_jackdbus_mgr_get_client_data(jack_client_ptr))
 		lash_error("Problem extracting client data from graph");
 
 	/* Copy JACK client name to LASH client, make sure it has a class string */
-	lash_strset(&lash_client->jack_client_name, client->name);
-	client_maybe_fill_class(lash_client);
+	lash_strset(&lash_client_ptr->jack_client_name, jack_client_ptr->name);
+	client_maybe_fill_class(lash_client_ptr);
 }
 
 static void
