@@ -325,6 +325,7 @@ lashd_jackdbus_get_client_pid(dbus_uint64_t client_id)
 {
 	dbus_int64_t pid;
 
+	pid = 0;
 	if (!method_call_new_valist(g_server->dbus_service, &pid,
 	                            lashd_jackdbus_get_client_pid_return_handler,
 	                            true,
@@ -354,6 +355,7 @@ lashd_jackdbus_mgr_get_unknown_clients(lashd_jackdbus_mgr_t *mgr)
 	DBusMessageIter iter, array_iter, struct_iter;
 	dbus_uint64_t client_id;
 	const char *client_name;
+	dbus_int64_t pid;
 	jack_mgr_client_t *jack_client;
 
 	if (!mgr->graph) {
@@ -387,13 +389,17 @@ lashd_jackdbus_mgr_get_unknown_clients(lashd_jackdbus_mgr_t *mgr)
 			goto fail;
 		}
 
-		/* Create JACK client and store in mgr->unknown_clients */
-		jack_client = jack_mgr_client_new();
-		jack_client->name = lash_strdup(client_name);
-		jack_client->jackdbus_id = client_id;
-		jack_client->pid = (pid_t) lashd_jackdbus_get_client_pid(client_id);
-		lash_debug("Storing unknown JACK client '%s'", client_name);
-		list_add_tail(&jack_client->siblings, &mgr->unknown_clients);
+		pid = lashd_jackdbus_get_client_pid(client_id);
+		if (pid != 0)
+		{
+			/* Create JACK client and store in mgr->unknown_clients */
+			jack_client = jack_mgr_client_new();
+			jack_client->name = lash_strdup(client_name);
+			jack_client->jackdbus_id = client_id;
+			jack_client->pid = (pid_t)pid;
+			lash_debug("Storing unknown JACK client '%s'", client_name);
+			list_add_tail(&jack_client->siblings, &mgr->unknown_clients);
+		}
 
 		dbus_message_iter_next(&array_iter);
 	}
