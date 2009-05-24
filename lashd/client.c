@@ -1,6 +1,8 @@
+/* -*- Mode: C ; indent-tabs-mode: t ; tab-width: 8 ; c-basic-offset: 8 -*- */
 /*
  *   LASH
  *
+ *   Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *   Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *   Copyright (C) 2002 Robert Ham <rah@bash.sh>
  *
@@ -36,6 +38,7 @@
 #include "store.h"
 #include "dbus_iface_control.h"
 #include "file.h"
+#include "procfs.h"
 
 struct lash_client *
 client_new(void)
@@ -186,7 +189,7 @@ client_task_completed(struct lash_client *client,
 		goto end;
 	}
 
-	//lash_info("%s:%s task completed %s", project->name, client->name, was_succesful ? "successfully" : "with fail");
+	lash_info("%s:%s task completed %s", project->name, client->name, was_succesful ? "successfully" : "with fail");
 
 	switch (client->task_type) {
 	case LASH_Save_Data_Set:
@@ -455,6 +458,29 @@ client_find_by_name(struct list_head *client_list,
 		}
 	}
 	return NULL;
+}
+
+bool
+client_fill_by_pid(
+	struct lash_client * lash_client_ptr,
+	unsigned long long pid)
+{
+	lash_client_ptr->working_dir = procfs_get_process_cwd(pid);
+	if (lash_client_ptr->working_dir == NULL)
+	{
+		return false;
+	}
+
+	if (!procfs_get_process_cmdline(pid, &lash_client_ptr->argc, &lash_client_ptr->argv))
+	{
+		free(lash_client_ptr->working_dir);
+		lash_client_ptr->working_dir = NULL;
+		return false;
+	}
+
+	lash_client_ptr->pid = pid;
+
+	return true;
 }
 
 /* EOF */

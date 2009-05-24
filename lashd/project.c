@@ -1,3 +1,4 @@
+/* -*- Mode: C ; indent-tabs-mode: t ; tab-width: 8 ; c-basic-offset: 8 -*- */
 /*
  *   LASH
  *
@@ -1145,6 +1146,12 @@ project_unload(project_t *project)
 	list_for_each_safe (node, next, &project->clients) {
 		client = list_entry(node, struct lash_client, siblings);
 
+		if (client->dbus_name == NULL && client->pid != 0)
+		{
+			lash_debug("Sending SIGTERM to raw client '%s' with PID %llu", client->name, (unsigned long long)client->pid);
+			kill(client->pid, SIGTERM);
+		}
+
 		if (client->jack_client_name) {
 #ifdef HAVE_JACK_DBUS
 			lashd_jackdbus_mgr_remove_client(g_server->jackdbus_mgr,
@@ -1260,11 +1267,14 @@ void
 project_client_task_completed(project_t *project,
                               struct lash_client  *client)
 {
+	lash_debug("----------- client '%s' task completed", client->name);
+
 	/* Calculate new progress reading and send Progress signal */
 	project_client_progress(project, client, 100);
 
 	/* If the project task is finished emit the appropriate signals */
 	if (project->client_tasks_pending && (--project->client_tasks_pending) == 0) {
+		lash_debug("----------- project '%s' tasks completed", project->name);
 		project->task_type = 0;
 		project->client_tasks_total = 0;
 		project->client_tasks_progress = 0;

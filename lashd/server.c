@@ -1,3 +1,4 @@
+/* -*- Mode: C ; indent-tabs-mode: t ; tab-width: 8 ; c-basic-offset: 8 -*- */
 /*
  *   LASH
  *
@@ -224,7 +225,7 @@ find_client_in_list_by_dbus_name(struct list_head *client_list,
 	list_for_each (node, client_list) {
 		client = list_entry(node, struct lash_client, siblings);
 
-		if (strcmp(client->dbus_name, dbus_name) == 0)
+		if (client->dbus_name != NULL && strcmp(client->dbus_name, dbus_name) == 0)
 			return client;
 	}
 
@@ -477,35 +478,53 @@ server_add_client(const char  *dbus_name,
                   int          argc,
                   char       **argv)
 {
-	struct lash_client *client;
+	struct lash_client * client_ptr;
 
-	/* See if we launched this client */
-	if (pid && (client = server_find_lost_client_by_pid(pid))) {
-		lash_strset(&client->dbus_name, dbus_name);
-		client->flags |= LASH_Restored;
-		client_resume_project(client);
-	/* Otherwise add a new client */
-	} else {
-		client = client_new();
-		client->pid = pid;
-		lash_strset(&client->class, class);
-		client->flags = flags;
-		client->argc = argc;
-		client->argv = argv;
-		lash_strset(&client->dbus_name, dbus_name);
-		lash_strset(&client->working_dir, working_dir);
-		project_new_client(server_get_newborn_project(), client);
+	if (pid == 0)
+	{
+		lash_error("Cannot add client with PID 0");
+		return NULL;
 	}
 
-#ifdef HAVE_JACK_DBUS
-	/* Try to find an unknown JACK client whose PID matches the newly
-	   added LASH client's, if succesful bind them together */
-	jack_mgr_client_t *jack_client;
-	if ((jack_client = jack_mgr_client_find_by_pid(&(g_server->jackdbus_mgr->unknown_clients), pid)))
-		lashd_jackdbus_mgr_bind_client(jack_client, client);
-#endif
+	/* Have we launched this client? */
+	client_ptr = server_find_lost_client_by_pid(pid);
+	if (client_ptr != NULL)
+	{
+		lash_strset(&client_ptr->dbus_name, dbus_name);
+		client_ptr->flags |= LASH_Restored;
+		client_resume_project(client_ptr);
+		return client_ptr;
+	}
 
-	return client;
+	client_ptr = server_find_client_by_pid(pid);
+	/* new real lash client? */
+	if (client_ptr == NULL)
+	{
+		client_ptr = client_new();
+		client_ptr->pid = pid;
+		lash_strset(&client_ptr->class, class);
+		client_ptr->flags = flags;
+		client_ptr->argc = argc;
+		client_ptr->argv = argv;
+		lash_strset(&client_ptr->dbus_name, dbus_name);
+		lash_strset(&client_ptr->working_dir, working_dir);
+		project_new_client(server_get_newborn_project(), client_ptr);
+		return client_ptr;
+	}
+
+	/* raw client transformed to real lash client */
+
+	lash_strset(&client_ptr->class, class);
+	lash_strset(&client_ptr->dbus_name, dbus_name);
+	lash_strset(&client_ptr->working_dir, working_dir);
+
+	client_ptr->flags = flags;
+
+	/* TODO: replace argv with what client supplied. */
+	//client->argc = argc;
+	//client->argv = argv;
+
+	return client_ptr;
 }
 
 static bool

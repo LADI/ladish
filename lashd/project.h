@@ -271,4 +271,7 @@ project_new_client(
 	project_t *project,
 	struct lash_client  *client);
 
+project_t *
+server_get_newborn_project();
+
 #endif /* __LASHD_PROJECT_H__ */

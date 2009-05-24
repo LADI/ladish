@@ -1,3 +1,4 @@
+/* -*- Mode: C ; indent-tabs-mode: t ; tab-width: 8 ; c-basic-offset: 8 -*- */
 /*
  *   LASH
  *
@@ -270,6 +271,13 @@ loader_exec_program(struct lash_client *client,
 
 	lash_debug("Running command: %s", buf);
 #endif
+
+	char pidstr[100];
+	sprintf(pidstr, "%lld", (long long)getpid());
+	if (setenv("JACK_CLIENT_PID_OVERRIDE", pidstr, true) != 0)
+	{
+		lash_error("setenv() failed.");
+	}
 
 	if (run_in_terminal)
 		loader_exec_program_in_xterm(client->argv);

@@ -22,6 +22,7 @@
 #include "config.h"
 
 #include "common/safety.h"
+#define LASH_DEBUG
 #include "common/debug.h"
 #include "common/klist.h"
 

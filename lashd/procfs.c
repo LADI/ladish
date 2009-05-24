@@ -19,61 +19,99 @@
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <stdbool.h>
+#include <string.h>
+#include <assert.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <string.h>
-#include <assert.h>
 
 #include "procfs.h"
 #include "common/debug.h"
 
-static char g_buffer[4096];
+#define BUFFER_SIZE 4096
+
+static char g_buffer[BUFFER_SIZE];
 
 static
-char *
+bool
 procfs_get_process_file(
 	unsigned long long pid,
-	const char * filename)
+	const char * filename,
+	char ** buffer_ptr_ptr,
+	size_t * size_ptr)
 {
 	int fd;
 	ssize_t ret;
 	size_t max;
 	char * buffer_ptr;
+	char * read_ptr;
+	size_t buffer_size;
+	size_t used_size;
 
 	sprintf(g_buffer, "/proc/%llu/%s", pid, filename);
 
 	fd = open(g_buffer, O_RDONLY);
 	if (fd == -1)
 	{
-		return NULL;
+		return false;
 	}
 
-	buffer_ptr = g_buffer;
-	do
+	buffer_size = BUFFER_SIZE;
+	buffer_ptr = malloc(buffer_size);
+	if (buffer_ptr == NULL)
 	{
-		max = sizeof(g_buffer) - (buffer_ptr - g_buffer);
-		ret = read(fd, buffer_ptr, max);
-		buffer_ptr += ret;
+		lash_error("malloc failed to allocate buffer with size %zu", buffer_size);
+		return false;
 	}
-	while (ret > 0);
 
-	if (ret == 0)
+	used_size = 0;
+	read_ptr = buffer_ptr;
+loop:
+	max = buffer_size - used_size;
+	if (max < BUFFER_SIZE / 4)
 	{
-		buffer_ptr = strdup(g_buffer);
-		lash_debug("process %llu %s is \"%s\"", pid, filename, buffer_ptr);
+		buffer_size = used_size + BUFFER_SIZE;
+		read_ptr = realloc(buffer_ptr, buffer_size);
+		if (read_ptr == NULL)
+		{
+			lash_error("realloc failed to allocate buffer with size %zu", buffer_size);
+			free(buffer_ptr);
+			close(fd);
+			return false;
+		}
+
+		buffer_ptr = read_ptr;
+		read_ptr = buffer_ptr + used_size;
+		max = BUFFER_SIZE;
 	}
-	else
+
+	ret = read(fd, read_ptr, max);
+	if (ret > 0)
 	{
-		assert(ret == -1);
-		buffer_ptr = NULL;
+		assert(ret <= max);
+		read_ptr += ret;
+		used_size += ret;
+		assert(used_size <= buffer_size);
+		goto loop;
 	}
 
 	close(fd);
 
-	return buffer_ptr;
+	if (ret < 0)
+	{
+		assert(ret == -1);
+		close(fd);
+		return false;
+	}
+
+	*buffer_ptr_ptr = buffer_ptr;
+	*size_ptr = used_size;
+
+	return true;
 }
 
 static
@@ -112,11 +150,79 @@ procfs_get_process_link(
 	return buffer_ptr;
 }
 
-char *
+bool
 procfs_get_process_cmdline(
-	unsigned long long pid)
+	unsigned long long pid,
+	int * argc_ptr,
+	char *** argv_ptr)
 {
-	return procfs_get_process_file(pid, "cmdline");
+	char * cmdline_ptr;
+	char * temp_ptr;
+	size_t cmdline_size;
+	int i;
+	int argc;
+	char ** argv;
+
+	if (!procfs_get_process_file(pid, "cmdline", &cmdline_ptr, &cmdline_size))
+	{
+		return false;
+	}
+
+	argc = 0;
+	temp_ptr = cmdline_ptr;
+
+	while (temp_ptr - cmdline_ptr < cmdline_size)
+	{
+		if (*temp_ptr == 0)
+		{
+			argc++;
+		}
+
+		temp_ptr++;
+	}
+
+	assert(*(temp_ptr - 1) == 0);	/* the last nul char */
+
+	argv = malloc((argc + 1) * sizeof(char *));
+	if (argv == NULL)
+	{
+		free(cmdline_ptr);
+		return false;
+	}
+
+	temp_ptr = cmdline_ptr;
+
+	for (i = 0; i < argc; i++)
+	{
+		assert(temp_ptr - cmdline_ptr < cmdline_size);
+
+		argv[i] = strdup(temp_ptr);
+		if (argv[i] == NULL)
+		{
+			/* rollback */
+			while (i > 0)
+			{
+				i--;
+				free(argv[i]);
+			}
+
+			free(argv);
+			free(cmdline_ptr);
+			return false;
+		}
+
+		temp_ptr += strlen(temp_ptr) + 1;
+	}
+
+	/* Make sure that the array is NULL terminated */
+	argv[argc] = NULL;
+
+	*argc_ptr = argc;
+	*argv_ptr = argv;
+
+	free(cmdline_ptr);
+
+	return true;
 }
 
 char *

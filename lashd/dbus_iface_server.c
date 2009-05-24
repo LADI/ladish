@@ -1,3 +1,4 @@
+/* -*- Mode: C ; indent-tabs-mode: t ; tab-width: 8 ; c-basic-offset: 8 -*- */
 /*
  *   LASH
  *
@@ -89,6 +90,11 @@ lashd_dbus_connect(method_call_t *call)
 
 	client = server_add_client(sender, (pid_t) pid, class,
 	                           (int) flags, wd, argc, argv);
+	if (client == NULL)
+	{
+		lash_dbus_error(call, LASH_DBUS_ERROR_GENERIC, "server_add_client() failed");
+		return;
+	}
 
 	id_str = (const char *) client->id_str;
 	client_name = client->name ? client->name : "";

@@ -1,6 +1,8 @@
+/* -*- Mode: C ; indent-tabs-mode: t ; tab-width: 8 ; c-basic-offset: 8 -*- */
 /*
  *   LASH
  *
+ *   Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *   Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *   Copyright (C) 2002 Robert Ham <rah@bash.sh>
  *
@@ -132,5 +134,10 @@ client_resume_project(struct lash_client *client);
 struct lash_client *
 client_find_by_name(struct list_head *client_list,
                     const char       *client_name);
+
+bool
+client_fill_by_pid(
+	struct lash_client * lash_client_ptr,
+	unsigned long long pid);
 
 #endif /* __LASHD_CLIENT_H__ */

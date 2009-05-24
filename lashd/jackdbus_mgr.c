@@ -47,7 +47,7 @@ lashd_jackdbus_handler(DBusConnection *connection,
                        void           *data);
 
 static void
-lashd_jackdbus_mgr_get_unknown_clients(lashd_jackdbus_mgr_t *mgr);
+lashd_jackdbus_mgr_create_raw_clients(lashd_jackdbus_mgr_t *mgr);
 
 static bool
 lashd_jackdbus_mgr_get_client_data(jack_mgr_client_t *client);
@@ -253,14 +253,13 @@ lashd_jackdbus_mgr_new(void)
 	}
 
 	INIT_LIST_HEAD(&mgr->clients);
-	INIT_LIST_HEAD(&mgr->unknown_clients);
 	g_jack_mgr_ptr = mgr;
 
 	/* Get list of unknown JACK clients */
 	if (lashd_jackdbus_mgr_is_server_started())
 	{
 		lashd_jackdbus_mgr_get_graph(mgr);
-		lashd_jackdbus_mgr_get_unknown_clients(mgr);
+		lashd_jackdbus_mgr_create_raw_clients(mgr);
 	}
 
 	return mgr;
@@ -340,6 +339,88 @@ lashd_jackdbus_get_client_pid(dbus_uint64_t client_id)
 	return pid;
 }
 
+static
+void
+lashd_jackdbus_on_client_appeared(
+	const char * client_name,
+	dbus_uint64_t client_id)
+{
+	dbus_int64_t pid;
+	struct lash_client * lash_client_ptr;
+	project_t * project_ptr;
+	jack_mgr_client_t * jack_client_ptr;
+
+	pid = lashd_jackdbus_get_client_pid(client_id);
+
+	if (pid == 0)
+	{
+		lash_info(
+			"Ignoring new JACK client '%s' with id %llu, pid %lld",
+			client_name,
+			(unsigned long long)client_id,
+			(long long)pid);
+		return;
+	}
+
+	lash_info("New JACK client '%s' with id %llu, pid %lld",
+	           client_name, (unsigned long long)client_id, (long long)pid);
+
+	jack_client_ptr = jack_mgr_client_new();
+	jack_client_ptr->name = lash_strdup(client_name);
+	jack_client_ptr->jackdbus_id = client_id;
+	jack_client_ptr->pid = (pid_t) pid;
+
+	/* Add JACK client to the active client list */
+	list_add_tail(&jack_client_ptr->siblings, &g_jack_mgr_ptr->clients);
+
+	lash_client_ptr = server_find_client_by_pid(pid);
+	if (lash_client_ptr == NULL)
+	{
+		lash_client_ptr = server_find_lost_client_by_pid(pid);
+		if (lash_client_ptr != NULL)
+		{
+			lash_client_ptr->flags |= LASH_Restored;
+			client_resume_project(lash_client_ptr);
+		}
+	}
+
+	if (lash_client_ptr == NULL)
+	{
+		/* None of the known LASH clients have the same PID */
+		/* create new raw (liblash-less) client object */
+
+		lash_client_ptr = client_new();
+
+		if (!client_fill_by_pid(lash_client_ptr, pid))
+		{
+			client_destroy(lash_client_ptr);
+			return;
+		}
+
+		lash_strset(&lash_client_ptr->class, client_name);
+
+		project_ptr = server_get_newborn_project();
+		project_new_client(project_ptr, lash_client_ptr);
+
+		lash_debug("New raw client of project '%s' for JACK client '%s'", project_ptr->name, client_name);
+	}
+
+	/* Copy UUID and move JACK patches from LASH client to JACK client */
+	uuid_copy(jack_client_ptr->id, lash_client_ptr->id);
+	jack_mgr_client_free_patch_list(&jack_client_ptr->old_patches);
+	INIT_LIST_HEAD(&jack_client_ptr->old_patches);
+	list_splice_init(&lash_client_ptr->jack_patches, &jack_client_ptr->old_patches);
+	jack_mgr_client_dup_patch_list(&jack_client_ptr->old_patches, &jack_client_ptr->backup_patches);
+
+	/* Extract JACK client's data from latest graph */
+	lashd_jackdbus_mgr_get_graph(g_jack_mgr_ptr);
+	if (!lashd_jackdbus_mgr_get_client_data(jack_client_ptr))
+		lash_error("Problem extracting client data from graph");
+
+	/* Copy JACK client name to LASH client, make sure it has a class string */
+	lash_strset(&lash_client_ptr->jack_client_name, jack_client_ptr->name);
+}
+
 /** Fill @a mgr 's unknown_clients list with one @a jack_mgr_client_t object per
  * each currently running JACK client. This is done in @a lashd_jackdbus_mgr_new
  * for @a mgr to be able to later on match JACK client PIDs against LASH clients.
@@ -348,15 +429,13 @@ lashd_jackdbus_get_client_pid(dbus_uint64_t client_id)
  * @param mgr Pointer to JACK D-Bus manager.
  */
 static void
-lashd_jackdbus_mgr_get_unknown_clients(lashd_jackdbus_mgr_t *mgr)
+lashd_jackdbus_mgr_create_raw_clients(lashd_jackdbus_mgr_t *mgr)
 {
-	lash_debug("Getting unknown JACK clients from graph");
+	lash_debug("Creating raw clients from JACK graph");
 
 	DBusMessageIter iter, array_iter, struct_iter;
 	dbus_uint64_t client_id;
 	const char *client_name;
-	dbus_int64_t pid;
-	jack_mgr_client_t *jack_client;
 
 	if (!mgr->graph) {
 		lash_error("Cannot find graph");
@@ -389,18 +468,7 @@ lashd_jackdbus_mgr_get_unknown_clients(lashd_jackdbus_mgr_t *mgr)
 			goto fail;
 		}
 
-		pid = lashd_jackdbus_get_client_pid(client_id);
-		if (pid != 0)
-		{
-			/* Create JACK client and store in mgr->unknown_clients */
-			jack_client = jack_mgr_client_new();
-			jack_client->name = lash_strdup(client_name);
-			jack_client->jackdbus_id = client_id;
-			jack_client->pid = (pid_t)pid;
-			lash_debug("Storing unknown JACK client '%s'", client_name);
-			list_add_tail(&jack_client->siblings, &mgr->unknown_clients);
-		}
-
+		lashd_jackdbus_on_client_appeared(client_name, client_id);
 		dbus_message_iter_next(&array_iter);
 	}
 
@@ -419,7 +487,7 @@ lashd_jackdbus_mgr_clear(
 	struct list_head * node;
 	struct list_head * next;
 
-	list_for_each_safe (node, next, &g_jack_mgr_ptr->unknown_clients)
+	list_for_each_safe (node, next, &g_jack_mgr_ptr->clients)
 	{
 		jack_mgr_client_destroy(list_entry(node, jack_mgr_client_t, siblings));
 	}
@@ -432,42 +500,10 @@ lashd_jackdbus_mgr_destroy(lashd_jackdbus_mgr_t *mgr)
 {
 	if (mgr)
 	{
-		// TODO: destroy mgr->clients
 		lashd_jackdbus_mgr_clear();
 		free(mgr);
 		g_jack_mgr_ptr = NULL;
 	}
-}
-
-void
-lashd_jackdbus_mgr_bind_client(
-	jack_mgr_client_t * jack_client_ptr,
-	struct lash_client * lash_client_ptr)
-{
-	lash_debug("Associating previously unknown JACK client '%s' with '%s'",
-	           jack_client_ptr->name, lash_client_ptr->name);
-
-	/* Unlink JACK client from its current list, if any */
-	list_del(&jack_client_ptr->siblings);
-
-	/* Copy UUID and move JACK patches from LASH client to JACK client */
-	uuid_copy(jack_client_ptr->id, lash_client_ptr->id);
-	jack_mgr_client_free_patch_list(&jack_client_ptr->old_patches);
-	INIT_LIST_HEAD(&jack_client_ptr->old_patches);
-	list_splice_init(&lash_client_ptr->jack_patches, &jack_client_ptr->old_patches);
-	jack_mgr_client_dup_patch_list(&jack_client_ptr->old_patches, &jack_client_ptr->backup_patches);
-
-	/* Add JACK client to the active client list */
-	list_add_tail(&jack_client_ptr->siblings, &g_jack_mgr_ptr->clients);
-
-	/* Extract JACK client's data from latest graph */
-	lashd_jackdbus_mgr_get_graph(g_jack_mgr_ptr);
-	if (!lashd_jackdbus_mgr_get_client_data(jack_client_ptr))
-		lash_error("Problem extracting client data from graph");
-
-	/* Copy JACK client name to LASH client, make sure it has a class string */
-	lash_strset(&lash_client_ptr->jack_client_name, jack_client_ptr->name);
-	client_maybe_fill_class(lash_client_ptr);
 }
 
 static void
@@ -500,6 +536,15 @@ lashd_jackdbus_mgr_connect_ports(const char *client1_name,
 	lash_info("Attempting to resume patch '%s:%s' -> '%s:%s'",
 	           client1_name, port1_name, client2_name, port2_name);
 
+	if (!client1_name[0] ||
+	    !client2_name[0] ||
+	    !port1_name[0] ||
+	    !port2_name[0])
+	{
+		lash_error("Ignoring patch '%s:%s' -> '%s:%s'", client1_name, port1_name, client2_name, port2_name);
+		return;
+	}
+
 	/* Send a port connect request */
 	method_call_new_valist(g_server->dbus_service,
 	                       NULL,
@@ -520,57 +565,37 @@ lashd_jackdbus_mgr_connect_ports(const char *client1_name,
 	                       DBUS_TYPE_INVALID);
 }
 
-static
-void
-lashd_jackdbus_on_client_appeared(
-	const char * client_name,
-	dbus_uint64_t client_id)
-{
-	dbus_int64_t pid;
-	struct lash_client * client_ptr;
-	jack_mgr_client_t * jack_client_ptr;
-
-	pid = lashd_jackdbus_get_client_pid(client_id);
-
-	lash_debug("New JACK client '%s' with id %llu, pid %lld",
-	           client_name, (unsigned long long)client_id, (long long)pid);
-
-	jack_client_ptr = jack_mgr_client_new();
-	jack_client_ptr->name = lash_strdup(client_name);
-	jack_client_ptr->jackdbus_id = client_id;
-	jack_client_ptr->pid = (pid_t) pid;
-
-	if (!(client_ptr = server_find_client_by_pid(pid))
-	    && !(client_ptr = server_find_lost_client_by_pid(pid))) {
-		/* None of the known LASH clients have the same PID */
-		lash_debug("Storing unknown JACK client '%s'", client_name);
-		list_add_tail(&jack_client_ptr->siblings, &g_jack_mgr_ptr->unknown_clients);
-		/* TODO: we need to create liblash-less client object here */
-		return;
-	}
-
-	/* The new JACK client's PID matches a known LASH client, associate them */
-
-	INIT_LIST_HEAD(&jack_client_ptr->siblings);
-	lashd_jackdbus_mgr_bind_client(jack_client_ptr, client_ptr);
-
-	lash_debug("Client added");
-}
-
 /** Remove the unknown client whose id parameter matches \a client_id.
  * @param client_id The disappeared client's JACK D-Bus ID.
  */
 static void
 lashd_jackdbus_on_client_disappeared(dbus_uint64_t client_id)
 {
-	jack_mgr_client_t *client;
+	jack_mgr_client_t * jack_client_ptr;
+	struct lash_client * lash_client_ptr;
 
-	if (!(client = jack_mgr_client_find_by_jackdbus_id(&g_jack_mgr_ptr->unknown_clients, client_id)))
+	jack_client_ptr = jack_mgr_client_find_by_jackdbus_id(&g_jack_mgr_ptr->clients, client_id);
+	if (jack_client_ptr == NULL)
+	{
 		return;
+	}
 
-	lash_debug("Removing unknown JACK client '%s'", client->name);
-	list_del(&client->siblings);
-	jack_mgr_client_destroy(client);
+	lash_client_ptr = server_find_client_by_id(jack_client_ptr->id);
+	if (lash_client_ptr != NULL &&
+	    lash_client_ptr->dbus_name == NULL)
+	{
+		client_disconnected(lash_client_ptr);
+		lash_debug(
+			"Closing raw client '%s' of project '%s' because JACK client '%s' disappeared",
+			lash_client_ptr->name,
+			lash_client_ptr->project->name,
+			jack_client_ptr->name);
+		return;
+	}
+
+	lash_debug("Removing JACK client '%s'", jack_client_ptr->name);
+	list_del(&jack_client_ptr->siblings);
+	jack_mgr_client_destroy(jack_client_ptr);
 }
 
 /** Search all known JACK clients for old patches that involve the foreign port
@@ -918,7 +943,7 @@ lashd_jackdbus_handle_control_signal(
 		lash_info("JACK server start detected.");
 		g_jack_mgr_ptr->graph_version = 0;
 		lashd_jackdbus_mgr_get_graph(g_jack_mgr_ptr);
-		lashd_jackdbus_mgr_get_unknown_clients(g_jack_mgr_ptr);
+		lashd_jackdbus_mgr_create_raw_clients(g_jack_mgr_ptr);
 		return;
 	}
 
