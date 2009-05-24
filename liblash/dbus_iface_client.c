@@ -653,10 +653,10 @@ lash_dbus_client_name_changed(method_call_t *call)
 		return;
 	}
 
+	lash_debug("Setting new client name to '%s'", new_name);
+
 	if (!new_name[0])
 		new_name = NULL;
-
-	lash_debug("Setting new client name to '%s'");
 
 	lash_strset(&client_ptr->name, new_name);
 
