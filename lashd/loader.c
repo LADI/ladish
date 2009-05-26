@@ -272,18 +272,11 @@ loader_exec_program(struct lash_client *client,
 	lash_debug("Running command: %s", buf);
 #endif
 
-	char pidstr[100];
-	sprintf(pidstr, "%lld", (long long)getpid());
-	if (setenv("JACK_CLIENT_PID_OVERRIDE", pidstr, true) != 0)
-	{
-		lash_error("setenv() failed.");
-	}
+	lash_info("Executing program '%s' with PID %u",
+	          client->argv[0], (unsigned int) getpid());
 
 	if (run_in_terminal)
 		loader_exec_program_in_xterm(client->argv);
-
-	lash_info("Executing program '%s' with PID %u",
-	          client->argv[0], (unsigned int) getpid());
 
 	/* Execute it */
 	execvp(client->argv[0], client->argv);
@@ -523,5 +516,5 @@ loader_execute(struct lash_client *client,
 
 	client->pid = pid;
 	child_ptr->pid = pid;
-	lash_debug("Forked to run program '%s'", program);
+	lash_info("Forked to run program '%s' pid = %llu", program, (unsigned long long)pid);
 }
