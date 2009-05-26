@@ -379,6 +379,7 @@ lashd_jackdbus_on_client_appeared(
 		lash_client_ptr = server_find_lost_client_by_pid(pid);
 		if (lash_client_ptr != NULL)
 		{
+			lash_info("Found launched client '%s' with pid %lld", lash_client_ptr->name, (long long)pid);
 			lash_client_ptr->flags |= LASH_Restored;
 			client_resume_project(lash_client_ptr);
 		}
