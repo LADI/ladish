@@ -7,6 +7,7 @@ import Utils
 
 APPNAME='ladish'
 VERSION='1'
+DBUS_NAME_BASE = 'org.nongnu.LASH'
 
 # these variables are mandatory ('/' are converted automatically)
 srcdir = '.'
@@ -143,14 +144,15 @@ def build(bld):
 
     daemon.source.append(os.path.join("common", "safety.c"))
 
-    # process org.jackaudio.service.in -> org.jackaudio.service
-    #import misc
-    #obj = bld.new_task_gen('subst')
-    #obj.source = 'org.jackaudio.service.in'
-    #obj.target = 'org.jackaudio.service'
-    #obj.dict = {'BINDIR': bld.env['PREFIX'] + '/bin'}
-    #obj.install_path = '${DBUS_SERVICES_DIR}/'
-    #obj.fun = misc.subst_func
+    # process name.arnaudov.nedko.ladish.service.in -> name.arnaudov.nedko.ladish.service
+    import misc
+    obj = bld.new_task_gen('subst')
+    obj.source = os.path.join('daemon', 'dbus.service.in')
+    obj.target = DBUS_NAME_BASE + '.service'
+    obj.dict = {'dbus_object_path': DBUS_NAME_BASE,
+                'daemon_bin_path': os.path.join(bld.env['PREFIX'], 'bin', daemon.target)}
+    obj.install_path = bld.env['DBUS_SERVICES_DIR'] + os.path.sep
+    obj.fun = misc.subst_func
 
     liblash = bld.new_task_gen('cc', 'shlib')
     liblash.includes = "build/default" # XXX config.h version.h and other generated files

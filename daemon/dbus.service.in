@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=@dbus_object_path@
+Exec=@daemon_bin_path@
