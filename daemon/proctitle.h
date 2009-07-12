@@ -26,14 +26,14 @@
 
 void
 lash_init_setproctitle(
-	int argc,
-	char ** argv,
-	char ** envp);
+  int argc,
+  char ** argv,
+  char ** envp);
 
 void
 lash_setproctitile(
-	const char * format,
-	...);
+  const char * format,
+  ...);
 
 #elif defined(__FreeBSD__)
 # define lash_init_setproctitle(argc, argv, envp) ((void)0)

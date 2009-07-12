@@ -34,15 +34,15 @@
 
 struct _jack_patch
 {
-	struct list_head  siblings;
-	char             *src_client;
-	char             *src_port;
-	char             *dest_client;
-	char             *dest_port;
-	char             *src_desc;
-	char             *dest_desc;
-	uuid_t            src_client_id;
-	uuid_t            dest_client_id;
+  struct list_head  siblings;
+  char             *src_client;
+  char             *src_port;
+  char             *dest_client;
+  char             *dest_port;
+  char             *src_desc;
+  char             *dest_desc;
+  uuid_t            src_client_id;
+  uuid_t            dest_client_id;
 };
 
 jack_patch_t *
@@ -67,11 +67,11 @@ jack_patch_dup(const jack_patch_t *patch);
 static __inline__ void
 jack_patch_list(struct list_head *list)
 {
-	struct list_head *node;
-	list_for_each (node, list) {
-		jack_patch_t *p = list_entry(node, jack_patch_t, siblings);
-		lash_debug("%s -> %s", p->src_desc, p->dest_desc);
-	}
+  struct list_head *node;
+  list_for_each (node, list) {
+    jack_patch_t *p = list_entry(node, jack_patch_t, siblings);
+    lash_debug("%s -> %s", p->src_desc, p->dest_desc);
+  }
 }
 #endif
 

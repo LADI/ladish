@@ -37,11 +37,11 @@
 
 struct _store
 {
-	char             *dir;
-	unsigned long     num_keys;
-	struct list_head  keys;
-	struct list_head  removed_keys;
-	struct list_head  unstored_configs;
+  char             *dir;
+  unsigned long     num_keys;
+  struct list_head  keys;
+  struct list_head  removed_keys;
+  struct list_head  unstored_configs;
 };
 
 store_t *

@@ -34,26 +34,26 @@ lash_dbus_error(method_call_t *call_ptr,
                 const char    *format,
                                ...)
 {
-	va_list ap;
-	char message[1024];
-	const char *interface_name;
+  va_list ap;
+  char message[1024];
+  const char *interface_name;
 
-	va_start(ap, format);
+  va_start(ap, format);
 
-	vsnprintf(message, sizeof(message), format, ap);
-	message[sizeof(message) - 1] = '\0';
+  vsnprintf(message, sizeof(message), format, ap);
+  message[sizeof(message) - 1] = '\0';
 
-	va_end(ap);
+  va_end(ap);
 
-	interface_name = (call_ptr->interface
-	                  && call_ptr->interface->name
-	                  && call_ptr->interface->name[0])
-	                 ? call_ptr->interface->name
-	                 : "<unknown>";
+  interface_name = (call_ptr->interface
+                    && call_ptr->interface->name
+                    && call_ptr->interface->name[0])
+                   ? call_ptr->interface->name
+                   : "<unknown>";
 
-	lash_error("In method %s.%s: %s", interface_name,
-	           call_ptr->method_name, message);
+  lash_error("In method %s.%s: %s", interface_name,
+             call_ptr->method_name, message);
 
-	call_ptr->reply = dbus_message_new_error(call_ptr->message, err_name,
-	                                         message);
+  call_ptr->reply = dbus_message_new_error(call_ptr->message, err_name,
+                                           message);
 }

@@ -41,50 +41,50 @@ lashd_client_disconnect_handler(DBusConnection *conn,
 service_t *
 lashd_dbus_service_new(void)
 {
-	service_t *service;
-	DBusError err;
+  service_t *service;
+  DBusError err;
 
-	                   // TODO: move service name into public header
-	service = service_new("org.nongnu.LASH", &g_server->quit,
-	                      1,
-	                      object_path_new("/", NULL, 2,
-	                                      &g_lashd_interface_server,
-	                                      &g_lashd_interface_control,
-	                                      NULL),
-	                      NULL);
-	if (!service) {
-		lash_error("Failed to create D-Bus service");
-		return NULL;
-	}
+                     // TODO: move service name into public header
+  service = service_new("org.nongnu.LASH", &g_server->quit,
+                        1,
+                        object_path_new("/", NULL, 2,
+                                        &g_lashd_interface_server,
+                                        &g_lashd_interface_control,
+                                        NULL),
+                        NULL);
+  if (!service) {
+    lash_error("Failed to create D-Bus service");
+    return NULL;
+  }
 
-	dbus_error_init(&err);
+  dbus_error_init(&err);
 
-	dbus_bus_add_match(service->connection,
-	                   "type='signal'"
-	                   ",sender='org.freedesktop.DBus'"
-	                   ",path='/org/freedesktop/DBus'"
-	                   ",interface='org.freedesktop.DBus'"
-	                   ",member='NameOwnerChanged'"
-	                   ",arg2=''",
-	                   &err);
-	if (dbus_error_is_set(&err)) {
-		lash_error("Failed to add D-Bus match rule: %s", err.message);
-		dbus_error_free(&err);
-		goto fail;
-	}
+  dbus_bus_add_match(service->connection,
+                     "type='signal'"
+                     ",sender='org.freedesktop.DBus'"
+                     ",path='/org/freedesktop/DBus'"
+                     ",interface='org.freedesktop.DBus'"
+                     ",member='NameOwnerChanged'"
+                     ",arg2=''",
+                     &err);
+  if (dbus_error_is_set(&err)) {
+    lash_error("Failed to add D-Bus match rule: %s", err.message);
+    dbus_error_free(&err);
+    goto fail;
+  }
 
-	if (!dbus_connection_add_filter(service->connection,
-	                                lashd_client_disconnect_handler,
-	                                NULL, NULL)) {
-		lash_error("Failed to add D-Bus filter");
-		goto fail;
-	}
+  if (!dbus_connection_add_filter(service->connection,
+                                  lashd_client_disconnect_handler,
+                                  NULL, NULL)) {
+    lash_error("Failed to add D-Bus filter");
+    goto fail;
+  }
 
-	return service;
+  return service;
 
 fail:
-	service_destroy(service);
-	return NULL;
+  service_destroy(service);
+  return NULL;
 }
 
 static DBusHandlerResult
@@ -92,45 +92,45 @@ lashd_client_disconnect_handler(DBusConnection *connection,
                                 DBusMessage    *message,
                                 void           *data)
 {
-	/* If the message isn't a signal the object path handler may use it */
-	if (dbus_message_get_type(message) != DBUS_MESSAGE_TYPE_SIGNAL)
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+  /* If the message isn't a signal the object path handler may use it */
+  if (dbus_message_get_type(message) != DBUS_MESSAGE_TYPE_SIGNAL)
+    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 
-	const char *member, *name, *old_name;
-	struct lash_client *client;
-	DBusError err;
+  const char *member, *name, *old_name;
+  struct lash_client *client;
+  DBusError err;
 
-	if (!(member = dbus_message_get_member(message))) {
-		lash_error("Received JACK signal with NULL member");
-		return DBUS_HANDLER_RESULT_HANDLED;
-	}
+  if (!(member = dbus_message_get_member(message))) {
+    lash_error("Received JACK signal with NULL member");
+    return DBUS_HANDLER_RESULT_HANDLED;
+  }
 
-	if (strcmp(member, "NameOwnerChanged") != 0)
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+  if (strcmp(member, "NameOwnerChanged") != 0)
+    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 
-	dbus_error_init(&err);
+  dbus_error_init(&err);
 
-	if (!dbus_message_get_args(message, &err,
-	                           DBUS_TYPE_STRING, &name,
-	                           DBUS_TYPE_STRING, &old_name,
-	                           DBUS_TYPE_INVALID)) {
-		lash_error("Cannot get message arguments: %s",
-		           err.message);
-		dbus_error_free(&err);
-		return DBUS_HANDLER_RESULT_HANDLED;
-	}
+  if (!dbus_message_get_args(message, &err,
+                             DBUS_TYPE_STRING, &name,
+                             DBUS_TYPE_STRING, &old_name,
+                             DBUS_TYPE_INVALID)) {
+    lash_error("Cannot get message arguments: %s",
+               err.message);
+    dbus_error_free(&err);
+    return DBUS_HANDLER_RESULT_HANDLED;
+  }
 
-	client = server_find_client_by_dbus_name(old_name);
-	if (client)
-	{
-		client_disconnected(client);
-		return DBUS_HANDLER_RESULT_HANDLED;
-	}
+  client = server_find_client_by_dbus_name(old_name);
+  if (client)
+  {
+    client_disconnected(client);
+    return DBUS_HANDLER_RESULT_HANDLED;
+  }
 
-	else
-	{
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-	}
+  else
+  {
+    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+  }
 }
 
 /* EOF */

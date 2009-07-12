@@ -52,8 +52,8 @@
 void
 term_handler(int signum)
 {
-	lash_info("Caught signal %d (%s), terminating", signum, strsignal(signum));
-	g_server->quit = true;
+  lash_info("Caught signal %d (%s), terminating", signum, strsignal(signum));
+  g_server->quit = true;
 }
 
 int
@@ -61,93 +61,93 @@ main(int    argc,
      char **argv,
      char **envp)
 {
-	int opt;
-	const char *options = "hd:";
-	struct option long_options[] = {
-		{"help", 0, NULL, 'h'},
-		{"default-dir", 1, NULL, 'd'},
-		{0, 0, 0, 0}
-	};
-	char *default_dir = NULL;
-	sig_t sigh;
-	struct stat st;
-	char timestamp_str[26];
+  int opt;
+  const char *options = "hd:";
+  struct option long_options[] = {
+    {"help", 0, NULL, 'h'},
+    {"default-dir", 1, NULL, 'd'},
+    {0, 0, 0, 0}
+  };
+  char *default_dir = NULL;
+  sig_t sigh;
+  struct stat st;
+  char timestamp_str[26];
 
-	st.st_mtime = 0;
-	stat(argv[0], &st);
-	ctime_r(&st.st_mtime, timestamp_str);
-	timestamp_str[24] = 0;
+  st.st_mtime = 0;
+  stat(argv[0], &st);
+  ctime_r(&st.st_mtime, timestamp_str);
+  timestamp_str[24] = 0;
 
-	lash_init_setproctitle(argc, argv, envp);
+  lash_init_setproctitle(argc, argv, envp);
 
-	dbus_threads_init_default();
+  dbus_threads_init_default();
 
 #ifdef LASH_DEBUG
-	mtrace();
+  mtrace();
 #endif
 
-	xmlSetCompressMode(0);
+  xmlSetCompressMode(0);
 
-	while ((opt = getopt_long(argc, argv, options, long_options, NULL)) != -1) {
-		switch (opt) {
-		case 'd':
-			default_dir = optarg;
-			break;
-		default:
-			exit(EXIT_FAILURE);
-			break;
-		}
-	}
+  while ((opt = getopt_long(argc, argv, options, long_options, NULL)) != -1) {
+    switch (opt) {
+    case 'd':
+      default_dir = optarg;
+      break;
+    default:
+      exit(EXIT_FAILURE);
+      break;
+    }
+  }
 
-//	if (!default_dir)
-//		default_dir = DEFAULT_PROJECT_DIR;
+//  if (!default_dir)
+//    default_dir = DEFAULT_PROJECT_DIR;
 
-	lash_info("------------------");
-	//lash_info("LASH activated. Version %s (%s) built on %s",
+  lash_info("------------------");
+  //lash_info("LASH activated. Version %s (%s) built on %s",
   //         PACKAGE_VERSION, SVN_VERSION, timestamp_str);
 
-	lash_debug("Default dir: '%s'", default_dir);
+  lash_debug("Default dir: '%s'", default_dir);
 
-	loader_init();
+  loader_init();
 
-	if (!server_start(default_dir))
-	{
-		goto uninit_loader;
-	}
+  if (!server_start(default_dir))
+  {
+    goto uninit_loader;
+  }
 
-	/* install the signal handlers */
-	sigh = signal(SIGTERM, term_handler);
-	if (sigh == SIG_IGN)
-		signal(SIGTERM, SIG_IGN);
+  /* install the signal handlers */
+  sigh = signal(SIGTERM, term_handler);
+  if (sigh == SIG_IGN)
+    signal(SIGTERM, SIG_IGN);
 
-	sigh = signal(SIGINT, term_handler);
-	if (sigh == SIG_IGN)
-		signal(SIGINT, SIG_IGN);
+  sigh = signal(SIGINT, term_handler);
+  if (sigh == SIG_IGN)
+    signal(SIGINT, SIG_IGN);
 
-	sigh = signal(SIGHUP, term_handler);
-	if (sigh == SIG_IGN)
-		signal(SIGHUP, SIG_IGN);
+  sigh = signal(SIGHUP, term_handler);
+  if (sigh == SIG_IGN)
+    signal(SIGHUP, SIG_IGN);
 
-	signal(SIGPIPE, SIG_IGN);
+  signal(SIGPIPE, SIG_IGN);
 
-	/* setup our SIGSEGV magic that prints nice stack in our logfile */ 
-	setup_sigsegv();
+  /* setup our SIGSEGV magic that prints nice stack in our logfile */ 
+  setup_sigsegv();
 
-	server_main();
+  server_main();
 
-	lash_debug("Finished, cleaning up");
-	printf("Cleaning up\n");
+  lash_debug("Finished, cleaning up");
+  printf("Cleaning up\n");
 
-	server_stop();
+  server_stop();
 
 uninit_loader:
-	loader_uninit();
+  loader_uninit();
 
-	lash_debug("Cleaned up, exiting");
-	printf("Finished\n");
+  lash_debug("Cleaned up, exiting");
+  printf("Finished\n");
 
-	lash_info("LASH deactivated");
-	lash_info("------------------");
+  lash_info("LASH deactivated");
+  lash_info("------------------");
 
-	exit(EXIT_SUCCESS);
+  exit(EXIT_SUCCESS);
 }

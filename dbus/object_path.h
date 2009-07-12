@@ -32,10 +32,10 @@
  */
 struct _object_path
 {
-	char               *name;
-	void               *context;
-	DBusMessage        *introspection;
-	const interface_t **interfaces;
+  char               *name;
+  void               *context;
+  DBusMessage        *introspection;
+  const interface_t **interfaces;
 };
 
 object_path_t *

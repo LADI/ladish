@@ -32,35 +32,35 @@
 
 struct _method_msg
 {
-	const service_t               *service;
-	DBusMessage                   *message;
-	void                          *context;
-	DBusFreeFunction               context_free_func;
-	DBusPendingCallNotifyFunction  return_handler;
+  const service_t               *service;
+  DBusMessage                   *message;
+  void                          *context;
+  DBusFreeFunction               context_free_func;
+  DBusPendingCallNotifyFunction  return_handler;
 };
 
 struct _method_call
 {
-	DBusConnection    *connection;
-	const char        *method_name;
-	DBusMessage       *message;
-	DBusMessage       *reply;
-	const interface_t *interface;
-	void              *context;
+  DBusConnection    *connection;
+  const char        *method_name;
+  DBusMessage       *message;
+  DBusMessage       *reply;
+  const interface_t *interface;
+  void              *context;
 };
 
 struct _method_arg
 {
-	const char *name;
-	const char *type;
-	const int   direction;  /* 0 == out, 1 == in */
+  const char *name;
+  const char *type;
+  const int   direction;  /* 0 == out, 1 == in */
 };
 
 struct _method
 {
-	const char             *name;
-	const method_handler_t  handler;
-	const method_arg_t     *args;
+  const char             *name;
+  const method_handler_t  handler;
+  const method_arg_t     *args;
 };
 
 void

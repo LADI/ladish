@@ -34,15 +34,15 @@ extern server_t *g_server;
 
 struct _server
 {
-	service_t            *dbus_service;
-	lashd_jackdbus_mgr_t *jackdbus_mgr;
-	char                 *projects_dir;
-	struct list_head      loaded_projects;
-	struct list_head      all_projects;
-	struct list_head      appdb;
-	dbus_uint64_t         task_iter;
+  service_t            *dbus_service;
+  lashd_jackdbus_mgr_t *jackdbus_mgr;
+  char                 *projects_dir;
+  struct list_head      loaded_projects;
+  struct list_head      all_projects;
+  struct list_head      appdb;
+  dbus_uint64_t         task_iter;
 
-	bool                  quit;
+  bool                  quit;
 };
 
 bool

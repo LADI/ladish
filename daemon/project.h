@@ -39,40 +39,40 @@
 
 enum
 {
-	LASH_TASK_SAVE = 1,
-	LASH_TASK_LOAD
+  LASH_TASK_SAVE = 1,
+  LASH_TASK_LOAD
 };
 
 struct _project
 {
-	struct list_head  siblings_all;
-	struct list_head  siblings_loaded;
+  struct list_head  siblings_all;
+  struct list_head  siblings_loaded;
 
-	xmlDocPtr         doc;
+  xmlDocPtr         doc;
 
-	/** user-visible name */
-	char             *name;
-	/** invoke project_move on project_unload */
-	bool             move_on_close;
-	
-	/** absolute path to project directory */
-	char             *directory;
-	char             *description;
-	char             *notes;
-	bool              modified_status;
-	time_t            last_modify_time;
+  /** user-visible name */
+  char             *name;
+  /** invoke project_move on project_unload */
+  bool             move_on_close;
+  
+  /** absolute path to project directory */
+  char             *directory;
+  char             *description;
+  char             *notes;
+  bool              modified_status;
+  time_t            last_modify_time;
 
-	/** Clients that are running in a session */
-	struct list_head  clients;
-	/** Clients that are supposed to be running in a session, but don't (because they haven't been
-	 * loaded yet, or failed to run, or dropped out of the session */
-	struct list_head  lost_clients;
+  /** Clients that are running in a session */
+  struct list_head  clients;
+  /** Clients that are supposed to be running in a session, but don't (because they haven't been
+   * loaded yet, or failed to run, or dropped out of the session */
+  struct list_head  lost_clients;
 
-	/* For task progress feedback (LASH_Percentage) */
-	int               task_type;
-	uint32_t          client_tasks_total;
-	uint32_t          client_tasks_pending;
-	uint32_t          client_tasks_progress; // Min is 0, max is client_tasks_total*100
+  /* For task progress feedback (LASH_Percentage) */
+  int               task_type;
+  uint32_t          client_tasks_total;
+  uint32_t          client_tasks_pending;
+  uint32_t          client_tasks_progress; // Min is 0, max is client_tasks_total*100
 };
 
 /** Create a new, empty project object, without setting the directory. Initializes
@@ -266,8 +266,8 @@ project_name_client(project_t  *project,
 
 void
 project_new_client(
-	project_t *project,
-	struct lash_client  *client);
+  project_t *project,
+  struct lash_client  *client);
 
 project_t *
 server_get_newborn_project();

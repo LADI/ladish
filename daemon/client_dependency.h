@@ -33,8 +33,8 @@
  */
 struct _client_dependency
 {
-	struct list_head siblings;
-	uuid_t           client_id;
+  struct list_head siblings;
+  uuid_t           client_id;
 };
 
 /**

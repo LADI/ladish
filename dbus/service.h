@@ -28,11 +28,11 @@
 
 struct _service
 {
-	char            *name;
-	const char      *unique_name;
-	DBusConnection  *connection;
-	object_path_t  **object_paths;
-	bool            *quit;
+  char            *name;
+  const char      *unique_name;
+  DBusConnection  *connection;
+  object_path_t  **object_paths;
+  bool            *quit;
 };
 
 service_t *

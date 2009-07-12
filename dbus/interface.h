@@ -30,10 +30,10 @@
 
 struct _interface
 {
-	const char                *name;
-	const interface_handler_t  handler;
-	const method_t            *methods;
-	const signal_t            *signals;
+  const char                *name;
+  const interface_handler_t  handler;
+  const method_t            *methods;
+  const signal_t            *signals;
 };
 
 bool

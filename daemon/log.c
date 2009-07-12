@@ -40,150 +40,150 @@ FILE * g_logfile;
 
 bool
 ensure_dir_exist(
-	const char * dirname,
-	int mode)
+  const char * dirname,
+  int mode)
 {
-	struct stat st;
-	if (stat(dirname, &st) != 0)
-	{
-		if (errno == ENOENT)
-		{
-			lash_info("Directory \"%s\" does not exist. Creating...", dirname);
-			if (mkdir(dirname, mode) != 0)
-			{
-				lash_error("Failed to create \"%s\" directory: %d (%s)", dirname, errno, strerror(errno));
-				return false;
-			}
-		}
-		else
-		{
-			lash_error("Failed to stat \"%s\": %d (%s)", dirname, errno, strerror(errno));
-			return false;
-		}
-	}
-	else
-	{
-		if (!S_ISDIR(st.st_mode))
-		{
-			lash_error("\"%s\" exists but is not directory.", dirname);
-			return false;
-		}
-	}
+  struct stat st;
+  if (stat(dirname, &st) != 0)
+  {
+    if (errno == ENOENT)
+    {
+      lash_info("Directory \"%s\" does not exist. Creating...", dirname);
+      if (mkdir(dirname, mode) != 0)
+      {
+        lash_error("Failed to create \"%s\" directory: %d (%s)", dirname, errno, strerror(errno));
+        return false;
+      }
+    }
+    else
+    {
+      lash_error("Failed to stat \"%s\": %d (%s)", dirname, errno, strerror(errno));
+      return false;
+    }
+  }
+  else
+  {
+    if (!S_ISDIR(st.st_mode))
+    {
+      lash_error("\"%s\" exists but is not directory.", dirname);
+      return false;
+    }
+  }
 
-	return true;
+  return true;
 }
 
 void lash_log_init() __attribute__ ((constructor));
 void lash_log_init()
 {
-	char * log_filename;
-	size_t log_len;
-	char * lash_log_dir;
-	size_t lash_log_dir_len; /* without terminating '\0' char */
-	const char * home_dir;
-	char * xdg_log_home;
+  char * log_filename;
+  size_t log_len;
+  char * lash_log_dir;
+  size_t lash_log_dir_len; /* without terminating '\0' char */
+  const char * home_dir;
+  char * xdg_log_home;
 
-	home_dir = getenv("HOME");
-	if (home_dir == NULL)
-	{
-		lash_error("Environment variable HOME not set");
-		goto exit;
-	}
+  home_dir = getenv("HOME");
+  if (home_dir == NULL)
+  {
+    lash_error("Environment variable HOME not set");
+    goto exit;
+  }
 
-	xdg_log_home = lash_catdup(home_dir, DEFAULT_XDG_LOG);
-	lash_log_dir = lash_catdup(xdg_log_home, LASH_XDG_SUBDIR);
+  xdg_log_home = lash_catdup(home_dir, DEFAULT_XDG_LOG);
+  lash_log_dir = lash_catdup(xdg_log_home, LASH_XDG_SUBDIR);
 
-	if (!ensure_dir_exist(xdg_log_home, 0700))
-	{
-		goto free_log_dir;
-	}
+  if (!ensure_dir_exist(xdg_log_home, 0700))
+  {
+    goto free_log_dir;
+  }
 
-	if (!ensure_dir_exist(lash_log_dir, 0700))
-	{
-		goto free_log_dir;
-	}
+  if (!ensure_dir_exist(lash_log_dir, 0700))
+  {
+    goto free_log_dir;
+  }
 
-	lash_log_dir_len = strlen(lash_log_dir);
+  lash_log_dir_len = strlen(lash_log_dir);
 
-	log_len = strlen(LASH_XDG_LOG);
+  log_len = strlen(LASH_XDG_LOG);
 
-	log_filename = malloc(lash_log_dir_len + log_len + 1);
-	if (log_filename == NULL)
-	{
-		lash_error("Out of memory");
-		goto free_log_dir;
-	}
+  log_filename = malloc(lash_log_dir_len + log_len + 1);
+  if (log_filename == NULL)
+  {
+    lash_error("Out of memory");
+    goto free_log_dir;
+  }
 
-	memcpy(log_filename, lash_log_dir, lash_log_dir_len);
-	memcpy(log_filename + lash_log_dir_len, LASH_XDG_LOG, log_len);
-	log_filename[lash_log_dir_len + log_len] = 0;
+  memcpy(log_filename, lash_log_dir, lash_log_dir_len);
+  memcpy(log_filename + lash_log_dir_len, LASH_XDG_LOG, log_len);
+  log_filename[lash_log_dir_len + log_len] = 0;
 
-	g_logfile = fopen(log_filename, "a");
-	if (g_logfile == NULL)
-	{
-		lash_error("Cannot open jackdbus log file \"%s\": %d (%s)\n", log_filename, errno, strerror(errno));
-	}
+  g_logfile = fopen(log_filename, "a");
+  if (g_logfile == NULL)
+  {
+    lash_error("Cannot open jackdbus log file \"%s\": %d (%s)\n", log_filename, errno, strerror(errno));
+  }
 
-	free(log_filename);
+  free(log_filename);
 
 free_log_dir:
-	free(lash_log_dir);
+  free(lash_log_dir);
 
 //free_log_home:
-	free(xdg_log_home);
+  free(xdg_log_home);
 
 exit:
-	return;
+  return;
 }
 
 void lash_log_uninit()  __attribute__ ((destructor));
 void lash_log_uninit()
 {
-	if (g_logfile != NULL)
-	{
-		fclose(g_logfile);
-	}
+  if (g_logfile != NULL)
+  {
+    fclose(g_logfile);
+  }
 }
 
 void
 lash_log(
-	unsigned int level,
-	const char * format,
-	...)
+  unsigned int level,
+  const char * format,
+  ...)
 {
-	va_list ap;
-	FILE * stream;
-	time_t timestamp;
-	char timestamp_str[26];
+  va_list ap;
+  FILE * stream;
+  time_t timestamp;
+  char timestamp_str[26];
 
-	if (g_logfile != NULL)
-	{
-		stream = g_logfile;
-	}
-	else
-	{
-		switch (level)
-		{
-		case LASH_LOG_LEVEL_DEBUG:
-		case LASH_LOG_LEVEL_INFO:
-			stream = stdout;
-			break;
-		case LASH_LOG_LEVEL_WARN:
-		case LASH_LOG_LEVEL_ERROR:
-		case LASH_LOG_LEVEL_ERROR_PLAIN:
-		default:
-			stream = stderr;
-		}
-	}
+  if (g_logfile != NULL)
+  {
+    stream = g_logfile;
+  }
+  else
+  {
+    switch (level)
+    {
+    case LASH_LOG_LEVEL_DEBUG:
+    case LASH_LOG_LEVEL_INFO:
+      stream = stdout;
+      break;
+    case LASH_LOG_LEVEL_WARN:
+    case LASH_LOG_LEVEL_ERROR:
+    case LASH_LOG_LEVEL_ERROR_PLAIN:
+    default:
+      stream = stderr;
+    }
+  }
 
-	time(&timestamp);
-	ctime_r(&timestamp, timestamp_str);
-	timestamp_str[24] = 0;
+  time(&timestamp);
+  ctime_r(&timestamp, timestamp_str);
+  timestamp_str[24] = 0;
 
-	fprintf(stream, "%s: ", timestamp_str);
+  fprintf(stream, "%s: ", timestamp_str);
 
-	va_start(ap, format);
-	vfprintf(stream, format, ap);
-	fflush(stream);
-	va_end(ap);
+  va_start(ap, format);
+  vfprintf(stream, format, ap);
+  fflush(stream);
+  va_end(ap);
 }

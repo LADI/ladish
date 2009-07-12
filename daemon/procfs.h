@@ -1,4 +1,4 @@
-/* -*- Mode: C ; indent-tabs-mode: t ; tab-width: 8 ; c-basic-offset: 8 -*- */
+/* -*- Mode: C -*- */
 /*
  *   LASH
  *
@@ -24,12 +24,12 @@
 
 bool
 procfs_get_process_cmdline(
-	unsigned long long pid,
-	int * argc_ptr,
-	char *** argv_ptr);
+  unsigned long long pid,
+  int * argc_ptr,
+  char *** argv_ptr);
 
 char *
 procfs_get_process_cwd(
-	unsigned long long pid);
+  unsigned long long pid);
 
 #endif /* #ifndef PROCFS_H__604D0D94_1609_4BB4_BFA7_5DC47830011A__INCLUDED */

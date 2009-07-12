@@ -36,35 +36,35 @@ bool
 interface_default_handler(const interface_t *interface,
                           method_call_t     *call)
 {
-	const method_t *ptr;
+  const method_t *ptr;
 
-	for (ptr = (const method_t *) interface->methods;
-	     ptr && ptr->name;
-	     ++ptr) {
-		if (strcmp(call->method_name, ptr->name) == 0) {
-			if (ptr->handler) {
-				call->interface = interface;
-				ptr->handler(call);
+  for (ptr = (const method_t *) interface->methods;
+       ptr && ptr->name;
+       ++ptr) {
+    if (strcmp(call->method_name, ptr->name) == 0) {
+      if (ptr->handler) {
+        call->interface = interface;
+        ptr->handler(call);
 
-				/* If the method handler didn't construct a return
-				   message create a void one here */
-				// TODO: Also handle cases where the sender doesn't need a reply
-				if (!call->reply
-				    && !(call->reply = dbus_message_new_method_return(call->message))) {
-					lash_error("Failed to construct void method return");
-				}
-			} else {
-				lash_dbus_error(call, LASH_DBUS_ERROR_GENERIC,
-				                "Handler for method \"%s\" is NULL", ptr->name);
-			}
+        /* If the method handler didn't construct a return
+           message create a void one here */
+        // TODO: Also handle cases where the sender doesn't need a reply
+        if (!call->reply
+            && !(call->reply = dbus_message_new_method_return(call->message))) {
+          lash_error("Failed to construct void method return");
+        }
+      } else {
+        lash_dbus_error(call, LASH_DBUS_ERROR_GENERIC,
+                        "Handler for method \"%s\" is NULL", ptr->name);
+      }
 
-			/* Found method */
-			return true;
-		}
-	}
+      /* Found method */
+      return true;
+    }
+  }
 
-	/* Didn't find method */
-	return false;
+  /* Didn't find method */
+  return false;
 }
 
 /* EOF */

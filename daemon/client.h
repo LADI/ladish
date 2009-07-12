@@ -1,4 +1,4 @@
-/* -*- Mode: C ; indent-tabs-mode: t ; tab-width: 8 ; c-basic-offset: 8 -*- */
+/* -*- Mode: C -*- */
 /*
  *   LASH
  *
@@ -39,38 +39,38 @@
 
 struct lash_client
 {
-	struct list_head        siblings;
+  struct list_head        siblings;
 
-	uuid_t                  id;
-	char                    id_str[37];
-	pid_t                   pid;
-	enum LASH_Client_Flag   flags;
-	char                   *class;
-	char                   *working_dir;
-	char                   *data_path;
-	int                     argc;
-	char                  **argv;
+  uuid_t                  id;
+  char                    id_str[37];
+  pid_t                   pid;
+  enum LASH_Client_Flag   flags;
+  char                   *class;
+  char                   *working_dir;
+  char                   *data_path;
+  int                     argc;
+  char                  **argv;
 
-	char                   *dbus_name;
-	char                   *name;
-	store_t                *store;
+  char                   *dbus_name;
+  char                   *name;
+  store_t                *store;
 
-	dbus_uint64_t           pending_task;
-	enum LASH_Event_Type    task_type;
-	uint8_t                 task_progress;
+  dbus_uint64_t           pending_task;
+  enum LASH_Event_Type    task_type;
+  uint8_t                 task_progress;
 
-	char                   *jack_client_name;
-	struct list_head        jack_patches;
+  char                   *jack_client_name;
+  struct list_head        jack_patches;
 
-	struct list_head        dependencies;
-	struct list_head        unsatisfied_deps;
+  struct list_head        dependencies;
+  struct list_head        unsatisfied_deps;
 
-	project_t              *project;
+  project_t              *project;
 };
 
 enum
 {
-	LASH_Saved = 0x01000000  /* Client has been saved */
+  LASH_Saved = 0x01000000  /* Client has been saved */
 };
 
 #define CLIENT_CONFIG_DATA_SET(x)    (((x)->flags) & LASH_Config_Data_Set)
@@ -135,7 +135,7 @@ client_find_by_name(struct list_head *client_list,
 
 bool
 client_fill_by_pid(
-	struct lash_client * lash_client_ptr,
-	unsigned long long pid);
+  struct lash_client * lash_client_ptr,
+  unsigned long long pid);
 
 #endif /* __LASHD_CLIENT_H__ */

@@ -28,20 +28,20 @@
 
 struct _signal_msg
 {
-	DBusConnection *connection;
-	DBusMessage    *message;
+  DBusConnection *connection;
+  DBusMessage    *message;
 };
 
 struct _signal_arg
 {
-	const char *name;
-	const char *type;
+  const char *name;
+  const char *type;
 };
 
 struct _signal
 {
-	const char         *name;
-	const signal_arg_t *args;
+  const char         *name;
+  const signal_arg_t *args;
 };
 
 void

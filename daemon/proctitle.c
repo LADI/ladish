@@ -31,33 +31,33 @@ static char * g_argv_end;
 
 void
 lash_init_setproctitle(
-	int argc,
-	char ** argv,
-	char ** envp)
+  int argc,
+  char ** argv,
+  char ** envp)
 {
-	char * last_arg;
+  char * last_arg;
 
-	g_argv_begin = argv[0];
+  g_argv_begin = argv[0];
 
-	last_arg = argv[argc-1];
+  last_arg = argv[argc-1];
 
-	g_argv_end = last_arg + strlen(last_arg);
+  g_argv_end = last_arg + strlen(last_arg);
 
-	//lash_info("%u chars available for title", g_argv_end - g_argv_begin);
+  //lash_info("%u chars available for title", g_argv_end - g_argv_begin);
 }
 
 void
 lash_setproctitile(
-	const char * format,
-	...)
+  const char * format,
+  ...)
 {
-	va_list ap;
+  va_list ap;
 
-	va_start(ap, format);
+  va_start(ap, format);
 
-	memset(g_argv_begin, 0, g_argv_end - g_argv_begin);
+  memset(g_argv_begin, 0, g_argv_end - g_argv_begin);
 
-	vsnprintf(g_argv_begin, g_argv_end - g_argv_begin, format, ap);
+  vsnprintf(g_argv_begin, g_argv_end - g_argv_begin, format, ap);
 
-	va_end(ap);
+  va_end(ap);
 }

@@ -35,113 +35,113 @@
 jack_mgr_client_t *
 jack_mgr_client_new(void)
 {
-	jack_mgr_client_t *client;
+  jack_mgr_client_t *client;
 
-	if ((client = lash_calloc(1, sizeof(jack_mgr_client_t)))) {
-		INIT_LIST_HEAD(&client->old_patches);
-		INIT_LIST_HEAD(&client->backup_patches);
-	}
+  if ((client = lash_calloc(1, sizeof(jack_mgr_client_t)))) {
+    INIT_LIST_HEAD(&client->old_patches);
+    INIT_LIST_HEAD(&client->backup_patches);
+  }
 
-	return client;
+  return client;
 }
 
 void
 jack_mgr_client_destroy(jack_mgr_client_t *client)
 {
-	if (client) {
-		lash_free(&client->name);
-		jack_mgr_client_free_patch_list(&client->old_patches);
-		jack_mgr_client_free_patch_list(&client->backup_patches);
-		free(client);
-	}
+  if (client) {
+    lash_free(&client->name);
+    jack_mgr_client_free_patch_list(&client->old_patches);
+    jack_mgr_client_free_patch_list(&client->backup_patches);
+    free(client);
+  }
 }
 
 void
 jack_mgr_client_dup_patch_list(struct list_head *src,
                                struct list_head *dest)
 {
-	struct list_head *node;
-	jack_patch_t *patch;
+  struct list_head *node;
+  jack_patch_t *patch;
 
-	list_for_each(node, src) {
-		patch = jack_patch_dup(list_entry(node, jack_patch_t, siblings));
-		list_add_tail(&patch->siblings, dest);
-	}
+  list_for_each(node, src) {
+    patch = jack_patch_dup(list_entry(node, jack_patch_t, siblings));
+    list_add_tail(&patch->siblings, dest);
+  }
 }
 
 void
 jack_mgr_client_free_patch_list(struct list_head *patch_list)
 {
-	struct list_head *node, *next;
+  struct list_head *node, *next;
 
-	list_for_each_safe(node, next, patch_list)
-		jack_patch_destroy(list_entry(node, jack_patch_t, siblings));
+  list_for_each_safe(node, next, patch_list)
+    jack_patch_destroy(list_entry(node, jack_patch_t, siblings));
 }
 
 jack_mgr_client_t *
 jack_mgr_client_find_by_id(struct list_head *client_list,
                            uuid_t            id)
 {
-	if (client_list) {
-		struct list_head *node;
-		jack_mgr_client_t *client;
+  if (client_list) {
+    struct list_head *node;
+    jack_mgr_client_t *client;
 
-		list_for_each (node, client_list) {
-			client = list_entry(node, jack_mgr_client_t, siblings);
+    list_for_each (node, client_list) {
+      client = list_entry(node, jack_mgr_client_t, siblings);
 
-			if (uuid_compare(id, client->id) == 0)
-				return client;
-		}
-	}
+      if (uuid_compare(id, client->id) == 0)
+        return client;
+    }
+  }
 
-	return NULL;
+  return NULL;
 }
 
 jack_mgr_client_t *
 jack_mgr_client_find_by_jackdbus_id(struct list_head   *client_list,
                                     dbus_uint64_t       id)
 {
-	if (client_list) {
-		struct list_head *node;
-		jack_mgr_client_t *client;
+  if (client_list) {
+    struct list_head *node;
+    jack_mgr_client_t *client;
 
-		list_for_each (node, client_list) {
-			client = list_entry(node, jack_mgr_client_t, siblings);
+    list_for_each (node, client_list) {
+      client = list_entry(node, jack_mgr_client_t, siblings);
 
-			if (client->jackdbus_id == id)
-				return client;
-		}
-	}
+      if (client->jackdbus_id == id)
+        return client;
+    }
+  }
 
-	return NULL;
+  return NULL;
 }
 
 jack_mgr_client_t *
 jack_mgr_client_find_by_pid(struct list_head *client_list,
                             pid_t             pid)
 {
-	if (client_list) {
-		struct list_head *node;
-		jack_mgr_client_t *client;
+  if (client_list) {
+    struct list_head *node;
+    jack_mgr_client_t *client;
 
-		list_for_each (node, client_list) {
-			client = list_entry(node, jack_mgr_client_t, siblings);
+    list_for_each (node, client_list) {
+      client = list_entry(node, jack_mgr_client_t, siblings);
 
-			if (client->pid == pid)
-				return client;
-		}
-	}
+      if (client->pid == pid)
+        return client;
+    }
+  }
 
-	return NULL;
+  return NULL;
 }
 
 void
 jack_mgr_client_modified(jack_mgr_client_t *client)
 {
-	struct lash_client *lash_client;
-	if ((lash_client = server_find_client_by_id(client->id))
-	    && lash_client->project)
-		project_set_modified_status(lash_client->project, true);
+  struct lash_client *lash_client;
+  if ((lash_client = server_find_client_by_id(client->id))
+      && lash_client->project)
+    project_set_modified_status(lash_client->project, true);
 }
 
 /* EOF */

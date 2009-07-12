@@ -1,4 +1,4 @@
-/* -*- Mode: C ; indent-tabs-mode: t ; tab-width: 8 ; c-basic-offset: 8 -*- */
+/* -*- Mode: C -*- */
 /*
  *   LASH
  *
@@ -32,9 +32,9 @@
 
 struct _lashd_jackdbus_mgr
 {
-	struct list_head  clients;
-	DBusMessage      *graph;
-	dbus_uint64_t     graph_version;
+  struct list_head  clients;
+  DBusMessage      *graph;
+  dbus_uint64_t     graph_version;
 };
 
 lashd_jackdbus_mgr_t *

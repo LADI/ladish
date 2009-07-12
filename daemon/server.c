@@ -1,4 +1,4 @@
-/* -*- Mode: C ; indent-tabs-mode: t ; tab-width: 8 ; c-basic-offset: 8 -*- */
+/* -*- Mode: C -*- */
 /*
  *   LASH
  *
@@ -56,116 +56,116 @@ server_fill_projects(void);
 bool
 server_start(const char *default_dir)
 {
-	g_server = lash_calloc(1, sizeof(server_t));
+  g_server = lash_calloc(1, sizeof(server_t));
 
-	INIT_LIST_HEAD(&g_server->loaded_projects);
-	INIT_LIST_HEAD(&g_server->all_projects);
+  INIT_LIST_HEAD(&g_server->loaded_projects);
+  INIT_LIST_HEAD(&g_server->all_projects);
 
-	lash_debug("Starting server");
+  lash_debug("Starting server");
 
-	if (!lash_appdb_load(&g_server->appdb)) {
-		lash_error("Failed to load application database");
-		goto fail;
-	}
+  if (!lash_appdb_load(&g_server->appdb)) {
+    lash_error("Failed to load application database");
+    goto fail;
+  }
 
 #ifdef LASH_DEBUG
-	struct list_head *node;
-	struct lash_appdb_entry *entry;
+  struct list_head *node;
+  struct lash_appdb_entry *entry;
 
-	list_for_each (node, &g_server->appdb) {
-		entry = list_entry(node, struct lash_appdb_entry, siblings);
-		lash_info("Application '%s'", entry->name);
-	}
+  list_for_each (node, &g_server->appdb) {
+    entry = list_entry(node, struct lash_appdb_entry, siblings);
+    lash_info("Application '%s'", entry->name);
+  }
 #endif
 
-	g_server->projects_dir = lash_dup_fqn(getenv("HOME"), default_dir);
+  g_server->projects_dir = lash_dup_fqn(getenv("HOME"), default_dir);
 
-	server_fill_projects();
+  server_fill_projects();
 
-	if (!(g_server->dbus_service = lashd_dbus_service_new())) {
-		lash_debug("Failed to launch D-Bus service");
-		goto fail;
-	}
+  if (!(g_server->dbus_service = lashd_dbus_service_new())) {
+    lash_debug("Failed to launch D-Bus service");
+    goto fail;
+  }
 
-	if (!(g_server->jackdbus_mgr = lashd_jackdbus_mgr_new())) {
-		lash_debug("Failed to launch JACK D-Bus manager");
-		goto fail;
-	}
+  if (!(g_server->jackdbus_mgr = lashd_jackdbus_mgr_new())) {
+    lash_debug("Failed to launch JACK D-Bus manager");
+    goto fail;
+  }
 
-	lash_debug("Server running");
+  lash_debug("Server running");
 
-	return true;
+  return true;
 
 fail:
-	server_stop();
-	return false;
+  server_stop();
+  return false;
 }
 
 void
 server_stop(void)
 {
-	struct list_head *node;
-	project_t *project;
+  struct list_head *node;
+  project_t *project;
 
-	if (!g_server)
-		return;
+  if (!g_server)
+    return;
 
-	while (!list_empty(&g_server->all_projects)) {
-		node = g_server->all_projects.next;
-		list_del(node);
-		project = list_entry(node, project_t, siblings_all);
-		project_destroy(project);
-	}
+  while (!list_empty(&g_server->all_projects)) {
+    node = g_server->all_projects.next;
+    list_del(node);
+    project = list_entry(node, project_t, siblings_all);
+    project_destroy(project);
+  }
 
-	lash_debug("Destroying D-Bus service");
-	service_destroy(g_server->dbus_service);
-	g_server->dbus_service = NULL;
+  lash_debug("Destroying D-Bus service");
+  service_destroy(g_server->dbus_service);
+  g_server->dbus_service = NULL;
 
-	lash_debug("Destroying JACK D-Bus manager");
-	lashd_jackdbus_mgr_destroy(g_server->jackdbus_mgr);
+  lash_debug("Destroying JACK D-Bus manager");
+  lashd_jackdbus_mgr_destroy(g_server->jackdbus_mgr);
 
-	lash_free(&g_server->projects_dir);
+  lash_free(&g_server->projects_dir);
 
-	lash_debug("Destroying application database");
-	lash_appdb_free(&g_server->appdb);
+  lash_debug("Destroying application database");
+  lash_appdb_free(&g_server->appdb);
 
-	free(g_server);
-	g_server = NULL;
+  free(g_server);
+  g_server = NULL;
 
-	lash_debug("Server destroyed");
+  lash_debug("Server destroyed");
 }
 
 static void
 server_fill_projects(void)
 {
-	DIR *dir;
-	struct dirent *dentry;
-	project_t *project;
+  DIR *dir;
+  struct dirent *dentry;
+  project_t *project;
 
-	lash_debug("Getting projects from directory '%s'", g_server->projects_dir);
+  lash_debug("Getting projects from directory '%s'", g_server->projects_dir);
 
-	dir = opendir(g_server->projects_dir);
-	if (!dir) {
-		lash_error("Cannot open directory '%s': %s",
-		           g_server->projects_dir, strerror(errno));
-		return;
-	}
+  dir = opendir(g_server->projects_dir);
+  if (!dir) {
+    lash_error("Cannot open directory '%s': %s",
+               g_server->projects_dir, strerror(errno));
+    return;
+  }
 
-	while ((dentry = readdir(dir))) {
-		if (dentry->d_type != DT_DIR)
-			continue;
+  while ((dentry = readdir(dir))) {
+    if (dentry->d_type != DT_DIR)
+      continue;
 
-		/* Skip . and .. */
-		if (dentry->d_name[0] == '.')
-			continue;
+    /* Skip . and .. */
+    if (dentry->d_name[0] == '.')
+      continue;
 
-		project = project_new_from_disk(g_server->projects_dir, dentry->d_name);
-		if (project)
-			list_add_tail(&project->siblings_all,
-			              &g_server->all_projects);
-	}
+    project = project_new_from_disk(g_server->projects_dir, dentry->d_name);
+    if (project)
+      list_add_tail(&project->siblings_all,
+                    &g_server->all_projects);
+  }
 
-	closedir(dir);
+  closedir(dir);
 }
 
 /*****************************
@@ -175,273 +175,273 @@ server_fill_projects(void)
 project_t *
 server_find_project_by_name(const char *project_name)
 {
-	struct list_head *node;
-	project_t *project;
+  struct list_head *node;
+  project_t *project;
 
-	if (!project_name)
-		return NULL;
+  if (!project_name)
+    return NULL;
 
-	list_for_each (node, &g_server->loaded_projects) {
-		project = list_entry(node, project_t, siblings_loaded);
-		if (strcmp(project->name, project_name) == 0)
-			return project;
-	}
+  list_for_each (node, &g_server->loaded_projects) {
+    project = list_entry(node, project_t, siblings_loaded);
+    if (strcmp(project->name, project_name) == 0)
+      return project;
+  }
 
-	return NULL;
+  return NULL;
 }
 
 static __inline__ struct lash_client *
 find_client_in_list_by_dbus_name(struct list_head *client_list,
                                  const char       *dbus_name)
 {
-	struct list_head *node;
-	struct lash_client *client;
+  struct list_head *node;
+  struct lash_client *client;
 
-	list_for_each (node, client_list) {
-		client = list_entry(node, struct lash_client, siblings);
+  list_for_each (node, client_list) {
+    client = list_entry(node, struct lash_client, siblings);
 
-		if (client->dbus_name != NULL && strcmp(client->dbus_name, dbus_name) == 0)
-			return client;
-	}
+    if (client->dbus_name != NULL && strcmp(client->dbus_name, dbus_name) == 0)
+      return client;
+  }
 
-	return NULL;
+  return NULL;
 }
 
 static __inline__ struct lash_client *
 find_client_in_list_by_pid(struct list_head *client_list,
                            pid_t             pid)
 {
-	struct list_head *node;
-	struct lash_client *client;
+  struct list_head *node;
+  struct lash_client *client;
 
-	list_for_each (node, client_list) {
-		client = list_entry(node, struct lash_client, siblings);
+  list_for_each (node, client_list) {
+    client = list_entry(node, struct lash_client, siblings);
 
-		if (client->pid == pid)
-			return client;
-	}
+    if (client->pid == pid)
+      return client;
+  }
 
-	return NULL;
+  return NULL;
 }
 
 struct lash_client *
 server_find_client_by_dbus_name(const char *dbus_name)
 {
-	struct list_head *node;
-	project_t *project;
-	struct lash_client *client;
+  struct list_head *node;
+  project_t *project;
+  struct lash_client *client;
 
-	list_for_each (node, &g_server->loaded_projects) {
-		project = list_entry(node, project_t, siblings_loaded);
+  list_for_each (node, &g_server->loaded_projects) {
+    project = list_entry(node, project_t, siblings_loaded);
 
-		client = find_client_in_list_by_dbus_name(&project->clients,
-		                                          dbus_name);
-		if (client)
-			return client;
-	}
+    client = find_client_in_list_by_dbus_name(&project->clients,
+                                              dbus_name);
+    if (client)
+      return client;
+  }
 
-	return NULL;
+  return NULL;
 }
 
 struct lash_client *
 server_find_client_by_id(uuid_t id)
 {
-	struct list_head *node;
-	project_t *project;
-	struct lash_client *client;
+  struct list_head *node;
+  project_t *project;
+  struct lash_client *client;
 
-	list_for_each (node, &g_server->loaded_projects) {
-		project = list_entry(node, project_t, siblings_loaded);
+  list_for_each (node, &g_server->loaded_projects) {
+    project = list_entry(node, project_t, siblings_loaded);
 
-		client = project_get_client_by_id(&project->clients, id);
-		if (client)
-			return client;
-	}
+    client = project_get_client_by_id(&project->clients, id);
+    if (client)
+      return client;
+  }
 
-	return NULL;
+  return NULL;
 }
 
 struct lash_client *
 server_find_client_by_pid(pid_t pid)
 {
-	struct list_head *node;
-	project_t *project;
-	struct lash_client *client;
+  struct list_head *node;
+  project_t *project;
+  struct lash_client *client;
 
-	list_for_each (node, &g_server->loaded_projects) {
-		project = list_entry(node, project_t, siblings_loaded);
+  list_for_each (node, &g_server->loaded_projects) {
+    project = list_entry(node, project_t, siblings_loaded);
 
-		client = find_client_in_list_by_pid(&project->clients, pid);
-		if (client)
-			return client;
-	}
+    client = find_client_in_list_by_pid(&project->clients, pid);
+    if (client)
+      return client;
+  }
 
-	return NULL;
+  return NULL;
 }
 
 struct lash_client *
 server_find_lost_client_by_pid(pid_t pid)
 {
-	struct list_head *node;
-	project_t *project;
-	struct lash_client *client;
+  struct list_head *node;
+  project_t *project;
+  struct lash_client *client;
 
-	list_for_each (node, &g_server->loaded_projects) {
-		project = list_entry(node, project_t, siblings_loaded);
+  list_for_each (node, &g_server->loaded_projects) {
+    project = list_entry(node, project_t, siblings_loaded);
 
-		client = find_client_in_list_by_pid(&project->lost_clients, pid);
-		if (client)
-			return client;
-	}
+    client = find_client_in_list_by_pid(&project->lost_clients, pid);
+    if (client)
+      return client;
+  }
 
-	return NULL;
+  return NULL;
 }
 
 static const char *
 server_create_new_project_name(const char *suggestion)
 {
-	static char new_name[1034];
-	const char *info_file;
-	int i;
+  static char new_name[1034];
+  const char *info_file;
+  int i;
 
-	if (!suggestion || !suggestion[0]) {
-		suggestion = "New Project";
-	} else if (strlen(suggestion) > 1023) {
-		lash_error("Suggested project name is too long "
-		           "(over 1023 characters excl. NUL)");
-		return NULL;
-	}
+  if (!suggestion || !suggestion[0]) {
+    suggestion = "New Project";
+  } else if (strlen(suggestion) > 1023) {
+    lash_error("Suggested project name is too long "
+               "(over 1023 characters excl. NUL)");
+    return NULL;
+  }
 
-	strcpy(new_name, suggestion);
+  strcpy(new_name, suggestion);
 
-	/* Yes, arbitrary limits suck, but I suppose this one is acceptable */
-	for (i = 2; i <= 1000000000; ++i) {
-		if (!server_find_project_by_name(new_name)) {
-			info_file = lash_get_fqn(lash_get_fqn(g_server->projects_dir,
-			                                      new_name),
-			                         PROJECT_INFO_FILE);
-			if (access(info_file, F_OK) != 0)
-				return new_name;
-		}
+  /* Yes, arbitrary limits suck, but I suppose this one is acceptable */
+  for (i = 2; i <= 1000000000; ++i) {
+    if (!server_find_project_by_name(new_name)) {
+      info_file = lash_get_fqn(lash_get_fqn(g_server->projects_dir,
+                                            new_name),
+                               PROJECT_INFO_FILE);
+      if (access(info_file, F_OK) != 0)
+        return new_name;
+    }
 
-		sprintf(new_name, "%s %d", suggestion, i);
-	}
+    sprintf(new_name, "%s %d", suggestion, i);
+  }
 
-	/* You win the WTF prize of superb WTF */
-	lash_error("Cannot create new project name: Tried 999 999 999 "
-	           "different names but all were taken");
+  /* You win the WTF prize of superb WTF */
+  lash_error("Cannot create new project name: Tried 999 999 999 "
+             "different names but all were taken");
 
-	return NULL;
+  return NULL;
 }
 
 static __inline__ project_t *
 server_create_new_project(const char *name)
 {
-	project_t *project;
+  project_t *project;
 
-	lash_debug("Creating a new project");
+  lash_debug("Creating a new project");
 
-	project = project_new();
-	lash_strset(&project->name, server_create_new_project_name(name));
+  project = project_new();
+  lash_strset(&project->name, server_create_new_project_name(name));
 
-	lash_debug("The new project's name is '%s'", project->name);
+  lash_debug("The new project's name is '%s'", project->name);
 
-	lash_strset(&project->directory,
-	            lash_get_fqn(g_server->projects_dir, project->name));
+  lash_strset(&project->directory,
+              lash_get_fqn(g_server->projects_dir, project->name));
 
-	project_clear_id_dir(project);
+  project_clear_id_dir(project);
 
-	list_add_tail(&project->siblings_loaded, &g_server->loaded_projects);
+  list_add_tail(&project->siblings_loaded, &g_server->loaded_projects);
 
-	/* if we save the project later we will add it to available for loading list */
-	INIT_LIST_HEAD(&project->siblings_all);
+  /* if we save the project later we will add it to available for loading list */
+  INIT_LIST_HEAD(&project->siblings_all);
 
-	lashd_dbus_signal_emit_project_appeared(project->name, project->directory);
+  lashd_dbus_signal_emit_project_appeared(project->name, project->directory);
 
-	lash_info("Created project '%s'", project->name);
+  lash_info("Created project '%s'", project->name);
 
-	return project;
+  return project;
 }
 
 project_t *
 server_get_newborn_project()
 {
-	struct list_head * node_ptr;
-	project_t * project_ptr;
+  struct list_head * node_ptr;
+  project_t * project_ptr;
 
-	project_ptr = NULL;
+  project_ptr = NULL;
 
-	list_for_each(node_ptr, &g_server->loaded_projects)
-	{
-		project_ptr = list_entry(node_ptr, project_t, siblings_loaded);
-		if (project_ptr->doc == NULL)
-		{
-			return project_ptr;
-		}
-	}
+  list_for_each(node_ptr, &g_server->loaded_projects)
+  {
+    project_ptr = list_entry(node_ptr, project_t, siblings_loaded);
+    if (project_ptr->doc == NULL)
+    {
+      return project_ptr;
+    }
+  }
 
-	/* no unsaved project found */
+  /* no unsaved project found */
 
-	if (project_ptr != NULL)
-	{
-		/* reuse last loaded project if any */
-		return project_ptr;
-	}
+  if (project_ptr != NULL)
+  {
+    /* reuse last loaded project if any */
+    return project_ptr;
+  }
 
-	lash_debug("Creating new project for client");
+  lash_debug("Creating new project for client");
 
-	return server_create_new_project(NULL);
+  return server_create_new_project(NULL);
 }
 
 // TODO: This belongs in project.c and should be called project_close()
 void
 server_close_project(project_t *project)
 {
-	project_unload(project);
+  project_unload(project);
 
-	lashd_dbus_signal_emit_project_disappeared(project->name);
+  lashd_dbus_signal_emit_project_disappeared(project->name);
 
-	lash_info("Project '%s' removed", project->name);
+  lash_info("Project '%s' removed", project->name);
 }
 
 bool
 server_project_close_by_name(const char *project_name)
 {
-	project_t *project;
+  project_t *project;
 
-	project = server_find_project_by_name(project_name);
-	if (!project)
-		return false;
+  project = server_find_project_by_name(project_name);
+  if (!project)
+    return false;
 
-	server_close_project(project);
+  server_close_project(project);
 
-	return true;
+  return true;
 }
 
 void
 server_close_all_projects(void)
 {
-	struct list_head *node;
-	project_t *project;
+  struct list_head *node;
+  project_t *project;
 
-	while (!list_empty(&g_server->loaded_projects)) {
-		node = g_server->loaded_projects.next;
-		project = list_entry(node, project_t, siblings_loaded);
+  while (!list_empty(&g_server->loaded_projects)) {
+    node = g_server->loaded_projects.next;
+    project = list_entry(node, project_t, siblings_loaded);
 
-		server_close_project(project); /* Removes from list */
-	}
+    server_close_project(project); /* Removes from list */
+  }
 }
 
 void
 server_save_all_projects(void)
 {
-	struct list_head *node;
-	project_t *project;
+  struct list_head *node;
+  project_t *project;
 
-	list_for_each (node, &g_server->loaded_projects) {
-		project = list_entry(node, project_t, siblings_loaded);
-		project_save(project);
-	}
+  list_for_each (node, &g_server->loaded_projects) {
+    project = list_entry(node, project_t, siblings_loaded);
+    project_save(project);
+  }
 }
 
 struct lash_client *
@@ -453,181 +453,181 @@ server_add_client(const char  *dbus_name,
                   int          argc,
                   char       **argv)
 {
-	struct lash_client * client_ptr;
+  struct lash_client * client_ptr;
 
-	if (pid == 0)
-	{
-		lash_error("Cannot add client with PID 0");
-		return NULL;
-	}
+  if (pid == 0)
+  {
+    lash_error("Cannot add client with PID 0");
+    return NULL;
+  }
 
-	/* Have we launched this client? */
-	client_ptr = server_find_lost_client_by_pid(pid);
-	if (client_ptr != NULL)
-	{
-		lash_strset(&client_ptr->dbus_name, dbus_name);
-		client_ptr->flags |= LASH_Restored;
-		client_resume_project(client_ptr);
-		return client_ptr;
-	}
+  /* Have we launched this client? */
+  client_ptr = server_find_lost_client_by_pid(pid);
+  if (client_ptr != NULL)
+  {
+    lash_strset(&client_ptr->dbus_name, dbus_name);
+    client_ptr->flags |= LASH_Restored;
+    client_resume_project(client_ptr);
+    return client_ptr;
+  }
 
-	client_ptr = server_find_client_by_pid(pid);
-	/* new real lash client? */
-	if (client_ptr == NULL)
-	{
-		client_ptr = client_new();
-		client_ptr->pid = pid;
-		lash_strset(&client_ptr->class, class);
-		client_ptr->flags = flags;
-		client_ptr->argc = argc;
-		client_ptr->argv = argv;
-		lash_strset(&client_ptr->dbus_name, dbus_name);
-		lash_strset(&client_ptr->working_dir, working_dir);
-		project_new_client(server_get_newborn_project(), client_ptr);
-		return client_ptr;
-	}
+  client_ptr = server_find_client_by_pid(pid);
+  /* new real lash client? */
+  if (client_ptr == NULL)
+  {
+    client_ptr = client_new();
+    client_ptr->pid = pid;
+    lash_strset(&client_ptr->class, class);
+    client_ptr->flags = flags;
+    client_ptr->argc = argc;
+    client_ptr->argv = argv;
+    lash_strset(&client_ptr->dbus_name, dbus_name);
+    lash_strset(&client_ptr->working_dir, working_dir);
+    project_new_client(server_get_newborn_project(), client_ptr);
+    return client_ptr;
+  }
 
-	/* raw client transformed to real lash client */
+  /* raw client transformed to real lash client */
 
-	lash_strset(&client_ptr->class, class);
-	lash_strset(&client_ptr->dbus_name, dbus_name);
-	lash_strset(&client_ptr->working_dir, working_dir);
+  lash_strset(&client_ptr->class, class);
+  lash_strset(&client_ptr->dbus_name, dbus_name);
+  lash_strset(&client_ptr->working_dir, working_dir);
 
-	client_ptr->flags = flags;
+  client_ptr->flags = flags;
 
-	/* TODO: replace argv with what client supplied. */
-	//client->argc = argc;
-	//client->argv = argv;
+  /* TODO: replace argv with what client supplied. */
+  //client->argc = argc;
+  //client->argv = argv;
 
-	return client_ptr;
+  return client_ptr;
 }
 
 static bool
 server_project_restore(project_t *project)
 {
-	struct list_head *node;
-	struct lash_client *client;
+  struct list_head *node;
+  struct lash_client *client;
 
-	lash_info("Restoring project '%s'", project->name);
+  lash_info("Restoring project '%s'", project->name);
 
-	if (project_is_loaded(project)) {
-		lash_error("Cannot restore project: '%s' is already loaded", project->name);
-		return false;
-	}
+  if (project_is_loaded(project)) {
+    lash_error("Cannot restore project: '%s' is already loaded", project->name);
+    return false;
+  }
 
-	if (!project_load(project)) {
-		lash_error("Cannot restore project '%s' from directory %s",
-		           project->name, project->directory);
-		return false;
-	}
+  if (!project_load(project)) {
+    lash_error("Cannot restore project '%s' from directory %s",
+               project->name, project->directory);
+    return false;
+  }
 
-	// TODO: Shouldn't this check g_server->all_projects instead?
-	if (server_find_project_by_name(project->name)) {
-		const char *new_name = server_create_new_project_name(project->name);
-		lash_info("Changing restored project's name from '%s' to '%s' "
-		          "to avoid clashing with an existing project",
-		          project->name, new_name);
-		project_rename(project, new_name);
-	}
+  // TODO: Shouldn't this check g_server->all_projects instead?
+  if (server_find_project_by_name(project->name)) {
+    const char *new_name = server_create_new_project_name(project->name);
+    lash_info("Changing restored project's name from '%s' to '%s' "
+              "to avoid clashing with an existing project",
+              project->name, new_name);
+    project_rename(project, new_name);
+  }
 
-	lash_info("Adding project '%s' to project list", project->name);
-	list_add_tail(&project->siblings_loaded, &g_server->loaded_projects);
+  lash_info("Adding project '%s' to project list", project->name);
+  list_add_tail(&project->siblings_loaded, &g_server->loaded_projects);
 
-	lashd_dbus_signal_emit_project_appeared(project->name, project->directory);
+  lashd_dbus_signal_emit_project_appeared(project->name, project->directory);
 
-	project->task_type = LASH_TASK_LOAD;
-	project->client_tasks_total = project->client_tasks_progress = 0;
+  project->task_type = LASH_TASK_LOAD;
+  project->client_tasks_total = project->client_tasks_progress = 0;
 
-	/* Signal beginning of task */
-	lashd_dbus_signal_emit_progress(0);
+  /* Signal beginning of task */
+  lashd_dbus_signal_emit_progress(0);
 
-	list_for_each (node, &project->lost_clients) {
-		client = list_entry(node, struct lash_client, siblings);
-		client->project = project;
+  list_for_each (node, &project->lost_clients) {
+    client = list_entry(node, struct lash_client, siblings);
+    client->project = project;
 
-		++project->client_tasks_total;
+    ++project->client_tasks_total;
 
-		/* Remove bogus entries from the client's dependencies list */
-		client_dependency_list_sanity_check(&project->lost_clients,
-		                                    client);
+    /* Remove bogus entries from the client's dependencies list */
+    client_dependency_list_sanity_check(&project->lost_clients,
+                                        client);
 
-		/* Initialize the client's unsatisfied dependencies list */
-		client_dependency_init_unsatisfied(client);
+    /* Initialize the client's unsatisfied dependencies list */
+    client_dependency_init_unsatisfied(client);
 
-		/* First only launch clients which don't depend on others */
-		if (!list_empty(&client->unsatisfied_deps)) {
-			lash_debug("Postponing adding of client %s because "
-			           "it depends on other clients",
-			           client->id_str);
-			continue;
-		}
+    /* First only launch clients which don't depend on others */
+    if (!list_empty(&client->unsatisfied_deps)) {
+      lash_debug("Postponing adding of client %s because "
+                 "it depends on other clients",
+                 client->id_str);
+      continue;
+    }
 
-		project_launch_client(project, client);
-	}
+    project_launch_client(project, client);
+  }
 
-	project->client_tasks_pending = project->client_tasks_total;
+  project->client_tasks_pending = project->client_tasks_total;
 
-	return true;
+  return true;
 }
 
 bool
 server_project_restore_by_name(const char *project_name)
 {
-	struct list_head *node;
-	project_t *project;
+  struct list_head *node;
+  project_t *project;
 
-	list_for_each (node, &g_server->all_projects) {
-		project = list_entry(node, project_t, siblings_all);
+  list_for_each (node, &g_server->all_projects) {
+    project = list_entry(node, project_t, siblings_all);
 
-		if (strcmp(project->name, project_name) == 0)
-			return server_project_restore(project);
-	}
+    if (strcmp(project->name, project_name) == 0)
+      return server_project_restore(project);
+  }
 
-	return false;
+  return false;
 }
 
 bool
 server_project_restore_by_dir(const char *directory)
 {
-	struct list_head *node;
-	project_t *project;
+  struct list_head *node;
+  project_t *project;
 
-	list_for_each (node, &g_server->all_projects) {
-		project = list_entry(node, project_t, siblings_all);
+  list_for_each (node, &g_server->all_projects) {
+    project = list_entry(node, project_t, siblings_all);
 
-		if (strcmp(project->directory, directory) == 0)
-			return server_project_restore(project);
-	}
+    if (strcmp(project->directory, directory) == 0)
+      return server_project_restore(project);
+  }
 
-	return false;
+  return false;
 }
 
 bool
 server_project_save_by_name(const char *project_name)
 {
-	project_t *project;
+  project_t *project;
 
-	project = server_find_project_by_name(project_name);
-	if (!project)
-		return false;
+  project = server_find_project_by_name(project_name);
+  if (!project)
+    return false;
 
-	project_save(project);
+  project_save(project);
 
-	return true;
+  return true;
 }
 
 void
 server_main(void)
 {
-	while (!g_server->quit) {
-		dbus_connection_read_write_dispatch(g_server->dbus_service->connection, 50);
+  while (!g_server->quit) {
+    dbus_connection_read_write_dispatch(g_server->dbus_service->connection, 50);
 
-		loader_run();
-		// TODO: wtf?
-		loader_run();
-	}
+    loader_run();
+    // TODO: wtf?
+    loader_run();
+  }
 
-	lash_debug("Finished");
+  lash_debug("Finished");
 }
 
 /* EOF */

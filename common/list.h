@@ -44,8 +44,8 @@ extern "C" {
 
 typedef struct _lash_list lash_list_t;
 
-typedef int		(*JCompareFunc)		(void*	a,
-						 void*	b);
+typedef int   (*JCompareFunc)   (void*  a,
+             void*  b);
 struct _lash_list
 {
   void *data;
@@ -68,7 +68,7 @@ lash_list_alloc (void)
 static __inline__ 
 lash_list_t*
 lash_list_prepend (lash_list_t   *list,
-		    void     *data)
+        void     *data)
 {
   lash_list_t *new_list;
 
@@ -79,7 +79,7 @@ lash_list_prepend (lash_list_t   *list,
   return new_list;
 }
 
-#define lash_list_next(slist)	((slist) ? (((lash_list_t *)(slist))->next) : NULL)
+#define lash_list_next(slist) ((slist) ? (((lash_list_t *)(slist))->next) : NULL)
 static __inline__ 
 lash_list_t*
 lash_list_last (lash_list_t *list)
@@ -87,7 +87,7 @@ lash_list_last (lash_list_t *list)
   if (list)
     {
       while (list->next)
-	list = list->next;
+  list = list->next;
     }
 
   return list;
@@ -107,15 +107,15 @@ lash_list_remove_link (lash_list_t *list,
   while (tmp)
     {
       if (tmp == llink)
-	{
-	  if (prev)
-	    prev->next = tmp->next;
-	  if (list == tmp)
-	    list = list->next;
+  {
+    if (prev)
+      prev->next = tmp->next;
+    if (list == tmp)
+      list = list->next;
 
-	  tmp->next = NULL;
-	  break;
-	}
+    tmp->next = NULL;
+    break;
+  }
 
       prev = tmp;
       tmp = tmp->next;
@@ -130,9 +130,9 @@ lash_list_free (lash_list_t *list)
 {
   while (list)
     {
-	    lash_list_t *next = list->next;
-	    free(list);
-	    list = next;
+      lash_list_t *next = list->next;
+      free(list);
+      list = next;
     }
 }
 
@@ -149,7 +149,7 @@ lash_list_free_1 (lash_list_t *list)
 static __inline__ 
 lash_list_t*
 lash_list_remove (lash_list_t   *list,
-		   void     *data)
+       void     *data)
 {
   lash_list_t *tmp;
   lash_list_t *prev;
@@ -160,17 +160,17 @@ lash_list_remove (lash_list_t   *list,
   while (tmp)
     {
       if (tmp->data == data)
-	{
-	  if (prev)
-	    prev->next = tmp->next;
-	  if (list == tmp)
-	    list = list->next;
+  {
+    if (prev)
+      prev->next = tmp->next;
+    if (list == tmp)
+      list = list->next;
 
-	  tmp->next = NULL;
-	  lash_list_free (tmp);
+    tmp->next = NULL;
+    lash_list_free (tmp);
 
-	  break;
-	}
+    break;
+  }
 
       prev = tmp;
       tmp = tmp->next;
@@ -197,12 +197,12 @@ lash_list_length (lash_list_t *list)
 static __inline__ 
 lash_list_t*
 lash_list_find (lash_list_t   *list,
-		 void     *data)
+     void     *data)
 {
   while (list)
     {
       if (list->data == data)
-	break;
+  break;
       list = list->next;
     }
 
@@ -224,12 +224,12 @@ lash_list_copy (lash_list_t *list)
       last = new_list;
       list = list->next;
       while (list)
-	{
-	  last->next = lash_list_alloc ();
-	  last = last->next;
-	  last->data = list->data;
-	  list = list->next;
-	}
+  {
+    last->next = lash_list_alloc ();
+    last = last->next;
+    last->data = list->data;
+    list = list->next;
+  }
     }
 
   return new_list;
@@ -238,7 +238,7 @@ lash_list_copy (lash_list_t *list)
 static __inline__ 
 lash_list_t*
 lash_list_append (lash_list_t   *list,
-		   void     *data)
+       void     *data)
 {
   lash_list_t *new_list;
   lash_list_t *last;
@@ -260,8 +260,8 @@ lash_list_append (lash_list_t   *list,
 static __inline__ 
 lash_list_t* 
 lash_list_sort_merge  (lash_list_t      *l1, 
-			lash_list_t      *l2,
-			JCompareFunc compare_func)
+      lash_list_t      *l2,
+      JCompareFunc compare_func)
 {
   lash_list_t list, *l;
 
@@ -271,13 +271,13 @@ lash_list_sort_merge  (lash_list_t      *l1,
     {
       if (compare_func(l1->data,l2->data) < 0)
         {
-	  l=l->next=l1;
-	  l1=l1->next;
+    l=l->next=l1;
+    l1=l1->next;
         } 
       else 
-	{
-	  l=l->next=l2;
-	  l2=l2->next;
+  {
+    l=l->next=l2;
+    l2=l2->next;
         }
     }
   l->next= l1 ? l1 : l2;
@@ -288,7 +288,7 @@ lash_list_sort_merge  (lash_list_t      *l1,
 static __inline__ 
 lash_list_t* 
 lash_list_sort (lash_list_t       *list,
-		 JCompareFunc compare_func)
+     JCompareFunc compare_func)
 {
   lash_list_t *l1, *l2;
 
@@ -303,15 +303,15 @@ lash_list_sort (lash_list_t       *list,
   while ((l2 = l2->next) != NULL)
     {
       if ((l2 = l2->next) == NULL) 
-	break;
+  break;
       l1=l1->next;
     }
   l2 = l1->next; 
   l1->next = NULL;
 
   return lash_list_sort_merge (lash_list_sort (list, compare_func),
-				lash_list_sort (l2,   compare_func),
-				compare_func);
+        lash_list_sort (l2,   compare_func),
+        compare_func);
 }
 
 static __inline__ 

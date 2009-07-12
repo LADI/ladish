@@ -39,29 +39,29 @@ client_dependency_find_circular(struct list_head *client_list,
                                 uuid_t            orig_id,
                                 uuid_t            new_id)
 {
-	struct lash_client *client = NULL;
-	struct list_head *node;
-	client_dependency_t *dep;
+  struct lash_client *client = NULL;
+  struct list_head *node;
+  client_dependency_t *dep;
 
-	client = project_get_client_by_id(client_list, new_id);
+  client = project_get_client_by_id(client_list, new_id);
 
-	/* Didn't find an existing client with id new_id, no possibility
-	   of a circular dependency here */
-	if (!client)
-		return false;
+  /* Didn't find an existing client with id new_id, no possibility
+     of a circular dependency here */
+  if (!client)
+    return false;
 
-	/* Check the client's dependencies for matches with the original ID */
-	list_for_each(node, &client->dependencies) {
-		dep = list_entry(node, client_dependency_t, siblings);
-		if (uuid_compare(orig_id, dep->client_id) == 0
-		    || client_dependency_find_circular(client_list, orig_id,
-		                                       dep->client_id))
-			/* Found circular dependency */
-			return true;
-	}
+  /* Check the client's dependencies for matches with the original ID */
+  list_for_each(node, &client->dependencies) {
+    dep = list_entry(node, client_dependency_t, siblings);
+    if (uuid_compare(orig_id, dep->client_id) == 0
+        || client_dependency_find_circular(client_list, orig_id,
+                                           dep->client_id))
+      /* Found circular dependency */
+      return true;
+  }
 
-	/* Didn't find a circular dependency along this path */
-	return false;
+  /* Didn't find a circular dependency along this path */
+  return false;
 }
 
 void
@@ -69,38 +69,38 @@ client_dependency_add(struct list_head *client_list,
                       struct lash_client         *client,
                       uuid_t            client_id)
 {
-	if (!client_list || !client) {
-		lash_error("Invalid arguments");
-		return;
-	}
+  if (!client_list || !client) {
+    lash_error("Invalid arguments");
+    return;
+  }
 
-	struct list_head *node;
-	client_dependency_t *dep;
+  struct list_head *node;
+  client_dependency_t *dep;
 
-	/* Check if we're trying to add a duplicate dependency */
-	list_for_each(node, &client->dependencies) {
-		dep = list_entry(node, client_dependency_t, siblings);
-		if (uuid_compare(client_id, dep->client_id) == 0) {
-			/* Found duplicate dependency */
-			lash_error("Refusing to add duplicate dependency");
-			return;
-		}
-	}
+  /* Check if we're trying to add a duplicate dependency */
+  list_for_each(node, &client->dependencies) {
+    dep = list_entry(node, client_dependency_t, siblings);
+    if (uuid_compare(client_id, dep->client_id) == 0) {
+      /* Found duplicate dependency */
+      lash_error("Refusing to add duplicate dependency");
+      return;
+    }
+  }
 
-	/* Check if adding dependency would introduce a circular */
-	if (client_dependency_find_circular(client_list, client->id, client_id)) {
-		lash_error("Refusing to add circular dependency");
-		return;
-	}
+  /* Check if adding dependency would introduce a circular */
+  if (client_dependency_find_circular(client_list, client->id, client_id)) {
+    lash_error("Refusing to add circular dependency");
+    return;
+  }
 
-	dep = lash_calloc(1, sizeof(client_dependency_t));
-	uuid_copy(dep->client_id, client_id);
-	list_add(&dep->siblings, &client->dependencies);
+  dep = lash_calloc(1, sizeof(client_dependency_t));
+  uuid_copy(dep->client_id, client_id);
+  list_add(&dep->siblings, &client->dependencies);
 #ifdef LASH_DEBUG
-	char id_str[37];
-	uuid_unparse(client_id, id_str);
-	lash_debug("Added dependency on client %s to client '%s'",
-	           id_str, client->name);
+  char id_str[37];
+  uuid_unparse(client_id, id_str);
+  lash_debug("Added dependency on client %s to client '%s'",
+             id_str, client->name);
 #endif
 }
 
@@ -108,110 +108,110 @@ void
 client_dependency_remove(struct list_head *head,
                          uuid_t            client_id)
 {
-	if (!head) {
-		lash_error("List head pointer is NULL");
-		return;
-	}
+  if (!head) {
+    lash_error("List head pointer is NULL");
+    return;
+  }
 
-	struct list_head *node;
-	client_dependency_t *dep;
+  struct list_head *node;
+  client_dependency_t *dep;
 
-	list_for_each(node, head) {
-		dep = list_entry(node, client_dependency_t, siblings);
-		if (uuid_compare(dep->client_id, client_id) == 0) {
-			list_del(node);
-			free(dep);
+  list_for_each(node, head) {
+    dep = list_entry(node, client_dependency_t, siblings);
+    if (uuid_compare(dep->client_id, client_id) == 0) {
+      list_del(node);
+      free(dep);
 #ifdef LASH_DEBUG
-			char id_str[37];
-			uuid_unparse(client_id, id_str);
-			lash_debug("Removed dependency on client %s", id_str);
+      char id_str[37];
+      uuid_unparse(client_id, id_str);
+      lash_debug("Removed dependency on client %s", id_str);
 #endif
-			break;
-		}
-	}
+      break;
+    }
+  }
 }
 
 void
 client_dependency_list_sanity_check(struct list_head *client_list,
                                     struct lash_client         *client)
 {
-	if (!client_list || !client) {
-		lash_error("Invalid arguments");
-		return;
-	}
+  if (!client_list || !client) {
+    lash_error("Invalid arguments");
+    return;
+  }
 
-	struct list_head *head, *node;
-	client_dependency_t *dep;
+  struct list_head *head, *node;
+  client_dependency_t *dep;
 
-	lash_debug("Sanity checking client %s dependencies", client->id_str);
+  lash_debug("Sanity checking client %s dependencies", client->id_str);
 
-	head = &client->dependencies;
-	node = head->next;
+  head = &client->dependencies;
+  node = head->next;
 
-	while (node != head) {
-		dep = list_entry(node, client_dependency_t, siblings);
-		node = node->next;
+  while (node != head) {
+    dep = list_entry(node, client_dependency_t, siblings);
+    node = node->next;
 
-		if (!project_get_client_by_id(client_list, dep->client_id)) {
+    if (!project_get_client_by_id(client_list, dep->client_id)) {
 #ifdef LASH_DEBUG
-			char id_str[37];
-			uuid_unparse(dep->client_id, id_str);
-			lash_debug("Dropping bogus dependency on nonexistent "
-			           "client %s", id_str);
+      char id_str[37];
+      uuid_unparse(dep->client_id, id_str);
+      lash_debug("Dropping bogus dependency on nonexistent "
+                 "client %s", id_str);
 #endif
-			list_del(&dep->siblings);
-			free(dep);
-		}
-	}
+      list_del(&dep->siblings);
+      free(dep);
+    }
+  }
 }
 
 void
 client_dependency_init_unsatisfied(struct lash_client *client)
 {
-	if (!client) {
-		lash_error("Client pointer is NULL");
-		return;
-	}
+  if (!client) {
+    lash_error("Client pointer is NULL");
+    return;
+  }
 
-	/* Clear the existing list */
-	if (!list_empty(&client->unsatisfied_deps))
-		client_dependency_remove_all(&client->unsatisfied_deps);
+  /* Clear the existing list */
+  if (!list_empty(&client->unsatisfied_deps))
+    client_dependency_remove_all(&client->unsatisfied_deps);
 
-	/* Nothing to do */
-	if (list_empty(&client->dependencies))
-		return;
+  /* Nothing to do */
+  if (list_empty(&client->dependencies))
+    return;
 
-	struct list_head *node;
-	client_dependency_t *dep, *new;
+  struct list_head *node;
+  client_dependency_t *dep, *new;
 
-	list_for_each(node, &client->dependencies) {
-		dep = list_entry(node, client_dependency_t, siblings);
-		new = lash_calloc(1, sizeof(client_dependency_t));
-		uuid_copy(new->client_id, dep->client_id);
-		list_add(&new->siblings, &client->unsatisfied_deps);
-	}
+  list_for_each(node, &client->dependencies) {
+    dep = list_entry(node, client_dependency_t, siblings);
+    new = lash_calloc(1, sizeof(client_dependency_t));
+    uuid_copy(new->client_id, dep->client_id);
+    list_add(&new->siblings, &client->unsatisfied_deps);
+  }
 }
 
 void
 client_dependency_remove_all(struct list_head *head)
 {
-	if (!head) {
-		lash_error("List head pointer is NULL");
-		return;
-	}
+  if (!head) {
+    lash_error("List head pointer is NULL");
+    return;
+  }
 
-	struct list_head *node;
-	client_dependency_t *dep;
+  struct list_head *node;
+  client_dependency_t *dep;
 
-	node = head->next;
+  node = head->next;
 
-	while (node != head) {
-		dep = list_entry(node, client_dependency_t, siblings);
-		node = node->next;
-		free(dep);
-	}
+  while (node != head) {
+    dep = list_entry(node, client_dependency_t, siblings);
+    node = node->next;
+    free(dep);
+  }
 
-	INIT_LIST_HEAD(head);
+  INIT_LIST_HEAD(head);
 }
 
 /* EOF */

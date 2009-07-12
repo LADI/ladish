@@ -34,14 +34,14 @@
 
 struct _jack_mgr_client
 {
-	struct list_head  siblings;
-	char             *name;
-	// TODO: Add pointer to parent LASH client object, use that to reference the UUID
-	uuid_t            id;
-	struct list_head  old_patches;
-	struct list_head  backup_patches;
-	dbus_uint64_t     jackdbus_id;
-	pid_t             pid; /**< Client PID. */
+  struct list_head  siblings;
+  char             *name;
+  // TODO: Add pointer to parent LASH client object, use that to reference the UUID
+  uuid_t            id;
+  struct list_head  old_patches;
+  struct list_head  backup_patches;
+  dbus_uint64_t     jackdbus_id;
+  pid_t             pid; /**< Client PID. */
 };
 
 jack_mgr_client_t *
