@@ -14,7 +14,6 @@ buildcheck:
           CFLAGS="$$CFLAGS -std=c99 -Werror -Wall -pedantic -Wno-switch" \
           ../configure \
             --disable-debug \
-            --disable-gtk \
             --enable-maintainer-mode
 	cd $(top_srcdir)/buildcheck && make
 	cd $(top_srcdir)/buildcheck && make distclean

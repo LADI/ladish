@@ -90,35 +90,6 @@ else
 fi
 
 
-###################
-### --with-gtk2 ###
-###################
-
-lash_gtk2=""
-AC_MSG_CHECKING([whether to build clients which require GTK+ 2])
-AC_ARG_WITH(gtk2,
-  [AS_HELP_STRING(--with-gtk2, [build clients which require GTK+ 2 [default=auto]])],
-  [case "$withval" in
-    "yes")
-      lash_gtk2="yes"
-      ;;
-    "no")
-      lash_gtk2="no"
-      ;;
-    *)
-      AC_MSG_ERROR([must use --with-gtk2(=yes/no) or --without-gtk2])
-      ;;
-  esac]
-)
-if test "x$lash_gtk2" = "x"; then
-  AC_MSG_RESULT([auto])
-elif test "x$lash_gtk2" = "xyes"; then
-  AC_MSG_RESULT([yes])
-else
-  AC_MSG_RESULT([no])
-fi
-
-
 #####################
 ### --with-python ###
 #####################
@@ -198,26 +169,6 @@ PKG_CHECK_MODULES(XML2, libxml-2.0 >= 2.0.0, HAVE_XML2="yes", [
 
 MISSING_OPTIONAL=""
 
-HAVE_GTK2=""
-if test "x$lash_gtk2" != "xno"; then
-  PKG_CHECK_MODULES(GTK2, gtk+-2.0 >= 2.0.0, HAVE_GTK2="yes", HAVE_GTK2="no")
-
-  if test "x$lash_gtk2" = "x"; then
-    if test "x$HAVE_GTK2" = "xyes"; then
-      lash_gtk2="yes (auto-selected)"
-    else
-      lash_gtk2="no (auto-selected)"
-    fi
-  elif test "x$HAVE_GTK2" = "xno"; then
-    if test "x$MISSING_OPTIONAL" != "x"; then
-      MISSING_OPTIONAL="$MISSING_OPTIONAL
-    GTK+ >= 2.0.0"
-    else
-      MISSING_OPTIONAL="    GTK+ >= 2.0.0"
-    fi
-  fi
-fi
-
 HAVE_PYTHON=""
 if test "x$lash_python" = "xyes"; then
   AM_PATH_PYTHON([2.3], [HAVE_PYTHON="yes"], [HAVE_PYTHON="no"])
@@ -266,9 +217,6 @@ if test "x$MISSING_REQUIRED$MISSING_OPTIONAL" != "x"; then
   fi
   if test "x$HAVE_XML2" = "xno"; then
     AC_MSG_RESULT([    libxml2:  http://xmlsoft.org/])
-  fi
-  if test "x$HAVE_GTK2" = "xno"; then
-    AC_MSG_RESULT([    GTK+ 2:   http://gtk.org/])
   fi
   if test "x$HAVE_PYTHON" = "xno"; then
     AC_MSG_RESULT([    Python:   http://www.python.org/])
@@ -357,20 +305,6 @@ AC_SUBST(XML2_CFLAGS)
 AC_SUBST(XML2_LIBS)
 AC_DEFINE_UNQUOTED(LASH_XML2_VERSION, "$XML2_VERSION", [The version of libxml2 we're compiling against])
 PC_REQUIRES="$PC_REQUIRES libxml-2.0"
-
-
-##############
-### GTK+ 2 ###
-##############
-
-if test "x$HAVE_GTK2" = "xyes"; then
-  GTK2_VERSION=$(pkg-config --modversion gtk+-2.0)
-  AC_SUBST(GTK2_CFLAGS)
-  AC_SUBST(GTK2_LIBS)
-  AC_DEFINE(HAVE_GTK2, 1, [Whether or not GTK+ 2 support is enabled])
-  AC_DEFINE_UNQUOTED(LASH_GTK2_VERSION, "$GTK2_VERSION", [The version of GTK+ 2 we're compiling against])
-fi
-AM_CONDITIONAL(HAVE_GTK2, [test "x$HAVE_GTK2" = "xyes"])
 
 
 # Check for optionals
@@ -476,7 +410,6 @@ AC_MSG_RESULT([
   LASH Configured
 
   JACK D-Bus support:    $lash_jack_dbus
-  GTK+ 2 clients:        $lash_gtk2
   Readline support:      $lash_readline
   Python bindings:       $lash_python
   HTML manual:           $lash_texi2html
@@ -488,10 +421,6 @@ AC_MSG_RESULT([
   libuuid version:       $UUID_VERSION
   libxml2 version:       $XML2_VERSION])
 
-if test x$HAVE_GTK2 = xyes; then
-  AC_MSG_RESULT([  GTK+ 2 version:        $GTK2_VERSION])
-fi
-
 AC_MSG_RESULT([
   CFLAGS:  $CFLAGS
 
@@ -500,19 +429,11 @@ AC_MSG_RESULT([
   UUID_CFLAGS:  $UUID_CFLAGS
   XML2_CFLAGS:  $XML2_CFLAGS])
 
-if test x$HAVE_GTK2 = xyes; then
-  AC_MSG_RESULT([  GTK2_CFLAGS:  $GTK2_CFLAGS])
-fi
-
 AC_MSG_RESULT([
   JACK_LIBS:    $JACK_LIBS
   DBUS_LIBS:    $DBUS_LIBS
   UUID_LIBS:    $UUID_LIBS
   XML2_LIBS:    $XML2_LIBS])
-
-if test x$HAVE_GTK2 = xyes; then
-  AC_MSG_RESULT([  GTK2_LIBS:    $GTK2_LIBS])
-fi
 
 if test x$lash_readline = xyes; then
   AC_MSG_RESULT([  READLINE_LIBS: $READLINE_LIBS])
