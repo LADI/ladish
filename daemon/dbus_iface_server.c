@@ -516,7 +516,7 @@ SIGNALS_END
  * Interface description.
  */
 
-INTERFACE_BEGIN(g_lashd_interface_server, "org.nongnu.LASH.Server")
+INTERFACE_BEGIN(g_lashd_interface_server, DBUS_NAME_BASE ".Server")
   INTERFACE_DEFAULT_HANDLER
   INTERFACE_EXPOSE_METHODS
   INTERFACE_EXPOSE_SIGNALS

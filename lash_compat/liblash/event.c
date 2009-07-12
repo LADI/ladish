@@ -144,9 +144,9 @@ _lash_client_name(lash_client_t *client,
 
 		method_call_new_void(client->dbus_service, &ctx,
 		                     _lash_id_query_handler, false,
-		                     "org.nongnu.LASH",
+		                     DBUS_NAME_BASE,
 		                     "/",
-		                     "org.nongnu.LASH.Server",
+		                     DBUS_NAME_BASE ".Server",
 		                     "GetName");
 	}
 }
@@ -162,9 +162,9 @@ _lash_jack_client_name(lash_client_t *client,
 
 		method_call_new_void(client->dbus_service, &ctx,
 		                     _lash_id_query_handler, false,
-		                     "org.nongnu.LASH",
+		                     DBUS_NAME_BASE,
 		                     "/",
-		                     "org.nongnu.LASH.Server",
+		                     DBUS_NAME_BASE ".Server",
 		                     "GetJackName");
 	}
 }
@@ -177,9 +177,9 @@ _lash_task_done(lash_client_t *client,
 		const uint8_t x = 255;
 		method_call_new_valist(client->dbus_service, NULL,
 		                       method_default_handler, false,
-		                       "org.nongnu.LASH",
+		                       DBUS_NAME_BASE,
 		                       "/",
-		                       "org.nongnu.LASH.Server",
+		                       DBUS_NAME_BASE ".Server",
 		                       "Progress",
 		                       DBUS_TYPE_UINT64, &client->pending_task,
 		                       DBUS_TYPE_BYTE, &x,
@@ -229,9 +229,9 @@ _lash_save(lash_client_t *client,
 {
 	method_call_new_void(client->dbus_service, NULL,
 	                     method_default_handler, false,
-	                     "org.nongnu.LASH",
+	                     DBUS_NAME_BASE,
 	                     "/",
-	                     "org.nongnu.LASH.Server",
+	                     DBUS_NAME_BASE ".Server",
 	                     "SaveProject");
 }
 
@@ -244,9 +244,9 @@ _lash_quit(lash_client_t *client,
 {
 	method_call_new_void(client->dbus_service, NULL,
 	                     method_default_handler, false,
-	                     "org.nongnu.LASH",
+	                     DBUS_NAME_BASE,
 	                     "/",
-	                     "org.nongnu.LASH.Server",
+	                     DBUS_NAME_BASE ".Server",
 	                     "CloseProject");
 }
 

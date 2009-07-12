@@ -45,7 +45,7 @@ lashd_dbus_service_new(void)
   DBusError err;
 
                      // TODO: move service name into public header
-  service = service_new("org.nongnu.LASH", &g_server->quit,
+  service = service_new(DBUS_NAME_BASE, &g_server->quit,
                         1,
                         object_path_new("/", NULL, 2,
                                         &g_lashd_interface_server,

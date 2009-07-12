@@ -67,6 +67,8 @@ def configure(conf):
 
     conf.define('DEFAULT_PROJECT_DIR', "audio-projects")
     conf.define('PACKAGE_VERSION', VERSION)
+    conf.define('DBUS_NAME_BASE', DBUS_NAME_BASE)
+    conf.define('DBUS_BASE_PATH', '/' + DBUS_NAME_BASE.replace('.', '/'))
     conf.write_config_header('config.h')
 
     display_msg(conf)

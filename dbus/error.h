@@ -24,16 +24,16 @@
 
 #include "types.h"
 
-#define LASH_DBUS_ERROR_UNKNOWN_METHOD      "org.nongnu.LASH.Error.UnknownMethod"
-#define LASH_DBUS_ERROR_SERVER_NOT_RUNNING  "org.nongnu.LASH.Error.ServerNotRunning"
-#define LASH_DBUS_ERROR_INVALID_ARGS        "org.nongnu.LASH.Error.InvalidArgs"
-#define LASH_DBUS_ERROR_GENERIC             "org.nongnu.LASH.Error.Generic"
-#define LASH_DBUS_ERROR_FATAL               "org.nongnu.LASH.Error.Fatal"
-#define LASH_DBUS_ERROR_UNKNOWN_PROJECT     "org.nongnu.LASH.Error.UnknownProject"
-#define LASH_DBUS_ERROR_UNKNOWN_CLIENT      "org.nongnu.LASH.Error.UnknownClient"
-#define LASH_DBUS_ERROR_INVALID_CLIENT_ID   "org.nongnu.LASH.Error.InvalidClientId"
-#define LASH_DBUS_ERROR_UNFINISHED_TASK     "org.nongnu.LASH.Error.UnfinishedTask"
-#define LASH_DBUS_ERROR_INVALID_TASK        "org.nongnu.LASH.Error.InvalidTask"
+#define LASH_DBUS_ERROR_UNKNOWN_METHOD      DBUS_NAME_BASE ".Error.UnknownMethod"
+#define LASH_DBUS_ERROR_SERVER_NOT_RUNNING  DBUS_NAME_BASE ".Error.ServerNotRunning"
+#define LASH_DBUS_ERROR_INVALID_ARGS        DBUS_NAME_BASE ".Error.InvalidArgs"
+#define LASH_DBUS_ERROR_GENERIC             DBUS_NAME_BASE ".Error.Generic"
+#define LASH_DBUS_ERROR_FATAL               DBUS_NAME_BASE ".Error.Fatal"
+#define LASH_DBUS_ERROR_UNKNOWN_PROJECT     DBUS_NAME_BASE ".Error.UnknownProject"
+#define LASH_DBUS_ERROR_UNKNOWN_CLIENT      DBUS_NAME_BASE ".Error.UnknownClient"
+#define LASH_DBUS_ERROR_INVALID_CLIENT_ID   DBUS_NAME_BASE ".Error.InvalidClientId"
+#define LASH_DBUS_ERROR_UNFINISHED_TASK     DBUS_NAME_BASE ".Error.UnfinishedTask"
+#define LASH_DBUS_ERROR_INVALID_TASK        DBUS_NAME_BASE ".Error.InvalidTask"
 
 void
 lash_dbus_error(method_call_t *call_ptr,

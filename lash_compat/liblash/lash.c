@@ -82,7 +82,7 @@ lash_client_new_with_service(void)
 }
 
 /* The client's signal handler function for signals
-   originating from org.nongnu.LASH.Server */
+   originating from DBUS_NAME_BASE.Server */
 static void
 lash_server_signal_handler(lash_client_t *client,
                            const char    *member,
@@ -301,11 +301,11 @@ lash_dbus_signal_handler(DBusConnection *connection,
 		return DBUS_HANDLER_RESULT_HANDLED;
 	}
 
-	if (strcmp(interface, "org.nongnu.LASH.Server") == 0) {
+	if (strcmp(interface, DBUS_NAME_BASE ".Server") == 0) {
 		lash_debug("Received Server signal '%s'", member);
 		lash_server_signal_handler(client, member, message);
 
-	} else if (strcmp(interface, "org.nongnu.LASH.Control") == 0) {
+	} else if (strcmp(interface, DBUS_NAME_BASE ".Control") == 0) {
 		lash_debug("Received Control signal '%s'", member);
 
 		/* This arrangement is OK only so far as a normal client
@@ -339,9 +339,9 @@ lash_client_register_as_controller(lash_client_t *client)
 	/* Listen to the LASH server's frontend-facing beacon */
 	dbus_bus_add_match(client->dbus_service->connection,
 	                   "type='signal'"
-	                   ",sender='org.nongnu.LASH'"
+	                   ",sender='" DBUS_NAME_BASE "'"
 	                   ",path='/'"
-	                   ",interface='org.nongnu.LASH.Control'",
+	                   ",interface='" DBUS_NAME_BASE ".Control'",
 	                   &err);
 
 	if (dbus_error_is_set(&err)) {
@@ -426,7 +426,7 @@ lash_client_open(const char  *class,
 	/* Check whether the server is active */
 	if (!dbus_bus_name_has_owner(client->dbus_service->connection,
 	                             // TODO: Move service name into public header
-	                             "org.nongnu.LASH", &err)) {
+	                             DBUS_NAME_BASE, &err)) {
 		if (dbus_error_is_set(&err)) {
 			lash_error("Failed to query LASH service "
 			           "availability: %s", err.message);
@@ -453,17 +453,17 @@ lash_client_open(const char  *class,
 	/* Listen to the LASH server's client-facing beacon */
 	dbus_bus_add_match(client->dbus_service->connection,
 	                   "type='signal'"
-	                   ",sender='org.nongnu.LASH'"
+	                   ",sender='" DBUS_NAME_BASE "'"
 	                   ",path='/'"
-	                   ",interface='org.nongnu.LASH.Server'",
+	                   ",interface='" DBUS_NAME_BASE ".Server'",
 	                   &err);
 
 	if (!dbus_error_is_set(&err)) {
 		dbus_bus_add_match(client->dbus_service->connection,
 		                   "type='signal'"
-		                   ",sender='org.nongnu.LASH'"
+		                   ",sender='" DBUS_NAME_BASE "'"
 		                   ",path='/'"
-		                   ",interface='org.nongnu.LASH.Control'"
+		                   ",interface='" DBUS_NAME_BASE ".Control'"
 		                   ",member='ProjectNameChanged'",
 		                   &err);
 	}
@@ -725,9 +725,9 @@ lash_notify_progress(lash_client_t *client,
 
 	method_call_new_valist(client->dbus_service, NULL,
 	                       method_default_handler, false,
-	                       "org.nongnu.LASH",
+	                       DBUS_NAME_BASE,
 	                       "/",
-	                       "org.nongnu.LASH.Server",
+	                       DBUS_NAME_BASE ".Server",
 	                       "Progress",
 	                       DBUS_TYPE_UINT64, &client->pending_task,
 	                       DBUS_TYPE_BYTE, &percentage,
@@ -771,9 +771,9 @@ lash_jack_client_name(lash_client_t *client,
 
 	method_call_new_single(client->dbus_service, NULL,
 	                       method_default_handler, false,
-	                       "org.nongnu.LASH",
+	                       DBUS_NAME_BASE,
 	                       "/",
-	                       "org.nongnu.LASH.Server",
+	                       DBUS_NAME_BASE ".Server",
 	                       "JackName",
 	                       DBUS_TYPE_STRING, &name);
 
@@ -805,9 +805,9 @@ lash_control_load_project_path(lash_client_t *client,
 
 	method_call_new_single(client->dbus_service, NULL,
 	                       method_default_handler, false,
-	                       "org.nongnu.LASH",
+	                       DBUS_NAME_BASE,
 	                       "/",
-	                       "org.nongnu.LASH.Control",
+	                       DBUS_NAME_BASE ".Control",
 	                       "LoadProjectPath",
 	                       DBUS_TYPE_STRING, &project_path);
 
@@ -832,9 +832,9 @@ lash_control_name_project(lash_client_t *client,
 
 	method_call_new_valist(client->dbus_service, NULL,
 	                       method_default_handler, false,
-	                       "org.nongnu.LASH",
+	                       DBUS_NAME_BASE,
 	                       "/",
-	                       "org.nongnu.LASH.Control",
+	                       DBUS_NAME_BASE ".Control",
 	                       "ProjectRename",
 	                       DBUS_TYPE_STRING, &project_name,
 	                       DBUS_TYPE_STRING, &new_name,
@@ -861,9 +861,9 @@ lash_control_move_project(lash_client_t *client,
 
 	method_call_new_valist(client->dbus_service, NULL,
 	                       method_default_handler, false,
-	                       "org.nongnu.LASH",
+	                       DBUS_NAME_BASE,
 	                       "/",
-	                       "org.nongnu.LASH.Control",
+	                       DBUS_NAME_BASE ".Control",
 	                       "ProjectMove",
 	                       DBUS_TYPE_STRING, &project_name,
 	                       DBUS_TYPE_STRING, &new_path,
@@ -889,9 +889,9 @@ lash_control_save_project(lash_client_t *client,
 
 	method_call_new_single(client->dbus_service, NULL,
 	                       method_default_handler, false,
-	                       "org.nongnu.LASH",
+	                       DBUS_NAME_BASE,
 	                       "/",
-	                       "org.nongnu.LASH.Control",
+	                       DBUS_NAME_BASE ".Control",
 	                       "ProjectSave",
 	                       DBUS_TYPE_STRING, &project_name);
 
@@ -915,9 +915,9 @@ lash_control_close_project(lash_client_t *client,
 
 	method_call_new_single(client->dbus_service, NULL,
 	                       method_default_handler, false,
-	                       "org.nongnu.LASH",
+	                       DBUS_NAME_BASE,
 	                       "/",
-	                       "org.nongnu.LASH.Control",
+	                       DBUS_NAME_BASE ".Control",
 	                       "ProjectClose",
 	                       DBUS_TYPE_STRING, &project_name);
 

@@ -43,7 +43,7 @@ lash_dbus_service_new(lash_client_t *client)
 
 	return service_new(NULL, &client->quit,
 	                   1,
-	                   object_path_new("/org/nongnu/LASH/Client",
+	                   object_path_new(DBUS_BASE_PATH "/Client",
 	                                   (void *) client, 1,
 	                                   &g_liblash_interface_client, NULL),
 	                   NULL);
@@ -143,9 +143,9 @@ lash_dbus_service_connect(lash_client_t *client)
 	if (!method_call_init(&call, client->dbus_service,
 	                      (void *) client,
 	                      lash_dbus_service_connect_handler,
-	                      "org.nongnu.LASH",
+	                      DBUS_NAME_BASE,
 	                      "/",
-	                      "org.nongnu.LASH.Server",
+	                      DBUS_NAME_BASE ".Server",
 	                      "Connect"))
 		goto fail;
 

@@ -107,9 +107,9 @@ lash_dbus_try_save(method_call_t *call)
 		                     NULL,
 		                     lash_dbus_try_save_handler,
 		                     true,
-		                     "org.nongnu.LASH",
+		                     DBUS_NAME_BASE,
 		                     "/",
-		                     "org.nongnu.LASH.Server",
+		                     DBUS_NAME_BASE ".Server",
 		                     "WaitForSave");
 		retval = true;
 	} else {
@@ -136,9 +136,9 @@ report_success_or_failure(lash_client_t *client,
 	/* Send a success or failure report */
 	method_call_new_valist(client->dbus_service, NULL,
 	                       method_default_handler, false,
-	                       "org.nongnu.LASH",
+	                       DBUS_NAME_BASE,
 	                       "/",
-	                       "org.nongnu.LASH.Server",
+	                       DBUS_NAME_BASE ".Server",
 	                       "Progress",
 	                       DBUS_TYPE_UINT64, &client->pending_task,
 	                       DBUS_TYPE_BYTE, &x,
@@ -319,9 +319,9 @@ lash_new_save_data_set_task(lash_client_t *client,
 	if (!method_call_init(new_call, client->dbus_service,
 	                      NULL,
 	                      method_default_handler,
-	                      "org.nongnu.LASH",
+	                      DBUS_NAME_BASE,
 	                      "/",
-	                      "org.nongnu.LASH.Server",
+	                      DBUS_NAME_BASE ".Server",
 	                      "CommitDataSet")) {
 		lash_error("Failed to initialise CommitDataSet method call");
 		goto fail;
@@ -621,9 +621,9 @@ lash_dbus_try_path_change(method_call_t *call)
 		                     client_ptr,
 		                     lash_dbus_path_change_handler,
 		                     true,
-		                     "org.nongnu.LASH",
+		                     DBUS_NAME_BASE,
 		                     "/",
-		                     "org.nongnu.LASH.Server",
+		                     DBUS_NAME_BASE ".Server",
 		                     "CommitPathChange");
 		retval = true;
 	} else {
@@ -714,7 +714,7 @@ METHODS_END
  * Interface description.
  */
 
-INTERFACE_BEGIN(g_liblash_interface_client, "org.nongnu.LASH.Client")
+INTERFACE_BEGIN(g_liblash_interface_client, DBUS_NAME_BASE ".Client")
   INTERFACE_DEFAULT_HANDLER
   INTERFACE_EXPOSE_METHODS
 INTERFACE_END

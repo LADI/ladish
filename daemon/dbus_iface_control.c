@@ -35,7 +35,7 @@
 #include "client_dependency.h"
 #include "appdb.h"
 
-#define INTERFACE_NAME "org.nongnu.LASH.Control"
+#define INTERFACE_NAME DBUS_NAME_BASE ".Control"
 
 static bool
 maybe_add_dict_entry_string(DBusMessageIter *dict_iter_ptr,

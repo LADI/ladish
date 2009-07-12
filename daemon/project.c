@@ -142,7 +142,7 @@ project_set_modified_status(project_t *project,
   project->modified_status = new_status;
 
   signal_new_valist(g_server->dbus_service,
-                    "/", "org.nongnu.LASH.Control",
+                    "/", DBUS_NAME_BASE ".Control",
                     "ProjectModifiedStatusChanged",
                     DBUS_TYPE_STRING, &project->name,
                     DBUS_TYPE_BOOLEAN, &value,
@@ -241,8 +241,8 @@ project_load_file(project_t *project,
   method_call_new_valist(g_server->dbus_service, NULL,
                          method_default_handler, false,
                          client->dbus_name,
-                         "/org/nongnu/LASH/Client",
-                         "org.nongnu.LASH.Client",
+                         DBUS_BASE_PATH "/Client",
+                         DBUS_NAME_BASE ".Client",
                          "Load",
                          DBUS_TYPE_UINT64, &client->pending_task,
                          DBUS_TYPE_STRING, &client->data_path,
@@ -277,8 +277,8 @@ project_load_data_set(project_t *project,
                         NULL,
                         method_default_handler,
                         client->dbus_name,
-                        "/org/nongnu/LASH/Client",
-                        "org.nongnu.LASH.Client",
+                        DBUS_BASE_PATH "/Client",
+                        DBUS_NAME_BASE ".Client",
                         "LoadDataSet")) {
     lash_error("Failed to initialise LoadDataSet method call");
     return;
@@ -482,7 +482,7 @@ project_save_clients(project_t *project)
   lash_debug("Signaling all clients of project '%s' to save (task %llu)",
              project->name, g_server->task_iter);
   signal_new_valist(g_server->dbus_service,
-                    "/", "org.nongnu.LASH.Server", "Save",
+                    "/", DBUS_NAME_BASE ".Server", "Save",
                     DBUS_TYPE_STRING, &project->name,
                     DBUS_TYPE_UINT64, &g_server->task_iter,
                     DBUS_TYPE_INVALID);
@@ -1061,7 +1061,7 @@ project_unload(project_t *project)
              project->name);
 
   signal_new_single(g_server->dbus_service,
-                    "/", "org.nongnu.LASH.Server", "Quit",
+                    "/", DBUS_NAME_BASE ".Server", "Quit",
                     DBUS_TYPE_STRING, &project->name);
 
   list_for_each_safe (node, next, &project->clients) {
