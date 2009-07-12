@@ -156,7 +156,8 @@ def build(bld):
     liblash.includes = "build/default" # XXX config.h version.h and other generated files
     liblash.uselib = 'DBUS-1 LIBXML-2.0 UUID'
     liblash.target = 'lash'
-    liblash.defines = 'LASH_OLD_API'
+    liblash.vnum = "1.1.1"
+    liblash.defines = ['LASH_OLD_API', 'DEBUG_OUTPUT_TERMINAL']
     liblash.source = []
 
     for source in [
