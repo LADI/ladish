@@ -182,55 +182,6 @@ lashd_dbus_jack_name(method_call_t *call)
 }
 
 static void
-lashd_dbus_alsa_id(method_call_t *call)
-{
-	const char *sender;
-	unsigned char alsa_id;
-	struct lash_client *client;
-	DBusError err;
-
-	if (!get_message_sender(call, &sender, &client))
-		return;
-
-	dbus_error_init(&err);
-
-	if (!dbus_message_get_args(call->message, &err,
-	                           DBUS_TYPE_BYTE, &alsa_id,
-	                           DBUS_TYPE_INVALID)) {
-		lash_dbus_error(call, LASH_DBUS_ERROR_INVALID_ARGS,
-		                "Invalid arguments to method \"%s\": %s",
-		                call->method_name, err.message);
-		dbus_error_free(&err);
-		return;
-	}
-
-#ifdef HAVE_ALSA
-	lash_debug("Received ALSA ID %u from '%s'",
-	           alsa_id, client_get_identity(client));
-
-	if (client->alsa_client_id) {
-		lash_dbus_error(call, LASH_DBUS_ERROR_GENERIC,
-		                "Can only set ALSA client ID once");
-		return;
-	}
-
-	client->alsa_client_id = alsa_id;
-
-	client_maybe_fill_class(client);
-
-	alsa_mgr_lock(g_server->alsa_mgr);
-	alsa_mgr_add_client(g_server->alsa_mgr, client->id,
-	                    alsa_id, &client->alsa_patches);
-	alsa_mgr_unlock(g_server->alsa_mgr);
-	// TODO: Send ClientAlsaIdChanged signal
-#else
-	lash_debug("Received ALSA ID %u from '%s'; ALSA support is not "
-	           "enabled so doing nothing",
-	           alsa_id, client_get_identity(client));
-#endif
-}
-
-static void
 lashd_dbus_get_name(method_call_t *call)
 {
 	const char *sender, *name;
@@ -264,21 +215,6 @@ lashd_dbus_get_jack_name(method_call_t *call)
 	           client_get_identity(client), name);
 
 	method_return_new_single(call, DBUS_TYPE_STRING, &name);
-}
-
-static void
-lashd_dbus_get_alsa_id(method_call_t *call)
-{
-	const char *sender;
-	struct lash_client *client;
-
-	if (!get_message_sender(call, &sender, &client))
-		return;
-
-	lash_debug("Telling client '%s' its ALSA ID %u",
-	           client_get_identity(client), client->alsa_client_id);
-
-	method_return_new_single(call, DBUS_TYPE_BYTE, &client->alsa_client_id);
 }
 
 #if 0
@@ -534,20 +470,12 @@ METHOD_ARGS_BEGIN(JackName)
   METHOD_ARG_DESCRIBE("jack_name", "s", DIRECTION_IN)
 METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(AlsaId)
-  METHOD_ARG_DESCRIBE("alsa_id", "y", DIRECTION_IN)
-METHOD_ARGS_END
-
 METHOD_ARGS_BEGIN(GetName)
   METHOD_ARG_DESCRIBE("client_name", "s", DIRECTION_OUT)
 METHOD_ARGS_END
 
 METHOD_ARGS_BEGIN(GetJackName)
   METHOD_ARG_DESCRIBE("jack_name", "s", DIRECTION_OUT)
-METHOD_ARGS_END
-
-METHOD_ARGS_BEGIN(GetAlsaId)
-  METHOD_ARG_DESCRIBE("alsa_id", "y", DIRECTION_OUT)
 METHOD_ARGS_END
 
 METHOD_ARGS_BEGIN(SaveProject)
@@ -573,10 +501,8 @@ METHODS_BEGIN
   METHOD_DESCRIBE(Ping, lashd_dbus_ping)
   METHOD_DESCRIBE(Connect, lashd_dbus_connect)
   METHOD_DESCRIBE(JackName, lashd_dbus_jack_name)
-  METHOD_DESCRIBE(AlsaId, lashd_dbus_alsa_id)
   METHOD_DESCRIBE(GetName, lashd_dbus_get_name)
   METHOD_DESCRIBE(GetJackName, lashd_dbus_get_jack_name)
-  METHOD_DESCRIBE(GetAlsaId, lashd_dbus_get_alsa_id)
   METHOD_DESCRIBE(Progress, lashd_dbus_progress)
   METHOD_DESCRIBE(CommitDataSet, lashd_dbus_commit_data_set)
   METHOD_DESCRIBE(CommitPathChange, lashd_dbus_commit_path_change)

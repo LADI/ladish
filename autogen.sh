@@ -2,11 +2,6 @@
 
 echo -n "Generating build files... "
 
-if ! test -d docs/lash-manual-html-split; then
-  mkdir docs/lash-manual-html-split;
-  ln -s ../lash-manual-html-one-page/Makefile.am docs/lash-manual-html-split;
-fi
-
 if ! test -e ltmain.sh; then
   if test -e /usr/share/libtool/ltmain.sh; then
     ln -s /usr/share/libtool/ltmain.sh .;
@@ -15,8 +10,7 @@ if ! test -e ltmain.sh; then
   fi
 fi
 
-# Shuts up automake..
-touch docs/lash-manual.texi
+touch NEWS README ChangeLog
 
 libtoolize --copy --force \
   && aclocal -I m4 \

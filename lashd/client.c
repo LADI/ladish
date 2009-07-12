@@ -34,7 +34,6 @@
 #include "client_dependency.h"
 #include "project.h"
 #include "jack_patch.h"
-#include "alsa_patch.h"
 #include "store.h"
 #include "dbus_iface_control.h"
 #include "file.h"
@@ -48,7 +47,6 @@ client_new(void)
 	client = lash_calloc(1, sizeof(struct lash_client));
 
 	INIT_LIST_HEAD(&client->jack_patches);
-	INIT_LIST_HEAD(&client->alsa_patches);
 	INIT_LIST_HEAD(&client->dependencies);
 	INIT_LIST_HEAD(&client->unsatisfied_deps);
 
@@ -242,9 +240,6 @@ client_parse_xml(project_t  *project,
 	xmlChar *content;
 	uuid_t id;
 	jack_patch_t *jack_patch;
-#ifdef HAVE_ALSA
-	alsa_patch_t *alsa_patch;
-#endif
 
 	lash_debug("Parsing client XML data");
 
@@ -309,23 +304,6 @@ client_parse_xml(project_t  *project,
 					list_add_tail(&jack_patch->siblings, &client->jack_patches);
 				}
 		} else if (strcmp((const char*) xmlnode->name,
-		                  "alsa_patch_set") == 0) {
-#ifdef HAVE_ALSA
-			for (argnode = xmlnode->children; argnode;
-			     argnode = argnode->next) {
-				if (strcmp((const char *) argnode->name,
-				           "alsa_patch") == 0) {
-					alsa_patch = alsa_patch_new();
-					alsa_patch_parse_xml(alsa_patch,
-					                     argnode);
-					list_add_tail(&alsa_patch->siblings, &client->alsa_patches);
-				}
-			}
-#else
-			lash_info("Warning: Session contains ALSA information, "
-			          "but LASH is built without ALSA support");
-#endif
-		} else if (strcmp((const char*) xmlnode->name,
 		                  "dependencies") == 0) {
 			for (argnode = xmlnode->children; argnode;
 			     argnode = argnode->next)
@@ -350,30 +328,17 @@ void
 client_maybe_fill_class(struct lash_client *client)
 {
 	const char *name;
-#ifdef HAVE_ALSA
-	snd_seq_client_info_t *info;
-
-	snd_seq_client_info_alloca(&info);
-#endif
 
 	if (client->class && client->class[0])
 		return; /* no need to fill class */
 
 	lash_info("Client class string is empty");
 	lash_info("JACK client name '%s'", client->jack_client_name);
-	lash_info("ALSA ID %u", client->alsa_client_id);
 
 	name = NULL;
 
 	if (client->jack_client_name && client->jack_client_name[0])
 		name = client->jack_client_name;
-
-#ifdef HAVE_ALSA
-	if (client->alsa_client_id != 0
-	    && snd_seq_get_any_client_info(g_server->alsa_mgr->seq,
-	                                   client->alsa_client_id, info) >= 0)
-		name = snd_seq_client_info_get_name(info);
-#endif
 
 	if (name) {
 		lash_info("Changing client class and name to '%s'", name);

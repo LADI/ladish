@@ -89,9 +89,6 @@ server_start(const char *default_dir)
 #ifndef HAVE_JACK_DBUS
 	g_server->jack_mgr = jack_mgr_new();
 #endif
-#ifdef HAVE_ALSA
-	g_server->alsa_mgr = alsa_mgr_new();
-#endif
 
 	if (!(g_server->dbus_service = lashd_dbus_service_new())) {
 		lash_debug("Failed to launch D-Bus service");
@@ -141,12 +138,6 @@ server_stop(void)
 	lash_debug("Destroying JACK manager");
 	jack_mgr_lock(g_server->jack_mgr);
 	jack_mgr_destroy(g_server->jack_mgr);
-#endif
-
-#ifdef HAVE_ALSA
-	lash_debug("Destroying ALSA manager");
-	alsa_mgr_lock(g_server->alsa_mgr);
-	alsa_mgr_destroy(g_server->alsa_mgr);
 #endif
 
 	lash_free(&g_server->projects_dir);

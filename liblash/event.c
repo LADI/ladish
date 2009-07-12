@@ -53,7 +53,6 @@ lash_event_new(void)
 
 //   LASH_Client_Name = 1,  /* set the client's user-visible name */
 //   LASH_Jack_Client_Name, /* tell the server what name the client is connected to jack with */
-//   LASH_Alsa_Client_ID,   /* tell the server what id the client is connected to the alsa sequencer with */
 //   LASH_Save_File,        /* tell clients to save to files */
 //   LASH_Restore_File,     /* tell clients to restore from files */
 //   LASH_Save_Data_Set,    /* tell clients to send the server a data set */
@@ -82,7 +81,6 @@ _lash_id_query_handler(DBusPendingCall *pending,
 {
 	DBusMessage *msg = dbus_pending_call_steal_reply(pending);
 	DBusError err;
-	uint8_t alsa_id;
 	const char *name;
 	dbus_bool_t retval;
 	lash_event_t *event;
@@ -105,17 +103,9 @@ _lash_id_query_handler(DBusPendingCall *pending,
 
 	dbus_error_init(&err);
 
-	if (ctx->ev_type == LASH_Alsa_Client_ID) {
-		retval = dbus_message_get_args(msg, &err,
-		                               DBUS_TYPE_BYTE, &alsa_id,
-		                               DBUS_TYPE_INVALID);
-		unsigned char id[2] = { alsa_id, 0 };
-		name = (const char *) id;
-	} else {
-		retval = dbus_message_get_args(msg, &err,
-		                               DBUS_TYPE_STRING, &name,
-		                               DBUS_TYPE_INVALID);
-	}
+  retval = dbus_message_get_args(msg, &err,
+                                 DBUS_TYPE_STRING, &name,
+                                 DBUS_TYPE_INVALID);
 
 	if (!retval) {
 		lash_error("Cannot get message argument: %s", err.message);
@@ -176,23 +166,6 @@ _lash_jack_client_name(lash_client_t *client,
 		                     "/",
 		                     "org.nongnu.LASH.Server",
 		                     "GetJackName");
-	}
-}
-
-static void
-_lash_alsa_client_id(lash_client_t *client, lash_event_t *event)
-{
-	if (event->string) {
-		lash_alsa_client_id(client, event->string[0]);
-	} else {
-		struct _handler_ctx ctx = { client, LASH_Alsa_Client_ID };
-
-		method_call_new_void(client->dbus_service, &ctx,
-		                     _lash_id_query_handler, false,
-		                     "org.nongnu.LASH",
-		                     "/",
-		                     "org.nongnu.LASH.Server",
-		                     "GetAlsaId");
 	}
 }
 
@@ -281,7 +254,7 @@ static const LASHEventConstructor g_lash_event_ctors[] = {
 	NULL,
 	_lash_client_name,
 	_lash_jack_client_name,
-	_lash_alsa_client_id,
+	NULL,
 	_lash_task_done,
 	_lash_task_done,
 	_lash_save_data_set,
@@ -420,20 +393,12 @@ void
 lash_event_set_alsa_client_id(lash_event_t  *event,
                               unsigned char  alsa_id)
 {
-	char id[2];
-
-	lash_str_set_alsa_client_id(id, alsa_id);
-
-	event->type = LASH_Alsa_Client_ID;
-	lash_event_set_string(event, id);
+  return;
 }
 
 unsigned char
 lash_event_get_alsa_client_id(const lash_event_t *event)
 {
-	if (event)
-		return lash_str_get_alsa_client_id(event->string);
-
 	return 0;
 }
 
@@ -441,14 +406,13 @@ void
 lash_str_set_alsa_client_id(char          *str,
                             unsigned char  alsa_id)
 {
-	str[0] = (char) alsa_id;
-	str[1] = '\0';
+  return;
 }
 
 unsigned char
 lash_str_get_alsa_client_id(const char *str)
 {
-	return (unsigned char) *str;
+  return 0;
 }
 
 /* EOF */

@@ -1256,11 +1256,6 @@ SIGNAL_ARGS_BEGIN(ClientJackNameChanged)
   SIGNAL_ARG_DESCRIBE("jack_name", "s")
 SIGNAL_ARGS_END
 
-SIGNAL_ARGS_BEGIN(ClientAlsaIdChanged)
-  SIGNAL_ARG_DESCRIBE("client_id", "s")
-  SIGNAL_ARG_DESCRIBE("alsa_id", "y")
-SIGNAL_ARGS_END
-
 SIGNAL_ARGS_BEGIN(Progress)
   SIGNAL_ARG_DESCRIBE("percentage", "y")
 SIGNAL_ARGS_END
@@ -1279,7 +1274,6 @@ SIGNALS_BEGIN
   SIGNAL_DESCRIBE(ClientDisappeared)
   SIGNAL_DESCRIBE(ClientNameChanged)
   SIGNAL_DESCRIBE(ClientJackNameChanged)
-  SIGNAL_DESCRIBE(ClientAlsaIdChanged)
   SIGNAL_DESCRIBE(Progress)
 SIGNALS_END
 

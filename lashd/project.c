@@ -58,11 +58,6 @@
 # include "jack_mgr.h"
 #endif
 
-#ifdef HAVE_ALSA
-#include <alsa/asoundlib.h>
-#include "alsa_patch.h"
-#endif
-
 static const char *
 project_get_client_config_dir(project_t *project,
                               struct lash_client  *client);
@@ -552,35 +547,6 @@ project_create_client_jack_patch_xml(project_t  *project,
 	}
 }
 
-#ifdef HAVE_ALSA
-static void
-project_create_client_alsa_patch_xml(project_t  *project,
-                                     struct lash_client   *client,
-                                     xmlNodePtr  clientxml)
-{
-	xmlNodePtr alsa_patch_set;
-	struct list_head *node, *next;
-	alsa_patch_t *patch;
-
-	LIST_HEAD(patches);
-
-	alsa_mgr_lock(g_server->alsa_mgr);
-	alsa_mgr_get_client_patches(g_server->alsa_mgr, client->id, &patches);
-	alsa_mgr_unlock(g_server->alsa_mgr);
-	if (list_empty(&patches))
-		return;
-
-	alsa_patch_set =
-		xmlNewChild(clientxml, NULL, BAD_CAST "alsa_patch_set", NULL);
-
-	list_for_each_safe (node, next, &patches) {
-		patch = list_entry(node, alsa_patch_t, siblings);
-		alsa_patch_create_xml(patch, alsa_patch_set);
-		alsa_patch_destroy(patch);
-	}
-}
-#endif
-
 static void
 project_create_client_dependencies_xml(struct lash_client   *client,
                                        xmlNodePtr  parent)
@@ -662,11 +628,7 @@ project_create_xml(project_t *project)
 		{
 			lash_info("client '%s' (%p) has no jack client name", client_get_identity(client), client);
 		}
-#ifdef HAVE_ALSA
-		if (client->alsa_client_id)
-			project_create_client_alsa_patch_xml(project, client,
-			                                     clientxml);
-#endif
+
 		if (!list_empty(&client->dependencies))
 			project_create_client_dependencies_xml(client,
 			                                       clientxml);
@@ -951,16 +913,6 @@ project_load(project_t *project)
 			for (i = 0; i < client->argc; i++) {
 				lash_debug("      %d: '%s'", i, client->argv[i]);
 			}
-#ifdef HAVE_ALSA
-			if (!list_empty(&client->alsa_patches)) {
-				lash_debug("    alsa patches:");
-				list_for_each (node2, &client->alsa_patches) {
-					lash_debug("      %s",
-					           alsa_patch_get_desc(list_entry(node2, alsa_patch_t, siblings)));
-				}
-			} else
-				lash_debug("    no alsa patches");
-#endif
 
 			if (!list_empty(&client->jack_patches)) {
 				lash_debug("    jack patches:");
@@ -1104,17 +1056,6 @@ project_lose_client(project_t *project,
 		}
 	}
 
-#ifdef HAVE_ALSA
-	if (client->alsa_client_id) {
-		alsa_mgr_lock(g_server->alsa_mgr);
-		INIT_LIST_HEAD(&patches);
-		alsa_mgr_remove_client(g_server->alsa_mgr, client->id, &patches);
-		alsa_mgr_unlock(g_server->alsa_mgr);
-		if (!list_empty(&patches))
-			list_splice(&patches, &client->alsa_patches);
-	}
-#endif
-
 	/* Pid is only stored for clients who were recently launched so that
 	   lashd can tell launched clients from recovering ones. All lost
 	   clients must have valid project pointers. */
@@ -1164,14 +1105,6 @@ project_unload(project_t *project)
 #endif
 		}
 
-#ifdef HAVE_ALSA
-		if (client->alsa_client_id) {
-			alsa_mgr_lock(g_server->alsa_mgr);
-			alsa_mgr_remove_client(g_server->alsa_mgr, client->id, NULL);
-			alsa_mgr_unlock(g_server->alsa_mgr);
-		}
-#endif
-
 		list_del(&client->siblings);
 		client_destroy(client);
 	}
@@ -1179,8 +1112,7 @@ project_unload(project_t *project)
 	list_for_each_safe (node, next, &project->lost_clients) {
 		client = list_entry(node, struct lash_client, siblings);
 		list_del(&client->siblings);
-		// TODO: Do lost clients also need to have their
-		//       JACK and ALSA patches destroyed?
+		// TODO: Do lost clients also need to have their patches destroyed?
 		client_destroy(client);
 	}
 

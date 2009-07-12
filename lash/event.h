@@ -44,7 +44,6 @@ void lash_event_set_string    (lash_event_t * event, const char * string);
 void lash_event_set_project   (lash_event_t * event, const char * project);
 void lash_event_set_client_id (lash_event_t * event, uuid_t id);
 
-/* set the type to LASH_Alsa_Client_ID, and the string to { <id>, '\0' } */
 void lash_event_set_alsa_client_id (lash_event_t * event, unsigned char alsa_id);
 unsigned char lash_event_get_alsa_client_id (const lash_event_t * event);
 

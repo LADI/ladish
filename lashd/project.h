@@ -101,8 +101,6 @@ project_destroy(project_t *project);
  * - for all clients:
  *   - call jack_mgr_remove_client (under a lock)
  *   - call jack_patch_destroy on all JACK patches and free JACK patch list
- *   - call alsa_mgr_remove_client (under a lock)
- *   - call alsa_patch_destroy on all JACK patches and free ALSA patch list
  *   - unlink and delete the client
  * - delete all lost_clients
  * - if move_on_close is set, do project_move on the project
@@ -206,9 +204,9 @@ project_launch_client(project_t *project,
 
 /** Called after client has disappeared. If client has left any data (keys), it calls
  * store_write to save them. If there are no data for the client, the client directory
- * is removed. If the project gets empty, its directory is removed, too. JACK and ALSA
+ * is removed. If the project gets empty, its directory is removed, too. JACK
  * "backup" patches are retrieved and stored in client's structure. Client instance
- * data (argc, argv and pid) are cleared. The modified flag is set.
+ * data (argc, argv and pid) is cleared. The modified flag is set.
  * lashd_dbus_signal_emit_client_disappeared is called to notify about client
  * disappearance.
  *

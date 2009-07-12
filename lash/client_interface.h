@@ -123,9 +123,6 @@ void
 lash_jack_client_name(lash_client_t *client,
                       const char    *name);
 
-/**
- * Tell the server the client's ALSA client ID.
- */
 void
 lash_alsa_client_id(lash_client_t *client,
                     unsigned char  id);

@@ -1,9 +1,9 @@
-SUBDIRS = m4 docs lash common dbus liblash lashd clients icons pylash
+SUBDIRS = m4 lash common dbus liblash lashd icons pylash
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = lash-1.0.pc
 
-EXTRA_DIST = common.am README.SECURITY \
+EXTRA_DIST = common.am \
 	lash-configure-template ChangeLog.old
 
 buildcheck:

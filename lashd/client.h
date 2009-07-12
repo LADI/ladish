@@ -61,8 +61,6 @@ struct lash_client
 
 	char                   *jack_client_name;
 	struct list_head        jack_patches;
-	unsigned char           alsa_client_id;
-	struct list_head        alsa_patches;
 
 	struct list_head        dependencies;
 	struct list_head        unsatisfied_deps;

@@ -35,16 +35,6 @@ typedef struct _jack_patch jack_patch_t;
 
 typedef struct _jack_mgr_client jack_mgr_client_t;
 
-#ifdef HAVE_ALSA
-typedef struct _alsa_mgr alsa_mgr_t;
-
-typedef struct _alsa_client alsa_client_t;
-
-typedef struct _alsa_fport alsa_fport_t;
-
-typedef struct _alsa_patch alsa_patch_t;
-#endif
-
 typedef struct _project project_t;
 
 typedef struct _store store_t;

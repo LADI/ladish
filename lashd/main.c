@@ -67,18 +67,12 @@ print_help(const char *argv0)
 	       "the COPYING file that came with this software for details.\n"
 	       "\n"
 	       "Compiled with JACK %s, D-Bus %s, libxml2 %s"
-#ifdef HAVE_ALSA
-	       ", ALSA %s"
-#endif
 	       "\n\n"
 	       "Usage: %s [OPTION]\n"
 	       "\n"
 	       "  -d, --default-dir PATH     store projects in $HOME/PATH\n\n",
 	       "  -h, --help                 display this help and exit\n"
 	       PACKAGE_VERSION, LASH_JACK_VERSION, LASH_DBUS_VERSION, LASH_XML2_VERSION,
-#ifdef HAVE_ALSA
-	       LASH_ALSA_VERSION,
-#endif
 	       argv0);
 }
 

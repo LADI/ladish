@@ -33,16 +33,7 @@ lashd_SOURCES += \
 	jack_fport.c jack_fport.h
 endif
 
-if HAVE_ALSA
-lashd_SOURCES += \
-	alsa_patch.c alsa_patch.h \
-	alsa_fport.c alsa_fport.h \
-	alsa_mgr.c alsa_mgr.h \
-	alsa_client.c alsa_client.h
-endif
-
 lashd_LDADD = \
-	$(ALSA_LIBS) \
 	$(XML2_LIBS) \
 	$(UUID_LIBS) \
 	$(DBUS_LIBS) \
@@ -51,7 +42,6 @@ lashd_LDADD = \
 
 AM_CFLAGS = \
 	$(LASH_CFLAGS) \
-	$(ALSA_CFLAGS) \
 	$(XML2_CFLAGS) \
 	$(DBUS_CFLAGS) \
 	-DDTDDIR=\"$(dtddir)\"
@@ -61,21 +51,12 @@ lashd_LDADD += $(JACK_LIBS)
 AM_CFLAGS += $(JACK_CFLAGS)
 endif
 
-if HAVE_ALSA
-lashd_LDADD += -lpthread
-endif
-
-dtddir = $(pkgdatadir)/dtds
-dtd_DATA = lash-project-1.0.dtd
-
-EXTRA_DIST = $(dtd_DATA)
-
 # Dbus service file
 servicedir = $(DBUS_SERVICES_DIR)
 service_in_files = org.nongnu.lash.service.in
 service_DATA = $(service_in_files:.service.in=.service)
 
-EXTRA_DIST += $(service_in_files)
+EXTRA_DIST = $(service_in_files)
 CLEANFILES = $(service_DATA)
 
 # Rule to make the service file with bindir expanded

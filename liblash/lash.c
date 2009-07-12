@@ -220,9 +220,6 @@ lash_control_signal_handler(lash_client_t *client,
 	} else if (strcmp(member, "ClientJackNameChanged") == 0) {
 		sig_id = 8;
 		type = LASH_Jack_Client_Name;
-	} else if (strcmp(member, "ClientAlsaIdChanged") == 0) {
-		sig_id = 9;
-		type = LASH_Alsa_Client_ID;
 	} else if (strcmp(member, "Progress") == 0) {
 		sig_id = 10;
 		type = LASH_Percentage;
@@ -787,26 +784,7 @@ void
 lash_alsa_client_id(lash_client_t *client,
                     unsigned char  id)
 {
-	if (!client) {
-		lash_error("NULL client pointer");
-		return;
-	}
-
-	// TODO: Find some generic place for this
-	if (!client->dbus_service) {
-		lash_error("D-Bus service not running");
-		return;
-	}
-
-	method_call_new_single(client->dbus_service, NULL,
-	                       method_default_handler, false,
-	                       "org.nongnu.LASH",
-	                       "/",
-	                       "org.nongnu.LASH.Server",
-	                       "AlsaId",
-	                       DBUS_TYPE_BYTE, &id);
-
-	lash_debug("Sent ALSA id");
+	return;			/* deprecated */
 }
 
 // TODO: Convert to ProjectOpen
