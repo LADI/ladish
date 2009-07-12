@@ -32,10 +32,10 @@
 
 #include "store.h"
 #include "file.h"
-#include "common/safety.h"
-#include "common/debug.h"
-#include "dbus/method.h"
-#include "lash/types.h"
+#include "../common/safety.h"
+#include "../common/debug.h"
+#include "../dbus/method.h"
+#include "../lash_compat/lash/types.h"
 
 #define STORE_INFO_FILE ".store_info"
 

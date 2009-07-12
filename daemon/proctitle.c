@@ -24,7 +24,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include "common/debug.h"
+#include "../common/debug.h"
 
 static char * g_argv_begin;
 static char * g_argv_end;

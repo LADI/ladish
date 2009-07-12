@@ -24,8 +24,8 @@
 
 #include <dbus/dbus.h>
 
-#include "dbus/types.h"
-#include "dbus/interface.h"
+#include "types.h"
+#include "interface.h"
 
 /**
  * Object path descriptor.

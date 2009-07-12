@@ -41,9 +41,9 @@
 #include "file.h"
 #include "client_dependency.h"
 #include "dbus_iface_control.h"
-#include "common/safety.h"
-#include "common/debug.h"
-#include "common/klist.h"
+#include "../common/safety.h"
+#include "../common/debug.h"
+#include "../common/klist.h"
 #include "jack_mgr_client.h"
 
 #include "jackdbus_mgr.h"

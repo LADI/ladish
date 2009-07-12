@@ -24,11 +24,11 @@
 #include <string.h>
 #include <dbus/dbus.h>
 
-#include "common/safety.h"
-#include "common/debug.h"
-#include "dbus/introspection.h"
-#include "dbus/signal.h"
-#include "dbus/method.h"
+#include "../common/safety.h"
+#include "../common/debug.h"
+#include "introspection.h"
+#include "signal.h"
+#include "method.h"
 
 #define write_buf(args...) buf_ptr += sprintf(buf_ptr, ## args)
 

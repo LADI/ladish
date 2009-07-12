@@ -21,7 +21,7 @@
 #ifndef __LASHD_DBUS_SERVICE_H__
 #define __LASHD_DBUS_SERVICE_H__
 
-#include "dbus/service.h"
+#include "../dbus/service.h"
 #include "types.h"
 
 service_t *

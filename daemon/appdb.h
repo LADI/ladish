@@ -22,7 +22,7 @@
 #ifndef APPDB_H__4839D031_68EF_43F5_BDE2_2317C6B956A9__INCLUDED
 #define APPDB_H__4839D031_68EF_43F5_BDE2_2317C6B956A9__INCLUDED
 
-#include "common/klist.h"
+#include "../common/klist.h"
 
 /* all strings except name can be not present (NULL) */
 /* all strings are utf-8 */

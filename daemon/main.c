@@ -22,7 +22,7 @@
 
 #define _GNU_SOURCE
 
-#include "../config.h"
+#include "config.h"
 
 #include <string.h>
 #include <getopt.h>
@@ -36,11 +36,11 @@
 #include <jack/jack.h>
 #include <libxml/tree.h>
 
-#include "common/debug.h"
+#include "../common/debug.h"
 
 #include "server.h"
 #include "loader.h"
-#include "svnversion.h"
+//#include "version.h"
 
 #ifdef LASH_DEBUG
 #  include <mcheck.h>
@@ -54,26 +54,6 @@ term_handler(int signum)
 {
 	lash_info("Caught signal %d (%s), terminating", signum, strsignal(signum));
 	g_server->quit = true;
-}
-
-static void
-print_help(const char *argv0)
-{
-	printf("lashd version %s\n"
-	       "Copyright (C) 2002 Robert Ham <rah@bash.sh>\n"
-	       "\n"
-	       "This program comes with ABSOLUTELY NO WARRANTY.  You are licensed to use it\n"
-	       "under the terms of the GNU General Public License, version 2 or later.  See\n"
-	       "the COPYING file that came with this software for details.\n"
-	       "\n"
-	       "Compiled with D-Bus %s, libxml2 %s"
-	       "\n\n"
-	       "Usage: %s [OPTION]\n"
-	       "\n"
-	       "  -d, --default-dir PATH     store projects in $HOME/PATH\n\n",
-	       "  -h, --help                 display this help and exit\n"
-	       PACKAGE_VERSION, LASH_DBUS_VERSION, LASH_XML2_VERSION,
-	       argv0);
 }
 
 int
@@ -110,26 +90,21 @@ main(int    argc,
 
 	while ((opt = getopt_long(argc, argv, options, long_options, NULL)) != -1) {
 		switch (opt) {
-		case 'h':
-			print_help(argv[0]);
-			exit(EXIT_SUCCESS);
-			break;
 		case 'd':
 			default_dir = optarg;
 			break;
 		default:
-			print_help(argv[0]);
 			exit(EXIT_FAILURE);
 			break;
 		}
 	}
 
-	if (!default_dir)
-		default_dir = DEFAULT_PROJECT_DIR;
+//	if (!default_dir)
+//		default_dir = DEFAULT_PROJECT_DIR;
 
 	lash_info("------------------");
-	lash_info("LASH activated. Version %s (%s) built on %s",
-	          PACKAGE_VERSION, SVN_VERSION, timestamp_str);
+	//lash_info("LASH activated. Version %s (%s) built on %s",
+  //         PACKAGE_VERSION, SVN_VERSION, timestamp_str);
 
 	lash_debug("Default dir: '%s'", default_dir);
 

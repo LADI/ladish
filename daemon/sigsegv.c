@@ -15,7 +15,7 @@
 #include "config.h"
 #endif
 
-//#define NO_CPP_DEMANGLE
+#define NO_CPP_DEMANGLE
 #define SIGSEGV_NO_AUTO_INIT
 
 #ifndef _GNU_SOURCE
@@ -35,7 +35,7 @@
 char * __cxa_demangle(const char * __mangled_name, char * __output_buffer, size_t * __length, int * __status);
 #endif
 
-#include "common/debug.h"
+#include "../common/debug.h"
 
 #if defined(REG_RIP)
 # define SIGSEGV_STACK_IA64

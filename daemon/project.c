@@ -22,7 +22,7 @@
 
 #define _GNU_SOURCE
 
-#include "../config.h"
+#include "config.h"
 
 #include <stdlib.h>
 #include <sys/types.h>
@@ -49,8 +49,8 @@
 #include "server.h"
 #include "loader.h"
 #include "dbus_iface_control.h"
-#include "common/safety.h"
-#include "common/debug.h"
+#include "../common/safety.h"
+#include "../common/debug.h"
 
 #include "jackdbus_mgr.h"
 

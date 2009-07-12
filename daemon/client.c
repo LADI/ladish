@@ -21,13 +21,13 @@
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "../config.h"
+#include "config.h"
 
 #include <string.h>
 #include <dbus/dbus.h>
 
-#include "common/safety.h"
-#include "common/debug.h"
+#include "../common/safety.h"
+#include "../common/debug.h"
 
 #include "client.h"
 #include "server.h"

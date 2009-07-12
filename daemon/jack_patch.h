@@ -21,7 +21,7 @@
 #ifndef __LASHD_JACK_PATCH_H__
 #define __LASHD_JACK_PATCH_H__
 
-#include "../config.h"
+#include "config.h"
 
 #include <stdbool.h>
 #include <uuid/uuid.h>
@@ -30,7 +30,7 @@
 #include <dbus/dbus.h>
 
 #include "types.h"
-#include "common/klist.h"
+#include "../common/klist.h"
 
 struct _jack_patch
 {

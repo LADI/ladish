@@ -26,8 +26,8 @@
 #include <assert.h>
 
 #include "appdb.h"
-#include "common/debug.h"
-#include "common/safety.h"
+#include "../common/debug.h"
+#include "../common/safety.h"
 
 void
 lash_appdb_free_entry(

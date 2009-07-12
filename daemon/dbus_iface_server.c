@@ -31,12 +31,11 @@
 #include "server.h"
 #include "client.h"
 #include "project.h"
-#include "common/safety.h"
-#include "common/debug.h"
-#include "common/klist.h"
-#include "dbus/interface.h"
-#include "dbus/error.h"
-#include "lash/types.h"
+#include "../common/safety.h"
+#include "../common/debug.h"
+#include "../common/klist.h"
+#include "../dbus/interface.h"
+#include "../dbus/error.h"
 #include "store.h"
 
 static void

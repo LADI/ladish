@@ -27,7 +27,7 @@
 #include <uuid/uuid.h>
 #include <libxml/tree.h>
 
-#include "common/klist.h"
+#include "../common/klist.h"
 
 #include "types.h"
 

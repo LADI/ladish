@@ -21,13 +21,13 @@
 
 #include "config.h"
 
-#include "common/safety.h"
+#include "../common/safety.h"
 #define LASH_DEBUG
-#include "common/debug.h"
-#include "common/klist.h"
+#include "../common/debug.h"
+#include "../common/klist.h"
 
-#include "dbus/interface.h"
-#include "dbus/error.h"
+#include "../dbus/interface.h"
+#include "../dbus/error.h"
 
 #include "server.h"
 #include "project.h"

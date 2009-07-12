@@ -28,8 +28,8 @@
 #include "server.h"
 #include "dbus_iface_server.h"
 #include "dbus_iface_control.h"
-#include "common/debug.h"
-#include "dbus/object_path.h"
+#include "../common/debug.h"
+#include "../dbus/object_path.h"
 #include "client.h"
 
 static DBusHandlerResult

@@ -22,11 +22,11 @@
 #include <stdio.h>
 #include <dbus/dbus.h>
 
-#include "common/debug.h"
+#include "../common/debug.h"
 
-#include "dbus/error.h"
-#include "dbus/method.h"
-#include "dbus/interface.h"
+#include "error.h"
+#include "method.h"
+#include "interface.h"
 
 void
 lash_dbus_error(method_call_t *call_ptr,

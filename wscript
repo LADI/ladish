@@ -64,6 +64,8 @@ def configure(conf):
         errmsg = "not installed, see http://xmlsoft.org/",
         args='--cflags --libs')
 
+    conf.write_config_header('config.h')
+
     display_msg(conf)
 
     display_msg(conf, "==================")
@@ -96,7 +98,56 @@ def configure(conf):
     display_msg(conf)
 
 def build(bld):
-    pass
+    daemon = bld.new_task_gen('cc', 'program')
+    daemon.target = 'ladishd'
+    daemon.includes = "build/default" # XXX config.h version.h and other generated files
+    daemon.uselib = 'DBUS-1 LIBXML-2.0 UUID'
+    daemon.env.append_value("LINKFLAGS", ["-lutil"])
+    daemon.source = []
+    for source in [
+        'main.c',
+        'server.c',
+        'loader.c',
+        'log.c',
+        'sigsegv.c',
+        'proctitle.c',
+        'project.c',
+        'appdb.c',
+        'client.c',
+        'store.c',
+        'procfs.c',
+        'jack_patch.c',
+        'file.c',
+        'dbus_service.c',
+        'jackdbus_mgr.c',
+        'dbus_iface_control.c',
+        'dbus_iface_server.c',
+        'client_dependency.c',
+        'jack_mgr_client.c',
+        ]:
+        daemon.source.append(os.path.join("daemon", source))
+
+    for source in [
+        'service.c',
+        'signal.c',
+        'method.c',
+        'error.c',
+        'object_path.c',
+        'introspection.c',
+        'interface.c',
+        ]:
+        daemon.source.append(os.path.join("dbus", source))
+
+    daemon.source.append("common/safety.c")
+
+    # process org.jackaudio.service.in -> org.jackaudio.service
+    #import misc
+    #obj = bld.new_task_gen('subst')
+    #obj.source = 'org.jackaudio.service.in'
+    #obj.target = 'org.jackaudio.service'
+    #obj.dict = {'BINDIR': bld.env['PREFIX'] + '/bin'}
+    #obj.install_path = '${DBUS_SERVICES_DIR}/'
+    #obj.fun = misc.subst_func
 
 def dist_hook():
     pass

@@ -24,9 +24,9 @@
 
 #include <stdbool.h>
 
-#include "dbus/types.h"
-#include "dbus/method.h"
-#include "dbus/signal.h"
+#include "types.h"
+#include "method.h"
+#include "signal.h"
 
 struct _interface
 {

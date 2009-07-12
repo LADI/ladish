@@ -22,7 +22,7 @@
 
 #include "jack_patch.h"
 #include "jack_mgr_client.h"
-#include "common/safety.h"
+#include "../common/safety.h"
 
 jack_patch_t *
 jack_patch_new(void)

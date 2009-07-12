@@ -22,7 +22,7 @@
 #ifndef __LASH_DBUS_ERROR_H__
 #define __LASH_DBUS_ERROR_H__
 
-#include "dbus/types.h"
+#include "types.h"
 
 #define LASH_DBUS_ERROR_UNKNOWN_METHOD      "org.nongnu.LASH.Error.UnknownMethod"
 #define LASH_DBUS_ERROR_SERVER_NOT_RUNNING  "org.nongnu.LASH.Error.ServerNotRunning"

@@ -26,8 +26,8 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "common/safety.h"
-#include "common/debug.h"
+#include "safety.h"
+#include "debug.h"
 
 void
 _lash_free(void **ptr)

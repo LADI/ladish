@@ -31,9 +31,9 @@
 #include <sys/types.h>
 #include <dbus/dbus.h>
 
-#include "common/klist.h"
+#include "../common/klist.h"
 
-#include "lash/types.h"
+#include "../lash_compat/lash/types.h"
 
 #include "types.h"
 

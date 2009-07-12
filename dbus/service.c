@@ -23,9 +23,9 @@
 #include <stdarg.h>
 #include <string.h> /* strerror() */
 
-#include "common/safety.h"
-#include "common/debug.h"
-#include "dbus/service.h"
+#include "../common/safety.h"
+#include "../common/debug.h"
+#include "service.h"
 
 service_t *
 service_new(const char *service_name,

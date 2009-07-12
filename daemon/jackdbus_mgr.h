@@ -26,7 +26,7 @@
 #include <uuid/uuid.h>
 #include <dbus/dbus.h>
 
-#include "common/klist.h"
+#include "../common/klist.h"
 #include "types.h"
 #include "client.h"
 

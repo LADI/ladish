@@ -24,8 +24,8 @@
 #include <string.h>
 #include <dbus/dbus.h>
 
-#include "common/safety.h"
-#include "common/debug.h"
+#include "../common/safety.h"
+#include "../common/debug.h"
 
 #include "jackdbus_mgr.h"
 #include "jack_patch.h"

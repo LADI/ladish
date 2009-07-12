@@ -23,11 +23,11 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include "dbus/object_path.h"
-#include "common/safety.h"
-#include "common/debug.h"
-#include "dbus/introspection.h"	/* g_dbus_interface_dtor_introspectable */
-#include "dbus/error.h" 	/* lash_dbus_error() */
+#include "object_path.h"
+#include "../common/safety.h"
+#include "../common/debug.h"
+#include "introspection.h"	/* g_dbus_interface_dtor_introspectable */
+#include "error.h" 	/* lash_dbus_error() */
 
 static DBusHandlerResult
 object_path_handler(DBusConnection *connection,

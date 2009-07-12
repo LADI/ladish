@@ -29,8 +29,8 @@
 #include <string.h>
 #include <time.h>
 
-#include "common/debug.h"
-#include "common/safety.h"
+#include "../common/debug.h"
+#include "../common/safety.h"
 
 #define DEFAULT_XDG_LOG "/.log"
 #define LASH_XDG_SUBDIR "/lash"

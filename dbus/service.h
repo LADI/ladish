@@ -24,7 +24,7 @@
 #include <stdbool.h>
 #include <dbus/dbus.h>
 
-#include "dbus/object_path.h"
+#include "object_path.h"
 
 struct _service
 {

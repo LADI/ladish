@@ -30,7 +30,7 @@
 #include <unistd.h>
 
 #include "procfs.h"
-#include "common/debug.h"
+#include "../common/debug.h"
 
 #define BUFFER_SIZE 4096
 

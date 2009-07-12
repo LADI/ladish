@@ -21,16 +21,14 @@
 #ifndef __LASHD_SERVER_H__
 #define __LASHD_SERVER_H__
 
-#include "../config.h"
-
 #include <stdbool.h>
 #include <sys/types.h>
 #include <dbus/dbus.h>
 #include <uuid/uuid.h>
 
 #include "types.h"
-#include "dbus/service.h"
-#include "common/klist.h"
+#include "../dbus/service.h"
+#include "../common/klist.h"
 
 extern server_t *g_server;
 

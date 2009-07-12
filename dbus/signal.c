@@ -20,9 +20,9 @@
 
 #include <stdarg.h>
 
-#include "common/debug.h"
-#include "dbus/signal.h"
-#include "dbus/service.h"
+#include "../common/debug.h"
+#include "signal.h"
+#include "service.h"
 
 static void
 signal_send(signal_msg_t *signal);

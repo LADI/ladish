@@ -35,11 +35,11 @@
 #include <sys/resource.h>
 #include <uuid/uuid.h>
 
-#include "common/safety.h"
-#include "common/debug.h"
-#include "common/klist.h"
+#include "../common/safety.h"
+#include "../common/debug.h"
+#include "../common/klist.h"
 
-#include "lash/types.h"
+#include "../lash_compat/lash/types.h"
 
 #include "loader.h"
 #include "server.h"

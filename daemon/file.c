@@ -29,8 +29,8 @@
 #include <errno.h>
 
 #include "file.h"
-#include "common/safety.h"
-#include "common/debug.h"
+#include "../common/safety.h"
+#include "../common/debug.h"
 
 bool
 lash_file_exists(const char *file)

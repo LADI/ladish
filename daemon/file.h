@@ -25,7 +25,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "common/safety.h"
+#include "../common/safety.h"
 
 #define get_store_and_return_fqn(dir, file)   \
   static char *fqn = NULL;                    \

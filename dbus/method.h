@@ -25,7 +25,7 @@
 #include <stdbool.h>
 #include <dbus/dbus.h>
 
-#include "dbus/types.h"
+#include "types.h"
 
 #define DIRECTION_OUT (0)
 #define DIRECTION_IN  (1)

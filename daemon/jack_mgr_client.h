@@ -22,15 +22,15 @@
 #ifndef __LASHD_JACK_MGR_CLIENT_H__
 #define __LASHD_JACK_MGR_CLIENT_H__
 
-#include "../config.h"
+#include "config.h"
 
 #include <sys/types.h>
 #include <uuid/uuid.h>
 
 #include <dbus/dbus.h>
 
-#include "common/klist.h"
-#include "lashd/types.h"
+#include "../common/klist.h"
+#include "types.h"
 
 struct _jack_mgr_client
 {

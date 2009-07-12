@@ -21,10 +21,10 @@
 
 #include <string.h>
 
-#include "common/debug.h"
+#include "../common/debug.h"
 
-#include "dbus/interface.h"
-#include "dbus/error.h"
+#include "interface.h"
+#include "error.h"
 
 /*
  * Execute a method's function if the method specified in the method call

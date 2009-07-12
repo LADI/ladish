@@ -21,9 +21,9 @@
 #ifndef __LASH_DBUS_INTROSPECTION_H__
 #define __LASH_DBUS_INTROSPECTION_H__
 
-#include "dbus/types.h"
-#include "dbus/interface.h"
-#include "dbus/object_path.h"
+#include "types.h"
+#include "interface.h"
+#include "object_path.h"
 
 DBusMessage *
 introspection_new(object_path_t *path);

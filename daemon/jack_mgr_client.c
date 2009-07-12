@@ -23,8 +23,8 @@
 
 #include <string.h>
 
-#include "common/safety.h"
-#include "common/debug.h"
+#include "../common/safety.h"
+#include "../common/debug.h"
 
 #include "jack_mgr_client.h"
 #include "jack_patch.h"

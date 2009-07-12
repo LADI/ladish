@@ -21,7 +21,7 @@
 #ifndef __LASHD_DBUS_IFACE_SERVER_H__
 #define __LASHD_DBUS_IFACE_SERVER_H__
 
-#include "dbus/interface.h"
+#include "../dbus/interface.h"
 
 extern const interface_t g_lashd_interface_server;
 

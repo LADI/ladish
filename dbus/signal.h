@@ -24,7 +24,7 @@
 
 #include <dbus/dbus.h>
 
-#include "dbus/types.h"
+#include "types.h"
 
 struct _signal_msg
 {

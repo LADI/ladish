@@ -19,11 +19,11 @@
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "common/safety.h"
-#include "common/debug.h"
+#include "../common/safety.h"
+#include "../common/debug.h"
 
-#include "dbus/method.h"
-#include "dbus/service.h"
+#include "method.h"
+#include "service.h"
 
 /*
  * Construct a void method return.
