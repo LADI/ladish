@@ -182,5 +182,15 @@ def build(bld):
     liblash.source.append(os.path.join("common", "safety.c"))
     liblash.source.append(os.path.join("daemon", "file.c"))
 
+    # pkgpyexec_LTLIBRARIES = _lash.la
+    # INCLUDES = $(PYTHON_INCLUDES)
+    # _lash_la_LDFLAGS = -module -avoid-version ../liblash/liblash.la
+    # _lash_la_SOURCES = lash.c lash.h lash_wrap.c
+    # pkgpyexec_SCRIPTS = lash.py
+    # CLEANFILES = lash_wrap.c lash.py lash.pyc zynjacku.defs
+    # EXTRA_DIST = test.py lash.i lash.py
+    # lash_wrap.c lash.py: lash.i lash.h
+    # 	swig -o lash_wrap.c -I$(top_srcdir) -python $(top_srcdir)/$(subdir)/lash.i
+
 def dist_hook():
     pass
