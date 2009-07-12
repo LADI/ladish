@@ -1,14 +1,9 @@
-Original Author:
-	Bob Ham <rah@bash.sh>
+Nedko Arnaudov <nedko@arnaudov.name>
 
-Maintainer (as of Lash 0.5.0):
-	Dave Robillard <dave@drobilla.net>
-
-Server auto-start support:
-	Lars Luthman <larsl@users.sourceforge.net>
-
-Developers:
-	Nedko Arnaudov <nedko@arnaudov.name>
-	Juuso Alasuutari <juuso.alasuutari@gmail.com>
+This project borrowed code that was written/modified by:
+Bob Ham <rah@bash.sh>
+Dave Robillard <dave@drobilla.net>
+Lars Luthman <larsl@users.sourceforge.net>
+Juuso Alasuutari <juuso.alasuutari@gmail.com>
 
 LASH Icon created by Thorsten Wilms <t_w_@freenet.de>
