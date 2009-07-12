@@ -66,13 +66,13 @@ print_help(const char *argv0)
 	       "under the terms of the GNU General Public License, version 2 or later.  See\n"
 	       "the COPYING file that came with this software for details.\n"
 	       "\n"
-	       "Compiled with JACK %s, D-Bus %s, libxml2 %s"
+	       "Compiled with D-Bus %s, libxml2 %s"
 	       "\n\n"
 	       "Usage: %s [OPTION]\n"
 	       "\n"
 	       "  -d, --default-dir PATH     store projects in $HOME/PATH\n\n",
 	       "  -h, --help                 display this help and exit\n"
-	       PACKAGE_VERSION, LASH_JACK_VERSION, LASH_DBUS_VERSION, LASH_XML2_VERSION,
+	       PACKAGE_VERSION, LASH_DBUS_VERSION, LASH_XML2_VERSION,
 	       argv0);
 }
 

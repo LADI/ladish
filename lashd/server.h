@@ -37,11 +37,7 @@ extern server_t *g_server;
 struct _server
 {
 	service_t            *dbus_service;
-#ifdef HAVE_JACK_DBUS
 	lashd_jackdbus_mgr_t *jackdbus_mgr;
-#else
-	jack_mgr_t           *jack_mgr;
-#endif
 	char                 *projects_dir;
 	struct list_head      loaded_projects;
 	struct list_head      all_projects;

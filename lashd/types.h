@@ -23,11 +23,7 @@
 
 typedef struct _server server_t;
 
-#ifdef HAVE_JACK_DBUS
 typedef struct _lashd_jackdbus_mgr lashd_jackdbus_mgr_t;
-#else
-typedef struct _jack_mgr jack_mgr_t;
-#endif /* HAVE_JACK_DBUS */
 
 typedef struct _jack_fport jack_fport_t;
 

@@ -24,14 +24,8 @@ lashd_SOURCES = \
 	types.h \
 	$(top_srcdir)/common/safety.c
 
-if HAVE_JACK_DBUS
 lashd_SOURCES += \
 	jackdbus_mgr.c jackdbus_mgr.h
-else
-lashd_SOURCES += \
-	jack_mgr.c jack_mgr.h \
-	jack_fport.c jack_fport.h
-endif
 
 lashd_LDADD = \
 	$(XML2_LIBS) \
@@ -45,11 +39,6 @@ AM_CFLAGS = \
 	$(XML2_CFLAGS) \
 	$(DBUS_CFLAGS) \
 	-DDTDDIR=\"$(dtddir)\"
-
-if !HAVE_JACK_DBUS
-lashd_LDADD += $(JACK_LIBS)
-AM_CFLAGS += $(JACK_CFLAGS)
-endif
 
 # Dbus service file
 servicedir = $(DBUS_SERVICES_DIR)

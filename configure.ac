@@ -64,32 +64,6 @@ else
 fi
 
 
-########################
-### --with-jack-dbus ###
-########################
-
-lash_jack_dbus="yes"
-AC_MSG_CHECKING([whether to use D-Bus for JACK communication])
-AC_ARG_WITH(jack-dbus, [
-AS_HELP_STRING(--with-jack-dbus, [use D-Bus for JACK communication [default=yes]])],
-  [case "x$withval" in
-    "xyes")
-      ;;
-    "xno")
-      lash_jack_dbus="no"
-      ;;
-    *)
-      AC_MSG_ERROR([must use --with-jack-dbus(=yes/no) or --without-jack-dbus])
-      ;;
-  esac]
-)
-if test "x$lash_jack_dbus" = "xyes"; then
-  AC_MSG_RESULT([yes])
-else
-  AC_MSG_RESULT([no])
-fi
-
-
 #####################
 ### --with-python ###
 #####################
@@ -120,10 +94,6 @@ fi
 # packages in one go so that the user doesn't need to play hit-and-miss.
 
 MISSING_REQUIRED=""
-
-# 0.99.17 = first version with jack_client_open
-HAVE_JACK="no"
-PKG_CHECK_MODULES(JACK, jack >= 0.99.17, HAVE_JACK="yes", MISSING_REQUIRED="    JACK >= 0.99.17")
 
 HAVE_DBUS="no"
 PKG_CHECK_MODULES(DBUS, dbus-1 >= 1.0.0, HAVE_DBUS="yes", [
@@ -206,9 +176,6 @@ if test "x$MISSING_REQUIRED$MISSING_OPTIONAL" != "x"; then
   Please refer to these websites for further information:
 ])
 
-  if test "x$HAVE_JACK" = "xno"; then
-    AC_MSG_RESULT([    JACK:     http://jackaudio.org/])
-  fi
   if test "x$HAVE_DBUS" = "xno"; then
     AC_MSG_RESULT([    D-Bus:    http://dbus.freedesktop.org/])
   fi
@@ -236,21 +203,6 @@ if test "x$lash_old_api" = "xyes"; then
   AC_DEFINE(LASH_OLD_API, 1, [whether or not to enable the old API])
 fi
 AM_CONDITIONAL(LASH_OLD_API, [test "x$lash_old_api" = "xyes"])
-
-############
-### JACK ###
-############
-
-JACK_VERSION=$(pkg-config --modversion jack)
-AC_DEFINE_UNQUOTED(LASH_JACK_VERSION, "$JACK_VERSION", [The version of jack we're compiling against])
-AM_CONDITIONAL(HAVE_JACK_DBUS, [test "x$lash_jack_dbus" = "xyes"])
-if test "x$lash_jack_dbus" = "xyes"; then
-  AC_DEFINE(HAVE_JACK_DBUS, 1, [Whether to use D-Bus for JACK communication])
-else
-  AC_SUBST(JACK_CFLAGS)
-  AC_SUBST(JACK_LIBS)
-  PC_REQUIRES="jack"
-fi
 
 #############
 ### D-Bus ###
@@ -409,14 +361,12 @@ fi
 AC_MSG_RESULT([
   LASH Configured
 
-  JACK D-Bus support:    $lash_jack_dbus
   Readline support:      $lash_readline
   Python bindings:       $lash_python
   HTML manual:           $lash_texi2html
   Debugging output:      $lash_debug
   Support old API:       $lash_old_api
 
-  JACK version:          $JACK_VERSION
   D-Bus version:         $DBUS_VERSION
   libuuid version:       $UUID_VERSION
   libxml2 version:       $XML2_VERSION])
@@ -424,13 +374,11 @@ AC_MSG_RESULT([
 AC_MSG_RESULT([
   CFLAGS:  $CFLAGS
 
-  JACK_CFLAGS:  $JACK_CFLAGS
   DBUS_CFLAGS:  $DBUS_CFLAGS
   UUID_CFLAGS:  $UUID_CFLAGS
   XML2_CFLAGS:  $XML2_CFLAGS])
 
 AC_MSG_RESULT([
-  JACK_LIBS:    $JACK_LIBS
   DBUS_LIBS:    $DBUS_LIBS
   UUID_LIBS:    $UUID_LIBS
   XML2_LIBS:    $XML2_LIBS])
@@ -448,7 +396,7 @@ if test "x$DBUS_SERVICES_DIR_REAL" != "x$DBUS_SERVICES_DIR"
 then
 	AC_MSG_WARN([D-Bus session services directory as reported by pkg-config is $DBUS_SERVICES_DIR_REAL])
 	AC_MSG_WARN([but service file will be installed in $DBUS_SERVICES_DIR])
-	AC_MSG_WARN([You may need to adjust your D-Bus configuration after installing jackdbus])
+	AC_MSG_WARN([You may need to adjust your D-Bus configuration after installing ladish])
 	AC_MSG_WARN([You can override dbus service install dir])
 	AC_MSG_WARN([with --enable-pkg-config-dbus-service-dir option to this script])
 fi

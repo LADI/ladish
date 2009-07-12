@@ -27,9 +27,7 @@
 #include <sys/types.h>
 #include <uuid/uuid.h>
 
-#ifdef HAVE_JACK_DBUS
-# include <dbus/dbus.h>
-#endif
+#include <dbus/dbus.h>
 
 #include "common/klist.h"
 #include "lashd/types.h"
@@ -42,12 +40,8 @@ struct _jack_mgr_client
 	uuid_t            id;
 	struct list_head  old_patches;
 	struct list_head  backup_patches;
-#ifndef HAVE_JACK_DBUS
-	struct list_head  patches;
-#else
 	dbus_uint64_t     jackdbus_id;
 	pid_t             pid; /**< Client PID. */
-#endif
 };
 
 jack_mgr_client_t *
@@ -67,8 +61,6 @@ jack_mgr_client_t *
 jack_mgr_client_find_by_id(struct list_head *client_list,
                            uuid_t            id);
 
-#ifdef HAVE_JACK_DBUS
-
 jack_mgr_client_t *
 jack_mgr_client_find_by_jackdbus_id(struct list_head *client_list,
                                     dbus_uint64_t     id);
@@ -87,14 +79,5 @@ jack_mgr_client_find_by_pid(struct list_head *client_list,
  */
 void
 jack_mgr_client_modified(jack_mgr_client_t *client);
-
-#else /* !HAVE_JACK_DBUS */
-
-void
-jack_mgr_client_dup_uniq_patches(struct list_head *jack_mgr_clients,
-                                 uuid_t            client_id,
-                                 struct list_head *dest);
-
-#endif
 
 #endif /* __LASHD_JACK_MGR_CLIENT_H__ */

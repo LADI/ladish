@@ -27,9 +27,7 @@
 #include <uuid/uuid.h>
 #include <libxml/tree.h>
 
-#ifdef HAVE_JACK_DBUS
-# include <dbus/dbus.h>
-#endif
+#include <dbus/dbus.h>
 
 #include "types.h"
 #include "common/klist.h"
@@ -77,8 +75,6 @@ jack_patch_list(struct list_head *list)
 }
 #endif
 
-#ifdef HAVE_JACK_DBUS
-
 /** Create a new JACK patch with the given parameters and return a pointer to it.
  * The *_uuid and *_name parameters are mutually exclusive; for example if
  * src_uuid is not NULL then src_name must be NULL, and vice versa.
@@ -118,30 +114,5 @@ jack_patch_find_by_description(struct list_head *patch_list,
                                uuid_t           *dest_uuid,
                                const char       *dest_name,
                                const char       *dest_port);
-
-#else /* !HAVE_JACK_DBUS */
-
-/* set/unset the lash IDs */
-void
-jack_patch_set(jack_patch_t     *patch,
-               struct list_head *jack_mgr_clients);
-
-bool
-jack_patch_unset(jack_patch_t     *patch,
-                 struct list_head *jack_mgr_clients);
-
-void
-jack_patch_switch_clients(jack_patch_t *patch);
-
-/* Set both the client and port in/from a jack port name */
-void
-jack_patch_set_src(jack_patch_t *patch,
-                   const char   *src);
-
-void
-jack_patch_set_dest(jack_patch_t *patch,
-                    const char   *dest);
-
-#endif
 
 #endif /* __LASHD_JACK_PATCH_H__ */

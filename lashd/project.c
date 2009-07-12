@@ -52,11 +52,7 @@
 #include "common/safety.h"
 #include "common/debug.h"
 
-#ifdef HAVE_JACK_DBUS
-# include "jackdbus_mgr.h"
-#else
-# include "jack_mgr.h"
-#endif
+#include "jackdbus_mgr.h"
 
 static const char *
 project_get_client_config_dir(project_t *project,
@@ -521,15 +517,8 @@ project_create_client_jack_patch_xml(project_t  *project,
 
 	LIST_HEAD(patches);
 
-#ifdef HAVE_JACK_DBUS
 	if (!lashd_jackdbus_mgr_get_client_patches(g_server->jackdbus_mgr,
 	                                           client->id, &patches)) {
-#else
-	jack_mgr_lock(g_server->jack_mgr);
-	jack_mgr_get_client_patches(g_server->jack_mgr, client->id, &patches);
-	jack_mgr_unlock(g_server->jack_mgr);
-	if (list_empty(&patches)) {
-#endif
 		lash_info("client '%s' has no patches to save", client_get_identity(client));
 		return;
 	}
@@ -822,9 +811,7 @@ project_save(project_t *project)
 
 	project_save_clients(project);
 
-#ifdef HAVE_JACK_DBUS
 	lashd_jackdbus_mgr_get_graph(g_server->jackdbus_mgr);
-#endif
 
 	if (!project_save_notes(project))
 		lash_error("Error writing notes file for project '%s'", project->name);
@@ -1039,15 +1026,8 @@ project_lose_client(project_t *project,
 	}
 
 	if (client->jack_client_name) {
-#ifdef HAVE_JACK_DBUS
 		if (lashd_jackdbus_mgr_remove_client(g_server->jackdbus_mgr,
 		                                     client->id, &patches)) {
-#else
-		jack_mgr_lock(g_server->jack_mgr);
-		jack_mgr_remove_client(g_server->jack_mgr, client->id, &patches);
-		jack_mgr_unlock(g_server->jack_mgr);
-		if (!list_empty(&patches)) {
-#endif
 			list_splice(&patches, &client->jack_patches);
 #ifdef LASH_DEBUG
 			lash_debug("Backed-up JACK patches:");
@@ -1094,15 +1074,8 @@ project_unload(project_t *project)
 		}
 
 		if (client->jack_client_name) {
-#ifdef HAVE_JACK_DBUS
 			lashd_jackdbus_mgr_remove_client(g_server->jackdbus_mgr,
 			                                 client->id, NULL);
-#else
-			jack_mgr_lock(g_server->jack_mgr);
-			jack_mgr_remove_client(g_server->jack_mgr,
-			                       client->id, NULL);
-			jack_mgr_unlock(g_server->jack_mgr);
-#endif
 		}
 
 		list_del(&client->siblings);

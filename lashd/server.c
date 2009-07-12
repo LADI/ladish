@@ -46,11 +46,7 @@
 #include "common/klist.h"
 #include "jack_mgr_client.h"
 
-#ifdef HAVE_JACK_DBUS
-# include "jackdbus_mgr.h"
-#else
-# include "jack_mgr.h"
-#endif
+#include "jackdbus_mgr.h"
 
 server_t *g_server = NULL;
 
@@ -86,21 +82,15 @@ server_start(const char *default_dir)
 
 	server_fill_projects();
 
-#ifndef HAVE_JACK_DBUS
-	g_server->jack_mgr = jack_mgr_new();
-#endif
-
 	if (!(g_server->dbus_service = lashd_dbus_service_new())) {
 		lash_debug("Failed to launch D-Bus service");
 		goto fail;
 	}
 
-#ifdef HAVE_JACK_DBUS
 	if (!(g_server->jackdbus_mgr = lashd_jackdbus_mgr_new())) {
 		lash_debug("Failed to launch JACK D-Bus manager");
 		goto fail;
 	}
-#endif
 
 	lash_debug("Server running");
 
@@ -131,14 +121,8 @@ server_stop(void)
 	service_destroy(g_server->dbus_service);
 	g_server->dbus_service = NULL;
 
-#ifdef HAVE_JACK_DBUS
 	lash_debug("Destroying JACK D-Bus manager");
 	lashd_jackdbus_mgr_destroy(g_server->jackdbus_mgr);
-#else
-	lash_debug("Destroying JACK manager");
-	jack_mgr_lock(g_server->jack_mgr);
-	jack_mgr_destroy(g_server->jack_mgr);
-#endif
 
 	lash_free(&g_server->projects_dir);
 
