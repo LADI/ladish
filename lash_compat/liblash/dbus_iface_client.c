@@ -19,15 +19,15 @@
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "../config.h"
+#include "config.h"
 
-#include "common/safety.h"
-#include "common/debug.h"
+#include "../../common/safety.h"
+#include "../../common/debug.h"
 
-#include "dbus/error.h"
-#include "dbus/object_path.h"
-#include "dbus/interface.h"
-#include "dbus/method.h"
+#include "../../dbus/error.h"
+#include "../../dbus/object_path.h"
+#include "../../dbus/interface.h"
+#include "../../dbus/method.h"
 
 #include "lash/types.h"
 

@@ -24,7 +24,7 @@
 
 # include <stdlib.h>
 
-# include "common/safety.h"
+# include "../../common/safety.h"
 
 lash_args_t *
 lash_args_new()

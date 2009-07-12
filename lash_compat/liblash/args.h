@@ -21,7 +21,7 @@
 #ifndef __LIBLASH_ARGS_H__
 #define __LIBLASH_ARGS_H__
 
-#include "../config.h"
+#include "config.h"
 
 #ifdef LASH_OLD_API
 

@@ -23,11 +23,11 @@
 #include <string.h>
 #include <errno.h>
 
-#include "common/safety.h"
-#include "common/debug.h"
+#include "../../common/safety.h"
+#include "../../common/debug.h"
 
-#include "dbus/object_path.h"
-#include "dbus/service.h"
+#include "../../dbus/object_path.h"
+#include "../../dbus/service.h"
 
 #include "dbus_service.h"
 #include "dbus_iface_client.h"

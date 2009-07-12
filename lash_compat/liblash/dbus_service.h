@@ -23,7 +23,7 @@
 
 #include "lash/types.h"
 
-#include "dbus/types.h"
+#include "../../dbus/types.h"
 
 service_t *
 lash_dbus_service_new(lash_client_t *client);

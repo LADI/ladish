@@ -21,7 +21,7 @@
 #ifndef __LIBLASH_CONFIG_H__
 #define __LIBLASH_CONFIG_H__
 
-#include "../config.h"
+#include "config.h"
 
 #include <stdbool.h>
 #include <dbus/dbus.h>
@@ -37,7 +37,7 @@ struct _lash_config_handle
 
 #ifdef LASH_OLD_API
 # include <sys/types.h>
-# include "common/klist.h"
+# include "../../common/klist.h"
 
 struct _lash_config
 {

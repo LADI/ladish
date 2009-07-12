@@ -23,7 +23,7 @@
 
 #include <uuid/uuid.h>
 
-#include "lash/types.h"
+#include "types.h"
 
 #ifdef __cplusplus
 extern "C" {

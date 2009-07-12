@@ -21,7 +21,7 @@
 #ifndef __LIBLASH_DBUS_IFACE_CLIENT_H__
 #define __LIBLASH_DBUS_IFACE_CLIENT_H__
 
-#include "dbus/interface.h"
+#include "../../dbus/interface.h"
 
 #include "lash/types.h"
 

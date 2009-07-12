@@ -24,7 +24,7 @@
 
 #include <uuid/uuid.h>
 
-#include "common/klist.h"
+#include "../../common/klist.h"
 #include "lash/types.h"
 
 typedef void (*LASHEventConstructor) (lash_client_t *, lash_event_t *);

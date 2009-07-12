@@ -138,7 +138,7 @@ def build(bld):
         ]:
         daemon.source.append(os.path.join("dbus", source))
 
-    daemon.source.append("common/safety.c")
+    daemon.source.append(os.path.join("common", "safety.c"))
 
     # process org.jackaudio.service.in -> org.jackaudio.service
     #import misc
@@ -148,6 +148,39 @@ def build(bld):
     #obj.dict = {'BINDIR': bld.env['PREFIX'] + '/bin'}
     #obj.install_path = '${DBUS_SERVICES_DIR}/'
     #obj.fun = misc.subst_func
+
+    liblash = bld.new_task_gen('cc', 'shlib')
+    liblash.includes = "build/default" # XXX config.h version.h and other generated files
+    liblash.uselib = 'DBUS-1 LIBXML-2.0 UUID'
+    liblash.target = 'lash'
+    liblash.defines = 'LASH_OLD_API'
+    liblash.source = []
+
+    for source in [
+        'lash.c',
+        'lash_config.c',
+        'client.c',
+        'dbus_service.c',
+        'dbus_iface_client.c',
+        'protocol.c',
+        'event.c',
+        'args.c',
+        ]:
+        liblash.source.append(os.path.join("lash_compat", "liblash", source))
+
+    for source in [
+        'service.c',
+        'signal.c',
+        'method.c',
+        'error.c',
+        'object_path.c',
+        'introspection.c',
+        'interface.c',
+        ]:
+        liblash.source.append(os.path.join("dbus", source))
+
+    liblash.source.append(os.path.join("common", "safety.c"))
+    liblash.source.append(os.path.join("daemon", "file.c"))
 
 def dist_hook():
     pass

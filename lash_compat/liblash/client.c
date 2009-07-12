@@ -21,7 +21,7 @@
 
 #include <stdlib.h>
 
-#include "common/safety.h"
+#include "../../common/safety.h"
 
 #include "client.h"
 

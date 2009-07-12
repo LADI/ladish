@@ -19,7 +19,7 @@
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "../config.h"
+#include "config.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -35,12 +35,12 @@
 #include <sys/param.h>
 #include <rpc/xdr.h>
 
-#include "common/safety.h"
-#include "common/debug.h"
+#include "../../common/safety.h"
+#include "../../common/debug.h"
 
 #include "lash/lash.h"
 
-#include "dbus/service.h"
+#include "../../dbus/service.h"
 
 #include "dbus_service.h"
 #include "client.h"

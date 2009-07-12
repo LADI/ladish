@@ -33,7 +33,7 @@
 
 #include "../common/klist.h"
 
-#include "../lash_compat/lash/types.h"
+#include "../lash_compat/liblash/lash/types.h"
 
 #include "types.h"
 

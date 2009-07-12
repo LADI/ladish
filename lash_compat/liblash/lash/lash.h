@@ -21,11 +21,11 @@
 #ifndef __LASH_H__
 #define __LASH_H__
 
-#include <lash/types.h>
-#include <lash/event.h>
-#include <lash/config.h>
-#include <lash/protocol.h>
-#include <lash/client_interface.h>
-#include <lash/client_interface_new.h>
+#include "types.h"
+#include "event.h"
+#include "config.h"
+#include "protocol.h"
+#include "client_interface.h"
+#include "client_interface_new.h"
 
 #endif /* __LASH_H__ */

@@ -35,7 +35,7 @@
 #include "../common/safety.h"
 #include "../common/debug.h"
 #include "../dbus/method.h"
-#include "../lash_compat/lash/types.h"
+#include "../lash_compat/liblash/lash/types.h"
 
 #define STORE_INFO_FILE ".store_info"
 

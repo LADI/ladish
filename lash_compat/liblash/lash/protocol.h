@@ -21,7 +21,7 @@
 #ifndef __LASH_PROTOCOL_H__
 #define __LASH_PROTOCOL_H__
 
-#include <lash/types.h>
+#include "types.h"
 
 #define LASH_PROTOCOL_MAJOR 2
 #define LASH_PROTOCOL_MINOR 0

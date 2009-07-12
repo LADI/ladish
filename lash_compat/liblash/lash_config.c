@@ -23,13 +23,13 @@
 #include <arpa/inet.h>
 #include <rpc/xdr.h>
 
-#include "common/debug.h"
+#include "../../common/debug.h"
 
 #include "lash/config.h"
 
 #include "lash_config.h"
 
-#include "dbus/method.h"
+#include "../../dbus/method.h"
 
 bool
 lash_config_write(lash_config_handle_t *handle,
@@ -164,7 +164,7 @@ lash_config_read(lash_config_handle_t  *handle,
 
 
 #ifdef LASH_OLD_API
-# include "common/safety.h"
+# include "../../common/safety.h"
 
 # include <stdlib.h>
 # include <string.h>

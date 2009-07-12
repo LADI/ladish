@@ -28,13 +28,13 @@
 
 #include "config.h"
 
-#include "dbus/service.h"
-#include "dbus/method.h"
+#include "../../dbus/service.h"
+#include "../../dbus/method.h"
 
 #include "lash/types.h"
 
 #ifdef LASH_OLD_API
-# include "common/klist.h"
+# include "../../common/klist.h"
 #endif
 
 struct _lash_client

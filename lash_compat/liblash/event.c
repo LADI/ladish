@@ -23,10 +23,10 @@
 #include <stdint.h>
 #include <dbus/dbus.h>
 
-#include "common/safety.h"
-#include "common/debug.h"
+#include "../../common/safety.h"
+#include "../../common/debug.h"
 
-#include "dbus/method.h"
+#include "../../dbus/method.h"
 
 #include "lash/event.h"
 

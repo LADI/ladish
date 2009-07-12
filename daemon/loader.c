@@ -39,8 +39,6 @@
 #include "../common/debug.h"
 #include "../common/klist.h"
 
-#include "../lash_compat/lash/types.h"
-
 #include "loader.h"
 #include "server.h"
 #include "client.h"
