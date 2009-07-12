@@ -23,6 +23,7 @@
 #define _GNU_SOURCE
 
 #include "config.h"
+#include "version.h"
 
 #include <string.h>
 #include <getopt.h>
@@ -99,12 +100,11 @@ main(int    argc,
     }
   }
 
-//  if (!default_dir)
-//    default_dir = DEFAULT_PROJECT_DIR;
+  if (!default_dir)
+    default_dir = DEFAULT_PROJECT_DIR;
 
   lash_info("------------------");
-  //lash_info("LASH activated. Version %s (%s) built on %s",
-  //         PACKAGE_VERSION, SVN_VERSION, timestamp_str);
+  lash_info("LASH activated. Version %s (%s) built on %s", PACKAGE_VERSION, GIT_VERSION, timestamp_str);
 
   lash_debug("Default dir: '%s'", default_dir);
 

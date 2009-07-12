@@ -64,6 +64,8 @@ def configure(conf):
         errmsg = "not installed, see http://xmlsoft.org/",
         args='--cflags --libs')
 
+    conf.define('DEFAULT_PROJECT_DIR', "audio-projects")
+    conf.define('PACKAGE_VERSION', VERSION)
     conf.write_config_header('config.h')
 
     display_msg(conf)
@@ -102,6 +104,7 @@ def build(bld):
     daemon.target = 'ladishd'
     daemon.includes = "build/default" # XXX config.h version.h and other generated files
     daemon.uselib = 'DBUS-1 LIBXML-2.0 UUID'
+    daemon.ver_header = 'version.h'
     daemon.env.append_value("LINKFLAGS", ["-lutil"])
     daemon.source = []
     for source in [
@@ -194,3 +197,40 @@ def build(bld):
 
 def dist_hook():
     pass
+
+import commands
+from Constants import RUN_ME
+from TaskGen import feature, after
+import Task, Utils
+
+@feature('cc')
+@after('apply_core')
+def process_git(self):
+    if getattr(self, 'ver_header', None):
+        tsk = self.create_task('git_ver')
+        tsk.set_outputs(self.path.find_or_declare(self.ver_header))
+
+def git_ver(self):
+    self.ver = "unknown"
+    self.ver = commands.getoutput("LANG= git rev-parse HEAD").splitlines()[0]
+    if commands.getoutput("LANG= git diff-index --name-only HEAD").splitlines():
+        self.ver += "-dirty"
+
+    Utils.pprint('BLUE', "git revision " + self.ver)
+
+    fi = open(self.outputs[0].abspath(self.env), 'w')
+    fi.write('#define GIT_VERSION "%s"\n' % self.ver)
+    fi.close()
+
+cls = Task.task_type_from_func('git_ver', vars=[], func=git_ver, color='BLUE', before='cc')
+
+def always(self):
+	return RUN_ME
+cls.runnable_status = always
+
+def post_run(self):
+	sg = Utils.h_list(self.ver)
+	node = self.outputs[0]
+	variant = node.variant(self.env)
+	self.generator.bld.node_sigs[variant][node.id] = sg
+cls.post_run = post_run
