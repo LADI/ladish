@@ -1,0 +1,14 @@
+patchage (0.4.2) unstable; urgency=low
+
+  * LASH support via D-BUS from ladi-patchage branch
+  * Remove old LASH support via liblash
+ 
+ -- Dave Robillard <dave@drobilla.net>  Tue, 09 Sep 2008 15:41:04 -0400
+
+
+patchage (0.4.1) unstable; urgency=low
+
+  * Initial Debian release
+ 
+ -- Dave Robillard <dave@drobilla.net>  Sun, 06 Jul 2008 17:19:55 -0400
+
