@@ -67,12 +67,12 @@ public:
 	do_change_notes(
 		const string& notes);
 
-	signal<void> _signal_renamed;
-	signal<void> _signal_modified_status_changed;
-	signal<void> _signal_description_changed;
-	signal<void> _signal_notes_changed;
-	signal<void, shared_ptr<lash_client> > _signal_client_added;
-	signal<void, shared_ptr<lash_client> > _signal_client_removed;
+	signal0<void> _signal_renamed;
+	signal0<void> _signal_modified_status_changed;
+	signal0<void> _signal_description_changed;
+	signal0<void> _signal_notes_changed;
+	signal1<void, shared_ptr<lash_client> > _signal_client_added;
+	signal1<void, shared_ptr<lash_client> > _signal_client_removed;
 
 private:
 	friend class lash_proxy_impl;

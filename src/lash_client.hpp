@@ -50,7 +50,7 @@ public:
 	do_rename(
 		const string& name);
 
-	signal<void> _signal_renamed;
+	signal0<void> _signal_renamed;
 
 private:
 	friend class lash_proxy_impl;

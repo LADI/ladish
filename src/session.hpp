@@ -52,8 +52,8 @@ public:
 
 	shared_ptr<lash_client> find_client_by_id(const string& id);
 
-	sigc::signal<void, shared_ptr<project> > _signal_project_added;
-	sigc::signal<void, shared_ptr<project> > _signal_project_closed;
+	sigc::signal1<void, shared_ptr<project> > _signal_project_added;
+	sigc::signal1<void, shared_ptr<project> > _signal_project_closed;
 
 private:
 	session_impl * _impl_ptr;

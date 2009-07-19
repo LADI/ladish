@@ -73,8 +73,8 @@ public:
 	void
 	stop_server();
 
-	sigc::signal<void> signal_started;
-	sigc::signal<void> signal_stopped;
+	sigc::signal0<void> signal_started;
+	sigc::signal0<void> signal_stopped;
 
 private:
 	void error_msg(const std::string& msg) const;
