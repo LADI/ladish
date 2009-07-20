@@ -28,17 +28,19 @@ def display_line(conf, text, color = 'NORMAL'):
 
 def set_options(opt):
     opt.tool_options('compiler_cc')
+    opt.tool_options('compiler_cxx')
     opt.add_option('--enable-pkg-config-dbus-service-dir', action='store_true', default=False, help='force D-Bus service install dir to be one returned by pkg-config')
 
 def configure(conf):
     conf.check_tool('compiler_cc')
+    conf.check_tool('compiler_cxx')
 
     conf.check_cfg(
         package = 'dbus-1',
         atleast_version = '1.0.0',
         mandatory = True,
         errmsg = "not installed, see http://dbus.freedesktop.org/",
-        args='--cflags --libs')
+        args = '--cflags --libs')
 
     dbus_dir = conf.check_cfg(package='dbus-1', args='--variable=session_bus_services_dir', msg="Retrieving D-Bus services dir")
     if not dbus_dir:
@@ -56,14 +58,61 @@ def configure(conf):
         package = 'uuid',
         mandatory = True,
         errmsg = "not installed, see http://e2fsprogs.sourceforge.net/",
-        args='--cflags --libs')
+        args = '--cflags --libs')
 
     conf.check_cfg(
         package = 'libxml-2.0',
         atleast_version = '2.0.0',
         mandatory = True,
         errmsg = "not installed, see http://xmlsoft.org/",
-        args='--cflags --libs')
+        args = '--cflags --libs')
+
+    conf.check_cfg(
+        package = 'dbus-glib-1',
+        mandatory = True,
+        errmsg = "not installed, see http://dbus.freedesktop.org/",
+        args = '--cflags --libs')
+
+    conf.check_cfg(
+        package = 'glibmm-2.4',
+        mandatory = True,
+        errmsg = "not installed, see http://www.gtkmm.org/",
+        args = '--cflags --libs')
+
+    conf.check_cfg(
+        package = 'gtkmm-2.4',
+        mandatory = True,
+        atleast_version = '2.11.12',
+        errmsg = "not installed, see http://www.gtkmm.org/",
+        args = '--cflags --libs')
+
+    conf.check_cfg(
+        package = 'libgnomecanvasmm-2.6',
+        mandatory = True,
+        errmsg = "not installed, see http://www.gtkmm.org/",
+        args = '--cflags --libs')
+
+    conf.check_cfg(
+        package = 'libglademm-2.4',
+        mandatory = True,
+        errmsg = "not installed, see http://www.gtkmm.org/",
+        args = '--cflags --libs')
+
+    conf.check_cfg(
+        package = 'flowcanvas',
+        mandatory = True,
+        atleast_version = '0.4.0',
+        errmsg = "not installed, see http://drobilla.net/software/flowcanvas/",
+        args = '--cflags --libs')
+
+    # We need the boost headers package (e.g. libboost-dev)
+    # shared_ptr.hpp and weak_ptr.hpp
+    conf.check_tool('boost')
+    conf.check_boost()
+
+    conf.define('PATCHAGE_APPNAME', "gladish")
+    conf.env['PATCHAGE_VERSION'] = VERSION
+    conf.define('PATCHAGE_DATA_DIR', os.path.normpath(os.path.join(conf.env['PREFIX'], 'share', "gladish")))
 
     conf.define('DEFAULT_PROJECT_DIR', "audio-projects")
     conf.define('PACKAGE_VERSION', VERSION)
@@ -199,6 +248,68 @@ def build(bld):
     # EXTRA_DIST = test.py lash.i lash.py
     # lash_wrap.c lash.py: lash.i lash.h
     # 	swig -o lash_wrap.c -I$(top_srcdir) -python $(top_srcdir)/$(subdir)/lash.i
+
+    #####################################################
+    # gladish
+    gladish = bld.new_task_gen('cxx', 'program')
+    gladish.target = 'gladish'
+    gladish.includes = "build/default" # XXX config.h version.h and other generated files
+    gladish.uselib = 'DBUS-1 LIBGNOMECANVASMM-2.6 LIBGLADEMM-2.4 FLOWCANVAS DBUS-GLIB-1'
+    gladish.source = []
+    for source in [
+        'main.cpp',
+        'Patchage.cpp',
+        'PatchageCanvas.cpp',
+        'StateManager.cpp',
+        'jack_proxy.cpp',
+        'lash_client.cpp',
+        'lash_proxy.cpp',
+        'load_projects_dialog.cpp',
+        'project.cpp',
+        'project_list.cpp',
+        'project_properties.cpp',
+        'session.cpp',
+        'a2j_proxy.cpp',
+        'dbus_helpers.c',
+        ]:
+        gladish.source.append(os.path.join("gui", source))
+    
+    # Glade UI definitions (XML)
+    #install_files('DATADIR', bld.env()['APP_INSTALL_NAME'], 'src/patchage.glade')
+    
+    # 'Desktop' file (menu entry, icon, etc)
+    #obj = bld.create_obj('subst')
+    #obj.source = 'patchage.desktop.in'
+    #obj.target = 'patchage.desktop'
+    #obj.dict = {
+    #    'BINDIR'           : bld.env()['BINDIR'],
+    #    'APP_INSTALL_NAME' : bld.env()['APP_INSTALL_NAME'],
+    #    'APP_HUMAN_NAME'   : bld.env()['APP_HUMAN_NAME'],
+    #}
+    #install_as(os.path.normpath(bld.env()['DATADIR'] + 'applications/'), bld.env()['APP_INSTALL_NAME'] + '.desktop', 'build/default/patchage.desktop')
+
+    # Icons
+    #
+    # Installation layout (with /usr prefix)
+    # /usr/bin/patchage
+    # /usr/share/applications/patchage.desktop
+    # /usr/share/icons/hicolor/16x16/apps/patchage.png
+    # /usr/share/icons/hicolor/22x22/apps/patchage.png
+    # /usr/share/icons/hicolor/24x24/apps/patchage.png
+    # /usr/share/icons/hicolor/32x32/apps/patchage.png
+    # /usr/share/icons/hicolor/48x48/apps/patchage.png
+    # /usr/share/icons/hicolor/scalable/apps/patchage.svg
+    # /usr/share/patchage/patchage.glade
+    #
+    # icon cache is updated using:
+    # gtk-update-icon-cache -f -t $(datadir)/icons/hicolor
+
+    # Dave disabled this, ask why before removing this
+    #install_as(os.path.normpath(bld.env()['PREFIX'] + '/share/icons/hicolor/scalable/apps/'), bld.env()['APP_INSTALL_NAME'] + '.svg', 'icons/scalable/patchage.svg')
+
+    #icon_sizes = ['16x16', '22x22', '24x24', '32x32', '48x48']
+    #for icon_size in icon_sizes:
+    #    install_as(os.path.normpath(bld.env()['DATADIR'] + '/icons/hicolor/' + icon_size + '/apps/'), bld.env()['APP_INSTALL_NAME'] + '.png', 'icons/' + icon_size + '/patchage.png')
 
 def dist_hook():
     pass
