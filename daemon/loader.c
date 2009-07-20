@@ -30,8 +30,6 @@
 
 #include "loader.h"
 
-#define LASH_DEBUG
-
 #define XTERM_COMMAND_EXTENSION "&& sh || sh"
 
 #define CLIENT_OUTPUT_BUFFER_SIZE 2048
