@@ -272,7 +272,7 @@ def build(bld):
         gladish.source.append(os.path.join("gui", source))
     
     # Glade UI definitions (XML)
-    #install_files('DATADIR', bld.env()['APP_INSTALL_NAME'], 'src/patchage.glade')
+    bld.install_files(bld.env['DATA_DIR'], 'gui/gui.glade')
     
     # 'Desktop' file (menu entry, icon, etc)
     #obj = bld.create_obj('subst')
