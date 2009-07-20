@@ -30,7 +30,6 @@
 #include <stdexcept>
 #include <libglademm/xml.h>
 #include "config.h"
-#include "binary_location.h"
 
 #include "Patchage.hpp"
 #include "globals.hpp"
