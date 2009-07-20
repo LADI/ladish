@@ -27,81 +27,81 @@ class lash_client;
 class project
 {
 public:
-	project(
-		lash_proxy * lash_ptr,
-		const string& name);
+  project(
+    lash_proxy * lash_ptr,
+    const string& name);
 
-	~project();
+  ~project();
 
-	void
-	clear();
+  void
+  clear();
 
-	void
-	get_name(
-		string& name);
+  void
+  get_name(
+    string& name);
 
-	void
-	get_description(
-		string& description);
+  void
+  get_description(
+    string& description);
 
-	void
-	get_notes(
-		string& notes);
+  void
+  get_notes(
+    string& notes);
 
-	bool
-	get_modified_status();
+  bool
+  get_modified_status();
 
-	void
-	get_clients(
-		list<shared_ptr<lash_client> >& clients);
+  void
+  get_clients(
+    list<shared_ptr<lash_client> >& clients);
 
-	void
-	do_rename(
-		const string& name);
+  void
+  do_rename(
+    const string& name);
 
-	void
-	do_change_description(
-		const string& description);
+  void
+  do_change_description(
+    const string& description);
 
-	void
-	do_change_notes(
-		const string& notes);
+  void
+  do_change_notes(
+    const string& notes);
 
-	signal0<void> _signal_renamed;
-	signal0<void> _signal_modified_status_changed;
-	signal0<void> _signal_description_changed;
-	signal0<void> _signal_notes_changed;
-	signal1<void, shared_ptr<lash_client> > _signal_client_added;
-	signal1<void, shared_ptr<lash_client> > _signal_client_removed;
+  signal0<void> _signal_renamed;
+  signal0<void> _signal_modified_status_changed;
+  signal0<void> _signal_description_changed;
+  signal0<void> _signal_notes_changed;
+  signal1<void, shared_ptr<lash_client> > _signal_client_added;
+  signal1<void, shared_ptr<lash_client> > _signal_client_removed;
 
 private:
-	friend class lash_proxy_impl;
+  friend class lash_proxy_impl;
 
-	void
-	on_name_changed(
-		const string& name);
+  void
+  on_name_changed(
+    const string& name);
 
-	void
-	on_modified_status_changed(
-		bool modified_status);
+  void
+  on_modified_status_changed(
+    bool modified_status);
 
-	void
-	on_description_changed(
-		const string& description);
+  void
+  on_description_changed(
+    const string& description);
 
-	void
-	on_notes_changed(
-		const string& notes);
+  void
+  on_notes_changed(
+    const string& notes);
 
-	void
-	on_client_added(
-		shared_ptr<lash_client> client_ptr);
+  void
+  on_client_added(
+    shared_ptr<lash_client> client_ptr);
 
-	void
-	on_client_removed(
-		const string& id);
+  void
+  on_client_removed(
+    const string& id);
 
-	project_impl * _impl_ptr;
+  project_impl * _impl_ptr;
 };
 
 #endif // #ifndef PROJECT_HPP__C1D5778B_7D4B_4DD7_9B27_657D79B53083__INCLUDED

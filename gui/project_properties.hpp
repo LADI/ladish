@@ -24,13 +24,13 @@ struct project_properties_dialog_impl;
 class project_properties_dialog
 {
 public:
-	project_properties_dialog();
-	~project_properties_dialog();
+  project_properties_dialog();
+  ~project_properties_dialog();
 
-	void run(shared_ptr<project> project_ptr);
+  void run(shared_ptr<project> project_ptr);
 
 private:
-	project_properties_dialog_impl * _impl_ptr;
+  project_properties_dialog_impl * _impl_ptr;
 };
 
 #endif // #ifndef PROJECT_PROPERTIES_HPP__B854A265_3660_4DAA_87E7_104020C5962D__INCLUDED

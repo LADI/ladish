@@ -30,127 +30,127 @@ DBusError g_dbus_error;
 void
 patchage_dbus_init()
 {
-	dbus_error_init(&g_dbus_error);
+  dbus_error_init(&g_dbus_error);
 
-	// Connect to the bus
-	g_dbus_connection = dbus_bus_get(DBUS_BUS_SESSION, &g_dbus_error);
-	if (dbus_error_is_set(&g_dbus_error))
-	{
-		//error_msg("dbus_bus_get() failed");
-		//error_msg(g_dbus_error.message);
-		dbus_error_free(&g_dbus_error);
-	}
+  // Connect to the bus
+  g_dbus_connection = dbus_bus_get(DBUS_BUS_SESSION, &g_dbus_error);
+  if (dbus_error_is_set(&g_dbus_error))
+  {
+    //error_msg("dbus_bus_get() failed");
+    //error_msg(g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+  }
 
-	dbus_connection_setup_with_g_main(g_dbus_connection, NULL);
+  dbus_connection_setup_with_g_main(g_dbus_connection, NULL);
 }
 
 bool
 patchage_dbus_call_valist(
-	bool response_expected,
-	const char * service,
-	const char * object,
-	const char * iface,
-	const char * method,
-	DBusMessage ** reply_ptr_ptr,
-	int in_type,
-	va_list ap)
+  bool response_expected,
+  const char * service,
+  const char * object,
+  const char * iface,
+  const char * method,
+  DBusMessage ** reply_ptr_ptr,
+  int in_type,
+  va_list ap)
 {
-	DBusMessage * request_ptr;
-	DBusMessage * reply_ptr;
+  DBusMessage * request_ptr;
+  DBusMessage * reply_ptr;
 
-	request_ptr = dbus_message_new_method_call(
-		service,
-		object,
-		iface,
-		method);
-	if (!request_ptr)
-	{
-		//throw std::runtime_error("dbus_message_new_method_call() returned 0");
-	}
+  request_ptr = dbus_message_new_method_call(
+    service,
+    object,
+    iface,
+    method);
+  if (!request_ptr)
+  {
+    //throw std::runtime_error("dbus_message_new_method_call() returned 0");
+  }
 
-	dbus_message_append_args_valist(request_ptr, in_type, ap);
+  dbus_message_append_args_valist(request_ptr, in_type, ap);
 
-	// send message and get a handle for a reply
-	reply_ptr = dbus_connection_send_with_reply_and_block(
-		g_dbus_connection,
-		request_ptr,
-		DBUS_CALL_DEFAULT_TIMEOUT,
-		&g_dbus_error);
+  // send message and get a handle for a reply
+  reply_ptr = dbus_connection_send_with_reply_and_block(
+    g_dbus_connection,
+    request_ptr,
+    DBUS_CALL_DEFAULT_TIMEOUT,
+    &g_dbus_error);
 
-	dbus_message_unref(request_ptr);
+  dbus_message_unref(request_ptr);
 
-	if (!reply_ptr)
-	{
-		if (response_expected)
-		{
-			//error_msg("no reply from server when calling method '%s', error is '%s'", method, _error.message);
-		}
-		dbus_error_free(&g_dbus_error);
-	}
-	else
-	{
-		*reply_ptr_ptr = reply_ptr;
-	}
+  if (!reply_ptr)
+  {
+    if (response_expected)
+    {
+      //error_msg("no reply from server when calling method '%s', error is '%s'", method, _error.message);
+    }
+    dbus_error_free(&g_dbus_error);
+  }
+  else
+  {
+    *reply_ptr_ptr = reply_ptr;
+  }
 
-	return reply_ptr;
+  return reply_ptr;
 }
 
 bool
 patchage_dbus_call(
-	bool response_expected,
-	const char * service,
-	const char * object,
-	const char * iface,
-	const char * method,
-	DBusMessage ** reply_ptr_ptr,
-	int in_type,
-	...)
+  bool response_expected,
+  const char * service,
+  const char * object,
+  const char * iface,
+  const char * method,
+  DBusMessage ** reply_ptr_ptr,
+  int in_type,
+  ...)
 {
-	bool ret;
-	va_list ap;
+  bool ret;
+  va_list ap;
 
-	va_start(ap, in_type);
+  va_start(ap, in_type);
 
-	ret = patchage_dbus_call_valist(
-		response_expected,
-		service,
-		object,
-		iface,
-		method,
-		reply_ptr_ptr,
-		in_type,
-		ap);
+  ret = patchage_dbus_call_valist(
+    response_expected,
+    service,
+    object,
+    iface,
+    method,
+    reply_ptr_ptr,
+    in_type,
+    ap);
 
-	va_end(ap);
+  va_end(ap);
 
-	return (ap != NULL);
+  return (ap != NULL);
 }
 
 void
 patchage_dbus_add_match(
-	const char * rule)
+  const char * rule)
 {
-	dbus_bus_add_match(g_dbus_connection, rule, NULL);
+  dbus_bus_add_match(g_dbus_connection, rule, NULL);
 }
 
 void
 patchage_dbus_add_filter(
-	DBusHandleMessageFunction function,
-	void * user_data)
+  DBusHandleMessageFunction function,
+  void * user_data)
 {
-	dbus_connection_add_filter(g_dbus_connection, function, user_data, NULL);
+  dbus_connection_add_filter(g_dbus_connection, function, user_data, NULL);
 }
 
 void
 patchage_dbus_uninit()
 {
-	if (g_dbus_connection)
-	{
-		dbus_connection_flush(g_dbus_connection);
-	}
+  if (g_dbus_connection)
+  {
+    dbus_connection_flush(g_dbus_connection);
+  }
 
-	if (dbus_error_is_set(&g_dbus_error))
-	{
-		dbus_error_free(&g_dbus_error);
-	}
+  if (dbus_error_is_set(&g_dbus_error))
+  {
+    dbus_error_free(&g_dbus_error);
+  }
 }

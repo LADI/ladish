@@ -24,32 +24,32 @@
 template <typename W>
 class Widget : public boost::noncopyable {
 public:
-	Widget(Glib::RefPtr<Gnome::Glade::Xml> xml, const std::string& name) {
-		init(xml, name);
-	}
+  Widget(Glib::RefPtr<Gnome::Glade::Xml> xml, const std::string& name) {
+    init(xml, name);
+  }
 
-	Widget()
-	{
-		_me = 0;
-	}
+  Widget()
+  {
+    _me = 0;
+  }
 
-	void init(Glib::RefPtr<Gnome::Glade::Xml> xml, const std::string& name)
-	{
-		xml->get_widget(name.c_str(), _me);
-	}
+  void init(Glib::RefPtr<Gnome::Glade::Xml> xml, const std::string& name)
+  {
+    xml->get_widget(name.c_str(), _me);
+  }
 
-	void destroy() { delete _me; }
+  void destroy() { delete _me; }
 
-	W*       get()              { return _me; }
-	const W* get() const        { return _me; }
-	W*       operator->()       { return _me; }
-	const W* operator->() const { return _me; }
-	W&       operator*()        { return *_me; }
-	const W& operator*() const  { return *_me; }
+  W*       get()              { return _me; }
+  const W* get() const        { return _me; }
+  W*       operator->()       { return _me; }
+  const W* operator->() const { return _me; }
+  W&       operator*()        { return *_me; }
+  const W& operator*() const  { return *_me; }
 
 private:
-	W* _me;
+  W* _me;
 };
-	
+  
 
 #endif // PATCHAGE_WIDGET_HPP

@@ -23,67 +23,67 @@
 
 struct lash_client_impl
 {
-	lash_proxy * lash_ptr;
-	project * project_ptr;
-	string id;
-	string name;
+        lash_proxy * lash_ptr;
+        project * project_ptr;
+        string id;
+        string name;
 };
 
 lash_client::lash_client(
-	lash_proxy * lash_ptr,
-	project * project_ptr,
-	const string& id,
-	const string& name)
+        lash_proxy * lash_ptr,
+        project * project_ptr,
+        const string& id,
+        const string& name)
 {
-	_impl_ptr = new lash_client_impl;
-	_impl_ptr->lash_ptr = lash_ptr;
-	_impl_ptr->project_ptr = project_ptr;
-	_impl_ptr->id = id;
-	_impl_ptr->name = name;
+        _impl_ptr = new lash_client_impl;
+        _impl_ptr->lash_ptr = lash_ptr;
+        _impl_ptr->project_ptr = project_ptr;
+        _impl_ptr->id = id;
+        _impl_ptr->name = name;
 
-	//g_app->info_msg("client created");
+        //g_app->info_msg("client created");
 }
 
 lash_client::~lash_client()
 {
-	delete _impl_ptr;
-	//g_app->info_msg("client destroyed");
+        delete _impl_ptr;
+        //g_app->info_msg("client destroyed");
 }
 
 project *
 lash_client::get_project()
 {
-	return _impl_ptr->project_ptr;
+        return _impl_ptr->project_ptr;
 }
 
 void
 lash_client::get_id(
-	string& id)
+        string& id)
 {
-	id = _impl_ptr->id;
+        id = _impl_ptr->id;
 }
 
 void
 lash_client::get_name(
-	string& name)
+        string& name)
 {
-	name = _impl_ptr->name;
+        name = _impl_ptr->name;
 }
 
 void
 lash_client::do_rename(
-	const string& name)
+        const string& name)
 {
-	if (_impl_ptr->name != name)
-	{
-		//_impl_ptr->lash_ptr->client_rename(_impl_ptr->id, name);
-	}
+        if (_impl_ptr->name != name)
+        {
+                //_impl_ptr->lash_ptr->client_rename(_impl_ptr->id, name);
+        }
 }
 
 void
 lash_client::on_name_changed(
-	const string& name)
+        const string& name)
 {
-	_impl_ptr->name = name;
-	_signal_renamed.emit();
+        _impl_ptr->name = name;
+        _signal_renamed.emit();
 }

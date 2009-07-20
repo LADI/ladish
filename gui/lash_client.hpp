@@ -27,39 +27,39 @@ class project;
 class lash_client
 {
 public:
-	lash_client(
-		lash_proxy * lash_ptr,
-		project * project_ptr,
-		const string& id,
-		const string& name);
+        lash_client(
+                lash_proxy * lash_ptr,
+                project * project_ptr,
+                const string& id,
+                const string& name);
 
-	~lash_client();
+        ~lash_client();
 
-	project *
-	get_project();
+        project *
+        get_project();
 
-	void
-	get_id(
-		string& id);
+        void
+        get_id(
+                string& id);
 
-	void
-	get_name(
-		string& name);
+        void
+        get_name(
+                string& name);
 
-	void
-	do_rename(
-		const string& name);
+        void
+        do_rename(
+                const string& name);
 
-	signal0<void> _signal_renamed;
+        signal0<void> _signal_renamed;
 
 private:
-	friend class lash_proxy_impl;
+        friend class lash_proxy_impl;
 
-	void
-	on_name_changed(
-		const string& name);
+        void
+        on_name_changed(
+                const string& name);
 
-	lash_client_impl * _impl_ptr;
+        lash_client_impl * _impl_ptr;
 };
 
 #endif // #ifndef LASH_CLIENT_HPP__BC03AD3F_8D6F_4D3A_95ED_ECDA8C929BCF__INCLUDED

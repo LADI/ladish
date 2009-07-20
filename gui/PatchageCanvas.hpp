@@ -32,28 +32,28 @@ using namespace FlowCanvas;
 
 class PatchageCanvas : public Canvas {
 public:
-	PatchageCanvas(Patchage* _app, int width, int height);
-	
-	boost::shared_ptr<PatchageModule> find_module(const string& name, ModuleType type);
-	
-	void connect(boost::shared_ptr<Connectable> port1, boost::shared_ptr<Connectable> port2);
-	void disconnect(boost::shared_ptr<Connectable> port1, boost::shared_ptr<Connectable> port2);
+  PatchageCanvas(Patchage* _app, int width, int height);
+  
+  boost::shared_ptr<PatchageModule> find_module(const string& name, ModuleType type);
+  
+  void connect(boost::shared_ptr<Connectable> port1, boost::shared_ptr<Connectable> port2);
+  void disconnect(boost::shared_ptr<Connectable> port1, boost::shared_ptr<Connectable> port2);
 
-	void status_message(const string& msg);
-	
-	boost::shared_ptr<Item> get_item(const string& name);
+  void status_message(const string& msg);
+  
+  boost::shared_ptr<Item> get_item(const string& name);
 
-	boost::shared_ptr<PatchagePort>
-	get_port(
-		const string& module_name,
-		const string& port_name);
+  boost::shared_ptr<PatchagePort>
+  get_port(
+    const string& module_name,
+    const string& port_name);
 
-	boost::shared_ptr<PatchagePort>
-	lookup_port_by_a2j_jack_port_name(
-		const char * a2j_jack_port_name);
+  boost::shared_ptr<PatchagePort>
+  lookup_port_by_a2j_jack_port_name(
+    const char * a2j_jack_port_name);
 
 private:
-	Patchage* _app;
+  Patchage* _app;
 };
 
 

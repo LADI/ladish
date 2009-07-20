@@ -23,16 +23,16 @@
 
 struct lash_project_info
 {
-	string name;
-	time_t modification_time;
-	string description;
+        string name;
+        time_t modification_time;
+        string description;
 };
 
 struct lash_loaded_project_properties
 {
-	bool modified_status;
-	string description;
-	string notes;
+        bool modified_status;
+        string description;
+        string notes;
 };
 
 class session;
@@ -42,25 +42,25 @@ struct lash_proxy_impl;
 class lash_proxy
 {
 public:
-	lash_proxy(session * session_ptr);
-	~lash_proxy();
+        lash_proxy(session * session_ptr);
+        ~lash_proxy();
 
-	bool is_active();
-	void try_activate();
-	void deactivate();
-	void get_available_projects(std::list<lash_project_info>& projects);
-	void load_project(const std::string& project_name);
-	void save_all_projects();
-	void save_project(const std::string& project_name);
-	void close_project(const std::string& project_name);
-	void close_all_projects();
-	void project_rename(const string& old_name, const string& new_name);
-	void get_loaded_project_properties(const string& name, lash_loaded_project_properties& properties);
-	void project_set_description(const string& project_name, const string& description);
-	void project_set_notes(const string& project_name, const string& notes);
+        bool is_active();
+        void try_activate();
+        void deactivate();
+        void get_available_projects(std::list<lash_project_info>& projects);
+        void load_project(const std::string& project_name);
+        void save_all_projects();
+        void save_project(const std::string& project_name);
+        void close_project(const std::string& project_name);
+        void close_all_projects();
+        void project_rename(const string& old_name, const string& new_name);
+        void get_loaded_project_properties(const string& name, lash_loaded_project_properties& properties);
+        void project_set_description(const string& project_name, const string& description);
+        void project_set_notes(const string& project_name, const string& notes);
 
 private:
-	lash_proxy_impl * _impl_ptr;
+        lash_proxy_impl * _impl_ptr;
 };
 
 #endif // #ifndef LASH_PROXY_HPP__89E81B38_627F_41B9_AD08_DB119FB5F34C__INCLUDED

@@ -26,16 +26,16 @@ class session;
 class project_list
 {
 public:
-	project_list(
-		Patchage* app,
-		session * session_ptr);
+  project_list(
+    Patchage* app,
+    session * session_ptr);
 
-	~project_list();
+  ~project_list();
 
-	void set_lash_availability(bool lash_active);
+  void set_lash_availability(bool lash_active);
 
 private:
-	project_list_impl * _impl_ptr;
+  project_list_impl * _impl_ptr;
 };
 
 #endif // #ifndef PROJECT_LIST_HPP__D786489B_E400_4E92_85C7_2BAE606DE56D__INCLUDED

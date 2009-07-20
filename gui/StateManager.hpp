@@ -28,48 +28,48 @@
 enum ModuleType { Input, Output, InputOutput };
 
 struct Coord {
-	Coord(double x_=0, double y_=0) : x(x_), y(y_) {}
-	double x;
-	double y;
+  Coord(double x_=0, double y_=0) : x(x_), y(y_) {}
+  double x;
+  double y;
 };
 
 class StateManager
 {
 public:
-	StateManager();
+  StateManager();
 
-	void load(const std::string& filename);
-	void save(const std::string& filename);
+  void load(const std::string& filename);
+  void save(const std::string& filename);
 
-	bool get_module_location(const std::string& name, ModuleType type, Coord& loc);
-	void  set_module_location(const std::string& name, ModuleType type, Coord loc);
+  bool get_module_location(const std::string& name, ModuleType type, Coord& loc);
+  void  set_module_location(const std::string& name, ModuleType type, Coord loc);
 
-	void set_module_split(const std::string& name, bool split);
-	bool get_module_split(const std::string& name, bool default_val) const;
-	
-	float get_zoom();
-	void  set_zoom(float zoom);
-	
-	int get_port_color(PortType type);
+  void set_module_split(const std::string& name, bool split);
+  bool get_module_split(const std::string& name, bool default_val) const;
+  
+  float get_zoom();
+  void  set_zoom(float zoom);
+  
+  int get_port_color(PortType type);
 
-	Coord get_window_location()          { return _window_location; }
-	void  set_window_location(Coord loc) { _window_location = loc; }
-	Coord get_window_size()              { return _window_size; }
-	void  set_window_size(Coord size)    { _window_size = size; }
+  Coord get_window_location()          { return _window_location; }
+  void  set_window_location(Coord loc) { _window_location = loc; }
+  Coord get_window_size()              { return _window_size; }
+  void  set_window_size(Coord size)    { _window_size = size; }
 
 private:
-	struct ModuleSettings {
-		ModuleSettings() : split(false) {}
-		bool split;
-		boost::optional<Coord> input_location;
-		boost::optional<Coord> output_location;
-		boost::optional<Coord> inout_location;
-	};
+  struct ModuleSettings {
+    ModuleSettings() : split(false) {}
+    bool split;
+    boost::optional<Coord> input_location;
+    boost::optional<Coord> output_location;
+    boost::optional<Coord> inout_location;
+  };
 
-	std::map<std::string,ModuleSettings> _module_settings;
-	Coord _window_location;
-	Coord _window_size;
-	float _zoom;
+  std::map<std::string,ModuleSettings> _module_settings;
+  Coord _window_location;
+  Coord _window_size;
+  float _zoom;
 };
 
 

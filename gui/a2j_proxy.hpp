@@ -28,27 +28,27 @@ struct a2j_proxy_impl;
 class a2j_proxy
 {
 public:
-	a2j_proxy();
-	~a2j_proxy();
+  a2j_proxy();
+  ~a2j_proxy();
 
-	const char *
-	get_jack_client_name();
+  const char *
+  get_jack_client_name();
 
-	bool
-	map_jack_port(
-		const char * jack_port_name,
-		string& alsa_client_name,
-		string& alsa_port_name,
-		uint32_t& alsa_client_id);
+  bool
+  map_jack_port(
+    const char * jack_port_name,
+    string& alsa_client_name,
+    string& alsa_port_name,
+    uint32_t& alsa_client_id);
 
-	void
-	start_bridge();
+  void
+  start_bridge();
 
-	void
-	stop_bridge();
+  void
+  stop_bridge();
 
 private:
-	a2j_proxy_impl * _impl_ptr;
+  a2j_proxy_impl * _impl_ptr;
 };
 
 #endif // #ifndef A2J_PROXY_HPP__24525CB1_8AED_4697_8C56_5C57473839CC__INCLUDED

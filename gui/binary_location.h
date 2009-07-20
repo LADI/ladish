@@ -16,7 +16,7 @@
  */
 
 #ifndef _GNU_SOURCE
-	#define _GNU_SOURCE
+  #define _GNU_SOURCE
 #endif
 
 #include <dlfcn.h>
@@ -30,12 +30,12 @@
 static char*
 binary_location()
 {
-	Dl_info dli;
-	dladdr((void*)&binary_location, &dli);
+  Dl_info dli;
+  dladdr((void*)&binary_location, &dli);
 
-	char* bin_loc = (char*)calloc(PATH_MAX, sizeof(char));
-	realpath(dli.dli_fname, bin_loc);
+  char* bin_loc = (char*)calloc(PATH_MAX, sizeof(char));
+  realpath(dli.dli_fname, bin_loc);
 
-	return bin_loc;
+  return bin_loc;
 }
 

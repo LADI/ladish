@@ -26,37 +26,37 @@ class lash_client;
 class session
 {
 public:
-	session();
-	~session();
+  session();
+  ~session();
 
-	void
-	clear();
+  void
+  clear();
 
-	void
-	project_add(
-		shared_ptr<project> project_ptr);
+  void
+  project_add(
+    shared_ptr<project> project_ptr);
 
-	void
-	project_close(
-		const string& project_name);
+  void
+  project_close(
+    const string& project_name);
 
-	shared_ptr<project> find_project_by_name(const string& name);
+  shared_ptr<project> find_project_by_name(const string& name);
 
-	void
-	client_add(
-		shared_ptr<lash_client> client_ptr);
+  void
+  client_add(
+    shared_ptr<lash_client> client_ptr);
 
-	void
-	client_remove(
-		const string& id);
+  void
+  client_remove(
+    const string& id);
 
-	shared_ptr<lash_client> find_client_by_id(const string& id);
+  shared_ptr<lash_client> find_client_by_id(const string& id);
 
-	sigc::signal1<void, shared_ptr<project> > _signal_project_added;
-	sigc::signal1<void, shared_ptr<project> > _signal_project_closed;
+  sigc::signal1<void, shared_ptr<project> > _signal_project_added;
+  sigc::signal1<void, shared_ptr<project> > _signal_project_closed;
 
 private:
-	session_impl * _impl_ptr;
+  session_impl * _impl_ptr;
 };
 
 #endif // #ifndef SESSION_HPP__C870E949_EF2A_43E8_8FE8_55AE5A714172__INCLUDED

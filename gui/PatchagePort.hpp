@@ -35,20 +35,20 @@ enum PortType { JACK_AUDIO, JACK_MIDI };
  */
 struct PatchagePort : public FlowCanvas::Port
 {
-	PatchagePort(
-		boost::shared_ptr<Module> module,
-		const std::string& name,
-		bool is_input,
-		int color)
-		: Port(module, name, is_input, color)
-	{
-	}
+  PatchagePort(
+    boost::shared_ptr<Module> module,
+    const std::string& name,
+    bool is_input,
+    int color)
+    : Port(module, name, is_input, color)
+  {
+  }
 
-	virtual ~PatchagePort() {}
+  virtual ~PatchagePort() {}
 
-	PortType type;
-	bool is_a2j_mapped;
-	std::string a2j_jack_port_name; // valid only if is_a2j_mapped is true
+  PortType type;
+  bool is_a2j_mapped;
+  std::string a2j_jack_port_name; // valid only if is_a2j_mapped is true
 };
 
 

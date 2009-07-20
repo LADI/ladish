@@ -65,28 +65,28 @@ glade_open()
 
 int main(int argc, char** argv)
 {
-	try {
-	
-	Gnome::Canvas::init();
-	Gtk::Main app(argc, argv);
+  try {
+  
+  Gnome::Canvas::init();
+  Gtk::Main app(argc, argv);
 
-	g_xml = glade_open();
-	
-	Patchage patchage(argc, argv);
-	app.run(*patchage.window());
-	
-	} catch (std::exception& e) {
-		std::cerr << "Caught exception, aborting.  Error message was: "
-				<< e.what() << std::endl;
-		return 1;
-	
-	} catch (Glib::Exception& e) {
-		std::cerr << "Caught exception, aborting.  Error message was: "
-				<< e.what() << std::endl;
-		return 1;
-	}
+  g_xml = glade_open();
+  
+  Patchage patchage(argc, argv);
+  app.run(*patchage.window());
+  
+  } catch (std::exception& e) {
+    std::cerr << "Caught exception, aborting.  Error message was: "
+        << e.what() << std::endl;
+    return 1;
+  
+  } catch (Glib::Exception& e) {
+    std::cerr << "Caught exception, aborting.  Error message was: "
+        << e.what() << std::endl;
+    return 1;
+  }
 
-	return 0;
+  return 0;
 }
 
 

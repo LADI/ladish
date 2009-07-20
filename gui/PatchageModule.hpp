@@ -31,82 +31,82 @@ using namespace FlowCanvas;
 class PatchageModule : public Module
 {
 public:
-	PatchageModule(Patchage* app, const std::string& name, ModuleType type, double x=0, double y=0)
-		: Module(app->canvas(), name, x, y)
-		, _app(app)
-		, _type(type)
-	{
+  PatchageModule(Patchage* app, const std::string& name, ModuleType type, double x=0, double y=0)
+    : Module(app->canvas(), name, x, y)
+    , _app(app)
+    , _type(type)
+  {
 
-	}
+  }
 
-	virtual ~PatchageModule() { delete _menu; _menu = NULL; }
+  virtual ~PatchageModule() { delete _menu; _menu = NULL; }
 
-	bool
-	identify(const std::string& name, ModuleType type)
-	{
-		return _name == name && (_type == type || _type == InputOutput);
-	}
+  bool
+  identify(const std::string& name, ModuleType type)
+  {
+    return _name == name && (_type == type || _type == InputOutput);
+  }
 
-	void create_menu() {
-		_menu = new Gtk::Menu();
-		Gtk::Menu::MenuList& items = _menu->items();
-		if (_type == InputOutput) {
-			items.push_back(Gtk::Menu_Helpers::MenuElem("Split",
-				sigc::mem_fun(this, &PatchageModule::split)));
-		} else {
-			items.push_back(Gtk::Menu_Helpers::MenuElem("Join",
-				sigc::mem_fun(this, &PatchageModule::join)));
-		}
-		items.push_back(Gtk::Menu_Helpers::MenuElem("Disconnect All",
-			sigc::mem_fun(this, &PatchageModule::menu_disconnect_all)));
-	}
-	
-	void move(double dx, double dy) {
-		FlowCanvas::Module::move(dx, dy);
-		store_location();
-	}
-	
-	void load_location() {
-		boost::shared_ptr<Canvas> canvas = _canvas.lock();
-		if (!canvas)
-			return;
+  void create_menu() {
+    _menu = new Gtk::Menu();
+    Gtk::Menu::MenuList& items = _menu->items();
+    if (_type == InputOutput) {
+      items.push_back(Gtk::Menu_Helpers::MenuElem("Split",
+        sigc::mem_fun(this, &PatchageModule::split)));
+    } else {
+      items.push_back(Gtk::Menu_Helpers::MenuElem("Join",
+        sigc::mem_fun(this, &PatchageModule::join)));
+    }
+    items.push_back(Gtk::Menu_Helpers::MenuElem("Disconnect All",
+      sigc::mem_fun(this, &PatchageModule::menu_disconnect_all)));
+  }
+  
+  void move(double dx, double dy) {
+    FlowCanvas::Module::move(dx, dy);
+    store_location();
+  }
+  
+  void load_location() {
+    boost::shared_ptr<Canvas> canvas = _canvas.lock();
+    if (!canvas)
+      return;
 
-		Coord loc;
+    Coord loc;
 
-		if (_app->state_manager()->get_module_location(_name, _type, loc))
-			move_to(loc.x, loc.y);
-		else
-			move_to((canvas->width()/2) - 100 + rand() % 400,
-			         (canvas->height()/2) - 100 + rand() % 400);
-	}
-	
-	virtual void store_location() {
-		Coord loc(property_x().get_value(), property_y().get_value());
-		_app->state_manager()->set_module_location(_name, _type, loc);
-	}
-	
-	void split() {
-		assert(_type == InputOutput);
-		_app->state_manager()->set_module_split(_name, true);
-		_app->refresh();
-	}
+    if (_app->state_manager()->get_module_location(_name, _type, loc))
+      move_to(loc.x, loc.y);
+    else
+      move_to((canvas->width()/2) - 100 + rand() % 400,
+               (canvas->height()/2) - 100 + rand() % 400);
+  }
+  
+  virtual void store_location() {
+    Coord loc(property_x().get_value(), property_y().get_value());
+    _app->state_manager()->set_module_location(_name, _type, loc);
+  }
+  
+  void split() {
+    assert(_type == InputOutput);
+    _app->state_manager()->set_module_split(_name, true);
+    _app->refresh();
+  }
 
-	void join() {
-		assert(_type != InputOutput);
-		_app->state_manager()->set_module_split(_name, false);
-		_app->refresh();
-	}
+  void join() {
+    assert(_type != InputOutput);
+    _app->state_manager()->set_module_split(_name, false);
+    _app->refresh();
+  }
 
-	virtual void show_dialog() {}
-	
-	virtual void menu_disconnect_all() {
-		for (PortVector::iterator p = _ports.begin(); p != _ports.end(); ++p)
-			(*p)->disconnect_all();
-	}
+  virtual void show_dialog() {}
+  
+  virtual void menu_disconnect_all() {
+    for (PortVector::iterator p = _ports.begin(); p != _ports.end(); ++p)
+      (*p)->disconnect_all();
+  }
 
 protected:
-	Patchage*  _app;
-	ModuleType _type;
+  Patchage*  _app;
+  ModuleType _type;
 };
 
 

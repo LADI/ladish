@@ -30,34 +30,34 @@ patchage_dbus_init();
 
 bool
 patchage_dbus_call_valist(
-	bool response_expected,
-	const char* service,
-	const char* object,
-	const char* iface,
-	const char* method,
-	DBusMessage** reply_ptr,
-	int in_type,
-	va_list ap);
+  bool response_expected,
+  const char* service,
+  const char* object,
+  const char* iface,
+  const char* method,
+  DBusMessage** reply_ptr,
+  int in_type,
+  va_list ap);
 
 bool
 patchage_dbus_call(
-	bool response_expected,
-	const char* service,
-	const char* object,
-	const char* iface,
-	const char* method,
-	DBusMessage** reply_ptr,
-	int in_type,
-	...);
+  bool response_expected,
+  const char* service,
+  const char* object,
+  const char* iface,
+  const char* method,
+  DBusMessage** reply_ptr,
+  int in_type,
+  ...);
 
 void
 patchage_dbus_add_match(
-	const char * rule);
+  const char * rule);
 
 void
 patchage_dbus_add_filter(
-	DBusHandleMessageFunction function,
-	void * user_data);
+  DBusHandleMessageFunction function,
+  void * user_data);
 
 void
 patchage_dbus_uninit();
