@@ -20,9 +20,8 @@
 #define COMMON_HPP__AA9070A8_1E8C_4C6E_9769_395BF3D848C0__INCLUDED
 
 #include <string>
-#include <sigc++/sigc++.h>
 #include <list>
-#include <string>
+#include <sigc++/sigc++.h>
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 #include <boost/format.hpp>
