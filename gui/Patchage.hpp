@@ -160,15 +160,12 @@ protected:
   Widget<Gtk::Window>         _main_win;
   Widget<Gtk::ProgressBar>    _main_xrun_progress;
   Widget<Gtk::Label>          _main_a2j_status_label;
-  Widget<Gtk::Label>          _main_lash_status_label;
   Widget<Gtk::MenuItem>       _menu_file_quit;
   Widget<Gtk::MenuItem>       _menu_help_about;
   Widget<Gtk::MenuItem>       _menu_jack_start;
   Widget<Gtk::MenuItem>       _menu_jack_stop;
   Widget<Gtk::MenuItem>       _menu_a2j_start;
   Widget<Gtk::MenuItem>       _menu_a2j_stop;
-  Widget<Gtk::MenuItem>       _menu_lash_activate;
-  Widget<Gtk::MenuItem>       _menu_lash_deactivate;
   Widget<Gtk::MenuItem>       _menu_load_project;
   Widget<Gtk::MenuItem>       _menu_save_all_projects;
   Widget<Gtk::MenuItem>       _menu_close_all_projects;
