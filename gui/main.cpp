@@ -1,4 +1,7 @@
-/* This file is part of Patchage.
+/*
+ * This file is part of LADI session handler.
+ *
+ * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
  * 
  * Patchage is free software; you can redistribute it and/or modify it under the
@@ -21,11 +24,44 @@
 #include <libgnomecanvasmm.h>
 #include <glibmm/exception.h>
 
+#include <string>
+#include <fstream>
+#include <sstream>
+#include <stdexcept>
+#include <libglademm/xml.h>
+#include "config.h"
+#include "binary_location.h"
+
 #include "Patchage.hpp"
-#include "GladeFile.hpp"
 #include "globals.hpp"
 
 Glib::RefPtr<Gnome::Glade::Xml> g_xml;
+
+static
+Glib::RefPtr<Gnome::Glade::Xml>
+glade_open()
+{
+  // Check for the .glade file in ./src/
+  std::string glade_filename = std::string("./gui/gui.glade");
+  std::ifstream fs(glade_filename.c_str());
+  if (fs.fail())
+  { // didn't find it, check DATA_PATH
+    fs.clear();
+
+    glade_filename = DATA_DIR "/gui.glade";
+
+    fs.open(glade_filename.c_str());
+    if (fs.fail())
+    {
+      std::ostringstream ss;
+      ss << "Unable to find gui.glade file" << std::endl;
+      throw std::runtime_error(ss.str());
+    }
+    fs.close();
+  }
+
+  return Gnome::Glade::Xml::create(glade_filename);
+}
 
 int main(int argc, char** argv)
 {
@@ -34,7 +70,7 @@ int main(int argc, char** argv)
 	Gnome::Canvas::init();
 	Gtk::Main app(argc, argv);
 
-	g_xml = GladeFile::open("patchage");
+	g_xml = glade_open();
 	
 	Patchage patchage(argc, argv);
 	app.run(*patchage.window());

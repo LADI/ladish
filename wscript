@@ -110,10 +110,7 @@ def configure(conf):
     conf.check_tool('boost')
     conf.check_boost()
 
-    conf.define('PATCHAGE_APPNAME', "gladish")
-    conf.env['PATCHAGE_VERSION'] = VERSION
-    conf.define('PATCHAGE_DATA_DIR', os.path.normpath(os.path.join(conf.env['PREFIX'], 'share', "gladish")))
-
+    conf.define('DATA_DIR', os.path.normpath(os.path.join(conf.env['PREFIX'], 'share', APPNAME)))
     conf.define('DEFAULT_PROJECT_DIR', "audio-projects")
     conf.define('PACKAGE_VERSION', VERSION)
     conf.define('DBUS_NAME_BASE', DBUS_NAME_BASE)

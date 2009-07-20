@@ -1,6 +1,8 @@
-/* This file is part of Patchage.
+/*
+ * This file is part of LADI session handler.
+ *
+ * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
- * Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
  * 
  * Patchage is free software; you can redistribute it and/or modify it under the
  * terms of the GNU General Public License as published by the Free Software
@@ -120,7 +122,7 @@ Patchage::Patchage(int argc, char** argv)
 	g_app = this;
 
 	_settings_filename = getenv("HOME");
-	_settings_filename += "/." PATCHAGE_APPNAME "rc";
+	_settings_filename += "/.gladishrc";
 	_state_manager = new StateManager();
 	_canvas = boost::shared_ptr<PatchageCanvas>(new PatchageCanvas(this, 1600*2, 1200*2));
 
@@ -138,8 +140,8 @@ Patchage::Patchage(int argc, char** argv)
 
 	Glib::set_application_name("Patchage");
 	_about_win->property_program_name() = "Patchage";
-	_about_win->property_logo_icon_name() = PATCHAGE_APPNAME;
-	gtk_window_set_default_icon_name(PATCHAGE_APPNAME);
+	_about_win->property_logo_icon_name() = "gladish";
+	gtk_window_set_default_icon_name("gladish");
 	
 	gtkmm_set_width_for_given_text(*_buffer_size_combo, "4096 frames", 40);
 
