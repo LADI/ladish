@@ -31,6 +31,10 @@ def set_options(opt):
     opt.tool_options('compiler_cxx')
     opt.add_option('--enable-pkg-config-dbus-service-dir', action='store_true', default=False, help='force D-Bus service install dir to be one returned by pkg-config')
 
+def add_cflag(conf, flag):
+    conf.env.append_unique('CXXFLAGS', flag)
+    conf.env.append_unique('CCFLAGS', flag)
+
 def configure(conf):
     conf.check_tool('compiler_cc')
     conf.check_tool('compiler_cxx')
@@ -110,11 +114,15 @@ def configure(conf):
     conf.check_tool('boost')
     conf.check_boost()
 
+    add_cflag(conf, '-Wall')
+    add_cflag(conf, '-Werror')
+
     conf.define('DATA_DIR', os.path.normpath(os.path.join(conf.env['PREFIX'], 'share', APPNAME)))
     conf.define('DEFAULT_PROJECT_DIR', "audio-projects")
     conf.define('PACKAGE_VERSION', VERSION)
     conf.define('DBUS_NAME_BASE', DBUS_NAME_BASE)
     conf.define('DBUS_BASE_PATH', '/' + DBUS_NAME_BASE.replace('.', '/'))
+    conf.define('_GNU_SOURCE', 1)
     conf.write_config_header('config.h')
 
     display_msg(conf)
@@ -158,24 +166,24 @@ def build(bld):
     daemon.source = []
     for source in [
         'main.c',
-        'server.c',
+#        'server.c',
         'loader.c',
         'log.c',
         'sigsegv.c',
         'proctitle.c',
-        'project.c',
+#        'project.c',
         'appdb.c',
-        'client.c',
-        'store.c',
+#        'client.c',
+#        'store.c',
         'procfs.c',
-        'jack_patch.c',
-        'file.c',
-        'dbus_service.c',
-        'jackdbus_mgr.c',
-        'dbus_iface_control.c',
-        'dbus_iface_server.c',
-        'client_dependency.c',
-        'jack_mgr_client.c',
+#        'jack_patch.c',
+#        'file.c',
+#        'dbus_service.c',
+#        'jackdbus_mgr.c',
+#        'dbus_iface_control.c',
+#        'dbus_iface_server.c',
+#        'client_dependency.c',
+#        'jack_mgr_client.c',
         ]:
         daemon.source.append(os.path.join("daemon", source))
 

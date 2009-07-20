@@ -329,7 +329,7 @@ project_launch_client(project_t *project,
                       struct lash_client  *client)
 {
   lash_debug("Launching client %s (flags 0x%08X)", client->id_str, client->flags);
-  loader_execute(client, client->flags & LASH_Terminal);
+  loader_execute(client, client->flags & LASH_Terminal, &client->pid);
 }
 
 struct lash_client *

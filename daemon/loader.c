@@ -1,8 +1,8 @@
 /* -*- Mode: C -*- */
 /*
- *   LASH
+ *   LADI session handler
  *
- *   Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
+ *   Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *   Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *   Copyright (C) 2002 Robert Ham <rah@bash.sh>
  *
@@ -21,29 +21,16 @@
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <signal.h>
+#include "common.h"
+
 #include <unistd.h>
 #include <fcntl.h>
-#include <pty.h>
-#include <sys/types.h>
+#include <pty.h>                /* forkpty() */
 #include <sys/wait.h>
-#include <sys/time.h>
-#include <sys/resource.h>
-#include <uuid/uuid.h>
-
-#include "../common/safety.h"
-#include "../common/debug.h"
-#include "../common/klist.h"
 
 #include "loader.h"
-#include "server.h"
-#include "client.h"
-#include "project.h"
-#include "sigsegv.h"
+
+#define LASH_DEBUG
 
 #define XTERM_COMMAND_EXTENSION "&& sh || sh"
 
@@ -53,26 +40,28 @@ struct loader_child
 {
   struct list_head  siblings;
 
-  uuid_t            id;
-  char             *project;
-  char             *argv0;
+  char * project_name;
+  char * argv0;
 
-  bool              dead;
-  pid_t             pid;
+  bool dead;
+  pid_t pid;
 
-  bool              terminal;
-  int               stdout;
-  char              stdout_buffer[CLIENT_OUTPUT_BUFFER_SIZE];
-  char              stdout_last_line[CLIENT_OUTPUT_BUFFER_SIZE];
-  unsigned int      stdout_last_line_repeat_count;
-  char             *stdout_buffer_ptr;
-  int               stderr;
-  char              stderr_buffer[CLIENT_OUTPUT_BUFFER_SIZE];
-  char              stderr_last_line[CLIENT_OUTPUT_BUFFER_SIZE];
-  unsigned int      stderr_last_line_repeat_count;
-  char             *stderr_buffer_ptr;
+  bool terminal;
+
+  int stdout;
+  char stdout_buffer[CLIENT_OUTPUT_BUFFER_SIZE];
+  char stdout_last_line[CLIENT_OUTPUT_BUFFER_SIZE];
+  unsigned int stdout_last_line_repeat_count;
+  char * stdout_buffer_ptr;
+
+  int stderr;
+  char stderr_buffer[CLIENT_OUTPUT_BUFFER_SIZE];
+  char stderr_last_line[CLIENT_OUTPUT_BUFFER_SIZE];
+  unsigned int stderr_last_line_repeat_count;
+  char * stderr_buffer_ptr;
 };
 
+static void (* g_on_child_exit)(pid_t pid);
 static struct list_head g_childs_list;
 
 static struct loader_child *
@@ -81,9 +70,11 @@ loader_child_find_and_mark_dead(pid_t pid)
   struct list_head *node_ptr;
   struct loader_child *child_ptr;
 
-  list_for_each (node_ptr, &g_childs_list) {
+  list_for_each (node_ptr, &g_childs_list)
+  {
     child_ptr = list_entry(node_ptr, struct loader_child, siblings);
-    if (child_ptr->pid == pid) {
+    if (child_ptr->pid == pid)
+    {
       child_ptr->dead = true;
       return child_ptr;
     }
@@ -120,146 +111,162 @@ loader_childs_bury(void)
   struct list_head *next_ptr;
   struct loader_child *child_ptr;
 
-  list_for_each_safe (node_ptr, next_ptr, &g_childs_list) {
+  list_for_each_safe (node_ptr, next_ptr, &g_childs_list)
+  {
     child_ptr = list_entry(node_ptr, struct loader_child, siblings);
-    if (child_ptr->dead) {
+    if (child_ptr->dead)
+    {
       loader_check_line_repeat_end(
-        child_ptr->project,
+        child_ptr->project_name,
         child_ptr->argv0,
         false,
         child_ptr->stdout_last_line_repeat_count);
+
       loader_check_line_repeat_end(
-        child_ptr->project,
+        child_ptr->project_name,
         child_ptr->argv0,
         true,
         child_ptr->stderr_last_line_repeat_count);
 
-      lash_debug("Bury child '%s' with PID %u",
-                 child_ptr->argv0, (unsigned int) child_ptr->pid);
+      lash_debug("Bury child '%s' with PID %llu", child_ptr->argv0, (unsigned long long)child_ptr->pid);
 
       list_del(&child_ptr->siblings);
 
-      lash_free(&child_ptr->project);
-      lash_free(&child_ptr->argv0);
+      free(&child_ptr->project_name);
+      free(&child_ptr->argv0);
 
-      if (!child_ptr->terminal) {
+      if (!child_ptr->terminal)
+      {
         close(child_ptr->stdout);
         close(child_ptr->stderr);
       }
 
-      client_disconnected(server_find_client_by_pid(child_ptr->pid));
+      g_on_child_exit(child_ptr->pid);
       free(child_ptr);
     }
   }
 }
 
-static void
-loader_sigchld_handler(int signum)
+static void loader_sigchld_handler(int signum)
 {
   int status;
   pid_t pid;
   struct loader_child *child_ptr;
 
-  while ((pid = waitpid(-1, &status, WNOHANG)) > 0) {
+  while ((pid = waitpid(-1, &status, WNOHANG)) > 0)
+  {
     child_ptr = loader_child_find_and_mark_dead(pid);
 
     if (!child_ptr)
-      lash_error("LASH loader detected termination of "
-                 "unknown child process with PID %u",
-                 (unsigned int) pid);
+    {
+      lash_error("LASH loader detected termination of unknown child process with PID %llu", (unsigned long long)pid);
+    }
     else
-      lash_info("LASH loader detected termination of "
-                "child process '%s' with PID %u",
-                child_ptr->argv0, (unsigned int) pid);
+    {
+      lash_info("LASH loader detected termination of child process '%s' with PID %llu", child_ptr->argv0, (unsigned long long)pid);
+    }
 
     if (WIFEXITED(status))
+    {
       lash_info("Child exited, status=%d", WEXITSTATUS(status));
+    }
     else if (WIFSIGNALED(status))
+    {
       lash_info("Child was killed by signal %d", WTERMSIG(status));
+    }
     else if (WIFSTOPPED(status))
+    {
       lash_info("Child was stopped by signal %d", WSTOPSIG(status));
+    }
   }
 }
 
-void
-loader_init(void)
+void loader_init(void (* on_child_exit)(pid_t pid))
 {
   signal(SIGCHLD, loader_sigchld_handler);
   INIT_LIST_HEAD(&g_childs_list);
 }
 
-void
-loader_uninit(void)
+void loader_uninit(void)
 {
   loader_childs_bury();
 }
 
-static void
-loader_exec_program_in_xterm(char **argv)
+static void loader_exec_program_in_xterm(const char * const * argv)
 {
-  char *ptr, **aptr;
+  char * dst_ptr;
+  const char * const * src_ptr_ptr;
   size_t len;
 
-  lash_debug("Executing program '%s' with PID %u in terminal",
-             argv[0], (unsigned int) getpid());
+  lash_debug("Executing program '%s' with PID %llu in terminal", argv[0], (unsigned long long)getpid());
 
   /* Calculate the command string length */
   len = strlen(XTERM_COMMAND_EXTENSION) + 1;
-  for (aptr = argv; *aptr; ++aptr)
-    len += strlen(*aptr) + 3;
+  for (src_ptr_ptr = argv; *src_ptr_ptr != NULL; src_ptr_ptr++)
+  {
+    len += strlen(*src_ptr_ptr) + 3; /* three additional chars per argument: two double quotes and a space */
+  }
 
-  char buf[len];
-  ptr = (char *) buf;
+  char buf[len];                /* dynamically allocate in stack */
 
   /* Create the command string */
-  for (aptr = argv; *aptr; ++aptr) {
-    sprintf(ptr, "\"%s\" ", *aptr);
-    ptr += strlen(*aptr) + 3;
+  src_ptr_ptr = argv;
+  dst_ptr = buf;
+  while (*src_ptr_ptr != NULL)
+  {
+    len = strlen(*src_ptr_ptr);
+    dst_ptr[0] = '"';
+    memcpy(dst_ptr + 1, src_ptr_ptr, len);
+    dst_ptr[1 + len] = '"';
+    dst_ptr[1 + len + 1] = ' ';
+    dst_ptr += len + 3;
+    src_ptr_ptr++;
   }
-  sprintf(ptr, "%s", XTERM_COMMAND_EXTENSION);
+
+  strcat(dst_ptr, XTERM_COMMAND_EXTENSION);
 
   /* Execute the command */
-  execlp("xterm", "xterm", "-e", "/bin/sh", "-c", buf, (char *) NULL);
+  execlp("xterm", "xterm", "-e", "/bin/sh", "-c", buf, NULL);
 
-  lash_error("Failed to execute command '%s' in terminal: %s",
-             buf, strerror(errno));
+  lash_error("Failed to execute command '%s' in terminal: %s", buf, strerror(errno));
 
   exit(1);
 }
 
-static void
-loader_exec_program(struct lash_client *client,
-                    bool      run_in_terminal)
+static void loader_exec_program(const char * const * argv, const char * working_dir, bool run_in_terminal)
 {
   /* for non terminal processes we use forkpty() that calls login_tty() that calls setsid() */
   /* we can successful call setsid() only once */
-  if (run_in_terminal) {
+  if (run_in_terminal)
+  {
     /* no longer anything to do with lashd */
-    if (setsid() == -1) {
-      lash_error("Could not create new process group: %s",
-                 strerror(errno));
+    if (setsid() == -1)
+    {
+      lash_error("Could not create new process group: %s", strerror(errno));
     }
   }
 
   /* change the working dir */
-  if (chdir(client->working_dir) == -1) {
-    lash_error("Could not change directory to working "
-               "dir '%s' for program '%s': %s",
-               client->working_dir, client->argv[0],
-               strerror(errno));
+  if (chdir(working_dir) == -1)
+  {
+    lash_error("Could not change directory to working dir '%s' for program '%s': %s", working_dir, argv[0], strerror(errno));
   }
 
 #ifdef LASH_DEBUG
-  char *ptr, **aptr;
+  char *ptr;
+  const char * const * aptr;
   size_t len = 0;
 
-  for (aptr = client->argv; *aptr; ++aptr)
+  for (aptr = argv; *aptr; ++aptr)
+  {
     len += strlen(*aptr) + 1;
+  }
 
   char buf[len];
   ptr = (char *) buf;
 
-  for (aptr = client->argv; *aptr; ++aptr) {
+  for (aptr = argv; *aptr; ++aptr)
+  {
     strcpy(ptr, *aptr);
     ptr += strlen(*aptr);
     *ptr = ' ';
@@ -270,30 +277,33 @@ loader_exec_program(struct lash_client *client,
   lash_debug("Running command: %s", buf);
 #endif
 
-  lash_info("Executing program '%s' with PID %u",
-            client->argv[0], (unsigned int) getpid());
+  lash_info("Executing program '%s' with PID %llu", argv[0], (unsigned long long)getpid());
 
   if (run_in_terminal)
-    loader_exec_program_in_xterm(client->argv);
+  {
+    loader_exec_program_in_xterm(argv);
+  }
+  else
+  {
+    /* Execute it */
+    execvp(argv[0], (char **)argv);
 
-  /* Execute it */
-  execvp(client->argv[0], client->argv);
-
-  lash_error("Executing program '%s' failed: %s",
-             client->argv[0], strerror(errno));
+    lash_error("Executing program '%s' failed: %s", argv[0], strerror(errno));
+  }
 
   exit(1);
 }
 
-static void
+static
+void
 loader_read_child_output(
-  char  *project,
-  char  *argv0,
-  int    fd,
-  bool   error,
-  char  *buffer_ptr,
-  char **buffer_ptr_ptr,
-  char  *last_line,
+  char * project,
+  char * argv0,
+  int fd,
+  bool error,
+  char * buffer_ptr,
+  char ** buffer_ptr_ptr,
+  char * last_line,
   unsigned int * last_line_repeat_count)
 {
   ssize_t ret;
@@ -387,16 +397,17 @@ loader_read_child_output(
 static void
 loader_read_childs_output(void)
 {
-  struct list_head *node_ptr;
-  struct loader_child *child_ptr;
+  struct list_head * node_ptr;
+  struct loader_child * child_ptr;
 
-  list_for_each (node_ptr, &g_childs_list) {
+  list_for_each (node_ptr, &g_childs_list)
+  {
     child_ptr = list_entry(node_ptr, struct loader_child, siblings);
 
     if (!child_ptr->dead && !child_ptr->terminal)
     {
       loader_read_child_output(
-        child_ptr->project,
+        child_ptr->project_name,
         child_ptr->argv0,
         child_ptr->stdout,
         false,
@@ -406,7 +417,7 @@ loader_read_childs_output(void)
         &child_ptr->stdout_last_line_repeat_count);
 
       loader_read_child_output(
-        child_ptr->project,
+        child_ptr->project_name,
         child_ptr->argv0,
         child_ptr->stderr,
         true,
@@ -425,35 +436,57 @@ loader_run(void)
   loader_childs_bury();
 }
 
-void
-loader_execute(struct lash_client *client,
-               bool      run_in_terminal)
+bool
+loader_execute(
+  const char * const * argv,
+  const char * working_dir,
+  const char * project_name,
+  bool run_in_terminal,
+  pid_t * pid_ptr)
 {
   pid_t pid;
-  const char *program;
-  struct loader_child *child_ptr;
+  struct loader_child * child_ptr;
   int stderr_pipe[2];
 
-  program = client->argv[0];
+  child_ptr = malloc(sizeof(struct loader_child));
+  if (child_ptr == NULL)
+  {
+    lash_error("malloc() failed to allocate struct loader_child");
+    goto fail;
+  }
 
-  child_ptr = lash_calloc(1, sizeof(struct loader_child));
+  child_ptr->project_name = strdup(project_name);
+  if (child_ptr->project_name == NULL)
+  {
+    lash_error("strdup() failed to duplicate project name '%s'", project_name);
+    goto free_struct;
+  }
 
-  uuid_copy(child_ptr->id, client->id);
-  child_ptr->project = lash_strdup(client->project->name);
-  child_ptr->argv0 = lash_strdup(program);
+  child_ptr->argv0 = strdup(argv[0]);
+  if (child_ptr->project_name == NULL)
+  {
+    lash_error("strdup() failed to duplicate argv[0] '%s'", argv[0]);
+    goto free_project_name;
+  }
+
   child_ptr->terminal = run_in_terminal;
   child_ptr->stdout_buffer_ptr = child_ptr->stdout_buffer;
   child_ptr->stderr_buffer_ptr = child_ptr->stderr_buffer;
   child_ptr->stdout_last_line_repeat_count = 0;
   child_ptr->stderr_last_line_repeat_count = 0;
 
-  if (!child_ptr->terminal) {
-    if (pipe(stderr_pipe) == -1) {
+  if (!run_in_terminal)
+  {
+    if (pipe(stderr_pipe) == -1)
+    {
       lash_error("Failed to create stderr pipe");
-    } else {
+    }
+    else
+    {
       child_ptr->stderr = stderr_pipe[0];
 
-      if (fcntl(child_ptr->stderr, F_SETFL, O_NONBLOCK) == -1) {
+      if (fcntl(child_ptr->stderr, F_SETFL, O_NONBLOCK) == -1)
+      {
         lash_error("Failed to set nonblocking mode on "
                    "stderr reading end: %s",
                    strerror(errno));
@@ -465,20 +498,25 @@ loader_execute(struct lash_client *client,
 
   list_add_tail(&child_ptr->siblings, &g_childs_list);
 
-  if (!child_ptr->terminal)
+  if (!run_in_terminal)
+  {
     /* We need pty to disable libc buffering of stdout */
     pid = forkpty(&child_ptr->stdout, NULL, NULL, NULL);
+  }
   else
+  {
     pid = fork();
-
-  if (pid == -1) {
-    lash_error("Could not fork to exec program '%s': %s",
-               program, strerror(errno));
-    client->pid = 0;
-    return;
   }
 
-  if (pid == 0) {
+  if (pid == -1)
+  {
+    lash_error("Could not fork to exec program '%s': %s", argv[0], strerror(errno));
+    list_del(&child_ptr->siblings); /* fork failed so it is not really a child process to watch for. */
+    return false;
+  }
+
+  if (pid == 0)
+  {
     /* Need to close all open file descriptors except the std ones */
     struct rlimit max_fds;
     rlim_t fd;
@@ -486,25 +524,30 @@ loader_execute(struct lash_client *client,
     getrlimit(RLIMIT_NOFILE, &max_fds);
 
     for (fd = 3; fd < max_fds.rlim_cur; ++fd)
+    {
       close(fd);
+    }
 
-    if (!child_ptr->terminal) {
+    if (!run_in_terminal)
+    {
       /* In child, close unused reading end of pipe */
       close(stderr_pipe[0]);
 
       dup2(stderr_pipe[1], fileno(stderr));
     }
 
-    loader_exec_program(client, run_in_terminal);
+    loader_exec_program(argv, working_dir, run_in_terminal);
 
-    return;  /* We should never get here */
+    return false;  /* We should never get here */
   }
 
-  if (!child_ptr->terminal) {
+  if (!run_in_terminal)
+  {
     /* In parent, close unused writing ends of pipe */
     close(stderr_pipe[1]);
 
-    if (fcntl(child_ptr->stdout, F_SETFL, O_NONBLOCK) == -1) {
+    if (fcntl(child_ptr->stdout, F_SETFL, O_NONBLOCK) == -1)
+    {
       lash_error("Could not set noblocking mode on stdout "
                  "- pty: %s", strerror(errno));
       close(stderr_pipe[0]);
@@ -512,7 +555,18 @@ loader_execute(struct lash_client *client,
     }
   }
 
-  client->pid = pid;
-  child_ptr->pid = pid;
-  lash_info("Forked to run program '%s' pid = %llu", program, (unsigned long long)pid);
+  lash_info("Forked to run program '%s' pid = %llu", argv[0], (unsigned long long)pid);
+
+  *pid_ptr = child_ptr->pid = pid;
+
+  return true;
+
+free_project_name:
+  free(child_ptr->project_name);
+
+free_struct:
+  free(child_ptr);
+
+fail:
+  return false;
 }

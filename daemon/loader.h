@@ -1,8 +1,8 @@
 /*
- *   LASH
+ *   LADI session handler
  *
+ *   Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *   Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
- *   Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
  *   Copyright (C) 2002, 2003 Robert Ham <rah@bash.sh>
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -23,22 +23,18 @@
 #ifndef __LASHD_LOADER_H__
 #define __LASHD_LOADER_H__
 
-#include <stdbool.h>
+void loader_init(void (* on_child_exit)(pid_t pid));
 
-#include "types.h"
-#include "client.h"
+bool
+loader_execute(
+  const char * const * argv,
+  const char * working_dir,
+  const char * project_name,
+  bool run_in_terminal,
+  pid_t * pid_ptr);
 
-void
-loader_init(void);
+void loader_run(void);
 
-void
-loader_uninit(void);
-
-void
-loader_execute(struct lash_client *client,
-               bool      run_in_terminal);
-
-void
-loader_run(void);
+void loader_uninit(void);
 
 #endif /* __LASHD_LOADER_H__ */

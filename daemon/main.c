@@ -1,8 +1,8 @@
 /*
  *   LASH
  *
+ *   Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *   Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
- *   Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
  *   Copyright (C) 2002 Robert Ham <rah@bash.sh>
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -20,59 +20,164 @@
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#define _GNU_SOURCE
+#include "common.h"
 
-#include "config.h"
-#include "version.h"
-
-#include <string.h>
-#include <getopt.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
-#include <limits.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 
-#include <jack/jack.h>
-#include <libxml/tree.h>
-
-#include "../common/debug.h"
-
-#include "server.h"
+#include "version.h"            /* git version define */
+#include "proctitle.h"
 #include "loader.h"
-//#include "version.h"
+#include "sigsegv.h"
 
-#ifdef LASH_DEBUG
-#  include <mcheck.h>
+static bool g_quit;
+service_t * g_dbus_service;
+
+#if 0
+static DBusHandlerResult lashd_client_disconnect_handler(DBusConnection * connection, DBusMessage * message, void * data)
+{
+  /* If the message isn't a signal the object path handler may use it */
+  if (dbus_message_get_type(message) != DBUS_MESSAGE_TYPE_SIGNAL)
+  {
+    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+  }
+
+  const char *member, *name, *old_name;
+  struct lash_client *client;
+  DBusError err;
+
+  if (!(member = dbus_message_get_member(message)))
+  {
+    lash_error("Received JACK signal with NULL member");
+    return DBUS_HANDLER_RESULT_HANDLED;
+  }
+
+  if (strcmp(member, "NameOwnerChanged") != 0)
+  {
+    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+  }
+
+  dbus_error_init(&err);
+
+  if (!dbus_message_get_args(message, &err,
+                             DBUS_TYPE_STRING, &name,
+                             DBUS_TYPE_STRING, &old_name,
+                             DBUS_TYPE_INVALID))
+  {
+    lash_error("Cannot get message arguments: %s",
+               err.message);
+    dbus_error_free(&err);
+    return DBUS_HANDLER_RESULT_HANDLED;
+  }
+
+  client = server_find_client_by_dbus_name(old_name);
+  if (client)
+  {
+    client_disconnected(client);
+    return DBUS_HANDLER_RESULT_HANDLED;
+  }
+
+  else
+  {
+    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+  }
+}
 #endif
 
-#include "sigsegv.h"
-#include "proctitle.h"
-
-void
-term_handler(int signum)
+service_t * lashd_dbus_service_new(void)
 {
-  lash_info("Caught signal %d (%s), terminating", signum, strsignal(signum));
-  g_server->quit = true;
+  service_t * service;
+  DBusError err;
+
+  service = service_new(
+    DBUS_NAME_BASE,
+    &g_quit,
+    1,
+    object_path_new(
+      "/",
+      NULL,
+      0,//2,
+      //&g_lashd_interface_server,
+      //&g_lashd_interface_control,
+      NULL),
+    NULL);
+  if (service == NULL)
+  {
+    lash_error("Failed to create D-Bus service");
+    return NULL;
+  }
+
+  dbus_error_init(&err);
+
+#if 0
+  dbus_bus_add_match(
+    service->connection,
+    "type='signal'"
+    ",sender='org.freedesktop.DBus'"
+    ",path='/org/freedesktop/DBus'"
+    ",interface='org.freedesktop.DBus'"
+    ",member='NameOwnerChanged'"
+    ",arg2=''",
+    &err);
+  if (dbus_error_is_set(&err))
+  {
+    lash_error("Failed to add D-Bus match rule: %s", err.message);
+    dbus_error_free(&err);
+    goto fail;
+  }
+
+  if (!dbus_connection_add_filter(service->connection, lashd_client_disconnect_handler, NULL, NULL))
+  {
+    lash_error("Failed to add D-Bus filter");
+    goto fail;
+  }
+#endif
+
+  return service;
+
+#if 0
+fail:
+  service_destroy(service);
+  return NULL;
+#endif
 }
 
-int
-main(int    argc,
-     char **argv,
-     char **envp)
+static void on_child_exit(pid_t pid)
 {
-  int opt;
-  const char *options = "hd:";
-  struct option long_options[] = {
-    {"help", 0, NULL, 'h'},
-    {"default-dir", 1, NULL, 'd'},
-    {0, 0, 0, 0}
-  };
-  char *default_dir = NULL;
+  //client_disconnected(server_find_client_by_pid(child_ptr->pid));
+}
+
+void term_signal_handler(int signum)
+{
+  lash_info("Caught signal %d (%s), terminating", signum, strsignal(signum));
+  g_quit = true;
+}
+
+bool install_term_signal_handler(int signum, bool ignore_if_already_ignored)
+{
   sig_t sigh;
+
+  sigh = signal(signum, term_signal_handler);
+  if (sigh == SIG_ERR)
+  {
+    lash_error("signal() failed to install handler function for signal %d.", signum);
+    return false;
+  }
+
+  if (sigh == SIG_IGN && ignore_if_already_ignored)
+  {
+    signal(SIGTERM, SIG_IGN);
+  }
+
+  return true;
+}
+
+int main(int argc, char ** argv, char ** envp)
+{
   struct stat st;
   char timestamp_str[26];
+  int ret;
 
   st.st_mtime = 0;
   stat(argv[0], &st);
@@ -83,70 +188,50 @@ main(int    argc,
 
   dbus_threads_init_default();
 
-#ifdef LASH_DEBUG
-  mtrace();
-#endif
-
-  xmlSetCompressMode(0);
-
-  while ((opt = getopt_long(argc, argv, options, long_options, NULL)) != -1) {
-    switch (opt) {
-    case 'd':
-      default_dir = optarg;
-      break;
-    default:
-      exit(EXIT_FAILURE);
-      break;
-    }
-  }
-
-  if (!default_dir)
-    default_dir = DEFAULT_PROJECT_DIR;
-
   lash_info("------------------");
-  lash_info("LASH activated. Version %s (%s) built on %s", PACKAGE_VERSION, GIT_VERSION, timestamp_str);
+  lash_info("LADI session handler activated. Version %s (%s) built on %s", PACKAGE_VERSION, GIT_VERSION, timestamp_str);
 
-  lash_debug("Default dir: '%s'", default_dir);
+  ret = EXIT_FAILURE;
 
-  loader_init();
+  loader_init(on_child_exit);
 
-  if (!server_start(default_dir))
+  g_dbus_service = lashd_dbus_service_new();
+  if (g_dbus_service == NULL)
   {
+    lash_error("Failed to launch D-Bus service");
     goto uninit_loader;
   }
 
   /* install the signal handlers */
-  sigh = signal(SIGTERM, term_handler);
-  if (sigh == SIG_IGN)
-    signal(SIGTERM, SIG_IGN);
-
-  sigh = signal(SIGINT, term_handler);
-  if (sigh == SIG_IGN)
-    signal(SIGINT, SIG_IGN);
-
-  sigh = signal(SIGHUP, term_handler);
-  if (sigh == SIG_IGN)
-    signal(SIGHUP, SIG_IGN);
-
-  signal(SIGPIPE, SIG_IGN);
+  install_term_signal_handler(SIGTERM, false);
+  install_term_signal_handler(SIGINT, true);
+  install_term_signal_handler(SIGHUP, true);
+  if (signal(SIGPIPE, SIG_IGN) == SIG_ERR)
+  {
+    lash_error("signal(SIGPIPE, SIG_IGN).");
+  }
 
   /* setup our SIGSEGV magic that prints nice stack in our logfile */ 
   setup_sigsegv();
 
-  server_main();
+  while (!g_quit)
+  {
+    dbus_connection_read_write_dispatch(g_dbus_service->connection, 50);
+    loader_run();
+  }
+
+  ret = EXIT_SUCCESS;
 
   lash_debug("Finished, cleaning up");
-  printf("Cleaning up\n");
 
-  server_stop();
+  service_destroy(g_dbus_service);
 
 uninit_loader:
   loader_uninit();
 
   lash_debug("Cleaned up, exiting");
-  printf("Finished\n");
 
-  lash_info("LASH deactivated");
+  lash_info("LADI session handler deactivated");
   lash_info("------------------");
 
   exit(EXIT_SUCCESS);
