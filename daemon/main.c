@@ -30,8 +30,9 @@
 #include "proctitle.h"
 #include "loader.h"
 #include "sigsegv.h"
+#include "dbus_iface_control.h"
 
-static bool g_quit;
+bool g_quit;
 service_t * g_dbus_service;
 
 #if 0
@@ -97,9 +98,9 @@ service_t * lashd_dbus_service_new(void)
     object_path_new(
       "/",
       NULL,
-      0,//2,
+      1,//2,
       //&g_lashd_interface_server,
-      //&g_lashd_interface_control,
+      &g_lashd_interface_control,
       NULL),
     NULL);
   if (service == NULL)

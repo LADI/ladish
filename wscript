@@ -180,7 +180,7 @@ def build(bld):
 #        'file.c',
 #        'dbus_service.c',
 #        'jackdbus_mgr.c',
-#        'dbus_iface_control.c',
+        'dbus_iface_control.c',
 #        'dbus_iface_server.c',
 #        'client_dependency.c',
 #        'jack_mgr_client.c',

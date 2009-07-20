@@ -21,55 +21,63 @@
 #ifndef __LASHD_DBUS_IFACE_CONTROL_H__
 #define __LASHD_DBUS_IFACE_CONTROL_H__
 
-#include <stdint.h>
-
-#include "../dbus/interface.h"
-
 extern const interface_t g_lashd_interface_control;
 
 void
-lashd_dbus_signal_emit_project_appeared(const char *project_name,
-                                        const char *project_path);
+lashd_dbus_signal_emit_project_appeared(
+  const char * project_name,
+  const char * project_path);
 
 void
-lashd_dbus_signal_emit_project_disappeared(const char *project_name);
+lashd_dbus_signal_emit_project_disappeared(
+  const char * project_name);
 
 void
-lashd_dbus_signal_emit_project_name_changed(const char *old_name,
-                                            const char *new_name);
+lashd_dbus_signal_emit_project_name_changed(
+  const char * old_name,
+  const char * new_name);
 
 void
-lashd_dbus_signal_emit_project_path_changed(const char *project_name,
-                                            const char *new_path);
+lashd_dbus_signal_emit_project_path_changed(
+  const char * project_name,
+  const char * new_path);
 
 void
-lashd_dbus_signal_emit_project_description_changed(const char *project_name,
-                                                   const char *description);
+lashd_dbus_signal_emit_project_description_changed(
+  const char * project_name,
+  const char * description);
 
 void
-lashd_dbus_signal_emit_project_notes_changed(const char *project_name,
-                                             const char *notes);
+lashd_dbus_signal_emit_project_notes_changed(
+  const char * project_name,
+  const char * notes);
 
 void
-lashd_dbus_signal_emit_project_saved(const char *project_name);
+lashd_dbus_signal_emit_project_saved(
+  const char * project_name);
 
 void
-lashd_dbus_signal_emit_project_loaded(const char *project_name);
+lashd_dbus_signal_emit_project_loaded(
+  const char * project_name);
 
 void
-lashd_dbus_signal_emit_client_appeared(const char *client_id,
-                                       const char *project_name,
-                                       const char *client_name);
+lashd_dbus_signal_emit_client_appeared(
+  const char * client_id,
+  const char * project_name,
+  const char * client_name);
 
 void
-lashd_dbus_signal_emit_client_disappeared(const char *client_id,
-                                          const char *project_name);
+lashd_dbus_signal_emit_client_disappeared(
+  const char * client_id,
+  const char * project_name);
 
 void
-lashd_dbus_signal_emit_client_name_changed(const char *client_id,
-                                           const char *new_client_name);
+lashd_dbus_signal_emit_client_name_changed(
+  const char * client_id,
+  const char * new_client_name);
 
 void
-lashd_dbus_signal_emit_progress(uint8_t percentage);
+lashd_dbus_signal_emit_progress(
+  uint8_t percentage);
 
 #endif /* __LASHD_DBUS_IFACE_CONTROL_H__ */

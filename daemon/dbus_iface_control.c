@@ -19,38 +19,35 @@
  *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-
-#include "../common/safety.h"
-#define LASH_DEBUG
-#include "../common/debug.h"
-#include "../common/klist.h"
+#include "common.h"
 
 #include "../dbus/interface.h"
 #include "../dbus/error.h"
 
-#include "server.h"
-#include "project.h"
-#include "client.h"
-#include "client_dependency.h"
-#include "appdb.h"
-
 #define INTERFACE_NAME DBUS_NAME_BASE ".Control"
 
-static bool
-maybe_add_dict_entry_string(DBusMessageIter *dict_iter_ptr,
-                            const char      *key,
-                            const char      *value)
+#if 0
+static
+bool
+maybe_add_dict_entry_string(
+  DBusMessageIter *dict_iter_ptr,
+  const char * key,
+  const char * value)
 {
   DBusMessageIter dict_entry_iter;
 
-  if (!value)
+  if (value == NULL)
+  {
     return true;
+  }
 
   if (!dbus_message_iter_open_container(dict_iter_ptr, DBUS_TYPE_DICT_ENTRY, NULL, &dict_entry_iter))
+  {
     return false;
+  }
 
-  if (!dbus_message_iter_append_basic(&dict_entry_iter, DBUS_TYPE_STRING, (const void *) &key)) {
+  if (!dbus_message_iter_append_basic(&dict_entry_iter, DBUS_TYPE_STRING, (const void *) &key))
+  {
     dbus_message_iter_close_container(dict_iter_ptr, &dict_entry_iter);
     return false;
   }
@@ -58,7 +55,9 @@ maybe_add_dict_entry_string(DBusMessageIter *dict_iter_ptr,
   method_iter_append_variant(&dict_entry_iter, DBUS_TYPE_STRING, &value);
 
   if (!dbus_message_iter_close_container(dict_iter_ptr, &dict_entry_iter))
+  {
     return false;
+  }
 
   return true;
 }
@@ -71,13 +70,18 @@ add_dict_entry_uint32(
 {
   DBusMessageIter dict_entry_iter;
 
-  if (!value)
+  if (value == NULL)
+  {
     return true;
+  }
 
   if (!dbus_message_iter_open_container(dict_iter_ptr, DBUS_TYPE_DICT_ENTRY, NULL, &dict_entry_iter))
+  {
     return false;
+  }
 
-  if (!dbus_message_iter_append_basic(&dict_entry_iter, DBUS_TYPE_STRING, (const void *) &key)) {
+  if (!dbus_message_iter_append_basic(&dict_entry_iter, DBUS_TYPE_STRING, (const void *) &key))
+  {
     dbus_message_iter_close_container(dict_iter_ptr, &dict_entry_iter);
     return false;
   }
@@ -85,7 +89,9 @@ add_dict_entry_uint32(
   method_iter_append_variant(&dict_entry_iter, DBUS_TYPE_UINT32, &value);
 
   if (!dbus_message_iter_close_container(dict_iter_ptr, &dict_entry_iter))
+  {
     return false;
+  }
 
   return true;
 }
@@ -99,9 +105,12 @@ add_dict_entry_bool(
   DBusMessageIter dict_entry_iter;
 
   if (!dbus_message_iter_open_container(dict_iter_ptr, DBUS_TYPE_DICT_ENTRY, NULL, &dict_entry_iter))
+  {
     return false;
+  }
 
-  if (!dbus_message_iter_append_basic(&dict_entry_iter, DBUS_TYPE_STRING, (const void *) &key)) {
+  if (!dbus_message_iter_append_basic(&dict_entry_iter, DBUS_TYPE_STRING, (const void *) &key))
+  {
     dbus_message_iter_close_container(dict_iter_ptr, &dict_entry_iter);
     return false;
   }
@@ -109,17 +118,22 @@ add_dict_entry_bool(
   method_iter_append_variant(&dict_entry_iter, DBUS_TYPE_BOOLEAN, &value);
 
   if (!dbus_message_iter_close_container(dict_iter_ptr, &dict_entry_iter))
+  {
     return false;
+  }
 
   return true;
 }
 
+#endif
+
 static void
 lashd_dbus_projects_get_available(method_call_t *call)
 {
-  DBusMessageIter iter, array_iter, struct_iter, dict_iter;
-  struct list_head * node_ptr;
-  project_t * project_ptr;
+  DBusMessageIter iter, array_iter;
+  //DBusMessageIter struct_iter, dict_iter;
+  //struct list_head * node_ptr;
+  //project_t * project_ptr;
 
   call->reply = dbus_message_new_method_return(call->message);
   if (!call->reply)
@@ -130,13 +144,16 @@ lashd_dbus_projects_get_available(method_call_t *call)
   if (!dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "(sa{sv})", &array_iter))
     goto fail_unref;
 
-  list_for_each (node_ptr, &g_server->all_projects) {
+#if 0
+  list_for_each (node_ptr, &g_server->all_projects)
+  {
     project_ptr = list_entry(node_ptr, project_t, siblings_all);
 
     if (!dbus_message_iter_open_container(&array_iter, DBUS_TYPE_STRUCT, NULL, &struct_iter))
       goto fail_unref;
 
-    if (!dbus_message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &project_ptr->name)) {
+    if (!dbus_message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &project_ptr->name))
+    {
       dbus_message_iter_close_container(&iter, &array_iter);
       goto fail_unref;
     }
@@ -156,6 +173,7 @@ lashd_dbus_projects_get_available(method_call_t *call)
     if (!dbus_message_iter_close_container(&array_iter, &struct_iter))
       goto fail_unref;
   }
+#endif
 
   if (!dbus_message_iter_close_container(&iter, &array_iter))
     goto fail_unref;
@@ -191,14 +209,14 @@ lashd_dbus_project_open(method_call_t *call)
   lash_info("Opening project '%s'", project_name);
 
   // TODO: Evaluate return, send error return if necessary
-  server_project_restore_by_name(project_name);
+  //server_project_restore_by_name(project_name);
 }
 
 static void
 lashd_dbus_projects_get(method_call_t *call)
 {
-  struct list_head * node_ptr;
-  project_t * project_ptr;
+  //struct list_head * node_ptr;
+  //project_t * project_ptr;
   DBusMessageIter iter, sub_iter;
 
   call->reply = dbus_message_new_method_return(call->message);
@@ -210,14 +228,17 @@ lashd_dbus_projects_get(method_call_t *call)
   if (!dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "s", &sub_iter))
     goto fail_unref;
 
+#if 0
   list_for_each(node_ptr, &g_server->loaded_projects)
   {
     project_ptr = list_entry(node_ptr, project_t, siblings_loaded);
-    if (!dbus_message_iter_append_basic(&sub_iter, DBUS_TYPE_STRING, &project_ptr->name)) {
+    if (!dbus_message_iter_append_basic(&sub_iter, DBUS_TYPE_STRING, &project_ptr->name))
+    {
       dbus_message_iter_close_container(&iter, &sub_iter);
       goto fail_unref;
     }
   }
+#endif
 
   if (!dbus_message_iter_close_container(&iter, &sub_iter))
     goto fail_unref;
@@ -231,6 +252,8 @@ fail_unref:
 fail:
   lash_error("Ran out of memory trying to construct method return");
 }
+
+#if 0
 
 static
 void
@@ -941,89 +964,104 @@ lashd_dbus_projects_close_all(method_call_t *call)
   server_close_all_projects();
 }
 
-static void
-lashd_dbus_exit(method_call_t *call)
+#endif
+
+static void lashd_dbus_exit(method_call_t *call)
 {
-  g_server->quit = true;
+  lash_info("Exit command received through D-Bus");
+  g_quit = true;
 }
 
 void
-lashd_dbus_signal_emit_project_appeared(const char *project_name,
-                                        const char *project_path)
+lashd_dbus_signal_emit_project_appeared(
+  const char * project_name,
+  const char * project_path)
 {
-  signal_new_valist(g_server->dbus_service,
-                    "/", INTERFACE_NAME, "ProjectAppeared",
-                    DBUS_TYPE_STRING, &project_name,
-                    DBUS_TYPE_STRING, &project_path,
-                    DBUS_TYPE_INVALID);
+  signal_new_valist(
+    g_dbus_service,
+    "/", INTERFACE_NAME, "ProjectAppeared",
+    DBUS_TYPE_STRING, &project_name,
+    DBUS_TYPE_STRING, &project_path,
+    DBUS_TYPE_INVALID);
 }
 
 void
-lashd_dbus_signal_emit_project_disappeared(const char *project_name)
+lashd_dbus_signal_emit_project_disappeared(
+  const char * project_name)
 {
-  signal_new_single(g_server->dbus_service,
-                    "/", INTERFACE_NAME, "ProjectDisappeared",
-                    DBUS_TYPE_STRING, &project_name);
+  signal_new_single(
+    g_dbus_service,
+    "/", INTERFACE_NAME, "ProjectDisappeared",
+    DBUS_TYPE_STRING, &project_name);
 }
 
 void
-lashd_dbus_signal_emit_project_name_changed(const char *old_name,
-                                            const char *new_name)
+lashd_dbus_signal_emit_project_name_changed(
+  const char * old_name,
+  const char * new_name)
 {
-  signal_new_valist(g_server->dbus_service,
-                    "/", INTERFACE_NAME, "ProjectNameChanged",
-                    DBUS_TYPE_STRING, &old_name,
-                    DBUS_TYPE_STRING, &new_name,
-                    DBUS_TYPE_INVALID);
+  signal_new_valist(
+    g_dbus_service,
+    "/", INTERFACE_NAME, "ProjectNameChanged",
+    DBUS_TYPE_STRING, &old_name,
+    DBUS_TYPE_STRING, &new_name,
+    DBUS_TYPE_INVALID);
 }
 
 void
-lashd_dbus_signal_emit_project_path_changed(const char *project_name,
-                                            const char *new_path)
+lashd_dbus_signal_emit_project_path_changed(
+  const char * project_name,
+  const char * new_path)
 {
-  signal_new_valist(g_server->dbus_service,
-                    "/", INTERFACE_NAME, "ProjectPathChanged",
-                    DBUS_TYPE_STRING, &project_name,
-                    DBUS_TYPE_STRING, &new_path,
-                    DBUS_TYPE_INVALID);
+  signal_new_valist(
+    g_dbus_service,
+    "/", INTERFACE_NAME, "ProjectPathChanged",
+    DBUS_TYPE_STRING, &project_name,
+    DBUS_TYPE_STRING, &new_path,
+    DBUS_TYPE_INVALID);
 }
 
 void
-lashd_dbus_signal_emit_project_description_changed(const char *project_name,
-                                                   const char *description)
+lashd_dbus_signal_emit_project_description_changed(
+  const char * project_name,
+  const char * description)
 {
-  signal_new_valist(g_server->dbus_service,
-                    "/", INTERFACE_NAME, "ProjectDescriptionChanged",
-                    DBUS_TYPE_STRING, &project_name,
-                    DBUS_TYPE_STRING, &description,
-                    DBUS_TYPE_INVALID);
+  signal_new_valist(
+    g_dbus_service,
+    "/", INTERFACE_NAME, "ProjectDescriptionChanged",
+    DBUS_TYPE_STRING, &project_name,
+    DBUS_TYPE_STRING, &description,
+    DBUS_TYPE_INVALID);
 }
 
 void
 lashd_dbus_signal_emit_project_notes_changed(const char *project_name,
                                              const char *notes)
 {
-  signal_new_valist(g_server->dbus_service,
-                    "/", INTERFACE_NAME, "ProjectNotesChanged",
-                    DBUS_TYPE_STRING, &project_name,
-                    DBUS_TYPE_STRING, &notes,
-                    DBUS_TYPE_INVALID);
+  signal_new_valist(
+    g_dbus_service,
+    "/", INTERFACE_NAME, "ProjectNotesChanged",
+    DBUS_TYPE_STRING, &project_name,
+    DBUS_TYPE_STRING, &notes,
+    DBUS_TYPE_INVALID);
 }
 
 void
 lashd_dbus_signal_emit_project_saved(const char *project_name)
 {
-  signal_new_single(g_server->dbus_service,
-                    "/", INTERFACE_NAME, "ProjectSaved",
-                    DBUS_TYPE_STRING, &project_name);
+  signal_new_single(
+    g_dbus_service,
+    "/", INTERFACE_NAME, "ProjectSaved",
+    DBUS_TYPE_STRING, &project_name);
 }
 
 void
 lashd_dbus_signal_emit_project_loaded(const char *project_name)
 {
-  signal_new_single(g_server->dbus_service,
-                    "/", INTERFACE_NAME, "ProjectLoaded",
-                    DBUS_TYPE_STRING, &project_name);
+  signal_new_single(
+    g_dbus_service,
+    "/", INTERFACE_NAME, "ProjectLoaded",
+    DBUS_TYPE_STRING, &project_name);
 }
 
 void
@@ -1031,42 +1069,46 @@ lashd_dbus_signal_emit_client_appeared(const char *client_id,
                                        const char *project_name,
                                        const char *client_name)
 {
-  signal_new_valist(g_server->dbus_service,
-                    "/", INTERFACE_NAME, "ClientAppeared",
-                    DBUS_TYPE_STRING, &client_id,
-                    DBUS_TYPE_STRING, &project_name,
-                    DBUS_TYPE_STRING, &client_name,
-                    DBUS_TYPE_INVALID);
+  signal_new_valist(
+    g_dbus_service,
+    "/", INTERFACE_NAME, "ClientAppeared",
+    DBUS_TYPE_STRING, &client_id,
+    DBUS_TYPE_STRING, &project_name,
+    DBUS_TYPE_STRING, &client_name,
+    DBUS_TYPE_INVALID);
 }
 
 void
 lashd_dbus_signal_emit_client_disappeared(const char *client_id,
                                           const char *project_name)
 {
-  signal_new_valist(g_server->dbus_service,
-                    "/", INTERFACE_NAME, "ClientDisappeared",
-                    DBUS_TYPE_STRING, &client_id,
-                    DBUS_TYPE_STRING, &project_name,
-                    DBUS_TYPE_INVALID);
+  signal_new_valist(
+    g_dbus_service,
+    "/", INTERFACE_NAME, "ClientDisappeared",
+    DBUS_TYPE_STRING, &client_id,
+    DBUS_TYPE_STRING, &project_name,
+    DBUS_TYPE_INVALID);
 }
 
 void
 lashd_dbus_signal_emit_client_name_changed(const char *client_id,
                                            const char *new_client_name)
 {
-  signal_new_valist(g_server->dbus_service,
-                    "/", INTERFACE_NAME, "ClientNameChanged",
-                    DBUS_TYPE_STRING, &client_id,
-                    DBUS_TYPE_STRING, &new_client_name,
-                    DBUS_TYPE_INVALID);
+  signal_new_valist(
+    g_dbus_service,
+    "/", INTERFACE_NAME, "ClientNameChanged",
+    DBUS_TYPE_STRING, &client_id,
+    DBUS_TYPE_STRING, &new_client_name,
+    DBUS_TYPE_INVALID);
 }
 
 void
 lashd_dbus_signal_emit_progress(uint8_t percentage)
 {
-  signal_new_single(g_server->dbus_service,
-                    "/", INTERFACE_NAME, "Progress",
-                    DBUS_TYPE_BYTE, &percentage);
+  signal_new_single(
+    g_dbus_service,
+    "/", INTERFACE_NAME, "Progress",
+    DBUS_TYPE_BYTE, &percentage);
 }
 
 METHOD_ARGS_BEGIN(ProjectsGetAvailable)
@@ -1169,6 +1211,7 @@ METHODS_BEGIN
   METHOD_DESCRIBE(ProjectsGetAvailable, lashd_dbus_projects_get_available)
   METHOD_DESCRIBE(ProjectOpen, lashd_dbus_project_open)
   METHOD_DESCRIBE(ProjectsGet, lashd_dbus_projects_get)
+#if 0
   METHOD_DESCRIBE(ProjectGetProperties, lashd_dbus_project_get_properties)
   METHOD_DESCRIBE(ProjectSetDescription, lashd_dbus_project_set_description)
   METHOD_DESCRIBE(ProjectSetNotes, lashd_dbus_project_set_notes)
@@ -1186,6 +1229,7 @@ METHODS_BEGIN
   METHOD_DESCRIBE(ProjectClose, lashd_dbus_project_close)
   METHOD_DESCRIBE(ProjectsSaveAll, lashd_dbus_projects_save_all)
   METHOD_DESCRIBE(ProjectsCloseAll, lashd_dbus_projects_close_all)
+#endif
   METHOD_DESCRIBE(Exit, lashd_dbus_exit)
 METHODS_END
 

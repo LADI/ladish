@@ -12,6 +12,7 @@
 #include "config.h"             /* configure stage result */
 
 #include <stdbool.h>            /* C99 bool */
+#include <stdint.h>             /* fixed bit size ints */
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -24,5 +25,6 @@
 #include "../common/debug.h"
 
 extern service_t * g_dbus_service;
+extern bool g_quit;
 
 #endif /* #ifndef COMMON_H__CFDC869A_31AE_4FA3_B2D3_DACA8488CA55__INCLUDED */
