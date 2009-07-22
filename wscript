@@ -185,6 +185,7 @@ def build(bld):
 #        'client_dependency.c',
 #        'jack_mgr_client.c',
         'jack_proxy.c',
+        'jack.c',
         ]:
         daemon.source.append(os.path.join("daemon", source))
 
