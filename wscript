@@ -184,6 +184,7 @@ def build(bld):
 #        'dbus_iface_server.c',
 #        'client_dependency.c',
 #        'jack_mgr_client.c',
+        'jack_proxy.c',
         ]:
         daemon.source.append(os.path.join("daemon", source))
 
