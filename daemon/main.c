@@ -31,6 +31,7 @@
 #include "loader.h"
 #include "sigsegv.h"
 #include "dbus_iface_control.h"
+#include "jack.h"
 
 bool g_quit;
 service_t * g_dbus_service;
@@ -215,6 +216,11 @@ int main(int argc, char ** argv, char ** envp)
   /* setup our SIGSEGV magic that prints nice stack in our logfile */ 
   setup_sigsegv();
 
+  if (!jack_init())
+  {
+    goto uninit_dbus;
+  }
+
   while (!g_quit)
   {
     dbus_connection_read_write_dispatch(g_dbus_service->connection, 50);
@@ -224,6 +230,9 @@ int main(int argc, char ** argv, char ** envp)
   ret = EXIT_SUCCESS;
 
   lash_debug("Finished, cleaning up");
+
+uninit_dbus:
+  jack_uninit();
 
   service_destroy(g_dbus_service);
 
