@@ -36,8 +36,6 @@ jack_proxy_connect_ports(
 bool
 jack_proxy_read_conf_container(
   const char * address,
-  char * child_buffer,
-  size_t child_buffer_size,
   void * callback_context,
   bool (* callback)(void * context, bool leaf, const char * address, char * child));
 

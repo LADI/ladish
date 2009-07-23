@@ -125,7 +125,7 @@ conf_callback(
 
   lash_info("%s (container)", path);
 
-  if (!jack_proxy_read_conf_container(context, context, 1024, context, conf_callback))
+  if (!jack_proxy_read_conf_container(context, context, conf_callback))
   {
     return false;
   }
@@ -142,7 +142,7 @@ on_jack_server_started(
   char buffer[1024] = "";
   lash_info("JACK server start detected.");
 
-  if (!jack_proxy_read_conf_container(buffer, buffer, 1024, buffer, conf_callback))
+  if (!jack_proxy_read_conf_container(buffer, buffer, conf_callback))
   {
   }
 }
