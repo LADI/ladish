@@ -106,31 +106,29 @@ conf_callback(
 
   strcpy(dst, child);
 
-  if (!leaf)
-  {
-    dst = context;
-    len = component - address;
-    memcpy(dst, address, len);
-    dst += len;
-    len = strlen(child) + 1;
-    memcpy(dst, child, len);
-    dst[len] = 0;
-  }
+  /* address always is same buffer as the one supplied through context pointer */
+  assert(context == address);
+  dst = (char *)component;
+
+  len = strlen(child) + 1;
+  memcpy(dst, child, len);
+  dst[len] = 0;
 
   if (leaf)
   {
     lash_info("%s (leaf)", path);
-    return true;
   }
-
-  lash_info("%s (container)", path);
-
-  if (!jack_proxy_read_conf_container(context, context, conf_callback))
+  else
   {
-    return false;
+    lash_info("%s (container)", path);
+
+    if (!jack_proxy_read_conf_container(context, context, conf_callback))
+    {
+      return false;
+    }
   }
 
-  *(char *)component = 0;
+  *dst = 0;
 
   return true;
 }
@@ -144,6 +142,7 @@ on_jack_server_started(
 
   if (!jack_proxy_read_conf_container(buffer, buffer, conf_callback))
   {
+    lash_error("jack_proxy_read_conf_container() failed.");
   }
 }
 
