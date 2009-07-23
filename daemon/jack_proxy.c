@@ -14,6 +14,7 @@
 #define JACKDBUS_OBJECT          "/org/jackaudio/Controller"
 #define JACKDBUS_IFACE_CONTROL   "org.jackaudio.JackControl"
 #define JACKDBUS_IFACE_PATCHBAY  "org.jackaudio.JackPatchbay"
+#define JACKDBUS_IFACE_CONFIGURE "org.jackaudio.Configure"
 
 static
 void
@@ -397,4 +398,104 @@ jack_proxy_connect_ports(
   uint64_t port2_id)
 {
   return false;
+}
+
+bool
+jack_proxy_read_conf_container(
+  const char * address,
+  char * child_buffer,
+  size_t child_buffer_size,
+  void * callback_context,
+  bool (* callback)(void * context, bool leaf, const char * address, char * child))
+{
+  DBusMessage * request_ptr;
+  DBusMessage * reply_ptr;
+  DBusMessageIter top_iter;
+  DBusMessageIter array_iter;
+  const char * component;
+  const char * reply_signature;
+  dbus_bool_t leaf;           /* Whether children are parameters (true) or containers (false) */
+  char * child;
+
+  request_ptr = dbus_message_new_method_call(JACKDBUS_SERVICE, JACKDBUS_OBJECT, JACKDBUS_IFACE_CONFIGURE, "ReadContainer");
+  if (request_ptr == NULL)
+  {
+    lash_error("dbus_message_new_method_call() failed.");
+    return false;
+  }
+
+  dbus_message_iter_init_append(request_ptr, &top_iter);
+
+  if (!dbus_message_iter_open_container(&top_iter, DBUS_TYPE_ARRAY, "s", &array_iter))
+  {
+    lash_error("dbus_message_iter_open_container() failed.");
+    dbus_message_unref(request_ptr);
+    return false;
+  }
+
+  if (address != NULL)
+  {
+    component = address;
+    while (*component != 0)
+    {
+      if (!dbus_message_iter_append_basic(&array_iter, DBUS_TYPE_STRING, &component))
+      {
+        lash_error("dbus_message_iter_append_basic() failed.");
+        dbus_message_unref(request_ptr);
+        return false;
+      }
+
+      component += strlen(component) + 1;
+    }
+  }
+
+  dbus_message_iter_close_container(&top_iter, &array_iter);
+
+  // send message and get a handle for a reply
+  reply_ptr = dbus_connection_send_with_reply_and_block(
+    g_dbus_connection,
+    request_ptr,
+    DBUS_CALL_DEFAULT_TIMEOUT,
+    &g_dbus_error);
+
+  dbus_message_unref(request_ptr);
+
+  if (reply_ptr == NULL)
+  {
+    lash_error("no reply from JACK server, error is '%s'", g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return false;
+  }
+
+  reply_signature = dbus_message_get_signature(reply_ptr);
+
+  if (strcmp(reply_signature, "bas") != 0)
+  {
+    lash_error("ReadContainer() reply signature mismatch. '%s'", reply_signature);
+    dbus_message_unref(reply_ptr);
+    return false;
+  }
+
+  dbus_message_iter_init(reply_ptr, &top_iter);
+
+  dbus_message_iter_get_basic(&top_iter, &leaf);
+  dbus_message_iter_next(&top_iter);
+
+  dbus_message_iter_recurse(&top_iter, &array_iter);
+
+  while (dbus_message_iter_get_arg_type(&array_iter) != DBUS_TYPE_INVALID)
+  {
+    dbus_message_iter_get_basic(&array_iter, &child);
+
+    if (!callback(callback_context, leaf, address, child))
+    {
+      break;
+    }
+
+    dbus_message_iter_next(&array_iter);
+  }
+
+  dbus_message_unref(reply_ptr);
+
+  return true;
 }

@@ -81,11 +81,70 @@ on_jack_ports_disconnected(
   lash_info("JACK ports disconnected.");
 }
 
+bool
+conf_callback(
+  void * context,
+  bool leaf,
+  const char * address,
+  char * child)
+{
+  char path[1024];
+  const char * component;
+  char * dst;
+  size_t len;
+
+  dst = path;
+  component = address;
+  while (*component != 0)
+  {
+    len = strlen(component);
+    memcpy(dst, component, len);
+    dst[len] = ':';
+    component += len + 1;
+    dst += len + 1;
+  }
+
+  strcpy(dst, child);
+
+  if (!leaf)
+  {
+    dst = context;
+    len = component - address;
+    memcpy(dst, address, len);
+    dst += len;
+    len = strlen(child) + 1;
+    memcpy(dst, child, len);
+    dst[len] = 0;
+  }
+
+  if (leaf)
+  {
+    lash_info("%s (leaf)", path);
+    return true;
+  }
+
+  lash_info("%s (container)", path);
+
+  if (!jack_proxy_read_conf_container(context, context, 1024, context, conf_callback))
+  {
+    return false;
+  }
+
+  *(char *)component = 0;
+
+  return true;
+}
+
 void
 on_jack_server_started(
   void)
 {
+  char buffer[1024] = "";
   lash_info("JACK server start detected.");
+
+  if (!jack_proxy_read_conf_container(buffer, buffer, 1024, buffer, conf_callback))
+  {
+  }
 }
 
 void

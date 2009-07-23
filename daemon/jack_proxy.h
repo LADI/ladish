@@ -33,6 +33,14 @@ jack_proxy_connect_ports(
   uint64_t port1_id,
   uint64_t port2_id);
 
+bool
+jack_proxy_read_conf_container(
+  const char * address,
+  char * child_buffer,
+  size_t child_buffer_size,
+  void * callback_context,
+  bool (* callback)(void * context, bool leaf, const char * address, char * child));
+
 void
 on_jack_client_appeared(
   uint64_t client_id,
