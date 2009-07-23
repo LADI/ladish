@@ -35,6 +35,7 @@
 
 bool g_quit;
 service_t * g_dbus_service;
+DBusError g_dbus_error;
 
 #if 0
 static DBusHandlerResult lashd_client_disconnect_handler(DBusConnection * connection, DBusMessage * message, void * data)

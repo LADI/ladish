@@ -107,6 +107,7 @@ struct studio
 
 extern service_t * g_dbus_service;
 #define g_dbus_connection (g_dbus_service->connection)
+extern DBusError g_dbus_error;
 extern bool g_quit;
 
 #endif /* #ifndef COMMON_H__CFDC869A_31AE_4FA3_B2D3_DACA8488CA55__INCLUDED */

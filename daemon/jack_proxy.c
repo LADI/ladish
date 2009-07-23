@@ -6,12 +6,230 @@
  *
  *****************************************************************************/
 
+//#define LASH_DEBUG
+
 #include "jack_proxy.h"
 
 #define JACKDBUS_SERVICE         "org.jackaudio.service"
 #define JACKDBUS_OBJECT          "/org/jackaudio/Controller"
 #define JACKDBUS_IFACE_CONTROL   "org.jackaudio.JackControl"
 #define JACKDBUS_IFACE_PATCHBAY  "org.jackaudio.JackPatchbay"
+
+static
+void
+on_jack_patchbay_signal(
+  DBusMessage * message_ptr,
+  const char * signal_name)
+{
+  const char * client1_name;
+  const char * port1_name;
+  const char * client2_name;
+  const char * port2_name;
+  dbus_uint64_t dummy;
+  dbus_uint64_t client1_id;
+  dbus_uint64_t client2_id;
+  dbus_uint64_t port1_id;
+  dbus_uint64_t port2_id;
+
+  dbus_error_init(&g_dbus_error);
+
+  if (strcmp(signal_name, "ClientAppeared") == 0)
+  {
+    lash_debug("Received ClientAppeared signal");
+
+    if (!dbus_message_get_args(
+          message_ptr,
+          &g_dbus_error,
+          DBUS_TYPE_UINT64, &dummy,
+          DBUS_TYPE_UINT64, &client1_id,
+          DBUS_TYPE_STRING, &client1_name,
+          DBUS_TYPE_INVALID))
+    {
+      goto fail;
+    }
+
+    on_jack_client_appeared(client1_id, client1_name);
+    return;
+  }
+
+  if (strcmp(signal_name, "ClientDisappeared") == 0)
+  {
+    lash_debug("Received ClientDisappeared signal");
+
+    if (!dbus_message_get_args(
+          message_ptr,
+          &g_dbus_error,
+          DBUS_TYPE_UINT64, &dummy,
+          DBUS_TYPE_UINT64, &client1_id,
+          DBUS_TYPE_STRING, &client1_name,
+          DBUS_TYPE_INVALID))
+    {
+      goto fail;
+    }
+
+    on_jack_client_disappeared(client1_id);
+    return;
+  }
+
+  if (strcmp(signal_name, "PortAppeared") == 0)
+  {
+    lash_debug("Received PortAppeared signal");
+
+    if (!dbus_message_get_args(
+          message_ptr,
+          &g_dbus_error,
+          DBUS_TYPE_UINT64, &dummy,
+          DBUS_TYPE_UINT64, &client1_id,
+          DBUS_TYPE_STRING, &client1_name,
+          DBUS_TYPE_UINT64, &port1_id,
+          DBUS_TYPE_STRING, &port1_name,
+          DBUS_TYPE_INVALID))
+    {
+      goto fail;
+    }
+
+    on_jack_port_appeared(client1_id, port1_id, port1_name);
+    return;
+  }
+
+  if (strcmp(signal_name, "PortsConnected") == 0)
+  {
+    lash_debug("Received PortsConnected signal");
+
+    if (!dbus_message_get_args(
+          message_ptr,
+          &g_dbus_error,
+          DBUS_TYPE_UINT64, &dummy,
+          DBUS_TYPE_UINT64, &client1_id,
+          DBUS_TYPE_STRING, &client1_name,
+          DBUS_TYPE_UINT64, &port1_id,
+          DBUS_TYPE_STRING, &port1_name,
+          DBUS_TYPE_UINT64, &client2_id,
+          DBUS_TYPE_STRING, &client2_name,
+          DBUS_TYPE_UINT64, &port2_id,
+          DBUS_TYPE_STRING, &port2_name,
+          DBUS_TYPE_INVALID))
+    {
+      goto fail;
+    }
+
+    on_jack_ports_connected(
+      client1_id,
+      port1_id,
+      client2_id,
+      port2_id);
+
+    return;
+  }
+
+  if (strcmp(signal_name, "PortsDisconnected") == 0)
+  {
+    lash_debug("Received PortsDisconnected signal");
+
+    if (!dbus_message_get_args(
+          message_ptr,
+          &g_dbus_error,
+          DBUS_TYPE_UINT64, &dummy,
+          DBUS_TYPE_UINT64, &client1_id,
+          DBUS_TYPE_STRING, &client1_name,
+          DBUS_TYPE_UINT64, &port1_id,
+          DBUS_TYPE_STRING, &port1_name,
+          DBUS_TYPE_UINT64, &client2_id,
+          DBUS_TYPE_STRING, &client2_name,
+          DBUS_TYPE_UINT64, &port2_id,
+          DBUS_TYPE_STRING, &port2_name,
+          DBUS_TYPE_INVALID))
+    {
+      goto fail;
+    }
+
+    on_jack_ports_disconnected(
+      client1_id,
+      port1_id,
+      client2_id,
+      port2_id);
+    return;
+  }
+
+  return;
+
+fail:
+  lash_error("Cannot get message arguments: %s", g_dbus_error.message);
+  dbus_error_free(&g_dbus_error);
+}
+
+static
+void
+on_jack_control_signal(
+  DBusMessage * message_ptr,
+  const char * signal_name)
+{
+  if (strcmp(signal_name, "ServerStarted") == 0)
+  {
+    lash_debug("JACK server start detected.");
+    on_jack_server_started();
+    return;
+  }
+
+  if (strcmp(signal_name, "ServerStopped") == 0)
+  {
+    lash_debug("JACK server stop detected.");
+    on_jack_server_stopped();
+    return;
+  }
+}
+
+static
+DBusHandlerResult
+on_bus_signal(
+  DBusMessage * message_ptr,
+  const char * signal_name)
+{
+  const char * object_name;
+  const char * old_owner;
+  const char * new_owner;
+
+  //lash_info("bus signal '%s' received", signal_name);
+
+  dbus_error_init(&g_dbus_error);
+
+  if (strcmp(signal_name, "NameOwnerChanged") == 0)
+  {
+    //lash_info("NameOwnerChanged signal received");
+
+    if (!dbus_message_get_args(
+          message_ptr,
+          &g_dbus_error,
+          DBUS_TYPE_STRING, &object_name,
+          DBUS_TYPE_STRING, &old_owner,
+          DBUS_TYPE_STRING, &new_owner,
+          DBUS_TYPE_INVALID)) {
+      lash_error("Cannot get message arguments: %s", g_dbus_error.message);
+      dbus_error_free(&g_dbus_error);
+      return DBUS_HANDLER_RESULT_HANDLED;
+    }
+
+    if (strcmp(object_name, JACKDBUS_SERVICE) != 0)
+    {
+      return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+    }
+
+    if (old_owner[0] == '\0')
+    {
+      lash_debug("JACK serivce appeared");
+      on_jack_server_appeared();
+    }
+    else if (new_owner[0] == '\0')
+    {
+      lash_debug("JACK serivce disappeared");
+      on_jack_server_disappeared();
+    }
+
+    return DBUS_HANDLER_RESULT_HANDLED;
+  }
+
+  return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
 
 static
 DBusHandlerResult
@@ -46,21 +264,20 @@ dbus_signal_handler(
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
   }
 
-  lash_info("'%s' sent signal '%s'::'%s'", object_path, interface, signal_name);
+  lash_debug("'%s' sent signal '%s'::'%s'", object_path, interface, signal_name);
 
-#if 0
   /* Handle JACK patchbay and control interface signals */
   if (object_path != NULL && strcmp(object_path, JACKDBUS_OBJECT) == 0)
   {
     if (strcmp(interface, JACKDBUS_IFACE_PATCHBAY) == 0)
     {
-      lashd_jackdbus_handle_patchbay_signal(message_ptr);
+      on_jack_patchbay_signal(message_ptr, signal_name);
       return DBUS_HANDLER_RESULT_HANDLED;
     }
 
     if (strcmp(interface, JACKDBUS_IFACE_CONTROL) == 0)
     {
-      lashd_jackdbus_handle_control_signal(message_ptr);
+      on_jack_control_signal(message_ptr, signal_name);
       return DBUS_HANDLER_RESULT_HANDLED;
     }
 
@@ -70,9 +287,8 @@ dbus_signal_handler(
   /* Handle session bus signals to track JACK service alive state */
   if (strcmp(interface, DBUS_INTERFACE_DBUS) == 0)
   {
-    return lashd_jackdbus_handle_bus_signal(message_ptr);
+    return on_bus_signal(message_ptr, signal_name);
   }
-#endif
 
   /* Let everything else pass through */
   return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
