@@ -166,24 +166,13 @@ def build(bld):
     daemon.source = []
     for source in [
         'main.c',
-#        'server.c',
         'loader.c',
         'log.c',
         'sigsegv.c',
         'proctitle.c',
-#        'project.c',
         'appdb.c',
-#        'client.c',
-#        'store.c',
         'procfs.c',
-#        'jack_patch.c',
-#        'file.c',
-#        'dbus_service.c',
-#        'jackdbus_mgr.c',
         'dbus_iface_control.c',
-#        'dbus_iface_server.c',
-#        'client_dependency.c',
-#        'jack_mgr_client.c',
         'jack_proxy.c',
         'jack.c',
         ]:
@@ -244,7 +233,7 @@ def build(bld):
         liblash.source.append(os.path.join("dbus", source))
 
     liblash.source.append(os.path.join("common", "safety.c"))
-    liblash.source.append(os.path.join("daemon", "file.c"))
+    liblash.source.append(os.path.join("daemon", "legacy", "file.c"))
 
     # pkgpyexec_LTLIBRARIES = _lash.la
     # INCLUDES = $(PYTHON_INCLUDES)
