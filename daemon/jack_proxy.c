@@ -400,6 +400,41 @@ jack_proxy_connect_ports(
   return false;
 }
 
+static
+bool
+add_address(
+  DBusMessageIter * iter_ptr,
+  const char * address)
+{
+  DBusMessageIter array_iter;
+  const char * component;
+
+  if (!dbus_message_iter_open_container(iter_ptr, DBUS_TYPE_ARRAY, "s", &array_iter))
+  {
+    lash_error("dbus_message_iter_open_container() failed.");
+    return false;
+  }
+
+  if (address != NULL)
+  {
+    component = address;
+    while (*component != 0)
+    {
+      if (!dbus_message_iter_append_basic(&array_iter, DBUS_TYPE_STRING, &component))
+      {
+        lash_error("dbus_message_iter_append_basic() failed.");
+        return false;
+      }
+
+      component += strlen(component) + 1;
+    }
+  }
+
+  dbus_message_iter_close_container(iter_ptr, &array_iter);
+
+  return true;
+}
+
 bool
 jack_proxy_read_conf_container(
   const char * address,
@@ -410,7 +445,6 @@ jack_proxy_read_conf_container(
   DBusMessage * reply_ptr;
   DBusMessageIter top_iter;
   DBusMessageIter array_iter;
-  const char * component;
   const char * reply_signature;
   dbus_bool_t leaf;           /* Whether children are parameters (true) or containers (false) */
   char * child;
@@ -424,30 +458,11 @@ jack_proxy_read_conf_container(
 
   dbus_message_iter_init_append(request_ptr, &top_iter);
 
-  if (!dbus_message_iter_open_container(&top_iter, DBUS_TYPE_ARRAY, "s", &array_iter))
+  if (!add_address(&top_iter, address))
   {
-    lash_error("dbus_message_iter_open_container() failed.");
     dbus_message_unref(request_ptr);
     return false;
   }
-
-  if (address != NULL)
-  {
-    component = address;
-    while (*component != 0)
-    {
-      if (!dbus_message_iter_append_basic(&array_iter, DBUS_TYPE_STRING, &component))
-      {
-        lash_error("dbus_message_iter_append_basic() failed.");
-        dbus_message_unref(request_ptr);
-        return false;
-      }
-
-      component += strlen(component) + 1;
-    }
-  }
-
-  dbus_message_iter_close_container(&top_iter, &array_iter);
 
   // send message and get a handle for a reply
   reply_ptr = dbus_connection_send_with_reply_and_block(
@@ -494,6 +509,145 @@ jack_proxy_read_conf_container(
   }
 
   dbus_message_unref(reply_ptr);
+
+  return true;
+}
+
+bool
+get_variant(
+  DBusMessageIter * iter_ptr,
+  struct jack_parameter_variant * parameter_ptr)
+{
+  DBusMessageIter variant_iter;
+  int type;
+  dbus_bool_t boolean;
+  dbus_int32_t int32;
+  dbus_uint32_t uint32;
+  char * string;
+
+  dbus_message_iter_recurse(iter_ptr, &variant_iter);
+  lash_debug("variant signature: '%s'", dbus_message_iter_get_signature(&variant_iter));
+
+  type = dbus_message_iter_get_arg_type(&variant_iter);
+  switch (type)
+  {
+  case DBUS_TYPE_INT32:
+    dbus_message_iter_get_basic(&variant_iter, &int32);
+    parameter_ptr->value.int32 = int32;
+    parameter_ptr->type = jack_int32;
+    return true;
+  case DBUS_TYPE_UINT32:
+    dbus_message_iter_get_basic(&variant_iter, &uint32);
+    parameter_ptr->value.uint32 = uint32;
+    parameter_ptr->type = jack_uint32;
+    return true;
+  case DBUS_TYPE_BYTE:
+    dbus_message_iter_get_basic(&variant_iter, &parameter_ptr->value.byte);
+    parameter_ptr->type = jack_byte;
+    return true;
+  case DBUS_TYPE_STRING:
+    dbus_message_iter_get_basic(&variant_iter, &string);
+    string = strdup(string);
+    if (string == NULL)
+    {
+      lash_error("strdup failed.");
+      return false;
+    }
+
+    parameter_ptr->value.string = string;
+    parameter_ptr->type = jack_string;
+    return true;
+  case DBUS_TYPE_BOOLEAN:
+    dbus_message_iter_get_basic(&variant_iter, &boolean);
+    parameter_ptr->value.boolean = boolean;
+    parameter_ptr->type = jack_boolean;
+    return true;
+  }
+
+  lash_error("Unknown D-Bus parameter type %i", (int)type);
+  return false;
+}
+
+bool
+jack_proxy_get_parameter_value(
+  const char * address,
+  bool * is_set_ptr,
+  struct jack_parameter_variant * parameter_ptr)
+{
+  DBusMessage * request_ptr;
+  DBusMessage * reply_ptr;
+  DBusMessageIter top_iter;
+  const char * reply_signature;
+  dbus_bool_t is_set;
+  struct jack_parameter_variant default_value;
+
+  request_ptr = dbus_message_new_method_call(JACKDBUS_SERVICE, JACKDBUS_OBJECT, JACKDBUS_IFACE_CONFIGURE, "GetParameterValue");
+  if (request_ptr == NULL)
+  {
+    lash_error("dbus_message_new_method_call() failed.");
+    return false;
+  }
+
+  dbus_message_iter_init_append(request_ptr, &top_iter);
+
+  if (!add_address(&top_iter, address))
+  {
+    dbus_message_unref(request_ptr);
+    return false;
+  }
+
+  // send message and get a handle for a reply
+  reply_ptr = dbus_connection_send_with_reply_and_block(
+    g_dbus_connection,
+    request_ptr,
+    DBUS_CALL_DEFAULT_TIMEOUT,
+    &g_dbus_error);
+
+  dbus_message_unref(request_ptr);
+
+  if (reply_ptr == NULL)
+  {
+    lash_error("no reply from JACK server, error is '%s'", g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return false;
+  }
+
+  reply_signature = dbus_message_get_signature(reply_ptr);
+
+  if (strcmp(reply_signature, "bvv") != 0)
+  {
+    lash_error("GetParameterValue() reply signature mismatch. '%s'", reply_signature);
+    dbus_message_unref(reply_ptr);
+    return false;
+  }
+
+  dbus_message_iter_init(reply_ptr, &top_iter);
+
+  dbus_message_iter_get_basic(&top_iter, &is_set);
+  dbus_message_iter_next(&top_iter);
+
+  if (!get_variant(&top_iter, &default_value))
+  {
+    dbus_message_unref(reply_ptr);
+    return false;
+  }
+
+  if (default_value.type == jack_string)
+  {
+    free(default_value.value.string);
+  }
+
+  dbus_message_iter_next(&top_iter);
+
+  if (!get_variant(&top_iter, parameter_ptr))
+  {
+    dbus_message_unref(reply_ptr);
+    return false;
+  }
+
+  dbus_message_unref(reply_ptr);
+
+  *is_set_ptr = is_set;
 
   return true;
 }

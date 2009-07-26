@@ -92,6 +92,8 @@ conf_callback(
   const char * component;
   char * dst;
   size_t len;
+  struct jack_parameter_variant parameter;
+  bool is_set;
 
   dst = path;
   component = address;
@@ -116,14 +118,50 @@ conf_callback(
 
   if (leaf)
   {
-    lash_info("%s (leaf)", path);
+    lash_debug("%s (leaf)", path);
+
+    if (!jack_proxy_get_parameter_value(context, &is_set, &parameter))
+    {
+      lash_error("cannot get value of %s", path);
+      return false;
+    }
+
+    if (is_set)
+    {
+      switch (parameter.type)
+      {
+      case jack_boolean:
+        lash_info("%s value is %s (boolean)", path, parameter.value.boolean ? "true" : "false");
+        break;
+      case jack_string:
+        lash_info("%s value is %s (string)", path, parameter.value.string);
+        break;
+      case jack_byte:
+        lash_info("%s value is %u/%c (byte/char)", path, parameter.value.byte, (char)parameter.value.byte);
+        break;
+      case jack_uint32:
+        lash_info("%s value is %u (uint32)", path, (unsigned int)parameter.value.uint32);
+        break;
+      case jack_int32:
+        lash_info("%s value is %u (int32)", path, (signed int)parameter.value.int32);
+        break;
+      default:
+        lash_error("ignoring unknown jack parameter type %d (%s)", (int)parameter.type, path);
+      }
+    }
+
+    if (parameter.type == jack_string)
+    {
+      free(parameter.value.string);
+    }
   }
   else
   {
-    lash_info("%s (container)", path);
+    lash_debug("%s (container)", path);
 
     if (!jack_proxy_read_conf_container(context, context, conf_callback))
     {
+      lash_error("cannot read container %s", path);
       return false;
     }
   }

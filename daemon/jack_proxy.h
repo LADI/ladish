@@ -11,6 +11,37 @@
 
 #include "common.h"
 
+struct jack_parameter_variant
+{
+  enum
+  {
+    jack_byte,
+    jack_boolean,
+    jack_int16,
+    jack_uint16,
+    jack_int32,
+    jack_uint32,
+    jack_int64,
+    jack_uint64,
+    jack_doubl,
+    jack_string,
+  } type;
+
+  union
+  {
+    unsigned char byte;
+    bool boolean;
+    int16_t int16;
+    uint16_t uint16;
+    int32_t int32;
+    uint32_t uint32;
+    int64_t int64;
+    uint64_t uint64;
+    double doubl;
+    char *string;
+  } value;
+};
+
 bool
 jack_proxy_init(
   void);
@@ -38,6 +69,12 @@ jack_proxy_read_conf_container(
   const char * address,
   void * callback_context,
   bool (* callback)(void * context, bool leaf, const char * address, char * child));
+
+bool
+jack_proxy_get_parameter_value(
+  const char * address,
+  bool * is_set_ptr,
+  struct jack_parameter_variant * parameter_ptr);
 
 void
 on_jack_client_appeared(
