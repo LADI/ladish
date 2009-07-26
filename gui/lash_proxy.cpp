@@ -95,6 +95,8 @@ lash_proxy_impl::init()
         _server_responding = false;
 
         patchage_dbus_add_match("type='signal',interface='" DBUS_INTERFACE_DBUS "',member=NameOwnerChanged,arg0='" LASH_SERVICE "'");
+        patchage_dbus_add_match("type='signal',interface='" LASH_IFACE_CONTROL "',member=StudioAppeared");
+        patchage_dbus_add_match("type='signal',interface='" LASH_IFACE_CONTROL "',member=StudioDisappeared");
         patchage_dbus_add_match("type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectAppeared");
         patchage_dbus_add_match("type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectDisappeared");
         patchage_dbus_add_match("type='signal',interface='" LASH_IFACE_CONTROL "',member=ProjectNameChanged");
@@ -110,9 +112,9 @@ lash_proxy_impl::init()
         // get initial list of projects
         // calling any method to updates server responding status
         // this also actiavtes lash object if it not activated already
-        fetch_loaded_projects();
+        //fetch_loaded_projects();
 
-        g_app->set_lash_availability(_server_responding);
+        g_app->set_studio_availability(false);
 }
 
 bool
@@ -167,7 +169,7 @@ lash_proxy_impl::dbus_message_hook(
         assert(proxy);
         lash_proxy_impl * me = reinterpret_cast<lash_proxy_impl *>(proxy);
 
-        //info_msg("dbus_message_hook() called.");
+        info_msg("dbus_message_hook() called.");
 
         // Handle signals we have subscribed for in attach()
 
@@ -193,14 +195,29 @@ lash_proxy_impl::dbus_message_hook(
                 if (old_owner[0] == '\0')
                 {
                         info_msg((string)"LASH activated.");
-                        g_app->set_lash_availability(true);
                 }
                 else if (new_owner[0] == '\0')
                 {
                         info_msg((string)"LASH deactivated.");
-                        g_app->set_lash_availability(false);
+                        g_app->set_studio_availability(false);
                         me->_server_responding = false;
                 }
+
+                return DBUS_HANDLER_RESULT_HANDLED;
+        }
+
+        if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "StudioAppeared"))
+        {
+                info_msg((string)"Studio appeared.");
+                g_app->set_studio_availability(true);
+
+                return DBUS_HANDLER_RESULT_HANDLED;
+        }
+
+        if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "StudioDisappeared"))
+        {
+                info_msg((string)"Studio disappeared.");
+                g_app->set_studio_availability(false);
 
                 return DBUS_HANDLER_RESULT_HANDLED;
         }

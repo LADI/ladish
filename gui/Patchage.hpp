@@ -61,7 +61,7 @@ public:
   void update_state();
   void store_window_location();
   
-  void set_lash_availability(bool lash_active);
+  void set_studio_availability(bool available);
   void set_a2j_status(unsigned int status);
 
   void load_project_ask();

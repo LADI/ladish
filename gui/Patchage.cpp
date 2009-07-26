@@ -214,6 +214,7 @@ Patchage::Patchage(int argc, char** argv)
   _session = new session();
 
   _project_list = new project_list(this, _session);
+  _project_list_viewport->hide();
 
   _lash = new lash_proxy(_session);
 
@@ -554,11 +555,19 @@ Patchage::buffer_size_changed()
 }
 
 void
-Patchage::set_lash_availability(
-  bool lash_active)
+Patchage::set_studio_availability(
+  bool available)
 {
-  _project_list->set_lash_availability(lash_active);
-  _menu_view_projects->set_active(lash_active);
+  if (available)
+  {
+    _main_win->set_title("Active Studio - LADI Session Handler");
+  }
+  else
+  {
+    _main_win->set_title("LADI Session Handler");
+  }
+  _project_list->set_lash_availability(available);
+  _menu_view_projects->set_active(available);
 }
 
 void
