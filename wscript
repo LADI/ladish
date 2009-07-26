@@ -162,7 +162,7 @@ def build(bld):
     daemon.includes = "build/default" # XXX config.h version.h and other generated files
     daemon.uselib = 'DBUS-1 LIBXML-2.0 UUID'
     daemon.ver_header = 'version.h'
-    daemon.env.append_value("LINKFLAGS", ["-lutil"])
+    daemon.env.append_value("LINKFLAGS", ["-lutil", "-ldl"])
     daemon.source = []
     for source in [
         'main.c',
