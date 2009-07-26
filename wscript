@@ -64,12 +64,10 @@ def configure(conf):
         errmsg = "not installed, see http://e2fsprogs.sourceforge.net/",
         args = '--cflags --libs')
 
-    conf.check_cfg(
-        package = 'libxml-2.0',
-        atleast_version = '2.0.0',
-        mandatory = True,
-        errmsg = "not installed, see http://xmlsoft.org/",
-        args = '--cflags --libs')
+    conf.check(header_name='expat.h', define_name="HAVE_EXPAT")
+
+    if conf.is_defined('HAVE_EXPAT'):
+        conf.env['LIB_EXPAT'] = ['expat']
 
     conf.check_cfg(
         package = 'dbus-glib-1',
