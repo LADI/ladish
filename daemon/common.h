@@ -104,12 +104,66 @@ struct studio
   struct list_head rooms;                  /* Rooms connected to the studio */
   struct list_head clients;                /* studio clients (studio guts and room links) */
   struct list_head ports;                  /* studio ports (studio guts and room links) */
+
+  bool persisted:1;             /* Studio has on-disk representation, i.e. can be reloaded from disk */
+  bool modified:1;              /* Studio needs saving */
+  bool jack_conf_obsolete:1;    /* JACK server was stopped during configuration retrieval */
+  bool jack_conf_stable:1;      /* JACK server configuration obtained successfully */
+
+  struct list_head jack_conf;
+};
+
+struct jack_parameter_variant
+{
+  enum
+  {
+    jack_byte,
+    jack_boolean,
+    jack_int16,
+    jack_uint16,
+    jack_int32,
+    jack_uint32,
+    jack_int64,
+    jack_uint64,
+    jack_doubl,
+    jack_string,
+  } type;
+
+  union
+  {
+    unsigned char byte;
+    bool boolean;
+    int16_t int16;
+    uint16_t uint16;
+    int32_t int32;
+    uint32_t uint32;
+    int64_t int64;
+    uint64_t uint64;
+    double doubl;
+    char *string;
+  } value;
+};
+
+struct jack_conf_container
+{
+  struct list_head siblings;
+  char * name;
+  bool children_leafs;          /* if true, children are "jack_conf_parameter"s, if false, children are "jack_conf_container"s */
+  struct list_head children;
+};
+
+struct jack_conf_parameter
+{
+  struct list_head siblings;
+  char * name;
+  struct jack_parameter_variant parameter;
 };
 
 extern service_t * g_dbus_service;
 #define g_dbus_connection (g_dbus_service->connection)
 extern DBusError g_dbus_error;
 extern bool g_quit;
+extern struct studio * g_studio_ptr;
 
 #define DBUS_CALL_DEFAULT_TIMEOUT 1000 // in milliseconds
 

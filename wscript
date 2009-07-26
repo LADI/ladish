@@ -173,6 +173,7 @@ def build(bld):
         'dbus_iface_control.c',
         'jack_proxy.c',
         'jack.c',
+        'studio.c',
         ]:
         daemon.source.append(os.path.join("daemon", source))
 

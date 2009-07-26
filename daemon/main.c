@@ -32,10 +32,12 @@
 #include "sigsegv.h"
 #include "dbus_iface_control.h"
 #include "jack.h"
+#include "studio.h"
 
 bool g_quit;
 service_t * g_dbus_service;
 DBusError g_dbus_error;
+struct studio * g_studio_ptr;
 
 #if 0
 static DBusHandlerResult lashd_client_disconnect_handler(DBusConnection * connection, DBusMessage * message, void * data)
@@ -226,6 +228,11 @@ int main(int argc, char ** argv, char ** envp)
   {
     dbus_connection_read_write_dispatch(g_dbus_service->connection, 50);
     loader_run();
+  }
+
+  if (g_studio_ptr != NULL)
+  {
+    studio_destroy(g_studio_ptr);
   }
 
   ret = EXIT_SUCCESS;
