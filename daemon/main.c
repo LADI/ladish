@@ -232,6 +232,7 @@ int main(int argc, char ** argv, char ** envp)
 
   if (g_studio_ptr != NULL)
   {
+    lashd_dbus_signal_emit_studio_appeared();
     studio_destroy(g_studio_ptr);
   }
 

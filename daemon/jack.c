@@ -9,6 +9,7 @@
 #include "jack.h"
 #include "jack_proxy.h"
 #include "studio.h"
+#include "dbus_iface_control.h"
 
 bool
 jack_conf_container_create(
@@ -411,6 +412,7 @@ on_jack_server_started(
     {
       g_studio_ptr->jack_conf_stable = true;
       lash_info("jack conf successfully retrieved");
+      lashd_dbus_signal_emit_studio_appeared();
       return;
     }
   }
@@ -438,6 +440,7 @@ on_jack_server_stopped(
 
   if (!g_studio_ptr->persisted)
   {
+    lashd_dbus_signal_emit_studio_disappeared();
     studio_destroy(g_studio_ptr);
     g_studio_ptr = NULL;
     return;

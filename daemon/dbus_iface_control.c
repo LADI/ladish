@@ -973,6 +973,24 @@ static void lashd_dbus_exit(method_call_t *call)
 }
 
 void
+lashd_dbus_signal_emit_studio_appeared()
+{
+  signal_new_valist(
+    g_dbus_service,
+    "/", INTERFACE_NAME, "StudioAppeared",
+    DBUS_TYPE_INVALID);
+}
+
+void
+lashd_dbus_signal_emit_studio_disappeared()
+{
+  signal_new_valist(
+    g_dbus_service,
+    "/", INTERFACE_NAME, "StudioDisappeared",
+    DBUS_TYPE_INVALID);
+}
+
+void
 lashd_dbus_signal_emit_project_appeared(
   const char * project_name,
   const char * project_path)

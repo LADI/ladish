@@ -24,6 +24,12 @@
 extern const interface_t g_lashd_interface_control;
 
 void
+lashd_dbus_signal_emit_studio_appeared();
+
+void
+lashd_dbus_signal_emit_studio_disappeared();
+
+void
 lashd_dbus_signal_emit_project_appeared(
   const char * project_name,
   const char * project_path);
