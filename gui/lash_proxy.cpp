@@ -27,9 +27,9 @@
 #include "globals.hpp"
 #include "dbus_helpers.h"
 
-#define LASH_SERVICE       "org.nongnu.LASH"
+#define LASH_SERVICE       DBUS_NAME_BASE
 #define LASH_OBJECT        "/"
-#define LASH_IFACE_CONTROL "org.nongnu.LASH.Control"
+#define LASH_IFACE_CONTROL DBUS_NAME_BASE ".Control"
 
 using namespace std;
 

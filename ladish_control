@@ -17,8 +17,8 @@
 #   along with this program; if not, write to the Free Software
 #   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
 
-control_interface_name = 'org.nongnu.LASH.Control'
-service_name = 'org.nongnu.LASH'
+control_interface_name = 'org.ladish.Control'
+service_name = 'org.ladish'
 
 import sys
 import os
