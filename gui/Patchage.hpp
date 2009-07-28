@@ -109,11 +109,7 @@ protected:
 
   void on_arrange();
   void on_help_about();
-  void on_messages_clear();
-  void on_messages_close();
-  bool on_messages_delete(GdkEventAny*);
   void on_quit();
-  void on_show_messages();
   void on_show_projects();
   void on_store_positions();
   void on_view_toolbar();
@@ -171,16 +167,11 @@ protected:
   Widget<Gtk::MenuItem>       _menu_close_all_projects;
   Widget<Gtk::MenuItem>       _menu_store_positions;
   Widget<Gtk::MenuItem>       _menu_view_arrange;
-  Widget<Gtk::CheckMenuItem>  _menu_view_messages;
   Widget<Gtk::CheckMenuItem>  _menu_view_projects;
   Widget<Gtk::MenuItem>       _menu_view_refresh;
   Widget<Gtk::CheckMenuItem>  _menu_view_toolbar;
-  Widget<Gtk::Button>         _messages_clear_but;
-  Widget<Gtk::Button>         _messages_close_but;
-  Widget<Gtk::Dialog>         _messages_win;
   Widget<Gtk::Viewport>       _project_list_viewport;
   Widget<Gtk::Label>          _sample_rate_label;
-  Widget<Gtk::TextView>       _status_text;
   Widget<Gtk::Toolbar>        _toolbar;
   Widget<Gtk::ToolButton>     _zoom_full_but;
   Widget<Gtk::ToolButton>     _zoom_normal_but;

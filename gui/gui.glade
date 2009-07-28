@@ -4,7 +4,7 @@
 <glade-interface>
   <widget class="GtkWindow" id="main_win">
     <property name="border_width">1</property>
-    <property name="title" translatable="yes">Patchage</property>
+    <property name="title" translatable="yes">LADI Session Handler</property>
     <child>
       <widget class="GtkVBox" id="main_vbox">
         <property name="visible">True</property>
@@ -203,16 +203,6 @@
                         <property name="label" translatable="yes">_Projects</property>
                         <property name="use_underline">True</property>
                         <accelerator key="P" modifiers="GDK_CONTROL_MASK" signal="activate"/>
-                      </widget>
-                    </child>
-                    <child>
-                      <widget class="GtkCheckMenuItem" id="menu_view_messages">
-                        <property name="visible">True</property>
-                        <property name="tooltip" translatable="yes">View log messages</property>
-                        <property name="label" translatable="yes">_Messages</property>
-                        <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_messages1_activate"/>
-                        <accelerator key="M" modifiers="GDK_CONTROL_MASK" signal="activate"/>
                       </widget>
                     </child>
                     <child>
@@ -564,86 +554,6 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
       <widget class="GtkVBox" id="dialog-vbox1">
         <child internal-child="action_area">
           <widget class="GtkHButtonBox" id="dialog-action_area1">
-          </widget>
-          <packing>
-            <property name="expand">False</property>
-            <property name="pack_type">GTK_PACK_END</property>
-          </packing>
-        </child>
-      </widget>
-    </child>
-  </widget>
-  <widget class="GtkDialog" id="messages_win">
-    <property name="can_default">True</property>
-    <property name="has_default">True</property>
-    <property name="receives_default">True</property>
-    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-    <property name="border_width">5</property>
-    <property name="title" translatable="yes">Patchage - Messages</property>
-    <property name="window_position">GTK_WIN_POS_CENTER_ON_PARENT</property>
-    <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
-    <property name="has_separator">False</property>
-    <child internal-child="vbox">
-      <widget class="GtkVBox" id="dialog-vbox3">
-        <property name="visible">True</property>
-        <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-        <property name="spacing">2</property>
-        <child>
-          <widget class="GtkScrolledWindow" id="scrolledwindow2">
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-            <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-            <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
-            <property name="shadow_type">GTK_SHADOW_IN</property>
-            <child>
-              <widget class="GtkTextView" id="status_text">
-                <property name="width_request">640</property>
-                <property name="height_request">480</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="editable">False</property>
-                <property name="wrap_mode">GTK_WRAP_WORD</property>
-                <property name="cursor_visible">False</property>
-                <property name="accepts_tab">False</property>
-              </widget>
-            </child>
-          </widget>
-          <packing>
-            <property name="position">1</property>
-          </packing>
-        </child>
-        <child internal-child="action_area">
-          <widget class="GtkHButtonBox" id="dialog-action_area3">
-            <property name="visible">True</property>
-            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-            <property name="layout_style">GTK_BUTTONBOX_END</property>
-            <child>
-              <widget class="GtkButton" id="messages_clear_but">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                <property name="label" translatable="yes">gtk-clear</property>
-                <property name="use_stock">True</property>
-                <property name="response_id">0</property>
-              </widget>
-            </child>
-            <child>
-              <widget class="GtkButton" id="messages_close_but">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="can_default">True</property>
-                <property name="has_default">True</property>
-                <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                <property name="label" translatable="yes">gtk-close</property>
-                <property name="use_stock">True</property>
-                <property name="response_id">0</property>
-              </widget>
-              <packing>
-                <property name="position">1</property>
-              </packing>
-            </child>
           </widget>
           <packing>
             <property name="expand">False</property>

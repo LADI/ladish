@@ -44,8 +44,8 @@
 
 Patchage * g_app;
 
-//#define LOG_TO_STD
-#define LOG_TO_STATUS
+#define LOG_TO_STD
+//#define LOG_TO_STATUS
 
 using namespace std;
 
@@ -102,16 +102,11 @@ Patchage::Patchage(int argc, char** argv)
   , INIT_WIDGET(_menu_close_all_projects)
   , INIT_WIDGET(_menu_store_positions)
   , INIT_WIDGET(_menu_view_arrange)
-  , INIT_WIDGET(_menu_view_messages)
   , INIT_WIDGET(_menu_view_projects)
   , INIT_WIDGET(_menu_view_refresh)
   , INIT_WIDGET(_menu_view_toolbar)
-  , INIT_WIDGET(_messages_clear_but)
-  , INIT_WIDGET(_messages_close_but)
-  , INIT_WIDGET(_messages_win)
   , INIT_WIDGET(_project_list_viewport)
   , INIT_WIDGET(_sample_rate_label)
-  , INIT_WIDGET(_status_text)
   , INIT_WIDGET(_toolbar)
   , INIT_WIDGET(_zoom_full_but)
   , INIT_WIDGET(_zoom_normal_but)
@@ -178,20 +173,11 @@ Patchage::Patchage(int argc, char** argv)
       sigc::mem_fun(this, &Patchage::on_arrange));
   _menu_view_toolbar->signal_activate().connect(
       sigc::mem_fun(this, &Patchage::on_view_toolbar));
-  _menu_view_messages->signal_toggled().connect(
-      sigc::mem_fun(this, &Patchage::on_show_messages));
   _menu_view_projects->signal_toggled().connect(
       sigc::mem_fun(this, &Patchage::on_show_projects));
   _menu_help_about->signal_activate().connect(
       sigc::mem_fun(this, &Patchage::on_help_about));
   
-  _messages_clear_but->signal_clicked().connect(
-      sigc::mem_fun(this, &Patchage::on_messages_clear));
-  _messages_close_but->signal_clicked().connect(
-      sigc::mem_fun(this, &Patchage::on_messages_close));
-  _messages_win->signal_delete_event().connect(
-      sigc::mem_fun(this, &Patchage::on_messages_delete));
-
   _canvas->show();
   _main_win->present();
   
@@ -252,7 +238,6 @@ Patchage::~Patchage()
   delete _a2j;
 
   _about_win.destroy();
-  _messages_win.destroy();
   //_main_win.destroy();
 
   patchage_dbus_uninit();
@@ -389,11 +374,6 @@ Patchage::info_msg(const std::string& msg)
 void
 Patchage::status_msg(const string& msg) 
 {
-  if (_status_text->get_buffer()->size() > 0)
-    _status_text->get_buffer()->insert(_status_text->get_buffer()->end(), "\n");
-
-  _status_text->get_buffer()->insert(_status_text->get_buffer()->end(), msg);
-  _status_text->scroll_to_mark(_status_text->get_buffer()->get_insert(), 0);
 }
 
 
@@ -455,45 +435,10 @@ Patchage::on_help_about()
 
 
 void
-Patchage::on_messages_clear()
-{
-  _status_text->get_buffer()->erase(
-      _status_text->get_buffer()->begin(),
-      _status_text->get_buffer()->end());
-}
-
-  
-void
-Patchage::on_messages_close() 
-{
-  _menu_view_messages->set_active(false);
-}
-
-  
-bool
-Patchage::on_messages_delete(GdkEventAny*) 
-{
-  _menu_view_messages->set_active(false);
-  return true;
-}
-
-
-void
 Patchage::on_quit() 
 {
   _main_win->hide();
 }
-
-
-void
-Patchage::on_show_messages()
-{
-  if (_menu_view_messages->get_active())
-    _messages_win->present();
-  else
-    _messages_win->hide();
-}
-
 
 void
 Patchage::on_show_projects()
