@@ -544,30 +544,22 @@ The bar represents the percentage of available time used for audio processing (i
   <widget class="GtkAboutDialog" id="about_win">
     <property name="destroy_with_parent">True</property>
     <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
-    <property name="program_name">Patchage</property>
-    <property name="copyright" translatable="yes">(C) 2005-2008 Dave Robillard
-(C) 2008 Nedko Arnaudov</property>
-    <property name="comments" translatable="yes">A LASH frontend.</property>
-    <property name="website">http://drobilla.net/software/patchage</property>
-    <property name="license" translatable="yes">Patchage is free software; you can redistribute it and/or modify
+    <property name="program_name">LADI Session Handler</property>
+    <property name="website">http://ladish.org/</property>
+    <property name="license" translatable="yes">LADI Session Handler is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
 (at your option) any later version.
 
-Patchage is distributed in the hope that it will be useful,
+LADI Session Handler is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with Patchage; if not, write to the Free Software Foundation, Inc.,
+along with LADI Session Handler; if not, write to the Free Software Foundation, Inc.,
 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 </property>
-    <property name="authors">Dave Robillard &lt;dave@drobilla.net&gt;
-Nedko Arnaudov &lt;nedko@arnaudov.name&gt;</property>
-    <property name="translator_credits" translatable="yes" comments="TRANSLATORS: Replace this string with your names, one name per line.">translator-credits</property>
-    <property name="artists">Icon:
-	Lapo Calamandrei</property>
     <child internal-child="vbox">
       <widget class="GtkVBox" id="dialog-vbox1">
         <child internal-child="action_area">
