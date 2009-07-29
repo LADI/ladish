@@ -18,13 +18,9 @@
 #ifndef PATCHAGE_PATCHAGEPORT_HPP
 #define PATCHAGE_PATCHAGEPORT_HPP
 
-#include "config.h"
+#include "common.h"
 #include <string>
 #include <boost/shared_ptr.hpp>
-#include <flowcanvas/Port.hpp>
-#include <flowcanvas/Module.hpp>
-
-using namespace FlowCanvas;
 
 enum PortType { JACK_AUDIO, JACK_MIDI };
 
@@ -33,18 +29,14 @@ enum PortType { JACK_AUDIO, JACK_MIDI };
  *
  * \ingroup OmGtk
  */
-struct PatchagePort : public FlowCanvas::Port
+struct PatchagePort
 {
   PatchagePort(
-    boost::shared_ptr<Module> module,
+    canvas_module_handle module,
     const std::string& name,
     bool is_input,
-    int color)
-    : Port(module, name, is_input, color)
-  {
-  }
-
-  virtual ~PatchagePort() {}
+    int color);
+  virtual ~PatchagePort();
 
   PortType type;
   bool is_a2j_mapped;

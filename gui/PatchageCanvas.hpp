@@ -18,9 +18,8 @@
 #ifndef PATCHAGE_PATCHAGECANVAS_HPP
 #define PATCHAGE_PATCHAGECANVAS_HPP
 
-#include "config.h"
+#include "common.h"
 #include <string>
-#include <flowcanvas/Canvas.hpp>
 #include "StateManager.hpp"
 
 class Patchage;
@@ -28,21 +27,19 @@ class PatchageModule;
 class PatchagePort;
 
 using std::string;
-using namespace FlowCanvas;
 
-class PatchageCanvas : public Canvas {
+class PatchageCanvas
+{
 public:
   PatchageCanvas(Patchage* _app, int width, int height);
   
   boost::shared_ptr<PatchageModule> find_module(const string& name, ModuleType type);
   
-  void connect(boost::shared_ptr<Connectable> port1, boost::shared_ptr<Connectable> port2);
-  void disconnect(boost::shared_ptr<Connectable> port1, boost::shared_ptr<Connectable> port2);
+  void connect(boost::shared_ptr<PatchagePort> port1, boost::shared_ptr<PatchagePort> port2);
+  void disconnect(boost::shared_ptr<PatchagePort> port1, boost::shared_ptr<PatchagePort> port2);
 
   void status_message(const string& msg);
   
-  boost::shared_ptr<Item> get_item(const string& name);
-
   boost::shared_ptr<PatchagePort>
   get_port(
     const string& module_name,
@@ -54,6 +51,7 @@ public:
 
 private:
   Patchage* _app;
+  canvas_handle _canvas;
 };
 
 

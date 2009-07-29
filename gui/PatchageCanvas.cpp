@@ -22,26 +22,12 @@
 #include "PatchageModule.hpp"
 #include "PatchagePort.hpp"
 
-PatchageCanvas::PatchageCanvas(Patchage* app, int width, int height)
-  : FlowCanvas::Canvas(width, height)
-    , _app(app)
+PatchageCanvas::PatchageCanvas(Patchage* app, int width, int height) : _app(app)
 {
+	canvas_create(width, height, &_canvas);
 }
 
-
-boost::shared_ptr<Item>
-PatchageCanvas::get_item(const string& name)
-{
-  ItemList::iterator m = _items.begin();
-
-  for ( ; m != _items.end(); ++m)
-    if ((*m)->name() == name)
-      break;
-
-  return (m == _items.end()) ? boost::shared_ptr<Item>() : *m;
-}
-
-
+#if 0
 boost::shared_ptr<PatchageModule>
 PatchageCanvas::find_module(const string& name, ModuleType type)
 {
@@ -118,3 +104,4 @@ PatchageCanvas::lookup_port_by_a2j_jack_port_name(
   
   return boost::shared_ptr<PatchagePort>();
 }
+#endif

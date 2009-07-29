@@ -20,33 +20,23 @@
 
 #include <string>
 #include <libgnomecanvasmm.h>
-#include <flowcanvas/Canvas.hpp>
-#include <flowcanvas/Module.hpp>
 #include "PatchageCanvas.hpp"
 #include "StateManager.hpp"
 #include "PatchagePort.hpp"
 
-using namespace FlowCanvas;
-
-class PatchageModule : public Module
+class PatchageModule
 {
 public:
-  PatchageModule(Patchage* app, const std::string& name, ModuleType type, double x=0, double y=0)
-    : Module(app->canvas(), name, x, y)
-    , _app(app)
-    , _type(type)
-  {
+  PatchageModule(Patchage* app, const std::string& name, ModuleType type, double x=0, double y=0);
 
-  }
-
-  virtual ~PatchageModule() { delete _menu; _menu = NULL; }
+  virtual ~PatchageModule();
 
   bool
   identify(const std::string& name, ModuleType type)
   {
     return _name == name && (_type == type || _type == InputOutput);
   }
-
+#if 0
   void create_menu() {
     _menu = new Gtk::Menu();
     Gtk::Menu::MenuList& items = _menu->items();
@@ -60,7 +50,6 @@ public:
     items.push_back(Gtk::Menu_Helpers::MenuElem("Disconnect All",
       sigc::mem_fun(this, &PatchageModule::menu_disconnect_all)));
   }
-  
   void move(double dx, double dy) {
     FlowCanvas::Module::move(dx, dy);
     store_location();
@@ -103,10 +92,12 @@ public:
     for (PortVector::iterator p = _ports.begin(); p != _ports.end(); ++p)
       (*p)->disconnect_all();
   }
+#endif
 
 protected:
   Patchage*  _app;
   ModuleType _type;
+  std::string _name;
 };
 
 
