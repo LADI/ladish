@@ -38,8 +38,8 @@ public:
         lash_client(
                 lash_proxy * lash_ptr,
                 project * project_ptr,
-                const string& id,
-                const string& name);
+                const std::string& id,
+                const std::string& name);
 
         ~lash_client();
 
@@ -48,24 +48,24 @@ public:
 
         void
         get_id(
-                string& id);
+                std::string& id);
 
         void
         get_name(
-                string& name);
+                std::string& name);
 
         void
         do_rename(
-                const string& name);
+                const std::string& name);
 
-        signal0<void> _signal_renamed;
+	sigc::signal0<void> _signal_renamed;
 
 private:
         friend class lash_proxy_impl;
 
         void
         on_name_changed(
-                const string& name);
+                const std::string& name);
 
         lash_client_impl * _impl_ptr;
 };

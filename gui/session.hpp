@@ -42,26 +42,26 @@ public:
 
   void
   project_add(
-    shared_ptr<project> project_ptr);
+    boost::shared_ptr<project> project_ptr);
 
   void
   project_close(
-    const string& project_name);
+    const std::string& project_name);
 
-  shared_ptr<project> find_project_by_name(const string& name);
+  boost::shared_ptr<project> find_project_by_name(const std::string& name);
 
   void
   client_add(
-    shared_ptr<lash_client> client_ptr);
+    boost::shared_ptr<lash_client> client_ptr);
 
   void
   client_remove(
-    const string& id);
+    const std::string& id);
 
-  shared_ptr<lash_client> find_client_by_id(const string& id);
+  boost::shared_ptr<lash_client> find_client_by_id(const std::string& id);
 
-  sigc::signal1<void, shared_ptr<project> > _signal_project_added;
-  sigc::signal1<void, shared_ptr<project> > _signal_project_closed;
+  sigc::signal1<void, boost::shared_ptr<project> > _signal_project_added;
+  sigc::signal1<void, boost::shared_ptr<project> > _signal_project_closed;
 
 private:
   session_impl * _impl_ptr;

@@ -42,8 +42,8 @@
 struct project_list_column_record : public Gtk::TreeModel::ColumnRecord
 {
   Gtk::TreeModelColumn<Glib::ustring> name;
-  Gtk::TreeModelColumn<shared_ptr<project> > project_ptr;
-  Gtk::TreeModelColumn<shared_ptr<lash_client> > client_ptr;
+  Gtk::TreeModelColumn<boost::shared_ptr<project> > project_ptr;
+  Gtk::TreeModelColumn<boost::shared_ptr<lash_client> > client_ptr;
 };
 
 struct project_list_impl : public sigc::trackable
@@ -58,20 +58,20 @@ struct project_list_impl : public sigc::trackable
     Glib::RefPtr<Gnome::Glade::Xml> xml,
     Patchage * app);
 
-  void project_added(shared_ptr<project> project_ptr);
-  void project_closed(shared_ptr<project> project_ptr);
+  void project_added(boost::shared_ptr<project> project_ptr);
+  void project_closed(boost::shared_ptr<project> project_ptr);
   void project_renamed(Gtk::TreeModel::iterator iter);
-  void client_added(shared_ptr<lash_client> client_ptr, Gtk::TreeModel::iterator iter);
-  void client_removed(shared_ptr<lash_client> client_ptr, Gtk::TreeModel::iterator iter);
+  void client_added(boost::shared_ptr<lash_client> client_ptr, Gtk::TreeModel::iterator iter);
+  void client_removed(boost::shared_ptr<lash_client> client_ptr, Gtk::TreeModel::iterator iter);
   void client_renamed(Gtk::TreeModel::iterator iter);
 
   bool on_button_press_event(GdkEventButton * event);
 
   void on_menu_popup_load_project();
   void on_menu_popup_save_all_projects();
-  void on_menu_popup_save_project(shared_ptr<project> project_ptr);
-  void on_menu_popup_close_project(shared_ptr<project> project_ptr);
-  void on_menu_popup_project_properties(shared_ptr<project> project_ptr);
+  void on_menu_popup_save_project(boost::shared_ptr<project> project_ptr);
+  void on_menu_popup_close_project(boost::shared_ptr<project> project_ptr);
+  void on_menu_popup_project_properties(boost::shared_ptr<project> project_ptr);
   void on_menu_popup_close_all_projects();
 };
 
@@ -138,8 +138,8 @@ project_list_impl::on_button_press_event(GdkEventButton * event_ptr)
       selection->select(path);
 
       Gtk::TreeIter iter = selection->get_selected();
-      shared_ptr<project> project_ptr = (*iter)[_columns.project_ptr];
-      string name;
+      boost::shared_ptr<project> project_ptr = (*iter)[_columns.project_ptr];
+      std::string name;
 
       if (project_ptr)
       {
@@ -147,7 +147,7 @@ project_list_impl::on_button_press_event(GdkEventButton * event_ptr)
 
         menulist.push_back(
           Gtk::Menu_Helpers::MenuElem(
-            (string)"_Save project '" + name + "'",
+            (std::string)"_Save project '" + name + "'",
             sigc::bind(
               sigc::mem_fun(
                 *this,
@@ -155,7 +155,7 @@ project_list_impl::on_button_press_event(GdkEventButton * event_ptr)
               project_ptr)));
         menulist.push_back(
           Gtk::Menu_Helpers::MenuElem(
-            (string)"_Close project '" + name + "'",
+            (std::string)"_Close project '" + name + "'",
             sigc::bind(
               sigc::mem_fun(
                 *this,
@@ -164,7 +164,7 @@ project_list_impl::on_button_press_event(GdkEventButton * event_ptr)
 
         menulist.push_back(
           Gtk::Menu_Helpers::MenuElem(
-            (string)"_Project '" + name + "' properties",
+            (std::string)"_Project '" + name + "' properties",
             sigc::bind(
               sigc::mem_fun(
                 *this,
@@ -202,9 +202,9 @@ project_list_impl::on_menu_popup_save_all_projects()
 
 void
 project_list_impl::on_menu_popup_save_project(
-  shared_ptr<project> project_ptr)
+  boost::shared_ptr<project> project_ptr)
 {
-  string name;
+  std::string name;
 
   project_ptr->get_name(name);
   _app->save_project(name);
@@ -212,9 +212,9 @@ project_list_impl::on_menu_popup_save_project(
 
 void
 project_list_impl::on_menu_popup_close_project(
-  shared_ptr<project> project_ptr)
+  boost::shared_ptr<project> project_ptr)
 {
-  string name;
+  std::string name;
 
   project_ptr->get_name(name);
   _app->close_project(name);
@@ -222,7 +222,7 @@ project_list_impl::on_menu_popup_close_project(
 
 void
 project_list_impl::on_menu_popup_project_properties(
-  shared_ptr<project> project_ptr)
+  boost::shared_ptr<project> project_ptr)
 {
   project_properties_dialog dialog;
 
@@ -237,12 +237,12 @@ project_list_impl::on_menu_popup_close_all_projects()
 
 void
 project_list_impl::project_added(
-  shared_ptr<project> project_ptr)
+  boost::shared_ptr<project> project_ptr)
 {
   Gtk::TreeModel::iterator iter;
   Gtk::TreeModel::iterator child_iter;
   Gtk::TreeModel::Row row;
-  string project_name;
+  std::string project_name;
 
   project_ptr->get_name(project_name);
 
@@ -264,9 +264,9 @@ project_list_impl::project_added(
 
 void
 project_list_impl::project_closed(
-  shared_ptr<project> project_ptr)
+  boost::shared_ptr<project> project_ptr)
 {
-  shared_ptr<project> temp_project_ptr;
+  boost::shared_ptr<project> temp_project_ptr;
   Gtk::TreeModel::Children children = _model->children();
   Gtk::TreeModel::Children::iterator iter = children.begin();
 
@@ -290,8 +290,8 @@ void
 project_list_impl::project_renamed(
   Gtk::TreeModel::iterator iter)
 {
-  shared_ptr<project> project_ptr;
-  string project_name;
+  boost::shared_ptr<project> project_ptr;
+  std::string project_name;
 
   Gtk::TreeModel::Row row = *iter;
 
@@ -308,10 +308,10 @@ project_list_impl::project_renamed(
 
 void
 project_list_impl::client_added(
-  shared_ptr<lash_client> client_ptr,
+  boost::shared_ptr<lash_client> client_ptr,
   Gtk::TreeModel::iterator iter)
 {
-  string name;
+  std::string name;
   Gtk::TreeModel::Path path = _model->get_path(iter);
   Gtk::TreeModel::Row row = *iter;
 
@@ -331,8 +331,8 @@ void
 project_list_impl::client_renamed(
   Gtk::TreeModel::iterator iter)
 {
-  shared_ptr<lash_client> client_ptr;
-  string client_name;
+  boost::shared_ptr<lash_client> client_ptr;
+  std::string client_name;
 
   Gtk::TreeModel::Row row = *iter;
 
@@ -344,10 +344,10 @@ project_list_impl::client_renamed(
 
 void
 project_list_impl::client_removed(
-  shared_ptr<lash_client> client_ptr,
+  boost::shared_ptr<lash_client> client_ptr,
   Gtk::TreeModel::iterator iter)
 {
-  string name;
+  std::string name;
   Gtk::TreeModel::Path path = _model->get_path(iter);
   Gtk::TreeModel::Row row = *iter;
 

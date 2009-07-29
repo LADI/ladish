@@ -37,7 +37,7 @@ class project
 public:
   project(
     lash_proxy * lash_ptr,
-    const string& name);
+    const std::string& name);
 
   ~project();
 
@@ -46,48 +46,48 @@ public:
 
   void
   get_name(
-    string& name);
+    std::string& name);
 
   void
   get_description(
-    string& description);
+    std::string& description);
 
   void
   get_notes(
-    string& notes);
+    std::string& notes);
 
   bool
   get_modified_status();
 
   void
   get_clients(
-    list<shared_ptr<lash_client> >& clients);
+    std::list<boost::shared_ptr<lash_client> >& clients);
 
   void
   do_rename(
-    const string& name);
+    const std::string& name);
 
   void
   do_change_description(
-    const string& description);
+    const std::string& description);
 
   void
   do_change_notes(
-    const string& notes);
+    const std::string& notes);
 
-  signal0<void> _signal_renamed;
-  signal0<void> _signal_modified_status_changed;
-  signal0<void> _signal_description_changed;
-  signal0<void> _signal_notes_changed;
-  signal1<void, shared_ptr<lash_client> > _signal_client_added;
-  signal1<void, shared_ptr<lash_client> > _signal_client_removed;
+  sigc::signal0<void> _signal_renamed;
+  sigc::signal0<void> _signal_modified_status_changed;
+  sigc::signal0<void> _signal_description_changed;
+  sigc::signal0<void> _signal_notes_changed;
+  sigc::signal1<void, boost::shared_ptr<lash_client> > _signal_client_added;
+  sigc::signal1<void, boost::shared_ptr<lash_client> > _signal_client_removed;
 
 private:
   friend class lash_proxy_impl;
 
   void
   on_name_changed(
-    const string& name);
+    const std::string& name);
 
   void
   on_modified_status_changed(
@@ -95,19 +95,19 @@ private:
 
   void
   on_description_changed(
-    const string& description);
+    const std::string& description);
 
   void
   on_notes_changed(
-    const string& notes);
+    const std::string& notes);
 
   void
   on_client_added(
-    shared_ptr<lash_client> client_ptr);
+    boost::shared_ptr<lash_client> client_ptr);
 
   void
   on_client_removed(
-    const string& id);
+    const std::string& id);
 
   project_impl * _impl_ptr;
 };

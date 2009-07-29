@@ -31,9 +31,6 @@
 #include "StateManager.hpp"
 #include "Patchage.hpp"
 
-using namespace std;
-
-
 StateManager::StateManager()
   : _window_location(0, 0)
   , _window_size(640, 480)
@@ -43,9 +40,9 @@ StateManager::StateManager()
 
 
 bool
-StateManager::get_module_location(const string& name, ModuleType type, Coord& loc) 
+StateManager::get_module_location(const std::string& name, ModuleType type, Coord& loc) 
 {
-  map<string, ModuleSettings>::const_iterator i = _module_settings.find(name);
+  std::map<std::string, ModuleSettings>::const_iterator i = _module_settings.find(name);
   if (i == _module_settings.end())
     return false;
 
@@ -79,10 +76,10 @@ StateManager::get_module_location(const string& name, ModuleType type, Coord& lo
 
 
 void
-StateManager::set_module_location(const string& name, ModuleType type, Coord loc) 
+StateManager::set_module_location(const std::string& name, ModuleType type, Coord loc) 
 {
 retry:
-  map<string, ModuleSettings>::iterator i = _module_settings.find(name);
+  std::map<std::string, ModuleSettings>::iterator i = _module_settings.find(name);
   if (i == _module_settings.end()) {
     // no mapping exists, insert new element and set its split type, then retry to retrieve reference to it
     _module_settings[name].split = type != InputOutput;
@@ -113,9 +110,9 @@ retry:
  * to allow driver's to request terminal ports get split by default).
  */
 bool
-StateManager::get_module_split(const string& name, bool default_val) const
+StateManager::get_module_split(const std::string& name, bool default_val) const
 {
-  map<string, ModuleSettings>::const_iterator i = _module_settings.find(name);
+  std::map<std::string, ModuleSettings>::const_iterator i = _module_settings.find(name);
   if (i == _module_settings.end())
     return default_val;
 
@@ -124,28 +121,28 @@ StateManager::get_module_split(const string& name, bool default_val) const
 
 
 void
-StateManager::set_module_split(const string& name, bool split) 
+StateManager::set_module_split(const std::string& name, bool split) 
 {
   _module_settings[name].split = split;
 }
 
 
 void
-StateManager::load(const string& filename) 
+StateManager::load(const std::string& filename) 
 { 
   _module_settings.clear();
 
-  cerr << "Loading configuration file " << filename << endl;
+  std::cerr << "Loading configuration file " << filename << std::endl;
   
   std::ifstream is;
   is.open(filename.c_str(), std::ios::in);
 
   if ( ! is.good()) {
-    std::cerr << "Unable to load file " << filename << "!" << endl;
+    std::cerr << "Unable to load file " << filename << "!" << std::endl;
     return;
   }
 
-  string s;
+  std::string s;
 
   is >> s;
   if (s == "window_location") {
@@ -175,7 +172,7 @@ StateManager::load(const string& filename)
 
   Coord loc;
   ModuleType type;
-  string name;
+  std::string name;
 
   while (1) {
     is >> s;
@@ -218,7 +215,7 @@ StateManager::load(const string& filename)
 static inline void
 write_module_settings_entry(
   std::ofstream& os,
-  const string& name,
+  const std::string& name,
   const char * type,
   const Coord& loc)
 {
@@ -226,7 +223,7 @@ write_module_settings_entry(
 }
 
 void
-StateManager::save(const string& filename) 
+StateManager::save(const std::string& filename) 
 {
   std::ofstream os;
   os.open(filename.c_str(), std::ios::out);
@@ -236,9 +233,9 @@ StateManager::save(const string& filename)
   os << "zoom_level " << _zoom << std::endl;
 
 
-  for (map<string, ModuleSettings>::iterator i = _module_settings.begin(); i != _module_settings.end(); ++i) {
+  for (std::map<std::string, ModuleSettings>::iterator i = _module_settings.begin(); i != _module_settings.end(); ++i) {
     const ModuleSettings& settings = (*i).second;
-    const string& name = (*i).first;
+    const std::string& name = (*i).first;
 
     if (settings.split) {
       write_module_settings_entry(os, name, "input", *settings.input_location);
@@ -250,7 +247,7 @@ StateManager::save(const string& filename)
 
   os.close();
 
-  cerr << "Saved configuration file " << filename << endl;
+  std::cerr << "Saved configuration file " << filename << std::endl;
 }
 
 

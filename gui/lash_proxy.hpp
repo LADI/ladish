@@ -31,16 +31,16 @@
 
 struct lash_project_info
 {
-        string name;
+        std::string name;
         time_t modification_time;
-        string description;
+        std::string description;
 };
 
 struct lash_loaded_project_properties
 {
         bool modified_status;
-        string description;
-        string notes;
+        std::string description;
+        std::string notes;
 };
 
 class session;
@@ -62,10 +62,10 @@ public:
         void save_project(const std::string& project_name);
         void close_project(const std::string& project_name);
         void close_all_projects();
-        void project_rename(const string& old_name, const string& new_name);
-        void get_loaded_project_properties(const string& name, lash_loaded_project_properties& properties);
-        void project_set_description(const string& project_name, const string& description);
-        void project_set_notes(const string& project_name, const string& notes);
+        void project_rename(const std::string& old_name, const std::string& new_name);
+        void get_loaded_project_properties(const std::string& name, lash_loaded_project_properties& properties);
+        void project_set_description(const std::string& project_name, const std::string& description);
+        void project_set_notes(const std::string& project_name, const std::string& notes);
 
 private:
         lash_proxy_impl * _impl_ptr;

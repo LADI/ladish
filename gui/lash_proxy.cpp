@@ -40,14 +40,12 @@
 #define LASH_OBJECT        "/"
 #define LASH_IFACE_CONTROL DBUS_NAME_BASE ".Control"
 
-using namespace std;
-
 struct lash_proxy_impl
 {
         void init();
 
         void fetch_loaded_projects();
-        void fetch_project_clients(shared_ptr<project> project_ptr);
+        void fetch_project_clients(boost::shared_ptr<project> project_ptr);
 
         static void error_msg(const std::string& msg);
         static void info_msg(const std::string& msg);
@@ -68,15 +66,15 @@ struct lash_proxy_impl
                 int in_type,
                 ...);
 
-        shared_ptr<project>
+        boost::shared_ptr<project>
         on_project_added(
-                string name);
+                std::string name);
 
-        shared_ptr<lash_client>
+        boost::shared_ptr<lash_client>
         on_client_added(
-                shared_ptr<project> project_ptr,
-                string id,
-                string name);
+                boost::shared_ptr<project> project_ptr,
+                std::string id,
+                std::string name);
 
         void exit();
 
@@ -135,7 +133,7 @@ lash_proxy::is_active()
 void
 lash_proxy::try_activate()
 {
-        list<lash_project_info> projects;
+        std::list<lash_project_info> projects;
         get_available_projects(projects);
 }
 
@@ -172,8 +170,8 @@ lash_proxy_impl::dbus_message_hook(
         const char * client_id;
         const char * client_name;
         dbus_bool_t modified_status;
-        shared_ptr<project> project_ptr;
-        shared_ptr<lash_client> client_ptr;
+        boost::shared_ptr<project> project_ptr;
+        boost::shared_ptr<lash_client> client_ptr;
 
         assert(proxy);
         lash_proxy_impl * me = reinterpret_cast<lash_proxy_impl *>(proxy);
@@ -196,18 +194,18 @@ lash_proxy_impl::dbus_message_hook(
                         return DBUS_HANDLER_RESULT_HANDLED;
                 }
 
-                if ((string)object_name != LASH_SERVICE)
+                if ((std::string)object_name != LASH_SERVICE)
                 {
                         return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
                 }
 
                 if (old_owner[0] == '\0')
                 {
-                        info_msg((string)"LASH activated.");
+                        info_msg((std::string)"LASH activated.");
                 }
                 else if (new_owner[0] == '\0')
                 {
-                        info_msg((string)"LASH deactivated.");
+                        info_msg((std::string)"LASH deactivated.");
                         g_app->set_studio_availability(false);
                         me->_server_responding = false;
                 }
@@ -217,7 +215,7 @@ lash_proxy_impl::dbus_message_hook(
 
         if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "StudioAppeared"))
         {
-                info_msg((string)"Studio appeared.");
+                info_msg((std::string)"Studio appeared.");
                 g_app->set_studio_availability(true);
 
                 return DBUS_HANDLER_RESULT_HANDLED;
@@ -225,7 +223,7 @@ lash_proxy_impl::dbus_message_hook(
 
         if (dbus_message_is_signal(message, LASH_IFACE_CONTROL, "StudioDisappeared"))
         {
-                info_msg((string)"Studio disappeared.");
+                info_msg((std::string)"Studio disappeared.");
                 g_app->set_studio_availability(false);
 
                 return DBUS_HANDLER_RESULT_HANDLED;
@@ -242,7 +240,7 @@ lash_proxy_impl::dbus_message_hook(
                         return DBUS_HANDLER_RESULT_HANDLED;
                 }
 
-                info_msg((string)"Project '" + project_name + "' appeared.");
+                info_msg((std::string)"Project '" + project_name + "' appeared.");
                 me->on_project_added(project_name);
 
                 return DBUS_HANDLER_RESULT_HANDLED;
@@ -260,7 +258,7 @@ lash_proxy_impl::dbus_message_hook(
                         return DBUS_HANDLER_RESULT_HANDLED;
                 }
 
-                info_msg((string)"Project '" + project_name + "' disappeared.");
+                info_msg((std::string)"Project '" + project_name + "' disappeared.");
                 me->_session_ptr->project_close(project_name);
 
                 return DBUS_HANDLER_RESULT_HANDLED;
@@ -280,7 +278,7 @@ lash_proxy_impl::dbus_message_hook(
                         return DBUS_HANDLER_RESULT_HANDLED;
                 }
 
-                info_msg((string)"Project '" + project_name + "' renamed to '" + new_project_name + "'.");
+                info_msg((std::string)"Project '" + project_name + "' renamed to '" + new_project_name + "'.");
 
                 project_ptr = me->_session_ptr->find_project_by_name(project_name);
                 if (project_ptr)
@@ -304,7 +302,7 @@ lash_proxy_impl::dbus_message_hook(
                         return DBUS_HANDLER_RESULT_HANDLED;
                 }
 
-                info_msg((string)"Project '" + project_name + "' modified status changed to '" + (modified_status ? "true" : "false") + "'.");
+                info_msg((std::string)"Project '" + project_name + "' modified status changed to '" + (modified_status ? "true" : "false") + "'.");
 
                 project_ptr = me->_session_ptr->find_project_by_name(project_name);
                 if (project_ptr)
@@ -328,7 +326,7 @@ lash_proxy_impl::dbus_message_hook(
                         return DBUS_HANDLER_RESULT_HANDLED;
                 }
 
-                info_msg((string)"Project '" + project_name + "' description changed.");
+                info_msg((std::string)"Project '" + project_name + "' description changed.");
 
                 project_ptr = me->_session_ptr->find_project_by_name(project_name);
                 if (project_ptr)
@@ -352,7 +350,7 @@ lash_proxy_impl::dbus_message_hook(
                         return DBUS_HANDLER_RESULT_HANDLED;
                 }
 
-                info_msg((string)"Project '" + project_name + "' notes changed.");
+                info_msg((std::string)"Project '" + project_name + "' notes changed.");
 
                 project_ptr = me->_session_ptr->find_project_by_name(project_name);
                 if (project_ptr)
@@ -377,7 +375,7 @@ lash_proxy_impl::dbus_message_hook(
                         return DBUS_HANDLER_RESULT_HANDLED;
                 }
 
-                info_msg((string)"Client '" + client_id + "':'" + client_name + "' appeared in project '" + project_name + "'.");
+                info_msg((std::string)"Client '" + client_id + "':'" + client_name + "' appeared in project '" + project_name + "'.");
 
                 project_ptr = me->_session_ptr->find_project_by_name(project_name);
                 if (project_ptr)
@@ -401,7 +399,7 @@ lash_proxy_impl::dbus_message_hook(
                         return DBUS_HANDLER_RESULT_HANDLED;
                 }
 
-                info_msg((string)"Client '" + client_id + "' of project '" + project_name + "' disappeared.");
+                info_msg((std::string)"Client '" + client_id + "' of project '" + project_name + "' disappeared.");
 
                 client_ptr = me->_session_ptr->find_client_by_id(client_id);
                 if (client_ptr)
@@ -426,7 +424,7 @@ lash_proxy_impl::dbus_message_hook(
                         return DBUS_HANDLER_RESULT_HANDLED;
                 }
 
-                info_msg((string)"Client '" + client_id + "' name changed to '" + client_name + "'.");
+                info_msg((std::string)"Client '" + client_id + "' name changed to '" + client_name + "'.");
 
                 client_ptr = me->_session_ptr->find_client_by_id(client_id);
                 if (client_ptr)
@@ -476,7 +474,7 @@ lash_proxy_impl::fetch_loaded_projects()
         DBusMessageIter iter;
         DBusMessageIter array_iter;
         const char * project_name;
-        shared_ptr<project> project_ptr;
+        boost::shared_ptr<project> project_ptr;
 
         if (!call(true, LASH_IFACE_CONTROL, "ProjectsGet", &reply_ptr, DBUS_TYPE_INVALID)) {
                 return;
@@ -486,7 +484,7 @@ lash_proxy_impl::fetch_loaded_projects()
 
         if (strcmp(reply_signature, "as") != 0)
         {
-                error_msg((string)"ProjectsGet() reply signature mismatch. " + reply_signature);
+                error_msg((std::string)"ProjectsGet() reply signature mismatch. " + reply_signature);
                 goto unref;
         }
 
@@ -507,7 +505,7 @@ unref:
 
 void
 lash_proxy_impl::fetch_project_clients(
-        shared_ptr<project> project_ptr)
+        boost::shared_ptr<project> project_ptr)
 {
         DBusMessage* reply_ptr;
         const char * reply_signature;
@@ -516,7 +514,7 @@ lash_proxy_impl::fetch_project_clients(
         DBusMessageIter struct_iter;
         const char * client_id;
         const char * client_name;
-        string project_name;
+        std::string project_name;
         const char * project_name_cstr;
 
         project_ptr->get_name(project_name);
@@ -537,7 +535,7 @@ lash_proxy_impl::fetch_project_clients(
 
         if (strcmp(reply_signature, "a(ss)") != 0)
         {
-                error_msg((string)"ProjectGetClients() reply signature mismatch. " + reply_signature);
+                error_msg((std::string)"ProjectGetClients() reply signature mismatch. " + reply_signature);
                 goto unref;
         }
 
@@ -561,24 +559,24 @@ unref:
         dbus_message_unref(reply_ptr);
 }
 
-shared_ptr<project>
+boost::shared_ptr<project>
 lash_proxy_impl::on_project_added(
-        string name)
+        std::string name)
 {
-        shared_ptr<project> project_ptr(new project(_interface_ptr, name));
+        boost::shared_ptr<project> project_ptr(new project(_interface_ptr, name));
 
         _session_ptr->project_add(project_ptr);
 
         return project_ptr;
 }
 
-shared_ptr<lash_client>
+boost::shared_ptr<lash_client>
 lash_proxy_impl::on_client_added(
-        shared_ptr<project> project_ptr,
-        string id,
-        string name)
+        boost::shared_ptr<project> project_ptr,
+        std::string id,
+        std::string name)
 {
-        shared_ptr<lash_client> client_ptr(
+        boost::shared_ptr<lash_client> client_ptr(
                 new lash_client(
                         _interface_ptr,
                         project_ptr.get(),
@@ -593,7 +591,7 @@ lash_proxy_impl::on_client_added(
 
 void
 lash_proxy::get_available_projects(
-        list<lash_project_info>& projects)
+        std::list<lash_project_info>& projects)
 {
         DBusMessage * reply_ptr;
         const char * reply_signature;
@@ -619,7 +617,7 @@ lash_proxy::get_available_projects(
 
         if (strcmp(reply_signature, "a(sa{sv})") != 0)
         {
-                lash_proxy_impl::error_msg((string)"ProjectsGetAvailable() reply signature mismatch. " + reply_signature);
+                lash_proxy_impl::error_msg((std::string)"ProjectsGetAvailable() reply signature mismatch. " + reply_signature);
                 goto unref;
         }
 
@@ -679,7 +677,7 @@ unref:
 
 void
 lash_proxy::load_project(
-        const string& project_name)
+        const std::string& project_name)
 {
         DBusMessage * reply_ptr;
         const char * project_name_cstr;
@@ -709,7 +707,7 @@ lash_proxy::save_all_projects()
 
 void
 lash_proxy::save_project(
-        const string& project_name)
+        const std::string& project_name)
 {
         DBusMessage * reply_ptr;
         const char * project_name_cstr;
@@ -726,7 +724,7 @@ lash_proxy::save_project(
 
 void
 lash_proxy::close_project(
-        const string& project_name)
+        const std::string& project_name)
 {
         DBusMessage * reply_ptr;
         const char * project_name_cstr;
@@ -756,8 +754,8 @@ lash_proxy::close_all_projects()
 
 void
 lash_proxy::project_rename(
-        const string& old_name,
-        const string& new_name)
+        const std::string& old_name,
+        const std::string& new_name)
 {
         DBusMessage * reply_ptr;
         const char * old_name_cstr;
@@ -783,7 +781,7 @@ lash_proxy::project_rename(
 
 void
 lash_proxy::get_loaded_project_properties(
-        const string& name,
+        const std::string& name,
         lash_loaded_project_properties& properties)
 {
         DBusMessage * reply_ptr;
@@ -815,7 +813,7 @@ lash_proxy::get_loaded_project_properties(
 
         if (strcmp(reply_signature, "a{sv}") != 0)
         {
-                lash_proxy_impl::error_msg((string)"ProjectGetProperties() reply signature mismatch. " + reply_signature);
+                lash_proxy_impl::error_msg((std::string)"ProjectGetProperties() reply signature mismatch. " + reply_signature);
                 goto unref;
         }
 
@@ -863,8 +861,8 @@ unref:
 
 void
 lash_proxy::project_set_description(
-        const string& project_name,
-        const string& description)
+        const std::string& project_name,
+        const std::string& description)
 {
         DBusMessage * reply_ptr;
         const char * project_name_cstr;
@@ -890,8 +888,8 @@ lash_proxy::project_set_description(
 
 void
 lash_proxy::project_set_notes(
-        const string& project_name,
-        const string& notes)
+        const std::string& project_name,
+        const std::string& notes)
 {
         DBusMessage * reply_ptr;
         const char * project_name_cstr;

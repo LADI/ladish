@@ -35,7 +35,7 @@ public:
   project_properties_dialog();
   ~project_properties_dialog();
 
-  void run(shared_ptr<project> project_ptr);
+  void run(boost::shared_ptr<project> project_ptr);
 
 private:
   project_properties_dialog_impl * _impl_ptr;

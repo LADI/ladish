@@ -34,24 +34,22 @@ class Patchage;
 class PatchageModule;
 class PatchagePort;
 
-using std::string;
-
 class PatchageCanvas
 {
 public:
   PatchageCanvas(Patchage* _app, int width, int height);
   
-  boost::shared_ptr<PatchageModule> find_module(const string& name, ModuleType type);
+  boost::shared_ptr<PatchageModule> find_module(const std::string& name, ModuleType type);
   
   void connect(boost::shared_ptr<PatchagePort> port1, boost::shared_ptr<PatchagePort> port2);
   void disconnect(boost::shared_ptr<PatchagePort> port1, boost::shared_ptr<PatchagePort> port2);
 
-  void status_message(const string& msg);
+  void status_message(const std::string& msg);
   
   boost::shared_ptr<PatchagePort>
   get_port(
-    const string& module_name,
-    const string& port_name);
+    const std::string& module_name,
+    const std::string& port_name);
 
   boost::shared_ptr<PatchagePort>
   lookup_port_by_a2j_jack_port_name(

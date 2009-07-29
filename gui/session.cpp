@@ -31,8 +31,8 @@
 
 struct session_impl
 {
-  list<shared_ptr<project> > projects;
-  list<shared_ptr<lash_client> > clients;
+  std::list<boost::shared_ptr<project> > projects;
+  std::list<boost::shared_ptr<lash_client> > clients;
 };
 
 session::session()
@@ -48,7 +48,7 @@ session::~session()
 void
 session::clear()
 {
-  shared_ptr<project> project_ptr;
+  boost::shared_ptr<project> project_ptr;
 
   _impl_ptr->clients.clear();
 
@@ -63,21 +63,21 @@ session::clear()
 
 void
 session::project_add(
-  shared_ptr<project> project_ptr)
+  boost::shared_ptr<project> project_ptr)
 {
   _impl_ptr->projects.push_back(project_ptr);
 
   _signal_project_added.emit(project_ptr);
 }
 
-shared_ptr<project>
+boost::shared_ptr<project>
 session::find_project_by_name(
-  const string& name)
+  const std::string& name)
 {
-  shared_ptr<project> project_ptr;
-  string temp_name;
+  boost::shared_ptr<project> project_ptr;
+  std::string temp_name;
 
-  for (list<shared_ptr<project> >::iterator iter = _impl_ptr->projects.begin(); iter != _impl_ptr->projects.end(); iter++)
+  for (std::list<boost::shared_ptr<project> >::iterator iter = _impl_ptr->projects.begin(); iter != _impl_ptr->projects.end(); iter++)
   {
     project_ptr = *iter;
     project_ptr->get_name(temp_name);
@@ -88,18 +88,18 @@ session::find_project_by_name(
     }
   }
 
-  return shared_ptr<project>();
+  return boost::shared_ptr<project>();
 }
 
 void
 session::project_close(
-  const string& project_name)
+  const std::string& project_name)
 {
-  shared_ptr<project> project_ptr;
-  string temp_name;
-  list<shared_ptr<lash_client> > clients;
+  boost::shared_ptr<project> project_ptr;
+  std::string temp_name;
+  std::list<boost::shared_ptr<lash_client> > clients;
 
-  for (list<shared_ptr<project> >::iterator iter = _impl_ptr->projects.begin(); iter != _impl_ptr->projects.end(); iter++)
+  for (std::list<boost::shared_ptr<project> >::iterator iter = _impl_ptr->projects.begin(); iter != _impl_ptr->projects.end(); iter++)
   {
     project_ptr = *iter;
     project_ptr->get_name(temp_name);
@@ -111,9 +111,9 @@ session::project_close(
 
       // remove clients from session, if not removed already
       project_ptr->get_clients(clients);
-      for (list<shared_ptr<lash_client> >::iterator iter = clients.begin(); iter != clients.end(); iter++)
+      for (std::list<boost::shared_ptr<lash_client> >::iterator iter = clients.begin(); iter != clients.end(); iter++)
       {
-        string id;
+        std::string id;
 
         (*iter)->get_id(id);
 
@@ -127,19 +127,19 @@ session::project_close(
 
 void
 session::client_add(
-  shared_ptr<lash_client> client_ptr)
+  boost::shared_ptr<lash_client> client_ptr)
 {
   _impl_ptr->clients.push_back(client_ptr);
 }
 
 void
 session::client_remove(
-  const string& id)
+  const std::string& id)
 {
-  shared_ptr<lash_client> client_ptr;
-  string temp_id;
+  boost::shared_ptr<lash_client> client_ptr;
+  std::string temp_id;
 
-  for (list<shared_ptr<lash_client> >::iterator iter = _impl_ptr->clients.begin(); iter != _impl_ptr->clients.end(); iter++)
+  for (std::list<boost::shared_ptr<lash_client> >::iterator iter = _impl_ptr->clients.begin(); iter != _impl_ptr->clients.end(); iter++)
   {
     client_ptr = *iter;
     client_ptr->get_id(temp_id);
@@ -152,13 +152,13 @@ session::client_remove(
   }
 }
 
-shared_ptr<lash_client>
-session::find_client_by_id(const string& id)
+boost::shared_ptr<lash_client>
+session::find_client_by_id(const std::string& id)
 {
-  shared_ptr<lash_client> client_ptr;
-  string temp_id;
+  boost::shared_ptr<lash_client> client_ptr;
+  std::string temp_id;
 
-  for (list<shared_ptr<lash_client> >::iterator iter = _impl_ptr->clients.begin(); iter != _impl_ptr->clients.end(); iter++)
+  for (std::list<boost::shared_ptr<lash_client> >::iterator iter = _impl_ptr->clients.begin(); iter != _impl_ptr->clients.end(); iter++)
   {
     client_ptr = *iter;
     client_ptr->get_id(temp_id);
@@ -169,5 +169,5 @@ session::find_client_by_id(const string& id)
     }
   }
 
-  return shared_ptr<lash_client>();
+  return boost::shared_ptr<lash_client>();
 }

@@ -33,16 +33,16 @@
 struct project_impl
 {
   lash_proxy * lash_ptr;
-  string name;
-  string description;
-  string notes;
+  std::string name;
+  std::string description;
+  std::string notes;
   bool modified_status;
-  list<shared_ptr<lash_client> > clients;
+  std::list<boost::shared_ptr<lash_client> > clients;
 };
 
 project::project(
   lash_proxy * lash_ptr,
-  const string& name)
+  const std::string& name)
 {
   lash_loaded_project_properties properties;
 
@@ -68,7 +68,7 @@ project::~project()
 void
 project::clear()
 {
-  shared_ptr<lash_client> client_ptr;
+  boost::shared_ptr<lash_client> client_ptr;
 
   while (!_impl_ptr->clients.empty())
   {
@@ -80,14 +80,14 @@ project::clear()
 
 void
 project::get_name(
-  string& name)
+  std::string& name)
 {
   name = _impl_ptr->name;
 }
 
 void
 project::on_name_changed(
-  const string& name)
+  const std::string& name)
 {
   _impl_ptr->name = name;
   _signal_renamed.emit();
@@ -95,14 +95,14 @@ project::on_name_changed(
 
 void
 project::get_description(
-  string& description)
+  std::string& description)
 {
   description = _impl_ptr->description;
 }
 
 void
 project::get_notes(
-  string& notes)
+  std::string& notes)
 {
   notes = _impl_ptr->notes;
 }
@@ -115,14 +115,14 @@ project::get_modified_status()
 
 void
 project::get_clients(
-    list<shared_ptr<lash_client> >& clients)
+  std::list<boost::shared_ptr<lash_client> >& clients)
 {
   clients = _impl_ptr->clients;
 }
 
 void
 project::on_client_added(
-    shared_ptr<lash_client> client_ptr)
+    boost::shared_ptr<lash_client> client_ptr)
 {
   _impl_ptr->clients.push_back(client_ptr);
   _signal_client_added.emit(client_ptr);
@@ -130,12 +130,12 @@ project::on_client_added(
 
 void
 project::on_client_removed(
-  const string& id)
+  const std::string& id)
 {
-  shared_ptr<lash_client> client_ptr;
-  string temp_id;
+  boost::shared_ptr<lash_client> client_ptr;
+  std::string temp_id;
 
-  for (list<shared_ptr<lash_client> >::iterator iter = _impl_ptr->clients.begin(); iter != _impl_ptr->clients.end(); iter++)
+  for (std::list<boost::shared_ptr<lash_client> >::iterator iter = _impl_ptr->clients.begin(); iter != _impl_ptr->clients.end(); iter++)
   {
     client_ptr = *iter;
     client_ptr->get_id(temp_id);
@@ -159,7 +159,7 @@ project::on_modified_status_changed(
 
 void
 project::on_description_changed(
-    const string& description)
+    const std::string& description)
 {
   _impl_ptr->description = description;
   _signal_description_changed.emit();
@@ -167,7 +167,7 @@ project::on_description_changed(
 
 void
 project::on_notes_changed(
-    const string& notes)
+    const std::string& notes)
 {
   _impl_ptr->notes = notes;
   _signal_notes_changed.emit();
@@ -175,7 +175,7 @@ project::on_notes_changed(
 
 void
 project::do_rename(
-  const string& name)
+  const std::string& name)
 {
   if (_impl_ptr->name != name)
   {
@@ -185,7 +185,7 @@ project::do_rename(
 
 void
 project::do_change_description(
-  const string& description)
+  const std::string& description)
 {
   if (_impl_ptr->description != description)
   {
@@ -195,7 +195,7 @@ project::do_change_description(
 
 void
 project::do_change_notes(
-  const string& notes)
+  const std::string& notes)
 {
   if (_impl_ptr->notes != notes)
   {

@@ -33,15 +33,15 @@ struct lash_client_impl
 {
         lash_proxy * lash_ptr;
         project * project_ptr;
-        string id;
-        string name;
+        std::string id;
+        std::string name;
 };
 
 lash_client::lash_client(
         lash_proxy * lash_ptr,
         project * project_ptr,
-        const string& id,
-        const string& name)
+        const std::string& id,
+        const std::string& name)
 {
         _impl_ptr = new lash_client_impl;
         _impl_ptr->lash_ptr = lash_ptr;
@@ -66,21 +66,21 @@ lash_client::get_project()
 
 void
 lash_client::get_id(
-        string& id)
+        std::string& id)
 {
         id = _impl_ptr->id;
 }
 
 void
 lash_client::get_name(
-        string& name)
+        std::string& name)
 {
         name = _impl_ptr->name;
 }
 
 void
 lash_client::do_rename(
-        const string& name)
+        const std::string& name)
 {
         if (_impl_ptr->name != name)
         {
@@ -90,7 +90,7 @@ lash_client::do_rename(
 
 void
 lash_client::on_name_changed(
-        const string& name)
+        const std::string& name)
 {
         _impl_ptr->name = name;
         _signal_renamed.emit();

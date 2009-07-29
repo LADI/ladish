@@ -54,8 +54,6 @@ Patchage * g_app;
 #define LOG_TO_STD
 //#define LOG_TO_STATUS
 
-using namespace std;
-
 /* Gtk helpers (resize combo boxes) */
 
 static void
@@ -127,7 +125,7 @@ Patchage::Patchage(int argc, char** argv)
 
   while (argc > 0) {
     if (!strcmp(*argv, "--help")) {
-      cout << "Usage: patchage [OPTIONS]\nOptions: --no-alsa" << endl;
+      std::cout << "Usage: patchage [OPTIONS]\nOptions: --no-alsa" << std::endl;
       exit(0);
     }
 
@@ -288,7 +286,7 @@ Patchage::update_load()
   char tmp_buf[8];
   snprintf(tmp_buf, 8, "%zd", _jack->xruns());
 
-  _main_xrun_progress->set_text(string(tmp_buf) + " Dropouts");
+  _main_xrun_progress->set_text(std::string(tmp_buf) + " Dropouts");
 
   float load = _jack->get_dsp_load();
 
@@ -361,7 +359,7 @@ Patchage::error_msg(const std::string& msg)
   status_msg(msg);
 #endif
 #if defined(LOG_TO_STD)
-  cerr << msg << endl;
+  std::cerr << msg << std::endl;
 #endif
 }
 
@@ -373,13 +371,13 @@ Patchage::info_msg(const std::string& msg)
   status_msg(msg);
 #endif
 #if defined(LOG_TO_STD)
-  cerr << msg << endl;
+  std::cerr << msg << std::endl;
 #endif
 }
 
 
 void
-Patchage::status_msg(const string& msg) 
+Patchage::status_msg(const std::string& msg) 
 {
 }
 
@@ -478,7 +476,7 @@ Patchage::on_view_toolbar()
 bool
 Patchage::on_scroll(GdkEventScroll* ev) 
 {
-  cout << "ON SCROLL" << endl;
+  std::cout << "ON SCROLL" << std::endl;
   return false;
 }
 
@@ -608,8 +606,8 @@ Patchage::on_port_added(
 {
 #if 0
   bool is_a2j_mapped;
-  string canvas_client_name;
-  string canvas_port_name;
+  std::string canvas_client_name;
+  std::string canvas_port_name;
   uint32_t alsa_client_id;
   boost::shared_ptr<PatchageModule> module;
 
@@ -721,13 +719,13 @@ Patchage::on_ports_connected(
 #if 0
   boost::shared_ptr<PatchagePort> port1 = lookup_port(jack_client1_name, jack_port1_name);
   if (!port1) {
-    error_msg((string)"Unable to connect unknown port '" + jack_port1_name + "' of client '" + jack_client1_name + "'");
+    error_msg((std::string)"Unable to connect unknown port '" + jack_port1_name + "' of client '" + jack_client1_name + "'");
     return;
   }
 
   boost::shared_ptr<PatchagePort> port2 = lookup_port(jack_client2_name, jack_port2_name);
   if (!port2) {
-    error_msg((string)"Unable to connect unknown port '" + jack_port2_name + "' of client '" + jack_client2_name + "'");
+    error_msg((std::string)"Unable to connect unknown port '" + jack_port2_name + "' of client '" + jack_client2_name + "'");
     return;
   }
 
@@ -745,13 +743,13 @@ Patchage::on_ports_disconnected(
 #if 0
   boost::shared_ptr<PatchagePort> port1 = lookup_port(jack_client1_name, jack_port1_name);
   if (!port1) {
-    error_msg((string)"Unable to disconnect unknown port '" + jack_port1_name + "' of client '" + jack_client1_name + "'");
+    error_msg((std::string)"Unable to disconnect unknown port '" + jack_port1_name + "' of client '" + jack_client1_name + "'");
     return;
   }
 
   boost::shared_ptr<PatchagePort> port2 = lookup_port(jack_client2_name, jack_port2_name);
   if (!port2) {
-    error_msg((string)"Unable to disconnect unknown port '" + jack_port2_name + "' of client '" + jack_client2_name + "'");
+    error_msg((std::string)"Unable to disconnect unknown port '" + jack_port2_name + "' of client '" + jack_client2_name + "'");
     return;
   }
 
@@ -773,8 +771,8 @@ port_type_match(
 void
 Patchage::get_port_jack_names(
   boost::shared_ptr<PatchagePort> port,
-  string& jack_client_name,
-  string& jack_port_name)
+  std::string& jack_client_name,
+  std::string& jack_port_name)
 {
 #if 0
   if (port->is_a2j_mapped)
@@ -796,10 +794,10 @@ Patchage::connect(
   boost::shared_ptr<PatchagePort> port2)
 {
 #if 0
-  string jack_client1_name;
-  string jack_port1_name;
-  string jack_client2_name;
-  string jack_port2_name;
+  std::string jack_client1_name;
+  std::string jack_port1_name;
+  std::string jack_client2_name;
+  std::string jack_port2_name;
 
   if (port_type_match(port1, port2))
   {
@@ -825,10 +823,10 @@ Patchage::disconnect(
   boost::shared_ptr<PatchagePort> port2)
 {
 #if 0
-  string jack_client1_name;
-  string jack_port1_name;
-  string jack_client2_name;
-  string jack_port2_name;
+  std::string jack_client1_name;
+  std::string jack_port1_name;
+  std::string jack_client2_name;
+  std::string jack_port2_name;
 
   if (port_type_match(port1, port2))
   {

@@ -57,11 +57,11 @@ project_properties_dialog::~project_properties_dialog()
 
 void
 project_properties_dialog::run(
-  shared_ptr<project> project_ptr)
+  boost::shared_ptr<project> project_ptr)
 {
-  string name;
-  string description;
-  string notes;
+  std::string name;
+  std::string description;
+  std::string notes;
   Glib::RefPtr<Gtk::TextBuffer> buffer;
   int result;
 

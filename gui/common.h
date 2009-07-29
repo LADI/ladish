@@ -39,10 +39,6 @@
 #include <boost/weak_ptr.hpp>
 #include <boost/format.hpp>
 
-using namespace boost;
-using namespace std;
-using namespace sigc;
-
 #include "canvas.h"
 
 #endif /* #ifndef COMMON_H__15E63B7A_8350_4ABD_B04C_592158354949__INCLUDED */

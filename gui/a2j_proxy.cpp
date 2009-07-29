@@ -40,17 +40,17 @@
 static
 void
 error_msg(
-  const string& msg)
+  const std::string& msg)
 {
-  g_app->error_msg((string)"[A2J] " + msg);
+  g_app->error_msg((std::string)"[A2J] " + msg);
 }
 
 static
 void
 info_msg(
-  const string& msg)
+  const std::string& msg)
 {
-  g_app->info_msg((string)"[A2J] " + msg);
+  g_app->info_msg((std::string)"[A2J] " + msg);
 }
 
 struct a2j_proxy_impl
@@ -76,13 +76,13 @@ struct a2j_proxy_impl
 
   bool
   get_jack_client_name(
-    string& jack_client_name_ref);
+    std::string& jack_client_name_ref);
 
   bool
   is_started();
 
   bool _server_responding;
-  string _jack_client_name;
+  std::string _jack_client_name;
 };
 
 a2j_proxy::a2j_proxy()
@@ -170,19 +170,19 @@ a2j_proxy_impl::dbus_message_hook(
       return DBUS_HANDLER_RESULT_HANDLED;
     }
 
-    if ((string)object_name != A2J_SERVICE)
+    if ((std::string)object_name != A2J_SERVICE)
     {
       return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     }
 
     if (old_owner[0] == '\0')
     {
-      info_msg((string)"A2J activated.");
+      info_msg((std::string)"A2J activated.");
       g_app->set_a2j_status(A2J_STATUS_BRIDGE_STOPPED);
     }
     else if (new_owner[0] == '\0')
     {
-      info_msg((string)"A2J deactivated.");
+      info_msg((std::string)"A2J deactivated.");
       g_app->set_a2j_status(A2J_STATUS_NO_RESPONSE);
     }
 
@@ -238,7 +238,7 @@ a2j_proxy_impl::call(
 
 bool
 a2j_proxy_impl::get_jack_client_name(
-  string& jack_client_name_ref)
+  std::string& jack_client_name_ref)
 {
   DBusMessage * reply_ptr;
   const char * jack_client_name;
@@ -266,8 +266,8 @@ a2j_proxy_impl::get_jack_client_name(
 bool
 a2j_proxy::map_jack_port(
   const char * jack_port_name,
-  string& alsa_client_name_ref,
-  string& alsa_port_name_ref,
+  std::string& alsa_client_name_ref,
+  std::string& alsa_port_name_ref,
   uint32_t& alsa_client_id_ref)
 {
   DBusMessage * reply_ptr;

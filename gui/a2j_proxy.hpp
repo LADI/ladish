@@ -45,8 +45,8 @@ public:
   bool
   map_jack_port(
     const char * jack_port_name,
-    string& alsa_client_name,
-    string& alsa_port_name,
+    std::string& alsa_client_name,
+    std::string& alsa_port_name,
     uint32_t& alsa_client_id);
 
   void

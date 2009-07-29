@@ -40,8 +40,6 @@
 #include "jack_proxy.hpp"
 #include "dbus_helpers.h"
 
-using namespace std;
-
 #define JACKDBUS_SERVICE         "org.jackaudio.service"
 #define JACKDBUS_OBJECT          "/org/jackaudio/Controller"
 #define JACKDBUS_IFACE_CONTROL   "org.jackaudio.JackControl"
@@ -184,7 +182,7 @@ jack_proxy::dbus_message_hook(
       return DBUS_HANDLER_RESULT_HANDLED;
     }
 
-    if ((string)object_name != JACKDBUS_SERVICE)
+    if ((std::string)object_name != JACKDBUS_SERVICE)
     {
       return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     }
@@ -567,13 +565,13 @@ jack_proxy::refresh_internal(bool force)
   reply_signature = dbus_message_get_signature(reply_ptr);
 
   if (strcmp(reply_signature, "ta(tsa(tsuu))a(tstststst)") != 0) {
-    error_msg((string )"GetGraph() reply signature mismatch. " + reply_signature);
+    error_msg((std::string )"GetGraph() reply signature mismatch. " + reply_signature);
     goto unref;
   }
 
   dbus_message_iter_init(reply_ptr, &iter);
 
-  //info_msg((string)"version " + (char)dbus_message_iter_get_arg_type(&iter));
+  //info_msg((std::string)"version " + (char)dbus_message_iter_get_arg_type(&iter));
   dbus_message_iter_get_basic(&iter, &version);
   dbus_message_iter_next(&iter);
 
@@ -586,12 +584,12 @@ jack_proxy::refresh_internal(bool force)
   //info_msg(str(boost::format("got new graph version %llu") % version));
   _graph_version = version;
 
-  //info_msg((string)"clients " + (char)dbus_message_iter_get_arg_type(&iter));
+  //info_msg((std::string)"clients " + (char)dbus_message_iter_get_arg_type(&iter));
 
   for (dbus_message_iter_recurse(&iter, &clients_array_iter);
        dbus_message_iter_get_arg_type(&clients_array_iter) != DBUS_TYPE_INVALID;
        dbus_message_iter_next(&clients_array_iter)) {
-    //info_msg((string)"a client " + (char)dbus_message_iter_get_arg_type(&clients_array_iter));
+    //info_msg((std::string)"a client " + (char)dbus_message_iter_get_arg_type(&clients_array_iter));
     dbus_message_iter_recurse(&clients_array_iter, &client_struct_iter);
 
     dbus_message_iter_get_basic(&client_struct_iter, &client_id);
@@ -600,12 +598,12 @@ jack_proxy::refresh_internal(bool force)
     dbus_message_iter_get_basic(&client_struct_iter, &client_name);
     dbus_message_iter_next(&client_struct_iter);
 
-    //info_msg((string)"client '" + client_name + "'");
+    //info_msg((std::string)"client '" + client_name + "'");
 
     for (dbus_message_iter_recurse(&client_struct_iter, &ports_array_iter);
          dbus_message_iter_get_arg_type(&ports_array_iter) != DBUS_TYPE_INVALID;
          dbus_message_iter_next(&ports_array_iter)) {
-      //info_msg((string)"a port " + (char)dbus_message_iter_get_arg_type(&ports_array_iter));
+      //info_msg((std::string)"a port " + (char)dbus_message_iter_get_arg_type(&ports_array_iter));
       dbus_message_iter_recurse(&ports_array_iter, &port_struct_iter);
 
       dbus_message_iter_get_basic(&port_struct_iter, &port_id);
@@ -620,7 +618,7 @@ jack_proxy::refresh_internal(bool force)
       dbus_message_iter_get_basic(&port_struct_iter, &port_type);
       dbus_message_iter_next(&port_struct_iter);
 
-      //info_msg((string)"port: " + port_name);
+      //info_msg((std::string)"port: " + port_name);
 
       on_port_added(client_id, client_name, port_id, port_name, port_flags, port_type);
     }
@@ -633,7 +631,7 @@ jack_proxy::refresh_internal(bool force)
   for (dbus_message_iter_recurse(&iter, &connections_array_iter);
        dbus_message_iter_get_arg_type(&connections_array_iter) != DBUS_TYPE_INVALID;
        dbus_message_iter_next(&connections_array_iter)) {
-    //info_msg((string)"a connection " + (char)dbus_message_iter_get_arg_type(&connections_array_iter));
+    //info_msg((std::string)"a connection " + (char)dbus_message_iter_get_arg_type(&connections_array_iter));
     dbus_message_iter_recurse(&connections_array_iter, &connection_struct_iter);
 
     dbus_message_iter_get_basic(&connection_struct_iter, &client_id);
