@@ -27,7 +27,7 @@
 #ifndef PATCHAGE_WIDGET_HPP
 #define PATCHAGE_WIDGET_HPP
 
-#include <string>
+#include <libglademm/xml.h>
 #include <boost/utility.hpp>
 
 template <typename W>

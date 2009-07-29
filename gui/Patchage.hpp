@@ -28,12 +28,9 @@
 #ifndef PATCHAGE_PATCHAGE_HPP
 #define PATCHAGE_PATCHAGE_HPP
 
-#include <string>
-#include <boost/shared_ptr.hpp>
-#include <libgnomecanvasmm.h>
-#include <libglademm/xml.h>
+#include "common.h"
 #include "Widget.hpp"
-
+#include <gtkmm.h>
 #include "PatchagePort.hpp"
 
 class PatchageCanvas;

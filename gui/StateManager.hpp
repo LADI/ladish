@@ -27,14 +27,9 @@
 #ifndef PATCHAGE_STATEMANAGER_HPP
 #define PATCHAGE_STATEMANAGER_HPP
 
-#include <string>
-#include <list>
-#include <map>
-#include <iostream>
-#include <boost/optional.hpp>
+#include "common.h"
 #include "PatchagePort.hpp"
-
-enum ModuleType { Input, Output, InputOutput };
+#include <map>
 
 struct Coord {
   Coord(double x_=0, double y_=0) : x(x_), y(y_) {}

@@ -27,11 +27,8 @@
 #ifndef PATCHAGE_PATCHAGEMODULE_HPP
 #define PATCHAGE_PATCHAGEMODULE_HPP
 
-#include <string>
-#include <libgnomecanvasmm.h>
+#include "common.h"
 #include "PatchageCanvas.hpp"
-#include "StateManager.hpp"
-#include "PatchagePort.hpp"
 
 class PatchageModule
 {

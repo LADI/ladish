@@ -28,11 +28,8 @@
 #define PATCHAGE_PATCHAGEPORT_HPP
 
 #include "common.h"
-#include <string>
-#include <boost/shared_ptr.hpp>
 
 enum PortType { JACK_AUDIO, JACK_MIDI };
-
 
 /** A Port on a PatchageModule
  *
