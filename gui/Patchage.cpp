@@ -25,6 +25,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "common.h"
+
 #include <string.h>
 #include <cmath>
 #include <sstream>
@@ -34,8 +36,6 @@
 #include <gtk/gtkwindow.h>
 #include <boost/format.hpp>
 
-#include "config.h"
-#include "common.hpp"
 #include "jack_proxy.hpp"
 #include "Patchage.hpp"
 #include "PatchageCanvas.hpp"

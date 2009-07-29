@@ -24,7 +24,7 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "common.hpp"
+#include "common.h"
 #include "lash_client.hpp"
 #include "Patchage.hpp"
 //#include "globals.hpp"

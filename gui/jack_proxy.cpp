@@ -24,19 +24,18 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "common.h"
+
 #include <cassert>
 #include <cstring>
 #include <set>
 #include <iostream>
-
-#include "config.h"
 
 #include <glib.h>
 #include <dbus/dbus.h>
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
 
-#include "common.hpp"
 #include "Patchage.hpp"
 #include "jack_proxy.hpp"
 #include "dbus_helpers.h"

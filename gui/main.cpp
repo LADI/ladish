@@ -25,8 +25,6 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-
 #include <iostream>
 #include <libgnomecanvasmm.h>
 #include <glibmm/exception.h>
@@ -36,7 +34,6 @@
 #include <sstream>
 #include <stdexcept>
 #include <libglademm/xml.h>
-#include "config.h"
 
 #include "Patchage.hpp"
 #include "globals.hpp"

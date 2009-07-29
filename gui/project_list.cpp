@@ -24,11 +24,12 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "common.h"
+
 #include <iostream>
 #include <gtkmm.h>
 #include <libglademm/xml.h>
 
-#include "common.hpp"
 #include "project_list.hpp"
 #include "Widget.hpp"
 #include "Patchage.hpp"

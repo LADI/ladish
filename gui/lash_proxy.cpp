@@ -24,10 +24,11 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "common.h"
+
 #include <string.h>
 #include <dbus/dbus.h>
 
-#include "common.hpp"
 #include "lash_proxy.hpp"
 #include "session.hpp"
 #include "project.hpp"

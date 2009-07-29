@@ -24,8 +24,7 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "config.h"
-#include "common.hpp"
+#include "common.h"
 #include "PatchageCanvas.hpp"
 #include "Patchage.hpp"
 #include "PatchageModule.hpp"

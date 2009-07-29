@@ -32,6 +32,17 @@
 #include <stdbool.h>            /* C99 bool */
 #include <stdint.h>             /* fixed bit size ints */
 
+#include <string>
+#include <list>
+#include <sigc++/sigc++.h>
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
+#include <boost/format.hpp>
+
+using namespace boost;
+using namespace std;
+using namespace sigc;
+
 #include "canvas.h"
 
 #endif /* #ifndef COMMON_H__15E63B7A_8350_4ABD_B04C_592158354949__INCLUDED */

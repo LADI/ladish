@@ -32,7 +32,6 @@
 #include <boost/shared_ptr.hpp>
 #include <libgnomecanvasmm.h>
 #include <libglademm/xml.h>
-#include "config.h"
 #include "Widget.hpp"
 
 #include "PatchagePort.hpp"

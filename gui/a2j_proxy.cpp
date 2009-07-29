@@ -24,9 +24,10 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "common.h"
+
 #include <dbus/dbus.h>
 
-#include "common.hpp"
 #include "a2j_proxy.hpp"
 #include "Patchage.hpp"
 #include "globals.hpp"

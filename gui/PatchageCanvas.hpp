@@ -28,7 +28,6 @@
 #define PATCHAGE_PATCHAGECANVAS_HPP
 
 #include "common.h"
-#include <string>
 #include "StateManager.hpp"
 
 class Patchage;
