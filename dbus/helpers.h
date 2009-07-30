@@ -6,7 +6,7 @@
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
- * This file contains interface to the D-Bus control interface helpers
+ * This file contains interface to the D-Bus helpers code
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -25,9 +25,11 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __LASHD_DBUS_IFACE_CONTROL_H__
-#define __LASHD_DBUS_IFACE_CONTROL_H__
+#ifndef HELPERS_H__6C2107A6_A5E3_4806_869B_4BE609535BA2__INCLUDED
+#define HELPERS_H__6C2107A6_A5E3_4806_869B_4BE609535BA2__INCLUDED
 
-extern const interface_t g_lashd_interface_control;
+bool dbus_maybe_add_dict_entry_string(DBusMessageIter *dict_iter_ptr, const char * key, const char * value);
+bool dbus_add_dict_entry_uint32(DBusMessageIter * dict_iter_ptr, const char * key, dbus_uint32_t value);
+bool dbus_add_dict_entry_bool(DBusMessageIter * dict_iter_ptr, const char * key, dbus_bool_t value);
 
-#endif /* __LASHD_DBUS_IFACE_CONTROL_H__ */
+#endif /* #ifndef HELPERS_H__6C2107A6_A5E3_4806_869B_4BE609535BA2__INCLUDED */
