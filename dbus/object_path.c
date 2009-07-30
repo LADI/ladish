@@ -80,13 +80,13 @@ object_path_new(const char *name,
   return NULL;
 }
 
-int
+bool
 object_path_register(DBusConnection *conn,
                      object_path_t  *path)
 {
   if (!conn || !path || !path->name || !path->interfaces) {
     lash_debug("Invalid arguments");
-    return 0;
+    return false;
   }
 
   lash_debug("Registering object path");
@@ -101,7 +101,7 @@ object_path_register(DBusConnection *conn,
   dbus_connection_register_object_path(conn, path->name,
                                        &vtable, (void *) path);
 
-  return 1;
+  return true;
 }
 
 void
