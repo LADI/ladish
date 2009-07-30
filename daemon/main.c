@@ -41,8 +41,10 @@
 #include "studio.h"
 
 bool g_quit;
-service_t * g_dbus_service;
 DBusError g_dbus_error;
+DBusConnection * g_dbus_connection;
+const char * g_dbus_unique_name;
+object_path_t * g_control_object;
 struct studio * g_studio_ptr;
 
 #if 0
@@ -94,34 +96,7 @@ static DBusHandlerResult lashd_client_disconnect_handler(DBusConnection * connec
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
   }
 }
-#endif
 
-service_t * lashd_dbus_service_new(void)
-{
-  service_t * service;
-  DBusError err;
-
-  service = service_new(
-    DBUS_NAME_BASE,
-    &g_quit,
-    1,
-    object_path_new(
-      "/",
-      NULL,
-      1,//2,
-      //&g_lashd_interface_server,
-      &g_lashd_interface_control,
-      NULL),
-    NULL);
-  if (service == NULL)
-  {
-    lash_error("Failed to create D-Bus service");
-    return NULL;
-  }
-
-  dbus_error_init(&err);
-
-#if 0
   dbus_bus_add_match(
     service->connection,
     "type='signal'"
@@ -145,13 +120,65 @@ service_t * lashd_dbus_service_new(void)
   }
 #endif
 
-  return service;
+static bool connect_dbus(void)
+{
+  int ret;
 
-#if 0
+  g_dbus_connection = dbus_bus_get(DBUS_BUS_SESSION, &g_dbus_error);
+  if (dbus_error_is_set(&g_dbus_error))
+  {
+    lash_error("Failed to get bus: %s", g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    goto fail;
+  }
+
+  g_dbus_unique_name = dbus_bus_get_unique_name(g_dbus_connection);
+  if (g_dbus_unique_name == NULL)
+  {
+    lash_error("Failed to read unique bus name");
+    goto unref_connection;
+  }
+
+  ret = dbus_bus_request_name(g_dbus_connection, DBUS_NAME_BASE, DBUS_NAME_FLAG_DO_NOT_QUEUE, &g_dbus_error);
+  if (ret == -1)
+  {
+    lash_error("Failed to acquire bus name: %s", g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    goto unref_connection;
+  }
+
+  if (ret == DBUS_REQUEST_NAME_REPLY_EXISTS)
+  {
+    lash_error("Requested connection name already exists");
+    goto unref_connection;
+  }
+
+  g_control_object = object_path_new("/", NULL, 1, &g_lashd_interface_control, NULL);
+  if (g_control_object == NULL)
+  {
+    goto unref_connection;
+  }
+
+  if (!object_path_register(g_dbus_connection, g_control_object))
+  {
+    goto destroy_control_object;
+  }
+
+  return true;
+
+destroy_control_object:
+  object_path_destroy(g_control_object);
+unref_connection:
+  dbus_connection_unref(g_dbus_connection);
+
 fail:
-  service_destroy(service);
-  return NULL;
-#endif
+  return false;
+}
+
+static void disconnect_dbus(void)
+{
+  dbus_connection_unref(g_dbus_connection);
+  object_path_destroy(g_control_object);
 }
 
 static void on_child_exit(pid_t pid)
@@ -206,10 +233,9 @@ int main(int argc, char ** argv, char ** envp)
 
   loader_init(on_child_exit);
 
-  g_dbus_service = lashd_dbus_service_new();
-  if (g_dbus_service == NULL)
+  if (!connect_dbus())
   {
-    lash_error("Failed to launch D-Bus service");
+    lash_error("Failed to connecto to D-Bus");
     goto uninit_loader;
   }
 
@@ -232,7 +258,7 @@ int main(int argc, char ** argv, char ** envp)
 
   while (!g_quit)
   {
-    dbus_connection_read_write_dispatch(g_dbus_service->connection, 50);
+    dbus_connection_read_write_dispatch(g_dbus_connection, 50);
     loader_run();
   }
 
@@ -248,7 +274,7 @@ int main(int argc, char ** argv, char ** envp)
 uninit_dbus:
   jack_uninit();
 
-  service_destroy(g_dbus_service);
+  disconnect_dbus();
 
 uninit_loader:
   loader_uninit();

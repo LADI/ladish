@@ -177,8 +177,7 @@ struct jack_conf_parameter
   struct jack_parameter_variant parameter;
 };
 
-extern service_t * g_dbus_service;
-#define g_dbus_connection (g_dbus_service->connection)
+extern DBusConnection * g_dbus_connection;
 extern DBusError g_dbus_error;
 extern bool g_quit;
 extern struct studio * g_studio_ptr;
