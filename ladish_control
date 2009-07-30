@@ -86,11 +86,10 @@ def main():
     if len(sys.argv) == 1:
         print "Usage: %s [command] [command] ..." % os.path.basename(sys.argv[0])
         print "Commands:"
-        print "    exit                 - exit lash dbus service"
-        print "    list                 - list projects"
-        print "    open <projectname>   - open project"
-        print "    save                 - save all open projects"
-        print "    close                - close all open projects"
+        print "    exit                 - exit ladish dbus service"
+        print "    studios              - list studios"
+        print "    apps                 - list apps"
+        print "    load <studioname>    - load studio"
         sys.exit(0)
     
     bus = dbus.SessionBus()
@@ -113,14 +112,17 @@ def main():
 		# we have deactivated the object and we need to get new connection if there are more commands
 		lash = None
 		control_iface = None
-            elif arg == 'list':
-                print "--- projects list"
-                projects = control_iface.ProjectsGetAvailable()
-                for project in projects:
-                    print project
-            elif arg == 'open':
+            elif arg == 'studios':
+                print "--- studio list"
+                for studio in control_iface.GetStudioList():
+                    print studio
+            elif arg == 'apps':
+                print "--- app list"
+                for app in control_iface.GetApplicationList():
+                    print app
+            elif arg == 'load':
                 if index >= len(sys.argv):
-                    print "project open command requires project name argument"
+                    print "load studio command requires studio name argument"
                     sys.exit()
 
                 arg = sys.argv[index]
@@ -130,11 +132,7 @@ def main():
 		#open_options["option1"] = "asd"
 		#open_options["option2"] = True
 
-		control_iface.ProjectOpen(arg, open_options)
-            elif arg == 'save':
-		control_iface.ProjectsSaveAll()
-            elif arg == 'close':
-		control_iface.ProjectsCloseAll()
+		control_iface.LoadStudio(arg, open_options)
             else:
                 print "Unknown command '%s'" % arg
         except dbus.DBusException, e:
