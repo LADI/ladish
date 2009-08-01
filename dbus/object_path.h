@@ -49,6 +49,6 @@ object_path_register(DBusConnection *conn,
                      object_path_t  *path);
 
 void
-object_path_destroy(object_path_t *path);
+object_path_destroy(DBusConnection * connection_ptr, object_path_t *path);
 
 #endif /* __LASH_DBUS_OBJECT_PATH_H__ */

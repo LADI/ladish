@@ -59,6 +59,8 @@ studio_create(
 
   INIT_LIST_HEAD(&studio_ptr->jack_conf);
 
+  studio_ptr->dbus_object = NULL;
+
   *studio_ptr_ptr = studio_ptr;
 
   return true;
@@ -70,6 +72,11 @@ studio_destroy(
 {
   struct list_head * node_ptr;
 
+  if (studio_ptr->dbus_object != NULL)
+  {
+    object_path_destroy(g_dbus_connection, studio_ptr->dbus_object);
+  }
+
   while (!list_empty(&studio_ptr->jack_conf))
   {
     node_ptr = studio_ptr->jack_conf.next;
@@ -79,4 +86,31 @@ studio_destroy(
 
   free(studio_ptr);
   lash_info("studio object destroy");
+}
+
+bool
+studio_activate(
+  struct studio * studio_ptr)
+{
+  object_path_t * object;
+
+  object = object_path_new(DBUS_BASE_PATH "/Studio", NULL, 0, NULL);
+  if (object == NULL)
+  {
+    lash_error("object_path_new() failed");
+    return false;
+  }
+
+  if (!object_path_register(g_dbus_connection, object))
+  {
+    lash_error("object_path_register() failed");
+    object_path_destroy(g_dbus_connection, object);
+    return false;
+  }
+
+  lash_info("Studio D-Bus object created.");
+
+  studio_ptr->dbus_object = object;
+
+  return true;
 }

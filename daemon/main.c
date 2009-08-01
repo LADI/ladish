@@ -153,7 +153,7 @@ static bool connect_dbus(void)
     goto unref_connection;
   }
 
-  g_control_object = object_path_new("/", NULL, 1, &g_lashd_interface_control, NULL);
+  g_control_object = object_path_new(DBUS_BASE_PATH "/Control", NULL, 1, &g_lashd_interface_control, NULL);
   if (g_control_object == NULL)
   {
     goto unref_connection;
@@ -167,7 +167,7 @@ static bool connect_dbus(void)
   return true;
 
 destroy_control_object:
-  object_path_destroy(g_control_object);
+  object_path_destroy(g_dbus_connection, g_control_object);
 unref_connection:
   dbus_connection_unref(g_dbus_connection);
 
@@ -177,8 +177,8 @@ fail:
 
 static void disconnect_dbus(void)
 {
+  object_path_destroy(g_dbus_connection, g_control_object);
   dbus_connection_unref(g_dbus_connection);
-  object_path_destroy(g_control_object);
 }
 
 static void on_child_exit(pid_t pid)

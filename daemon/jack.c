@@ -430,6 +430,7 @@ on_jack_server_started(
     {
       g_studio_ptr->jack_conf_stable = true;
       lash_info("jack conf successfully retrieved");
+      studio_activate(g_studio_ptr);
       return;
     }
   }

@@ -37,4 +37,8 @@ void
 studio_destroy(
   struct studio * studio_ptr);
 
+bool
+studio_activate(
+  struct studio * studio_ptr);
+
 #endif /* #ifndef STUDIO_H__0BEDE85E_4FB3_4D74_BC08_C373A22409C0__INCLUDED */

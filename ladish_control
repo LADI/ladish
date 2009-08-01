@@ -25,6 +25,7 @@
 
 control_interface_name = 'org.ladish.Control'
 service_name = 'org.ladish'
+dbus_object_path = "/org/ladish/Control"
 
 import sys
 import os
@@ -108,7 +109,7 @@ def main():
         index += 1
         try:
 	    if not lash:
-		lash = bus.get_object(service_name, "/")
+		lash = bus.get_object(service_name, dbus_object_path)
 		control_iface = dbus.Interface(lash, control_interface_name)
 	    
             if arg == "exit":

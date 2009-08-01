@@ -1,8 +1,8 @@
 /*
  *   LASH
  *
+ *   Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *   Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
- *   Copyright (C) 2008 Nedko Arnaudov
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -44,8 +44,9 @@ object_path_new(const char *name,
                 int         num_ifaces,
                             ...)
 {
-  if (!name || !name[0] || num_ifaces < 1) {
-    lash_debug("Invalid arguments");
+  if (!name || !name[0] || num_ifaces < 0)
+  {
+    lash_error("Invalid arguments");
     return NULL;
   }
 
@@ -75,7 +76,7 @@ object_path_new(const char *name,
   }
 
   lash_error("Failed to create object path");
-  object_path_destroy(path);
+  object_path_destroy(NULL, path);
 
   return NULL;
 }
@@ -104,27 +105,37 @@ object_path_register(DBusConnection *conn,
   return true;
 }
 
-void
-object_path_destroy(object_path_t *path)
+void object_path_destroy(DBusConnection * connection_ptr, object_path_t * path_ptr)
 {
   lash_debug("Destroying object path");
 
-  if (path) {
-    if (path->name) {
-      free(path->name);
-      path->name = NULL;
+  if (path_ptr)
+  {
+    if (connection_ptr != NULL && !dbus_connection_unregister_object_path(connection_ptr, path_ptr->name))
+    {
+      lash_error("dbus_connection_unregister_object_path() failed.");
     }
-    if (path->interfaces) {
-      free(path->interfaces);
-      path->interfaces = NULL;
+
+    if (path_ptr->name)
+    {
+      free(path_ptr->name);
+      path_ptr->name = NULL;
     }
-    introspection_destroy(path);
-    free(path);
-    path = NULL;
+
+    if (path_ptr->interfaces)
+    {
+      free(path_ptr->interfaces);
+      path_ptr->interfaces = NULL;
+    }
+
+    introspection_destroy(path_ptr);
+    free(path_ptr);
   }
 #ifdef LASH_DEBUG
   else
+  {
     lash_debug("Nothing to destroy");
+  }
 #endif
 }
 

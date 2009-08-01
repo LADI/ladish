@@ -123,21 +123,25 @@ service_destroy(service_t *service)
 
   if (service) {
     /* cut the bus connection */
-    if (service->connection) {
+    if (service->connection)
+    {
+      /* reap the object path(s) */
+      if (service->object_paths)
+      {
+        object_path_t **path_pptr;
+
+        for (path_pptr = service->object_paths; *path_pptr != NULL; ++path_pptr)
+        {
+          object_path_destroy(service->connection, *path_pptr);
+          *path_pptr = NULL;
+        }
+
+        free(service->object_paths);
+        service->object_paths = NULL;
+      }
+
       dbus_connection_unref(service->connection);
       service->connection = NULL;
-    }
-
-    /* reap the object path(s) */
-    if (service->object_paths) {
-      object_path_t **path_pptr;
-      for (path_pptr = service->object_paths;
-           *path_pptr; ++path_pptr) {
-        object_path_destroy(*path_pptr);
-        *path_pptr = NULL;
-      }
-      free(service->object_paths);
-      service->object_paths = NULL;
     }
 
     /* other stuff */

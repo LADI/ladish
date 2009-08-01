@@ -129,6 +129,8 @@ struct studio
   bool jack_conf_stable:1;      /* JACK server configuration obtained successfully */
 
   struct list_head jack_conf;
+
+  object_path_t * dbus_object;
 };
 
 struct jack_parameter_variant
