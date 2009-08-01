@@ -1,26 +1,30 @@
 /* -*- Mode: C ; c-basic-offset: 2 -*- */
-/*****************************************************************************
+/*
+ * LADI Session Handler (ladish)
  *
- *   Linux kernel header adapted for user-mode
- *   The 2.6.17-rt1 version was used.
+ * Linux kernel header adapted for user-mode. The 2.6.17-rt1 version was used.
  *
- *   Original copyright holders of this code are unknown, they were not
- *   mentioned in the original file.
- *    
- *   This program is free software; you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation; version 2 of the License
+ * Original copyright holders of this code are unknown, they were not
+ * mentioned in the original file.
  *
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
+ **************************************************************************
+ * This file contains implementation of double linked list (kernel style)
+ **************************************************************************
  *
- *   You should have received a copy of the GNU General Public License
- *   along with this program; if not, write to the Free Software
- *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ * LADI Session Handler is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License.
  *
- *****************************************************************************/
+ * LADI Session Handler is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with LADI Session Handler. If not, see <http://www.gnu.org/licenses/>
+ * or write to the Free Software Foundation, Inc.,
+ * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
 
 #ifndef _LINUX_LIST_H
 #define _LINUX_LIST_H
