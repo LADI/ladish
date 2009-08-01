@@ -29,6 +29,7 @@
 
 #include "../dbus/interface.h"
 #include "../dbus/error.h"
+#include "dbus_iface_control.h"
 
 #define INTERFACE_NAME DBUS_NAME_BASE ".Control"
 
@@ -194,6 +195,16 @@ static void ladish_exit(method_call_t * call_ptr)
   g_quit = true;
 }
 
+void emit_studio_appeared()
+{
+  signal_new_valist(g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "StudioAppeared", DBUS_TYPE_INVALID);
+}
+
+void emit_studio_disappeared()
+{
+  signal_new_valist(g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "StudioDisappeared", DBUS_TYPE_INVALID);
+}
+
 METHOD_ARGS_BEGIN(GetStudioList)
   METHOD_ARG_DESCRIBE("studio_list", "a(sa{sv})", DIRECTION_OUT)
 METHOD_ARGS_END
@@ -217,7 +228,15 @@ METHODS_BEGIN
   METHOD_DESCRIBE(Exit, ladish_exit)
 METHODS_END
 
+SIGNAL_ARGS_BEGIN(StudioAppeared)
+SIGNAL_ARGS_END
+
+SIGNAL_ARGS_BEGIN(StudioDisappeared)
+SIGNAL_ARGS_END
+
 SIGNALS_BEGIN
+  SIGNAL_DESCRIBE(StudioAppeared)
+  SIGNAL_DESCRIBE(StudioDisappeared)
 SIGNALS_END
 
 /*

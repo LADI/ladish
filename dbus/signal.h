@@ -1,8 +1,8 @@
 /*
  *   LASH
  *
+ * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *   Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
- *   Copyright (C) 2008 Nedko Arnaudov
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -45,20 +45,22 @@ struct _signal
 };
 
 void
-signal_new_single(service_t  *service,
-                  const char *path,
-                  const char *interface,
-                  const char *name,
-                  int         type,
-                  const void *arg);
+signal_new_single(
+  DBusConnection * connection_ptr,
+  const char * path,
+  const char * interface,
+  const char * name,
+  int type,
+  const void * arg);
 
 void
-signal_new_valist(service_t  *service,
-                  const char *path,
-                  const char *interface,
-                  const char *name,
-                  int         type,
-                              ...);
+signal_new_valist(
+  DBusConnection * connection_ptr,
+  const char * path,
+  const char * interface,
+  const char * name,
+  int type,
+  ...);
 
 #define SIGNAL_ARGS_BEGIN(signal_name)                         \
 static const struct _signal_arg signal_name ## _args_dtor[] =  \

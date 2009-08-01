@@ -28,6 +28,11 @@
 #ifndef __LASHD_DBUS_IFACE_CONTROL_H__
 #define __LASHD_DBUS_IFACE_CONTROL_H__
 
+#define CONTROL_OBJECT_PATH DBUS_BASE_PATH "/Control"
+
 extern const interface_t g_lashd_interface_control;
+
+void emit_studio_appeared();
+void emit_studio_disappeared();
 
 #endif /* __LASHD_DBUS_IFACE_CONTROL_H__ */

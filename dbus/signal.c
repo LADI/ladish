@@ -1,6 +1,7 @@
 /*
  *   LASH
  *
+ * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *   Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -28,12 +29,13 @@ static void
 signal_send(signal_msg_t *signal);
 
 void
-signal_new_single(service_t  *service,
-                  const char *path,
-                  const char *interface,
-                  const char *name,
-                  int         type,
-                  const void *arg)
+signal_new_single(
+  DBusConnection * connection_ptr,
+  const char * path,
+  const char * interface,
+  const char * name,
+  int type,
+  const void * arg)
 {
   signal_msg_t signal;
   DBusMessageIter iter;
@@ -43,7 +45,7 @@ signal_new_single(service_t  *service,
   if ((signal.message = dbus_message_new_signal(path, interface, name))) {
     dbus_message_iter_init_append(signal.message, &iter);
     if (dbus_message_iter_append_basic(&iter, type, arg)) {
-      signal.connection = service->connection;
+      signal.connection = connection_ptr;
       signal_send(&signal);
     } else {
       lash_error("Ran out of memory trying to append signal argument");
@@ -59,12 +61,13 @@ signal_new_single(service_t  *service,
 }
 
 void
-signal_new_valist (service_t  *service,
-                   const char *path,
-                   const char *interface,
-                   const char *name,
-                   int         type,
-                               ...)
+signal_new_valist(
+  DBusConnection * connection_ptr,
+  const char * path,
+  const char * interface,
+  const char * name,
+  int type,
+  ...)
 {
   signal_msg_t signal;
   va_list argp;
@@ -74,7 +77,7 @@ signal_new_valist (service_t  *service,
   if ((signal.message = dbus_message_new_signal (path, interface, name))) {
     va_start(argp, type);
     if (dbus_message_append_args_valist(signal.message, type, argp)) {
-      signal.connection = service->connection;
+      signal.connection = connection_ptr;
       signal_send(&signal);
     } else {
       lash_error("Ran out of memory trying to append signal argument(s)");

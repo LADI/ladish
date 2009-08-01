@@ -431,6 +431,7 @@ on_jack_server_started(
       g_studio_ptr->jack_conf_stable = true;
       lash_info("jack conf successfully retrieved");
       studio_activate(g_studio_ptr);
+      emit_studio_appeared();
       return;
     }
   }
@@ -458,6 +459,7 @@ on_jack_server_stopped(
 
   if (!g_studio_ptr->persisted)
   {
+    emit_studio_disappeared();
     studio_destroy(g_studio_ptr);
     g_studio_ptr = NULL;
     return;

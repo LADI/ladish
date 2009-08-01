@@ -153,7 +153,7 @@ static bool connect_dbus(void)
     goto unref_connection;
   }
 
-  g_control_object = object_path_new(DBUS_BASE_PATH "/Control", NULL, 1, &g_lashd_interface_control, NULL);
+  g_control_object = object_path_new(CONTROL_OBJECT_PATH, NULL, 1, &g_lashd_interface_control, NULL);
   if (g_control_object == NULL)
   {
     goto unref_connection;
@@ -265,6 +265,7 @@ int main(int argc, char ** argv, char ** envp)
   if (g_studio_ptr != NULL)
   {
     studio_destroy(g_studio_ptr);
+    emit_studio_disappeared();
   }
 
   ret = EXIT_SUCCESS;
