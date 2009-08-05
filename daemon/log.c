@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Marc-Olivier Barre
  *
  **************************************************************************
@@ -36,7 +36,7 @@
 #include <time.h>
 
 #include "../common/debug.h"
-#include "../common/safety.h"
+#include "catdup.h"
 
 #define DEFAULT_XDG_LOG "/.log"
 #define LASH_XDG_SUBDIR "/lash"
@@ -96,8 +96,19 @@ void lash_log_init()
     goto exit;
   }
 
-  xdg_log_home = lash_catdup(home_dir, DEFAULT_XDG_LOG);
-  lash_log_dir = lash_catdup(xdg_log_home, LASH_XDG_SUBDIR);
+  xdg_log_home = catdup(home_dir, DEFAULT_XDG_LOG);
+  if (xdg_log_home == NULL)
+  {
+    lash_error("catdup failed for '%s' and '%s'", home_dir, DEFAULT_XDG_LOG);
+    goto exit;
+  }
+
+  lash_log_dir = catdup(xdg_log_home, LASH_XDG_SUBDIR);
+  if (lash_log_dir == NULL)
+  {
+    lash_error("catdup failed for '%s' and '%s'", home_dir, LASH_XDG_SUBDIR);
+    goto free_log_home;
+  }
 
   if (!ensure_dir_exist(xdg_log_home, 0700))
   {
@@ -135,7 +146,7 @@ void lash_log_init()
 free_log_dir:
   free(lash_log_dir);
 
-//free_log_home:
+free_log_home:
   free(xdg_log_home);
 
 exit:

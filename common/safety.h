@@ -140,10 +140,6 @@ char *
 lash_strdup(const char *s);
 
 /** TODO: Document this */
-char *
-lash_catdup(const char *s1,
-            const char *s2);
-
 #else /* LASH_DEBUG */
 
 /**
@@ -189,10 +185,6 @@ lash_catdup(const char *s1,
  */
 # define lash_strdup(s) \
   lash_strdup_dbg(s, __FILE__, __LINE__, __func__, # s)
-
-/** TODO: Document this */
-# define lash_catdup(s1, s2) \
-  lash_catdup_dbg(s1, s2, __FILE__, __LINE__, __func__, # s1, # s2)
 
 /**
  * This is a wrapper around malloc which checks whether nmemb * size
@@ -319,16 +311,6 @@ lash_strdup_dbg(const char *s,
                 int         line,
                 const char *function,
                 const char *arg1);
-
-/** TODO: Document this */
-char *
-lash_catdup_dbg(const char *s1,
-                const char *s2,
-                const char *file,
-                int         line,
-                const char *function,
-                const char *arg1,
-                const char *arg2);
 
 #endif /* LASH_DEBUG */
 

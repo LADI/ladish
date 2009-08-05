@@ -174,6 +174,7 @@ def build(bld):
         'jack_proxy.c',
         'jack.c',
         'studio.c',
+        'catdup.c'
         ]:
         daemon.source.append(os.path.join("daemon", source))
 

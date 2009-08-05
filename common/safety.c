@@ -144,30 +144,6 @@ lash_strdup(const char *s)
   abort();
 }
 
-char *
-lash_catdup(const char *s1,
-            const char *s2)
-{
-  char *str;
-
-  if (s1 && s2) {
-    size_t s1_len, s2_len;
-
-    s1_len = strlen(s1);
-    s2_len = strlen(s2);
-    str = lash_malloc(1, s1_len + s2_len + 1);
-
-    memcpy(str, s1, s1_len);
-    memcpy(str + s1_len, s2, s2_len);
-    str[s1_len + s2_len] = '\0';
-  } else if (!(str = strdup(""))) {
-    lash_error("strdup returned NULL");
-    abort();
-  }
-
-  return str;
-}
-
 #else /* LASH_DEBUG */
 
 void *
@@ -312,43 +288,6 @@ lash_strdup_dbg(const char *s,
                    file, line, function, arg1);
 
   abort();
-}
-
-char *
-lash_catdup_dbg(const char *s1,
-                const char *s2,
-                const char *file,
-                int         line,
-                const char *function,
-                const char *arg1,
-                const char *arg2)
-{
-  char *str;
-
-  if (s1 && s2) {
-    size_t s1_len, s2_len;
-
-    s1_len = strlen(s1);
-    s2_len = strlen(s2);
-    str = lash_malloc(1, s1_len + s2_len + 1);
-
-    memcpy(str, s1, s1_len);
-    memcpy(str + s1_len, s2, s2_len);
-    str[s1_len + s2_len] = '\0';
-  } else {
-    lash_error_plain("%s:%d:%s: lash_catdup(%s, %s) failed: "
-                     "NULL argument(s)",
-                     file, line, function, arg1, arg2);
-
-    if (!(str = strdup(""))) {
-      lash_error_plain("%s:%d:%s: lash_catdup(%s, %s) failed: "
-                       "strdup returned NULL",
-                       file, line, function, arg1, arg2);
-      abort();
-    }
-  }
-
-  return str;
 }
 
 #endif /* LASH_DEBUG */

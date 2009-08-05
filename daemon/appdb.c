@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains code of the application database
@@ -33,7 +33,7 @@
 
 #include "appdb.h"
 #include "../common/debug.h"
-#include "../common/safety.h"
+#include "catdup.h"
 
 void
 lash_appdb_free_entry(
@@ -508,7 +508,12 @@ lash_appdb_load_dir(
 
   ret = false;
 
-  directory_path = lash_catdup(base_directory, "/applications/");
+  directory_path = catdup(base_directory, "/applications/");
+  if (directory_path == NULL)
+  {
+    lash_error("catdup() failed to compose the appdb dir path");
+    goto fail;
+  }
 
   //lash_info("Scanning directory '%s'", directory_path);
 
@@ -527,15 +532,21 @@ lash_appdb_load_dir(
         continue;
       }
 
-      file_path = lash_catdup(directory_path, dentry_ptr->d_name);
-
-      if (!lash_appdb_load_file(appdb, file_path))
+      file_path = catdup(directory_path, dentry_ptr->d_name);
+      if (file_path == NULL)
       {
-        free(file_path);
-        goto fail_free_path;
+        lash_error("catdup() failed to compose the appdb dir file");
       }
+      else
+      {
+        if (!lash_appdb_load_file(appdb, file_path))
+        {
+          free(file_path);
+          goto fail_free_path;
+        }
 
-      free(file_path);
+        free(file_path);
+      }
     }
 
     closedir(dir);
@@ -550,7 +561,7 @@ lash_appdb_load_dir(
 fail_free_path:
   free(directory_path);
 
-//fail:
+fail:
   return ret;
 }
 
@@ -618,7 +629,12 @@ lash_appdb_load(
     goto fail;
   }
 
-  data_home_default = lash_catdup(home_dir, "/.local/share");
+  data_home_default = catdup(home_dir, "/.local/share");
+  if (data_home_default == NULL)
+  {
+    lash_error("catdup failed to compose data_home_default");
+    goto fail;
+  }
 
   data_home = get_xdg_var("XDG_DATA_HOME", data_home_default);
 
