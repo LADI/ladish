@@ -45,7 +45,7 @@ DBusError g_dbus_error;
 DBusConnection * g_dbus_connection;
 const char * g_dbus_unique_name;
 object_path_t * g_control_object;
-struct studio * g_studio_ptr;
+studio_handle g_studio;
 
 #if 0
 static DBusHandlerResult lashd_client_disconnect_handler(DBusConnection * connection, DBusMessage * message, void * data)
@@ -262,9 +262,9 @@ int main(int argc, char ** argv, char ** envp)
     loader_run();
   }
 
-  if (g_studio_ptr != NULL)
+  if (g_studio != NULL)
   {
-    studio_destroy(g_studio_ptr);
+    studio_destroy(g_studio);
     emit_studio_disappeared();
   }
 

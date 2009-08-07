@@ -27,18 +27,26 @@
 #ifndef STUDIO_H__0BEDE85E_4FB3_4D74_BC08_C373A22409C0__INCLUDED
 #define STUDIO_H__0BEDE85E_4FB3_4D74_BC08_C373A22409C0__INCLUDED
 
-#include "common.h"
+typedef struct { int unused; } * studio_handle;
 
 bool
 studio_create(
-  struct studio ** studio_ptr_ptr);
+  studio_handle * studio_ptr);
 
 void
 studio_destroy(
-  struct studio * studio_ptr);
+  studio_handle studio);
 
 bool
 studio_activate(
-  struct studio * studio_ptr);
+  studio_handle studio);
+
+bool
+studio_fetch_jack_settings(
+  studio_handle studio);
+
+bool
+studio_is_persisted(
+  studio_handle studio);
 
 #endif /* #ifndef STUDIO_H__0BEDE85E_4FB3_4D74_BC08_C373A22409C0__INCLUDED */

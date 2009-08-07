@@ -25,11 +25,342 @@
  */
 
 #include "common.h"
-#include "jack.h"
+#include "jack_proxy.h"
+
+struct studio
+{
+  struct list_head all_connections;        /* All connections (studio guts and all rooms). Including superconnections. */
+  struct list_head all_ports;              /* All ports (studio guts and all rooms) */
+  struct list_head all_clients;            /* All clients (studio guts and all rooms) */
+  struct list_head jack_connections;       /* JACK connections (studio guts and all rooms). Including superconnections, excluding virtual connections. */
+  struct list_head jack_ports;             /* JACK ports (studio guts and all rooms). Excluding virtual ports. */
+  struct list_head jack_clients;           /* JACK clients (studio guts and all rooms). Excluding virtual clients. */
+  struct list_head rooms;                  /* Rooms connected to the studio */
+  struct list_head clients;                /* studio clients (studio guts and room links) */
+  struct list_head ports;                  /* studio ports (studio guts and room links) */
+
+  bool persisted:1;             /* Studio has on-disk representation, i.e. can be reloaded from disk */
+  bool modified:1;              /* Studio needs saving */
+  bool jack_conf_stable:1;      /* JACK server configuration obtained successfully */
+
+  struct list_head jack_conf;
+
+  object_path_t * dbus_object;
+};
+
+struct jack_conf_parameter
+{
+  struct list_head siblings;
+  char * name;
+  struct jack_parameter_variant parameter;
+};
+
+struct jack_conf_container
+{
+  struct list_head siblings;
+  char * name;
+  bool children_leafs;          /* if true, children are "jack_conf_parameter"s, if false, children are "jack_conf_container"s */
+  struct list_head children;
+};
+
+struct conf_callback_context
+{
+  char address[1024];
+  struct list_head * container_ptr;
+  struct studio * studio_ptr;
+  struct jack_conf_container * parent_ptr;
+};
+
+bool
+jack_conf_container_create(
+  struct jack_conf_container ** container_ptr_ptr,
+  const char * name)
+{
+  struct jack_conf_container * container_ptr;
+
+  container_ptr = malloc(sizeof(struct jack_conf_container));
+  if (container_ptr == NULL)
+  {
+    lash_error("malloc() failed to allocate struct jack_conf_container");
+    goto fail;
+  }
+
+  container_ptr->name = strdup(name);
+  if (container_ptr->name == NULL)
+  {
+    lash_error("strdup() failed to duplicate \"%s\"", name);
+    goto fail_free;
+  }
+
+  INIT_LIST_HEAD(&container_ptr->children);
+  container_ptr->children_leafs = false;
+
+  *container_ptr_ptr = container_ptr;
+  return true;
+
+fail_free:
+  free(container_ptr);
+
+fail:
+  return false;
+}
+
+bool
+jack_conf_parameter_create(
+  struct jack_conf_parameter ** parameter_ptr_ptr,
+  const char * name)
+{
+  struct jack_conf_parameter * parameter_ptr;
+
+  parameter_ptr = malloc(sizeof(struct jack_conf_parameter));
+  if (parameter_ptr == NULL)
+  {
+    lash_error("malloc() failed to allocate struct jack_conf_parameter");
+    goto fail;
+  }
+
+  parameter_ptr->name = strdup(name);
+  if (parameter_ptr->name == NULL)
+  {
+    lash_error("strdup() failed to duplicate \"%s\"", name);
+    goto fail_free;
+  }
+
+  *parameter_ptr_ptr = parameter_ptr;
+  return true;
+
+fail_free:
+  free(parameter_ptr);
+
+fail:
+  return false;
+}
+
+void
+jack_conf_parameter_destroy(
+  struct jack_conf_parameter * parameter_ptr)
+{
+#if 0
+  lash_info("jack_conf_parameter destroy");
+
+  switch (parameter_ptr->parameter.type)
+  {
+  case jack_boolean:
+    lash_info("%s value is %s (boolean)", parameter_ptr->name, parameter_ptr->parameter.value.boolean ? "true" : "false");
+    break;
+  case jack_string:
+    lash_info("%s value is %s (string)", parameter_ptr->name, parameter_ptr->parameter.value.string);
+    break;
+  case jack_byte:
+    lash_info("%s value is %u/%c (byte/char)", parameter_ptr->name, parameter_ptr->parameter.value.byte, (char)parameter_ptr->parameter.value.byte);
+    break;
+  case jack_uint32:
+    lash_info("%s value is %u (uint32)", parameter_ptr->name, (unsigned int)parameter_ptr->parameter.value.uint32);
+    break;
+  case jack_int32:
+    lash_info("%s value is %u (int32)", parameter_ptr->name, (signed int)parameter_ptr->parameter.value.int32);
+    break;
+  default:
+    lash_error("unknown jack parameter_ptr->parameter type %d (%s)", (int)parameter_ptr->parameter.type, parameter_ptr->name);
+    break;
+  }
+#endif
+
+  if (parameter_ptr->parameter.type == jack_string)
+  {
+    free(parameter_ptr->parameter.value.string);
+  }
+
+  free(parameter_ptr->name);
+  free(parameter_ptr);
+}
+
+void
+jack_conf_container_destroy(
+  struct jack_conf_container * container_ptr)
+{
+  struct list_head * node_ptr;
+
+  //lash_info("\"%s\" jack_conf_parameter destroy", container_ptr->name);
+
+  if (!container_ptr->children_leafs)
+  {
+    while (!list_empty(&container_ptr->children))
+    {
+      node_ptr = container_ptr->children.next;
+      list_del(node_ptr);
+      jack_conf_container_destroy(list_entry(node_ptr, struct jack_conf_container, siblings));
+    }
+  }
+  else
+  {
+    while (!list_empty(&container_ptr->children))
+    {
+      node_ptr = container_ptr->children.next;
+      list_del(node_ptr);
+      jack_conf_parameter_destroy(list_entry(node_ptr, struct jack_conf_parameter, siblings));
+    }
+  }
+
+  free(container_ptr->name);
+  free(container_ptr);
+}
+
+#define context_ptr ((struct conf_callback_context *)context)
+
+static
+bool
+conf_callback(
+  void * context,
+  bool leaf,
+  const char * address,
+  char * child)
+{
+  char path[1024];
+  const char * component;
+  char * dst;
+  size_t len;
+  bool is_set;
+  struct jack_conf_container * parent_ptr;
+  struct jack_conf_container * container_ptr;
+  struct jack_conf_parameter * parameter_ptr;
+
+  assert(context_ptr->studio_ptr);
+
+  parent_ptr = context_ptr->parent_ptr;
+
+  dst = path;
+  component = address;
+  while (*component != 0)
+  {
+    len = strlen(component);
+    memcpy(dst, component, len);
+    dst[len] = ':';
+    component += len + 1;
+    dst += len + 1;
+  }
+
+  strcpy(dst, child);
+
+  /* address always is same buffer as the one supplied through context pointer */
+  assert(context_ptr->address == address);
+  dst = (char *)component;
+
+  len = strlen(child) + 1;
+  memcpy(dst, child, len);
+  dst[len] = 0;
+
+  if (leaf)
+  {
+    lash_debug("%s (leaf)", path);
+
+    if (parent_ptr == NULL)
+    {
+      lash_error("jack conf parameters can't appear in root container");
+      return false;
+    }
+
+    if (!parent_ptr->children_leafs)
+    {
+      if (!list_empty(&parent_ptr->children))
+      {
+        lash_error("jack conf parameters cant be mixed with containers at same hierarchy level");
+        return false;
+      }
+
+      parent_ptr->children_leafs = true;
+    }
+
+    if (!jack_conf_parameter_create(&parameter_ptr, child))
+    {
+      lash_error("jack_conf_parameter_create() failed");
+      return false;
+    }
+
+    if (!jack_proxy_get_parameter_value(context_ptr->address, &is_set, &parameter_ptr->parameter))
+    {
+      lash_error("cannot get value of %s", path);
+      return false;
+    }
+
+    if (is_set)
+    {
+      switch (parameter_ptr->parameter.type)
+      {
+      case jack_boolean:
+        lash_info("%s value is %s (boolean)", path, parameter_ptr->parameter.value.boolean ? "true" : "false");
+        break;
+      case jack_string:
+        lash_info("%s value is %s (string)", path, parameter_ptr->parameter.value.string);
+        break;
+      case jack_byte:
+        lash_info("%s value is %u/%c (byte/char)", path, parameter_ptr->parameter.value.byte, (char)parameter_ptr->parameter.value.byte);
+        break;
+      case jack_uint32:
+        lash_info("%s value is %u (uint32)", path, (unsigned int)parameter_ptr->parameter.value.uint32);
+        break;
+      case jack_int32:
+        lash_info("%s value is %u (int32)", path, (signed int)parameter_ptr->parameter.value.int32);
+        break;
+      default:
+        lash_error("unknown jack parameter_ptr->parameter type %d (%s)", (int)parameter_ptr->parameter.type, path);
+        jack_conf_parameter_destroy(parameter_ptr);
+        return false;
+      }
+
+      list_add_tail(&parameter_ptr->siblings, &parent_ptr->children);
+    }
+    else
+    {
+      jack_conf_parameter_destroy(parameter_ptr);
+    }
+  }
+  else
+  {
+    lash_debug("%s (container)", path);
+
+    if (parent_ptr != NULL && parent_ptr->children_leafs)
+    {
+      lash_error("jack conf containers cant be mixed with parameters at same hierarchy level");
+      return false;
+    }
+
+    if (!jack_conf_container_create(&container_ptr, child))
+    {
+      lash_error("jack_conf_container_create() failed");
+      return false;
+    }
+
+    if (parent_ptr == NULL)
+    {
+      list_add_tail(&container_ptr->siblings, &context_ptr->studio_ptr->jack_conf);
+    }
+    else
+    {
+      list_add_tail(&container_ptr->siblings, &parent_ptr->children);
+    }
+
+    context_ptr->parent_ptr = container_ptr;
+
+    if (!jack_proxy_read_conf_container(context_ptr->address, context, conf_callback))
+    {
+      lash_error("cannot read container %s", path);
+      return false;
+    }
+
+    context_ptr->parent_ptr = parent_ptr;
+  }
+
+  *dst = 0;
+
+  return true;
+}
+
+#undef context_ptr
 
 bool
 studio_create(
-  struct studio ** studio_ptr_ptr)
+  studio_handle * studio_handle_ptr)
 {
   struct studio * studio_ptr;
 
@@ -54,21 +385,22 @@ studio_create(
 
   studio_ptr->modified = false;
   studio_ptr->persisted = false;
-  studio_ptr->jack_conf_obsolete = false;
   studio_ptr->jack_conf_stable = false;
 
   INIT_LIST_HEAD(&studio_ptr->jack_conf);
 
   studio_ptr->dbus_object = NULL;
 
-  *studio_ptr_ptr = studio_ptr;
+  *studio_handle_ptr = (studio_handle)studio_ptr;
 
   return true;
 }
 
+#define studio_ptr ((struct studio *)studio)
+
 void
 studio_destroy(
-  struct studio * studio_ptr)
+  studio_handle studio)
 {
   struct list_head * node_ptr;
 
@@ -90,7 +422,7 @@ studio_destroy(
 
 bool
 studio_activate(
-  struct studio * studio_ptr)
+  studio_handle studio)
 {
   object_path_t * object;
 
@@ -111,6 +443,35 @@ studio_activate(
   lash_info("Studio D-Bus object created.");
 
   studio_ptr->dbus_object = object;
+
+  return true;
+}
+
+bool
+studio_is_persisted(
+  studio_handle studio)
+{
+  return studio_ptr->persisted;
+}
+
+#undef studio_ptr
+
+bool
+studio_fetch_jack_settings(
+  studio_handle studio)
+{
+  struct conf_callback_context context;
+
+  context.address[0] = 0;
+  context.studio_ptr = (struct studio *)studio;
+  context.container_ptr = &context.studio_ptr->jack_conf;
+  context.parent_ptr = NULL;
+
+  if (!jack_proxy_read_conf_container(context.address, &context, conf_callback))
+  {
+    lash_error("jack_proxy_read_conf_container() failed.");
+    return false;
+  }
 
   return true;
 }
