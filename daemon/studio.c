@@ -43,15 +43,21 @@ struct studio
   bool modified:1;              /* Studio needs saving */
   bool jack_conf_stable:1;      /* JACK server configuration obtained successfully */
 
-  struct list_head jack_conf;
+  struct list_head jack_conf;   /* root of the conf tree */
+  struct list_head jack_params; /* list of conf tree leaves */
 
   object_path_t * dbus_object;
 };
 
+#define JACK_CONF_MAX_ADDRESS_SIZE 1024
+
 struct jack_conf_parameter
 {
-  struct list_head siblings;
+  struct list_head siblings;    /* siblings in container children list */
+  struct list_head leaves;      /* studio::jack_param siblings */
   char * name;
+  struct jack_conf_container * parent_ptr;
+  char address[JACK_CONF_MAX_ADDRESS_SIZE];
   struct jack_parameter_variant parameter;
 };
 
@@ -59,13 +65,14 @@ struct jack_conf_container
 {
   struct list_head siblings;
   char * name;
+  struct jack_conf_container * parent_ptr;
   bool children_leafs;          /* if true, children are "jack_conf_parameter"s, if false, children are "jack_conf_container"s */
   struct list_head children;
 };
 
 struct conf_callback_context
 {
-  char address[1024];
+  char address[JACK_CONF_MAX_ADDRESS_SIZE];
   struct list_head * container_ptr;
   struct studio * studio_ptr;
   struct jack_conf_container * parent_ptr;
@@ -216,7 +223,7 @@ conf_callback(
   const char * address,
   char * child)
 {
-  char path[1024];
+  char path[JACK_CONF_MAX_ADDRESS_SIZE];
   const char * component;
   char * dst;
   size_t len;
@@ -308,7 +315,10 @@ conf_callback(
         return false;
       }
 
+      parameter_ptr->parent_ptr = parent_ptr;
+      memcpy(parameter_ptr->address, context_ptr->address, JACK_CONF_MAX_ADDRESS_SIZE);
       list_add_tail(&parameter_ptr->siblings, &parent_ptr->children);
+      list_add_tail(&parameter_ptr->leaves, &context_ptr->studio_ptr->jack_params);
     }
     else
     {
@@ -330,6 +340,8 @@ conf_callback(
       lash_error("jack_conf_container_create() failed");
       return false;
     }
+
+    container_ptr->parent_ptr = parent_ptr;
 
     if (parent_ptr == NULL)
     {
@@ -388,6 +400,7 @@ studio_create(
   studio_ptr->jack_conf_stable = false;
 
   INIT_LIST_HEAD(&studio_ptr->jack_conf);
+  INIT_LIST_HEAD(&studio_ptr->jack_params);
 
   studio_ptr->dbus_object = NULL;
 
@@ -452,6 +465,88 @@ studio_is_persisted(
   studio_handle studio)
 {
   return studio_ptr->persisted;
+}
+
+bool
+studio_save(
+  studio_handle studio,
+  const char * file_path)
+{
+  struct list_head * node_ptr;
+  struct jack_conf_parameter * parameter_ptr;
+  char path[JACK_CONF_MAX_ADDRESS_SIZE * 3]; /* encode each char in three bytes (percent encoding) */
+  const char * src;
+  char * dst;
+  static char hex_digits[] = "0123456789ABCDEF";
+
+  lash_info("saving studio...");
+
+  list_for_each(node_ptr, &studio_ptr->jack_params)
+  {
+    parameter_ptr = list_entry(node_ptr, struct jack_conf_parameter, leaves);
+
+    /* compose the parameter path, percent-encode "bad" chars */
+    src = parameter_ptr->address;
+    dst = path;
+    do
+    {
+      *dst++ = '/';
+      while (*src != 0)
+      {
+        switch (*src)
+        {
+        case '/':               /* used as separator for address components */
+        case '<':               /* invalid attribute value char (XML spec) */
+        case '&':               /* invalid attribute value char (XML spec) */
+        case '"':               /* we store attribute values in double quotes - invalid attribute value char (XML spec) */
+        case '%':
+          dst[0] = '%';
+          dst[1] = hex_digits[*src >> 4];
+          dst[2] = hex_digits[*src & 0x0F];
+          dst += 3;
+          src++;
+          break;
+        default:
+          *dst++ = *src++;
+        }
+      }
+      src++;
+    }
+    while (*src != 0);
+    *dst = 0;
+
+    switch (parameter_ptr->parameter.type)
+    {
+    case jack_boolean:
+      lash_info("%s value is %s (boolean)", path, parameter_ptr->parameter.value.boolean ? "true" : "false");
+      break;
+    case jack_string:
+      lash_info("%s value is %s (string)", path, parameter_ptr->parameter.value.string);
+      break;
+    case jack_byte:
+      lash_info("%s value is %u/%c (byte/char)", path, parameter_ptr->parameter.value.byte, (char)parameter_ptr->parameter.value.byte);
+      break;
+    case jack_uint32:
+      lash_info("%s value is %u (uint32)", path, (unsigned int)parameter_ptr->parameter.value.uint32);
+      break;
+    case jack_int32:
+      lash_info("%s value is %u (int32)", path, (signed int)parameter_ptr->parameter.value.int32);
+      break;
+    default:
+      lash_error("unknown jack parameter_ptr->parameter type %d (%s)", (int)parameter_ptr->parameter.type, path);
+      return false;
+    }
+  }
+
+  return false;                 /* not implemented yet */
+}
+
+bool
+studio_load(
+  studio_handle studio,
+  const char * file_path)
+{
+  return false;                 /* not implemented yet */
 }
 
 #undef studio_ptr

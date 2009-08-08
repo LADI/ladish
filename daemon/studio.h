@@ -49,4 +49,14 @@ bool
 studio_is_persisted(
   studio_handle studio);
 
+bool
+studio_save(
+  studio_handle studio,
+  const char * file_path);
+
+bool
+studio_load(
+  studio_handle studio,
+  const char * file_path);
+
 #endif /* #ifndef STUDIO_H__0BEDE85E_4FB3_4D74_BC08_C373A22409C0__INCLUDED */

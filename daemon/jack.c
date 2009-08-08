@@ -132,6 +132,7 @@ on_jack_server_started(
   lash_info("jack conf successfully retrieved");
   studio_activate(g_studio);
   emit_studio_appeared();
+  studio_save(g_studio, NULL);  /* XXX - to test save functionality, we should not save unless requested by user */
   return;
 }
 
