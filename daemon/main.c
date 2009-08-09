@@ -41,8 +41,6 @@
 #include "studio.h"
 
 bool g_quit;
-DBusError g_dbus_error;
-DBusConnection * g_dbus_connection;
 const char * g_dbus_unique_name;
 object_path_t * g_control_object;
 studio_handle g_studio;

@@ -40,6 +40,7 @@
 #include <uuid/uuid.h>
 
 #include "../dbus/service.h"
+#include "../dbus/helpers.h"
 #include "../common/klist.h"
 #include "../common/debug.h"
 
@@ -113,8 +114,6 @@ struct room
 
 #include "studio.h"
 
-extern DBusConnection * g_dbus_connection;
-extern DBusError g_dbus_error;
 extern bool g_quit;
 extern studio_handle g_studio;
 

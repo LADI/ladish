@@ -28,8 +28,13 @@
 #ifndef HELPERS_H__6C2107A6_A5E3_4806_869B_4BE609535BA2__INCLUDED
 #define HELPERS_H__6C2107A6_A5E3_4806_869B_4BE609535BA2__INCLUDED
 
+extern DBusConnection * g_dbus_connection;
+extern DBusError g_dbus_error;
+
 bool dbus_maybe_add_dict_entry_string(DBusMessageIter *dict_iter_ptr, const char * key, const char * value);
 bool dbus_add_dict_entry_uint32(DBusMessageIter * dict_iter_ptr, const char * key, dbus_uint32_t value);
 bool dbus_add_dict_entry_bool(DBusMessageIter * dict_iter_ptr, const char * key, dbus_bool_t value);
+
+bool dbus_call_simple(const char * service, const char * object, const char * iface, const char * method, char * input_signature, ...);
 
 #endif /* #ifndef HELPERS_H__6C2107A6_A5E3_4806_869B_4BE609535BA2__INCLUDED */

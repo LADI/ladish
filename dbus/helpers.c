@@ -25,6 +25,20 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <stdbool.h>
+#include <dbus/dbus.h>
+#include <string.h>
+#include <assert.h>
+
+#include "helpers.h"
+#include "method.h"
+#include "../common/debug.h"
+
+DBusConnection * g_dbus_connection;
+DBusError g_dbus_error;
+
+#define DBUS_CALL_DEFAULT_TIMEOUT 1000 // in milliseconds
+
 bool dbus_maybe_add_dict_entry_string(DBusMessageIter *dict_iter_ptr, const char * key, const char * value)
 {
   DBusMessageIter dict_entry_iter;
@@ -58,11 +72,6 @@ bool dbus_maybe_add_dict_entry_string(DBusMessageIter *dict_iter_ptr, const char
 bool dbus_add_dict_entry_uint32(DBusMessageIter * dict_iter_ptr, const char * key, dbus_uint32_t value)
 {
   DBusMessageIter dict_entry_iter;
-
-  if (value == NULL)
-  {
-    return true;
-  }
 
   if (!dbus_message_iter_open_container(dict_iter_ptr, DBUS_TYPE_DICT_ENTRY, NULL, &dict_entry_iter))
   {
@@ -109,3 +118,110 @@ bool dbus_add_dict_entry_bool(DBusMessageIter * dict_iter_ptr, const char * key,
 
   return true;
 }
+
+bool
+dbus_call_simple(
+  const char * service,
+  const char * object,
+  const char * iface,
+  const char * method,
+  char * input_signature,
+  ...)
+{
+  DBusMessageIter iter;
+  DBusMessage * request_ptr;
+  DBusMessage * reply_ptr;
+  const char * output_signature;
+  const char * reply_signature;
+  va_list ap;
+  bool ret;
+  void * parameter_ptr;
+  int type;
+  DBusSignatureIter sig_iter;
+
+  lash_info("dbus_call_simple('%s', '%s', '%s', '%s')", service, object, iface, method);
+
+  ret = false;
+  va_start(ap, input_signature);
+
+  if (!dbus_signature_validate(input_signature, NULL))
+  {
+    lash_error("input signature '%s' is invalid", input_signature);
+    goto fail;
+  }
+
+  dbus_signature_iter_init(&sig_iter, input_signature);
+
+  request_ptr = dbus_message_new_method_call(service, object, iface, method);
+  if (request_ptr == NULL)
+  {
+    lash_error("dbus_message_new_method_call() failed.");
+    goto fail;
+  }
+
+  dbus_message_iter_init_append(request_ptr, &iter);
+
+  while (*input_signature != '\0')
+  {
+    type = dbus_signature_iter_get_current_type(&sig_iter);
+    if (!dbus_type_is_basic(type))
+    {
+      lash_error("non-basic input parameter '%c' (%d)", *input_signature, type);
+      goto fail;
+    }
+
+    parameter_ptr = va_arg(ap, void *);
+
+    if (!dbus_message_iter_append_basic(&iter, type, parameter_ptr))
+    {
+      lash_error("dbus_message_iter_append_basic() failed.");
+      goto fail;
+    }
+
+    dbus_signature_iter_next(&sig_iter);
+    input_signature++;
+  }
+
+  output_signature = va_arg(ap, const char *);
+
+  reply_ptr = dbus_connection_send_with_reply_and_block(
+    g_dbus_connection,
+    request_ptr,
+    DBUS_CALL_DEFAULT_TIMEOUT,
+    &g_dbus_error);
+
+  dbus_message_unref(request_ptr);
+
+  if (reply_ptr == NULL)
+  {
+    lash_error("calling method '%s' failed, error is '%s'", method, g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    goto fail;
+  }
+
+  reply_signature = dbus_message_get_signature(reply_ptr);
+
+  if (strcmp(reply_signature, output_signature) != 0)
+  {
+    lash_error("reply signature is '%s' but expected signature is '%s'", reply_signature, output_signature);
+  }
+
+  dbus_message_iter_init(reply_ptr, &iter);
+
+  while (*output_signature++ != '\0')
+  {
+    assert(dbus_message_iter_get_arg_type(&iter) != DBUS_TYPE_INVALID); /* we've checked the signature, this should not happen */
+    parameter_ptr = va_arg(ap, void *);
+    dbus_message_iter_get_basic(&iter, parameter_ptr);
+    dbus_message_iter_next(&iter);
+  }
+
+  assert(dbus_message_iter_get_arg_type(&iter) == DBUS_TYPE_INVALID); /* we've checked the signature, this should not happen */
+
+  ret = true;
+
+fail:
+  va_end(ap);
+  return ret;
+}
+
