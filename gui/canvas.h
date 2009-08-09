@@ -33,8 +33,6 @@ typedef struct canvas_tag { int unused; } * canvas_handle;
 typedef struct canvas_module_tag { int unused; } * canvas_module_handle;
 typedef struct canvas_port_tag { int unused; } * canvas_port_handle;
 
-enum ModuleType { Input, Output, InputOutput };
-
 #ifdef __cplusplus
 extern "C" {
 #endif
