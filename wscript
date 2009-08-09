@@ -249,6 +249,7 @@ def build(bld):
     #####################################################
     # gladish
     gladish = bld.new_task_gen('cxx', 'program')
+    gladish.features.append('cc')
     gladish.target = 'gladish'
     gladish.includes = "build/default" # XXX config.h version.h and other generated files
     gladish.uselib = 'DBUS-1 LIBGNOMECANVASMM-2.6 LIBGLADEMM-2.4 FLOWCANVAS DBUS-GLIB-1'
