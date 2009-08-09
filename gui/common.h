@@ -32,12 +32,14 @@
 #include <stdbool.h>            /* C99 bool */
 #include <stdint.h>             /* fixed bit size ints */
 
+#ifdef __cplusplus
 #include <string>
 #include <list>
 #include <sigc++/sigc++.h>
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 #include <boost/format.hpp>
+#endif
 
 #include "canvas.h"
 
