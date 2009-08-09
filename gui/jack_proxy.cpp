@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains code that interface with JACK through D-Bus
@@ -43,7 +43,6 @@
 #define JACKDBUS_SERVICE         "org.jackaudio.service"
 #define JACKDBUS_OBJECT          "/org/jackaudio/Controller"
 #define JACKDBUS_IFACE_CONTROL   "org.jackaudio.JackControl"
-#define JACKDBUS_IFACE_PATCHBAY  "org.jackaudio.JackPatchbay"
 
 #define JACKDBUS_PORT_FLAG_INPUT         0x00000001
 #define JACKDBUS_PORT_FLAG_OUTPUT        0x00000002
@@ -54,9 +53,6 @@
 #define JACKDBUS_PORT_TYPE_AUDIO    0
 #define JACKDBUS_PORT_TYPE_MIDI     1
 
-//#define USE_FULL_REFRESH
-
-
 jack_proxy::jack_proxy(Patchage* app)
   : _app(app)
   , _server_responding(false)
@@ -65,16 +61,6 @@ jack_proxy::jack_proxy(Patchage* app)
   , _max_dsp_load(0.0)
 {
   patchage_dbus_add_match("type='signal',interface='" DBUS_INTERFACE_DBUS "',member=NameOwnerChanged,arg0='" JACKDBUS_SERVICE "'");
-#if defined(USE_FULL_REFRESH)
-  patchage_dbus_add_match("type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=GraphChanged");
-#else
-  //   patchage_dbus_add_match("type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=ClientAppeared");
-  //   patchage_dbus_add_match("type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=ClientDisappeared");
-  patchage_dbus_add_match("type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=PortAppeared");
-  patchage_dbus_add_match("type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=PortDisappeared");
-  patchage_dbus_add_match("type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=PortsConnected");
-  patchage_dbus_add_match("type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=PortsDisconnected");
-#endif
   patchage_dbus_add_filter(dbus_message_hook, this);
 
   update_attached();
@@ -147,18 +133,6 @@ jack_proxy::dbus_message_hook(
   DBusMessage*    message,
   void*           jack_driver)
 {
-  dbus_uint64_t new_graph_version;
-  dbus_uint64_t client_id;
-  const char *client_name;
-  dbus_uint64_t port_id;
-  const char *port_name;
-  dbus_uint32_t port_flags;
-  dbus_uint32_t port_type;
-  dbus_uint64_t client2_id;
-  const char *client2_name;
-  dbus_uint64_t port2_id;
-  const char *port2_name;
-  dbus_uint64_t connection_id;
   const char *object_name;
   const char *old_owner;
   const char *new_owner;
@@ -195,162 +169,6 @@ jack_proxy::dbus_message_hook(
 
     return DBUS_HANDLER_RESULT_HANDLED;
   }
-
-#if defined(USE_FULL_REFRESH)
-  if (dbus_message_is_signal(message, JACKDBUS_IFACE_PATCHBAY, "GraphChanged")) {
-    if (!dbus_message_get_args(message, &g_dbus_error,
-          DBUS_TYPE_UINT64, &new_graph_version,
-          DBUS_TYPE_INVALID)) {
-      me->error_msg(str(boost::format("dbus_message_get_args() failed to extract "
-          "GraphChanged signal arguments (%s)") % g_dbus_error.message));
-      dbus_error_free(&g_dbus_error);
-      return DBUS_HANDLER_RESULT_HANDLED;
-    }
-
-    if (!me->_server_started) {
-      me->_server_started = true;
-      me->signal_attached.emit();
-    }
-
-    if (new_graph_version > me->_graph_version) {
-      me->refresh_internal(false);
-    }
-
-    return DBUS_HANDLER_RESULT_HANDLED;
-  }
-#else
-//  if (dbus_message_is_signal(message, JACKDBUS_IFACE_PATCHBAY, "ClientAppeared")) {
-//    me->info_msg("ClientAppeared");
-//     return DBUS_HANDLER_RESULT_HANDLED;
-//  }
-
-//  if (dbus_message_is_signal(message, JACKDBUS_IFACE_PATCHBAY, "ClientDisappeared")) {
-//    me->info_msg("ClientDisappeared");
-//     return DBUS_HANDLER_RESULT_HANDLED;
-//  }
-
-  if (dbus_message_is_signal(message, JACKDBUS_IFACE_PATCHBAY, "PortAppeared")) {
-    if (!dbus_message_get_args( message, &g_dbus_error,
-          DBUS_TYPE_UINT64, &new_graph_version,
-          DBUS_TYPE_UINT64, &client_id,
-          DBUS_TYPE_STRING, &client_name,
-          DBUS_TYPE_UINT64, &port_id,
-          DBUS_TYPE_STRING, &port_name,
-          DBUS_TYPE_UINT32, &port_flags,
-          DBUS_TYPE_UINT32, &port_type,
-          DBUS_TYPE_INVALID)) {
-      me->error_msg(str(boost::format("dbus_message_get_args() failed to extract "
-          "PortAppeared signal arguments (%s)") % g_dbus_error.message));
-      dbus_error_free(&g_dbus_error);
-      return DBUS_HANDLER_RESULT_HANDLED;
-    }
-
-    //me->info_msg(str(boost::format("PortAppeared, %s(%llu):%s(%llu), %lu, %lu") % client_name % client_id % port_name % port_id % port_flags % port_type));
-
-    if (!me->_server_started) {
-      me->_server_started = true;
-      me->signal_started.emit();
-    }
-
-    me->on_port_added(client_id, client_name, port_id, port_name, port_flags, port_type);
-
-    return DBUS_HANDLER_RESULT_HANDLED;
-  }
-
-  if (dbus_message_is_signal(message, JACKDBUS_IFACE_PATCHBAY, "PortDisappeared")) {
-    if (!dbus_message_get_args( message, &g_dbus_error,
-          DBUS_TYPE_UINT64, &new_graph_version,
-          DBUS_TYPE_UINT64, &client_id,
-          DBUS_TYPE_STRING, &client_name,
-          DBUS_TYPE_UINT64, &port_id,
-          DBUS_TYPE_STRING, &port_name,
-          DBUS_TYPE_INVALID)) {
-      me->error_msg(str(boost::format("dbus_message_get_args() failed to extract "
-          "PortDisappeared signal arguments (%s)") % g_dbus_error.message));
-      dbus_error_free(&g_dbus_error);
-      return DBUS_HANDLER_RESULT_HANDLED;
-    }
-
-    //me->info_msg(str(boost::format("PortDisappeared, %s(%llu):%s(%llu)") % client_name % client_id % port_name % port_id));
-
-    if (!me->_server_started) {
-      me->_server_started = true;
-      me->signal_started.emit();
-    }
-
-    me->on_port_removed(client_id, client_name, port_id, port_name);
-
-    return DBUS_HANDLER_RESULT_HANDLED;
-  }
-
-  if (dbus_message_is_signal(message, JACKDBUS_IFACE_PATCHBAY, "PortsConnected")) {
-    if (!dbus_message_get_args(message, &g_dbus_error,
-        DBUS_TYPE_UINT64, &new_graph_version,
-        DBUS_TYPE_UINT64, &client_id,
-        DBUS_TYPE_STRING, &client_name,
-        DBUS_TYPE_UINT64, &port_id,
-        DBUS_TYPE_STRING, &port_name,
-        DBUS_TYPE_UINT64, &client2_id,
-        DBUS_TYPE_STRING, &client2_name,
-        DBUS_TYPE_UINT64, &port2_id,
-        DBUS_TYPE_STRING, &port2_name,
-        DBUS_TYPE_UINT64, &connection_id,
-        DBUS_TYPE_INVALID)) {
-      me->error_msg(str(boost::format("dbus_message_get_args() failed to extract "
-          "PortsConnected signal arguments (%s)") % g_dbus_error.message));
-      dbus_error_free(&g_dbus_error);
-      return DBUS_HANDLER_RESULT_HANDLED;
-    }
-
-    if (!me->_server_started) {
-      me->_server_started = true;
-      me->signal_started.emit();
-    }
-
-    me->on_ports_connected(
-      connection_id,
-      client_id, client_name,
-      port_id, port_name,
-      client2_id, client2_name,
-      port2_id, port2_name);
-
-    return DBUS_HANDLER_RESULT_HANDLED;
-  }
-
-  if (dbus_message_is_signal(message, JACKDBUS_IFACE_PATCHBAY, "PortsDisconnected")) {
-    if (!dbus_message_get_args(message, &g_dbus_error,
-          DBUS_TYPE_UINT64, &new_graph_version,
-          DBUS_TYPE_UINT64, &client_id,
-          DBUS_TYPE_STRING, &client_name,
-          DBUS_TYPE_UINT64, &port_id,
-          DBUS_TYPE_STRING, &port_name,
-          DBUS_TYPE_UINT64, &client2_id,
-          DBUS_TYPE_STRING, &client2_name,
-          DBUS_TYPE_UINT64, &port2_id,
-          DBUS_TYPE_STRING, &port2_name,
-          DBUS_TYPE_UINT64, &connection_id,
-          DBUS_TYPE_INVALID)) {
-      me->error_msg(str(boost::format("dbus_message_get_args() failed to extract "
-          "PortsConnected signal arguments (%s)") % g_dbus_error.message));
-      dbus_error_free(&g_dbus_error);
-      return DBUS_HANDLER_RESULT_HANDLED;
-    }
-
-    if (!me->_server_started) {
-      me->_server_started = true;
-      me->signal_started.emit();
-    }
-
-    me->on_ports_disconnected(
-      connection_id,
-      client_id, client_name,
-      port_id, port_name,
-      client2_id, client2_name,
-      port2_id, port2_name);
-
-    return DBUS_HANDLER_RESULT_HANDLED;
-  }
-#endif
 
   return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
@@ -521,220 +339,8 @@ jack_proxy::on_ports_disconnected(
 }
 
 void
-jack_proxy::refresh_internal(bool force)
-{
-  DBusMessage* reply_ptr;
-  DBusMessageIter iter;
-  dbus_uint64_t version;
-  const char * reply_signature;
-  DBusMessageIter clients_array_iter;
-  DBusMessageIter client_struct_iter;
-  DBusMessageIter ports_array_iter;
-  DBusMessageIter port_struct_iter;
-  DBusMessageIter connections_array_iter;
-  DBusMessageIter connection_struct_iter;
-  dbus_uint64_t client_id;
-  const char *client_name;
-  dbus_uint64_t port_id;
-  const char *port_name;
-  dbus_uint32_t port_flags;
-  dbus_uint32_t port_type;
-  dbus_uint64_t client2_id;
-  const char *client2_name;
-  dbus_uint64_t port2_id;
-  const char *port2_name;
-  dbus_uint64_t connection_id;
-
-  if (!_server_started)
-  {
-    info_msg("ignoring refresh request because JACK server is stopped");
-    return;
-  }
-
-  if (force) {
-    version = 0; // workaround module split/join stupidity
-  } else {
-    version = _graph_version;
-  }
-
-  if (!call(true, JACKDBUS_IFACE_PATCHBAY, "GetGraph", &reply_ptr, DBUS_TYPE_UINT64, &version, DBUS_TYPE_INVALID)) {
-    error_msg("GetGraph() failed.");
-    return;
-  }
-
-  reply_signature = dbus_message_get_signature(reply_ptr);
-
-  if (strcmp(reply_signature, "ta(tsa(tsuu))a(tstststst)") != 0) {
-    error_msg((std::string )"GetGraph() reply signature mismatch. " + reply_signature);
-    goto unref;
-  }
-
-  dbus_message_iter_init(reply_ptr, &iter);
-
-  //info_msg((std::string)"version " + (char)dbus_message_iter_get_arg_type(&iter));
-  dbus_message_iter_get_basic(&iter, &version);
-  dbus_message_iter_next(&iter);
-
-  if (!force && version <= _graph_version) {
-    goto unref;
-  }
-
-  _app->clear_canvas();
-
-  //info_msg(str(boost::format("got new graph version %llu") % version));
-  _graph_version = version;
-
-  //info_msg((std::string)"clients " + (char)dbus_message_iter_get_arg_type(&iter));
-
-  for (dbus_message_iter_recurse(&iter, &clients_array_iter);
-       dbus_message_iter_get_arg_type(&clients_array_iter) != DBUS_TYPE_INVALID;
-       dbus_message_iter_next(&clients_array_iter)) {
-    //info_msg((std::string)"a client " + (char)dbus_message_iter_get_arg_type(&clients_array_iter));
-    dbus_message_iter_recurse(&clients_array_iter, &client_struct_iter);
-
-    dbus_message_iter_get_basic(&client_struct_iter, &client_id);
-    dbus_message_iter_next(&client_struct_iter);
-
-    dbus_message_iter_get_basic(&client_struct_iter, &client_name);
-    dbus_message_iter_next(&client_struct_iter);
-
-    //info_msg((std::string)"client '" + client_name + "'");
-
-    for (dbus_message_iter_recurse(&client_struct_iter, &ports_array_iter);
-         dbus_message_iter_get_arg_type(&ports_array_iter) != DBUS_TYPE_INVALID;
-         dbus_message_iter_next(&ports_array_iter)) {
-      //info_msg((std::string)"a port " + (char)dbus_message_iter_get_arg_type(&ports_array_iter));
-      dbus_message_iter_recurse(&ports_array_iter, &port_struct_iter);
-
-      dbus_message_iter_get_basic(&port_struct_iter, &port_id);
-      dbus_message_iter_next(&port_struct_iter);
-
-      dbus_message_iter_get_basic(&port_struct_iter, &port_name);
-      dbus_message_iter_next(&port_struct_iter);
-
-      dbus_message_iter_get_basic(&port_struct_iter, &port_flags);
-      dbus_message_iter_next(&port_struct_iter);
-
-      dbus_message_iter_get_basic(&port_struct_iter, &port_type);
-      dbus_message_iter_next(&port_struct_iter);
-
-      //info_msg((std::string)"port: " + port_name);
-
-      on_port_added(client_id, client_name, port_id, port_name, port_flags, port_type);
-    }
-
-    dbus_message_iter_next(&client_struct_iter);
-  }
-
-  dbus_message_iter_next(&iter);
-
-  for (dbus_message_iter_recurse(&iter, &connections_array_iter);
-       dbus_message_iter_get_arg_type(&connections_array_iter) != DBUS_TYPE_INVALID;
-       dbus_message_iter_next(&connections_array_iter)) {
-    //info_msg((std::string)"a connection " + (char)dbus_message_iter_get_arg_type(&connections_array_iter));
-    dbus_message_iter_recurse(&connections_array_iter, &connection_struct_iter);
-
-    dbus_message_iter_get_basic(&connection_struct_iter, &client_id);
-    dbus_message_iter_next(&connection_struct_iter);
-
-    dbus_message_iter_get_basic(&connection_struct_iter, &client_name);
-    dbus_message_iter_next(&connection_struct_iter);
-
-    dbus_message_iter_get_basic(&connection_struct_iter, &port_id);
-    dbus_message_iter_next(&connection_struct_iter);
-
-    dbus_message_iter_get_basic(&connection_struct_iter, &port_name);
-    dbus_message_iter_next(&connection_struct_iter);
-
-    dbus_message_iter_get_basic(&connection_struct_iter, &client2_id);
-    dbus_message_iter_next(&connection_struct_iter);
-
-    dbus_message_iter_get_basic(&connection_struct_iter, &client2_name);
-    dbus_message_iter_next(&connection_struct_iter);
-
-    dbus_message_iter_get_basic(&connection_struct_iter, &port2_id);
-    dbus_message_iter_next(&connection_struct_iter);
-
-    dbus_message_iter_get_basic(&connection_struct_iter, &port2_name);
-    dbus_message_iter_next(&connection_struct_iter);
-
-    dbus_message_iter_get_basic(&connection_struct_iter, &connection_id);
-    dbus_message_iter_next(&connection_struct_iter);
-
-    //info_msg(str(boost::format("connection(%llu) %s(%llu):%s(%llu) <-> %s(%llu):%s(%llu)") %
-    //    connection_id %
-    //    client_name %
-    //    client_id %
-    //    port_name %
-    //    port_id %
-    //    client2_name %
-    //    client2_id %
-    //    port2_name %
-    //    port2_id));
-
-    on_ports_connected(
-      connection_id,
-      client_id, client_name,
-      port_id, port_name,
-      client2_id, client2_name,
-      port2_id, port2_name);
-  }
-
-unref:
-  dbus_message_unref(reply_ptr);
-}
-
-
-void
 jack_proxy::refresh()
 {
-  refresh_internal(true);
-}
-
-
-bool
-jack_proxy::connect(
-  const char * client1_name,
-  const char * port1_name,
-  const char * client2_name,
-  const char * port2_name)
-{
-  DBusMessage* reply_ptr;
-
-  if (!call(true, JACKDBUS_IFACE_PATCHBAY, "ConnectPortsByName", &reply_ptr,
-        DBUS_TYPE_STRING, &client1_name,
-        DBUS_TYPE_STRING, &port1_name,
-        DBUS_TYPE_STRING, &client2_name,
-        DBUS_TYPE_STRING, &port2_name,
-        DBUS_TYPE_INVALID)) {
-    error_msg("ConnectPortsByName() failed.");
-    return false;
-  }
-
-  return true;
-}
-
-
-bool
-jack_proxy::disconnect(
-  const char * client1_name,
-  const char * port1_name,
-  const char * client2_name,
-  const char * port2_name)
-{
-  DBusMessage* reply_ptr;
-
-  if (!call(true, JACKDBUS_IFACE_PATCHBAY, "DisconnectPortsByName", &reply_ptr,
-        DBUS_TYPE_STRING, &client1_name,
-        DBUS_TYPE_STRING, &port1_name,
-        DBUS_TYPE_STRING, &client2_name,
-        DBUS_TYPE_STRING, &port2_name,
-        DBUS_TYPE_INVALID)) {
-    error_msg("DisconnectPortsByName() failed.");
-    return false;
-  }
-
-  return true;
 }
 
 uint32_t

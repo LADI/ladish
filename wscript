@@ -251,6 +251,7 @@ def build(bld):
     gladish = bld.new_task_gen('cxx', 'program')
     gladish.features.append('cc')
     gladish.target = 'gladish'
+    gladish.defines = ['DEBUG_OUTPUT_TERMINAL']
     gladish.includes = "build/default" # XXX config.h version.h and other generated files
     gladish.uselib = 'DBUS-1 LIBGNOMECANVASMM-2.6 LIBGLADEMM-2.4 FLOWCANVAS DBUS-GLIB-1'
     gladish.source = []
@@ -270,9 +271,16 @@ def build(bld):
         'a2j_proxy.cpp',
         'dbus_helpers.c',
         'canvas.cpp',
+        'graph.c',
         ]:
         gladish.source.append(os.path.join("gui", source))
-    
+
+    for source in [
+        'method.c',
+        'helpers.c',
+        ]:
+        gladish.source.append(os.path.join("dbus", source))
+
     # Glade UI definitions (XML)
     bld.install_files(bld.env['DATA_DIR'], 'gui/gui.glade')
     

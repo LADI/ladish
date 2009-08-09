@@ -199,24 +199,32 @@ dbus_call_simple(
     goto fail;
   }
 
-  reply_signature = dbus_message_get_signature(reply_ptr);
-
-  if (strcmp(reply_signature, output_signature) != 0)
+  if (output_signature != NULL)
   {
-    lash_error("reply signature is '%s' but expected signature is '%s'", reply_signature, output_signature);
+    reply_signature = dbus_message_get_signature(reply_ptr);
+
+    if (strcmp(reply_signature, output_signature) != 0)
+    {
+      lash_error("reply signature is '%s' but expected signature is '%s'", reply_signature, output_signature);
+    }
+
+    dbus_message_iter_init(reply_ptr, &iter);
+
+    while (*output_signature++ != '\0')
+    {
+      assert(dbus_message_iter_get_arg_type(&iter) != DBUS_TYPE_INVALID); /* we've checked the signature, this should not happen */
+      parameter_ptr = va_arg(ap, void *);
+      dbus_message_iter_get_basic(&iter, parameter_ptr);
+      dbus_message_iter_next(&iter);
+    }
+
+    assert(dbus_message_iter_get_arg_type(&iter) == DBUS_TYPE_INVALID); /* we've checked the signature, this should not happen */
   }
-
-  dbus_message_iter_init(reply_ptr, &iter);
-
-  while (*output_signature++ != '\0')
+  else
   {
-    assert(dbus_message_iter_get_arg_type(&iter) != DBUS_TYPE_INVALID); /* we've checked the signature, this should not happen */
-    parameter_ptr = va_arg(ap, void *);
-    dbus_message_iter_get_basic(&iter, parameter_ptr);
-    dbus_message_iter_next(&iter);
+    parameter_ptr = va_arg(ap, DBusMessage **);
+    *(DBusMessage **)parameter_ptr = reply_ptr;
   }
-
-  assert(dbus_message_iter_get_arg_type(&iter) == DBUS_TYPE_INVALID); /* we've checked the signature, this should not happen */
 
   ret = true;
 

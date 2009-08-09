@@ -46,14 +46,14 @@ void
 graph_destroy(
   graph_handle graph);
 
-void
+bool
 graph_attach(
   graph_handle graph,
   void * context,
   void (* clear)(void * context),
   void (* client_appeared)(void * context, uint64_t id, const char * name),
   void (* client_disappeared)(void * context, uint64_t id),
-  void (* port_sappeared)(void * context, uint64_t client_id, uint64_t port_id, const char * port_name, bool is_input, bool is_terminal, bool is_midi),
+  void (* port_appeared)(void * context, uint64_t client_id, uint64_t port_id, const char * port_name, bool is_input, bool is_terminal, bool is_midi),
   void (* port_disappeared)(void * context, uint64_t client_id, uint64_t port_id),
   void (* ports_connected)(void * context, uint64_t client1_id, uint64_t port1_id, uint64_t client2_id, uint64_t port2_id),
   void (* ports_disconnected)(void * context, uint64_t client1_id, uint64_t port1_id, uint64_t client2_id, uint64_t port2_id));
