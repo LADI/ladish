@@ -26,6 +26,7 @@
 
 //#define LASH_DEBUG
 
+#include "common.h"
 #include "jack_proxy.h"
 
 #define JACKDBUS_SERVICE         "org.jackaudio.service"
@@ -399,7 +400,15 @@ bool
 jack_proxy_is_started(
   bool * started_ptr)
 {
-  return false;
+  dbus_bool_t started;
+
+  if (!dbus_call_simple(JACKDBUS_SERVICE, JACKDBUS_OBJECT, JACKDBUS_IFACE_CONTROL, "IsStarted", "", "b", &started))
+  {
+    return false;
+  }
+
+  *started_ptr = started;
+  return true;
 }
 
 bool
