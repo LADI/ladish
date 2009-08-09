@@ -33,9 +33,16 @@ bool
 jack_init(
   void)
 {
+  bool started;
+
   if (!jack_proxy_init())
   {
     return false;
+  }
+
+  if (jack_proxy_is_started(&started) && started)
+  {
+    on_jack_server_started();
   }
 
   return true;
