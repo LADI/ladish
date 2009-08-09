@@ -268,7 +268,7 @@ def build(bld):
         'session.cpp',
         'a2j_proxy.cpp',
         'dbus_helpers.c',
-        'canvas.c',
+        'canvas.cpp',
         ]:
         gladish.source.append(os.path.join("gui", source))
     
