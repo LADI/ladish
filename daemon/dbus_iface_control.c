@@ -33,6 +33,36 @@
 
 #define INTERFACE_NAME DBUS_NAME_BASE ".Control"
 
+static void ladish_is_studio_loaded(method_call_t * call_ptr)
+{
+  DBusMessageIter iter;
+  dbus_bool_t is_loaded;
+
+  is_loaded = g_studio != NULL;
+
+  call_ptr->reply = dbus_message_new_method_return(call_ptr->message);
+  if (call_ptr->reply == NULL)
+  {
+    goto fail;
+  }
+
+  dbus_message_iter_init_append(call_ptr->reply, &iter);
+
+  if (!dbus_message_iter_append_basic(&iter, DBUS_TYPE_BOOLEAN, &is_loaded))
+  {
+    goto fail_unref;
+  }
+
+  return;
+
+fail_unref:
+  dbus_message_unref(call_ptr->reply);
+  call_ptr->reply = NULL;
+
+fail:
+  lash_error("Ran out of memory trying to construct method return");
+}
+
 static void ladish_get_studio_list(method_call_t * call_ptr)
 {
   DBusMessageIter iter, array_iter;
@@ -205,6 +235,10 @@ void emit_studio_disappeared()
   signal_new_valist(g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "StudioDisappeared", DBUS_TYPE_INVALID);
 }
 
+METHOD_ARGS_BEGIN(IsStudioLoaded, "Check whether studio D-Bus object is present")
+  METHOD_ARG_DESCRIBE_OUT("present", "b", "Whether studio D-Bus object is present")
+METHOD_ARGS_END
+
 METHOD_ARGS_BEGIN(GetStudioList, "Get list of studios")
   METHOD_ARG_DESCRIBE_OUT("studio_list", "a(sa{sv})", "List of studios, name and properties")
 METHOD_ARGS_END
@@ -222,6 +256,7 @@ METHOD_ARGS_BEGIN(Exit, "Tell ladish D-Bus service to exit")
 METHOD_ARGS_END
 
 METHODS_BEGIN
+  METHOD_DESCRIBE(IsStudioLoaded, ladish_is_studio_loaded)
   METHOD_DESCRIBE(GetStudioList, ladish_get_studio_list)
   METHOD_DESCRIBE(LoadStudio, ladish_load_studio)
   METHOD_DESCRIBE(GetApplicationList, ladish_get_application_list)

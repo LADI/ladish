@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains code that communicates with ladishd through D-Bus
@@ -37,7 +37,7 @@
 #include "dbus_helpers.h"
 
 #define LASH_SERVICE       DBUS_NAME_BASE
-#define LASH_OBJECT        "/"
+#define LASH_OBJECT        "/org/ladish/Control"
 #define LASH_IFACE_CONTROL DBUS_NAME_BASE ".Control"
 
 struct lash_proxy_impl
@@ -46,6 +46,7 @@ struct lash_proxy_impl
 
         void fetch_loaded_projects();
         void fetch_project_clients(boost::shared_ptr<project> project_ptr);
+        bool is_studio_loaded();
 
         static void error_msg(const std::string& msg);
         static void info_msg(const std::string& msg);
@@ -121,7 +122,7 @@ lash_proxy_impl::init()
         // this also actiavtes lash object if it not activated already
         //fetch_loaded_projects();
 
-        g_app->set_studio_availability(false);
+        g_app->set_studio_availability(is_studio_loaded());
 }
 
 bool
@@ -929,4 +930,35 @@ lash_proxy_impl::exit()
         }
 
         dbus_message_unref(reply_ptr);
+}
+
+bool
+lash_proxy_impl::is_studio_loaded()
+{
+        DBusMessage* reply_ptr;
+        const char * reply_signature;
+        DBusMessageIter iter;
+        dbus_bool_t is_loaded;
+
+        if (!call(true, LASH_IFACE_CONTROL, "IsStudioLoaded", &reply_ptr, DBUS_TYPE_INVALID))
+        {
+                error_msg("IsStudioLoaded() call failed.");
+                return false;
+        }
+
+        reply_signature = dbus_message_get_signature(reply_ptr);
+
+        if (strcmp(reply_signature, "b") != 0)
+        {
+                error_msg((std::string)"IsStudioLoaded() reply signature mismatch. " + reply_signature);
+                dbus_message_unref(reply_ptr);
+                return false;
+        }
+
+        dbus_message_iter_init(reply_ptr, &iter);
+
+        dbus_message_iter_get_basic(&iter, &is_loaded);
+
+        dbus_message_unref(reply_ptr);
+        return is_loaded;
 }
