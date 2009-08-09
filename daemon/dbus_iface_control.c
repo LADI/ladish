@@ -205,20 +205,20 @@ void emit_studio_disappeared()
   signal_new_valist(g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "StudioDisappeared", DBUS_TYPE_INVALID);
 }
 
-METHOD_ARGS_BEGIN(GetStudioList)
-  METHOD_ARG_DESCRIBE("studio_list", "a(sa{sv})", DIRECTION_OUT)
+METHOD_ARGS_BEGIN(GetStudioList, "Get list of studios")
+  METHOD_ARG_DESCRIBE_OUT("studio_list", "a(sa{sv})", "List of studios, name and properties")
 METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(LoadStudio)
-  METHOD_ARG_DESCRIBE("studio_name", "s", DIRECTION_IN)
-  METHOD_ARG_DESCRIBE("options", "a{sv}", DIRECTION_IN)
+METHOD_ARGS_BEGIN(LoadStudio, "Load studio")
+  METHOD_ARG_DESCRIBE_IN("studio_name", "s", "Name of studio to load")
+  METHOD_ARG_DESCRIBE_IN("options", "a{sv}", "Load options")
 METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(GetApplicationList)
-  METHOD_ARG_DESCRIBE("applications", "a(sa{sv})", DIRECTION_OUT)
+METHOD_ARGS_BEGIN(GetApplicationList, "Get list of applications that can be launched")
+  METHOD_ARG_DESCRIBE_OUT("applications", "a(sa{sv})", "List of applications, name and properties")
 METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(Exit)
+METHOD_ARGS_BEGIN(Exit, "Tell ladish D-Bus service to exit")
 METHOD_ARGS_END
 
 METHODS_BEGIN
@@ -228,10 +228,10 @@ METHODS_BEGIN
   METHOD_DESCRIBE(Exit, ladish_exit)
 METHODS_END
 
-SIGNAL_ARGS_BEGIN(StudioAppeared)
+SIGNAL_ARGS_BEGIN(StudioAppeared, "Studio D-Bus object appeared")
 SIGNAL_ARGS_END
 
-SIGNAL_ARGS_BEGIN(StudioDisappeared)
+SIGNAL_ARGS_BEGIN(StudioDisappeared, "Studio D-Bus object disappeared")
 SIGNAL_ARGS_END
 
 SIGNALS_BEGIN

@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -33,9 +33,6 @@
 
 #include "types.h"
 
-#define DIRECTION_OUT (0)
-#define DIRECTION_IN  (1)
-
 struct _method_msg
 {
   const service_t               *service;
@@ -59,7 +56,7 @@ struct _method_arg
 {
   const char *name;
   const char *type;
-  const int   direction;  /* 0 == out, 1 == in */
+  const bool direction_in;      /* false == out, true == in */
 };
 
 struct _method
@@ -164,22 +161,27 @@ method_iter_get_dict_entry(DBusMessageIter  *iter,
                            int              *type_ptr,
                            int              *size_ptr);
 
-#define METHOD_ARGS_BEGIN(method_name)                          \
+#define METHOD_ARGS_BEGIN(method_name, descr)                   \
 static const struct _method_arg method_name ## _args_dtor[] =   \
 {
 
-#define METHOD_ARG_DESCRIBE(arg_name, arg_type, arg_direction)  \
+#define METHOD_ARG_DESCRIBE_IN(arg_name, arg_type, descr)       \
         {                                                       \
                 .name = arg_name,                               \
                 .type = arg_type,                               \
-                .direction = arg_direction                      \
+                .direction_in = true                            \
+        },
+
+#define METHOD_ARG_DESCRIBE_OUT(arg_name, arg_type, descr)      \
+        {                                                       \
+                .name = arg_name,                               \
+                .type = arg_type,                               \
+                .direction_in = false                           \
         },
 
 #define METHOD_ARGS_END                                         \
         {                                                       \
                 .name = NULL,                                   \
-                .type = NULL,                                   \
-                .direction = 0                                  \
         }                                                       \
 };
 

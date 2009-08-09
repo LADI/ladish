@@ -1,8 +1,8 @@
 /*
  *   LASH
  *
+ *   Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *   Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
- *   Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -38,6 +38,8 @@
 # include "lash/event.h"
 # include "lash/config.h"
 #endif
+
+#if 0
 
 #define client_ptr ((lash_client_t *)(((object_path_t *)call->context)->context))
 
@@ -667,9 +669,13 @@ lash_dbus_client_name_changed(method_call_t *call)
 
 #undef client_ptr
 
+#endif
+
 /*
  * Interface methods.
  */
+
+#if 0
 
 METHOD_ARGS_BEGIN(Save)
   METHOD_ARG_DESCRIBE("task_id", "t", DIRECTION_IN)
@@ -699,8 +705,10 @@ METHOD_ARGS_END
 METHOD_ARGS_BEGIN(ClientNameChanged)
   METHOD_ARG_DESCRIBE("new_name", "s", DIRECTION_IN)
 METHOD_ARGS_END
+#endif
 
 METHODS_BEGIN
+#if 0
   METHOD_DESCRIBE(Save, lash_dbus_save)
   METHOD_DESCRIBE(Load, lash_dbus_load)
   METHOD_DESCRIBE(LoadDataSet, lash_dbus_load_data_set)
@@ -708,6 +716,7 @@ METHODS_BEGIN
   METHOD_DESCRIBE(TrySave, lash_dbus_try_save)
   METHOD_DESCRIBE(TryPathChange, lash_dbus_try_path_change)
   METHOD_DESCRIBE(ClientNameChanged, lash_dbus_client_name_changed)
+#endif
 METHODS_END
 
 /*

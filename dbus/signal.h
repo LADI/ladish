@@ -68,11 +68,11 @@ signal_new_valist(
   int type,
   ...);
 
-#define SIGNAL_ARGS_BEGIN(signal_name)                         \
+#define SIGNAL_ARGS_BEGIN(signal_name, descr)                  \
 static const struct _signal_arg signal_name ## _args_dtor[] =  \
 {
 
-#define SIGNAL_ARG_DESCRIBE(arg_name, arg_type)                \
+#define SIGNAL_ARG_DESCRIBE(arg_name, arg_type, descr)         \
         {                                                      \
                 .name = arg_name,                              \
                 .type = arg_type                               \

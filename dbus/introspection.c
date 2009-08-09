@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -89,7 +89,7 @@ introspection_new(object_path_t *path)
         write_buf("      <arg name=\"%s\" type=\"%s\" direction=\"%s\" />\n",
                   method_arg_ptr->name,
                   method_arg_ptr->type,
-                  method_arg_ptr->direction == DIRECTION_IN ? "in" : "out");
+                  method_arg_ptr->direction_in ? "in" : "out");
       }
       write_buf("    </method>\n");
     }
@@ -191,8 +191,8 @@ introspection_handler(const interface_t *interface,
  * Interface description.
  */
 
-METHOD_ARGS_BEGIN(Introspect)
-  METHOD_ARG_DESCRIBE("xml_data", "s", DIRECTION_OUT)
+METHOD_ARGS_BEGIN(Introspect, "Get introspection XML")
+  METHOD_ARG_DESCRIBE_OUT("xml_data", "s", "XML description of the object")
 METHOD_ARGS_END
 
 METHODS_BEGIN
