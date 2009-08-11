@@ -150,6 +150,17 @@ bool
 jack_proxy_is_started(
   bool * started_ptr);
 
+bool jack_proxy_start_server(void);
+bool jack_proxy_stop_server(void);
+
+bool jack_proxy_is_realtime(bool * realtime_ptr);
+bool jack_proxy_sample_rate(uint32_t * sample_rate_ptr);
+bool jack_proxy_get_xruns(uint32_t * xruns_ptr);
+bool jack_proxy_get_dsp_load(double * dsp_load_ptr);
+bool jack_proxy_get_buffer_size(uint32_t * size_ptr);
+bool jack_proxy_set_buffer_size(uint32_t size);
+bool jack_proxy_reset_xruns(void);
+
 bool
 jack_proxy_get_client_pid(
   uint64_t client_id,

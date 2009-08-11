@@ -756,3 +756,56 @@ jack_proxy_get_parameter_value(
 
   return true;
 }
+
+bool jack_proxy_start_server(void)
+{
+  return dbus_call_simple(JACKDBUS_SERVICE, JACKDBUS_OBJECT, JACKDBUS_IFACE_CONTROL, "StartServer", "", "");
+}
+
+bool jack_proxy_stop_server(void)
+{
+  return dbus_call_simple(JACKDBUS_SERVICE, JACKDBUS_OBJECT, JACKDBUS_IFACE_CONTROL, "StopServer", "", "");
+}
+
+bool jack_proxy_is_realtime(bool * realtime_ptr)
+{
+  dbus_bool_t realtime;
+
+  if (!dbus_call_simple(JACKDBUS_SERVICE, JACKDBUS_OBJECT, JACKDBUS_IFACE_CONTROL, "IsStarted", "", "b", &realtime))
+  {
+    return false;
+  }
+
+  *realtime_ptr = realtime;
+  return true;
+}
+
+bool jack_proxy_sample_rate(uint32_t * sample_rate_ptr)
+{
+  return dbus_call_simple(JACKDBUS_SERVICE, JACKDBUS_OBJECT, JACKDBUS_IFACE_CONTROL, "GetSampleRate", "", "u", sample_rate_ptr);
+}
+
+bool jack_proxy_get_xruns(uint32_t * xruns_ptr)
+{
+  return dbus_call_simple(JACKDBUS_SERVICE, JACKDBUS_OBJECT, JACKDBUS_IFACE_CONTROL, "GetXruns", "", "u", xruns_ptr);
+}
+
+bool jack_proxy_get_dsp_load(double * dsp_load_ptr)
+{
+  return dbus_call_simple(JACKDBUS_SERVICE, JACKDBUS_OBJECT, JACKDBUS_IFACE_CONTROL, "GetXruns", "", "d", dsp_load_ptr);
+}
+
+bool jack_proxy_get_buffer_size(uint32_t * size_ptr)
+{
+  return dbus_call_simple(JACKDBUS_SERVICE, JACKDBUS_OBJECT, JACKDBUS_IFACE_CONTROL, "GetBufferSize", "", "u", size_ptr);
+}
+
+bool jack_proxy_set_buffer_size(uint32_t size)
+{
+  return dbus_call_simple(JACKDBUS_SERVICE, JACKDBUS_OBJECT, JACKDBUS_IFACE_CONTROL, "GetBufferSize", "u", &size, "");
+}
+
+bool jack_proxy_reset_xruns(void)
+{
+  return dbus_call_simple(JACKDBUS_SERVICE, JACKDBUS_OBJECT, JACKDBUS_IFACE_CONTROL, "GetBufferSize", "", "");
+}
