@@ -172,7 +172,6 @@ def build(bld):
         'appdb.c',
         'procfs.c',
         'dbus_iface_control.c',
-        'jack_proxy.c',
         'jack.c',
         'studio.c',
         'catdup.c'
@@ -192,6 +191,7 @@ def build(bld):
         daemon.source.append(os.path.join("dbus", source))
 
     daemon.source.append(os.path.join("common", "safety.c"))
+    daemon.source.append('jack_proxy.c')
 
     # process name.arnaudov.nedko.ladish.service.in -> name.arnaudov.nedko.ladish.service
     import misc

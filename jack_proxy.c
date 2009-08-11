@@ -26,8 +26,12 @@
 
 //#define LASH_DEBUG
 
+#include <dbus/dbus.h>
+
 #include "common.h"
 #include "jack_proxy.h"
+#include "dbus/helpers.h"
+#include "common/debug.h"
 
 #define JACKDBUS_SERVICE         "org.jackaudio.service"
 #define JACKDBUS_OBJECT          "/org/jackaudio/Controller"

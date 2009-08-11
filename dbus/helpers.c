@@ -37,8 +37,6 @@
 DBusConnection * g_dbus_connection;
 DBusError g_dbus_error;
 
-#define DBUS_CALL_DEFAULT_TIMEOUT 1000 // in milliseconds
-
 bool dbus_maybe_add_dict_entry_string(DBusMessageIter *dict_iter_ptr, const char * key, const char * value)
 {
   DBusMessageIter dict_entry_iter;

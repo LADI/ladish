@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains D-Bus helpers
@@ -30,11 +30,7 @@
 #include <dbus/dbus-glib-lowlevel.h>
 
 #include "dbus_helpers.h"
-
-DBusConnection * g_dbus_connection;
-DBusError g_dbus_error;
-
-#define DBUS_CALL_DEFAULT_TIMEOUT 1000 // in milliseconds
+#include "../dbus/helpers.h"
 
 void
 patchage_dbus_init()

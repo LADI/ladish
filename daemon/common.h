@@ -27,14 +27,8 @@
 #ifndef COMMON_H__CFDC869A_31AE_4FA3_B2D3_DACA8488CA55__INCLUDED
 #define COMMON_H__CFDC869A_31AE_4FA3_B2D3_DACA8488CA55__INCLUDED
 
-#include "config.h"             /* configure stage result */
+#include "../common.h"
 
-#include <stdbool.h>            /* C99 bool */
-#include <stdint.h>             /* fixed bit size ints */
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include <assert.h>
 #include <errno.h>
 #include <dbus/dbus.h>
 #include <uuid/uuid.h>
@@ -116,7 +110,5 @@ struct room
 
 extern bool g_quit;
 extern studio_handle g_studio;
-
-#define DBUS_CALL_DEFAULT_TIMEOUT 1000 // in milliseconds
 
 #endif /* #ifndef COMMON_H__CFDC869A_31AE_4FA3_B2D3_DACA8488CA55__INCLUDED */

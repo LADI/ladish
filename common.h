@@ -2,11 +2,10 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
- * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
+ * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains interface to the D-Bus helpers code
+ * This file contains stuff that is needed almost everywhere in ladish
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -25,18 +24,16 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef HELPERS_H__6C2107A6_A5E3_4806_869B_4BE609535BA2__INCLUDED
-#define HELPERS_H__6C2107A6_A5E3_4806_869B_4BE609535BA2__INCLUDED
+#ifndef COMMON_H__82C9504A_ACD2_435D_9743_781943473E6A__INCLUDED
+#define COMMON_H__82C9504A_ACD2_435D_9743_781943473E6A__INCLUDED
 
-extern DBusConnection * g_dbus_connection;
-extern DBusError g_dbus_error;
+#include "config.h"             /* configure stage result */
 
-bool dbus_maybe_add_dict_entry_string(DBusMessageIter *dict_iter_ptr, const char * key, const char * value);
-bool dbus_add_dict_entry_uint32(DBusMessageIter * dict_iter_ptr, const char * key, dbus_uint32_t value);
-bool dbus_add_dict_entry_bool(DBusMessageIter * dict_iter_ptr, const char * key, dbus_bool_t value);
+#include <stdbool.h>            /* C99 bool */
+#include <stdint.h>             /* fixed bit size ints */
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <assert.h>
 
-bool dbus_call_simple(const char * service, const char * object, const char * iface, const char * method, char * input_signature, ...);
-
-#define DBUS_CALL_DEFAULT_TIMEOUT 1000 // in milliseconds
-
-#endif /* #ifndef HELPERS_H__6C2107A6_A5E3_4806_869B_4BE609535BA2__INCLUDED */
+#endif /* #ifndef COMMON_H__82C9504A_ACD2_435D_9743_781943473E6A__INCLUDED */

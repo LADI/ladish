@@ -25,7 +25,7 @@
  */
 
 #include "common.h"
-#include "jack_proxy.h"
+#include "../jack_proxy.h"
 
 struct studio
 {

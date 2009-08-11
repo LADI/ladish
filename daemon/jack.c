@@ -25,7 +25,7 @@
  */
 
 #include "jack.h"
-#include "jack_proxy.h"
+#include "../jack_proxy.h"
 #include "studio.h"
 #include "dbus_iface_control.h"
 
