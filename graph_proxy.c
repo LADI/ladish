@@ -537,6 +537,7 @@ message_hook(
   DBusMessage * message,
   void * graph)
 {
+  const char * object_path;
   dbus_uint64_t new_graph_version;
   dbus_uint64_t client_id;
   const char *client_name;
@@ -549,6 +550,12 @@ message_hook(
   dbus_uint64_t port2_id;
   const char *port2_name;
   dbus_uint64_t connection_id;
+
+  object_path = dbus_message_get_path(message);
+  if (object_path == NULL || strcmp(object_path, graph_ptr->object) != 0)
+  {
+    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+  }
 
   if (dbus_message_is_signal(message, JACKDBUS_IFACE_PATCHBAY, "ClientAppeared"))
   {
