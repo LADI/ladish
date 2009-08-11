@@ -364,16 +364,7 @@ dbus_signal_handler(
 
 bool
 jack_proxy_init(
-  jack_proxy_callback_client_appeared client_appeared,
-  jack_proxy_callback_client_disappeared client_disappeared,
-  jack_proxy_callback_port_appeared port_appeared,
-  jack_proxy_callback_port_disappeared port_disappeared,
-  jack_proxy_callback_ports_connected ports_connected,
-  jack_proxy_callback_ports_disconnected ports_disconnected,
-  jack_proxy_callback_server_started server_started,
-  jack_proxy_callback_server_stopped server_stopped,
-  jack_proxy_callback_server_appeared server_appeared,
-  jack_proxy_callback_server_disappeared server_disappeared)
+  void)
 {
   DBusError err;
   char rule[1024];
@@ -443,18 +434,37 @@ jack_proxy_init(
     return false;
   }
 
+  return true;
+}
+
+void
+jack_proxy_set_server_callbacks(
+  jack_proxy_callback_server_started server_started,
+  jack_proxy_callback_server_stopped server_stopped,
+  jack_proxy_callback_server_appeared server_appeared,
+  jack_proxy_callback_server_disappeared server_disappeared)
+{
+  g_on_server_started = server_started;
+  g_on_server_stopped = server_stopped;
+  g_on_server_appeared = server_appeared;
+  g_on_server_disappeared = server_disappeared;
+}
+
+void
+jack_proxy_set_patchbay_callbacks(
+  jack_proxy_callback_client_appeared client_appeared,
+  jack_proxy_callback_client_disappeared client_disappeared,
+  jack_proxy_callback_port_appeared port_appeared,
+  jack_proxy_callback_port_disappeared port_disappeared,
+  jack_proxy_callback_ports_connected ports_connected,
+  jack_proxy_callback_ports_disconnected ports_disconnected)
+{
   g_on_client_appeared = client_appeared;
   g_on_client_disappeared = client_disappeared;
   g_on_port_appeared = port_appeared;
   g_on_port_disappeared = port_disappeared;
   g_on_ports_connected = ports_connected;
   g_on_ports_disconnected = ports_disconnected;
-  g_on_server_started = server_started;
-  g_on_server_stopped = server_stopped;
-  g_on_server_appeared = server_appeared;
-  g_on_server_disappeared = server_disappeared;
-
-  return true;
 }
 
 void

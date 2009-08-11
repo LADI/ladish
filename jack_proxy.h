@@ -124,16 +124,23 @@ void
 
 bool
 jack_proxy_init(
+  void);
+
+void
+jack_proxy_set_server_callbacks(
+  jack_proxy_callback_server_started server_started,
+  jack_proxy_callback_server_stopped server_stopped,
+  jack_proxy_callback_server_appeared server_appeared,
+  jack_proxy_callback_server_disappeared server_disappeared);
+
+void
+jack_proxy_set_patchbay_callbacks(
   jack_proxy_callback_client_appeared client_appeared,
   jack_proxy_callback_client_disappeared client_disappeared,
   jack_proxy_callback_port_appeared port_appeared,
   jack_proxy_callback_port_disappeared port_disappeared,
   jack_proxy_callback_ports_connected ports_connected,
-  jack_proxy_callback_ports_disconnected ports_disconnected,
-  jack_proxy_callback_server_started server_started,
-  jack_proxy_callback_server_stopped server_stopped,
-  jack_proxy_callback_server_appeared server_appeared,
-  jack_proxy_callback_server_disappeared server_disappeared);
+  jack_proxy_callback_ports_disconnected ports_disconnected);
 
 void
 jack_proxy_uninit(

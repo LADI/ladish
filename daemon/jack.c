@@ -159,20 +159,24 @@ jack_init(
 {
   bool started;
 
-  if (!jack_proxy_init(
-        on_jack_client_appeared,
-        on_jack_client_disappeared,
-        on_jack_port_appeared,
-        on_jack_port_disappeared,
-        on_jack_ports_connected,
-        on_jack_ports_disconnected,
-        on_jack_server_started,
-        on_jack_server_stopped,
-        on_jack_server_appeared,
-        on_jack_server_disappeared))
+  if (!jack_proxy_init())
   {
     return false;
   }
+
+  jack_proxy_set_server_callbacks(
+    on_jack_server_started,
+    on_jack_server_stopped,
+    on_jack_server_appeared,
+    on_jack_server_disappeared);
+
+  jack_proxy_set_patchbay_callbacks(
+    on_jack_client_appeared,
+    on_jack_client_disappeared,
+    on_jack_port_appeared,
+    on_jack_port_disappeared,
+    on_jack_ports_connected,
+    on_jack_ports_disconnected);
 
   if (jack_proxy_is_started(&started) && started)
   {
