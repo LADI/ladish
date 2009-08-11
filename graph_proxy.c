@@ -552,7 +552,9 @@ message_hook(
 
   if (dbus_message_is_signal(message, JACKDBUS_IFACE_PATCHBAY, "ClientAppeared"))
   {
-    if (!dbus_message_get_args( message, &g_dbus_error,
+    if (!dbus_message_get_args(
+          message,
+          &g_dbus_error,
           DBUS_TYPE_UINT64, &new_graph_version,
           DBUS_TYPE_UINT64, &client_id,
           DBUS_TYPE_STRING, &client_name,
@@ -572,7 +574,9 @@ message_hook(
 
   if (dbus_message_is_signal(message, JACKDBUS_IFACE_PATCHBAY, "ClientDisappeared"))
   {
-    if (!dbus_message_get_args( message, &g_dbus_error,
+    if (!dbus_message_get_args(
+          message,
+          &g_dbus_error,
           DBUS_TYPE_UINT64, &new_graph_version,
           DBUS_TYPE_UINT64, &client_id,
           DBUS_TYPE_STRING, &client_name,
@@ -592,7 +596,9 @@ message_hook(
 
   if (dbus_message_is_signal(message, JACKDBUS_IFACE_PATCHBAY, "PortAppeared"))
   {
-    if (!dbus_message_get_args( message, &g_dbus_error,
+    if (!dbus_message_get_args(
+          message,
+          &g_dbus_error,
           DBUS_TYPE_UINT64, &new_graph_version,
           DBUS_TYPE_UINT64, &client_id,
           DBUS_TYPE_STRING, &client_name,
@@ -616,7 +622,9 @@ message_hook(
 
   if (dbus_message_is_signal(message, JACKDBUS_IFACE_PATCHBAY, "PortDisappeared"))
   {
-    if (!dbus_message_get_args( message, &g_dbus_error,
+    if (!dbus_message_get_args(
+          message,
+          &g_dbus_error,
           DBUS_TYPE_UINT64, &new_graph_version,
           DBUS_TYPE_UINT64, &client_id,
           DBUS_TYPE_STRING, &client_name,
@@ -638,18 +646,20 @@ message_hook(
 
   if (dbus_message_is_signal(message, JACKDBUS_IFACE_PATCHBAY, "PortsConnected"))
   {
-    if (!dbus_message_get_args(message, &g_dbus_error,
-        DBUS_TYPE_UINT64, &new_graph_version,
-        DBUS_TYPE_UINT64, &client_id,
-        DBUS_TYPE_STRING, &client_name,
-        DBUS_TYPE_UINT64, &port_id,
-        DBUS_TYPE_STRING, &port_name,
-        DBUS_TYPE_UINT64, &client2_id,
-        DBUS_TYPE_STRING, &client2_name,
-        DBUS_TYPE_UINT64, &port2_id,
-        DBUS_TYPE_STRING, &port2_name,
-        DBUS_TYPE_UINT64, &connection_id,
-        DBUS_TYPE_INVALID))
+    if (!dbus_message_get_args(
+          message,
+          &g_dbus_error,
+          DBUS_TYPE_UINT64, &new_graph_version,
+          DBUS_TYPE_UINT64, &client_id,
+          DBUS_TYPE_STRING, &client_name,
+          DBUS_TYPE_UINT64, &port_id,
+          DBUS_TYPE_STRING, &port_name,
+          DBUS_TYPE_UINT64, &client2_id,
+          DBUS_TYPE_STRING, &client2_name,
+          DBUS_TYPE_UINT64, &port2_id,
+          DBUS_TYPE_STRING, &port2_name,
+          DBUS_TYPE_UINT64, &connection_id,
+          DBUS_TYPE_INVALID))
     {
       lash_error("dbus_message_get_args() failed to extract PortsConnected signal arguments (%s)", g_dbus_error.message);
       dbus_error_free(&g_dbus_error);
@@ -663,7 +673,9 @@ message_hook(
 
   if (dbus_message_is_signal(message, JACKDBUS_IFACE_PATCHBAY, "PortsDisconnected"))
   {
-    if (!dbus_message_get_args(message, &g_dbus_error,
+    if (!dbus_message_get_args(
+          message,
+          &g_dbus_error,
           DBUS_TYPE_UINT64, &new_graph_version,
           DBUS_TYPE_UINT64, &client_id,
           DBUS_TYPE_STRING, &client_name,
