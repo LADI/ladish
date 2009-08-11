@@ -27,7 +27,7 @@
 #ifndef GRAPH_CANVAS_H__F145C6FA_633C_4E64_9117_ED301618B587__INCLUDED
 #define GRAPH_CANVAS_H__F145C6FA_633C_4E64_9117_ED301618B587__INCLUDED
 
-#include "graph.h"
+#include "../graph_proxy.h"
 #include "canvas.h"
 
 typedef struct graph_canvas_tag { int unused; } * graph_canvas_handle;

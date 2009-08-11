@@ -162,7 +162,11 @@ def build(bld):
     daemon.uselib = 'DBUS-1 LIBXML-2.0 UUID'
     daemon.ver_header = 'version.h'
     daemon.env.append_value("LINKFLAGS", ["-lutil", "-ldl"])
-    daemon.source = []
+
+    daemon.source = [
+        'jack_proxy.c',
+        ]
+
     for source in [
         'main.c',
         'loader.c',
@@ -191,7 +195,6 @@ def build(bld):
         daemon.source.append(os.path.join("dbus", source))
 
     daemon.source.append(os.path.join("common", "safety.c"))
-    daemon.source.append('jack_proxy.c')
 
     # process name.arnaudov.nedko.ladish.service.in -> name.arnaudov.nedko.ladish.service
     import misc
@@ -255,7 +258,12 @@ def build(bld):
     gladish.defines = ['DEBUG_OUTPUT_TERMINAL']
     gladish.includes = "build/default" # XXX config.h version.h and other generated files
     gladish.uselib = 'DBUS-1 LIBGNOMECANVASMM-2.6 LIBGLADEMM-2.4 FLOWCANVAS DBUS-GLIB-1'
-    gladish.source = []
+
+    gladish.source = [
+        'jack_proxy.c',
+        'graph_proxy.c',
+        ]
+
     for source in [
         'main.cpp',
         'Patchage.cpp',
@@ -271,7 +279,6 @@ def build(bld):
         'a2j_proxy.cpp',
         'dbus_helpers.c',
         'canvas.cpp',
-        'graph.c',
         'graph_canvas.c',
         ]:
         gladish.source.append(os.path.join("gui", source))
@@ -281,8 +288,6 @@ def build(bld):
         'helpers.c',
         ]:
         gladish.source.append(os.path.join("dbus", source))
-
-    gladish.source.append('jack_proxy.c')
 
     # Glade UI definitions (XML)
     bld.install_files(bld.env['DATA_DIR'], 'gui/gui.glade')

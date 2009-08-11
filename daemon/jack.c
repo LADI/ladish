@@ -30,59 +30,6 @@
 #include "dbus_iface_control.h"
 
 void
-on_jack_client_appeared(
-  uint64_t client_id,
-  const char * client_name)
-{
-  lash_info("JACK client appeared.");
-}
-
-void
-on_jack_client_disappeared(
-  uint64_t client_id)
-{
-  lash_info("JACK client disappeared.");
-}
-
-void
-on_jack_port_appeared(
-  uint64_t client_id,
-  uint64_t port_id,
-  const char * port_name)
-{
-  lash_info("JACK port appeared.");
-}
-
-void
-on_jack_port_disappeared(
-  uint64_t client_id,
-  uint64_t port_id,
-  const char * port_name)
-{
-  lash_info("JACK port disappeared.");
-}
-
-void
-on_jack_ports_connected(
-  uint64_t client1_id,
-  uint64_t port1_id,
-  uint64_t client2_id,
-  uint64_t port2_id)
-{
-  lash_info("JACK ports connected.");
-}
-
-void
-on_jack_ports_disconnected(
-  uint64_t client1_id,
-  uint64_t port1_id,
-  uint64_t client2_id,
-  uint64_t port2_id)
-{
-  lash_info("JACK ports disconnected.");
-}
-
-void
 on_jack_server_started(
   void)
 {
@@ -159,24 +106,14 @@ jack_init(
 {
   bool started;
 
-  if (!jack_proxy_init())
+  if (!jack_proxy_init(
+        on_jack_server_started,
+        on_jack_server_stopped,
+        on_jack_server_appeared,
+        on_jack_server_disappeared))
   {
     return false;
   }
-
-  jack_proxy_set_server_callbacks(
-    on_jack_server_started,
-    on_jack_server_stopped,
-    on_jack_server_appeared,
-    on_jack_server_disappeared);
-
-  jack_proxy_set_patchbay_callbacks(
-    on_jack_client_appeared,
-    on_jack_client_disappeared,
-    on_jack_port_appeared,
-    on_jack_port_disappeared,
-    on_jack_ports_connected,
-    on_jack_ports_disconnected);
 
   if (jack_proxy_is_started(&started) && started)
   {

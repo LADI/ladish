@@ -33,184 +33,13 @@
 #include "dbus/helpers.h"
 #include "common/debug.h"
 
-#define JACKDBUS_SERVICE         "org.jackaudio.service"
-#define JACKDBUS_OBJECT          "/org/jackaudio/Controller"
 #define JACKDBUS_IFACE_CONTROL   "org.jackaudio.JackControl"
-#define JACKDBUS_IFACE_PATCHBAY  "org.jackaudio.JackPatchbay"
 #define JACKDBUS_IFACE_CONFIGURE "org.jackaudio.Configure"
 
-jack_proxy_callback_client_appeared g_on_client_appeared;
-jack_proxy_callback_client_disappeared g_on_client_disappeared;
-jack_proxy_callback_port_appeared g_on_port_appeared;
-jack_proxy_callback_port_disappeared g_on_port_disappeared;
-jack_proxy_callback_ports_connected g_on_ports_connected;
-jack_proxy_callback_ports_disconnected g_on_ports_disconnected;
 jack_proxy_callback_server_started g_on_server_started;
 jack_proxy_callback_server_stopped g_on_server_stopped;
 jack_proxy_callback_server_appeared g_on_server_appeared;
 jack_proxy_callback_server_disappeared g_on_server_disappeared;
-
-static
-void
-on_jack_patchbay_signal(
-  DBusMessage * message_ptr,
-  const char * signal_name)
-{
-  const char * client1_name;
-  const char * port1_name;
-  const char * client2_name;
-  const char * port2_name;
-  dbus_uint64_t dummy;
-  dbus_uint64_t client1_id;
-  dbus_uint64_t client2_id;
-  dbus_uint64_t port1_id;
-  dbus_uint64_t port2_id;
-
-  dbus_error_init(&g_dbus_error);
-
-  if (strcmp(signal_name, "ClientAppeared") == 0)
-  {
-    lash_debug("Received ClientAppeared signal");
-
-    if (!dbus_message_get_args(
-          message_ptr,
-          &g_dbus_error,
-          DBUS_TYPE_UINT64, &dummy,
-          DBUS_TYPE_UINT64, &client1_id,
-          DBUS_TYPE_STRING, &client1_name,
-          DBUS_TYPE_INVALID))
-    {
-      goto fail;
-    }
-
-    if (g_on_client_appeared != NULL)
-    {
-      g_on_client_appeared(client1_id, client1_name);
-    }
-
-    return;
-  }
-
-  if (strcmp(signal_name, "ClientDisappeared") == 0)
-  {
-    lash_debug("Received ClientDisappeared signal");
-
-    if (!dbus_message_get_args(
-          message_ptr,
-          &g_dbus_error,
-          DBUS_TYPE_UINT64, &dummy,
-          DBUS_TYPE_UINT64, &client1_id,
-          DBUS_TYPE_STRING, &client1_name,
-          DBUS_TYPE_INVALID))
-    {
-      goto fail;
-    }
-
-    if (g_on_client_disappeared != NULL)
-    {
-      g_on_client_disappeared(client1_id);
-    }
-
-    return;
-  }
-
-  if (strcmp(signal_name, "PortAppeared") == 0)
-  {
-    lash_debug("Received PortAppeared signal");
-
-    if (!dbus_message_get_args(
-          message_ptr,
-          &g_dbus_error,
-          DBUS_TYPE_UINT64, &dummy,
-          DBUS_TYPE_UINT64, &client1_id,
-          DBUS_TYPE_STRING, &client1_name,
-          DBUS_TYPE_UINT64, &port1_id,
-          DBUS_TYPE_STRING, &port1_name,
-          DBUS_TYPE_INVALID))
-    {
-      goto fail;
-    }
-
-    if (g_on_port_appeared != NULL)
-    {
-      g_on_port_appeared(client1_id, port1_id, port1_name);
-    }
-
-    return;
-  }
-
-  if (strcmp(signal_name, "PortsConnected") == 0)
-  {
-    lash_debug("Received PortsConnected signal");
-
-    if (!dbus_message_get_args(
-          message_ptr,
-          &g_dbus_error,
-          DBUS_TYPE_UINT64, &dummy,
-          DBUS_TYPE_UINT64, &client1_id,
-          DBUS_TYPE_STRING, &client1_name,
-          DBUS_TYPE_UINT64, &port1_id,
-          DBUS_TYPE_STRING, &port1_name,
-          DBUS_TYPE_UINT64, &client2_id,
-          DBUS_TYPE_STRING, &client2_name,
-          DBUS_TYPE_UINT64, &port2_id,
-          DBUS_TYPE_STRING, &port2_name,
-          DBUS_TYPE_INVALID))
-    {
-      goto fail;
-    }
-
-    if (g_on_ports_disconnected != NULL)
-    {
-      g_on_ports_connected(
-        client1_id,
-        port1_id,
-        client2_id,
-        port2_id);
-    }
-
-    return;
-  }
-
-  if (strcmp(signal_name, "PortsDisconnected") == 0)
-  {
-    lash_debug("Received PortsDisconnected signal");
-
-    if (!dbus_message_get_args(
-          message_ptr,
-          &g_dbus_error,
-          DBUS_TYPE_UINT64, &dummy,
-          DBUS_TYPE_UINT64, &client1_id,
-          DBUS_TYPE_STRING, &client1_name,
-          DBUS_TYPE_UINT64, &port1_id,
-          DBUS_TYPE_STRING, &port1_name,
-          DBUS_TYPE_UINT64, &client2_id,
-          DBUS_TYPE_STRING, &client2_name,
-          DBUS_TYPE_UINT64, &port2_id,
-          DBUS_TYPE_STRING, &port2_name,
-          DBUS_TYPE_INVALID))
-    {
-      goto fail;
-    }
-
-    if (g_on_ports_disconnected != NULL)
-    {
-      g_on_ports_disconnected(
-        client1_id,
-        port1_id,
-        client2_id,
-        port2_id);
-    }
-
-    return;
-  }
-
-  return;
-
-fail:
-  lash_error("Cannot get message arguments: %s", g_dbus_error.message);
-  dbus_error_free(&g_dbus_error);
-}
 
 static
 void
@@ -337,12 +166,6 @@ dbus_signal_handler(
   /* Handle JACK patchbay and control interface signals */
   if (object_path != NULL && strcmp(object_path, JACKDBUS_OBJECT) == 0)
   {
-    if (strcmp(interface, JACKDBUS_IFACE_PATCHBAY) == 0)
-    {
-      on_jack_patchbay_signal(message_ptr, signal_name);
-      return DBUS_HANDLER_RESULT_HANDLED;
-    }
-
     if (strcmp(interface, JACKDBUS_IFACE_CONTROL) == 0)
     {
       on_jack_control_signal(message_ptr, signal_name);
@@ -364,19 +187,14 @@ dbus_signal_handler(
 
 bool
 jack_proxy_init(
-  void)
+  jack_proxy_callback_server_started server_started,
+  jack_proxy_callback_server_stopped server_stopped,
+  jack_proxy_callback_server_appeared server_appeared,
+  jack_proxy_callback_server_disappeared server_disappeared)
 {
   DBusError err;
   char rule[1024];
   const char ** signal;
-
-  const char * patchbay_signals[] = {
-    "ClientAppeared",
-    "ClientDisappeared",
-    "PortAppeared",
-    "PortsConnected",
-    "PortsDisconnected",
-    NULL};
 
   const char * control_signals[] = {
     "ServerStarted",
@@ -392,23 +210,6 @@ jack_proxy_init(
     lash_error("Failed to add D-Bus match rule: %s", err.message);
     dbus_error_free(&err);
     return false;
-  }
-
-  for (signal = patchbay_signals; *signal != NULL; signal++)
-  {
-    snprintf(
-      rule,
-      sizeof(rule),
-      "type='signal',sender='"JACKDBUS_SERVICE"',path='"JACKDBUS_OBJECT"',interface='"JACKDBUS_IFACE_PATCHBAY"',member='%s'",
-      *signal);
-
-    dbus_bus_add_match(g_dbus_connection, rule, &err);
-    if (dbus_error_is_set(&err))
-    {
-      lash_error("Failed to add D-Bus match rule: %s", err.message);
-      dbus_error_free(&err);
-      return false;
-    }
   }
 
   for (signal = control_signals; *signal != NULL; signal++)
@@ -434,37 +235,12 @@ jack_proxy_init(
     return false;
   }
 
-  return true;
-}
-
-void
-jack_proxy_set_server_callbacks(
-  jack_proxy_callback_server_started server_started,
-  jack_proxy_callback_server_stopped server_stopped,
-  jack_proxy_callback_server_appeared server_appeared,
-  jack_proxy_callback_server_disappeared server_disappeared)
-{
   g_on_server_started = server_started;
   g_on_server_stopped = server_stopped;
   g_on_server_appeared = server_appeared;
   g_on_server_disappeared = server_disappeared;
-}
 
-void
-jack_proxy_set_patchbay_callbacks(
-  jack_proxy_callback_client_appeared client_appeared,
-  jack_proxy_callback_client_disappeared client_disappeared,
-  jack_proxy_callback_port_appeared port_appeared,
-  jack_proxy_callback_port_disappeared port_disappeared,
-  jack_proxy_callback_ports_connected ports_connected,
-  jack_proxy_callback_ports_disconnected ports_disconnected)
-{
-  g_on_client_appeared = client_appeared;
-  g_on_client_disappeared = client_disappeared;
-  g_on_port_appeared = port_appeared;
-  g_on_port_disappeared = port_disappeared;
-  g_on_ports_connected = ports_connected;
-  g_on_ports_disconnected = ports_disconnected;
+  return true;
 }
 
 void

@@ -29,10 +29,10 @@
 #include <assert.h>
 
 #include "common.h"
-#include "graph.h"
-#include "../common/klist.h"
-#include "../common/debug.h"
-#include "../dbus/helpers.h"
+#include "graph_proxy.h"
+#include "common/klist.h"
+#include "common/debug.h"
+#include "dbus/helpers.h"
 
 #define JACKDBUS_IFACE_PATCHBAY  "org.jackaudio.JackPatchbay"
 
@@ -363,6 +363,17 @@ graph_create(
   graph_handle * graph_handle_ptr)
 {
   struct graph * graph_ptr;
+  char rule[1024];
+  const char ** signal;
+
+  const char * patchbay_signals[] = {
+    "ClientAppeared",
+    "ClientDisappeared",
+    "PortAppeared",
+    "PortDisappeared",
+    "PortsConnected",
+    "PortsDisconnected",
+    NULL};
 
   graph_ptr = malloc(sizeof(struct graph));
   if (graph_ptr == NULL)
@@ -389,12 +400,24 @@ graph_create(
 
   graph_ptr->version = 0;
 
-  dbus_bus_add_match(g_dbus_connection, "type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=ClientAppeared", NULL);
-  dbus_bus_add_match(g_dbus_connection, "type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=ClientDisappeared", NULL);
-  dbus_bus_add_match(g_dbus_connection, "type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=PortAppeared", NULL);
-  dbus_bus_add_match(g_dbus_connection, "type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=PortDisappeared", NULL);
-  dbus_bus_add_match(g_dbus_connection, "type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=PortsConnected", NULL);
-  dbus_bus_add_match(g_dbus_connection, "type='signal',interface='" JACKDBUS_IFACE_PATCHBAY "',member=PortsDisconnected", NULL);
+  for (signal = patchbay_signals; *signal != NULL; signal++)
+  {
+    snprintf(
+      rule,
+      sizeof(rule),
+      "type='signal',sender='%s',path='%s',interface='" JACKDBUS_IFACE_PATCHBAY "',member='%s'",
+      service,
+      object,
+      *signal);
+
+    dbus_bus_add_match(g_dbus_connection, rule, &g_dbus_error);
+    if (dbus_error_is_set(&g_dbus_error))
+    {
+      lash_error("Failed to add D-Bus match rule: %s", g_dbus_error.message);
+      dbus_error_free(&g_dbus_error);
+      return false;
+    }
+  }
 
   dbus_connection_add_filter(g_dbus_connection, message_hook, graph_ptr, NULL);
 

@@ -30,6 +30,9 @@
 
 #include "common.h"
 
+#define JACKDBUS_SERVICE         "org.jackaudio.service"
+#define JACKDBUS_OBJECT          "/org/jackaudio/Controller"
+
 struct jack_parameter_variant
 {
   enum
@@ -63,47 +66,6 @@ struct jack_parameter_variant
 
 typedef
 void
-(* jack_proxy_callback_client_appeared)(
-  uint64_t client_id,
-  const char * client_name);
-
-typedef
-void
-(* jack_proxy_callback_client_disappeared)(
-  uint64_t client_id);
-
-typedef
-void
-(* jack_proxy_callback_port_appeared)(
-  uint64_t client_id,
-  uint64_t port_id,
-  const char * port_name);
-
-typedef
-void
-(* jack_proxy_callback_port_disappeared)(
-  uint64_t client_id,
-  uint64_t port_id,
-  const char * port_name);
-
-typedef
-void
-(* jack_proxy_callback_ports_connected)(
-  uint64_t client1_id,
-  uint64_t port1_id,
-  uint64_t client2_id,
-  uint64_t port2_id);
-
-typedef
-void
-(* jack_proxy_callback_ports_disconnected)(
-  uint64_t client1_id,
-  uint64_t port1_id,
-  uint64_t client2_id,
-  uint64_t port2_id);
-
-typedef
-void
 (* jack_proxy_callback_server_started)(
   void);
 
@@ -124,23 +86,10 @@ void
 
 bool
 jack_proxy_init(
-  void);
-
-void
-jack_proxy_set_server_callbacks(
   jack_proxy_callback_server_started server_started,
   jack_proxy_callback_server_stopped server_stopped,
   jack_proxy_callback_server_appeared server_appeared,
   jack_proxy_callback_server_disappeared server_disappeared);
-
-void
-jack_proxy_set_patchbay_callbacks(
-  jack_proxy_callback_client_appeared client_appeared,
-  jack_proxy_callback_client_disappeared client_disappeared,
-  jack_proxy_callback_port_appeared port_appeared,
-  jack_proxy_callback_port_disappeared port_disappeared,
-  jack_proxy_callback_ports_connected ports_connected,
-  jack_proxy_callback_ports_disconnected ports_disconnected);
 
 void
 jack_proxy_uninit(
