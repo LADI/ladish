@@ -36,7 +36,6 @@
 #include <gtk/gtkwindow.h>
 #include <boost/format.hpp>
 
-#include "jack_proxy.hpp"
 #include "Patchage.hpp"
 #include "lash_proxy.hpp"
 #include "project_list.hpp"
@@ -195,19 +194,15 @@ Patchage::Patchage(int argc, char** argv)
 
   _lash = new lash_proxy(_session);
 
-  _jack = new jack_proxy(this);
-
-  _menu_jack_start->signal_activate().connect(
-    sigc::mem_fun(_jack, &jack_proxy::start_server));
-  _menu_jack_stop->signal_activate().connect(
-    sigc::mem_fun(_jack, &jack_proxy::stop_server));
+  //_menu_jack_start->signal_activate().connect(sigc::mem_fun(_jack, &jack_proxy::start_server));
+  //_menu_jack_stop->signal_activate().connect(sigc::mem_fun(_jack, &jack_proxy::stop_server));
 
   _menu_a2j_start->signal_activate().connect(
     sigc::mem_fun(_a2j, &a2j_proxy::start_bridge));
   _menu_a2j_stop->signal_activate().connect(
     sigc::mem_fun(_a2j, &a2j_proxy::stop_bridge));
 
-  jack_status_changed(_jack->is_started());
+  //jack_status_changed(_jack->is_started());
 
   connect_widgets();
   update_state();
@@ -221,7 +216,6 @@ Patchage::Patchage(int argc, char** argv)
 
 Patchage::~Patchage() 
 {
-  delete _jack;
   delete _lash;
   delete _project_list;
   delete _session;
@@ -233,7 +227,6 @@ Patchage::~Patchage()
   patchage_dbus_uninit();
 }
 
-
 bool
 Patchage::idle_callback() 
 {
@@ -242,10 +235,10 @@ Patchage::idle_callback()
   return true;
 }
 
-
 void
 Patchage::update_toolbar()
 {
+#if 0
   bool started;
 
   started = _jack->is_started();
@@ -256,12 +249,13 @@ Patchage::update_toolbar()
   {
     _buffer_size_combo->set_active((int)log2f(_jack->buffer_size()) - 5);
   }
+#endif
 }
-
 
 void
 Patchage::update_load()
 {
+#if 0
   if (!_jack->is_started())
   {
     _main_xrun_progress->set_text("JACK stopped");
@@ -282,6 +276,7 @@ Patchage::update_load()
     _max_dsp_load = load;
     _main_xrun_progress->set_fraction(load);
   }
+#endif
 }
 
 
@@ -310,9 +305,11 @@ Patchage::refresh()
 void
 Patchage::clear_load()
 {
+#if 0
   _main_xrun_progress->set_fraction(0.0);
   _jack->reset_xruns();
   _max_dsp_load = 0.0;
+#endif
 }
 
 
@@ -364,11 +361,8 @@ Patchage::update_state()
 void
 Patchage::connect_widgets()
 {
-  _jack->signal_started.connect(
-    sigc::bind(sigc::mem_fun(this, &Patchage::jack_status_changed), true));
-  
-  _jack->signal_stopped.connect(
-    sigc::bind(sigc::mem_fun(this, &Patchage::jack_status_changed), false));
+  //_jack->signal_started.connect(sigc::bind(sigc::mem_fun(this, &Patchage::jack_status_changed), true));
+  //_jack->signal_stopped.connect(sigc::bind(sigc::mem_fun(this, &Patchage::jack_status_changed), false));
 }
 
 void
@@ -439,11 +433,15 @@ Patchage::on_scroll(GdkEventScroll* ev)
 void
 Patchage::buffer_size_changed()
 {
+#if 0
   const int selected = _buffer_size_combo->get_active_row_number();
 
-  if (selected == -1) {
+  if (selected == -1)
+  {
     update_toolbar();
-  } else {
+  }
+  else
+  {
     uint32_t buffer_size = 1 << (selected+5);
   
     // this check is temporal workaround for jack bug
@@ -457,6 +455,7 @@ Patchage::buffer_size_changed()
       }
     }
   }
+#endif
 }
 
 void

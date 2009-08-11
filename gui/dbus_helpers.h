@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to D-Bus helpers
@@ -26,6 +26,8 @@
 
 #ifndef DBUS_HELPERS_H__4078F17D_E387_4F96_8CAB_FF0BFF83A295__INCLUDED
 #define DBUS_HELPERS_H__4078F17D_E387_4F96_8CAB_FF0BFF83A295__INCLUDED
+
+#include <dbus/dbus.h>
 
 #ifdef __cplusplus
 extern "C" {

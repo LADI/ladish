@@ -34,7 +34,6 @@
 
 class PatchageCanvas;
 class a2j_proxy;
-class jack_proxy;
 class lash_proxy;
 class project_list;
 class session;
@@ -99,7 +98,6 @@ protected:
 #endif
 
   a2j_proxy * _a2j;
-  jack_proxy * _jack;
   session * _session;
   lash_proxy * _lash;
   project_list * _project_list;

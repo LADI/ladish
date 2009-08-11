@@ -261,7 +261,6 @@ def build(bld):
         'Patchage.cpp',
         #'PatchageCanvas.cpp',
         #'StateManager.cpp',
-        'jack_proxy.cpp',
         'lash_client.cpp',
         'lash_proxy.cpp',
         'load_projects_dialog.cpp',
@@ -282,6 +281,8 @@ def build(bld):
         'helpers.c',
         ]:
         gladish.source.append(os.path.join("dbus", source))
+
+    gladish.source.append('jack_proxy.c')
 
     # Glade UI definitions (XML)
     bld.install_files(bld.env['DATA_DIR'], 'gui/gui.glade')
