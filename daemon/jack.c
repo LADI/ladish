@@ -29,32 +29,6 @@
 #include "studio.h"
 #include "dbus_iface_control.h"
 
-bool
-jack_init(
-  void)
-{
-  bool started;
-
-  if (!jack_proxy_init())
-  {
-    return false;
-  }
-
-  if (jack_proxy_is_started(&started) && started)
-  {
-    on_jack_server_started();
-  }
-
-  return true;
-}
-
-void
-jack_uninit(
-  void)
-{
-  jack_proxy_uninit();
-}
-
 void
 on_jack_client_appeared(
   uint64_t client_id,
@@ -177,4 +151,40 @@ on_jack_server_disappeared(
   void)
 {
   lash_info("JACK controller disappeared.");
+}
+
+bool
+jack_init(
+  void)
+{
+  bool started;
+
+  if (!jack_proxy_init(
+        on_jack_client_appeared,
+        on_jack_client_disappeared,
+        on_jack_port_appeared,
+        on_jack_port_disappeared,
+        on_jack_ports_connected,
+        on_jack_ports_disconnected,
+        on_jack_server_started,
+        on_jack_server_stopped,
+        on_jack_server_appeared,
+        on_jack_server_disappeared))
+  {
+    return false;
+  }
+
+  if (jack_proxy_is_started(&started) && started)
+  {
+    on_jack_server_started();
+  }
+
+  return true;
+}
+
+void
+jack_uninit(
+  void)
+{
+  jack_proxy_uninit();
 }

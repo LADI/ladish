@@ -39,6 +39,17 @@
 #define JACKDBUS_IFACE_PATCHBAY  "org.jackaudio.JackPatchbay"
 #define JACKDBUS_IFACE_CONFIGURE "org.jackaudio.Configure"
 
+jack_proxy_callback_client_appeared g_on_client_appeared;
+jack_proxy_callback_client_disappeared g_on_client_disappeared;
+jack_proxy_callback_port_appeared g_on_port_appeared;
+jack_proxy_callback_port_disappeared g_on_port_disappeared;
+jack_proxy_callback_ports_connected g_on_ports_connected;
+jack_proxy_callback_ports_disconnected g_on_ports_disconnected;
+jack_proxy_callback_server_started g_on_server_started;
+jack_proxy_callback_server_stopped g_on_server_stopped;
+jack_proxy_callback_server_appeared g_on_server_appeared;
+jack_proxy_callback_server_disappeared g_on_server_disappeared;
+
 static
 void
 on_jack_patchbay_signal(
@@ -72,7 +83,11 @@ on_jack_patchbay_signal(
       goto fail;
     }
 
-    on_jack_client_appeared(client1_id, client1_name);
+    if (g_on_client_appeared != NULL)
+    {
+      g_on_client_appeared(client1_id, client1_name);
+    }
+
     return;
   }
 
@@ -91,7 +106,11 @@ on_jack_patchbay_signal(
       goto fail;
     }
 
-    on_jack_client_disappeared(client1_id);
+    if (g_on_client_disappeared != NULL)
+    {
+      g_on_client_disappeared(client1_id);
+    }
+
     return;
   }
 
@@ -112,7 +131,11 @@ on_jack_patchbay_signal(
       goto fail;
     }
 
-    on_jack_port_appeared(client1_id, port1_id, port1_name);
+    if (g_on_port_appeared != NULL)
+    {
+      g_on_port_appeared(client1_id, port1_id, port1_name);
+    }
+
     return;
   }
 
@@ -137,11 +160,14 @@ on_jack_patchbay_signal(
       goto fail;
     }
 
-    on_jack_ports_connected(
-      client1_id,
-      port1_id,
-      client2_id,
-      port2_id);
+    if (g_on_ports_disconnected != NULL)
+    {
+      g_on_ports_connected(
+        client1_id,
+        port1_id,
+        client2_id,
+        port2_id);
+    }
 
     return;
   }
@@ -167,11 +193,15 @@ on_jack_patchbay_signal(
       goto fail;
     }
 
-    on_jack_ports_disconnected(
-      client1_id,
-      port1_id,
-      client2_id,
-      port2_id);
+    if (g_on_ports_disconnected != NULL)
+    {
+      g_on_ports_disconnected(
+        client1_id,
+        port1_id,
+        client2_id,
+        port2_id);
+    }
+
     return;
   }
 
@@ -191,14 +221,22 @@ on_jack_control_signal(
   if (strcmp(signal_name, "ServerStarted") == 0)
   {
     lash_debug("JACK server start detected.");
-    on_jack_server_started();
+    if (g_on_server_started != NULL)
+    {
+      g_on_server_started();
+    }
+
     return;
   }
 
   if (strcmp(signal_name, "ServerStopped") == 0)
   {
     lash_debug("JACK server stop detected.");
-    on_jack_server_stopped();
+    if (g_on_server_stopped != NULL)
+    {
+      g_on_server_stopped();
+    }
+
     return;
   }
 }
@@ -241,12 +279,18 @@ on_bus_signal(
     if (old_owner[0] == '\0')
     {
       lash_debug("JACK serivce appeared");
-      on_jack_server_appeared();
+      if (g_on_server_appeared != NULL)
+      {
+        g_on_server_appeared();
+      }
     }
     else if (new_owner[0] == '\0')
     {
       lash_debug("JACK serivce disappeared");
-      on_jack_server_disappeared();
+      if (g_on_server_disappeared != NULL)
+      {
+        g_on_server_disappeared();
+      }
     }
 
     return DBUS_HANDLER_RESULT_HANDLED;
@@ -320,7 +364,16 @@ dbus_signal_handler(
 
 bool
 jack_proxy_init(
-  void)
+  jack_proxy_callback_client_appeared client_appeared,
+  jack_proxy_callback_client_disappeared client_disappeared,
+  jack_proxy_callback_port_appeared port_appeared,
+  jack_proxy_callback_port_disappeared port_disappeared,
+  jack_proxy_callback_ports_connected ports_connected,
+  jack_proxy_callback_ports_disconnected ports_disconnected,
+  jack_proxy_callback_server_started server_started,
+  jack_proxy_callback_server_stopped server_stopped,
+  jack_proxy_callback_server_appeared server_appeared,
+  jack_proxy_callback_server_disappeared server_disappeared)
 {
   DBusError err;
   char rule[1024];
@@ -389,6 +442,17 @@ jack_proxy_init(
     lash_error("Failed to add D-Bus filter");
     return false;
   }
+
+  g_on_client_appeared = client_appeared;
+  g_on_client_disappeared = client_disappeared;
+  g_on_port_appeared = port_appeared;
+  g_on_port_disappeared = port_disappeared;
+  g_on_ports_connected = ports_connected;
+  g_on_ports_disconnected = ports_disconnected;
+  g_on_server_started = server_started;
+  g_on_server_stopped = server_stopped;
+  g_on_server_appeared = server_appeared;
+  g_on_server_disappeared = server_disappeared;
 
   return true;
 }

@@ -61,9 +61,79 @@ struct jack_parameter_variant
   } value;
 };
 
+typedef
+void
+(* jack_proxy_callback_client_appeared)(
+  uint64_t client_id,
+  const char * client_name);
+
+typedef
+void
+(* jack_proxy_callback_client_disappeared)(
+  uint64_t client_id);
+
+typedef
+void
+(* jack_proxy_callback_port_appeared)(
+  uint64_t client_id,
+  uint64_t port_id,
+  const char * port_name);
+
+typedef
+void
+(* jack_proxy_callback_port_disappeared)(
+  uint64_t client_id,
+  uint64_t port_id,
+  const char * port_name);
+
+typedef
+void
+(* jack_proxy_callback_ports_connected)(
+  uint64_t client1_id,
+  uint64_t port1_id,
+  uint64_t client2_id,
+  uint64_t port2_id);
+
+typedef
+void
+(* jack_proxy_callback_ports_disconnected)(
+  uint64_t client1_id,
+  uint64_t port1_id,
+  uint64_t client2_id,
+  uint64_t port2_id);
+
+typedef
+void
+(* jack_proxy_callback_server_started)(
+  void);
+
+typedef
+void
+(* jack_proxy_callback_server_stopped)(
+  void);
+
+typedef
+void
+(* jack_proxy_callback_server_appeared)(
+  void);
+
+typedef
+void
+(* jack_proxy_callback_server_disappeared)(
+  void);
+
 bool
 jack_proxy_init(
-  void);
+  jack_proxy_callback_client_appeared client_appeared,
+  jack_proxy_callback_client_disappeared client_disappeared,
+  jack_proxy_callback_port_appeared port_appeared,
+  jack_proxy_callback_port_disappeared port_disappeared,
+  jack_proxy_callback_ports_connected ports_connected,
+  jack_proxy_callback_ports_disconnected ports_disconnected,
+  jack_proxy_callback_server_started server_started,
+  jack_proxy_callback_server_stopped server_stopped,
+  jack_proxy_callback_server_appeared server_appeared,
+  jack_proxy_callback_server_disappeared server_disappeared);
 
 void
 jack_proxy_uninit(
@@ -94,56 +164,5 @@ jack_proxy_get_parameter_value(
   const char * address,
   bool * is_set_ptr,
   struct jack_parameter_variant * parameter_ptr);
-
-void
-on_jack_client_appeared(
-  uint64_t client_id,
-  const char * client_name);
-
-void
-on_jack_client_disappeared(
-  uint64_t client_id);
-
-void
-on_jack_port_appeared(
-  uint64_t client_id,
-  uint64_t port_id,
-  const char * port_name);
-
-void
-on_jack_port_disappeared(
-  uint64_t client_id,
-  uint64_t port_id,
-  const char * port_name);
-
-void
-on_jack_ports_connected(
-  uint64_t client1_id,
-  uint64_t port1_id,
-  uint64_t client2_id,
-  uint64_t port2_id);
-
-void
-on_jack_ports_disconnected(
-  uint64_t client1_id,
-  uint64_t port1_id,
-  uint64_t client2_id,
-  uint64_t port2_id);
-
-void
-on_jack_server_started(
-  void);
-
-void
-on_jack_server_stopped(
-  void);
-
-void
-on_jack_server_appeared(
-  void);
-
-void
-on_jack_server_disappeared(
-  void);
 
 #endif /* #ifndef JACK_PROXY_H__88702EEC_4B82_407F_A664_AD70C1E14D02__INCLUDED */
