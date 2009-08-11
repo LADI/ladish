@@ -112,6 +112,7 @@ def configure(conf):
     conf.check_tool('boost')
     conf.check_boost()
 
+    add_cflag(conf, '-g')
     add_cflag(conf, '-Wall')
     add_cflag(conf, '-Werror')
 
@@ -258,8 +259,8 @@ def build(bld):
     for source in [
         'main.cpp',
         'Patchage.cpp',
-        'PatchageCanvas.cpp',
-        'StateManager.cpp',
+        #'PatchageCanvas.cpp',
+        #'StateManager.cpp',
         'jack_proxy.cpp',
         'lash_client.cpp',
         'lash_proxy.cpp',
@@ -272,6 +273,7 @@ def build(bld):
         'dbus_helpers.c',
         'canvas.cpp',
         'graph.c',
+        'graph_canvas.c',
         ]:
         gladish.source.append(os.path.join("gui", source))
 

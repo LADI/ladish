@@ -5,7 +5,7 @@
  * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains stuff that is needed almost everywhere in the gladish
+ * This file contains interface to graph canvas object
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -24,24 +24,49 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef COMMON_H__15E63B7A_8350_4ABD_B04C_592158354949__INCLUDED
-#define COMMON_H__15E63B7A_8350_4ABD_B04C_592158354949__INCLUDED
+#ifndef GRAPH_CANVAS_H__F145C6FA_633C_4E64_9117_ED301618B587__INCLUDED
+#define GRAPH_CANVAS_H__F145C6FA_633C_4E64_9117_ED301618B587__INCLUDED
 
-#include "config.h"             /* configure stage result */
+#include "graph.h"
+#include "canvas.h"
 
-#include <stdbool.h>            /* C99 bool */
-#include <stdint.h>             /* fixed bit size ints */
-#include <string.h>
+typedef struct graph_canvas_tag { int unused; } * graph_canvas_handle;
 
 #ifdef __cplusplus
-#include <string>
-#include <list>
-#include <sigc++/sigc++.h>
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
-#include <boost/format.hpp>
+extern "C" {
+#endif
+#if 0
+} /* Adjust editor indent */
 #endif
 
-enum ModuleType { Input, Output, InputOutput };
+bool
+graph_canvas_create(
+  int width,
+  int height,
+  graph_canvas_handle * graph_canvas_ptr);
 
-#endif /* #ifndef COMMON_H__15E63B7A_8350_4ABD_B04C_592158354949__INCLUDED */
+void
+graph_canvas_destroy(
+  graph_canvas_handle graph_canvas);
+
+bool
+graph_canvas_attach(
+  graph_canvas_handle graph_canvas,
+  graph_handle graph);
+
+void
+graph_canvas_detach(
+  graph_canvas_handle graph_canvas);
+
+canvas_handle
+graph_canvas_get_canvas(
+  graph_canvas_handle graph_canvas);
+
+#if 0
+{ /* Adjust editor indent */
+#endif
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#endif /* #ifndef GRAPH_CANVAS_H__F145C6FA_633C_4E64_9117_ED301618B587__INCLUDED */

@@ -27,6 +27,7 @@
 #ifndef CANVAS_H__BE110B39_CB54_47C2_A5B2_FFB3BA7CDA6D__INCLUDED
 #define CANVAS_H__BE110B39_CB54_47C2_A5B2_FFB3BA7CDA6D__INCLUDED
 
+#include <gtk/gtk.h>
 #include "common.h"
 
 typedef struct canvas_tag { int unused; } * canvas_handle;
@@ -46,7 +47,11 @@ canvas_create(
   int height,
   canvas_handle * canvas_handle_ptr);
 
-bool
+GtkWidget *
+canvas_get_widget(
+  canvas_handle canvas);
+
+void
 canvas_destroy(
   canvas_handle canvas);
 

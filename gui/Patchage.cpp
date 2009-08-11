@@ -38,21 +38,21 @@
 
 #include "jack_proxy.hpp"
 #include "Patchage.hpp"
-#include "PatchageCanvas.hpp"
-#include "StateManager.hpp"
 #include "lash_proxy.hpp"
 #include "project_list.hpp"
 #include "session.hpp"
 #include "globals.hpp"
 #include "a2j_proxy.hpp"
-#include "PatchageModule.hpp"
 #include "dbus_helpers.h"
 #include "load_projects_dialog.hpp"
+#include "graph_canvas.h"
 
 Patchage * g_app;
 
 #define LOG_TO_STD
 //#define LOG_TO_STATUS
+
+graph_canvas_handle g_jack_graph_canvas;
 
 /* Gtk helpers (resize combo boxes) */
 
@@ -118,10 +118,7 @@ Patchage::Patchage(int argc, char** argv)
 {
   g_app = this;
 
-  _settings_filename = getenv("HOME");
-  _settings_filename += "/.gladishrc";
-  _state_manager = new StateManager();
-  //_canvas = boost::shared_ptr<PatchageCanvas>(new PatchageCanvas(this, 1600*2, 1200*2));
+  graph_canvas_create(1600 * 2, 1200 * 2, &g_jack_graph_canvas);
 
   while (argc > 0) {
     if (!strcmp(*argv, "--help")) {
@@ -142,7 +139,8 @@ Patchage::Patchage(int argc, char** argv)
   
   gtkmm_set_width_for_given_text(*_buffer_size_combo, "4096 frames", 40);
 
-//  _main_scrolledwin->add(*_canvas);
+  _main_scrolledwin->add(*Glib::wrap(canvas_get_widget(graph_canvas_get_canvas(g_jack_graph_canvas))));
+
 //   _canvas->scroll_to(static_cast<int>(_canvas->width()/2 - 320),
 //                      static_cast<int>(_canvas->height()/2 - 240)); // FIXME: hardcoded
 
@@ -168,8 +166,6 @@ Patchage::Patchage(int argc, char** argv)
   _menu_close_all_projects->signal_activate().connect(
       sigc::mem_fun(this, &Patchage::close_all_projects));
 
-  _menu_store_positions->signal_activate().connect(
-      sigc::mem_fun(this, &Patchage::on_store_positions));
   _menu_file_quit->signal_activate().connect(
       sigc::mem_fun(this, &Patchage::on_quit));
   _menu_view_refresh->signal_activate().connect(
@@ -182,20 +178,10 @@ Patchage::Patchage(int argc, char** argv)
       sigc::mem_fun(this, &Patchage::on_show_projects));
   _menu_help_about->signal_activate().connect(
       sigc::mem_fun(this, &Patchage::on_help_about));
-  
-//   _canvas->show();
-  _main_win->present();
-  
-  _state_manager->load(_settings_filename);
-  
-  _main_win->resize(
-    static_cast<int>(_state_manager->get_window_size().x),
-    static_cast<int>(_state_manager->get_window_size().y));
 
-  _main_win->move(
-    static_cast<int>(_state_manager->get_window_location().x),
-    static_cast<int>(_state_manager->get_window_location().y));
-  
+  Glib::wrap(canvas_get_widget(graph_canvas_get_canvas(g_jack_graph_canvas)))->show();
+  _main_win->present();
+
   _about_win->set_transient_for(*_main_win);
 
   _a2j = new a2j_proxy;
@@ -239,7 +225,6 @@ Patchage::~Patchage()
   delete _lash;
   delete _project_list;
   delete _session;
-  delete _state_manager;
   delete _a2j;
 
   _about_win.destroy();
@@ -303,7 +288,6 @@ Patchage::update_load()
 void
 Patchage::zoom(double z)
 {
-  _state_manager->set_zoom(z);
 //   _canvas->set_zoom(z);
 }
 
@@ -322,26 +306,6 @@ Patchage::refresh()
 //     (*i)->resize();
 //   }
 }
-
-
-/** Update the stored window location and size in the StateManager (in memory).
- */
-void
-Patchage::store_window_location()
-{
-  int loc_x, loc_y, size_x, size_y;
-  _main_win->get_position(loc_x, loc_y);
-  _main_win->get_size(size_x, size_y);
-  Coord window_location;
-  window_location.x = loc_x;
-  window_location.y = loc_y;
-  Coord window_size;
-  window_size.x = size_x;
-  window_size.y = size_y;
-  _state_manager->set_window_location(window_location);
-  _state_manager->set_window_size(window_size);
-}
-
 
 void
 Patchage::clear_load()
@@ -453,15 +417,6 @@ Patchage::on_show_projects()
   else
     _project_list_viewport->hide();
 }
-
-  
-void
-Patchage::on_store_positions() 
-{
-  store_window_location();
-  _state_manager->save(_settings_filename);
-}
-
 
 void
 Patchage::on_view_toolbar() 
@@ -596,6 +551,7 @@ Patchage::close_all_projects()
   _lash->close_all_projects();
 }
 
+#if 0
 void
 Patchage::on_port_added(
   const char * jack_client_name,
@@ -604,7 +560,6 @@ Patchage::on_port_added(
   bool is_input,
   bool is_terminal)
 {
-#if 0
   bool is_a2j_mapped;
   std::string canvas_client_name;
   std::string canvas_port_name;
@@ -664,10 +619,8 @@ Patchage::on_port_added(
   module->add_port(port);
 
   module->resize();
-#endif
 }
 
-#if 0
 boost::shared_ptr<PatchagePort>
 Patchage::lookup_port(
   const char * jack_client_name,
@@ -680,14 +633,12 @@ Patchage::lookup_port(
 
   return _canvas->get_port(jack_client_name, jack_port_name);
 }
-#endif
 
 void
 Patchage::on_port_removed(
   const char * jack_client_name,
   const char * jack_port_name)
 {
-#if 0
   boost::shared_ptr<PatchagePort> port = lookup_port(jack_client_name, jack_port_name);
   if (!port) {
     error_msg(str(boost::format("Unable to remove unknown port '%s':'%s'") % jack_client_name % jack_port_name));
@@ -706,7 +657,6 @@ Patchage::on_port_removed(
   } else {
     module->resize();
   }
-#endif
 }
 
 void
@@ -716,7 +666,6 @@ Patchage::on_ports_connected(
   const char * jack_client2_name,
   const char * jack_port2_name)
 {
-#if 0
   boost::shared_ptr<PatchagePort> port1 = lookup_port(jack_client1_name, jack_port1_name);
   if (!port1) {
     error_msg((std::string)"Unable to connect unknown port '" + jack_port1_name + "' of client '" + jack_client1_name + "'");
@@ -730,7 +679,6 @@ Patchage::on_ports_connected(
   }
 
   _canvas->add_connection(port1, port2, port1->color() + 0x22222200);
-#endif
 }
 
 void
@@ -740,7 +688,6 @@ Patchage::on_ports_disconnected(
   const char * jack_client2_name,
   const char * jack_port2_name)
 {
-#if 0
   boost::shared_ptr<PatchagePort> port1 = lookup_port(jack_client1_name, jack_port1_name);
   if (!port1) {
     error_msg((std::string)"Unable to disconnect unknown port '" + jack_port1_name + "' of client '" + jack_client1_name + "'");
@@ -754,10 +701,8 @@ Patchage::on_ports_disconnected(
   }
 
   _canvas->remove_connection(port1, port2);
-#endif
 }
 
-#if 0
 static
 bool
 port_type_match(
@@ -766,7 +711,6 @@ port_type_match(
 {
   return port1->type == port2->type;
 }
-#endif
 
 void
 Patchage::get_port_jack_names(
@@ -774,7 +718,6 @@ Patchage::get_port_jack_names(
   std::string& jack_client_name,
   std::string& jack_port_name)
 {
-#if 0
   if (port->is_a2j_mapped)
   {
     jack_client_name = _a2j->get_jack_client_name();
@@ -785,7 +728,6 @@ Patchage::get_port_jack_names(
     jack_client_name = port->module().lock()->name();
     jack_port_name = port->name();
   }
-#endif
 }
 
 void
@@ -793,7 +735,6 @@ Patchage::connect(
   boost::shared_ptr<PatchagePort> port1,
   boost::shared_ptr<PatchagePort> port2)
 {
-#if 0
   std::string jack_client1_name;
   std::string jack_port1_name;
   std::string jack_client2_name;
@@ -814,7 +755,6 @@ Patchage::connect(
   {
     status_msg("ERROR: Attempt to connect ports with mismatched types");
   }
-#endif
 }
 
 void
@@ -822,7 +762,6 @@ Patchage::disconnect(
   boost::shared_ptr<PatchagePort> port1,
   boost::shared_ptr<PatchagePort> port2)
 {
-#if 0
   std::string jack_client1_name;
   std::string jack_port1_name;
   std::string jack_client2_name;
@@ -843,7 +782,6 @@ Patchage::disconnect(
   {
     status_msg("ERROR: Attempt to disconnect ports with mismatched types");
   }
-#endif
 }
 
 /** Destroy all JACK (canvas) ports.
@@ -851,7 +789,6 @@ Patchage::disconnect(
 void
 Patchage::clear_canvas()
 {
-#if 0
   ItemList modules = _canvas->items(); // copy
   for (ItemList::iterator m = modules.begin(); m != modules.end(); ++m) {
     shared_ptr<Module> module = dynamic_pointer_cast<Module>(*m);
@@ -873,12 +810,11 @@ Patchage::clear_canvas()
     else
       module->resize();
   }
-#endif
 }
 
 bool
 Patchage::is_canvas_empty()
 {
-//  return _canvas->items().empty();
-  return false;
+  return _canvas->items().empty();
 }
+#endif

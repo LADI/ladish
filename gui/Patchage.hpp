@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
  *
  **************************************************************************
@@ -31,13 +31,11 @@
 #include "common.h"
 #include "Widget.hpp"
 #include <gtkmm.h>
-#include "PatchagePort.hpp"
 
 class PatchageCanvas;
 class a2j_proxy;
 class jack_proxy;
 class lash_proxy;
-class StateManager;
 class project_list;
 class session;
 
@@ -46,16 +44,9 @@ public:
   Patchage(int argc, char** argv);
   ~Patchage();
 
-  boost::shared_ptr<PatchageCanvas> canvas() const { return _canvas; }
-  
   Gtk::Window* window() { return _main_win.get(); }
   
-  StateManager* state_manager() const { return _state_manager; }
-
   void quit() { _main_win->hide(); }
-
-  void connect(boost::shared_ptr<PatchagePort> p1, boost::shared_ptr<PatchagePort> p2);
-  void disconnect(boost::shared_ptr<PatchagePort> p1, boost::shared_ptr<PatchagePort> p2);
 
   void        refresh();
 
@@ -64,7 +55,6 @@ public:
   void error_msg(const std::string& msg);
   void status_msg(const std::string& msg);
   void update_state();
-  void store_window_location();
   
   void set_studio_availability(bool available);
   void set_a2j_status(unsigned int status);
@@ -76,39 +66,6 @@ public:
   void close_project(const std::string& project_name);
   void close_all_projects();
 
-  void
-  on_port_added(
-    const char * client_name,
-    const char * port_name,
-    PortType port_type,
-    bool is_input,
-    bool is_terminal);
-
-  void
-  on_port_removed(
-    const char * client_name,
-    const char * port_name);
-
-  void
-  on_ports_connected(
-    const char * client1_name,
-    const char * port1_name,
-    const char * client2_name,
-    const char * port2_name);
-
-  void
-  on_ports_disconnected(
-    const char * client1_name,
-    const char * port1_name,
-    const char * client2_name,
-    const char * port2_name);
-
-  void
-  clear_canvas();
-
-  bool
-  is_canvas_empty();
-
 protected:
   void connect_widgets();
 
@@ -116,7 +73,6 @@ protected:
   void on_help_about();
   void on_quit();
   void on_show_projects();
-  void on_store_positions();
   void on_view_toolbar();
   bool on_scroll(GdkEventScroll* ev);
 
@@ -129,6 +85,7 @@ protected:
 
   void buffer_size_changed();
 
+#if 0
   void
   get_port_jack_names(
     boost::shared_ptr<PatchagePort> port,
@@ -139,19 +96,16 @@ protected:
   lookup_port(
     const char * jack_client_name,
     const char * jack_port_name);
-
-  boost::shared_ptr<PatchageCanvas> _canvas;
+#endif
 
   a2j_proxy * _a2j;
   jack_proxy * _jack;
   session * _session;
   lash_proxy * _lash;
   project_list * _project_list;
-  StateManager * _state_manager;
 
   Gtk::Main* _gtk_main;
 
-  std::string _settings_filename;
   float _max_dsp_load;
   
   Widget<Gtk::AboutDialog>    _about_win;

@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to code that interfaces JACK through D-Bus
@@ -42,8 +42,6 @@ public:
   bool is_started();
   bool is_realtime();
   
-  void refresh();
-
   bool
   connect(
     const char * client1_name,
@@ -57,10 +55,6 @@ public:
     const char * port1_name,
     const char * client2_name,
     const char * port2_name);
-
-  void start_transport();
-  void stop_transport();
-  void rewind_transport();
 
   void reset_xruns();
 
@@ -89,46 +83,6 @@ private:
   void error_msg(const std::string& msg) const;
   void info_msg(const std::string& msg) const;
 
-  void
-  on_port_added(
-    dbus_uint64_t client_id,
-    const char * client_name,
-    dbus_uint64_t port_id,
-    const char * port_name,
-    dbus_uint32_t port_flags,
-    dbus_uint32_t port_type);
-
-  void
-  on_port_removed(
-    dbus_uint64_t client_id,
-    const char * client_name,
-    dbus_uint64_t port_id,
-    const char * port_name);
-
-  void
-  on_ports_connected(
-    dbus_uint64_t connection_id,
-    dbus_uint64_t client1_id,
-    const char * client1_name,
-    dbus_uint64_t port1_id,
-    const char * port1_name,
-    dbus_uint64_t client2_id,
-    const char * client2_name,
-    dbus_uint64_t port2_id,
-    const char * port2_name);
-
-  void
-  on_ports_disconnected(
-    dbus_uint64_t connection_id,
-    dbus_uint64_t client1_id,
-    const char * client1_name,
-    dbus_uint64_t port1_id,
-    const char * port1_name,
-    dbus_uint64_t client2_id,
-    const char * client2_name,
-    dbus_uint64_t port2_id,
-    const char * port2_name);
-
   bool
   call(
     bool response_expected,
@@ -140,8 +94,6 @@ private:
 
   void
   update_attached();
-
-  void refresh_internal(bool force);
 
   static
   DBusHandlerResult

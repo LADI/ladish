@@ -68,8 +68,6 @@ jack_proxy::jack_proxy(Patchage* app)
   if (!_server_responding) {
     return;
   }
-
-  refresh();                    // the initial refresh
 }
 
 
@@ -257,92 +255,6 @@ jack_proxy::stop_server()
   }
 }
 
-void
-jack_proxy::on_port_added(
-  dbus_uint64_t client_id,
-  const char * client_name,
-  dbus_uint64_t port_id,
-  const char * port_name,
-  dbus_uint32_t port_flags,
-  dbus_uint32_t port_type)
-{
-  PortType local_port_type;
-
-  switch (port_type) {
-  case JACKDBUS_PORT_TYPE_AUDIO:
-    local_port_type = JACK_AUDIO;
-    break;
-  case JACKDBUS_PORT_TYPE_MIDI:
-    local_port_type = JACK_MIDI;
-    break;
-  default:
-    error_msg("Unknown JACK D-Bus port type");
-    return;
-  }
-
-  _app->on_port_added(
-    client_name,
-    port_name,
-    local_port_type,
-    port_flags & JACKDBUS_PORT_FLAG_INPUT,
-    port_flags & JACKDBUS_PORT_FLAG_TERMINAL);
-}
-
-void
-jack_proxy::on_port_removed(
-  dbus_uint64_t client_id,
-  const char * client_name,
-  dbus_uint64_t port_id,
-  const char * port_name)
-{
-  _app->on_port_removed(client_name, port_name);
-
-  if (_app->is_canvas_empty())
-  {
-    if (_server_started)
-    {
-      signal_stopped.emit();
-    }
-
-    _server_started = false;
-  }
-}
-
-void
-jack_proxy::on_ports_connected(
-  dbus_uint64_t connection_id,
-  dbus_uint64_t client1_id,
-  const char*   client1_name,
-  dbus_uint64_t port1_id,
-  const char*   port1_name,
-  dbus_uint64_t client2_id,
-  const char*   client2_name,
-  dbus_uint64_t port2_id,
-  const char*   port2_name)
-{
-  _app->on_ports_connected(client1_name, port1_name, client2_name, port2_name);
-}
-
-void
-jack_proxy::on_ports_disconnected(
-  dbus_uint64_t connection_id,
-  dbus_uint64_t client1_id,
-  const char*   client1_name,
-  dbus_uint64_t port1_id,
-  const char*   port1_name,
-  dbus_uint64_t client2_id,
-  const char*   client2_name,
-  dbus_uint64_t port2_id,
-  const char*   port2_name)
-{
-  _app->on_ports_disconnected(client1_name, port1_name, client2_name, port2_name);
-}
-
-void
-jack_proxy::refresh()
-{
-}
-
 uint32_t
 jack_proxy::buffer_size()
 {
@@ -501,26 +413,6 @@ jack_proxy::get_dsp_load()
   dbus_message_unref(reply_ptr);
 
   return load;
-}
-
-void
-jack_proxy::start_transport()
-{
-  //info_msg(__func__);
-}
-
-
-void
-jack_proxy::stop_transport()
-{
-  //info_msg(__func__);
-}
-
-
-void
-jack_proxy::rewind_transport()
-{
-  //info_msg(__func__);
 }
 
 void

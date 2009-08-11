@@ -30,20 +30,42 @@
 
 #include "canvas.h"
 
+struct canvas
+{
+  FlowCanvas::Canvas * flowcanvas_ptr;
+};
+
 bool
 canvas_create(
   int width,
   int height,
   canvas_handle * canvas_handle_ptr)
 {
-  return false;
+  struct canvas * canvas_ptr;
+
+  canvas_ptr = new canvas;
+  canvas_ptr->flowcanvas_ptr = new FlowCanvas::Canvas(width, height);
+
+  *canvas_handle_ptr = (canvas_handle)canvas_ptr;
+
+  return true;
 }
 
-bool
+#define canvas_ptr ((struct canvas *)canvas)
+
+GtkWidget *
+canvas_get_widget(
+  canvas_handle canvas)
+{
+  return ((Gtk::Widget *)canvas_ptr->flowcanvas_ptr)->gobj();
+}
+
+void
 canvas_destroy(
   canvas_handle canvas)
 {
-  return false;
+  delete canvas_ptr->flowcanvas_ptr;
+  delete canvas_ptr;
 }
 
 void

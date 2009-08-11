@@ -27,6 +27,8 @@
 #ifndef GRAPH_H__61D1ED56_E33B_4F50_B45B_F520979E8AA7__INCLUDED
 #define GRAPH_H__61D1ED56_E33B_4F50_B45B_F520979E8AA7__INCLUDED
 
+#include "common.h"
+
 typedef struct graph_tag { int unused; } * graph_handle;
 
 #ifdef __cplusplus
