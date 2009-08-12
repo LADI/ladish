@@ -45,8 +45,8 @@ public:
   {};
 
   virtual ~canvas_cls() {};
-	virtual void connect(boost::shared_ptr<FlowCanvas::Connectable> port1, boost::shared_ptr<FlowCanvas::Connectable> port2);
-	virtual void disconnect(boost::shared_ptr<FlowCanvas::Connectable> port1, boost::shared_ptr<FlowCanvas::Connectable> port2);
+  virtual void connect(boost::shared_ptr<FlowCanvas::Connectable> port1, boost::shared_ptr<FlowCanvas::Connectable> port2);
+  virtual void disconnect(boost::shared_ptr<FlowCanvas::Connectable> port1, boost::shared_ptr<FlowCanvas::Connectable> port2);
 
   void (* m_connect_request)(void * port1_context, void * port2_context);
   void (* m_disconnect_request)(void * port1_context, void * port2_context);
@@ -65,7 +65,7 @@ public:
     , context(port_context)
   {};
 
-	virtual ~port_cls() {};
+  virtual ~port_cls() {};
 
   void * context;
 };
@@ -133,7 +133,7 @@ canvas_set_zoom(
   canvas_handle canvas,
   double pix_per_unit)
 {
-	canvas_ptr->get()->set_zoom(pix_per_unit);
+  canvas_ptr->get()->set_zoom(pix_per_unit);
 }
 
 void
