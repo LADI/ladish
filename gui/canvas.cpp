@@ -140,7 +140,11 @@ void
 canvas_arrange(
   canvas_handle canvas)
 {
-	canvas_ptr->get()->arrange();
+  Glib::RefPtr<Gdk::Window> win = canvas_ptr->get()->get_window();
+  if (win)
+  {
+    canvas_ptr->get()->arrange();
+  }
 }
 
 bool
