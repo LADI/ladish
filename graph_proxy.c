@@ -129,7 +129,7 @@ port_appeared(
 
   is_input = port_flags & JACKDBUS_PORT_FLAG_INPUT;
   is_terminal = port_flags & JACKDBUS_PORT_FLAG_TERMINAL;
-  is_midi = port_flags == JACKDBUS_PORT_TYPE_MIDI;
+  is_midi = port_type == JACKDBUS_PORT_TYPE_MIDI;
 
   list_for_each(node_ptr, &graph_ptr->monitors)
   {
