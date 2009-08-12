@@ -89,11 +89,16 @@ canvas_create_port(
   canvas_module_handle module,
   const char * name,
   bool is_input,
-  int color);
+  int color,
+  canvas_port_handle * port_handle_ptr);
 
 bool
 canvas_destroy_port(
   canvas_handle canvas,
+  canvas_port_handle port);
+
+int
+canvas_get_port_color(
   canvas_port_handle port);
 
 bool

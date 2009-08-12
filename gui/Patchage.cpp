@@ -788,34 +788,6 @@ Patchage::disconnect(
   }
 }
 
-/** Destroy all JACK (canvas) ports.
- */
-void
-Patchage::clear_canvas()
-{
-  ItemList modules = _canvas->items(); // copy
-  for (ItemList::iterator m = modules.begin(); m != modules.end(); ++m) {
-    shared_ptr<Module> module = dynamic_pointer_cast<Module>(*m);
-    if (!module)
-      continue;
-
-    PortVector ports = module->ports(); // copy
-    for (PortVector::iterator p = ports.begin(); p != ports.end(); ++p) {
-      boost::shared_ptr<PatchagePort> port = boost::dynamic_pointer_cast<PatchagePort>(*p);
-      if (port)
-      {
-        module->remove_port(port);
-        port->hide();
-      }
-    }
-
-    if (module->ports().empty())
-      _canvas->remove_item(module);
-    else
-      module->resize();
-  }
-}
-
 bool
 Patchage::is_canvas_empty()
 {

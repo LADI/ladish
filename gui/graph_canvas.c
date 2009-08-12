@@ -29,12 +29,71 @@
 
 #include "graph_canvas.h"
 #include "../common/debug.h"
+#include "../common/klist.h"
 
 struct graph_canvas
 {
   graph_handle graph;
   canvas_handle canvas;
+  struct list_head clients;
 };
+
+struct client
+{
+  struct list_head siblings;
+  uint64_t id;
+  canvas_module_handle canvas_module;
+  struct list_head ports;
+};
+
+struct port
+{
+  struct list_head siblings;
+  uint64_t id;
+  canvas_port_handle canvas_port;
+};
+
+static
+struct client *
+find_client(
+  struct graph_canvas * graph_canvas_ptr,
+  uint64_t id)
+{
+  struct list_head * node_ptr;
+  struct client * client_ptr;
+
+  list_for_each(node_ptr, &graph_canvas_ptr->clients)
+  {
+    client_ptr = list_entry(node_ptr, struct client, siblings);
+    if (client_ptr->id == id)
+    {
+      return client_ptr;
+    }
+  }
+
+  return NULL;
+}
+
+static
+struct port *
+find_port(
+  struct client * client_ptr,
+  uint64_t id)
+{
+  struct list_head * node_ptr;
+  struct port * port_ptr;
+
+  list_for_each(node_ptr, &client_ptr->ports)
+  {
+    port_ptr = list_entry(node_ptr, struct port, siblings);
+    if (port_ptr->id == id)
+    {
+      return port_ptr;
+    }
+  }
+
+  return NULL;
+}
 
 bool
 graph_canvas_create(
@@ -57,6 +116,7 @@ graph_canvas_create(
   }
 
   graph_canvas_ptr->graph = NULL;
+  INIT_LIST_HEAD(&graph_canvas_ptr->clients);
 
   *graph_canvas_handle_ptr = (graph_canvas_handle)graph_canvas_ptr;
 
@@ -71,6 +131,7 @@ clear(
   void * graph_canvas)
 {
   lash_info("canvas::clear()");
+  canvas_clear(graph_canvas_ptr->canvas);
 }
 
 static
@@ -80,7 +141,28 @@ client_appeared(
   uint64_t id,
   const char * name)
 {
+  struct client * client_ptr;
+
   lash_info("canvas::client_appeared(%"PRIu64", \"%s\")", id, name);
+
+  client_ptr = malloc(sizeof(struct client));
+  if (client_ptr == NULL)
+  {
+    lash_error("allocation of memory for struct client failed");
+    return;
+  }
+
+  client_ptr->id = id;
+  INIT_LIST_HEAD(&client_ptr->ports);
+
+  if (!canvas_create_module(graph_canvas_ptr->canvas, name, 0, 0, true, true, &client_ptr->canvas_module))
+  {
+    lash_error("canvas_create_module(\"%s\") failed", name);
+    free(client_ptr);
+    return;
+  }
+
+  list_add_tail(&client_ptr->siblings, &graph_canvas_ptr->clients);
 }
 
 static
@@ -89,7 +171,20 @@ client_disappeared(
   void * graph_canvas,
   uint64_t id)
 {
+  struct client * client_ptr;
+
   lash_info("canvas::client_disappeared(%"PRIu64")", id);
+
+  client_ptr = find_client(graph_canvas_ptr, id);
+  if (client_ptr == NULL)
+  {
+    lash_error("cannot find disappearing client %"PRIu64"", id);
+    return;
+  }
+
+  list_del(&client_ptr->siblings);
+  canvas_destroy_module(graph_canvas_ptr->canvas, client_ptr->canvas_module);
+  free(client_ptr);
 }
 
 static
@@ -103,7 +198,46 @@ port_appeared(
   bool is_terminal,
   bool is_midi)
 {
+  int color;
+  struct client * client_ptr;
+  struct port * port_ptr;
+
   lash_info("canvas::port_appeared(%"PRIu64", %"PRIu64", \"%s\")", client_id, port_id, port_name);
+
+  client_ptr = find_client(graph_canvas_ptr, client_id);
+  if (client_ptr == NULL)
+  {
+    lash_error("cannot find client %"PRIu64" of appearing port %"PRIu64" \"%s\"", client_id, port_id, port_name);
+    return;
+  }
+
+  port_ptr = malloc(sizeof(struct port));
+  if (port_ptr == NULL)
+  {
+    lash_error("allocation of memory for struct port failed");
+    return;
+  }
+
+  port_ptr->id = port_id;
+
+  // Darkest tango palette colour, with S -= 6, V -= 6, w/ transparency
+  if (is_midi)
+  {
+    color = 0x960909C0;
+  }
+  else
+  {
+    color = 0x244678C0;
+  }
+
+  if (!canvas_create_port(graph_canvas_ptr->canvas, client_ptr->canvas_module, port_name, is_input, color, &port_ptr->canvas_port))
+  {
+    lash_error("canvas_create_port(\"%s\") failed", port_name);
+    free(client_ptr);
+    return;
+  }
+
+  list_add_tail(&port_ptr->siblings, &client_ptr->ports);
 }
 
 static
@@ -113,7 +247,28 @@ port_disappeared(
   uint64_t client_id,
   uint64_t port_id)
 {
+  struct client * client_ptr;
+  struct port * port_ptr;
+
   lash_info("canvas::port_disappeared(%"PRIu64", %"PRIu64")", client_id, port_id);
+
+  client_ptr = find_client(graph_canvas_ptr, client_id);
+  if (client_ptr == NULL)
+  {
+    lash_error("cannot find client %"PRIu64" of disappearing port %"PRIu64"", client_id, port_id);
+    return;
+  }
+
+  port_ptr = find_port(client_ptr, port_id);
+  if (client_ptr == NULL)
+  {
+    lash_error("cannot find disappearing port %"PRIu64" of client %"PRIu64"", port_id, client_id);
+    return;
+  }
+
+  list_del(&port_ptr->siblings);
+  canvas_destroy_port(graph_canvas_ptr->canvas, port_ptr->canvas_port);
+  free(port_ptr);
 }
 
 static
@@ -125,7 +280,46 @@ ports_connected(
   uint64_t client2_id,
   uint64_t port2_id)
 {
+  struct client * client1_ptr;
+  struct port * port1_ptr;
+  struct client * client2_ptr;
+  struct port * port2_ptr;
+
   lash_info("canvas::ports_connected(%"PRIu64", %"PRIu64", %"PRIu64", %"PRIu64")", client1_id, port1_id, client2_id, port2_id);
+
+  client1_ptr = find_client(graph_canvas_ptr, client1_id);
+  if (client1_ptr == NULL)
+  {
+    lash_error("cannot find client %"PRIu64" of connected port %"PRIu64"", client1_id, port1_id);
+    return;
+  }
+
+  port1_ptr = find_port(client1_ptr, port1_id);
+  if (client1_ptr == NULL)
+  {
+    lash_error("cannot find connected port %"PRIu64" of client %"PRIu64"", port1_id, client1_id);
+    return;
+  }
+
+  client2_ptr = find_client(graph_canvas_ptr, client2_id);
+  if (client2_ptr == NULL)
+  {
+    lash_error("cannot find client %"PRIu64" of connected port %"PRIu64"", client2_id, port2_id);
+    return;
+  }
+
+  port2_ptr = find_port(client2_ptr, port2_id);
+  if (client2_ptr == NULL)
+  {
+    lash_error("cannot find connected port %"PRIu64" of client %"PRIu64"", port2_id, client2_id);
+    return;
+  }
+
+  canvas_add_connection(
+    graph_canvas_ptr->canvas,
+    port1_ptr->canvas_port,
+    port2_ptr->canvas_port,
+    canvas_get_port_color(port1_ptr->canvas_port) + 0x22222200);
 }
 
 static
@@ -137,7 +331,45 @@ ports_disconnected(
   uint64_t client2_id,
   uint64_t port2_id)
 {
+  struct client * client1_ptr;
+  struct port * port1_ptr;
+  struct client * client2_ptr;
+  struct port * port2_ptr;
+
   lash_info("canvas::ports_disconnected(%"PRIu64", %"PRIu64", %"PRIu64", %"PRIu64")", client1_id, port1_id, client2_id, port2_id);
+
+  client1_ptr = find_client(graph_canvas_ptr, client1_id);
+  if (client1_ptr == NULL)
+  {
+    lash_error("cannot find client %"PRIu64" of disconnected port %"PRIu64"", client1_id, port1_id);
+    return;
+  }
+
+  port1_ptr = find_port(client1_ptr, port1_id);
+  if (client1_ptr == NULL)
+  {
+    lash_error("cannot find disconnected port %"PRIu64" of client %"PRIu64"", port1_id, client1_id);
+    return;
+  }
+
+  client2_ptr = find_client(graph_canvas_ptr, client2_id);
+  if (client2_ptr == NULL)
+  {
+    lash_error("cannot find client %"PRIu64" of disconnected port %"PRIu64"", client2_id, port2_id);
+    return;
+  }
+
+  port2_ptr = find_port(client2_ptr, port2_id);
+  if (client2_ptr == NULL)
+  {
+    lash_error("cannot find disconnected port %"PRIu64" of client %"PRIu64"", port2_id, client2_id);
+    return;
+  }
+
+  canvas_remove_connection(
+    graph_canvas_ptr->canvas,
+    port1_ptr->canvas_port,
+    port2_ptr->canvas_port);
 }
 
 void
