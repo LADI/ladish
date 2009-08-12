@@ -603,7 +603,7 @@ message_hook(
       return DBUS_HANDLER_RESULT_HANDLED;
     }
 
-    lash_info("ClientAppeared, %s(%llu)", client_name, client_id);
+    //lash_info("ClientAppeared, %s(%llu)", client_name, client_id);
 
     client_appeared(graph_ptr, client_id, client_name);
 
@@ -625,7 +625,7 @@ message_hook(
       return DBUS_HANDLER_RESULT_HANDLED;
     }
 
-    lash_info("ClientDisappeared, %s(%llu)", client_name, client_id);
+    //lash_info("ClientDisappeared, %s(%llu)", client_name, client_id);
 
     client_disappeared(graph_ptr, client_id);
 
