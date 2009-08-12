@@ -45,6 +45,7 @@
 #include "dbus_helpers.h"
 #include "load_projects_dialog.hpp"
 #include "graph_canvas.h"
+#include "../jack_proxy.h"
 
 Patchage * g_app;
 
@@ -52,6 +53,7 @@ Patchage * g_app;
 //#define LOG_TO_STATUS
 
 graph_canvas_handle g_jack_graph_canvas;
+graph_handle g_jack_graph;
 
 /* Gtk helpers (resize combo boxes) */
 
@@ -117,8 +119,6 @@ Patchage::Patchage(int argc, char** argv)
 {
   g_app = this;
 
-  graph_canvas_create(1600 * 2, 1200 * 2, &g_jack_graph_canvas);
-
   while (argc > 0) {
     if (!strcmp(*argv, "--help")) {
       std::cout << "Usage: patchage [OPTIONS]\nOptions: --no-alsa" << std::endl;
@@ -130,6 +130,11 @@ Patchage::Patchage(int argc, char** argv)
   }
 
   patchage_dbus_init();
+
+  graph_create(JACKDBUS_SERVICE, JACKDBUS_OBJECT, &g_jack_graph);
+  graph_canvas_create(1600 * 2, 1200 * 2, &g_jack_graph_canvas);
+  graph_canvas_attach(g_jack_graph_canvas, g_jack_graph);
+  graph_activate(g_jack_graph);
 
   Glib::set_application_name("Patchage");
   _about_win->property_program_name() = "Patchage";

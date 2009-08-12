@@ -64,6 +64,7 @@ struct graph
   char * service;
   char * object;
   uint64_t version;
+  bool active;
 };
 
 DBusHandlerResult message_hook(DBusConnection *, DBusMessage *, void *);
@@ -216,6 +217,8 @@ static void refresh_internal(struct graph * graph_ptr, bool force)
   const char *port2_name;
   dbus_uint64_t connection_id;
 
+  lash_info("refresh_internal() called");
+
   if (force)
   {
     version = 0; // workaround module split/join stupidity
@@ -363,17 +366,6 @@ graph_create(
   graph_handle * graph_handle_ptr)
 {
   struct graph * graph_ptr;
-  char rule[1024];
-  const char ** signal;
-
-  const char * patchbay_signals[] = {
-    "ClientAppeared",
-    "ClientDisappeared",
-    "PortAppeared",
-    "PortDisappeared",
-    "PortsConnected",
-    "PortsDisconnected",
-    NULL};
 
   graph_ptr = malloc(sizeof(struct graph));
   if (graph_ptr == NULL)
@@ -399,29 +391,7 @@ graph_create(
   INIT_LIST_HEAD(&graph_ptr->monitors);
 
   graph_ptr->version = 0;
-
-  for (signal = patchbay_signals; *signal != NULL; signal++)
-  {
-    snprintf(
-      rule,
-      sizeof(rule),
-      "type='signal',sender='%s',path='%s',interface='" JACKDBUS_IFACE_PATCHBAY "',member='%s'",
-      service,
-      object,
-      *signal);
-
-    dbus_bus_add_match(g_dbus_connection, rule, &g_dbus_error);
-    if (dbus_error_is_set(&g_dbus_error))
-    {
-      lash_error("Failed to add D-Bus match rule: %s", g_dbus_error.message);
-      dbus_error_free(&g_dbus_error);
-      return false;
-    }
-  }
-
-  dbus_connection_add_filter(g_dbus_connection, message_hook, graph_ptr, NULL);
-
-  refresh_internal(graph_ptr, true);
+  graph_ptr->active = false;
 
   *graph_handle_ptr = (graph_handle)graph_ptr;
 
@@ -451,6 +421,62 @@ graph_destroy(
 }
 
 bool
+graph_activate(
+  graph_handle graph)
+{
+  char rule[1024];
+  const char ** signal;
+
+  const char * patchbay_signals[] = {
+    "ClientAppeared",
+    "ClientDisappeared",
+    "PortAppeared",
+    "PortDisappeared",
+    "PortsConnected",
+    "PortsDisconnected",
+    NULL};
+
+  if (list_empty(&graph_ptr->monitors))
+  {
+    lash_error("no monitors to activate");
+    return false;
+  }
+
+  if (graph_ptr->active)
+  {
+    lash_error("graph already active");
+    return false;
+  }
+
+  for (signal = patchbay_signals; *signal != NULL; signal++)
+  {
+    snprintf(
+      rule,
+      sizeof(rule),
+      "type='signal',sender='%s',path='%s',interface='" JACKDBUS_IFACE_PATCHBAY "',member='%s'",
+      graph_ptr->service,
+      graph_ptr->object,
+      *signal);
+
+    dbus_bus_add_match(g_dbus_connection, rule, &g_dbus_error);
+    if (dbus_error_is_set(&g_dbus_error))
+    {
+      lash_error("Failed to add D-Bus match rule: %s", g_dbus_error.message);
+      dbus_error_free(&g_dbus_error);
+      return false;
+    }
+  }
+
+  dbus_connection_add_filter(g_dbus_connection, message_hook, graph_ptr, NULL);
+
+  graph_ptr->active = true;
+
+  refresh_internal(graph_ptr, true);
+
+  return true;
+}
+
+bool
 graph_attach(
   graph_handle graph,
   void * context,
@@ -463,6 +489,11 @@ graph_attach(
   void (* ports_disconnected)(void * context, uint64_t client1_id, uint64_t port1_id, uint64_t client2_id, uint64_t port2_id))
 {
   struct monitor * monitor_ptr;
+
+  if (graph_ptr->active)
+  {
+    return false;
+  }
 
   monitor_ptr = malloc(sizeof(struct monitor));
   if (monitor_ptr == NULL)

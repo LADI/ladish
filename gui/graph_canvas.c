@@ -25,8 +25,10 @@
  */
 
 #include <stdlib.h>
+#include <inttypes.h>
 
 #include "graph_canvas.h"
+#include "../common/debug.h"
 
 struct graph_canvas
 {
@@ -63,6 +65,81 @@ graph_canvas_create(
 
 #define graph_canvas_ptr ((struct graph_canvas *)graph_canvas)
 
+static
+void
+clear(
+  void * graph_canvas)
+{
+  lash_info("canvas::clear()");
+}
+
+static
+void
+client_appeared(
+  void * graph_canvas,
+  uint64_t id,
+  const char * name)
+{
+  lash_info("canvas::client_appeared(%"PRIu64", \"%s\")", id, name);
+}
+
+static
+void
+client_disappeared(
+  void * graph_canvas,
+  uint64_t id)
+{
+  lash_info("canvas::client_disappeared(%"PRIu64")", id);
+}
+
+static
+void
+port_appeared(
+  void * graph_canvas,
+  uint64_t client_id,
+  uint64_t port_id,
+  const char * port_name,
+  bool is_input,
+  bool is_terminal,
+  bool is_midi)
+{
+  lash_info("canvas::port_appeared(%"PRIu64", %"PRIu64", \"%s\")", client_id, port_id, port_name);
+}
+
+static
+void
+port_disappeared(
+  void * graph_canvas,
+  uint64_t client_id,
+  uint64_t port_id)
+{
+  lash_info("canvas::port_disappeared(%"PRIu64", %"PRIu64")", client_id, port_id);
+}
+
+static
+void
+ports_connected(
+  void * graph_canvas,
+  uint64_t client1_id,
+  uint64_t port1_id,
+  uint64_t client2_id,
+  uint64_t port2_id)
+{
+  lash_info("canvas::ports_connected(%"PRIu64", %"PRIu64", %"PRIu64", %"PRIu64")", client1_id, port1_id, client2_id, port2_id);
+}
+
+static
+void
+ports_disconnected(
+  void * graph_canvas,
+  uint64_t client1_id,
+  uint64_t port1_id,
+  uint64_t client2_id,
+  uint64_t port2_id)
+{
+  lash_info("canvas::ports_disconnected(%"PRIu64", %"PRIu64", %"PRIu64", %"PRIu64")", client1_id, port1_id, client2_id, port2_id);
+}
+
 void
 graph_canvas_destroy(
   graph_canvas_handle graph_canvas)
@@ -80,13 +157,34 @@ graph_canvas_attach(
   graph_canvas_handle graph_canvas,
   graph_handle graph)
 {
-  return false;
+  assert(graph_canvas_ptr->graph == NULL);
+
+  if (!graph_attach(
+        graph,
+        graph_canvas,
+        clear,
+        client_appeared,
+        client_disappeared,
+        port_appeared,
+        port_disappeared,
+        ports_connected,
+        ports_disconnected))
+  {
+    return false;
+  }
+
+  graph_canvas_ptr->graph = graph;
+
+  return true;
 }
 
 void
 graph_canvas_detach(
   graph_canvas_handle graph_canvas)
 {
+  assert(graph_canvas_ptr->graph != NULL);
+  graph_detach(graph_canvas_ptr->graph, graph_canvas);
+  graph_canvas_ptr->graph = NULL;
 }
 
 canvas_handle

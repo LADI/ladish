@@ -49,6 +49,10 @@ graph_destroy(
   graph_handle graph);
 
 bool
+graph_activate(
+  graph_handle graph);
+
+bool
 graph_attach(
   graph_handle graph,
   void * context,
