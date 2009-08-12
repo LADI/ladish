@@ -31,41 +31,75 @@
 
 #include "canvas.h"
 
-struct canvas
+class canvas_cls: public FlowCanvas::Canvas
 {
-  boost::shared_ptr<FlowCanvas::Canvas> * flowcanvas;
+public:
+  canvas_cls(
+    double width,
+    double height,
+    void (* connect_request)(void * port1_context, void * port2_context),
+    void (* disconnect_request)(void * port1_context, void * port2_context))
+    : FlowCanvas::Canvas(width, height)
+    , m_connect_request(connect_request)
+    , m_disconnect_request(disconnect_request)
+  {};
+
+  virtual ~canvas_cls() {};
+	virtual void connect(boost::shared_ptr<FlowCanvas::Connectable> port1, boost::shared_ptr<FlowCanvas::Connectable> port2);
+	virtual void disconnect(boost::shared_ptr<FlowCanvas::Connectable> port1, boost::shared_ptr<FlowCanvas::Connectable> port2);
+
+  void (* m_connect_request)(void * port1_context, void * port2_context);
+  void (* m_disconnect_request)(void * port1_context, void * port2_context);
+};
+
+class port_cls: public FlowCanvas::Port
+{
+public:
+  port_cls(
+    boost::shared_ptr<FlowCanvas::Module> module,
+    const std::string& name,
+    bool is_input,
+    uint32_t color,
+    void * port_context)
+    : FlowCanvas::Port(module, name, is_input, color)
+    , context(port_context)
+  {};
+
+	virtual ~port_cls() {};
+
+  void * context;
 };
 
 bool
 canvas_create(
-  int width,
-  int height,
+  double width,
+  double height,
+  void (* connect_request)(void * port1_context, void * port2_context),
+  void (* disconnect_request)(void * port1_context, void * port2_context),
   canvas_handle * canvas_handle_ptr)
 {
-  struct canvas * canvas_ptr;
+  boost::shared_ptr<canvas_cls> * canvas;
 
-  canvas_ptr = new canvas;
-  canvas_ptr->flowcanvas = new boost::shared_ptr<FlowCanvas::Canvas>(new FlowCanvas::Canvas(width, height));
+  canvas = new boost::shared_ptr<canvas_cls>(new canvas_cls(width, height, connect_request, disconnect_request));
 
-  *canvas_handle_ptr = (canvas_handle)canvas_ptr;
+  *canvas_handle_ptr = (canvas_handle)canvas;
 
   return true;
 }
 
-#define canvas_ptr ((struct canvas *)canvas)
+#define canvas_ptr ((boost::shared_ptr<canvas_cls> *)canvas)
 
 GtkWidget *
 canvas_get_widget(
   canvas_handle canvas)
 {
-  return ((Gtk::Widget *)canvas_ptr->flowcanvas->get())->gobj();
+  return ((Gtk::Widget *)canvas_ptr->get())->gobj();
 }
 
 void
 canvas_destroy(
   canvas_handle canvas)
 {
-  delete canvas_ptr->flowcanvas;
   delete canvas_ptr;
 }
 
@@ -73,7 +107,7 @@ void
 canvas_clear(
   canvas_handle canvas)
 {
-  FlowCanvas::ItemList modules = canvas_ptr->flowcanvas->get()->items(); // copy
+  FlowCanvas::ItemList modules = canvas_ptr->get()->items(); // copy
   for (FlowCanvas::ItemList::iterator m = modules.begin(); m != modules.end(); ++m)
   {
     boost::shared_ptr<FlowCanvas::Module> module = boost::dynamic_pointer_cast<FlowCanvas::Module>(*m);
@@ -90,7 +124,7 @@ canvas_clear(
     }
 
     assert(module->ports().empty());
-    canvas_ptr->flowcanvas->get()->remove_item(module);
+    canvas_ptr->get()->remove_item(module);
   }
 }
 
@@ -99,14 +133,14 @@ canvas_set_zoom(
   canvas_handle canvas,
   double pix_per_unit)
 {
-	canvas_ptr->flowcanvas->get()->set_zoom(pix_per_unit);
+	canvas_ptr->get()->set_zoom(pix_per_unit);
 }
 
 void
 canvas_arrange(
   canvas_handle canvas)
 {
-	canvas_ptr->flowcanvas->get()->arrange();
+	canvas_ptr->get()->arrange();
 }
 
 bool
@@ -121,8 +155,8 @@ canvas_create_module(
 {
   boost::shared_ptr<FlowCanvas::Module> * module;
 
-  module = new boost::shared_ptr<FlowCanvas::Module>(new FlowCanvas::Module(*canvas_ptr->flowcanvas, name, x, y, show_title, show_port_labels));
-  canvas_ptr->flowcanvas->get()->add_item(*module);
+  module = new boost::shared_ptr<FlowCanvas::Module>(new FlowCanvas::Module(*canvas_ptr, name, x, y, show_title, show_port_labels));
+  canvas_ptr->get()->add_item(*module);
   module->get()->resize();
 
   *module_handle_ptr = (canvas_module_handle)module;
@@ -137,7 +171,7 @@ canvas_destroy_module(
   canvas_handle canvas,
   canvas_module_handle module)
 {
-  canvas_ptr->flowcanvas->get()->remove_item(*module_ptr);
+  canvas_ptr->get()->remove_item(*module_ptr);
   delete module_ptr;
   return true;
 }
@@ -149,11 +183,13 @@ canvas_create_port(
   const char * name,
   bool is_input,
   int color,
+  void * port_context,
   canvas_port_handle * port_handle_ptr)
 {
-  boost::shared_ptr<FlowCanvas::Port> * port;
+  boost::shared_ptr<port_cls> * port;
 
-  port = new boost::shared_ptr<FlowCanvas::Port>(new FlowCanvas::Port(*module_ptr, name, is_input, color));
+  port = new boost::shared_ptr<port_cls>(new port_cls(*module_ptr, name, is_input, color, port_context));
+
   module_ptr->get()->add_port(*port);
   module_ptr->get()->resize();
 
@@ -163,7 +199,7 @@ canvas_create_port(
 }
 
 #undef module_ptr
-#define port_ptr ((boost::shared_ptr<FlowCanvas::Port> *)port)
+#define port_ptr ((boost::shared_ptr<port_cls> *)port)
 
 bool
 canvas_destroy_port(
@@ -185,8 +221,8 @@ canvas_get_port_color(
 }
 
 #undef port_ptr
-#define port1_ptr ((boost::shared_ptr<FlowCanvas::Port> *)port1)
-#define port2_ptr ((boost::shared_ptr<FlowCanvas::Port> *)port2)
+#define port1_ptr ((boost::shared_ptr<port_cls> *)port1)
+#define port2_ptr ((boost::shared_ptr<port_cls> *)port2)
 
 bool
 canvas_add_connection(
@@ -195,7 +231,7 @@ canvas_add_connection(
   canvas_port_handle port2,
   uint32_t color)
 {
-  canvas_ptr->flowcanvas->get()->add_connection(*port1_ptr, *port2_ptr, color);
+  canvas_ptr->get()->add_connection(*port1_ptr, *port2_ptr, color);
   return true;
 }
 
@@ -205,12 +241,38 @@ canvas_remove_connection(
   canvas_port_handle port1,
   canvas_port_handle port2)
 {
-  canvas_ptr->flowcanvas->get()->remove_connection(*port1_ptr, *port2_ptr);
+  canvas_ptr->get()->remove_connection(*port1_ptr, *port2_ptr);
   return true;
 }
 
 #undef port1_ptr
 #undef port2_ptr
+
+void
+canvas_cls::connect(
+  boost::shared_ptr<FlowCanvas::Connectable> c1,
+  boost::shared_ptr<FlowCanvas::Connectable> c2)
+{
+  if (m_connect_request != NULL)
+  {
+    boost::shared_ptr<port_cls> port1 = boost::dynamic_pointer_cast<port_cls>(c1);
+    boost::shared_ptr<port_cls> port2 = boost::dynamic_pointer_cast<port_cls>(c2);
+    m_connect_request(port1->context, port2->context);
+  }
+}
+
+void
+canvas_cls::disconnect(
+  boost::shared_ptr<FlowCanvas::Connectable> c1,
+  boost::shared_ptr<FlowCanvas::Connectable> c2)
+{
+  if (m_disconnect_request != NULL)
+  {
+    boost::shared_ptr<port_cls> port1 = boost::dynamic_pointer_cast<port_cls>(c1);
+    boost::shared_ptr<port_cls> port2 = boost::dynamic_pointer_cast<port_cls>(c2);
+    m_disconnect_request(port1->context, port2->context);
+  }
+}
 
 bool
 canvas_enum_modules(

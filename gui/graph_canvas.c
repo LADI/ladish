@@ -51,6 +51,7 @@ struct port
   struct list_head siblings;
   uint64_t id;
   canvas_port_handle canvas_port;
+  struct graph_canvas * graph_canvas;
 };
 
 static
@@ -95,6 +96,37 @@ find_port(
   return NULL;
 }
 
+#define port1_ptr ((struct port *)port1_context)
+#define port2_ptr ((struct port *)port2_context)
+
+static
+void
+connect_request(
+  void * port1_context,
+  void * port2_context)
+{
+  lash_info("connect request(%"PRIu64", %"PRIu64")", port1_ptr->id, port2_ptr->id);
+
+  assert(port1_ptr->graph_canvas == port2_ptr->graph_canvas);
+
+  graph_connect_ports(port1_ptr->graph_canvas->graph, port1_ptr->id, port2_ptr->id);
+}
+
+void
+disconnect_request(
+  void * port1_context,
+  void * port2_context)
+{
+  lash_info("disconnect request(%"PRIu64", %"PRIu64")", port1_ptr->id, port2_ptr->id);
+
+  assert(port1_ptr->graph_canvas == port2_ptr->graph_canvas);
+
+  graph_disconnect_ports(port1_ptr->graph_canvas->graph, port1_ptr->id, port2_ptr->id);
+}
+
+#undef port1_ptr
+#undef port2_ptr
+
 bool
 graph_canvas_create(
   int width,
@@ -109,7 +141,7 @@ graph_canvas_create(
     return false;
   }
 
-  if (!canvas_create(width, height, &graph_canvas_ptr->canvas))
+  if (!canvas_create(width, height, connect_request, disconnect_request, &graph_canvas_ptr->canvas))
   {
     free(graph_canvas_ptr);
     return false;
@@ -219,6 +251,7 @@ port_appeared(
   }
 
   port_ptr->id = port_id;
+  port_ptr->graph_canvas = graph_canvas_ptr;
 
   // Darkest tango palette colour, with S -= 6, V -= 6, w/ transparency
   if (is_midi)
@@ -230,7 +263,7 @@ port_appeared(
     color = 0x244678C0;
   }
 
-  if (!canvas_create_port(graph_canvas_ptr->canvas, client_ptr->canvas_module, port_name, is_input, color, &port_ptr->canvas_port))
+  if (!canvas_create_port(graph_canvas_ptr->canvas, client_ptr->canvas_module, port_name, is_input, color, port_ptr, &port_ptr->canvas_port))
   {
     lash_error("canvas_create_port(\"%s\") failed", port_name);
     free(client_ptr);

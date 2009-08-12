@@ -43,8 +43,10 @@ extern "C" {
 
 bool
 canvas_create(
-  int width,
-  int height,
+  double width,
+  double height,
+  void (* connect_request)(void * port1_context, void * port2_context),
+  void (* disconnect_request)(void * port1_context, void * port2_context),
   canvas_handle * canvas_handle_ptr);
 
 GtkWidget *
@@ -90,6 +92,7 @@ canvas_create_port(
   const char * name,
   bool is_input,
   int color,
+  void * port_context,
   canvas_port_handle * port_handle_ptr);
 
 bool
