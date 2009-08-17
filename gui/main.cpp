@@ -38,6 +38,7 @@
 #include "common.h"
 #include "Widget.hpp"
 #include <gtkmm.h>
+#include "../common/debug.h"
 
 //class a2j_proxy;
 //class lash_proxy;
@@ -905,9 +906,13 @@ glade_open()
 
 int main(int argc, char** argv)
 {
+  if (!canvas_init()) {
+    lash_error("Canvas initialization failed.");
+    return 1;
+  }
+
   try {
   
-  Gnome::Canvas::init();
   Gtk::Main app(argc, argv);
 
   g_xml = glade_open();

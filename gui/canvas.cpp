@@ -71,6 +71,14 @@ public:
 };
 
 bool
+canvas_init(
+  void)
+{
+  Gnome::Canvas::init();
+  return true;
+}
+
+bool
 canvas_create(
   double width,
   double height,

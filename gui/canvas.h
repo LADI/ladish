@@ -42,6 +42,10 @@ extern "C" {
 #endif
 
 bool
+canvas_init(
+  void);
+
+bool
 canvas_create(
   double width,
   double height,
