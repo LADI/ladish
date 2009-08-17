@@ -897,6 +897,8 @@ int main(int argc, char** argv)
   //_main_scrolledwin->property_hadjustment().get_value()->set_step_increment(10);
   //_main_scrolledwin->property_vadjustment().get_value()->set_step_increment(10);
 
+  g_signal_connect(G_OBJECT(main_win), "destroy", G_CALLBACK(gtk_main_quit), NULL);
+
   gtk_widget_show(main_win);
 
   //_about_win->set_transient_for(*_main_win);
