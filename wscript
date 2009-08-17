@@ -266,7 +266,7 @@ def build(bld):
 
     for source in [
         'main.cpp',
-        'Patchage.cpp',
+        #'Patchage.cpp',
         #'PatchageCanvas.cpp',
         #'StateManager.cpp',
         #'lash_client.cpp',
