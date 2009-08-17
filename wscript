@@ -265,7 +265,7 @@ def build(bld):
         ]
 
     for source in [
-        'main.cpp',
+        'main.c',
         #'Patchage.cpp',
         #'PatchageCanvas.cpp',
         #'StateManager.cpp',
