@@ -56,9 +56,6 @@ public:
   void        refresh();
 
   void clear_load();
-  void info_msg(const std::string& msg);
-  void error_msg(const std::string& msg);
-  void status_msg(const std::string& msg);
   void update_state();
   
   void set_studio_availability(bool available);
@@ -430,37 +427,6 @@ Patchage::clear_load()
   _max_dsp_load = 0.0;
 #endif
 }
-
-
-void
-Patchage::error_msg(const std::string& msg)
-{
-#if defined(LOG_TO_STATUS)
-  status_msg(msg);
-#endif
-#if defined(LOG_TO_STD)
-  std::cerr << msg << std::endl;
-#endif
-}
-
-
-void
-Patchage::info_msg(const std::string& msg)
-{
-#if defined(LOG_TO_STATUS)
-  status_msg(msg);
-#endif
-#if defined(LOG_TO_STD)
-  std::cerr << msg << std::endl;
-#endif
-}
-
-
-void
-Patchage::status_msg(const std::string& msg) 
-{
-}
-
 
 void
 Patchage::update_state()
