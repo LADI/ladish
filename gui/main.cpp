@@ -25,29 +25,17 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <iostream>
-#include <libgnomecanvasmm.h>
-#include <glibmm/exception.h>
-
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <stdexcept>
-#include <libglademm/xml.h>
-
 #include "common.h"
-#include "Widget.hpp"
+#include <libglademm/xml.h>
+#include <glibmm/exception.h>
 #include <gtkmm.h>
-#include "../common/debug.h"
+#include "Widget.hpp"
 
-//class a2j_proxy;
-//class lash_proxy;
-//class project_list;
-//class session;
+#include "../common/debug.h"
 
 class Patchage {
 public:
-  Patchage(int argc, char** argv);
+  Patchage();
   ~Patchage();
 
   Gtk::Window* window() { return _main_win.get(); }
@@ -150,8 +138,6 @@ protected:
 
 #include <string.h>
 #include <cmath>
-#include <sstream>
-#include <fstream>
 #include <libgnomecanvasmm.h>
 #include <libglademm/xml.h>
 #include <gtk/gtkwindow.h>
@@ -206,7 +192,7 @@ gtkmm_set_width_for_given_text (Gtk::Widget &w, const gchar *text,
 
 #define INIT_WIDGET(x) x(g_xml, ((const char*)#x) + 1)
 
-Patchage::Patchage(int argc, char** argv)
+Patchage::Patchage()
   : _max_dsp_load(0.0)
   , INIT_WIDGET(_about_win)
   , INIT_WIDGET(_buffer_size_combo)
@@ -236,16 +222,6 @@ Patchage::Patchage(int argc, char** argv)
   , INIT_WIDGET(_zoom_normal_but)
 {
   g_app = this;
-
-  while (argc > 0) {
-    if (!strcmp(*argv, "--help")) {
-      std::cout << "Usage: patchage [OPTIONS]\nOptions: --no-alsa" << std::endl;
-      exit(0);
-    }
-
-    argv++;
-    argc--;
-  }
 
   patchage_dbus_init();
 
@@ -511,7 +487,7 @@ Patchage::on_view_toolbar()
 bool
 Patchage::on_scroll(GdkEventScroll* ev) 
 {
-  std::cout << "ON SCROLL" << std::endl;
+  lash_debug("ON SCROLL");
   return false;
 }
 
@@ -878,6 +854,9 @@ Patchage::is_canvas_empty()
 
 Glib::RefPtr<Gnome::Glade::Xml> g_xml;
 
+#include <fstream>
+#include <sstream>
+
 static
 Glib::RefPtr<Gnome::Glade::Xml>
 glade_open()
@@ -906,32 +885,32 @@ glade_open()
 
 int main(int argc, char** argv)
 {
-  if (!canvas_init()) {
+  if (!canvas_init())
+  {
     lash_error("Canvas initialization failed.");
     return 1;
   }
 
-  try {
-  
-  Gtk::Main app(argc, argv);
+  try
+  {
+    Gtk::Main app(argc, argv);
 
-  g_xml = glade_open();
+    g_xml = glade_open();
   
-  Patchage patchage(argc, argv);
-  app.run(*patchage.window());
-  
-  } catch (std::exception& e) {
-    std::cerr << "Caught exception, aborting.  Error message was: "
-        << e.what() << std::endl;
+    Patchage patchage;
+    app.run(*patchage.window());
+  }
+  catch (std::exception& e)
+  {
+    lash_error("Caught exception, aborting.  Error message was: %s\n", e.what());
     return 1;
   
-  } catch (Glib::Exception& e) {
-    std::cerr << "Caught exception, aborting.  Error message was: "
-        << e.what() << std::endl;
+  }
+  catch (Glib::Exception& e)
+  {
+    lash_error("Caught exception, aborting.  Error message was: %s\n", e.what().c_str());
     return 1;
   }
 
   return 0;
 }
-
-
