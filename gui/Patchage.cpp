@@ -160,15 +160,11 @@ Patchage::Patchage(int argc, char** argv)
       sigc::mem_fun(this, &Patchage::clear_load));
   _zoom_normal_but->signal_clicked().connect(sigc::bind(
       sigc::mem_fun(this, &Patchage::zoom), 1.0));
-//   _zoom_full_but->signal_clicked().connect(
-//       sigc::mem_fun(_canvas.get(), &PatchageCanvas::zoom_full));
+//   _zoom_full_but->signal_clicked().connect(sigc::mem_fun(_canvas.get(), &PatchageCanvas::zoom_full));
 
-  _menu_load_project->signal_activate().connect(
-      sigc::mem_fun(this, &Patchage::load_project_ask));
-  _menu_save_all_projects->signal_activate().connect(
-      sigc::mem_fun(this, &Patchage::save_all_projects));
-  _menu_close_all_projects->signal_activate().connect(
-      sigc::mem_fun(this, &Patchage::close_all_projects));
+//  _menu_load_project->signal_activate().connect(sigc::mem_fun(this, &Patchage::load_project_ask));
+//  _menu_save_all_projects->signal_activate().connect(sigc::mem_fun(this, &Patchage::save_all_projects));
+//  _menu_close_all_projects->signal_activate().connect(sigc::mem_fun(this, &Patchage::close_all_projects));
 
   _menu_file_quit->signal_activate().connect(
       sigc::mem_fun(this, &Patchage::on_quit));
@@ -188,24 +184,22 @@ Patchage::Patchage(int argc, char** argv)
 
   _about_win->set_transient_for(*_main_win);
 
-  _a2j = new a2j_proxy;
+//  _a2j = new a2j_proxy;
 
   //info_msg(str(boost::format("a2j jack client name is '%s'") % _a2j->get_jack_client_name()));
 
-  _session = new session();
+//  _session = new session();
 
-  _project_list = new project_list(this, _session);
-  _project_list_viewport->hide();
+//  _project_list = new project_list(this, _session);
+//  _project_list_viewport->hide();
 
-  _lash = new lash_proxy(_session);
+//  _lash = new lash_proxy(_session);
 
   //_menu_jack_start->signal_activate().connect(sigc::mem_fun(_jack, &jack_proxy::start_server));
   //_menu_jack_stop->signal_activate().connect(sigc::mem_fun(_jack, &jack_proxy::stop_server));
 
-  _menu_a2j_start->signal_activate().connect(
-    sigc::mem_fun(_a2j, &a2j_proxy::start_bridge));
-  _menu_a2j_stop->signal_activate().connect(
-    sigc::mem_fun(_a2j, &a2j_proxy::stop_bridge));
+//  _menu_a2j_start->signal_activate().connect(sigc::mem_fun(_a2j, &a2j_proxy::start_bridge));
+//  _menu_a2j_stop->signal_activate().connect(sigc::mem_fun(_a2j, &a2j_proxy::stop_bridge));
 
   //jack_status_changed(_jack->is_started());
 
@@ -221,10 +215,10 @@ Patchage::Patchage(int argc, char** argv)
 
 Patchage::~Patchage() 
 {
-  delete _lash;
-  delete _project_list;
-  delete _session;
-  delete _a2j;
+  //delete _lash;
+  //delete _project_list;
+  //delete _session;
+  //delete _a2j;
 
   _about_win.destroy();
   //_main_win.destroy();
@@ -475,10 +469,11 @@ Patchage::set_studio_availability(
   {
     _main_win->set_title("LADI Session Handler");
   }
-  _project_list->set_lash_availability(available);
+  //_project_list->set_lash_availability(available);
   _menu_view_projects->set_active(available);
 }
 
+#if 0
 void
 Patchage::set_a2j_status(
   unsigned int status)
@@ -555,7 +550,6 @@ Patchage::close_all_projects()
   _lash->close_all_projects();
 }
 
-#if 0
 void
 Patchage::on_port_added(
   const char * jack_client_name,

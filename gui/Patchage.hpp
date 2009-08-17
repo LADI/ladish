@@ -32,11 +32,10 @@
 #include "Widget.hpp"
 #include <gtkmm.h>
 
-class PatchageCanvas;
-class a2j_proxy;
-class lash_proxy;
-class project_list;
-class session;
+//class a2j_proxy;
+//class lash_proxy;
+//class project_list;
+//class session;
 
 class Patchage {
 public:
@@ -56,6 +55,7 @@ public:
   void update_state();
   
   void set_studio_availability(bool available);
+#if 0
   void set_a2j_status(unsigned int status);
 
   void load_project_ask();
@@ -64,6 +64,7 @@ public:
   void save_project(const std::string& project_name);
   void close_project(const std::string& project_name);
   void close_all_projects();
+#endif
 
 protected:
   void connect_widgets();
@@ -97,10 +98,10 @@ protected:
     const char * jack_port_name);
 #endif
 
-  a2j_proxy * _a2j;
-  session * _session;
-  lash_proxy * _lash;
-  project_list * _project_list;
+  //a2j_proxy * _a2j;
+  //session * _session;
+  //lash_proxy * _lash;
+  //project_list * _project_list;
 
   Gtk::Main* _gtk_main;
 
