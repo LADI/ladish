@@ -26,13 +26,13 @@
  */
 
 #include "common.h"
-#include <libglademm/xml.h>
-#include <glibmm/exception.h>
-#include <gtkmm.h>
-#include "Widget.hpp"
+#include "glade.h"
+#include "canvas.h"
+#include "graph_canvas.h"
+#include "../jack_proxy.h"
+#include "dbus_helpers.h"
 
-#include "../common/debug.h"
-
+#if 0
 class Patchage {
 public:
   Patchage();
@@ -146,7 +146,6 @@ protected:
 #include "project_list.hpp"
 #include "session.hpp"
 #include "globals.hpp"
-#include "dbus_helpers.h"
 //#include "load_projects_dialog.hpp"
 #include "graph_canvas.h"
 #include "../jack_proxy.h"
@@ -155,9 +154,6 @@ Patchage * g_app;
 
 #define LOG_TO_STD
 //#define LOG_TO_STATUS
-
-graph_canvas_handle g_jack_graph_canvas;
-graph_handle g_jack_graph;
 
 /* Gtk helpers (resize combo boxes) */
 
@@ -194,6 +190,7 @@ gtkmm_set_width_for_given_text (Gtk::Widget &w, const gchar *text,
 
 Patchage::Patchage()
   : _max_dsp_load(0.0)
+#if 0
   , INIT_WIDGET(_about_win)
   , INIT_WIDGET(_buffer_size_combo)
   , INIT_WIDGET(_clear_load_but)
@@ -220,6 +217,7 @@ Patchage::Patchage()
   , INIT_WIDGET(_toolbar)
   , INIT_WIDGET(_zoom_full_but)
   , INIT_WIDGET(_zoom_normal_but)
+#endif
 {
   g_app = this;
 
@@ -851,66 +849,61 @@ Patchage::is_canvas_empty()
   return _canvas->items().empty();
 }
 #endif
+#endif
 
-Glib::RefPtr<Gnome::Glade::Xml> g_xml;
-
-#include <fstream>
-#include <sstream>
-
-static
-Glib::RefPtr<Gnome::Glade::Xml>
-glade_open()
-{
-  // Check for the .glade file in ./src/
-  std::string glade_filename = std::string("./gui/gui.glade");
-  std::ifstream fs(glade_filename.c_str());
-  if (fs.fail())
-  { // didn't find it, check DATA_PATH
-    fs.clear();
-
-    glade_filename = DATA_DIR "/gui.glade";
-
-    fs.open(glade_filename.c_str());
-    if (fs.fail())
-    {
-      std::ostringstream ss;
-      ss << "Unable to find gui.glade file" << std::endl;
-      throw std::runtime_error(ss.str());
-    }
-    fs.close();
-  }
-
-  return Gnome::Glade::Xml::create(glade_filename);
-}
+graph_canvas_handle g_jack_graph_canvas;
+graph_handle g_jack_graph;
 
 int main(int argc, char** argv)
 {
+  GtkWidget * main_win;
+  GtkScrolledWindow * main_scrolledwin;
+  GtkWidget * canvas_widget;
+
+  gtk_init(&argc, &argv);
+
   if (!canvas_init())
   {
     lash_error("Canvas initialization failed.");
     return 1;
   }
 
-  try
+  if (!init_glade())
   {
-    Gtk::Main app(argc, argv);
+    return 1;
+  }
 
-    g_xml = glade_open();
-  
-    Patchage patchage;
-    app.run(*patchage.window());
-  }
-  catch (std::exception& e)
-  {
-    lash_error("Caught exception, aborting.  Error message was: %s\n", e.what());
-    return 1;
-  
-  }
-  catch (Glib::Exception& e)
-  {
-    lash_error("Caught exception, aborting.  Error message was: %s\n", e.what().c_str());
-    return 1;
-  }
+  /* Obtain widgets that we need */
+  main_win = get_glade_widget("main_win");
+  main_scrolledwin = GTK_SCROLLED_WINDOW(get_glade_widget("main_scrolledwin"));
+
+  patchage_dbus_init();
+
+  graph_create(JACKDBUS_SERVICE, JACKDBUS_OBJECT, &g_jack_graph);
+  graph_canvas_create(1600 * 2, 1200 * 2, &g_jack_graph_canvas);
+  graph_canvas_attach(g_jack_graph_canvas, g_jack_graph);
+  graph_activate(g_jack_graph);
+
+  canvas_widget = canvas_get_widget(graph_canvas_get_canvas(g_jack_graph_canvas));
+
+  gtk_widget_show(canvas_widget);
+
+  //gtkmm_set_width_for_given_text(*_buffer_size_combo, "4096 frames", 40);
+
+  gtk_container_add(GTK_CONTAINER(main_scrolledwin), canvas_widget);
+
+//   _canvas->scroll_to(static_cast<int>(_canvas->width()/2 - 320), static_cast<int>(_canvas->height()/2 - 240)); // FIXME: hardcoded
+
+  //_main_scrolledwin->property_hadjustment().get_value()->set_step_increment(10);
+  //_main_scrolledwin->property_vadjustment().get_value()->set_step_increment(10);
+
+  gtk_widget_show(main_win);
+
+  //_about_win->set_transient_for(*_main_win);
+
+  gtk_main();
+
+  uninit_glade();
 
   return 0;
 }

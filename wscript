@@ -280,6 +280,7 @@ def build(bld):
         'dbus_helpers.c',
         'canvas.cpp',
         'graph_canvas.c',
+        'glade.c',
         ]:
         gladish.source.append(os.path.join("gui", source))
 

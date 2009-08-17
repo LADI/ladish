@@ -5,7 +5,7 @@
  * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains stuff that is needed almost everywhere in the gladish
+ * This file contains the glade (gtk_builder) helpers
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -24,29 +24,54 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef COMMON_H__15E63B7A_8350_4ABD_B04C_592158354949__INCLUDED
-#define COMMON_H__15E63B7A_8350_4ABD_B04C_592158354949__INCLUDED
+#include "common.h"
+#include "glade.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <assert.h>
+#include <glade/glade.h>
 
-#include "config.h"             /* configure stage result */
+GladeXML * g_glade;
 
-#include <stdbool.h>            /* C99 bool */
-#include <stdint.h>             /* fixed bit size ints */
-#include <string.h>
+bool init_glade(void)
+{
+  const char * path;
+  struct stat st;
 
-#ifdef __cplusplus
-#include <string>
-#include <list>
-#include <sigc++/sigc++.h>
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
-#include <boost/format.hpp>
-#endif
+  path = "./gui/gui.glade";
+  if (stat(path, &st) == 0)
+  {
+    goto found;
+  }
 
-enum ModuleType { Input, Output, InputOutput };
+  path = DATA_DIR "/gui.glade";
+  if (stat(path, &st) == 0)
+  {
+    goto found;
+  }
 
-#include <gtk/gtk.h>
-extern GtkBuilder * g_builder;
+  lash_error("Unable to find the gui.glade file");
+  uninit_glade();
+  return false;
 
-#include "../common/debug.h"
+found:
+  lash_info("Loading glade from %s", path);
+  g_glade = glade_xml_new(path, NULL, NULL);
+  return true;
+}
 
-#endif /* #ifndef COMMON_H__15E63B7A_8350_4ABD_B04C_592158354949__INCLUDED */
+void uninit_glade(void)
+{
+}
+
+GtkWidget * get_glade_widget(const char * name)
+{
+  GtkWidget * ptr;
+
+  ptr = GTK_WIDGET(glade_xml_get_widget(g_glade, name));
+
+  assert(ptr != NULL);
+
+  return ptr;
+}

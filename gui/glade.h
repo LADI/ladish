@@ -5,7 +5,7 @@
  * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains stuff that is needed almost everywhere in the gladish
+ * This file contains the interface to the glade (gtk_builder) helpers
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -24,29 +24,25 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef COMMON_H__15E63B7A_8350_4ABD_B04C_592158354949__INCLUDED
-#define COMMON_H__15E63B7A_8350_4ABD_B04C_592158354949__INCLUDED
-
-#include "config.h"             /* configure stage result */
-
-#include <stdbool.h>            /* C99 bool */
-#include <stdint.h>             /* fixed bit size ints */
-#include <string.h>
+#ifndef GLADE_H__E2BF7CFC_1B04_4160_9165_A1B433C6B3C2__INCLUDED
+#define GLADE_H__E2BF7CFC_1B04_4160_9165_A1B433C6B3C2__INCLUDED
 
 #ifdef __cplusplus
-#include <string>
-#include <list>
-#include <sigc++/sigc++.h>
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
-#include <boost/format.hpp>
+extern "C" {
+#endif
+#if 0
+} /* Adjust editor indent */
 #endif
 
-enum ModuleType { Input, Output, InputOutput };
+bool init_glade(void);
+void uninit_glade(void);
+GtkWidget * get_glade_widget(const char * name);
 
-#include <gtk/gtk.h>
-extern GtkBuilder * g_builder;
+#if 0
+{ /* Adjust editor indent */
+#endif
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
-#include "../common/debug.h"
-
-#endif /* #ifndef COMMON_H__15E63B7A_8350_4ABD_B04C_592158354949__INCLUDED */
+#endif /* #ifndef GLADE_H__E2BF7CFC_1B04_4160_9165_A1B433C6B3C2__INCLUDED */
