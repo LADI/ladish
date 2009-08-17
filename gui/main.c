@@ -898,6 +898,7 @@ int main(int argc, char** argv)
   //_main_scrolledwin->property_vadjustment().get_value()->set_step_increment(10);
 
   g_signal_connect(G_OBJECT(main_win), "destroy", G_CALLBACK(gtk_main_quit), NULL);
+  g_signal_connect(G_OBJECT(get_glade_widget("menu_file_quit")), "activate", G_CALLBACK(gtk_main_quit), NULL);
 
   gtk_widget_show(main_win);
 
