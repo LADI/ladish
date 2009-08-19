@@ -29,13 +29,6 @@
 
 #include <dbus/dbus.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-#if 0
-} /* Adjust editor indent */
-#endif
-
 void
 patchage_dbus_init();
 
@@ -74,12 +67,5 @@ void
 patchage_dbus_uninit();
 
 extern DBusError g_dbus_error;
-
-#if 0
-{ /* Adjust editor indent */
-#endif
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
 
 #endif // #ifndef DBUS_HELPERS_H__4078F17D_E387_4F96_8CAB_FF0BFF83A295__INCLUDED

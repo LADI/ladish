@@ -29,22 +29,8 @@
 
 #include <gtk/gtk.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-#if 0
-} /* Adjust editor indent */
-#endif
-
 bool init_glade(void);
 void uninit_glade(void);
 GtkWidget * get_glade_widget(const char * name);
-
-#if 0
-{ /* Adjust editor indent */
-#endif
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
 
 #endif /* #ifndef GLADE_H__E2BF7CFC_1B04_4160_9165_A1B433C6B3C2__INCLUDED */

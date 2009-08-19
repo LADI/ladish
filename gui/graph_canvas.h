@@ -32,13 +32,6 @@
 
 typedef struct graph_canvas_tag { int unused; } * graph_canvas_handle;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-#if 0
-} /* Adjust editor indent */
-#endif
-
 bool
 graph_canvas_create(
   int width,
@@ -61,12 +54,5 @@ graph_canvas_detach(
 canvas_handle
 graph_canvas_get_canvas(
   graph_canvas_handle graph_canvas);
-
-#if 0
-{ /* Adjust editor indent */
-#endif
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
 
 #endif /* #ifndef GRAPH_CANVAS_H__F145C6FA_633C_4E64_9117_ED301618B587__INCLUDED */
