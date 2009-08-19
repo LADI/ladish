@@ -31,13 +31,7 @@
 
 #include <stdbool.h>            /* C99 bool */
 #include <stdint.h>             /* fixed bit size ints */
-#include <string.h>
 
-enum ModuleType { Input, Output, InputOutput };
-
-#include <gtk/gtk.h>
-extern GtkBuilder * g_builder;
-
-#include "../common/debug.h"
+#include "../common/debug.h"    /* log macros */
 
 #endif /* #ifndef COMMON_H__15E63B7A_8350_4ABD_B04C_592158354949__INCLUDED */
