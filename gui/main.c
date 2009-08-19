@@ -852,22 +852,45 @@ Patchage::is_canvas_empty()
 #endif
 #endif
 
+graph_canvas_handle g_jack_graph_canvas;
+graph_handle g_jack_graph;
+
+GtkScrolledWindow * g_main_scrolledwin;
+
 void control_proxy_on_studio_appeared(void)
 {
+  GtkWidget * canvas_widget;
+
+  graph_create(JACKDBUS_SERVICE, JACKDBUS_OBJECT, &g_jack_graph);
+  graph_canvas_create(1600 * 2, 1200 * 2, &g_jack_graph_canvas);
+  graph_canvas_attach(g_jack_graph_canvas, g_jack_graph);
+  graph_activate(g_jack_graph);
+
+  canvas_widget = canvas_get_widget(graph_canvas_get_canvas(g_jack_graph_canvas));
+
+  gtk_widget_show(canvas_widget);
+
+  gtk_container_add(GTK_CONTAINER(g_main_scrolledwin), canvas_widget);
+
+  //_canvas->scroll_to(static_cast<int>(_canvas->width()/2 - 320), static_cast<int>(_canvas->height()/2 - 240)); // FIXME: hardcoded
+  //_main_scrolledwin->property_hadjustment().get_value()->set_step_increment(10);
+  //_main_scrolledwin->property_vadjustment().get_value()->set_step_increment(10);
 }
 
 void control_proxy_on_studio_disappeared(void)
 {
-}
+  GtkWidget * canvas_widget;
+  canvas_widget = canvas_get_widget(graph_canvas_get_canvas(g_jack_graph_canvas));
 
-graph_canvas_handle g_jack_graph_canvas;
-graph_handle g_jack_graph;
+  gtk_container_remove(GTK_CONTAINER(g_main_scrolledwin), canvas_widget);
+  graph_canvas_detach(g_jack_graph_canvas);
+  graph_canvas_destroy(g_jack_graph_canvas);
+  graph_destroy(g_jack_graph);
+}
 
 int main(int argc, char** argv)
 {
   GtkWidget * main_win;
-  GtkScrolledWindow * main_scrolledwin;
-  GtkWidget * canvas_widget;
 
   gtk_init(&argc, &argv);
 
@@ -884,7 +907,7 @@ int main(int argc, char** argv)
 
   /* Obtain widgets that we need */
   main_win = get_glade_widget("main_win");
-  main_scrolledwin = GTK_SCROLLED_WINDOW(get_glade_widget("main_scrolledwin"));
+  g_main_scrolledwin = GTK_SCROLLED_WINDOW(get_glade_widget("main_scrolledwin"));
 
   patchage_dbus_init();
 
@@ -893,23 +916,7 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  graph_create(JACKDBUS_SERVICE, JACKDBUS_OBJECT, &g_jack_graph);
-  graph_canvas_create(1600 * 2, 1200 * 2, &g_jack_graph_canvas);
-  graph_canvas_attach(g_jack_graph_canvas, g_jack_graph);
-  graph_activate(g_jack_graph);
-
-  canvas_widget = canvas_get_widget(graph_canvas_get_canvas(g_jack_graph_canvas));
-
-  gtk_widget_show(canvas_widget);
-
   //gtkmm_set_width_for_given_text(*_buffer_size_combo, "4096 frames", 40);
-
-  gtk_container_add(GTK_CONTAINER(main_scrolledwin), canvas_widget);
-
-//   _canvas->scroll_to(static_cast<int>(_canvas->width()/2 - 320), static_cast<int>(_canvas->height()/2 - 240)); // FIXME: hardcoded
-
-  //_main_scrolledwin->property_hadjustment().get_value()->set_step_increment(10);
-  //_main_scrolledwin->property_vadjustment().get_value()->set_step_increment(10);
 
   g_signal_connect(G_OBJECT(main_win), "destroy", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(G_OBJECT(get_glade_widget("menu_file_quit")), "activate", G_CALLBACK(gtk_main_quit), NULL);
