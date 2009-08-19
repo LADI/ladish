@@ -66,11 +66,38 @@ static DBusHandlerResult message_hook(DBusConnection * connection, DBusMessage *
   return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
+static bool control_proxy_is_studio_loaded(bool * present_ptr)
+{
+  dbus_bool_t present;
+
+  if (!dbus_call_simple(SERVICE, OBJECT, IFACE, "IsStudioLoaded", "", "b", &present))
+  {
+    return false;
+  }
+
+  *present_ptr = present;
+
+  return true;
+}
+
 bool control_proxy_init(void)
 {
+  bool studio_present;
+
   if (!dbus_register_object_signal_handler(g_dbus_connection, SERVICE, OBJECT, IFACE, g_signals, message_hook, NULL))
   {
     return false;
+  }
+
+  if (!control_proxy_is_studio_loaded(&studio_present))
+  {
+    dbus_unregister_object_signal_handler(g_dbus_connection, SERVICE, OBJECT, IFACE, g_signals, message_hook, NULL);
+    return false;
+  }
+
+  if (studio_present)
+  {
+    control_proxy_on_studio_appeared();
   }
 
   return true;
