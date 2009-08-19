@@ -852,25 +852,90 @@ Patchage::is_canvas_empty()
 #endif
 #endif
 
-graph_canvas_handle g_jack_graph_canvas;
-graph_handle g_jack_graph;
-
 GtkScrolledWindow * g_main_scrolledwin;
+
+struct view
+{
+  char * name;
+  graph_canvas_handle graph_canvas;
+  graph_handle graph;
+  GtkWidget * canvas_widget;
+};
+
+struct view * create_view(const char * name, const char * service, const char * object)
+{
+  struct view * view_ptr;
+
+  view_ptr = malloc(sizeof(struct view));
+  if (view_ptr == NULL)
+  {
+    lash_error("malloc() failed for struct view");
+    goto fail;
+  }
+
+  view_ptr->name = strdup(name);
+  if (view_ptr->name == NULL)
+  {
+    lash_error("strdup() failed for \"%s\"", name);
+    goto free_view;
+  }
+
+  if (!graph_create(JACKDBUS_SERVICE, JACKDBUS_OBJECT, &view_ptr->graph))
+  {
+    goto free_name;
+  }
+
+  if (!graph_canvas_create(1600 * 2, 1200 * 2, &view_ptr->graph_canvas))
+  {
+    goto destroy_graph;
+  }
+
+  if (!graph_canvas_attach(view_ptr->graph_canvas, view_ptr->graph))
+  {
+    goto destroy_graph_canvas;
+  }
+
+  if (!graph_activate(view_ptr->graph))
+  {
+    goto detach_graph_canvas;
+  }
+
+  view_ptr->canvas_widget = canvas_get_widget(graph_canvas_get_canvas(view_ptr->graph_canvas));
+
+  gtk_widget_show(view_ptr->canvas_widget);
+
+  return view_ptr;
+
+detach_graph_canvas:
+  graph_canvas_detach(view_ptr->graph_canvas);
+destroy_graph_canvas:
+  graph_canvas_destroy(view_ptr->graph_canvas);
+destroy_graph:
+  graph_destroy(view_ptr->graph);
+free_name:
+  free(view_ptr->name);
+free_view:
+  free(view_ptr);
+fail:
+  return NULL;
+}
+
+void destroy_view(struct view * view_ptr)
+{
+  graph_canvas_detach(view_ptr->graph_canvas);
+  graph_canvas_destroy(view_ptr->graph_canvas);
+  graph_destroy(view_ptr->graph);
+  free(view_ptr->name);
+  free(view_ptr);
+}
+
+struct view * g_jack_view;
 
 void control_proxy_on_studio_appeared(void)
 {
-  GtkWidget * canvas_widget;
+  g_jack_view = create_view("Raw JACK", JACKDBUS_SERVICE, JACKDBUS_OBJECT);
 
-  graph_create(JACKDBUS_SERVICE, JACKDBUS_OBJECT, &g_jack_graph);
-  graph_canvas_create(1600 * 2, 1200 * 2, &g_jack_graph_canvas);
-  graph_canvas_attach(g_jack_graph_canvas, g_jack_graph);
-  graph_activate(g_jack_graph);
-
-  canvas_widget = canvas_get_widget(graph_canvas_get_canvas(g_jack_graph_canvas));
-
-  gtk_widget_show(canvas_widget);
-
-  gtk_container_add(GTK_CONTAINER(g_main_scrolledwin), canvas_widget);
+  gtk_container_add(GTK_CONTAINER(g_main_scrolledwin), g_jack_view->canvas_widget);
 
   //_canvas->scroll_to(static_cast<int>(_canvas->width()/2 - 320), static_cast<int>(_canvas->height()/2 - 240)); // FIXME: hardcoded
   //_main_scrolledwin->property_hadjustment().get_value()->set_step_increment(10);
@@ -879,13 +944,8 @@ void control_proxy_on_studio_appeared(void)
 
 void control_proxy_on_studio_disappeared(void)
 {
-  GtkWidget * canvas_widget;
-  canvas_widget = canvas_get_widget(graph_canvas_get_canvas(g_jack_graph_canvas));
-
-  gtk_container_remove(GTK_CONTAINER(g_main_scrolledwin), canvas_widget);
-  graph_canvas_detach(g_jack_graph_canvas);
-  graph_canvas_destroy(g_jack_graph_canvas);
-  graph_destroy(g_jack_graph);
+  gtk_container_remove(GTK_CONTAINER(g_main_scrolledwin), g_jack_view->canvas_widget);
+  destroy_view(g_jack_view);
 }
 
 int main(int argc, char** argv)
