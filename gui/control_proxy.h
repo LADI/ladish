@@ -5,7 +5,8 @@
  * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains stuff that is needed almost everywhere in the gladish
+ * This file contains interface to code that interfaces
+ * the ladishd Control object through D-Bus
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -24,10 +25,24 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef COMMON_H__15E63B7A_8350_4ABD_B04C_592158354949__INCLUDED
-#define COMMON_H__15E63B7A_8350_4ABD_B04C_592158354949__INCLUDED
+#ifndef CONTROL_PROXY_H__8BC89E98_FE1B_4831_8B89_1A48F676E019__INCLUDED
+#define CONTROL_PROXY_H__8BC89E98_FE1B_4831_8B89_1A48F676E019__INCLUDED
 
-#include "../common.h"
-#include "../common/debug.h"    /* log macros */
+#include "common.h"
+#include "../common/klist.h"
 
-#endif /* #ifndef COMMON_H__15E63B7A_8350_4ABD_B04C_592158354949__INCLUDED */
+struct loadable_studio
+{
+  struct list_head siblings;
+  char * name;
+};
+
+bool control_proxy_init(void);
+void control_proxy_uninit(void);
+void control_proxy_on_studio_appeared(void);
+void control_proxy_on_studio_disappeared(void);
+bool control_proxy_get_studio_list(struct list_head * studio_list);
+bool control_proxy_load_studio(const char * studio_name);
+bool control_proxy_exit(void);
+
+#endif /* #ifndef CONTROL_PROXY_H__8BC89E98_FE1B_4831_8B89_1A48F676E019__INCLUDED */

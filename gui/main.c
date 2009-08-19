@@ -31,6 +31,7 @@
 #include "graph_canvas.h"
 #include "../jack_proxy.h"
 #include "dbus_helpers.h"
+#include "control_proxy.h"
 
 #if 0
 class Patchage {
@@ -851,6 +852,14 @@ Patchage::is_canvas_empty()
 #endif
 #endif
 
+void control_proxy_on_studio_appeared(void)
+{
+}
+
+void control_proxy_on_studio_disappeared(void)
+{
+}
+
 graph_canvas_handle g_jack_graph_canvas;
 graph_handle g_jack_graph;
 
@@ -879,6 +888,11 @@ int main(int argc, char** argv)
 
   patchage_dbus_init();
 
+  if (!control_proxy_init())
+  {
+    return 1;
+  }
+
   graph_create(JACKDBUS_SERVICE, JACKDBUS_OBJECT, &g_jack_graph);
   graph_canvas_create(1600 * 2, 1200 * 2, &g_jack_graph_canvas);
   graph_canvas_attach(g_jack_graph_canvas, g_jack_graph);
@@ -906,6 +920,7 @@ int main(int argc, char** argv)
 
   gtk_main();
 
+  control_proxy_uninit();
   uninit_glade();
 
   return 0;

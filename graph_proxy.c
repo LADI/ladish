@@ -67,7 +67,7 @@ struct graph
   bool active;
 };
 
-DBusHandlerResult message_hook(DBusConnection *, DBusMessage *, void *);
+static DBusHandlerResult message_hook(DBusConnection *, DBusMessage *, void *);
 
 static void clear(struct graph * graph_ptr)
 {
@@ -562,6 +562,7 @@ graph_disconnect_ports(
   }
 }
 
+static
 DBusHandlerResult
 message_hook(
   DBusConnection * connection,

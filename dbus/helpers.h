@@ -28,6 +28,8 @@
 #ifndef HELPERS_H__6C2107A6_A5E3_4806_869B_4BE609535BA2__INCLUDED
 #define HELPERS_H__6C2107A6_A5E3_4806_869B_4BE609535BA2__INCLUDED
 
+#include <dbus/dbus.h>
+
 extern DBusConnection * g_dbus_connection;
 extern DBusError g_dbus_error;
 
@@ -36,6 +38,26 @@ bool dbus_add_dict_entry_uint32(DBusMessageIter * dict_iter_ptr, const char * ke
 bool dbus_add_dict_entry_bool(DBusMessageIter * dict_iter_ptr, const char * key, dbus_bool_t value);
 
 bool dbus_call_simple(const char * service, const char * object, const char * iface, const char * method, char * input_signature, ...);
+
+bool
+dbus_register_object_signal_handler(
+  DBusConnection * connection,
+  const char * service,
+  const char * object,
+  const char * iface,
+  const char * const * signals,
+  DBusHandleMessageFunction handler,
+  void * handler_data);
+
+bool
+dbus_unregister_object_signal_handler(
+  DBusConnection * connection,
+  const char * service,
+  const char * object,
+  const char * iface,
+  const char * const * signals,
+  DBusHandleMessageFunction handler,
+  void * handler_data);
 
 #define DBUS_CALL_DEFAULT_TIMEOUT 1000 // in milliseconds
 

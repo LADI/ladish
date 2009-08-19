@@ -231,3 +231,71 @@ fail:
   return ret;
 }
 
+static
+const char *
+compose_signal_match(
+  const char * service,
+  const char * object,
+  const char * iface,
+  const char * signal)
+{
+  static char rule[1024];
+  snprintf(rule, sizeof(rule), "type='signal',sender='%s',path='%s',interface='%s',member='%s'", service, object, iface, signal);
+  return rule;
+}
+
+bool
+dbus_register_object_signal_handler(
+  DBusConnection * connection,
+  const char * service,
+  const char * object,
+  const char * iface,
+  const char * const * signals,
+  DBusHandleMessageFunction handler,
+  void * handler_data)
+{
+  const char * const * signal;
+
+  for (signal = signals; *signal != NULL; signal++)
+  {
+    dbus_bus_add_match(connection, compose_signal_match(service, object, iface, *signal), &g_dbus_error);
+    if (dbus_error_is_set(&g_dbus_error))
+    {
+      lash_error("Failed to add D-Bus match rule: %s", g_dbus_error.message);
+      dbus_error_free(&g_dbus_error);
+      return false;
+    }
+  }
+
+  dbus_connection_add_filter(g_dbus_connection, handler, handler_data, NULL);
+
+  return true;
+}
+
+bool
+dbus_unregister_object_signal_handler(
+  DBusConnection * connection,
+  const char * service,
+  const char * object,
+  const char * iface,
+  const char * const * signals,
+  DBusHandleMessageFunction handler,
+  void * handler_data)
+{
+  const char * const * signal;
+
+  for (signal = signals; *signal != NULL; signal++)
+  {
+    dbus_bus_remove_match(connection, compose_signal_match(service, object, iface, *signal), &g_dbus_error);
+    if (dbus_error_is_set(&g_dbus_error))
+    {
+      lash_error("Failed to add D-Bus match rule: %s", g_dbus_error.message);
+      dbus_error_free(&g_dbus_error);
+      return false;
+    }
+  }
+
+  dbus_connection_remove_filter(g_dbus_connection, handler, handler_data);
+
+  return true;
+}

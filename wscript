@@ -278,6 +278,7 @@ def build(bld):
         'canvas.cpp',
         'graph_canvas.c',
         'glade.c',
+        'control_proxy.c',
         ]:
         gladish.source.append(os.path.join("gui", source))
 
