@@ -178,7 +178,8 @@ def build(bld):
         'control.c',
         'jack.c',
         'studio.c',
-        'catdup.c'
+        'catdup.c',
+        'patchbay.c',
         ]:
         daemon.source.append(os.path.join("daemon", source))
 

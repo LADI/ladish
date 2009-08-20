@@ -69,10 +69,13 @@ object_path_new(const char *name,
   va_start(argp, num_ifaces);
 
   iface_pptr = path->interfaces;
-  *iface_pptr = &g_dbus_interface_dtor_introspectable;
-  for (++iface_pptr;
-       (*iface_pptr = va_arg(argp, const interface_t *));
-       ++iface_pptr);
+  *iface_pptr++ = &g_dbus_interface_dtor_introspectable;
+  while (num_ifaces > 0)
+  {
+    *iface_pptr++ = va_arg(argp, const interface_t *);
+    num_ifaces--;
+  }
+  *iface_pptr = NULL;
 
   va_end(argp);
 

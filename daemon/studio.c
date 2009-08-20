@@ -26,6 +26,7 @@
 
 #include "common.h"
 #include "../jack_proxy.h"
+#include "patchbay.h"
 
 extern const interface_t g_interface_studio;
 
@@ -49,6 +50,8 @@ struct studio
   struct list_head jack_params; /* list of conf tree leaves */
 
   object_path_t * dbus_object;
+
+  struct patchbay_implementator patchbay_implementator;
 };
 
 #define JACK_CONF_MAX_ADDRESS_SIZE 1024
@@ -441,7 +444,7 @@ studio_activate(
 {
   object_path_t * object;
 
-  object = object_path_new(DBUS_BASE_PATH "/Studio", NULL, 1, &g_interface_studio, NULL);
+  object = object_path_new(DBUS_BASE_PATH "/Studio", studio, 2, &g_interface_studio, &g_interface_patchbay);
   if (object == NULL)
   {
     lash_error("object_path_new() failed");
