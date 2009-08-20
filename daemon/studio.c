@@ -27,6 +27,8 @@
 #include "common.h"
 #include "../jack_proxy.h"
 
+extern const interface_t g_interface_studio;
+
 struct studio
 {
   struct list_head all_connections;        /* All connections (studio guts and all rooms). Including superconnections. */
@@ -439,7 +441,7 @@ studio_activate(
 {
   object_path_t * object;
 
-  object = object_path_new(DBUS_BASE_PATH "/Studio", NULL, 0, NULL);
+  object = object_path_new(DBUS_BASE_PATH "/Studio", NULL, 1, &g_interface_studio, NULL);
   if (object == NULL)
   {
     lash_error("object_path_new() failed");
@@ -570,3 +572,25 @@ studio_fetch_jack_settings(
 
   return true;
 }
+
+METHODS_BEGIN
+METHODS_END
+
+SIGNAL_ARGS_BEGIN(RoomAppeared, "Room D-Bus object appeared")
+  SIGNAL_ARG_DESCRIBE("room_path", "s", "room object path")
+SIGNAL_ARGS_END
+
+SIGNAL_ARGS_BEGIN(RoomDisappeared, "Room D-Bus object disappeared")
+  SIGNAL_ARG_DESCRIBE("room_path", "s", "room object path")
+SIGNAL_ARGS_END
+
+SIGNALS_BEGIN
+  SIGNAL_DESCRIBE(RoomAppeared)
+  SIGNAL_DESCRIBE(RoomDisappeared)
+SIGNALS_END
+
+INTERFACE_BEGIN(g_interface_studio, DBUS_NAME_BASE ".Studio")
+  INTERFACE_DEFAULT_HANDLER
+  INTERFACE_EXPOSE_METHODS
+  INTERFACE_EXPOSE_SIGNALS
+INTERFACE_END
