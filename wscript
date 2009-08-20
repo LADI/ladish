@@ -175,7 +175,7 @@ def build(bld):
         'proctitle.c',
         'appdb.c',
         'procfs.c',
-        'dbus_iface_control.c',
+        'control.c',
         'jack.c',
         'studio.c',
         'catdup.c'

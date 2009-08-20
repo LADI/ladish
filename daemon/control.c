@@ -29,7 +29,7 @@
 
 #include "../dbus/interface.h"
 #include "../dbus/error.h"
-#include "dbus_iface_control.h"
+#include "control.h"
 
 #define INTERFACE_NAME DBUS_NAME_BASE ".Control"
 

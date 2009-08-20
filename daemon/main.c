@@ -36,7 +36,7 @@
 #include "proctitle.h"
 #include "loader.h"
 #include "sigsegv.h"
-#include "dbus_iface_control.h"
+#include "control.h"
 #include "jack.h"
 #include "studio.h"
 
