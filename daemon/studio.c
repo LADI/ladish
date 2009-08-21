@@ -32,6 +32,9 @@ extern const interface_t g_interface_studio;
 
 struct studio
 {
+  /* this must be first member of struct studio because object_path_new() assumes all interfaces have same context */
+  struct patchbay_implementator patchbay_impl;
+
   struct list_head all_connections;        /* All connections (studio guts and all rooms). Including superconnections. */
   struct list_head all_ports;              /* All ports (studio guts and all rooms) */
   struct list_head all_clients;            /* All clients (studio guts and all rooms) */
@@ -375,6 +378,18 @@ conf_callback(
 
 #undef context_ptr
 
+#define studio_ptr ((struct studio *)this)
+
+uint64_t
+studio_get_graph_version(
+  void * this)
+{
+  //lash_info("studio_get_graph_version() called");
+  return 1;
+}
+
+#undef studio_ptr
+
 bool
 studio_create(
   studio_handle * studio_handle_ptr)
@@ -389,6 +404,9 @@ studio_create(
     lash_error("malloc() failed to allocate struct studio");
     return false;
   }
+
+  studio_ptr->patchbay_impl.this = studio_ptr;
+  studio_ptr->patchbay_impl.get_graph_version = studio_get_graph_version;
 
   INIT_LIST_HEAD(&studio_ptr->all_connections);
   INIT_LIST_HEAD(&studio_ptr->all_ports);

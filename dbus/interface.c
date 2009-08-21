@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -31,6 +31,7 @@
 
 #include "interface.h"
 #include "error.h"
+#include "object_path.h"
 
 /*
  * Execute a method's function if the method specified in the method call
@@ -50,6 +51,7 @@ interface_default_handler(const interface_t *interface,
     if (strcmp(call->method_name, ptr->name) == 0) {
       if (ptr->handler) {
         call->interface = interface;
+        call->context = ((object_path_t *)call->context)->context;
         ptr->handler(call);
 
         /* If the method handler didn't construct a return

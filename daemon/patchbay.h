@@ -29,7 +29,9 @@
 
 struct patchbay_implementator
 {
-  void * implementator_ptr;
+  void * this;
+
+  uint64_t (* get_graph_version)(void * this);
 };
 
 extern const interface_t g_interface_patchbay;

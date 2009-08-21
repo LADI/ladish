@@ -178,12 +178,16 @@ object_path_handler(DBusConnection *connection,
   call.reply = NULL;
 
   /* Check if there's an interface specified for this method call. */
-  if ((interface_name = dbus_message_get_interface(message))) {
+  if ((interface_name = dbus_message_get_interface(message)))
+  {
     for (iface_pptr = (const interface_t **) ((object_path_t *) data)->interfaces;
          iface_pptr && *iface_pptr;
-         ++iface_pptr) {
-      if (strcmp(interface_name, (*iface_pptr)->name) == 0) {
-        if ((*iface_pptr)->handler(*iface_pptr, &call)) {
+         ++iface_pptr)
+    {
+      if (strcmp(interface_name, (*iface_pptr)->name) == 0)
+      {
+        if ((*iface_pptr)->handler(*iface_pptr, &call))
+        {
           goto send_return;
         }
 

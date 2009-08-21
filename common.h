@@ -31,6 +31,7 @@
 
 #include <stdbool.h>            /* C99 bool */
 #include <stdint.h>             /* fixed bit size ints */
+#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
