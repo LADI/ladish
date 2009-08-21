@@ -33,6 +33,34 @@
 
 static void get_all_ports(method_call_t * call_ptr)
 {
+  DBusMessageIter iter, sub_iter;
+
+  call_ptr->reply = dbus_message_new_method_return(call_ptr->message);
+  if (call_ptr->reply == NULL)
+  {
+    goto fail;
+  }
+
+  dbus_message_iter_init_append(call_ptr->reply, &iter);
+
+  if (!dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "s", &sub_iter))
+  {
+    goto fail_unref;
+  }
+
+  if (!dbus_message_iter_close_container(&iter, &sub_iter))
+  {
+    goto fail_unref;
+  }
+
+  return;
+
+fail_unref:
+  dbus_message_unref(call_ptr->reply);
+  call_ptr->reply = NULL;
+
+fail:
+  lash_error("Ran out of memory trying to construct method return");
 }
 
 static void get_graph(method_call_t * call_ptr)
@@ -280,26 +308,33 @@ exit:
 
 static void connect_ports_by_name(method_call_t * call_ptr)
 {
+  method_return_new_void(call_ptr);
 }
 
 static void connect_ports_by_id(method_call_t * call_ptr)
 {
+  method_return_new_void(call_ptr);
 }
 
 static void disconnect_ports_by_name(method_call_t * call_ptr)
 {
+  method_return_new_void(call_ptr);
 }
 
 static void disconnect_ports_by_id(method_call_t * call_ptr)
 {
+  method_return_new_void(call_ptr);
 }
 
 static void disconnect_ports_by_connection_id(method_call_t * call_ptr)
 {
+  method_return_new_void(call_ptr);
 }
 
 static void get_client_pid(method_call_t * call_ptr)
 {
+  int64_t pid = 0;
+  method_return_new_single(call_ptr, DBUS_TYPE_INT64, &pid);
 }
 
 METHOD_ARGS_BEGIN(GetAllPorts, "Get all ports")
