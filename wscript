@@ -271,7 +271,7 @@ def build(bld):
         #'lash_proxy.cpp',
         #'load_projects_dialog.cpp',
         #'project.cpp',
-        #'project_list.cpp',
+        'world_tree.c',
         #'project_properties.cpp',
         #'session.cpp',
         #'a2j_proxy.cpp',

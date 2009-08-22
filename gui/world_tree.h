@@ -2,10 +2,10 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains interface of the project_list class
+ * This file contains the interface of the world tree widget
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -24,26 +24,17 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef PROJECT_LIST_HPP__D786489B_E400_4E92_85C7_2BAE606DE56D__INCLUDED
-#define PROJECT_LIST_HPP__D786489B_E400_4E92_85C7_2BAE606DE56D__INCLUDED
+#ifndef WORLD_TREE_H__D786489B_E400_4E92_85C7_2BAE606DE56D__INCLUDED
+#define WORLD_TREE_H__D786489B_E400_4E92_85C7_2BAE606DE56D__INCLUDED
 
-struct project_list_impl;
-class Patchage;
-class session;
+#include "../graph_proxy.h"
 
-class project_list
-{
-public:
-  project_list(
-    Patchage* app,
-    session * session_ptr);
+void world_tree_init(void);
 
-  ~project_list();
+void world_tree_add_studio(graph_handle graph);
+void world_tree_remove_studio(graph_handle graph);
 
-  void set_lash_availability(bool lash_active);
+void world_tree_add_jack(graph_handle graph);
+void world_tree_remove_jack(graph_handle graph);
 
-private:
-  project_list_impl * _impl_ptr;
-};
-
-#endif // #ifndef PROJECT_LIST_HPP__D786489B_E400_4E92_85C7_2BAE606DE56D__INCLUDED
+#endif // #ifndef WORLD_TREE_H__D786489B_E400_4E92_85C7_2BAE606DE56D__INCLUDED

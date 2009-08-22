@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the project_list class
@@ -25,7 +25,9 @@
  */
 
 #include "common.h"
+#include "world_tree.h"
 
+#if 0
 #include <iostream>
 #include <gtkmm.h>
 #include <libglademm/xml.h>
@@ -373,4 +375,25 @@ project_list::set_lash_availability(
   bool lash_active)
 {
   _impl_ptr->_widget->set_sensitive(lash_active);
+}
+#endif
+
+void world_tree_init(void)
+{
+}
+
+void world_tree_add_studio(graph_handle graph)
+{
+}
+
+void world_tree_remove_studio(graph_handle graph)
+{
+}
+
+void world_tree_add_jack(graph_handle graph)
+{
+}
+
+void world_tree_remove_jack(graph_handle graph)
+{
 }
