@@ -5,6 +5,8 @@
   <widget class="GtkWindow" id="main_win">
     <property name="border_width">1</property>
     <property name="title" translatable="yes">LADI Session Handler</property>
+    <property name="default_width">70</property>
+    <property name="default_height">400</property>
     <child>
       <widget class="GtkVBox" id="main_vbox">
         <property name="visible">True</property>
@@ -526,6 +528,17 @@ The bar represents the percentage of available time used for audio processing (i
           </widget>
           <packing>
             <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <widget class="GtkStatusbar" id="statusbar">
+            <property name="visible">True</property>
+            <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+            <property name="spacing">2</property>
+          </widget>
+          <packing>
+            <property name="expand">False</property>
+            <property name="position">3</property>
           </packing>
         </child>
       </widget>
