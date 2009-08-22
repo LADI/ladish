@@ -381,8 +381,8 @@ project_list::set_lash_availability(
 
 enum
 {
-  COL_NAME = 0,
-  COL_GRAPH,
+  COL_VIEW = 0,
+  COL_NAME,
   NUM_COLS
 };
 
@@ -404,31 +404,29 @@ void world_tree_init(void)
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_tree_view_column_add_attribute(col, renderer, "text", COL_NAME);
 
-  g_treestore = gtk_tree_store_new(NUM_COLS, G_TYPE_STRING, G_TYPE_POINTER);
+  g_treestore = gtk_tree_store_new(NUM_COLS, G_TYPE_POINTER, G_TYPE_STRING);
   gtk_tree_view_set_model(GTK_TREE_VIEW(g_world_tree_widget), GTK_TREE_MODEL(g_treestore));
 }
 
-void world_tree_add(graph_handle graph, const char * name)
+void world_tree_add(graph_view_handle view)
 {
   GtkTreeIter iter;
 
   gtk_tree_store_append(g_treestore, &iter, NULL);
-  gtk_tree_store_set(g_treestore, &iter, COL_NAME, name, COL_GRAPH, graph, -1);
+  gtk_tree_store_set(g_treestore, &iter, COL_VIEW, view, COL_NAME, get_view_name(view), -1);
 }
 
-void world_tree_remove(graph_handle graph)
+void world_tree_remove(graph_view_handle view)
 {
   GtkTreeIter iter;
-  gchar * name;
-  graph_handle graph2;
+  graph_view_handle view2;
 
   if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(g_treestore), &iter))
   {
     do
     {
-      gtk_tree_model_get(GTK_TREE_MODEL(g_treestore), &iter, COL_NAME, &name, COL_GRAPH, &graph2, -1);
-      //lash_info("'%s' %p", name, graph2);
-      if (graph == graph2)
+      gtk_tree_model_get(GTK_TREE_MODEL(g_treestore), &iter, COL_VIEW, &view2, -1);
+      if (view == view2)
       {
         gtk_tree_store_remove(g_treestore, &iter);
         return;

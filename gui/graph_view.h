@@ -35,5 +35,6 @@ void view_init(void);
 bool create_view(const char * name, const char * service, const char * object, graph_view_handle * handle_ptr);
 void destroy_view(graph_view_handle view);
 void activate_view(graph_view_handle view);
+const char * get_view_name(graph_view_handle view);
 
 #endif /* #ifndef GRAPH_VIEW_H__05B5CE46_5239_43F1_9F31_79F13EBF0DFA__INCLUDED */

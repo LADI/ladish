@@ -92,7 +92,7 @@ bool create_view(const char * name, const char * service, const char * object, g
 
   gtk_widget_show(view_ptr->canvas_widget);
 
-  world_tree_add(view_ptr->graph, name);
+  world_tree_add((graph_view_handle)view_ptr);
 
   *handle_ptr = (graph_view_handle)view_ptr;
 
@@ -163,7 +163,7 @@ void destroy_view(graph_view_handle view)
 
   detach_canvas(view_ptr);
 
-  world_tree_remove(view_ptr->graph);
+  world_tree_remove(view);
 
   graph_canvas_detach(view_ptr->graph_canvas);
   graph_canvas_destroy(view_ptr->graph_canvas);
@@ -175,4 +175,9 @@ void destroy_view(graph_view_handle view)
 void activate_view(graph_view_handle view)
 {
   activate_view_internal(view_ptr);
+}
+
+const char * get_view_name(graph_view_handle view)
+{
+  return view_ptr->name;
 }

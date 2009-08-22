@@ -27,11 +27,11 @@
 #ifndef WORLD_TREE_H__D786489B_E400_4E92_85C7_2BAE606DE56D__INCLUDED
 #define WORLD_TREE_H__D786489B_E400_4E92_85C7_2BAE606DE56D__INCLUDED
 
-#include "../graph_proxy.h"
+#include "graph_view.h"
 
 void world_tree_init(void);
 
-void world_tree_add(graph_handle graph, const char * name);
-void world_tree_remove(graph_handle graph);
+void world_tree_add(graph_view_handle view);
+void world_tree_remove(graph_view_handle view);
 
 #endif // #ifndef WORLD_TREE_H__D786489B_E400_4E92_85C7_2BAE606DE56D__INCLUDED
