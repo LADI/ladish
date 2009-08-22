@@ -866,28 +866,50 @@ void control_proxy_on_studio_appeared(void)
     return;
   }
 
+  activate_view(g_studio_view);
+}
+
+void control_proxy_on_studio_disappeared(void)
+{
+  if (g_studio_view != NULL)
+  {
+    destroy_view(g_studio_view);
+    g_jack_view = NULL;
+  }
+}
+
+void jack_started(void)
+{
+  lash_info("JACK started");
+}
+
+void jack_stopped(void)
+{
+  lash_info("JACK stopped");
+}
+
+void jack_appeared(void)
+{
+  lash_info("JACK appeared");
+
   if (!create_view("Raw JACK", JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, &g_jack_view))
   {
     lash_error("create_view() failed for jack");
     return;
   }
-
-  activate_view(g_jack_view);
 }
 
-void control_proxy_on_studio_disappeared(void)
+void jack_disappeared(void)
 {
+  lash_info("JACK disappeared");
+
   if (g_jack_view != NULL)
   {
     destroy_view(g_jack_view);
     g_jack_view = NULL;
   }
 
-  if (g_studio_view != NULL)
-  {
-    destroy_view(g_studio_view);
-    g_jack_view = NULL;
-  }
+  activate_view(g_jack_view);
 }
 
 int main(int argc, char** argv)
@@ -914,6 +936,11 @@ int main(int argc, char** argv)
   view_init();
 
   patchage_dbus_init();
+
+  if (!jack_proxy_init(jack_started, jack_stopped, jack_appeared, jack_disappeared))
+  {
+    return 1;
+  }
 
   if (!control_proxy_init())
   {
