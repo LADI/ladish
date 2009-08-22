@@ -583,7 +583,7 @@ bool jack_proxy_get_xruns(uint32_t * xruns_ptr)
 
 bool jack_proxy_get_dsp_load(double * dsp_load_ptr)
 {
-  return dbus_call_simple(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONTROL, "GetXruns", "", "d", dsp_load_ptr);
+  return dbus_call_simple(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONTROL, "GetLoad", "", "d", dsp_load_ptr);
 }
 
 bool jack_proxy_get_buffer_size(uint32_t * size_ptr)
@@ -593,10 +593,10 @@ bool jack_proxy_get_buffer_size(uint32_t * size_ptr)
 
 bool jack_proxy_set_buffer_size(uint32_t size)
 {
-  return dbus_call_simple(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONTROL, "GetBufferSize", "u", &size, "");
+  return dbus_call_simple(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONTROL, "SetBufferSize", "u", &size, "");
 }
 
 bool jack_proxy_reset_xruns(void)
 {
-  return dbus_call_simple(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONTROL, "GetBufferSize", "", "");
+  return dbus_call_simple(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONTROL, "ResetXruns", "", "");
 }
