@@ -29,7 +29,7 @@
 #include "../dbus/helpers.h"
 #include "../dbus_constants.h"
 
-const char * g_signals[] =
+static const char * g_signals[] =
 {
   "StudioAppeared",
   "StudioDisappeared",

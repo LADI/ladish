@@ -68,6 +68,17 @@ struct graph
 
 static DBusHandlerResult message_hook(DBusConnection *, DBusMessage *, void *);
 
+static const char * g_signals[] =
+{
+  "ClientAppeared",
+  "ClientDisappeared",
+  "PortAppeared",
+  "PortDisappeared",
+  "PortsConnected",
+  "PortsDisconnected",
+  NULL
+};
+
 static void clear(struct graph * graph_ptr)
 {
   struct list_head * node_ptr;
@@ -357,7 +368,6 @@ unref:
   dbus_message_unref(reply_ptr);
 }
 
-
 bool
 graph_create(
   const char * service,
@@ -414,6 +424,18 @@ graph_destroy(
 {
   assert(list_empty(&graph_ptr->monitors));
 
+  if (graph_ptr->active)
+  {
+    dbus_unregister_object_signal_handler(
+      g_dbus_connection,
+      graph_ptr->service,
+      graph_ptr->object,
+      JACKDBUS_IFACE_PATCHBAY,
+      g_signals,
+      message_hook,
+      graph_ptr);
+  }
+
   free(graph_ptr->object);
   free(graph_ptr->service);
   free(graph_ptr);
@@ -423,18 +445,6 @@ bool
 graph_activate(
   graph_handle graph)
 {
-  char rule[1024];
-  const char ** signal;
-
-  const char * patchbay_signals[] = {
-    "ClientAppeared",
-    "ClientDisappeared",
-    "PortAppeared",
-    "PortDisappeared",
-    "PortsConnected",
-    "PortsDisconnected",
-    NULL};
-
   if (list_empty(&graph_ptr->monitors))
   {
     lash_error("no monitors to activate");
@@ -447,26 +457,17 @@ graph_activate(
     return false;
   }
 
-  for (signal = patchbay_signals; *signal != NULL; signal++)
+  if (!dbus_register_object_signal_handler(
+        g_dbus_connection,
+        graph_ptr->service,
+        graph_ptr->object,
+        JACKDBUS_IFACE_PATCHBAY,
+        g_signals,
+        message_hook,
+        graph_ptr))
   {
-    snprintf(
-      rule,
-      sizeof(rule),
-      "type='signal',sender='%s',path='%s',interface='" JACKDBUS_IFACE_PATCHBAY "',member='%s'",
-      graph_ptr->service,
-      graph_ptr->object,
-      *signal);
-
-    dbus_bus_add_match(g_dbus_connection, rule, &g_dbus_error);
-    if (dbus_error_is_set(&g_dbus_error))
-    {
-      lash_error("Failed to add D-Bus match rule: %s", g_dbus_error.message);
-      dbus_error_free(&g_dbus_error);
-      return false;
-    }
+    return false;
   }
-
-  dbus_connection_add_filter(g_dbus_connection, message_hook, graph_ptr, NULL);
 
   graph_ptr->active = true;
 
