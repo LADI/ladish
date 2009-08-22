@@ -81,20 +81,25 @@ bool control_proxy_init(void)
 {
   bool studio_present;
 
-  if (!dbus_register_object_signal_handler(g_dbus_connection, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, g_signals, message_hook, NULL))
-  {
-    return false;
-  }
-
   if (!control_proxy_is_studio_loaded(&studio_present))
   {
-    dbus_unregister_object_signal_handler(g_dbus_connection, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, g_signals, message_hook, NULL);
     return false;
   }
 
   if (studio_present)
   {
+    lash_info("Initial studio appear");
     control_proxy_on_studio_appeared();
+  }
+
+  if (!dbus_register_object_signal_handler(g_dbus_connection, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, g_signals, message_hook, NULL))
+  {
+    if (studio_present)
+    {
+      control_proxy_on_studio_disappeared();
+    }
+
+    return false;
   }
 
   return true;
