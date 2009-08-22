@@ -301,6 +301,7 @@
                         <child>
                           <widget class="GtkComboBoxEntry" id="buffer_size_combo">
                             <property name="visible">True</property>
+                            <property name="sensitive">False</property>
                             <property name="tooltip" translatable="yes">Jack latency</property>
                             <property name="border_width">1</property>
                             <property name="items" translatable="yes">32 frames
@@ -312,7 +313,9 @@
 2048 frames
 4096 frames</property>
                             <child internal-child="entry">
-                              <widget class="GtkEntry" id="comboboxentry-entry1">
+                              <widget class="GtkEntry" id="comboboxentry">
+                                <property name="sensitive">True</property>
+                                <property name="editable">False</property>
                               </widget>
                             </child>
                           </widget>
@@ -364,8 +367,9 @@
               </packing>
             </child>
             <child>
-              <widget class="GtkToolButton" id="clear_load_but">
+              <widget class="GtkToolButton" id="clear_load_button">
                 <property name="visible">True</property>
+                <property name="sensitive">False</property>
                 <property name="tooltip" translatable="yes">Clear the dropout indicator</property>
                 <property name="stock_id">gtk-clear</property>
               </widget>
@@ -381,13 +385,13 @@
                     <property name="visible">True</property>
                     <property name="yscale">0</property>
                     <child>
-                      <widget class="GtkProgressBar" id="main_xrun_progress">
+                      <widget class="GtkProgressBar" id="xrun_progress_bar">
                         <property name="visible">True</property>
                         <property name="tooltip" translatable="yes">Drouput (XRun) Indicator
 
 The bar represents the percentage of available time used for audio processing (i.e. the DSP load).  If the bar reaches 100%, a dropout will occur.</property>
                         <property name="pulse_step">0.10000000149</property>
-                        <property name="text" translatable="yes">0 Dropouts</property>
+                        <property name="text" translatable="yes">? Dropouts</property>
                       </widget>
                     </child>
                   </widget>

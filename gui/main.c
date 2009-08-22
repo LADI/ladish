@@ -26,6 +26,9 @@
  */
 
 #include "common.h"
+
+#include <math.h>
+
 #include "glade.h"
 #include "canvas.h"
 #include "graph_canvas.h"
@@ -36,6 +39,14 @@
 #include "world_tree.h"
 #include "graph_view.h"
 #include "../catdup.h"
+
+GtkWidget * g_main_win;
+GtkWidget * g_clear_load_button;
+GtkWidget * g_xrun_progress_bar;
+GtkWidget * g_buffer_size_combo;
+
+graph_view_handle g_jack_view = NULL;
+graph_view_handle g_studio_view = NULL;
 
 #if 0
 static void
@@ -64,21 +75,54 @@ gtkmm_set_width_for_given_text (Gtk::Widget &w, const gchar *text,
   w.set_size_request(width + hpadding, old_height);//height + vpadding);
 }
 
-void
-update_toolbar()
+#endif
+
+static void set_buffer_size_combo_width(void)
 {
-  bool started;
+  //gtkmm_set_width_for_given_text(*_buffer_size_combo, "4096 frames", 40);
+}
 
-  started = _jack->is_started();
+static void buffer_size_clear()
+{
+  gtk_entry_set_text(GTK_ENTRY(get_glade_widget("comboboxentry")), "");
+}
 
-  _buffer_size_combo->set_sensitive(started);
+static void buffer_size_set(uint32_t size)
+{
+  gtk_combo_box_set_active(GTK_COMBO_BOX(g_buffer_size_combo), (int)log2f(size) - 5);
+}
 
-  if (started)
+#if 0
+
+void
+buffer_size_changed()
+{
+  const int selected = _buffer_size_combo->get_active_row_number();
+
+  if (selected == -1)
   {
-    _buffer_size_combo->set_active((int)log2f(_jack->buffer_size()) - 5);
+    update_toolbar();
+  }
+  else
+  {
+    uint32_t buffer_size = 1 << (selected + 5);
+
+    // this check is temporal workaround for jack bug
+    // we skip setting buffer size if it same as acutal one
+    // proper place for such check is in jack
+    if (_jack->buffer_size() != buffer_size)
+    {
+      if (!_jack->set_buffer_size(buffer_size))
+      {
+        update_toolbar(); // reset combo box to actual value
+      }
+    }
   }
 }
 
+#endif
+
+#if 0
 void
 update_load()
 {
@@ -111,53 +155,7 @@ clear_load()
   _jack->reset_xruns();
   _max_dsp_load = 0.0;
 }
-
-void
-jack_status_changed(
-  bool started)
-{
-  update_toolbar();
-
-  _menu_jack_start->set_sensitive(!started);
-  _menu_jack_stop->set_sensitive(started);
-  _clear_load_but->set_sensitive(started);
-  if (!started)
-  {
-    _main_xrun_progress->set_fraction(0.0);
-  }
-}
-
-void
-buffer_size_changed()
-{
-  const int selected = _buffer_size_combo->get_active_row_number();
-
-  if (selected == -1)
-  {
-    update_toolbar();
-  }
-  else
-  {
-    uint32_t buffer_size = 1 << (selected+5);
-  
-    // this check is temporal workaround for jack bug
-    // we skip setting buffer size if it same as acutal one
-    // proper place for such check is in jack
-    if (_jack->buffer_size() != buffer_size)
-    {
-      if (!_jack->set_buffer_size(buffer_size))
-      {
-        update_toolbar(); // reset combo box to actual value
-      }
-    }
-  }
-}
-
 #endif
-
-GtkWidget * g_main_win;
-graph_view_handle g_jack_view = NULL;
-graph_view_handle g_studio_view = NULL;
 
 void control_proxy_on_studio_appeared(void)
 {
@@ -179,12 +177,32 @@ void control_proxy_on_studio_disappeared(void)
 
 void jack_started(void)
 {
+  uint32_t size;
+
   lash_info("JACK started");
+
+  gtk_widget_set_sensitive(g_buffer_size_combo, true);
+
+  if (jack_proxy_get_buffer_size(&size))
+  {
+    buffer_size_set(size);
+  }
+  else
+  {
+    lash_error("jack_proxy_get_buffer_size() failed.");
+  }
+
+  gtk_widget_set_sensitive(g_clear_load_button, true);
 }
 
 void jack_stopped(void)
 {
   lash_info("JACK stopped");
+
+  gtk_widget_set_sensitive(g_buffer_size_combo, false);
+  buffer_size_clear();
+  gtk_widget_set_sensitive(g_clear_load_button, false);
+  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_xrun_progress_bar), 0.0);
 }
 
 void jack_appeared(void)
@@ -234,6 +252,9 @@ int main(int argc, char** argv)
   }
 
   g_main_win = get_glade_widget("main_win");
+  g_clear_load_button = get_glade_widget("clear_load_button");
+  g_xrun_progress_bar = get_glade_widget("xrun_progress_bar");
+  g_buffer_size_combo = get_glade_widget("buffer_size_combo");
 
   world_tree_init();
   view_init();
@@ -250,7 +271,7 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  //gtkmm_set_width_for_given_text(*_buffer_size_combo, "4096 frames", 40);
+  set_buffer_size_combo_width();
 
   g_signal_connect(G_OBJECT(g_main_win), "destroy", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(G_OBJECT(get_glade_widget("menu_file_quit")), "activate", G_CALLBACK(gtk_main_quit), NULL);
