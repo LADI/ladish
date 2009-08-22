@@ -35,6 +35,7 @@
 #include "../dbus_constants.h"
 #include "world_tree.h"
 #include "graph_view.h"
+#include "../catdup.h"
 
 #if 0
 class Patchage {
@@ -855,6 +856,7 @@ Patchage::is_canvas_empty()
 #endif
 #endif
 
+GtkWidget * g_main_win;
 graph_view_handle g_jack_view = NULL;
 graph_view_handle g_studio_view = NULL;
 
@@ -908,10 +910,17 @@ void jack_disappeared(void)
   }
 }
 
+void
+set_main_window_title(
+  graph_view_handle view)
+{
+  char * title = catdup(get_view_name(view), " - LADI Session Handler");
+  gtk_window_set_title(GTK_WINDOW(g_main_win), title);
+  free(title);
+}
+
 int main(int argc, char** argv)
 {
-  GtkWidget * main_win;
-
   gtk_init(&argc, &argv);
 
   if (!canvas_init())
@@ -925,8 +934,7 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  /* Obtain widgets that we need */
-  main_win = get_glade_widget("main_win");
+  g_main_win = get_glade_widget("main_win");
 
   world_tree_init();
   view_init();
@@ -945,10 +953,10 @@ int main(int argc, char** argv)
 
   //gtkmm_set_width_for_given_text(*_buffer_size_combo, "4096 frames", 40);
 
-  g_signal_connect(G_OBJECT(main_win), "destroy", G_CALLBACK(gtk_main_quit), NULL);
+  g_signal_connect(G_OBJECT(g_main_win), "destroy", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(G_OBJECT(get_glade_widget("menu_file_quit")), "activate", G_CALLBACK(gtk_main_quit), NULL);
 
-  gtk_widget_show(main_win);
+  gtk_widget_show(g_main_win);
 
   //_about_win->set_transient_for(*_main_win);
 

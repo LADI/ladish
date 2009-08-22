@@ -37,4 +37,7 @@ void destroy_view(graph_view_handle view);
 void activate_view(graph_view_handle view);
 const char * get_view_name(graph_view_handle view);
 
+/* not very good place for this prototype, because it is not implemented in graph_view.c */
+void set_main_window_title(graph_view_handle view);
+
 #endif /* #ifndef GRAPH_VIEW_H__05B5CE46_5239_43F1_9F31_79F13EBF0DFA__INCLUDED */

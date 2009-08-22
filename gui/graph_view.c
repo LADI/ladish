@@ -170,6 +170,7 @@ void destroy_view(graph_view_handle view)
 void activate_view(graph_view_handle view)
 {
   attach_canvas(view_ptr);
+  set_main_window_title(view);
 }
 
 const char * get_view_name(graph_view_handle view)
