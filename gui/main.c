@@ -44,6 +44,11 @@ GtkWidget * g_main_win;
 GtkWidget * g_clear_load_button;
 GtkWidget * g_xrun_progress_bar;
 GtkWidget * g_buffer_size_combo;
+GtkWidget * g_menu_item_save_studio;
+GtkWidget * g_menu_item_create_room;
+GtkWidget * g_menu_item_destroy_room;
+GtkWidget * g_menu_item_load_project;
+GtkWidget * g_menu_item_start_app;
 
 graph_view_handle g_jack_view = NULL;
 graph_view_handle g_studio_view = NULL;
@@ -164,6 +169,11 @@ static void arrange(void)
   }
 }
 
+static void save_studio(void)
+{
+  lash_info("save studio request");
+}
+
 static gboolean poll_jack(gpointer data)
 {
   update_load();
@@ -179,10 +189,22 @@ void control_proxy_on_studio_appeared(void)
     lash_error("create_view() failed for studio");
     return;
   }
+
+  gtk_widget_set_sensitive(g_menu_item_save_studio, true);
+  gtk_widget_set_sensitive(g_menu_item_create_room, true);
+  gtk_widget_set_sensitive(g_menu_item_destroy_room, true);
+  gtk_widget_set_sensitive(g_menu_item_load_project, true);
+  gtk_widget_set_sensitive(g_menu_item_start_app, true);
 }
 
 void control_proxy_on_studio_disappeared(void)
 {
+  gtk_widget_set_sensitive(g_menu_item_save_studio, false);
+  gtk_widget_set_sensitive(g_menu_item_create_room, false);
+  gtk_widget_set_sensitive(g_menu_item_destroy_room, false);
+  gtk_widget_set_sensitive(g_menu_item_load_project, false);
+  gtk_widget_set_sensitive(g_menu_item_start_app, false);
+
   if (g_studio_view != NULL)
   {
     destroy_view(g_studio_view);
@@ -262,6 +284,11 @@ int main(int argc, char** argv)
   g_clear_load_button = get_glade_widget("clear_load_button");
   g_xrun_progress_bar = get_glade_widget("xrun_progress_bar");
   g_buffer_size_combo = get_glade_widget("buffer_size_combo");
+  g_menu_item_save_studio = get_glade_widget("menu_item_save_studio");
+  g_menu_item_create_room = get_glade_widget("menu_item_create_room");
+  g_menu_item_destroy_room = get_glade_widget("menu_item_destroy_room");
+  g_menu_item_load_project = get_glade_widget("menu_item_load_project");
+  g_menu_item_start_app = get_glade_widget("menu_item_start_app");
 
   world_tree_init();
   view_init();
@@ -285,6 +312,7 @@ int main(int argc, char** argv)
   g_signal_connect(G_OBJECT(g_buffer_size_combo), "changed", G_CALLBACK(buffer_size_change_request), NULL);
   g_signal_connect(G_OBJECT(g_clear_load_button), "clicked", G_CALLBACK(clear_load), NULL);
   g_signal_connect(G_OBJECT(get_glade_widget("menu_item_view_arrange")), "activate", G_CALLBACK(arrange), NULL);
+  g_signal_connect(G_OBJECT(g_menu_item_save_studio), "activate", G_CALLBACK(save_studio), NULL);
 
   gtk_widget_show(g_main_win);
 

@@ -39,6 +39,7 @@
                     <child>
                       <widget class="GtkImageMenuItem" id="menu_item_save_studio">
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="label" translatable="yes">_Save Studio</property>
                         <property name="use_underline">True</property>
                         <accelerator key="S" modifiers="GDK_CONTROL_MASK" signal="activate"/>
@@ -54,6 +55,7 @@
                     <child>
                       <widget class="GtkImageMenuItem" id="menu_item_create_room">
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="label" translatable="yes">_Create Room</property>
                         <property name="use_underline">True</property>
                         <accelerator key="C" modifiers="GDK_CONTROL_MASK" signal="activate"/>
@@ -94,6 +96,7 @@
                     <child>
                       <widget class="GtkImageMenuItem" id="menu_item_destroy_room">
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="label" translatable="yes">_Destroy Room</property>
                         <property name="use_underline">True</property>
                         <accelerator key="D" modifiers="GDK_CONTROL_MASK" signal="activate"/>
@@ -109,6 +112,7 @@
                     <child>
                       <widget class="GtkImageMenuItem" id="menu_item_load_project">
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="label" translatable="yes">_Load Project...</property>
                         <property name="use_underline">True</property>
                         <accelerator key="L" modifiers="GDK_CONTROL_MASK" signal="activate"/>
@@ -124,6 +128,7 @@
                     <child>
                       <widget class="GtkImageMenuItem" id="menu_item_start_app">
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="label" translatable="yes">Start Application</property>
                         <property name="use_underline">True</property>
                         <accelerator key="R" modifiers="GDK_CONTROL_MASK" signal="activate"/>
