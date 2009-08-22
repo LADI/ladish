@@ -5,7 +5,7 @@
  * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains interface to studio object helpers
+ * This file contains interface of the studio singleton object
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -27,36 +27,9 @@
 #ifndef STUDIO_H__0BEDE85E_4FB3_4D74_BC08_C373A22409C0__INCLUDED
 #define STUDIO_H__0BEDE85E_4FB3_4D74_BC08_C373A22409C0__INCLUDED
 
-typedef struct { int unused; } * studio_handle;
-
-bool
-studio_create(
-  studio_handle * studio_ptr);
-
-void
-studio_destroy(
-  studio_handle studio);
-
-bool
-studio_activate(
-  studio_handle studio);
-
-bool
-studio_fetch_jack_settings(
-  studio_handle studio);
-
-bool
-studio_is_persisted(
-  studio_handle studio);
-
-bool
-studio_save(
-  studio_handle studio,
-  const char * file_path);
-
-bool
-studio_load(
-  studio_handle studio,
-  const char * file_path);
+bool studio_init(void);
+void studio_uninit(void);
+void studio_run(void);
+bool studio_is_loaded(void);
 
 #endif /* #ifndef STUDIO_H__0BEDE85E_4FB3_4D74_BC08_C373A22409C0__INCLUDED */

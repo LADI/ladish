@@ -39,7 +39,7 @@ static void ladish_is_studio_loaded(method_call_t * call_ptr)
   DBusMessageIter iter;
   dbus_bool_t is_loaded;
 
-  is_loaded = g_studio != NULL;
+  is_loaded = studio_is_loaded();
 
   call_ptr->reply = dbus_message_new_method_return(call_ptr->message);
   if (call_ptr->reply == NULL)

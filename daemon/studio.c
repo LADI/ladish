@@ -5,7 +5,7 @@
  * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains studio object helpers
+ * This file contains implementation of the studio singleton object
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -28,6 +28,7 @@
 #include "../jack_proxy.h"
 #include "patchbay.h"
 #include "../dbus_constants.h"
+#include "control.h"
 
 extern const interface_t g_interface_studio;
 
@@ -48,14 +49,23 @@ struct studio
 
   bool persisted:1;             /* Studio has on-disk representation, i.e. can be reloaded from disk */
   bool modified:1;              /* Studio needs saving */
-  bool jack_conf_stable:1;      /* JACK server configuration obtained successfully */
+  bool jack_conf_valid:1;       /* JACK server configuration obtained successfully */
 
   struct list_head jack_conf;   /* root of the conf tree */
   struct list_head jack_params; /* list of conf tree leaves */
 
   object_path_t * dbus_object;
 
-  struct patchbay_implementator patchbay_implementator;
+  struct list_head event_queue;
+} g_studio;
+
+#define EVENT_JACK_START   0
+#define EVENT_JACK_STOP    1
+
+struct event
+{
+  struct list_head siblings;
+  unsigned int type;
 };
 
 #define JACK_CONF_MAX_ADDRESS_SIZE 1024
@@ -83,7 +93,6 @@ struct conf_callback_context
 {
   char address[JACK_CONF_MAX_ADDRESS_SIZE];
   struct list_head * container_ptr;
-  struct studio * studio_ptr;
   struct jack_conf_container * parent_ptr;
 };
 
@@ -241,8 +250,6 @@ conf_callback(
   struct jack_conf_container * container_ptr;
   struct jack_conf_parameter * parameter_ptr;
 
-  assert(context_ptr->studio_ptr);
-
   parent_ptr = context_ptr->parent_ptr;
 
   dst = path;
@@ -327,7 +334,7 @@ conf_callback(
       parameter_ptr->parent_ptr = parent_ptr;
       memcpy(parameter_ptr->address, context_ptr->address, JACK_CONF_MAX_ADDRESS_SIZE);
       list_add_tail(&parameter_ptr->siblings, &parent_ptr->children);
-      list_add_tail(&parameter_ptr->leaves, &context_ptr->studio_ptr->jack_params);
+      list_add_tail(&parameter_ptr->leaves, &g_studio.jack_params);
     }
     else
     {
@@ -354,7 +361,7 @@ conf_callback(
 
     if (parent_ptr == NULL)
     {
-      list_add_tail(&container_ptr->siblings, &context_ptr->studio_ptr->jack_conf);
+      list_add_tail(&container_ptr->siblings, &g_studio.jack_conf);
     }
     else
     {
@@ -379,91 +386,29 @@ conf_callback(
 
 #undef context_ptr
 
-#define studio_ptr ((struct studio *)this)
-
-uint64_t
-studio_get_graph_version(
-  void * this)
+bool studio_fetch_jack_settings()
 {
-  //lash_info("studio_get_graph_version() called");
-  return 1;
-}
+  struct conf_callback_context context;
 
-#undef studio_ptr
+  context.address[0] = 0;
+  context.container_ptr = &g_studio.jack_conf;
+  context.parent_ptr = NULL;
 
-bool
-studio_create(
-  studio_handle * studio_handle_ptr)
-{
-  struct studio * studio_ptr;
-
-  lash_info("studio object construct");
-
-  studio_ptr = malloc(sizeof(struct studio));
-  if (studio_ptr == NULL)
+  if (!jack_proxy_read_conf_container(context.address, &context, conf_callback))
   {
-    lash_error("malloc() failed to allocate struct studio");
+    lash_error("jack_proxy_read_conf_container() failed.");
     return false;
   }
-
-  studio_ptr->patchbay_impl.this = studio_ptr;
-  studio_ptr->patchbay_impl.get_graph_version = studio_get_graph_version;
-
-  INIT_LIST_HEAD(&studio_ptr->all_connections);
-  INIT_LIST_HEAD(&studio_ptr->all_ports);
-  INIT_LIST_HEAD(&studio_ptr->all_clients);
-  INIT_LIST_HEAD(&studio_ptr->jack_connections);
-  INIT_LIST_HEAD(&studio_ptr->jack_ports);
-  INIT_LIST_HEAD(&studio_ptr->jack_clients);
-  INIT_LIST_HEAD(&studio_ptr->rooms);
-  INIT_LIST_HEAD(&studio_ptr->clients);
-  INIT_LIST_HEAD(&studio_ptr->ports);
-
-  studio_ptr->modified = false;
-  studio_ptr->persisted = false;
-  studio_ptr->jack_conf_stable = false;
-
-  INIT_LIST_HEAD(&studio_ptr->jack_conf);
-  INIT_LIST_HEAD(&studio_ptr->jack_params);
-
-  studio_ptr->dbus_object = NULL;
-
-  *studio_handle_ptr = (studio_handle)studio_ptr;
 
   return true;
 }
 
-#define studio_ptr ((struct studio *)studio)
-
-void
-studio_destroy(
-  studio_handle studio)
-{
-  struct list_head * node_ptr;
-
-  if (studio_ptr->dbus_object != NULL)
-  {
-    object_path_destroy(g_dbus_connection, studio_ptr->dbus_object);
-  }
-
-  while (!list_empty(&studio_ptr->jack_conf))
-  {
-    node_ptr = studio_ptr->jack_conf.next;
-    list_del(node_ptr);
-    jack_conf_container_destroy(list_entry(node_ptr, struct jack_conf_container, siblings));
-  }
-
-  free(studio_ptr);
-  lash_info("studio object destroy");
-}
-
 bool
-studio_activate(
-  studio_handle studio)
+studio_activate(void)
 {
   object_path_t * object;
 
-  object = object_path_new(STUDIO_OBJECT_PATH, studio, 2, &g_interface_studio, &g_interface_patchbay);
+  object = object_path_new(STUDIO_OBJECT_PATH, &g_studio, 2, &g_interface_studio, &g_interface_patchbay);
   if (object == NULL)
   {
     lash_error("object_path_new() failed");
@@ -479,22 +424,205 @@ studio_activate(
 
   lash_info("Studio D-Bus object created.");
 
-  studio_ptr->dbus_object = object;
+  g_studio.dbus_object = object;
+
+  emit_studio_appeared();
 
   return true;
 }
 
-bool
-studio_is_persisted(
-  studio_handle studio)
+void
+studio_clear(void)
 {
-  return studio_ptr->persisted;
+  struct list_head * node_ptr;
+
+  g_studio.modified = false;
+  g_studio.persisted = false;
+
+  while (!list_empty(&g_studio.jack_conf))
+  {
+    node_ptr = g_studio.jack_conf.next;
+    list_del(node_ptr);
+    jack_conf_container_destroy(list_entry(node_ptr, struct jack_conf_container, siblings));
+  }
+
+  g_studio.jack_conf_valid = false;
+
+  if (g_studio.dbus_object != NULL)
+  {
+    object_path_destroy(g_dbus_connection, g_studio.dbus_object);
+    g_studio.dbus_object = NULL;
+    emit_studio_disappeared();
+  }
 }
 
-bool
-studio_save(
-  studio_handle studio,
-  const char * file_path)
+void
+studio_clear_if_not_persisted(void)
+{
+  if (!g_studio.persisted)
+  {
+    studio_clear();
+    return;
+  }
+}
+
+void on_event_jack_started(void)
+{
+  if (g_studio.dbus_object == NULL)
+  {
+    studio_activate();
+  }
+
+  if (!studio_fetch_jack_settings(g_studio))
+  {
+    lash_error("studio_fetch_jack_settings() failed.");
+
+    studio_clear_if_not_persisted();
+    return;
+  }
+
+  lash_info("jack conf successfully retrieved");
+  g_studio.jack_conf_valid = true;
+}
+
+void on_event_jack_stopped(void)
+{
+  studio_clear_if_not_persisted();
+
+  /* TODO: if user wants, restart jack server and reconnect all jack apps to it */
+}
+
+void studio_run(void)
+{
+  struct event * event_ptr;
+
+  while (!list_empty(&g_studio.event_queue))
+  {
+    event_ptr = list_entry(g_studio.event_queue.next, struct event, siblings);
+    list_del(g_studio.event_queue.next);
+
+    switch (event_ptr->type)
+    {
+    case EVENT_JACK_START:
+      on_event_jack_started();
+      break;
+    case EVENT_JACK_STOP:
+      on_event_jack_stopped();
+      break;
+    }
+
+    free(event_ptr);
+  }
+}
+
+static void on_jack_server_started(void)
+{
+  struct event * event_ptr;
+
+  lash_info("JACK server start detected.");
+
+  event_ptr = malloc(sizeof(struct event));
+  if (event_ptr == NULL)
+  {
+    lash_error("malloc() failed to allocate struct event. Ignoring JACK start.");
+    return;
+  }
+
+  event_ptr->type = EVENT_JACK_START;
+  list_add_tail(&event_ptr->siblings, &g_studio.event_queue);
+}
+
+static void on_jack_server_stopped(void)
+{
+  struct event * event_ptr;
+
+  lash_info("JACK server stop detected.");
+
+  event_ptr = malloc(sizeof(struct event));
+  if (event_ptr == NULL)
+  {
+    lash_error("malloc() failed to allocate struct event. Ignoring JACK stop.");
+    return;
+  }
+
+  event_ptr->type = EVENT_JACK_STOP;
+  list_add_tail(&event_ptr->siblings, &g_studio.event_queue);
+}
+
+static void on_jack_server_appeared(void)
+{
+  lash_info("JACK controller appeared.");
+}
+
+static void on_jack_server_disappeared(void)
+{
+  lash_info("JACK controller disappeared.");
+}
+
+#define studio_ptr ((struct studio *)this)
+
+uint64_t
+studio_get_graph_version(
+  void * this)
+{
+  //lash_info("studio_get_graph_version() called");
+  return 1;
+}
+
+#undef studio_ptr
+
+bool studio_init(void)
+{
+  lash_info("studio object construct");
+
+  g_studio.patchbay_impl.this = &g_studio;
+  g_studio.patchbay_impl.get_graph_version = studio_get_graph_version;
+
+  INIT_LIST_HEAD(&g_studio.all_connections);
+  INIT_LIST_HEAD(&g_studio.all_ports);
+  INIT_LIST_HEAD(&g_studio.all_clients);
+  INIT_LIST_HEAD(&g_studio.jack_connections);
+  INIT_LIST_HEAD(&g_studio.jack_ports);
+  INIT_LIST_HEAD(&g_studio.jack_clients);
+  INIT_LIST_HEAD(&g_studio.rooms);
+  INIT_LIST_HEAD(&g_studio.clients);
+  INIT_LIST_HEAD(&g_studio.ports);
+
+  INIT_LIST_HEAD(&g_studio.jack_conf);
+  INIT_LIST_HEAD(&g_studio.jack_params);
+
+  INIT_LIST_HEAD(&g_studio.event_queue);
+
+  g_studio.dbus_object = NULL;
+  studio_clear();
+
+  if (!jack_proxy_init(
+        on_jack_server_started,
+        on_jack_server_stopped,
+        on_jack_server_appeared,
+        on_jack_server_disappeared))
+  {
+    return false;
+  }
+
+  return true;
+}
+
+void studio_uninit(void)
+{
+  jack_proxy_uninit();
+
+  studio_clear();
+
+  lash_info("studio object destroy");
+}
+
+bool studio_is_loaded(void)
+{
+  return g_studio.dbus_object != NULL;
+}
+
+bool studio_save(const char * file_path)
 {
   struct list_head * node_ptr;
   struct jack_conf_parameter * parameter_ptr;
@@ -505,7 +633,7 @@ studio_save(
 
   lash_info("saving studio...");
 
-  list_for_each(node_ptr, &studio_ptr->jack_params)
+  list_for_each(node_ptr, &g_studio.jack_params)
   {
     parameter_ptr = list_entry(node_ptr, struct jack_conf_parameter, leaves);
 
@@ -565,37 +693,21 @@ studio_save(
   return false;                 /* not implemented yet */
 }
 
-bool
-studio_load(
-  studio_handle studio,
-  const char * file_path)
+bool studio_load(const char * file_path)
 {
   return false;                 /* not implemented yet */
 }
 
-#undef studio_ptr
-
-bool
-studio_fetch_jack_settings(
-  studio_handle studio)
+static void ladish_save_studio(method_call_t * call_ptr)
 {
-  struct conf_callback_context context;
-
-  context.address[0] = 0;
-  context.studio_ptr = (struct studio *)studio;
-  context.container_ptr = &context.studio_ptr->jack_conf;
-  context.parent_ptr = NULL;
-
-  if (!jack_proxy_read_conf_container(context.address, &context, conf_callback))
-  {
-    lash_error("jack_proxy_read_conf_container() failed.");
-    return false;
-  }
-
-  return true;
+  //studio_save(g_studio, NULL)
 }
 
+METHOD_ARGS_BEGIN(Save, "Save studio")
+METHOD_ARGS_END
+
 METHODS_BEGIN
+  METHOD_DESCRIBE(Save, ladish_save_studio)
 METHODS_END
 
 SIGNAL_ARGS_BEGIN(RoomAppeared, "Room D-Bus object appeared")

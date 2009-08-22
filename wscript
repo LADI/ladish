@@ -177,7 +177,6 @@ def build(bld):
         'appdb.c',
         'procfs.c',
         'control.c',
-        'jack.c',
         'studio.c',
         'patchbay.c',
         ]:

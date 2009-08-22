@@ -37,14 +37,12 @@
 #include "loader.h"
 #include "sigsegv.h"
 #include "control.h"
-#include "jack.h"
 #include "studio.h"
 #include "../dbus_constants.h"
 
 bool g_quit;
 const char * g_dbus_unique_name;
 object_path_t * g_control_object;
-studio_handle g_studio;
 
 #if 0
 static DBusHandlerResult lashd_client_disconnect_handler(DBusConnection * connection, DBusMessage * message, void * data)
@@ -57,7 +55,6 @@ static DBusHandlerResult lashd_client_disconnect_handler(DBusConnection * connec
 
   const char *member, *name, *old_name;
   struct lash_client *client;
-  DBusError err;
 
   if (!(member = dbus_message_get_member(message)))
   {
@@ -137,6 +134,8 @@ static bool connect_dbus(void)
     lash_error("Failed to read unique bus name");
     goto unref_connection;
   }
+
+  lash_info("Connected to local session bus, unique name is \"%s\"", g_dbus_unique_name);
 
   ret = dbus_bus_request_name(g_dbus_connection, SERVICE_NAME, DBUS_NAME_FLAG_DO_NOT_QUEUE, &g_dbus_error);
   if (ret == -1)
@@ -250,7 +249,7 @@ int main(int argc, char ** argv, char ** envp)
   /* setup our SIGSEGV magic that prints nice stack in our logfile */ 
   setup_sigsegv();
 
-  if (!jack_init())
+  if (!studio_init())
   {
     goto uninit_dbus;
   }
@@ -259,21 +258,16 @@ int main(int argc, char ** argv, char ** envp)
   {
     dbus_connection_read_write_dispatch(g_dbus_connection, 50);
     loader_run();
-  }
-
-  if (g_studio != NULL)
-  {
-    studio_destroy(g_studio);
-    emit_studio_disappeared();
+    studio_run();
   }
 
   ret = EXIT_SUCCESS;
 
   lash_debug("Finished, cleaning up");
 
-uninit_dbus:
-  jack_uninit();
+  studio_uninit();
 
+uninit_dbus:
   disconnect_dbus();
 
 uninit_loader:

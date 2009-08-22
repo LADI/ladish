@@ -107,6 +107,5 @@ struct room
 #include "studio.h"
 
 extern bool g_quit;
-extern studio_handle g_studio;
 
 #endif /* #ifndef COMMON_H__CFDC869A_31AE_4FA3_B2D3_DACA8488CA55__INCLUDED */
