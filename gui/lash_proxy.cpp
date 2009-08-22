@@ -36,10 +36,6 @@
 #include "globals.hpp"
 #include "dbus_helpers.h"
 
-#define LASH_SERVICE       DBUS_NAME_BASE
-#define LASH_OBJECT        "/org/ladish/Control"
-#define LASH_IFACE_CONTROL DBUS_NAME_BASE ".Control"
-
 struct lash_proxy_impl
 {
         void init();

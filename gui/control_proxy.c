@@ -27,10 +27,7 @@
 
 #include "control_proxy.h"
 #include "../dbus/helpers.h"
-
-#define SERVICE   DBUS_NAME_BASE
-#define OBJECT    DBUS_BASE_PATH "/Control"
-#define IFACE     DBUS_NAME_BASE ".Control"
+#include "../dbus_constants.h"
 
 const char * g_signals[] =
 {
@@ -44,19 +41,19 @@ static DBusHandlerResult message_hook(DBusConnection * connection, DBusMessage *
   const char * object_path;
 
   object_path = dbus_message_get_path(message);
-  if (object_path == NULL || strcmp(object_path, OBJECT) != 0)
+  if (object_path == NULL || strcmp(object_path, CONTROL_OBJECT_PATH) != 0)
   {
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
   }
 
-  if (dbus_message_is_signal(message, IFACE, "StudioAppeared"))
+  if (dbus_message_is_signal(message, IFACE_CONTROL, "StudioAppeared"))
   {
     lash_info("StudioAppeared");
     control_proxy_on_studio_appeared();
     return DBUS_HANDLER_RESULT_HANDLED;
   }
 
-  if (dbus_message_is_signal(message, IFACE, "StudioDisappeared"))
+  if (dbus_message_is_signal(message, IFACE_CONTROL, "StudioDisappeared"))
   {
     lash_info("StudioDisappeared");
     control_proxy_on_studio_disappeared();
@@ -70,7 +67,7 @@ static bool control_proxy_is_studio_loaded(bool * present_ptr)
 {
   dbus_bool_t present;
 
-  if (!dbus_call_simple(SERVICE, OBJECT, IFACE, "IsStudioLoaded", "", "b", &present))
+  if (!dbus_call_simple(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "IsStudioLoaded", "", "b", &present))
   {
     return false;
   }
@@ -84,14 +81,14 @@ bool control_proxy_init(void)
 {
   bool studio_present;
 
-  if (!dbus_register_object_signal_handler(g_dbus_connection, SERVICE, OBJECT, IFACE, g_signals, message_hook, NULL))
+  if (!dbus_register_object_signal_handler(g_dbus_connection, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, g_signals, message_hook, NULL))
   {
     return false;
   }
 
   if (!control_proxy_is_studio_loaded(&studio_present))
   {
-    dbus_unregister_object_signal_handler(g_dbus_connection, SERVICE, OBJECT, IFACE, g_signals, message_hook, NULL);
+    dbus_unregister_object_signal_handler(g_dbus_connection, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, g_signals, message_hook, NULL);
     return false;
   }
 
@@ -105,7 +102,7 @@ bool control_proxy_init(void)
 
 void control_proxy_uninit(void)
 {
-  dbus_unregister_object_signal_handler(g_dbus_connection, SERVICE, OBJECT, IFACE, g_signals, message_hook, NULL);
+  dbus_unregister_object_signal_handler(g_dbus_connection, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, g_signals, message_hook, NULL);
 }
 
 bool control_proxy_get_studio_list(struct list_head * studio_list)

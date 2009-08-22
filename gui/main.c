@@ -32,6 +32,7 @@
 #include "../jack_proxy.h"
 #include "dbus_helpers.h"
 #include "control_proxy.h"
+#include "../dbus_constants.h"
 
 #if 0
 class Patchage {
@@ -880,7 +881,7 @@ struct view * create_view(const char * name, const char * service, const char * 
     goto free_view;
   }
 
-  if (!graph_create(JACKDBUS_SERVICE, JACKDBUS_OBJECT, &view_ptr->graph))
+  if (!graph_create(service, object, &view_ptr->graph))
   {
     goto free_name;
   }
@@ -948,7 +949,7 @@ struct view * g_studio_view;
 
 void control_proxy_on_studio_appeared(void)
 {
-  g_jack_view = create_view("Raw JACK", JACKDBUS_SERVICE, JACKDBUS_OBJECT);
+  g_jack_view = create_view("Raw JACK", JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH);
   attach_view(g_jack_view);
 }
 

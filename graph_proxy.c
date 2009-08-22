@@ -33,8 +33,7 @@
 #include "common/klist.h"
 #include "common/debug.h"
 #include "dbus/helpers.h"
-
-#define JACKDBUS_IFACE_PATCHBAY  "org.jackaudio.JackPatchbay"
+#include "dbus_constants.h"
 
 #define JACKDBUS_PORT_FLAG_INPUT         0x00000001
 #define JACKDBUS_PORT_FLAG_OUTPUT        0x00000002

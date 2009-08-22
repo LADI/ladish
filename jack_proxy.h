@@ -30,9 +30,6 @@
 
 #include "common.h"
 
-#define JACKDBUS_SERVICE         "org.jackaudio.service"
-#define JACKDBUS_OBJECT          "/org/jackaudio/Controller"
-
 struct jack_parameter_variant
 {
   enum

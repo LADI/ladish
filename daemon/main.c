@@ -39,6 +39,7 @@
 #include "control.h"
 #include "jack.h"
 #include "studio.h"
+#include "../dbus_constants.h"
 
 bool g_quit;
 const char * g_dbus_unique_name;
@@ -137,7 +138,7 @@ static bool connect_dbus(void)
     goto unref_connection;
   }
 
-  ret = dbus_bus_request_name(g_dbus_connection, DBUS_NAME_BASE, DBUS_NAME_FLAG_DO_NOT_QUEUE, &g_dbus_error);
+  ret = dbus_bus_request_name(g_dbus_connection, SERVICE_NAME, DBUS_NAME_FLAG_DO_NOT_QUEUE, &g_dbus_error);
   if (ret == -1)
   {
     lash_error("Failed to acquire bus name: %s", g_dbus_error.message);

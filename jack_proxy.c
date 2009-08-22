@@ -32,9 +32,7 @@
 #include "jack_proxy.h"
 #include "dbus/helpers.h"
 #include "common/debug.h"
-
-#define JACKDBUS_IFACE_CONTROL   "org.jackaudio.JackControl"
-#define JACKDBUS_IFACE_CONFIGURE "org.jackaudio.Configure"
+#include "dbus_constants.h"
 
 jack_proxy_callback_server_started g_on_server_started;
 jack_proxy_callback_server_stopped g_on_server_stopped;
@@ -100,7 +98,7 @@ on_bus_signal(
       return DBUS_HANDLER_RESULT_HANDLED;
     }
 
-    if (strcmp(object_name, JACKDBUS_SERVICE) != 0)
+    if (strcmp(object_name, JACKDBUS_SERVICE_NAME) != 0)
     {
       return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     }
@@ -164,7 +162,7 @@ dbus_signal_handler(
   lash_debug("'%s' sent signal '%s'::'%s'", object_path, interface, signal_name);
 
   /* Handle JACK patchbay and control interface signals */
-  if (object_path != NULL && strcmp(object_path, JACKDBUS_OBJECT) == 0)
+  if (object_path != NULL && strcmp(object_path, JACKDBUS_OBJECT_PATH) == 0)
   {
     if (strcmp(interface, JACKDBUS_IFACE_CONTROL) == 0)
     {
@@ -203,7 +201,7 @@ jack_proxy_init(
 
   dbus_bus_add_match(
     g_dbus_connection,
-    "type='signal',interface='"DBUS_INTERFACE_DBUS"',member=NameOwnerChanged,arg0='"JACKDBUS_SERVICE"'",
+    "type='signal',interface='"DBUS_INTERFACE_DBUS"',member=NameOwnerChanged,arg0='"JACKDBUS_SERVICE_NAME"'",
     &err);
   if (dbus_error_is_set(&err))
   {
@@ -217,7 +215,7 @@ jack_proxy_init(
     snprintf(
       rule,
       sizeof(rule),
-      "type='signal',sender='"JACKDBUS_SERVICE"',path='"JACKDBUS_OBJECT"',interface='"JACKDBUS_IFACE_CONTROL"',member='%s'",
+      "type='signal',sender='"JACKDBUS_SERVICE_NAME"',path='"JACKDBUS_OBJECT_PATH"',interface='"JACKDBUS_IFACE_CONTROL"',member='%s'",
       *signal);
 
     dbus_bus_add_match(g_dbus_connection, rule, &err);
@@ -256,7 +254,7 @@ jack_proxy_is_started(
 {
   dbus_bool_t started;
 
-  if (!dbus_call_simple(JACKDBUS_SERVICE, JACKDBUS_OBJECT, JACKDBUS_IFACE_CONTROL, "IsStarted", "", "b", &started))
+  if (!dbus_call_simple(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONTROL, "IsStarted", "", "b", &started))
   {
     return false;
   }
@@ -330,7 +328,7 @@ jack_proxy_read_conf_container(
   dbus_bool_t leaf;           /* Whether children are parameters (true) or containers (false) */
   char * child;
 
-  request_ptr = dbus_message_new_method_call(JACKDBUS_SERVICE, JACKDBUS_OBJECT, JACKDBUS_IFACE_CONFIGURE, "ReadContainer");
+  request_ptr = dbus_message_new_method_call(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONFIGURE, "ReadContainer");
   if (request_ptr == NULL)
   {
     lash_error("dbus_message_new_method_call() failed.");
@@ -462,7 +460,7 @@ jack_proxy_get_parameter_value(
   dbus_bool_t is_set;
   struct jack_parameter_variant default_value;
 
-  request_ptr = dbus_message_new_method_call(JACKDBUS_SERVICE, JACKDBUS_OBJECT, JACKDBUS_IFACE_CONFIGURE, "GetParameterValue");
+  request_ptr = dbus_message_new_method_call(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONFIGURE, "GetParameterValue");
   if (request_ptr == NULL)
   {
     lash_error("dbus_message_new_method_call() failed.");
@@ -535,19 +533,19 @@ jack_proxy_get_parameter_value(
 
 bool jack_proxy_start_server(void)
 {
-  return dbus_call_simple(JACKDBUS_SERVICE, JACKDBUS_OBJECT, JACKDBUS_IFACE_CONTROL, "StartServer", "", "");
+  return dbus_call_simple(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONTROL, "StartServer", "", "");
 }
 
 bool jack_proxy_stop_server(void)
 {
-  return dbus_call_simple(JACKDBUS_SERVICE, JACKDBUS_OBJECT, JACKDBUS_IFACE_CONTROL, "StopServer", "", "");
+  return dbus_call_simple(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONTROL, "StopServer", "", "");
 }
 
 bool jack_proxy_is_realtime(bool * realtime_ptr)
 {
   dbus_bool_t realtime;
 
-  if (!dbus_call_simple(JACKDBUS_SERVICE, JACKDBUS_OBJECT, JACKDBUS_IFACE_CONTROL, "IsStarted", "", "b", &realtime))
+  if (!dbus_call_simple(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONTROL, "IsStarted", "", "b", &realtime))
   {
     return false;
   }
@@ -558,30 +556,30 @@ bool jack_proxy_is_realtime(bool * realtime_ptr)
 
 bool jack_proxy_sample_rate(uint32_t * sample_rate_ptr)
 {
-  return dbus_call_simple(JACKDBUS_SERVICE, JACKDBUS_OBJECT, JACKDBUS_IFACE_CONTROL, "GetSampleRate", "", "u", sample_rate_ptr);
+  return dbus_call_simple(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONTROL, "GetSampleRate", "", "u", sample_rate_ptr);
 }
 
 bool jack_proxy_get_xruns(uint32_t * xruns_ptr)
 {
-  return dbus_call_simple(JACKDBUS_SERVICE, JACKDBUS_OBJECT, JACKDBUS_IFACE_CONTROL, "GetXruns", "", "u", xruns_ptr);
+  return dbus_call_simple(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONTROL, "GetXruns", "", "u", xruns_ptr);
 }
 
 bool jack_proxy_get_dsp_load(double * dsp_load_ptr)
 {
-  return dbus_call_simple(JACKDBUS_SERVICE, JACKDBUS_OBJECT, JACKDBUS_IFACE_CONTROL, "GetXruns", "", "d", dsp_load_ptr);
+  return dbus_call_simple(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONTROL, "GetXruns", "", "d", dsp_load_ptr);
 }
 
 bool jack_proxy_get_buffer_size(uint32_t * size_ptr)
 {
-  return dbus_call_simple(JACKDBUS_SERVICE, JACKDBUS_OBJECT, JACKDBUS_IFACE_CONTROL, "GetBufferSize", "", "u", size_ptr);
+  return dbus_call_simple(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONTROL, "GetBufferSize", "", "u", size_ptr);
 }
 
 bool jack_proxy_set_buffer_size(uint32_t size)
 {
-  return dbus_call_simple(JACKDBUS_SERVICE, JACKDBUS_OBJECT, JACKDBUS_IFACE_CONTROL, "GetBufferSize", "u", &size, "");
+  return dbus_call_simple(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONTROL, "GetBufferSize", "u", &size, "");
 }
 
 bool jack_proxy_reset_xruns(void)
 {
-  return dbus_call_simple(JACKDBUS_SERVICE, JACKDBUS_OBJECT, JACKDBUS_IFACE_CONTROL, "GetBufferSize", "", "");
+  return dbus_call_simple(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONTROL, "GetBufferSize", "", "");
 }

@@ -27,6 +27,7 @@
 #include "common.h"
 #include "../jack_proxy.h"
 #include "patchbay.h"
+#include "../dbus_constants.h"
 
 extern const interface_t g_interface_studio;
 
@@ -462,7 +463,7 @@ studio_activate(
 {
   object_path_t * object;
 
-  object = object_path_new(DBUS_BASE_PATH "/Studio", studio, 2, &g_interface_studio, &g_interface_patchbay);
+  object = object_path_new(STUDIO_OBJECT_PATH, studio, 2, &g_interface_studio, &g_interface_patchbay);
   if (object == NULL)
   {
     lash_error("object_path_new() failed");
@@ -610,7 +611,7 @@ SIGNALS_BEGIN
   SIGNAL_DESCRIBE(RoomDisappeared)
 SIGNALS_END
 
-INTERFACE_BEGIN(g_interface_studio, DBUS_NAME_BASE ".Studio")
+INTERFACE_BEGIN(g_interface_studio, IFACE_STUDIO)
   INTERFACE_DEFAULT_HANDLER
   INTERFACE_EXPOSE_METHODS
   INTERFACE_EXPOSE_SIGNALS

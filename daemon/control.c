@@ -30,8 +30,9 @@
 #include "../dbus/interface.h"
 #include "../dbus/error.h"
 #include "control.h"
+#include "../dbus_constants.h"
 
-#define INTERFACE_NAME DBUS_NAME_BASE ".Control"
+#define INTERFACE_NAME IFACE_CONTROL
 
 static void ladish_is_studio_loaded(method_call_t * call_ptr)
 {
