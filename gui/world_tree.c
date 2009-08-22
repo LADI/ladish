@@ -26,6 +26,7 @@
 
 #include "common.h"
 #include "world_tree.h"
+#include "glade.h"
 
 #if 0
 #include <iostream>
@@ -378,22 +379,69 @@ project_list::set_lash_availability(
 }
 #endif
 
+enum
+{
+  COL_NAME = 0,
+  COL_GRAPH,
+  NUM_COLS
+};
+
+GtkWidget * g_world_tree_widget;
+GtkTreeStore * g_treestore;
+
 void world_tree_init(void)
 {
+  GtkTreeViewColumn * col;
+  GtkCellRenderer * renderer;
+
+  g_world_tree_widget = get_glade_widget("world_tree");
+  gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(g_world_tree_widget), FALSE);
+
+  col = gtk_tree_view_column_new();
+  gtk_tree_view_column_set_title(col, "Name");
+  gtk_tree_view_append_column(GTK_TREE_VIEW(g_world_tree_widget), col);
+  renderer = gtk_cell_renderer_text_new();
+  gtk_tree_view_column_pack_start(col, renderer, TRUE);
+  gtk_tree_view_column_add_attribute(col, renderer, "text", COL_NAME);
+
+  g_treestore = gtk_tree_store_new(NUM_COLS, G_TYPE_STRING, G_TYPE_POINTER);
+  gtk_tree_view_set_model(GTK_TREE_VIEW(g_world_tree_widget), GTK_TREE_MODEL(g_treestore));
 }
 
 void world_tree_add_studio(graph_handle graph)
 {
-}
+  GtkTreeIter iter;
 
-void world_tree_remove_studio(graph_handle graph)
-{
+  gtk_tree_store_append(g_treestore, &iter, NULL);
+  gtk_tree_store_set(g_treestore, &iter, COL_NAME, "Studio", COL_GRAPH, graph, -1);
 }
 
 void world_tree_add_jack(graph_handle graph)
 {
+  GtkTreeIter toplevel;
+
+  gtk_tree_store_append(g_treestore, &toplevel, NULL);
+  gtk_tree_store_set(g_treestore, &toplevel, COL_NAME, "JACK", COL_GRAPH, graph, -1);
 }
 
-void world_tree_remove_jack(graph_handle graph)
+void world_tree_remove(graph_handle graph)
 {
+  GtkTreeIter iter;
+  gchar * name;
+  graph_handle graph2;
+
+  if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(g_treestore), &iter))
+  {
+    do
+    {
+      gtk_tree_model_get(GTK_TREE_MODEL(g_treestore), &iter, COL_NAME, &name, COL_GRAPH, &graph2, -1);
+      //lash_info("'%s' %p", name, graph2);
+      if (graph == graph2)
+      {
+        gtk_tree_store_remove(g_treestore, &iter);
+        return;
+      }
+    }
+    while (gtk_tree_model_iter_next(GTK_TREE_MODEL(g_treestore), &iter));
+  }
 }

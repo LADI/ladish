@@ -33,6 +33,7 @@
 #include "dbus_helpers.h"
 #include "control_proxy.h"
 #include "../dbus_constants.h"
+#include "world_tree.h"
 
 #if 0
 class Patchage {
@@ -965,15 +966,21 @@ void control_proxy_on_studio_appeared(void)
 {
   g_studio_view = create_view("Studio", SERVICE_NAME, STUDIO_OBJECT_PATH);
   attach_view(g_studio_view);
+  world_tree_add_studio(g_studio_view->graph);
+
   g_jack_view = create_view("Raw JACK", JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH);
   attach_view(g_jack_view);
+  world_tree_add_jack(g_jack_view->graph);
 }
 
 void control_proxy_on_studio_disappeared(void)
 {
   detach_view(g_jack_view);
+  world_tree_remove(g_jack_view->graph);
   destroy_view(g_jack_view);
+
   detach_view(g_studio_view);
+  world_tree_remove(g_studio_view->graph);
   destroy_view(g_studio_view);
 }
 
@@ -997,6 +1004,8 @@ int main(int argc, char** argv)
   /* Obtain widgets that we need */
   main_win = get_glade_widget("main_win");
   g_main_scrolledwin = GTK_SCROLLED_WINDOW(get_glade_widget("main_scrolledwin"));
+
+  world_tree_init();
 
   patchage_dbus_init();
 

@@ -32,9 +32,7 @@
 void world_tree_init(void);
 
 void world_tree_add_studio(graph_handle graph);
-void world_tree_remove_studio(graph_handle graph);
-
 void world_tree_add_jack(graph_handle graph);
-void world_tree_remove_jack(graph_handle graph);
+void world_tree_remove(graph_handle graph);
 
 #endif // #ifndef WORLD_TREE_H__D786489B_E400_4E92_85C7_2BAE606DE56D__INCLUDED
