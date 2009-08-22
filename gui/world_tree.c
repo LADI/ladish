@@ -389,10 +389,36 @@ enum
 GtkWidget * g_world_tree_widget;
 GtkTreeStore * g_treestore;
 
+static
+gboolean
+on_select(
+  GtkTreeSelection * selection,
+  GtkTreeModel * model,
+  GtkTreePath * path,
+  gboolean path_currently_selected,
+  gpointer data)
+{
+  GtkTreeIter iter;
+  graph_view_handle view;
+
+  if (gtk_tree_model_get_iter(model, &iter, path))
+  {
+    gtk_tree_model_get(model, &iter, COL_VIEW, &view, -1);
+    //lash_info("%s is going to be %s.", get_view_name(view), path_currently_selected ? "unselected" : "selected");
+    if (!path_currently_selected)
+    {
+      activate_view(view);
+    }
+  }
+
+  return TRUE;
+}
+
 void world_tree_init(void)
 {
   GtkTreeViewColumn * col;
   GtkCellRenderer * renderer;
+  GtkTreeSelection * selection;
 
   g_world_tree_widget = get_glade_widget("world_tree");
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(g_world_tree_widget), FALSE);
@@ -406,14 +432,23 @@ void world_tree_init(void)
 
   g_treestore = gtk_tree_store_new(NUM_COLS, G_TYPE_POINTER, G_TYPE_STRING);
   gtk_tree_view_set_model(GTK_TREE_VIEW(g_world_tree_widget), GTK_TREE_MODEL(g_treestore));
+
+  selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(g_world_tree_widget));
+  gtk_tree_selection_set_select_function(selection, on_select, NULL, NULL);
 }
 
-void world_tree_add(graph_view_handle view)
+void world_tree_add(graph_view_handle view, bool force_activate)
 {
   GtkTreeIter iter;
 
   gtk_tree_store_append(g_treestore, &iter, NULL);
   gtk_tree_store_set(g_treestore, &iter, COL_VIEW, view, COL_NAME, get_view_name(view), -1);
+
+  /* select the first top level item */
+  if (force_activate || gtk_tree_model_iter_n_children(GTK_TREE_MODEL(g_treestore), NULL) == 1)
+  {
+    gtk_tree_selection_select_iter(gtk_tree_view_get_selection(GTK_TREE_VIEW(g_world_tree_widget)), &iter);
+  }
 }
 
 void world_tree_remove(graph_view_handle view)

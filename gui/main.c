@@ -860,13 +860,11 @@ graph_view_handle g_studio_view = NULL;
 
 void control_proxy_on_studio_appeared(void)
 {
-  if (!create_view("Studio", SERVICE_NAME, STUDIO_OBJECT_PATH, &g_studio_view))
+  if (!create_view("Studio", SERVICE_NAME, STUDIO_OBJECT_PATH, false, &g_studio_view))
   {
     lash_error("create_view() failed for studio");
     return;
   }
-
-  activate_view(g_studio_view);
 }
 
 void control_proxy_on_studio_disappeared(void)
@@ -892,7 +890,7 @@ void jack_appeared(void)
 {
   lash_info("JACK appeared");
 
-  if (!create_view("Raw JACK", JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, &g_jack_view))
+  if (!create_view("Raw JACK", JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, true, &g_jack_view))
   {
     lash_error("create_view() failed for jack");
     return;
@@ -908,8 +906,6 @@ void jack_disappeared(void)
     destroy_view(g_jack_view);
     g_jack_view = NULL;
   }
-
-  activate_view(g_jack_view);
 }
 
 int main(int argc, char** argv)

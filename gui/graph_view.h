@@ -32,7 +32,7 @@
 typedef struct graph_view_tag { int unused; } * graph_view_handle;
 
 void view_init(void);
-bool create_view(const char * name, const char * service, const char * object, graph_view_handle * handle_ptr);
+bool create_view(const char * name, const char * service, const char * object, bool force_activate, graph_view_handle * handle_ptr);
 void destroy_view(graph_view_handle view);
 void activate_view(graph_view_handle view);
 const char * get_view_name(graph_view_handle view);

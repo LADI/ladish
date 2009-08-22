@@ -48,7 +48,7 @@ void view_init(void)
   INIT_LIST_HEAD(&g_views);
 }
 
-bool create_view(const char * name, const char * service, const char * object, graph_view_handle * handle_ptr)
+bool create_view(const char * name, const char * service, const char * object, bool force_activate, graph_view_handle * handle_ptr)
 {
   struct graph_view * view_ptr;
 
@@ -92,7 +92,7 @@ bool create_view(const char * name, const char * service, const char * object, g
 
   gtk_widget_show(view_ptr->canvas_widget);
 
-  world_tree_add((graph_view_handle)view_ptr);
+  world_tree_add((graph_view_handle)view_ptr, force_activate);
 
   *handle_ptr = (graph_view_handle)view_ptr;
 
