@@ -932,6 +932,14 @@ void destroy_view(struct view * view_ptr)
 
 void attach_view(struct view * view_ptr)
 {
+  GtkWidget * child;
+
+  child = gtk_bin_get_child(GTK_BIN(g_main_scrolledwin));
+  if (child != NULL)
+  {
+    gtk_container_remove(GTK_CONTAINER(g_main_scrolledwin), child);
+  }
+
   gtk_container_add(GTK_CONTAINER(g_main_scrolledwin), view_ptr->canvas_widget);
 
   //_canvas->scroll_to(static_cast<int>(_canvas->width()/2 - 320), static_cast<int>(_canvas->height()/2 - 240)); // FIXME: hardcoded
@@ -941,7 +949,13 @@ void attach_view(struct view * view_ptr)
 
 void detach_view(struct view * view_ptr)
 {
-  gtk_container_remove(GTK_CONTAINER(g_main_scrolledwin), view_ptr->canvas_widget);
+  GtkWidget * child;
+
+  child = gtk_bin_get_child(GTK_BIN(g_main_scrolledwin));
+  if (child == view_ptr->canvas_widget)
+  {
+    gtk_container_remove(GTK_CONTAINER(g_main_scrolledwin), view_ptr->canvas_widget);
+  }
 }
 
 struct view * g_jack_view;
@@ -949,6 +963,8 @@ struct view * g_studio_view;
 
 void control_proxy_on_studio_appeared(void)
 {
+  g_studio_view = create_view("Studio", SERVICE_NAME, STUDIO_OBJECT_PATH);
+  attach_view(g_studio_view);
   g_jack_view = create_view("Raw JACK", JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH);
   attach_view(g_jack_view);
 }
@@ -957,6 +973,8 @@ void control_proxy_on_studio_disappeared(void)
 {
   detach_view(g_jack_view);
   destroy_view(g_jack_view);
+  detach_view(g_studio_view);
+  destroy_view(g_studio_view);
 }
 
 int main(int argc, char** argv)
