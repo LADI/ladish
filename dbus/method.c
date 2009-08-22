@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -30,6 +30,7 @@
 
 #include "method.h"
 #include "service.h"
+#include "helpers.h"
 
 /*
  * Construct a void method return.
@@ -210,17 +211,14 @@ method_return_verify(DBusMessage  *msg,
   if (!msg || dbus_message_get_type(msg) != DBUS_MESSAGE_TYPE_ERROR)
     return true;
 
-  DBusError err;
   const char *ptr;
 
-  dbus_error_init(&err);
-
-  if (!dbus_message_get_args(msg, &err,
+  if (!dbus_message_get_args(msg, &g_dbus_error,
                              DBUS_TYPE_STRING, &ptr,
                              DBUS_TYPE_INVALID)) {
     lash_error("Cannot read description from D-Bus error message: %s ",
-               err.message);
-    dbus_error_free(&err);
+               g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
     ptr = NULL;
   }
 

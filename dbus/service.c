@@ -32,6 +32,7 @@
 #include "../common/safety.h"
 #include "../common/debug.h"
 #include "service.h"
+#include "helpers.h"
 
 service_t *
 service_new(const char *service_name,
@@ -47,7 +48,6 @@ service_new(const char *service_name,
   lash_debug("Creating D-Bus service");
 
   service_t *service;
-  DBusError err;
   int r;
   va_list argp;
   object_path_t **path_pptr, *path_ptr;
@@ -56,11 +56,9 @@ service_new(const char *service_name,
   service->object_paths = lash_calloc(num_paths + 1,
                                       sizeof(object_path_t *));
 
-  dbus_error_init(&err);
-
-  service->connection = dbus_bus_get(DBUS_BUS_SESSION, &err);
-  if (dbus_error_is_set(&err)) {
-    lash_error("Failed to get bus: %s", err.message);
+  service->connection = dbus_bus_get(DBUS_BUS_SESSION, &g_dbus_error);
+  if (dbus_error_is_set(&g_dbus_error)) {
+    lash_error("Failed to get bus: %s", g_dbus_error.message);
     goto fail_free_err;
   }
 
@@ -72,9 +70,9 @@ service_new(const char *service_name,
   if (service_name) {
     r = dbus_bus_request_name(service->connection, service_name,
                               DBUS_NAME_FLAG_DO_NOT_QUEUE,
-                              &err);
+                              &g_dbus_error);
     if (r == -1) {
-      lash_error("Failed to acquire bus name: %s", err.message);
+      lash_error("Failed to acquire bus name: %s", g_dbus_error.message);
       goto fail_free_err;
     } else if (r == DBUS_REQUEST_NAME_REPLY_EXISTS) {
       lash_error("Requested bus name already exists");
@@ -106,7 +104,7 @@ service_new(const char *service_name,
   return service;
 
 fail_free_err:
-  dbus_error_free(&err);
+  dbus_error_free(&g_dbus_error);
 
 fail:
   lash_free(&service->object_paths);

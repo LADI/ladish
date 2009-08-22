@@ -190,7 +190,6 @@ jack_proxy_init(
   jack_proxy_callback_server_appeared server_appeared,
   jack_proxy_callback_server_disappeared server_disappeared)
 {
-  DBusError err;
   char rule[1024];
   const char ** signal;
 
@@ -202,11 +201,11 @@ jack_proxy_init(
   dbus_bus_add_match(
     g_dbus_connection,
     "type='signal',interface='"DBUS_INTERFACE_DBUS"',member=NameOwnerChanged,arg0='"JACKDBUS_SERVICE_NAME"'",
-    &err);
-  if (dbus_error_is_set(&err))
+    &g_dbus_error);
+  if (dbus_error_is_set(&g_dbus_error))
   {
-    lash_error("Failed to add D-Bus match rule: %s", err.message);
-    dbus_error_free(&err);
+    lash_error("Failed to add D-Bus match rule: %s", g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
     return false;
   }
 
@@ -218,11 +217,11 @@ jack_proxy_init(
       "type='signal',sender='"JACKDBUS_SERVICE_NAME"',path='"JACKDBUS_OBJECT_PATH"',interface='"JACKDBUS_IFACE_CONTROL"',member='%s'",
       *signal);
 
-    dbus_bus_add_match(g_dbus_connection, rule, &err);
-    if (dbus_error_is_set(&err))
+    dbus_bus_add_match(g_dbus_connection, rule, &g_dbus_error);
+    if (dbus_error_is_set(&g_dbus_error))
     {
-      lash_error("Failed to add D-Bus match rule: %s", err.message);
-      dbus_error_free(&err);
+      lash_error("Failed to add D-Bus match rule: %s", g_dbus_error.message);
+      dbus_error_free(&g_dbus_error);
       return false;
     }
   }
