@@ -151,6 +151,19 @@ static void clear_load(void)
   gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_xrun_progress_bar), 0.0);
 }
 
+static void arrange(void)
+{
+  canvas_handle canvas;
+
+  lash_info("arrange request");
+
+  canvas = get_current_canvas();
+  if (canvas != NULL)
+  {
+    canvas_arrange(canvas);
+  }
+}
+
 static gboolean poll_jack(gpointer data)
 {
   update_load();
@@ -271,8 +284,11 @@ int main(int argc, char** argv)
   g_signal_connect(G_OBJECT(get_glade_widget("menu_file_quit")), "activate", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(G_OBJECT(g_buffer_size_combo), "changed", G_CALLBACK(buffer_size_change_request), NULL);
   g_signal_connect(G_OBJECT(g_clear_load_button), "clicked", G_CALLBACK(clear_load), NULL);
+  g_signal_connect(G_OBJECT(get_glade_widget("menu_view_arrange")), "activate", G_CALLBACK(arrange), NULL);
 
   gtk_widget_show(g_main_win);
+
+  arrange();                    /* XXX: initial arrange of jack graph */
 
   //_about_win->set_transient_for(*_main_win);
 

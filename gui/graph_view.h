@@ -36,6 +36,7 @@ bool create_view(const char * name, const char * service, const char * object, b
 void destroy_view(graph_view_handle view);
 void activate_view(graph_view_handle view);
 const char * get_view_name(graph_view_handle view);
+canvas_handle get_current_canvas();
 
 /* not very good place for this prototype, because it is not implemented in graph_view.c */
 void set_main_window_title(graph_view_handle view);
