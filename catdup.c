@@ -24,11 +24,7 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <string.h>
-#include <stdlib.h>
-#include <assert.h>
-
-#include "../common/debug.h"
+#include "common.h"
 #include "catdup.h"
 
 char * catdup(const char * s1, const char * s2)

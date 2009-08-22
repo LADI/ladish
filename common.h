@@ -41,4 +41,6 @@
 #include "common/klist.h"
 #endif
 
+#include "common/debug.h"    /* log macros */
+
 #endif /* #ifndef COMMON_H__82C9504A_ACD2_435D_9743_781943473E6A__INCLUDED */

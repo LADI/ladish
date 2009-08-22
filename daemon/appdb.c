@@ -33,7 +33,7 @@
 
 #include "appdb.h"
 #include "../common/debug.h"
-#include "catdup.h"
+#include "../catdup.h"
 
 void
 lash_appdb_free_entry(

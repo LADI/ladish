@@ -28,6 +28,5 @@
 #define COMMON_H__15E63B7A_8350_4ABD_B04C_592158354949__INCLUDED
 
 #include "../common.h"
-#include "../common/debug.h"    /* log macros */
 
 #endif /* #ifndef COMMON_H__15E63B7A_8350_4ABD_B04C_592158354949__INCLUDED */

@@ -165,6 +165,7 @@ def build(bld):
 
     daemon.source = [
         'jack_proxy.c',
+        'catdup.c',
         ]
 
     for source in [
@@ -178,7 +179,6 @@ def build(bld):
         'control.c',
         'jack.c',
         'studio.c',
-        'catdup.c',
         'patchbay.c',
         ]:
         daemon.source.append(os.path.join("daemon", source))
@@ -263,6 +263,7 @@ def build(bld):
     gladish.source = [
         'jack_proxy.c',
         'graph_proxy.c',
+        'catdup.c',
         ]
 
     for source in [

@@ -36,7 +36,7 @@
 #include <time.h>
 
 #include "../common/debug.h"
-#include "catdup.h"
+#include "../catdup.h"
 
 #define DEFAULT_XDG_LOG "/.log"
 #define LASH_XDG_SUBDIR "/lash"
