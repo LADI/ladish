@@ -48,6 +48,9 @@ GtkWidget * g_buffer_size_combo;
 graph_view_handle g_jack_view = NULL;
 graph_view_handle g_studio_view = NULL;
 
+static guint g_jack_poll_source_tag;
+static double g_jack_max_dsp_load = 0.0;
+
 #if 0
 static void
 gtkmm_get_ink_pixel_size (Glib::RefPtr<Pango::Layout> layout,
@@ -92,70 +95,69 @@ static void buffer_size_set(uint32_t size)
   gtk_combo_box_set_active(GTK_COMBO_BOX(g_buffer_size_combo), (int)log2f(size) - 5);
 }
 
-#if 0
-
-void
-buffer_size_changed()
+static void buffer_size_change_request(void)
 {
-  const int selected = _buffer_size_combo->get_active_row_number();
+  const int selected = gtk_combo_box_get_active(GTK_COMBO_BOX(g_buffer_size_combo));
 
-  if (selected == -1)
+  if (selected < 0 || !jack_proxy_set_buffer_size(1 << (selected + 5)))
   {
-    update_toolbar();
+    lash_error("cannot set JACK buffer size");
+    buffer_size_clear();
+  }
+}
+
+static void update_buffer_size(void)
+{
+  uint32_t size;
+
+  if (jack_proxy_get_buffer_size(&size))
+  {
+    buffer_size_set(size);
   }
   else
   {
-    uint32_t buffer_size = 1 << (selected + 5);
-
-    // this check is temporal workaround for jack bug
-    // we skip setting buffer size if it same as acutal one
-    // proper place for such check is in jack
-    if (_jack->buffer_size() != buffer_size)
-    {
-      if (!_jack->set_buffer_size(buffer_size))
-      {
-        update_toolbar(); // reset combo box to actual value
-      }
-    }
+    buffer_size_clear();
   }
 }
 
-#endif
-
-#if 0
-void
-update_load()
+static void update_load(void)
 {
-  if (!_jack->is_started())
+  uint32_t xruns;
+  double load;
+  char tmp_buf[100];
+
+  if (!jack_proxy_get_xruns(&xruns) || !jack_proxy_get_dsp_load(&load))
   {
-    _main_xrun_progress->set_text("JACK stopped");
-    return;
+    gtk_progress_bar_set_text(GTK_PROGRESS_BAR(g_xrun_progress_bar), "error");
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_xrun_progress_bar), 0.0);
   }
 
-  char tmp_buf[8];
-  snprintf(tmp_buf, 8, "%zd", _jack->xruns());
+  snprintf(tmp_buf, sizeof(tmp_buf), "%" PRIu32 " Dropouts", xruns);
+  gtk_progress_bar_set_text(GTK_PROGRESS_BAR(g_xrun_progress_bar), tmp_buf);
 
-  _main_xrun_progress->set_text(std::string(tmp_buf) + " Dropouts");
+  load /= 100.0;           // dbus returns it in percents, we use 0..1
 
-  float load = _jack->get_dsp_load();
-
-  load /= 100.0;                // dbus returns it in percents, we use 0..1
-
-  if (load > _max_dsp_load)
+  if (load > g_jack_max_dsp_load)
   {
-    _max_dsp_load = load;
-    _main_xrun_progress->set_fraction(load);
+    g_jack_max_dsp_load = load;
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_xrun_progress_bar), load);
   }
 }
 
-void
-clear_load()
+static void clear_load(void)
 {
-  _main_xrun_progress->set_fraction(0.0);
-  _jack->reset_xruns();
-  _max_dsp_load = 0.0;
+  jack_proxy_reset_xruns();
+  g_jack_max_dsp_load = 0.0;
+  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_xrun_progress_bar), 0.0);
 }
-#endif
+
+static gboolean poll_jack(gpointer data)
+{
+  update_load();
+  update_buffer_size();
+
+  return TRUE;
+}
 
 void control_proxy_on_studio_appeared(void)
 {
@@ -177,27 +179,19 @@ void control_proxy_on_studio_disappeared(void)
 
 void jack_started(void)
 {
-  uint32_t size;
-
   lash_info("JACK started");
 
   gtk_widget_set_sensitive(g_buffer_size_combo, true);
-
-  if (jack_proxy_get_buffer_size(&size))
-  {
-    buffer_size_set(size);
-  }
-  else
-  {
-    lash_error("jack_proxy_get_buffer_size() failed.");
-  }
-
   gtk_widget_set_sensitive(g_clear_load_button, true);
+
+  g_jack_poll_source_tag = g_timeout_add(100, poll_jack, NULL);
 }
 
 void jack_stopped(void)
 {
   lash_info("JACK stopped");
+
+  g_source_remove(g_jack_poll_source_tag);
 
   gtk_widget_set_sensitive(g_buffer_size_combo, false);
   buffer_size_clear();
@@ -275,6 +269,8 @@ int main(int argc, char** argv)
 
   g_signal_connect(G_OBJECT(g_main_win), "destroy", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(G_OBJECT(get_glade_widget("menu_file_quit")), "activate", G_CALLBACK(gtk_main_quit), NULL);
+  g_signal_connect(G_OBJECT(g_buffer_size_combo), "changed", G_CALLBACK(buffer_size_change_request), NULL);
+  g_signal_connect(G_OBJECT(g_clear_load_button), "clicked", G_CALLBACK(clear_load), NULL);
 
   gtk_widget_show(g_main_win);
 
