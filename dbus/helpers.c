@@ -137,7 +137,7 @@ dbus_call_simple(
   int type;
   DBusSignatureIter sig_iter;
 
-  lash_info("dbus_call_simple('%s', '%s', '%s', '%s')", service, object, iface, method);
+  //lash_info("dbus_call_simple('%s', '%s', '%s', '%s')", service, object, iface, method);
 
   ret = false;
   va_start(ap, input_signature);
