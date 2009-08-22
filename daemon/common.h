@@ -35,7 +35,6 @@
 
 #include "../dbus/service.h"
 #include "../dbus/helpers.h"
-#include "../common/klist.h"
 #include "../common/debug.h"
 
 /* JACK port or virtual port */

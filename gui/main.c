@@ -34,6 +34,7 @@
 #include "control_proxy.h"
 #include "../dbus_constants.h"
 #include "world_tree.h"
+#include "graph_view.h"
 
 #if 0
 class Patchage {
@@ -854,134 +855,39 @@ Patchage::is_canvas_empty()
 #endif
 #endif
 
-GtkScrolledWindow * g_main_scrolledwin;
-
-struct view
-{
-  char * name;
-  graph_canvas_handle graph_canvas;
-  graph_handle graph;
-  GtkWidget * canvas_widget;
-};
-
-struct view * create_view(const char * name, const char * service, const char * object)
-{
-  struct view * view_ptr;
-
-  view_ptr = malloc(sizeof(struct view));
-  if (view_ptr == NULL)
-  {
-    lash_error("malloc() failed for struct view");
-    goto fail;
-  }
-
-  view_ptr->name = strdup(name);
-  if (view_ptr->name == NULL)
-  {
-    lash_error("strdup() failed for \"%s\"", name);
-    goto free_view;
-  }
-
-  if (!graph_create(service, object, &view_ptr->graph))
-  {
-    goto free_name;
-  }
-
-  if (!graph_canvas_create(1600 * 2, 1200 * 2, &view_ptr->graph_canvas))
-  {
-    goto destroy_graph;
-  }
-
-  if (!graph_canvas_attach(view_ptr->graph_canvas, view_ptr->graph))
-  {
-    goto destroy_graph_canvas;
-  }
-
-  if (!graph_activate(view_ptr->graph))
-  {
-    goto detach_graph_canvas;
-  }
-
-  view_ptr->canvas_widget = canvas_get_widget(graph_canvas_get_canvas(view_ptr->graph_canvas));
-
-  gtk_widget_show(view_ptr->canvas_widget);
-
-  return view_ptr;
-
-detach_graph_canvas:
-  graph_canvas_detach(view_ptr->graph_canvas);
-destroy_graph_canvas:
-  graph_canvas_destroy(view_ptr->graph_canvas);
-destroy_graph:
-  graph_destroy(view_ptr->graph);
-free_name:
-  free(view_ptr->name);
-free_view:
-  free(view_ptr);
-fail:
-  return NULL;
-}
-
-void destroy_view(struct view * view_ptr)
-{
-  graph_canvas_detach(view_ptr->graph_canvas);
-  graph_canvas_destroy(view_ptr->graph_canvas);
-  graph_destroy(view_ptr->graph);
-  free(view_ptr->name);
-  free(view_ptr);
-}
-
-void attach_view(struct view * view_ptr)
-{
-  GtkWidget * child;
-
-  child = gtk_bin_get_child(GTK_BIN(g_main_scrolledwin));
-  if (child != NULL)
-  {
-    gtk_container_remove(GTK_CONTAINER(g_main_scrolledwin), child);
-  }
-
-  gtk_container_add(GTK_CONTAINER(g_main_scrolledwin), view_ptr->canvas_widget);
-
-  //_canvas->scroll_to(static_cast<int>(_canvas->width()/2 - 320), static_cast<int>(_canvas->height()/2 - 240)); // FIXME: hardcoded
-  //_main_scrolledwin->property_hadjustment().get_value()->set_step_increment(10);
-  //_main_scrolledwin->property_vadjustment().get_value()->set_step_increment(10);
-}
-
-void detach_view(struct view * view_ptr)
-{
-  GtkWidget * child;
-
-  child = gtk_bin_get_child(GTK_BIN(g_main_scrolledwin));
-  if (child == view_ptr->canvas_widget)
-  {
-    gtk_container_remove(GTK_CONTAINER(g_main_scrolledwin), view_ptr->canvas_widget);
-  }
-}
-
-struct view * g_jack_view;
-struct view * g_studio_view;
+graph_view_handle g_jack_view = NULL;
+graph_view_handle g_studio_view = NULL;
 
 void control_proxy_on_studio_appeared(void)
 {
-  g_studio_view = create_view("Studio", SERVICE_NAME, STUDIO_OBJECT_PATH);
-  attach_view(g_studio_view);
-  world_tree_add_studio(g_studio_view->graph);
+  if (!create_view("Studio", SERVICE_NAME, STUDIO_OBJECT_PATH, &g_studio_view))
+  {
+    lash_error("create_view() failed for studio");
+    return;
+  }
 
-  g_jack_view = create_view("Raw JACK", JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH);
-  attach_view(g_jack_view);
-  world_tree_add_jack(g_jack_view->graph);
+  if (!create_view("Raw JACK", JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, &g_jack_view))
+  {
+    lash_error("create_view() failed for jack");
+    return;
+  }
+
+  activate_view(g_jack_view);
 }
 
 void control_proxy_on_studio_disappeared(void)
 {
-  detach_view(g_jack_view);
-  world_tree_remove(g_jack_view->graph);
-  destroy_view(g_jack_view);
+  if (g_jack_view != NULL)
+  {
+    destroy_view(g_jack_view);
+    g_jack_view = NULL;
+  }
 
-  detach_view(g_studio_view);
-  world_tree_remove(g_studio_view->graph);
-  destroy_view(g_studio_view);
+  if (g_studio_view != NULL)
+  {
+    destroy_view(g_studio_view);
+    g_jack_view = NULL;
+  }
 }
 
 int main(int argc, char** argv)
@@ -1003,9 +909,9 @@ int main(int argc, char** argv)
 
   /* Obtain widgets that we need */
   main_win = get_glade_widget("main_win");
-  g_main_scrolledwin = GTK_SCROLLED_WINDOW(get_glade_widget("main_scrolledwin"));
 
   world_tree_init();
+  view_init();
 
   patchage_dbus_init();
 

@@ -5,7 +5,7 @@
  * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains stuff that is needed almost everywhere in ladish
+ * This file contains interface of the graph view object
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -24,21 +24,16 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef COMMON_H__82C9504A_ACD2_435D_9743_781943473E6A__INCLUDED
-#define COMMON_H__82C9504A_ACD2_435D_9743_781943473E6A__INCLUDED
+#ifndef GRAPH_VIEW_H__05B5CE46_5239_43F1_9F31_79F13EBF0DFA__INCLUDED
+#define GRAPH_VIEW_H__05B5CE46_5239_43F1_9F31_79F13EBF0DFA__INCLUDED
 
-#include "config.h"             /* configure stage result */
+#include "graph_canvas.h"
 
-#include <stdbool.h>            /* C99 bool */
-#include <stdint.h>             /* fixed bit size ints */
-#include <inttypes.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include <assert.h>
+typedef struct graph_view_tag { int unused; } * graph_view_handle;
 
-#ifndef __cplusplus
-#include "common/klist.h"
-#endif
+void view_init(void);
+bool create_view(const char * name, const char * service, const char * object, graph_view_handle * handle_ptr);
+void destroy_view(graph_view_handle view);
+void activate_view(graph_view_handle view);
 
-#endif /* #ifndef COMMON_H__82C9504A_ACD2_435D_9743_781943473E6A__INCLUDED */
+#endif /* #ifndef GRAPH_VIEW_H__05B5CE46_5239_43F1_9F31_79F13EBF0DFA__INCLUDED */

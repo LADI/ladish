@@ -408,20 +408,12 @@ void world_tree_init(void)
   gtk_tree_view_set_model(GTK_TREE_VIEW(g_world_tree_widget), GTK_TREE_MODEL(g_treestore));
 }
 
-void world_tree_add_studio(graph_handle graph)
+void world_tree_add(graph_handle graph, const char * name)
 {
   GtkTreeIter iter;
 
   gtk_tree_store_append(g_treestore, &iter, NULL);
-  gtk_tree_store_set(g_treestore, &iter, COL_NAME, "Studio", COL_GRAPH, graph, -1);
-}
-
-void world_tree_add_jack(graph_handle graph)
-{
-  GtkTreeIter toplevel;
-
-  gtk_tree_store_append(g_treestore, &toplevel, NULL);
-  gtk_tree_store_set(g_treestore, &toplevel, COL_NAME, "JACK", COL_GRAPH, graph, -1);
+  gtk_tree_store_set(g_treestore, &iter, COL_NAME, name, COL_GRAPH, graph, -1);
 }
 
 void world_tree_remove(graph_handle graph)

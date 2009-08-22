@@ -272,6 +272,7 @@ def build(bld):
         #'load_projects_dialog.cpp',
         #'project.cpp',
         'world_tree.c',
+        'graph_view.c',
         #'project_properties.cpp',
         #'session.cpp',
         #'a2j_proxy.cpp',
