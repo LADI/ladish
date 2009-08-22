@@ -238,6 +238,23 @@ jack_proxy_init(
   g_on_server_appeared = server_appeared;
   g_on_server_disappeared = server_disappeared;
 
+  {
+    bool started;
+
+    if (jack_proxy_is_started(&started))
+    {
+      if (g_on_server_appeared != NULL)
+      {
+        g_on_server_appeared();
+      }
+
+      if (g_on_server_started != NULL && started)
+      {
+        g_on_server_started();
+      }
+    }
+  }
+
   return true;
 }
 

@@ -104,8 +104,6 @@ bool
 jack_init(
   void)
 {
-  bool started;
-
   if (!jack_proxy_init(
         on_jack_server_started,
         on_jack_server_stopped,
@@ -113,11 +111,6 @@ jack_init(
         on_jack_server_disappeared))
   {
     return false;
-  }
-
-  if (jack_proxy_is_started(&started) && started)
-  {
-    on_jack_server_started();
   }
 
   return true;
