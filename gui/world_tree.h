@@ -33,5 +33,6 @@ void world_tree_init(void);
 
 void world_tree_add(graph_view_handle view, bool force_activate);
 void world_tree_remove(graph_view_handle view);
+void world_tree_activate(graph_view_handle view);
 
 #endif // #ifndef WORLD_TREE_H__D786489B_E400_4E92_85C7_2BAE606DE56D__INCLUDED

@@ -451,22 +451,42 @@ void world_tree_add(graph_view_handle view, bool force_activate)
   }
 }
 
-void world_tree_remove(graph_view_handle view)
+static bool find_view(graph_view_handle view, GtkTreeIter * iter_ptr)
 {
-  GtkTreeIter iter;
   graph_view_handle view2;
 
-  if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(g_treestore), &iter))
+  if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(g_treestore), iter_ptr))
   {
     do
     {
-      gtk_tree_model_get(GTK_TREE_MODEL(g_treestore), &iter, COL_VIEW, &view2, -1);
+      gtk_tree_model_get(GTK_TREE_MODEL(g_treestore), iter_ptr, COL_VIEW, &view2, -1);
       if (view == view2)
       {
-        gtk_tree_store_remove(g_treestore, &iter);
-        return;
+        return true;
       }
     }
-    while (gtk_tree_model_iter_next(GTK_TREE_MODEL(g_treestore), &iter));
+    while (gtk_tree_model_iter_next(GTK_TREE_MODEL(g_treestore), iter_ptr));
+  }
+
+  return false;
+}
+
+void world_tree_remove(graph_view_handle view)
+{
+  GtkTreeIter iter;
+
+  if (find_view(view, &iter))
+  {
+    gtk_tree_store_remove(g_treestore, &iter);
+  }
+}
+
+void world_tree_activate(graph_view_handle view)
+{
+  GtkTreeIter iter;
+
+  if (find_view(view, &iter))
+  {
+    gtk_tree_selection_select_iter(gtk_tree_view_get_selection(GTK_TREE_VIEW(g_world_tree_widget)), &iter);
   }
 }

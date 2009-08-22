@@ -146,11 +146,6 @@ static void detach_canvas(struct graph_view * view_ptr)
   }
 }
 
-static void activate_view_internal(struct graph_view * view_ptr)
-{
-  attach_canvas(view_ptr);
-}
-
 #define view_ptr ((struct graph_view *)view)
 
 void destroy_view(graph_view_handle view)
@@ -158,7 +153,7 @@ void destroy_view(graph_view_handle view)
   list_del(&view_ptr->siblings);
   if (!list_empty(&g_views))
   {
-    activate_view_internal(list_entry(g_views.next, struct graph_view, siblings));
+    world_tree_activate((graph_view_handle)list_entry(g_views.next, struct graph_view, siblings));
   }
 
   detach_canvas(view_ptr);
@@ -174,7 +169,7 @@ void destroy_view(graph_view_handle view)
 
 void activate_view(graph_view_handle view)
 {
-  activate_view_internal(view_ptr);
+  attach_canvas(view_ptr);
 }
 
 const char * get_view_name(graph_view_handle view)
