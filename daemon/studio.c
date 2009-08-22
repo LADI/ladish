@@ -252,6 +252,12 @@ conf_callback(
 
   parent_ptr = context_ptr->parent_ptr;
 
+  if (parent_ptr == NULL && strcmp(child, "drivers") == 0)
+  {
+    lash_info("ignoring drivers branch");
+    return true;
+  }
+
   dst = path;
   component = address;
   while (*component != 0)
