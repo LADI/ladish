@@ -29,6 +29,8 @@
 #include "patchbay.h"
 #include "../dbus_constants.h"
 #include "control.h"
+#include "../catdup.h"
+#include "../dbus/error.h"
 
 extern const interface_t g_interface_studio;
 
@@ -57,6 +59,8 @@ struct studio
   object_path_t * dbus_object;
 
   struct list_head event_queue;
+
+  char * name;
 } g_studio;
 
 #define EVENT_JACK_START   0
@@ -409,10 +413,34 @@ bool studio_fetch_jack_settings()
   return true;
 }
 
+bool studio_name_generate(char ** name_ptr)
+{
+  time_t now;
+  char timestamp_str[26];
+  char * name;
+
+  time(&now);
+  //ctime_r(&now, timestamp_str);
+  //timestamp_str[24] = 0;
+  snprintf(timestamp_str, sizeof(timestamp_str), "%llu", (unsigned long long)now);
+
+  name = catdup("Studio ", timestamp_str);
+  if (name == NULL)
+  {
+    lash_error("catdup failed to create studio name");
+    return false;
+  }
+
+  *name_ptr = name;
+  return true;
+}
+
 bool
 studio_activate(void)
 {
   object_path_t * object;
+
+  assert(g_studio.name != NULL);
 
   object = object_path_new(STUDIO_OBJECT_PATH, &g_studio, 2, &g_interface_studio, &g_interface_patchbay);
   if (object == NULL)
@@ -428,7 +456,7 @@ studio_activate(void)
     return false;
   }
 
-  lash_info("Studio D-Bus object created.");
+  lash_info("Studio D-Bus object created. \"%s\"", g_studio.name);
 
   g_studio.dbus_object = object;
 
@@ -460,6 +488,12 @@ studio_clear(void)
     g_studio.dbus_object = NULL;
     emit_studio_disappeared();
   }
+
+  if (g_studio.name != NULL)
+  {
+    free(g_studio.name);
+    g_studio.name = NULL;
+  }
 }
 
 void
@@ -476,6 +510,13 @@ void on_event_jack_started(void)
 {
   if (g_studio.dbus_object == NULL)
   {
+    assert(g_studio.name == NULL);
+    if (!studio_name_generate(&g_studio.name))
+    {
+      lash_error("studio_name_generate() failed.");
+      return;
+    }
+
     studio_activate();
   }
 
@@ -600,6 +641,7 @@ bool studio_init(void)
   INIT_LIST_HEAD(&g_studio.event_queue);
 
   g_studio.dbus_object = NULL;
+  g_studio.name = NULL;
   studio_clear();
 
   if (!jack_proxy_init(
@@ -628,7 +670,7 @@ bool studio_is_loaded(void)
   return g_studio.dbus_object != NULL;
 }
 
-bool studio_save(const char * file_path)
+bool studio_save()
 {
   struct list_head * node_ptr;
   struct jack_conf_parameter * parameter_ptr;
@@ -704,15 +746,56 @@ bool studio_load(const char * file_path)
   return false;                 /* not implemented yet */
 }
 
+static void ladish_get_studio_name(method_call_t * call_ptr)
+{
+  method_return_new_single(call_ptr, DBUS_TYPE_STRING, &g_studio.name);
+}
+
+static void ladish_rename_studio(method_call_t * call_ptr)
+{
+  const char * new_name;
+  char * new_name_dup;
+  
+  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_STRING, &new_name, DBUS_TYPE_INVALID))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return;
+  }
+
+  new_name_dup = strdup(new_name);
+  if (new_name_dup == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup() failed to allocate new name.");
+    return;
+  }
+
+  free(g_studio.name);
+  g_studio.name = new_name_dup;
+
+  method_return_new_void(call_ptr);
+}
+
 static void ladish_save_studio(method_call_t * call_ptr)
 {
-  //studio_save(g_studio, NULL)
+  studio_save();
+  method_return_new_void(call_ptr);
 }
+
+METHOD_ARGS_BEGIN(GetName, "Get studio name")
+  METHOD_ARG_DESCRIBE_OUT("studio_name", "s", "Name of studio")
+METHOD_ARGS_END
+
+METHOD_ARGS_BEGIN(Rename, "Rename studio")
+  METHOD_ARG_DESCRIBE_IN("studio_name", "s", "New name")
+METHOD_ARGS_END
 
 METHOD_ARGS_BEGIN(Save, "Save studio")
 METHOD_ARGS_END
 
 METHODS_BEGIN
+  METHOD_DESCRIBE(GetName, ladish_get_studio_name)
+  METHOD_DESCRIBE(Rename, ladish_rename_studio)
   METHOD_DESCRIBE(Save, ladish_save_studio)
 METHODS_END
 

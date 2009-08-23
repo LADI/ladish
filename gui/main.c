@@ -39,6 +39,7 @@
 #include "world_tree.h"
 #include "graph_view.h"
 #include "../catdup.h"
+#include "../studio_proxy.h"
 
 GtkWidget * g_main_win;
 GtkWidget * g_clear_load_button;
@@ -172,6 +173,10 @@ static void arrange(void)
 static void save_studio(void)
 {
   lash_info("save studio request");
+  if (!studio_proxy_save())
+  {
+    lash_error("studio save failed");
+  }
 }
 
 static gboolean poll_jack(gpointer data)
