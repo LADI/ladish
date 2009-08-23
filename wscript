@@ -173,6 +173,7 @@ def build(bld):
         'main.c',
         'loader.c',
         'log.c',
+        'dirhelpers.c',
         'sigsegv.c',
         'proctitle.c',
         'appdb.c',

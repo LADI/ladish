@@ -25,59 +25,20 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <stdlib.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <errno.h>
-#include <string.h>
-#include <time.h>
+#include "../common.h"
 
-#include "../common/debug.h"
+#include <errno.h>
+#include <time.h>
+#include <stdarg.h>
+
 #include "../catdup.h"
+#include "dirhelpers.h"
 
 #define DEFAULT_XDG_LOG "/.log"
 #define LASH_XDG_SUBDIR "/" BASE_NAME
 #define LASH_XDG_LOG "/" BASE_NAME ".log"
 
 FILE * g_logfile;
-
-bool
-ensure_dir_exist(
-  const char * dirname,
-  int mode)
-{
-  struct stat st;
-  if (stat(dirname, &st) != 0)
-  {
-    if (errno == ENOENT)
-    {
-      lash_info("Directory \"%s\" does not exist. Creating...", dirname);
-      if (mkdir(dirname, mode) != 0)
-      {
-        lash_error("Failed to create \"%s\" directory: %d (%s)", dirname, errno, strerror(errno));
-        return false;
-      }
-    }
-    else
-    {
-      lash_error("Failed to stat \"%s\": %d (%s)", dirname, errno, strerror(errno));
-      return false;
-    }
-  }
-  else
-  {
-    if (!S_ISDIR(st.st_mode))
-    {
-      lash_error("\"%s\" exists but is not directory.", dirname);
-      return false;
-    }
-  }
-
-  return true;
-}
 
 void lash_log_init() __attribute__ ((constructor));
 void lash_log_init()
