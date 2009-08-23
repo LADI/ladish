@@ -189,10 +189,24 @@ static gboolean poll_jack(gpointer data)
 
 void control_proxy_on_studio_appeared(void)
 {
-  if (!create_view("Studio", SERVICE_NAME, STUDIO_OBJECT_PATH, false, &g_studio_view))
+  char * name;
+
+  if (!studio_proxy_get_name(&name))
+  {
+    lash_error("failed to get studio name");
+    goto exit;
+  }
+
+  if (g_studio_view != NULL)
+  {
+    lash_error("studio appear signal received but studio already exists");
+    goto free_name;
+  }
+
+  if (!create_view(name, SERVICE_NAME, STUDIO_OBJECT_PATH, false, &g_studio_view))
   {
     lash_error("create_view() failed for studio");
-    return;
+    goto free_name;
   }
 
   gtk_widget_set_sensitive(g_menu_item_save_studio, true);
@@ -200,10 +214,22 @@ void control_proxy_on_studio_appeared(void)
   gtk_widget_set_sensitive(g_menu_item_destroy_room, true);
   gtk_widget_set_sensitive(g_menu_item_load_project, true);
   gtk_widget_set_sensitive(g_menu_item_start_app, true);
+
+free_name:
+  free(name);
+
+exit:
+  return;
 }
 
 void control_proxy_on_studio_disappeared(void)
 {
+  if (g_studio_view == NULL)
+  {
+    lash_error("studio disappear signal received but studio does not exists");
+    return;
+  }
+
   gtk_widget_set_sensitive(g_menu_item_save_studio, false);
   gtk_widget_set_sensitive(g_menu_item_create_room, false);
   gtk_widget_set_sensitive(g_menu_item_destroy_room, false);
@@ -213,7 +239,7 @@ void control_proxy_on_studio_disappeared(void)
   if (g_studio_view != NULL)
   {
     destroy_view(g_studio_view);
-    g_jack_view = NULL;
+    g_studio_view = NULL;
   }
 }
 
