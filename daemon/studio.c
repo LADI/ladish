@@ -25,6 +25,12 @@
  */
 
 #include "common.h"
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+
 #include "../jack_proxy.h"
 #include "patchbay.h"
 #include "../dbus_constants.h"
@@ -35,6 +41,8 @@
 
 #define STUDIOS_DIR "/studios"
 char * g_studios_dir;
+
+#define STUDIO_HEADER_TEXT BASE_NAME " Studio configuration.\n"
 
 extern const interface_t g_interface_studio;
 
@@ -763,61 +771,221 @@ bool maybe_compose_filename(void)
   return true;
 }
 
-bool studio_save()
+bool
+write_string(int fd, const char * string, void * call_ptr)
 {
-  struct list_head * node_ptr;
-  struct jack_conf_parameter * parameter_ptr;
-  char path[JACK_CONF_MAX_ADDRESS_SIZE * 3]; /* encode each char in three bytes (percent encoding) */
+  size_t len;
+
+  len = strlen(string);
+
+  if (write(fd, string, len) != len)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "write() failed to write config file.");
+    return false;
+  }
+
+  return true;
+}
+
+bool
+write_jack_parameter(
+  int fd,
+  const char * indent,
+  struct jack_conf_parameter * parameter_ptr,
+  void * call_ptr)
+{
   const char * src;
   char * dst;
+  char path[JACK_CONF_MAX_ADDRESS_SIZE * 3]; /* encode each char in three bytes (percent encoding) */
+  const char * content;
+  char valbuf[100];
 
-  if (!maybe_compose_filename())
+  /* compose the parameter path, percent-encode "bad" chars */
+  src = parameter_ptr->address;
+  dst = path;
+  do
+  {
+    *dst++ = '/';
+    escape(&src, &dst);
+    src++;
+  }
+  while (*src != 0);
+  *dst = 0;
+
+  if (!write_string(fd, indent, call_ptr))
   {
     return false;
   }
 
+  if (!write_string(fd, "<parameter path=\"", call_ptr))
+  {
+    return false;
+  }
+
+  if (!write_string(fd, path, call_ptr))
+  {
+    return false;
+  }
+
+  if (!write_string(fd, "\">", call_ptr))
+  {
+    return false;
+  }
+
+  switch (parameter_ptr->parameter.type)
+  {
+  case jack_boolean:
+    content = parameter_ptr->parameter.value.boolean ? "true" : "false";
+    lash_debug("%s value is %s (boolean)", path, content);
+    break;
+  case jack_string:
+    content = parameter_ptr->parameter.value.string;
+    lash_debug("%s value is %s (string)", path, content);
+    break;
+  case jack_byte:
+    valbuf[0] = (char)parameter_ptr->parameter.value.byte;
+    valbuf[1] = 0;
+    lash_debug("%s value is %u/%c (byte/char)", path, parameter_ptr->parameter.value.byte, (char)parameter_ptr->parameter.value.byte);
+    break;
+  case jack_uint32:
+    snprintf(valbuf, sizeof(valbuf), "%" PRIu32, parameter_ptr->parameter.value.uint32);
+    lash_debug("%s value is %s (uint32)", path, content);
+    break;
+  case jack_int32:
+    snprintf(valbuf, sizeof(valbuf), "%" PRIi32, parameter_ptr->parameter.value.int32);
+    lash_debug("%s value is %s (int32)", path, content);
+    break;
+  default:
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "unknown jack parameter_ptr->parameter type %d (%s)", (int)parameter_ptr->parameter.type, path);
+    return false;
+  }
+
+  if (!write_string(fd, content, call_ptr))
+  {
+    return false;
+  }
+
+  if (!write_string(fd, "</parameter>\n", call_ptr))
+  {
+    return false;
+  }
+
+  return true;
+}
+
+bool studio_save(void * call_ptr)
+{
+  struct list_head * node_ptr;
+  struct jack_conf_parameter * parameter_ptr;
+  int fd;
+  time_t timestamp;
+  char timestamp_str[26];
+  bool ret;
+
+  time(&timestamp);
+  ctime_r(&timestamp, timestamp_str);
+  timestamp_str[24] = 0;
+
+  ret = false;
+
+  if (!maybe_compose_filename())
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "failed to compose studio filename");
+    goto exit;
+  }
+
   lash_info("saving studio... (%s)", g_studio.filename);
+
+  fd = open(g_studio.filename, O_WRONLY | O_TRUNC | O_CREAT, 0700);
+  if (fd == -1)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "open(\"%s\") failed: %d (%s)", g_studio.filename, errno, strerror(errno));
+    goto exit;
+  }
+
+  if (!write_string(fd, "<?xml version=\"1.0\"?>\n", call_ptr))
+  {
+    goto close;
+  }
+
+  if (!write_string(fd, "<!--\n", call_ptr))
+  {
+    goto close;
+  }
+
+  if (!write_string(fd, STUDIO_HEADER_TEXT, call_ptr))
+  {
+    goto close;
+  }
+
+  if (!write_string(fd, "-->\n", call_ptr))
+  {
+    goto close;
+  }
+
+  if (!write_string(fd, "<!-- ", call_ptr))
+  {
+    goto close;
+  }
+
+  if (!write_string(fd, timestamp_str, call_ptr))
+  {
+    goto close;
+  }
+
+  if (!write_string(fd, " -->\n", call_ptr))
+  {
+    goto close;
+  }
+
+  if (!write_string(fd, "<studio>\n", call_ptr))
+  {
+    goto close;
+  }
+
+  if (!write_string(fd, "  <jack>\n", call_ptr))
+  {
+    goto close;
+  }
+
+  if (!write_string(fd, "    <conf>\n", call_ptr))
+  {
+    goto close;
+  }
 
   list_for_each(node_ptr, &g_studio.jack_params)
   {
     parameter_ptr = list_entry(node_ptr, struct jack_conf_parameter, leaves);
 
-    /* compose the parameter path, percent-encode "bad" chars */
-    src = parameter_ptr->address;
-    dst = path;
-    do
+    if (!write_jack_parameter(fd, "      ", parameter_ptr, call_ptr))
     {
-      *dst++ = '/';
-      escape(&src, &dst);
-      src++;
-    }
-    while (*src != 0);
-    *dst = 0;
-
-    switch (parameter_ptr->parameter.type)
-    {
-    case jack_boolean:
-      lash_info("%s value is %s (boolean)", path, parameter_ptr->parameter.value.boolean ? "true" : "false");
-      break;
-    case jack_string:
-      lash_info("%s value is %s (string)", path, parameter_ptr->parameter.value.string);
-      break;
-    case jack_byte:
-      lash_info("%s value is %u/%c (byte/char)", path, parameter_ptr->parameter.value.byte, (char)parameter_ptr->parameter.value.byte);
-      break;
-    case jack_uint32:
-      lash_info("%s value is %u (uint32)", path, (unsigned int)parameter_ptr->parameter.value.uint32);
-      break;
-    case jack_int32:
-      lash_info("%s value is %u (int32)", path, (signed int)parameter_ptr->parameter.value.int32);
-      break;
-    default:
-      lash_error("unknown jack parameter_ptr->parameter type %d (%s)", (int)parameter_ptr->parameter.type, path);
-      return false;
+      goto close;
     }
   }
 
-  return false;                 /* not implemented yet */
+  if (!write_string(fd, "    </conf>\n", call_ptr))
+  {
+    goto close;
+  }
+
+  if (!write_string(fd, "  </jack>\n", call_ptr))
+  {
+    goto close;
+  }
+
+  if (!write_string(fd, "</studio>\n", call_ptr))
+  {
+    goto close;
+  }
+
+  lash_info("studio saved. (%s)", g_studio.filename);
+  ret = true;
+
+close:
+  close(fd);
+
+exit:
+  return ret;
 }
 
 bool studio_load(const char * file_path)
@@ -863,8 +1031,10 @@ static void ladish_rename_studio(method_call_t * call_ptr)
 
 static void ladish_save_studio(method_call_t * call_ptr)
 {
-  studio_save();
-  method_return_new_void(call_ptr);
+  if (studio_save(call_ptr))
+  {
+    method_return_new_void(call_ptr);
+  }
 }
 
 METHOD_ARGS_BEGIN(GetName, "Get studio name")
