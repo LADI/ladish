@@ -117,7 +117,6 @@ def configure(conf):
     add_cflag(conf, '-Werror')
 
     conf.define('DATA_DIR', os.path.normpath(os.path.join(conf.env['PREFIX'], 'share', APPNAME)))
-    conf.define('DEFAULT_PROJECT_DIR', "audio-projects")
     conf.define('PACKAGE_VERSION', VERSION)
     conf.define('DBUS_NAME_BASE', DBUS_NAME_BASE)
     conf.define('DBUS_BASE_PATH', '/' + DBUS_NAME_BASE.replace('.', '/'))

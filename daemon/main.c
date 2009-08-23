@@ -39,10 +39,13 @@
 #include "control.h"
 #include "studio.h"
 #include "../dbus_constants.h"
+#include "../catdup.h"
+#include "dirhelpers.h"
 
 bool g_quit;
 const char * g_dbus_unique_name;
 object_path_t * g_control_object;
+char * g_base_dir;
 
 #if 0
 static DBusHandlerResult lashd_client_disconnect_handler(DBusConnection * connection, DBusMessage * message, void * data)
@@ -209,6 +212,38 @@ bool install_term_signal_handler(int signum, bool ignore_if_already_ignored)
   return true;
 }
 
+bool init_paths(void)
+{
+  const char * home_dir;
+
+  home_dir = getenv("HOME");
+  if (home_dir == NULL)
+  {
+    lash_error("Environment variable HOME not set");
+    return false;
+  }
+
+  g_base_dir = catdup(home_dir, BASE_DIR);
+  if (g_base_dir == NULL)
+  {
+    lash_error("catdup failed for '%s' and '%s'", home_dir, BASE_DIR);
+    return false;
+  }
+
+  if (!ensure_dir_exist(g_base_dir, 0700))
+  {
+    free(g_base_dir);
+    return false;
+  }
+
+  return true;
+}
+
+void uninit_paths(void)
+{
+  free(g_base_dir);
+}
+
 int main(int argc, char ** argv, char ** envp)
 {
   struct stat st;
@@ -228,6 +263,11 @@ int main(int argc, char ** argv, char ** envp)
   lash_info("LADI session handler activated. Version %s (%s) built on %s", PACKAGE_VERSION, GIT_VERSION, timestamp_str);
 
   ret = EXIT_FAILURE;
+
+  if (!init_paths())
+  {
+    goto exit;
+  }
 
   loader_init(on_child_exit);
 
@@ -273,6 +313,9 @@ uninit_dbus:
 uninit_loader:
   loader_uninit();
 
+  uninit_paths();
+
+exit:
   lash_debug("Cleaned up, exiting");
 
   lash_info("LADI session handler deactivated");

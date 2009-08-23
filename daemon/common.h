@@ -36,6 +36,10 @@
 #include "../dbus/service.h"
 #include "../dbus/helpers.h"
 
+/* ~/BASE_DIR is where studio, room and project xml files are stored */
+#define BASE_DIR "/." BASE_NAME
+extern char * g_base_dir;
+
 /* JACK port or virtual port */
 struct port
 {
