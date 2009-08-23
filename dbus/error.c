@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -51,15 +51,16 @@ lash_dbus_error(method_call_t *call_ptr,
 
   va_end(ap);
 
-  interface_name = (call_ptr->interface
-                    && call_ptr->interface->name
-                    && call_ptr->interface->name[0])
-                   ? call_ptr->interface->name
-                   : "<unknown>";
+  if (call_ptr != NULL)
+  {
+    interface_name = (call_ptr->interface && call_ptr->interface->name && call_ptr->interface->name[0]) ? call_ptr->interface->name : "<unknown>";
 
-  lash_error("In method %s.%s: %s", interface_name,
-             call_ptr->method_name, message);
+    lash_error("In method %s.%s: %s", interface_name, call_ptr->method_name, message);
 
-  call_ptr->reply = dbus_message_new_error(call_ptr->message, err_name,
-                                           message);
+    call_ptr->reply = dbus_message_new_error(call_ptr->message, err_name, message);
+  }
+  else
+  {
+    lash_error("%s", message);
+  }
 }

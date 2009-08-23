@@ -64,12 +64,48 @@ fail:
   lash_error("Ran out of memory trying to construct method return");
 }
 
+#define array_iter_ptr ((DBusMessageIter *)context)
+
+static bool get_studio_list_callback(void * call_ptr, void * context, const char * studio, uint32_t modtime)
+{
+  DBusMessageIter struct_iter;
+  DBusMessageIter dict_iter;
+  bool ret;
+
+  ret = false;
+
+  if (!dbus_message_iter_open_container(array_iter_ptr, DBUS_TYPE_STRUCT, NULL, &struct_iter))
+    goto exit;
+
+  if (!dbus_message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &studio))
+    goto close_struct;
+
+  if (!dbus_message_iter_open_container(&struct_iter, DBUS_TYPE_ARRAY, "{sv}", &dict_iter))
+    goto close_struct;
+
+/*   if (!maybe_add_dict_entry_string(&dict_iter, "Description", xxx)) */
+/*     goto close_dict; */
+
+  if (!dbus_add_dict_entry_uint32(&dict_iter, "Modification Time", modtime))
+    goto close_dict;
+
+  ret = true;
+
+close_dict:
+  if (!dbus_message_iter_close_container(&struct_iter, &dict_iter))
+    ret = false;
+
+close_struct:
+  if (!dbus_message_iter_close_container(array_iter_ptr, &struct_iter))
+    ret = false;
+
+exit:
+  return ret;
+}
+
 static void ladish_get_studio_list(method_call_t * call_ptr)
 {
   DBusMessageIter iter, array_iter;
-  //DBusMessageIter struct_iter, dict_iter;
-  //struct list_head * node_ptr;
-  //project_t * project_ptr;
 
   call_ptr->reply = dbus_message_new_method_return(call_ptr->message);
   if (call_ptr->reply == NULL)
@@ -84,36 +120,15 @@ static void ladish_get_studio_list(method_call_t * call_ptr)
     goto fail_unref;
   }
 
-#if 0
-  list_for_each (node_ptr, &g_server->all_projects)
+  if (!studios_iterate(call_ptr, &array_iter, get_studio_list_callback))
   {
-    project_ptr = list_entry(node_ptr, project_t, siblings_all);
-
-    if (!dbus_message_iter_open_container(&array_iter, DBUS_TYPE_STRUCT, NULL, &struct_iter))
+    dbus_message_iter_close_container(&iter, &array_iter);
+    if (call_ptr->reply == NULL)
       goto fail_unref;
 
-    if (!dbus_message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &project_ptr->name))
-    {
-      dbus_message_iter_close_container(&iter, &array_iter);
-      goto fail_unref;
-    }
-
-    if (!dbus_message_iter_open_container(&struct_iter, DBUS_TYPE_ARRAY, "{sv}", &dict_iter))
-      goto fail_unref;
-
-    if (!maybe_add_dict_entry_string(&dict_iter, "Description", project_ptr->description))
-      goto fail_unref;
-
-    if (!add_dict_entry_uint32(&dict_iter, "Modification Time", project_ptr->last_modify_time))
-      goto fail_unref;
-
-    if (!dbus_message_iter_close_container(&struct_iter, &dict_iter))
-      goto fail_unref;
-
-    if (!dbus_message_iter_close_container(&array_iter, &struct_iter))
-      goto fail_unref;
+    /* studios_iterate or get_studio_list_callback() composed error reply */
+    return;
   }
-#endif
 
   if (!dbus_message_iter_close_container(&iter, &array_iter))
   {

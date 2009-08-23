@@ -32,4 +32,6 @@ void studio_uninit(void);
 void studio_run(void);
 bool studio_is_loaded(void);
 
+bool studios_iterate(void * call_ptr, void * context, bool (* callback)(void * call_ptr, void * context, const char * studio, uint32_t modtime));
+
 #endif /* #ifndef STUDIO_H__0BEDE85E_4FB3_4D74_BC08_C373A22409C0__INCLUDED */

@@ -30,6 +30,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <dirent.h>
 
 #include "../jack_proxy.h"
 #include "patchbay.h"
@@ -39,7 +40,7 @@
 #include "../dbus/error.h"
 #include "dirhelpers.h"
 
-#define STUDIOS_DIR "/studios"
+#define STUDIOS_DIR "/studios/"
 char * g_studios_dir;
 
 #define STUDIO_HEADER_TEXT BASE_NAME " Studio configuration.\n"
@@ -986,6 +987,59 @@ close:
 
 exit:
   return ret;
+}
+
+bool studios_iterate(void * call_ptr, void * context, bool (* callback)(void * call_ptr, void * context, const char * studio, uint32_t modtime))
+{
+  DIR * dir;
+  struct dirent * dentry;
+  size_t len;
+  struct stat st;
+  char * path;
+
+  dir = opendir(g_studios_dir);
+  if (dir == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Cannot open directory '%s': %d (%s)", g_studios_dir, errno, strerror(errno));
+    return false;
+  }
+
+  while ((dentry = readdir(dir)) != NULL)
+  {
+    if (dentry->d_type != DT_REG)
+      continue;
+
+    len = strlen(dentry->d_name);
+    if (len < 4 || strcmp(dentry->d_name + (len - 4), ".xml"))
+      continue;
+
+    path = catdup(g_studios_dir, dentry->d_name);
+    if (path == NULL)
+    {
+      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "catdup() failed");
+      return false;
+    }
+
+    dentry->d_name[len - 4] = 0;
+
+    if (stat(path, &st) != 0)
+    {
+      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "failed to stat '%s': %d (%s)", path, errno, strerror(errno));
+      free(path);
+      return false;
+    }
+
+    free(path);
+
+    if (!callback(call_ptr, context, dentry->d_name, st.st_mtime))
+    {
+      closedir(dir);
+      return false;
+    }
+  }
+
+  closedir(dir);
+  return true;
 }
 
 bool studio_load(const char * file_path)
