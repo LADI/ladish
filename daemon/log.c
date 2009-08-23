@@ -39,8 +39,8 @@
 #include "../catdup.h"
 
 #define DEFAULT_XDG_LOG "/.log"
-#define LASH_XDG_SUBDIR "/lash"
-#define LASH_XDG_LOG "/lash.log"
+#define LASH_XDG_SUBDIR "/" BASE_NAME
+#define LASH_XDG_LOG "/" BASE_NAME ".log"
 
 FILE * g_logfile;
 

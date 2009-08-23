@@ -121,6 +121,7 @@ def configure(conf):
     conf.define('PACKAGE_VERSION', VERSION)
     conf.define('DBUS_NAME_BASE', DBUS_NAME_BASE)
     conf.define('DBUS_BASE_PATH', '/' + DBUS_NAME_BASE.replace('.', '/'))
+    conf.define('BASE_NAME', APPNAME)
     conf.define('_GNU_SOURCE', 1)
     conf.write_config_header('config.h')
 
