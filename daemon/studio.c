@@ -31,6 +31,10 @@
 #include "control.h"
 #include "../catdup.h"
 #include "../dbus/error.h"
+#include "dirhelpers.h"
+
+#define STUDIOS_DIR "/studios"
+char * g_studios_dir;
 
 extern const interface_t g_interface_studio;
 
@@ -61,6 +65,7 @@ struct studio
   struct list_head event_queue;
 
   char * name;
+  char * filename;
 } g_studio;
 
 #define EVENT_JACK_START   0
@@ -318,6 +323,7 @@ conf_callback(
 
     if (is_set)
     {
+#if 0
       switch (parameter_ptr->parameter.type)
       {
       case jack_boolean:
@@ -340,6 +346,7 @@ conf_callback(
         jack_conf_parameter_destroy(parameter_ptr);
         return false;
       }
+#endif
 
       parameter_ptr->parent_ptr = parent_ptr;
       memcpy(parameter_ptr->address, context_ptr->address, JACK_CONF_MAX_ADDRESS_SIZE);
@@ -494,6 +501,12 @@ studio_clear(void)
     free(g_studio.name);
     g_studio.name = NULL;
   }
+
+  if (g_studio.filename != NULL)
+  {
+    free(g_studio.filename);
+    g_studio.filename = NULL;
+  }
 }
 
 void
@@ -622,6 +635,19 @@ bool studio_init(void)
 {
   lash_info("studio object construct");
 
+  g_studios_dir = catdup(g_base_dir, STUDIOS_DIR);
+  if (g_studios_dir == NULL)
+  {
+    lash_error("catdup failed for '%s' and '%s'", g_base_dir, STUDIOS_DIR);
+    return false;
+  }
+
+  if (!ensure_dir_exist(g_studios_dir, 0700))
+  {
+    free(g_studios_dir);
+    return false;
+  }
+
   g_studio.patchbay_impl.this = &g_studio;
   g_studio.patchbay_impl.get_graph_version = studio_get_graph_version;
 
@@ -642,6 +668,7 @@ bool studio_init(void)
 
   g_studio.dbus_object = NULL;
   g_studio.name = NULL;
+  g_studio.filename = NULL;
   studio_clear();
 
   if (!jack_proxy_init(
@@ -670,6 +697,72 @@ bool studio_is_loaded(void)
   return g_studio.dbus_object != NULL;
 }
 
+void escape(const char ** src_ptr, char ** dst_ptr)
+{
+  const char * src;
+  char * dst;
+  static char hex_digits[] = "0123456789ABCDEF";
+
+  src = *src_ptr;
+  dst = *dst_ptr;
+
+  while (*src != 0)
+  {
+    switch (*src)
+    {
+    case '/':               /* used as separator for address components */
+    case '<':               /* invalid attribute value char (XML spec) */
+    case '&':               /* invalid attribute value char (XML spec) */
+    case '"':               /* we store attribute values in double quotes - invalid attribute value char (XML spec) */
+    case '%':
+      dst[0] = '%';
+      dst[1] = hex_digits[*src >> 4];
+      dst[2] = hex_digits[*src & 0x0F];
+      dst += 3;
+      src++;
+      break;
+    default:
+      *dst++ = *src++;
+    }
+  }
+
+  *src_ptr = src;
+  *dst_ptr = dst;
+}
+
+bool maybe_compose_filename(void)
+{
+  size_t len_dir;
+  char * p;
+  const char * src;
+
+  if (g_studio.filename != NULL)
+  {
+    return true;
+  }
+
+  len_dir = strlen(g_studios_dir);
+
+  g_studio.filename = malloc(len_dir + 1 + strlen(g_studio.name) * 3 + 4);
+  if (g_studio.filename == NULL)
+  {
+    lash_error("malloc failed to allocate memory for studio file path");
+    return false;
+  }
+
+  p = g_studio.filename;
+  memcpy(p, g_studios_dir, len_dir);
+  p += len_dir;
+
+  *p++ = '/';
+
+  src = g_studio.name;
+  escape(&src, &p);
+  strcpy(p, ".xml");
+
+  return true;
+}
+
 bool studio_save()
 {
   struct list_head * node_ptr;
@@ -677,9 +770,13 @@ bool studio_save()
   char path[JACK_CONF_MAX_ADDRESS_SIZE * 3]; /* encode each char in three bytes (percent encoding) */
   const char * src;
   char * dst;
-  static char hex_digits[] = "0123456789ABCDEF";
 
-  lash_info("saving studio...");
+  if (!maybe_compose_filename())
+  {
+    return false;
+  }
+
+  lash_info("saving studio... (%s)", g_studio.filename);
 
   list_for_each(node_ptr, &g_studio.jack_params)
   {
@@ -691,25 +788,7 @@ bool studio_save()
     do
     {
       *dst++ = '/';
-      while (*src != 0)
-      {
-        switch (*src)
-        {
-        case '/':               /* used as separator for address components */
-        case '<':               /* invalid attribute value char (XML spec) */
-        case '&':               /* invalid attribute value char (XML spec) */
-        case '"':               /* we store attribute values in double quotes - invalid attribute value char (XML spec) */
-        case '%':
-          dst[0] = '%';
-          dst[1] = hex_digits[*src >> 4];
-          dst[2] = hex_digits[*src & 0x0F];
-          dst += 3;
-          src++;
-          break;
-        default:
-          *dst++ = *src++;
-        }
-      }
+      escape(&src, &dst);
       src++;
     }
     while (*src != 0);
