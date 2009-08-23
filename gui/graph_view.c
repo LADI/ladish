@@ -41,13 +41,13 @@ struct graph_view
 struct list_head g_views;
 
 GtkScrolledWindow * g_main_scrolledwin;
-graph_canvas_handle g_current_graph_canvas;
+static struct graph_view * g_current_view;
 
 void view_init(void)
 {
   g_main_scrolledwin = GTK_SCROLLED_WINDOW(get_glade_widget("main_scrolledwin"));
   INIT_LIST_HEAD(&g_views);
-  g_current_graph_canvas = NULL;
+  g_current_view = NULL;
 }
 
 bool create_view(const char * name, const char * service, const char * object, bool force_activate, graph_view_handle * handle_ptr)
@@ -130,7 +130,7 @@ static void attach_canvas(struct graph_view * view_ptr)
     gtk_container_remove(GTK_CONTAINER(g_main_scrolledwin), child);
   }
 
-  g_current_graph_canvas = view_ptr->graph_canvas;
+  g_current_view = view_ptr;
   gtk_container_add(GTK_CONTAINER(g_main_scrolledwin), view_ptr->canvas_widget);
 
   //_canvas->scroll_to(static_cast<int>(_canvas->width()/2 - 320), static_cast<int>(_canvas->height()/2 - 240)); // FIXME: hardcoded
@@ -146,7 +146,7 @@ static void detach_canvas(struct graph_view * view_ptr)
   if (child == view_ptr->canvas_widget)
   {
     gtk_container_remove(GTK_CONTAINER(g_main_scrolledwin), view_ptr->canvas_widget);
-    g_current_graph_canvas = NULL;
+    g_current_view = NULL;
   }
 }
 
@@ -182,12 +182,36 @@ const char * get_view_name(graph_view_handle view)
   return view_ptr->name;
 }
 
+bool set_view_name(graph_view_handle view, const char * cname)
+{
+  char * name;
+
+  name = strdup(cname);
+  if (name == NULL)
+  {
+    lash_error("strdup() failed for \"%s\"", name);
+    return false;
+  }
+
+  free(view_ptr->name);
+  view_ptr->name = name;
+
+  world_tree_name_changed(view);
+
+  if (g_current_view == view_ptr)
+  {
+    set_main_window_title(view);
+  }
+
+  return true;
+}
+
 canvas_handle get_current_canvas()
 {
-  if (g_current_graph_canvas == NULL)
+  if (g_current_view == NULL)
   {
     return NULL;
   }
 
-  return graph_canvas_get_canvas(g_current_graph_canvas);
+  return graph_canvas_get_canvas(g_current_view->graph_canvas);
 }

@@ -29,6 +29,95 @@
 #include "dbus_constants.h"
 #include "dbus/helpers.h"
 
+static void (* g_renamed_callback)(const char * new_studio_name) = NULL;
+
+static const char * g_signals[] =
+{
+  "StudioRenamed",
+  "RoomAppeared",
+  "RoomDisappeared",
+  NULL
+};
+
+static DBusHandlerResult message_hook(DBusConnection * connection, DBusMessage * message, void * data)
+{
+  const char * object_path;
+  char * name;
+
+  object_path = dbus_message_get_path(message);
+  if (object_path == NULL || strcmp(object_path, STUDIO_OBJECT_PATH) != 0)
+  {
+    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+  }
+
+  if (dbus_message_is_signal(message, IFACE_STUDIO, "StudioRenamed"))
+  {
+    if (!dbus_message_get_args(message, &g_dbus_error, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
+    {
+      lash_error("Invalid parameters of StudioRenamed signal: %s",  g_dbus_error.message);
+      dbus_error_free(&g_dbus_error);
+    }
+    else
+    {
+      lash_info("StudioRenamed");
+
+      if (g_renamed_callback != NULL)
+      {
+        g_renamed_callback(name);
+      }
+    }
+
+    return DBUS_HANDLER_RESULT_HANDLED;
+  }
+
+  if (dbus_message_is_signal(message, IFACE_STUDIO, "RoomAppeared"))
+  {
+    lash_info("RoomAppeared");
+    return DBUS_HANDLER_RESULT_HANDLED;
+  }
+
+  if (dbus_message_is_signal(message, IFACE_STUDIO, "RoomDisappeared"))
+  {
+    lash_info("RoomDisappeared");
+    return DBUS_HANDLER_RESULT_HANDLED;
+  }
+
+  return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+bool studio_proxy_init(void)
+{
+  if (!dbus_register_object_signal_handler(
+        g_dbus_connection,
+        SERVICE_NAME,
+        STUDIO_OBJECT_PATH,
+        IFACE_STUDIO,
+        g_signals,
+        message_hook,
+        NULL))
+  {
+    lash_error("studio_object_path() failed");
+    return false;
+  }
+
+  return true;
+}
+
+void studio_proxy_uninit(void)
+{
+  if (!dbus_unregister_object_signal_handler(
+        g_dbus_connection,
+        SERVICE_NAME,
+        STUDIO_OBJECT_PATH,
+        IFACE_STUDIO,
+        g_signals,
+        message_hook,
+        NULL))
+  {
+    lash_error("studio_object_path() failed");
+  }
+}
+
 bool studio_proxy_get_name(char ** name_ptr)
 {
   const char * name;
@@ -55,4 +144,9 @@ bool studio_proxy_rename(const char * name)
 bool studio_proxy_save(void)
 {
   return dbus_call_simple(SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Save", "", "");
+}
+
+void studio_proxy_set_renamed_callback(void (* callback)(const char * new_studio_name))
+{
+  g_renamed_callback = callback;
 }

@@ -490,3 +490,13 @@ void world_tree_activate(graph_view_handle view)
     gtk_tree_selection_select_iter(gtk_tree_view_get_selection(GTK_TREE_VIEW(g_world_tree_widget)), &iter);
   }
 }
+
+void world_tree_name_changed(graph_view_handle view)
+{
+  GtkTreeIter iter;
+
+  if (find_view(view, &iter))
+  {
+    gtk_tree_store_set(g_treestore, &iter, COL_NAME, get_view_name(view), -1);
+  }
+}

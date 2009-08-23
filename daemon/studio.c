@@ -746,6 +746,11 @@ bool studio_load(const char * file_path)
   return false;                 /* not implemented yet */
 }
 
+void emit_studio_renamed()
+{
+  signal_new_valist(g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioRenamed", DBUS_TYPE_STRING, &g_studio.name, DBUS_TYPE_INVALID);
+}
+
 static void ladish_get_studio_name(method_call_t * call_ptr)
 {
   method_return_new_single(call_ptr, DBUS_TYPE_STRING, &g_studio.name);
@@ -774,6 +779,7 @@ static void ladish_rename_studio(method_call_t * call_ptr)
   g_studio.name = new_name_dup;
 
   method_return_new_void(call_ptr);
+  emit_studio_renamed();
 }
 
 static void ladish_save_studio(method_call_t * call_ptr)
@@ -799,6 +805,10 @@ METHODS_BEGIN
   METHOD_DESCRIBE(Save, ladish_save_studio)
 METHODS_END
 
+SIGNAL_ARGS_BEGIN(StudioRenamed, "Studio name changed")
+  SIGNAL_ARG_DESCRIBE("studio_name", "s", "New studio name")
+SIGNAL_ARGS_END
+
 SIGNAL_ARGS_BEGIN(RoomAppeared, "Room D-Bus object appeared")
   SIGNAL_ARG_DESCRIBE("room_path", "s", "room object path")
 SIGNAL_ARGS_END
@@ -808,6 +818,7 @@ SIGNAL_ARGS_BEGIN(RoomDisappeared, "Room D-Bus object disappeared")
 SIGNAL_ARGS_END
 
 SIGNALS_BEGIN
+  SIGNAL_DESCRIBE(StudioRenamed)
   SIGNAL_DESCRIBE(RoomAppeared)
   SIGNAL_DESCRIBE(RoomDisappeared)
 SIGNALS_END

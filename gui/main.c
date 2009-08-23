@@ -294,6 +294,14 @@ void control_proxy_on_studio_disappeared(void)
   }
 }
 
+static void on_studio_renamed(const char * new_studio_name)
+{
+  if (g_studio_view != NULL)
+  {
+    set_view_name(g_studio_view, new_studio_name);
+  }
+}
+
 void jack_started(void)
 {
   lash_info("JACK started");
@@ -390,6 +398,13 @@ int main(int argc, char** argv)
     return 1;
   }
 
+  if (!studio_proxy_init())
+  {
+    return 1;
+  }
+
+  studio_proxy_set_renamed_callback(on_studio_renamed);
+
   set_buffer_size_combo_width();
 
   g_signal_connect(G_OBJECT(g_main_win), "destroy", G_CALLBACK(gtk_main_quit), NULL);
@@ -408,6 +423,7 @@ int main(int argc, char** argv)
 
   gtk_main();
 
+  studio_proxy_uninit();
   control_proxy_uninit();
   uninit_glade();
 
