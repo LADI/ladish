@@ -1039,6 +1039,7 @@ bool studios_iterate(void * call_ptr, void * context, bool (* callback)(void * c
       return false;
     }
 
+    /* TODO: unescape */
     dentry->d_name[len - 4] = 0;
 
     if (stat(path, &st) != 0)
@@ -1063,12 +1064,49 @@ bool studios_iterate(void * call_ptr, void * context, bool (* callback)(void * c
 
 bool studio_load(void * call_ptr, const char * studio_name)
 {
+  char * path;
+  struct stat st;
+
   lash_info("Loading studio '%s'", studio_name);
+
+  /* TODO: unescape */
+  path = catdup3(g_studios_dir, studio_name, ".xml");
+  if (path == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "catdup3() failed to compose path of studio \%s\" file", studio_name);
+    return false;
+  }
+
+  lash_info("'%s'", path);
+
+  if (stat(path, &st) != 0)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "failed to stat '%s': %d (%s)", path, errno, strerror(errno));
+    free(path);
+    return false;
+  }
 
   studio_clear();
 
-  lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Not implemented yet");
-  return false;
+  g_studio.name = strdup(studio_name);
+  if (g_studio.name == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup(\"%s\") failed", studio_name);
+    free(path);
+    return false;
+  }
+
+  g_studio.filename = path;
+
+  /* TODO: load jack params from xml */
+
+  studio_activate();
+
+  if (!jack_proxy_start_server())
+  {
+  }
+
+  return true;
 }
 
 void emit_studio_renamed()
