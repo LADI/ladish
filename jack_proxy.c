@@ -744,3 +744,55 @@ bool jack_proxy_reset_xruns(void)
 {
   return dbus_call_simple(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONTROL, "ResetXruns", "", "");
 }
+
+static
+bool
+reset_callback(
+  void * context,
+  bool leaf,
+  const char * address,
+  char * child)
+{
+  const char * component;
+  char * dst;
+  size_t len;
+
+  if (*address == 0 && !*(bool *)context && strcmp(child, "drivers") == 0)
+  {
+    /* don't reset drivers branch unless requested */
+    return true;
+  }
+
+  component = address;
+  while (*component != 0)
+  {
+    component += strlen(component) + 1;
+  }
+
+  /* address always is same buffer as the one in the jack_reset_all_params() stack */
+  dst = (char *)component;
+
+  len = strlen(child) + 1;
+  memcpy(dst, child, len);
+  dst[len] = 0;
+
+  if (leaf)
+  {
+    if (!jack_proxy_reset_parameter_value(address))
+    {
+      lash_error("cannot reset value of parameter");
+      return false;
+    }
+  }
+
+  *dst = 0;
+
+  return true;
+}
+
+bool jack_reset_all_params(bool reset_drivers)
+{
+  char address[1024] = "";
+
+  return jack_proxy_read_conf_container(address, &reset_drivers, reset_callback);
+}
