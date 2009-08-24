@@ -417,8 +417,6 @@ int main(int argc, char** argv)
 
   gtk_widget_show(g_main_win);
 
-  arrange();                    /* XXX: initial arrange of jack graph */
-
   //_about_win->set_transient_for(*_main_win);
 
   gtk_main();
