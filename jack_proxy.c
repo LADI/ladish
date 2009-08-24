@@ -784,6 +784,14 @@ reset_callback(
       return false;
     }
   }
+  else
+  {
+    if (!jack_proxy_read_conf_container(address, context, reset_callback))
+    {
+      lash_error("cannot read container");
+      return false;
+    }
+  }
 
   *dst = 0;
 
