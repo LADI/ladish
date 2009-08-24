@@ -122,7 +122,9 @@ def main():
             elif arg == 'studios':
                 print "--- studio list"
                 for studio in control_iface.GetStudioList():
-                    print studio
+                    name = studio[0]
+                    mtime = studio[1]['Modification Time']
+                    print '"%s" last modified on %s' % (name, time.ctime(mtime))
             elif arg == 'apps':
                 print "--- app list"
                 for app in control_iface.GetApplicationList():
