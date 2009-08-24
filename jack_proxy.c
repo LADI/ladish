@@ -33,6 +33,7 @@
 #include "dbus/helpers.h"
 #include "common/debug.h"
 #include "dbus_constants.h"
+#include "dbus/method.h"
 
 jack_proxy_callback_server_started g_on_server_started;
 jack_proxy_callback_server_stopped g_on_server_stopped;
@@ -543,6 +544,150 @@ jack_proxy_get_parameter_value(
   dbus_message_unref(reply_ptr);
 
   *is_set_ptr = is_set;
+
+  return true;
+}
+
+bool
+jack_proxy_set_parameter_value(
+  const char * address,
+  const struct jack_parameter_variant * parameter_ptr)
+{
+  DBusMessage * request_ptr;
+  DBusMessage * reply_ptr;
+  DBusMessageIter top_iter;
+  const char * reply_signature;
+  int type;
+  const void * value_ptr;
+  dbus_bool_t boolean;
+
+  switch (parameter_ptr->type)
+  {
+  case jack_int32:
+    type = DBUS_TYPE_INT32;
+    value_ptr = &parameter_ptr->value.int32;
+    break;
+  case jack_uint32:
+    type = DBUS_TYPE_UINT32;
+    value_ptr = &parameter_ptr->value.uint32;
+    break;
+  case jack_byte:
+    type = DBUS_TYPE_BYTE;
+    value_ptr = &parameter_ptr->value.byte;
+    break;
+  case jack_string:
+    type = DBUS_TYPE_STRING;
+    value_ptr = &parameter_ptr->value.string;
+    break;
+  case jack_boolean:
+    type = DBUS_TYPE_BOOLEAN;
+    boolean = parameter_ptr->value.boolean;
+    value_ptr = &boolean;
+    break;
+  default:
+    lash_error("Unknown jack parameter type %i", (int)type);
+    return false;
+  }
+
+  request_ptr = dbus_message_new_method_call(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONFIGURE, "SetParameterValue");
+  if (request_ptr == NULL)
+  {
+    lash_error("dbus_message_new_method_call() failed.");
+    return false;
+  }
+
+  dbus_message_iter_init_append(request_ptr, &top_iter);
+
+  if (!add_address(&top_iter, address))
+  {
+    dbus_message_unref(request_ptr);
+    return false;
+  }
+
+  if (!method_iter_append_variant(&top_iter, type, value_ptr))
+  {
+    dbus_message_unref(request_ptr);
+    return false;
+  }
+
+  // send message and get a handle for a reply
+  reply_ptr = dbus_connection_send_with_reply_and_block(
+    g_dbus_connection,
+    request_ptr,
+    DBUS_CALL_DEFAULT_TIMEOUT,
+    &g_dbus_error);
+
+  dbus_message_unref(request_ptr);
+
+  if (reply_ptr == NULL)
+  {
+    lash_error("no reply from JACK server, error is '%s'", g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return false;
+  }
+
+  reply_signature = dbus_message_get_signature(reply_ptr);
+
+  dbus_message_unref(reply_ptr);
+
+  if (strcmp(reply_signature, "") != 0)
+  {
+    lash_error("SetParameterValue() reply signature mismatch. '%s'", reply_signature);
+    return false;
+  }
+
+  return false;
+}
+
+bool
+jack_proxy_reset_parameter_value(
+  const char * address)
+{
+  DBusMessage * request_ptr;
+  DBusMessage * reply_ptr;
+  DBusMessageIter top_iter;
+  const char * reply_signature;
+
+  request_ptr = dbus_message_new_method_call(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONFIGURE, "ResetParameterValue");
+  if (request_ptr == NULL)
+  {
+    lash_error("dbus_message_new_method_call() failed.");
+    return false;
+  }
+
+  dbus_message_iter_init_append(request_ptr, &top_iter);
+
+  if (!add_address(&top_iter, address))
+  {
+    dbus_message_unref(request_ptr);
+    return false;
+  }
+
+  // send message and get a handle for a reply
+  reply_ptr = dbus_connection_send_with_reply_and_block(
+    g_dbus_connection,
+    request_ptr,
+    DBUS_CALL_DEFAULT_TIMEOUT,
+    &g_dbus_error);
+
+  dbus_message_unref(request_ptr);
+
+  if (reply_ptr == NULL)
+  {
+    lash_error("no reply from JACK server, error is '%s'", g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return false;
+  }
+
+  reply_signature = dbus_message_get_signature(reply_ptr);
+
+  dbus_message_unref(reply_ptr);
+
+  if (strcmp(reply_signature, "") != 0)
+  {
+    lash_error("ResetParameterValue() reply signature mismatch. '%s'", reply_signature);
+    return false;
+  }
 
   return true;
 }

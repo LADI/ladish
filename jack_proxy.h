@@ -129,4 +129,13 @@ jack_proxy_get_parameter_value(
   bool * is_set_ptr,
   struct jack_parameter_variant * parameter_ptr);
 
+bool
+jack_proxy_set_parameter_value(
+  const char * address,
+  const struct jack_parameter_variant * parameter_ptr);
+
+bool
+jack_proxy_reset_parameter_value(
+  const char * address);
+
 #endif /* #ifndef JACK_PROXY_H__88702EEC_4B82_407F_A664_AD70C1E14D02__INCLUDED */
