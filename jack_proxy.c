@@ -757,12 +757,6 @@ reset_callback(
   char * dst;
   size_t len;
 
-  if (*address == 0 && !*(bool *)context && strcmp(child, "drivers") == 0)
-  {
-    /* don't reset drivers branch unless requested */
-    return true;
-  }
-
   component = address;
   while (*component != 0)
   {
@@ -798,9 +792,9 @@ reset_callback(
   return true;
 }
 
-bool jack_reset_all_params(bool reset_drivers)
+bool jack_reset_all_params(void)
 {
   char address[1024] = "";
 
-  return jack_proxy_read_conf_container(address, &reset_drivers, reset_callback);
+  return jack_proxy_read_conf_container(address, NULL, reset_callback);
 }
