@@ -65,6 +65,7 @@ struct studio
   bool persisted:1;             /* Studio has on-disk representation, i.e. can be reloaded from disk */
   bool modified:1;              /* Studio needs saving */
   bool jack_conf_valid:1;       /* JACK server configuration obtained successfully */
+  bool jack_running:1;          /* JACK server is running */
 
   struct list_head jack_conf;   /* root of the conf tree */
   struct list_head jack_params; /* list of conf tree leaves */
@@ -498,6 +499,20 @@ studio_clear(void)
 
   g_studio.jack_conf_valid = false;
 
+  if (g_studio.jack_running)
+  {
+    lash_info("Stopping JACK server...");
+
+    if (jack_proxy_stop_server())
+    {
+      g_studio.jack_running = false;
+    }
+    else
+    {
+      lash_error("Stopping JACK server failed.");
+    }
+  }
+
   if (g_studio.dbus_object != NULL)
   {
     object_path_destroy(g_dbus_connection, g_studio.dbus_object);
@@ -552,11 +567,14 @@ void on_event_jack_started(void)
 
   lash_info("jack conf successfully retrieved");
   g_studio.jack_conf_valid = true;
+  g_studio.jack_running = true;
 }
 
 void on_event_jack_stopped(void)
 {
   studio_clear_if_not_persisted();
+
+  g_studio.jack_running = false;
 
   /* TODO: if user wants, restart jack server and reconnect all jack apps to it */
 }
@@ -678,6 +696,7 @@ bool studio_init(void)
   g_studio.dbus_object = NULL;
   g_studio.name = NULL;
   g_studio.filename = NULL;
+  g_studio.jack_running = false;
   studio_clear();
 
   if (!jack_proxy_init(
@@ -1042,9 +1061,14 @@ bool studios_iterate(void * call_ptr, void * context, bool (* callback)(void * c
   return true;
 }
 
-bool studio_load(const char * file_path)
+bool studio_load(void * call_ptr, const char * studio_name)
 {
-  return false;                 /* not implemented yet */
+  lash_info("Loading studio '%s'", studio_name);
+
+  studio_clear();
+
+  lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Not implemented yet");
+  return false;
 }
 
 void emit_studio_renamed()

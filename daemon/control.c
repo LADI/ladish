@@ -158,7 +158,10 @@ static void ladish_load_studio(method_call_t * call_ptr)
     return;
   }
 
-  lash_info("Loading studio '%s'", name);
+  if (studio_load(call_ptr, name))
+  {
+    method_return_new_void(call_ptr);
+  }
 }
 
 static void ladish_get_application_list(method_call_t * call_ptr)
