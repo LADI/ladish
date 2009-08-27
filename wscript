@@ -159,7 +159,7 @@ def build(bld):
     daemon = bld.new_task_gen('cc', 'program')
     daemon.target = 'ladishd'
     daemon.includes = "build/default" # XXX config.h version.h and other generated files
-    daemon.uselib = 'DBUS-1 LIBXML-2.0 UUID'
+    daemon.uselib = 'DBUS-1 LIBXML-2.0 UUID EXPAT'
     daemon.ver_header = 'version.h'
     daemon.env.append_value("LINKFLAGS", ["-lutil", "-ldl"])
 
