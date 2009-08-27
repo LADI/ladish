@@ -865,14 +865,17 @@ write_jack_parameter(
   case jack_byte:
     valbuf[0] = (char)parameter_ptr->parameter.value.byte;
     valbuf[1] = 0;
+    content = valbuf;
     lash_debug("%s value is %u/%c (byte/char)", path, parameter_ptr->parameter.value.byte, (char)parameter_ptr->parameter.value.byte);
     break;
   case jack_uint32:
     snprintf(valbuf, sizeof(valbuf), "%" PRIu32, parameter_ptr->parameter.value.uint32);
+    content = valbuf;
     lash_debug("%s value is %s (uint32)", path, content);
     break;
   case jack_int32:
     snprintf(valbuf, sizeof(valbuf), "%" PRIi32, parameter_ptr->parameter.value.int32);
+    content = valbuf;
     lash_debug("%s value is %s (int32)", path, content);
     break;
   default:
