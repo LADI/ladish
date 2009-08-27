@@ -636,7 +636,7 @@ jack_proxy_set_parameter_value(
     return false;
   }
 
-  return false;
+  return true;
 }
 
 bool
