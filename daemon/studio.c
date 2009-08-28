@@ -511,6 +511,7 @@ studio_clear(void)
   g_studio.modified = false;
   g_studio.persisted = false;
 
+  INIT_LIST_HEAD(&g_studio.jack_params); /* we will destroy the leaves as part of tree destroy traversal */
   while (!list_empty(&g_studio.jack_conf))
   {
     node_ptr = g_studio.jack_conf.next;
