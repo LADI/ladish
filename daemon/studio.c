@@ -1223,6 +1223,11 @@ static void callback_elend(void * data, const char * el)
       goto fail_free_address;
     }
 
+    if (parameter.type == jack_string)
+    {
+      free(parameter.value.string);
+    }
+
     switch (parameter.type)
     {
     case jack_boolean:
