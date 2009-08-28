@@ -1023,6 +1023,7 @@ bool studio_save(void * call_ptr)
   }
 
   lash_info("studio saved. (%s)", g_studio.filename);
+  g_studio.persisted = true;
   ret = true;
 
 close:
@@ -1409,6 +1410,7 @@ bool studio_load(void * call_ptr, const char * studio_name)
   XML_ParserFree(parser);
   close(fd);
 
+  g_studio.persisted = true;
   lash_info("Studio loaded. ('%s')", path);
 
   studio_activate();
