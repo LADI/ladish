@@ -47,12 +47,14 @@ GtkWidget * g_clear_load_button;
 GtkWidget * g_xrun_progress_bar;
 GtkWidget * g_buffer_size_combo;
 
+GtkWidget * g_menu_item_load_studio;
 GtkWidget * g_menu_item_save_studio;
 GtkWidget * g_menu_item_rename_studio;
 GtkWidget * g_menu_item_create_room;
 GtkWidget * g_menu_item_destroy_room;
 GtkWidget * g_menu_item_load_project;
 GtkWidget * g_menu_item_start_app;
+GtkWidget * g_menu_studio_list;
 
 GtkWidget * g_rename_dialog;
 
@@ -61,6 +63,7 @@ graph_view_handle g_studio_view = NULL;
 
 static guint g_jack_poll_source_tag;
 static double g_jack_max_dsp_load = 0.0;
+static int g_studio_count = 0;
 
 #if 0
 static void
@@ -201,6 +204,69 @@ static void arrange(void)
   if (canvas != NULL)
   {
     canvas_arrange(canvas);
+  }
+}
+
+static void on_load_studio(GtkWidget * item)
+{
+  const char * studio_name;
+
+  studio_name = gtk_label_get_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(item))));
+  lash_info("Load studio \"%s\"", studio_name);
+
+  if (!control_proxy_load_studio(studio_name))
+  {
+    /* TODO: display error message */
+  }
+}
+
+static void remove_studio_list_menu_entry(GtkWidget * item, GtkContainer * container)
+{
+  GtkWidget * label;
+
+  label = gtk_bin_get_child(GTK_BIN(item));
+
+  //lash_debug("removing studio menu item \"%s\"", gtk_menu_item_get_label(GTK_MENU_ITEM(item));
+  // gtk_menu_item_get_label() requries gtk 2.16
+  lash_debug("removing studio menu item \"%s\"", gtk_label_get_text(GTK_LABEL(label)));
+
+  gtk_container_remove(GTK_CONTAINER(item), label); /* destroy the label and drop the item refcount by one */
+  //lash_info("refcount == %d", (unsigned int)G_OBJECT(item)->ref_count);
+  gtk_container_remove(container, item);            /* drop the refcount of item by one and thus destroy it */
+  g_studio_count--;
+}
+
+static void menu_studio_list_clear(void)
+{
+  gtk_container_foreach(GTK_CONTAINER(g_menu_studio_list), (GtkCallback)remove_studio_list_menu_entry, GTK_CONTAINER(g_menu_studio_list));
+  assert(g_studio_count == 0);
+  g_studio_count = 0;
+}
+
+static void add_studio_list_menu_entry(void * context, const char * studio_name)
+{
+  GtkWidget * item;
+
+  item = gtk_menu_item_new_with_label(studio_name);
+  //lash_info("refcount == %d", (unsigned int)G_OBJECT(item)->ref_count); // refcount == 2 because of the label
+  gtk_widget_set_sensitive(item, (bool)context);
+  gtk_widget_show(item);
+  gtk_menu_shell_append(GTK_MENU_SHELL(g_menu_studio_list), item);
+  g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(on_load_studio), item);
+  g_studio_count++;
+}
+
+static void activate_load_studio_list(void)
+{
+  menu_studio_list_clear();
+  if (!control_proxy_get_studio_list(add_studio_list_menu_entry, (void *)true))
+  {
+    menu_studio_list_clear();
+    add_studio_list_menu_entry((void *)false, "Error obtaining studio list");
+  }
+  else if (g_studio_count == 0)
+  {
+    add_studio_list_menu_entry((void *)false, "Empty studio list");
   }
 }
 
@@ -374,14 +440,18 @@ int main(int argc, char** argv)
   g_clear_load_button = get_glade_widget("clear_load_button");
   g_xrun_progress_bar = get_glade_widget("xrun_progress_bar");
   g_buffer_size_combo = get_glade_widget("buffer_size_combo");
+  g_menu_item_load_studio = get_glade_widget("menu_item_load_studio");
   g_menu_item_save_studio = get_glade_widget("menu_item_save_studio");
   g_menu_item_rename_studio = get_glade_widget("menu_item_rename_studio");
   g_menu_item_create_room = get_glade_widget("menu_item_create_room");
   g_menu_item_destroy_room = get_glade_widget("menu_item_destroy_room");
   g_menu_item_load_project = get_glade_widget("menu_item_load_project");
   g_menu_item_start_app = get_glade_widget("menu_item_start_app");
+  g_menu_studio_list = get_glade_widget("studio_list_menu");
 
   g_rename_dialog = get_glade_widget("rename_dialog");
+
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM(g_menu_item_load_studio), g_menu_studio_list);
 
   world_tree_init();
   view_init();
@@ -414,6 +484,7 @@ int main(int argc, char** argv)
   g_signal_connect(G_OBJECT(get_glade_widget("menu_item_view_arrange")), "activate", G_CALLBACK(arrange), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_save_studio), "activate", G_CALLBACK(save_studio), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_rename_studio), "activate", G_CALLBACK(rename_studio), NULL);
+  g_signal_connect(G_OBJECT(g_menu_item_load_studio), "activate", G_CALLBACK(activate_load_studio_list), NULL);
 
   gtk_widget_show(g_main_win);
 

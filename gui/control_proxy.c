@@ -110,17 +110,63 @@ void control_proxy_uninit(void)
   dbus_unregister_object_signal_handler(g_dbus_connection, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, g_signals, message_hook, NULL);
 }
 
-bool control_proxy_get_studio_list(struct list_head * studio_list)
+bool control_proxy_get_studio_list(void (* callback)(void * context, const char * studio_name), void * context)
 {
-  return false;
+  DBusMessage * reply_ptr;
+  const char * reply_signature;
+  DBusMessageIter top_iter;
+  DBusMessageIter struct_iter;
+  DBusMessageIter array_iter;
+  const char * studio_name;
+
+  if (!dbus_call_simple(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "GetStudioList", "", NULL, &reply_ptr))
+  {
+    lash_error("GetStudioList() failed.");
+    return false;
+  }
+
+  reply_signature = dbus_message_get_signature(reply_ptr);
+  if (strcmp(reply_signature, "a(sa{sv})") != 0)
+  {
+    lash_error("GetStudioList() reply signature mismatch. '%s'", reply_signature);
+    dbus_message_unref(reply_ptr);
+    return false;
+  }
+
+  dbus_message_iter_init(reply_ptr, &top_iter);
+  for (dbus_message_iter_recurse(&top_iter, &array_iter);
+       dbus_message_iter_get_arg_type(&array_iter) != DBUS_TYPE_INVALID;
+       dbus_message_iter_next(&array_iter))
+  {
+    dbus_message_iter_recurse(&array_iter, &struct_iter);
+    dbus_message_iter_get_basic(&struct_iter, &studio_name);
+    callback(context, studio_name);
+    dbus_message_iter_next(&struct_iter);
+    dbus_message_iter_next(&struct_iter);
+  }
+
+  dbus_message_unref(reply_ptr);
+  return true;
 }
 
 bool control_proxy_load_studio(const char * studio_name)
 {
-  return false;
+  if (!dbus_call_simple(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "LoadStudio", "s", &studio_name, ""))
+  {
+    lash_error("LoadStudio() failed.");
+    return false;
+  }
+
+  return true;
 }
 
 bool control_proxy_exit(void)
 {
-  return false;
+  if (!dbus_call_simple(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "Exit", "", ""))
+  {
+    lash_error("Exit() failed.");
+    return false;
+  }
+
+  return true;
 }

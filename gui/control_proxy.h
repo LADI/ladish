@@ -31,17 +31,11 @@
 #include "common.h"
 #include "../common/klist.h"
 
-struct loadable_studio
-{
-  struct list_head siblings;
-  char * name;
-};
-
 bool control_proxy_init(void);
 void control_proxy_uninit(void);
 void control_proxy_on_studio_appeared(void);
 void control_proxy_on_studio_disappeared(void);
-bool control_proxy_get_studio_list(struct list_head * studio_list);
+bool control_proxy_get_studio_list(void (* callback)(void * context, const char * studio_name), void * context);
 bool control_proxy_load_studio(const char * studio_name);
 bool control_proxy_exit(void);
 
