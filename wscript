@@ -295,6 +295,8 @@ def build(bld):
     # Glade UI definitions (XML)
     bld.install_files(bld.env['DATA_DIR'], 'gui/gui.glade')
     
+    bld.install_files('${PREFIX}/bin', 'ladish_control', chmod=0755)
+
     # 'Desktop' file (menu entry, icon, etc)
     #obj = bld.create_obj('subst')
     #obj.source = 'patchage.desktop.in'
