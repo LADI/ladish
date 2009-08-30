@@ -474,7 +474,7 @@ bool studio_name_generate(char ** name_ptr)
 }
 
 bool
-studio_activate(void)
+studio_publish(void)
 {
   object_path_t * object;
 
@@ -576,7 +576,7 @@ void on_event_jack_started(void)
       return;
     }
 
-    studio_activate();
+    studio_publish();
   }
 
   if (!studio_fetch_jack_settings(g_studio))
@@ -1545,9 +1545,9 @@ bool studio_load(void * call_ptr, const char * studio_name)
   g_studio.persisted = true;
   lash_info("Studio loaded. ('%s')", path);
 
-  if (!studio_activate())
+  if (!studio_publish())
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "studio_activate() failed.");
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "studio_publish() failed.");
     studio_clear();
     return false;
   }
@@ -1633,9 +1633,9 @@ bool studio_new(void * call_ptr, const char * studio_name)
     return false;
   }
 
-  if (!studio_activate())
+  if (!studio_publish())
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "studio_activate() failed.");
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "studio_publish() failed.");
     studio_clear();
     return false;
   }
