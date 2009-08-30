@@ -27,8 +27,6 @@
 #ifndef GLADE_H__E2BF7CFC_1B04_4160_9165_A1B433C6B3C2__INCLUDED
 #define GLADE_H__E2BF7CFC_1B04_4160_9165_A1B433C6B3C2__INCLUDED
 
-#include <gtk/gtk.h>
-
 bool init_glade(void);
 void uninit_glade(void);
 GtkWidget * get_glade_widget(const char * name);
