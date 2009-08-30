@@ -1393,6 +1393,48 @@ fail_free_address:
 
 #undef context_ptr
 
+bool studio_delete(void * call_ptr, const char * studio_name)
+{
+  char * filename;
+  char * bak_filename;
+  struct stat st;
+  bool ret;
+
+  ret = false;
+
+  if (!compose_filename(studio_name, &filename, &bak_filename))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "failed to compose studio filename");
+    goto exit;
+  }
+
+  lash_info("Loading studio ('%s')", filename);
+
+  if (unlink(filename) != 0)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "unlink(%s) failed: %d (%s)", filename, errno, strerror(errno));
+    goto free;
+  }
+
+  /* try to delete the backup file */
+  if (stat(bak_filename, &st) == 0)
+  {
+    if (unlink(bak_filename) != 0)
+    {
+      /* failing to delete backup file will not case delete command failure */
+      lash_error("unlink(%s) failed: %d (%s)", bak_filename, errno, strerror(errno));
+    }
+  }
+
+  ret = true;
+
+free:
+  free(filename);
+  free(bak_filename);
+exit:
+  return ret;
+}
+
 bool studio_load(void * call_ptr, const char * studio_name)
 {
   char * path;

@@ -50,11 +50,11 @@ GtkWidget * g_buffer_size_combo;
 GtkWidget * g_menu_item_load_studio;
 GtkWidget * g_menu_item_save_studio;
 GtkWidget * g_menu_item_rename_studio;
+GtkWidget * g_menu_item_delete_studio;
 GtkWidget * g_menu_item_create_room;
 GtkWidget * g_menu_item_destroy_room;
 GtkWidget * g_menu_item_load_project;
 GtkWidget * g_menu_item_start_app;
-GtkWidget * g_menu_studio_list;
 
 GtkWidget * g_rename_dialog;
 
@@ -63,7 +63,18 @@ graph_view_handle g_studio_view = NULL;
 
 static guint g_jack_poll_source_tag;
 static double g_jack_max_dsp_load = 0.0;
-static int g_studio_count = 0;
+
+struct studio_list
+{
+  int count;
+  GtkWidget * menu_item;
+  GtkWidget * menu;
+  void (* item_activate_callback)(GtkWidget * item);
+  bool add_sensitive;
+};
+
+static struct studio_list g_load_studio_list;
+static struct studio_list g_delete_studio_list;
 
 #if 0
 static void
@@ -220,7 +231,24 @@ static void on_load_studio(GtkWidget * item)
   }
 }
 
-static void remove_studio_list_menu_entry(GtkWidget * item, GtkContainer * container)
+static void on_delete_studio(GtkWidget * item)
+{
+  const char * studio_name;
+
+  studio_name = gtk_label_get_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(item))));
+  lash_info("Delete studio \"%s\"", studio_name);
+
+  /* TODO: ask user for confirmation */
+
+  if (!control_proxy_delete_studio(studio_name))
+  {
+    /* TODO: display error message */
+  }
+}
+
+#define studio_list_ptr ((struct studio_list *)context)
+
+static void remove_studio_list_menu_entry(GtkWidget * item, gpointer context)
 {
   GtkWidget * label;
 
@@ -232,15 +260,8 @@ static void remove_studio_list_menu_entry(GtkWidget * item, GtkContainer * conta
 
   gtk_container_remove(GTK_CONTAINER(item), label); /* destroy the label and drop the item refcount by one */
   //lash_info("refcount == %d", (unsigned int)G_OBJECT(item)->ref_count);
-  gtk_container_remove(container, item);            /* drop the refcount of item by one and thus destroy it */
-  g_studio_count--;
-}
-
-static void menu_studio_list_clear(void)
-{
-  gtk_container_foreach(GTK_CONTAINER(g_menu_studio_list), (GtkCallback)remove_studio_list_menu_entry, GTK_CONTAINER(g_menu_studio_list));
-  assert(g_studio_count == 0);
-  g_studio_count = 0;
+  gtk_container_remove(GTK_CONTAINER(studio_list_ptr->menu), item); /* drop the refcount of item by one and thus destroy it */
+  studio_list_ptr->count--;
 }
 
 static void add_studio_list_menu_entry(void * context, const char * studio_name)
@@ -249,24 +270,36 @@ static void add_studio_list_menu_entry(void * context, const char * studio_name)
 
   item = gtk_menu_item_new_with_label(studio_name);
   //lash_info("refcount == %d", (unsigned int)G_OBJECT(item)->ref_count); // refcount == 2 because of the label
-  gtk_widget_set_sensitive(item, (bool)context);
+  gtk_widget_set_sensitive(item, studio_list_ptr->add_sensitive);
   gtk_widget_show(item);
-  gtk_menu_shell_append(GTK_MENU_SHELL(g_menu_studio_list), item);
-  g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(on_load_studio), item);
-  g_studio_count++;
+  gtk_menu_shell_append(GTK_MENU_SHELL(studio_list_ptr->menu), item);
+  g_signal_connect(G_OBJECT(item), "activate", G_CALLBACK(studio_list_ptr->item_activate_callback), item);
+  studio_list_ptr->count++;
 }
 
-static void activate_load_studio_list(void)
+#undef studio_list_ptr
+
+static void menu_studio_list_clear(struct studio_list * studio_list_ptr)
 {
-  menu_studio_list_clear();
-  if (!control_proxy_get_studio_list(add_studio_list_menu_entry, (void *)true))
+  gtk_container_foreach(GTK_CONTAINER(studio_list_ptr->menu), remove_studio_list_menu_entry, studio_list_ptr);
+  assert(studio_list_ptr->count == 0);
+  studio_list_ptr->count = 0;
+}
+
+static void populate_studio_list_menu(GtkMenuItem * menu_item, struct studio_list * studio_list_ptr)
+{
+  menu_studio_list_clear(studio_list_ptr);
+  studio_list_ptr->add_sensitive = true;
+  if (!control_proxy_get_studio_list(add_studio_list_menu_entry, studio_list_ptr))
   {
-    menu_studio_list_clear();
-    add_studio_list_menu_entry((void *)false, "Error obtaining studio list");
+    menu_studio_list_clear(studio_list_ptr);
+    studio_list_ptr->add_sensitive = true;
+    add_studio_list_menu_entry(studio_list_ptr, "Error obtaining studio list");
   }
-  else if (g_studio_count == 0)
+  else if (studio_list_ptr->count == 0)
   {
-    add_studio_list_menu_entry((void *)false, "Empty studio list");
+    studio_list_ptr->add_sensitive = true;
+    add_studio_list_menu_entry(studio_list_ptr, "Empty studio list");
   }
 }
 
@@ -421,6 +454,25 @@ set_main_window_title(
   free(title);
 }
 
+static
+void
+init_studio_list(
+  struct studio_list * studio_list_ptr,
+  const char * menu_item,
+  const char * menu,
+  void (* item_activate_callback)(GtkWidget * item))
+{
+  studio_list_ptr->count = 0;
+  studio_list_ptr->menu_item = get_glade_widget(menu_item);
+  studio_list_ptr->menu = get_glade_widget(menu);
+  studio_list_ptr->item_activate_callback = item_activate_callback;
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM(studio_list_ptr->menu_item), studio_list_ptr->menu);
+  g_signal_connect(G_OBJECT(studio_list_ptr->menu_item), "activate", G_CALLBACK(populate_studio_list_menu), studio_list_ptr);
+
+  lash_info("studio_list_ptr = %p", studio_list_ptr);
+  lash_info("studio_list_ptr->menu = %p", studio_list_ptr->menu);
+}
+
 int main(int argc, char** argv)
 {
   gtk_init(&argc, &argv);
@@ -440,18 +492,17 @@ int main(int argc, char** argv)
   g_clear_load_button = get_glade_widget("clear_load_button");
   g_xrun_progress_bar = get_glade_widget("xrun_progress_bar");
   g_buffer_size_combo = get_glade_widget("buffer_size_combo");
-  g_menu_item_load_studio = get_glade_widget("menu_item_load_studio");
   g_menu_item_save_studio = get_glade_widget("menu_item_save_studio");
   g_menu_item_rename_studio = get_glade_widget("menu_item_rename_studio");
   g_menu_item_create_room = get_glade_widget("menu_item_create_room");
   g_menu_item_destroy_room = get_glade_widget("menu_item_destroy_room");
   g_menu_item_load_project = get_glade_widget("menu_item_load_project");
   g_menu_item_start_app = get_glade_widget("menu_item_start_app");
-  g_menu_studio_list = get_glade_widget("studio_list_menu");
 
   g_rename_dialog = get_glade_widget("rename_dialog");
 
-  gtk_menu_item_set_submenu(GTK_MENU_ITEM(g_menu_item_load_studio), g_menu_studio_list);
+  init_studio_list(&g_load_studio_list, "menu_item_load_studio", "load_studio_menu", on_load_studio);
+  init_studio_list(&g_delete_studio_list, "menu_item_delete_studio", "delete_studio_menu", on_delete_studio);
 
   world_tree_init();
   view_init();
@@ -484,7 +535,6 @@ int main(int argc, char** argv)
   g_signal_connect(G_OBJECT(get_glade_widget("menu_item_view_arrange")), "activate", G_CALLBACK(arrange), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_save_studio), "activate", G_CALLBACK(save_studio), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_rename_studio), "activate", G_CALLBACK(rename_studio), NULL);
-  g_signal_connect(G_OBJECT(g_menu_item_load_studio), "activate", G_CALLBACK(activate_load_studio_list), NULL);
 
   gtk_widget_show(g_main_win);
 

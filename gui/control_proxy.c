@@ -160,6 +160,17 @@ bool control_proxy_load_studio(const char * studio_name)
   return true;
 }
 
+bool control_proxy_delete_studio(const char * studio_name)
+{
+  if (!dbus_call_simple(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "DeleteStudio", "s", &studio_name, ""))
+  {
+    lash_error("DeleteStudio() failed.");
+    return false;
+  }
+
+  return true;
+}
+
 bool control_proxy_exit(void)
 {
   if (!dbus_call_simple(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "Exit", "", ""))
