@@ -58,6 +58,7 @@ GtkWidget * g_menu_item_create_room;
 GtkWidget * g_menu_item_destroy_room;
 GtkWidget * g_menu_item_load_project;
 GtkWidget * g_menu_item_start_app;
+GtkWidget * g_menu_item_daemon_exit;
 
 GtkWidget * g_name_dialog;
 
@@ -218,6 +219,16 @@ static void arrange(void)
   if (canvas != NULL)
   {
     canvas_arrange(canvas);
+  }
+}
+
+static void daemon_exit(GtkWidget * item)
+{
+  lash_info("Daemon exit request");
+
+  if (!control_proxy_exit())
+  {
+    /* TODO: display error message */
   }
 }
 
@@ -566,6 +577,7 @@ int main(int argc, char** argv)
   g_menu_item_destroy_room = get_glade_widget("menu_item_destroy_room");
   g_menu_item_load_project = get_glade_widget("menu_item_load_project");
   g_menu_item_start_app = get_glade_widget("menu_item_start_app");
+  g_menu_item_daemon_exit = get_glade_widget("menu_item_daemon_exit");
 
   g_name_dialog = get_glade_widget("name_dialog");
 
@@ -607,6 +619,7 @@ int main(int argc, char** argv)
   g_signal_connect(G_OBJECT(g_menu_item_unload_studio), "activate", G_CALLBACK(unload_studio), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_save_studio), "activate", G_CALLBACK(save_studio), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_rename_studio), "activate", G_CALLBACK(rename_studio), NULL);
+  g_signal_connect(G_OBJECT(g_menu_item_daemon_exit), "activate", G_CALLBACK(daemon_exit), NULL);
 
   gtk_widget_show(g_main_win);
 
