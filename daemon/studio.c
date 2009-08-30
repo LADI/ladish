@@ -435,9 +435,26 @@ conf_callback(
 
 #undef context_ptr
 
+static void jack_conf_clear(void)
+{
+  struct list_head * node_ptr;
+
+  INIT_LIST_HEAD(&g_studio.jack_params); /* we will destroy the leaves as part of tree destroy traversal */
+  while (!list_empty(&g_studio.jack_conf))
+  {
+    node_ptr = g_studio.jack_conf.next;
+    list_del(node_ptr);
+    jack_conf_container_destroy(list_entry(node_ptr, struct jack_conf_container, siblings));
+  }
+
+  g_studio.jack_conf_valid = false;
+}
+
 bool studio_fetch_jack_settings()
 {
   struct conf_callback_context context;
+
+  jack_conf_clear();
 
   context.address[0] = 0;
   context.container_ptr = &g_studio.jack_conf;
@@ -558,21 +575,11 @@ static bool studio_stop(void)
 void
 studio_clear(void)
 {
-  struct list_head * node_ptr;
-
   g_studio.modified = false;
   g_studio.persisted = false;
   g_studio.automatic = false;
 
-  INIT_LIST_HEAD(&g_studio.jack_params); /* we will destroy the leaves as part of tree destroy traversal */
-  while (!list_empty(&g_studio.jack_conf))
-  {
-    node_ptr = g_studio.jack_conf.next;
-    list_del(node_ptr);
-    jack_conf_container_destroy(list_entry(node_ptr, struct jack_conf_container, siblings));
-  }
-
-  g_studio.jack_conf_valid = false;
+  jack_conf_clear();
 
   studio_stop();
 
@@ -1684,13 +1691,6 @@ bool studio_new(void * call_ptr, const char * studio_name)
   if (!studio_publish())
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "studio_publish() failed.");
-    studio_clear();
-    return false;
-  }
-
-  if (!studio_fetch_jack_settings(g_studio))
-  {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "studio_fetch_jack_settings() failed.");
     studio_clear();
     return false;
   }
