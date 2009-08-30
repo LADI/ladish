@@ -543,9 +543,6 @@ init_studio_list(
   studio_list_ptr->item_activate_callback = item_activate_callback;
   gtk_menu_item_set_submenu(GTK_MENU_ITEM(studio_list_ptr->menu_item), studio_list_ptr->menu);
   g_signal_connect(G_OBJECT(studio_list_ptr->menu_item), "activate", G_CALLBACK(populate_studio_list_menu), studio_list_ptr);
-
-  lash_info("studio_list_ptr = %p", studio_list_ptr);
-  lash_info("studio_list_ptr->menu = %p", studio_list_ptr->menu);
 }
 
 int main(int argc, char** argv)
