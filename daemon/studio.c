@@ -1621,6 +1621,8 @@ static void ladish_rename_studio(method_call_t * call_ptr)
     return;
   }
 
+  lash_info("Rename studio request (%s)", new_name);
+
   new_name_dup = strdup(new_name);
   if (new_name_dup == NULL)
   {
@@ -1645,12 +1647,14 @@ static void ladish_save_studio(method_call_t * call_ptr)
 
 static void ladish_unload_studio(method_call_t * call_ptr)
 {
+  lash_info("Unload studio request");
   studio_clear();
   method_return_new_void(call_ptr);
 }
 
 bool studio_new(void * call_ptr, const char * studio_name)
 {
+  lash_info("New studio request (%s)", studio_name);
   studio_clear();
 
   assert(g_studio.name == NULL);
