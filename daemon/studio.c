@@ -1607,6 +1607,12 @@ static void ladish_save_studio(method_call_t * call_ptr)
   }
 }
 
+static void ladish_unload_studio(method_call_t * call_ptr)
+{
+  studio_clear();
+  method_return_new_void(call_ptr);
+}
+
 bool studio_new(void * call_ptr, const char * studio_name)
 {
   studio_clear();
@@ -1655,10 +1661,14 @@ METHOD_ARGS_END
 METHOD_ARGS_BEGIN(Save, "Save studio")
 METHOD_ARGS_END
 
+METHOD_ARGS_BEGIN(Unload, "Unload studio")
+METHOD_ARGS_END
+
 METHODS_BEGIN
   METHOD_DESCRIBE(GetName, ladish_get_studio_name)
   METHOD_DESCRIBE(Rename, ladish_rename_studio)
   METHOD_DESCRIBE(Save, ladish_save_studio)
+  METHOD_DESCRIBE(Unload, ladish_unload_studio)
 METHODS_END
 
 SIGNAL_ARGS_BEGIN(StudioRenamed, "Studio name changed")

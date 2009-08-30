@@ -33,6 +33,7 @@ void studio_proxy_uninit(void);
 bool studio_proxy_get_name(char ** name);
 bool studio_proxy_rename(const char * name);
 bool studio_proxy_save(void);
+bool studio_proxy_unload(void);
 void studio_proxy_set_renamed_callback(void (* callback)(const char * new_studio_name));
 
 #endif /* #ifndef STUDIO_PROXY_H__2CEC623F_C998_4618_A947_D1A0016DF978__INCLUDED */

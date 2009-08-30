@@ -146,6 +146,11 @@ bool studio_proxy_save(void)
   return dbus_call_simple(SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Save", "", "");
 }
 
+bool studio_proxy_unload(void)
+{
+  return dbus_call_simple(SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Unload", "", "");
+}
+
 void studio_proxy_set_renamed_callback(void (* callback)(const char * new_studio_name))
 {
   g_renamed_callback = callback;
