@@ -40,6 +40,7 @@
 #include "graph_view.h"
 #include "../catdup.h"
 #include "../studio_proxy.h"
+#include "ask_dialog.h"
 
 GtkWidget * g_main_win;
 
@@ -234,11 +235,16 @@ static void on_load_studio(GtkWidget * item)
 static void on_delete_studio(GtkWidget * item)
 {
   const char * studio_name;
+  bool result;
 
   studio_name = gtk_label_get_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(item))));
-  lash_info("Delete studio \"%s\"", studio_name);
 
-  /* TODO: ask user for confirmation */
+  if (!ask_dialog(&result, "<b><big>Confirm studio delete</big></b>", "Studio \"%s\" will be deleted. Are you sure?", studio_name) || !result)
+  {
+    return;
+  }
+
+  lash_info("Delete studio \"%s\"", studio_name);
 
   if (!control_proxy_delete_studio(studio_name))
   {

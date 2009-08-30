@@ -283,6 +283,7 @@ def build(bld):
         'graph_canvas.c',
         'glade.c',
         'control_proxy.c',
+        'ask_dialog.c',
         ]:
         gladish.source.append(os.path.join("gui", source))
 
