@@ -63,6 +63,7 @@ struct studio
   struct list_head clients;                /* studio clients (studio guts and room links) */
   struct list_head ports;                  /* studio ports (studio guts and room links) */
 
+  bool automatic:1;             /* Studio was automatically created because of external JACK start */
   bool persisted:1;             /* Studio has on-disk representation, i.e. can be reloaded from disk */
   bool modified:1;              /* Studio needs saving */
   bool jack_conf_valid:1;       /* JACK server configuration obtained successfully */
@@ -537,6 +538,8 @@ static bool studio_stop(void)
   {
     lash_info("Stopping JACK server...");
 
+    g_studio.automatic = false;   /* even if it was automatic, it is not anymore because user knows about it */
+
     if (jack_proxy_stop_server())
     {
       g_studio.jack_running = false;
@@ -559,6 +562,7 @@ studio_clear(void)
 
   g_studio.modified = false;
   g_studio.persisted = false;
+  g_studio.automatic = false;
 
   INIT_LIST_HEAD(&g_studio.jack_params); /* we will destroy the leaves as part of tree destroy traversal */
   while (!list_empty(&g_studio.jack_conf))
@@ -593,10 +597,11 @@ studio_clear(void)
 }
 
 void
-studio_clear_if_not_persisted(void)
+studio_clear_if_automatic(void)
 {
-  if (!g_studio.persisted)
+  if (g_studio.automatic)
   {
+    lash_info("Unloading automatic studio.");
     studio_clear();
     return;
   }
@@ -613,6 +618,8 @@ void on_event_jack_started(void)
       return;
     }
 
+    g_studio.automatic = true;
+
     studio_publish();
   }
 
@@ -620,7 +627,7 @@ void on_event_jack_started(void)
   {
     lash_error("studio_fetch_jack_settings() failed.");
 
-    studio_clear_if_not_persisted();
+    studio_clear_if_automatic();
     return;
   }
 
@@ -631,7 +638,7 @@ void on_event_jack_started(void)
 
 void on_event_jack_stopped(void)
 {
-  studio_clear_if_not_persisted();
+  studio_clear_if_automatic();
 
   g_studio.jack_running = false;
 
@@ -1122,6 +1129,7 @@ bool studio_save(void * call_ptr)
 
   lash_info("studio saved. (%s)", g_studio.filename);
   g_studio.persisted = true;
+  g_studio.automatic = false;   /* even if it was automatic, it is not anymore because it is saved */
   ret = true;
 
 close:
