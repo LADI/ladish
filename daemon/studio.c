@@ -780,35 +780,46 @@ void escape(const char ** src_ptr, char ** dst_ptr)
   *dst_ptr = dst;
 }
 
-bool maybe_compose_filename(void)
+static bool compose_filename(const char * name, char ** filename_ptr_ptr, char ** backup_filename_ptr_ptr)
 {
   size_t len_dir;
   char * p;
   const char * src;
-
-  if (g_studio.filename != NULL)
-  {
-    return true;
-  }
+  char * filename_ptr;
+  char * backup_filename_ptr;
 
   len_dir = strlen(g_studios_dir);
 
-  g_studio.filename = malloc(len_dir + 1 + strlen(g_studio.name) * 3 + 4);
-  if (g_studio.filename == NULL)
+  filename_ptr = malloc(len_dir + 1 + strlen(name) * 3 + 4 + 1);
+  if (filename_ptr == NULL)
   {
     lash_error("malloc failed to allocate memory for studio file path");
     return false;
   }
 
-  p = g_studio.filename;
+  backup_filename_ptr = malloc(len_dir + 1 + strlen(name) * 3 + 4 + 4 + 1);
+  if (backup_filename_ptr == NULL)
+  {
+    lash_error("malloc failed to allocate memory for studio backup file path");
+    free(filename_ptr);
+    return false;
+  }
+
+  p = filename_ptr;
   memcpy(p, g_studios_dir, len_dir);
   p += len_dir;
 
   *p++ = '/';
 
-  src = g_studio.name;
+  src = name;
   escape(&src, &p);
   strcpy(p, ".xml");
+
+  strcpy(backup_filename_ptr, filename_ptr);
+  strcat(backup_filename_ptr, ".bak");
+
+  *filename_ptr_ptr = filename_ptr;
+  *backup_filename_ptr_ptr = backup_filename_ptr;
 
   return true;
 }
@@ -926,6 +937,10 @@ bool studio_save(void * call_ptr)
   time_t timestamp;
   char timestamp_str[26];
   bool ret;
+  char * filename;              /* filename */
+  char * bak_filename;          /* filename of the backup file */
+  char * old_filename;          /* filename where studio was persisted before save */
+  struct stat st;
 
   time(&timestamp);
   ctime_r(&timestamp, timestamp_str);
@@ -933,10 +948,55 @@ bool studio_save(void * call_ptr)
 
   ret = false;
 
-  if (!maybe_compose_filename())
+  if (!compose_filename(g_studio.name, &filename, &bak_filename))
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "failed to compose studio filename");
     goto exit;
+  }
+
+  if (g_studio.filename == NULL)
+  {
+    /* saving studio for first time */
+    g_studio.filename = filename;
+    free(bak_filename);
+    bak_filename = NULL;
+    old_filename = NULL;
+  }
+  else if (strcmp(g_studio.filename, filename) == 0)
+  {
+    /* saving already persisted studio that was not renamed */
+    old_filename = filename;
+  }
+  else
+  {
+    /* saving renamed studio */
+    old_filename = g_studio.filename;
+    g_studio.filename = filename;
+  }
+
+  filename = NULL;
+  assert(g_studio.filename != NULL);
+  assert(g_studio.filename != old_filename);
+  assert(g_studio.filename != bak_filename);
+
+  if (bak_filename != NULL)
+  {
+    assert(old_filename != NULL);
+
+    if (stat(old_filename, &st) == 0) /* if old filename does not exist, rename with fail */
+    {
+      if (rename(old_filename, bak_filename) != 0)
+      {
+        lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "rename(%s, %s) failed: %d (%s)", old_filename, bak_filename, errno, strerror(errno));
+        goto free_filenames;
+      }
+    }
+    else
+    {
+      /* mark that there is no backup file */
+      free(bak_filename);
+      bak_filename = NULL;
+    }
   }
 
   lash_info("saving studio... (%s)", g_studio.filename);
@@ -944,8 +1004,8 @@ bool studio_save(void * call_ptr)
   fd = open(g_studio.filename, O_WRONLY | O_TRUNC | O_CREAT, 0700);
   if (fd == -1)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "open(\"%s\") failed: %d (%s)", g_studio.filename, errno, strerror(errno));
-    goto exit;
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "open(%s) failed: %d (%s)", g_studio.filename, errno, strerror(errno));
+    goto rename_back;
   }
 
   if (!write_string(fd, "<?xml version=\"1.0\"?>\n", call_ptr))
@@ -1029,6 +1089,30 @@ bool studio_save(void * call_ptr)
 
 close:
   close(fd);
+
+rename_back:
+  if (!ret && bak_filename != NULL)
+  {
+    /* save failed - try to rename the backup file back */
+    if (rename(bak_filename, g_studio.filename) != 0)
+    {
+      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "rename(%s, %s) failed: %d (%s)", bak_filename, g_studio.filename, errno, strerror(errno));
+    }
+  }
+
+free_filenames:
+  if (bak_filename != NULL)
+  {
+    free(bak_filename);
+  }
+
+  if (old_filename != NULL)
+  {
+    free(old_filename);
+  }
+
+  assert(filename == NULL);
+  assert(g_studio.filename != NULL);
 
 exit:
   return ret;
