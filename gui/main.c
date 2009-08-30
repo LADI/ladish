@@ -48,16 +48,15 @@ GtkWidget * g_clear_load_button;
 GtkWidget * g_xrun_progress_bar;
 GtkWidget * g_buffer_size_combo;
 
-GtkWidget * g_menu_item_load_studio;
+GtkWidget * g_menu_item_new_studio;
 GtkWidget * g_menu_item_save_studio;
 GtkWidget * g_menu_item_rename_studio;
-GtkWidget * g_menu_item_delete_studio;
 GtkWidget * g_menu_item_create_room;
 GtkWidget * g_menu_item_destroy_room;
 GtkWidget * g_menu_item_load_project;
 GtkWidget * g_menu_item_start_app;
 
-GtkWidget * g_rename_dialog;
+GtkWidget * g_name_dialog;
 
 graph_view_handle g_jack_view = NULL;
 graph_view_handle g_studio_view = NULL;
@@ -177,33 +176,33 @@ static void clear_load(void)
   gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_xrun_progress_bar), 0.0);
 }
 
-bool rename_dialog(const char * object, const char * old_name, char ** new_name)
+bool name_dialog(const char * title, const char * object, const char * old_name, char ** new_name)
 {
   guint result;
-  bool renamed;
-  GtkEntry * entry = GTK_ENTRY(get_glade_widget("rename_entry"));
+  bool ok;
+  GtkEntry * entry = GTK_ENTRY(get_glade_widget("name_entry"));
 
-  gtk_widget_show(g_rename_dialog);
+  gtk_widget_show(g_name_dialog);
 
-  gtk_label_set_text(GTK_LABEL(get_glade_widget("rename_label")), object);
+  gtk_label_set_text(GTK_LABEL(get_glade_widget("name_label")), object);
   gtk_entry_set_text(entry, old_name);
   gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);
 
-  result = gtk_dialog_run(GTK_DIALOG(g_rename_dialog));
-  renamed = result == 2;
-  if (renamed)
+  result = gtk_dialog_run(GTK_DIALOG(g_name_dialog));
+  ok = result == 2;
+  if (ok)
   {
     *new_name = strdup(gtk_entry_get_text(entry));
     if (*new_name == NULL)
     {
-      lash_error("strdup failed for new name (rename)");
-      renamed = false;
+      lash_error("strdup failed for new name (name_dialog)");
+      ok = false;
     }
   }
 
-  gtk_widget_hide(g_rename_dialog);
+  gtk_widget_hide(g_name_dialog);
 
-  return renamed;
+  return ok;
 }
 
 static void arrange(void)
@@ -315,6 +314,25 @@ static void save_studio(void)
   if (!studio_proxy_save())
   {
     lash_error("studio save failed");
+    /* TODO: display error message */
+  }
+}
+
+static void new_studio(void)
+{
+  char * new_name;
+
+  lash_info("new studio request");
+
+  if (name_dialog("New studio", "Studio name", "", &new_name))
+  {
+    if (!control_proxy_new_studio(new_name))
+    {
+      lash_error("creation of new studio failed");
+      /* TODO: display error message */
+    }
+
+    free(new_name);
   }
 }
 
@@ -322,11 +340,12 @@ static void rename_studio(void)
 {
   char * new_name;
 
-  if (rename_dialog("Studio name", get_view_name(g_studio_view), &new_name))
+  if (name_dialog("Rename studio", "Studio name", get_view_name(g_studio_view), &new_name))
   {
     if (!studio_proxy_rename(new_name))
     {
       lash_error("studio rename failed");
+      /* TODO: display error message */
     }
 
     free(new_name);
@@ -498,6 +517,7 @@ int main(int argc, char** argv)
   g_clear_load_button = get_glade_widget("clear_load_button");
   g_xrun_progress_bar = get_glade_widget("xrun_progress_bar");
   g_buffer_size_combo = get_glade_widget("buffer_size_combo");
+  g_menu_item_new_studio = get_glade_widget("menu_item_new_studio");
   g_menu_item_save_studio = get_glade_widget("menu_item_save_studio");
   g_menu_item_rename_studio = get_glade_widget("menu_item_rename_studio");
   g_menu_item_create_room = get_glade_widget("menu_item_create_room");
@@ -505,7 +525,7 @@ int main(int argc, char** argv)
   g_menu_item_load_project = get_glade_widget("menu_item_load_project");
   g_menu_item_start_app = get_glade_widget("menu_item_start_app");
 
-  g_rename_dialog = get_glade_widget("rename_dialog");
+  g_name_dialog = get_glade_widget("name_dialog");
 
   init_studio_list(&g_load_studio_list, "menu_item_load_studio", "load_studio_menu", on_load_studio);
   init_studio_list(&g_delete_studio_list, "menu_item_delete_studio", "delete_studio_menu", on_delete_studio);
@@ -539,6 +559,7 @@ int main(int argc, char** argv)
   g_signal_connect(G_OBJECT(g_buffer_size_combo), "changed", G_CALLBACK(buffer_size_change_request), NULL);
   g_signal_connect(G_OBJECT(g_clear_load_button), "clicked", G_CALLBACK(clear_load), NULL);
   g_signal_connect(G_OBJECT(get_glade_widget("menu_item_view_arrange")), "activate", G_CALLBACK(arrange), NULL);
+  g_signal_connect(G_OBJECT(g_menu_item_new_studio), "activate", G_CALLBACK(new_studio), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_save_studio), "activate", G_CALLBACK(save_studio), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_rename_studio), "activate", G_CALLBACK(rename_studio), NULL);
 

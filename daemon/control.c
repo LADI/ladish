@@ -183,6 +183,25 @@ static void ladish_delete_studio(method_call_t * call_ptr)
   }
 }
 
+static void ladish_new_studio(method_call_t * call_ptr)
+{
+  const char * name;
+
+  dbus_error_init(&g_dbus_error);
+
+  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return;
+  }
+
+  if (studio_new(call_ptr, name))
+  {
+    method_return_new_void(call_ptr);
+  }
+}
+
 static void ladish_get_application_list(method_call_t * call_ptr)
 {
   DBusMessageIter iter;
@@ -281,6 +300,10 @@ METHOD_ARGS_BEGIN(GetStudioList, "Get list of studios")
   METHOD_ARG_DESCRIBE_OUT("studio_list", "a(sa{sv})", "List of studios, name and properties")
 METHOD_ARGS_END
 
+METHOD_ARGS_BEGIN(NewStudio, "New studio")
+  METHOD_ARG_DESCRIBE_IN("studio_name", "s", "Name of studio, if empty name will be generated")
+METHOD_ARGS_END
+
 METHOD_ARGS_BEGIN(LoadStudio, "Load studio")
   METHOD_ARG_DESCRIBE_IN("studio_name", "s", "Name of studio to load")
   METHOD_ARG_DESCRIBE_IN("options", "a{sv}", "Load options")
@@ -300,6 +323,7 @@ METHOD_ARGS_END
 METHODS_BEGIN
   METHOD_DESCRIBE(IsStudioLoaded, ladish_is_studio_loaded)
   METHOD_DESCRIBE(GetStudioList, ladish_get_studio_list)
+  METHOD_DESCRIBE(NewStudio, ladish_new_studio)
   METHOD_DESCRIBE(LoadStudio, ladish_load_studio)
   METHOD_DESCRIBE(DeleteStudio, ladish_delete_studio)
   METHOD_DESCRIBE(GetApplicationList, ladish_get_application_list)

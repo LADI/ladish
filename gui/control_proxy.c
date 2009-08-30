@@ -149,6 +149,22 @@ bool control_proxy_get_studio_list(void (* callback)(void * context, const char 
   return true;
 }
 
+bool control_proxy_new_studio(const char * studio_name)
+{
+  if (studio_name == NULL)
+  {
+    studio_name = "";
+  }
+
+  if (!dbus_call_simple(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "NewStudio", "s", &studio_name, ""))
+  {
+    lash_error("NewStudio() failed.");
+    return false;
+  }
+
+  return true;
+}
+
 bool control_proxy_load_studio(const char * studio_name)
 {
   if (!dbus_call_simple(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "LoadStudio", "s", &studio_name, ""))

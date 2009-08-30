@@ -1607,6 +1607,43 @@ static void ladish_save_studio(method_call_t * call_ptr)
   }
 }
 
+bool studio_new(void * call_ptr, const char * studio_name)
+{
+  studio_clear();
+
+  assert(g_studio.name == NULL);
+  if (*studio_name != 0)
+  {
+    g_studio.name = strdup(studio_name);
+    if (g_studio.name == NULL)
+    {
+      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup() failed to allocate studio name.");
+      return false;
+    }
+  }
+  else if (!studio_name_generate(&g_studio.name))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "studio_name_generate() failed.");
+    return false;
+  }
+
+  if (!studio_activate())
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "studio_activate() failed.");
+    studio_clear();
+    return false;
+  }
+
+  if (!studio_fetch_jack_settings(g_studio))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "studio_fetch_jack_settings() failed.");
+    studio_clear();
+    return false;
+  }
+
+  return true;
+}
+
 METHOD_ARGS_BEGIN(GetName, "Get studio name")
   METHOD_ARG_DESCRIBE_OUT("studio_name", "s", "Name of studio")
 METHOD_ARGS_END
