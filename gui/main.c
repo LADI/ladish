@@ -312,12 +312,12 @@ static void populate_studio_list_menu(GtkMenuItem * menu_item, struct studio_lis
   if (!control_proxy_get_studio_list(add_studio_list_menu_entry, studio_list_ptr))
   {
     menu_studio_list_clear(studio_list_ptr);
-    studio_list_ptr->add_sensitive = true;
+    studio_list_ptr->add_sensitive = false;
     add_studio_list_menu_entry(studio_list_ptr, "Error obtaining studio list");
   }
   else if (studio_list_ptr->count == 0)
   {
-    studio_list_ptr->add_sensitive = true;
+    studio_list_ptr->add_sensitive = false;
     add_studio_list_menu_entry(studio_list_ptr, "Empty studio list");
   }
 }
