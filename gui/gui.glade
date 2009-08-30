@@ -92,7 +92,7 @@
                         <child internal-child="image">
                           <widget class="GtkImage" id="menu-item-image5">
                             <property name="visible">True</property>
-                            <property name="stock">gtk-save</property>
+                            <property name="stock">gtk-close</property>
                             <property name="icon_size">1</property>
                           </widget>
                         </child>
@@ -108,7 +108,7 @@
                         <child internal-child="image">
                           <widget class="GtkImage" id="image823">
                             <property name="visible">True</property>
-                            <property name="stock">gtk-open</property>
+                            <property name="stock">gtk-delete</property>
                             <property name="icon_size">1</property>
                           </widget>
                         </child>
