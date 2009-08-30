@@ -49,6 +49,8 @@ GtkWidget * g_xrun_progress_bar;
 GtkWidget * g_buffer_size_combo;
 
 GtkWidget * g_menu_item_new_studio;
+GtkWidget * g_menu_item_start_studio;
+GtkWidget * g_menu_item_stop_studio;
 GtkWidget * g_menu_item_save_studio;
 GtkWidget * g_menu_item_unload_studio;
 GtkWidget * g_menu_item_rename_studio;
@@ -337,6 +339,26 @@ static void new_studio(void)
   }
 }
 
+static void start_studio(void)
+{
+  lash_info("start studio request");
+  if (!studio_proxy_start())
+  {
+    lash_error("studio start failed");
+    /* TODO: display error message */
+  }
+}
+
+static void stop_studio(void)
+{
+  lash_info("stop studio request");
+  if (!studio_proxy_stop())
+  {
+    lash_error("studio stop failed");
+    /* TODO: display error message */
+  }
+}
+
 static void unload_studio(void)
 {
   lash_info("unload studio request");
@@ -393,6 +415,8 @@ void control_proxy_on_studio_appeared(void)
     goto free_name;
   }
 
+  gtk_widget_set_sensitive(g_menu_item_start_studio, true);
+  gtk_widget_set_sensitive(g_menu_item_stop_studio, true);
   gtk_widget_set_sensitive(g_menu_item_save_studio, true);
   gtk_widget_set_sensitive(g_menu_item_unload_studio, true);
   gtk_widget_set_sensitive(g_menu_item_rename_studio, true);
@@ -416,6 +440,8 @@ void control_proxy_on_studio_disappeared(void)
     return;
   }
 
+  gtk_widget_set_sensitive(g_menu_item_start_studio, false);
+  gtk_widget_set_sensitive(g_menu_item_stop_studio, false);
   gtk_widget_set_sensitive(g_menu_item_save_studio, false);
   gtk_widget_set_sensitive(g_menu_item_unload_studio, false);
   gtk_widget_set_sensitive(g_menu_item_rename_studio, false);
@@ -531,6 +557,8 @@ int main(int argc, char** argv)
   g_xrun_progress_bar = get_glade_widget("xrun_progress_bar");
   g_buffer_size_combo = get_glade_widget("buffer_size_combo");
   g_menu_item_new_studio = get_glade_widget("menu_item_new_studio");
+  g_menu_item_start_studio = get_glade_widget("menu_item_start_studio");
+  g_menu_item_stop_studio = get_glade_widget("menu_item_stop_studio");
   g_menu_item_save_studio = get_glade_widget("menu_item_save_studio");
   g_menu_item_unload_studio = get_glade_widget("menu_item_unload_studio");
   g_menu_item_rename_studio = get_glade_widget("menu_item_rename_studio");
@@ -574,6 +602,8 @@ int main(int argc, char** argv)
   g_signal_connect(G_OBJECT(g_clear_load_button), "clicked", G_CALLBACK(clear_load), NULL);
   g_signal_connect(G_OBJECT(get_glade_widget("menu_item_view_arrange")), "activate", G_CALLBACK(arrange), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_new_studio), "activate", G_CALLBACK(new_studio), NULL);
+  g_signal_connect(G_OBJECT(g_menu_item_start_studio), "activate", G_CALLBACK(start_studio), NULL);
+  g_signal_connect(G_OBJECT(g_menu_item_stop_studio), "activate", G_CALLBACK(stop_studio), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_unload_studio), "activate", G_CALLBACK(unload_studio), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_save_studio), "activate", G_CALLBACK(save_studio), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_rename_studio), "activate", G_CALLBACK(rename_studio), NULL);

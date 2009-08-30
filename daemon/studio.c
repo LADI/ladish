@@ -503,6 +503,55 @@ studio_publish(void)
   return true;
 }
 
+static void emit_studio_started()
+{
+  signal_new_valist(g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioStarted", DBUS_TYPE_INVALID);
+}
+
+static void emit_studio_stopped()
+{
+  signal_new_valist(g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioStopped", DBUS_TYPE_INVALID);
+}
+
+static bool studio_start(void)
+{
+  if (!g_studio.jack_running)
+  {
+    lash_info("Starting JACK server.");
+
+    if (!jack_proxy_start_server())
+    {
+      lash_error("jack_proxy_start_server() failed.");
+      return false;
+    }
+  }
+
+  emit_studio_started();
+
+  return true;
+}
+
+static bool studio_stop(void)
+{
+  if (g_studio.jack_running)
+  {
+    lash_info("Stopping JACK server...");
+
+    if (jack_proxy_stop_server())
+    {
+      g_studio.jack_running = false;
+      emit_studio_stopped();
+    }
+    else
+    {
+      lash_error("Stopping JACK server failed.");
+      return false;
+    }
+  }
+
+  return true;
+}
+
 void
 studio_clear(void)
 {
@@ -521,19 +570,7 @@ studio_clear(void)
 
   g_studio.jack_conf_valid = false;
 
-  if (g_studio.jack_running)
-  {
-    lash_info("Stopping JACK server...");
-
-    if (jack_proxy_stop_server())
-    {
-      g_studio.jack_running = false;
-    }
-    else
-    {
-      lash_error("Stopping JACK server failed.");
-    }
-  }
+  studio_stop();
 
   if (g_studio.dbus_object != NULL)
   {
@@ -1552,10 +1589,9 @@ bool studio_load(void * call_ptr, const char * studio_name)
     return false;
   }
 
-  lash_info("Starting JACK server.");
-  if (!jack_proxy_start_server())
+  if (!studio_start())
   {
-      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Failed to start JACK server() failed.");
+      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Failed to start JACK server.");
       studio_clear();
       return false;
   }
@@ -1650,6 +1686,34 @@ bool studio_new(void * call_ptr, const char * studio_name)
   return true;
 }
 
+static void ladish_stop_studio(method_call_t * call_ptr)
+{
+  lash_info("Studio stop requested");
+
+  if (!studio_stop())
+  {
+      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Failed to stop studio.");
+  }
+  else
+  {
+    method_return_new_void(call_ptr);
+  }
+}
+
+static void ladish_start_studio(method_call_t * call_ptr)
+{
+  lash_info("Studio start requested");
+
+  if (!studio_start())
+  {
+      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Failed to start studio.");
+  }
+  else
+  {
+    method_return_new_void(call_ptr);
+  }
+}
+
 METHOD_ARGS_BEGIN(GetName, "Get studio name")
   METHOD_ARG_DESCRIBE_OUT("studio_name", "s", "Name of studio")
 METHOD_ARGS_END
@@ -1664,15 +1728,29 @@ METHOD_ARGS_END
 METHOD_ARGS_BEGIN(Unload, "Unload studio")
 METHOD_ARGS_END
 
+METHOD_ARGS_BEGIN(Start, "Start studio")
+METHOD_ARGS_END
+
+METHOD_ARGS_BEGIN(Stop, "Stop studio")
+METHOD_ARGS_END
+
 METHODS_BEGIN
   METHOD_DESCRIBE(GetName, ladish_get_studio_name)
   METHOD_DESCRIBE(Rename, ladish_rename_studio)
   METHOD_DESCRIBE(Save, ladish_save_studio)
   METHOD_DESCRIBE(Unload, ladish_unload_studio)
+  METHOD_DESCRIBE(Start, ladish_start_studio)
+  METHOD_DESCRIBE(Stop, ladish_stop_studio)
 METHODS_END
 
 SIGNAL_ARGS_BEGIN(StudioRenamed, "Studio name changed")
   SIGNAL_ARG_DESCRIBE("studio_name", "s", "New studio name")
+SIGNAL_ARGS_END
+
+SIGNAL_ARGS_BEGIN(StudioStarted, "Studio started")
+SIGNAL_ARGS_END
+
+SIGNAL_ARGS_BEGIN(StudioStopped, "Studio stopped")
 SIGNAL_ARGS_END
 
 SIGNAL_ARGS_BEGIN(RoomAppeared, "Room D-Bus object appeared")
@@ -1685,6 +1763,8 @@ SIGNAL_ARGS_END
 
 SIGNALS_BEGIN
   SIGNAL_DESCRIBE(StudioRenamed)
+  SIGNAL_DESCRIBE(StudioStarted)
+  SIGNAL_DESCRIBE(StudioStopped)
   SIGNAL_DESCRIBE(RoomAppeared)
   SIGNAL_DESCRIBE(RoomDisappeared)
 SIGNALS_END

@@ -30,10 +30,14 @@
 #include "dbus/helpers.h"
 
 static void (* g_renamed_callback)(const char * new_studio_name) = NULL;
+static void (* g_started_callback)(void) = NULL;
+static void (* g_stopped_callback)(void) = NULL;
 
 static const char * g_signals[] =
 {
   "StudioRenamed",
+  "StudioStarted",
+  "StudioStopped",
   "RoomAppeared",
   "RoomDisappeared",
   NULL
@@ -65,6 +69,30 @@ static DBusHandlerResult message_hook(DBusConnection * connection, DBusMessage *
       {
         g_renamed_callback(name);
       }
+    }
+
+    return DBUS_HANDLER_RESULT_HANDLED;
+  }
+
+  if (dbus_message_is_signal(message, IFACE_STUDIO, "StudioStarted"))
+  {
+    lash_info("StudioStarted");
+
+    if (g_started_callback != NULL)
+    {
+      g_started_callback();
+    }
+
+    return DBUS_HANDLER_RESULT_HANDLED;
+  }
+
+  if (dbus_message_is_signal(message, IFACE_STUDIO, "StudioStopped"))
+  {
+    lash_info("StudioStopped");
+
+    if (g_stopped_callback != NULL)
+    {
+      g_stopped_callback();
     }
 
     return DBUS_HANDLER_RESULT_HANDLED;
@@ -154,4 +182,20 @@ bool studio_proxy_unload(void)
 void studio_proxy_set_renamed_callback(void (* callback)(const char * new_studio_name))
 {
   g_renamed_callback = callback;
+}
+
+void studio_proxy_set_startstop_callbacks(void (* started_callback)(void), void (* stopped_callback)(void))
+{
+  g_started_callback = started_callback;
+  g_stopped_callback = stopped_callback;
+}
+
+bool studio_proxy_start(void)
+{
+  return dbus_call_simple(SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Start", "", "");
+}
+
+bool studio_proxy_stop(void)
+{
+  return dbus_call_simple(SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Stop", "", "");
 }

@@ -108,6 +108,8 @@ def main():
         print "    ssave                - save studio"
         print "    sunload              - unload studio"
         print "    srename <studioname> - rename studio"
+        print "    sstart               - start studio"
+        print "    sstop                - stop studio"
         sys.exit(0)
     
     bus = dbus.SessionBus()
@@ -205,6 +207,12 @@ def main():
                     index += 1
 
                     studio_iface.Rename(arg)
+                elif arg == 'sstart':
+                    print "--- studio start"
+                    studio_iface.Start()
+                elif arg == 'sstop':
+                    print "--- studio stop"
+                    studio_iface.Stop()
                 else:
                     print "Unknown command '%s'" % arg
         except dbus.DBusException, e:
