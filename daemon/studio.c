@@ -1408,7 +1408,7 @@ bool studio_delete(void * call_ptr, const char * studio_name)
     goto exit;
   }
 
-  lash_info("Loading studio ('%s')", filename);
+  lash_info("Deleting studio ('%s')", filename);
 
   if (unlink(filename) != 0)
   {
