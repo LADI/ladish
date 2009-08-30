@@ -1545,12 +1545,18 @@ bool studio_load(void * call_ptr, const char * studio_name)
   g_studio.persisted = true;
   lash_info("Studio loaded. ('%s')", path);
 
-  studio_activate();
+  if (!studio_activate())
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "studio_activate() failed.");
+    studio_clear();
+    return false;
+  }
 
   lash_info("Starting JACK server.");
   if (!jack_proxy_start_server())
   {
       lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Failed to start JACK server() failed.");
+      studio_clear();
       return false;
   }
 
