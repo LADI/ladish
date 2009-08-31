@@ -26,10 +26,17 @@ def display_raw_text(conf, text, color = 'NORMAL'):
 def display_line(conf, text, color = 'NORMAL'):
     Utils.pprint(color, text, sep = os.linesep)
 
+def yesno(bool):
+    if bool:
+        return "yes"
+    else:
+        return "no"
+
 def set_options(opt):
     opt.tool_options('compiler_cc')
     opt.tool_options('compiler_cxx')
     opt.add_option('--enable-pkg-config-dbus-service-dir', action='store_true', default=False, help='force D-Bus service install dir to be one returned by pkg-config')
+    opt.add_option('--enable-liblash', action='store_true', default=False, help='Build LASH compatibility library')
 
 def add_cflag(conf, flag):
     conf.env.append_unique('CXXFLAGS', flag)
@@ -57,6 +64,8 @@ def configure(conf):
         conf.env['DBUS_SERVICES_DIR'] = dbus_dir
     else:
         conf.env['DBUS_SERVICES_DIR'] = os.path.join(os.path.normpath(conf.env['PREFIX']), 'share', 'dbus-1', 'services')
+
+    conf.env['BUILD_LIBLASH'] = Options.options.enable_liblash
 
     conf.check_cfg(
         package = 'uuid',
@@ -139,7 +148,7 @@ def configure(conf):
     display_msg(conf)
     display_msg(conf, "Install prefix", conf.env['PREFIX'], 'CYAN')
 
-    display_msg(conf, 'D-Bus service install directory', conf.env['DBUS_SERVICES_DIR'], 'CYAN')
+    display_msg(conf, 'Build liblash', yesno(Options.options.enable_liblash))
 
     if conf.env['DBUS_SERVICES_DIR'] != conf.env['DBUS_SERVICES_DIR_REAL']:
         display_msg(conf)
@@ -207,40 +216,41 @@ def build(bld):
     obj.install_path = bld.env['DBUS_SERVICES_DIR'] + os.path.sep
     obj.fun = misc.subst_func
 
-    liblash = bld.new_task_gen('cc', 'shlib')
-    liblash.includes = "build/default" # XXX config.h version.h and other generated files
-    liblash.uselib = 'DBUS-1 LIBXML-2.0 UUID'
-    liblash.target = 'lash'
-    liblash.vnum = "1.1.1"
-    liblash.defines = ['LASH_OLD_API', 'DEBUG_OUTPUT_TERMINAL']
-    liblash.source = []
+    if bld.env['BUILD_LIBLASH']:
+        liblash = bld.new_task_gen('cc', 'shlib')
+        liblash.includes = "build/default" # XXX config.h version.h and other generated files
+        liblash.uselib = 'DBUS-1 LIBXML-2.0 UUID'
+        liblash.target = 'lash'
+        liblash.vnum = "1.1.1"
+        liblash.defines = ['LASH_OLD_API', 'DEBUG_OUTPUT_TERMINAL']
+        liblash.source = []
 
-    for source in [
-        'lash.c',
-        'lash_config.c',
-        'client.c',
-        'dbus_service.c',
-        'dbus_iface_client.c',
-        'protocol.c',
-        'event.c',
-        'args.c',
-        ]:
-        liblash.source.append(os.path.join("lash_compat", "liblash", source))
+        for source in [
+            'lash.c',
+            'lash_config.c',
+            'client.c',
+            'dbus_service.c',
+            'dbus_iface_client.c',
+            'protocol.c',
+            'event.c',
+            'args.c',
+            ]:
+            liblash.source.append(os.path.join("lash_compat", "liblash", source))
 
-    for source in [
-        'service.c',
-        'signal.c',
-        'method.c',
-        'error.c',
-        'object_path.c',
-        'introspection.c',
-        'interface.c',
-        'helpers.c',
-        ]:
-        liblash.source.append(os.path.join("dbus", source))
+        for source in [
+            'service.c',
+            'signal.c',
+            'method.c',
+            'error.c',
+            'object_path.c',
+            'introspection.c',
+            'interface.c',
+            'helpers.c',
+            ]:
+            liblash.source.append(os.path.join("dbus", source))
 
-    liblash.source.append(os.path.join("common", "safety.c"))
-    liblash.source.append(os.path.join("daemon", "legacy", "file.c"))
+        liblash.source.append(os.path.join("common", "safety.c"))
+        liblash.source.append(os.path.join("daemon", "legacy", "file.c"))
 
     # pkgpyexec_LTLIBRARIES = _lash.la
     # INCLUDES = $(PYTHON_INCLUDES)
