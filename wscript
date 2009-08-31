@@ -235,6 +235,7 @@ def build(bld):
         'object_path.c',
         'introspection.c',
         'interface.c',
+        'helpers.c',
         ]:
         liblash.source.append(os.path.join("dbus", source))
 
