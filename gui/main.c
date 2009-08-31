@@ -60,6 +60,7 @@ GtkWidget * g_menu_item_load_project;
 GtkWidget * g_menu_item_start_app;
 GtkWidget * g_menu_item_daemon_exit;
 GtkWidget * g_menu_item_jack_configure;
+GtkWidget * g_studio_status_label;
 
 GtkWidget * g_name_dialog;
 
@@ -471,6 +472,8 @@ void control_proxy_on_studio_appeared(void)
   gtk_widget_set_sensitive(g_menu_item_load_project, true);
   gtk_widget_set_sensitive(g_menu_item_start_app, true);
 
+  gtk_label_set_text(GTK_LABEL(g_studio_status_label), name);
+
 free_name:
   free(name);
 
@@ -495,6 +498,8 @@ void control_proxy_on_studio_disappeared(void)
   gtk_widget_set_sensitive(g_menu_item_destroy_room, false);
   gtk_widget_set_sensitive(g_menu_item_load_project, false);
   gtk_widget_set_sensitive(g_menu_item_start_app, false);
+
+  gtk_label_set_text(GTK_LABEL(g_studio_status_label), "No studio loaded");
 
   if (g_studio_view != NULL)
   {
@@ -531,6 +536,7 @@ void jack_stopped(void)
   buffer_size_clear();
   gtk_widget_set_sensitive(g_clear_load_button, false);
   gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_xrun_progress_bar), 0.0);
+  gtk_progress_bar_set_text(GTK_PROGRESS_BAR(g_xrun_progress_bar), "Stopped");
 }
 
 void jack_appeared(void)
@@ -611,6 +617,7 @@ int main(int argc, char** argv)
   g_menu_item_start_app = get_glade_widget("menu_item_start_app");
   g_menu_item_daemon_exit = get_glade_widget("menu_item_daemon_exit");
   g_menu_item_jack_configure = get_glade_widget("menu_item_jack_configure");
+  g_studio_status_label = get_glade_widget("studio_status_label");
 
   g_name_dialog = get_glade_widget("name_dialog");
 

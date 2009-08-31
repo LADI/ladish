@@ -389,7 +389,7 @@
                           <widget class="GtkComboBoxEntry" id="buffer_size_combo">
                             <property name="visible">True</property>
                             <property name="sensitive">False</property>
-                            <property name="tooltip" translatable="yes">Jack latency</property>
+                            <property name="tooltip" translatable="yes">JACK latency</property>
                             <property name="border_width">1</property>
                             <property name="items" translatable="yes">32 frames
 64 frames
@@ -477,7 +477,7 @@
 
 The bar represents the percentage of available time used for audio processing (i.e. the DSP load).  If the bar reaches 100%, a dropout will occur.</property>
                         <property name="pulse_step">0.10000000149</property>
-                        <property name="text" translatable="yes">? Dropouts</property>
+                        <property name="text" translatable="yes">Stopped</property>
                       </widget>
                     </child>
                   </widget>
@@ -499,7 +499,7 @@ The bar represents the percentage of available time used for audio processing (i
               </packing>
             </child>
             <child>
-              <widget class="GtkToolItem" id="toolitem_a2j">
+              <widget class="GtkToolItem" id="toolitem_studio">
                 <property name="visible">True</property>
                 <property name="border_width">1</property>
                 <child>
@@ -508,11 +508,11 @@ The bar represents the percentage of available time used for audio processing (i
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                     <property name="resize_mode">GTK_RESIZE_QUEUE</property>
                     <child>
-                      <widget class="GtkLabel" id="main_a2j_status_label">
+                      <widget class="GtkLabel" id="studio_status_label">
                         <property name="width_request">150</property>
                         <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                        <property name="label" translatable="yes">A2J status?</property>
+                        <property name="label" translatable="yes">No studio loaded</property>
                         <property name="use_markup">True</property>
                       </widget>
                     </child>
@@ -526,16 +526,6 @@ The bar represents the percentage of available time used for audio processing (i
             </child>
             <child>
               <widget class="GtkSeparatorToolItem" id="toolbutton4">
-                <property name="visible">True</property>
-                <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-                <property name="homogeneous">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkSeparatorToolItem" id="toolbutton2">
                 <property name="visible">True</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
               </widget>
