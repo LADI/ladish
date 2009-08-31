@@ -59,6 +59,7 @@ GtkWidget * g_menu_item_destroy_room;
 GtkWidget * g_menu_item_load_project;
 GtkWidget * g_menu_item_start_app;
 GtkWidget * g_menu_item_daemon_exit;
+GtkWidget * g_menu_item_jack_configure;
 
 GtkWidget * g_name_dialog;
 
@@ -240,6 +241,35 @@ static void daemon_exit(GtkWidget * item)
   if (!control_proxy_exit())
   {
     error_message_box("Daemon exit command failed, please inspect logs.");
+  }
+}
+
+static void jack_configure(GtkWidget * item)
+{
+  GError * error_ptr;
+  gchar * argv[] = {"ladiconf", NULL};
+  GtkWidget * dialog;
+
+  lash_info("JACK configure request");
+
+  error_ptr = NULL;
+  if (!g_spawn_async(
+        NULL,                   /* working directory */
+        argv,
+        NULL,                   /* envp */
+        G_SPAWN_SEARCH_PATH,    /* flags */
+        NULL,                   /* child_setup callback */
+        NULL,                   /* user_data */
+        NULL,
+        &error_ptr))
+  {
+    dialog = get_glade_widget("error_dialog");
+    gtk_message_dialog_set_markup(GTK_MESSAGE_DIALOG(dialog), "<b><big>Error executing ladiconf.\nAre LADI Tools installed?</big></b>");
+    gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(dialog), "%s", error_ptr->message);
+    gtk_widget_show(dialog);
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_hide(dialog);
+    g_error_free(error_ptr);
   }
 }
 
@@ -580,6 +610,7 @@ int main(int argc, char** argv)
   g_menu_item_load_project = get_glade_widget("menu_item_load_project");
   g_menu_item_start_app = get_glade_widget("menu_item_start_app");
   g_menu_item_daemon_exit = get_glade_widget("menu_item_daemon_exit");
+  g_menu_item_jack_configure = get_glade_widget("menu_item_jack_configure");
 
   g_name_dialog = get_glade_widget("name_dialog");
 
@@ -622,6 +653,7 @@ int main(int argc, char** argv)
   g_signal_connect(G_OBJECT(g_menu_item_save_studio), "activate", G_CALLBACK(save_studio), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_rename_studio), "activate", G_CALLBACK(rename_studio), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_daemon_exit), "activate", G_CALLBACK(daemon_exit), NULL);
+  g_signal_connect(G_OBJECT(g_menu_item_jack_configure), "activate", G_CALLBACK(jack_configure), NULL);
 
   gtk_widget_show(g_main_win);
 
