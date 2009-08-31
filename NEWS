@@ -1,0 +1,3 @@
+= Version 0.1 "preview 1" on 2009-09-01 =
+ * JACK multiconfig (Save/restore jack settings by saving and then
+   loading and activating studios)

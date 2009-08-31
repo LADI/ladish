@@ -1,0 +1,49 @@
+===================================================
+
+Requirements (tools, headers and libraries):
+
+ * You need gcc for C and C++ (4.2.2 should work)
+ * You need dbus (1.2.16 should work)
+ * You need libuuid from e2fsprogs (1.40.2 should work)
+ * You need the expat XML parser (2.0.1 should work)
+ * You need glib (2.20.3 should work)
+ * You need dbus-glib (0.74 should work)
+ * You need gtk+ (2.12.1 should work)
+ * You need libglade (2.6.2 should work)
+ * You need flowcanvas (svn revision 2186 or later should work, included in tarball)
+ * Python (for ladish_control and LADI Tools)
+
+===================================================
+
+The tarball contains sources for suitable flowcanvas library and
+sources of suitable LADI Tools. Check the docs in corresponding
+flowcanvas/ and laditools/ subdirectories.
+
+===================================================
+
+= Configure it =
+
+./waf configure
+
+This will configure for installation to /usr/local prefix.
+If you want to use other prefix, use --prefix option:
+
+./waf configure --prefix=/usr
+
+For full list of options, run:
+
+./waf configure --help
+
+= Build it =
+
+./waf
+
+You can use -j option to enable building on more than one CPU:
+
+./waf -j 4
+
+= Install it =
+
+./waf install
+
+You probably want to run later as superuser to install system-wide
