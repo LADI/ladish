@@ -209,6 +209,17 @@ bool name_dialog(const char * title, const char * object, const char * old_name,
   return ok;
 }
 
+void error_message_box(const char * failed_operation)
+{
+  GtkWidget * dialog;
+  dialog = get_glade_widget("error_dialog");
+  gtk_message_dialog_set_markup(GTK_MESSAGE_DIALOG(dialog), "<b><big>Error</big></b>");
+  gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(dialog), "%s", failed_operation);
+  gtk_widget_show(dialog);
+  gtk_dialog_run(GTK_DIALOG(dialog));
+  gtk_widget_hide(dialog);
+}
+
 static void arrange(void)
 {
   canvas_handle canvas;
@@ -228,7 +239,7 @@ static void daemon_exit(GtkWidget * item)
 
   if (!control_proxy_exit())
   {
-    /* TODO: display error message */
+    error_message_box("Daemon exit command failed, please inspect logs.");
   }
 }
 
@@ -241,7 +252,7 @@ static void on_load_studio(GtkWidget * item)
 
   if (!control_proxy_load_studio(studio_name))
   {
-    /* TODO: display error message */
+    error_message_box("Studio load failed, please inspect logs.");
   }
 }
 
@@ -261,7 +272,7 @@ static void on_delete_studio(GtkWidget * item)
 
   if (!control_proxy_delete_studio(studio_name))
   {
-    /* TODO: display error message */
+    error_message_box("Studio delete failed, please inspect logs.");
   }
 }
 
@@ -327,8 +338,7 @@ static void save_studio(void)
   lash_info("save studio request");
   if (!studio_proxy_save())
   {
-    lash_error("studio save failed");
-    /* TODO: display error message */
+    error_message_box("Studio save failed, please inspect logs.");
   }
 }
 
@@ -342,8 +352,7 @@ static void new_studio(void)
   {
     if (!control_proxy_new_studio(new_name))
     {
-      lash_error("creation of new studio failed");
-      /* TODO: display error message */
+      error_message_box("Creation of new studio failed, please inspect logs.");
     }
 
     free(new_name);
@@ -355,8 +364,7 @@ static void start_studio(void)
   lash_info("start studio request");
   if (!studio_proxy_start())
   {
-    lash_error("studio start failed");
-    /* TODO: display error message */
+    error_message_box("Studio start failed, please inspect logs.");
   }
 }
 
@@ -365,8 +373,7 @@ static void stop_studio(void)
   lash_info("stop studio request");
   if (!studio_proxy_stop())
   {
-    lash_error("studio stop failed");
-    /* TODO: display error message */
+    error_message_box("Studio stop failed, please inspect logs.");
   }
 }
 
@@ -375,8 +382,7 @@ static void unload_studio(void)
   lash_info("unload studio request");
   if (!studio_proxy_unload())
   {
-    lash_error("studio unload failed");
-    /* TODO: display error message */
+    error_message_box("Studio unload failed, please inspect logs.");
   }
 }
 
@@ -388,8 +394,7 @@ static void rename_studio(void)
   {
     if (!studio_proxy_rename(new_name))
     {
-      lash_error("studio rename failed");
-      /* TODO: display error message */
+      error_message_box("Studio rename failed, please inspect logs.");
     }
 
     free(new_name);
