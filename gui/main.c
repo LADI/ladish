@@ -469,10 +469,10 @@ void control_proxy_on_studio_appeared(void)
   gtk_widget_set_sensitive(g_menu_item_save_studio, true);
   gtk_widget_set_sensitive(g_menu_item_unload_studio, true);
   gtk_widget_set_sensitive(g_menu_item_rename_studio, true);
-  gtk_widget_set_sensitive(g_menu_item_create_room, true);
-  gtk_widget_set_sensitive(g_menu_item_destroy_room, true);
-  gtk_widget_set_sensitive(g_menu_item_load_project, true);
-  gtk_widget_set_sensitive(g_menu_item_start_app, true);
+  //gtk_widget_set_sensitive(g_menu_item_create_room, true);
+  //gtk_widget_set_sensitive(g_menu_item_destroy_room, true);
+  //gtk_widget_set_sensitive(g_menu_item_load_project, true);
+  //gtk_widget_set_sensitive(g_menu_item_start_app, true);
 
   gtk_label_set_text(GTK_LABEL(g_studio_status_label), name);
 
@@ -496,10 +496,10 @@ void control_proxy_on_studio_disappeared(void)
   gtk_widget_set_sensitive(g_menu_item_save_studio, false);
   gtk_widget_set_sensitive(g_menu_item_unload_studio, false);
   gtk_widget_set_sensitive(g_menu_item_rename_studio, false);
-  gtk_widget_set_sensitive(g_menu_item_create_room, false);
-  gtk_widget_set_sensitive(g_menu_item_destroy_room, false);
-  gtk_widget_set_sensitive(g_menu_item_load_project, false);
-  gtk_widget_set_sensitive(g_menu_item_start_app, false);
+  //gtk_widget_set_sensitive(g_menu_item_create_room, false);
+  //gtk_widget_set_sensitive(g_menu_item_destroy_room, false);
+  //gtk_widget_set_sensitive(g_menu_item_load_project, false);
+  //gtk_widget_set_sensitive(g_menu_item_start_app, false);
 
   gtk_label_set_text(GTK_LABEL(g_studio_status_label), "No studio loaded");
 
