@@ -90,26 +90,26 @@ def dbus_typesig_to_type_string(type_char):
     if type_char == 'b':
         return "bool"
 
-    print 'shit'
+    print('unknown dbus typesig')
     return None                         # throw exception here?
 
 def main():
     if len(sys.argv) == 1:
-        print "Usage: %s [command] [command] ..." % os.path.basename(sys.argv[0])
-        print "Commands:"
-        print "    exit                 - exit ladish dbus service"
-        print "    slist                - list studios"
-        print "    alist                - list apps"
-        print "    sload <studioname>   - load studio"
-        print "    sdel <studioname>    - delete studio"
-        print "    snew [studioname]    - new studio"
-        print "    sisloaded            - is studio loaded?"
-        print "    sname                - get studio name"
-        print "    ssave                - save studio"
-        print "    sunload              - unload studio"
-        print "    srename <studioname> - rename studio"
-        print "    sstart               - start studio"
-        print "    sstop                - stop studio"
+        print("Usage: %s [command] [command] ..." % os.path.basename(sys.argv[0]))
+        print("Commands:")
+        print("    exit                 - exit ladish dbus service")
+        print("    slist                - list studios")
+        print("    alist                - list apps")
+        print("    sload <studioname>   - load studio")
+        print("    sdel <studioname>    - delete studio")
+        print("    snew [studioname]    - new studio")
+        print("    sisloaded            - is studio loaded?")
+        print("    sname                - get studio name")
+        print("    ssave                - save studio")
+        print("    sunload              - unload studio")
+        print("    srename <studioname> - rename studio")
+        print("    sstart               - start studio")
+        print("    sstop                - stop studio")
         sys.exit(0)
     
     bus = dbus.SessionBus()
@@ -122,45 +122,45 @@ def main():
         arg = sys.argv[index]
         index += 1
         try:
-	    if not control_obj:
-		control_obj = bus.get_object(service_name, control_object_path)
-		control_iface = dbus.Interface(control_obj, control_interface_name)
-	    
+            if not control_obj:
+                control_obj = bus.get_object(service_name, control_object_path)
+                control_iface = dbus.Interface(control_obj, control_interface_name)
+            
             if arg == "exit":
-                print "--- exit"
+                print("--- exit")
                 control_iface.Exit()
-		time.sleep(1)
-		# we have deactivated the object and we need to get new connection if there are more commands
-		control_obj = None
-		control_iface = None
+                time.sleep(1)
+                # we have deactivated the object and we need to get new connection if there are more commands
+                control_obj = None
+                control_iface = None
             elif arg == 'slist':
-                print "--- studio list"
+                print("--- studio list")
                 for studio in control_iface.GetStudioList():
                     name = studio[0]
                     mtime = studio[1]['Modification Time']
-                    print '"%s" last modified on %s' % (name, time.ctime(mtime))
+                    print('"%s" last modified on %s' % (name, time.ctime(mtime)))
             elif arg == 'alist':
-                print "--- app list"
+                print("--- app list")
                 for app in control_iface.GetApplicationList():
-                    print app
+                    print(app)
             elif arg == 'sload':
-                print "--- studio load"
+                print("--- studio load")
                 if index >= len(sys.argv):
-                    print "load studio command requires studio name argument"
+                    print("load studio command requires studio name argument")
                     sys.exit()
 
                 arg = sys.argv[index]
                 index += 1
 
-		open_options = {}
-		#open_options["option1"] = "asd"
-		#open_options["option2"] = True
+                open_options = {}
+                #open_options["option1"] = "asd"
+                #open_options["option2"] = True
 
-		control_iface.LoadStudio(arg, open_options)
+                control_iface.LoadStudio(arg, open_options)
             elif arg == 'sdel':
-                print "--- studio delete"
+                print("--- studio delete")
                 if index >= len(sys.argv):
-                    print "delete studio command requires studio name argument"
+                    print("delete studio command requires studio name argument")
                     sys.exit()
 
                 arg = sys.argv[index]
@@ -168,7 +168,7 @@ def main():
 
                 control_iface.DeleteStudio(arg)
             elif arg == 'snew':
-                print "--- studio new"
+                print("--- studio new")
                 name = ""
                 if index < len(sys.argv):
                     name = sys.argv[index]
@@ -176,31 +176,31 @@ def main():
 
                 control_iface.NewStudio(name)
             elif arg == 'sisloaded':
-                print "--- studio is loaded"
+                print("--- studio is loaded")
                 if control_iface.IsStudioLoaded():
-                    print "yes"
+                    print("yes")
                 else:
-                    print "no"
+                    print("no")
             else:
                 if not studio_obj:
                     studio_obj = bus.get_object(service_name, studio_object_path)
                     studio_iface = dbus.Interface(studio_obj, studio_interface_name)
 
                 if arg == 'sname':
-                    print "--- studio get name"
-                    print "\"%s\"" % studio_iface.GetName()
+                    print("--- studio get name")
+                    print("\"%s\"" % studio_iface.GetName())
                 elif arg == 'ssave':
-                    print "--- studio save"
+                    print("--- studio save")
                     studio_iface.Save()
                 elif arg == 'sunload':
-                    print "--- studio unload"
+                    print("--- studio unload")
                     studio_iface.Unload()
                     studio_obj = None
                     studio_iface = None
                 elif arg == 'srename':
-                    print "--- studio rename"
+                    print("--- studio rename")
                     if index >= len(sys.argv):
-                        print "rename studio command requires studio name argument"
+                        print("rename studio command requires studio name argument")
                         sys.exit()
 
                     arg = sys.argv[index]
@@ -208,15 +208,15 @@ def main():
 
                     studio_iface.Rename(arg)
                 elif arg == 'sstart':
-                    print "--- studio start"
+                    print("--- studio start")
                     studio_iface.Start()
                 elif arg == 'sstop':
-                    print "--- studio stop"
+                    print("--- studio stop")
                     studio_iface.Stop()
                 else:
-                    print "Unknown command '%s'" % arg
+                    print("Unknown command '%s'" % arg)
         except dbus.DBusException, e:
-            print "DBus exception: %s" % str(e)
+            print("DBus exception: %s" % str(e))
 
 if __name__ == '__main__':
     main()
