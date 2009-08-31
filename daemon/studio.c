@@ -831,6 +831,41 @@ void escape(const char ** src_ptr, char ** dst_ptr)
   *dst_ptr = dst;
 }
 
+#define HEX_TO_INT(hexchar) ((hexchar) <= '9' ? hexchar - '0' : 10 + (hexchar - 'A'))
+
+static size_t unescape(const char * src, size_t src_len, char * dst)
+{
+  size_t dst_len;
+
+  dst_len = 0;
+
+  while (src_len)
+  {
+    if (src_len >= 3 &&
+        src[0] == '%' &&
+        ((src[1] >= '0' && src[1] <= '9') ||
+         (src[1] >= 'A' && src[1] <= 'F')) &&
+        ((src[2] >= '0' && src[2] <= '9') ||
+         (src[2] >= 'A' && src[2] <= 'F')))
+    {
+      *dst = (HEX_TO_INT(src[1]) << 4) | HEX_TO_INT(src[2]);
+      //lash_info("unescaping %c%c%c to '%c'", src[0], src[1], src[2], *dst);
+      src_len -= 3;
+      src += 3;
+    }
+    else
+    {
+      *dst = *src;
+      src_len--;
+      src++;
+    }
+    dst++;
+    dst_len++;
+  }
+
+  return dst_len;
+}
+
 static bool compose_filename(const char * name, char ** filename_ptr_ptr, char ** backup_filename_ptr_ptr)
 {
   size_t len_dir;
@@ -848,12 +883,15 @@ static bool compose_filename(const char * name, char ** filename_ptr_ptr, char *
     return false;
   }
 
-  backup_filename_ptr = malloc(len_dir + 1 + strlen(name) * 3 + 4 + 4 + 1);
-  if (backup_filename_ptr == NULL)
+  if (backup_filename_ptr_ptr != NULL)
   {
-    lash_error("malloc failed to allocate memory for studio backup file path");
-    free(filename_ptr);
-    return false;
+    backup_filename_ptr = malloc(len_dir + 1 + strlen(name) * 3 + 4 + 4 + 1);
+    if (backup_filename_ptr == NULL)
+    {
+      lash_error("malloc failed to allocate memory for studio backup file path");
+      free(filename_ptr);
+      return false;
+    }
   }
 
   p = filename_ptr;
@@ -866,11 +904,14 @@ static bool compose_filename(const char * name, char ** filename_ptr_ptr, char *
   escape(&src, &p);
   strcpy(p, ".xml");
 
-  strcpy(backup_filename_ptr, filename_ptr);
-  strcat(backup_filename_ptr, ".bak");
-
   *filename_ptr_ptr = filename_ptr;
-  *backup_filename_ptr_ptr = backup_filename_ptr;
+
+  if (backup_filename_ptr_ptr != NULL)
+  {
+    strcpy(backup_filename_ptr, filename_ptr);
+    strcat(backup_filename_ptr, ".bak");
+    *backup_filename_ptr_ptr = backup_filename_ptr;
+  }
 
   return true;
 }
@@ -1177,6 +1218,7 @@ bool studios_iterate(void * call_ptr, void * context, bool (* callback)(void * c
   size_t len;
   struct stat st;
   char * path;
+  char * name;
 
   dir = opendir(g_studios_dir);
   if (dir == NULL)
@@ -1191,7 +1233,7 @@ bool studios_iterate(void * call_ptr, void * context, bool (* callback)(void * c
       continue;
 
     len = strlen(dentry->d_name);
-    if (len < 4 || strcmp(dentry->d_name + (len - 4), ".xml"))
+    if (len <= 4 || strcmp(dentry->d_name + (len - 4), ".xml") != 0)
       continue;
 
     path = catdup(g_studios_dir, dentry->d_name);
@@ -1200,9 +1242,6 @@ bool studios_iterate(void * call_ptr, void * context, bool (* callback)(void * c
       lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "catdup() failed");
       return false;
     }
-
-    /* TODO: unescape */
-    dentry->d_name[len - 4] = 0;
 
     if (stat(path, &st) != 0)
     {
@@ -1213,11 +1252,18 @@ bool studios_iterate(void * call_ptr, void * context, bool (* callback)(void * c
 
     free(path);
 
-    if (!callback(call_ptr, context, dentry->d_name, st.st_mtime))
+    name = malloc(len - 4 + 1);
+    name[unescape(dentry->d_name, len - 4, name)] = 0;
+    //lash_info("name = '%s'", name);
+
+    if (!callback(call_ptr, context, name, st.st_mtime))
     {
+      free(name);
       closedir(dir);
       return false;
     }
+
+    free(name);
   }
 
   closedir(dir);
@@ -1313,6 +1359,9 @@ static void callback_elend(void * data, const char * el)
 {
   char * src;
   char * dst;
+  char * sep;
+  size_t src_len;
+  size_t dst_len;
   char * address;
   struct jack_parameter_variant parameter;
   bool is_set;
@@ -1334,25 +1383,37 @@ static void callback_elend(void * data, const char * el)
 
     //lash_info("'%s' with value '%s'", context_ptr->path, context_ptr->data);
 
-    /* TODO: unescape */
     dst = address = strdup(context_ptr->path);
     src = context_ptr->path + 1;
     while (*src != 0)
     {
-      if (*src == '/')
+      sep = strchr(src, '/');
+      if (sep == NULL)
       {
-        *dst = 0;
+        src_len = strlen(src);
       }
       else
       {
-        *dst = *src;
+        src_len = sep - src;
       }
 
-      src++;
-      dst++;
+      dst_len = unescape(src, src_len, dst);
+      dst[dst_len] = 0;
+      dst += dst_len + 1;
+
+      src += src_len;
+      assert(*src == '/' || *src == 0);
+      if (sep != NULL)
+      {
+        assert(*src == '/');
+        src++;                  /* skip separator */
+      }
+      else
+      {
+        assert(*src == 0);
+      }
     }
-    dst[0] = 0;
-    dst[1] = 0;                     /* ASCIZZ */
+    *dst = 0;                   /* ASCIZZ */
 
     if (!jack_proxy_get_parameter_value(address, &is_set, &parameter))
     {
@@ -1498,9 +1559,7 @@ bool studio_load(void * call_ptr, const char * studio_name)
   enum XML_Status xmls;
   struct parse_context context;
 
-  /* TODO: unescape */
-  path = catdup3(g_studios_dir, studio_name, ".xml");
-  if (path == NULL)
+  if (!compose_filename(studio_name, &path, NULL))
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "catdup3() failed to compose path of studio \%s\" file", studio_name);
     return false;
