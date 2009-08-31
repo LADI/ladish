@@ -79,34 +79,27 @@ def configure(conf):
         conf.env['LIB_EXPAT'] = ['expat']
 
     conf.check_cfg(
+        package = 'glib-2.0',
+        mandatory = True,
+        errmsg = "not installed, see http://www.gtk.org/",
+        args = '--cflags --libs')
+
+    conf.check_cfg(
         package = 'dbus-glib-1',
         mandatory = True,
         errmsg = "not installed, see http://dbus.freedesktop.org/",
         args = '--cflags --libs')
 
     conf.check_cfg(
-        package = 'glibmm-2.4',
+        package = 'gtk+-2.0',
         mandatory = True,
-        errmsg = "not installed, see http://www.gtkmm.org/",
+        errmsg = "not installed, see http://www.gtk.org/",
         args = '--cflags --libs')
 
     conf.check_cfg(
-        package = 'gtkmm-2.4',
+        package = 'libglade-2.0',
         mandatory = True,
-        atleast_version = '2.11.12',
-        errmsg = "not installed, see http://www.gtkmm.org/",
-        args = '--cflags --libs')
-
-    conf.check_cfg(
-        package = 'libgnomecanvasmm-2.6',
-        mandatory = True,
-        errmsg = "not installed, see http://www.gtkmm.org/",
-        args = '--cflags --libs')
-
-    conf.check_cfg(
-        package = 'libglademm-2.4',
-        mandatory = True,
-        errmsg = "not installed, see http://www.gtkmm.org/",
+        errmsg = "not installed, see http://ftp.gnome.org/pub/GNOME/sources/libglade/",
         args = '--cflags --libs')
 
     conf.check_cfg(
@@ -168,7 +161,7 @@ def build(bld):
     daemon = bld.new_task_gen('cc', 'program')
     daemon.target = 'ladishd'
     daemon.includes = "build/default" # XXX config.h version.h and other generated files
-    daemon.uselib = 'DBUS-1 LIBXML-2.0 UUID EXPAT'
+    daemon.uselib = 'DBUS-1 UUID EXPAT'
     daemon.ver_header = 'version.h'
     daemon.env.append_value("LINKFLAGS", ["-lutil", "-ldl"])
 
@@ -219,7 +212,7 @@ def build(bld):
     if bld.env['BUILD_LIBLASH']:
         liblash = bld.new_task_gen('cc', 'shlib')
         liblash.includes = "build/default" # XXX config.h version.h and other generated files
-        liblash.uselib = 'DBUS-1 LIBXML-2.0 UUID'
+        liblash.uselib = 'DBUS-1'
         liblash.target = 'lash'
         liblash.vnum = "1.1.1"
         liblash.defines = ['LASH_OLD_API', 'DEBUG_OUTPUT_TERMINAL']
@@ -269,7 +262,7 @@ def build(bld):
     gladish.target = 'gladish'
     gladish.defines = ['DEBUG_OUTPUT_TERMINAL']
     gladish.includes = "build/default" # XXX config.h version.h and other generated files
-    gladish.uselib = 'DBUS-1 LIBGNOMECANVASMM-2.6 LIBGLADEMM-2.4 FLOWCANVAS DBUS-GLIB-1'
+    gladish.uselib = 'DBUS-1 DBUS-GLIB-1 LIBGLADE-2.0 FLOWCANVAS'
 
     gladish.source = [
         'jack_proxy.c',
