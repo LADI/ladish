@@ -61,6 +61,8 @@ GtkWidget * g_menu_item_start_app;
 GtkWidget * g_menu_item_daemon_exit;
 GtkWidget * g_menu_item_jack_configure;
 GtkWidget * g_studio_status_label;
+GtkWidget * g_menu_item_view_toolbar;
+GtkWidget * g_toolbar;
 
 GtkWidget * g_name_dialog;
 
@@ -586,6 +588,18 @@ init_studio_list(
   g_signal_connect(G_OBJECT(studio_list_ptr->menu_item), "activate", G_CALLBACK(populate_studio_list_menu), studio_list_ptr);
 }
 
+static void toggle_toolbar(void)
+{
+	if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(g_menu_item_view_toolbar)))
+  {
+		gtk_widget_show(g_toolbar);
+  }
+	else
+  {
+		gtk_widget_hide(g_toolbar);
+  }
+}
+
 int main(int argc, char** argv)
 {
   gtk_init(&argc, &argv);
@@ -618,6 +632,8 @@ int main(int argc, char** argv)
   g_menu_item_daemon_exit = get_glade_widget("menu_item_daemon_exit");
   g_menu_item_jack_configure = get_glade_widget("menu_item_jack_configure");
   g_studio_status_label = get_glade_widget("studio_status_label");
+  g_menu_item_view_toolbar = get_glade_widget("menu_item_view_toolbar");
+  g_toolbar = get_glade_widget("toolbar");
 
   g_name_dialog = get_glade_widget("name_dialog");
 
@@ -653,6 +669,7 @@ int main(int argc, char** argv)
   g_signal_connect(G_OBJECT(g_buffer_size_combo), "changed", G_CALLBACK(buffer_size_change_request), NULL);
   g_signal_connect(G_OBJECT(g_clear_load_button), "clicked", G_CALLBACK(clear_load), NULL);
   g_signal_connect(G_OBJECT(get_glade_widget("menu_item_view_arrange")), "activate", G_CALLBACK(arrange), NULL);
+  g_signal_connect(G_OBJECT(g_menu_item_view_toolbar), "activate", G_CALLBACK(toggle_toolbar), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_new_studio), "activate", G_CALLBACK(new_studio), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_start_studio), "activate", G_CALLBACK(start_studio), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_stop_studio), "activate", G_CALLBACK(stop_studio), NULL);
