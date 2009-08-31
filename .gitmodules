@@ -1,0 +1,3 @@
+[submodule "laditools"]
+	path = laditools
+	url = git://repo.or.cz/laditools.git
