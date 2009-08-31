@@ -600,6 +600,14 @@ static void toggle_toolbar(void)
   }
 }
 
+static void show_about(void)
+{
+  GtkWidget * dialog;
+  dialog = get_glade_widget("about_win");
+  gtk_dialog_run(GTK_DIALOG(dialog));
+  gtk_widget_hide(dialog);
+}
+
 int main(int argc, char** argv)
 {
   gtk_init(&argc, &argv);
@@ -678,6 +686,7 @@ int main(int argc, char** argv)
   g_signal_connect(G_OBJECT(g_menu_item_rename_studio), "activate", G_CALLBACK(rename_studio), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_daemon_exit), "activate", G_CALLBACK(daemon_exit), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_jack_configure), "activate", G_CALLBACK(jack_configure), NULL);
+  g_signal_connect(G_OBJECT(get_glade_widget("menu_item_help_about")), "activate", G_CALLBACK(show_about), NULL);
 
   gtk_widget_show(g_main_win);
 
