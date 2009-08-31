@@ -604,6 +604,8 @@ static void show_about(void)
 {
   GtkWidget * dialog;
   dialog = get_glade_widget("about_win");
+  gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), PACKAGE_VERSION);
+  gtk_widget_show(dialog);
   gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_hide(dialog);
 }
