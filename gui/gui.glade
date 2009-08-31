@@ -41,7 +41,6 @@
                         <property name="label" translatable="yes">_Load Studio</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_load_project_menuitem_activate"/>
-                        <accelerator key="O" modifiers="GDK_CONTROL_MASK" signal="activate"/>
                         <child internal-child="image">
                           <widget class="GtkImage" id="image823">
                             <property name="visible">True</property>
@@ -148,7 +147,6 @@
                         <property name="label" translatable="yes">_Delete Studio</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="on_delete_project_menuitem_activate"/>
-                        <accelerator key="O" modifiers="GDK_CONTROL_MASK" signal="activate"/>
                         <child internal-child="image">
                           <widget class="GtkImage" id="image823">
                             <property name="visible">True</property>
