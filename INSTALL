@@ -6,12 +6,14 @@ Requirements (tools, headers and libraries):
  * You need dbus (1.2.16 should work)
  * You need libuuid from e2fsprogs (1.40.2 should work)
  * You need the expat XML parser (2.0.1 should work)
+ * Python (for ladish_control and LADI Tools)
+
+Optional requirements, without them GUI frontend will not be built:
  * You need glib (2.20.3 should work)
  * You need dbus-glib (0.74 should work)
  * You need gtk+ (2.12.1 should work)
  * You need libglade (2.6.2 should work)
  * You need flowcanvas (svn revision 2186 or later should work, included in tarball)
- * Python (for ladish_control and LADI Tools)
 
 ===================================================
 

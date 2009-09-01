@@ -37,6 +37,7 @@ def yesno(bool):
 def set_options(opt):
     opt.tool_options('compiler_cc')
     opt.tool_options('compiler_cxx')
+    opt.tool_options('boost')
     opt.add_option('--enable-pkg-config-dbus-service-dir', action='store_true', default=False, help='force D-Bus service install dir to be one returned by pkg-config')
     opt.add_option('--enable-liblash', action='store_true', default=False, help='Build LASH compatibility library')
 
@@ -47,6 +48,7 @@ def add_cflag(conf, flag):
 def configure(conf):
     conf.check_tool('compiler_cc')
     conf.check_tool('compiler_cxx')
+    conf.check_tool('boost')
 
     conf.check_cfg(
         package = 'dbus-1',
@@ -80,41 +82,50 @@ def configure(conf):
     if conf.is_defined('HAVE_EXPAT'):
         conf.env['LIB_EXPAT'] = ['expat']
 
-    conf.check_cfg(
+    build_gui = True
+
+    if build_gui and not conf.check_cfg(
         package = 'glib-2.0',
-        mandatory = True,
+        mandatory = False,
         errmsg = "not installed, see http://www.gtk.org/",
-        args = '--cflags --libs')
+        args = '--cflags --libs'):
+        build_gui = False
 
-    conf.check_cfg(
+    if build_gui and not conf.check_cfg(
         package = 'dbus-glib-1',
-        mandatory = True,
+        mandatory = False,
         errmsg = "not installed, see http://dbus.freedesktop.org/",
-        args = '--cflags --libs')
+        args = '--cflags --libs'):
+        build_gui = False
 
-    conf.check_cfg(
+    if build_gui and not conf.check_cfg(
         package = 'gtk+-2.0',
-        mandatory = True,
+        mandatory = False,
         errmsg = "not installed, see http://www.gtk.org/",
-        args = '--cflags --libs')
+        args = '--cflags --libs'):
+        build_gui = False
 
-    conf.check_cfg(
+    if build_gui and not conf.check_cfg(
         package = 'libglade-2.0',
-        mandatory = True,
+        mandatory = False,
         errmsg = "not installed, see http://ftp.gnome.org/pub/GNOME/sources/libglade/",
-        args = '--cflags --libs')
+        args = '--cflags --libs'):
+        build_gui = False
 
-    conf.check_cfg(
+    if build_gui and not conf.check_cfg(
         package = 'flowcanvas',
-        mandatory = True,
-        atleast_version = '0.4.0',
+        mandatory = False,
+        atleast_version = '0.5.3',
         errmsg = "not installed, see http://drobilla.net/software/flowcanvas/",
-        args = '--cflags --libs')
+        args = '--cflags --libs'):
+        build_gui = False
 
-    # We need the boost headers package (e.g. libboost-dev)
-    # shared_ptr.hpp and weak_ptr.hpp
-    conf.check_tool('boost')
-    conf.check_boost()
+    if build_gui:
+        # We need the boost headers package (e.g. libboost-dev)
+        # shared_ptr.hpp and weak_ptr.hpp
+        build_gui = conf.check_boost(errmsg="not found, see http://boost.org/")
+
+    conf.env['BUILD_GLADISH'] = build_gui
 
     add_cflag(conf, '-g')
     add_cflag(conf, '-Wall')
@@ -146,6 +157,7 @@ def configure(conf):
     display_msg(conf)
     display_msg(conf, "Install prefix", conf.env['PREFIX'], 'CYAN')
 
+    display_msg(conf, 'Build gladish', yesno(conf.env['BUILD_GLADISH']))
     display_msg(conf, 'Build liblash', yesno(Options.options.enable_liblash))
 
     if conf.env['DBUS_SERVICES_DIR'] != conf.env['DBUS_SERVICES_DIR_REAL']:
@@ -262,48 +274,49 @@ def build(bld):
 
     #####################################################
     # gladish
-    gladish = bld.new_task_gen('cxx', 'program')
-    gladish.features.append('cc')
-    gladish.target = 'gladish'
-    gladish.defines = ['DEBUG_OUTPUT_TERMINAL']
-    gladish.includes = "build/default" # XXX config.h version.h and other generated files
-    gladish.uselib = 'DBUS-1 DBUS-GLIB-1 LIBGLADE-2.0 FLOWCANVAS'
+    if bld.env['BUILD_GLADISH']:
+        gladish = bld.new_task_gen('cxx', 'program')
+        gladish.features.append('cc')
+        gladish.target = 'gladish'
+        gladish.defines = ['DEBUG_OUTPUT_TERMINAL']
+        gladish.includes = "build/default" # XXX config.h version.h and other generated files
+        gladish.uselib = 'DBUS-1 DBUS-GLIB-1 LIBGLADE-2.0 FLOWCANVAS'
 
-    gladish.source = [
-        'jack_proxy.c',
-        'graph_proxy.c',
-        'studio_proxy.c',
-        'catdup.c',
-        ]
+        gladish.source = [
+            'jack_proxy.c',
+            'graph_proxy.c',
+            'studio_proxy.c',
+            'catdup.c',
+            ]
 
-    for source in [
-        'main.c',
-        #'lash_client.cpp',
-        #'lash_proxy.cpp',
-        #'load_projects_dialog.cpp',
-        #'project.cpp',
-        'world_tree.c',
-        'graph_view.c',
-        #'project_properties.cpp',
-        #'session.cpp',
-        #'a2j_proxy.cpp',
-        'dbus_helpers.c',
-        'canvas.cpp',
-        'graph_canvas.c',
-        'glade.c',
-        'control_proxy.c',
-        'ask_dialog.c',
-        ]:
-        gladish.source.append(os.path.join("gui", source))
+        for source in [
+            'main.c',
+            #'lash_client.cpp',
+            #'lash_proxy.cpp',
+            #'load_projects_dialog.cpp',
+            #'project.cpp',
+            'world_tree.c',
+            'graph_view.c',
+            #'project_properties.cpp',
+            #'session.cpp',
+            #'a2j_proxy.cpp',
+            'dbus_helpers.c',
+            'canvas.cpp',
+            'graph_canvas.c',
+            'glade.c',
+            'control_proxy.c',
+            'ask_dialog.c',
+            ]:
+            gladish.source.append(os.path.join("gui", source))
 
-    for source in [
-        'method.c',
-        'helpers.c',
-        ]:
-        gladish.source.append(os.path.join("dbus", source))
+        for source in [
+            'method.c',
+            'helpers.c',
+            ]:
+            gladish.source.append(os.path.join("dbus", source))
 
-    # Glade UI definitions (XML)
-    bld.install_files(bld.env['DATA_DIR'], 'gui/gui.glade')
+        # Glade UI definitions (XML)
+        bld.install_files(bld.env['DATA_DIR'], 'gui/gui.glade')
     
     bld.install_files('${PREFIX}/bin', 'ladish_control', chmod=0755)
 
