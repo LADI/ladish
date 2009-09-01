@@ -8,7 +8,7 @@ import shutil
 import re
 
 APPNAME='ladish'
-VERSION='0.1'
+VERSION='0.2'
 DBUS_NAME_BASE = 'org.ladish'
 
 # these variables are mandatory ('/' are converted automatically)
