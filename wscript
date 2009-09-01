@@ -4,6 +4,8 @@
 import os
 import Options
 import Utils
+import shutil
+import re
 
 APPNAME='ladish'
 VERSION='0.1'
@@ -131,10 +133,13 @@ def configure(conf):
     display_msg(conf, "==================")
     version_msg = APPNAME + "-" + VERSION
 
-    #if svnrev:
-    #    version_msg += " exported from r" + rev
-    #else:
-    #    version_msg += " git revision will checked and eventually updated during build"
+    if os.access('version.h', os.R_OK):
+        data = file('version.h').read()
+        m = re.match(r'^#define GIT_VERSION "([^"]*)"$', data)
+        if m != None:
+            version_msg += " exported from " + m.group(1)
+    elif os.access('.git', os.R_OK):
+        version_msg += " git revision will checked and eventually updated during build"
 
     display_msg(conf, version_msg)
 
@@ -337,7 +342,7 @@ def build(bld):
     #    install_as(os.path.normpath(bld.env()['DATADIR'] + '/icons/hicolor/' + icon_size + '/apps/'), bld.env()['APP_INSTALL_NAME'] + '.png', 'icons/' + icon_size + '/patchage.png')
 
 def dist_hook():
-    pass
+    shutil.copy('../build/default/version.h', "./")
 
 import commands
 from Constants import RUN_ME
@@ -352,14 +357,28 @@ def process_git(self):
         tsk.set_outputs(self.path.find_or_declare(self.ver_header))
 
 def git_ver(self):
-    self.ver = "unknown"
-    self.ver = commands.getoutput("LANG= git rev-parse HEAD").splitlines()[0]
-    if commands.getoutput("LANG= git diff-index --name-only HEAD").splitlines():
-        self.ver += "-dirty"
+    header = self.outputs[0].abspath(self.env)
+    if os.access('../version.h', os.R_OK):
+        shutil.copy('../version.h', header)
+        data = file(header).read()
+        m = re.match(r'^#define GIT_VERSION "([^"]*)"$', data)
+        if m != None:
+            self.ver = m.group(1)
+            Utils.pprint('BLUE', "tarball from git revision " + self.ver)
+        else:
+            self.ver = "tarball"
+        return
 
-    Utils.pprint('BLUE', "git revision " + self.ver)
+    if os.access('../.git', os.R_OK):
+        self.ver = commands.getoutput("LANG= git rev-parse HEAD").splitlines()[0]
+        if commands.getoutput("LANG= git diff-index --name-only HEAD").splitlines():
+            self.ver += "-dirty"
 
-    fi = open(self.outputs[0].abspath(self.env), 'w')
+        Utils.pprint('BLUE', "git revision " + self.ver)
+    else:
+        self.ver = "unknown"
+
+    fi = open(header, 'w')
     fi.write('#define GIT_VERSION "%s"\n' % self.ver)
     fi.close()
 
