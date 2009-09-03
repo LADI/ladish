@@ -790,6 +790,8 @@ void studio_uninit(void)
 
   studio_clear();
 
+  free(g_studios_dir);
+
   lash_info("studio object destroy");
 }
 
