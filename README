@@ -33,7 +33,7 @@ Project goals:
    of such library for restoring connections between JACK clients.
  * Flow canvas based GUI. Positions of elements on the canvas are
    saved/restored.
- * Allow clients to use external storage to save its state. This
+ * Allow clients to use external storage to save their state. This
    includes storing internal state to non-filesystem place like memory
    of a hardware synth. This also includes storing client internal
    state (client project data) in a way that is not directly bound to
@@ -45,7 +45,7 @@ Project goals:
    other computer or storing it in a backup archive.
  * Hierarchical or tag-based organization of projects.
  * List of JACK applications. Applications are always started through
-   ladish to have restored runtime environment closer to one existed
+   ladish to have the restored runtime environment closer to one existed
    before project save.
  * Distributed studio - network connected computers. Netjack
    configuration is part of the studio and thus is saved/restored.
