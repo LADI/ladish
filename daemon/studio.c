@@ -35,7 +35,7 @@
 
 #include "../jack_proxy.h"
 #include "../graph_proxy.h"
-#include "patchbay.h"
+#include "graph_iface.h"
 #include "../dbus_constants.h"
 #include "control.h"
 #include "../catdup.h"
@@ -52,7 +52,7 @@ extern const interface_t g_interface_studio;
 struct studio
 {
   /* this must be first member of struct studio because object_path_new() assumes all interfaces have same context */
-  struct patchbay_implementator patchbay_impl;
+  struct graph_implementator graph_impl;
 
   struct list_head all_connections;        /* All connections (studio guts and all rooms). Including superconnections. */
   struct list_head all_ports;              /* All ports (studio guts and all rooms) */
@@ -758,8 +758,8 @@ bool studio_init(void)
     return false;
   }
 
-  g_studio.patchbay_impl.this = &g_studio;
-  g_studio.patchbay_impl.get_graph_version = studio_get_graph_version;
+  g_studio.graph_impl.this = &g_studio;
+  g_studio.graph_impl.get_graph_version = studio_get_graph_version;
 
   INIT_LIST_HEAD(&g_studio.all_connections);
   INIT_LIST_HEAD(&g_studio.all_ports);

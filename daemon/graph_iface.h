@@ -27,7 +27,7 @@
 #ifndef PATCHBAY_H__30334B9A_8847_4E8C_AFF9_73DB13406C8E__INCLUDED
 #define PATCHBAY_H__30334B9A_8847_4E8C_AFF9_73DB13406C8E__INCLUDED
 
-struct patchbay_implementator
+struct graph_implementator
 {
   void * this;
 

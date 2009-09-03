@@ -26,10 +26,10 @@
  */
 
 #include "common.h"
-#include "patchbay.h"
+#include "graph_iface.h"
 #include "../dbus/error.h"
 
-#define impl_ptr ((struct patchbay_implementator *)call_ptr->context)
+#define impl_ptr ((struct graph_implementator *)call_ptr->context)
 
 static void get_all_ports(method_call_t * call_ptr)
 {

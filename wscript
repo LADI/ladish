@@ -199,7 +199,7 @@ def build(bld):
         'procfs.c',
         'control.c',
         'studio.c',
-        'patchbay.c',
+        'graph_iface.c',
         ]:
         daemon.source.append(os.path.join("daemon", source))
 
