@@ -34,7 +34,7 @@ struct graph_view
   struct list_head siblings;
   char * name;
   graph_canvas_handle graph_canvas;
-  graph_handle graph;
+  graph_proxy_handle graph;
   GtkWidget * canvas_widget;
 };
 
@@ -68,7 +68,7 @@ bool create_view(const char * name, const char * service, const char * object, b
     goto free_view;
   }
 
-  if (!graph_create(service, object, &view_ptr->graph))
+  if (!graph_proxy_create(service, object, &view_ptr->graph))
   {
     goto free_name;
   }
@@ -83,7 +83,7 @@ bool create_view(const char * name, const char * service, const char * object, b
     goto destroy_graph_canvas;
   }
 
-  if (!graph_activate(view_ptr->graph))
+  if (!graph_proxy_activate(view_ptr->graph))
   {
     goto detach_graph_canvas;
   }
@@ -105,7 +105,7 @@ detach_graph_canvas:
 destroy_graph_canvas:
   graph_canvas_destroy(view_ptr->graph_canvas);
 destroy_graph:
-  graph_destroy(view_ptr->graph);
+  graph_proxy_destroy(view_ptr->graph);
 free_name:
   free(view_ptr->name);
 free_view:
@@ -166,7 +166,7 @@ void destroy_view(graph_view_handle view)
 
   graph_canvas_detach(view_ptr->graph_canvas);
   graph_canvas_destroy(view_ptr->graph_canvas);
-  graph_destroy(view_ptr->graph);
+  graph_proxy_destroy(view_ptr->graph);
   free(view_ptr->name);
   free(view_ptr);
 }

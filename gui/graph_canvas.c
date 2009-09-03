@@ -33,7 +33,7 @@
 
 struct graph_canvas
 {
-  graph_handle graph;
+  graph_proxy_handle graph;
   canvas_handle canvas;
   struct list_head clients;
 };
@@ -109,7 +109,7 @@ connect_request(
 
   assert(port1_ptr->graph_canvas == port2_ptr->graph_canvas);
 
-  graph_connect_ports(port1_ptr->graph_canvas->graph, port1_ptr->id, port2_ptr->id);
+  graph_proxy_connect_ports(port1_ptr->graph_canvas->graph, port1_ptr->id, port2_ptr->id);
 }
 
 void
@@ -121,7 +121,7 @@ disconnect_request(
 
   assert(port1_ptr->graph_canvas == port2_ptr->graph_canvas);
 
-  graph_disconnect_ports(port1_ptr->graph_canvas->graph, port1_ptr->id, port2_ptr->id);
+  graph_proxy_disconnect_ports(port1_ptr->graph_canvas->graph, port1_ptr->id, port2_ptr->id);
 }
 
 #undef port1_ptr
@@ -420,11 +420,11 @@ graph_canvas_destroy(
 bool
 graph_canvas_attach(
   graph_canvas_handle graph_canvas,
-  graph_handle graph)
+  graph_proxy_handle graph)
 {
   assert(graph_canvas_ptr->graph == NULL);
 
-  if (!graph_attach(
+  if (!graph_proxy_attach(
         graph,
         graph_canvas,
         clear,
@@ -448,7 +448,7 @@ graph_canvas_detach(
   graph_canvas_handle graph_canvas)
 {
   assert(graph_canvas_ptr->graph != NULL);
-  graph_detach(graph_canvas_ptr->graph, graph_canvas);
+  graph_proxy_detach(graph_canvas_ptr->graph, graph_canvas);
   graph_canvas_ptr->graph = NULL;
 }
 

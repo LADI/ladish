@@ -369,10 +369,10 @@ unref:
 }
 
 bool
-graph_create(
+graph_proxy_create(
   const char * service,
   const char * object,
-  graph_handle * graph_handle_ptr)
+  graph_proxy_handle * graph_proxy_handle_ptr)
 {
   struct graph * graph_ptr;
 
@@ -402,7 +402,7 @@ graph_create(
   graph_ptr->version = 0;
   graph_ptr->active = false;
 
-  *graph_handle_ptr = (graph_handle)graph_ptr;
+  *graph_proxy_handle_ptr = (graph_proxy_handle)graph_ptr;
 
   return true;
 
@@ -419,8 +419,8 @@ fail:
 #define graph_ptr ((struct graph *)graph)
 
 void
-graph_destroy(
-  graph_handle graph)
+graph_proxy_destroy(
+  graph_proxy_handle graph)
 {
   assert(list_empty(&graph_ptr->monitors));
 
@@ -442,8 +442,8 @@ graph_destroy(
 }
 
 bool
-graph_activate(
-  graph_handle graph)
+graph_proxy_activate(
+  graph_proxy_handle graph)
 {
   if (list_empty(&graph_ptr->monitors))
   {
@@ -477,8 +477,8 @@ graph_activate(
 }
 
 bool
-graph_attach(
-  graph_handle graph,
+graph_proxy_attach(
+  graph_proxy_handle graph,
   void * context,
   void (* clear)(void * context),
   void (* client_appeared)(void * context, uint64_t id, const char * name),
@@ -517,8 +517,8 @@ graph_attach(
 }
 
 void
-graph_detach(
-  graph_handle graph,
+graph_proxy_detach(
+  graph_proxy_handle graph,
   void * context)
 {
   struct list_head * node_ptr;
@@ -539,8 +539,8 @@ graph_detach(
 }
 
 void
-graph_connect_ports(
-  graph_handle graph,
+graph_proxy_connect_ports(
+  graph_proxy_handle graph,
   uint64_t port1_id,
   uint64_t port2_id)
 {
@@ -551,8 +551,8 @@ graph_connect_ports(
 }
 
 void
-graph_disconnect_ports(
-  graph_handle graph,
+graph_proxy_disconnect_ports(
+  graph_proxy_handle graph,
   uint64_t port1_id,
   uint64_t port2_id)
 {

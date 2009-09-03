@@ -80,7 +80,7 @@ struct studio
   char * name;
   char * filename;
 
-  graph_handle jack_graph;
+  graph_proxy_handle jack_graph_proxy;
 } g_studio;
 
 #define EVENT_JACK_START   0
@@ -645,7 +645,7 @@ void on_event_jack_started(void)
   g_studio.jack_conf_valid = true;
   g_studio.jack_running = true;
 
-  if (!graph_create(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, &g_studio.jack_graph))
+  if (!graph_proxy_create(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, &g_studio.jack_graph_proxy))
   {
     lash_error("graph_create() failed for jackdbus");
   }
@@ -657,7 +657,7 @@ void on_event_jack_stopped(void)
 
   g_studio.jack_running = false;
 
-  graph_destroy(g_studio.jack_graph);
+  graph_proxy_destroy(g_studio.jack_graph_proxy);
 
   /* TODO: if user wants, restart jack server and reconnect all jack apps to it */
 }

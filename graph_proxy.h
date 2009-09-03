@@ -24,12 +24,12 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef GRAPH_H__61D1ED56_E33B_4F50_B45B_F520979E8AA7__INCLUDED
-#define GRAPH_H__61D1ED56_E33B_4F50_B45B_F520979E8AA7__INCLUDED
+#ifndef GRAPH_PROXY_H__61D1ED56_E33B_4F50_B45B_F520979E8AA7__INCLUDED
+#define GRAPH_PROXY_H__61D1ED56_E33B_4F50_B45B_F520979E8AA7__INCLUDED
 
 #include "common.h"
 
-typedef struct graph_tag { int unused; } * graph_handle;
+typedef struct graph_proxy_tag { int unused; } * graph_proxy_handle;
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,22 +39,22 @@ extern "C" {
 #endif
 
 bool
-graph_create(
+graph_proxy_create(
   const char * service,
   const char * object,
-  graph_handle * graph_ptr);
+  graph_proxy_handle * graph_proxy_ptr);
 
 void
-graph_destroy(
-  graph_handle graph);
+graph_proxy_destroy(
+  graph_proxy_handle graph);
 
 bool
-graph_activate(
-  graph_handle graph);
+graph_proxy_activate(
+  graph_proxy_handle graph);
 
 bool
-graph_attach(
-  graph_handle graph,
+graph_proxy_attach(
+  graph_proxy_handle graph,
   void * context,
   void (* clear)(void * context),
   void (* client_appeared)(void * context, uint64_t id, const char * name),
@@ -65,19 +65,19 @@ graph_attach(
   void (* ports_disconnected)(void * context, uint64_t client1_id, uint64_t port1_id, uint64_t client2_id, uint64_t port2_id));
 
 void
-graph_detach(
-  graph_handle graph,
+graph_proxy_detach(
+  graph_proxy_handle graph,
   void * context);
 
 void
-graph_connect_ports(
-  graph_handle graph,
+graph_proxy_connect_ports(
+  graph_proxy_handle graph,
   uint64_t port1_id,
   uint64_t port2_id);
 
 void
-graph_disconnect_ports(
-  graph_handle graph,
+graph_proxy_disconnect_ports(
+  graph_proxy_handle graph,
   uint64_t port1_id,
   uint64_t port2_id);
 
@@ -88,4 +88,4 @@ graph_disconnect_ports(
 } /* extern "C" */
 #endif
 
-#endif /* #ifndef GRAPH_H__61D1ED56_E33B_4F50_B45B_F520979E8AA7__INCLUDED */
+#endif /* #ifndef GRAPH_PROXY_H__61D1ED56_E33B_4F50_B45B_F520979E8AA7__INCLUDED */

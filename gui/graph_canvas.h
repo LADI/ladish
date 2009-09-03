@@ -45,7 +45,7 @@ graph_canvas_destroy(
 bool
 graph_canvas_attach(
   graph_canvas_handle graph_canvas,
-  graph_handle graph);
+  graph_proxy_handle graph);
 
 void
 graph_canvas_detach(
