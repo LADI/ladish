@@ -778,6 +778,8 @@ bool studio_init(void)
         on_jack_server_appeared,
         on_jack_server_disappeared))
   {
+    lash_error("jack_proxy_init() failed.");
+    studio_clear();
     return false;
   }
 
