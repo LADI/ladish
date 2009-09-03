@@ -184,6 +184,7 @@ def build(bld):
 
     daemon.source = [
         'jack_proxy.c',
+        'graph_proxy.c',
         'catdup.c',
         ]
 

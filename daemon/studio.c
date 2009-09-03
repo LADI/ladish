@@ -34,6 +34,7 @@
 #include <expat.h>
 
 #include "../jack_proxy.h"
+#include "../graph_proxy.h"
 #include "patchbay.h"
 #include "../dbus_constants.h"
 #include "control.h"
@@ -78,6 +79,8 @@ struct studio
 
   char * name;
   char * filename;
+
+  graph_handle jack_graph;
 } g_studio;
 
 #define EVENT_JACK_START   0
@@ -641,6 +644,11 @@ void on_event_jack_started(void)
   lash_info("jack conf successfully retrieved");
   g_studio.jack_conf_valid = true;
   g_studio.jack_running = true;
+
+  if (!graph_create(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, &g_studio.jack_graph))
+  {
+    lash_error("graph_create() failed for jackdbus");
+  }
 }
 
 void on_event_jack_stopped(void)
@@ -648,6 +656,8 @@ void on_event_jack_stopped(void)
   studio_clear_if_automatic();
 
   g_studio.jack_running = false;
+
+  graph_destroy(g_studio.jack_graph);
 
   /* TODO: if user wants, restart jack server and reconnect all jack apps to it */
 }
