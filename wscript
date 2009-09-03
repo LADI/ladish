@@ -233,35 +233,8 @@ def build(bld):
         liblash.uselib = 'DBUS-1'
         liblash.target = 'lash'
         liblash.vnum = "1.1.1"
-        liblash.defines = ['LASH_OLD_API', 'DEBUG_OUTPUT_TERMINAL']
-        liblash.source = []
-
-        for source in [
-            'lash.c',
-            'lash_config.c',
-            'client.c',
-            'dbus_service.c',
-            'dbus_iface_client.c',
-            'protocol.c',
-            'event.c',
-            'args.c',
-            ]:
-            liblash.source.append(os.path.join("lash_compat", "liblash", source))
-
-        for source in [
-            'service.c',
-            'signal.c',
-            'method.c',
-            'error.c',
-            'object_path.c',
-            'introspection.c',
-            'interface.c',
-            'helpers.c',
-            ]:
-            liblash.source.append(os.path.join("dbus", source))
-
-        liblash.source.append(os.path.join("common", "safety.c"))
-        liblash.source.append(os.path.join("daemon", "legacy", "file.c"))
+        liblash.defines = ['DEBUG_OUTPUT_TERMINAL']
+        liblash.source = [os.path.join("lash_compat", "liblash", 'lash.c')]
 
     # pkgpyexec_LTLIBRARIES = _lash.la
     # INCLUDES = $(PYTHON_INCLUDES)

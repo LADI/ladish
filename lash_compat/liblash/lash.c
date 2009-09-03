@@ -1,1157 +1,249 @@
+/* -*- Mode: C ; c-basic-offset: 2 -*- */
 /*
- *   LASH
+ * LADI Session Handler (ladish)
  *
- *   Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
- *   Copyright (C) 2002, 2003 Robert Ham <rah@bash.sh>
+ * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *
- *   This program is free software; you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation; either version 2 of the License, or
- *   (at your option) any later version.
+ **************************************************************************
+ * This file contains the liblash implementaiton
+ **************************************************************************
  *
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
+ * LADI Session Handler is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *   You should have received a copy of the GNU General Public License
- *   along with this program; if not, write to the Free Software
- *   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
+ * LADI Session Handler is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with LADI Session Handler. If not, see <http://www.gnu.org/licenses/>
+ * or write to the Free Software Foundation, Inc.,
+ * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-
-#include "config.h"
-
-#include <stdlib.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <netdb.h>
-#include <dbus/dbus.h>
-
-#include <errno.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <sys/param.h>
-#include <rpc/xdr.h>
-
-#include "../../common/safety.h"
-#include "../../common/debug.h"
 
 #include "lash/lash.h"
 
-#include "../../dbus/service.h"
-
-#include "dbus_service.h"
-#include "client.h"
-#include "lash_config.h"
-
-#include "dbus_iface_client.h"
-
-#if 0
-static void
-ping_handler(DBusPendingCall *pending,
-             void            *data)
+const char * lash_protocol_string(lash_protocol_t protocol)
 {
-	DBusMessage *msg = dbus_pending_call_steal_reply(pending);
-	if (msg)
-		dbus_message_unref(msg);
-	dbus_pending_call_unref(pending);
-	fprintf(stderr, "Server replied: Pong!\n");
-}
-#endif
-
-static lash_client_t *
-lash_client_new_with_service(void)
-{
-	lash_client_t *client = lash_client_new();
-	if (!client) {
-		lash_error("Failed to allocate memory for client");
-		return NULL;
-	}
-
-	/* Connect to the D-Bus daemon */
-	client->dbus_service = lash_dbus_service_new(client);
-	if (!client->dbus_service) {
-		lash_error("Failed to start client D-Bus service");
-		lash_client_destroy(client);
-		client = NULL;
-	}
-
-	return client;
+  return "ladish";
 }
 
-/* The client's signal handler function for signals
-   originating from DBUS_NAME_BASE.Server */
-static void
-lash_server_signal_handler(lash_client_t *client,
-                           const char    *member,
-                           DBusMessage   *message)
+lash_client_t * lash_client_open(const char * class, int flags, int argc, char ** argv)
 {
-	const char *project_name;
-	dbus_uint64_t task_id;
-	DBusError err;
-
-	dbus_error_init(&err);
-
-	if (strcmp(member, "Save") == 0) {
-		if (!dbus_message_get_args(message, &err,
-		                           DBUS_TYPE_STRING, &project_name,
-		                           DBUS_TYPE_UINT64, &task_id,
-		                           DBUS_TYPE_INVALID)) {
-			lash_error("Cannot get signal arguments: %s", err.message);
-			dbus_error_free(&err);
-			return;
-		}
-
-		//lash_info("Save signal for project '%s' received.", project_name);
-
-		/* Silently return if this signal doesn't concern our project */
-		if (!client->project_name
-		    || strcmp(client->project_name, project_name) != 0)
-			return;
-
-		if (!client->pending_task) {
-			if ((client->flags & LASH_Config_Data_Set))
-				lash_new_save_data_set_task(client, task_id);
-			else if ((client->flags & LASH_Config_File))
-				lash_new_save_task(client, task_id);
-		} else {
-			lash_error("Task %llu is unfinished",
-			                client->pending_task);
-		}
-
-		//lash_info("Save signal for project '%s' processed.", project_name); fflush(stdout);
-
-	} else if (strcmp(member, "Quit") == 0) {
-		if (!dbus_message_get_args(message, &err,
-		                           DBUS_TYPE_STRING, &project_name,
-		                           DBUS_TYPE_INVALID)) {
-			lash_error("Cannot get signal arguments: %s", err.message);
-			dbus_error_free(&err);
-			return;
-		}
-
-		/* Silently return if this signal doesn't concern our project */
-		if (client->project_name
-		    && strcmp(client->project_name, project_name) != 0)
-			return;
-
-		lash_new_quit_task(client);
-
-	} else {
-		lash_error("Received unknown signal '%s'", member);
-	}
+	return NULL;
 }
 
-static void
-lash_project_name_changed_handler(lash_client_t *client,
-                                  DBusMessage   *message)
+void lash_jack_client_name(lash_client_t * client, const char * name)
 {
-	const char *old_name, *new_name;
-	DBusError err;
-
-	dbus_error_init(&err);
-
-	if (!dbus_message_get_args(message, &err,
-	                           DBUS_TYPE_STRING, &old_name,
-	                           DBUS_TYPE_STRING, &new_name,
-	                           DBUS_TYPE_INVALID)) {
-		lash_error("Cannot get signal arguments: %s", err.message);
-		dbus_error_free(&err);
-		return;
-	}
-
-	if (client->project_name) {
-		if (strcmp(client->project_name, old_name) != 0)
-			return;
-	} else if (old_name[0])
-		return;
-
-	if (!new_name[0])
-		new_name = NULL;
-
-	lash_strset(&client->project_name, new_name);
-
-	/* Call client's ProjectChanged callback */
-	if (client->cb.proj)
-		client->cb.proj(client->ctx.proj);
+	return;
 }
 
-static void
-lash_control_signal_handler(lash_client_t *client,
-                            const char    *member,
-                            DBusMessage   *message)
+void lash_alsa_client_id(lash_client_t * client, unsigned char id)
 {
-	if (!client->cb.control) {
-		lash_error("Controller callback function is not set");
-		return;
-	}
-
-	uint8_t sig_id;
-	enum LASH_Event_Type type;
-	dbus_bool_t ret;
-	DBusError err;
-	const char *str1, *str2;
-	unsigned char byte_var[2];
-	uuid_t id;
-
-	if (strcmp(member, "ProjectDisappeared") == 0) {
-		sig_id = 1;
-		type = LASH_Project_Remove;
-	} else if (strcmp(member, "ProjectAppeared") == 0) {
-		sig_id = 2;
-		type = LASH_Project_Add;
-	} else if (strcmp(member, "ProjectNameChanged") == 0) {
-		sig_id = 3;
-		type = LASH_Project_Name;
-	} else if (strcmp(member, "ProjectPathChanged") == 0) {
-		sig_id = 4;
-		type = LASH_Project_Dir;
-	} else if (strcmp(member, "ClientAppeared") == 0) {
-		sig_id = 5;
-		type = LASH_Client_Add;
-	} else if (strcmp(member, "ClientDisappeared") == 0) {
-		sig_id = 6;
-		type = LASH_Client_Remove;
-	} else if (strcmp(member, "ClientNameChanged") == 0) {
-		sig_id = 7;
-		type = LASH_Client_Name;
-	} else if (strcmp(member, "ClientJackNameChanged") == 0) {
-		sig_id = 8;
-		type = LASH_Jack_Client_Name;
-	} else if (strcmp(member, "Progress") == 0) {
-		sig_id = 10;
-		type = LASH_Percentage;
-	} else {
-		lash_error("Received unknown signal '%s'", member);
-		return;
-	}
-
-	dbus_error_init(&err);
-
-	if (sig_id == 1) {
-		ret = dbus_message_get_args(message, &err,
-		                            DBUS_TYPE_STRING, &str1,
-		                            DBUS_TYPE_INVALID);
-		str2 = "";
-	} else if (sig_id < 9) {
-		ret = dbus_message_get_args(message, &err,
-		                            DBUS_TYPE_STRING, &str1,
-		                            DBUS_TYPE_STRING, &str2,
-		                            DBUS_TYPE_INVALID);
-	} else if (sig_id == 9) {
-		ret = dbus_message_get_args(message, &err,
-		                            DBUS_TYPE_STRING, &str1,
-		                            DBUS_TYPE_BYTE, &byte_var[0],
-		                            DBUS_TYPE_INVALID);
-		byte_var[1] = '\0';
-		str2 = (const char *) byte_var;
-	} else {
-		ret = dbus_message_get_args(message, &err,
-		                            DBUS_TYPE_BYTE, &byte_var[0],
-		                            DBUS_TYPE_INVALID);
-		byte_var[1] = '\0';
-		str1 = (const char *) byte_var;
-		str2 = "";
-	}
-
-	if (!ret) {
-		lash_error("Cannot get signal arguments: %s", err.message);
-		dbus_error_free(&err);
-		return;
-	}
-
-	if (sig_id < 5 || sig_id > 9)
-		uuid_clear(id);
-	else if (uuid_parse(str1, id) == 0) {
-		str1 = str2;
-	} else {
-		lash_error("Cannot parse client id");
-		return;
-	}
-
-	/* Call the control callback */
-	client->cb.control(type, str1, str2, id, client->ctx.control);
+	return;
 }
 
-static DBusHandlerResult
-lash_dbus_signal_handler(DBusConnection *connection,
-                         DBusMessage    *message,
-                         void           *data)
+lash_args_t * lash_extract_args(int * argc, char *** argv)
 {
-	/* Let non-signal messages fall through */
-	if (dbus_message_get_type(message) != DBUS_MESSAGE_TYPE_SIGNAL)
-		return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-
-	lash_client_t *client = data;
-	const char *member, *interface;
-
-	member = dbus_message_get_member(message);
-
-	if (!member) {
-		lash_error("Received signal with NULL member");
-		return DBUS_HANDLER_RESULT_HANDLED;
-	}
-
-	interface = dbus_message_get_interface(message);
-
-	if (!interface) {
-		lash_error("Received signal with NULL interface");
-		return DBUS_HANDLER_RESULT_HANDLED;
-	}
-
-	if (strcmp(interface, DBUS_NAME_BASE ".Server") == 0) {
-		lash_debug("Received Server signal '%s'", member);
-		lash_server_signal_handler(client, member, message);
-
-	} else if (strcmp(interface, DBUS_NAME_BASE ".Control") == 0) {
-		lash_debug("Received Control signal '%s'", member);
-
-		/* This arrangement is OK only so far as a normal client
-		   doesn't intercept more than one signal, ProjectNameChanged */
-		if (client->is_controller != 1) {
-			lash_project_name_changed_handler(client, message);
-			if (client->is_controller) {
-				lash_control_signal_handler(client, member, message);
-			}
-		} else {
-			lash_control_signal_handler(client, member, message);
-		}
-
-	} else if (strcmp(interface, "org.freedesktop.DBus") != 0) {
-		lash_error("Received signal from unknown interface '%s'",
-		           interface);
-	}
-
-	return DBUS_HANDLER_RESULT_HANDLED;
+	return NULL;
 }
 
-static bool
-lash_client_register_as_controller(lash_client_t *client)
+void lash_args_destroy(lash_args_t * args)
 {
-	DBusError err;
-
-	dbus_error_init(&err);
-
-	lash_debug("Registering client as control application");
-
-	/* Listen to the LASH server's frontend-facing beacon */
-	dbus_bus_add_match(client->dbus_service->connection,
-	                   "type='signal'"
-	                   ",sender='" DBUS_NAME_BASE "'"
-	                   ",path='/'"
-	                   ",interface='" DBUS_NAME_BASE ".Control'",
-	                   &err);
-
-	if (dbus_error_is_set(&err)) {
-		lash_error("Failed to add D-Bus match rule: "
-		           "%s", err.message);
-		dbus_error_free(&err);
-		return false;
-	}
-
-	return true;
 }
 
-static void
-lash_client_add_filter(lash_client_t **client)
+lash_client_t * lash_init(const lash_args_t * args, const char * class, int client_flags, lash_protocol_t protocol)
 {
-	if (!dbus_connection_add_filter((*client)->dbus_service->connection,
-	                                lash_dbus_signal_handler,
-	                                *client, NULL)) {
-		lash_error("Failed to add D-Bus filter");
-		lash_client_destroy(*client);
-		*client = NULL;
-	}
+  return NULL;
 }
 
-lash_client_t *
-lash_client_open(const char  *class,
-                 int          flags,
-                 int          argc,
-                 char       **argv)
+unsigned int lash_get_pending_event_count(lash_client_t * client)
 {
-	lash_client_t *client = NULL;
-
-	if (class == NULL)
-	{
-		lash_error("Invalid arguments to lash_client_open() - class is NULL");
-		goto end;
-	}
-
-	/* seq24 usually supplies no class name and we should be able to handle this situation anyway,
-	   to support liblash-less clients */
-#if 0
-	if (class[0] == '\0')
-	{
-		lash_error("Invalid arguments to lash_client_open() - class is empty string");
-		goto end;
-	}
-#endif
-
-	if (!argc || !argv || !argv[0] || !argv[0][0])
-	{
-		lash_error("Invalid arguments to lash_client_open()");
-		goto end;
-	}
-
-	char *str, wd[MAXPATHLEN];
-	DBusError err;
-
-	client = lash_client_new_with_service();
-	if (!client) {
-		lash_error("Failed to create new client");
-		goto end;
-	}
-
-	/* Set the client parameters */
-	if (!(str = getcwd(wd, MAXPATHLEN))) {
-		lash_error("Cannot get working directory: %s",
-		           strerror(errno));
-		wd[0] = '\0';
-		if ((str = getenv("PWD")) || (str = getenv("HOME"))) {
-			if (strlen(str) < MAXPATHLEN)
-				strcpy(wd, str);
-		}
-	}
-	client->argc = argc;
-	client->argv = argv;
-	client->working_dir = lash_strdup(wd);
-	client->flags = flags;
-	lash_strset(&client->class, class);
-
-	dbus_error_init(&err);
-
-	/* Check whether the server is active */
-	if (!dbus_bus_name_has_owner(client->dbus_service->connection,
-	                             // TODO: Move service name into public header
-	                             DBUS_NAME_BASE, &err)) {
-		if (dbus_error_is_set(&err)) {
-			lash_error("Failed to query LASH service "
-			           "availability: %s", err.message);
-			dbus_error_free(&err);
-			dbus_error_init(&err);
-		}
-
-		if (!getenv("LASH_NO_START_SERVER"))
-			lash_info("Attempting to auto-start LASH server");
-		else {
-			lash_info("Not attempting to auto-start LASH server");
-			goto fail;
-		}
-	}
-
-	lash_dbus_service_connect(client);
-
-	if (client->flags & LASH_Server_Interface) {
-		lash_client_register_as_controller(client);
-		client->flags ^= LASH_Server_Interface;
-		client->is_controller = 2;
-	}
-
-	/* Listen to the LASH server's client-facing beacon */
-	dbus_bus_add_match(client->dbus_service->connection,
-	                   "type='signal'"
-	                   ",sender='" DBUS_NAME_BASE "'"
-	                   ",path='/'"
-	                   ",interface='" DBUS_NAME_BASE ".Server'",
-	                   &err);
-
-	if (!dbus_error_is_set(&err)) {
-		dbus_bus_add_match(client->dbus_service->connection,
-		                   "type='signal'"
-		                   ",sender='" DBUS_NAME_BASE "'"
-		                   ",path='/'"
-		                   ",interface='" DBUS_NAME_BASE ".Control'"
-		                   ",member='ProjectNameChanged'",
-		                   &err);
-	}
-
-	if (dbus_error_is_set(&err)) {
-		lash_error("Failed to add D-Bus match rule: %s", err.message);
-		goto fail;
-	}
-
-	lash_client_add_filter(&client);
-
-	goto end;
-
-fail:
-	dbus_error_free(&err);
-	lash_client_destroy(client);
-	client = NULL;
-
-end:
-	return client;
+  return 0;
 }
 
-lash_client_t *
-lash_client_open_controller(void)
+unsigned int lash_get_pending_config_count(lash_client_t * client)
 {
-	lash_client_t *client;
-
-	client = lash_client_new_with_service();
-	if (!client) {
-		lash_error("Failed to create new client");
-		return NULL;
-	}
-
-	if (!lash_client_register_as_controller(client)) {
-		lash_client_destroy(client);
-		return NULL;
-	}
-
-	client->is_controller = 1;
-	lash_client_add_filter(&client);
-
-	return client;
+  return 0;
 }
 
-// TODO: Move lash_set_*_callback() args checking to a common function
-
-bool
-lash_set_control_callback(lash_client_t       *client,
-                          LashControlCallback  callback,
-                          void                *user_data)
+lash_event_t * lash_get_event(lash_client_t * client)
 {
-	if (!client) {
-		lash_error("Client pointer is NULL");
-		return false;
-	} else if (!callback) {
-		lash_error("Callback function is NULL");
-		return false;
-	}
-
-	client->cb.control = callback;
-	client->ctx.control = user_data;
-
-	return true;
+  return NULL;
 }
 
-bool
-lash_set_save_callback(lash_client_t     *client,
-                       LashEventCallback  callback,
-                       void              *user_data)
+lash_config_t * lash_get_config(lash_client_t * client)
 {
-	if (!client || !callback) {
-		lash_error("Invalid arguments");
-		return false;
-	} else if (!client->server_connected) {
-		lash_error("Not connected to server");
-		return false;
-	}
-
-	client->cb.save = callback;
-	client->ctx.save = user_data;
-
-	return true;
+  return NULL;
 }
 
-bool
-lash_set_load_callback(lash_client_t     *client,
-                       LashEventCallback  callback,
-                       void              *user_data)
+void lash_send_event(lash_client_t * client, lash_event_t * event)
 {
-	if (!client || !callback) {
-		lash_error("Invalid arguments");
-		return false;
-	} else if (!client->server_connected) {
-		lash_error("Not connected to server");
-		return false;
-	}
-
-	client->cb.load = callback;
-	client->ctx.load = user_data;
-
-	return true;
 }
 
-bool
-lash_set_save_data_set_callback(lash_client_t      *client,
-                                LashConfigCallback  callback,
-                                void               *user_data)
+void lash_send_config(lash_client_t * client, lash_config_t * config)
 {
-	if (!client || !callback) {
-		lash_error("Invalid arguments");
-		return false;
-	} else if (!client->server_connected) {
-		lash_error("Not connected to server");
-		return false;
-	}
-
-	client->cb.save_data_set = callback;
-	client->ctx.save_data_set = user_data;
-
-	return true;
 }
 
-bool
-lash_set_load_data_set_callback(lash_client_t      *client,
-                                LashConfigCallback  callback,
-                                void               *user_data)
+int lash_server_connected(lash_client_t * client)
 {
-	if (!client || !callback) {
-		lash_error("Invalid arguments");
-		return false;
-	} else if (!client->server_connected) {
-		lash_error("Not connected to server");
-		return false;
-	}
-
-	client->cb.load_data_set = callback;
-	client->ctx.load_data_set = user_data;
-
-	return true;
+  return 0;
 }
 
-bool
-lash_set_quit_callback(lash_client_t     *client,
-                       LashEventCallback  callback,
-                       void              *user_data)
+const char * lash_get_server_name(lash_client_t * client)
 {
-	if (!client || !callback) {
-		lash_error("Invalid arguments");
-		return false;
-	} else if (!client->server_connected) {
-		lash_error("Not connected to server");
-		return false;
-	}
-
-	client->cb.quit = callback;
-	client->ctx.quit = user_data;
-
-	return true;
+	return NULL;
 }
 
-bool
-lash_set_name_change_callback(lash_client_t     *client,
-                              LashEventCallback  callback,
-                              void              *user_data)
+lash_event_t * lash_event_new(void)
 {
-	if (!client || !callback) {
-		lash_error("Invalid arguments");
-		return false;
-	} else if (!client->server_connected) {
-		lash_error("Not connected to server");
-		return false;
-	}
-
-	client->cb.name = callback;
-	client->ctx.name = user_data;
-
-	return true;
+  return NULL;
 }
 
-bool
-lash_set_project_change_callback(lash_client_t     *client,
-                                 LashEventCallback  callback,
-                                 void              *user_data)
+lash_event_t * lash_event_new_with_type(enum LASH_Event_Type type)
 {
-	if (!client || !callback) {
-		lash_error("Invalid arguments");
-		return false;
-	} else if (!client->server_connected) {
-		lash_error("Not connected to server");
-		return false;
-	}
-
-	client->cb.proj = callback;
-	client->ctx.proj = user_data;
-
-	return true;
+  return NULL;
 }
 
-bool
-lash_set_path_change_callback(lash_client_t     *client,
-                              LashEventCallback  callback,
-                              void              *user_data)
+lash_event_t * lash_event_new_with_all (enum LASH_Event_Type type, const char * string)
 {
-	if (!client || !callback) {
-		lash_error("Invalid arguments");
-		return false;
-	} else if (!client->server_connected) {
-		lash_error("Not connected to server");
-		return false;
-	}
-
-	client->cb.path = callback;
-	client->ctx.path = user_data;
-
-	return true;
+  return NULL;
 }
 
-void
-lash_wait(lash_client_t *client)
+void lash_event_destroy(lash_event_t * event)
 {
-	if (client && client->dbus_service)
-		(void) dbus_connection_read_write(client->dbus_service->connection, -1);
 }
 
-void
-lash_dispatch(lash_client_t *client)
+enum LASH_Event_Type lash_event_get_type(const lash_event_t * event)
 {
-	if (!client || !client->dbus_service)
-		return;
-
-	do
-	{
-		dbus_connection_read_write_dispatch(client->dbus_service->connection, 0);
-	}
-	while (dbus_connection_get_dispatch_status(client->dbus_service->connection) == DBUS_DISPATCH_DATA_REMAINS);
+  return 0;
 }
 
-bool
-lash_dispatch_once(lash_client_t *client)
+const char * lash_event_get_string(const lash_event_t * event)
 {
-	return
-	  (client && client->dbus_service
-	   && dbus_connection_read_write_dispatch(client->dbus_service->connection, 0)
-	   && dbus_connection_get_dispatch_status(client->dbus_service->connection)
-	      == DBUS_DISPATCH_DATA_REMAINS)
-	  ? true : false;
+  return NULL;
 }
 
-void
-lash_notify_progress(lash_client_t *client,
-                     uint8_t        percentage)
+const char * lash_event_get_project(const lash_event_t * event)
 {
-	if (!client || !client->dbus_service
-	    || !client->pending_task || !percentage)
-		return;
-
-	if (percentage > 99)
-		percentage = 99;
-
-	method_call_new_valist(client->dbus_service, NULL,
-	                       method_default_handler, false,
-	                       DBUS_NAME_BASE,
-	                       "/",
-	                       DBUS_NAME_BASE ".Server",
-	                       "Progress",
-	                       DBUS_TYPE_UINT64, &client->pending_task,
-	                       DBUS_TYPE_BYTE, &percentage,
-	                       DBUS_TYPE_INVALID);
+  return NULL;
 }
 
-const char *
-lash_get_client_name(lash_client_t *client)
+void lash_event_get_client_id(const lash_event_t * event, uuid_t id)
 {
-	return (const char *) ((client && client->dbus_service)
-	                       ? client->name : NULL);
+}
+ 
+void lash_event_set_type(lash_event_t * event, enum LASH_Event_Type type)
+{
 }
 
-const char *
-lash_get_project_name(lash_client_t *client)
+void lash_event_set_string(lash_event_t * event, const char * string)
 {
-	return (const char *) ((client && client->dbus_service)
-	                       ? client->project_name : NULL);
 }
 
-bool
-lash_client_is_being_restored(lash_client_t *client)
+void lash_event_set_project(lash_event_t * event, const char * project)
 {
-	return (client && (client->flags & LASH_Restored));
 }
 
-void
-lash_jack_client_name(lash_client_t *client,
-                      const char    *name)
+void lash_event_set_client_id(lash_event_t * event, uuid_t id)
 {
-	if (!client || !name || !name[0]) {
-		lash_error("Invalid arguments");
-		return;
-	}
-
-	// TODO: Find some generic place for this
-	if (!client->dbus_service) {
-		lash_error("D-Bus service not running");
-		return;
-	}
-
-	method_call_new_single(client->dbus_service, NULL,
-	                       method_default_handler, false,
-	                       DBUS_NAME_BASE,
-	                       "/",
-	                       DBUS_NAME_BASE ".Server",
-	                       "JackName",
-	                       DBUS_TYPE_STRING, &name);
-
-	lash_debug("Sent JACK name");
 }
 
-void
-lash_alsa_client_id(lash_client_t *client,
-                    unsigned char  id)
+void lash_event_set_alsa_client_id(lash_event_t * event, unsigned char alsa_id)
 {
-	return;			/* deprecated */
 }
 
-// TODO: Convert to ProjectOpen
-void
-lash_control_load_project_path(lash_client_t *client,
-                               const char    *project_path)
+unsigned char lash_event_get_alsa_client_id(const lash_event_t * event)
 {
-	if (!client || !project_path) {
-		lash_error("Invalid arguments");
-		return;
-	}
-
-	// TODO: Find some generic place for this
-	if (!client->dbus_service) {
-		lash_error("D-Bus service not running");
-		return;
-	}
-
-	method_call_new_single(client->dbus_service, NULL,
-	                       method_default_handler, false,
-	                       DBUS_NAME_BASE,
-	                       "/",
-	                       DBUS_NAME_BASE ".Control",
-	                       "LoadProjectPath",
-	                       DBUS_TYPE_STRING, &project_path);
-
-	lash_debug("Sent LoadProjectPath request");
+  return 0;
 }
 
-void
-lash_control_name_project(lash_client_t *client,
-                          const char    *project_name,
-                          const char    *new_name)
+void lash_str_set_alsa_client_id(char * str, unsigned char alsa_id)
 {
-	if (!client || !project_name || !new_name) {
-		lash_error("Invalid arguments");
-		return;
-	}
-
-	// TODO: Find some generic place for this
-	if (!client->dbus_service) {
-		lash_error("D-Bus service not running");
-		return;
-	}
-
-	method_call_new_valist(client->dbus_service, NULL,
-	                       method_default_handler, false,
-	                       DBUS_NAME_BASE,
-	                       "/",
-	                       DBUS_NAME_BASE ".Control",
-	                       "ProjectRename",
-	                       DBUS_TYPE_STRING, &project_name,
-	                       DBUS_TYPE_STRING, &new_name,
-	                       DBUS_TYPE_INVALID);
-
-	lash_debug("Sent ProjectRename request");
 }
 
-void
-lash_control_move_project(lash_client_t *client,
-                          const char    *project_name,
-                          const char    *new_path)
+unsigned char lash_str_get_alsa_client_id(const char * str)
 {
-	if (!client || !project_name || !new_path) {
-		lash_error("Invalid arguments");
-		return;
-	}
-
-	// TODO: Find some generic place for this
-	if (!client->dbus_service) {
-		lash_error("D-Bus service not running");
-		return;
-	}
-
-	method_call_new_valist(client->dbus_service, NULL,
-	                       method_default_handler, false,
-	                       DBUS_NAME_BASE,
-	                       "/",
-	                       DBUS_NAME_BASE ".Control",
-	                       "ProjectMove",
-	                       DBUS_TYPE_STRING, &project_name,
-	                       DBUS_TYPE_STRING, &new_path,
-	                       DBUS_TYPE_INVALID);
-
-	lash_debug("Sent ProjectMove request");
+  return 0;
 }
 
-void
-lash_control_save_project(lash_client_t *client,
-                          const char    *project_name)
+lash_config_t * lash_config_new(void)
 {
-	if (!client || !project_name) {
-		lash_error("Invalid arguments");
-		return;
-	}
-
-	// TODO: Find some generic place for this
-	if (!client->dbus_service) {
-		lash_error("D-Bus service not running");
-		return;
-	}
-
-	method_call_new_single(client->dbus_service, NULL,
-	                       method_default_handler, false,
-	                       DBUS_NAME_BASE,
-	                       "/",
-	                       DBUS_NAME_BASE ".Control",
-	                       "ProjectSave",
-	                       DBUS_TYPE_STRING, &project_name);
-
-	lash_debug("Sent ProjectSave request");
+  return NULL;
 }
 
-void
-lash_control_close_project(lash_client_t *client,
-                           const char    *project_name)
+lash_config_t * lash_config_dup(const lash_config_t * config)
 {
-	if (!client || !project_name) {
-		lash_error("Invalid arguments");
-		return;
-	}
-
-	// TODO: Find some generic place for this
-	if (!client->dbus_service) {
-		lash_error("D-Bus service not running");
-		return;
-	}
-
-	method_call_new_single(client->dbus_service, NULL,
-	                       method_default_handler, false,
-	                       DBUS_NAME_BASE,
-	                       "/",
-	                       DBUS_NAME_BASE ".Control",
-	                       "ProjectClose",
-	                       DBUS_TYPE_STRING, &project_name);
-
-	lash_debug("Sent ProjectClose request");
+  return NULL;
 }
 
-#ifdef LASH_OLD_API
-
-# include "args.h"
-# include "event.h"
-
-lash_args_t *
-lash_extract_args(int *argc, char ***argv)
+lash_config_t * lash_config_new_with_key(const char * key)
 {
-	int i, j, valid_count;
-	lash_args_t *args;
-
-	args = lash_args_new();
-
-	for (i = 1; i < *argc; ++i) {
-		if (strncasecmp("--lash-server=", (*argv)[i], 14) == 0) {
-			lash_error("Dropping deprecated --lash-server flag");
-			(*argv)[i] = NULL;
-			continue;
-		}
-
-		if (strncasecmp("--lash-project=", (*argv)[i], 15) == 0) {
-			lash_error("Dropping deprecated --lash-project flag");
-			(*argv)[i] = NULL;
-			continue;
-		}
-
-		if (strncmp("--lash-id=", (*argv)[i], 10) == 0) {
-			lash_error("Dropping deprecated --lash-id flag");
-			(*argv)[i] = NULL;
-			continue;
-		}
-
-		if (strncmp("--lash-no-autoresume", (*argv)[i], 20) == 0) {
-			lash_debug("Setting LASH_No_Autoresume flag from "
-			           "command line");
-
-			lash_args_set_flag(args, LASH_No_Autoresume);
-
-			(*argv)[i] = NULL;
-
-			continue;
-		}
-
-		if (strncmp("--lash-no-start-server", (*argv)[i], 22) == 0) {
-			lash_debug("Setting LASH_No_Start_Server flag from "
-			           "command line");
-
-			lash_args_set_flag(args, LASH_No_Start_Server);
-
-			(*argv)[i] = NULL;
-
-			continue;
-		}
-	}
-
-	lash_debug("Args checked");
-
-	/* sort out the argv pointers */
-	valid_count = *argc;
-	for (i = 1; i < valid_count; ++i) {
-		lash_debug("Checking argv[%d]", i);
-		if ((*argv)[i] == NULL) {
-
-			for (j = i; j < *argc - 1; ++j)
-				(*argv)[j] = (*argv)[j + 1];
-
-			valid_count--;
-			i--;
-		}
-	}
-
-	lash_debug("Done");
-
-	*argc = valid_count;
-
-	lash_args_set_args(args, *argc, (const char**)*argv);
-
-	return args;
+  return NULL;
 }
 
-lash_client_t *
-lash_init(const lash_args_t *args,
-          const char        *class,
-          int                client_flags,
-          lash_protocol_t    protocol)
+void lash_config_destroy(lash_config_t * config)
 {
-	lash_debug("Initializing LASH client");
-	// TODO: Destroy args
-	return lash_client_open(class, client_flags, args->argc, args->argv);
 }
 
-static lash_event_t * g_pending_event = NULL;
-
-static
-void
-lash_handle_pending_event(
-	lash_client_t *client)
+const char * lash_config_get_key(const lash_config_t * config)
 {
-	if (g_pending_event != NULL)
-	{
-		lash_error("Application didnt sent event of type %d back to LASH, trying to workaround", g_pending_event->type);
-		lash_send_event(client, g_pending_event);
-	}
+  return NULL;
 }
 
-unsigned int
-lash_get_pending_event_count(lash_client_t *client)
+const void * lash_config_get_value(const lash_config_t * config)
 {
-	if (!lash_enabled(client))
-		return 0;
-
-	lash_handle_pending_event(client);
-
-	lash_dispatch(client);
-
-	return (unsigned int) client->num_events_in;
+  return NULL;
 }
 
-unsigned int
-lash_get_pending_config_count(lash_client_t *client)
+size_t lash_config_get_value_size(const lash_config_t * config)
 {
-	if (!lash_enabled(client))
-		return 0;
-
-	lash_dispatch(client);
-
-	return (unsigned int) client->num_configs_in;
+  return 0;
 }
 
-lash_event_t *
-lash_get_event(lash_client_t *client)
+void lash_config_set_key(lash_config_t * config, const char * key)
 {
-	if (!lash_enabled(client))
-		return NULL;
-
-	lash_handle_pending_event(client);
-
-	lash_event_t *event = NULL;
-
-	lash_dispatch_once(client);
-
-	if (!list_empty(&client->events_in)) {
-		event = list_entry(client->events_in.next, lash_event_t, siblings);
-		list_del(&event->siblings);
-		--client->num_events_in;
-	}
-
-	if (event != NULL)
-	{
-		if (event->type == LASH_Save_File ||
-		    event->type == LASH_Restore_File ||
-		    event->type == LASH_Save_Data_Set ||
-		    event->type == LASH_Restore_Data_Set)
-		{
-			g_pending_event = event;
-		}
-	}
-
-	return event;
 }
 
-lash_config_t *
-lash_get_config(lash_client_t *client)
+void lash_config_set_value(lash_config_t * config, const void * value, size_t value_size)
 {
-	lash_config_t *config = NULL;
-
-	if (!client)
-		return NULL;
-
-	lash_dispatch_once(client);
-
-	if (!list_empty(&client->configs_in)) {
-		config = list_entry(client->configs_in.next, lash_config_t, siblings);
-		list_del(&config->siblings);
-		--client->num_configs_in;
-	}
-
-	return config;
 }
 
-void
-lash_send_event(lash_client_t *client,
-                lash_event_t  *event)
+uint32_t lash_config_get_value_int(const lash_config_t * config)
 {
-	if (g_pending_event != NULL && event != NULL && g_pending_event->type == event->type)
-	{
-		g_pending_event = NULL;
-	}
-
-	if (!client || !event)
-		lash_error("Invalid arguments");
-	else if (lash_enabled(client) && event->ctor)
-		event->ctor(client, event);
-
-	lash_event_destroy(event);
+  return 0;
 }
 
-void
-lash_send_config(lash_client_t *client,
-                 lash_config_t *config)
+float lash_config_get_value_float(const lash_config_t * config)
 {
-	if (!client || !config) {
-		lash_error("Invalid arguments");
-	} else {
-		struct _lash_config_handle cfg;
-
-		cfg.iter = &client->array_iter;
-		cfg.is_read = false;
-
-		lash_config_write_raw(&cfg, config->key,
-		                      config->value, config->value_size);
-	}
-
-	lash_config_destroy(config);
+  return 0.0;
 }
 
-const char *
-lash_get_server_name(lash_client_t *client)
+double lash_config_get_value_double(const lash_config_t * config)
 {
-	return (lash_enabled(client)) ? "localhost" : NULL;
+  return 0.0;
 }
 
-#endif /* LASH_OLD_API */
-
-int
-lash_server_connected(lash_client_t *client)
+const char * lash_config_get_value_string(const lash_config_t * config)
 {
-	return (client) ? client->server_connected : 0;
+  return NULL;
 }
 
-/* EOF */
+void lash_config_set_value_int(lash_config_t * config, uint32_t value)
+{
+}
+
+void lash_config_set_value_float(lash_config_t * config, float value)
+{
+}
+
+void lash_config_set_value_double(lash_config_t * config, double value)
+{
+}
+
+void lash_config_set_value_string(lash_config_t * config, const char * value)
+{
+}
