@@ -95,64 +95,12 @@ method_iter_append_dict_entry(DBusMessageIter *iter,
                               const void      *value,
                               int              length);
 
-bool
-method_send(method_msg_t *call,
-            bool          will_block);
-
 void
 method_return_send(method_call_t *call);
 
 void
 method_default_handler(DBusPendingCall *pending,
                        void            *data);
-
-bool
-method_call_init(method_msg_t                  *call,
-                 service_t                     *service,
-                 void                          *return_context,
-                 DBusPendingCallNotifyFunction  return_handler,
-                 const char                    *destination,
-                 const char                    *path,
-                 const char                    *interface,
-                 const char                    *method);
-
-bool
-method_call_new_void(service_t                     *service,
-                     void                          *return_context,
-                     DBusPendingCallNotifyFunction  return_handler,
-                     bool                           will_block,
-                     const char                    *destination,
-                     const char                    *path,
-                     const char                    *interface,
-                     const char                    *method);
-
-bool
-method_call_new_single(service_t                     *service,
-                       void                          *return_context,
-                       DBusPendingCallNotifyFunction  return_handler,
-                       bool                           will_block,
-                       const char                    *destination,
-                       const char                    *path,
-                       const char                    *interface,
-                       const char                    *method,
-                       int                            type,
-                       const void                    *arg);
-
-bool
-method_call_new_valist(service_t                     *service,
-                       void                          *return_context,
-                       DBusPendingCallNotifyFunction  return_handler,
-                       bool                           will_block,
-                       const char                    *destination,
-                       const char                    *path,
-                       const char                    *interface,
-                       const char                    *method,
-                       int                            type,
-                                                       ...);
-
-bool
-method_iter_get_args(DBusMessageIter *iter,
-                                      ...);
 
 bool
 method_iter_get_dict_entry(DBusMessageIter  *iter,

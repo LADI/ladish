@@ -204,7 +204,6 @@ def build(bld):
         daemon.source.append(os.path.join("daemon", source))
 
     for source in [
-        'service.c',
         'signal.c',
         'method.c',
         'error.c',

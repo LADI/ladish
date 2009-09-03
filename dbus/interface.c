@@ -51,7 +51,7 @@ interface_default_handler(const interface_t *interface,
     if (strcmp(call->method_name, ptr->name) == 0) {
       if (ptr->handler) {
         call->interface = interface;
-        call->context = ((object_path_t *)call->context)->context;
+        call->context = ((struct dbus_object_path *)call->context)->context;
         ptr->handler(call);
 
         /* If the method handler didn't construct a return

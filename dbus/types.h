@@ -2,6 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
+ * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -44,9 +45,6 @@ typedef void (*method_handler_t) (method_call_t *call);
 /* interface types */
 typedef struct _interface interface_t;
 typedef bool (*interface_handler_t) (const interface_t *, method_call_t *);
-
-/* object path types */
-typedef struct _object_path object_path_t;
 
 /* service types */
 typedef struct _service service_t;

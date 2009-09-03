@@ -25,13 +25,9 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
-
+#include "../common.h"
 #include "object_path.h"
 #include "../common/safety.h"
-#include "../common/debug.h"
 #include "introspection.h"  /* g_dbus_interface_dtor_introspectable */
 #include "error.h"  /* lash_dbus_error() */
 
@@ -44,8 +40,8 @@ static void
 object_path_handler_unregister(DBusConnection *conn,
                                void           *data);
 
-object_path_t *
-object_path_new(const char *name,
+struct dbus_object_path *
+dbus_object_path_new(const char *name,
                 void       *context,
                 int         num_ifaces,
                             ...)
@@ -58,11 +54,11 @@ object_path_new(const char *name,
 
   lash_debug("Creating object path");
 
-  object_path_t *path;
+  struct dbus_object_path *path;
   va_list argp;
   const interface_t **iface_pptr;
 
-  path = lash_malloc(1, sizeof(object_path_t));
+  path = lash_malloc(1, sizeof(struct dbus_object_path));
   path->name = lash_strdup(name);
   path->interfaces = lash_malloc(num_ifaces + 2, sizeof(interface_t *));
 
@@ -85,14 +81,14 @@ object_path_new(const char *name,
   }
 
   lash_error("Failed to create object path");
-  object_path_destroy(NULL, path);
+  dbus_object_path_destroy(NULL, path);
 
   return NULL;
 }
 
 bool
-object_path_register(DBusConnection *conn,
-                     object_path_t  *path)
+dbus_object_path_register(DBusConnection *conn,
+                     struct dbus_object_path  *path)
 {
   if (!conn || !path || !path->name || !path->interfaces) {
     lash_debug("Invalid arguments");
@@ -114,7 +110,7 @@ object_path_register(DBusConnection *conn,
   return true;
 }
 
-void object_path_destroy(DBusConnection * connection_ptr, object_path_t * path_ptr)
+void dbus_object_path_destroy(DBusConnection * connection_ptr, struct dbus_object_path * path_ptr)
 {
   lash_debug("Destroying object path");
 
@@ -180,7 +176,7 @@ object_path_handler(DBusConnection *connection,
   /* Check if there's an interface specified for this method call. */
   if ((interface_name = dbus_message_get_interface(message)))
   {
-    for (iface_pptr = (const interface_t **) ((object_path_t *) data)->interfaces;
+    for (iface_pptr = (const interface_t **) ((struct dbus_object_path *) data)->interfaces;
          iface_pptr && *iface_pptr;
          ++iface_pptr)
     {
@@ -202,7 +198,7 @@ object_path_handler(DBusConnection *connection,
     * omitting the interface must never be rejected.
     */
 
-    for (iface_pptr = (const interface_t **) ((object_path_t *) data)->interfaces;
+    for (iface_pptr = (const interface_t **) ((struct dbus_object_path *) data)->interfaces;
          iface_pptr && *iface_pptr;
          ++iface_pptr) {
       if ((*iface_pptr)->handler(*iface_pptr, &call)) {
@@ -227,7 +223,7 @@ object_path_handler_unregister(DBusConnection *conn,
                                void           *data)
 {
 #ifdef LASH_DEBUG
-  object_path_t *path = data;
+  struct dbus_object_path *path = data;
   lash_debug("Message handler of object path %s was unregistered",
              (path && path->name) ? path->name : "<unknown>");
 #endif /* LASH_DEBUG */

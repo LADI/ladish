@@ -44,7 +44,7 @@
 
 bool g_quit;
 const char * g_dbus_unique_name;
-object_path_t * g_control_object;
+struct dbus_object_path * g_control_object;
 char * g_base_dir;
 
 #if 0
@@ -154,13 +154,13 @@ static bool connect_dbus(void)
     goto unref_connection;
   }
 
-  g_control_object = object_path_new(CONTROL_OBJECT_PATH, NULL, 1, &g_lashd_interface_control);
+  g_control_object = dbus_object_path_new(CONTROL_OBJECT_PATH, NULL, 1, &g_lashd_interface_control);
   if (g_control_object == NULL)
   {
     goto unref_connection;
   }
 
-  if (!object_path_register(g_dbus_connection, g_control_object))
+  if (!dbus_object_path_register(g_dbus_connection, g_control_object))
   {
     goto destroy_control_object;
   }
@@ -168,7 +168,7 @@ static bool connect_dbus(void)
   return true;
 
 destroy_control_object:
-  object_path_destroy(g_dbus_connection, g_control_object);
+  dbus_object_path_destroy(g_dbus_connection, g_control_object);
 unref_connection:
   dbus_connection_unref(g_dbus_connection);
 
@@ -178,7 +178,7 @@ fail:
 
 static void disconnect_dbus(void)
 {
-  object_path_destroy(g_dbus_connection, g_control_object);
+  dbus_object_path_destroy(g_dbus_connection, g_control_object);
   dbus_connection_unref(g_dbus_connection);
 }
 

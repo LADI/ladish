@@ -2,6 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
+ * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -31,11 +32,8 @@
 #include "interface.h"
 #include "object_path.h"
 
-DBusMessage *
-introspection_new(object_path_t *path);
-
-void
-introspection_destroy(object_path_t *path);
+DBusMessage * introspection_new(struct dbus_object_path * opath_ptr);
+void introspection_destroy(struct dbus_object_path * opath_ptr);
 
 extern const interface_t g_dbus_interface_dtor_introspectable;
 

@@ -30,10 +30,8 @@
 #include "../common.h"
 
 #include <errno.h>
-#include <dbus/dbus.h>
 #include <uuid/uuid.h>
 
-#include "../dbus/service.h"
 #include "../dbus/helpers.h"
 
 /* ~/BASE_DIR is where studio, room and project xml files are stored */

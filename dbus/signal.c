@@ -25,11 +25,9 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "../common.h"
 #include <stdarg.h>
-
-#include "../common/debug.h"
 #include "signal.h"
-#include "service.h"
 
 static void
 signal_send(signal_msg_t *signal);

@@ -39,7 +39,7 @@
 #define write_buf(args...) buf_ptr += sprintf(buf_ptr, ## args)
 
 DBusMessage *
-introspection_new(object_path_t *path)
+introspection_new(struct dbus_object_path *path)
 {
   if (!path) {
     lash_debug("Invalid arguments");
@@ -142,7 +142,7 @@ introspection_new(object_path_t *path)
 #undef write_buf
 
 void
-introspection_destroy(object_path_t *path)
+introspection_destroy(struct dbus_object_path *path)
 {
   lash_debug("Destroying introspection message");
 
@@ -162,7 +162,7 @@ introspection_handler(const interface_t *interface,
 {
   if (strcmp(call->method_name, "Introspect") == 0) {
     /* Try to construct the instrospection message */
-    if ((call->reply = dbus_message_copy(((object_path_t *) call->context)->introspection))
+    if ((call->reply = dbus_message_copy(((struct dbus_object_path *) call->context)->introspection))
         && dbus_message_set_destination(call->reply, dbus_message_get_sender(call->message))
         && dbus_message_set_reply_serial(call->reply, dbus_message_get_serial(call->message))) {
       return true;

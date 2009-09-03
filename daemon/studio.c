@@ -73,7 +73,7 @@ struct studio
   struct list_head jack_conf;   /* root of the conf tree */
   struct list_head jack_params; /* list of conf tree leaves */
 
-  object_path_t * dbus_object;
+  struct dbus_object_path * dbus_object;
 
   struct list_head event_queue;
 
@@ -497,21 +497,21 @@ bool studio_name_generate(char ** name_ptr)
 bool
 studio_publish(void)
 {
-  object_path_t * object;
+  struct dbus_object_path * object;
 
   assert(g_studio.name != NULL);
 
-  object = object_path_new(STUDIO_OBJECT_PATH, &g_studio, 2, &g_interface_studio, &g_interface_patchbay);
+  object = dbus_object_path_new(STUDIO_OBJECT_PATH, &g_studio, 2, &g_interface_studio, &g_interface_patchbay);
   if (object == NULL)
   {
-    lash_error("object_path_new() failed");
+    lash_error("dbus_object_path_new() failed");
     return false;
   }
 
-  if (!object_path_register(g_dbus_connection, object))
+  if (!dbus_object_path_register(g_dbus_connection, object))
   {
     lash_error("object_path_register() failed");
-    object_path_destroy(g_dbus_connection, object);
+    dbus_object_path_destroy(g_dbus_connection, object);
     return false;
   }
 
@@ -588,7 +588,7 @@ studio_clear(void)
 
   if (g_studio.dbus_object != NULL)
   {
-    object_path_destroy(g_dbus_connection, g_studio.dbus_object);
+    dbus_object_path_destroy(g_dbus_connection, g_studio.dbus_object);
     g_studio.dbus_object = NULL;
     emit_studio_disappeared();
   }

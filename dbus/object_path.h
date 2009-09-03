@@ -33,28 +33,16 @@
 #include "types.h"
 #include "interface.h"
 
-/**
- * Object path descriptor.
- */
-struct _object_path
+struct dbus_object_path
 {
-  char               *name;
-  void               *context;
-  DBusMessage        *introspection;
-  const interface_t **interfaces;
+  char * name;
+  void * context;
+  DBusMessage * introspection;
+  const interface_t ** interfaces;
 };
 
-object_path_t *
-object_path_new(const char *name,
-                void       *context,
-                int         num_ifaces,
-                            ...);
-
-bool
-object_path_register(DBusConnection *conn,
-                     object_path_t  *path);
-
-void
-object_path_destroy(DBusConnection * connection_ptr, object_path_t *path);
+struct dbus_object_path * dbus_object_path_new(const char * name, void * context, int num_ifaces, ...);
+bool dbus_object_path_register(DBusConnection * connection_ptr, struct dbus_object_path * opath_ptr);
+void dbus_object_path_destroy(DBusConnection * connection_ptr, struct dbus_object_path * opath_ptr);
 
 #endif /* __LASH_DBUS_OBJECT_PATH_H__ */
