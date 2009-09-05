@@ -208,7 +208,6 @@ def build(bld):
         'method.c',
         'error.c',
         'object_path.c',
-        'introspection.c',
         'interface.c',
         'helpers.c',
         ]:

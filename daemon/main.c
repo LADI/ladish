@@ -44,7 +44,7 @@
 
 bool g_quit;
 const char * g_dbus_unique_name;
-struct dbus_object_path * g_control_object;
+dbus_object_path g_control_object;
 char * g_base_dir;
 
 #if 0

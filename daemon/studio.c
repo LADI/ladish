@@ -72,7 +72,7 @@ struct studio
   struct list_head jack_conf;   /* root of the conf tree */
   struct list_head jack_params; /* list of conf tree leaves */
 
-  struct dbus_object_path * dbus_object;
+  dbus_object_path dbus_object;
 
   struct list_head event_queue;
 
@@ -496,7 +496,7 @@ bool studio_name_generate(char ** name_ptr)
 bool
 studio_publish(void)
 {
-  struct dbus_object_path * object;
+  dbus_object_path object;
 
   assert(g_studio.name != NULL);
 
