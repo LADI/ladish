@@ -394,6 +394,11 @@ void ladish_graph_destroy(ladish_graph_handle graph_handle)
   free(impl_ptr);
 }
 
+const char * ladish_graph_get_opath(ladish_graph_handle graph_handle)
+{
+  return impl_ptr->opath;
+}
+
 void ladish_graph_clear(ladish_graph_handle graph_handle)
 {
 }
@@ -403,7 +408,7 @@ void * ladish_graph_get_dbus_context(ladish_graph_handle graph_handle)
   return graph_handle;
 }
 
-void ladish_graph_add_client(ladish_graph_handle graph_handle, ladish_client_handle client, const char * opath)
+void ladish_graph_add_client(ladish_graph_handle graph_handle, ladish_client_handle client)
 {
   const char * name;
 
@@ -411,12 +416,12 @@ void ladish_graph_add_client(ladish_graph_handle graph_handle, ladish_client_han
   list_add_tail(ladish_client_get_graph_link(client), &impl_ptr->clients);
   impl_ptr->graph_version++;
 
-  name = ladish_client_get_graph_name(client, opath);
+  name = ladish_client_get_graph_name(client, impl_ptr->opath);
   lash_info("adding client '%s' (%p)", name, client);
   assert(name != NULL);
   dbus_signal_emit(
     g_dbus_connection,
-    opath,
+    impl_ptr->opath,
     JACKDBUS_IFACE_PATCHBAY,
     "ClientAppeared",
     "tts",

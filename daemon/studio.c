@@ -41,6 +41,7 @@
 #include "../catdup.h"
 #include "../dbus/error.h"
 #include "dirhelpers.h"
+#include "jack_dispatch.h"
 
 #define STUDIOS_DIR "/studios/"
 char * g_studios_dir;
@@ -79,6 +80,7 @@ struct studio
 
   graph_proxy_handle jack_graph_proxy;
   ladish_graph_handle graph;
+  ladish_jack_dispatcher_handle jack_dispatcher;
 } g_studio;
 
 #define EVENT_JACK_START   0
@@ -655,19 +657,15 @@ void on_event_jack_started(void)
   }
   else
   {
-#if 1                           /* XXX */
-    ladish_client_handle capture_client;
-    ladish_client_handle playback_client;
+    if (!ladish_jack_dispatcher_create(g_studio.jack_graph_proxy, g_studio.graph, &g_studio.jack_dispatcher))
+    {
+      lash_error("ladish_jack_dispatcher_create() failed.");
+    }
 
-    ladish_client_create( NULL, true, false, true, &capture_client);
-    ladish_client_create(NULL, true, false, true, &playback_client);
-
-    ladish_client_set_graph_name(capture_client, STUDIO_OBJECT_PATH, "Hardware Capture");
-    ladish_client_set_graph_name(playback_client, STUDIO_OBJECT_PATH, "Hardware Playback");
-
-    ladish_graph_add_client(g_studio.graph, capture_client, STUDIO_OBJECT_PATH);
-    ladish_graph_add_client(g_studio.graph, playback_client, STUDIO_OBJECT_PATH);
-#endif
+    if (!graph_proxy_activate(g_studio.jack_graph_proxy))
+    {
+      lash_error("graph_proxy_activate() failed.");
+    }
   }
 }
 
@@ -677,7 +675,16 @@ void on_event_jack_stopped(void)
 
   g_studio.jack_running = false;
 
-  graph_proxy_destroy(g_studio.jack_graph_proxy);
+  if (g_studio.jack_dispatcher)
+  {
+    ladish_jack_dispatcher_destroy(g_studio.jack_dispatcher);
+  }
+
+  if (g_studio.jack_graph_proxy)
+  {
+    graph_proxy_destroy(g_studio.jack_graph_proxy);
+    g_studio.jack_graph_proxy = NULL;
+  }
 
   /* TODO: if user wants, restart jack server and reconnect all jack apps to it */
 }

@@ -5,7 +5,7 @@
  * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains interface to the D-Bus patchbay interface helpers
+ * This file contains interface to graph dispatcher object
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -24,20 +24,23 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef PATCHBAY_H__30334B9A_8847_4E8C_AFF9_73DB13406C8E__INCLUDED
-#define PATCHBAY_H__30334B9A_8847_4E8C_AFF9_73DB13406C8E__INCLUDED
+#ifndef JACK_DISPATCH_H__C7566B66_081D_4D00_A702_7C18F7CC0735__INCLUDED
+#define JACK_DISPATCH_H__C7566B66_081D_4D00_A702_7C18F7CC0735__INCLUDED
 
-#include "client.h"
+#include "common.h"
+#include "../graph_proxy.h"
+#include "graph_iface.h"
 
-typedef struct ladish_graph_tag { int unused; } * ladish_graph_handle;
+typedef struct ladish_jack_dispatcher { int unused; } * ladish_jack_dispatcher_handle;
 
-bool ladish_graph_create(ladish_graph_handle * graph_handle_ptr, const char * opath);
-void ladish_graph_destroy(ladish_graph_handle graph_handle);
-void ladish_graph_clear(ladish_graph_handle graph_handle);
-void * ladish_graph_get_dbus_context(ladish_graph_handle graph_handle);
-void ladish_graph_add_client(ladish_graph_handle graph_handle, ladish_client_handle client_handle);
-const char * ladish_graph_get_opath(ladish_graph_handle graph_handle);
+bool
+ladish_jack_dispatcher_create(
+  graph_proxy_handle jack_graph,
+  ladish_graph_handle studio_graph,
+  ladish_jack_dispatcher_handle * handle_ptr);
 
-extern const struct dbus_interface_descriptor g_interface_patchbay;
+void
+ladish_jack_dispatcher_destroy(
+  ladish_jack_dispatcher_handle handle);
 
-#endif /* #ifndef PATCHBAY_H__30334B9A_8847_4E8C_AFF9_73DB13406C8E__INCLUDED */
+#endif /* #ifndef JACK_DISPATCH_H__C7566B66_081D_4D00_A702_7C18F7CC0735__INCLUDED */
