@@ -296,42 +296,49 @@ dbus_call(
   ret = false;
   va_start(ap, input_signature);
 
-  if (!dbus_signature_validate(input_signature, NULL))
+  if (input_signature != NULL)
   {
-    lash_error("input signature '%s' is invalid", input_signature);
-    goto fail;
-  }
-
-  dbus_signature_iter_init(&sig_iter, input_signature);
-
-  request_ptr = dbus_message_new_method_call(service, object, iface, method);
-  if (request_ptr == NULL)
-  {
-    lash_error("dbus_message_new_method_call() failed.");
-    goto fail;
-  }
-
-  dbus_message_iter_init_append(request_ptr, &iter);
-
-  while (*input_signature != '\0')
-  {
-    type = dbus_signature_iter_get_current_type(&sig_iter);
-    if (!dbus_type_is_basic(type))
+    if (!dbus_signature_validate(input_signature, NULL))
     {
-      lash_error("non-basic input parameter '%c' (%d)", *input_signature, type);
+      lash_error("input signature '%s' is invalid", input_signature);
       goto fail;
     }
 
-    parameter_ptr = va_arg(ap, void *);
+    dbus_signature_iter_init(&sig_iter, input_signature);
 
-    if (!dbus_message_iter_append_basic(&iter, type, parameter_ptr))
+    request_ptr = dbus_message_new_method_call(service, object, iface, method);
+    if (request_ptr == NULL)
     {
-      lash_error("dbus_message_iter_append_basic() failed.");
+      lash_error("dbus_message_new_method_call() failed.");
       goto fail;
     }
 
-    dbus_signature_iter_next(&sig_iter);
-    input_signature++;
+    dbus_message_iter_init_append(request_ptr, &iter);
+
+    while (*input_signature != '\0')
+    {
+      type = dbus_signature_iter_get_current_type(&sig_iter);
+      if (!dbus_type_is_basic(type))
+      {
+        lash_error("non-basic input parameter '%c' (%d)", *input_signature, type);
+        goto fail;
+      }
+
+      parameter_ptr = va_arg(ap, void *);
+
+      if (!dbus_message_iter_append_basic(&iter, type, parameter_ptr))
+      {
+        lash_error("dbus_message_iter_append_basic() failed.");
+        goto fail;
+      }
+
+      dbus_signature_iter_next(&sig_iter);
+      input_signature++;
+    }
+  }
+  else
+  {
+    request_ptr = va_arg(ap, DBusMessage *);
   }
 
   output_signature = va_arg(ap, const char *);
@@ -342,7 +349,10 @@ dbus_call(
     DBUS_CALL_DEFAULT_TIMEOUT,
     &g_dbus_error);
 
-  dbus_message_unref(request_ptr);
+  if (input_signature != NULL)
+  {
+    dbus_message_unref(request_ptr);
+  }
 
   if (reply_ptr == NULL)
   {
