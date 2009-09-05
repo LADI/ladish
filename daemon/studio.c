@@ -525,12 +525,12 @@ studio_publish(void)
 
 static void emit_studio_started()
 {
-  signal_new_valist(g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioStarted", DBUS_TYPE_INVALID);
+  dbus_signal_emit(g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioStarted", "");
 }
 
 static void emit_studio_stopped()
 {
-  signal_new_valist(g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioStopped", DBUS_TYPE_INVALID);
+  dbus_signal_emit(g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioStopped", "");
 }
 
 static bool studio_start(void)
@@ -1688,7 +1688,7 @@ bool studio_load(void * call_ptr, const char * studio_name)
 
 void emit_studio_renamed()
 {
-  signal_new_valist(g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioRenamed", DBUS_TYPE_STRING, &g_studio.name, DBUS_TYPE_INVALID);
+  dbus_signal_emit(g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioRenamed", "s", &g_studio.name);
 }
 
 static void ladish_get_studio_name(struct dbus_method_call * call_ptr)

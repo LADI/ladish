@@ -43,21 +43,12 @@ struct dbus_signal_descriptor
 };
 
 void
-signal_new_single(
+dbus_signal_emit(
   DBusConnection * connection_ptr,
   const char * path,
   const char * interface,
   const char * name,
-  int type,
-  const void * arg);
-
-void
-signal_new_valist(
-  DBusConnection * connection_ptr,
-  const char * path,
-  const char * interface,
-  const char * name,
-  int type,
+  const char * signature,
   ...);
 
 #define SIGNAL_ARGS_BEGIN(signal_name, descr) \

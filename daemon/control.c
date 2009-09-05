@@ -283,12 +283,12 @@ static void ladish_exit(struct dbus_method_call * call_ptr)
 
 void emit_studio_appeared()
 {
-  signal_new_valist(g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "StudioAppeared", DBUS_TYPE_INVALID);
+  dbus_signal_emit(g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "StudioAppeared", "");
 }
 
 void emit_studio_disappeared()
 {
-  signal_new_valist(g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "StudioDisappeared", DBUS_TYPE_INVALID);
+  dbus_signal_emit(g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "StudioDisappeared", "");
 }
 
 METHOD_ARGS_BEGIN(IsStudioLoaded, "Check whether studio D-Bus object is present")
