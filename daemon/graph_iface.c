@@ -28,6 +28,17 @@
 #include "common.h"
 #include "graph_iface.h"
 #include "../dbus/error.h"
+#include "../dbus_constants.h"
+
+struct graph_implementator
+{
+  char * opath;
+  struct list_head clients;
+  uint64_t graph_version;
+  uint64_t next_client_id;
+  uint64_t next_port_id;
+  uint64_t next_connection_id;
+};
 
 #define impl_ptr ((struct graph_implementator *)call_ptr->iface_context)
 
@@ -70,9 +81,13 @@ static void get_graph(struct dbus_method_call * call_ptr)
   DBusMessageIter iter;
   DBusMessageIter clients_array_iter;
   DBusMessageIter connections_array_iter;
-#if 0
-  DBusMessageIter ports_array_iter;
   DBusMessageIter client_struct_iter;
+  struct list_head * client_node_ptr;
+  ladish_client_handle client_handle;
+  uint64_t id;
+  const char * name;
+  DBusMessageIter ports_array_iter;
+#if 0
   DBusMessageIter port_struct_iter;
   DBusMessageIter connection_struct_iter;
 #endif
@@ -97,7 +112,7 @@ static void get_graph(struct dbus_method_call * call_ptr)
 
   dbus_message_iter_init_append(call_ptr->reply, &iter);
 
-  current_version = impl_ptr->get_graph_version(impl_ptr->this);
+  current_version = impl_ptr->graph_version;
   if (known_version > current_version)
   {
     lash_dbus_error(
@@ -121,22 +136,24 @@ static void get_graph(struct dbus_method_call * call_ptr)
 
   if (known_version < current_version)
   {
-#if 0
-    list_for_each(client_node_ptr, &patchbay_ptr->graph.clients)
+    list_for_each(client_node_ptr, &impl_ptr->clients)
     {
-      client_ptr = list_entry(client_node_ptr, struct jack_graph_client, siblings);
+      client_handle = ladish_client_get_by_graph_link(client_node_ptr);
 
       if (!dbus_message_iter_open_container (&clients_array_iter, DBUS_TYPE_STRUCT, NULL, &client_struct_iter))
       {
         goto nomem_close_clients_array;
       }
 
-      if (!dbus_message_iter_append_basic(&client_struct_iter, DBUS_TYPE_UINT64, &client_ptr->id))
+      id = ladish_client_get_graph_id(client_handle);
+      if (!dbus_message_iter_append_basic(&client_struct_iter, DBUS_TYPE_UINT64, &id))
       {
         goto nomem_close_client_struct;
       }
 
-      if (!dbus_message_iter_append_basic(&client_struct_iter, DBUS_TYPE_STRING, &client_ptr->name))
+      name = ladish_client_get_graph_name(client_handle, impl_ptr->opath);
+      lash_info("client '%s' (%u)", name, (unsigned int)id);
+      if (!dbus_message_iter_append_basic(&client_struct_iter, DBUS_TYPE_STRING, &name))
       {
         goto nomem_close_client_struct;
       }
@@ -146,6 +163,7 @@ static void get_graph(struct dbus_method_call * call_ptr)
         goto nomem_close_client_struct;
       }
 
+#if 0
       list_for_each(port_node_ptr, &client_ptr->ports)
       {
         port_ptr = list_entry(port_node_ptr, struct jack_graph_port, siblings_client);
@@ -180,6 +198,7 @@ static void get_graph(struct dbus_method_call * call_ptr)
           goto nomem_close_ports_array;
         }
       }
+#endif
 
       if (!dbus_message_iter_close_container(&client_struct_iter, &ports_array_iter))
       {
@@ -191,7 +210,6 @@ static void get_graph(struct dbus_method_call * call_ptr)
         goto nomem_close_clients_array;
       }
     }
-#endif
   }
 
   if (!dbus_message_iter_close_container(&iter, &clients_array_iter))
@@ -289,13 +307,13 @@ nomem_close_port_struct:
 
 nomem_close_ports_array:
   dbus_message_iter_close_container(&client_struct_iter, &ports_array_iter);
+#endif
 
 nomem_close_client_struct:
   dbus_message_iter_close_container(&clients_array_iter, &client_struct_iter);
 
 nomem_close_clients_array:
   dbus_message_iter_close_container(&iter, &clients_array_iter);
-#endif
 
 nomem:
   dbus_message_unref(call_ptr->reply);
@@ -336,6 +354,78 @@ static void get_client_pid(struct dbus_method_call * call_ptr)
   int64_t pid = 0;
   method_return_new_single(call_ptr, DBUS_TYPE_INT64, &pid);
 }
+
+#undef impl_ptr
+
+bool ladish_graph_create(ladish_graph_handle * graph_handle_ptr, const char * opath)
+{
+  struct graph_implementator * impl_ptr;
+
+  impl_ptr = malloc(sizeof(struct graph_implementator));
+  if (impl_ptr == NULL)
+  {
+    lash_error("malloc() failed to allocate struct graph_implementator");
+    return false;
+  }
+
+  impl_ptr->opath = strdup(opath);
+  if (impl_ptr->opath == NULL)
+  {
+    free(impl_ptr);
+    return false;
+  }
+
+  INIT_LIST_HEAD(&impl_ptr->clients);
+
+  impl_ptr->graph_version = 1;
+  impl_ptr->next_client_id = 1;
+  impl_ptr->next_port_id = 1;
+  impl_ptr->next_connection_id = 1;
+
+  *graph_handle_ptr = (ladish_graph_handle)impl_ptr;
+  return true;
+}
+
+#define impl_ptr ((struct graph_implementator *)graph_handle)
+
+void ladish_graph_destroy(ladish_graph_handle graph_handle)
+{
+  free(impl_ptr->opath);
+  free(impl_ptr);
+}
+
+void ladish_graph_clear(ladish_graph_handle graph_handle)
+{
+}
+
+void * ladish_graph_get_dbus_context(ladish_graph_handle graph_handle)
+{
+  return graph_handle;
+}
+
+void ladish_graph_add_client(ladish_graph_handle graph_handle, ladish_client_handle client, const char * opath)
+{
+  const char * name;
+
+  ladish_client_set_graph_id(client, impl_ptr->next_client_id++);
+  list_add_tail(ladish_client_get_graph_link(client), &impl_ptr->clients);
+  impl_ptr->graph_version++;
+
+  name = ladish_client_get_graph_name(client, opath);
+  lash_info("adding client '%s' (%p)", name, client);
+  assert(name != NULL);
+  dbus_signal_emit(
+    g_dbus_connection,
+    opath,
+    JACKDBUS_IFACE_PATCHBAY,
+    "ClientAppeared",
+    "tts",
+    &impl_ptr->graph_version,
+    &impl_ptr->next_client_id,
+    &name);
+}
+
+#undef impl_ptr
 
 METHOD_ARGS_BEGIN(GetAllPorts, "Get all ports")
   METHOD_ARG_DESCRIBE_IN("ports_list", "as", "List of all ports")
@@ -462,7 +552,7 @@ SIGNALS_BEGIN
   SIGNAL_DESCRIBE(PortsDisconnected)
 SIGNALS_END
 
-INTERFACE_BEGIN(g_interface_patchbay, "org.jackaudio.JackPatchbay")
+INTERFACE_BEGIN(g_interface_patchbay, JACKDBUS_IFACE_PATCHBAY)
   INTERFACE_DEFAULT_HANDLER
   INTERFACE_EXPOSE_METHODS
   INTERFACE_EXPOSE_SIGNALS

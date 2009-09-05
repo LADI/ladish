@@ -27,12 +27,15 @@
 #ifndef PATCHBAY_H__30334B9A_8847_4E8C_AFF9_73DB13406C8E__INCLUDED
 #define PATCHBAY_H__30334B9A_8847_4E8C_AFF9_73DB13406C8E__INCLUDED
 
-struct graph_implementator
-{
-  void * this;
+#include "client.h"
 
-  uint64_t (* get_graph_version)(void * this);
-};
+typedef struct ladish_graph_tag { int unused; } * ladish_graph_handle;
+
+bool ladish_graph_create(ladish_graph_handle * graph_handle_ptr, const char * opath);
+void ladish_graph_destroy(ladish_graph_handle graph_handle);
+void ladish_graph_clear(ladish_graph_handle graph_handle);
+void * ladish_graph_get_dbus_context(ladish_graph_handle graph_handle);
+void ladish_graph_add_client(ladish_graph_handle graph_handle, ladish_client_handle client_handle, const char * opath);
 
 extern const struct dbus_interface_descriptor g_interface_patchbay;
 

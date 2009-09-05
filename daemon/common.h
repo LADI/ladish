@@ -78,23 +78,6 @@ struct connection
   struct port * playback_port_ptr;         /* The playback input port */
 };
 
-struct client
-{
-  struct list_head siblings_studio_all;    /* link for the studio::all_clients list */
-  struct list_head siblings_room;          /* link for the room::clients list */
-  struct list_head ports;                  /* List of ports that belong to the client */
-  uuid_t uuid;                             /* The UUID of the client */
-  uint64_t jack_id;                        /* JACK client ID */
-  char * jack_name;                        /* JACK name, not valid for virtual clients */
-  char * human_name;                       /* User assigned name, not valid for studio-room link clients */
-  bool virtual:1;                          /* Whether client is virtual */
-  bool link:1;                             /* Whether client is a studio-room link */
-  bool system:1;                           /* Whether client is system (server in-process) */
-  pid_t pid;                               /* process id. Not valid for system and virtual clients */
-  struct room * room_ptr;                  /* Room this client belongs to. If NULL, client belongs only to studio guts. */
-  struct studio * studio_ptr;              /* Studio this client belongs to. For room clients this points to studio connected to the room */
-};
-
 struct room
 {
   struct list_head siblings;               /* link for studio::rooms list */

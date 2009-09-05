@@ -51,8 +51,6 @@ extern const struct dbus_interface_descriptor g_interface_studio;
 
 struct studio
 {
-  struct graph_implementator graph_impl;
-
   struct list_head all_connections;        /* All connections (studio guts and all rooms). Including superconnections. */
   struct list_head all_ports;              /* All ports (studio guts and all rooms) */
   struct list_head all_clients;            /* All clients (studio guts and all rooms) */
@@ -80,6 +78,7 @@ struct studio
   char * filename;
 
   graph_proxy_handle jack_graph_proxy;
+  ladish_graph_handle graph;
 } g_studio;
 
 #define EVENT_JACK_START   0
@@ -500,7 +499,11 @@ studio_publish(void)
 
   assert(g_studio.name != NULL);
 
-  object = dbus_object_path_new(STUDIO_OBJECT_PATH, &g_interface_studio, &g_studio, &g_interface_patchbay, &g_studio.graph_impl, NULL);
+  object = dbus_object_path_new(
+    STUDIO_OBJECT_PATH,
+    &g_interface_studio, &g_studio,
+    &g_interface_patchbay, ladish_graph_get_dbus_context(g_studio.graph),
+    NULL);
   if (object == NULL)
   {
     lash_error("dbus_object_path_new() failed");
@@ -577,6 +580,8 @@ static bool studio_stop(void)
 void
 studio_clear(void)
 {
+  ladish_graph_clear(g_studio.graph);
+
   g_studio.modified = false;
   g_studio.persisted = false;
   g_studio.automatic = false;
@@ -646,7 +651,23 @@ void on_event_jack_started(void)
 
   if (!graph_proxy_create(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, &g_studio.jack_graph_proxy))
   {
-    lash_error("graph_create() failed for jackdbus");
+    lash_error("graph_proxy_create() failed for jackdbus");
+  }
+  else
+  {
+#if 1                           /* XXX */
+    ladish_client_handle capture_client;
+    ladish_client_handle playback_client;
+
+    ladish_client_create( NULL, true, false, true, &capture_client);
+    ladish_client_create(NULL, true, false, true, &playback_client);
+
+    ladish_client_set_graph_name(capture_client, STUDIO_OBJECT_PATH, "Hardware Capture");
+    ladish_client_set_graph_name(playback_client, STUDIO_OBJECT_PATH, "Hardware Playback");
+
+    ladish_graph_add_client(g_studio.graph, capture_client, STUDIO_OBJECT_PATH);
+    ladish_graph_add_client(g_studio.graph, playback_client, STUDIO_OBJECT_PATH);
+#endif
   }
 }
 
@@ -728,18 +749,6 @@ static void on_jack_server_disappeared(void)
   lash_info("JACK controller disappeared.");
 }
 
-#define studio_ptr ((struct studio *)this)
-
-uint64_t
-studio_get_graph_version(
-  void * this)
-{
-  //lash_info("studio_get_graph_version() called");
-  return 1;
-}
-
-#undef studio_ptr
-
 bool studio_init(void)
 {
   lash_info("studio object construct");
@@ -748,17 +757,13 @@ bool studio_init(void)
   if (g_studios_dir == NULL)
   {
     lash_error("catdup failed for '%s' and '%s'", g_base_dir, STUDIOS_DIR);
-    return false;
+    goto fail;
   }
 
   if (!ensure_dir_exist(g_studios_dir, 0700))
   {
-    free(g_studios_dir);
-    return false;
+    goto free_studios_dir;
   }
-
-  g_studio.graph_impl.this = &g_studio;
-  g_studio.graph_impl.get_graph_version = studio_get_graph_version;
 
   INIT_LIST_HEAD(&g_studio.all_connections);
   INIT_LIST_HEAD(&g_studio.all_ports);
@@ -779,7 +784,14 @@ bool studio_init(void)
   g_studio.name = NULL;
   g_studio.filename = NULL;
   g_studio.jack_running = false;
+
   studio_clear();
+
+  if (!ladish_graph_create(&g_studio.graph, STUDIO_OBJECT_PATH))
+  {
+    lash_error("ladish_graph_create() failed.");
+    goto free_studios_dir;
+  }
 
   if (!jack_proxy_init(
         on_jack_server_started,
@@ -788,11 +800,18 @@ bool studio_init(void)
         on_jack_server_disappeared))
   {
     lash_error("jack_proxy_init() failed.");
-    studio_clear();
-    return false;
+    goto graph_destroy;
   }
 
   return true;
+
+graph_destroy:
+  ladish_graph_destroy(g_studio.graph);
+free_studios_dir:
+  studio_clear();
+  free(g_studios_dir);
+fail:
+  return false;
 }
 
 void studio_uninit(void)
