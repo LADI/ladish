@@ -33,138 +33,123 @@
 #include "introspection.h"  /* g_dbus_interface_dtor_introspectable */
 #include "error.h"  /* lash_dbus_error() */
 
-static DBusHandlerResult
-object_path_handler(DBusConnection *connection,
-                    DBusMessage    *message,
-                    void           *data);
-
-static void
-object_path_handler_unregister(DBusConnection *conn,
-                               void           *data);
-
-struct dbus_object_path *
-dbus_object_path_new(const char *name,
-                void       *context,
-                int         num_ifaces,
-                            ...)
+struct dbus_object_path * dbus_object_path_new(const char *name, const interface_t * iface1_ptr, ...)
 {
-  if (!name || !name[0] || num_ifaces < 0)
-  {
-    lash_error("Invalid arguments");
-    return NULL;
-  }
+  struct dbus_object_path * opath_ptr;
+  va_list ap;
+  const interface_t * iface_src_ptr;
+  struct dbus_object_path_interface * iface_dst_ptr;
+  void * iface_context;
+  size_t len;
 
   lash_debug("Creating object path");
 
-  struct dbus_object_path *path;
-  va_list argp;
-  const interface_t **iface_pptr;
-
-  path = lash_malloc(1, sizeof(struct dbus_object_path));
-  path->name = lash_strdup(name);
-  path->interfaces = lash_malloc(num_ifaces + 2, sizeof(interface_t *));
-
-  va_start(argp, num_ifaces);
-
-  iface_pptr = path->interfaces;
-  *iface_pptr++ = &g_dbus_interface_dtor_introspectable;
-  while (num_ifaces > 0)
+  opath_ptr = malloc(sizeof(struct dbus_object_path));
+  if (opath_ptr == NULL)
   {
-    *iface_pptr++ = va_arg(argp, const interface_t *);
-    num_ifaces--;
+    lash_error("malloc() failed to allocate struct dbus_object_path.");
+    goto fail;
   }
-  *iface_pptr = NULL;
-
-  va_end(argp);
-
-  if ((path->introspection = introspection_new(path))) {
-    path->context = context;
-    return path;
+  
+  opath_ptr->name = strdup(name);
+  if (opath_ptr->name == NULL)
+  {
+    lash_error("malloc() failed to allocate struct dbus_object_path.");
+    goto free;
   }
 
-  lash_error("Failed to create object path");
-  dbus_object_path_destroy(NULL, path);
+  va_start(ap, iface1_ptr);
+  iface_src_ptr = iface1_ptr;
+  len = 0;
+  while (iface_src_ptr != NULL)
+  {
+    iface_context = va_arg(ap, void *);
+    iface_src_ptr = va_arg(ap, const interface_t *);
+    len++;
+  }
+  va_end(ap);
 
+  opath_ptr->ifaces = malloc((len + 2) * sizeof(struct dbus_object_path_interface));
+  if (opath_ptr->ifaces == NULL)
+  {
+    lash_error("malloc failed to allocate interfaces array");
+    goto free_name;
+  }
+
+  va_start(ap, iface1_ptr);
+  iface_src_ptr = iface1_ptr;
+  iface_dst_ptr = opath_ptr->ifaces;
+  while (iface_src_ptr != NULL)
+  {
+    iface_dst_ptr->iface = iface_src_ptr;
+    iface_dst_ptr->iface_context = va_arg(ap, void *);
+    iface_src_ptr = va_arg(ap, const interface_t *);
+    iface_dst_ptr++;
+    len--;
+  }
+  va_end(ap);
+
+  assert(len == 0);
+
+  iface_dst_ptr->iface = NULL;
+  opath_ptr->introspection = introspection_new(opath_ptr);
+  if (opath_ptr->introspection == NULL)
+  {
+    lash_error("introspection_new() failed.");
+    goto free_ifaces;
+  }
+
+  iface_dst_ptr->iface = &g_dbus_interface_dtor_introspectable;
+  iface_dst_ptr->iface_context = opath_ptr->introspection;
+  iface_dst_ptr++;
+  iface_dst_ptr->iface = NULL;
+
+  return opath_ptr;
+
+free_ifaces:
+  free(opath_ptr->ifaces);
+free_name:
+  free(opath_ptr->name);
+free:
+  free(opath_ptr);
+fail:
   return NULL;
 }
 
-bool
-dbus_object_path_register(DBusConnection *conn,
-                     struct dbus_object_path  *path)
-{
-  if (!conn || !path || !path->name || !path->interfaces) {
-    lash_debug("Invalid arguments");
-    return false;
-  }
-
-  lash_debug("Registering object path");
-
-  DBusObjectPathVTable vtable =
-  {
-    object_path_handler_unregister,
-    object_path_handler,
-    NULL, NULL, NULL, NULL
-  };
-
-  dbus_connection_register_object_path(conn, path->name,
-                                       &vtable, (void *) path);
-
-  return true;
-}
-
-void dbus_object_path_destroy(DBusConnection * connection_ptr, struct dbus_object_path * path_ptr)
+void dbus_object_path_destroy(DBusConnection * connection_ptr, struct dbus_object_path * opath_ptr)
 {
   lash_debug("Destroying object path");
 
-  if (path_ptr)
+  if (connection_ptr != NULL && !dbus_connection_unregister_object_path(connection_ptr, opath_ptr->name))
   {
-    if (connection_ptr != NULL && !dbus_connection_unregister_object_path(connection_ptr, path_ptr->name))
-    {
-      lash_error("dbus_connection_unregister_object_path() failed.");
-    }
-
-    if (path_ptr->name)
-    {
-      free(path_ptr->name);
-      path_ptr->name = NULL;
-    }
-
-    if (path_ptr->interfaces)
-    {
-      free(path_ptr->interfaces);
-      path_ptr->interfaces = NULL;
-    }
-
-    introspection_destroy(path_ptr);
-    free(path_ptr);
+    lash_error("dbus_connection_unregister_object_path() failed.");
   }
-#ifdef LASH_DEBUG
-  else
-  {
-    lash_debug("Nothing to destroy");
-  }
-#endif
+
+  introspection_destroy(opath_ptr);
+  free(opath_ptr->ifaces);
+  free(opath_ptr->name);
+  free(opath_ptr);
 }
 
+#define opath_ptr ((struct dbus_object_path *)data)
 
-static DBusHandlerResult
-object_path_handler(DBusConnection *connection,
-                    DBusMessage    *message,
-                    void           *data)
+static DBusHandlerResult dbus_object_path_handler(DBusConnection * connection, DBusMessage * message, void * data)
 {
-  const char *interface_name;
-  const interface_t **iface_pptr;
+  const char * iface_name;
+  const struct dbus_object_path_interface * iface_ptr;
   method_call_t call;
 
   /* Check if the message is a method call. If not, ignore it. */
-  if (dbus_message_get_type(message) != DBUS_MESSAGE_TYPE_METHOD_CALL) {
+  if (dbus_message_get_type(message) != DBUS_MESSAGE_TYPE_METHOD_CALL)
+  {
     goto handled;
   }
 
   /* Get the invoked method's name and make sure it's non-NULL. */
-  if (!(call.method_name = dbus_message_get_member(message))) {
-    lash_dbus_error(&call, LASH_DBUS_ERROR_UNKNOWN_METHOD,
-                    "Received method call with empty method name");
+  call.method_name = dbus_message_get_member(message);
+  if (call.method_name == NULL)
+  {
+    lash_dbus_error(&call, LASH_DBUS_ERROR_UNKNOWN_METHOD, "Received method call with empty method name");
     goto send_return;
   }
 
@@ -172,46 +157,49 @@ object_path_handler(DBusConnection *connection,
   call.connection = connection;
   call.message = message;
   call.interface = NULL; /* To be set by the default interface handler */
-  call.context = data;
   call.reply = NULL;
 
   /* Check if there's an interface specified for this method call. */
-  if ((interface_name = dbus_message_get_interface(message)))
+  iface_name = dbus_message_get_interface(message);
+  if (iface_name != NULL)
   {
-    for (iface_pptr = (const interface_t **) ((struct dbus_object_path *) data)->interfaces;
-         iface_pptr && *iface_pptr;
-         ++iface_pptr)
+    for (iface_ptr = opath_ptr->ifaces; iface_ptr->iface != NULL; iface_ptr++)
     {
-      if (strcmp(interface_name, (*iface_pptr)->name) == 0)
+      if (strcmp(iface_name, iface_ptr->iface->name) == 0)
       {
-        if ((*iface_pptr)->handler(*iface_pptr, &call))
+        call.context = iface_ptr->iface_context;
+        if (!iface_ptr->iface->handler(iface_ptr->iface, &call))
         {
-          goto send_return;
+          /* unknown method */
+          break;
         }
 
-        break;
+        goto send_return;
       }
     }
   }
   else
   {
-    /* No interface was specified so we have to try them all. This is
-    * dictated by the D-Bus specification which states that method calls
-    * omitting the interface must never be rejected.
-    */
-
-    for (iface_pptr = (const interface_t **) ((struct dbus_object_path *) data)->interfaces;
-         iface_pptr && *iface_pptr;
-         ++iface_pptr) {
-      if ((*iface_pptr)->handler(*iface_pptr, &call)) {
+    /* No interface was specified so we have to try them all. D-Bus spec states:
+     *
+     * Optionally, the message has an INTERFACE field giving the interface the method is a part of.
+     * In the absence of an INTERFACE field, if two interfaces on the same object have a method with
+     * the same name, it is undefined which of the two methods will be invoked.
+     * Implementations may also choose to return an error in this ambiguous case.
+     * However, if a method name is unique implementations must not require an interface field.
+     */
+    for (iface_ptr = opath_ptr->ifaces; iface_ptr->iface != NULL; iface_ptr++)
+    {
+      call.context = iface_ptr->iface_context;
+      if (!iface_ptr->iface->handler(iface_ptr->iface, &call))
+      {
+        /* known method */
         goto send_return;
       }
     }
   }
 
-  lash_dbus_error(&call, LASH_DBUS_ERROR_UNKNOWN_METHOD,
-                  "Method \"%s\" with signature \"%s\" on interface \"%s\" doesn't exist",
-                  call.method_name, dbus_message_get_signature(message), interface_name);
+  lash_dbus_error(&call, LASH_DBUS_ERROR_UNKNOWN_METHOD, "Method \"%s\" with signature \"%s\" on interface \"%s\" doesn't exist", call.method_name, dbus_message_get_signature(message), iface_name);
 
 send_return:
   method_return_send(&call);
@@ -220,15 +208,27 @@ handled:
   return DBUS_HANDLER_RESULT_HANDLED;
 }
 
-static void
-object_path_handler_unregister(DBusConnection *conn,
-                               void           *data)
+static void dbus_object_path_handler_unregister(DBusConnection * connection_ptr, void * data)
 {
 #ifdef LASH_DEBUG
-  struct dbus_object_path *path = data;
-  lash_debug("Message handler of object path %s was unregistered",
-             (path && path->name) ? path->name : "<unknown>");
+  lash_debug("Message handler of object path %s was unregistered", (opath_ptr && path->name) ? opath_ptr->name : "<unknown>");
 #endif /* LASH_DEBUG */
 }
 
-/* EOF */
+#undef opath_ptr
+
+bool dbus_object_path_register(DBusConnection * connection_ptr, struct dbus_object_path * opath_ptr)
+{
+  lash_debug("Registering object path");
+
+  DBusObjectPathVTable vtable =
+  {
+    dbus_object_path_handler_unregister,
+    dbus_object_path_handler,
+    NULL, NULL, NULL, NULL
+  };
+
+  dbus_connection_register_object_path(connection_ptr, opath_ptr->name, &vtable, opath_ptr);
+
+  return true;
+}

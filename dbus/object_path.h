@@ -35,15 +35,20 @@
 #include "types.h"
 #include "interface.h"
 
+struct dbus_object_path_interface
+{
+  const interface_t * iface;
+  void * iface_context;
+};
+
 struct dbus_object_path
 {
   char * name;
-  void * context;
   DBusMessage * introspection;
-  const interface_t ** interfaces;
+  struct dbus_object_path_interface * ifaces;
 };
 
-struct dbus_object_path * dbus_object_path_new(const char * name, void * context, int num_ifaces, ...);
+struct dbus_object_path * dbus_object_path_new(const char * name, const interface_t * iface, ...);
 bool dbus_object_path_register(DBusConnection * connection_ptr, struct dbus_object_path * opath_ptr);
 void dbus_object_path_destroy(DBusConnection * connection_ptr, struct dbus_object_path * opath_ptr);
 

@@ -51,7 +51,6 @@ extern const interface_t g_interface_studio;
 
 struct studio
 {
-  /* this must be first member of struct studio because object_path_new() assumes all interfaces have same context */
   struct graph_implementator graph_impl;
 
   struct list_head all_connections;        /* All connections (studio guts and all rooms). Including superconnections. */
@@ -501,7 +500,7 @@ studio_publish(void)
 
   assert(g_studio.name != NULL);
 
-  object = dbus_object_path_new(STUDIO_OBJECT_PATH, &g_studio, 2, &g_interface_studio, &g_interface_patchbay);
+  object = dbus_object_path_new(STUDIO_OBJECT_PATH, &g_interface_studio, &g_studio, &g_interface_patchbay, &g_studio.graph_impl, NULL);
   if (object == NULL)
   {
     lash_error("dbus_object_path_new() failed");

@@ -154,7 +154,7 @@ static bool connect_dbus(void)
     goto unref_connection;
   }
 
-  g_control_object = dbus_object_path_new(CONTROL_OBJECT_PATH, NULL, 1, &g_lashd_interface_control);
+  g_control_object = dbus_object_path_new(CONTROL_OBJECT_PATH, &g_lashd_interface_control, NULL, NULL);
   if (g_control_object == NULL)
   {
     goto unref_connection;
