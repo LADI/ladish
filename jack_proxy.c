@@ -601,7 +601,7 @@ jack_proxy_set_parameter_value(
     return false;
   }
 
-  if (!method_iter_append_variant(&top_iter, type, value_ptr))
+  if (!dbus_iter_append_variant(&top_iter, type, value_ptr))
   {
     dbus_message_unref(request_ptr);
     return false;

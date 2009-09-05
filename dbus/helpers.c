@@ -39,6 +39,158 @@
 DBusConnection * g_dbus_connection;
 DBusError g_dbus_error;
 
+bool dbus_iter_get_dict_entry(DBusMessageIter * iter, const char ** key_ptr, void * value_ptr, int * type_ptr, int * size_ptr)
+{
+  if (!iter || !key_ptr || !value_ptr || !type_ptr) {
+    lash_error("Invalid arguments");
+    return false;
+  }
+
+  DBusMessageIter dict_iter, variant_iter;
+
+  if (dbus_message_iter_get_arg_type(iter) != DBUS_TYPE_DICT_ENTRY) {
+    lash_error("Iterator does not point to a dict entry container");
+    return false;
+  }
+
+  dbus_message_iter_recurse(iter, &dict_iter);
+
+  if (dbus_message_iter_get_arg_type(&dict_iter) != DBUS_TYPE_STRING) {
+    lash_error("Cannot find key in dict entry container");
+    return false;
+  }
+
+  dbus_message_iter_get_basic(&dict_iter, key_ptr);
+
+  if (!dbus_message_iter_next(&dict_iter)
+      || dbus_message_iter_get_arg_type(&dict_iter) != DBUS_TYPE_VARIANT) {
+    lash_error("Cannot find variant container in dict entry");
+    return false;
+  }
+
+  dbus_message_iter_recurse(&dict_iter, &variant_iter);
+
+  *type_ptr = dbus_message_iter_get_arg_type(&variant_iter);
+  if (*type_ptr == DBUS_TYPE_INVALID) {
+    lash_error("Cannot find value in variant container");
+    return false;
+  }
+
+  if (*type_ptr == DBUS_TYPE_ARRAY) {
+    DBusMessageIter array_iter;
+    int n;
+
+    if (dbus_message_iter_get_element_type(&variant_iter)
+        != DBUS_TYPE_BYTE) {
+      lash_error("Dict entry value is a non-byte array");
+      return false;
+    }
+    *type_ptr = '-';
+
+    dbus_message_iter_recurse(&variant_iter, &array_iter);
+    dbus_message_iter_get_fixed_array(&array_iter, value_ptr, &n);
+
+    if (size_ptr)
+      *size_ptr = n;
+  } else
+    dbus_message_iter_get_basic(&variant_iter, value_ptr);
+
+  return true;
+}
+
+/*
+ * Append a variant type to a D-Bus message.
+ * Return false if something fails, true otherwise.
+ */
+bool dbus_iter_append_variant(DBusMessageIter * iter, int type, const void * arg)
+{
+  DBusMessageIter sub_iter;
+  char s[2];
+
+  s[0] = (char)type;
+  s[1] = '\0';
+
+  /* Open a variant container. */
+  if (!dbus_message_iter_open_container(iter, DBUS_TYPE_VARIANT, (const char *)s, &sub_iter))
+    return false;
+
+  /* Append the supplied value. */
+  if (!dbus_message_iter_append_basic(&sub_iter, type, arg))
+  {
+    dbus_message_iter_close_container(iter, &sub_iter);
+    return false;
+  }
+
+  /* Close the container. */
+  if (!dbus_message_iter_close_container(iter, &sub_iter))
+    return false;
+
+  return true;
+}
+
+static __inline__ bool dbus_iter_append_variant_raw(DBusMessageIter * iter, const void * buf, int len)
+{
+  DBusMessageIter variant_iter, array_iter;
+
+  /* Open a variant container. */
+  if (!dbus_message_iter_open_container(iter, DBUS_TYPE_VARIANT,
+                                        "ay", &variant_iter))
+    return false;
+
+  /* Open an array container. */
+  if (!dbus_message_iter_open_container(&variant_iter, DBUS_TYPE_ARRAY,
+                                        "y", &array_iter))
+    goto fail;
+
+  /* Append the supplied data. */
+  if (!dbus_message_iter_append_fixed_array(&array_iter, DBUS_TYPE_BYTE, buf, len)) {
+    dbus_message_iter_close_container(&variant_iter, &array_iter);
+    goto fail;
+  }
+
+  /* Close the containers. */
+  if (!dbus_message_iter_close_container(&variant_iter, &array_iter))
+    goto fail;
+  else if (!dbus_message_iter_close_container(iter, &variant_iter))
+    return false;
+
+  return true;
+
+fail:
+  dbus_message_iter_close_container(iter, &variant_iter);
+  return false;
+}
+
+bool dbus_iter_append_dict_entry(DBusMessageIter * iter, int type, const char * key, const void * value, int length)
+{
+  DBusMessageIter dict_iter;
+
+  if (!dbus_message_iter_open_container(iter, DBUS_TYPE_DICT_ENTRY, NULL, &dict_iter))
+    return false;
+
+  if (!dbus_message_iter_append_basic(&dict_iter, DBUS_TYPE_STRING, &key))
+    goto fail;
+
+  if (type == '-')
+  {
+    if (!dbus_iter_append_variant_raw(&dict_iter, value, length))
+      goto fail;
+  }
+  else if (!dbus_iter_append_variant(&dict_iter, type, value))
+  {
+    goto fail;
+  }
+
+  if (!dbus_message_iter_close_container(iter, &dict_iter))
+    return false;
+
+  return true;
+
+fail:
+  dbus_message_iter_close_container(iter, &dict_iter);
+  return false;
+}
+
 bool dbus_maybe_add_dict_entry_string(DBusMessageIter *dict_iter_ptr, const char * key, const char * value)
 {
   DBusMessageIter dict_entry_iter;
@@ -59,7 +211,7 @@ bool dbus_maybe_add_dict_entry_string(DBusMessageIter *dict_iter_ptr, const char
     return false;
   }
 
-  method_iter_append_variant(&dict_entry_iter, DBUS_TYPE_STRING, &value);
+  dbus_iter_append_variant(&dict_entry_iter, DBUS_TYPE_STRING, &value);
 
   if (!dbus_message_iter_close_container(dict_iter_ptr, &dict_entry_iter))
   {
@@ -84,7 +236,7 @@ bool dbus_add_dict_entry_uint32(DBusMessageIter * dict_iter_ptr, const char * ke
     return false;
   }
 
-  method_iter_append_variant(&dict_entry_iter, DBUS_TYPE_UINT32, &value);
+  dbus_iter_append_variant(&dict_entry_iter, DBUS_TYPE_UINT32, &value);
 
   if (!dbus_message_iter_close_container(dict_iter_ptr, &dict_entry_iter))
   {
@@ -109,7 +261,7 @@ bool dbus_add_dict_entry_bool(DBusMessageIter * dict_iter_ptr, const char * key,
     return false;
   }
 
-  method_iter_append_variant(&dict_entry_iter, DBUS_TYPE_BOOLEAN, &value);
+  dbus_iter_append_variant(&dict_entry_iter, DBUS_TYPE_BOOLEAN, &value);
 
   if (!dbus_message_iter_close_container(dict_iter_ptr, &dict_entry_iter))
   {

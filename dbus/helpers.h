@@ -35,6 +35,9 @@
 extern DBusConnection * g_dbus_connection;
 extern DBusError g_dbus_error;
 
+bool dbus_iter_get_dict_entry(DBusMessageIter * iter, const char ** key_ptr, void * value_ptr, int * type_ptr, int * size_ptr);
+bool dbus_iter_append_variant(DBusMessageIter * iter, int type, const void * arg);
+bool dbus_iter_append_dict_entry(DBusMessageIter *iter, int type, const char * key, const void * value, int length);
 bool dbus_maybe_add_dict_entry_string(DBusMessageIter *dict_iter_ptr, const char * key, const char * value);
 bool dbus_add_dict_entry_uint32(DBusMessageIter * dict_iter_ptr, const char * key, dbus_uint32_t value);
 bool dbus_add_dict_entry_bool(DBusMessageIter * dict_iter_ptr, const char * key, dbus_bool_t value);

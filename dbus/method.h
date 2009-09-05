@@ -60,11 +60,8 @@ void method_return_new_void(struct dbus_method_call * call_ptr);
 void method_return_new_single(struct dbus_method_call * call_ptr, int type, const void * arg);
 void method_return_new_valist(struct dbus_method_call * call_ptr, int type, ...);
 bool method_return_verify(DBusMessage * msg, const char ** str);
-bool method_iter_append_variant(DBusMessageIter *iter, int type, const void * arg);
-bool method_iter_append_dict_entry(DBusMessageIter *iter, int type, const char * key, const void * value, int length);
 void method_return_send(struct dbus_method_call * call_ptr);
 void method_default_handler(DBusPendingCall * pending, void * data);
-bool method_iter_get_dict_entry(DBusMessageIter * iter, const char ** key_ptr, void * value_ptr, int * type_ptr, int * size_ptr);
 
 #define METHOD_ARGS_BEGIN(method_name, descr) \
 static const struct dbus_method_arg_descriptor method_name ## _args_dtor[] = \
