@@ -28,13 +28,13 @@
  */
 
 #include "../common.h"
-#include "object_path.h"
+#include "helpers.h"
 #include "../common/safety.h"
 #include "error.h"  /* lash_dbus_error() */
 
 struct dbus_object_path_interface
 {
-  const interface_t * iface;
+  const struct dbus_interface_descriptor * iface;
   void * iface_context;
 };
 
@@ -52,10 +52,10 @@ introspection_new(struct dbus_object_path * opath_ptr)
 {
   char *xml_data, *buf_ptr;
   const struct dbus_object_path_interface * iface_ptr;
-  const method_t * method_ptr;
-  const method_arg_t * method_arg_ptr;
-  const signal_t * signal_ptr;
-  const signal_arg_t * signal_arg_ptr;
+  const struct dbus_method_descriptor * method_ptr;
+  const struct dbus_method_arg_descriptor * method_arg_ptr;
+  const struct dbus_signal_descriptor * signal_ptr;
+  const struct dbus_signal_arg_descriptor * signal_arg_ptr;
   DBusMessage * msg;
   DBusMessageIter iter;
 
@@ -150,7 +150,7 @@ introspection_destroy(struct dbus_object_path *path)
 #endif
 }
 
-static bool introspection_handler(const interface_t * interface, method_call_t * call_ptr)
+static bool introspection_handler(const struct dbus_interface_descriptor * interface, struct dbus_method_call * call_ptr)
 {
   if (strcmp(call_ptr->method_name, "Introspect") != 0)
   {
@@ -159,7 +159,7 @@ static bool introspection_handler(const interface_t * interface, method_call_t *
   }
 
   /* Try to construct the instrospection message */
-  call_ptr->reply = dbus_message_copy(call_ptr->context); /* context contains the reply message */
+  call_ptr->reply = dbus_message_copy(call_ptr->iface_context); /* context contains the reply message */
   if (call_ptr->reply == NULL)
   {
     lash_error("Ran out of memory trying to copy introspection message");
@@ -204,13 +204,11 @@ INTERFACE_BEGIN(g_dbus_interface_dtor_introspectable, "org.freedesktop.DBus.Intr
   INTERFACE_EXPOSE_METHODS
 INTERFACE_END
 
-extern const interface_t g_dbus_interface_dtor_introspectable;
-
-dbus_object_path dbus_object_path_new(const char *name, const interface_t * iface1_ptr, ...)
+dbus_object_path dbus_object_path_new(const char *name, const struct dbus_interface_descriptor * iface1_ptr, ...)
 {
   struct dbus_object_path * opath_ptr;
   va_list ap;
-  const interface_t * iface_src_ptr;
+  const struct dbus_interface_descriptor * iface_src_ptr;
   struct dbus_object_path_interface * iface_dst_ptr;
   void * iface_context;
   size_t len;
@@ -237,7 +235,7 @@ dbus_object_path dbus_object_path_new(const char *name, const interface_t * ifac
   while (iface_src_ptr != NULL)
   {
     iface_context = va_arg(ap, void *);
-    iface_src_ptr = va_arg(ap, const interface_t *);
+    iface_src_ptr = va_arg(ap, const struct dbus_interface_descriptor *);
     len++;
   }
   va_end(ap);
@@ -256,7 +254,7 @@ dbus_object_path dbus_object_path_new(const char *name, const interface_t * ifac
   {
     iface_dst_ptr->iface = iface_src_ptr;
     iface_dst_ptr->iface_context = va_arg(ap, void *);
-    iface_src_ptr = va_arg(ap, const interface_t *);
+    iface_src_ptr = va_arg(ap, const struct dbus_interface_descriptor *);
     iface_dst_ptr++;
     len--;
   }
@@ -310,7 +308,7 @@ static DBusHandlerResult dbus_object_path_handler(DBusConnection * connection, D
 {
   const char * iface_name;
   const struct dbus_object_path_interface * iface_ptr;
-  method_call_t call;
+  struct dbus_method_call call;
 
   /* Check if the message is a method call. If not, ignore it. */
   if (dbus_message_get_type(message) != DBUS_MESSAGE_TYPE_METHOD_CALL)
@@ -329,7 +327,7 @@ static DBusHandlerResult dbus_object_path_handler(DBusConnection * connection, D
   /* Initialize our data. */
   call.connection = connection;
   call.message = message;
-  call.interface = NULL; /* To be set by the default interface handler */
+  call.iface = NULL; /* To be set by the default interface handler */
   call.reply = NULL;
 
   /* Check if there's an interface specified for this method call. */
@@ -340,7 +338,7 @@ static DBusHandlerResult dbus_object_path_handler(DBusConnection * connection, D
     {
       if (strcmp(iface_name, iface_ptr->iface->name) == 0)
       {
-        call.context = iface_ptr->iface_context;
+        call.iface_context = iface_ptr->iface_context;
         if (!iface_ptr->iface->handler(iface_ptr->iface, &call))
         {
           /* unknown method */
@@ -363,7 +361,7 @@ static DBusHandlerResult dbus_object_path_handler(DBusConnection * connection, D
      */
     for (iface_ptr = opath_ptr->ifaces; iface_ptr->iface != NULL; iface_ptr++)
     {
-      call.context = iface_ptr->iface_context;
+      call.iface_context = iface_ptr->iface_context;
       if (!iface_ptr->iface->handler(iface_ptr->iface, &call))
       {
         /* known method */

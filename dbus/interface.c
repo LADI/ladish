@@ -27,53 +27,42 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "../common.h"
+#include "helpers.h"
 #include <string.h>
-
-#include "../common/debug.h"
-
-#include "interface.h"
 #include "error.h"
-#include "object_path.h"
 
 /*
  * Execute a method's function if the method specified in the method call
  * object exists in the method array. Return true if the method was found,
  * false otherwise.
- * TODO: rewrite description ^
  */
-bool
-interface_default_handler(const interface_t *interface,
-                          method_call_t     *call)
+bool dbus_interface_default_handler(const struct dbus_interface_descriptor * iface_ptr, struct dbus_method_call * call_ptr)
 {
-  const method_t *ptr;
+  const struct dbus_method_descriptor * method_ptr;
 
-  for (ptr = (const method_t *) interface->methods;
-       ptr && ptr->name;
-       ++ptr) {
-    if (strcmp(call->method_name, ptr->name) == 0) {
-      if (ptr->handler) {
-        call->interface = interface;
-        ptr->handler(call);
-
-        /* If the method handler didn't construct a return
-           message create a void one here */
-        // TODO: Also handle cases where the sender doesn't need a reply
-        if (!call->reply
-            && !(call->reply = dbus_message_new_method_return(call->message))) {
+  for (method_ptr = iface_ptr->methods; method_ptr->name != NULL; method_ptr++)
+  {
+    if (strcmp(call_ptr->method_name, method_ptr->name) == 0)
+    {
+      call_ptr->iface = iface_ptr;
+      method_ptr->handler(call_ptr);
+      /* If the method handler didn't construct a return message create a void one here */
+      // TODO: Also handle cases where the sender doesn't need a reply
+      if (call_ptr->reply == NULL)
+      {
+        call_ptr->reply = dbus_message_new_method_return(call_ptr->message);
+        if (call_ptr->reply == NULL)
+        {
           lash_error("Failed to construct void method return");
         }
-      } else {
-        lash_dbus_error(call, LASH_DBUS_ERROR_GENERIC,
-                        "Handler for method \"%s\" is NULL", ptr->name);
       }
 
-      /* Found method */
+      /* Known method */
       return true;
     }
   }
 
-  /* Didn't find method */
+  /* Unknown method */
   return false;
 }
-
-/* EOF */

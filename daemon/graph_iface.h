@@ -34,6 +34,6 @@ struct graph_implementator
   uint64_t (* get_graph_version)(void * this);
 };
 
-extern const interface_t g_interface_patchbay;
+extern const struct dbus_interface_descriptor g_interface_patchbay;
 
 #endif /* #ifndef PATCHBAY_H__30334B9A_8847_4E8C_AFF9_73DB13406C8E__INCLUDED */

@@ -27,20 +27,12 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <stdio.h>
-#include <dbus/dbus.h>
-
+#include "../common.h"
+#include "helpers.h"
+#include "error.h"
 #include "../common/debug.h"
 
-#include "error.h"
-#include "method.h"
-#include "interface.h"
-
-void
-lash_dbus_error(method_call_t *call_ptr,
-                const char    *err_name,
-                const char    *format,
-                               ...)
+void lash_dbus_error(struct dbus_method_call * call_ptr, const char * err_name, const char * format, ...)
 {
   va_list ap;
   char message[1024];
@@ -55,7 +47,7 @@ lash_dbus_error(method_call_t *call_ptr,
 
   if (call_ptr != NULL)
   {
-    interface_name = (call_ptr->interface && call_ptr->interface->name && call_ptr->interface->name[0]) ? call_ptr->interface->name : "<unknown>";
+    interface_name = (call_ptr->iface && call_ptr->iface->name && call_ptr->iface->name[0]) ? call_ptr->iface->name : "<unknown>";
 
     lash_error("In method %s.%s: %s", interface_name, call_ptr->method_name, message);
 

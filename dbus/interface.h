@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -30,42 +30,36 @@
 #ifndef __LASH_DBUS_INTERFACE_H__
 #define __LASH_DBUS_INTERFACE_H__
 
-#include <stdbool.h>
+typedef bool (* dbus_interface_handler)(const struct dbus_interface_descriptor *, struct dbus_method_call *);
 
-#include "types.h"
-#include "method.h"
-#include "signal.h"
-
-struct _interface
+struct dbus_interface_descriptor
 {
-  const char                *name;
-  const interface_handler_t  handler;
-  const method_t            *methods;
-  const signal_t            *signals;
+  const char * name;
+  dbus_interface_handler handler;
+  const struct dbus_method_descriptor * methods;
+  const struct dbus_signal_descriptor * signals;
 };
 
-bool
-interface_default_handler(const interface_t *interface,
-                          method_call_t     *call);
+bool dbus_interface_default_handler(const struct dbus_interface_descriptor * interface, struct dbus_method_call * call_ptr);
 
-#define INTERFACE_BEGIN(iface_var, iface_name) \
-const struct _interface iface_var =            \
-{                                              \
-        .name = iface_name,
+#define INTERFACE_BEGIN(iface_var, iface_name)     \
+const struct dbus_interface_descriptor iface_var = \
+{                                                  \
+  .name = iface_name,
 
-#define INTERFACE_DEFAULT_HANDLER              \
-        .handler = interface_default_handler,
+#define INTERFACE_DEFAULT_HANDLER               \
+  .handler = dbus_interface_default_handler,
 
-#define INTERFACE_HANDLER(handler_func)        \
-        .handler = handler_func,
+#define INTERFACE_HANDLER(handler_func)         \
+  .handler = handler_func,
 
-#define INTERFACE_EXPOSE_METHODS               \
-        .methods = methods_dtor,
+#define INTERFACE_EXPOSE_METHODS                \
+  .methods = methods_dtor,
 
-#define INTERFACE_EXPOSE_SIGNALS               \
-        .signals = signals_dtor,
+#define INTERFACE_EXPOSE_SIGNALS                \
+  .signals = signals_dtor,
 
-#define INTERFACE_END                          \
+#define INTERFACE_END                           \
 };
 
 #endif /* __LASH_DBUS_INTERFACE_H__ */

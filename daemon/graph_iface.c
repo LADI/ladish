@@ -29,9 +29,9 @@
 #include "graph_iface.h"
 #include "../dbus/error.h"
 
-#define impl_ptr ((struct graph_implementator *)call_ptr->context)
+#define impl_ptr ((struct graph_implementator *)call_ptr->iface_context)
 
-static void get_all_ports(method_call_t * call_ptr)
+static void get_all_ports(struct dbus_method_call * call_ptr)
 {
   DBusMessageIter iter, sub_iter;
 
@@ -63,7 +63,7 @@ fail:
   lash_error("Ran out of memory trying to construct method return");
 }
 
-static void get_graph(method_call_t * call_ptr)
+static void get_graph(struct dbus_method_call * call_ptr)
 {
   dbus_uint64_t known_version;
   dbus_uint64_t current_version;
@@ -306,32 +306,32 @@ exit:
   return;
 }
 
-static void connect_ports_by_name(method_call_t * call_ptr)
+static void connect_ports_by_name(struct dbus_method_call * call_ptr)
 {
   method_return_new_void(call_ptr);
 }
 
-static void connect_ports_by_id(method_call_t * call_ptr)
+static void connect_ports_by_id(struct dbus_method_call * call_ptr)
 {
   method_return_new_void(call_ptr);
 }
 
-static void disconnect_ports_by_name(method_call_t * call_ptr)
+static void disconnect_ports_by_name(struct dbus_method_call * call_ptr)
 {
   method_return_new_void(call_ptr);
 }
 
-static void disconnect_ports_by_id(method_call_t * call_ptr)
+static void disconnect_ports_by_id(struct dbus_method_call * call_ptr)
 {
   method_return_new_void(call_ptr);
 }
 
-static void disconnect_ports_by_connection_id(method_call_t * call_ptr)
+static void disconnect_ports_by_connection_id(struct dbus_method_call * call_ptr)
 {
   method_return_new_void(call_ptr);
 }
 
-static void get_client_pid(method_call_t * call_ptr)
+static void get_client_pid(struct dbus_method_call * call_ptr)
 {
   int64_t pid = 0;
   method_return_new_single(call_ptr, DBUS_TYPE_INT64, &pid);

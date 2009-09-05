@@ -29,10 +29,23 @@
 
 #include "../common.h"
 #include <stdarg.h>
-#include "signal.h"
+#include "helpers.h"
 
-static void
-signal_send(signal_msg_t *signal);
+struct dbus_signal_msg
+{
+  DBusConnection * connection;
+  DBusMessage * message;
+};
+
+static void signal_send(struct dbus_signal_msg * signal)
+{
+  if (!dbus_connection_send(signal->connection, signal->message, NULL))
+  {
+    lash_error("Ran out of memory trying to queue signal");
+  }
+
+  dbus_connection_flush(signal->connection);
+}
 
 void
 signal_new_single(
@@ -43,7 +56,7 @@ signal_new_single(
   int type,
   const void * arg)
 {
-  signal_msg_t signal;
+  struct dbus_signal_msg signal;
   DBusMessageIter iter;
 
   lash_debug("Sending signal %s.%s from %s", interface, name, path);
@@ -75,7 +88,7 @@ signal_new_valist(
   int type,
   ...)
 {
-  signal_msg_t signal;
+  struct dbus_signal_msg signal;
   va_list argp;
 
   lash_debug("Sending signal %s.%s from %s", interface, name, path);
@@ -98,15 +111,3 @@ signal_new_valist(
 
   lash_error("Ran out of memory trying to create new signal");
 }
-
-static void
-signal_send(signal_msg_t *signal)
-{
-  if (!dbus_connection_send(signal->connection, signal->message, NULL)) {
-    lash_error("Ran out of memory trying to queue signal");
-  }
-
-  dbus_connection_flush(signal->connection);
-}
-
-/* EOF */

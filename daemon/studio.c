@@ -47,7 +47,7 @@ char * g_studios_dir;
 
 #define STUDIO_HEADER_TEXT BASE_NAME " Studio configuration.\n"
 
-extern const interface_t g_interface_studio;
+extern const struct dbus_interface_descriptor g_interface_studio;
 
 struct studio
 {
@@ -1691,12 +1691,12 @@ void emit_studio_renamed()
   signal_new_valist(g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioRenamed", DBUS_TYPE_STRING, &g_studio.name, DBUS_TYPE_INVALID);
 }
 
-static void ladish_get_studio_name(method_call_t * call_ptr)
+static void ladish_get_studio_name(struct dbus_method_call * call_ptr)
 {
   method_return_new_single(call_ptr, DBUS_TYPE_STRING, &g_studio.name);
 }
 
-static void ladish_rename_studio(method_call_t * call_ptr)
+static void ladish_rename_studio(struct dbus_method_call * call_ptr)
 {
   const char * new_name;
   char * new_name_dup;
@@ -1724,7 +1724,7 @@ static void ladish_rename_studio(method_call_t * call_ptr)
   emit_studio_renamed();
 }
 
-static void ladish_save_studio(method_call_t * call_ptr)
+static void ladish_save_studio(struct dbus_method_call * call_ptr)
 {
   if (studio_save(call_ptr))
   {
@@ -1732,7 +1732,7 @@ static void ladish_save_studio(method_call_t * call_ptr)
   }
 }
 
-static void ladish_unload_studio(method_call_t * call_ptr)
+static void ladish_unload_studio(struct dbus_method_call * call_ptr)
 {
   lash_info("Unload studio request");
   studio_clear();
@@ -1770,7 +1770,7 @@ bool studio_new(void * call_ptr, const char * studio_name)
   return true;
 }
 
-static void ladish_stop_studio(method_call_t * call_ptr)
+static void ladish_stop_studio(struct dbus_method_call * call_ptr)
 {
   lash_info("Studio stop requested");
 
@@ -1784,7 +1784,7 @@ static void ladish_stop_studio(method_call_t * call_ptr)
   }
 }
 
-static void ladish_start_studio(method_call_t * call_ptr)
+static void ladish_start_studio(struct dbus_method_call * call_ptr)
 {
   lash_info("Studio start requested");
 

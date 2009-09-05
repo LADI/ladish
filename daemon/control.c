@@ -27,14 +27,13 @@
 
 #include "common.h"
 
-#include "../dbus/interface.h"
 #include "../dbus/error.h"
 #include "control.h"
 #include "../dbus_constants.h"
 
 #define INTERFACE_NAME IFACE_CONTROL
 
-static void ladish_is_studio_loaded(method_call_t * call_ptr)
+static void ladish_is_studio_loaded(struct dbus_method_call * call_ptr)
 {
   DBusMessageIter iter;
   dbus_bool_t is_loaded;
@@ -103,7 +102,7 @@ exit:
   return ret;
 }
 
-static void ladish_get_studio_list(method_call_t * call_ptr)
+static void ladish_get_studio_list(struct dbus_method_call * call_ptr)
 {
   DBusMessageIter iter, array_iter;
 
@@ -145,7 +144,7 @@ fail:
   lash_error("Ran out of memory trying to construct method return");
 }
 
-static void ladish_load_studio(method_call_t * call_ptr)
+static void ladish_load_studio(struct dbus_method_call * call_ptr)
 {
   const char * name;
 
@@ -164,7 +163,7 @@ static void ladish_load_studio(method_call_t * call_ptr)
   }
 }
 
-static void ladish_delete_studio(method_call_t * call_ptr)
+static void ladish_delete_studio(struct dbus_method_call * call_ptr)
 {
   const char * name;
 
@@ -183,7 +182,7 @@ static void ladish_delete_studio(method_call_t * call_ptr)
   }
 }
 
-static void ladish_new_studio(method_call_t * call_ptr)
+static void ladish_new_studio(struct dbus_method_call * call_ptr)
 {
   const char * name;
 
@@ -202,7 +201,7 @@ static void ladish_new_studio(method_call_t * call_ptr)
   }
 }
 
-static void ladish_get_application_list(method_call_t * call_ptr)
+static void ladish_get_application_list(struct dbus_method_call * call_ptr)
 {
   DBusMessageIter iter;
   DBusMessageIter array_iter;
@@ -276,7 +275,7 @@ fail:
   return;
 }
 
-static void ladish_exit(method_call_t * call_ptr)
+static void ladish_exit(struct dbus_method_call * call_ptr)
 {
   lash_info("Exit command received through D-Bus");
   g_quit = true;

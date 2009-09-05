@@ -30,26 +30,16 @@
 #ifndef __LASH_DBUS_SIGNAL_H__
 #define __LASH_DBUS_SIGNAL_H__
 
-#include <dbus/dbus.h>
-
-#include "types.h"
-
-struct _signal_msg
+struct dbus_signal_arg_descriptor
 {
-  DBusConnection *connection;
-  DBusMessage    *message;
+  const char * name;
+  const char * type;
 };
 
-struct _signal_arg
+struct dbus_signal_descriptor
 {
-  const char *name;
-  const char *type;
-};
-
-struct _signal
-{
-  const char         *name;
-  const signal_arg_t *args;
+  const char * name;
+  const struct dbus_signal_arg_descriptor * args;
 };
 
 void
@@ -70,8 +60,8 @@ signal_new_valist(
   int type,
   ...);
 
-#define SIGNAL_ARGS_BEGIN(signal_name, descr)                  \
-static const struct _signal_arg signal_name ## _args_dtor[] =  \
+#define SIGNAL_ARGS_BEGIN(signal_name, descr) \
+static const struct dbus_signal_arg_descriptor signal_name ## _args_dtor[] = \
 {
 
 #define SIGNAL_ARG_DESCRIBE(arg_name, arg_type, descr)         \
@@ -88,7 +78,7 @@ static const struct _signal_arg signal_name ## _args_dtor[] =  \
 };
 
 #define SIGNALS_BEGIN                                          \
-static const struct _signal signals_dtor[] =                   \
+static const struct dbus_signal_descriptor signals_dtor[] =    \
 {
 
 #define SIGNAL_DESCRIBE(signal_name)                           \

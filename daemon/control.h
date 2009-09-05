@@ -28,7 +28,7 @@
 #ifndef __LASHD_DBUS_IFACE_CONTROL_H__
 #define __LASHD_DBUS_IFACE_CONTROL_H__
 
-extern const interface_t g_lashd_interface_control;
+extern const struct dbus_interface_descriptor g_lashd_interface_control;
 
 void emit_studio_appeared();
 void emit_studio_disappeared();

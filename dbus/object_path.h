@@ -30,14 +30,9 @@
 #ifndef __LASH_DBUS_OBJECT_PATH_H__
 #define __LASH_DBUS_OBJECT_PATH_H__
 
-#include <dbus/dbus.h>
-
-#include "types.h"
-#include "interface.h"
-
 typedef struct dbus_object_path_tag { int unused; } * dbus_object_path;
 
-dbus_object_path dbus_object_path_new(const char * name, const interface_t * iface, ...);
+dbus_object_path dbus_object_path_new(const char * name, const struct dbus_interface_descriptor * iface, ...);
 bool dbus_object_path_register(DBusConnection * connection_ptr, dbus_object_path opath);
 void dbus_object_path_destroy(DBusConnection * connection_ptr, dbus_object_path opath);
 

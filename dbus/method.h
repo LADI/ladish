@@ -30,89 +30,44 @@
 #ifndef __LASH_DBUS_METHOD_H__
 #define __LASH_DBUS_METHOD_H__
 
-#include <stdbool.h>
-#include <dbus/dbus.h>
-
-#include "types.h"
-
-struct _method_msg
+struct dbus_method_call
 {
-  const service_t               *service;
-  DBusMessage                   *message;
-  void                          *context;
-  DBusFreeFunction               context_free_func;
-  DBusPendingCallNotifyFunction  return_handler;
+  DBusConnection * connection;
+  const char * method_name;
+  DBusMessage * message;
+  DBusMessage * reply;
+  const struct dbus_interface_descriptor * iface;
+  void * iface_context;
 };
 
-struct _method_call
+struct dbus_method_arg_descriptor
 {
-  DBusConnection    *connection;
-  const char        *method_name;
-  DBusMessage       *message;
-  DBusMessage       *reply;
-  const interface_t *interface;
-  void              *context;
-};
-
-struct _method_arg
-{
-  const char *name;
-  const char *type;
+  const char * name;
+  const char * type;
   const bool direction_in;      /* false == out, true == in */
 };
 
-struct _method
+typedef void (* dbus_method_handler)(struct dbus_method_call * call_ptr);
+
+struct dbus_method_descriptor
 {
-  const char             *name;
-  const method_handler_t  handler;
-  const method_arg_t     *args;
+  const char * name;
+  const dbus_method_handler handler;
+  const struct dbus_method_arg_descriptor * args;
 };
 
-void
-method_return_new_void(method_call_t *call);
+void method_return_new_void(struct dbus_method_call * call_ptr);
+void method_return_new_single(struct dbus_method_call * call_ptr, int type, const void * arg);
+void method_return_new_valist(struct dbus_method_call * call_ptr, int type, ...);
+bool method_return_verify(DBusMessage * msg, const char ** str);
+bool method_iter_append_variant(DBusMessageIter *iter, int type, const void * arg);
+bool method_iter_append_dict_entry(DBusMessageIter *iter, int type, const char * key, const void * value, int length);
+void method_return_send(struct dbus_method_call * call_ptr);
+void method_default_handler(DBusPendingCall * pending, void * data);
+bool method_iter_get_dict_entry(DBusMessageIter * iter, const char ** key_ptr, void * value_ptr, int * type_ptr, int * size_ptr);
 
-void
-method_return_new_single(method_call_t *call,
-                         int            type,
-                         const void    *arg);
-
-void
-method_return_new_valist(method_call_t *call,
-                         int            type,
-                                        ...);
-
-bool
-method_return_verify(DBusMessage  *msg,
-                     const char  **str);
-
-bool
-method_iter_append_variant(DBusMessageIter *iter,
-                           int              type,
-                           const void      *arg);
-
-bool
-method_iter_append_dict_entry(DBusMessageIter *iter,
-                              int              type,
-                              const char      *key,
-                              const void      *value,
-                              int              length);
-
-void
-method_return_send(method_call_t *call);
-
-void
-method_default_handler(DBusPendingCall *pending,
-                       void            *data);
-
-bool
-method_iter_get_dict_entry(DBusMessageIter  *iter,
-                           const char      **key_ptr,
-                           void             *value_ptr,
-                           int              *type_ptr,
-                           int              *size_ptr);
-
-#define METHOD_ARGS_BEGIN(method_name, descr)                   \
-static const struct _method_arg method_name ## _args_dtor[] =   \
+#define METHOD_ARGS_BEGIN(method_name, descr) \
+static const struct dbus_method_arg_descriptor method_name ## _args_dtor[] = \
 {
 
 #define METHOD_ARG_DESCRIBE_IN(arg_name, arg_type, descr)       \
@@ -136,7 +91,7 @@ static const struct _method_arg method_name ## _args_dtor[] =   \
 };
 
 #define METHODS_BEGIN                                           \
-static const struct _method methods_dtor[] =                    \
+static const struct dbus_method_descriptor methods_dtor[] =     \
 {
 
 #define METHOD_DESCRIBE(method_name, handler_name)              \

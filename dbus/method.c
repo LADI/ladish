@@ -37,12 +37,12 @@
  *
  * The operation can only fail due to lack of memory, in which case
  * there's no sense in trying to construct an error return. Instead,
- * call->reply will be set to NULL and handled in send_method_return().
+ * call_ptr->reply will be set to NULL and handled in send_method_return().
  */
 void
-method_return_new_void(method_call_t *call)
+method_return_new_void(struct dbus_method_call * call_ptr)
 {
-  if (!(call->reply = dbus_message_new_method_return(call->message))) {
+  if (!(call_ptr->reply = dbus_message_new_method_return(call_ptr->message))) {
     lash_error("Ran out of memory trying to construct method return");
   }
 }
@@ -54,21 +54,21 @@ method_return_new_void(method_call_t *call)
  *
  * The operation can only fail due to lack of memory, in which case
  * there's no sense in trying to construct an error return. Instead,
- * call->reply will be set to NULL and handled in send_method_return().
+ * call_ptr->reply will be set to NULL and handled in send_method_return().
  */
 void
-method_return_new_single(method_call_t *call,
+method_return_new_single(struct dbus_method_call * call_ptr,
                          int            type,
                          const void    *arg)
 {
-  if (!call || !arg) {
+  if (!call_ptr || !arg) {
     lash_error("Invalid arguments");
     return;
   }
 
-  call->reply = dbus_message_new_method_return(call->message);
+  call_ptr->reply = dbus_message_new_method_return(call_ptr->message);
 
-  if (!call->reply)
+  if (!call_ptr->reply)
     goto fail_no_mem;
 
   /* Void method return requested by caller. */
@@ -82,24 +82,24 @@ method_return_new_single(method_call_t *call,
 
   DBusMessageIter iter;
 
-  dbus_message_iter_init_append(call->reply, &iter);
+  dbus_message_iter_init_append(call_ptr->reply, &iter);
 
   if (dbus_message_iter_append_basic(&iter, type, arg))
     return;
 
-  dbus_message_unref(call->reply);
-  call->reply = NULL;
+  dbus_message_unref(call_ptr->reply);
+  call_ptr->reply = NULL;
 
 fail_no_mem:
   lash_error("Ran out of memory trying to construct method return");
 }
 
 void
-method_return_new_valist(method_call_t *call,
+method_return_new_valist(struct dbus_method_call * call_ptr,
                          int            type,
                                         ...)
 {
-  if (!call) {
+  if (!call_ptr) {
     lash_error("Call pointer is NULL");
     return;
   }
@@ -111,21 +111,21 @@ method_return_new_valist(method_call_t *call,
 
   va_list argp;
 
-  call->reply = dbus_message_new_method_return(call->message);
-  if (!call->reply)
+  call_ptr->reply = dbus_message_new_method_return(call_ptr->message);
+  if (!call_ptr->reply)
     goto fail_no_mem;
 
   va_start(argp, type);
 
-  if (dbus_message_append_args_valist(call->reply, type, argp)) {
+  if (dbus_message_append_args_valist(call_ptr->reply, type, argp)) {
     va_end(argp);
     return;
   }
 
   va_end(argp);
 
-  dbus_message_unref(call->reply);
-  call->reply = NULL;
+  dbus_message_unref(call_ptr->reply);
+  call_ptr->reply = NULL;
 
 fail_no_mem:
   lash_error("Ran out of memory trying to construct method return");
@@ -134,26 +134,26 @@ fail_no_mem:
 /*
  * Send a method return.
  *
- * If call->reply is NULL, i.e. a previous attempt to construct
+ * If call_ptr->reply is NULL, i.e. a previous attempt to construct
  * a return has failed, attempt to send a void return.
  */
 void
-method_return_send(method_call_t *call)
+method_return_send(struct dbus_method_call * call_ptr)
 {
-  if (call->reply) {
+  if (call_ptr->reply) {
   retry_send:
-    if (!dbus_connection_send(call->connection, call->reply, NULL))
+    if (!dbus_connection_send(call_ptr->connection, call_ptr->reply, NULL))
       lash_error("Ran out of memory trying to queue "
                  "method return");
     else
-      dbus_connection_flush(call->connection);
+      dbus_connection_flush(call_ptr->connection);
 
-    dbus_message_unref(call->reply);
-    call->reply = NULL;
+    dbus_message_unref(call_ptr->reply);
+    call_ptr->reply = NULL;
   } else {
     lash_debug("Message was NULL, trying to construct a void return");
 
-    if ((call->reply = dbus_message_new_method_return(call->message))) {
+    if ((call_ptr->reply = dbus_message_new_method_return(call_ptr->message))) {
       lash_debug("Constructed a void return, trying to queue it");
       goto retry_send;
     } else {

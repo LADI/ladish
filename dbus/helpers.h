@@ -63,6 +63,8 @@ dbus_unregister_object_signal_handler(
 
 #define DBUS_CALL_DEFAULT_TIMEOUT 1000 // in milliseconds
 
+#include "method.h"
+#include "signal.h"
 #include "interface.h"
 #include "object_path.h"
 

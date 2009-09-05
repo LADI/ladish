@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -30,8 +30,6 @@
 #ifndef __LASH_DBUS_ERROR_H__
 #define __LASH_DBUS_ERROR_H__
 
-#include "types.h"
-
 #define LASH_DBUS_ERROR_UNKNOWN_METHOD      DBUS_NAME_BASE ".Error.UnknownMethod"
 #define LASH_DBUS_ERROR_SERVER_NOT_RUNNING  DBUS_NAME_BASE ".Error.ServerNotRunning"
 #define LASH_DBUS_ERROR_INVALID_ARGS        DBUS_NAME_BASE ".Error.InvalidArgs"
@@ -43,10 +41,6 @@
 #define LASH_DBUS_ERROR_UNFINISHED_TASK     DBUS_NAME_BASE ".Error.UnfinishedTask"
 #define LASH_DBUS_ERROR_INVALID_TASK        DBUS_NAME_BASE ".Error.InvalidTask"
 
-void
-lash_dbus_error(method_call_t *call_ptr,
-                const char    *err_name,
-                const char    *format,
-                               ...);
+void lash_dbus_error(struct dbus_method_call * call_ptr, const char * err_name, const char * format, ...);
 
 #endif /* __LASH_DBUS_ERROR_H__ */
