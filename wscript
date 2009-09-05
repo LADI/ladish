@@ -242,7 +242,7 @@ def build(bld):
     # CLEANFILES = lash_wrap.c lash.py lash.pyc zynjacku.defs
     # EXTRA_DIST = test.py lash.i lash.py
     # lash_wrap.c lash.py: lash.i lash.h
-    # 	swig -o lash_wrap.c -I$(top_srcdir) -python $(top_srcdir)/$(subdir)/lash.i
+    #   swig -o lash_wrap.c -I$(top_srcdir) -python $(top_srcdir)/$(subdir)/lash.i
 
     #####################################################
     # gladish
@@ -370,12 +370,12 @@ def git_ver(self):
 cls = Task.task_type_from_func('git_ver', vars=[], func=git_ver, color='BLUE', before='cc')
 
 def always(self):
-	return RUN_ME
+    return RUN_ME
 cls.runnable_status = always
 
 def post_run(self):
-	sg = Utils.h_list(self.ver)
-	node = self.outputs[0]
-	variant = node.variant(self.env)
-	self.generator.bld.node_sigs[variant][node.id] = sg
+    sg = Utils.h_list(self.ver)
+    node = self.outputs[0]
+    variant = node.variant(self.env)
+    self.generator.bld.node_sigs[variant][node.id] = sg
 cls.post_run = post_run
