@@ -272,12 +272,12 @@ bool dbus_add_dict_entry_bool(DBusMessageIter * dict_iter_ptr, const char * key,
 }
 
 bool
-dbus_call_simple(
+dbus_call(
   const char * service,
   const char * object,
   const char * iface,
   const char * method,
-  char * input_signature,
+  const char * input_signature,
   ...)
 {
   DBusMessageIter iter;
@@ -291,7 +291,7 @@ dbus_call_simple(
   int type;
   DBusSignatureIter sig_iter;
 
-  //lash_info("dbus_call_simple('%s', '%s', '%s', '%s')", service, object, iface, method);
+  //lash_info("dbus_call('%s', '%s', '%s', '%s')", service, object, iface, method);
 
   ret = false;
   va_start(ap, input_signature);

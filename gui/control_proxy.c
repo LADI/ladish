@@ -67,7 +67,7 @@ static bool control_proxy_is_studio_loaded(bool * present_ptr)
 {
   dbus_bool_t present;
 
-  if (!dbus_call_simple(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "IsStudioLoaded", "", "b", &present))
+  if (!dbus_call(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "IsStudioLoaded", "", "b", &present))
   {
     return false;
   }
@@ -119,7 +119,7 @@ bool control_proxy_get_studio_list(void (* callback)(void * context, const char 
   DBusMessageIter array_iter;
   const char * studio_name;
 
-  if (!dbus_call_simple(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "GetStudioList", "", NULL, &reply_ptr))
+  if (!dbus_call(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "GetStudioList", "", NULL, &reply_ptr))
   {
     lash_error("GetStudioList() failed.");
     return false;
@@ -156,7 +156,7 @@ bool control_proxy_new_studio(const char * studio_name)
     studio_name = "";
   }
 
-  if (!dbus_call_simple(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "NewStudio", "s", &studio_name, ""))
+  if (!dbus_call(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "NewStudio", "s", &studio_name, ""))
   {
     lash_error("NewStudio() failed.");
     return false;
@@ -167,7 +167,7 @@ bool control_proxy_new_studio(const char * studio_name)
 
 bool control_proxy_load_studio(const char * studio_name)
 {
-  if (!dbus_call_simple(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "LoadStudio", "s", &studio_name, ""))
+  if (!dbus_call(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "LoadStudio", "s", &studio_name, ""))
   {
     lash_error("LoadStudio() failed.");
     return false;
@@ -178,7 +178,7 @@ bool control_proxy_load_studio(const char * studio_name)
 
 bool control_proxy_delete_studio(const char * studio_name)
 {
-  if (!dbus_call_simple(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "DeleteStudio", "s", &studio_name, ""))
+  if (!dbus_call(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "DeleteStudio", "s", &studio_name, ""))
   {
     lash_error("DeleteStudio() failed.");
     return false;
@@ -189,7 +189,7 @@ bool control_proxy_delete_studio(const char * studio_name)
 
 bool control_proxy_exit(void)
 {
-  if (!dbus_call_simple(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "Exit", "", ""))
+  if (!dbus_call(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "Exit", "", ""))
   {
     lash_error("Exit() failed.");
     return false;

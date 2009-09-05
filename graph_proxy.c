@@ -238,7 +238,7 @@ static void refresh_internal(struct graph * graph_ptr, bool force)
     version = graph_ptr->version;
   }
 
-  if (!dbus_call_simple(graph_ptr->service, graph_ptr->object, JACKDBUS_IFACE_PATCHBAY, "GetGraph", "t", &version, NULL, &reply_ptr))
+  if (!dbus_call(graph_ptr->service, graph_ptr->object, JACKDBUS_IFACE_PATCHBAY, "GetGraph", "t", &version, NULL, &reply_ptr))
   {
     lash_error("GetGraph() failed.");
     return;
@@ -544,7 +544,7 @@ graph_proxy_connect_ports(
   uint64_t port1_id,
   uint64_t port2_id)
 {
-  if (!dbus_call_simple(graph_ptr->service, graph_ptr->object, JACKDBUS_IFACE_PATCHBAY, "ConnectPortsByID", "tt", &port1_id, &port2_id, ""))
+  if (!dbus_call(graph_ptr->service, graph_ptr->object, JACKDBUS_IFACE_PATCHBAY, "ConnectPortsByID", "tt", &port1_id, &port2_id, ""))
   {
     lash_error("ConnectPortsByID() failed.");
   }
@@ -556,7 +556,7 @@ graph_proxy_disconnect_ports(
   uint64_t port1_id,
   uint64_t port2_id)
 {
-  if (!dbus_call_simple(graph_ptr->service, graph_ptr->object, JACKDBUS_IFACE_PATCHBAY, "DisconnectPortsByID", "tt", &port1_id, &port2_id, ""))
+  if (!dbus_call(graph_ptr->service, graph_ptr->object, JACKDBUS_IFACE_PATCHBAY, "DisconnectPortsByID", "tt", &port1_id, &port2_id, ""))
   {
     lash_error("DisconnectPortsByID() failed.");
   }
