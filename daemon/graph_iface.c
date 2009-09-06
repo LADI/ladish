@@ -145,7 +145,7 @@ static void get_graph(struct dbus_method_call * call_ptr)
         goto nomem_close_clients_array;
       }
 
-      id = ladish_client_get_graph_id(client_handle);
+      id = ladish_client_get_graph_id(client_handle, impl_ptr->opath);
       if (!dbus_message_iter_append_basic(&client_struct_iter, DBUS_TYPE_UINT64, &id))
       {
         goto nomem_close_client_struct;
@@ -412,8 +412,8 @@ void ladish_graph_add_client(ladish_graph_handle graph_handle, ladish_client_han
 {
   const char * name;
 
-  ladish_client_set_graph_id(client, impl_ptr->next_client_id++);
-  list_add_tail(ladish_client_get_graph_link(client), &impl_ptr->clients);
+  ladish_client_set_graph_id(client, impl_ptr->opath, impl_ptr->next_client_id++);
+  list_add_tail(ladish_client_get_graph_link(client, impl_ptr->opath), &impl_ptr->clients);
   impl_ptr->graph_version++;
 
   name = ladish_client_get_graph_name(client, impl_ptr->opath);

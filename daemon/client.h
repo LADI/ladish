@@ -56,23 +56,22 @@ ladish_client_drop_graph_name(
 void
 ladish_client_set_graph_id(
   ladish_client_handle client_handle,
+  const char * opath,
   uint64_t id);
 
 uint64_t
 ladish_client_get_graph_id(
-  ladish_client_handle client_handle);
+  ladish_client_handle client_handle,
+  const char * opath);
 
 struct list_head *
 ladish_client_get_graph_link(
-  ladish_client_handle client_handle);
+  ladish_client_handle client_handle,
+  const char * opath);
 
 ladish_client_handle
 ladish_client_get_by_graph_link(
   struct list_head * link);
-
-void
-ladish_client_detach(
-  ladish_client_handle client_handle);
 
 void
 ladish_client_destroy(

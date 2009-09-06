@@ -27,30 +27,30 @@
 #include "common.h"
 #include "client.h"
 
-struct ladish_client_graph_name
+struct ladish_client_graph_link
 {
-  struct list_head siblings;
+  struct list_head siblings_client;
+  struct list_head siblings_graph;
   char * graph_opath;
-  char * client_name;
+  char * name;
+  uint64_t id;
+  struct ladish_client * owner_ptr;
 };
 
 struct ladish_client
 {
   struct list_head siblings_studio_all;    /* link for the studio::all_clients list */
   struct list_head siblings_room;          /* link for the room::clients list */
-  struct list_head siblings_graph;
   struct list_head ports;                  /* List of ports that belong to the client */
-  uint64_t graph_id;
   uuid_t uuid;                             /* The UUID of the client */
   uint64_t jack_id;                        /* JACK client ID */
   char * jack_name;                        /* JACK name, not valid for virtual clients */
-  char * human_name;                       /* User assigned name, not valid for studio-room link clients */
   bool virtual:1;                          /* Whether client is virtual */
   bool link:1;                             /* Whether client is a studio-room link */
   bool system:1;                           /* Whether client is system (server in-process) */
   pid_t pid;                               /* process id. Not valid for system and virtual clients */
   struct room * room_ptr;                  /* Room this client belongs to. If NULL, client belongs only to studio guts. */
-  struct list_head graph_names;
+  struct list_head graph_links;            /* list of ladish_client_graph_link structs linked through ladish_client_graph_link::siblings_client */
 };
 
 bool
@@ -81,21 +81,39 @@ ladish_client_create(
 
   INIT_LIST_HEAD(&client_ptr->siblings_studio_all);
   INIT_LIST_HEAD(&client_ptr->siblings_room);
-  INIT_LIST_HEAD(&client_ptr->siblings_graph);
   INIT_LIST_HEAD(&client_ptr->ports);
-  client_ptr->graph_id = 0;
   client_ptr->jack_id = 0;
   client_ptr->jack_name = NULL;
-  client_ptr->human_name = NULL;
   client_ptr->virtual = virtual;
   client_ptr->link = link;
   client_ptr->system = system;
   client_ptr->pid = 0;
   client_ptr->room_ptr = NULL;
-  INIT_LIST_HEAD(&client_ptr->graph_names);
+  INIT_LIST_HEAD(&client_ptr->graph_links);
 
   *client_handle_ptr = (ladish_client_handle)client_ptr;
   return true;
+}
+
+static
+struct ladish_client_graph_link *
+ladish_client_find_graph_link(
+  struct ladish_client * client_ptr,
+  const char * opath)
+{
+  struct list_head * node_ptr;
+  struct ladish_client_graph_link * link_ptr;
+
+  list_for_each(node_ptr, &client_ptr->graph_links)
+  {
+    link_ptr = list_entry(node_ptr, struct ladish_client_graph_link, siblings_client);
+    if (strcmp(opath, link_ptr->graph_opath) == 0)
+    {
+      return link_ptr;
+    }
+  }
+
+  return NULL;
 }
 
 #define client_ptr ((struct ladish_client *)client_handle)
@@ -106,35 +124,38 @@ ladish_client_set_graph_name(
   const char * opath,
   const char * name)
 {
-  struct ladish_client_graph_name * graph_name;
+  struct ladish_client_graph_link * link_ptr;
 
   lash_info("setting %s name of client %p to '%s'", opath, client_handle, name);
 
-  graph_name = malloc(sizeof(struct ladish_client_graph_name));
-  if (graph_name == NULL)
+  link_ptr = malloc(sizeof(struct ladish_client_graph_link));
+  if (link_ptr == NULL)
   {
-    lash_error("malloc() failed for struct ladish_client_graph_name");
+    lash_error("malloc() failed for struct ladish_client_link_ptr");
     return false;
   }
 
-  graph_name->graph_opath = strdup(opath);
-  if (graph_name->graph_opath == NULL)
+  link_ptr->graph_opath = strdup(opath);
+  if (link_ptr->graph_opath == NULL)
   {
     lash_error("strdup() failed for graph opath");
-    free(graph_name);
+    free(link_ptr);
     return false;
   }
 
-  graph_name->client_name = strdup(name);
-  if (graph_name->client_name == NULL)
+  link_ptr->name = strdup(name);
+  if (link_ptr->name == NULL)
   {
     lash_error("strdup() failed for graph client name");
-    free(graph_name->graph_opath);
-    free(graph_name);
+    free(link_ptr->graph_opath);
+    free(link_ptr);
     return false;
   }
 
-  list_add_tail(&graph_name->siblings, &client_ptr->graph_names);
+  link_ptr->id = 0;
+  link_ptr->owner_ptr = client_ptr;
+  INIT_LIST_HEAD(&link_ptr->siblings_graph);
+  list_add_tail(&link_ptr->siblings_client, &client_ptr->graph_links);
   return true;
 }
 
@@ -143,20 +164,15 @@ ladish_client_drop_graph_name(
   ladish_client_handle client_handle,
   const char * opath)
 {
-  struct list_head * node_ptr;
-  struct ladish_client_graph_name * graph_name;
+  struct ladish_client_graph_link * link_ptr;
 
-  list_for_each(node_ptr, &client_ptr->graph_names)
+  link_ptr = ladish_client_find_graph_link(client_ptr, opath);
+  if (link_ptr != NULL)
   {
-    graph_name = list_entry(node_ptr, struct ladish_client_graph_name, siblings);
-    if (strcmp(opath, graph_name->graph_opath) == 0)
-    {
-      list_del(node_ptr);
-      free(graph_name->client_name);
-      free(graph_name->graph_opath);
-      free(graph_name);
-      return;
-    }
+    list_del(&link_ptr->siblings_client);
+    free(link_ptr->name);
+    free(link_ptr->graph_opath);
+    free(link_ptr);
   }
 }
 
@@ -165,16 +181,12 @@ ladish_client_get_graph_name(
   ladish_client_handle client_handle,
   const char * opath)
 {
-  struct list_head * node_ptr;
-  struct ladish_client_graph_name * graph_name;
+  struct ladish_client_graph_link * link_ptr;
 
-  list_for_each(node_ptr, &client_ptr->graph_names)
+  link_ptr = ladish_client_find_graph_link(client_ptr, opath);
+  if (link_ptr != NULL)
   {
-    graph_name = list_entry(node_ptr, struct ladish_client_graph_name, siblings);
-    if (strcmp(opath, graph_name->graph_opath) == 0)
-    {
-      return graph_name->client_name;
-    }
+      return link_ptr->name;
   }
 
   return NULL;
@@ -183,41 +195,66 @@ ladish_client_get_graph_name(
 void
 ladish_client_set_graph_id(
   ladish_client_handle client_handle,
+  const char * opath,
   uint64_t id)
 {
-  client_ptr->graph_id = id;
+  struct ladish_client_graph_link * link_ptr;
+
+  link_ptr = ladish_client_find_graph_link(client_ptr, opath);
+  if (link_ptr != NULL)
+  {
+    link_ptr->id = id;
+  }
+  else
+  {
+    assert(false);
+  }
 }
 
 uint64_t
 ladish_client_get_graph_id(
-  ladish_client_handle client_handle)
+  ladish_client_handle client_handle,
+  const char * opath)
 {
-  assert(client_ptr->graph_id != 0); /* nobody set it yet */
-  return client_ptr->graph_id;
+  struct ladish_client_graph_link * link_ptr;
+
+  link_ptr = ladish_client_find_graph_link(client_ptr, opath);
+  if (link_ptr != NULL)
+  {
+    assert(link_ptr->id != 0); /* nobody set it yet */
+    return link_ptr->id;
+  }
+  else
+  {
+    assert(false);
+    return 0;
+  }
 }
 
 struct list_head *
 ladish_client_get_graph_link(
-  ladish_client_handle client_handle)
+  ladish_client_handle client_handle,
+  const char * opath)
 {
-  return &client_ptr->siblings_graph;
+  struct ladish_client_graph_link * link_ptr;
+
+  link_ptr = ladish_client_find_graph_link(client_ptr, opath);
+  if (link_ptr == NULL)
+  {
+    assert(false);
+    return NULL;
+  }
+
+  return &link_ptr->siblings_graph;
 }
 
 ladish_client_handle
 ladish_client_get_by_graph_link(
   struct list_head * link)
 {
-  return (ladish_client_handle)list_entry(link, struct ladish_client, siblings_graph);
-}
-
-void
-ladish_client_detach(
-  ladish_client_handle client_handle)
-{
-  if (!list_empty(&client_ptr->siblings_graph))
-  {
-    list_del_init(&client_ptr->siblings_graph);
-  }
+  struct ladish_client_graph_link * link_ptr;
+  link_ptr = list_entry(link, struct ladish_client_graph_link, siblings_graph);
+  return (ladish_client_handle)link_ptr->owner_ptr;
 }
 
 void
@@ -225,32 +262,29 @@ ladish_client_destroy(
   ladish_client_handle client_handle)
 {
   struct list_head * node_ptr;
-  struct ladish_client_graph_name * graph_name;
+  struct ladish_client_graph_link * link_ptr;
 
-  ladish_client_detach(client_handle);
+  while (!list_empty(&client_ptr->graph_links))
+  {
+    node_ptr = client_ptr->graph_links.next;
+    list_del(node_ptr);
+    link_ptr = list_entry(node_ptr, struct ladish_client_graph_link, siblings_client);
+    if (!list_empty(&link_ptr->siblings_graph))
+    {
+      list_del_init(&link_ptr->siblings_graph);
+    }
+    free(link_ptr->name);
+    free(link_ptr->graph_opath);
+    free(link_ptr);
+  }
 
   assert(list_empty(&client_ptr->ports));
   assert(list_empty(&client_ptr->siblings_studio_all));
   assert(list_empty(&client_ptr->siblings_room));
 
-  while (!list_empty(&client_ptr->graph_names))
-  {
-    node_ptr = client_ptr->graph_names.next;
-    graph_name = list_entry(node_ptr, struct ladish_client_graph_name, siblings);
-    list_del(node_ptr);
-    free(graph_name->client_name);
-    free(graph_name->graph_opath);
-    free(graph_name);
-  }
-
   if (client_ptr->jack_name != NULL)
   {
     free(client_ptr->jack_name);
-  }
-
-  if (client_ptr->human_name != NULL)
-  {
-    free(client_ptr->human_name);
   }
 
   free(client_ptr);
