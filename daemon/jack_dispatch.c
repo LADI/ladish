@@ -25,6 +25,7 @@
  */
 
 #include "jack_dispatch.h"
+#include "../dbus_constants.h"
 
 struct jack_dispatcher
 {
@@ -71,20 +72,79 @@ static void client_disappeared(void * context, uint64_t id)
 
 static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, const char * port_name, bool is_input, bool is_terminal, bool is_midi)
 {
+  ladish_client_handle client;
+  ladish_port_handle port;
+  uint32_t type;
+  uint32_t flags;
+
   lash_info("port_appeared(%llu, %llu, %s (%s, %s))", (unsigned long long)client_id, (unsigned long long)port_id, port_name, is_input ? "in" : "out", is_midi ? "midi" : "audio");
 
   if (client_id == dispatcher_ptr->system_client_id)
   {
-    if (!is_input && dispatcher_ptr->system_capture_client == NULL)
+    if (!is_input)
     {
-      ladish_client_create(NULL, true, false, true, &dispatcher_ptr->system_capture_client);
-      ladish_graph_add_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_capture_client, "Hardware Capture");
+      if (dispatcher_ptr->system_capture_client == NULL)
+      {
+        if (!ladish_client_create(NULL, true, false, true, &dispatcher_ptr->system_capture_client))
+        {
+          lash_error("ladish_client_create() failed.");
+          return;
+        }
+
+        if (!ladish_graph_add_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_capture_client, "Hardware Capture"))
+        {
+          lash_error("ladish_graph_add_client() failed.");
+          ladish_graph_remove_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_capture_client, true);
+          dispatcher_ptr->system_capture_client = NULL;
+          return;
+        }
+      }
+
+      client = dispatcher_ptr->system_capture_client;
     }
-    else if (is_input && dispatcher_ptr->system_playback_client == NULL)
+    else
     {
-      ladish_client_create(NULL, true, false, true, &dispatcher_ptr->system_playback_client);
-      ladish_graph_add_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_playback_client, "Hardware Playback");
+      if (dispatcher_ptr->system_playback_client == NULL)
+      {
+        if (!ladish_client_create(NULL, true, false, true, &dispatcher_ptr->system_playback_client))
+        {
+          lash_error("ladish_client_create() failed.");
+          return;
+        }
+
+        if (!ladish_graph_add_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_playback_client, "Hardware Playback"))
+        {
+          ladish_graph_remove_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_playback_client, true);
+          dispatcher_ptr->system_playback_client = NULL;
+          return;
+        }
+      }
+
+      client = dispatcher_ptr->system_playback_client;
     }
+  }
+  else
+  {
+    return; /* TODO: find client by client_id */
+  }
+
+  type = is_midi ? JACKDBUS_PORT_TYPE_MIDI : JACKDBUS_PORT_TYPE_AUDIO;
+  flags = is_input ? JACKDBUS_PORT_FLAG_INPUT : JACKDBUS_PORT_FLAG_OUTPUT;
+  if (is_terminal)
+  {
+    flags |= JACKDBUS_PORT_FLAG_TERMINAL;
+  }
+
+  if (!ladish_port_create(NULL, &port))
+  {
+    lash_error("ladish_port_create() failed.");
+    return;
+  }
+
+  if (!ladish_graph_add_port(dispatcher_ptr->studio_graph, client, port, port_name, type, flags))
+  {
+    lash_error("ladish_graph_add_port() failed.");
+    return;
   }
 }
 
@@ -155,12 +215,12 @@ ladish_jack_dispatcher_destroy(
 
   if (dispatcher_ptr->system_capture_client != NULL)
   {
-    ladish_graph_remove_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_capture_client);
+    ladish_graph_remove_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_capture_client, true);
   }
 
   if (dispatcher_ptr->system_playback_client != NULL)
   {
-    ladish_graph_remove_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_playback_client);
+    ladish_graph_remove_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_playback_client, true);
   }
 }
 

@@ -201,6 +201,7 @@ def build(bld):
         'studio.c',
         'graph.c',
         'client.c',
+        'port.c',
         'jack_dispatch.c',
         ]:
         daemon.source.append(os.path.join("daemon", source))

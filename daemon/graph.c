@@ -30,18 +30,31 @@
 #include "../dbus/error.h"
 #include "../dbus_constants.h"
 
+struct ladish_graph_port
+{
+  struct list_head siblings_client;
+  struct list_head siblings_graph;
+  char * name;
+  uint32_t type;
+  uint32_t flags;
+  uint64_t id;
+  ladish_port_handle port;
+};
+
 struct ladish_graph_client
 {
   struct list_head siblings;
   char * name;
   uint64_t id;
   ladish_client_handle client;
+  struct list_head ports;
 };
 
 struct ladish_graph
 {
   char * opath;
   struct list_head clients;
+  struct list_head ports;
   uint64_t graph_version;
   uint64_t next_client_id;
   uint64_t next_port_id;
@@ -93,10 +106,10 @@ static void get_graph(struct dbus_method_call * call_ptr)
   struct list_head * client_node_ptr;
   struct ladish_graph_client * client_ptr;
   DBusMessageIter ports_array_iter;
-#if 0
+  struct list_head * port_node_ptr;
+  struct ladish_graph_port * port_ptr;
   DBusMessageIter port_struct_iter;
-  DBusMessageIter connection_struct_iter;
-#endif
+  //DBusMessageIter connection_struct_iter;
 
   //lash_info("get_graph() called");
 
@@ -167,10 +180,9 @@ static void get_graph(struct dbus_method_call * call_ptr)
         goto nomem_close_client_struct;
       }
 
-#if 0
       list_for_each(port_node_ptr, &client_ptr->ports)
       {
-        port_ptr = list_entry(port_node_ptr, struct jack_graph_port, siblings_client);
+        port_ptr = list_entry(port_node_ptr, struct ladish_graph_port, siblings_client);
 
         if (!dbus_message_iter_open_container(&ports_array_iter, DBUS_TYPE_STRUCT, NULL, &port_struct_iter))
         {
@@ -202,7 +214,6 @@ static void get_graph(struct dbus_method_call * call_ptr)
           goto nomem_close_ports_array;
         }
       }
-#endif
 
       if (!dbus_message_iter_close_container(&client_struct_iter, &ports_array_iter))
       {
@@ -305,13 +316,13 @@ nomem_close_connection_struct:
 nomem_close_connections_array:
   dbus_message_iter_close_container(&iter, &connections_array_iter);
   goto nomem_unlock;
+#endif
 
 nomem_close_port_struct:
   dbus_message_iter_close_container(&ports_array_iter, &port_struct_iter);
 
 nomem_close_ports_array:
   dbus_message_iter_close_container(&client_struct_iter, &ports_array_iter);
-#endif
 
 nomem_close_client_struct:
   dbus_message_iter_close_container(&clients_array_iter, &client_struct_iter);
@@ -380,6 +391,7 @@ bool ladish_graph_create(ladish_graph_handle * graph_handle_ptr, const char * op
   }
 
   INIT_LIST_HEAD(&graph_ptr->clients);
+  INIT_LIST_HEAD(&graph_ptr->ports);
 
   graph_ptr->graph_version = 1;
   graph_ptr->next_client_id = 1;
@@ -412,10 +424,51 @@ ladish_graph_find_client(
 }
 
 void
+ladish_graph_remove_port_internal(
+  struct ladish_graph * graph_ptr,
+  struct ladish_graph_client * client_ptr,
+  struct ladish_graph_port * port_ptr,
+  bool destroy)
+{
+  if (destroy)
+  {
+    ladish_port_destroy(port_ptr->port);
+  }
+
+  list_del(&port_ptr->siblings_client);
+  list_del(&port_ptr->siblings_graph);
+
+  lash_info("removing port '%s':'%s' (%llu:%llu)", client_ptr->name, port_ptr->name, (unsigned long long)client_ptr->id, (unsigned long long)port_ptr->id);
+  dbus_signal_emit(
+    g_dbus_connection,
+    graph_ptr->opath,
+    JACKDBUS_IFACE_PATCHBAY,
+    "PortDisappeared",
+    "ttsts",
+    &graph_ptr->graph_version,
+    &client_ptr->id,
+    &client_ptr->name,
+    &port_ptr->id,
+    &port_ptr->name);
+
+  free(port_ptr->name);
+  free(port_ptr);
+}
+
+void
 ladish_graph_remove_client_internal(
   struct ladish_graph * graph_ptr,
-  struct ladish_graph_client * client_ptr)
+  struct ladish_graph_client * client_ptr,
+  bool destroy_ports)
 {
+  struct ladish_graph_port * port_ptr;
+
+  while (!list_empty(&client_ptr->ports))
+  {
+    port_ptr = list_entry(client_ptr->ports.next, struct ladish_graph_port, siblings_client);
+    ladish_graph_remove_port_internal(graph_ptr, client_ptr, port_ptr, destroy_ports);
+  }
+
   graph_ptr->graph_version++;
   list_del(&client_ptr->siblings);
   lash_info("removing client '%s' (%llu)", client_ptr->name, (unsigned long long)client_ptr->id);
@@ -428,6 +481,7 @@ ladish_graph_remove_client_internal(
     &graph_ptr->graph_version,
     &client_ptr->id,
     &client_ptr->name);
+
   free(client_ptr->name);
   free(client_ptr);
 }
@@ -450,7 +504,7 @@ void ladish_graph_clear(ladish_graph_handle graph_handle)
   while (!list_empty(&graph_ptr->clients))
   {
     client_ptr = list_entry(graph_ptr->clients.next, struct ladish_graph_client, siblings);
-    ladish_graph_remove_client_internal(graph_ptr, client_ptr);
+    ladish_graph_remove_client_internal(graph_ptr, client_ptr, true);
   }
 }
 
@@ -468,7 +522,7 @@ bool ladish_graph_add_client(ladish_graph_handle graph_handle, ladish_client_han
   client_ptr = malloc(sizeof(struct ladish_graph_client));
   if (client_ptr == NULL)
   {
-    lash_error("malloc() failed for struct ladish_client_link_ptr");
+    lash_error("malloc() failed for struct ladish_graph_client");
     return false;
   }
 
@@ -483,6 +537,8 @@ bool ladish_graph_add_client(ladish_graph_handle graph_handle, ladish_client_han
   client_ptr->id = graph_ptr->next_client_id++;
   client_ptr->client = client_handle;
   graph_ptr->graph_version++;
+
+  INIT_LIST_HEAD(&client_ptr->ports);
 
   list_add_tail(&client_ptr->siblings, &graph_ptr->clients);
 
@@ -499,7 +555,11 @@ bool ladish_graph_add_client(ladish_graph_handle graph_handle, ladish_client_han
   return true;
 }
 
-void ladish_graph_remove_client(ladish_graph_handle graph_handle, ladish_client_handle client_handle)
+void
+ladish_graph_remove_client(
+  ladish_graph_handle graph_handle,
+  ladish_client_handle client_handle,
+  bool destroy_ports)
 {
   struct ladish_graph_client * client_ptr;
 
@@ -508,12 +568,76 @@ void ladish_graph_remove_client(ladish_graph_handle graph_handle, ladish_client_
   client_ptr = ladish_graph_find_client(graph_ptr, client_handle);
   if (client_ptr != NULL)
   {
-    ladish_graph_remove_client_internal(graph_ptr, client_ptr);
+    ladish_graph_remove_client_internal(graph_ptr, client_ptr, destroy_ports);
   }
   else
   {
     assert(false);
   }
+}
+
+bool
+ladish_graph_add_port(
+  ladish_graph_handle graph_handle,
+  ladish_client_handle client_handle,
+  ladish_port_handle port_handle,
+  const char * name,
+  uint32_t type,
+  uint32_t flags)
+{
+  struct ladish_graph_client * client_ptr;
+  struct ladish_graph_port * port_ptr;
+
+  client_ptr = ladish_graph_find_client(graph_ptr, client_handle);
+  if (client_ptr == NULL)
+  {
+    lash_error("cannot find client to add port to");
+    assert(false);
+    return false;
+  }
+
+  lash_info("adding port '%s':'%s' (%p)to graph %s", client_ptr->name, name, port_handle, graph_ptr->opath);
+
+  port_ptr = malloc(sizeof(struct ladish_graph_port));
+  if (port_ptr == NULL)
+  {
+    lash_error("malloc() failed for struct ladish_graph_port");
+    return false;
+  }
+
+  port_ptr->name = strdup(name);
+  if (port_ptr->name == NULL)
+  {
+    lash_error("strdup() failed for graph port name");
+    free(port_ptr);
+    return false;
+  }
+
+  port_ptr->type = type;
+  port_ptr->flags = flags;
+
+  port_ptr->id = graph_ptr->next_port_id++;
+  port_ptr->port = port_handle;
+  graph_ptr->graph_version++;
+
+  list_add_tail(&port_ptr->siblings_client, &client_ptr->ports);
+  list_add_tail(&port_ptr->siblings_graph, &graph_ptr->ports);
+
+  dbus_signal_emit(
+    g_dbus_connection,
+    graph_ptr->opath,
+    JACKDBUS_IFACE_PATCHBAY,
+    "PortAppeared",
+    "ttstsuu",
+    &graph_ptr->graph_version,
+    &client_ptr->id,
+    &client_ptr->name,
+    &port_ptr->id,
+    &port_ptr->name,
+    &flags,
+    &type);
+
+  return true;
 }
 
 #undef graph_ptr

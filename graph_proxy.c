@@ -35,15 +35,6 @@
 #include "dbus/helpers.h"
 #include "dbus_constants.h"
 
-#define JACKDBUS_PORT_FLAG_INPUT         0x00000001
-#define JACKDBUS_PORT_FLAG_OUTPUT        0x00000002
-#define JACKDBUS_PORT_FLAG_PHYSICAL      0x00000004
-#define JACKDBUS_PORT_FLAG_CAN_MONITOR   0x00000008
-#define JACKDBUS_PORT_FLAG_TERMINAL      0x00000010
-
-#define JACKDBUS_PORT_TYPE_AUDIO    0
-#define JACKDBUS_PORT_TYPE_MIDI     1
-
 struct monitor
 {
   struct list_head siblings;

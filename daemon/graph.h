@@ -28,6 +28,7 @@
 #define PATCHBAY_H__30334B9A_8847_4E8C_AFF9_73DB13406C8E__INCLUDED
 
 #include "client.h"
+#include "port.h"
 
 typedef struct ladish_graph_tag { int unused; } * ladish_graph_handle;
 
@@ -36,7 +37,27 @@ void ladish_graph_destroy(ladish_graph_handle graph_handle);
 void ladish_graph_clear(ladish_graph_handle graph_handle);
 void * ladish_graph_get_dbus_context(ladish_graph_handle graph_handle);
 bool ladish_graph_add_client(ladish_graph_handle graph_handle, ladish_client_handle client_handle, const char * name);
-void ladish_graph_remove_client(ladish_graph_handle graph_handle, ladish_client_handle client_handle);
+
+void
+ladish_graph_remove_client(
+  ladish_graph_handle graph_handle,
+  ladish_client_handle client_handle,
+  bool destroy_ports);
+
+bool
+ladish_graph_add_port(
+  ladish_graph_handle graph_handle,
+  ladish_client_handle client_handle,
+  ladish_port_handle port_handle,
+  const char * name,
+  uint32_t type,
+  uint32_t flags);
+
+void
+ladish_graph_remove_port(
+  ladish_graph_handle graph_handle,
+  ladish_client_handle client_handle,
+  ladish_port_handle port_handle);
 
 extern const struct dbus_interface_descriptor g_interface_patchbay;
 

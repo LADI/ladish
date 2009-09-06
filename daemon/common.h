@@ -38,29 +38,6 @@
 #define BASE_DIR "/." BASE_NAME
 extern char * g_base_dir;
 
-/* JACK port or virtual port */
-struct port
-{
-  struct list_head siblings_studio_all;    /* link for the studio::all_ports list */
-  struct list_head siblings_studio;        /* link for the studio::ports list */
-  struct list_head siblings_room;          /* link for the room::ports list */
-  struct list_head siblings_client;        /* link for the port list of the client */
-  struct list_head siblings_vclient;       /* link for the port list of the virtual client */
-
-  uuid_t uuid;                             /* The UUID of the port */
-  bool virtual;                            /* Whether the port is virtual or JACK port */
-  char * jack_name;                        /* JACK name (short). Not valid for virtual ports. */
-  uint64_t jack_id;                        /* JACK port ID. Not valid for virtual ports. */
-  char * human_name;                       /* User assigned name */
-
-  struct client * client_ptr;              /* JACK client this port belongs to. Not valid for virtual ports. */
-  struct client * vclient_ptr;             /* Virtual client this port belongs to. NULL if there is no virtual client associated. */
-
-  /* superconnections are not in these lists */
-  struct list_head input_connections;      /* list of input connections, i.e. connections that play to this port */
-  struct list_head output_connections;     /* list of output connections, i.e. connections that capture from this port */
-};
-
 /* connection between two ports */
 /* virtual connection is connection where at least one the ports is virtual */
 /* superconnection is connection that implements virtual connection chain at JACK level */
