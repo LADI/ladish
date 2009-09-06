@@ -154,7 +154,7 @@ void
 ladish_jack_dispatcher_destroy(
   ladish_jack_dispatcher_handle handle)
 {
-  graph_proxy_detach((graph_proxy_handle)handle, NULL);
+  graph_proxy_detach((graph_proxy_handle)handle, dispatcher_ptr);
 }
 
 #undef dispatcher_ptr
