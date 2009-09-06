@@ -493,8 +493,8 @@ bool ladish_graph_add_client(ladish_graph_handle graph_handle, ladish_client_han
     "ClientAppeared",
     "tts",
     &graph_ptr->graph_version,
-    &graph_ptr->next_client_id,
-    &name);
+    &client_ptr->id,
+    &client_ptr->name);
 
   return true;
 }
