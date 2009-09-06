@@ -29,7 +29,7 @@
 
 #include "common.h"
 #include "../graph_proxy.h"
-#include "graph_iface.h"
+#include "graph.h"
 
 typedef struct ladish_jack_dispatcher { int unused; } * ladish_jack_dispatcher_handle;
 

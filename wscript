@@ -199,7 +199,7 @@ def build(bld):
         'procfs.c',
         'control.c',
         'studio.c',
-        'graph_iface.c',
+        'graph.c',
         'client.c',
         'jack_dispatch.c',
         ]:

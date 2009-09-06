@@ -26,7 +26,7 @@
  */
 
 #include "common.h"
-#include "graph_iface.h"
+#include "graph.h"
 #include "../dbus/error.h"
 #include "../dbus_constants.h"
 

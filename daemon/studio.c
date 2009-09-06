@@ -35,7 +35,7 @@
 
 #include "../jack_proxy.h"
 #include "../graph_proxy.h"
-#include "graph_iface.h"
+#include "graph.h"
 #include "../dbus_constants.h"
 #include "control.h"
 #include "../catdup.h"
