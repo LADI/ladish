@@ -254,7 +254,7 @@ static void refresh_internal(struct graph * graph_ptr, bool force)
 
   dbus_message_iter_init(reply_ptr, &iter);
 
-  //info_msg((std::string)"version " + (char)dbus_message_iter_get_arg_type(&iter));
+  //lash_info_msg("version " + (char)dbus_message_iter_get_arg_type(&iter));
   dbus_message_iter_get_basic(&iter, &version);
   dbus_message_iter_next(&iter);
 
@@ -265,7 +265,7 @@ static void refresh_internal(struct graph * graph_ptr, bool force)
 
   clear(graph_ptr);
 
-  //info_msg(str(boost::format("got new graph version %llu") % version));
+  //lash_info("got new graph version %llu", (unsigned long long)version);
   graph_ptr->version = version;
 
   //info_msg((std::string)"clients " + (char)dbus_message_iter_get_arg_type(&iter));
@@ -604,9 +604,14 @@ message_hook(
       return DBUS_HANDLER_RESULT_HANDLED;
     }
 
-    //lash_info("ClientAppeared, %s(%llu)", client_name, client_id);
+    //lash_info("ClientAppeared, %s(%llu), graph %llu", client_name, client_id, new_graph_version);
 
-    client_appeared(graph_ptr, client_id, client_name);
+    if (new_graph_version > graph_ptr->version)
+    {
+      //lash_info("got new graph version %llu", (unsigned long long)new_graph_version);
+      graph_ptr->version = new_graph_version;
+      client_appeared(graph_ptr, client_id, client_name);
+    }
 
     return DBUS_HANDLER_RESULT_HANDLED;
   }
@@ -628,7 +633,12 @@ message_hook(
 
     //lash_info("ClientDisappeared, %s(%llu)", client_name, client_id);
 
-    client_disappeared(graph_ptr, client_id);
+    if (new_graph_version > graph_ptr->version)
+    {
+      //lash_info("got new graph version %llu", (unsigned long long)new_graph_version);
+      graph_ptr->version = new_graph_version;
+      client_disappeared(graph_ptr, client_id);
+    }
 
     return DBUS_HANDLER_RESULT_HANDLED;
   }
@@ -654,7 +664,12 @@ message_hook(
 
     //me->info_msg(str(boost::format("PortAppeared, %s(%llu):%s(%llu), %lu, %lu") % client_name % client_id % port_name % port_id % port_flags % port_type));
 
-    port_appeared(graph_ptr, client_id, port_id, port_name, port_flags, port_type);
+    if (new_graph_version > graph_ptr->version)
+    {
+      //lash_info("got new graph version %llu", (unsigned long long)new_graph_version);
+      graph_ptr->version = new_graph_version;
+      port_appeared(graph_ptr, client_id, port_id, port_name, port_flags, port_type);
+    }
 
     return DBUS_HANDLER_RESULT_HANDLED;
   }
@@ -678,7 +693,12 @@ message_hook(
 
     //me->info_msg(str(boost::format("PortDisappeared, %s(%llu):%s(%llu)") % client_name % client_id % port_name % port_id));
 
-    port_disappeared(graph_ptr, client_id, port_id);
+    if (new_graph_version > graph_ptr->version)
+    {
+      //lash_info("got new graph version %llu", (unsigned long long)new_graph_version);
+      graph_ptr->version = new_graph_version;
+      port_disappeared(graph_ptr, client_id, port_id);
+    }
 
     return DBUS_HANDLER_RESULT_HANDLED;
   }
@@ -705,7 +725,12 @@ message_hook(
       return DBUS_HANDLER_RESULT_HANDLED;
     }
 
-    ports_connected(graph_ptr, client_id, port_id, client2_id, port2_id);
+    if (new_graph_version > graph_ptr->version)
+    {
+      //lash_info("got new graph version %llu", (unsigned long long)new_graph_version);
+      graph_ptr->version = new_graph_version;
+      ports_connected(graph_ptr, client_id, port_id, client2_id, port2_id);
+    }
 
     return DBUS_HANDLER_RESULT_HANDLED;
   }
@@ -732,7 +757,12 @@ message_hook(
       return DBUS_HANDLER_RESULT_HANDLED;
     }
 
-    ports_disconnected(graph_ptr, client_id, port_id, client2_id, port2_id);
+    if (new_graph_version > graph_ptr->version)
+    {
+      //lash_info("got new graph version %llu", (unsigned long long)new_graph_version);
+      graph_ptr->version = new_graph_version;
+      ports_disconnected(graph_ptr, client_id, port_id, client2_id, port2_id);
+    }
 
     return DBUS_HANDLER_RESULT_HANDLED;
   }
