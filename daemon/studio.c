@@ -582,15 +582,12 @@ static bool studio_stop(void)
 void
 studio_clear(void)
 {
-  ladish_graph_clear(g_studio.graph);
+  jack_conf_clear();
+  studio_stop();
 
   g_studio.modified = false;
   g_studio.persisted = false;
   g_studio.automatic = false;
-
-  jack_conf_clear();
-
-  studio_stop();
 
   if (g_studio.dbus_object != NULL)
   {
@@ -678,7 +675,10 @@ void on_event_jack_stopped(void)
   if (g_studio.jack_dispatcher)
   {
     ladish_jack_dispatcher_destroy(g_studio.jack_dispatcher);
+    g_studio.jack_dispatcher = NULL;
   }
+
+  ladish_graph_clear(g_studio.graph);
 
   if (g_studio.jack_graph_proxy)
   {
@@ -792,7 +792,7 @@ bool studio_init(void)
   g_studio.filename = NULL;
   g_studio.jack_running = false;
 
-  studio_clear();
+  //studio_clear();
 
   if (!ladish_graph_create(&g_studio.graph, STUDIO_OBJECT_PATH))
   {

@@ -30,7 +30,15 @@
 #include "../dbus/error.h"
 #include "../dbus_constants.h"
 
-struct graph_implementator
+struct ladish_graph_client
+{
+  struct list_head siblings;
+  char * name;
+  uint64_t id;
+  ladish_client_handle client;
+};
+
+struct ladish_graph
 {
   char * opath;
   struct list_head clients;
@@ -40,7 +48,7 @@ struct graph_implementator
   uint64_t next_connection_id;
 };
 
-#define impl_ptr ((struct graph_implementator *)call_ptr->iface_context)
+#define graph_ptr ((struct ladish_graph *)call_ptr->iface_context)
 
 static void get_all_ports(struct dbus_method_call * call_ptr)
 {
@@ -83,9 +91,7 @@ static void get_graph(struct dbus_method_call * call_ptr)
   DBusMessageIter connections_array_iter;
   DBusMessageIter client_struct_iter;
   struct list_head * client_node_ptr;
-  ladish_client_handle client_handle;
-  uint64_t id;
-  const char * name;
+  struct ladish_graph_client * client_ptr;
   DBusMessageIter ports_array_iter;
 #if 0
   DBusMessageIter port_struct_iter;
@@ -112,7 +118,7 @@ static void get_graph(struct dbus_method_call * call_ptr)
 
   dbus_message_iter_init_append(call_ptr->reply, &iter);
 
-  current_version = impl_ptr->graph_version;
+  current_version = graph_ptr->graph_version;
   if (known_version > current_version)
   {
     lash_dbus_error(
@@ -136,24 +142,22 @@ static void get_graph(struct dbus_method_call * call_ptr)
 
   if (known_version < current_version)
   {
-    list_for_each(client_node_ptr, &impl_ptr->clients)
+    list_for_each(client_node_ptr, &graph_ptr->clients)
     {
-      client_handle = ladish_client_get_by_graph_link(client_node_ptr);
+      client_ptr = list_entry(client_node_ptr, struct ladish_graph_client, siblings);
 
       if (!dbus_message_iter_open_container (&clients_array_iter, DBUS_TYPE_STRUCT, NULL, &client_struct_iter))
       {
         goto nomem_close_clients_array;
       }
 
-      id = ladish_client_get_graph_id(client_handle, impl_ptr->opath);
-      if (!dbus_message_iter_append_basic(&client_struct_iter, DBUS_TYPE_UINT64, &id))
+      if (!dbus_message_iter_append_basic(&client_struct_iter, DBUS_TYPE_UINT64, &client_ptr->id))
       {
         goto nomem_close_client_struct;
       }
 
-      name = ladish_client_get_graph_name(client_handle, impl_ptr->opath);
-      lash_info("client '%s' (%u)", name, (unsigned int)id);
-      if (!dbus_message_iter_append_basic(&client_struct_iter, DBUS_TYPE_STRING, &name))
+      lash_info("client '%s' (%llu)", client_ptr->name, (unsigned long long)client_ptr->id);
+      if (!dbus_message_iter_append_basic(&client_struct_iter, DBUS_TYPE_STRING, &client_ptr->name))
       {
         goto nomem_close_client_struct;
       }
@@ -355,52 +359,99 @@ static void get_client_pid(struct dbus_method_call * call_ptr)
   method_return_new_single(call_ptr, DBUS_TYPE_INT64, &pid);
 }
 
-#undef impl_ptr
+#undef graph_ptr
 
 bool ladish_graph_create(ladish_graph_handle * graph_handle_ptr, const char * opath)
 {
-  struct graph_implementator * impl_ptr;
+  struct ladish_graph * graph_ptr;
 
-  impl_ptr = malloc(sizeof(struct graph_implementator));
-  if (impl_ptr == NULL)
+  graph_ptr = malloc(sizeof(struct ladish_graph));
+  if (graph_ptr == NULL)
   {
     lash_error("malloc() failed to allocate struct graph_implementator");
     return false;
   }
 
-  impl_ptr->opath = strdup(opath);
-  if (impl_ptr->opath == NULL)
+  graph_ptr->opath = strdup(opath);
+  if (graph_ptr->opath == NULL)
   {
-    free(impl_ptr);
+    free(graph_ptr);
     return false;
   }
 
-  INIT_LIST_HEAD(&impl_ptr->clients);
+  INIT_LIST_HEAD(&graph_ptr->clients);
 
-  impl_ptr->graph_version = 1;
-  impl_ptr->next_client_id = 1;
-  impl_ptr->next_port_id = 1;
-  impl_ptr->next_connection_id = 1;
+  graph_ptr->graph_version = 1;
+  graph_ptr->next_client_id = 1;
+  graph_ptr->next_port_id = 1;
+  graph_ptr->next_connection_id = 1;
 
-  *graph_handle_ptr = (ladish_graph_handle)impl_ptr;
+  *graph_handle_ptr = (ladish_graph_handle)graph_ptr;
   return true;
 }
 
-#define impl_ptr ((struct graph_implementator *)graph_handle)
+static
+struct ladish_graph_client *
+ladish_graph_find_client(
+  struct ladish_graph * graph_ptr,
+  ladish_client_handle client)
+{
+  struct list_head * node_ptr;
+  struct ladish_graph_client * client_ptr;
+
+  list_for_each(node_ptr, &graph_ptr->clients)
+  {
+    client_ptr = list_entry(node_ptr, struct ladish_graph_client, siblings);
+    if (client_ptr->client == client)
+    {
+      return client_ptr;
+    }
+  }
+
+  return NULL;
+}
+
+void
+ladish_graph_remove_client_internal(
+  struct ladish_graph * graph_ptr,
+  struct ladish_graph_client * client_ptr)
+{
+  graph_ptr->graph_version++;
+  list_del(&client_ptr->siblings);
+  lash_info("removing client '%s' (%llu)", client_ptr->name, (unsigned long long)client_ptr->id);
+  dbus_signal_emit(
+    g_dbus_connection,
+    graph_ptr->opath,
+    JACKDBUS_IFACE_PATCHBAY,
+    "ClientDisappeared",
+    "tts",
+    &graph_ptr->graph_version,
+    &client_ptr->id,
+    &client_ptr->name);
+  free(client_ptr->name);
+  free(client_ptr);
+}
+
+#define graph_ptr ((struct ladish_graph *)graph_handle)
 
 void ladish_graph_destroy(ladish_graph_handle graph_handle)
 {
-  free(impl_ptr->opath);
-  free(impl_ptr);
-}
-
-const char * ladish_graph_get_opath(ladish_graph_handle graph_handle)
-{
-  return impl_ptr->opath;
+  ladish_graph_clear(graph_handle);
+  free(graph_ptr->opath);
+  free(graph_ptr);
 }
 
 void ladish_graph_clear(ladish_graph_handle graph_handle)
 {
+  struct ladish_graph_client * client_ptr;
+
+  lash_info("ladish_graph_clear() called.");
+
+  while (!list_empty(&graph_ptr->clients))
+  {
+    client_ptr = list_entry(graph_ptr->clients.next, struct ladish_graph_client, siblings);
+    ladish_graph_remove_client_internal(graph_ptr, client_ptr);
+  }
 }
 
 void * ladish_graph_get_dbus_context(ladish_graph_handle graph_handle)
@@ -408,29 +459,64 @@ void * ladish_graph_get_dbus_context(ladish_graph_handle graph_handle)
   return graph_handle;
 }
 
-void ladish_graph_add_client(ladish_graph_handle graph_handle, ladish_client_handle client)
+bool ladish_graph_add_client(ladish_graph_handle graph_handle, ladish_client_handle client_handle, const char * name)
 {
-  const char * name;
+  struct ladish_graph_client * client_ptr;
 
-  ladish_client_set_graph_id(client, impl_ptr->opath, impl_ptr->next_client_id++);
-  list_add_tail(ladish_client_get_graph_link(client, impl_ptr->opath), &impl_ptr->clients);
-  impl_ptr->graph_version++;
+  lash_info("adding client '%s' (%p) to graph %s", name, client_handle, graph_ptr->opath);
 
-  name = ladish_client_get_graph_name(client, impl_ptr->opath);
-  lash_info("adding client '%s' (%p)", name, client);
-  assert(name != NULL);
+  client_ptr = malloc(sizeof(struct ladish_graph_client));
+  if (client_ptr == NULL)
+  {
+    lash_error("malloc() failed for struct ladish_client_link_ptr");
+    return false;
+  }
+
+  client_ptr->name = strdup(name);
+  if (client_ptr->name == NULL)
+  {
+    lash_error("strdup() failed for graph client name");
+    free(client_ptr);
+    return false;
+  }
+
+  client_ptr->id = graph_ptr->next_client_id++;
+  client_ptr->client = client_handle;
+  graph_ptr->graph_version++;
+
+  list_add_tail(&client_ptr->siblings, &graph_ptr->clients);
+
   dbus_signal_emit(
     g_dbus_connection,
-    impl_ptr->opath,
+    graph_ptr->opath,
     JACKDBUS_IFACE_PATCHBAY,
     "ClientAppeared",
     "tts",
-    &impl_ptr->graph_version,
-    &impl_ptr->next_client_id,
+    &graph_ptr->graph_version,
+    &graph_ptr->next_client_id,
     &name);
+
+  return true;
 }
 
-#undef impl_ptr
+void ladish_graph_remove_client(ladish_graph_handle graph_handle, ladish_client_handle client_handle)
+{
+  struct ladish_graph_client * client_ptr;
+
+  lash_info("ladish_graph_remove_client() called.");
+
+  client_ptr = ladish_graph_find_client(graph_ptr, client_handle);
+  if (client_ptr != NULL)
+  {
+    ladish_graph_remove_client_internal(graph_ptr, client_ptr);
+  }
+  else
+  {
+    assert(false);
+  }
+}
+
+#undef graph_ptr
 
 METHOD_ARGS_BEGIN(GetAllPorts, "Get all ports")
   METHOD_ARG_DESCRIBE_IN("ports_list", "as", "List of all ports")

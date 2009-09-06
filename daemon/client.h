@@ -37,42 +37,6 @@ ladish_client_create(
   bool system,
   ladish_client_handle * client_handle_ptr);
 
-bool
-ladish_client_set_graph_name(
-  ladish_client_handle client_handle,
-  const char * opath,
-  const char * name);
-
-const char *
-ladish_client_get_graph_name(
-  ladish_client_handle client_handle,
-  const char * opath);
-
-void
-ladish_client_drop_graph_name(
-  ladish_client_handle client_handle,
-  const char * opath);
-
-void
-ladish_client_set_graph_id(
-  ladish_client_handle client_handle,
-  const char * opath,
-  uint64_t id);
-
-uint64_t
-ladish_client_get_graph_id(
-  ladish_client_handle client_handle,
-  const char * opath);
-
-struct list_head *
-ladish_client_get_graph_link(
-  ladish_client_handle client_handle,
-  const char * opath);
-
-ladish_client_handle
-ladish_client_get_by_graph_link(
-  struct list_head * link);
-
 void
 ladish_client_destroy(
   ladish_client_handle client_handle);

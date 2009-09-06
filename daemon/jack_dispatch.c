@@ -55,8 +55,7 @@ static void client_appeared(void * context, uint64_t id, const char * name)
   else
   {
     ladish_client_create(NULL, true, false, true, &client);
-    ladish_client_set_graph_name(client, ladish_graph_get_opath(dispatcher_ptr->studio_graph), name);
-    ladish_graph_add_client(dispatcher_ptr->studio_graph, client);
+    ladish_graph_add_client(dispatcher_ptr->studio_graph, client, name);
   }
 }
 
@@ -79,14 +78,12 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
     if (!is_input && dispatcher_ptr->system_capture_client == NULL)
     {
       ladish_client_create(NULL, true, false, true, &dispatcher_ptr->system_capture_client);
-      ladish_client_set_graph_name(dispatcher_ptr->system_capture_client, ladish_graph_get_opath(dispatcher_ptr->studio_graph), "Hardware Capture");
-      ladish_graph_add_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_capture_client);
+      ladish_graph_add_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_capture_client, "Hardware Capture");
     }
     else if (is_input && dispatcher_ptr->system_playback_client == NULL)
     {
       ladish_client_create(NULL, true, false, true, &dispatcher_ptr->system_playback_client);
-      ladish_client_set_graph_name(dispatcher_ptr->system_playback_client, ladish_graph_get_opath(dispatcher_ptr->studio_graph), "Hardware Playback");
-      ladish_graph_add_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_playback_client);
+      ladish_graph_add_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_playback_client, "Hardware Playback");
     }
   }
 }
@@ -155,6 +152,16 @@ ladish_jack_dispatcher_destroy(
   ladish_jack_dispatcher_handle handle)
 {
   graph_proxy_detach((graph_proxy_handle)handle, dispatcher_ptr);
+
+  if (dispatcher_ptr->system_capture_client != NULL)
+  {
+    ladish_graph_remove_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_capture_client);
+  }
+
+  if (dispatcher_ptr->system_playback_client != NULL)
+  {
+    ladish_graph_remove_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_playback_client);
+  }
 }
 
 #undef dispatcher_ptr
