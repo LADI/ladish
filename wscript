@@ -203,6 +203,7 @@ def build(bld):
         'client.c',
         'port.c',
         'jack_dispatch.c',
+        'dict.c',
         ]:
         daemon.source.append(os.path.join("daemon", source))
 
