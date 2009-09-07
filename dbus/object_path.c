@@ -76,31 +76,37 @@ introspection_new(struct dbus_object_path * opath_ptr)
   for (iface_ptr = opath_ptr->ifaces; iface_ptr->iface != NULL; iface_ptr++)
   {
     write_buf("  <interface name=\"%s\">\n", iface_ptr->iface->name);
-    /* Add the interface's methods. */
-    for (method_ptr = iface_ptr->iface->methods; method_ptr->name != NULL; method_ptr++)
+    if (iface_ptr->iface->methods != NULL)
     {
-      write_buf("    <method name=\"%s\">\n", method_ptr->name);
-      /* Add the method's arguments. */
-      for (method_arg_ptr = method_ptr->args; method_arg_ptr->name != NULL; method_arg_ptr++)
+      /* Add the interface's methods. */
+      for (method_ptr = iface_ptr->iface->methods; method_ptr->name != NULL; method_ptr++)
       {
-        write_buf(
-          "      <arg name=\"%s\" type=\"%s\" direction=\"%s\" />\n",
-          method_arg_ptr->name,
-          method_arg_ptr->type,
-          method_arg_ptr->direction_in ? "in" : "out");
+        write_buf("    <method name=\"%s\">\n", method_ptr->name);
+        /* Add the method's arguments. */
+        for (method_arg_ptr = method_ptr->args; method_arg_ptr->name != NULL; method_arg_ptr++)
+        {
+          write_buf(
+            "      <arg name=\"%s\" type=\"%s\" direction=\"%s\" />\n",
+            method_arg_ptr->name,
+            method_arg_ptr->type,
+            method_arg_ptr->direction_in ? "in" : "out");
+        }
+        write_buf("    </method>\n");
       }
-      write_buf("    </method>\n");
     }
-    /* Add the interface's signals. */
-    for (signal_ptr = iface_ptr->iface->signals; signal_ptr->name != NULL; signal_ptr++)
+    if (iface_ptr->iface->signals != NULL)
     {
-      write_buf("    <signal name=\"%s\">\n", signal_ptr->name);
-      /* Add the signal's arguments. */
-      for (signal_arg_ptr = signal_ptr->args; signal_arg_ptr->name != NULL; signal_arg_ptr++)
+      /* Add the interface's signals. */
+      for (signal_ptr = iface_ptr->iface->signals; signal_ptr->name != NULL; signal_ptr++)
       {
-        write_buf("      <arg name=\"%s\" type=\"%s\" />\n", signal_arg_ptr->name, signal_arg_ptr->type);
+        write_buf("    <signal name=\"%s\">\n", signal_ptr->name);
+        /* Add the signal's arguments. */
+        for (signal_arg_ptr = signal_ptr->args; signal_arg_ptr->name != NULL; signal_arg_ptr++)
+        {
+          write_buf("      <arg name=\"%s\" type=\"%s\" />\n", signal_arg_ptr->name, signal_arg_ptr->type);
+        }
+        write_buf("    </signal>\n");
       }
-      write_buf("    </signal>\n");
     }
     write_buf("  </interface>\n");
   }
