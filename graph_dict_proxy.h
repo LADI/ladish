@@ -5,7 +5,7 @@
  * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains the interface of the client objects
+ * This file contains interface to graph dictionary D-Bus helpers
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -24,25 +24,35 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef CLIENT_H__2160B4BA_D6D1_464D_9DC5_ECA50B0958AD__INCLUDED
-#define CLIENT_H__2160B4BA_D6D1_464D_9DC5_ECA50B0958AD__INCLUDED
+#ifndef GRAPH_DICT_PROXY_H__83E681EB_798E_4A25_9653_F9A9DBEB4D82__INCLUDED
+#define GRAPH_DICT_PROXY_H__83E681EB_798E_4A25_9653_F9A9DBEB4D82__INCLUDED
 
-#include "dict.h"
-
-typedef struct ladish_client_tag { int unused; } * ladish_client_handle;
+#include "common.h"
 
 bool
-ladish_client_create(
-  uuid_t uuid_ptr,
-  bool virtual,
-  bool link,
-  bool system,
-  ladish_client_handle * client_handle_ptr);
+lash_graph_dict_proxy_set(
+  const char * service,
+  const char * object,
+  uint32_t object_type,
+  uint64_t object_id,
+  const char * key,
+  const char * value);
 
-void
-ladish_client_destroy(
-  ladish_client_handle client_handle);
+bool
+lash_graph_dict_proxy_get(
+  const char * service,
+  const char * object,
+  uint32_t object_type,
+  uint64_t object_id,
+  const char * key,
+  char ** value);
 
-ladish_dict_handle ladish_client_get_dict(ladish_client_handle client_handle);
+bool
+lash_graph_dict_proxy_drop(
+  const char * service,
+  const char * object,
+  uint32_t object_type,
+  uint64_t object_id,
+  const char * key);
 
-#endif /* #ifndef CLIENT_H__2160B4BA_D6D1_464D_9DC5_ECA50B0958AD__INCLUDED */
+#endif /* #ifndef GRAPH_DICT_PROXY_H__83E681EB_798E_4A25_9653_F9A9DBEB4D82__INCLUDED */

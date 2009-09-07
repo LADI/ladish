@@ -47,6 +47,8 @@ struct ladish_port
   /* superconnections are not in these lists */
   struct list_head input_connections;      /* list of input connections, i.e. connections that play to this port */
   struct list_head output_connections;     /* list of output connections, i.e. connections that capture from this port */
+
+  ladish_dict_handle dict;
 };
 
 bool
@@ -60,6 +62,13 @@ ladish_port_create(
   if (port_ptr == NULL)
   {
     lash_error("malloc() failed to allocate struct ladish_port");
+    return false;
+  }
+
+  if (!ladish_dict_create(&port_ptr->dict))
+  {
+    lash_error("ladish_dict_create() failed for port");
+    free(port_ptr);
     return false;
   }
 
@@ -87,7 +96,13 @@ ladish_port_create(
 
 void ladish_port_destroy(ladish_port_handle port_handle)
 {
+  ladish_dict_destroy(port_ptr->dict);
   free(port_ptr);
+}
+
+ladish_dict_handle ladish_port_get_dict(ladish_port_handle port_handle)
+{
+  return port_ptr->dict;
 }
 
 #undef port_ptr

@@ -53,6 +53,7 @@ struct ladish_graph_client
 struct ladish_graph
 {
   char * opath;
+  ladish_dict_handle dict;
   struct list_head clients;
   struct list_head ports;
   uint64_t graph_version;
@@ -386,6 +387,15 @@ bool ladish_graph_create(ladish_graph_handle * graph_handle_ptr, const char * op
   graph_ptr->opath = strdup(opath);
   if (graph_ptr->opath == NULL)
   {
+    lash_error("strdup() failed for graph opath");
+    free(graph_ptr);
+    return false;
+  }
+
+  if (!ladish_dict_create(&graph_ptr->dict))
+  {
+    lash_error("ladish_dict_create() failed for graph");
+    free(graph_ptr->opath);
     free(graph_ptr);
     return false;
   }
@@ -491,6 +501,7 @@ ladish_graph_remove_client_internal(
 void ladish_graph_destroy(ladish_graph_handle graph_handle)
 {
   ladish_graph_clear(graph_handle);
+  ladish_dict_destroy(graph_ptr->dict);
   free(graph_ptr->opath);
   free(graph_ptr);
 }
@@ -511,6 +522,11 @@ void ladish_graph_clear(ladish_graph_handle graph_handle)
 void * ladish_graph_get_dbus_context(ladish_graph_handle graph_handle)
 {
   return graph_handle;
+}
+
+ladish_dict_handle ladish_graph_get_dict(ladish_graph_handle graph_handle)
+{
+  return graph_ptr->dict;
 }
 
 bool ladish_graph_add_client(ladish_graph_handle graph_handle, ladish_client_handle client_handle, const char * name)
@@ -638,6 +654,40 @@ ladish_graph_add_port(
     &type);
 
   return true;
+}
+
+ladish_client_handle ladish_graph_find_client_by_id(ladish_graph_handle graph_handle, uint64_t client_id)
+{
+  struct list_head * node_ptr;
+  struct ladish_graph_client * client_ptr;
+
+  list_for_each(node_ptr, &graph_ptr->clients)
+  {
+    client_ptr = list_entry(node_ptr, struct ladish_graph_client, siblings);
+    if (client_ptr->id == client_id)
+    {
+      return client_ptr->client;
+    }
+  }
+
+  return NULL;
+}
+
+ladish_port_handle ladish_graph_find_port_by_id(ladish_graph_handle graph_handle, uint64_t port_id)
+{
+  struct list_head * node_ptr;
+  struct ladish_graph_port * port_ptr;
+
+  list_for_each(node_ptr, &graph_ptr->ports)
+  {
+    port_ptr = list_entry(node_ptr, struct ladish_graph_port, siblings_graph);
+    if (port_ptr->id == port_id)
+    {
+      return port_ptr->port;
+    }
+  }
+
+  return NULL;
 }
 
 #undef graph_ptr

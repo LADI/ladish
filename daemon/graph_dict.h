@@ -5,7 +5,7 @@
  * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains the interface of the client objects
+ * This file contains interface to the D-Bus graph dict interface helpers
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -24,25 +24,11 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef CLIENT_H__2160B4BA_D6D1_464D_9DC5_ECA50B0958AD__INCLUDED
-#define CLIENT_H__2160B4BA_D6D1_464D_9DC5_ECA50B0958AD__INCLUDED
+#ifndef GRAPH_DICT_H__D0A046E3_4EAC_4D5E_B06A_C66781AE4F67__INCLUDED
+#define GRAPH_DICT_H__D0A046E3_4EAC_4D5E_B06A_C66781AE4F67__INCLUDED
 
-#include "dict.h"
+#include "common.h"
 
-typedef struct ladish_client_tag { int unused; } * ladish_client_handle;
+extern const struct dbus_interface_descriptor g_iface_graph_dict;
 
-bool
-ladish_client_create(
-  uuid_t uuid_ptr,
-  bool virtual,
-  bool link,
-  bool system,
-  ladish_client_handle * client_handle_ptr);
-
-void
-ladish_client_destroy(
-  ladish_client_handle client_handle);
-
-ladish_dict_handle ladish_client_get_dict(ladish_client_handle client_handle);
-
-#endif /* #ifndef CLIENT_H__2160B4BA_D6D1_464D_9DC5_ECA50B0958AD__INCLUDED */
+#endif /* #ifndef GRAPH_DICT_H__D0A046E3_4EAC_4D5E_B06A_C66781AE4F67__INCLUDED */

@@ -204,6 +204,7 @@ def build(bld):
         'port.c',
         'jack_dispatch.c',
         'dict.c',
+        'graph_dict.c',
         ]:
         daemon.source.append(os.path.join("daemon", source))
 
@@ -261,6 +262,7 @@ def build(bld):
         gladish.source = [
             'jack_proxy.c',
             'graph_proxy.c',
+            'graph_dict_proxy.c',
             'studio_proxy.c',
             'catdup.c',
             ]

@@ -24,12 +24,13 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <stdlib.h>
-#include <inttypes.h>
+#include <locale.h>
 
 #include "graph_canvas.h"
 #include "../common/debug.h"
 #include "../common/klist.h"
+#include "../graph_dict_proxy.h"
+#include "../dbus_constants.h"
 
 struct graph_canvas
 {
@@ -44,6 +45,7 @@ struct client
   uint64_t id;
   canvas_module_handle canvas_module;
   struct list_head ports;
+  struct graph_canvas * owner_ptr;
 };
 
 struct port
@@ -127,6 +129,52 @@ disconnect_request(
 #undef port1_ptr
 #undef port2_ptr
 
+#define client_ptr ((struct client *)module_context)
+
+void
+module_location_changed(
+  void * module_context,
+  double x,
+  double y)
+{
+  char x_str[100];
+  char y_str[100];
+  char * locale;
+
+  lash_info("module_location_changed(id = %3llu, x = %6.1f, y = %6.1f)", (unsigned long long)client_ptr->id, x, y);
+
+  locale = strdup(setlocale(LC_NUMERIC, NULL));
+  if (locale == NULL)
+  {
+    lash_error("strdup() failed for locale string");
+    return;
+  }
+
+  setlocale(LC_NUMERIC, "POSIX");
+  sprintf(x_str, "%f", x);
+  sprintf(y_str, "%f", y);
+  setlocale(LC_NUMERIC, locale);
+  free(locale);
+
+  lash_graph_dict_proxy_set(
+    graph_proxy_get_service(client_ptr->owner_ptr->graph),
+    graph_proxy_get_object(client_ptr->owner_ptr->graph),
+    GRAPH_DICT_OBJECT_TYPE_CLIENT,
+    client_ptr->id,
+    URI_CANVAS_X,
+    x_str);
+
+  lash_graph_dict_proxy_set(
+    graph_proxy_get_service(client_ptr->owner_ptr->graph),
+    graph_proxy_get_object(client_ptr->owner_ptr->graph),
+    GRAPH_DICT_OBJECT_TYPE_CLIENT,
+    client_ptr->id,
+    URI_CANVAS_Y,
+    y_str);
+}
+
+#undef client_ptr
+
 bool
 graph_canvas_create(
   int width,
@@ -141,7 +189,7 @@ graph_canvas_create(
     return false;
   }
 
-  if (!canvas_create(width, height, connect_request, disconnect_request, &graph_canvas_ptr->canvas))
+  if (!canvas_create(width, height, connect_request, disconnect_request, module_location_changed, &graph_canvas_ptr->canvas))
   {
     free(graph_canvas_ptr);
     return false;
@@ -174,6 +222,11 @@ client_appeared(
   const char * name)
 {
   struct client * client_ptr;
+  char * x_str;
+  char * y_str;
+  double x;
+  double y;
+  char * locale;
 
   lash_info("canvas::client_appeared(%"PRIu64", \"%s\")", id, name);
 
@@ -186,8 +239,69 @@ client_appeared(
 
   client_ptr->id = id;
   INIT_LIST_HEAD(&client_ptr->ports);
+  client_ptr->owner_ptr = graph_canvas_ptr;
 
-  if (!canvas_create_module(graph_canvas_ptr->canvas, name, 0, 0, true, true, &client_ptr->canvas_module))
+  x = 0;
+  y = 0;
+
+  if (!lash_graph_dict_proxy_get(
+        graph_proxy_get_service(graph_canvas_ptr->graph),
+        graph_proxy_get_object(graph_canvas_ptr->graph),
+        GRAPH_DICT_OBJECT_TYPE_CLIENT,
+        id,
+        URI_CANVAS_X,
+        &x_str))
+  {
+    x_str = NULL;
+  }
+
+  if (!lash_graph_dict_proxy_get(
+        graph_proxy_get_service(graph_canvas_ptr->graph),
+        graph_proxy_get_object(graph_canvas_ptr->graph),
+        GRAPH_DICT_OBJECT_TYPE_CLIENT,
+        id,
+        URI_CANVAS_Y,
+        &y_str))
+  {
+    y_str = NULL;
+  }
+
+  if (x_str != NULL || y_str != NULL)
+  {
+    locale = strdup(setlocale(LC_NUMERIC, NULL));
+    if (locale == NULL)
+    {
+      lash_error("strdup() failed for locale string");
+    }
+    else
+    {
+      setlocale(LC_NUMERIC, "POSIX");
+      if (x_str != NULL)
+      {
+        //lash_info("converting %s", x_str);
+        sscanf(x_str, "%lf", &x);
+      }
+      if (y_str != NULL)
+      {
+        //lash_info("converting %s", y_str);
+        sscanf(y_str, "%lf", &y);
+      }
+      setlocale(LC_NUMERIC, locale);
+      free(locale);
+    }
+
+    if (x_str != NULL)
+    {
+      free(x_str);
+    }
+
+    if (y_str != NULL)
+    {
+      free(y_str);
+    }
+  }
+
+  if (!canvas_create_module(graph_canvas_ptr->canvas, name, x, y, true, true, client_ptr, &client_ptr->canvas_module))
   {
     lash_error("canvas_create_module(\"%s\") failed", name);
     free(client_ptr);

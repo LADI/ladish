@@ -43,6 +43,7 @@
 #define IFACE_LAUNCHER           DBUS_NAME_BASE ".Launcher"
 #define APPLICATION_OBJECT_PATH  DBUS_BASE_PATH "/Application"
 #define IFACE_APPLICATION        DBUS_NAME_BASE ".App"
+#define IFACE_GRAPH_DICT         DBUS_NAME_BASE ".GraphDict"
 
 #define JACKDBUS_PORT_FLAG_INPUT         0x00000001
 #define JACKDBUS_PORT_FLAG_OUTPUT        0x00000002
@@ -52,5 +53,15 @@
 
 #define JACKDBUS_PORT_TYPE_AUDIO    0
 #define JACKDBUS_PORT_TYPE_MIDI     1
+
+#define GRAPH_DICT_OBJECT_TYPE_GRAPH          0
+#define GRAPH_DICT_OBJECT_TYPE_CLIENT         1
+#define GRAPH_DICT_OBJECT_TYPE_PORT           2
+#define GRAPH_DICT_OBJECT_TYPE_CONNECTION     3
+
+#define URI_CANVAS_WIDTH    "http://ladish.org/ns/canvas/width"
+#define URI_CANVAS_HEIGHT   "http://ladish.org/ns/canvas/height"
+#define URI_CANVAS_X        "http://ladish.org/ns/canvas/x"
+#define URI_CANVAS_Y        "http://ladish.org/ns/canvas/y"
 
 #endif /* #ifndef DBUS_CONSTANTS_H__C21DE0EE_C19C_42F0_8D63_D613E4806C0E__INCLUDED */

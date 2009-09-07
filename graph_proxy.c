@@ -409,6 +409,16 @@ fail:
 
 #define graph_ptr ((struct graph *)graph)
 
+const char * graph_proxy_get_service(graph_proxy_handle graph)
+{
+  return graph_ptr->service;
+}
+
+const char * graph_proxy_get_object(graph_proxy_handle graph)
+{
+  return graph_ptr->object;
+}
+
 void
 graph_proxy_destroy(
   graph_proxy_handle graph)

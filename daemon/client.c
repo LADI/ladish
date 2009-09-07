@@ -40,6 +40,7 @@ struct ladish_client
   bool system:1;                           /* Whether client is system (server in-process) */
   pid_t pid;                               /* process id. Not valid for system and virtual clients */
   struct room * room_ptr;                  /* Room this client belongs to. If NULL, client belongs only to studio guts. */
+  ladish_dict_handle dict;
 };
 
 bool
@@ -56,6 +57,13 @@ ladish_client_create(
   if (client_ptr == NULL)
   {
     lash_error("malloc() failed to allocate struct ladish_client");
+    return false;
+  }
+
+  if (!ladish_dict_create(&client_ptr->dict))
+  {
+    lash_error("ladish_dict_create() failed for client");
+    free(client_ptr);
     return false;
   }
 
@@ -93,12 +101,19 @@ ladish_client_destroy(
   assert(list_empty(&client_ptr->siblings_studio_all));
   assert(list_empty(&client_ptr->siblings_room));
 
+  ladish_dict_destroy(client_ptr->dict);
+
   if (client_ptr->jack_name != NULL)
   {
     free(client_ptr->jack_name);
   }
 
   free(client_ptr);
+}
+
+ladish_dict_handle ladish_client_get_dict(ladish_client_handle client_handle)
+{
+  return client_ptr->dict;
 }
 
 #undef client_ptr

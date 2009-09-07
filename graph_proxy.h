@@ -48,6 +48,9 @@ void
 graph_proxy_destroy(
   graph_proxy_handle graph);
 
+const char * graph_proxy_get_service(graph_proxy_handle graph);
+const char * graph_proxy_get_object(graph_proxy_handle graph);
+
 bool
 graph_proxy_activate(
   graph_proxy_handle graph);

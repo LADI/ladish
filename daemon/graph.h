@@ -36,6 +36,7 @@ bool ladish_graph_create(ladish_graph_handle * graph_handle_ptr, const char * op
 void ladish_graph_destroy(ladish_graph_handle graph_handle);
 void ladish_graph_clear(ladish_graph_handle graph_handle);
 void * ladish_graph_get_dbus_context(ladish_graph_handle graph_handle);
+ladish_dict_handle ladish_graph_get_dict(ladish_graph_handle graph_handle);
 bool ladish_graph_add_client(ladish_graph_handle graph_handle, ladish_client_handle client_handle, const char * name);
 
 void
@@ -58,6 +59,9 @@ ladish_graph_remove_port(
   ladish_graph_handle graph_handle,
   ladish_client_handle client_handle,
   ladish_port_handle port_handle);
+
+ladish_client_handle ladish_graph_find_client_by_id(ladish_graph_handle graph_handle, uint64_t client_id);
+ladish_port_handle ladish_graph_find_port_by_id(ladish_graph_handle graph_handle, uint64_t port_id);
 
 extern const struct dbus_interface_descriptor g_interface_patchbay;
 

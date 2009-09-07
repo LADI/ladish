@@ -40,6 +40,7 @@
 #define LASH_DBUS_ERROR_INVALID_CLIENT_ID   DBUS_NAME_BASE ".Error.InvalidClientId"
 #define LASH_DBUS_ERROR_UNFINISHED_TASK     DBUS_NAME_BASE ".Error.UnfinishedTask"
 #define LASH_DBUS_ERROR_INVALID_TASK        DBUS_NAME_BASE ".Error.InvalidTask"
+#define LASH_DBUS_ERROR_KEY_NOT_FOUND       DBUS_NAME_BASE ".Error.KeyNotFound"
 
 void lash_dbus_error(struct dbus_method_call * call_ptr, const char * err_name, const char * format, ...);
 

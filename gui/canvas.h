@@ -50,6 +50,7 @@ canvas_create(
   double height,
   void (* connect_request)(void * port1_context, void * port2_context),
   void (* disconnect_request)(void * port1_context, void * port2_context),
+  void (* module_location_changed)(void * module_context, double x, double y),
   canvas_handle * canvas_handle_ptr);
 
 GtkWidget *
@@ -81,6 +82,7 @@ canvas_create_module(
   double y,
   bool show_title,
   bool show_port_labels,
+  void * module_context,
   canvas_module_handle * module_handle_ptr);
 
 bool

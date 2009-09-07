@@ -38,10 +38,12 @@ public:
     double width,
     double height,
     void (* connect_request)(void * port1_context, void * port2_context),
-    void (* disconnect_request)(void * port1_context, void * port2_context))
+    void (* disconnect_request)(void * port1_context, void * port2_context),
+    void (* module_location_changed)(void * module_context, double x, double y))
     : FlowCanvas::Canvas(width, height)
     , m_connect_request(connect_request)
     , m_disconnect_request(disconnect_request)
+    , m_module_location_changed(module_location_changed)
   {};
 
   virtual ~canvas_cls() {};
@@ -50,6 +52,32 @@ public:
 
   void (* m_connect_request)(void * port1_context, void * port2_context);
   void (* m_disconnect_request)(void * port1_context, void * port2_context);
+  void (* m_module_location_changed)(void * module_context, double x, double y);
+};
+
+class module_cls: public FlowCanvas::Module
+{
+public:
+  module_cls(
+    boost::shared_ptr<FlowCanvas::Canvas> canvas,
+    const std::string& name,
+    double x,
+    double y,
+    bool show_title,
+    bool show_port_labels,
+    void * module_context)
+    : FlowCanvas::Module(canvas, name, x, y, show_title, show_port_labels)
+    , m_context(module_context)
+  {};
+
+  virtual ~module_cls() {};
+
+  virtual void store_location()
+  {
+    boost::dynamic_pointer_cast<canvas_cls>(canvas().lock())->m_module_location_changed(m_context, property_x(), property_y());
+  }
+
+  void * m_context;
 };
 
 class port_cls: public FlowCanvas::Port
@@ -84,11 +112,12 @@ canvas_create(
   double height,
   void (* connect_request)(void * port1_context, void * port2_context),
   void (* disconnect_request)(void * port1_context, void * port2_context),
+  void (* module_location_changed)(void * module_context, double x, double y),
   canvas_handle * canvas_handle_ptr)
 {
   boost::shared_ptr<canvas_cls> * canvas;
 
-  canvas = new boost::shared_ptr<canvas_cls>(new canvas_cls(width, height, connect_request, disconnect_request));
+  canvas = new boost::shared_ptr<canvas_cls>(new canvas_cls(width, height, connect_request, disconnect_request, module_location_changed));
 
   *canvas_handle_ptr = (canvas_handle)canvas;
 
@@ -163,11 +192,12 @@ canvas_create_module(
   double y,
   bool show_title,
   bool show_port_labels,
+  void * module_context,
   canvas_module_handle * module_handle_ptr)
 {
   boost::shared_ptr<FlowCanvas::Module> * module;
 
-  module = new boost::shared_ptr<FlowCanvas::Module>(new FlowCanvas::Module(*canvas_ptr, name, x, y, show_title, show_port_labels));
+  module = new boost::shared_ptr<FlowCanvas::Module>(new module_cls(*canvas_ptr, name, x, y, show_title, show_port_labels, module_context));
   canvas_ptr->get()->add_item(*module);
   module->get()->resize();
 

@@ -42,6 +42,7 @@
 #include "../dbus/error.h"
 #include "dirhelpers.h"
 #include "jack_dispatch.h"
+#include "graph_dict.h"
 
 #define STUDIOS_DIR "/studios/"
 char * g_studios_dir;
@@ -505,6 +506,7 @@ studio_publish(void)
     STUDIO_OBJECT_PATH,
     &g_interface_studio, &g_studio,
     &g_interface_patchbay, ladish_graph_get_dbus_context(g_studio.graph),
+    &g_iface_graph_dict, g_studio.graph,
     NULL);
   if (object == NULL)
   {
