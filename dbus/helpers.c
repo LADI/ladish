@@ -381,6 +381,7 @@ dbus_call(
     }
 
     assert(dbus_message_iter_get_arg_type(&iter) == DBUS_TYPE_INVALID); /* we've checked the signature, this should not happen */
+    dbus_message_unref(reply_ptr);
   }
   else
   {
