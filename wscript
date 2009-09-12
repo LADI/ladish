@@ -205,6 +205,7 @@ def build(bld):
         'jack_dispatch.c',
         'dict.c',
         'graph_dict.c',
+        'escape.c',
         ]:
         daemon.source.append(os.path.join("daemon", source))
 

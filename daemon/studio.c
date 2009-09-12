@@ -43,6 +43,7 @@
 #include "dirhelpers.h"
 #include "jack_dispatch.h"
 #include "graph_dict.h"
+#include "escape.h"
 
 #define STUDIOS_DIR "/studios/"
 char * g_studios_dir;
@@ -837,74 +838,6 @@ void studio_uninit(void)
 bool studio_is_loaded(void)
 {
   return g_studio.dbus_object != NULL;
-}
-
-void escape(const char ** src_ptr, char ** dst_ptr)
-{
-  const char * src;
-  char * dst;
-  static char hex_digits[] = "0123456789ABCDEF";
-
-  src = *src_ptr;
-  dst = *dst_ptr;
-
-  while (*src != 0)
-  {
-    switch (*src)
-    {
-    case '/':               /* used as separator for address components */
-    case '<':               /* invalid attribute value char (XML spec) */
-    case '&':               /* invalid attribute value char (XML spec) */
-    case '"':               /* we store attribute values in double quotes - invalid attribute value char (XML spec) */
-    case '%':
-      dst[0] = '%';
-      dst[1] = hex_digits[*src >> 4];
-      dst[2] = hex_digits[*src & 0x0F];
-      dst += 3;
-      src++;
-      break;
-    default:
-      *dst++ = *src++;
-    }
-  }
-
-  *src_ptr = src;
-  *dst_ptr = dst;
-}
-
-#define HEX_TO_INT(hexchar) ((hexchar) <= '9' ? hexchar - '0' : 10 + (hexchar - 'A'))
-
-static size_t unescape(const char * src, size_t src_len, char * dst)
-{
-  size_t dst_len;
-
-  dst_len = 0;
-
-  while (src_len)
-  {
-    if (src_len >= 3 &&
-        src[0] == '%' &&
-        ((src[1] >= '0' && src[1] <= '9') ||
-         (src[1] >= 'A' && src[1] <= 'F')) &&
-        ((src[2] >= '0' && src[2] <= '9') ||
-         (src[2] >= 'A' && src[2] <= 'F')))
-    {
-      *dst = (HEX_TO_INT(src[1]) << 4) | HEX_TO_INT(src[2]);
-      //lash_info("unescaping %c%c%c to '%c'", src[0], src[1], src[2], *dst);
-      src_len -= 3;
-      src += 3;
-    }
-    else
-    {
-      *dst = *src;
-      src_len--;
-      src++;
-    }
-    dst++;
-    dst_len++;
-  }
-
-  return dst_len;
 }
 
 static bool compose_filename(const char * name, char ** filename_ptr_ptr, char ** backup_filename_ptr_ptr)
