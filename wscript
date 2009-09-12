@@ -206,6 +206,9 @@ def build(bld):
         'dict.c',
         'graph_dict.c',
         'escape.c',
+        'studio_jack_conf.c',
+        'studio_load.c',
+        'studio_save.c',
         ]:
         daemon.source.append(os.path.join("daemon", source))
 
