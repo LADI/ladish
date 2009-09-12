@@ -690,6 +690,63 @@ ladish_port_handle ladish_graph_find_port_by_id(ladish_graph_handle graph_handle
   return NULL;
 }
 
+bool
+ladish_graph_iterate_nodes(
+  ladish_graph_handle graph_handle,
+  void * callback_context,
+  bool
+  (* client_callback)(
+    void * context,
+    ladish_client_handle client_handle,
+    const char * client_name,
+    void ** client_iteration_context_ptr_ptr),
+  bool
+  (* port_callback)(
+    void * context,
+    void * client_iteration_context_ptr,
+    ladish_client_handle client_handle,
+    const char * client_name,
+    ladish_port_handle port_handle,
+    const char * port_name,
+    uint32_t port_type,
+    uint32_t port_flags))
+{
+  struct list_head * client_node_ptr;
+  struct ladish_graph_client * client_ptr;
+  void * client_context;
+  struct list_head * port_node_ptr;
+  struct ladish_graph_port * port_ptr;
+
+  list_for_each(client_node_ptr, &graph_ptr->clients)
+  {
+    client_ptr = list_entry(client_node_ptr, struct ladish_graph_client, siblings);
+    if (!client_callback(callback_context, client_ptr->client, client_ptr->name, &client_context))
+    {
+      return false;
+    }
+
+    list_for_each(port_node_ptr, &client_ptr->ports)
+    {
+      port_ptr = list_entry(port_node_ptr, struct ladish_graph_port, siblings_client);
+
+      if (!port_callback(
+            callback_context,
+            client_context,
+            client_ptr->client,
+            client_ptr->name,
+            port_ptr->port,
+            port_ptr->name,
+            port_ptr->type,
+            port_ptr->flags))
+      {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
 #undef graph_ptr
 
 METHOD_ARGS_BEGIN(GetAllPorts, "Get all ports")

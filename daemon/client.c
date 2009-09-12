@@ -122,4 +122,9 @@ ladish_dict_handle ladish_client_get_dict(ladish_client_handle client_handle)
   return client_ptr->dict;
 }
 
+void ladish_client_get_uuid(ladish_client_handle client_handle, uuid_t uuid)
+{
+  uuid_copy(uuid, client_ptr->uuid);
+}
+
 #undef client_ptr

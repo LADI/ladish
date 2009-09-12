@@ -63,6 +63,27 @@ ladish_graph_remove_port(
 ladish_client_handle ladish_graph_find_client_by_id(ladish_graph_handle graph_handle, uint64_t client_id);
 ladish_port_handle ladish_graph_find_port_by_id(ladish_graph_handle graph_handle, uint64_t port_id);
 
+bool
+ladish_graph_iterate_nodes(
+  ladish_graph_handle graph_handle,
+  void * callback_context,
+  bool
+  (* client_callback)(
+    void * context,
+    ladish_client_handle client_handle,
+    const char * client_name,
+    void ** client_iteration_context_ptr_ptr),
+  bool
+  (* port_callback)(
+    void * context,
+    void * client_iteration_context_ptr,
+    ladish_client_handle client_handle,
+    const char * client_name,
+    ladish_port_handle port_handle,
+    const char * port_name,
+    uint32_t port_type,
+    uint32_t port_flags));
+
 extern const struct dbus_interface_descriptor g_interface_patchbay;
 
 #endif /* #ifndef PATCHBAY_H__30334B9A_8847_4E8C_AFF9_73DB13406C8E__INCLUDED */

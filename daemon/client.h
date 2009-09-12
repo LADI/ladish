@@ -45,4 +45,6 @@ ladish_client_destroy(
 
 ladish_dict_handle ladish_client_get_dict(ladish_client_handle client_handle);
 
+void ladish_client_get_uuid(ladish_client_handle client_handle, uuid_t uuid);
+
 #endif /* #ifndef CLIENT_H__2160B4BA_D6D1_464D_9DC5_ECA50B0958AD__INCLUDED */
