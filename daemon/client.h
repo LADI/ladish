@@ -33,7 +33,7 @@ typedef struct ladish_client_tag { int unused; } * ladish_client_handle;
 
 bool
 ladish_client_create(
-  uuid_t uuid_ptr,
+  const uuid_t uuid_ptr,
   bool virtual,
   bool link,
   bool system,

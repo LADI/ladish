@@ -45,7 +45,7 @@ struct ladish_client
 
 bool
 ladish_client_create(
-  uuid_t uuid_ptr,
+  const uuid_t uuid_ptr,
   bool virtual,
   bool link,
   bool system,
@@ -86,6 +86,12 @@ ladish_client_create(
   client_ptr->system = system;
   client_ptr->pid = 0;
   client_ptr->room_ptr = NULL;
+
+  {
+    char str[37];
+    uuid_unparse(client_ptr->uuid, str);
+    lash_info("Created client %s", str);
+  }
 
   *client_handle_ptr = (ladish_client_handle)client_ptr;
   return true;
