@@ -50,7 +50,14 @@ void view_init(void)
   g_current_view = NULL;
 }
 
-bool create_view(const char * name, const char * service, const char * object, bool force_activate, graph_view_handle * handle_ptr)
+bool
+create_view(
+  const char * name,
+  const char * service,
+  const char * object,
+  bool graph_dict_supported,
+  bool force_activate,
+  graph_view_handle * handle_ptr)
 {
   struct graph_view * view_ptr;
 
@@ -68,7 +75,7 @@ bool create_view(const char * name, const char * service, const char * object, b
     goto free_view;
   }
 
-  if (!graph_proxy_create(service, object, &view_ptr->graph))
+  if (!graph_proxy_create(service, object, graph_dict_supported, &view_ptr->graph))
   {
     goto free_name;
   }

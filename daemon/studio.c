@@ -650,7 +650,7 @@ void on_event_jack_started(void)
   g_studio.jack_conf_valid = true;
   g_studio.jack_running = true;
 
-  if (!graph_proxy_create(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, &g_studio.jack_graph_proxy))
+  if (!graph_proxy_create(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, false, &g_studio.jack_graph_proxy))
   {
     lash_error("graph_proxy_create() failed for jackdbus");
   }

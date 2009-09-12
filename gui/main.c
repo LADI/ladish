@@ -458,7 +458,7 @@ void control_proxy_on_studio_appeared(void)
     goto free_name;
   }
 
-  if (!create_view(name, SERVICE_NAME, STUDIO_OBJECT_PATH, false, &g_studio_view))
+  if (!create_view(name, SERVICE_NAME, STUDIO_OBJECT_PATH, true, false, &g_studio_view))
   {
     lash_error("create_view() failed for studio");
     goto free_name;
@@ -545,7 +545,7 @@ void jack_appeared(void)
 {
   lash_info("JACK appeared");
 
-  if (!create_view("Raw JACK", JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, true, &g_jack_view))
+  if (!create_view("Raw JACK", JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, false, true, &g_jack_view))
   {
     lash_error("create_view() failed for jack");
     return;

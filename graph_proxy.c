@@ -55,6 +55,7 @@ struct graph
   char * object;
   uint64_t version;
   bool active;
+  bool graph_dict_supported;
 };
 
 static DBusHandlerResult message_hook(DBusConnection *, DBusMessage *, void *);
@@ -363,6 +364,7 @@ bool
 graph_proxy_create(
   const char * service,
   const char * object,
+  bool graph_dict_supported,
   graph_proxy_handle * graph_proxy_handle_ptr)
 {
   struct graph * graph_ptr;
@@ -392,6 +394,8 @@ graph_proxy_create(
 
   graph_ptr->version = 0;
   graph_ptr->active = false;
+
+  graph_ptr->graph_dict_supported = graph_dict_supported;
 
   *graph_proxy_handle_ptr = (graph_proxy_handle)graph_ptr;
 
@@ -779,11 +783,17 @@ graph_proxy_dict_entry_set(
   const char * key,
   const char * value)
 {
+  if (!graph_ptr->graph_dict_supported)
+  {
+    return false;
+  }
+
   if (!dbus_call(graph_ptr->service, graph_ptr->object, IFACE_GRAPH_DICT, "Set", "utss", &object_type, &object_id, &key, &value, ""))
   {
     lash_error(IFACE_GRAPH_DICT ".Set() failed.");
     return false;
   }
+
   return true;
 }
 
@@ -800,6 +810,11 @@ graph_proxy_dict_entry_get(
   DBusMessageIter iter;
   const char * cvalue_ptr;
   char * value_ptr;
+
+  if (!graph_ptr->graph_dict_supported)
+  {
+    return false;
+  }
 
   if (!dbus_call(graph_ptr->service, graph_ptr->object, IFACE_GRAPH_DICT, "Get", "uts", &object_type, &object_id, &key, NULL, &reply_ptr))
   {
@@ -836,10 +851,16 @@ graph_proxy_dict_entry_drop(
   uint64_t object_id,
   const char * key)
 {
+  if (!graph_ptr->graph_dict_supported)
+  {
+    return false;
+  }
+
   if (!dbus_call(graph_ptr->service, graph_ptr->object, IFACE_GRAPH_DICT, "Drop", "uts", &object_type, &object_id, &key, ""))
   {
     lash_error(IFACE_GRAPH_DICT ".Drop() failed.");
     return false;
   }
+
   return true;
 }

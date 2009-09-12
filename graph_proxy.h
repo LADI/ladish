@@ -42,6 +42,7 @@ bool
 graph_proxy_create(
   const char * service,
   const char * object,
+  bool graph_dict_supported,
   graph_proxy_handle * graph_proxy_ptr);
 
 void
