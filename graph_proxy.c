@@ -770,3 +770,76 @@ message_hook(
 
   return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
+
+bool
+graph_proxy_dict_entry_set(
+  graph_proxy_handle graph,
+  uint32_t object_type,
+  uint64_t object_id,
+  const char * key,
+  const char * value)
+{
+  if (!dbus_call(graph_ptr->service, graph_ptr->object, IFACE_GRAPH_DICT, "Set", "utss", &object_type, &object_id, &key, &value, ""))
+  {
+    lash_error(IFACE_GRAPH_DICT ".Set() failed.");
+    return false;
+  }
+  return true;
+}
+
+bool
+graph_proxy_dict_entry_get(
+  graph_proxy_handle graph,
+  uint32_t object_type,
+  uint64_t object_id,
+  const char * key,
+  char ** value_ptr_ptr)
+{
+  DBusMessage * reply_ptr;
+  const char * reply_signature;
+  DBusMessageIter iter;
+  const char * cvalue_ptr;
+  char * value_ptr;
+
+  if (!dbus_call(graph_ptr->service, graph_ptr->object, IFACE_GRAPH_DICT, "Get", "uts", &object_type, &object_id, &key, NULL, &reply_ptr))
+  {
+    lash_error(IFACE_GRAPH_DICT ".Get() failed.");
+    return false;
+  }
+
+  reply_signature = dbus_message_get_signature(reply_ptr);
+
+  if (strcmp(reply_signature, "s") != 0)
+  {
+    lash_error("reply signature is '%s' but expected signature is 's'", reply_signature);
+    dbus_message_unref(reply_ptr);
+    return false;
+  }
+
+  dbus_message_iter_init(reply_ptr, &iter);
+  dbus_message_iter_get_basic(&iter, &cvalue_ptr);
+  value_ptr = strdup(cvalue_ptr);
+  dbus_message_unref(reply_ptr);
+  if (value_ptr == NULL)
+  {
+    lash_error("strdup() failed for dict value");
+    return false;
+  }
+  *value_ptr_ptr = value_ptr;
+  return true;
+}
+
+bool
+graph_proxy_dict_entry_drop(
+  graph_proxy_handle graph,
+  uint32_t object_type,
+  uint64_t object_id,
+  const char * key)
+{
+  if (!dbus_call(graph_ptr->service, graph_ptr->object, IFACE_GRAPH_DICT, "Drop", "uts", &object_type, &object_id, &key, ""))
+  {
+    lash_error(IFACE_GRAPH_DICT ".Drop() failed.");
+    return false;
+  }
+  return true;
+}

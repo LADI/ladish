@@ -156,17 +156,15 @@ module_location_changed(
   setlocale(LC_NUMERIC, locale);
   free(locale);
 
-  lash_graph_dict_proxy_set(
-    graph_proxy_get_service(client_ptr->owner_ptr->graph),
-    graph_proxy_get_object(client_ptr->owner_ptr->graph),
+  graph_proxy_dict_entry_set(
+    client_ptr->owner_ptr->graph,
     GRAPH_DICT_OBJECT_TYPE_CLIENT,
     client_ptr->id,
     URI_CANVAS_X,
     x_str);
 
-  lash_graph_dict_proxy_set(
-    graph_proxy_get_service(client_ptr->owner_ptr->graph),
-    graph_proxy_get_object(client_ptr->owner_ptr->graph),
+  graph_proxy_dict_entry_set(
+    client_ptr->owner_ptr->graph,
     GRAPH_DICT_OBJECT_TYPE_CLIENT,
     client_ptr->id,
     URI_CANVAS_Y,
@@ -244,9 +242,8 @@ client_appeared(
   x = 0;
   y = 0;
 
-  if (!lash_graph_dict_proxy_get(
-        graph_proxy_get_service(graph_canvas_ptr->graph),
-        graph_proxy_get_object(graph_canvas_ptr->graph),
+  if (!graph_proxy_dict_entry_get(
+        client_ptr->owner_ptr->graph,
         GRAPH_DICT_OBJECT_TYPE_CLIENT,
         id,
         URI_CANVAS_X,
@@ -255,9 +252,8 @@ client_appeared(
     x_str = NULL;
   }
 
-  if (!lash_graph_dict_proxy_get(
-        graph_proxy_get_service(graph_canvas_ptr->graph),
-        graph_proxy_get_object(graph_canvas_ptr->graph),
+  if (!graph_proxy_dict_entry_get(
+        client_ptr->owner_ptr->graph,
         GRAPH_DICT_OBJECT_TYPE_CLIENT,
         id,
         URI_CANVAS_Y,

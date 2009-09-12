@@ -262,7 +262,6 @@ def build(bld):
         gladish.source = [
             'jack_proxy.c',
             'graph_proxy.c',
-            'graph_dict_proxy.c',
             'studio_proxy.c',
             'catdup.c',
             ]

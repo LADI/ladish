@@ -84,6 +84,29 @@ graph_proxy_disconnect_ports(
   uint64_t port1_id,
   uint64_t port2_id);
 
+bool
+graph_proxy_dict_entry_set(
+  graph_proxy_handle graph,
+  uint32_t object_type,
+  uint64_t object_id,
+  const char * key,
+  const char * value);
+
+bool
+graph_proxy_dict_entry_get(
+  graph_proxy_handle graph,
+  uint32_t object_type,
+  uint64_t object_id,
+  const char * key,
+  char ** value);
+
+bool
+graph_proxy_dict_entry_drop(
+  graph_proxy_handle graph,
+  uint32_t object_type,
+  uint64_t object_id,
+  const char * key);
+
 #if 0
 { /* Adjust editor indent */
 #endif
