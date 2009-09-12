@@ -384,18 +384,28 @@ bool ladish_graph_create(ladish_graph_handle * graph_handle_ptr, const char * op
     return false;
   }
 
-  graph_ptr->opath = strdup(opath);
-  if (graph_ptr->opath == NULL)
+  if (opath != NULL)
   {
-    lash_error("strdup() failed for graph opath");
-    free(graph_ptr);
-    return false;
+    graph_ptr->opath = strdup(opath);
+    if (graph_ptr->opath == NULL)
+    {
+      lash_error("strdup() failed for graph opath");
+      free(graph_ptr);
+      return false;
+    }
+  }
+  else
+  {
+    graph_ptr->opath = NULL;
   }
 
   if (!ladish_dict_create(&graph_ptr->dict))
   {
     lash_error("ladish_dict_create() failed for graph");
-    free(graph_ptr->opath);
+    if (graph_ptr->opath != NULL)
+    {
+      free(graph_ptr->opath);
+    }
     free(graph_ptr);
     return false;
   }
@@ -449,17 +459,20 @@ ladish_graph_remove_port_internal(
   list_del(&port_ptr->siblings_graph);
 
   lash_info("removing port '%s':'%s' (%llu:%llu)", client_ptr->name, port_ptr->name, (unsigned long long)client_ptr->id, (unsigned long long)port_ptr->id);
-  dbus_signal_emit(
-    g_dbus_connection,
-    graph_ptr->opath,
-    JACKDBUS_IFACE_PATCHBAY,
-    "PortDisappeared",
-    "ttsts",
-    &graph_ptr->graph_version,
-    &client_ptr->id,
-    &client_ptr->name,
-    &port_ptr->id,
-    &port_ptr->name);
+  if (graph_ptr->opath != NULL)
+  {
+    dbus_signal_emit(
+      g_dbus_connection,
+      graph_ptr->opath,
+      JACKDBUS_IFACE_PATCHBAY,
+      "PortDisappeared",
+      "ttsts",
+      &graph_ptr->graph_version,
+      &client_ptr->id,
+      &client_ptr->name,
+      &port_ptr->id,
+      &port_ptr->name);
+  }
 
   free(port_ptr->name);
   free(port_ptr);
@@ -482,15 +495,18 @@ ladish_graph_remove_client_internal(
   graph_ptr->graph_version++;
   list_del(&client_ptr->siblings);
   lash_info("removing client '%s' (%llu)", client_ptr->name, (unsigned long long)client_ptr->id);
-  dbus_signal_emit(
-    g_dbus_connection,
-    graph_ptr->opath,
-    JACKDBUS_IFACE_PATCHBAY,
-    "ClientDisappeared",
-    "tts",
-    &graph_ptr->graph_version,
-    &client_ptr->id,
-    &client_ptr->name);
+  if (graph_ptr->opath != NULL)
+  {
+    dbus_signal_emit(
+      g_dbus_connection,
+      graph_ptr->opath,
+      JACKDBUS_IFACE_PATCHBAY,
+      "ClientDisappeared",
+      "tts",
+      &graph_ptr->graph_version,
+      &client_ptr->id,
+      &client_ptr->name);
+  }
 
   free(client_ptr->name);
   free(client_ptr);
@@ -502,7 +518,10 @@ void ladish_graph_destroy(ladish_graph_handle graph_handle)
 {
   ladish_graph_clear(graph_handle);
   ladish_dict_destroy(graph_ptr->dict);
-  free(graph_ptr->opath);
+  if (graph_ptr->opath != NULL)
+  {
+    free(graph_ptr->opath);
+  }
   free(graph_ptr);
 }
 
@@ -533,7 +552,7 @@ bool ladish_graph_add_client(ladish_graph_handle graph_handle, ladish_client_han
 {
   struct ladish_graph_client * client_ptr;
 
-  lash_info("adding client '%s' (%p) to graph %s", name, client_handle, graph_ptr->opath);
+  lash_info("adding client '%s' (%p) to graph %s", name, client_handle, graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
 
   client_ptr = malloc(sizeof(struct ladish_graph_client));
   if (client_ptr == NULL)
@@ -558,15 +577,18 @@ bool ladish_graph_add_client(ladish_graph_handle graph_handle, ladish_client_han
 
   list_add_tail(&client_ptr->siblings, &graph_ptr->clients);
 
-  dbus_signal_emit(
-    g_dbus_connection,
-    graph_ptr->opath,
-    JACKDBUS_IFACE_PATCHBAY,
-    "ClientAppeared",
-    "tts",
-    &graph_ptr->graph_version,
-    &client_ptr->id,
-    &client_ptr->name);
+  if (graph_ptr->opath != NULL)
+  {
+    dbus_signal_emit(
+      g_dbus_connection,
+      graph_ptr->opath,
+      JACKDBUS_IFACE_PATCHBAY,
+      "ClientAppeared",
+      "tts",
+      &graph_ptr->graph_version,
+      &client_ptr->id,
+      &client_ptr->name);
+  }
 
   return true;
 }
@@ -612,7 +634,7 @@ ladish_graph_add_port(
     return false;
   }
 
-  lash_info("adding port '%s':'%s' (%p)to graph %s", client_ptr->name, name, port_handle, graph_ptr->opath);
+  lash_info("adding port '%s':'%s' (%p)to graph %s", client_ptr->name, name, port_handle, graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
 
   port_ptr = malloc(sizeof(struct ladish_graph_port));
   if (port_ptr == NULL)
@@ -639,19 +661,22 @@ ladish_graph_add_port(
   list_add_tail(&port_ptr->siblings_client, &client_ptr->ports);
   list_add_tail(&port_ptr->siblings_graph, &graph_ptr->ports);
 
-  dbus_signal_emit(
-    g_dbus_connection,
-    graph_ptr->opath,
-    JACKDBUS_IFACE_PATCHBAY,
-    "PortAppeared",
-    "ttstsuu",
-    &graph_ptr->graph_version,
-    &client_ptr->id,
-    &client_ptr->name,
-    &port_ptr->id,
-    &port_ptr->name,
-    &flags,
-    &type);
+  if (graph_ptr->opath != NULL)
+  {
+    dbus_signal_emit(
+      g_dbus_connection,
+      graph_ptr->opath,
+      JACKDBUS_IFACE_PATCHBAY,
+      "PortAppeared",
+      "ttstsuu",
+      &graph_ptr->graph_version,
+      &client_ptr->id,
+      &client_ptr->name,
+      &port_ptr->id,
+      &port_ptr->name,
+      &flags,
+      &type);
+  }
 
   return true;
 }

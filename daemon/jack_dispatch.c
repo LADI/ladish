@@ -29,7 +29,9 @@
 
 struct jack_dispatcher
 {
-  graph_proxy_handle jack_graph;
+
+  graph_proxy_handle jack_graph_proxy;
+  ladish_graph_handle jack_graph;
   ladish_graph_handle studio_graph;
   uint64_t system_client_id;
   ladish_client_handle system_capture_client;
@@ -173,7 +175,8 @@ static void ports_disconnected(void * context, uint64_t client1_id, uint64_t por
 
 bool
 ladish_jack_dispatcher_create(
-  graph_proxy_handle jack_graph,
+  graph_proxy_handle jack_graph_proxy,
+  ladish_graph_handle jack_graph,
   ladish_graph_handle studio_graph,
   ladish_jack_dispatcher_handle * handle_ptr)
 {
@@ -186,6 +189,7 @@ ladish_jack_dispatcher_create(
     return false;
   }
 
+  dispatcher_ptr->jack_graph_proxy = jack_graph_proxy;
   dispatcher_ptr->jack_graph = jack_graph;
   dispatcher_ptr->studio_graph = studio_graph;
   dispatcher_ptr->system_client_id = 0;
@@ -193,7 +197,7 @@ ladish_jack_dispatcher_create(
   dispatcher_ptr->system_playback_client = NULL;
 
   if (!graph_proxy_attach(
-        jack_graph,
+        jack_graph_proxy,
         dispatcher_ptr,
         clear,
         client_appeared,

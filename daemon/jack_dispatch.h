@@ -35,7 +35,8 @@ typedef struct ladish_jack_dispatcher { int unused; } * ladish_jack_dispatcher_h
 
 bool
 ladish_jack_dispatcher_create(
-  graph_proxy_handle jack_graph,
+  graph_proxy_handle jack_graph_proxy,
+  ladish_graph_handle jack_graph,
   ladish_graph_handle studio_graph,
   ladish_jack_dispatcher_handle * handle_ptr);
 

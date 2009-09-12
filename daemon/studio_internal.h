@@ -63,7 +63,8 @@ struct studio
   char * filename;
 
   graph_proxy_handle jack_graph_proxy;
-  ladish_graph_handle graph;
+  ladish_graph_handle jack_graph;
+  ladish_graph_handle studio_graph;
   ladish_jack_dispatcher_handle jack_dispatcher;
 };
 

@@ -86,8 +86,8 @@ studio_publish(void)
   object = dbus_object_path_new(
     STUDIO_OBJECT_PATH,
     &g_interface_studio, &g_studio,
-    &g_interface_patchbay, ladish_graph_get_dbus_context(g_studio.graph),
-    &g_iface_graph_dict, g_studio.graph,
+    &g_interface_patchbay, ladish_graph_get_dbus_context(g_studio.studio_graph),
+    &g_iface_graph_dict, g_studio.studio_graph,
     NULL);
   if (object == NULL)
   {
@@ -237,7 +237,7 @@ void on_event_jack_started(void)
   }
   else
   {
-    if (!ladish_jack_dispatcher_create(g_studio.jack_graph_proxy, g_studio.graph, &g_studio.jack_dispatcher))
+    if (!ladish_jack_dispatcher_create(g_studio.jack_graph_proxy, g_studio.jack_graph, g_studio.studio_graph, &g_studio.jack_dispatcher))
     {
       lash_error("ladish_jack_dispatcher_create() failed.");
     }
@@ -261,7 +261,8 @@ void on_event_jack_stopped(void)
     g_studio.jack_dispatcher = NULL;
   }
 
-  ladish_graph_clear(g_studio.graph);
+  ladish_graph_clear(g_studio.jack_graph);
+  ladish_graph_clear(g_studio.studio_graph);
 
   if (g_studio.jack_graph_proxy)
   {
@@ -377,10 +378,16 @@ bool studio_init(void)
 
   //studio_clear();
 
-  if (!ladish_graph_create(&g_studio.graph, STUDIO_OBJECT_PATH))
+  if (!ladish_graph_create(&g_studio.jack_graph, STUDIO_OBJECT_PATH))
   {
-    lash_error("ladish_graph_create() failed.");
+    lash_error("ladish_graph_create() failed to create jack graph object.");
     goto free_studios_dir;
+  }
+
+  if (!ladish_graph_create(&g_studio.studio_graph, NULL))
+  {
+    lash_error("ladish_graph_create() failed to create studio graph object.");
+    goto jack_graph_destroy;
   }
 
   if (!jack_proxy_init(
@@ -390,13 +397,15 @@ bool studio_init(void)
         on_jack_server_disappeared))
   {
     lash_error("jack_proxy_init() failed.");
-    goto graph_destroy;
+    goto studio_graph_destroy;
   }
 
   return true;
 
-graph_destroy:
-  ladish_graph_destroy(g_studio.graph);
+studio_graph_destroy:
+  ladish_graph_destroy(g_studio.studio_graph);
+jack_graph_destroy:
+  ladish_graph_destroy(g_studio.jack_graph);
 free_studios_dir:
   studio_clear();
   free(g_studios_dir);
@@ -407,6 +416,8 @@ fail:
 void studio_uninit(void)
 {
   jack_proxy_uninit();
+
+  ladish_graph_destroy(g_studio.studio_graph);
 
   studio_clear();
 

@@ -175,6 +175,39 @@ save_jack_port(
   return true;
 }
 
+bool
+save_studio_client(
+  void * context,
+  ladish_client_handle client_handle,
+  const char * client_name,
+  void ** client_iteration_context_ptr_ptr)
+{
+#if 0
+  uuid_t uuid;
+  char str[37];
+
+  ladish_client_get_uuid(client_handle, uuid);
+  uuid_unparse(uuid, str);
+#endif
+  lash_info("saving studio client '%s'", client_name);
+  return true;
+}
+
+bool
+save_studio_port(
+  void * context,
+  void * client_iteration_context_ptr,
+  ladish_client_handle client_handle,
+  const char * client_name,
+  ladish_port_handle port_handle,
+  const char * port_name,
+  uint32_t port_type,
+  uint32_t port_flags)
+{
+  lash_info("saving studio port '%s':'%s'", client_name, port_name);
+  return true;
+}
+
 bool studio_save(void * call_ptr)
 {
   struct list_head * node_ptr;
@@ -319,6 +352,22 @@ bool studio_save(void * call_ptr)
     goto close;
   }
 
+  if (!write_string(fd, "    <clients>\n", call_ptr))
+  {
+    goto close;
+  }
+
+  if (!ladish_graph_iterate_nodes(g_studio.jack_graph, call_ptr, save_jack_client, save_jack_port))
+  {
+    lash_error("ladish_graph_iterate_nodes() failed");
+    goto close;
+  }
+
+  if (!write_string(fd, "    </clients>\n", call_ptr))
+  {
+    goto close;
+  }
+
   if (!write_string(fd, "  </jack>\n", call_ptr))
   {
     goto close;
@@ -329,7 +378,7 @@ bool studio_save(void * call_ptr)
     goto close;
   }
 
-  if (!ladish_graph_iterate_nodes(g_studio.graph, call_ptr, save_jack_client, save_jack_port))
+  if (!ladish_graph_iterate_nodes(g_studio.studio_graph, call_ptr, save_studio_client, save_studio_port))
   {
     lash_error("ladish_graph_iterate_nodes() failed");
     goto close;
