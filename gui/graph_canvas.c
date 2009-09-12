@@ -29,7 +29,6 @@
 #include "graph_canvas.h"
 #include "../common/debug.h"
 #include "../common/klist.h"
-#include "../graph_dict_proxy.h"
 #include "../dbus_constants.h"
 
 struct graph_canvas
