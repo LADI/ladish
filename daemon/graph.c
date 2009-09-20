@@ -34,6 +34,7 @@ struct ladish_graph_port
 {
   struct list_head siblings_client;
   struct list_head siblings_graph;
+  struct ladish_graph_client * client_ptr;
   char * name;
   uint32_t type;
   uint32_t flags;
@@ -658,6 +659,7 @@ ladish_graph_add_port(
   port_ptr->port = port_handle;
   graph_ptr->graph_version++;
 
+  port_ptr->client_ptr = client_ptr;
   list_add_tail(&port_ptr->siblings_client, &client_ptr->ports);
   list_add_tail(&port_ptr->siblings_graph, &graph_ptr->ports);
 
@@ -713,6 +715,25 @@ ladish_port_handle ladish_graph_find_port_by_id(ladish_graph_handle graph_handle
   }
 
   return NULL;
+}
+
+void
+ladish_graph_remove_port(
+  ladish_graph_handle graph_handle,
+  ladish_port_handle port)
+{
+  struct list_head * node_ptr;
+  struct ladish_graph_port * port_ptr;
+
+  list_for_each(node_ptr, &graph_ptr->ports)
+  {
+    port_ptr = list_entry(node_ptr, struct ladish_graph_port, siblings_graph);
+    if (port_ptr->port == port)
+    {
+      ladish_graph_remove_port_internal(graph_ptr, port_ptr->client_ptr, port_ptr, false);
+      return;
+    }
+  }
 }
 
 bool

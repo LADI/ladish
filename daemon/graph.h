@@ -57,7 +57,6 @@ ladish_graph_add_port(
 void
 ladish_graph_remove_port(
   ladish_graph_handle graph_handle,
-  ladish_client_handle client_handle,
   ladish_port_handle port_handle);
 
 ladish_client_handle ladish_graph_find_client_by_id(ladish_graph_handle graph_handle, uint64_t client_id);
