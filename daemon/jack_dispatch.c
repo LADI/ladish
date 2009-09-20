@@ -55,7 +55,20 @@ static void client_appeared(void * context, uint64_t id, const char * name)
 {
   ladish_client_handle client;
 
-  lash_info("client_appeared(%llu, %s)", (unsigned long long)id, name);
+  lash_info("client_appeared(%"PRIu64", %s)", id, name);
+
+  if (!ladish_client_create(NULL, true, false, false, &client))
+  {
+    lash_error("ladish_client_create() failed. Ignoring client %"PRIu64" (%s)", id, name);
+    return;
+  }
+
+  if (!ladish_graph_add_client(dispatcher_ptr->jack_graph, client, name))
+  {
+    lash_error("ladish_graph_add_client() failed to add client %"PRIu64" (%s) to JACK graph", id, name);
+    ladish_client_destroy(client);
+    return;
+  }
 
   if (strcmp(name, "system") == 0)
   {
@@ -63,19 +76,39 @@ static void client_appeared(void * context, uint64_t id, const char * name)
   }
   else
   {
-    ladish_client_create(NULL, true, false, true, &client);
-    ladish_graph_add_client(dispatcher_ptr->studio_graph, client, name);
+    if (!ladish_graph_add_client(dispatcher_ptr->studio_graph, client, name))
+    {
+      lash_error("ladish_graph_add_client() failed to add client %"PRIu64" (%s) to studio graph", id, name);
+      ladish_graph_remove_client(dispatcher_ptr->jack_graph, client, false);
+      ladish_client_destroy(client);
+    }
   }
 }
 
 static void client_disappeared(void * context, uint64_t id)
 {
-  lash_info("client_disappeared(%llu)", (unsigned long long)id);
+  ladish_client_handle client;
+
+  lash_info("client_disappeared(%"PRIu64")", id);
+
+  client = ladish_graph_find_client_by_id(dispatcher_ptr->jack_graph, id);
+  if (client == NULL)
+  {
+    lash_error("Unknown JACK client with id %"PRIu64" disappeared", id);
+    return;
+  }
 
   if (id == dispatcher_ptr->system_client_id)
   {
     dispatcher_ptr->system_client_id = 0;
   }
+  else
+  {
+    ladish_graph_remove_client(dispatcher_ptr->studio_graph, client, false);
+  }
+
+  ladish_graph_remove_client(dispatcher_ptr->jack_graph, client, false);
+  ladish_client_destroy(client);
 }
 
 static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, const char * port_name, bool is_input, bool is_terminal, bool is_midi)
