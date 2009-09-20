@@ -805,7 +805,7 @@ ladish_graph_iterate_nodes(
   ladish_graph_handle graph_handle,
   void * callback_context,
   bool
-  (* client_callback)(
+  (* client_begin_callback)(
     void * context,
     ladish_client_handle client_handle,
     const char * client_name,
@@ -819,7 +819,13 @@ ladish_graph_iterate_nodes(
     ladish_port_handle port_handle,
     const char * port_name,
     uint32_t port_type,
-    uint32_t port_flags))
+    uint32_t port_flags),
+  bool
+  (* client_end_callback)(
+    void * context,
+    ladish_client_handle client_handle,
+    const char * client_name,
+    void * client_iteration_context_ptr))
 {
   struct list_head * client_node_ptr;
   struct ladish_graph_client * client_ptr;
@@ -830,7 +836,7 @@ ladish_graph_iterate_nodes(
   list_for_each(client_node_ptr, &graph_ptr->clients)
   {
     client_ptr = list_entry(client_node_ptr, struct ladish_graph_client, siblings);
-    if (!client_callback(callback_context, client_ptr->client, client_ptr->name, &client_context))
+    if (!client_begin_callback(callback_context, client_ptr->client, client_ptr->name, &client_context))
     {
       return false;
     }
@@ -851,6 +857,11 @@ ladish_graph_iterate_nodes(
       {
         return false;
       }
+    }
+
+    if (!client_end_callback(callback_context, client_ptr->client, client_ptr->name, &client_context))
+    {
+      return false;
     }
   }
 

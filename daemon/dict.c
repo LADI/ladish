@@ -191,4 +191,9 @@ bool ladish_dict_iterate(ladish_dict_handle dict_handle, void * context, bool (*
   return true;
 }
 
+bool ladish_dict_is_empty(ladish_dict_handle dict_handle)
+{
+  return list_empty(&dict_ptr->entries);
+}
+
 #undef dict_ptr

@@ -36,11 +36,17 @@
 #include "escape.h"
 #include "studio_internal.h"
 
-#define PARSE_CONTEXT_ROOT        0
-#define PARSE_CONTEXT_STUDIO      1
-#define PARSE_CONTEXT_JACK        2
-#define PARSE_CONTEXT_CONF        3
-#define PARSE_CONTEXT_PARAMETER   4
+#define PARSE_CONTEXT_ROOT                0
+#define PARSE_CONTEXT_STUDIO              1
+#define PARSE_CONTEXT_JACK                2
+#define PARSE_CONTEXT_CONF                3
+#define PARSE_CONTEXT_PARAMETER           4
+#define PARSE_CONTEXT_CLIENTS             5
+#define PARSE_CONTEXT_CLIENT              6
+#define PARSE_CONTEXT_PORTS               7
+#define PARSE_CONTEXT_PORT                8
+#define PARSE_CONTEXT_DICT                9
+#define PARSE_CONTEXT_KEY                10
 
 #define MAX_STACK_DEPTH       10
 #define MAX_DATA_SIZE         1024
@@ -134,6 +140,48 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
 
     context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_PARAMETER;
     context_ptr->data_used = 0;
+    return;
+  }
+
+  if (strcmp(el, "clients") == 0)
+  {
+    //log_info("<clients>");
+    context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_CLIENTS;
+    return;
+  }
+
+  if (strcmp(el, "client") == 0)
+  {
+    //log_info("<client>");
+    context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_CLIENT;
+    return;
+  }
+
+  if (strcmp(el, "ports") == 0)
+  {
+    //log_info("<ports>");
+    context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_PORTS;
+    return;
+  }
+
+  if (strcmp(el, "port") == 0)
+  {
+    //log_info("<port>");
+    context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_PORT;
+    return;
+  }
+
+  if (strcmp(el, "dict") == 0)
+  {
+    //log_info("<dict>");
+    context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_DICT;
+    return;
+  }
+
+  if (strcmp(el, "key") == 0)
+  {
+    //log_info("<key>");
+    context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_KEY;
     return;
   }
 

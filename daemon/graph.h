@@ -72,7 +72,7 @@ ladish_graph_iterate_nodes(
   ladish_graph_handle graph_handle,
   void * callback_context,
   bool
-  (* client_callback)(
+  (* client_begin_callback)(
     void * context,
     ladish_client_handle client_handle,
     const char * client_name,
@@ -86,7 +86,13 @@ ladish_graph_iterate_nodes(
     ladish_port_handle port_handle,
     const char * port_name,
     uint32_t port_type,
-    uint32_t port_flags));
+    uint32_t port_flags),
+  bool
+  (* client_end_callback)(
+    void * context,
+    ladish_client_handle client_handle,
+    const char * client_name,
+    void * client_iteration_context_ptr));
 
 extern const struct dbus_interface_descriptor g_interface_patchbay;
 

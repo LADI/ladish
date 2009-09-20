@@ -38,5 +38,6 @@ const char * ladish_dict_get(ladish_dict_handle dict_handle, const char * key);
 void ladish_dict_drop(ladish_dict_handle dict_handle, const char * key);
 void ladish_dict_clear(ladish_dict_handle dict_handle);
 bool ladish_dict_iterate(ladish_dict_handle dict_handle, void * context, bool (* callback)(void * context, const char * key, const char * value));
+bool ladish_dict_is_empty(ladish_dict_handle dict_handle);
 
 #endif /* #ifndef DICT_H__12A321F8_A361_482B_9255_66CCD4D3C31F__INCLUDED */
