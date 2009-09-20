@@ -459,7 +459,7 @@ ladish_graph_remove_port_internal(
   list_del(&port_ptr->siblings_client);
   list_del(&port_ptr->siblings_graph);
 
-  lash_info("removing port '%s':'%s' (%llu:%llu)", client_ptr->name, port_ptr->name, (unsigned long long)client_ptr->id, (unsigned long long)port_ptr->id);
+  lash_info("removing port '%s':'%s' (%"PRIu64":%"PRIu64") from graph %s", client_ptr->name, port_ptr->name, client_ptr->id, port_ptr->id, graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
   if (graph_ptr->opath != NULL)
   {
     dbus_signal_emit(
@@ -495,7 +495,7 @@ ladish_graph_remove_client_internal(
 
   graph_ptr->graph_version++;
   list_del(&client_ptr->siblings);
-  lash_info("removing client '%s' (%llu)", client_ptr->name, (unsigned long long)client_ptr->id);
+  lash_info("removing client '%s' (%"PRIu64") from graph %s", client_ptr->name, client_ptr->id, graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
   if (graph_ptr->opath != NULL)
   {
     dbus_signal_emit(
@@ -635,7 +635,7 @@ ladish_graph_add_port(
     return false;
   }
 
-  lash_info("adding port '%s':'%s' (%p)to graph %s", client_ptr->name, name, port_handle, graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
+  lash_info("adding port '%s':'%s' (%p) to graph %s", client_ptr->name, name, port_handle, graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
 
   port_ptr = malloc(sizeof(struct ladish_graph_port));
   if (port_ptr == NULL)
@@ -717,7 +717,41 @@ ladish_port_handle ladish_graph_find_port_by_id(ladish_graph_handle graph_handle
   return NULL;
 }
 
-void
+ladish_client_handle ladish_graph_find_client_by_jack_id(ladish_graph_handle graph_handle, uint64_t client_id)
+{
+  struct list_head * node_ptr;
+  struct ladish_graph_client * client_ptr;
+
+  list_for_each(node_ptr, &graph_ptr->clients)
+  {
+    client_ptr = list_entry(node_ptr, struct ladish_graph_client, siblings);
+    if (ladish_client_get_jack_id(client_ptr->client) == client_id)
+    {
+      return client_ptr->client;
+    }
+  }
+
+  return NULL;
+}
+
+ladish_port_handle ladish_graph_find_port_by_jack_id(ladish_graph_handle graph_handle, uint64_t port_id)
+{
+  struct list_head * node_ptr;
+  struct ladish_graph_port * port_ptr;
+
+  list_for_each(node_ptr, &graph_ptr->ports)
+  {
+    port_ptr = list_entry(node_ptr, struct ladish_graph_port, siblings_graph);
+    if (ladish_port_get_jack_id(port_ptr->port) == port_id)
+    {
+      return port_ptr->port;
+    }
+  }
+
+  return NULL;
+}
+
+ladish_client_handle
 ladish_graph_remove_port(
   ladish_graph_handle graph_handle,
   ladish_port_handle port)
@@ -731,9 +765,39 @@ ladish_graph_remove_port(
     if (port_ptr->port == port)
     {
       ladish_graph_remove_port_internal(graph_ptr, port_ptr->client_ptr, port_ptr, false);
-      return;
+      return port_ptr->client_ptr->client;
     }
   }
+
+  return NULL;
+}
+
+const char * ladish_graph_get_client_name(ladish_graph_handle graph_handle, ladish_client_handle client_handle)
+{
+  struct ladish_graph_client * client_ptr;
+
+  client_ptr = ladish_graph_find_client(graph_ptr, client_handle);
+  if (client_ptr != NULL)
+  {
+      return client_ptr->name;
+  }
+
+  assert(false);
+  return NULL;
+}
+
+bool ladish_graph_is_client_empty(ladish_graph_handle graph_handle, ladish_client_handle client_handle)
+{
+  struct ladish_graph_client * client_ptr;
+
+  client_ptr = ladish_graph_find_client(graph_ptr, client_handle);
+  if (client_ptr != NULL)
+  {
+    return list_empty(&client_ptr->ports);
+  }
+
+  assert(false);
+  return true;
 }
 
 bool

@@ -105,4 +105,14 @@ ladish_dict_handle ladish_port_get_dict(ladish_port_handle port_handle)
   return port_ptr->dict;
 }
 
+void ladish_port_set_jack_id(ladish_port_handle port_handle, uint64_t jack_id)
+{
+  port_ptr->jack_id = jack_id;
+}
+
+uint64_t ladish_port_get_jack_id(ladish_port_handle port_handle)
+{
+  return port_ptr->jack_id;
+}
+
 #undef port_ptr

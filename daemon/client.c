@@ -127,4 +127,14 @@ void ladish_client_get_uuid(ladish_client_handle client_handle, uuid_t uuid)
   uuid_copy(uuid, client_ptr->uuid);
 }
 
+void ladish_client_set_jack_id(ladish_client_handle client_handle, uint64_t jack_id)
+{
+  client_ptr->jack_id = jack_id;
+}
+
+uint64_t ladish_client_get_jack_id(ladish_client_handle client_handle)
+{
+  return client_ptr->jack_id;
+}
+
 #undef client_ptr

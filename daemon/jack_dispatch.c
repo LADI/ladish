@@ -63,6 +63,8 @@ static void client_appeared(void * context, uint64_t id, const char * name)
     return;
   }
 
+  ladish_client_set_jack_id(client, id);
+
   if (!ladish_graph_add_client(dispatcher_ptr->jack_graph, client, name))
   {
     lash_error("ladish_graph_add_client() failed to add client %"PRIu64" (%s) to JACK graph", id, name);
@@ -74,15 +76,6 @@ static void client_appeared(void * context, uint64_t id, const char * name)
   {
     dispatcher_ptr->system_client_id = id;
   }
-  else
-  {
-    if (!ladish_graph_add_client(dispatcher_ptr->studio_graph, client, name))
-    {
-      lash_error("ladish_graph_add_client() failed to add client %"PRIu64" (%s) to studio graph", id, name);
-      ladish_graph_remove_client(dispatcher_ptr->jack_graph, client, false);
-      ladish_client_destroy(client);
-    }
-  }
 }
 
 static void client_disappeared(void * context, uint64_t id)
@@ -91,7 +84,7 @@ static void client_disappeared(void * context, uint64_t id)
 
   lash_info("client_disappeared(%"PRIu64")", id);
 
-  client = ladish_graph_find_client_by_id(dispatcher_ptr->jack_graph, id);
+  client = ladish_graph_find_client_by_jack_id(dispatcher_ptr->jack_graph, id);
   if (client == NULL)
   {
     lash_error("Unknown JACK client with id %"PRIu64" disappeared", id);
@@ -101,10 +94,6 @@ static void client_disappeared(void * context, uint64_t id)
   if (id == dispatcher_ptr->system_client_id)
   {
     dispatcher_ptr->system_client_id = 0;
-  }
-  else
-  {
-    ladish_graph_remove_client(dispatcher_ptr->studio_graph, client, false);
   }
 
   ladish_graph_remove_client(dispatcher_ptr->jack_graph, client, false);
@@ -117,13 +106,45 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
   ladish_port_handle port;
   uint32_t type;
   uint32_t flags;
+  const char * jack_client_name;
 
-  lash_info("port_appeared(%llu, %llu, %s (%s, %s))", (unsigned long long)client_id, (unsigned long long)port_id, port_name, is_input ? "in" : "out", is_midi ? "midi" : "audio");
+  lash_info("port_appeared(%"PRIu64", %"PRIu64", %s (%s, %s))", client_id, port_id, port_name, is_input ? "in" : "out", is_midi ? "midi" : "audio");
+
+  client = ladish_graph_find_client_by_jack_id(dispatcher_ptr->jack_graph, client_id);
+  if (client == NULL)
+  {
+    lash_error("Port of unknown JACK client with id %"PRIu64" appeared", client_id);
+    return;
+  }
+
+  jack_client_name = ladish_graph_get_client_name(dispatcher_ptr->jack_graph, client);
+
+  type = is_midi ? JACKDBUS_PORT_TYPE_MIDI : JACKDBUS_PORT_TYPE_AUDIO;
+  flags = is_input ? JACKDBUS_PORT_FLAG_INPUT : JACKDBUS_PORT_FLAG_OUTPUT;
+  if (is_terminal)
+  {
+    flags |= JACKDBUS_PORT_FLAG_TERMINAL;
+  }
+
+  if (!ladish_port_create(NULL, &port))
+  {
+    lash_error("ladish_port_create() failed.");
+    return;
+  }
+
+  ladish_port_set_jack_id(port, port_id);
+
+  if (!ladish_graph_add_port(dispatcher_ptr->jack_graph, client, port, port_name, type, flags))
+  {
+    lash_error("ladish_graph_add_port() failed.");
+    ladish_port_destroy(port);
+    return;
+  }
 
   if (client_id == dispatcher_ptr->system_client_id)
   {
     if (!is_input)
-    {
+    { /* output capture port */
       if (dispatcher_ptr->system_capture_client == NULL)
       {
         if (!ladish_client_create(g_system_capture_guid, true, false, true, &dispatcher_ptr->system_capture_client))
@@ -144,7 +165,7 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
       client = dispatcher_ptr->system_capture_client;
     }
     else
-    {
+    { /* input capture port */
       if (dispatcher_ptr->system_playback_client == NULL)
       {
         if (!ladish_client_create(g_system_playback_guid, true, false, true, &dispatcher_ptr->system_playback_client))
@@ -165,21 +186,25 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
     }
   }
   else
-  {
-    return; /* TODO: find client by client_id */
-  }
+  { /* non-system client */
+    client = ladish_graph_find_client_by_jack_id(dispatcher_ptr->studio_graph, client_id);
+    if (client == NULL)
+    {
+      if (!ladish_client_create(NULL, false, false, false, &client))
+      {
+        lash_error("ladish_client_create() failed.");
+        return;
+      }
 
-  type = is_midi ? JACKDBUS_PORT_TYPE_MIDI : JACKDBUS_PORT_TYPE_AUDIO;
-  flags = is_input ? JACKDBUS_PORT_FLAG_INPUT : JACKDBUS_PORT_FLAG_OUTPUT;
-  if (is_terminal)
-  {
-    flags |= JACKDBUS_PORT_FLAG_TERMINAL;
-  }
+      ladish_client_set_jack_id(client, client_id);
 
-  if (!ladish_port_create(NULL, &port))
-  {
-    lash_error("ladish_port_create() failed.");
-    return;
+      if (!ladish_graph_add_client(dispatcher_ptr->studio_graph, client, jack_client_name))
+      {
+        lash_error("ladish_graph_add_client() failed to add client '%s' to studio graph", jack_client_name);
+        ladish_client_destroy(client);
+        return;
+      }
+    }
   }
 
   if (!ladish_graph_add_port(dispatcher_ptr->studio_graph, client, port, port_name, type, flags))
@@ -191,7 +216,35 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
 
 static void port_disappeared(void * context, uint64_t client_id, uint64_t port_id)
 {
-  lash_info("port_disappeared(%llu)", (unsigned long long)port_id);
+  ladish_client_handle client;
+  ladish_port_handle port;
+
+  lash_info("port_disappeared(%"PRIu64")", port_id);
+
+  client = ladish_graph_find_client_by_jack_id(dispatcher_ptr->jack_graph, client_id);
+  if (client == NULL)
+  {
+    lash_error("Port of unknown JACK client with id %"PRIu64" disappeared", client_id);
+    return;
+  }
+
+  port = ladish_graph_find_port_by_jack_id(dispatcher_ptr->jack_graph, port_id);
+  if (client == NULL)
+  {
+    lash_error("Unknown JACK port with id %"PRIu64" disappeared", port_id);
+    return;
+  }
+
+  ladish_graph_remove_port(dispatcher_ptr->jack_graph, port);
+
+  client = ladish_graph_remove_port(dispatcher_ptr->studio_graph, port);
+  if (client != NULL)
+  {
+    if (ladish_graph_is_client_empty(dispatcher_ptr->studio_graph, client))
+    {
+      ladish_graph_remove_client(dispatcher_ptr->studio_graph, client, false);
+    }
+  }
 }
 
 static void ports_connected(void * context, uint64_t client1_id, uint64_t port1_id, uint64_t client2_id, uint64_t port2_id)
