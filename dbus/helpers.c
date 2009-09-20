@@ -34,7 +34,7 @@
 
 #include "helpers.h"
 #include "method.h"
-#include "../common/debug.h"
+#include "../log.h"
 
 DBusConnection * g_dbus_connection;
 DBusError g_dbus_error;

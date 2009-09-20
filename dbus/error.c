@@ -30,7 +30,6 @@
 #include "../common.h"
 #include "helpers.h"
 #include "error.h"
-#include "../common/debug.h"
 
 void lash_dbus_error(struct dbus_method_call * call_ptr, const char * err_name, const char * format, ...)
 {

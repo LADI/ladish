@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the code that sets process "title"
@@ -29,7 +29,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include "../common/debug.h"
+#include "../log.h"
 
 static char * g_argv_begin;
 static char * g_argv_end;

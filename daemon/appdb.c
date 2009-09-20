@@ -32,7 +32,7 @@
 #include <assert.h>
 
 #include "appdb.h"
-#include "../common/debug.h"
+#include "../log.h"
 #include "../catdup.h"
 
 void

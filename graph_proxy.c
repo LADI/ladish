@@ -31,7 +31,6 @@
 #include "common.h"
 #include "graph_proxy.h"
 #include "common/klist.h"
-#include "common/debug.h"
 #include "dbus/helpers.h"
 #include "dbus_constants.h"
 

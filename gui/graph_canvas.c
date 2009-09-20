@@ -27,8 +27,6 @@
 #include <locale.h>
 
 #include "graph_canvas.h"
-#include "../common/debug.h"
-#include "../common/klist.h"
 #include "../dbus_constants.h"
 
 struct graph_canvas

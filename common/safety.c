@@ -33,7 +33,7 @@
 #include <string.h>
 
 #include "safety.h"
-#include "debug.h"
+#include "../log.h"
 
 void
 _lash_free(void **ptr)

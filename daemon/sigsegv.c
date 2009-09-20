@@ -46,7 +46,7 @@
 char * __cxa_demangle(const char * __mangled_name, char * __output_buffer, size_t * __length, int * __status);
 #endif
 
-#include "../common/debug.h"
+#include "../log.h"
 
 #if defined(REG_RIP)
 # define SIGSEGV_STACK_IA64
