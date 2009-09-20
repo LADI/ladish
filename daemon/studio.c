@@ -378,13 +378,13 @@ bool studio_init(void)
 
   //studio_clear();
 
-  if (!ladish_graph_create(&g_studio.jack_graph, STUDIO_OBJECT_PATH))
+  if (!ladish_graph_create(&g_studio.jack_graph, NULL))
   {
     lash_error("ladish_graph_create() failed to create jack graph object.");
     goto free_studios_dir;
   }
 
-  if (!ladish_graph_create(&g_studio.studio_graph, NULL))
+  if (!ladish_graph_create(&g_studio.studio_graph, STUDIO_OBJECT_PATH))
   {
     lash_error("ladish_graph_create() failed to create studio graph object.");
     goto jack_graph_destroy;
