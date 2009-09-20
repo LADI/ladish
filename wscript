@@ -180,7 +180,7 @@ def build(bld):
     daemon.includes = "build/default" # XXX config.h version.h and other generated files
     daemon.uselib = 'DBUS-1 UUID EXPAT'
     daemon.ver_header = 'version.h'
-    daemon.env.append_value("LINKFLAGS", ["-lutil", "-ldl"])
+    daemon.env.append_value("LINKFLAGS", ["-lutil", "-ldl", "-Wl,-E"])
 
     daemon.source = [
         'jack_proxy.c',
