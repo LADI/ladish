@@ -102,27 +102,27 @@ write_jack_parameter(
   {
   case jack_boolean:
     content = parameter_ptr->parameter.value.boolean ? "true" : "false";
-    lash_debug("%s value is %s (boolean)", path, content);
+    log_debug("%s value is %s (boolean)", path, content);
     break;
   case jack_string:
     content = parameter_ptr->parameter.value.string;
-    lash_debug("%s value is %s (string)", path, content);
+    log_debug("%s value is %s (string)", path, content);
     break;
   case jack_byte:
     valbuf[0] = (char)parameter_ptr->parameter.value.byte;
     valbuf[1] = 0;
     content = valbuf;
-    lash_debug("%s value is %u/%c (byte/char)", path, parameter_ptr->parameter.value.byte, (char)parameter_ptr->parameter.value.byte);
+    log_debug("%s value is %u/%c (byte/char)", path, parameter_ptr->parameter.value.byte, (char)parameter_ptr->parameter.value.byte);
     break;
   case jack_uint32:
     snprintf(valbuf, sizeof(valbuf), "%" PRIu32, parameter_ptr->parameter.value.uint32);
     content = valbuf;
-    lash_debug("%s value is %s (uint32)", path, content);
+    log_debug("%s value is %s (uint32)", path, content);
     break;
   case jack_int32:
     snprintf(valbuf, sizeof(valbuf), "%" PRIi32, parameter_ptr->parameter.value.int32);
     content = valbuf;
-    lash_debug("%s value is %s (int32)", path, content);
+    log_debug("%s value is %s (int32)", path, content);
     break;
   default:
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "unknown jack parameter_ptr->parameter type %d (%s)", (int)parameter_ptr->parameter.type, path);
@@ -156,7 +156,7 @@ save_jack_client(
   ladish_client_get_uuid(client_handle, uuid);
   uuid_unparse(uuid, str);
 #endif
-  lash_info("saving jack client '%s'", client_name);
+  log_info("saving jack client '%s'", client_name);
   return true;
 }
 
@@ -171,7 +171,7 @@ save_jack_port(
   uint32_t port_type,
   uint32_t port_flags)
 {
-  lash_info("saving jack port '%s':'%s'", client_name, port_name);
+  log_info("saving jack port '%s':'%s'", client_name, port_name);
   return true;
 }
 
@@ -189,7 +189,7 @@ save_studio_client(
   ladish_client_get_uuid(client_handle, uuid);
   uuid_unparse(uuid, str);
 #endif
-  lash_info("saving studio client '%s'", client_name);
+  log_info("saving studio client '%s'", client_name);
   return true;
 }
 
@@ -204,7 +204,7 @@ save_studio_port(
   uint32_t port_type,
   uint32_t port_flags)
 {
-  lash_info("saving studio port '%s':'%s'", client_name, port_name);
+  log_info("saving studio port '%s':'%s'", client_name, port_name);
   return true;
 }
 
@@ -278,7 +278,7 @@ bool studio_save(void * call_ptr)
     }
   }
 
-  lash_info("saving studio... (%s)", g_studio.filename);
+  log_info("saving studio... (%s)", g_studio.filename);
 
   fd = open(g_studio.filename, O_WRONLY | O_TRUNC | O_CREAT, 0700);
   if (fd == -1)
@@ -359,7 +359,7 @@ bool studio_save(void * call_ptr)
 
   if (!ladish_graph_iterate_nodes(g_studio.jack_graph, call_ptr, save_jack_client, save_jack_port))
   {
-    lash_error("ladish_graph_iterate_nodes() failed");
+    log_error("ladish_graph_iterate_nodes() failed");
     goto close;
   }
 
@@ -380,7 +380,7 @@ bool studio_save(void * call_ptr)
 
   if (!ladish_graph_iterate_nodes(g_studio.studio_graph, call_ptr, save_studio_client, save_studio_port))
   {
-    lash_error("ladish_graph_iterate_nodes() failed");
+    log_error("ladish_graph_iterate_nodes() failed");
     goto close;
   }
 
@@ -394,7 +394,7 @@ bool studio_save(void * call_ptr)
     goto close;
   }
 
-  lash_info("studio saved. (%s)", g_studio.filename);
+  log_info("studio saved. (%s)", g_studio.filename);
   g_studio.persisted = true;
   g_studio.automatic = false;   /* even if it was automatic, it is not anymore because it is saved */
   ret = true;

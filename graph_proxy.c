@@ -124,7 +124,7 @@ port_appeared(
 
   if (port_type != JACKDBUS_PORT_TYPE_AUDIO && port_type != JACKDBUS_PORT_TYPE_MIDI)
   {
-    lash_error("Unknown JACK D-Bus port type %d", (unsigned int)port_type);
+    log_error("Unknown JACK D-Bus port type %d", (unsigned int)port_type);
     return;
   }
 
@@ -218,7 +218,7 @@ static void refresh_internal(struct graph * graph_ptr, bool force)
   const char *port2_name;
   dbus_uint64_t connection_id;
 
-  lash_info("refresh_internal() called");
+  log_info("refresh_internal() called");
 
   if (force)
   {
@@ -231,7 +231,7 @@ static void refresh_internal(struct graph * graph_ptr, bool force)
 
   if (!dbus_call(graph_ptr->service, graph_ptr->object, JACKDBUS_IFACE_PATCHBAY, "GetGraph", "t", &version, NULL, &reply_ptr))
   {
-    lash_error("GetGraph() failed.");
+    log_error("GetGraph() failed.");
     return;
   }
 
@@ -239,13 +239,13 @@ static void refresh_internal(struct graph * graph_ptr, bool force)
 
   if (strcmp(reply_signature, "ta(tsa(tsuu))a(tstststst)") != 0)
   {
-    lash_error("GetGraph() reply signature mismatch. '%s'", reply_signature);
+    log_error("GetGraph() reply signature mismatch. '%s'", reply_signature);
     goto unref;
   }
 
   dbus_message_iter_init(reply_ptr, &iter);
 
-  //lash_info_msg("version " + (char)dbus_message_iter_get_arg_type(&iter));
+  //log_info_msg("version " + (char)dbus_message_iter_get_arg_type(&iter));
   dbus_message_iter_get_basic(&iter, &version);
   dbus_message_iter_next(&iter);
 
@@ -256,7 +256,7 @@ static void refresh_internal(struct graph * graph_ptr, bool force)
 
   clear(graph_ptr);
 
-  //lash_info("got new graph version %llu", (unsigned long long)version);
+  //log_info("got new graph version %llu", (unsigned long long)version);
   graph_ptr->version = version;
 
   //info_msg((std::string)"clients " + (char)dbus_message_iter_get_arg_type(&iter));
@@ -371,21 +371,21 @@ graph_proxy_create(
   graph_ptr = malloc(sizeof(struct graph));
   if (graph_ptr == NULL)
   {
-    lash_error("malloc() failed to allocate struct graph");
+    log_error("malloc() failed to allocate struct graph");
     goto fail;
   }
 
   graph_ptr->service = strdup(service);
   if (graph_ptr->service == NULL)
   {
-    lash_error("strdup() failed too duplicate service name '%s'", service);
+    log_error("strdup() failed too duplicate service name '%s'", service);
     goto free_graph;
   }
 
   graph_ptr->object = strdup(object);
   if (graph_ptr->object == NULL)
   {
-    lash_error("strdup() failed too duplicate object name '%s'", object);
+    log_error("strdup() failed too duplicate object name '%s'", object);
     goto free_service;
   }
 
@@ -451,13 +451,13 @@ graph_proxy_activate(
 {
   if (list_empty(&graph_ptr->monitors))
   {
-    lash_error("no monitors to activate");
+    log_error("no monitors to activate");
     return false;
   }
 
   if (graph_ptr->active)
   {
-    lash_error("graph already active");
+    log_error("graph already active");
     return false;
   }
 
@@ -502,7 +502,7 @@ graph_proxy_attach(
   monitor_ptr = malloc(sizeof(struct monitor));
   if (monitor_ptr == NULL)
   {
-    lash_error("malloc() failed to allocate struct monitor");
+    log_error("malloc() failed to allocate struct monitor");
     return false;
   }
 
@@ -550,7 +550,7 @@ graph_proxy_connect_ports(
 {
   if (!dbus_call(graph_ptr->service, graph_ptr->object, JACKDBUS_IFACE_PATCHBAY, "ConnectPortsByID", "tt", &port1_id, &port2_id, ""))
   {
-    lash_error("ConnectPortsByID() failed.");
+    log_error("ConnectPortsByID() failed.");
   }
 }
 
@@ -562,7 +562,7 @@ graph_proxy_disconnect_ports(
 {
   if (!dbus_call(graph_ptr->service, graph_ptr->object, JACKDBUS_IFACE_PATCHBAY, "DisconnectPortsByID", "tt", &port1_id, &port2_id, ""))
   {
-    lash_error("DisconnectPortsByID() failed.");
+    log_error("DisconnectPortsByID() failed.");
   }
 }
 
@@ -603,16 +603,16 @@ message_hook(
           DBUS_TYPE_STRING, &client_name,
           DBUS_TYPE_INVALID))
     {
-      lash_error("dbus_message_get_args() failed to extract ClientAppeared signal arguments (%s)", g_dbus_error.message);
+      log_error("dbus_message_get_args() failed to extract ClientAppeared signal arguments (%s)", g_dbus_error.message);
       dbus_error_free(&g_dbus_error);
       return DBUS_HANDLER_RESULT_HANDLED;
     }
 
-    //lash_info("ClientAppeared, %s(%llu), graph %llu", client_name, client_id, new_graph_version);
+    //log_info("ClientAppeared, %s(%llu), graph %llu", client_name, client_id, new_graph_version);
 
     if (new_graph_version > graph_ptr->version)
     {
-      //lash_info("got new graph version %llu", (unsigned long long)new_graph_version);
+      //log_info("got new graph version %llu", (unsigned long long)new_graph_version);
       graph_ptr->version = new_graph_version;
       client_appeared(graph_ptr, client_id, client_name);
     }
@@ -630,16 +630,16 @@ message_hook(
           DBUS_TYPE_STRING, &client_name,
           DBUS_TYPE_INVALID))
     {
-      lash_error("dbus_message_get_args() failed to extract ClientDisappeared signal arguments (%s)", g_dbus_error.message);
+      log_error("dbus_message_get_args() failed to extract ClientDisappeared signal arguments (%s)", g_dbus_error.message);
       dbus_error_free(&g_dbus_error);
       return DBUS_HANDLER_RESULT_HANDLED;
     }
 
-    //lash_info("ClientDisappeared, %s(%llu)", client_name, client_id);
+    //log_info("ClientDisappeared, %s(%llu)", client_name, client_id);
 
     if (new_graph_version > graph_ptr->version)
     {
-      //lash_info("got new graph version %llu", (unsigned long long)new_graph_version);
+      //log_info("got new graph version %llu", (unsigned long long)new_graph_version);
       graph_ptr->version = new_graph_version;
       client_disappeared(graph_ptr, client_id);
     }
@@ -661,7 +661,7 @@ message_hook(
           DBUS_TYPE_UINT32, &port_type,
           DBUS_TYPE_INVALID))
     {
-      lash_error("dbus_message_get_args() failed to extract PortAppeared signal arguments (%s)", g_dbus_error.message);
+      log_error("dbus_message_get_args() failed to extract PortAppeared signal arguments (%s)", g_dbus_error.message);
       dbus_error_free(&g_dbus_error);
       return DBUS_HANDLER_RESULT_HANDLED;
     }
@@ -670,7 +670,7 @@ message_hook(
 
     if (new_graph_version > graph_ptr->version)
     {
-      //lash_info("got new graph version %llu", (unsigned long long)new_graph_version);
+      //log_info("got new graph version %llu", (unsigned long long)new_graph_version);
       graph_ptr->version = new_graph_version;
       port_appeared(graph_ptr, client_id, port_id, port_name, port_flags, port_type);
     }
@@ -690,7 +690,7 @@ message_hook(
           DBUS_TYPE_STRING, &port_name,
           DBUS_TYPE_INVALID))
     {
-      lash_error("dbus_message_get_args() failed to extract PortDisappeared signal arguments (%s)", g_dbus_error.message);
+      log_error("dbus_message_get_args() failed to extract PortDisappeared signal arguments (%s)", g_dbus_error.message);
       dbus_error_free(&g_dbus_error);
       return DBUS_HANDLER_RESULT_HANDLED;
     }
@@ -699,7 +699,7 @@ message_hook(
 
     if (new_graph_version > graph_ptr->version)
     {
-      //lash_info("got new graph version %llu", (unsigned long long)new_graph_version);
+      //log_info("got new graph version %llu", (unsigned long long)new_graph_version);
       graph_ptr->version = new_graph_version;
       port_disappeared(graph_ptr, client_id, port_id);
     }
@@ -724,14 +724,14 @@ message_hook(
           DBUS_TYPE_UINT64, &connection_id,
           DBUS_TYPE_INVALID))
     {
-      lash_error("dbus_message_get_args() failed to extract PortsConnected signal arguments (%s)", g_dbus_error.message);
+      log_error("dbus_message_get_args() failed to extract PortsConnected signal arguments (%s)", g_dbus_error.message);
       dbus_error_free(&g_dbus_error);
       return DBUS_HANDLER_RESULT_HANDLED;
     }
 
     if (new_graph_version > graph_ptr->version)
     {
-      //lash_info("got new graph version %llu", (unsigned long long)new_graph_version);
+      //log_info("got new graph version %llu", (unsigned long long)new_graph_version);
       graph_ptr->version = new_graph_version;
       ports_connected(graph_ptr, client_id, port_id, client2_id, port2_id);
     }
@@ -756,14 +756,14 @@ message_hook(
           DBUS_TYPE_UINT64, &connection_id,
           DBUS_TYPE_INVALID))
     {
-      lash_error("dbus_message_get_args() failed to extract PortsConnected signal arguments (%s)", g_dbus_error.message);
+      log_error("dbus_message_get_args() failed to extract PortsConnected signal arguments (%s)", g_dbus_error.message);
       dbus_error_free(&g_dbus_error);
       return DBUS_HANDLER_RESULT_HANDLED;
     }
 
     if (new_graph_version > graph_ptr->version)
     {
-      //lash_info("got new graph version %llu", (unsigned long long)new_graph_version);
+      //log_info("got new graph version %llu", (unsigned long long)new_graph_version);
       graph_ptr->version = new_graph_version;
       ports_disconnected(graph_ptr, client_id, port_id, client2_id, port2_id);
     }
@@ -789,7 +789,7 @@ graph_proxy_dict_entry_set(
 
   if (!dbus_call(graph_ptr->service, graph_ptr->object, IFACE_GRAPH_DICT, "Set", "utss", &object_type, &object_id, &key, &value, ""))
   {
-    lash_error(IFACE_GRAPH_DICT ".Set() failed.");
+    log_error(IFACE_GRAPH_DICT ".Set() failed.");
     return false;
   }
 
@@ -817,7 +817,7 @@ graph_proxy_dict_entry_get(
 
   if (!dbus_call(graph_ptr->service, graph_ptr->object, IFACE_GRAPH_DICT, "Get", "uts", &object_type, &object_id, &key, NULL, &reply_ptr))
   {
-    lash_error(IFACE_GRAPH_DICT ".Get() failed.");
+    log_error(IFACE_GRAPH_DICT ".Get() failed.");
     return false;
   }
 
@@ -825,7 +825,7 @@ graph_proxy_dict_entry_get(
 
   if (strcmp(reply_signature, "s") != 0)
   {
-    lash_error("reply signature is '%s' but expected signature is 's'", reply_signature);
+    log_error("reply signature is '%s' but expected signature is 's'", reply_signature);
     dbus_message_unref(reply_ptr);
     return false;
   }
@@ -836,7 +836,7 @@ graph_proxy_dict_entry_get(
   dbus_message_unref(reply_ptr);
   if (value_ptr == NULL)
   {
-    lash_error("strdup() failed for dict value");
+    log_error("strdup() failed for dict value");
     return false;
   }
   *value_ptr_ptr = value_ptr;
@@ -857,7 +857,7 @@ graph_proxy_dict_entry_drop(
 
   if (!dbus_call(graph_ptr->service, graph_ptr->object, IFACE_GRAPH_DICT, "Drop", "uts", &object_type, &object_id, &key, ""))
   {
-    lash_error(IFACE_GRAPH_DICT ".Drop() failed.");
+    log_error(IFACE_GRAPH_DICT ".Drop() failed.");
     return false;
   }
 

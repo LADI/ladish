@@ -35,39 +35,39 @@
 #include "dirhelpers.h"
 
 #define DEFAULT_XDG_LOG "/.log"
-#define LASH_XDG_SUBDIR "/" BASE_NAME
-#define LASH_XDG_LOG "/" BASE_NAME ".log"
+#define LADISH_XDG_SUBDIR "/" BASE_NAME
+#define LADISH_XDG_LOG "/" BASE_NAME ".log"
 
 FILE * g_logfile;
 
-void lash_log_init() __attribute__ ((constructor));
-void lash_log_init()
+void ladish_log_init() __attribute__ ((constructor));
+void ladish_log_init()
 {
   char * log_filename;
   size_t log_len;
-  char * lash_log_dir;
-  size_t lash_log_dir_len; /* without terminating '\0' char */
+  char * ladish_log_dir;
+  size_t ladish_log_dir_len; /* without terminating '\0' char */
   const char * home_dir;
   char * xdg_log_home;
 
   home_dir = getenv("HOME");
   if (home_dir == NULL)
   {
-    lash_error("Environment variable HOME not set");
+    log_error("Environment variable HOME not set");
     goto exit;
   }
 
   xdg_log_home = catdup(home_dir, DEFAULT_XDG_LOG);
   if (xdg_log_home == NULL)
   {
-    lash_error("catdup failed for '%s' and '%s'", home_dir, DEFAULT_XDG_LOG);
+    log_error("catdup failed for '%s' and '%s'", home_dir, DEFAULT_XDG_LOG);
     goto exit;
   }
 
-  lash_log_dir = catdup(xdg_log_home, LASH_XDG_SUBDIR);
-  if (lash_log_dir == NULL)
+  ladish_log_dir = catdup(xdg_log_home, LADISH_XDG_SUBDIR);
+  if (ladish_log_dir == NULL)
   {
-    lash_error("catdup failed for '%s' and '%s'", home_dir, LASH_XDG_SUBDIR);
+    log_error("catdup failed for '%s' and '%s'", home_dir, LADISH_XDG_SUBDIR);
     goto free_log_home;
   }
 
@@ -76,36 +76,36 @@ void lash_log_init()
     goto free_log_dir;
   }
 
-  if (!ensure_dir_exist(lash_log_dir, 0700))
+  if (!ensure_dir_exist(ladish_log_dir, 0700))
   {
     goto free_log_dir;
   }
 
-  lash_log_dir_len = strlen(lash_log_dir);
+  ladish_log_dir_len = strlen(ladish_log_dir);
 
-  log_len = strlen(LASH_XDG_LOG);
+  log_len = strlen(LADISH_XDG_LOG);
 
-  log_filename = malloc(lash_log_dir_len + log_len + 1);
+  log_filename = malloc(ladish_log_dir_len + log_len + 1);
   if (log_filename == NULL)
   {
-    lash_error("Out of memory");
+    log_error("Out of memory");
     goto free_log_dir;
   }
 
-  memcpy(log_filename, lash_log_dir, lash_log_dir_len);
-  memcpy(log_filename + lash_log_dir_len, LASH_XDG_LOG, log_len);
-  log_filename[lash_log_dir_len + log_len] = 0;
+  memcpy(log_filename, ladish_log_dir, ladish_log_dir_len);
+  memcpy(log_filename + ladish_log_dir_len, LADISH_XDG_LOG, log_len);
+  log_filename[ladish_log_dir_len + log_len] = 0;
 
   g_logfile = fopen(log_filename, "a");
   if (g_logfile == NULL)
   {
-    lash_error("Cannot open jackdbus log file \"%s\": %d (%s)\n", log_filename, errno, strerror(errno));
+    log_error("Cannot open jackdbus log file \"%s\": %d (%s)\n", log_filename, errno, strerror(errno));
   }
 
   free(log_filename);
 
 free_log_dir:
-  free(lash_log_dir);
+  free(ladish_log_dir);
 
 free_log_home:
   free(xdg_log_home);
@@ -114,8 +114,8 @@ exit:
   return;
 }
 
-void lash_log_uninit()  __attribute__ ((destructor));
-void lash_log_uninit()
+void ladish_log_uninit()  __attribute__ ((destructor));
+void ladish_log_uninit()
 {
   if (g_logfile != NULL)
   {
@@ -124,7 +124,7 @@ void lash_log_uninit()
 }
 
 void
-lash_log(
+ladish_log(
   unsigned int level,
   const char * format,
   ...)
@@ -142,13 +142,13 @@ lash_log(
   {
     switch (level)
     {
-    case LASH_LOG_LEVEL_DEBUG:
-    case LASH_LOG_LEVEL_INFO:
+    case LADISH_LOG_LEVEL_DEBUG:
+    case LADISH_LOG_LEVEL_INFO:
       stream = stdout;
       break;
-    case LASH_LOG_LEVEL_WARN:
-    case LASH_LOG_LEVEL_ERROR:
-    case LASH_LOG_LEVEL_ERROR_PLAIN:
+    case LADISH_LOG_LEVEL_WARN:
+    case LADISH_LOG_LEVEL_ERROR:
+    case LADISH_LOG_LEVEL_ERROR_PLAIN:
     default:
       stream = stderr;
     }

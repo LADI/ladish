@@ -29,7 +29,7 @@
  *   for reliable error handling and increased debugging verbosity.
  *
  *   Some of the provided methods can be either macros or function definitions
- *   depending on whether or not LASH_DEBUG is enabled. The programmer needn't
+ *   depending on whether or not LADISH_DEBUG is enabled. The programmer needn't
  *   worry, however, as the syntax is the same for both debug and normal builds.
  */
 
@@ -70,12 +70,12 @@ void
 lash_strset(char       **property,
             const char  *value);
 
-#ifndef LASH_DEBUG
+#ifndef LADISH_DEBUG
 
 /**
  * This is a wrapper around malloc which checks whether nmemb * size
  * would overflow, and whether malloc returns NULL. It prints an error
- * using \ref lash_error if anything fails.
+ * using \ref log_error if anything fails.
  * 
  * TODO: We currently call abort on failure,
  *       this probably needs to be changed.
@@ -92,7 +92,7 @@ lash_malloc(size_t nmemb,
 /**
  * This is a wrapper around calloc which checks whether nmemb * size
  * would overflow, and whether calloc) returns NULL. It prints an error
- * using \ref lash_error if anything fails.
+ * using \ref log_error if anything fails.
  * 
  * TODO: We currently call abort on failure,
  *       this probably needs to be changed.
@@ -109,7 +109,7 @@ lash_calloc(size_t nmemb,
 /**
  * This is a wrapper around realloc which checks whether nmemb * size
  * would overflow, and whether realloc returns NULL. It prints an error
- * using \ref lash_error if anything fails.
+ * using \ref log_error if anything fails.
  * 
  * TODO: We currently call abort on failure,
  *       this probably needs to be changed.
@@ -127,7 +127,7 @@ lash_realloc(void   *ptr,
 
 /**
  * This is a wrapper around strdup which checks for a NULL return value.
- * It prints an error using \ref lash_error if strdup fails.
+ * It prints an error using \ref log_error if strdup fails.
  * 
  * TODO: We currently call abort on failure,
  *       this probably needs to be changed.
@@ -140,7 +140,7 @@ char *
 lash_strdup(const char *s);
 
 /** TODO: Document this */
-#else /* LASH_DEBUG */
+#else /* LADISH_DEBUG */
 
 /**
  * This macro is a wrapper around \ref lash_malloc_dbg.
@@ -189,7 +189,7 @@ lash_strdup(const char *s);
 /**
  * This is a wrapper around malloc which checks whether nmemb * size
  * would overflow, and whether malloc returns NULL. It prints an error
- * using \ref lash_error if anything fails.
+ * using \ref log_error if anything fails.
  * 
  * This function is the 'debugging edition' of the LASH malloc wrapper and
  * has extra parameters for printing more detailed debugging messages. It
@@ -221,7 +221,7 @@ lash_malloc_dbg(size_t      nmemb,
 /**
  * This is a wrapper around calloc which checks whether nmemb * size
  * would overflow, and whether calloc returns NULL. It prints an error
- * using \ref lash_error if anything fails.
+ * using \ref log_error if anything fails.
  * 
  * This function is the 'debugging edition' of the LASH calloc wrapper and
  * has extra parameters for printing more detailed debugging messages. It
@@ -253,7 +253,7 @@ lash_calloc_dbg(size_t      nmemb,
 /**
  * This is a wrapper around realloc which checks whether nmemb * size
  * would overflow, and whether realloc returns NULL. It prints an error
- * using \ref lash_error if anything fails.
+ * using \ref log_error if anything fails.
  * 
  * This function is the 'debugging edition' of the LASH realloc wrapper and
  * has extra parameters for printing more detailed debugging messages. It
@@ -287,7 +287,7 @@ lash_realloc_dbg(void       *ptr,
 
 /**
  * This is a wrapper around strdup which checks for a NULL return value.
- * It prints an error using \ref lash_error if strdup fails.
+ * It prints an error using \ref log_error if strdup fails.
  * 
  * This function is the 'debugging edition' of the LASH strdup wrapper and
  * has extra parameters for printing more detailed debugging messages. It
@@ -312,6 +312,6 @@ lash_strdup_dbg(const char *s,
                 const char *function,
                 const char *arg1);
 
-#endif /* LASH_DEBUG */
+#endif /* LADISH_DEBUG */
 
 #endif /* __LASH_SAFETY_H__ */

@@ -48,12 +48,12 @@ void lash_dbus_error(struct dbus_method_call * call_ptr, const char * err_name, 
   {
     interface_name = (call_ptr->iface && call_ptr->iface->name && call_ptr->iface->name[0]) ? call_ptr->iface->name : "<unknown>";
 
-    lash_error("In method %s.%s: %s", interface_name, call_ptr->method_name, message);
+    log_error("In method %s.%s: %s", interface_name, call_ptr->method_name, message);
 
     call_ptr->reply = dbus_message_new_error(call_ptr->message, err_name, message);
   }
   else
   {
-    lash_error("%s", message);
+    log_error("%s", message);
   }
 }

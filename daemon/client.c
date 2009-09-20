@@ -56,13 +56,13 @@ ladish_client_create(
   client_ptr = malloc(sizeof(struct ladish_client));
   if (client_ptr == NULL)
   {
-    lash_error("malloc() failed to allocate struct ladish_client");
+    log_error("malloc() failed to allocate struct ladish_client");
     return false;
   }
 
   if (!ladish_dict_create(&client_ptr->dict))
   {
-    lash_error("ladish_dict_create() failed for client");
+    log_error("ladish_dict_create() failed for client");
     free(client_ptr);
     return false;
   }
@@ -90,7 +90,7 @@ ladish_client_create(
   {
     char str[37];
     uuid_unparse(client_ptr->uuid, str);
-    lash_info("Created client %s", str);
+    log_info("Created client %s", str);
   }
 
   *client_handle_ptr = (ladish_client_handle)client_ptr;

@@ -35,7 +35,7 @@ static void dbus_signal_send(DBusConnection * connection_ptr, DBusMessage * mess
 {
   if (!dbus_connection_send(connection_ptr, message_ptr, NULL))
   {
-    lash_error("Ran out of memory trying to queue signal");
+    log_error("Ran out of memory trying to queue signal");
   }
 
   dbus_connection_flush(connection_ptr);
@@ -57,7 +57,7 @@ dbus_signal_emit(
   DBusMessageIter iter;
   void * parameter_ptr;
 
-  lash_debug("Sending signal %s.%s from %s", interface, name, path);
+  log_debug("Sending signal %s.%s from %s", interface, name, path);
 
   va_start(ap, signature);
 
@@ -65,7 +65,7 @@ dbus_signal_emit(
   {
     if (!dbus_signature_validate(signature, NULL))
     {
-      lash_error("signature '%s' is invalid", signature);
+      log_error("signature '%s' is invalid", signature);
       goto exit;
     }
 
@@ -74,7 +74,7 @@ dbus_signal_emit(
     message_ptr = dbus_message_new_signal(path, interface, name);
     if (message_ptr == NULL)
     {
-      lash_error("dbus_message_new_signal() failed.");
+      log_error("dbus_message_new_signal() failed.");
       goto exit;
     }
 
@@ -85,7 +85,7 @@ dbus_signal_emit(
       type = dbus_signature_iter_get_current_type(&sig_iter);
       if (!dbus_type_is_basic(type))
       {
-        lash_error("non-basic input parameter '%c' (%d)", *signature, type);
+        log_error("non-basic input parameter '%c' (%d)", *signature, type);
         goto unref;
       }
 
@@ -93,7 +93,7 @@ dbus_signal_emit(
 
       if (!dbus_message_iter_append_basic(&iter, type, parameter_ptr))
       {
-        lash_error("dbus_message_iter_append_basic() failed.");
+        log_error("dbus_message_iter_append_basic() failed.");
         goto unref;
       }
 

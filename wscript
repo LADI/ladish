@@ -240,7 +240,7 @@ def build(bld):
         liblash.uselib = 'DBUS-1'
         liblash.target = 'lash'
         liblash.vnum = "1.1.1"
-        liblash.defines = ['DEBUG_OUTPUT_TERMINAL']
+        liblash.defines = ['LOG_OUTPUT_STDOUT']
         liblash.source = [os.path.join("lash_compat", "liblash", 'lash.c')]
 
     # pkgpyexec_LTLIBRARIES = _lash.la
@@ -259,7 +259,7 @@ def build(bld):
         gladish = bld.new_task_gen('cxx', 'program')
         gladish.features.append('cc')
         gladish.target = 'gladish'
-        gladish.defines = ['DEBUG_OUTPUT_TERMINAL']
+        gladish.defines = ['LOG_OUTPUT_STDOUT']
         gladish.includes = "build/default" # XXX config.h version.h and other generated files
         gladish.uselib = 'DBUS-1 DBUS-GLIB-1 LIBGLADE-2.0 FLOWCANVAS'
 

@@ -68,7 +68,7 @@ bool studio_name_generate(char ** name_ptr)
   name = catdup("Studio ", timestamp_str);
   if (name == NULL)
   {
-    lash_error("catdup failed to create studio name");
+    log_error("catdup failed to create studio name");
     return false;
   }
 
@@ -91,18 +91,18 @@ studio_publish(void)
     NULL);
   if (object == NULL)
   {
-    lash_error("dbus_object_path_new() failed");
+    log_error("dbus_object_path_new() failed");
     return false;
   }
 
   if (!dbus_object_path_register(g_dbus_connection, object))
   {
-    lash_error("object_path_register() failed");
+    log_error("object_path_register() failed");
     dbus_object_path_destroy(g_dbus_connection, object);
     return false;
   }
 
-  lash_info("Studio D-Bus object created. \"%s\"", g_studio.name);
+  log_info("Studio D-Bus object created. \"%s\"", g_studio.name);
 
   g_studio.dbus_object = object;
 
@@ -125,11 +125,11 @@ bool studio_start(void)
 {
   if (!g_studio.jack_running)
   {
-    lash_info("Starting JACK server.");
+    log_info("Starting JACK server.");
 
     if (!jack_proxy_start_server())
     {
-      lash_error("jack_proxy_start_server() failed.");
+      log_error("jack_proxy_start_server() failed.");
       return false;
     }
   }
@@ -143,7 +143,7 @@ static bool studio_stop(void)
 {
   if (g_studio.jack_running)
   {
-    lash_info("Stopping JACK server...");
+    log_info("Stopping JACK server...");
 
     g_studio.automatic = false;   /* even if it was automatic, it is not anymore because user knows about it */
 
@@ -154,7 +154,7 @@ static bool studio_stop(void)
     }
     else
     {
-      lash_error("Stopping JACK server failed.");
+      log_error("Stopping JACK server failed.");
       return false;
     }
   }
@@ -197,7 +197,7 @@ studio_clear_if_automatic(void)
 {
   if (g_studio.automatic)
   {
-    lash_info("Unloading automatic studio.");
+    log_info("Unloading automatic studio.");
     studio_clear();
     return;
   }
@@ -210,7 +210,7 @@ void on_event_jack_started(void)
     assert(g_studio.name == NULL);
     if (!studio_name_generate(&g_studio.name))
     {
-      lash_error("studio_name_generate() failed.");
+      log_error("studio_name_generate() failed.");
       return;
     }
 
@@ -221,30 +221,30 @@ void on_event_jack_started(void)
 
   if (!studio_fetch_jack_settings())
   {
-    lash_error("studio_fetch_jack_settings() failed.");
+    log_error("studio_fetch_jack_settings() failed.");
 
     studio_clear_if_automatic();
     return;
   }
 
-  lash_info("jack conf successfully retrieved");
+  log_info("jack conf successfully retrieved");
   g_studio.jack_conf_valid = true;
   g_studio.jack_running = true;
 
   if (!graph_proxy_create(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, false, &g_studio.jack_graph_proxy))
   {
-    lash_error("graph_proxy_create() failed for jackdbus");
+    log_error("graph_proxy_create() failed for jackdbus");
   }
   else
   {
     if (!ladish_jack_dispatcher_create(g_studio.jack_graph_proxy, g_studio.jack_graph, g_studio.studio_graph, &g_studio.jack_dispatcher))
     {
-      lash_error("ladish_jack_dispatcher_create() failed.");
+      log_error("ladish_jack_dispatcher_create() failed.");
     }
 
     if (!graph_proxy_activate(g_studio.jack_graph_proxy))
     {
-      lash_error("graph_proxy_activate() failed.");
+      log_error("graph_proxy_activate() failed.");
     }
   }
 }
@@ -300,12 +300,12 @@ static void on_jack_server_started(void)
 {
   struct event * event_ptr;
 
-  lash_info("JACK server start detected.");
+  log_info("JACK server start detected.");
 
   event_ptr = malloc(sizeof(struct event));
   if (event_ptr == NULL)
   {
-    lash_error("malloc() failed to allocate struct event. Ignoring JACK start.");
+    log_error("malloc() failed to allocate struct event. Ignoring JACK start.");
     return;
   }
 
@@ -317,12 +317,12 @@ static void on_jack_server_stopped(void)
 {
   struct event * event_ptr;
 
-  lash_info("JACK server stop detected.");
+  log_info("JACK server stop detected.");
 
   event_ptr = malloc(sizeof(struct event));
   if (event_ptr == NULL)
   {
-    lash_error("malloc() failed to allocate struct event. Ignoring JACK stop.");
+    log_error("malloc() failed to allocate struct event. Ignoring JACK stop.");
     return;
   }
 
@@ -332,22 +332,22 @@ static void on_jack_server_stopped(void)
 
 static void on_jack_server_appeared(void)
 {
-  lash_info("JACK controller appeared.");
+  log_info("JACK controller appeared.");
 }
 
 static void on_jack_server_disappeared(void)
 {
-  lash_info("JACK controller disappeared.");
+  log_info("JACK controller disappeared.");
 }
 
 bool studio_init(void)
 {
-  lash_info("studio object construct");
+  log_info("studio object construct");
 
   g_studios_dir = catdup(g_base_dir, STUDIOS_DIR);
   if (g_studios_dir == NULL)
   {
-    lash_error("catdup failed for '%s' and '%s'", g_base_dir, STUDIOS_DIR);
+    log_error("catdup failed for '%s' and '%s'", g_base_dir, STUDIOS_DIR);
     goto fail;
   }
 
@@ -380,13 +380,13 @@ bool studio_init(void)
 
   if (!ladish_graph_create(&g_studio.jack_graph, NULL))
   {
-    lash_error("ladish_graph_create() failed to create jack graph object.");
+    log_error("ladish_graph_create() failed to create jack graph object.");
     goto free_studios_dir;
   }
 
   if (!ladish_graph_create(&g_studio.studio_graph, STUDIO_OBJECT_PATH))
   {
-    lash_error("ladish_graph_create() failed to create studio graph object.");
+    log_error("ladish_graph_create() failed to create studio graph object.");
     goto jack_graph_destroy;
   }
 
@@ -396,7 +396,7 @@ bool studio_init(void)
         on_jack_server_appeared,
         on_jack_server_disappeared))
   {
-    lash_error("jack_proxy_init() failed.");
+    log_error("jack_proxy_init() failed.");
     goto studio_graph_destroy;
   }
 
@@ -423,7 +423,7 @@ void studio_uninit(void)
 
   free(g_studios_dir);
 
-  lash_info("studio object destroy");
+  log_info("studio object destroy");
 }
 
 bool studio_is_loaded(void)
@@ -444,7 +444,7 @@ bool studio_compose_filename(const char * name, char ** filename_ptr_ptr, char *
   filename_ptr = malloc(len_dir + 1 + strlen(name) * 3 + 4 + 1);
   if (filename_ptr == NULL)
   {
-    lash_error("malloc failed to allocate memory for studio file path");
+    log_error("malloc failed to allocate memory for studio file path");
     return false;
   }
 
@@ -453,7 +453,7 @@ bool studio_compose_filename(const char * name, char ** filename_ptr_ptr, char *
     backup_filename_ptr = malloc(len_dir + 1 + strlen(name) * 3 + 4 + 4 + 1);
     if (backup_filename_ptr == NULL)
     {
-      lash_error("malloc failed to allocate memory for studio backup file path");
+      log_error("malloc failed to allocate memory for studio backup file path");
       free(filename_ptr);
       return false;
     }
@@ -524,7 +524,7 @@ bool studios_iterate(void * call_ptr, void * context, bool (* callback)(void * c
 
     name = malloc(len - 4 + 1);
     name[unescape(dentry->d_name, len - 4, name)] = 0;
-    //lash_info("name = '%s'", name);
+    //log_info("name = '%s'", name);
 
     if (!callback(call_ptr, context, name, st.st_mtime))
     {
@@ -555,7 +555,7 @@ bool studio_delete(void * call_ptr, const char * studio_name)
     goto exit;
   }
 
-  lash_info("Deleting studio ('%s')", filename);
+  log_info("Deleting studio ('%s')", filename);
 
   if (unlink(filename) != 0)
   {
@@ -569,7 +569,7 @@ bool studio_delete(void * call_ptr, const char * studio_name)
     if (unlink(bak_filename) != 0)
     {
       /* failing to delete backup file will not case delete command failure */
-      lash_error("unlink(%s) failed: %d (%s)", bak_filename, errno, strerror(errno));
+      log_error("unlink(%s) failed: %d (%s)", bak_filename, errno, strerror(errno));
     }
   }
 
@@ -604,7 +604,7 @@ static void ladish_rename_studio(struct dbus_method_call * call_ptr)
     return;
   }
 
-  lash_info("Rename studio request (%s)", new_name);
+  log_info("Rename studio request (%s)", new_name);
 
   new_name_dup = strdup(new_name);
   if (new_name_dup == NULL)
@@ -630,14 +630,14 @@ static void ladish_save_studio(struct dbus_method_call * call_ptr)
 
 static void ladish_unload_studio(struct dbus_method_call * call_ptr)
 {
-  lash_info("Unload studio request");
+  log_info("Unload studio request");
   studio_clear();
   method_return_new_void(call_ptr);
 }
 
 bool studio_new(void * call_ptr, const char * studio_name)
 {
-  lash_info("New studio request (%s)", studio_name);
+  log_info("New studio request (%s)", studio_name);
   studio_clear();
 
   assert(g_studio.name == NULL);
@@ -668,7 +668,7 @@ bool studio_new(void * call_ptr, const char * studio_name)
 
 static void ladish_stop_studio(struct dbus_method_call * call_ptr)
 {
-  lash_info("Studio stop requested");
+  log_info("Studio stop requested");
 
   if (!studio_stop())
   {
@@ -682,7 +682,7 @@ static void ladish_stop_studio(struct dbus_method_call * call_ptr)
 
 static void ladish_start_studio(struct dbus_method_call * call_ptr)
 {
-  lash_info("Studio start requested");
+  log_info("Studio start requested");
 
   if (!studio_start())
   {

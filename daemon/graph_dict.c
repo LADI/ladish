@@ -98,7 +98,7 @@ void ladish_dict_set_dbus(struct dbus_method_call * call_ptr)
     return;
   }
 
-  lash_info("%s <- %s", key, value);
+  log_info("%s <- %s", key, value);
 
   if (!ladish_dict_set(dict, key, value))
   {

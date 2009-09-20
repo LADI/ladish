@@ -59,7 +59,7 @@ introspection_new(struct dbus_object_path * opath_ptr)
   DBusMessage * msg;
   DBusMessageIter iter;
 
-  lash_debug("Creating introspection message");
+  log_debug("Creating introspection message");
 
   /*
    * Create introspection XML data.
@@ -127,12 +127,12 @@ introspection_new(struct dbus_object_path * opath_ptr)
     {
       dbus_message_unref(msg);
       msg = NULL;
-      lash_error("Failed to append data to introspection message");
+      log_error("Failed to append data to introspection message");
     }
   }
   else
   {
-    lash_error("Failed to create introspection message");
+    log_error("Failed to create introspection message");
   }
 
   free(xml_data);
@@ -144,15 +144,15 @@ introspection_new(struct dbus_object_path * opath_ptr)
 void
 introspection_destroy(struct dbus_object_path *path)
 {
-  lash_debug("Destroying introspection message");
+  log_debug("Destroying introspection message");
 
   if (path && path->introspection) {
     dbus_message_unref(path->introspection);
     path->introspection = NULL;
   }
-#ifdef LASH_DEBUG
+#ifdef LADISH_DEBUG
   else
-    lash_debug("Nothing to destroy");
+    log_debug("Nothing to destroy");
 #endif
 }
 
@@ -168,19 +168,19 @@ static bool introspection_handler(const struct dbus_interface_descriptor * inter
   call_ptr->reply = dbus_message_copy(call_ptr->iface_context); /* context contains the reply message */
   if (call_ptr->reply == NULL)
   {
-    lash_error("Ran out of memory trying to copy introspection message");
+    log_error("Ran out of memory trying to copy introspection message");
     goto fail;
   }
 
   if (!dbus_message_set_destination(call_ptr->reply, dbus_message_get_sender(call_ptr->message)))
   {
-    lash_error("dbus_message_set_destination() failed.");
+    log_error("dbus_message_set_destination() failed.");
     goto unref_reply;
   }
 
   if (!dbus_message_set_reply_serial(call_ptr->reply, dbus_message_get_serial(call_ptr->message)))
   {
-    lash_error("dbus_message_set_reply_serial() failed.");
+    log_error("dbus_message_set_reply_serial() failed.");
     goto unref_reply;
   }
 
@@ -219,19 +219,19 @@ dbus_object_path dbus_object_path_new(const char *name, const struct dbus_interf
   void * iface_context;
   size_t len;
 
-  lash_debug("Creating object path");
+  log_debug("Creating object path");
 
   opath_ptr = malloc(sizeof(struct dbus_object_path));
   if (opath_ptr == NULL)
   {
-    lash_error("malloc() failed to allocate struct dbus_object_path.");
+    log_error("malloc() failed to allocate struct dbus_object_path.");
     goto fail;
   }
   
   opath_ptr->name = strdup(name);
   if (opath_ptr->name == NULL)
   {
-    lash_error("malloc() failed to allocate struct dbus_object_path.");
+    log_error("malloc() failed to allocate struct dbus_object_path.");
     goto free;
   }
 
@@ -249,7 +249,7 @@ dbus_object_path dbus_object_path_new(const char *name, const struct dbus_interf
   opath_ptr->ifaces = malloc((len + 2) * sizeof(struct dbus_object_path_interface));
   if (opath_ptr->ifaces == NULL)
   {
-    lash_error("malloc failed to allocate interfaces array");
+    log_error("malloc failed to allocate interfaces array");
     goto free_name;
   }
 
@@ -272,7 +272,7 @@ dbus_object_path dbus_object_path_new(const char *name, const struct dbus_interf
   opath_ptr->introspection = introspection_new(opath_ptr);
   if (opath_ptr->introspection == NULL)
   {
-    lash_error("introspection_new() failed.");
+    log_error("introspection_new() failed.");
     goto free_ifaces;
   }
 
@@ -297,11 +297,11 @@ fail:
 
 void dbus_object_path_destroy(DBusConnection * connection_ptr, dbus_object_path data)
 {
-  lash_debug("Destroying object path");
+  log_debug("Destroying object path");
 
   if (connection_ptr != NULL && !dbus_connection_unregister_object_path(connection_ptr, opath_ptr->name))
   {
-    lash_error("dbus_connection_unregister_object_path() failed.");
+    log_error("dbus_connection_unregister_object_path() failed.");
   }
 
   introspection_destroy(opath_ptr);
@@ -387,14 +387,14 @@ handled:
 
 static void dbus_object_path_handler_unregister(DBusConnection * connection_ptr, void * data)
 {
-#ifdef LASH_DEBUG
-  lash_debug("Message handler of object path %s was unregistered", (opath_ptr && path->name) ? opath_ptr->name : "<unknown>");
-#endif /* LASH_DEBUG */
+#ifdef LADISH_DEBUG
+  log_debug("Message handler of object path %s was unregistered", (opath_ptr && path->name) ? opath_ptr->name : "<unknown>");
+#endif /* LADISH_DEBUG */
 }
 
 bool dbus_object_path_register(DBusConnection * connection_ptr, dbus_object_path data)
 {
-  lash_debug("Registering object path");
+  log_debug("Registering object path");
 
   DBusObjectPathVTable vtable =
   {

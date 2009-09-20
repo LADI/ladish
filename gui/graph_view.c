@@ -64,14 +64,14 @@ create_view(
   view_ptr = malloc(sizeof(struct graph_view));
   if (view_ptr == NULL)
   {
-    lash_error("malloc() failed for struct graph_view");
+    log_error("malloc() failed for struct graph_view");
     goto fail;
   }
 
   view_ptr->name = strdup(name);
   if (view_ptr->name == NULL)
   {
-    lash_error("strdup() failed for \"%s\"", name);
+    log_error("strdup() failed for \"%s\"", name);
     goto free_view;
   }
 
@@ -196,7 +196,7 @@ bool set_view_name(graph_view_handle view, const char * cname)
   name = strdup(cname);
   if (name == NULL)
   {
-    lash_error("strdup() failed for \"%s\"", name);
+    log_error("strdup() failed for \"%s\"", name);
     return false;
   }
 

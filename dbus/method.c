@@ -43,7 +43,7 @@ void
 method_return_new_void(struct dbus_method_call * call_ptr)
 {
   if (!(call_ptr->reply = dbus_message_new_method_return(call_ptr->message))) {
-    lash_error("Ran out of memory trying to construct method return");
+    log_error("Ran out of memory trying to construct method return");
   }
 }
 
@@ -62,7 +62,7 @@ method_return_new_single(struct dbus_method_call * call_ptr,
                          const void    *arg)
 {
   if (!call_ptr || !arg) {
-    lash_error("Invalid arguments");
+    log_error("Invalid arguments");
     return;
   }
 
@@ -91,7 +91,7 @@ method_return_new_single(struct dbus_method_call * call_ptr,
   call_ptr->reply = NULL;
 
 fail_no_mem:
-  lash_error("Ran out of memory trying to construct method return");
+  log_error("Ran out of memory trying to construct method return");
 }
 
 void
@@ -100,12 +100,12 @@ method_return_new_valist(struct dbus_method_call * call_ptr,
                                         ...)
 {
   if (!call_ptr) {
-    lash_error("Call pointer is NULL");
+    log_error("Call pointer is NULL");
     return;
   }
 
   if (type == DBUS_TYPE_INVALID) {
-    lash_error("No argument(s) supplied");
+    log_error("No argument(s) supplied");
     return;
   }
 
@@ -128,7 +128,7 @@ method_return_new_valist(struct dbus_method_call * call_ptr,
   call_ptr->reply = NULL;
 
 fail_no_mem:
-  lash_error("Ran out of memory trying to construct method return");
+  log_error("Ran out of memory trying to construct method return");
 }
 
 /*
@@ -143,7 +143,7 @@ method_return_send(struct dbus_method_call * call_ptr)
   if (call_ptr->reply) {
   retry_send:
     if (!dbus_connection_send(call_ptr->connection, call_ptr->reply, NULL))
-      lash_error("Ran out of memory trying to queue "
+      log_error("Ran out of memory trying to queue "
                  "method return");
     else
       dbus_connection_flush(call_ptr->connection);
@@ -151,13 +151,13 @@ method_return_send(struct dbus_method_call * call_ptr)
     dbus_message_unref(call_ptr->reply);
     call_ptr->reply = NULL;
   } else {
-    lash_debug("Message was NULL, trying to construct a void return");
+    log_debug("Message was NULL, trying to construct a void return");
 
     if ((call_ptr->reply = dbus_message_new_method_return(call_ptr->message))) {
-      lash_debug("Constructed a void return, trying to queue it");
+      log_debug("Constructed a void return, trying to queue it");
       goto retry_send;
     } else {
-      lash_error("Failed to construct method return!");
+      log_error("Failed to construct method return!");
     }
   }
 }
@@ -174,7 +174,7 @@ method_return_verify(DBusMessage  *msg,
   if (!dbus_message_get_args(msg, &g_dbus_error,
                              DBUS_TYPE_STRING, &ptr,
                              DBUS_TYPE_INVALID)) {
-    lash_error("Cannot read description from D-Bus error message: %s ",
+    log_error("Cannot read description from D-Bus error message: %s ",
                g_dbus_error.message);
     dbus_error_free(&g_dbus_error);
     ptr = NULL;

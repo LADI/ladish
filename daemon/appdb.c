@@ -160,40 +160,40 @@ load_file_data(
   file = fopen(file_path, "r");
   if (file == NULL)
   {
-    lash_error("Failed to open '%s' for reading", file_path);
+    log_error("Failed to open '%s' for reading", file_path);
     goto exit;
   }
 
   if (fseek(file, 0, SEEK_END) == -1)
   {
-    lash_error("fseek('%s') failed", file_path);
+    log_error("fseek('%s') failed", file_path);
     goto exit_close;
   }
 
   size = ftell(file);
   if (size == -1)
   {
-    lash_error("ftell('%s') failed", file_path);
+    log_error("ftell('%s') failed", file_path);
     goto exit_close;
   }
 
   data_ptr = malloc(size + 1);
   if (data_ptr == NULL)
   {
-    lash_error("Failed to allocate %ld bytes for data of file '%s'", size + 1, file_path);
+    log_error("Failed to allocate %ld bytes for data of file '%s'", size + 1, file_path);
     ret = false;
     goto exit_close;
   }
 
   if (fseek(file, 0, SEEK_SET) == -1)
   {
-    lash_error("fseek('%s') failed", file_path);
+    log_error("fseek('%s') failed", file_path);
     goto exit_close;
   }
 
   if (fread(data_ptr, size, 1, file) != 1)
   {
-    lash_error("Failed to read %ld bytes of data from file '%s'", size, file_path);
+    log_error("Failed to read %ld bytes of data from file '%s'", size, file_path);
     goto exit_free_data;
   }
 
@@ -263,12 +263,12 @@ lash_appdb_parse_file_data(
     next_line = strchr(line, '\n');
     if (next_line != NULL)
     {
-      //lash_info("there is next line");
+      //log_info("there is next line");
       *next_line = 0;
       next_line++;
     }
 
-    //lash_info("Line '%s'", line);
+    //log_info("Line '%s'", line);
 
     /* skip comments (and empty lines) */
     if (*line == 0 || *line == '#')
@@ -301,12 +301,12 @@ lash_appdb_parse_file_data(
     strrstrip(line);
     value = strlstrip(value);
 
-    //lash_info("Key=%s", line);
-    //lash_info("Value=%s", value);
+    //log_info("Key=%s", line);
+    //log_info("Value=%s", value);
 
     if (count + 1 == max_count)
     {
-      lash_error("failed to parse desktop entry with more than %u keys", (unsigned int)max_count);
+      log_error("failed to parse desktop entry with more than %u keys", (unsigned int)max_count);
       return false;
     }
 
@@ -360,7 +360,7 @@ lash_appdb_load_file(
   char ** str_ptr_ptr;
   bool * bool_ptr;
 
-  //lash_info("Desktop entry '%s'", file_path);
+  //log_info("Desktop entry '%s'", file_path);
 
   ret = true;
 
@@ -380,7 +380,7 @@ lash_appdb_load_file(
     goto exit_free_data;
   }
 
-  //lash_info("%llu entries", (unsigned long long)entries_count);
+  //log_info("%llu entries", (unsigned long long)entries_count);
 
   /* check whether entry is of "Application" type */
   value = lash_appdb_find_key(entries, entries_count, "Type");
@@ -414,13 +414,13 @@ lash_appdb_load_file(
     }
   }
 
-  //lash_info("Application '%s' found", name);
+  //log_info("Application '%s' found", name);
 
   /* allocate new entry */
   entry_ptr = malloc(sizeof(struct lash_appdb_entry));
   if (entry_ptr == NULL)
   {
-    lash_error("malloc() failed");
+    log_error("malloc() failed");
     goto fail_free_data;
   }
 
@@ -438,7 +438,7 @@ lash_appdb_load_file(
       continue;
     }
 
-    //lash_info("mapping key '%s' to '%s'", map_ptr->key, value);
+    //log_info("mapping key '%s' to '%s'", map_ptr->key, value);
 
     if (map_ptr->type == MAP_TYPE_STRING)
     {
@@ -446,7 +446,7 @@ lash_appdb_load_file(
       *str_ptr_ptr = strdup(value);
       if (*str_ptr_ptr == NULL)
       {
-        lash_error("strdup() failed");
+        log_error("strdup() failed");
         goto fail_free_entry;
       }
     }
@@ -463,7 +463,7 @@ lash_appdb_load_file(
       }
       else
       {
-        lash_error("Ignoring %s:%s bool with wrong value '%s'", name, map_ptr->key, value);
+        log_error("Ignoring %s:%s bool with wrong value '%s'", name, map_ptr->key, value);
       }
     }
     else
@@ -504,18 +504,18 @@ lash_appdb_load_dir(
   struct dirent * dentry_ptr;
   char * file_path;
 
-  //lash_info("lash_appdb_load_dir() called for '%s'.", base_directory);
+  //log_info("lash_appdb_load_dir() called for '%s'.", base_directory);
 
   ret = false;
 
   directory_path = catdup(base_directory, "/applications/");
   if (directory_path == NULL)
   {
-    lash_error("catdup() failed to compose the appdb dir path");
+    log_error("catdup() failed to compose the appdb dir path");
     goto fail;
   }
 
-  //lash_info("Scanning directory '%s'", directory_path);
+  //log_info("Scanning directory '%s'", directory_path);
 
   dir = opendir(directory_path);
   if (dir != NULL)
@@ -535,7 +535,7 @@ lash_appdb_load_dir(
       file_path = catdup(directory_path, dentry_ptr->d_name);
       if (file_path == NULL)
       {
-        lash_error("catdup() failed to compose the appdb dir file");
+        log_error("catdup() failed to compose the appdb dir file");
       }
       else
       {
@@ -553,7 +553,7 @@ lash_appdb_load_dir(
   }
   else
   {
-    //lash_info("failed to open directory '%s'", directory_path);
+    //log_info("failed to open directory '%s'", directory_path);
   }
 
   ret = true;
@@ -577,7 +577,7 @@ lash_appdb_load_dirs(
   directories = strdup(base_directories);
   if (directories == NULL)
   {
-    lash_error("strdup() failed");
+    log_error("strdup() failed");
     return false;
   }
 
@@ -620,19 +620,19 @@ lash_appdb_load(
 
   INIT_LIST_HEAD(appdb);
 
-  //lash_info("lash_appdb_load() called.");
+  //log_info("lash_appdb_load() called.");
 
   home_dir = getenv("HOME");
   if (home_dir == NULL)
   {
-    lash_error("HOME environment variable is not set.");
+    log_error("HOME environment variable is not set.");
     goto fail;
   }
 
   data_home_default = catdup(home_dir, "/.local/share");
   if (data_home_default == NULL)
   {
-    lash_error("catdup failed to compose data_home_default");
+    log_error("catdup failed to compose data_home_default");
     goto fail;
   }
 
@@ -668,7 +668,7 @@ void
 lash_appdb_free_entry(
   struct lash_appdb_entry * entry_ptr)
 {
-  //lash_info("lash_appdb_free_entry() called.");
+  //log_info("lash_appdb_free_entry() called.");
 
   if (entry_ptr->name != NULL)
   {
@@ -710,7 +710,7 @@ lash_appdb_free(
   struct list_head * node_ptr;
   struct lash_appdb_entry * entry_ptr;
 
-  //lash_info("lash_appdb_free() called.");
+  //log_info("lash_appdb_free() called.");
 
   while (!list_empty(appdb))
   {
@@ -719,7 +719,7 @@ lash_appdb_free(
 
     list_del(node_ptr);
 
-    //lash_info("Destroying appdb entry '%s'", entry_ptr->name);
+    //log_info("Destroying appdb entry '%s'", entry_ptr->name);
 
     lash_appdb_free_entry(entry_ptr);
   }

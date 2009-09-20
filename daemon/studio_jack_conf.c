@@ -57,14 +57,14 @@ jack_conf_container_create(
   container_ptr = malloc(sizeof(struct jack_conf_container));
   if (container_ptr == NULL)
   {
-    lash_error("malloc() failed to allocate struct jack_conf_container");
+    log_error("malloc() failed to allocate struct jack_conf_container");
     goto fail;
   }
 
   container_ptr->name = strdup(name);
   if (container_ptr->name == NULL)
   {
-    lash_error("strdup() failed to duplicate \"%s\"", name);
+    log_error("strdup() failed to duplicate \"%s\"", name);
     goto fail_free;
   }
 
@@ -91,14 +91,14 @@ jack_conf_parameter_create(
   parameter_ptr = malloc(sizeof(struct jack_conf_parameter));
   if (parameter_ptr == NULL)
   {
-    lash_error("malloc() failed to allocate struct jack_conf_parameter");
+    log_error("malloc() failed to allocate struct jack_conf_parameter");
     goto fail;
   }
 
   parameter_ptr->name = strdup(name);
   if (parameter_ptr->name == NULL)
   {
-    lash_error("strdup() failed to duplicate \"%s\"", name);
+    log_error("strdup() failed to duplicate \"%s\"", name);
     goto fail_free;
   }
 
@@ -117,27 +117,27 @@ jack_conf_parameter_destroy(
   struct jack_conf_parameter * parameter_ptr)
 {
 #if 0
-  lash_info("jack_conf_parameter destroy");
+  log_info("jack_conf_parameter destroy");
 
   switch (parameter_ptr->parameter.type)
   {
   case jack_boolean:
-    lash_info("%s value is %s (boolean)", parameter_ptr->name, parameter_ptr->parameter.value.boolean ? "true" : "false");
+    log_info("%s value is %s (boolean)", parameter_ptr->name, parameter_ptr->parameter.value.boolean ? "true" : "false");
     break;
   case jack_string:
-    lash_info("%s value is %s (string)", parameter_ptr->name, parameter_ptr->parameter.value.string);
+    log_info("%s value is %s (string)", parameter_ptr->name, parameter_ptr->parameter.value.string);
     break;
   case jack_byte:
-    lash_info("%s value is %u/%c (byte/char)", parameter_ptr->name, parameter_ptr->parameter.value.byte, (char)parameter_ptr->parameter.value.byte);
+    log_info("%s value is %u/%c (byte/char)", parameter_ptr->name, parameter_ptr->parameter.value.byte, (char)parameter_ptr->parameter.value.byte);
     break;
   case jack_uint32:
-    lash_info("%s value is %u (uint32)", parameter_ptr->name, (unsigned int)parameter_ptr->parameter.value.uint32);
+    log_info("%s value is %u (uint32)", parameter_ptr->name, (unsigned int)parameter_ptr->parameter.value.uint32);
     break;
   case jack_int32:
-    lash_info("%s value is %u (int32)", parameter_ptr->name, (signed int)parameter_ptr->parameter.value.int32);
+    log_info("%s value is %u (int32)", parameter_ptr->name, (signed int)parameter_ptr->parameter.value.int32);
     break;
   default:
-    lash_error("unknown jack parameter_ptr->parameter type %d (%s)", (int)parameter_ptr->parameter.type, parameter_ptr->name);
+    log_error("unknown jack parameter_ptr->parameter type %d (%s)", (int)parameter_ptr->parameter.type, parameter_ptr->name);
     break;
   }
 #endif
@@ -157,7 +157,7 @@ jack_conf_container_destroy(
 {
   struct list_head * node_ptr;
 
-  //lash_info("\"%s\" jack_conf_parameter destroy", container_ptr->name);
+  //log_info("\"%s\" jack_conf_parameter destroy", container_ptr->name);
 
   if (!container_ptr->children_leafs)
   {
@@ -205,7 +205,7 @@ conf_callback(
 
   if (parent_ptr == NULL && strcmp(child, "drivers") == 0)
   {
-    lash_debug("ignoring drivers branch");
+    log_debug("ignoring drivers branch");
     return true;
   }
 
@@ -232,11 +232,11 @@ conf_callback(
 
   if (leaf)
   {
-    lash_debug("%s (leaf)", path);
+    log_debug("%s (leaf)", path);
 
     if (parent_ptr == NULL)
     {
-      lash_error("jack conf parameters can't appear in root container");
+      log_error("jack conf parameters can't appear in root container");
       return false;
     }
 
@@ -244,7 +244,7 @@ conf_callback(
     {
       if (!list_empty(&parent_ptr->children))
       {
-        lash_error("jack conf parameters cant be mixed with containers at same hierarchy level");
+        log_error("jack conf parameters cant be mixed with containers at same hierarchy level");
         return false;
       }
 
@@ -253,13 +253,13 @@ conf_callback(
 
     if (!jack_conf_parameter_create(&parameter_ptr, child))
     {
-      lash_error("jack_conf_parameter_create() failed");
+      log_error("jack_conf_parameter_create() failed");
       return false;
     }
 
     if (!jack_proxy_get_parameter_value(context_ptr->address, &is_set, &parameter_ptr->parameter))
     {
-      lash_error("cannot get value of %s", path);
+      log_error("cannot get value of %s", path);
       return false;
     }
 
@@ -269,22 +269,22 @@ conf_callback(
       switch (parameter_ptr->parameter.type)
       {
       case jack_boolean:
-        lash_info("%s value is %s (boolean)", path, parameter_ptr->parameter.value.boolean ? "true" : "false");
+        log_info("%s value is %s (boolean)", path, parameter_ptr->parameter.value.boolean ? "true" : "false");
         break;
       case jack_string:
-        lash_info("%s value is %s (string)", path, parameter_ptr->parameter.value.string);
+        log_info("%s value is %s (string)", path, parameter_ptr->parameter.value.string);
         break;
       case jack_byte:
-        lash_info("%s value is %u/%c (byte/char)", path, parameter_ptr->parameter.value.byte, (char)parameter_ptr->parameter.value.byte);
+        log_info("%s value is %u/%c (byte/char)", path, parameter_ptr->parameter.value.byte, (char)parameter_ptr->parameter.value.byte);
         break;
       case jack_uint32:
-        lash_info("%s value is %u (uint32)", path, (unsigned int)parameter_ptr->parameter.value.uint32);
+        log_info("%s value is %u (uint32)", path, (unsigned int)parameter_ptr->parameter.value.uint32);
         break;
       case jack_int32:
-        lash_info("%s value is %u (int32)", path, (signed int)parameter_ptr->parameter.value.int32);
+        log_info("%s value is %u (int32)", path, (signed int)parameter_ptr->parameter.value.int32);
         break;
       default:
-        lash_error("unknown jack parameter_ptr->parameter type %d (%s)", (int)parameter_ptr->parameter.type, path);
+        log_error("unknown jack parameter_ptr->parameter type %d (%s)", (int)parameter_ptr->parameter.type, path);
         jack_conf_parameter_destroy(parameter_ptr);
         return false;
       }
@@ -302,17 +302,17 @@ conf_callback(
   }
   else
   {
-    lash_debug("%s (container)", path);
+    log_debug("%s (container)", path);
 
     if (parent_ptr != NULL && parent_ptr->children_leafs)
     {
-      lash_error("jack conf containers cant be mixed with parameters at same hierarchy level");
+      log_error("jack conf containers cant be mixed with parameters at same hierarchy level");
       return false;
     }
 
     if (!jack_conf_container_create(&container_ptr, child))
     {
-      lash_error("jack_conf_container_create() failed");
+      log_error("jack_conf_container_create() failed");
       return false;
     }
 
@@ -331,7 +331,7 @@ conf_callback(
 
     if (!jack_proxy_read_conf_container(context_ptr->address, context, conf_callback))
     {
-      lash_error("cannot read container %s", path);
+      log_error("cannot read container %s", path);
       return false;
     }
 
@@ -372,7 +372,7 @@ bool studio_fetch_jack_settings(void)
 
   if (!jack_proxy_read_conf_container(context.address, &context, conf_callback))
   {
-    lash_error("jack_proxy_read_conf_container() failed.");
+    log_error("jack_proxy_read_conf_container() failed.");
     return false;
   }
 

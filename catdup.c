@@ -40,7 +40,7 @@ char * catdup(const char * s1, const char * s2)
   buffer = malloc(s1_len + s2_len + 1);
   if (buffer == NULL)
   {
-    lash_error("malloc() failed.");
+    log_error("malloc() failed.");
     return NULL;
   }
 
@@ -65,7 +65,7 @@ char * catdup3(const char * s1, const char * s2, const char * s3)
   buffer = malloc(s1_len + s2_len + s3_len + 1);
   if (buffer == NULL)
   {
-    lash_error("malloc() failed.");
+    log_error("malloc() failed.");
     return NULL;
   }
 

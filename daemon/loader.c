@@ -98,11 +98,11 @@ loader_check_line_repeat_end(
   {
     if (error)
     {
-      lash_error_plain("%s:%s: stderr line repeated %u times", project, argv0, last_line_repeat_count);
+      log_error_plain("%s:%s: stderr line repeated %u times", project, argv0, last_line_repeat_count);
     }
     else
     {
-      lash_info("%s:%s: stdout line repeated %u times", project, argv0, last_line_repeat_count);
+      log_info("%s:%s: stdout line repeated %u times", project, argv0, last_line_repeat_count);
     }
   }
 }
@@ -131,7 +131,7 @@ loader_childs_bury(void)
         true,
         child_ptr->stderr_last_line_repeat_count);
 
-      lash_debug("Bury child '%s' with PID %llu", child_ptr->argv0, (unsigned long long)child_ptr->pid);
+      log_debug("Bury child '%s' with PID %llu", child_ptr->argv0, (unsigned long long)child_ptr->pid);
 
       list_del(&child_ptr->siblings);
 
@@ -162,24 +162,24 @@ static void loader_sigchld_handler(int signum)
 
     if (!child_ptr)
     {
-      lash_error("LASH loader detected termination of unknown child process with PID %llu", (unsigned long long)pid);
+      log_error("LASH loader detected termination of unknown child process with PID %llu", (unsigned long long)pid);
     }
     else
     {
-      lash_info("LASH loader detected termination of child process '%s' with PID %llu", child_ptr->argv0, (unsigned long long)pid);
+      log_info("LASH loader detected termination of child process '%s' with PID %llu", child_ptr->argv0, (unsigned long long)pid);
     }
 
     if (WIFEXITED(status))
     {
-      lash_info("Child exited, status=%d", WEXITSTATUS(status));
+      log_info("Child exited, status=%d", WEXITSTATUS(status));
     }
     else if (WIFSIGNALED(status))
     {
-      lash_info("Child was killed by signal %d", WTERMSIG(status));
+      log_info("Child was killed by signal %d", WTERMSIG(status));
     }
     else if (WIFSTOPPED(status))
     {
-      lash_info("Child was stopped by signal %d", WSTOPSIG(status));
+      log_info("Child was stopped by signal %d", WSTOPSIG(status));
     }
   }
 }
@@ -201,7 +201,7 @@ static void loader_exec_program_in_xterm(const char * const * argv)
   const char * const * src_ptr_ptr;
   size_t len;
 
-  lash_debug("Executing program '%s' with PID %llu in terminal", argv[0], (unsigned long long)getpid());
+  log_debug("Executing program '%s' with PID %llu in terminal", argv[0], (unsigned long long)getpid());
 
   /* Calculate the command string length */
   len = strlen(XTERM_COMMAND_EXTENSION) + 1;
@@ -231,7 +231,7 @@ static void loader_exec_program_in_xterm(const char * const * argv)
   /* Execute the command */
   execlp("xterm", "xterm", "-e", "/bin/sh", "-c", buf, NULL);
 
-  lash_error("Failed to execute command '%s' in terminal: %s", buf, strerror(errno));
+  log_error("Failed to execute command '%s' in terminal: %s", buf, strerror(errno));
 
   exit(1);
 }
@@ -245,14 +245,14 @@ static void loader_exec_program(const char * const * argv, const char * working_
     /* no longer anything to do with lashd */
     if (setsid() == -1)
     {
-      lash_error("Could not create new process group: %s", strerror(errno));
+      log_error("Could not create new process group: %s", strerror(errno));
     }
   }
 
   /* change the working dir */
   if (chdir(working_dir) == -1)
   {
-    lash_error("Could not change directory to working dir '%s' for program '%s': %s", working_dir, argv[0], strerror(errno));
+    log_error("Could not change directory to working dir '%s' for program '%s': %s", working_dir, argv[0], strerror(errno));
   }
 
 #ifdef LASH_DEBUG
@@ -277,10 +277,10 @@ static void loader_exec_program(const char * const * argv, const char * working_
   }
   *ptr = '\0';
 
-  lash_debug("Running command: %s", buf);
+  log_debug("Running command: %s", buf);
 #endif
 
-  lash_info("Executing program '%s' with PID %llu", argv[0], (unsigned long long)getpid());
+  log_info("Executing program '%s' with PID %llu", argv[0], (unsigned long long)getpid());
 
   if (run_in_terminal)
   {
@@ -291,7 +291,7 @@ static void loader_exec_program(const char * const * argv, const char * working_
     /* Execute it */
     execvp(argv[0], (char **)argv);
 
-    lash_error("Executing program '%s' failed: %s", argv[0], strerror(errno));
+    log_error("Executing program '%s' failed: %s", argv[0], strerror(errno));
   }
 
   exit(1);
@@ -334,11 +334,11 @@ loader_read_child_output(
           {
             if (error)
             {
-              lash_error_plain("%s:%s: last stderr line repeating..", project, argv0);
+              log_error_plain("%s:%s: last stderr line repeating..", project, argv0);
             }
             else
             {
-              lash_info("%s:%s: last stdout line repeating...", project, argv0);
+              log_info("%s:%s: last stdout line repeating...", project, argv0);
             }
           }
 
@@ -353,11 +353,11 @@ loader_read_child_output(
 
           if (error)
           {
-            lash_error_plain("%s:%s: %s", project, argv0, char_ptr);
+            log_error_plain("%s:%s: %s", project, argv0, char_ptr);
           }
           else
           {
-            lash_info("%s:%s: %s", project, argv0, char_ptr);
+            log_info("%s:%s: %s", project, argv0, char_ptr);
           }
         }
 
@@ -376,11 +376,11 @@ loader_read_child_output(
 
           if (error)
           {
-            lash_error_plain("%s:%s: %s " ANSI_RESET ANSI_COLOR_RED "(truncated) " ANSI_RESET, project, argv0, char_ptr);
+            log_error_plain("%s:%s: %s " ANSI_RESET ANSI_COLOR_RED "(truncated) " ANSI_RESET, project, argv0, char_ptr);
           }
           else
           {
-            lash_info("%s:%s: %s " ANSI_RESET ANSI_COLOR_RED "(truncated) " ANSI_RESET, project, argv0, char_ptr);
+            log_info("%s:%s: %s " ANSI_RESET ANSI_COLOR_RED "(truncated) " ANSI_RESET, project, argv0, char_ptr);
           }
 
           left = 0;
@@ -454,21 +454,21 @@ loader_execute(
   child_ptr = malloc(sizeof(struct loader_child));
   if (child_ptr == NULL)
   {
-    lash_error("malloc() failed to allocate struct loader_child");
+    log_error("malloc() failed to allocate struct loader_child");
     goto fail;
   }
 
   child_ptr->project_name = strdup(project_name);
   if (child_ptr->project_name == NULL)
   {
-    lash_error("strdup() failed to duplicate project name '%s'", project_name);
+    log_error("strdup() failed to duplicate project name '%s'", project_name);
     goto free_struct;
   }
 
   child_ptr->argv0 = strdup(argv[0]);
   if (child_ptr->project_name == NULL)
   {
-    lash_error("strdup() failed to duplicate argv[0] '%s'", argv[0]);
+    log_error("strdup() failed to duplicate argv[0] '%s'", argv[0]);
     goto free_project_name;
   }
 
@@ -482,7 +482,7 @@ loader_execute(
   {
     if (pipe(stderr_pipe) == -1)
     {
-      lash_error("Failed to create stderr pipe");
+      log_error("Failed to create stderr pipe");
     }
     else
     {
@@ -490,7 +490,7 @@ loader_execute(
 
       if (fcntl(child_ptr->stderr, F_SETFL, O_NONBLOCK) == -1)
       {
-        lash_error("Failed to set nonblocking mode on "
+        log_error("Failed to set nonblocking mode on "
                    "stderr reading end: %s",
                    strerror(errno));
         close(stderr_pipe[0]);
@@ -513,7 +513,7 @@ loader_execute(
 
   if (pid == -1)
   {
-    lash_error("Could not fork to exec program '%s': %s", argv[0], strerror(errno));
+    log_error("Could not fork to exec program '%s': %s", argv[0], strerror(errno));
     list_del(&child_ptr->siblings); /* fork failed so it is not really a child process to watch for. */
     return false;
   }
@@ -551,14 +551,14 @@ loader_execute(
 
     if (fcntl(child_ptr->stdout, F_SETFL, O_NONBLOCK) == -1)
     {
-      lash_error("Could not set noblocking mode on stdout "
+      log_error("Could not set noblocking mode on stdout "
                  "- pty: %s", strerror(errno));
       close(stderr_pipe[0]);
       close(child_ptr->stdout);
     }
   }
 
-  lash_info("Forked to run program '%s' pid = %llu", argv[0], (unsigned long long)pid);
+  log_info("Forked to run program '%s' pid = %llu", argv[0], (unsigned long long)pid);
 
   *pid_ptr = child_ptr->pid = pid;
 

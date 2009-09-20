@@ -40,16 +40,16 @@ ensure_dir_exist(
   {
     if (errno == ENOENT)
     {
-      lash_info("Directory \"%s\" does not exist. Creating...", dirname);
+      log_info("Directory \"%s\" does not exist. Creating...", dirname);
       if (mkdir(dirname, mode) != 0)
       {
-        lash_error("Failed to create \"%s\" directory: %d (%s)", dirname, errno, strerror(errno));
+        log_error("Failed to create \"%s\" directory: %d (%s)", dirname, errno, strerror(errno));
         return false;
       }
     }
     else
     {
-      lash_error("Failed to stat \"%s\": %d (%s)", dirname, errno, strerror(errno));
+      log_error("Failed to stat \"%s\": %d (%s)", dirname, errno, strerror(errno));
       return false;
     }
   }
@@ -57,7 +57,7 @@ ensure_dir_exist(
   {
     if (!S_ISDIR(st.st_mode))
     {
-      lash_error("\"%s\" exists but is not directory.", dirname);
+      log_error("\"%s\" exists but is not directory.", dirname);
       return false;
     }
   }

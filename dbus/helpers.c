@@ -42,21 +42,21 @@ DBusError g_dbus_error;
 bool dbus_iter_get_dict_entry(DBusMessageIter * iter, const char ** key_ptr, void * value_ptr, int * type_ptr, int * size_ptr)
 {
   if (!iter || !key_ptr || !value_ptr || !type_ptr) {
-    lash_error("Invalid arguments");
+    log_error("Invalid arguments");
     return false;
   }
 
   DBusMessageIter dict_iter, variant_iter;
 
   if (dbus_message_iter_get_arg_type(iter) != DBUS_TYPE_DICT_ENTRY) {
-    lash_error("Iterator does not point to a dict entry container");
+    log_error("Iterator does not point to a dict entry container");
     return false;
   }
 
   dbus_message_iter_recurse(iter, &dict_iter);
 
   if (dbus_message_iter_get_arg_type(&dict_iter) != DBUS_TYPE_STRING) {
-    lash_error("Cannot find key in dict entry container");
+    log_error("Cannot find key in dict entry container");
     return false;
   }
 
@@ -64,7 +64,7 @@ bool dbus_iter_get_dict_entry(DBusMessageIter * iter, const char ** key_ptr, voi
 
   if (!dbus_message_iter_next(&dict_iter)
       || dbus_message_iter_get_arg_type(&dict_iter) != DBUS_TYPE_VARIANT) {
-    lash_error("Cannot find variant container in dict entry");
+    log_error("Cannot find variant container in dict entry");
     return false;
   }
 
@@ -72,7 +72,7 @@ bool dbus_iter_get_dict_entry(DBusMessageIter * iter, const char ** key_ptr, voi
 
   *type_ptr = dbus_message_iter_get_arg_type(&variant_iter);
   if (*type_ptr == DBUS_TYPE_INVALID) {
-    lash_error("Cannot find value in variant container");
+    log_error("Cannot find value in variant container");
     return false;
   }
 
@@ -82,7 +82,7 @@ bool dbus_iter_get_dict_entry(DBusMessageIter * iter, const char ** key_ptr, voi
 
     if (dbus_message_iter_get_element_type(&variant_iter)
         != DBUS_TYPE_BYTE) {
-      lash_error("Dict entry value is a non-byte array");
+      log_error("Dict entry value is a non-byte array");
       return false;
     }
     *type_ptr = '-';
@@ -291,7 +291,7 @@ dbus_call(
   int type;
   DBusSignatureIter sig_iter;
 
-  //lash_info("dbus_call('%s', '%s', '%s', '%s')", service, object, iface, method);
+  //log_info("dbus_call('%s', '%s', '%s', '%s')", service, object, iface, method);
 
   ret = false;
   va_start(ap, input_signature);
@@ -300,7 +300,7 @@ dbus_call(
   {
     if (!dbus_signature_validate(input_signature, NULL))
     {
-      lash_error("input signature '%s' is invalid", input_signature);
+      log_error("input signature '%s' is invalid", input_signature);
       goto fail;
     }
 
@@ -309,7 +309,7 @@ dbus_call(
     request_ptr = dbus_message_new_method_call(service, object, iface, method);
     if (request_ptr == NULL)
     {
-      lash_error("dbus_message_new_method_call() failed.");
+      log_error("dbus_message_new_method_call() failed.");
       goto fail;
     }
 
@@ -320,7 +320,7 @@ dbus_call(
       type = dbus_signature_iter_get_current_type(&sig_iter);
       if (!dbus_type_is_basic(type))
       {
-        lash_error("non-basic input parameter '%c' (%d)", *input_signature, type);
+        log_error("non-basic input parameter '%c' (%d)", *input_signature, type);
         goto fail;
       }
 
@@ -328,7 +328,7 @@ dbus_call(
 
       if (!dbus_message_iter_append_basic(&iter, type, parameter_ptr))
       {
-        lash_error("dbus_message_iter_append_basic() failed.");
+        log_error("dbus_message_iter_append_basic() failed.");
         goto fail;
       }
 
@@ -356,7 +356,7 @@ dbus_call(
 
   if (reply_ptr == NULL)
   {
-    lash_error("calling method '%s' failed, error is '%s'", method, g_dbus_error.message);
+    log_error("calling method '%s' failed, error is '%s'", method, g_dbus_error.message);
     dbus_error_free(&g_dbus_error);
     goto fail;
   }
@@ -367,7 +367,7 @@ dbus_call(
 
     if (strcmp(reply_signature, output_signature) != 0)
     {
-      lash_error("reply signature is '%s' but expected signature is '%s'", reply_signature, output_signature);
+      log_error("reply signature is '%s' but expected signature is '%s'", reply_signature, output_signature);
     }
 
     dbus_message_iter_init(reply_ptr, &iter);
@@ -426,7 +426,7 @@ dbus_register_object_signal_handler(
     dbus_bus_add_match(connection, compose_signal_match(service, object, iface, *signal), &g_dbus_error);
     if (dbus_error_is_set(&g_dbus_error))
     {
-      lash_error("Failed to add D-Bus match rule: %s", g_dbus_error.message);
+      log_error("Failed to add D-Bus match rule: %s", g_dbus_error.message);
       dbus_error_free(&g_dbus_error);
       return false;
     }
@@ -454,7 +454,7 @@ dbus_unregister_object_signal_handler(
     dbus_bus_remove_match(connection, compose_signal_match(service, object, iface, *signal), &g_dbus_error);
     if (dbus_error_is_set(&g_dbus_error))
     {
-      lash_error("Failed to add D-Bus match rule: %s", g_dbus_error.message);
+      log_error("Failed to add D-Bus match rule: %s", g_dbus_error.message);
       dbus_error_free(&g_dbus_error);
       return false;
     }

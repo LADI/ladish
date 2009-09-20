@@ -95,28 +95,28 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
 
   if (strcmp(el, "studio") == 0)
   {
-    //lash_info("<studio>");
+    //log_info("<studio>");
     context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_STUDIO;
     return;
   }
 
   if (strcmp(el, "jack") == 0)
   {
-    //lash_info("<jack>");
+    //log_info("<jack>");
     context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_JACK;
     return;
   }
 
   if (strcmp(el, "conf") == 0)
   {
-    //lash_info("<conf>");
+    //log_info("<conf>");
     context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_CONF;
     return;
   }
 
   if (strcmp(el, "parameter") == 0)
   {
-    //lash_info("<parameter>");
+    //log_info("<parameter>");
     if ((attr[0] == NULL || attr[2] != NULL) || strcmp(attr[0], "path") != 0)
     {
       lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "<parameter> XML element must contain exactly one attribute, named \"path\"");
@@ -157,7 +157,7 @@ static void callback_elend(void * data, const char * el)
     return;
   }
 
-  //lash_info("element end (depth = %d, element = %u)", context_ptr->depth, context_ptr->element[context_ptr->depth]);
+  //log_info("element end (depth = %d, element = %u)", context_ptr->depth, context_ptr->element[context_ptr->depth]);
 
   if (context_ptr->element[context_ptr->depth] == PARSE_CONTEXT_PARAMETER &&
       context_ptr->depth == 3 &&
@@ -167,7 +167,7 @@ static void callback_elend(void * data, const char * el)
   {
     context_ptr->data[context_ptr->data_used] = 0;
 
-    //lash_info("'%s' with value '%s'", context_ptr->path, context_ptr->data);
+    //log_info("'%s' with value '%s'", context_ptr->path, context_ptr->data);
 
     dst = address = strdup(context_ptr->path);
     src = context_ptr->path + 1;
@@ -215,7 +215,7 @@ static void callback_elend(void * data, const char * el)
     switch (parameter.type)
     {
     case jack_boolean:
-      lash_info("%s value is %s (boolean)", context_ptr->path, context_ptr->data);
+      log_info("%s value is %s (boolean)", context_ptr->path, context_ptr->data);
       if (strcmp(context_ptr->data, "true") == 0)
       {
         parameter.value.boolean = true;
@@ -231,11 +231,11 @@ static void callback_elend(void * data, const char * el)
       }
       break;
     case jack_string:
-      lash_info("%s value is %s (string)", context_ptr->path, context_ptr->data);
+      log_info("%s value is %s (string)", context_ptr->path, context_ptr->data);
       parameter.value.string = context_ptr->data;
       break;
     case jack_byte:
-      lash_debug("%s value is %u/%c (byte/char)", context_ptr->path, *context_ptr->data, *context_ptr->data);
+      log_debug("%s value is %u/%c (byte/char)", context_ptr->path, *context_ptr->data, *context_ptr->data);
       if (context_ptr->data[0] == 0 ||
           context_ptr->data[1] != 0)
       {
@@ -245,7 +245,7 @@ static void callback_elend(void * data, const char * el)
       parameter.value.byte = context_ptr->data[0];
       break;
     case jack_uint32:
-      lash_info("%s value is %s (uint32)", context_ptr->path, context_ptr->data);
+      log_info("%s value is %s (uint32)", context_ptr->path, context_ptr->data);
       if (sscanf(context_ptr->data, "%" PRIu32, &parameter.value.uint32) != 1)
       {
         lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "bad value for an uint32 jack param");
@@ -253,7 +253,7 @@ static void callback_elend(void * data, const char * el)
       }
       break;
     case jack_int32:
-      lash_info("%s value is %s (int32)", context_ptr->path, context_ptr->data);
+      log_info("%s value is %s (int32)", context_ptr->path, context_ptr->data);
       if (sscanf(context_ptr->data, "%" PRIi32, &parameter.value.int32) != 1)
       {
         lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "bad value for an int32 jack param");
@@ -309,7 +309,7 @@ bool studio_load(void * call_ptr, const char * studio_name)
     return false;
   }
 
-  lash_info("Loading studio... ('%s')", path);
+  log_info("Loading studio... ('%s')", path);
 
   if (stat(path, &st) != 0)
   {
@@ -351,7 +351,7 @@ bool studio_load(void * call_ptr, const char * studio_name)
     return false;
   }
 
-  //lash_info("conf file size is %llu bytes", (unsigned long long)st.st_size);
+  //log_info("conf file size is %llu bytes", (unsigned long long)st.st_size);
 
   /* we are expecting that conf file has small enough size to fit in memory */
 
@@ -398,7 +398,7 @@ bool studio_load(void * call_ptr, const char * studio_name)
   close(fd);
 
   g_studio.persisted = true;
-  lash_info("Studio loaded. ('%s')", path);
+  log_info("Studio loaded. ('%s')", path);
 
   if (!studio_publish())
   {

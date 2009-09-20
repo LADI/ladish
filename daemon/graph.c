@@ -94,7 +94,7 @@ fail_unref:
   call_ptr->reply = NULL;
 
 fail:
-  lash_error("Ran out of memory trying to construct method return");
+  log_error("Ran out of memory trying to construct method return");
 }
 
 static void get_graph(struct dbus_method_call * call_ptr)
@@ -113,7 +113,7 @@ static void get_graph(struct dbus_method_call * call_ptr)
   DBusMessageIter port_struct_iter;
   //DBusMessageIter connection_struct_iter;
 
-  //lash_info("get_graph() called");
+  //log_info("get_graph() called");
 
   if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_UINT64, &known_version, DBUS_TYPE_INVALID))
   {
@@ -122,12 +122,12 @@ static void get_graph(struct dbus_method_call * call_ptr)
     return;
   }
 
-  //lash_info("Getting graph, known version is %" PRIu64, known_version);
+  //log_info("Getting graph, known version is %" PRIu64, known_version);
 
   call_ptr->reply = dbus_message_new_method_return(call_ptr->message);
   if (call_ptr->reply == NULL)
   {
-    lash_error("Ran out of memory trying to construct method return");
+    log_error("Ran out of memory trying to construct method return");
     goto exit;
   }
 
@@ -171,7 +171,7 @@ static void get_graph(struct dbus_method_call * call_ptr)
         goto nomem_close_client_struct;
       }
 
-      lash_info("client '%s' (%llu)", client_ptr->name, (unsigned long long)client_ptr->id);
+      log_info("client '%s' (%llu)", client_ptr->name, (unsigned long long)client_ptr->id);
       if (!dbus_message_iter_append_basic(&client_struct_iter, DBUS_TYPE_STRING, &client_ptr->name))
       {
         goto nomem_close_client_struct;
@@ -335,7 +335,7 @@ nomem_close_clients_array:
 nomem:
   dbus_message_unref(call_ptr->reply);
   call_ptr->reply = NULL;
-  lash_error("Ran out of memory trying to construct method return");
+  log_error("Ran out of memory trying to construct method return");
 
 exit:
   return;
@@ -381,7 +381,7 @@ bool ladish_graph_create(ladish_graph_handle * graph_handle_ptr, const char * op
   graph_ptr = malloc(sizeof(struct ladish_graph));
   if (graph_ptr == NULL)
   {
-    lash_error("malloc() failed to allocate struct graph_implementator");
+    log_error("malloc() failed to allocate struct graph_implementator");
     return false;
   }
 
@@ -390,7 +390,7 @@ bool ladish_graph_create(ladish_graph_handle * graph_handle_ptr, const char * op
     graph_ptr->opath = strdup(opath);
     if (graph_ptr->opath == NULL)
     {
-      lash_error("strdup() failed for graph opath");
+      log_error("strdup() failed for graph opath");
       free(graph_ptr);
       return false;
     }
@@ -402,7 +402,7 @@ bool ladish_graph_create(ladish_graph_handle * graph_handle_ptr, const char * op
 
   if (!ladish_dict_create(&graph_ptr->dict))
   {
-    lash_error("ladish_dict_create() failed for graph");
+    log_error("ladish_dict_create() failed for graph");
     if (graph_ptr->opath != NULL)
     {
       free(graph_ptr->opath);
@@ -459,7 +459,7 @@ ladish_graph_remove_port_internal(
   list_del(&port_ptr->siblings_client);
   list_del(&port_ptr->siblings_graph);
 
-  lash_info("removing port '%s':'%s' (%"PRIu64":%"PRIu64") from graph %s", client_ptr->name, port_ptr->name, client_ptr->id, port_ptr->id, graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
+  log_info("removing port '%s':'%s' (%"PRIu64":%"PRIu64") from graph %s", client_ptr->name, port_ptr->name, client_ptr->id, port_ptr->id, graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
   if (graph_ptr->opath != NULL)
   {
     dbus_signal_emit(
@@ -495,7 +495,7 @@ ladish_graph_remove_client_internal(
 
   graph_ptr->graph_version++;
   list_del(&client_ptr->siblings);
-  lash_info("removing client '%s' (%"PRIu64") from graph %s", client_ptr->name, client_ptr->id, graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
+  log_info("removing client '%s' (%"PRIu64") from graph %s", client_ptr->name, client_ptr->id, graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
   if (graph_ptr->opath != NULL)
   {
     dbus_signal_emit(
@@ -530,7 +530,7 @@ void ladish_graph_clear(ladish_graph_handle graph_handle)
 {
   struct ladish_graph_client * client_ptr;
 
-  lash_info("ladish_graph_clear() called.");
+  log_info("ladish_graph_clear() called.");
 
   while (!list_empty(&graph_ptr->clients))
   {
@@ -553,19 +553,19 @@ bool ladish_graph_add_client(ladish_graph_handle graph_handle, ladish_client_han
 {
   struct ladish_graph_client * client_ptr;
 
-  lash_info("adding client '%s' (%p) to graph %s", name, client_handle, graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
+  log_info("adding client '%s' (%p) to graph %s", name, client_handle, graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
 
   client_ptr = malloc(sizeof(struct ladish_graph_client));
   if (client_ptr == NULL)
   {
-    lash_error("malloc() failed for struct ladish_graph_client");
+    log_error("malloc() failed for struct ladish_graph_client");
     return false;
   }
 
   client_ptr->name = strdup(name);
   if (client_ptr->name == NULL)
   {
-    lash_error("strdup() failed for graph client name");
+    log_error("strdup() failed for graph client name");
     free(client_ptr);
     return false;
   }
@@ -602,7 +602,7 @@ ladish_graph_remove_client(
 {
   struct ladish_graph_client * client_ptr;
 
-  lash_info("ladish_graph_remove_client() called.");
+  log_info("ladish_graph_remove_client() called.");
 
   client_ptr = ladish_graph_find_client(graph_ptr, client_handle);
   if (client_ptr != NULL)
@@ -630,24 +630,24 @@ ladish_graph_add_port(
   client_ptr = ladish_graph_find_client(graph_ptr, client_handle);
   if (client_ptr == NULL)
   {
-    lash_error("cannot find client to add port to");
+    log_error("cannot find client to add port to");
     assert(false);
     return false;
   }
 
-  lash_info("adding port '%s':'%s' (%p) to graph %s", client_ptr->name, name, port_handle, graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
+  log_info("adding port '%s':'%s' (%p) to graph %s", client_ptr->name, name, port_handle, graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
 
   port_ptr = malloc(sizeof(struct ladish_graph_port));
   if (port_ptr == NULL)
   {
-    lash_error("malloc() failed for struct ladish_graph_port");
+    log_error("malloc() failed for struct ladish_graph_port");
     return false;
   }
 
   port_ptr->name = strdup(name);
   if (port_ptr->name == NULL)
   {
-    lash_error("strdup() failed for graph port name");
+    log_error("strdup() failed for graph port name");
     free(port_ptr);
     return false;
   }

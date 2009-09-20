@@ -59,7 +59,7 @@ lash_strset(char       **property,
   }
 }
 
-#ifndef LASH_DEBUG
+#ifndef LADISH_DEBUG
 
 void *
 lash_malloc(size_t nmemb,
@@ -72,13 +72,13 @@ lash_malloc(size_t nmemb,
       if ((ptr = malloc(nmemb * size))) {
         return ptr;
       } else {
-        lash_error("malloc returned NULL");
+        log_error("malloc returned NULL");
       }
     } else {
-      lash_error("Arguments would overflow");
+      log_error("Arguments would overflow");
     }
   } else {
-    lash_error("Can't allocate zero bytes");
+    log_error("Can't allocate zero bytes");
   }
 
   abort();
@@ -95,13 +95,13 @@ lash_calloc(size_t nmemb,
       if ((ptr = calloc(nmemb, size))) {
         return ptr;
       } else {
-        lash_error("calloc returned NULL");
+        log_error("calloc returned NULL");
       }
     } else {
-      lash_error("Arguments would overflow");
+      log_error("Arguments would overflow");
     }
   } else {
-    lash_error("Can't allocate zero bytes");
+    log_error("Can't allocate zero bytes");
   }
 
   abort();
@@ -119,13 +119,13 @@ lash_realloc(void   *ptr,
       if ((ptr2 = realloc(ptr, nmemb * size))) {
         return ptr2;
       } else {
-        lash_error("realloc returned NULL");
+        log_error("realloc returned NULL");
       }
     } else {
-      lash_error("Arguments would overflow");
+      log_error("Arguments would overflow");
     }
   } else {
-    lash_error("Can't allocate zero bytes");
+    log_error("Can't allocate zero bytes");
   }
 
   abort();
@@ -139,12 +139,12 @@ lash_strdup(const char *s)
   if (ptr)
     return ptr;
 
-  lash_error("strdup returned NULL");
+  log_error("strdup returned NULL");
 
   abort();
 }
 
-#else /* LASH_DEBUG */
+#else /* LADISH_DEBUG */
 
 void *
 lash_malloc_dbg(size_t      nmemb,
@@ -162,20 +162,20 @@ lash_malloc_dbg(size_t      nmemb,
       if ((ptr = malloc(nmemb * size))) {
         return ptr;
       } else {
-        lash_error_plain("%s:%d:%s: "
+        log_error_plain("%s:%d:%s: "
                          "lash_malloc(%s,%s) failed: "
                          "malloc returned NULL",
                          file, line, function,
                          arg1, arg2);
       }
     } else {
-      lash_error_plain("%s:%d:%s: "
+      log_error_plain("%s:%d:%s: "
                        "lash_malloc(%s,%s) failed: "
                        "Arguments would overflow",
                        file, line, function, arg1, arg2);
     }
   } else {
-    lash_error_plain("%s:%d:%s: "
+    log_error_plain("%s:%d:%s: "
                      "lash_malloc(%s,%s) failed: "
                      "Can't allocate zero bytes",
                      file, line, function, arg1, arg2);
@@ -200,20 +200,20 @@ lash_calloc_dbg(size_t      nmemb,
       if ((ptr = calloc(nmemb, size))) {
         return ptr;
       } else {
-        lash_error_plain("%s:%d:%s: "
+        log_error_plain("%s:%d:%s: "
                          "lash_calloc(%s,%s) failed: "
                          "calloc returned NULL",
                          file, line, function,
                          arg1, arg2);
       }
     } else {
-      lash_error_plain("%s:%d:%s: "
+      log_error_plain("%s:%d:%s: "
                        "lash_calloc(%s,%s) failed: "
                        "Arguments would overflow",
                        file, line, function, arg1, arg2);
     }
   } else {
-    lash_error_plain("%s:%d:%s: "
+    log_error_plain("%s:%d:%s: "
                      "lash_calloc(%s,%s) failed: "
                      "Can't allocate zero bytes",
                      file, line, function, arg1, arg2);
@@ -240,20 +240,20 @@ lash_realloc_dbg(void       *ptr,
       if ((ptr2 = realloc(ptr, nmemb * size))) {
         return ptr2;
       } else {
-        lash_error_plain("%s:%d:%s: "
+        log_error_plain("%s:%d:%s: "
                          "lash_realloc(%s,%s,%s) failed: "
                          "calloc returned NULL",
                          file, line, function,
                          arg1, arg2, arg3);
       }
     } else {
-      lash_error_plain("%s:%d:%s: "
+      log_error_plain("%s:%d:%s: "
                        "lash_realloc(%s,%s,%s) failed: "
                        "Arguments would overflow",
                        file, line, function, arg1, arg2, arg3);
     }
   } else {
-    lash_error_plain("%s:%d:%s: "
+    log_error_plain("%s:%d:%s: "
                      "lash_realloc(%s,%s,%s) failed: "
                      "Can't allocate zero bytes",
                      file, line, function, arg1, arg2, arg3);
@@ -274,7 +274,7 @@ lash_strdup_dbg(const char *s,
   if (s) {
     ptr = strdup(s);
   } else {
-    lash_error_plain("%s:%d:%s: lash_strdup(%s) failed: "
+    log_error_plain("%s:%d:%s: lash_strdup(%s) failed: "
                      "Argument is NULL",
                      file, line, function, arg1);
     ptr = strdup("");
@@ -283,13 +283,13 @@ lash_strdup_dbg(const char *s,
   if (ptr)
     return ptr;
 
-  lash_error_plain("%s:%d:%s: lash_strdup(%s) failed: "
+  log_error_plain("%s:%d:%s: lash_strdup(%s) failed: "
                    "strdup returned NULL",
                    file, line, function, arg1);
 
   abort();
 }
 
-#endif /* LASH_DEBUG */
+#endif /* LADISH_DEBUG */
 
 /* EOF */

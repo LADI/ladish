@@ -60,7 +60,7 @@ fail_unref:
   call_ptr->reply = NULL;
 
 fail:
-  lash_error("Ran out of memory trying to construct method return");
+  log_error("Ran out of memory trying to construct method return");
 }
 
 #define array_iter_ptr ((DBusMessageIter *)context)
@@ -141,7 +141,7 @@ fail_unref:
   call_ptr->reply = NULL;
 
 fail:
-  lash_error("Ran out of memory trying to construct method return");
+  log_error("Ran out of memory trying to construct method return");
 }
 
 static void ladish_load_studio(struct dbus_method_call * call_ptr)
@@ -212,7 +212,7 @@ static void ladish_get_application_list(struct dbus_method_call * call_ptr)
   struct lash_appdb_entry * entry_ptr;
 #endif
 
-  lash_info("Getting applications list");
+  log_info("Getting applications list");
 
   call_ptr->reply = dbus_message_new_method_return(call_ptr->message);
   if (call_ptr->reply == NULL)
@@ -277,7 +277,7 @@ fail:
 
 static void ladish_exit(struct dbus_method_call * call_ptr)
 {
-  lash_info("Exit command received through D-Bus");
+  log_info("Exit command received through D-Bus");
   g_quit = true;
 }
 

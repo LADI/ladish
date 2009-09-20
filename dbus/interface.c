@@ -54,7 +54,7 @@ bool dbus_interface_default_handler(const struct dbus_interface_descriptor * ifa
         call_ptr->reply = dbus_message_new_method_return(call_ptr->message);
         if (call_ptr->reply == NULL)
         {
-          lash_error("Failed to construct void method return");
+          log_error("Failed to construct void method return");
         }
       }
 

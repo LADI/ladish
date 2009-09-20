@@ -104,7 +104,7 @@ connect_request(
   void * port1_context,
   void * port2_context)
 {
-  lash_info("connect request(%"PRIu64", %"PRIu64")", port1_ptr->id, port2_ptr->id);
+  log_info("connect request(%"PRIu64", %"PRIu64")", port1_ptr->id, port2_ptr->id);
 
   assert(port1_ptr->graph_canvas == port2_ptr->graph_canvas);
 
@@ -116,7 +116,7 @@ disconnect_request(
   void * port1_context,
   void * port2_context)
 {
-  lash_info("disconnect request(%"PRIu64", %"PRIu64")", port1_ptr->id, port2_ptr->id);
+  log_info("disconnect request(%"PRIu64", %"PRIu64")", port1_ptr->id, port2_ptr->id);
 
   assert(port1_ptr->graph_canvas == port2_ptr->graph_canvas);
 
@@ -138,12 +138,12 @@ module_location_changed(
   char y_str[100];
   char * locale;
 
-  lash_info("module_location_changed(id = %3llu, x = %6.1f, y = %6.1f)", (unsigned long long)client_ptr->id, x, y);
+  log_info("module_location_changed(id = %3llu, x = %6.1f, y = %6.1f)", (unsigned long long)client_ptr->id, x, y);
 
   locale = strdup(setlocale(LC_NUMERIC, NULL));
   if (locale == NULL)
   {
-    lash_error("strdup() failed for locale string");
+    log_error("strdup() failed for locale string");
     return;
   }
 
@@ -205,7 +205,7 @@ void
 clear(
   void * graph_canvas)
 {
-  lash_info("canvas::clear()");
+  log_info("canvas::clear()");
   canvas_clear(graph_canvas_ptr->canvas);
 }
 
@@ -223,12 +223,12 @@ client_appeared(
   double y;
   char * locale;
 
-  lash_info("canvas::client_appeared(%"PRIu64", \"%s\")", id, name);
+  log_info("canvas::client_appeared(%"PRIu64", \"%s\")", id, name);
 
   client_ptr = malloc(sizeof(struct client));
   if (client_ptr == NULL)
   {
-    lash_error("allocation of memory for struct client failed");
+    log_error("allocation of memory for struct client failed");
     return;
   }
 
@@ -264,19 +264,19 @@ client_appeared(
     locale = strdup(setlocale(LC_NUMERIC, NULL));
     if (locale == NULL)
     {
-      lash_error("strdup() failed for locale string");
+      log_error("strdup() failed for locale string");
     }
     else
     {
       setlocale(LC_NUMERIC, "POSIX");
       if (x_str != NULL)
       {
-        //lash_info("converting %s", x_str);
+        //log_info("converting %s", x_str);
         sscanf(x_str, "%lf", &x);
       }
       if (y_str != NULL)
       {
-        //lash_info("converting %s", y_str);
+        //log_info("converting %s", y_str);
         sscanf(y_str, "%lf", &y);
       }
       setlocale(LC_NUMERIC, locale);
@@ -296,7 +296,7 @@ client_appeared(
 
   if (!canvas_create_module(graph_canvas_ptr->canvas, name, x, y, true, true, client_ptr, &client_ptr->canvas_module))
   {
-    lash_error("canvas_create_module(\"%s\") failed", name);
+    log_error("canvas_create_module(\"%s\") failed", name);
     free(client_ptr);
     return;
   }
@@ -312,12 +312,12 @@ client_disappeared(
 {
   struct client * client_ptr;
 
-  lash_info("canvas::client_disappeared(%"PRIu64")", id);
+  log_info("canvas::client_disappeared(%"PRIu64")", id);
 
   client_ptr = find_client(graph_canvas_ptr, id);
   if (client_ptr == NULL)
   {
-    lash_error("cannot find disappearing client %"PRIu64"", id);
+    log_error("cannot find disappearing client %"PRIu64"", id);
     return;
   }
 
@@ -341,19 +341,19 @@ port_appeared(
   struct client * client_ptr;
   struct port * port_ptr;
 
-  lash_info("canvas::port_appeared(%"PRIu64", %"PRIu64", \"%s\")", client_id, port_id, port_name);
+  log_info("canvas::port_appeared(%"PRIu64", %"PRIu64", \"%s\")", client_id, port_id, port_name);
 
   client_ptr = find_client(graph_canvas_ptr, client_id);
   if (client_ptr == NULL)
   {
-    lash_error("cannot find client %"PRIu64" of appearing port %"PRIu64" \"%s\"", client_id, port_id, port_name);
+    log_error("cannot find client %"PRIu64" of appearing port %"PRIu64" \"%s\"", client_id, port_id, port_name);
     return;
   }
 
   port_ptr = malloc(sizeof(struct port));
   if (port_ptr == NULL)
   {
-    lash_error("allocation of memory for struct port failed");
+    log_error("allocation of memory for struct port failed");
     return;
   }
 
@@ -372,7 +372,7 @@ port_appeared(
 
   if (!canvas_create_port(graph_canvas_ptr->canvas, client_ptr->canvas_module, port_name, is_input, color, port_ptr, &port_ptr->canvas_port))
   {
-    lash_error("canvas_create_port(\"%s\") failed", port_name);
+    log_error("canvas_create_port(\"%s\") failed", port_name);
     free(client_ptr);
     return;
   }
@@ -390,19 +390,19 @@ port_disappeared(
   struct client * client_ptr;
   struct port * port_ptr;
 
-  lash_info("canvas::port_disappeared(%"PRIu64", %"PRIu64")", client_id, port_id);
+  log_info("canvas::port_disappeared(%"PRIu64", %"PRIu64")", client_id, port_id);
 
   client_ptr = find_client(graph_canvas_ptr, client_id);
   if (client_ptr == NULL)
   {
-    lash_error("cannot find client %"PRIu64" of disappearing port %"PRIu64"", client_id, port_id);
+    log_error("cannot find client %"PRIu64" of disappearing port %"PRIu64"", client_id, port_id);
     return;
   }
 
   port_ptr = find_port(client_ptr, port_id);
   if (client_ptr == NULL)
   {
-    lash_error("cannot find disappearing port %"PRIu64" of client %"PRIu64"", port_id, client_id);
+    log_error("cannot find disappearing port %"PRIu64" of client %"PRIu64"", port_id, client_id);
     return;
   }
 
@@ -425,33 +425,33 @@ ports_connected(
   struct client * client2_ptr;
   struct port * port2_ptr;
 
-  lash_info("canvas::ports_connected(%"PRIu64", %"PRIu64", %"PRIu64", %"PRIu64")", client1_id, port1_id, client2_id, port2_id);
+  log_info("canvas::ports_connected(%"PRIu64", %"PRIu64", %"PRIu64", %"PRIu64")", client1_id, port1_id, client2_id, port2_id);
 
   client1_ptr = find_client(graph_canvas_ptr, client1_id);
   if (client1_ptr == NULL)
   {
-    lash_error("cannot find client %"PRIu64" of connected port %"PRIu64"", client1_id, port1_id);
+    log_error("cannot find client %"PRIu64" of connected port %"PRIu64"", client1_id, port1_id);
     return;
   }
 
   port1_ptr = find_port(client1_ptr, port1_id);
   if (client1_ptr == NULL)
   {
-    lash_error("cannot find connected port %"PRIu64" of client %"PRIu64"", port1_id, client1_id);
+    log_error("cannot find connected port %"PRIu64" of client %"PRIu64"", port1_id, client1_id);
     return;
   }
 
   client2_ptr = find_client(graph_canvas_ptr, client2_id);
   if (client2_ptr == NULL)
   {
-    lash_error("cannot find client %"PRIu64" of connected port %"PRIu64"", client2_id, port2_id);
+    log_error("cannot find client %"PRIu64" of connected port %"PRIu64"", client2_id, port2_id);
     return;
   }
 
   port2_ptr = find_port(client2_ptr, port2_id);
   if (client2_ptr == NULL)
   {
-    lash_error("cannot find connected port %"PRIu64" of client %"PRIu64"", port2_id, client2_id);
+    log_error("cannot find connected port %"PRIu64" of client %"PRIu64"", port2_id, client2_id);
     return;
   }
 
@@ -476,33 +476,33 @@ ports_disconnected(
   struct client * client2_ptr;
   struct port * port2_ptr;
 
-  lash_info("canvas::ports_disconnected(%"PRIu64", %"PRIu64", %"PRIu64", %"PRIu64")", client1_id, port1_id, client2_id, port2_id);
+  log_info("canvas::ports_disconnected(%"PRIu64", %"PRIu64", %"PRIu64", %"PRIu64")", client1_id, port1_id, client2_id, port2_id);
 
   client1_ptr = find_client(graph_canvas_ptr, client1_id);
   if (client1_ptr == NULL)
   {
-    lash_error("cannot find client %"PRIu64" of disconnected port %"PRIu64"", client1_id, port1_id);
+    log_error("cannot find client %"PRIu64" of disconnected port %"PRIu64"", client1_id, port1_id);
     return;
   }
 
   port1_ptr = find_port(client1_ptr, port1_id);
   if (client1_ptr == NULL)
   {
-    lash_error("cannot find disconnected port %"PRIu64" of client %"PRIu64"", port1_id, client1_id);
+    log_error("cannot find disconnected port %"PRIu64" of client %"PRIu64"", port1_id, client1_id);
     return;
   }
 
   client2_ptr = find_client(graph_canvas_ptr, client2_id);
   if (client2_ptr == NULL)
   {
-    lash_error("cannot find client %"PRIu64" of disconnected port %"PRIu64"", client2_id, port2_id);
+    log_error("cannot find client %"PRIu64" of disconnected port %"PRIu64"", client2_id, port2_id);
     return;
   }
 
   port2_ptr = find_port(client2_ptr, port2_id);
   if (client2_ptr == NULL)
   {
-    lash_error("cannot find disconnected port %"PRIu64" of client %"PRIu64"", port2_id, client2_id);
+    log_error("cannot find disconnected port %"PRIu64" of client %"PRIu64"", port2_id, client2_id);
     return;
   }
 

@@ -78,31 +78,31 @@ static void signal_segv(int signum, siginfo_t* info, void*ptr) {
 
     if (signum == SIGSEGV)
     {
-        lash_error("Segmentation Fault!");
+        log_error("Segmentation Fault!");
     }
     else if (signum == SIGABRT)
     {
-        lash_error("Abort!");
+        log_error("Abort!");
     }
     else if (signum == SIGILL)
     {
-        lash_error("Illegal instruction!");
+        log_error("Illegal instruction!");
     }
     else if (signum == SIGFPE)
     {
-        lash_error("Floating point exception!");
+        log_error("Floating point exception!");
     }
     else
     {
-        lash_error("Unknown bad signal catched!");
+        log_error("Unknown bad signal catched!");
     }
 
-    lash_error("info.si_signo = %d", signum);
-    lash_error("info.si_errno = %d", info->si_errno);
-    lash_error("info.si_code  = %d (%s)", info->si_code, si_codes[info->si_code]);
-    lash_error("info.si_addr  = %p", info->si_addr);
+    log_error("info.si_signo = %d", signum);
+    log_error("info.si_errno = %d", info->si_errno);
+    log_error("info.si_code  = %d (%s)", info->si_code, si_codes[info->si_code]);
+    log_error("info.si_addr  = %p", info->si_addr);
     for(i = 0; i < NGREG; i++)
-        lash_error("reg[%02d]       = 0x" REGFORMAT, i, ucontext->uc_mcontext.gregs[i]);
+        log_error("reg[%02d]       = 0x" REGFORMAT, i, ucontext->uc_mcontext.gregs[i]);
 
 #if defined(SIGSEGV_STACK_X86) || defined(SIGSEGV_STACK_IA64)
 # if defined(SIGSEGV_STACK_IA64)
@@ -113,7 +113,7 @@ static void signal_segv(int signum, siginfo_t* info, void*ptr) {
     bp = (void**)ucontext->uc_mcontext.gregs[REG_EBP];
 # endif
 
-    lash_error("Stack trace:");
+    log_error("Stack trace:");
     while(bp && ip) {
         if(!dladdr(ip, &dlinfo))
             break;
@@ -127,7 +127,7 @@ static void signal_segv(int signum, siginfo_t* info, void*ptr) {
             symname = tmp;
 #endif
 
-        lash_error("% 2d: %p <%s+%u> (%s)",
+        log_error("% 2d: %p <%s+%u> (%s)",
                 ++f,
                 ip,
                 symname,
@@ -146,14 +146,14 @@ static void signal_segv(int signum, siginfo_t* info, void*ptr) {
         bp = (void**)bp[0];
     }
 #else
-    lash_error("Stack trace (non-dedicated):");
+    log_error("Stack trace (non-dedicated):");
     sz = backtrace(bt, 20);
     strings = backtrace_symbols(bt, sz);
 
     for(i = 0; i < sz; ++i)
-        lash_error("%s", strings[i]);
+        log_error("%s", strings[i]);
 #endif
-    lash_error("End of stack trace");
+    log_error("End of stack trace");
     exit (-1);
 }
 
@@ -164,22 +164,22 @@ int setup_sigsegv() {
     action.sa_sigaction = signal_segv;
     action.sa_flags = SA_SIGINFO;
     if(sigaction(SIGSEGV, &action, NULL) < 0) {
-        lash_error("sigaction failed. errno is %d (%s)", errno, strerror(errno));
+        log_error("sigaction failed. errno is %d (%s)", errno, strerror(errno));
         return 0;
     }
 
     if(sigaction(SIGILL, &action, NULL) < 0) {
-        lash_error("sigaction failed. errno is %d (%s)", errno, strerror(errno));
+        log_error("sigaction failed. errno is %d (%s)", errno, strerror(errno));
         return 0;
     }
 
     if(sigaction(SIGABRT, &action, NULL) < 0) {
-        lash_error("sigaction failed. errno is %d (%s)", errno, strerror(errno));
+        log_error("sigaction failed. errno is %d (%s)", errno, strerror(errno));
         return 0;
     }
 
     if(sigaction(SIGFPE, &action, NULL) < 0) {
-        lash_error("sigaction failed. errno is %d (%s)", errno, strerror(errno));
+        log_error("sigaction failed. errno is %d (%s)", errno, strerror(errno));
         return 0;
     }
 

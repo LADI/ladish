@@ -61,7 +61,7 @@ static DBusHandlerResult lashd_client_disconnect_handler(DBusConnection * connec
 
   if (!(member = dbus_message_get_member(message)))
   {
-    lash_error("Received JACK signal with NULL member");
+    log_error("Received JACK signal with NULL member");
     return DBUS_HANDLER_RESULT_HANDLED;
   }
 
@@ -77,7 +77,7 @@ static DBusHandlerResult lashd_client_disconnect_handler(DBusConnection * connec
                              DBUS_TYPE_STRING, &old_name,
                              DBUS_TYPE_INVALID))
   {
-    lash_error("Cannot get message arguments: %s",
+    log_error("Cannot get message arguments: %s",
                err.message);
     dbus_error_free(&err);
     return DBUS_HANDLER_RESULT_HANDLED;
@@ -107,14 +107,14 @@ static DBusHandlerResult lashd_client_disconnect_handler(DBusConnection * connec
     &err);
   if (dbus_error_is_set(&err))
   {
-    lash_error("Failed to add D-Bus match rule: %s", err.message);
+    log_error("Failed to add D-Bus match rule: %s", err.message);
     dbus_error_free(&err);
     goto fail;
   }
 
   if (!dbus_connection_add_filter(service->connection, lashd_client_disconnect_handler, NULL, NULL))
   {
-    lash_error("Failed to add D-Bus filter");
+    log_error("Failed to add D-Bus filter");
     goto fail;
   }
 #endif
@@ -126,7 +126,7 @@ static bool connect_dbus(void)
   g_dbus_connection = dbus_bus_get(DBUS_BUS_SESSION, &g_dbus_error);
   if (dbus_error_is_set(&g_dbus_error))
   {
-    lash_error("Failed to get bus: %s", g_dbus_error.message);
+    log_error("Failed to get bus: %s", g_dbus_error.message);
     dbus_error_free(&g_dbus_error);
     goto fail;
   }
@@ -134,23 +134,23 @@ static bool connect_dbus(void)
   g_dbus_unique_name = dbus_bus_get_unique_name(g_dbus_connection);
   if (g_dbus_unique_name == NULL)
   {
-    lash_error("Failed to read unique bus name");
+    log_error("Failed to read unique bus name");
     goto unref_connection;
   }
 
-  lash_info("Connected to local session bus, unique name is \"%s\"", g_dbus_unique_name);
+  log_info("Connected to local session bus, unique name is \"%s\"", g_dbus_unique_name);
 
   ret = dbus_bus_request_name(g_dbus_connection, SERVICE_NAME, DBUS_NAME_FLAG_DO_NOT_QUEUE, &g_dbus_error);
   if (ret == -1)
   {
-    lash_error("Failed to acquire bus name: %s", g_dbus_error.message);
+    log_error("Failed to acquire bus name: %s", g_dbus_error.message);
     dbus_error_free(&g_dbus_error);
     goto unref_connection;
   }
 
   if (ret == DBUS_REQUEST_NAME_REPLY_EXISTS)
   {
-    lash_error("Requested connection name already exists");
+    log_error("Requested connection name already exists");
     goto unref_connection;
   }
 
@@ -189,7 +189,7 @@ static void on_child_exit(pid_t pid)
 
 void term_signal_handler(int signum)
 {
-  lash_info("Caught signal %d (%s), terminating", signum, strsignal(signum));
+  log_info("Caught signal %d (%s), terminating", signum, strsignal(signum));
   g_quit = true;
 }
 
@@ -200,7 +200,7 @@ bool install_term_signal_handler(int signum, bool ignore_if_already_ignored)
   sigh = signal(signum, term_signal_handler);
   if (sigh == SIG_ERR)
   {
-    lash_error("signal() failed to install handler function for signal %d.", signum);
+    log_error("signal() failed to install handler function for signal %d.", signum);
     return false;
   }
 
@@ -219,14 +219,14 @@ bool init_paths(void)
   home_dir = getenv("HOME");
   if (home_dir == NULL)
   {
-    lash_error("Environment variable HOME not set");
+    log_error("Environment variable HOME not set");
     return false;
   }
 
   g_base_dir = catdup(home_dir, BASE_DIR);
   if (g_base_dir == NULL)
   {
-    lash_error("catdup failed for '%s' and '%s'", home_dir, BASE_DIR);
+    log_error("catdup failed for '%s' and '%s'", home_dir, BASE_DIR);
     return false;
   }
 
@@ -259,8 +259,8 @@ int main(int argc, char ** argv, char ** envp)
 
   dbus_threads_init_default();
 
-  lash_info("------------------");
-  lash_info("LADI session handler activated. Version %s (%s) built on %s", PACKAGE_VERSION, GIT_VERSION, timestamp_str);
+  log_info("------------------");
+  log_info("LADI session handler activated. Version %s (%s) built on %s", PACKAGE_VERSION, GIT_VERSION, timestamp_str);
 
   ret = EXIT_FAILURE;
 
@@ -273,7 +273,7 @@ int main(int argc, char ** argv, char ** envp)
 
   if (!connect_dbus())
   {
-    lash_error("Failed to connecto to D-Bus");
+    log_error("Failed to connecto to D-Bus");
     goto uninit_loader;
   }
 
@@ -283,7 +283,7 @@ int main(int argc, char ** argv, char ** envp)
   install_term_signal_handler(SIGHUP, true);
   if (signal(SIGPIPE, SIG_IGN) == SIG_ERR)
   {
-    lash_error("signal(SIGPIPE, SIG_IGN).");
+    log_error("signal(SIGPIPE, SIG_IGN).");
   }
 
   /* setup our SIGSEGV magic that prints nice stack in our logfile */ 
@@ -303,7 +303,7 @@ int main(int argc, char ** argv, char ** envp)
 
   ret = EXIT_SUCCESS;
 
-  lash_debug("Finished, cleaning up");
+  log_debug("Finished, cleaning up");
 
   studio_uninit();
 
@@ -316,10 +316,10 @@ uninit_loader:
   uninit_paths();
 
 exit:
-  lash_debug("Cleaned up, exiting");
+  log_debug("Cleaned up, exiting");
 
-  lash_info("LADI session handler deactivated");
-  lash_info("------------------");
+  log_info("LADI session handler deactivated");
+  log_info("------------------");
 
   exit(EXIT_SUCCESS);
 }

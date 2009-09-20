@@ -134,7 +134,7 @@ static void buffer_size_change_request(void)
 
   if (selected < 0 || !jack_proxy_set_buffer_size(1 << (selected + 5)))
   {
-    lash_error("cannot set JACK buffer size");
+    log_error("cannot set JACK buffer size");
     buffer_size_clear();
   }
 }
@@ -203,7 +203,7 @@ bool name_dialog(const char * title, const char * object, const char * old_name,
     *new_name = strdup(gtk_entry_get_text(entry));
     if (*new_name == NULL)
     {
-      lash_error("strdup failed for new name (name_dialog)");
+      log_error("strdup failed for new name (name_dialog)");
       ok = false;
     }
   }
@@ -228,7 +228,7 @@ static void arrange(void)
 {
   canvas_handle canvas;
 
-  lash_info("arrange request");
+  log_info("arrange request");
 
   canvas = get_current_canvas();
   if (canvas != NULL)
@@ -239,7 +239,7 @@ static void arrange(void)
 
 static void daemon_exit(GtkWidget * item)
 {
-  lash_info("Daemon exit request");
+  log_info("Daemon exit request");
 
   if (!control_proxy_exit())
   {
@@ -253,7 +253,7 @@ static void jack_configure(GtkWidget * item)
   gchar * argv[] = {"ladiconf", NULL};
   GtkWidget * dialog;
 
-  lash_info("JACK configure request");
+  log_info("JACK configure request");
 
   error_ptr = NULL;
   if (!g_spawn_async(
@@ -281,7 +281,7 @@ static void on_load_studio(GtkWidget * item)
   const char * studio_name;
 
   studio_name = gtk_label_get_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(item))));
-  lash_info("Load studio \"%s\"", studio_name);
+  log_info("Load studio \"%s\"", studio_name);
 
   if (!control_proxy_load_studio(studio_name))
   {
@@ -301,7 +301,7 @@ static void on_delete_studio(GtkWidget * item)
     return;
   }
 
-  lash_info("Delete studio \"%s\"", studio_name);
+  log_info("Delete studio \"%s\"", studio_name);
 
   if (!control_proxy_delete_studio(studio_name))
   {
@@ -317,12 +317,12 @@ static void remove_studio_list_menu_entry(GtkWidget * item, gpointer context)
 
   label = gtk_bin_get_child(GTK_BIN(item));
 
-  //lash_debug("removing studio menu item \"%s\"", gtk_menu_item_get_label(GTK_MENU_ITEM(item));
+  //log_debug("removing studio menu item \"%s\"", gtk_menu_item_get_label(GTK_MENU_ITEM(item));
   // gtk_menu_item_get_label() requries gtk 2.16
-  lash_debug("removing studio menu item \"%s\"", gtk_label_get_text(GTK_LABEL(label)));
+  log_debug("removing studio menu item \"%s\"", gtk_label_get_text(GTK_LABEL(label)));
 
   gtk_container_remove(GTK_CONTAINER(item), label); /* destroy the label and drop the item refcount by one */
-  //lash_info("refcount == %d", (unsigned int)G_OBJECT(item)->ref_count);
+  //log_info("refcount == %d", (unsigned int)G_OBJECT(item)->ref_count);
   gtk_container_remove(GTK_CONTAINER(studio_list_ptr->menu), item); /* drop the refcount of item by one and thus destroy it */
   studio_list_ptr->count--;
 }
@@ -332,7 +332,7 @@ static void add_studio_list_menu_entry(void * context, const char * studio_name)
   GtkWidget * item;
 
   item = gtk_menu_item_new_with_label(studio_name);
-  //lash_info("refcount == %d", (unsigned int)G_OBJECT(item)->ref_count); // refcount == 2 because of the label
+  //log_info("refcount == %d", (unsigned int)G_OBJECT(item)->ref_count); // refcount == 2 because of the label
   gtk_widget_set_sensitive(item, studio_list_ptr->add_sensitive);
   gtk_widget_show(item);
   gtk_menu_shell_append(GTK_MENU_SHELL(studio_list_ptr->menu), item);
@@ -368,7 +368,7 @@ static void populate_studio_list_menu(GtkMenuItem * menu_item, struct studio_lis
 
 static void save_studio(void)
 {
-  lash_info("save studio request");
+  log_info("save studio request");
   if (!studio_proxy_save())
   {
     error_message_box("Studio save failed, please inspect logs.");
@@ -379,7 +379,7 @@ static void new_studio(void)
 {
   char * new_name;
 
-  lash_info("new studio request");
+  log_info("new studio request");
 
   if (name_dialog("New studio", "Studio name", "", &new_name))
   {
@@ -394,7 +394,7 @@ static void new_studio(void)
 
 static void start_studio(void)
 {
-  lash_info("start studio request");
+  log_info("start studio request");
   if (!studio_proxy_start())
   {
     error_message_box("Studio start failed, please inspect logs.");
@@ -403,7 +403,7 @@ static void start_studio(void)
 
 static void stop_studio(void)
 {
-  lash_info("stop studio request");
+  log_info("stop studio request");
   if (!studio_proxy_stop())
   {
     error_message_box("Studio stop failed, please inspect logs.");
@@ -412,7 +412,7 @@ static void stop_studio(void)
 
 static void unload_studio(void)
 {
-  lash_info("unload studio request");
+  log_info("unload studio request");
   if (!studio_proxy_unload())
   {
     error_message_box("Studio unload failed, please inspect logs.");
@@ -448,19 +448,19 @@ void control_proxy_on_studio_appeared(void)
 
   if (!studio_proxy_get_name(&name))
   {
-    lash_error("failed to get studio name");
+    log_error("failed to get studio name");
     goto exit;
   }
 
   if (g_studio_view != NULL)
   {
-    lash_error("studio appear signal received but studio already exists");
+    log_error("studio appear signal received but studio already exists");
     goto free_name;
   }
 
   if (!create_view(name, SERVICE_NAME, STUDIO_OBJECT_PATH, true, false, &g_studio_view))
   {
-    lash_error("create_view() failed for studio");
+    log_error("create_view() failed for studio");
     goto free_name;
   }
 
@@ -487,7 +487,7 @@ void control_proxy_on_studio_disappeared(void)
 {
   if (g_studio_view == NULL)
   {
-    lash_error("studio disappear signal received but studio does not exists");
+    log_error("studio disappear signal received but studio does not exists");
     return;
   }
 
@@ -520,7 +520,7 @@ static void on_studio_renamed(const char * new_studio_name)
 
 void jack_started(void)
 {
-  lash_info("JACK started");
+  log_info("JACK started");
 
   gtk_widget_set_sensitive(g_buffer_size_combo, true);
   gtk_widget_set_sensitive(g_clear_load_button, true);
@@ -530,7 +530,7 @@ void jack_started(void)
 
 void jack_stopped(void)
 {
-  lash_info("JACK stopped");
+  log_info("JACK stopped");
 
   g_source_remove(g_jack_poll_source_tag);
 
@@ -543,18 +543,18 @@ void jack_stopped(void)
 
 void jack_appeared(void)
 {
-  lash_info("JACK appeared");
+  log_info("JACK appeared");
 
   if (!create_view("Raw JACK", JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, false, true, &g_jack_view))
   {
-    lash_error("create_view() failed for jack");
+    log_error("create_view() failed for jack");
     return;
   }
 }
 
 void jack_disappeared(void)
 {
-  lash_info("JACK disappeared");
+  log_info("JACK disappeared");
 
   if (g_jack_view != NULL)
   {
@@ -616,7 +616,7 @@ int main(int argc, char** argv)
 
   if (!canvas_init())
   {
-    lash_error("Canvas initialization failed.");
+    log_error("Canvas initialization failed.");
     return 1;
   }
 

@@ -45,7 +45,7 @@ bool ladish_dict_create(ladish_dict_handle * dict_handle_ptr)
   dict_ptr = malloc(sizeof(struct ladish_dict));
   if (dict_ptr == NULL)
   {
-    lash_error("malloc() failed to allocate struct ladish_dict");
+    log_error("malloc() failed to allocate struct ladish_dict");
     return false;
   }
 
@@ -100,7 +100,7 @@ bool ladish_dict_set(ladish_dict_handle dict_handle, const char * key, const cha
     new_value = strdup(value);
     if (new_value == NULL)
     {
-      lash_error("strdup() failed to duplicate dict value");
+      log_error("strdup() failed to duplicate dict value");
       return false;
     }
 
@@ -112,14 +112,14 @@ bool ladish_dict_set(ladish_dict_handle dict_handle, const char * key, const cha
   entry_ptr = malloc(sizeof(struct ladish_dict_entry));
   if (entry_ptr == NULL)
   {
-    lash_error("malloc() failed to allocate struct ladish_dict_entry");
+    log_error("malloc() failed to allocate struct ladish_dict_entry");
     return false;
   }
 
   entry_ptr->key = strdup(key);
   if (entry_ptr->key == NULL)
   {
-    lash_error("strdup() failed to duplicate dict key");
+    log_error("strdup() failed to duplicate dict key");
     free(entry_ptr);
     return false;
   }
@@ -127,7 +127,7 @@ bool ladish_dict_set(ladish_dict_handle dict_handle, const char * key, const cha
   entry_ptr->value = strdup(value);
   if (entry_ptr->value == NULL)
   {
-    lash_error("strdup() failed to duplicate dict value");
+    log_error("strdup() failed to duplicate dict value");
     free(entry_ptr->key);
     free(entry_ptr);
     return false;

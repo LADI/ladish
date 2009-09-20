@@ -61,13 +61,13 @@ ladish_port_create(
   port_ptr = malloc(sizeof(struct ladish_port));
   if (port_ptr == NULL)
   {
-    lash_error("malloc() failed to allocate struct ladish_port");
+    log_error("malloc() failed to allocate struct ladish_port");
     return false;
   }
 
   if (!ladish_dict_create(&port_ptr->dict))
   {
-    lash_error("ladish_dict_create() failed for port");
+    log_error("ladish_dict_create() failed for port");
     free(port_ptr);
     return false;
   }

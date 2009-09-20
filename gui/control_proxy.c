@@ -48,14 +48,14 @@ static DBusHandlerResult message_hook(DBusConnection * connection, DBusMessage *
 
   if (dbus_message_is_signal(message, IFACE_CONTROL, "StudioAppeared"))
   {
-    lash_info("StudioAppeared");
+    log_info("StudioAppeared");
     control_proxy_on_studio_appeared();
     return DBUS_HANDLER_RESULT_HANDLED;
   }
 
   if (dbus_message_is_signal(message, IFACE_CONTROL, "StudioDisappeared"))
   {
-    lash_info("StudioDisappeared");
+    log_info("StudioDisappeared");
     control_proxy_on_studio_disappeared();
     return DBUS_HANDLER_RESULT_HANDLED;
   }
@@ -88,7 +88,7 @@ bool control_proxy_init(void)
 
   if (studio_present)
   {
-    lash_info("Initial studio appear");
+    log_info("Initial studio appear");
     control_proxy_on_studio_appeared();
   }
 
@@ -121,14 +121,14 @@ bool control_proxy_get_studio_list(void (* callback)(void * context, const char 
 
   if (!dbus_call(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "GetStudioList", "", NULL, &reply_ptr))
   {
-    lash_error("GetStudioList() failed.");
+    log_error("GetStudioList() failed.");
     return false;
   }
 
   reply_signature = dbus_message_get_signature(reply_ptr);
   if (strcmp(reply_signature, "a(sa{sv})") != 0)
   {
-    lash_error("GetStudioList() reply signature mismatch. '%s'", reply_signature);
+    log_error("GetStudioList() reply signature mismatch. '%s'", reply_signature);
     dbus_message_unref(reply_ptr);
     return false;
   }
@@ -158,7 +158,7 @@ bool control_proxy_new_studio(const char * studio_name)
 
   if (!dbus_call(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "NewStudio", "s", &studio_name, ""))
   {
-    lash_error("NewStudio() failed.");
+    log_error("NewStudio() failed.");
     return false;
   }
 
@@ -169,7 +169,7 @@ bool control_proxy_load_studio(const char * studio_name)
 {
   if (!dbus_call(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "LoadStudio", "s", &studio_name, ""))
   {
-    lash_error("LoadStudio() failed.");
+    log_error("LoadStudio() failed.");
     return false;
   }
 
@@ -180,7 +180,7 @@ bool control_proxy_delete_studio(const char * studio_name)
 {
   if (!dbus_call(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "DeleteStudio", "s", &studio_name, ""))
   {
-    lash_error("DeleteStudio() failed.");
+    log_error("DeleteStudio() failed.");
     return false;
   }
 
@@ -191,7 +191,7 @@ bool control_proxy_exit(void)
 {
   if (!dbus_call(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "Exit", "", ""))
   {
-    lash_error("Exit() failed.");
+    log_error("Exit() failed.");
     return false;
   }
 

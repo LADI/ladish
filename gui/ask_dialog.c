@@ -47,7 +47,7 @@ ask_dialog(
   va_end(ap);
   if (msg == NULL)
   {
-    lash_error("g_markup_vprintf_escaped() failed.");
+    log_error("g_markup_vprintf_escaped() failed.");
     return false;
   }
   gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(dialog), "%s", msg);

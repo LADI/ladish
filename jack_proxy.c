@@ -24,7 +24,7 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-//#define LASH_DEBUG
+//#define LADISH_DEBUG
 
 #include "common.h"
 #include "jack_proxy.h"
@@ -44,7 +44,7 @@ on_jack_control_signal(
 {
   if (strcmp(signal_name, "ServerStarted") == 0)
   {
-    lash_debug("JACK server start detected.");
+    log_debug("JACK server start detected.");
     if (g_on_server_started != NULL)
     {
       g_on_server_started();
@@ -55,7 +55,7 @@ on_jack_control_signal(
 
   if (strcmp(signal_name, "ServerStopped") == 0)
   {
-    lash_debug("JACK server stop detected.");
+    log_debug("JACK server stop detected.");
     if (g_on_server_stopped != NULL)
     {
       g_on_server_stopped();
@@ -75,13 +75,13 @@ on_bus_signal(
   const char * old_owner;
   const char * new_owner;
 
-  //lash_info("bus signal '%s' received", signal_name);
+  //log_info("bus signal '%s' received", signal_name);
 
   dbus_error_init(&g_dbus_error);
 
   if (strcmp(signal_name, "NameOwnerChanged") == 0)
   {
-    //lash_info("NameOwnerChanged signal received");
+    //log_info("NameOwnerChanged signal received");
 
     if (!dbus_message_get_args(
           message_ptr,
@@ -90,7 +90,7 @@ on_bus_signal(
           DBUS_TYPE_STRING, &old_owner,
           DBUS_TYPE_STRING, &new_owner,
           DBUS_TYPE_INVALID)) {
-      lash_error("Cannot get message arguments: %s", g_dbus_error.message);
+      log_error("Cannot get message arguments: %s", g_dbus_error.message);
       dbus_error_free(&g_dbus_error);
       return DBUS_HANDLER_RESULT_HANDLED;
     }
@@ -102,7 +102,7 @@ on_bus_signal(
 
     if (old_owner[0] == '\0')
     {
-      lash_debug("JACK serivce appeared");
+      log_debug("JACK serivce appeared");
       if (g_on_server_appeared != NULL)
       {
         g_on_server_appeared();
@@ -110,7 +110,7 @@ on_bus_signal(
     }
     else if (new_owner[0] == '\0')
     {
-      lash_debug("JACK serivce disappeared");
+      log_debug("JACK serivce disappeared");
       if (g_on_server_disappeared != NULL)
       {
         g_on_server_disappeared();
@@ -152,11 +152,11 @@ dbus_signal_handler(
   signal_name = dbus_message_get_member(message_ptr);
   if (signal_name == NULL)
   {
-    lash_error("Received signal with NULL member");
+    log_error("Received signal with NULL member");
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
   }
 
-  lash_debug("'%s' sent signal '%s'::'%s'", object_path, interface, signal_name);
+  log_debug("'%s' sent signal '%s'::'%s'", object_path, interface, signal_name);
 
   /* Handle JACK patchbay and control interface signals */
   if (object_path != NULL && strcmp(object_path, JACKDBUS_OBJECT_PATH) == 0)
@@ -201,7 +201,7 @@ jack_proxy_init(
     &g_dbus_error);
   if (dbus_error_is_set(&g_dbus_error))
   {
-    lash_error("Failed to add D-Bus match rule: %s", g_dbus_error.message);
+    log_error("Failed to add D-Bus match rule: %s", g_dbus_error.message);
     dbus_error_free(&g_dbus_error);
     return false;
   }
@@ -217,7 +217,7 @@ jack_proxy_init(
     dbus_bus_add_match(g_dbus_connection, rule, &g_dbus_error);
     if (dbus_error_is_set(&g_dbus_error))
     {
-      lash_error("Failed to add D-Bus match rule: %s", g_dbus_error.message);
+      log_error("Failed to add D-Bus match rule: %s", g_dbus_error.message);
       dbus_error_free(&g_dbus_error);
       return false;
     }
@@ -225,7 +225,7 @@ jack_proxy_init(
 
   if (!dbus_connection_add_filter(g_dbus_connection, dbus_signal_handler, NULL, NULL))
   {
-    lash_error("Failed to add D-Bus filter");
+    log_error("Failed to add D-Bus filter");
     return false;
   }
 
@@ -303,7 +303,7 @@ add_address(
 
   if (!dbus_message_iter_open_container(iter_ptr, DBUS_TYPE_ARRAY, "s", &array_iter))
   {
-    lash_error("dbus_message_iter_open_container() failed.");
+    log_error("dbus_message_iter_open_container() failed.");
     return false;
   }
 
@@ -314,7 +314,7 @@ add_address(
     {
       if (!dbus_message_iter_append_basic(&array_iter, DBUS_TYPE_STRING, &component))
       {
-        lash_error("dbus_message_iter_append_basic() failed.");
+        log_error("dbus_message_iter_append_basic() failed.");
         return false;
       }
 
@@ -344,7 +344,7 @@ jack_proxy_read_conf_container(
   request_ptr = dbus_message_new_method_call(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONFIGURE, "ReadContainer");
   if (request_ptr == NULL)
   {
-    lash_error("dbus_message_new_method_call() failed.");
+    log_error("dbus_message_new_method_call() failed.");
     return false;
   }
 
@@ -367,7 +367,7 @@ jack_proxy_read_conf_container(
 
   if (reply_ptr == NULL)
   {
-    lash_error("no reply from JACK server, error is '%s'", g_dbus_error.message);
+    log_error("no reply from JACK server, error is '%s'", g_dbus_error.message);
     dbus_error_free(&g_dbus_error);
     return false;
   }
@@ -376,7 +376,7 @@ jack_proxy_read_conf_container(
 
   if (strcmp(reply_signature, "bas") != 0)
   {
-    lash_error("ReadContainer() reply signature mismatch. '%s'", reply_signature);
+    log_error("ReadContainer() reply signature mismatch. '%s'", reply_signature);
     dbus_message_unref(reply_ptr);
     return false;
   }
@@ -418,7 +418,7 @@ get_variant(
   char * string;
 
   dbus_message_iter_recurse(iter_ptr, &variant_iter);
-  lash_debug("variant signature: '%s'", dbus_message_iter_get_signature(&variant_iter));
+  log_debug("variant signature: '%s'", dbus_message_iter_get_signature(&variant_iter));
 
   type = dbus_message_iter_get_arg_type(&variant_iter);
   switch (type)
@@ -442,7 +442,7 @@ get_variant(
     string = strdup(string);
     if (string == NULL)
     {
-      lash_error("strdup failed.");
+      log_error("strdup failed.");
       return false;
     }
 
@@ -456,7 +456,7 @@ get_variant(
     return true;
   }
 
-  lash_error("Unknown D-Bus parameter type %i", (int)type);
+  log_error("Unknown D-Bus parameter type %i", (int)type);
   return false;
 }
 
@@ -476,7 +476,7 @@ jack_proxy_get_parameter_value(
   request_ptr = dbus_message_new_method_call(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONFIGURE, "GetParameterValue");
   if (request_ptr == NULL)
   {
-    lash_error("dbus_message_new_method_call() failed.");
+    log_error("dbus_message_new_method_call() failed.");
     return false;
   }
 
@@ -499,7 +499,7 @@ jack_proxy_get_parameter_value(
 
   if (reply_ptr == NULL)
   {
-    lash_error("no reply from JACK server, error is '%s'", g_dbus_error.message);
+    log_error("no reply from JACK server, error is '%s'", g_dbus_error.message);
     dbus_error_free(&g_dbus_error);
     return false;
   }
@@ -508,7 +508,7 @@ jack_proxy_get_parameter_value(
 
   if (strcmp(reply_signature, "bvv") != 0)
   {
-    lash_error("GetParameterValue() reply signature mismatch. '%s'", reply_signature);
+    log_error("GetParameterValue() reply signature mismatch. '%s'", reply_signature);
     dbus_message_unref(reply_ptr);
     return false;
   }
@@ -581,14 +581,14 @@ jack_proxy_set_parameter_value(
     value_ptr = &boolean;
     break;
   default:
-    lash_error("Unknown jack parameter type %i", (int)type);
+    log_error("Unknown jack parameter type %i", (int)type);
     return false;
   }
 
   request_ptr = dbus_message_new_method_call(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONFIGURE, "SetParameterValue");
   if (request_ptr == NULL)
   {
-    lash_error("dbus_message_new_method_call() failed.");
+    log_error("dbus_message_new_method_call() failed.");
     return false;
   }
 
@@ -617,7 +617,7 @@ jack_proxy_set_parameter_value(
 
   if (reply_ptr == NULL)
   {
-    lash_error("no reply from JACK server, error is '%s'", g_dbus_error.message);
+    log_error("no reply from JACK server, error is '%s'", g_dbus_error.message);
     dbus_error_free(&g_dbus_error);
     return false;
   }
@@ -628,7 +628,7 @@ jack_proxy_set_parameter_value(
 
   if (strcmp(reply_signature, "") != 0)
   {
-    lash_error("SetParameterValue() reply signature mismatch. '%s'", reply_signature);
+    log_error("SetParameterValue() reply signature mismatch. '%s'", reply_signature);
     return false;
   }
 
@@ -647,7 +647,7 @@ jack_proxy_reset_parameter_value(
   request_ptr = dbus_message_new_method_call(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONFIGURE, "ResetParameterValue");
   if (request_ptr == NULL)
   {
-    lash_error("dbus_message_new_method_call() failed.");
+    log_error("dbus_message_new_method_call() failed.");
     return false;
   }
 
@@ -670,7 +670,7 @@ jack_proxy_reset_parameter_value(
 
   if (reply_ptr == NULL)
   {
-    lash_error("no reply from JACK server, error is '%s'", g_dbus_error.message);
+    log_error("no reply from JACK server, error is '%s'", g_dbus_error.message);
     dbus_error_free(&g_dbus_error);
     return false;
   }
@@ -681,7 +681,7 @@ jack_proxy_reset_parameter_value(
 
   if (strcmp(reply_signature, "") != 0)
   {
-    lash_error("ResetParameterValue() reply signature mismatch. '%s'", reply_signature);
+    log_error("ResetParameterValue() reply signature mismatch. '%s'", reply_signature);
     return false;
   }
 
@@ -770,7 +770,7 @@ reset_callback(
   {
     if (!jack_proxy_reset_parameter_value(address))
     {
-      lash_error("cannot reset value of parameter");
+      log_error("cannot reset value of parameter");
       return false;
     }
   }
@@ -778,7 +778,7 @@ reset_callback(
   {
     if (!jack_proxy_read_conf_container(address, context, reset_callback))
     {
-      lash_error("cannot read container");
+      log_error("cannot read container");
       return false;
     }
   }

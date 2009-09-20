@@ -58,12 +58,12 @@ static DBusHandlerResult message_hook(DBusConnection * connection, DBusMessage *
   {
     if (!dbus_message_get_args(message, &g_dbus_error, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
     {
-      lash_error("Invalid parameters of StudioRenamed signal: %s",  g_dbus_error.message);
+      log_error("Invalid parameters of StudioRenamed signal: %s",  g_dbus_error.message);
       dbus_error_free(&g_dbus_error);
     }
     else
     {
-      lash_info("StudioRenamed");
+      log_info("StudioRenamed");
 
       if (g_renamed_callback != NULL)
       {
@@ -76,7 +76,7 @@ static DBusHandlerResult message_hook(DBusConnection * connection, DBusMessage *
 
   if (dbus_message_is_signal(message, IFACE_STUDIO, "StudioStarted"))
   {
-    lash_info("StudioStarted");
+    log_info("StudioStarted");
 
     if (g_started_callback != NULL)
     {
@@ -88,7 +88,7 @@ static DBusHandlerResult message_hook(DBusConnection * connection, DBusMessage *
 
   if (dbus_message_is_signal(message, IFACE_STUDIO, "StudioStopped"))
   {
-    lash_info("StudioStopped");
+    log_info("StudioStopped");
 
     if (g_stopped_callback != NULL)
     {
@@ -100,13 +100,13 @@ static DBusHandlerResult message_hook(DBusConnection * connection, DBusMessage *
 
   if (dbus_message_is_signal(message, IFACE_STUDIO, "RoomAppeared"))
   {
-    lash_info("RoomAppeared");
+    log_info("RoomAppeared");
     return DBUS_HANDLER_RESULT_HANDLED;
   }
 
   if (dbus_message_is_signal(message, IFACE_STUDIO, "RoomDisappeared"))
   {
-    lash_info("RoomDisappeared");
+    log_info("RoomDisappeared");
     return DBUS_HANDLER_RESULT_HANDLED;
   }
 
@@ -124,7 +124,7 @@ bool studio_proxy_init(void)
         message_hook,
         NULL))
   {
-    lash_error("studio_object_path() failed");
+    log_error("studio_object_path() failed");
     return false;
   }
 
@@ -142,7 +142,7 @@ void studio_proxy_uninit(void)
         message_hook,
         NULL))
   {
-    lash_error("studio_object_path() failed");
+    log_error("studio_object_path() failed");
   }
 }
 
@@ -157,7 +157,7 @@ bool studio_proxy_get_name(char ** name_ptr)
   *name_ptr = strdup(name);
   if (*name_ptr == NULL)
   {
-    lash_error("strdup() failed to duplicate studio name");
+    log_error("strdup() failed to duplicate studio name");
     return false;
   }
 

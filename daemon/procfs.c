@@ -69,7 +69,7 @@ procfs_get_process_file(
   buffer_ptr = malloc(buffer_size);
   if (buffer_ptr == NULL)
   {
-    lash_error("malloc failed to allocate buffer with size %zu", buffer_size);
+    log_error("malloc failed to allocate buffer with size %zu", buffer_size);
     return false;
   }
 
@@ -83,7 +83,7 @@ loop:
     read_ptr = realloc(buffer_ptr, buffer_size);
     if (read_ptr == NULL)
     {
-      lash_error("realloc failed to allocate buffer with size %zu", buffer_size);
+      log_error("realloc failed to allocate buffer with size %zu", buffer_size);
       free(buffer_ptr);
       close(fd);
       return false;
@@ -142,7 +142,7 @@ procfs_get_process_link(
   {
     g_buffer[ret] = 0;
     buffer_ptr = strdup(g_buffer);
-    lash_debug("process %llu %s symlink points to \"%s\"", pid, filename, buffer_ptr);
+    log_debug("process %llu %s symlink points to \"%s\"", pid, filename, buffer_ptr);
   }
   else
   {

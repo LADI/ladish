@@ -51,12 +51,12 @@ bool init_glade(void)
     goto found;
   }
 
-  lash_error("Unable to find the gui.glade file");
+  log_error("Unable to find the gui.glade file");
   uninit_glade();
   return false;
 
 found:
-  lash_info("Loading glade from %s", path);
+  log_info("Loading glade from %s", path);
   g_glade = glade_xml_new(path, NULL, NULL);
   return true;
 }

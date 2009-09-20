@@ -26,8 +26,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __LASH_DEBUG_H__
-#define __LASH_DEBUG_H__
+#ifndef __LADISH_LOG_H__
+#define __LADISH_LOG_H__
 
 #define ANSI_BOLD_ON    "\033[1m"
 #define ANSI_BOLD_OFF   "\033[22m"
@@ -49,45 +49,45 @@
 # endif
 #endif
 
-#ifndef DEBUG_OUTPUT_TERMINAL
+#ifndef LOG_OUTPUT_STDOUT
 
-# define LASH_LOG_LEVEL_DEBUG        0
-# define LASH_LOG_LEVEL_INFO         1
-# define LASH_LOG_LEVEL_WARN         2
-# define LASH_LOG_LEVEL_ERROR        3
-# define LASH_LOG_LEVEL_ERROR_PLAIN  4
+# define LADISH_LOG_LEVEL_DEBUG        0
+# define LADISH_LOG_LEVEL_INFO         1
+# define LADISH_LOG_LEVEL_WARN         2
+# define LADISH_LOG_LEVEL_ERROR        3
+# define LADISH_LOG_LEVEL_ERROR_PLAIN  4
 
 void
-lash_log(unsigned int  level,
+ladish_log(unsigned int  level,
          const char   *format,
                        ...);
 
-# ifdef LASH_DEBUG
-#   define lash_debug(fmt, args...) \
-      lash_log(LASH_LOG_LEVEL_DEBUG, "%s:%d:%s: " fmt "\n", __FILE__, __LINE__, __func__, ## args)
+# ifdef LADISH_DEBUG
+#   define log_debug(fmt, args...) \
+      ladish_log(LADISH_LOG_LEVEL_DEBUG, "%s:%d:%s: " fmt "\n", __FILE__, __LINE__, __func__, ## args)
 # else
-#   define lash_debug(fmt, args...)
-# endif /* LASH_DEBUG */
+#   define log_debug(fmt, args...)
+# endif /* LADISH_DEBUG */
 
-# define lash_info(fmt, args...) lash_log(LASH_LOG_LEVEL_INFO, fmt "\n", ## args)
-# define lash_warn(fmt, args...) lash_log(LASH_LOG_LEVEL_WARN, ANSI_COLOR_YELLOW "WARNING: " ANSI_RESET "%s: " fmt "\n", __func__, ## args)
-# define lash_error(fmt, args...) lash_log(LASH_LOG_LEVEL_ERROR, ANSI_COLOR_RED "ERROR: " ANSI_RESET "%s: " fmt "\n", __func__, ## args)
-# define lash_error_plain(fmt, args...) lash_log(LASH_LOG_LEVEL_ERROR_PLAIN, ANSI_COLOR_RED "ERROR: " ANSI_RESET fmt "\n", ## args)
+# define log_info(fmt, args...) ladish_log(LADISH_LOG_LEVEL_INFO, fmt "\n", ## args)
+# define log_warn(fmt, args...) ladish_log(LADISH_LOG_LEVEL_WARN, ANSI_COLOR_YELLOW "WARNING: " ANSI_RESET "%s: " fmt "\n", __func__, ## args)
+# define log_error(fmt, args...) ladish_log(LADISH_LOG_LEVEL_ERROR, ANSI_COLOR_RED "ERROR: " ANSI_RESET "%s: " fmt "\n", __func__, ## args)
+# define log_error_plain(fmt, args...) ladish_log(LADISH_LOG_LEVEL_ERROR_PLAIN, ANSI_COLOR_RED "ERROR: " ANSI_RESET fmt "\n", ## args)
 
-#else /* DEBUG_OUTPUT_TERMINAL */
+#else /* LOG_OUTPUT_STDOUT */
 
-# ifdef LASH_DEBUG
-#   define lash_debug(fmt, args...) \
+# ifdef LADISH_DEBUG
+#   define log_debug(fmt, args...) \
       printf("%s:%d:%s: " fmt "\n", __FILE__, __LINE__, __func__, ## args)
 # else
-#   define lash_debug(fmt, args...)
-# endif /* LASH_DEBUG */
+#   define log_debug(fmt, args...)
+# endif /* LADISH_DEBUG */
 
-# define lash_info(fmt, args...) printf(fmt "\n", ## args)
-# define lash_warn(fmt, args...) printf(fmt "\n", ## args)
-# define lash_error(fmt, args...) fprintf(stderr, "%s: " fmt "\n", __func__, ## args)
-# define lash_error_plain(fmt, args...) fprintf(stderr, fmt "\n", ## args)
+# define log_info(fmt, args...) printf(fmt "\n", ## args)
+# define log_warn(fmt, args...) printf(fmt "\n", ## args)
+# define log_error(fmt, args...) fprintf(stderr, "%s: " fmt "\n", __func__, ## args)
+# define log_error_plain(fmt, args...) fprintf(stderr, fmt "\n", ## args)
 
-#endif /* DEBUG_OUTPUT_TERMINAL */
+#endif /* LOG_OUTPUT_STDOUT */
 
-#endif /* __LASH_DEBUG_H__ */
+#endif /* __LADISH_LOG__ */
