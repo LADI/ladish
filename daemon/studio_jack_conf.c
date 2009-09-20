@@ -223,7 +223,7 @@ conf_callback(
   strcpy(dst, child);
 
   /* address always is same buffer as the one supplied through context pointer */
-  assert(context_ptr->address == address);
+  ASSERT(context_ptr->address == address);
   dst = (char *)component;
 
   len = strlen(child) + 1;

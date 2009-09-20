@@ -30,11 +30,11 @@
 #include <stdbool.h>
 #include <dbus/dbus.h>
 #include <string.h>
-#include <assert.h>
 
 #include "helpers.h"
 #include "method.h"
 #include "../log.h"
+#include "../assert.h"
 
 DBusConnection * g_dbus_connection;
 DBusError g_dbus_error;
@@ -374,13 +374,13 @@ dbus_call(
 
     while (*output_signature++ != '\0')
     {
-      assert(dbus_message_iter_get_arg_type(&iter) != DBUS_TYPE_INVALID); /* we've checked the signature, this should not happen */
+      ASSERT(dbus_message_iter_get_arg_type(&iter) != DBUS_TYPE_INVALID); /* we've checked the signature, this should not happen */
       parameter_ptr = va_arg(ap, void *);
       dbus_message_iter_get_basic(&iter, parameter_ptr);
       dbus_message_iter_next(&iter);
     }
 
-    assert(dbus_message_iter_get_arg_type(&iter) == DBUS_TYPE_INVALID); /* we've checked the signature, this should not happen */
+    ASSERT(dbus_message_iter_get_arg_type(&iter) == DBUS_TYPE_INVALID); /* we've checked the signature, this should not happen */
     dbus_message_unref(reply_ptr);
   }
   else

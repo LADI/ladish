@@ -81,7 +81,7 @@ studio_publish(void)
 {
   dbus_object_path object;
 
-  assert(g_studio.name != NULL);
+  ASSERT(g_studio.name != NULL);
 
   object = dbus_object_path_new(
     STUDIO_OBJECT_PATH,
@@ -207,7 +207,7 @@ void on_event_jack_started(void)
 {
   if (g_studio.dbus_object == NULL)
   {
-    assert(g_studio.name == NULL);
+    ASSERT(g_studio.name == NULL);
     if (!studio_name_generate(&g_studio.name))
     {
       log_error("studio_name_generate() failed.");
@@ -640,7 +640,7 @@ bool studio_new(void * call_ptr, const char * studio_name)
   log_info("New studio request (%s)", studio_name);
   studio_clear();
 
-  assert(g_studio.name == NULL);
+  ASSERT(g_studio.name == NULL);
   if (*studio_name != 0)
   {
     g_studio.name = strdup(studio_name);

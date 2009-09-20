@@ -148,7 +148,7 @@ const char * ladish_dict_get(ladish_dict_handle dict_handle, const char * key)
     return NULL;
   }
 
-  assert(entry_ptr->value != NULL);
+  ASSERT(entry_ptr->value != NULL);
   return entry_ptr->value;
 }
 

@@ -149,7 +149,7 @@ a2j_proxy_impl::dbus_message_hook(
   const char * old_owner;
   const char * new_owner;
 
-  assert(proxy);
+  ASSERT(proxy);
   //a2j_proxy_impl * me = reinterpret_cast<a2j_proxy_impl *>(proxy);
 
   //info_msg("dbus_message_hook() called.");

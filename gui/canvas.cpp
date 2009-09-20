@@ -155,12 +155,12 @@ canvas_clear(
     for (FlowCanvas::PortVector::iterator p = ports.begin(); p != ports.end(); ++p)
     {
       boost::shared_ptr<FlowCanvas::Port> port = boost::dynamic_pointer_cast<FlowCanvas::Port>(*p);
-      assert(port != NULL);
+      ASSERT(port != NULL);
       module->remove_port(port);
       port->hide();
     }
 
-    assert(module->ports().empty());
+    ASSERT(module->ports().empty());
     canvas_ptr->get()->remove_item(module);
   }
 }

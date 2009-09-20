@@ -26,7 +26,6 @@
 
 #include <dbus/dbus.h>
 #include <stdlib.h>
-#include <assert.h>
 
 #include "common.h"
 #include "graph_proxy.h"
@@ -426,7 +425,7 @@ void
 graph_proxy_destroy(
   graph_proxy_handle graph)
 {
-  assert(list_empty(&graph_ptr->monitors));
+  ASSERT(list_empty(&graph_ptr->monitors));
 
   if (graph_ptr->active)
   {
@@ -539,7 +538,7 @@ graph_proxy_detach(
     }
   }
 
-  assert(false);
+  ASSERT(false);
 }
 
 void

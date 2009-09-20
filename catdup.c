@@ -32,7 +32,7 @@ char * catdup(const char * s1, const char * s2)
   char * buffer;
   size_t s1_len, s2_len;
 
-  assert(s1 != NULL && s2 != NULL);
+  ASSERT(s1 != NULL && s2 != NULL);
 
   s1_len = strlen(s1);
   s2_len = strlen(s2);
@@ -56,7 +56,7 @@ char * catdup3(const char * s1, const char * s2, const char * s3)
   char * buffer;
   size_t s1_len, s2_len, s3_len;
 
-  assert(s1 != NULL && s2 != NULL && s3 != NULL);
+  ASSERT(s1 != NULL && s2 != NULL && s3 != NULL);
 
   s1_len = strlen(s1);
   s2_len = strlen(s2);

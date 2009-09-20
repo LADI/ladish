@@ -29,7 +29,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <assert.h>
 #include <glade/glade.h>
 
 GladeXML * g_glade;
@@ -71,7 +70,7 @@ GtkWidget * get_glade_widget(const char * name)
 
   ptr = GTK_WIDGET(glade_xml_get_widget(g_glade, name));
 
-  assert(ptr != NULL);
+  ASSERT(ptr != NULL);
 
   return ptr;
 }

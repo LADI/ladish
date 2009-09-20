@@ -188,15 +188,15 @@ static void callback_elend(void * data, const char * el)
       dst += dst_len + 1;
 
       src += src_len;
-      assert(*src == '/' || *src == 0);
+      ASSERT(*src == '/' || *src == 0);
       if (sep != NULL)
       {
-        assert(*src == '/');
+        ASSERT(*src == '/');
         src++;                  /* skip separator */
       }
       else
       {
-        assert(*src == 0);
+        ASSERT(*src == 0);
       }
     }
     *dst = 0;                   /* ASCIZZ */

@@ -611,7 +611,7 @@ ladish_graph_remove_client(
   }
   else
   {
-    assert(false);
+    ASSERT_NO_PASS;
   }
 }
 
@@ -631,7 +631,7 @@ ladish_graph_add_port(
   if (client_ptr == NULL)
   {
     log_error("cannot find client to add port to");
-    assert(false);
+    ASSERT_NO_PASS;
     return false;
   }
 
@@ -782,7 +782,7 @@ const char * ladish_graph_get_client_name(ladish_graph_handle graph_handle, ladi
       return client_ptr->name;
   }
 
-  assert(false);
+  ASSERT_NO_PASS;
   return NULL;
 }
 
@@ -796,7 +796,7 @@ bool ladish_graph_is_client_empty(ladish_graph_handle graph_handle, ladish_clien
     return list_empty(&client_ptr->ports);
   }
 
-  assert(false);
+  ASSERT_NO_PASS;
   return true;
 }
 

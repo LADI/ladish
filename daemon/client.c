@@ -103,9 +103,9 @@ void
 ladish_client_destroy(
   ladish_client_handle client_handle)
 {
-  assert(list_empty(&client_ptr->ports));
-  assert(list_empty(&client_ptr->siblings_studio_all));
-  assert(list_empty(&client_ptr->siblings_room));
+  ASSERT(list_empty(&client_ptr->ports));
+  ASSERT(list_empty(&client_ptr->siblings_studio_all));
+  ASSERT(list_empty(&client_ptr->siblings_room));
 
   ladish_dict_destroy(client_ptr->dict);
 

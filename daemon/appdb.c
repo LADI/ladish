@@ -29,11 +29,11 @@
 #include <string.h>
 #include <sys/types.h>
 #include <dirent.h>
-#include <assert.h>
 
 #include "appdb.h"
 #include "../log.h"
 #include "../catdup.h"
+#include "../assert.h"
 
 void
 lash_appdb_free_entry(
@@ -433,7 +433,7 @@ lash_appdb_load_file(
     value = lash_appdb_find_key(entries, entries_count, map_ptr->key);
     if (value == NULL)
     {
-      assert(strcmp(map_ptr->key, "Name") != 0); /* name is required and we already checked this */
+      ASSERT(strcmp(map_ptr->key, "Name") != 0); /* name is required and we already checked this */
       map_ptr++;  
       continue;
     }
@@ -468,7 +468,7 @@ lash_appdb_load_file(
     }
     else
     {
-      assert(false);
+      ASSERT_NO_PASS;
       goto fail_free_entry;
     }
 

@@ -345,7 +345,7 @@ static void add_studio_list_menu_entry(void * context, const char * studio_name)
 static void menu_studio_list_clear(struct studio_list * studio_list_ptr)
 {
   gtk_container_foreach(GTK_CONTAINER(studio_list_ptr->menu), remove_studio_list_menu_entry, studio_list_ptr);
-  assert(studio_list_ptr->count == 0);
+  ASSERT(studio_list_ptr->count == 0);
   studio_list_ptr->count = 0;
 }
 

@@ -266,7 +266,7 @@ dbus_object_path dbus_object_path_new(const char *name, const struct dbus_interf
   }
   va_end(ap);
 
-  assert(len == 0);
+  ASSERT(len == 0);
 
   iface_dst_ptr->iface = NULL;
   opath_ptr->introspection = introspection_new(opath_ptr);

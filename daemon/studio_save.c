@@ -254,13 +254,13 @@ bool studio_save(void * call_ptr)
   }
 
   filename = NULL;
-  assert(g_studio.filename != NULL);
-  assert(g_studio.filename != old_filename);
-  assert(g_studio.filename != bak_filename);
+  ASSERT(g_studio.filename != NULL);
+  ASSERT(g_studio.filename != old_filename);
+  ASSERT(g_studio.filename != bak_filename);
 
   if (bak_filename != NULL)
   {
-    assert(old_filename != NULL);
+    ASSERT(old_filename != NULL);
 
     if (stat(old_filename, &st) == 0) /* if old filename does not exist, rename with fail */
     {
@@ -423,8 +423,8 @@ free_filenames:
     free(old_filename);
   }
 
-  assert(filename == NULL);
-  assert(g_studio.filename != NULL);
+  ASSERT(filename == NULL);
+  ASSERT(g_studio.filename != NULL);
 
 exit:
   return ret;

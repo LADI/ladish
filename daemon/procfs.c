@@ -26,7 +26,6 @@
 
 #include <stdbool.h>
 #include <string.h>
-#include <assert.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -35,7 +34,6 @@
 #include <unistd.h>
 
 #include "procfs.h"
-#include "../log.h"
 
 #define BUFFER_SIZE 4096
 
@@ -97,10 +95,10 @@ loop:
   ret = read(fd, read_ptr, max);
   if (ret > 0)
   {
-    assert(ret <= max);
+    ASSERT(ret <= max);
     read_ptr += ret;
     used_size += ret;
-    assert(used_size <= buffer_size);
+    ASSERT(used_size <= buffer_size);
     goto loop;
   }
 
@@ -108,7 +106,7 @@ loop:
 
   if (ret < 0)
   {
-    assert(ret == -1);
+    ASSERT(ret == -1);
     close(fd);
     return false;
   }
@@ -146,7 +144,7 @@ procfs_get_process_link(
   }
   else
   {
-    assert(ret == -1);
+    ASSERT(ret == -1);
     buffer_ptr = NULL;
   }
 
@@ -186,7 +184,7 @@ procfs_get_process_cmdline(
     temp_ptr++;
   }
 
-  assert(*(temp_ptr - 1) == 0); /* the last nul char */
+  ASSERT(*(temp_ptr - 1) == 0); /* the last nul char */
 
   argv = malloc((argc + 1) * sizeof(char *));
   if (argv == NULL)
@@ -199,7 +197,7 @@ procfs_get_process_cmdline(
 
   for (i = 0; i < argc; i++)
   {
-    assert(temp_ptr - cmdline_ptr < cmdline_size);
+    ASSERT(temp_ptr - cmdline_ptr < cmdline_size);
 
     argv[i] = strdup(temp_ptr);
     if (argv[i] == NULL)

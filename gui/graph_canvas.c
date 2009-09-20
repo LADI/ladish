@@ -106,7 +106,7 @@ connect_request(
 {
   log_info("connect request(%"PRIu64", %"PRIu64")", port1_ptr->id, port2_ptr->id);
 
-  assert(port1_ptr->graph_canvas == port2_ptr->graph_canvas);
+  ASSERT(port1_ptr->graph_canvas == port2_ptr->graph_canvas);
 
   graph_proxy_connect_ports(port1_ptr->graph_canvas->graph, port1_ptr->id, port2_ptr->id);
 }
@@ -118,7 +118,7 @@ disconnect_request(
 {
   log_info("disconnect request(%"PRIu64", %"PRIu64")", port1_ptr->id, port2_ptr->id);
 
-  assert(port1_ptr->graph_canvas == port2_ptr->graph_canvas);
+  ASSERT(port1_ptr->graph_canvas == port2_ptr->graph_canvas);
 
   graph_proxy_disconnect_ports(port1_ptr->graph_canvas->graph, port1_ptr->id, port2_ptr->id);
 }
@@ -529,7 +529,7 @@ graph_canvas_attach(
   graph_canvas_handle graph_canvas,
   graph_proxy_handle graph)
 {
-  assert(graph_canvas_ptr->graph == NULL);
+  ASSERT(graph_canvas_ptr->graph == NULL);
 
   if (!graph_proxy_attach(
         graph,
@@ -554,7 +554,7 @@ void
 graph_canvas_detach(
   graph_canvas_handle graph_canvas)
 {
-  assert(graph_canvas_ptr->graph != NULL);
+  ASSERT(graph_canvas_ptr->graph != NULL);
   graph_proxy_detach(graph_canvas_ptr->graph, graph_canvas);
   graph_canvas_ptr->graph = NULL;
 }
