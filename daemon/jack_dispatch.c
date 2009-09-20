@@ -243,6 +243,14 @@ static void port_disappeared(void * context, uint64_t client_id, uint64_t port_i
     if (ladish_graph_is_client_empty(dispatcher_ptr->studio_graph, client))
     {
       ladish_graph_remove_client(dispatcher_ptr->studio_graph, client, false);
+      if (client == dispatcher_ptr->system_capture_client)
+      {
+        dispatcher_ptr->system_capture_client = NULL;
+      }
+      if (client == dispatcher_ptr->system_playback_client)
+      {
+        dispatcher_ptr->system_playback_client = NULL;
+      }
     }
   }
 }
