@@ -621,9 +621,12 @@ void ladish_graph_show_port(ladish_graph_handle graph_handle, ladish_port_handle
     return;
   }
 
+  //log_info("port '%s' is %s", port_ptr->name, port_ptr->hidden ? "invisible" : "visible");
+
   if (port_ptr->client_ptr->hidden)
   {
     port_ptr->client_ptr->hidden = false;
+    graph_ptr->graph_version++;
     dbus_signal_emit(
       g_dbus_connection,
       graph_ptr->opath,
@@ -637,6 +640,7 @@ void ladish_graph_show_port(ladish_graph_handle graph_handle, ladish_port_handle
 
   ASSERT(port_ptr->hidden);
   port_ptr->hidden = false;
+  graph_ptr->graph_version++;
   dbus_signal_emit(
     g_dbus_connection,
     graph_ptr->opath,
