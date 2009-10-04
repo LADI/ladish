@@ -57,6 +57,15 @@ static void client_appeared(void * context, uint64_t id, const char * name)
 
   log_info("client_appeared(%"PRIu64", %s)", id, name);
 
+  client = ladish_graph_find_client_by_name(dispatcher_ptr->jack_graph, name);
+  if (client != NULL)
+  {
+    log_info("found existing client");
+    ASSERT(ladish_client_get_jack_id(client) == 0); /* two JACK clients with same name? */
+    ladish_client_set_jack_id(client, id);
+    goto exit;
+  }
+
   if (!ladish_client_create(NULL, true, false, false, &client))
   {
     log_error("ladish_client_create() failed. Ignoring client %"PRIu64" (%s)", id, name);
@@ -65,13 +74,14 @@ static void client_appeared(void * context, uint64_t id, const char * name)
 
   ladish_client_set_jack_id(client, id);
 
-  if (!ladish_graph_add_client(dispatcher_ptr->jack_graph, client, name))
+  if (!ladish_graph_add_client(dispatcher_ptr->jack_graph, client, name, false))
   {
     log_error("ladish_graph_add_client() failed to add client %"PRIu64" (%s) to JACK graph", id, name);
     ladish_client_destroy(client);
     return;
   }
 
+exit:
   if (strcmp(name, "system") == 0)
   {
     dispatcher_ptr->system_client_id = id;
@@ -126,6 +136,29 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
     flags |= JACKDBUS_PORT_FLAG_TERMINAL;
   }
 
+  port = ladish_graph_find_port_by_name(dispatcher_ptr->jack_graph, client, port_name);
+  if (port != NULL)
+  {
+    log_info("found existing port");
+
+    ASSERT(ladish_port_get_jack_id(port) == 0); /* two JACK ports with same name? */
+    ladish_port_set_jack_id(port, port_id);
+    ladish_graph_adjust_port(dispatcher_ptr->jack_graph, port, type, flags);
+
+    if (!ladish_graph_is_port_present(dispatcher_ptr->studio_graph, port))
+    {
+      log_error("JACK port not found in studio graph");
+      ASSERT_NO_PASS;
+      return;
+    }
+    else
+    {
+      ladish_graph_adjust_port(dispatcher_ptr->studio_graph, port, type, flags);
+      ladish_graph_show_port(dispatcher_ptr->studio_graph, port);
+      return;
+    }
+  }
+
   if (!ladish_port_create(NULL, &port))
   {
     log_error("ladish_port_create() failed.");
@@ -134,7 +167,7 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
 
   ladish_port_set_jack_id(port, port_id);
 
-  if (!ladish_graph_add_port(dispatcher_ptr->jack_graph, client, port, port_name, type, flags))
+  if (!ladish_graph_add_port(dispatcher_ptr->jack_graph, client, port, port_name, type, flags, false))
   {
     log_error("ladish_graph_add_port() failed.");
     ladish_port_destroy(port);
@@ -153,7 +186,7 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
           return;
         }
 
-        if (!ladish_graph_add_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_capture_client, "Hardware Capture"))
+        if (!ladish_graph_add_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_capture_client, "Hardware Capture", false))
         {
           log_error("ladish_graph_add_client() failed.");
           ladish_graph_remove_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_capture_client, true);
@@ -174,7 +207,7 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
           return;
         }
 
-        if (!ladish_graph_add_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_playback_client, "Hardware Playback"))
+        if (!ladish_graph_add_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_playback_client, "Hardware Playback", false))
         {
           ladish_graph_remove_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_playback_client, true);
           dispatcher_ptr->system_playback_client = NULL;
@@ -198,7 +231,7 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
 
       ladish_client_set_jack_id(client, client_id);
 
-      if (!ladish_graph_add_client(dispatcher_ptr->studio_graph, client, jack_client_name))
+      if (!ladish_graph_add_client(dispatcher_ptr->studio_graph, client, jack_client_name, false))
       {
         log_error("ladish_graph_add_client() failed to add client '%s' to studio graph", jack_client_name);
         ladish_client_destroy(client);
@@ -207,7 +240,7 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
     }
   }
 
-  if (!ladish_graph_add_port(dispatcher_ptr->studio_graph, client, port, port_name, type, flags))
+  if (!ladish_graph_add_port(dispatcher_ptr->studio_graph, client, port, port_name, type, flags, false))
   {
     log_error("ladish_graph_add_port() failed.");
     return;

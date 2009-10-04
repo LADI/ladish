@@ -59,7 +59,10 @@ struct parse_context
   signed int depth;
   char data[MAX_DATA_SIZE];
   int data_used;
-  char * path;
+  char * str;
+  ladish_client_handle client;
+  ladish_port_handle port;
+  ladish_dict_handle dict;
 };
 
 #define context_ptr ((struct parse_context *)data)
@@ -71,7 +74,8 @@ static void callback_chrdata(void * data, const XML_Char * s, int len)
     return;
   }
 
-  if (context_ptr->element[context_ptr->depth] == PARSE_CONTEXT_PARAMETER)
+  if (context_ptr->element[context_ptr->depth] == PARSE_CONTEXT_PARAMETER ||
+      context_ptr->element[context_ptr->depth] == PARSE_CONTEXT_KEY)
   {
     if (context_ptr->data_used + len >= sizeof(context_ptr->data))
     {
@@ -87,6 +91,8 @@ static void callback_chrdata(void * data, const XML_Char * s, int len)
 
 static void callback_elstart(void * data, const char * el, const char ** attr)
 {
+  uuid_t uuid;
+
   if (context_ptr->error)
   {
     return;
@@ -130,8 +136,8 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
       return;
     }
 
-    context_ptr->path = strdup(attr[1]);
-    if (context_ptr->path == NULL)
+    context_ptr->str = strdup(attr[1]);
+    if (context_ptr->str == NULL)
     {
       lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup() failed");
       context_ptr->error = XML_TRUE;
@@ -154,6 +160,102 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
   {
     //log_info("<client>");
     context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_CLIENT;
+
+    if (context_ptr->client != NULL)
+    {
+        lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "nested clients");
+        context_ptr->error = XML_TRUE;
+        return;
+    }
+
+    if (context_ptr->depth == 3 &&
+        context_ptr->element[0] == PARSE_CONTEXT_STUDIO &&
+        context_ptr->element[1] == PARSE_CONTEXT_JACK &&
+        context_ptr->element[2] == PARSE_CONTEXT_CLIENTS)
+    {
+      if (attr[0] == NULL ||
+          attr[1] == NULL ||
+          attr[2] == NULL ||
+          attr[3] == NULL ||
+          attr[4] != NULL ||
+          strcmp(attr[0], "name") != 0 ||
+          strcmp(attr[2], "uuid") != 0)
+      {
+        lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "studio/jack/clients/client XML element must contain exactly two attributes, named \"name\" and \"uuid\", in this order");
+        context_ptr->error = XML_TRUE;
+        return;
+      }
+
+      if (uuid_parse(attr[3], uuid) != 0)
+      {
+        lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "cannot parse uuid \"%s\"", attr[3]);
+        context_ptr->error = XML_TRUE;
+        return;
+      }
+
+      log_info("jack client \"%s\" with uuid %s", attr[1], attr[3]);
+
+      if (!ladish_client_create(uuid, false, false, false, &context_ptr->client))
+      {
+        lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_client_create() failed.");
+        context_ptr->error = XML_TRUE;
+        ASSERT(context_ptr->client == NULL);
+        return;
+      }
+
+      if (!ladish_graph_add_client(g_studio.jack_graph, context_ptr->client, attr[1], true))
+      {
+        lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_graph_add_client() failed to add client '%s' to JACK graph", attr[1]);
+        context_ptr->error = XML_TRUE;
+        ladish_client_destroy(context_ptr->client);
+        context_ptr->client = NULL;
+        return;
+      }
+    }
+    else if (context_ptr->depth == 2 &&
+             context_ptr->element[0] == PARSE_CONTEXT_STUDIO &&
+             context_ptr->element[1] == PARSE_CONTEXT_CLIENTS)
+    {
+      if (attr[0] == NULL ||
+          attr[1] == NULL ||
+          attr[2] == NULL ||
+          attr[3] == NULL ||
+          attr[4] != NULL ||
+          strcmp(attr[0], "name") != 0 ||
+          strcmp(attr[2], "uuid") != 0)
+      {
+        lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "studio/clients/client XML element must contain exactly two attributes, named \"name\" and \"uuid\", in this order");
+        context_ptr->error = XML_TRUE;
+        return;
+      }
+
+      if (uuid_parse(attr[3], uuid) != 0)
+      {
+        lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "cannot parse uuid \"%s\"", attr[3]);
+        context_ptr->error = XML_TRUE;
+        return;
+      }
+
+      log_info("studio client \"%s\" with uuid %s", attr[1], attr[3]);
+
+      if (!ladish_client_create(uuid, true, false, false, &context_ptr->client))
+      {
+        lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_client_create() failed.");
+        context_ptr->error = XML_TRUE;
+        ASSERT(context_ptr->client == NULL);
+        return;
+      }
+
+      if (!ladish_graph_add_client(g_studio.studio_graph, context_ptr->client, attr[1], true))
+      {
+        lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_graph_add_client() failed to add client '%s' to studio graph", attr[1]);
+        context_ptr->error = XML_TRUE;
+        ladish_client_destroy(context_ptr->client);
+        context_ptr->client = NULL;
+        return;
+      }
+    }
+
     return;
   }
 
@@ -168,6 +270,109 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
   {
     //log_info("<port>");
     context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_PORT;
+
+    if (context_ptr->port != NULL)
+    {
+        lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "nested ports");
+        context_ptr->error = XML_TRUE;
+        return;
+    }
+
+    if (context_ptr->client == NULL)
+    {
+        lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "client-less port");
+        context_ptr->error = XML_TRUE;
+        return;
+    }
+
+    if (context_ptr->depth == 5 &&
+        context_ptr->element[0] == PARSE_CONTEXT_STUDIO &&
+        context_ptr->element[1] == PARSE_CONTEXT_JACK &&
+        context_ptr->element[2] == PARSE_CONTEXT_CLIENTS &&
+        context_ptr->element[3] == PARSE_CONTEXT_CLIENT &&
+        context_ptr->element[4] == PARSE_CONTEXT_PORTS)
+    {
+      if (attr[0] == NULL ||
+          attr[1] == NULL ||
+          attr[2] == NULL ||
+          attr[3] == NULL ||
+          attr[4] != NULL ||
+          strcmp(attr[0], "name") != 0 ||
+          strcmp(attr[2], "uuid") != 0)
+      {
+        lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "studio/jack/clients/client/ports/port XML element must contain exactly two attributes, named \"name\" and \"uuid\", in this order");
+        context_ptr->error = XML_TRUE;
+        return;
+      }
+
+      if (uuid_parse(attr[3], uuid) != 0)
+      {
+        lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "cannot parse uuid \"%s\"", attr[3]);
+        context_ptr->error = XML_TRUE;
+        return;
+      }
+
+      log_info("jack port \"%s\" with uuid %s", attr[1], attr[3]);
+
+      if (!ladish_port_create(uuid, &context_ptr->port))
+      {
+        lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_port_create() failed.");
+        return;
+      }
+
+      if (!ladish_graph_add_port(g_studio.jack_graph, context_ptr->client, context_ptr->port, attr[1], 0, 0, true))
+      {
+        lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_graph_add_port() failed.");
+        ladish_port_destroy(context_ptr->port);
+        context_ptr->port = NULL;
+        return;
+      }
+    }
+    else if (context_ptr->depth == 4 &&
+             context_ptr->element[0] == PARSE_CONTEXT_STUDIO &&
+             context_ptr->element[1] == PARSE_CONTEXT_CLIENTS &&
+             context_ptr->element[2] == PARSE_CONTEXT_CLIENT &&
+             context_ptr->element[3] == PARSE_CONTEXT_PORTS)
+    {
+      if (attr[0] == NULL ||
+          attr[1] == NULL ||
+          attr[2] == NULL ||
+          attr[3] == NULL ||
+          attr[4] != NULL ||
+          strcmp(attr[0], "name") != 0 ||
+          strcmp(attr[2], "uuid") != 0)
+      {
+        lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "studio/clients/client/ports/port XML element must contain exactly two attributes, named \"name\" and \"uuid\", in this order");
+        context_ptr->error = XML_TRUE;
+        return;
+      }
+
+      if (uuid_parse(attr[3], uuid) != 0)
+      {
+        lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "cannot parse uuid \"%s\"", attr[3]);
+        context_ptr->error = XML_TRUE;
+        return;
+      }
+
+      log_info("studio port \"%s\" with uuid %s", attr[1], attr[3]);
+
+      context_ptr->port = ladish_graph_find_port_by_uuid(g_studio.jack_graph, uuid);
+      if (context_ptr->port == NULL)
+      {
+        lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "studio client with non-jack port %s", attr[3]);
+        context_ptr->error = XML_TRUE;
+        return;
+      }
+
+      if (!ladish_graph_add_port(g_studio.studio_graph, context_ptr->client, context_ptr->port, attr[1], 0, 0, true))
+      {
+        lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_graph_add_port() failed.");
+        ladish_port_destroy(context_ptr->port);
+        context_ptr->port = NULL;
+        return;
+      }
+    }
+
     return;
   }
 
@@ -175,6 +380,41 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
   {
     //log_info("<dict>");
     context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_DICT;
+
+    if (context_ptr->dict != NULL)
+    {
+        lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "nested dicts");
+        context_ptr->error = XML_TRUE;
+        return;
+    }
+
+    if (context_ptr->depth == 1 &&
+        context_ptr->element[0] == PARSE_CONTEXT_STUDIO)
+    {
+      context_ptr->dict = ladish_graph_get_dict(g_studio.studio_graph);
+      ASSERT(context_ptr->dict != NULL);
+    }
+    else if (context_ptr->depth > 0 &&
+             context_ptr->element[context_ptr->depth - 1] == PARSE_CONTEXT_CLIENT)
+    {
+      ASSERT(context_ptr->client != NULL);
+      context_ptr->dict = ladish_client_get_dict(context_ptr->client);
+      ASSERT(context_ptr->dict != NULL);
+    }
+    else if (context_ptr->depth > 0 &&
+             context_ptr->element[context_ptr->depth - 1] == PARSE_CONTEXT_PORT)
+    {
+      ASSERT(context_ptr->port != NULL);
+      context_ptr->dict = ladish_port_get_dict(context_ptr->port);
+      ASSERT(context_ptr->dict != NULL);
+    }
+    else
+    {
+      lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "unexpected dict XML element");
+      context_ptr->error = XML_TRUE;
+      return;
+    }
+
     return;
   }
 
@@ -182,6 +422,34 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
   {
     //log_info("<key>");
     context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_KEY;
+
+    if (context_ptr->dict == NULL)
+    {
+        lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "dict-less key");
+        context_ptr->error = XML_TRUE;
+        return;
+    }
+
+    if (attr[0] == NULL ||
+        attr[1] == NULL ||
+        attr[2] != NULL ||
+        strcmp(attr[0], "name") != 0)
+    {
+      lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "dict/key XML element must contain exactly one attributes, named \"name\".");
+      context_ptr->error = XML_TRUE;
+      return;
+    }
+
+    context_ptr->str = strdup(attr[1]);
+    if (context_ptr->str == NULL)
+    {
+      lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup() failed");
+      context_ptr->error = XML_TRUE;
+      return;
+    }
+
+    context_ptr->data_used = 0;
+
     return;
   }
 
@@ -215,10 +483,10 @@ static void callback_elend(void * data, const char * el)
   {
     context_ptr->data[context_ptr->data_used] = 0;
 
-    //log_info("'%s' with value '%s'", context_ptr->path, context_ptr->data);
+    //log_info("'%s' with value '%s'", context_ptr->str, context_ptr->data);
 
-    dst = address = strdup(context_ptr->path);
-    src = context_ptr->path + 1;
+    dst = address = strdup(context_ptr->str);
+    src = context_ptr->str + 1;
     while (*src != 0)
     {
       sep = strchr(src, '/');
@@ -263,7 +531,7 @@ static void callback_elend(void * data, const char * el)
     switch (parameter.type)
     {
     case jack_boolean:
-      log_info("%s value is %s (boolean)", context_ptr->path, context_ptr->data);
+      log_info("%s value is %s (boolean)", context_ptr->str, context_ptr->data);
       if (strcmp(context_ptr->data, "true") == 0)
       {
         parameter.value.boolean = true;
@@ -279,11 +547,11 @@ static void callback_elend(void * data, const char * el)
       }
       break;
     case jack_string:
-      log_info("%s value is %s (string)", context_ptr->path, context_ptr->data);
+      log_info("%s value is %s (string)", context_ptr->str, context_ptr->data);
       parameter.value.string = context_ptr->data;
       break;
     case jack_byte:
-      log_debug("%s value is %u/%c (byte/char)", context_ptr->path, *context_ptr->data, *context_ptr->data);
+      log_debug("%s value is %u/%c (byte/char)", context_ptr->str, *context_ptr->data, *context_ptr->data);
       if (context_ptr->data[0] == 0 ||
           context_ptr->data[1] != 0)
       {
@@ -293,7 +561,7 @@ static void callback_elend(void * data, const char * el)
       parameter.value.byte = context_ptr->data[0];
       break;
     case jack_uint32:
-      log_info("%s value is %s (uint32)", context_ptr->path, context_ptr->data);
+      log_info("%s value is %s (uint32)", context_ptr->str, context_ptr->data);
       if (sscanf(context_ptr->data, "%" PRIu32, &parameter.value.uint32) != 1)
       {
         lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "bad value for an uint32 jack param");
@@ -301,7 +569,7 @@ static void callback_elend(void * data, const char * el)
       }
       break;
     case jack_int32:
-      log_info("%s value is %s (int32)", context_ptr->path, context_ptr->data);
+      log_info("%s value is %s (int32)", context_ptr->str, context_ptr->data);
       if (sscanf(context_ptr->data, "%" PRIi32, &parameter.value.int32) != 1)
       {
         lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "bad value for an int32 jack param");
@@ -309,7 +577,7 @@ static void callback_elend(void * data, const char * el)
       }
       break;
     default:
-      lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "unknown jack parameter type %d of %s", (int)parameter.type, context_ptr->path);
+      lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "unknown jack parameter type %d of %s", (int)parameter.type, context_ptr->str);
       goto fail_free_address;
     }
 
@@ -321,13 +589,45 @@ static void callback_elend(void * data, const char * el)
 
     free(address);
   }
+  else if (context_ptr->element[context_ptr->depth] == PARSE_CONTEXT_KEY &&
+           context_ptr->depth > 0 &&
+           context_ptr->element[context_ptr->depth - 1] == PARSE_CONTEXT_DICT)
+  {
+    ASSERT(context_ptr->dict != NULL);
+    context_ptr->data[context_ptr->data_used] = 0;
+    log_info("dict key '%s' with value '%s'", context_ptr->str, context_ptr->data);
+    if (!ladish_dict_set(context_ptr->dict, context_ptr->str, context_ptr->data))
+    {
+      lash_dbus_error(context_ptr->call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_dict_set() failed");
+      context_ptr->error = XML_TRUE;
+      return;
+    }
+  }
+  else if (context_ptr->element[context_ptr->depth] == PARSE_CONTEXT_DICT)
+  {
+    //log_info("</dict>");
+    ASSERT(context_ptr->dict != NULL);
+    context_ptr->dict = NULL;
+  }
+  else if (context_ptr->element[context_ptr->depth] == PARSE_CONTEXT_CLIENT)
+  {
+    //log_info("</client>");
+    ASSERT(context_ptr->client != NULL);
+    context_ptr->client = NULL;
+  }
+  else if (context_ptr->element[context_ptr->depth] == PARSE_CONTEXT_PORT)
+  {
+    //log_info("</port>");
+    ASSERT(context_ptr->port != NULL);
+    context_ptr->port = NULL;
+  }
 
   context_ptr->depth--;
 
-  if (context_ptr->path != NULL)
+  if (context_ptr->str != NULL)
   {
-    free(context_ptr->path);
-    context_ptr->path = NULL;
+    free(context_ptr->str);
+    context_ptr->str = NULL;
   }
 
   return;
@@ -423,7 +723,10 @@ bool studio_load(void * call_ptr, const char * studio_name)
 
   context.error = XML_FALSE;
   context.depth = -1;
-  context.path = NULL;
+  context.str = NULL;
+  context.client = NULL;
+  context.port = NULL;
+  context.dict = NULL;
   context.call_ptr = call_ptr;
 
   XML_SetElementHandler(parser, callback_elstart, callback_elend);
@@ -439,11 +742,19 @@ bool studio_load(void * call_ptr, const char * studio_name)
     }
     XML_ParserFree(parser);
     close(fd);
+    studio_clear();
     return false;
   }
 
   XML_ParserFree(parser);
   close(fd);
+
+  if (context.error)
+  {
+    /* if we have initiated the fail, dbus error is already set to better message */
+    studio_clear();
+    return false;
+  }
 
   g_studio.persisted = true;
   log_info("Studio loaded. ('%s')", path);
