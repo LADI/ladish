@@ -44,9 +44,9 @@ public:
     , m_connect_request(connect_request)
     , m_disconnect_request(disconnect_request)
     , m_module_location_changed(module_location_changed)
-  {};
+  {}
 
-  virtual ~canvas_cls() {};
+  virtual ~canvas_cls() {}
   virtual void connect(boost::shared_ptr<FlowCanvas::Connectable> port1, boost::shared_ptr<FlowCanvas::Connectable> port2);
   virtual void disconnect(boost::shared_ptr<FlowCanvas::Connectable> port1, boost::shared_ptr<FlowCanvas::Connectable> port2);
 
@@ -68,9 +68,9 @@ public:
     void * module_context)
     : FlowCanvas::Module(canvas, name, x, y, show_title, show_port_labels)
     , m_context(module_context)
-  {};
+  {}
 
-  virtual ~module_cls() {};
+  virtual ~module_cls() {}
 
   virtual void store_location()
   {
@@ -91,9 +91,9 @@ public:
     void * port_context)
     : FlowCanvas::Port(module, name, is_input, color)
     , context(port_context)
-  {};
+  {}
 
-  virtual ~port_cls() {};
+  virtual ~port_cls() {}
 
   void * context;
 };
