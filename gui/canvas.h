@@ -66,6 +66,10 @@ canvas_clear(
   canvas_handle canvas);
 
 void
+canvas_scroll_to_center(
+  canvas_handle canvas);
+
+void
 canvas_set_zoom(
   canvas_handle canvas,
   double pix_per_unit);
