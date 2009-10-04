@@ -47,6 +47,14 @@ public:
   {}
 
   virtual ~canvas_cls() {}
+
+  virtual void on_realize()
+  {
+    //log_debug("canvas_cls::on_realize");
+    FlowCanvas::Canvas::on_realize();
+    scroll_to_center();
+  }
+
   virtual void connect(boost::shared_ptr<FlowCanvas::Connectable> port1, boost::shared_ptr<FlowCanvas::Connectable> port2);
   virtual void disconnect(boost::shared_ptr<FlowCanvas::Connectable> port1, boost::shared_ptr<FlowCanvas::Connectable> port2);
 
