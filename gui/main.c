@@ -545,22 +545,26 @@ void jack_appeared(void)
 {
   log_info("JACK appeared");
 
+#if defined(SHOW_RAW_JACK)
   if (!create_view("Raw JACK", JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, false, true, &g_jack_view))
   {
     log_error("create_view() failed for jack");
     return;
   }
+#endif
 }
 
 void jack_disappeared(void)
 {
   log_info("JACK disappeared");
 
+#if defined(SHOW_RAW_JACK)
   if (g_jack_view != NULL)
   {
     destroy_view(g_jack_view);
     g_jack_view = NULL;
   }
+#endif
 }
 
 void
