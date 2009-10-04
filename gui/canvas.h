@@ -66,6 +66,12 @@ canvas_clear(
   canvas_handle canvas);
 
 void
+canvas_get_size(
+  canvas_handle canvas,
+  double * width_ptr,
+  double * height_ptr);
+
+void
 canvas_scroll_to_center(
   canvas_handle canvas);
 

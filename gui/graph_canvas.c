@@ -222,8 +222,13 @@ client_appeared(
   double x;
   double y;
   char * locale;
+  double width;
+  double height;
 
   log_info("canvas::client_appeared(%"PRIu64", \"%s\")", id, name);
+
+  canvas_get_size(graph_canvas_ptr->canvas, &width, &height);
+  //log_debug("width %f, height %f", width, height);
 
   client_ptr = malloc(sizeof(struct client));
   if (client_ptr == NULL)
@@ -247,6 +252,7 @@ client_appeared(
         &x_str))
   {
     x_str = NULL;
+    x = width / 2 - 100 + rand() % 400;
   }
 
   if (!graph_proxy_dict_entry_get(
@@ -257,6 +263,7 @@ client_appeared(
         &y_str))
   {
     y_str = NULL;
+    y = height / 2 - 100 + rand() % 400;
   }
 
   if (x_str != NULL || y_str != NULL)

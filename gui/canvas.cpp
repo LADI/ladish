@@ -174,6 +174,16 @@ canvas_clear(
 }
 
 void
+canvas_get_size(
+  canvas_handle canvas,
+  double * width_ptr,
+  double * height_ptr)
+{
+  *width_ptr = canvas_ptr->get()->width();
+  *height_ptr = canvas_ptr->get()->height();
+}
+
+void
 canvas_scroll_to_center(
   canvas_handle canvas)
 {
