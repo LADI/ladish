@@ -271,7 +271,7 @@ save_jack_client_begin(
     return false;
   }
 
-  if (!write_string(fd, "\" guid=\"", call_ptr))
+  if (!write_string(fd, "\" uuid=\"", call_ptr))
   {
     return false;
   }
@@ -343,7 +343,7 @@ save_jack_port(
     return false;
   }
 
-  if (!write_string(fd, "\" guid=\"", call_ptr))
+  if (!write_string(fd, "\" uuid=\"", call_ptr))
   {
     return false;
   }
@@ -386,7 +386,7 @@ save_studio_client_begin(
     return false;
   }
 
-  if (!write_string(fd, "\" guid=\"", call_ptr))
+  if (!write_string(fd, "\" uuid=\"", call_ptr))
   {
     return false;
   }
@@ -464,7 +464,7 @@ save_studio_port(
     return false;
   }
 
-  if (!write_string(fd, "\" guid=\"", call_ptr))
+  if (!write_string(fd, "\" uuid=\"", call_ptr))
   {
     return false;
   }

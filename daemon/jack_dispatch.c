@@ -39,10 +39,10 @@ struct jack_dispatcher
 };
 
 /* 47c1cd18-7b21-4389-bec4-6e0658e1d6b1 */
-UUID_DEFINE(g_system_capture_guid,0x47,0xC1,0xCD,0x18,0x7B,0x21,0x43,0x89,0xBE,0xC4,0x6E,0x06,0x58,0xE1,0xD6,0xB1);
+UUID_DEFINE(g_system_capture_uuid,0x47,0xC1,0xCD,0x18,0x7B,0x21,0x43,0x89,0xBE,0xC4,0x6E,0x06,0x58,0xE1,0xD6,0xB1);
 
 /* b2a0bb06-28d8-4bfe-956e-eb24378f9629 */
-UUID_DEFINE(g_system_playback_guid,0xB2,0xA0,0xBB,0x06,0x28,0xD8,0x4B,0xFE,0x95,0x6E,0xEB,0x24,0x37,0x8F,0x96,0x29);
+UUID_DEFINE(g_system_playback_uuid,0xB2,0xA0,0xBB,0x06,0x28,0xD8,0x4B,0xFE,0x95,0x6E,0xEB,0x24,0x37,0x8F,0x96,0x29);
 
 #define dispatcher_ptr ((struct jack_dispatcher *)context)
 
@@ -147,7 +147,7 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
     { /* output capture port */
       if (dispatcher_ptr->system_capture_client == NULL)
       {
-        if (!ladish_client_create(g_system_capture_guid, true, false, true, &dispatcher_ptr->system_capture_client))
+        if (!ladish_client_create(g_system_capture_uuid, true, false, true, &dispatcher_ptr->system_capture_client))
         {
           log_error("ladish_client_create() failed.");
           return;
@@ -168,7 +168,7 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
     { /* input capture port */
       if (dispatcher_ptr->system_playback_client == NULL)
       {
-        if (!ladish_client_create(g_system_playback_guid, true, false, true, &dispatcher_ptr->system_playback_client))
+        if (!ladish_client_create(g_system_playback_uuid, true, false, true, &dispatcher_ptr->system_playback_client))
         {
           log_error("ladish_client_create() failed.");
           return;
