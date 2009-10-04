@@ -48,11 +48,24 @@ public:
 
   virtual ~canvas_cls() {}
 
+#if 0
   virtual void on_realize()
   {
-    //log_debug("canvas_cls::on_realize");
+    log_info("canvas_cls::on_realize");
     FlowCanvas::Canvas::on_realize();
-    scroll_to_center();
+    //scroll_to_center();
+  }
+#endif
+
+  virtual void on_size_allocate(Gtk::Allocation& allocation)
+  {
+    //log_info("canvas_cls::on_size_allocate");
+    FlowCanvas::Canvas::on_size_allocate(allocation);
+    if (is_realized())
+    {
+      //log_info("... realized");
+      scroll_to_center();
+    }
   }
 
   virtual void connect(boost::shared_ptr<FlowCanvas::Connectable> port1, boost::shared_ptr<FlowCanvas::Connectable> port2);
@@ -187,7 +200,15 @@ void
 canvas_scroll_to_center(
   canvas_handle canvas)
 {
-  canvas_ptr->get()->scroll_to_center();
+  if (canvas_ptr->get()->is_realized())
+  {
+    //log_info("realized");
+    canvas_ptr->get()->scroll_to_center();
+  }
+  else
+  {
+    //log_info("NOT realized");
+  }
 }
 
 void

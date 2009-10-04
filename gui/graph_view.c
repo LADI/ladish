@@ -140,7 +140,6 @@ static void attach_canvas(struct graph_view * view_ptr)
   g_current_view = view_ptr;
   gtk_container_add(GTK_CONTAINER(g_main_scrolledwin), view_ptr->canvas_widget);
 
-  //_canvas->scroll_to(static_cast<int>(_canvas->width()/2 - 320), static_cast<int>(_canvas->height()/2 - 240)); // FIXME: hardcoded
   //_main_scrolledwin->property_hadjustment().get_value()->set_step_increment(10);
   //_main_scrolledwin->property_vadjustment().get_value()->set_step_increment(10);
 }
