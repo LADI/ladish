@@ -759,6 +759,9 @@ bool studio_load(void * call_ptr, const char * studio_name)
   g_studio.persisted = true;
   log_info("Studio loaded. ('%s')", path);
 
+  ladish_graph_dump(g_studio.jack_graph);
+  ladish_graph_dump(g_studio.studio_graph);
+
   if (!studio_publish())
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "studio_publish() failed.");
