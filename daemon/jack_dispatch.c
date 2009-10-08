@@ -106,8 +106,16 @@ static void client_disappeared(void * context, uint64_t id)
     dispatcher_ptr->system_client_id = 0;
   }
 
-  ladish_graph_remove_client(dispatcher_ptr->jack_graph, client, false);
-  ladish_client_destroy(client);
+  if (true)                     /* if client is supposed to be persisted */
+  {
+    ladish_client_set_jack_id(client, 0);
+    ladish_graph_hide_client(dispatcher_ptr->jack_graph, client);
+  }
+  else
+  {
+    ladish_graph_remove_client(dispatcher_ptr->jack_graph, client, false);
+    ladish_client_destroy(client);
+  }
 }
 
 static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, const char * port_name, bool is_input, bool is_terminal, bool is_midi)
@@ -144,6 +152,7 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
     ASSERT(ladish_port_get_jack_id(port) == 0); /* two JACK ports with same name? */
     ladish_port_set_jack_id(port, port_id);
     ladish_graph_adjust_port(dispatcher_ptr->jack_graph, port, type, flags);
+    ladish_graph_show_port(dispatcher_ptr->jack_graph, port);
 
     if (!ladish_graph_is_port_present(dispatcher_ptr->studio_graph, port))
     {
@@ -268,21 +277,35 @@ static void port_disappeared(void * context, uint64_t client_id, uint64_t port_i
     return;
   }
 
-  ladish_graph_remove_port(dispatcher_ptr->jack_graph, port);
-
-  client = ladish_graph_remove_port(dispatcher_ptr->studio_graph, port);
-  if (client != NULL)
+  if (true)                     /* if client is supposed to be persisted */
   {
-    if (ladish_graph_is_client_empty(dispatcher_ptr->studio_graph, client))
+    ladish_port_set_jack_id(port, 0);
+    ladish_graph_hide_port(dispatcher_ptr->jack_graph, port);
+    ladish_graph_hide_port(dispatcher_ptr->studio_graph, port);
+    client = ladish_graph_get_port_client(dispatcher_ptr->studio_graph, port);
+    if (ladish_graph_is_client_looks_empty(dispatcher_ptr->studio_graph, client))
     {
-      ladish_graph_remove_client(dispatcher_ptr->studio_graph, client, false);
-      if (client == dispatcher_ptr->system_capture_client)
+        ladish_graph_hide_client(dispatcher_ptr->studio_graph, client);
+    }
+  }
+  else
+  {
+    ladish_graph_remove_port(dispatcher_ptr->jack_graph, port);
+
+    client = ladish_graph_remove_port(dispatcher_ptr->studio_graph, port);
+    if (client != NULL)
+    {
+      if (ladish_graph_is_client_empty(dispatcher_ptr->studio_graph, client))
       {
-        dispatcher_ptr->system_capture_client = NULL;
-      }
-      if (client == dispatcher_ptr->system_playback_client)
-      {
-        dispatcher_ptr->system_playback_client = NULL;
+        ladish_graph_remove_client(dispatcher_ptr->studio_graph, client, false);
+        if (client == dispatcher_ptr->system_capture_client)
+        {
+          dispatcher_ptr->system_capture_client = NULL;
+        }
+        if (client == dispatcher_ptr->system_playback_client)
+        {
+          dispatcher_ptr->system_playback_client = NULL;
+        }
       }
     }
   }

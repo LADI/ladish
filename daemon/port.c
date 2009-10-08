@@ -88,6 +88,7 @@ ladish_port_create(
   port_ptr->human_name = NULL;
   port_ptr->virtual = true;
 
+  log_info("port %p created", port_ptr);
   *port_handle_ptr = (ladish_port_handle)port_ptr;
   return true;
 }
@@ -96,6 +97,7 @@ ladish_port_create(
 
 void ladish_port_destroy(ladish_port_handle port_handle)
 {
+  log_info("port %p destroy", port_ptr);
   ladish_dict_destroy(port_ptr->dict);
   free(port_ptr);
 }

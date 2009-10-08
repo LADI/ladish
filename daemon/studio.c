@@ -123,10 +123,17 @@ static void emit_studio_stopped()
 
 bool studio_start(void)
 {
+  if (g_studio.jack_pending)
+  {
+    log_error("JACK is not in stable state");
+    return false;
+  }
+
   if (!g_studio.jack_running)
   {
     log_info("Starting JACK server.");
 
+    g_studio.jack_pending = true;
     if (!jack_proxy_start_server())
     {
       log_error("jack_proxy_start_server() failed.");
@@ -134,39 +141,69 @@ bool studio_start(void)
     }
   }
 
-  emit_studio_started();
-
   return true;
 }
 
-static bool studio_stop(void)
+static bool studio_stop(bool clear, bool * clear_defered_ptr)
 {
+  if (g_studio.jack_pending)
+  {
+    log_error("JACK is not in stable state");
+    return false;
+  }
+
   if (g_studio.jack_running)
   {
     log_info("Stopping JACK server...");
 
     g_studio.automatic = false;   /* even if it was automatic, it is not anymore because user knows about it */
 
-    if (jack_proxy_stop_server())
+    g_studio.jack_pending = true;
+
+    if (clear)
     {
-      g_studio.jack_running = false;
-      emit_studio_stopped();
+      log_info("defer studio clear until jack stops");
+      g_studio.clear_on_jack_stop = true;
+      *clear_defered_ptr = true;
     }
-    else
+
+    if (!jack_proxy_stop_server())
     {
       log_error("Stopping JACK server failed.");
+      g_studio.jack_pending = false;
       return false;
     }
+  }
+  else if (clear)
+  {
+    *clear_defered_ptr = false;
   }
 
   return true;
 }
 
-void
-studio_clear(void)
+bool studio_clear(bool defer_if_started)
 {
+  bool clear_defered;
+
+  log_info("studio_clear() called.");
+
+  if (!studio_stop(defer_if_started, &clear_defered))
+  {
+    return false;
+  }
+
+  if (defer_if_started && clear_defered)
+  {
+    return true;
+  }
+
+  ladish_graph_dump(g_studio.studio_graph);
+  ladish_graph_dump(g_studio.jack_graph);
+  ladish_graph_clear(g_studio.studio_graph, false);
+  ladish_graph_clear(g_studio.jack_graph, true);
+
   jack_conf_clear();
-  studio_stop();
 
   g_studio.modified = false;
   g_studio.persisted = false;
@@ -190,6 +227,8 @@ studio_clear(void)
     free(g_studio.filename);
     g_studio.filename = NULL;
   }
+
+  return true;
 }
 
 void
@@ -198,13 +237,16 @@ studio_clear_if_automatic(void)
   if (g_studio.automatic)
   {
     log_info("Unloading automatic studio.");
-    studio_clear();
+    studio_clear(true);
     return;
   }
 }
 
 void on_event_jack_started(void)
 {
+  g_studio.jack_pending = false;
+  g_studio.jack_running = true;
+
   if (g_studio.dbus_object == NULL)
   {
     ASSERT(g_studio.name == NULL);
@@ -229,7 +271,6 @@ void on_event_jack_started(void)
 
   log_info("jack conf successfully retrieved");
   g_studio.jack_conf_valid = true;
-  g_studio.jack_running = true;
 
   if (!graph_proxy_create(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, false, &g_studio.jack_graph_proxy))
   {
@@ -247,22 +288,31 @@ void on_event_jack_started(void)
       log_error("graph_proxy_activate() failed.");
     }
   }
+
+  emit_studio_started();
 }
 
 void on_event_jack_stopped(void)
 {
-  studio_clear_if_automatic();
-
+  emit_studio_stopped();
+  g_studio.jack_pending = false;
   g_studio.jack_running = false;
+
+  if (g_studio.clear_on_jack_stop)
+  {
+    g_studio.clear_on_jack_stop = false;
+    studio_clear(false);
+  }
+  else
+  {
+    studio_clear_if_automatic();
+  }
 
   if (g_studio.jack_dispatcher)
   {
     ladish_jack_dispatcher_destroy(g_studio.jack_dispatcher);
     g_studio.jack_dispatcher = NULL;
   }
-
-  ladish_graph_clear(g_studio.jack_graph);
-  ladish_graph_clear(g_studio.studio_graph);
 
   if (g_studio.jack_graph_proxy)
   {
@@ -375,8 +425,7 @@ bool studio_init(void)
   g_studio.name = NULL;
   g_studio.filename = NULL;
   g_studio.jack_running = false;
-
-  //studio_clear();
+  g_studio.jack_pending = false;
 
   if (!ladish_graph_create(&g_studio.jack_graph, NULL))
   {
@@ -403,11 +452,11 @@ bool studio_init(void)
   return true;
 
 studio_graph_destroy:
-  ladish_graph_destroy(g_studio.studio_graph);
+  ladish_graph_destroy(g_studio.studio_graph, false);
 jack_graph_destroy:
-  ladish_graph_destroy(g_studio.jack_graph);
+  ladish_graph_destroy(g_studio.jack_graph, false);
 free_studios_dir:
-  studio_clear();
+  studio_clear(false);
   free(g_studios_dir);
 fail:
   return false;
@@ -415,11 +464,11 @@ fail:
 
 void studio_uninit(void)
 {
+  log_info("studio_uninit()");
+
   jack_proxy_uninit();
 
-  ladish_graph_destroy(g_studio.studio_graph);
-
-  studio_clear();
+  studio_clear(false);
 
   free(g_studios_dir);
 
@@ -631,14 +680,18 @@ static void ladish_save_studio(struct dbus_method_call * call_ptr)
 static void ladish_unload_studio(struct dbus_method_call * call_ptr)
 {
   log_info("Unload studio request");
-  studio_clear();
+  studio_clear(true);
   method_return_new_void(call_ptr);
 }
 
 bool studio_new(void * call_ptr, const char * studio_name)
 {
   log_info("New studio request (%s)", studio_name);
-  studio_clear();
+  if (!studio_clear(false))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Cannot create new studio when other studio is running.");
+    return false;
+  }
 
   ASSERT(g_studio.name == NULL);
   if (*studio_name != 0)
@@ -659,7 +712,7 @@ bool studio_new(void * call_ptr, const char * studio_name)
   if (!studio_publish())
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "studio_publish() failed.");
-    studio_clear();
+    studio_clear(false);
     return false;
   }
 
@@ -670,7 +723,7 @@ static void ladish_stop_studio(struct dbus_method_call * call_ptr)
 {
   log_info("Studio stop requested");
 
-  if (!studio_stop())
+  if (!studio_stop(false, NULL))
   {
       lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Failed to stop studio.");
   }

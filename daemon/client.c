@@ -87,12 +87,15 @@ ladish_client_create(
   client_ptr->pid = 0;
   client_ptr->room_ptr = NULL;
 
+#if 0
   {
     char str[37];
     uuid_unparse(client_ptr->uuid, str);
     log_info("Created client %s", str);
   }
+#endif
 
+  log_info("client %p created", client_ptr);
   *client_handle_ptr = (ladish_client_handle)client_ptr;
   return true;
 }
@@ -103,6 +106,8 @@ void
 ladish_client_destroy(
   ladish_client_handle client_handle)
 {
+  log_info("client %p destroy", client_ptr);
+
   ASSERT(list_empty(&client_ptr->ports));
   ASSERT(list_empty(&client_ptr->siblings_studio_all));
   ASSERT(list_empty(&client_ptr->siblings_room));
@@ -129,6 +134,7 @@ void ladish_client_get_uuid(ladish_client_handle client_handle, uuid_t uuid)
 
 void ladish_client_set_jack_id(ladish_client_handle client_handle, uint64_t jack_id)
 {
+  log_info("client jack id set to %"PRIu64, jack_id);
   client_ptr->jack_id = jack_id;
 }
 

@@ -517,7 +517,7 @@ ladish_graph_remove_port_internal(
   list_del(&port_ptr->siblings_graph);
 
   log_info("removing port '%s':'%s' (%"PRIu64":%"PRIu64") from graph %s", client_ptr->name, port_ptr->name, client_ptr->id, port_ptr->id, graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
-  if (graph_ptr->opath != NULL)
+  if (graph_ptr->opath != NULL && !port_ptr->hidden)
   {
     dbus_signal_emit(
       g_dbus_connection,
@@ -536,10 +536,12 @@ ladish_graph_remove_port_internal(
   free(port_ptr);
 }
 
+static
 void
 ladish_graph_remove_client_internal(
   struct ladish_graph * graph_ptr,
   struct ladish_graph_client * client_ptr,
+  bool destroy_client,
   bool destroy_ports)
 {
   struct ladish_graph_port * port_ptr;
@@ -553,7 +555,7 @@ ladish_graph_remove_client_internal(
   graph_ptr->graph_version++;
   list_del(&client_ptr->siblings);
   log_info("removing client '%s' (%"PRIu64") from graph %s", client_ptr->name, client_ptr->id, graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
-  if (graph_ptr->opath != NULL)
+  if (graph_ptr->opath != NULL && !client_ptr->hidden)
   {
     dbus_signal_emit(
       g_dbus_connection,
@@ -567,14 +569,20 @@ ladish_graph_remove_client_internal(
   }
 
   free(client_ptr->name);
+
+  if (destroy_client)
+  {
+    ladish_client_destroy(client_ptr->client);
+  }
+
   free(client_ptr);
 }
 
 #define graph_ptr ((struct ladish_graph *)graph_handle)
 
-void ladish_graph_destroy(ladish_graph_handle graph_handle)
+void ladish_graph_destroy(ladish_graph_handle graph_handle, bool destroy_ports)
 {
-  ladish_graph_clear(graph_handle);
+  ladish_graph_clear(graph_handle, destroy_ports);
   ladish_dict_destroy(graph_ptr->dict);
   if (graph_ptr->opath != NULL)
   {
@@ -583,16 +591,16 @@ void ladish_graph_destroy(ladish_graph_handle graph_handle)
   free(graph_ptr);
 }
 
-void ladish_graph_clear(ladish_graph_handle graph_handle)
+void ladish_graph_clear(ladish_graph_handle graph_handle, bool destroy_ports)
 {
   struct ladish_graph_client * client_ptr;
 
-  log_info("ladish_graph_clear() called.");
+  log_info("ladish_graph_clear() called for graph '%s'", graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
 
   while (!list_empty(&graph_ptr->clients))
   {
     client_ptr = list_entry(graph_ptr->clients.next, struct ladish_graph_client, siblings);
-    ladish_graph_remove_client_internal(graph_ptr, client_ptr, true);
+    ladish_graph_remove_client_internal(graph_ptr, client_ptr, true, destroy_ports);
   }
 }
 
@@ -610,8 +618,6 @@ void ladish_graph_show_port(ladish_graph_handle graph_handle, ladish_port_handle
 {
   struct ladish_graph_port * port_ptr;
 
-  ASSERT(graph_ptr->opath != NULL);
-
   log_info("ladish_graph_show_port() called.");
 
   port_ptr = ladish_graph_find_port(graph_ptr, port_handle);
@@ -627,33 +633,103 @@ void ladish_graph_show_port(ladish_graph_handle graph_handle, ladish_port_handle
   {
     port_ptr->client_ptr->hidden = false;
     graph_ptr->graph_version++;
-    dbus_signal_emit(
-      g_dbus_connection,
-      graph_ptr->opath,
-      JACKDBUS_IFACE_PATCHBAY,
-      "ClientAppeared",
-      "tts",
-      &graph_ptr->graph_version,
-      &port_ptr->client_ptr->id,
-      &port_ptr->client_ptr->name);
+    if (graph_ptr->opath != NULL)
+    {
+      dbus_signal_emit(
+        g_dbus_connection,
+        graph_ptr->opath,
+        JACKDBUS_IFACE_PATCHBAY,
+        "ClientAppeared",
+        "tts",
+        &graph_ptr->graph_version,
+        &port_ptr->client_ptr->id,
+        &port_ptr->client_ptr->name);
+    }
   }
 
   ASSERT(port_ptr->hidden);
   port_ptr->hidden = false;
   graph_ptr->graph_version++;
-  dbus_signal_emit(
-    g_dbus_connection,
-    graph_ptr->opath,
-    JACKDBUS_IFACE_PATCHBAY,
-    "PortAppeared",
-    "ttstsuu",
-    &graph_ptr->graph_version,
-    &port_ptr->client_ptr->id,
-    &port_ptr->client_ptr->name,
-    &port_ptr->id,
-    &port_ptr->name,
-    &port_ptr->flags,
-    &port_ptr->type);
+  if (graph_ptr->opath != NULL)
+  {
+    dbus_signal_emit(
+      g_dbus_connection,
+      graph_ptr->opath,
+      JACKDBUS_IFACE_PATCHBAY,
+      "PortAppeared",
+      "ttstsuu",
+      &graph_ptr->graph_version,
+      &port_ptr->client_ptr->id,
+      &port_ptr->client_ptr->name,
+      &port_ptr->id,
+      &port_ptr->name,
+      &port_ptr->flags,
+      &port_ptr->type);
+  }
+}
+
+void ladish_graph_hide_port(ladish_graph_handle graph_handle, ladish_port_handle port_handle)
+{
+  struct ladish_graph_port * port_ptr;
+
+  log_info("ladish_graph_hide_port() called.");
+
+  port_ptr = ladish_graph_find_port(graph_ptr, port_handle);
+  if (port_ptr == NULL)
+  {
+    ASSERT_NO_PASS;
+    return;
+  }
+
+  ASSERT(!port_ptr->hidden);
+  port_ptr->hidden = true;
+  graph_ptr->graph_version++;
+
+  if (graph_ptr->opath != NULL)
+  {
+    dbus_signal_emit(
+      g_dbus_connection,
+      graph_ptr->opath,
+      JACKDBUS_IFACE_PATCHBAY,
+      "PortDisappeared",
+      "ttsts",
+      &graph_ptr->graph_version,
+      &port_ptr->client_ptr->id,
+      &port_ptr->client_ptr->name,
+      &port_ptr->id,
+      &port_ptr->name);
+  }
+}
+
+void ladish_graph_hide_client(ladish_graph_handle graph_handle, ladish_client_handle client_handle)
+{
+  struct ladish_graph_client * client_ptr;
+
+  log_info("ladish_graph_hide_client() called.");
+
+  client_ptr = ladish_graph_find_client(graph_ptr, client_handle);
+  if (client_ptr == NULL)
+  {
+    ASSERT_NO_PASS;
+    return;
+  }
+
+  ASSERT(!client_ptr->hidden);
+  client_ptr->hidden = true;
+  graph_ptr->graph_version++;
+
+  if (graph_ptr->opath != NULL)
+  {
+    dbus_signal_emit(
+      g_dbus_connection,
+      graph_ptr->opath,
+      JACKDBUS_IFACE_PATCHBAY,
+      "ClientDisappeared",
+      "tts",
+      &graph_ptr->graph_version,
+      &client_ptr->id,
+      &client_ptr->name);
+  }
 }
 
 void ladish_graph_adjust_port(ladish_graph_handle graph_handle, ladish_port_handle port_handle, uint32_t type, uint32_t flags)
@@ -732,7 +808,7 @@ ladish_graph_remove_client(
   client_ptr = ladish_graph_find_client(graph_ptr, client_handle);
   if (client_ptr != NULL)
   {
-    ladish_graph_remove_client_internal(graph_ptr, client_ptr, destroy_ports);
+    ladish_graph_remove_client_internal(graph_ptr, client_ptr, false, destroy_ports);
   }
   else
   {
@@ -1022,6 +1098,37 @@ bool ladish_graph_is_client_empty(ladish_graph_handle graph_handle, ladish_clien
   return true;
 }
 
+bool ladish_graph_is_client_looks_empty(ladish_graph_handle graph_handle, ladish_client_handle client_handle)
+{
+  struct ladish_graph_client * client_ptr;
+  struct list_head * node_ptr;
+  struct ladish_graph_port * port_ptr;
+
+  client_ptr = ladish_graph_find_client(graph_ptr, client_handle);
+  if (client_ptr != NULL)
+  {
+    list_for_each(node_ptr, &client_ptr->ports)
+    {
+      port_ptr = list_entry(node_ptr, struct ladish_graph_port, siblings_client);
+      if (!port_ptr->hidden)
+      {
+        log_info("port '%s' is visible, client '%s' does not look empty", port_ptr->name, client_ptr->name);
+        return false;
+      }
+      else
+      {
+        log_info("port '%s' is invisible", port_ptr->name);
+      }
+    }
+
+    log_info("client '%s' looks empty", client_ptr->name);
+    return true;
+  }
+
+  ASSERT_NO_PASS;
+  return true;
+}
+
 bool
 ladish_graph_iterate_nodes(
   ladish_graph_handle graph_handle,
@@ -1088,6 +1195,30 @@ ladish_graph_iterate_nodes(
   }
 
   return true;
+}
+
+void ladish_graph_dump(ladish_graph_handle graph_handle)
+{
+  struct list_head * client_node_ptr;
+  struct ladish_graph_client * client_ptr;
+  struct list_head * port_node_ptr;
+  struct ladish_graph_port * port_ptr;
+
+  log_info("graph %s", graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
+  log_info("  version %"PRIu64, graph_ptr->graph_version);
+  log_info("  clients:");
+  list_for_each(client_node_ptr, &graph_ptr->clients)
+  {
+    client_ptr = list_entry(client_node_ptr, struct ladish_graph_client, siblings);
+    log_info("    %s client '%s', id=%"PRIu64", ptr=%p", client_ptr->hidden ? "invisible" : "visible", client_ptr->name, client_ptr->id, client_ptr->client);
+    log_info("      ports:");
+    list_for_each(port_node_ptr, &client_ptr->ports)
+    {
+      port_ptr = list_entry(port_node_ptr, struct ladish_graph_port, siblings_client);
+
+      log_info("        %s port '%s', id=%"PRIu64", type=0x%"PRIX32", flags=0x%"PRIX32", ptr=%p", port_ptr->hidden ? "invisible" : "visible", port_ptr->name, port_ptr->id, port_ptr->type, port_ptr->flags, port_ptr->port);
+    }
+  }
 }
 
 #undef graph_ptr

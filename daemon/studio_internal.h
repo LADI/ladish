@@ -51,6 +51,8 @@ struct studio
   bool modified:1;              /* Studio needs saving */
   bool jack_conf_valid:1;       /* JACK server configuration obtained successfully */
   bool jack_running:1;          /* JACK server is running */
+  bool jack_pending:1;          /* JACK server start/stop is pending */
+  bool clear_on_jack_stop:1;    /* clear studio when JACK is stopped */
 
   struct list_head jack_conf;   /* root of the conf tree */
   struct list_head jack_params; /* list of conf tree leaves */
@@ -101,7 +103,7 @@ extern const struct dbus_interface_descriptor g_interface_studio;
 void jack_conf_clear(void);
 bool studio_fetch_jack_settings(void);
 bool studio_compose_filename(const char * name, char ** filename_ptr_ptr, char ** backup_filename_ptr_ptr);
-void studio_clear(void);
+bool studio_clear(bool defer_if_started);
 bool studio_publish(void);
 bool studio_start(void);
 bool studio_save(void * call_ptr);

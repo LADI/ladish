@@ -33,8 +33,8 @@
 typedef struct ladish_graph_tag { int unused; } * ladish_graph_handle;
 
 bool ladish_graph_create(ladish_graph_handle * graph_handle_ptr, const char * opath);
-void ladish_graph_destroy(ladish_graph_handle graph_handle);
-void ladish_graph_clear(ladish_graph_handle graph_handle);
+void ladish_graph_destroy(ladish_graph_handle graph_handle, bool destroy_ports);
+void ladish_graph_clear(ladish_graph_handle graph_handle, bool destroy_ports);
 void * ladish_graph_get_dbus_context(ladish_graph_handle graph_handle);
 ladish_dict_handle ladish_graph_get_dict(ladish_graph_handle graph_handle);
 bool ladish_graph_add_client(ladish_graph_handle graph_handle, ladish_client_handle client_handle, const char * name, bool hidden);
@@ -71,9 +71,14 @@ ladish_port_handle ladish_graph_find_port_by_uuid(ladish_graph_handle graph_hand
 ladish_client_handle ladish_graph_get_port_client(ladish_graph_handle graph_handle, ladish_port_handle port_handle);
 const char * ladish_graph_get_client_name(ladish_graph_handle graph_handle, ladish_client_handle client_handle);
 bool ladish_graph_is_client_empty(ladish_graph_handle graph_handle, ladish_client_handle client_handle);
+bool ladish_graph_is_client_looks_empty(ladish_graph_handle graph_handle, ladish_client_handle client_handle);
 bool ladish_graph_is_port_present(ladish_graph_handle graph_handle, ladish_port_handle port_handle);
 void ladish_graph_show_port(ladish_graph_handle graph_handle, ladish_port_handle port_handle);
+void ladish_graph_hide_port(ladish_graph_handle graph_handle, ladish_port_handle port_handle);
+void ladish_graph_hide_client(ladish_graph_handle graph_handle, ladish_client_handle client_handle);
 void ladish_graph_adjust_port(ladish_graph_handle graph_handle, ladish_port_handle port_handle, uint32_t type, uint32_t flags);
+
+void ladish_graph_dump(ladish_graph_handle graph_handle);
 
 bool
 ladish_graph_iterate_nodes(
