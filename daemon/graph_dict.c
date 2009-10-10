@@ -46,7 +46,7 @@ bool find_dict(struct dbus_method_call * call_ptr, uint32_t object_type, uint64_
     client = ladish_graph_find_client_by_id(graph_handle, object_id);
     if (client == NULL)
     {
-      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "cannot find client %llu.", (unsigned int)object_id);
+      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "cannot find client %"PRIu64".", object_id);
       return false;
     }
     *dict_handle_ptr = ladish_client_get_dict(client);
@@ -55,7 +55,7 @@ bool find_dict(struct dbus_method_call * call_ptr, uint32_t object_type, uint64_
     port = ladish_graph_find_port_by_id(graph_handle, object_id);
     if (port == NULL)
     {
-      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "cannot find port %llu.", (unsigned int)object_id);
+      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "cannot find port %"PRIu64".", object_id);
       return false;
     }
     *dict_handle_ptr = ladish_port_get_dict(port);
@@ -65,7 +65,7 @@ bool find_dict(struct dbus_method_call * call_ptr, uint32_t object_type, uint64_
     return false;
   }
 
-  lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "find_dict() not implemented for object type %u.", (unsigned int)object_type);
+  lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "find_dict() not implemented for object type %"PRIu32".", object_type);
   return false;
 }
 
