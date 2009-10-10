@@ -1197,6 +1197,32 @@ ladish_graph_iterate_nodes(
   return true;
 }
 
+static
+bool
+dump_dict_entry(
+  void * context,
+  const char * key,
+  const char * value)
+{
+  log_info("%s  key '%s' with value '%s'", (const char *)context, key, value);
+  return true;
+}
+
+static
+void
+dump_dict(
+  const char * indent,
+  ladish_dict_handle dict)
+{
+  if (ladish_dict_is_empty(dict))
+  {
+    return;
+  }
+
+  log_info("%sdict:", indent);
+  ladish_dict_iterate(dict, (void *)indent, dump_dict_entry);
+}
+
 void ladish_graph_dump(ladish_graph_handle graph_handle)
 {
   struct list_head * client_node_ptr;
@@ -1206,17 +1232,20 @@ void ladish_graph_dump(ladish_graph_handle graph_handle)
 
   log_info("graph %s", graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
   log_info("  version %"PRIu64, graph_ptr->graph_version);
+  dump_dict("  ", graph_ptr->dict);
   log_info("  clients:");
   list_for_each(client_node_ptr, &graph_ptr->clients)
   {
     client_ptr = list_entry(client_node_ptr, struct ladish_graph_client, siblings);
     log_info("    %s client '%s', id=%"PRIu64", ptr=%p", client_ptr->hidden ? "invisible" : "visible", client_ptr->name, client_ptr->id, client_ptr->client);
+    dump_dict("      ", ladish_client_get_dict(client_ptr->client));
     log_info("      ports:");
     list_for_each(port_node_ptr, &client_ptr->ports)
     {
       port_ptr = list_entry(port_node_ptr, struct ladish_graph_port, siblings_client);
 
       log_info("        %s port '%s', id=%"PRIu64", type=0x%"PRIX32", flags=0x%"PRIX32", ptr=%p", port_ptr->hidden ? "invisible" : "visible", port_ptr->name, port_ptr->id, port_ptr->type, port_ptr->flags, port_ptr->port);
+      dump_dict("        ", ladish_port_get_dict(port_ptr->port));
     }
   }
 }
