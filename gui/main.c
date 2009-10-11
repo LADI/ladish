@@ -571,9 +571,18 @@ void
 set_main_window_title(
   graph_view_handle view)
 {
-  char * title = catdup(get_view_name(view), " - LADI Session Handler");
-  gtk_window_set_title(GTK_WINDOW(g_main_win), title);
-  free(title);
+  char * title;
+
+  if (view != NULL)
+  {
+    title = catdup(get_view_name(view), " - LADI Session Handler");
+    gtk_window_set_title(GTK_WINDOW(g_main_win), title);
+    free(title);
+  }
+  else
+  {
+    gtk_window_set_title(GTK_WINDOW(g_main_win), "LADI Session Handler");
+  }
 }
 
 static

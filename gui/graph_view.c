@@ -165,6 +165,10 @@ void destroy_view(graph_view_handle view)
   {
     world_tree_activate((graph_view_handle)list_entry(g_views.next, struct graph_view, siblings));
   }
+  else
+  {
+    set_main_window_title(NULL);
+  }
 
   detach_canvas(view_ptr);
 
