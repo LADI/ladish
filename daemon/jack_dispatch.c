@@ -371,17 +371,9 @@ void
 ladish_jack_dispatcher_destroy(
   ladish_jack_dispatcher_handle handle)
 {
+  log_info("ladish_jack_dispatcher_destroy() called");
+
   graph_proxy_detach((graph_proxy_handle)handle, dispatcher_ptr);
-
-  if (dispatcher_ptr->system_capture_client != NULL)
-  {
-    ladish_graph_remove_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_capture_client, true);
-  }
-
-  if (dispatcher_ptr->system_playback_client != NULL)
-  {
-    ladish_graph_remove_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_playback_client, true);
-  }
 }
 
 #undef dispatcher_ptr
