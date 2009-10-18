@@ -439,6 +439,8 @@ bool studio_init(void)
     goto jack_graph_destroy;
   }
 
+  ladish_cqueue_init(&g_studio.cmd_queue);
+
   if (!jack_proxy_init(
         on_jack_server_started,
         on_jack_server_stopped,
@@ -469,6 +471,8 @@ void studio_uninit(void)
   jack_proxy_uninit();
 
   studio_clear(false);
+
+  ladish_cqueue_uninit(&g_studio.cmd_queue);
 
   free(g_studios_dir);
 

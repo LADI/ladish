@@ -209,6 +209,14 @@ def build(bld):
         'studio_jack_conf.c',
         'studio_load.c',
         'studio_save.c',
+        'cmd_load_studio.c',
+        'cmd_new_studio.c',
+        'cmd_rename_studio.c',
+        'cmd_save_studio.c',
+        'cmd_start_studio.c',
+        'cmd_stop_studio.c',
+        'cmd_unload_studio.c',
+        'cqueue.c',
         ]:
         daemon.source.append(os.path.join("daemon", source))
 

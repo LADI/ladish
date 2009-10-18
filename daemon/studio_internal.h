@@ -31,6 +31,7 @@
 #include "../jack_proxy.h"
 #include "../dbus/error.h"
 #include "jack_dispatch.h"
+#include "cmd.h"
 
 #define JACK_CONF_MAX_ADDRESS_SIZE 1024
 
@@ -59,6 +60,7 @@ struct studio
 
   dbus_object_path dbus_object;
 
+  struct ladish_cqueue cmd_queue;
   struct list_head event_queue;
 
   char * name;
