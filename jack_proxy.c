@@ -581,7 +581,7 @@ jack_proxy_set_parameter_value(
     value_ptr = &boolean;
     break;
   default:
-    log_error("Unknown jack parameter type %i", (int)type);
+    log_error("Unknown jack parameter type %i", (int)parameter_ptr->type);
     return false;
   }
 
