@@ -490,7 +490,7 @@ bool studio_compose_filename(const char * name, char ** filename_ptr_ptr, char *
   char * p;
   const char * src;
   char * filename_ptr;
-  char * backup_filename_ptr;
+  char * backup_filename_ptr = NULL;
 
   len_dir = strlen(g_studios_dir);
 
