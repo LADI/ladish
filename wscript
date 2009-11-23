@@ -77,10 +77,12 @@ def configure(conf):
         errmsg = "not installed, see http://e2fsprogs.sourceforge.net/",
         args = '--cflags --libs')
 
-    conf.check(header_name='expat.h', define_name="HAVE_EXPAT")
+    conf.check(
+        header_name='expat.h',
+        mandatory = True,
+        errmsg = "not installed, see http://expat.sourceforge.net/")
 
-    if conf.is_defined('HAVE_EXPAT'):
-        conf.env['LIB_EXPAT'] = ['expat']
+    conf.env['LIB_EXPAT'] = ['expat']
 
     build_gui = True
 
