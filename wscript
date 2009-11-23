@@ -77,10 +77,12 @@ def configure(conf):
         errmsg = "not installed, see http://e2fsprogs.sourceforge.net/",
         args = '--cflags --libs')
 
-    conf.check(header_name='expat.h', define_name="HAVE_EXPAT")
+    conf.check(
+        header_name='expat.h',
+        mandatory = True,
+        errmsg = "not installed, see http://expat.sourceforge.net/")
 
-    if conf.is_defined('HAVE_EXPAT'):
-        conf.env['LIB_EXPAT'] = ['expat']
+    conf.env['LIB_EXPAT'] = ['expat']
 
     build_gui = True
 
@@ -168,7 +170,7 @@ def configure(conf):
         display_line(conf,     'WARNING: but service file will be installed in', 'RED')
         display_raw_text(conf, "WARNING:", 'RED')
         display_line(conf,      conf.env['DBUS_SERVICES_DIR'], 'CYAN')
-        display_line(conf,     'WARNING: You may need to adjust your D-Bus configuration after installing jackdbus', 'RED')
+        display_line(conf,     'WARNING: You may need to adjust your D-Bus configuration after installing ladish', 'RED')
         display_line(conf,     'WARNING: You can override dbus service install directory', 'RED')
         display_line(conf,     'WARNING: with --enable-pkg-config-dbus-service-dir option to this script', 'RED')
 
