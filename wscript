@@ -168,7 +168,7 @@ def configure(conf):
         display_line(conf,     'WARNING: but service file will be installed in', 'RED')
         display_raw_text(conf, "WARNING:", 'RED')
         display_line(conf,      conf.env['DBUS_SERVICES_DIR'], 'CYAN')
-        display_line(conf,     'WARNING: You may need to adjust your D-Bus configuration after installing jackdbus', 'RED')
+        display_line(conf,     'WARNING: You may need to adjust your D-Bus configuration after installing ladish', 'RED')
         display_line(conf,     'WARNING: You can override dbus service install directory', 'RED')
         display_line(conf,     'WARNING: with --enable-pkg-config-dbus-service-dir option to this script', 'RED')
 
