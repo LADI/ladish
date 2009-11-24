@@ -666,7 +666,7 @@ bool studio_load(void * call_ptr, const char * studio_name)
     return false;
   }
 
-  studio_clear(false);
+  studio_clear();
 
   g_studio.name = strdup(studio_name);
   if (g_studio.name == NULL)
@@ -742,7 +742,7 @@ bool studio_load(void * call_ptr, const char * studio_name)
     }
     XML_ParserFree(parser);
     close(fd);
-    studio_clear(false);
+    studio_clear();
     return false;
   }
 
@@ -752,7 +752,7 @@ bool studio_load(void * call_ptr, const char * studio_name)
   if (context.error)
   {
     /* if we have initiated the fail, dbus error is already set to better message */
-    studio_clear(false);
+    studio_clear();
     return false;
   }
 
@@ -765,14 +765,14 @@ bool studio_load(void * call_ptr, const char * studio_name)
   if (!studio_publish())
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "studio_publish() failed.");
-    studio_clear(false);
+    studio_clear();
     return false;
   }
 
   if (!studio_start())
   {
       lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Failed to start JACK server.");
-      studio_clear(false);
+      studio_clear();
       return false;
   }
 

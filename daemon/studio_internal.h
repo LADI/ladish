@@ -35,6 +35,76 @@
 
 #define JACK_CONF_MAX_ADDRESS_SIZE 1024
 
+typedef int ladish_environment_id;
+
+typedef struct
+{
+  uint64_t state;
+  uint64_t changed;
+} ladish_environment_store;
+
+#define ladish_environment_jack_server_present    ((ladish_environment_id)0)
+#define ladish_environment_jack_server_started    ((ladish_environment_id)1)
+
+static inline void ladish_environment_init(ladish_environment_store * store_ptr)
+{
+  store_ptr->state = 0;
+  store_ptr->changed = 0;
+}
+
+static inline uint64_t ladish_environment_state(ladish_environment_id id)
+{
+  ASSERT(sizeof(id) < 8);
+  return (uint64_t)1 << id;
+}
+
+static inline void ladish_environment_set(ladish_environment_store * store_ptr, ladish_environment_id id)
+{
+  uint64_t state = ladish_environment_state(id);
+  store_ptr->state |= state;
+  store_ptr->changed |= state;
+}
+
+static inline void ladish_environment_reset(ladish_environment_store * store_ptr, ladish_environment_id id)
+{
+  uint64_t state = ladish_environment_state(id);
+  store_ptr->state &= ~state;
+  store_ptr->changed |= state;
+}
+
+static inline bool ladish_environment_get(ladish_environment_store * store_ptr, ladish_environment_id id)
+{
+  uint64_t state = ladish_environment_state(id);
+
+  return (store_ptr->state & state) == state;
+}
+
+static inline bool ladish_environment_consume_change(ladish_environment_store * store_ptr, ladish_environment_id id, bool * new_state)
+{
+  uint64_t state = ladish_environment_state(id);
+
+  if ((store_ptr->changed & state) == 0)
+  {
+    return false;
+  }
+
+  *new_state = (store_ptr->state & state) == state;
+  store_ptr->changed &= ~state;
+  return true;
+}
+
+static inline void ladish_environment_ignore(ladish_environment_store * store_ptr, ladish_environment_id id)
+{
+  uint64_t state = ladish_environment_state(id);
+
+  if ((store_ptr->changed & state) != 0)
+  {
+    store_ptr->changed &= ~state;
+  }
+}
+
+#define ladish_environment_assert_consumed(store_ptr) ASSERT((store_ptr)->changed == 0)
+
 struct studio
 {
   struct list_head all_connections;        /* All connections (studio guts and all rooms). Including superconnections. */
@@ -51,9 +121,6 @@ struct studio
   bool persisted:1;             /* Studio has on-disk representation, i.e. can be reloaded from disk */
   bool modified:1;              /* Studio needs saving */
   bool jack_conf_valid:1;       /* JACK server configuration obtained successfully */
-  bool jack_running:1;          /* JACK server is running */
-  bool jack_pending:1;          /* JACK server start/stop is pending */
-  bool clear_on_jack_stop:1;    /* clear studio when JACK is stopped */
 
   struct list_head jack_conf;   /* root of the conf tree */
   struct list_head jack_params; /* list of conf tree leaves */
@@ -61,7 +128,7 @@ struct studio
   dbus_object_path dbus_object;
 
   struct ladish_cqueue cmd_queue;
-  struct list_head event_queue;
+  ladish_environment_store env_store;
 
   char * name;
   char * filename;
@@ -105,7 +172,7 @@ extern const struct dbus_interface_descriptor g_interface_studio;
 void jack_conf_clear(void);
 bool studio_fetch_jack_settings(void);
 bool studio_compose_filename(const char * name, char ** filename_ptr_ptr, char ** backup_filename_ptr_ptr);
-bool studio_clear(bool defer_if_started);
+bool studio_clear(void);
 bool studio_publish(void);
 bool studio_start(void);
 bool studio_save(void * call_ptr);

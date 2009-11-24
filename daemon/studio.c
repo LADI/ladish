@@ -45,15 +45,6 @@ char * g_studios_dir;
 
 struct studio g_studio;
 
-#define EVENT_JACK_START   0
-#define EVENT_JACK_STOP    1
-
-struct event
-{
-  struct list_head siblings;
-  unsigned int type;
-};
-
 bool studio_name_generate(char ** name_ptr)
 {
   time_t now;
@@ -123,79 +114,51 @@ static void emit_studio_stopped()
 
 bool studio_start(void)
 {
-  if (g_studio.jack_pending)
+  if (ladish_environment_get(&g_studio.env_store, ladish_environment_jack_server_started))
   {
-    log_error("JACK is not in stable state");
-    return false;
+    log_info("JACK server is already started");
+    return true;
   }
 
-  if (!g_studio.jack_running)
-  {
-    log_info("Starting JACK server.");
+  log_info("Starting JACK server.");
 
-    g_studio.jack_pending = true;
-    if (!jack_proxy_start_server())
-    {
-      log_error("jack_proxy_start_server() failed.");
-      return false;
-    }
+  if (!jack_proxy_start_server())
+  {
+    log_error("jack_proxy_start_server() failed.");
+    return false;
   }
 
   return true;
 }
 
-static bool studio_stop(bool clear, bool * clear_defered_ptr)
+static bool studio_stop(void)
 {
-  if (g_studio.jack_pending)
+  if (!ladish_environment_get(&g_studio.env_store, ladish_environment_jack_server_started))
   {
-    log_error("JACK is not in stable state");
+    log_info("JACK server is already stopped");
+    return true;
+  }
+
+  log_info("Stopping JACK server...");
+
+  g_studio.automatic = false;   /* even if it was automatic, it is not anymore because user knows about it */
+
+  if (!jack_proxy_stop_server())
+  {
+    log_error("Stopping JACK server failed.");
     return false;
-  }
-
-  if (g_studio.jack_running)
-  {
-    log_info("Stopping JACK server...");
-
-    g_studio.automatic = false;   /* even if it was automatic, it is not anymore because user knows about it */
-
-    g_studio.jack_pending = true;
-
-    if (clear)
-    {
-      log_info("defer studio clear until jack stops");
-      g_studio.clear_on_jack_stop = true;
-      *clear_defered_ptr = true;
-    }
-
-    if (!jack_proxy_stop_server())
-    {
-      log_error("Stopping JACK server failed.");
-      g_studio.jack_pending = false;
-      return false;
-    }
-  }
-  else if (clear)
-  {
-    *clear_defered_ptr = false;
   }
 
   return true;
 }
 
-bool studio_clear(bool defer_if_started)
+bool studio_clear(void)
 {
-  bool clear_defered;
-
   log_info("studio_clear() called.");
 
-  if (!studio_stop(defer_if_started, &clear_defered))
+  if (!studio_stop())
   {
     return false;
-  }
-
-  if (defer_if_started && clear_defered)
-  {
-    return true;
   }
 
   ladish_graph_dump(g_studio.studio_graph);
@@ -237,16 +200,13 @@ studio_clear_if_automatic(void)
   if (g_studio.automatic)
   {
     log_info("Unloading automatic studio.");
-    studio_clear(true);
+    studio_clear();
     return;
   }
 }
 
 void on_event_jack_started(void)
 {
-  g_studio.jack_pending = false;
-  g_studio.jack_running = true;
-
   if (g_studio.dbus_object == NULL)
   {
     ASSERT(g_studio.name == NULL);
@@ -295,18 +255,7 @@ void on_event_jack_started(void)
 void on_event_jack_stopped(void)
 {
   emit_studio_stopped();
-  g_studio.jack_pending = false;
-  g_studio.jack_running = false;
-
-  if (g_studio.clear_on_jack_stop)
-  {
-    g_studio.clear_on_jack_stop = false;
-    studio_clear(false);
-  }
-  else
-  {
-    studio_clear_if_automatic();
-  }
+  studio_clear_if_automatic();
 
   if (g_studio.jack_dispatcher)
   {
@@ -325,69 +274,47 @@ void on_event_jack_stopped(void)
 
 void studio_run(void)
 {
-  struct event * event_ptr;
+  bool state;
 
-  while (!list_empty(&g_studio.event_queue))
+  ladish_cqueue_run(&g_studio.cmd_queue);
+
+  if (ladish_environment_consume_change(&g_studio.env_store, ladish_environment_jack_server_started, &state))
   {
-    event_ptr = list_entry(g_studio.event_queue.next, struct event, siblings);
-    list_del(g_studio.event_queue.next);
-
-    switch (event_ptr->type)
+    if (state)
     {
-    case EVENT_JACK_START:
       on_event_jack_started();
-      break;
-    case EVENT_JACK_STOP:
-      on_event_jack_stopped();
-      break;
     }
-
-    free(event_ptr);
+    else
+    {
+      on_event_jack_stopped();
+    }
   }
+
+  ladish_environment_ignore(&g_studio.env_store, ladish_environment_jack_server_present);
+  ladish_environment_assert_consumed(&g_studio.env_store);
 }
 
 static void on_jack_server_started(void)
 {
-  struct event * event_ptr;
-
   log_info("JACK server start detected.");
-
-  event_ptr = malloc(sizeof(struct event));
-  if (event_ptr == NULL)
-  {
-    log_error("malloc() failed to allocate struct event. Ignoring JACK start.");
-    return;
-  }
-
-  event_ptr->type = EVENT_JACK_START;
-  list_add_tail(&event_ptr->siblings, &g_studio.event_queue);
+  ladish_environment_set(&g_studio.env_store, ladish_environment_jack_server_started);
 }
 
 static void on_jack_server_stopped(void)
 {
-  struct event * event_ptr;
-
-  log_info("JACK server stop detected.");
-
-  event_ptr = malloc(sizeof(struct event));
-  if (event_ptr == NULL)
-  {
-    log_error("malloc() failed to allocate struct event. Ignoring JACK stop.");
-    return;
-  }
-
-  event_ptr->type = EVENT_JACK_STOP;
-  list_add_tail(&event_ptr->siblings, &g_studio.event_queue);
+  ladish_environment_reset(&g_studio.env_store, ladish_environment_jack_server_started);
 }
 
 static void on_jack_server_appeared(void)
 {
   log_info("JACK controller appeared.");
+  ladish_environment_set(&g_studio.env_store, ladish_environment_jack_server_present);
 }
 
 static void on_jack_server_disappeared(void)
 {
   log_info("JACK controller disappeared.");
+  ladish_environment_reset(&g_studio.env_store, ladish_environment_jack_server_present);
 }
 
 bool studio_init(void)
@@ -419,13 +346,9 @@ bool studio_init(void)
   INIT_LIST_HEAD(&g_studio.jack_conf);
   INIT_LIST_HEAD(&g_studio.jack_params);
 
-  INIT_LIST_HEAD(&g_studio.event_queue);
-
   g_studio.dbus_object = NULL;
   g_studio.name = NULL;
   g_studio.filename = NULL;
-  g_studio.jack_running = false;
-  g_studio.jack_pending = false;
 
   if (!ladish_graph_create(&g_studio.jack_graph, NULL))
   {
@@ -440,6 +363,7 @@ bool studio_init(void)
   }
 
   ladish_cqueue_init(&g_studio.cmd_queue);
+  ladish_environment_init(&g_studio.env_store);
 
   if (!jack_proxy_init(
         on_jack_server_started,
@@ -458,7 +382,7 @@ studio_graph_destroy:
 jack_graph_destroy:
   ladish_graph_destroy(g_studio.jack_graph, false);
 free_studios_dir:
-  studio_clear(false);
+  studio_clear();
   free(g_studios_dir);
 fail:
   return false;
@@ -470,7 +394,7 @@ void studio_uninit(void)
 
   jack_proxy_uninit();
 
-  studio_clear(false);
+  studio_clear();
 
   ladish_cqueue_uninit(&g_studio.cmd_queue);
 
@@ -684,14 +608,14 @@ static void ladish_save_studio(struct dbus_method_call * call_ptr)
 static void ladish_unload_studio(struct dbus_method_call * call_ptr)
 {
   log_info("Unload studio request");
-  studio_clear(true);
+  studio_clear();
   method_return_new_void(call_ptr);
 }
 
 bool studio_new(void * call_ptr, const char * studio_name)
 {
   log_info("New studio request (%s)", studio_name);
-  if (!studio_clear(false))
+  if (!studio_clear())
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Cannot create new studio when other studio is running.");
     return false;
@@ -716,7 +640,7 @@ bool studio_new(void * call_ptr, const char * studio_name)
   if (!studio_publish())
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "studio_publish() failed.");
-    studio_clear(false);
+    studio_clear();
     return false;
   }
 
@@ -727,7 +651,7 @@ static void ladish_stop_studio(struct dbus_method_call * call_ptr)
 {
   log_info("Studio stop requested");
 
-  if (!studio_stop(false, NULL))
+  if (!studio_stop())
   {
       lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Failed to stop studio.");
   }
