@@ -517,7 +517,7 @@ static void ladish_save_studio(struct dbus_method_call * call_ptr)
 {
   log_info("Save studio request");
 
-  if (ladish_command_unload_studio(call_ptr, &g_studio.cmd_queue))
+  if (ladish_command_save_studio(call_ptr, &g_studio.cmd_queue))
   {
     method_return_new_void(call_ptr);
   }
