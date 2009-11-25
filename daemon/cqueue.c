@@ -49,6 +49,11 @@ loop:
   ASSERT(cmd_ptr->run != NULL);
   ASSERT(cmd_ptr->state == LADISH_COMMAND_STATE_PENDING || cmd_ptr->state == LADISH_COMMAND_STATE_WAITING);
 
+  if (cmd_ptr->state == LADISH_COMMAND_STATE_PENDING)
+  { /* if this is a new command, put a separator so its impact is clearly visible in the log */
+    log_info("-------");
+  }
+
   if (!cmd_ptr->run(cmd_ptr->context))
   {
     ladish_cqueue_clear(queue_ptr);
