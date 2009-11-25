@@ -172,9 +172,11 @@ extern const struct dbus_interface_descriptor g_interface_studio;
 void jack_conf_clear(void);
 bool studio_fetch_jack_settings(void);
 bool studio_compose_filename(const char * name, char ** filename_ptr_ptr, char ** backup_filename_ptr_ptr);
-bool studio_clear(void);
 bool studio_publish(void);
-bool studio_start(void);
-bool studio_save(void * call_ptr);
+bool studio_name_generate(char ** name_ptr);
+bool studio_is_started(void);
+void emit_studio_started(void);
+void emit_studio_stopped(void);
+void emit_studio_renamed(void);
 
 #endif /* #ifndef STUDIO_INTERNAL_H__B4CB73EC_8E89_401A_9E49_F0AEEF361D09__INCLUDED */

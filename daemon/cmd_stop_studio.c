@@ -25,8 +25,80 @@
  */
 
 #include "cmd.h"
+#include "studio_internal.h"
 
-bool ladish_command_stop_studio(void)
+#define cmd_ptr ((struct ladish_command *)context)
+
+static bool run(void * context)
 {
+  bool jack_server_started;
+
+  switch (cmd_ptr->state)
+  {
+  case LADISH_COMMAND_STATE_PENDING:
+    if (!studio_is_started())
+    {
+      /* nothing to do, studio is not running */
+      cmd_ptr->state = LADISH_COMMAND_STATE_DONE;
+      return true;
+    }
+
+    log_info("Stopping JACK server...");
+
+    if (!jack_proxy_stop_server())
+    {
+      log_error("Stopping JACK server failed.");
+      return false;
+    }
+
+    cmd_ptr->state = LADISH_COMMAND_STATE_WAITING;
+    /* fall through */
+  case LADISH_COMMAND_STATE_WAITING:
+    if (!ladish_environment_consume_change(&g_studio.env_store, ladish_environment_jack_server_started, &jack_server_started))
+    {
+      /* we are still waiting for the JACK server stop */
+      ASSERT(ladish_environment_get(&g_studio.env_store, ladish_environment_jack_server_started)); /* someone else consumed the state change? */
+      return true;
+    }
+
+    log_info("Wait for JACK server stop complete.");
+
+    ASSERT(!jack_server_started);
+    emit_studio_stopped();
+    cmd_ptr->state = LADISH_COMMAND_STATE_DONE;
+    return true;
+  }
+
+  ASSERT_NO_PASS;
+  return false;
+}
+
+#undef cmd_ptr
+
+bool ladish_command_stop_studio(void * call_ptr, struct ladish_cqueue * queue_ptr)
+{
+  struct ladish_command * cmd_ptr;
+
+  cmd_ptr = ladish_command_new(sizeof(struct ladish_command));
+  if (cmd_ptr == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_command_new() failed.");
+    goto fail;
+  }
+
+  cmd_ptr->run = run;
+
+  if (!ladish_cqueue_add_command(queue_ptr, cmd_ptr))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_cqueue_add_command() failed.");
+    goto fail_destroy_command;
+  }
+
+  return true;
+
+fail_destroy_command:
+  free(cmd_ptr);
+
+fail:
   return false;
 }

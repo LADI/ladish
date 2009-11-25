@@ -209,8 +209,6 @@ def build(bld):
         'graph_dict.c',
         'escape.c',
         'studio_jack_conf.c',
-        'studio_load.c',
-        'studio_save.c',
         'cmd_load_studio.c',
         'cmd_new_studio.c',
         'cmd_rename_studio.c',

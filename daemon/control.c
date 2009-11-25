@@ -30,6 +30,7 @@
 #include "../dbus/error.h"
 #include "control.h"
 #include "../dbus_constants.h"
+#include "studio_internal.h"
 
 #define INTERFACE_NAME IFACE_CONTROL
 
@@ -157,7 +158,9 @@ static void ladish_load_studio(struct dbus_method_call * call_ptr)
     return;
   }
 
-  if (studio_load(call_ptr, name))
+  log_info("Load studio request (%s)", name);
+
+  if (ladish_command_load_studio(call_ptr, &g_studio.cmd_queue, name))
   {
     method_return_new_void(call_ptr);
   }
@@ -195,7 +198,9 @@ static void ladish_new_studio(struct dbus_method_call * call_ptr)
     return;
   }
 
-  if (studio_new(call_ptr, name))
+  log_info("New studio request (%s)", name);
+
+  if (ladish_command_new_studio(call_ptr, &g_studio.cmd_queue, name))
   {
     method_return_new_void(call_ptr);
   }

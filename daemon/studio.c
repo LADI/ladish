@@ -102,107 +102,14 @@ studio_publish(void)
   return true;
 }
 
-static void emit_studio_started()
+void emit_studio_started()
 {
   dbus_signal_emit(g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioStarted", "");
 }
 
-static void emit_studio_stopped()
+void emit_studio_stopped()
 {
   dbus_signal_emit(g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioStopped", "");
-}
-
-bool studio_start(void)
-{
-  if (ladish_environment_get(&g_studio.env_store, ladish_environment_jack_server_started))
-  {
-    log_info("JACK server is already started");
-    return true;
-  }
-
-  log_info("Starting JACK server.");
-
-  if (!jack_proxy_start_server())
-  {
-    log_error("jack_proxy_start_server() failed.");
-    return false;
-  }
-
-  return true;
-}
-
-static bool studio_stop(void)
-{
-  if (!ladish_environment_get(&g_studio.env_store, ladish_environment_jack_server_started))
-  {
-    log_info("JACK server is already stopped");
-    return true;
-  }
-
-  log_info("Stopping JACK server...");
-
-  g_studio.automatic = false;   /* even if it was automatic, it is not anymore because user knows about it */
-
-  if (!jack_proxy_stop_server())
-  {
-    log_error("Stopping JACK server failed.");
-    return false;
-  }
-
-  return true;
-}
-
-bool studio_clear(void)
-{
-  log_info("studio_clear() called.");
-
-  if (!studio_stop())
-  {
-    return false;
-  }
-
-  ladish_graph_dump(g_studio.studio_graph);
-  ladish_graph_dump(g_studio.jack_graph);
-  ladish_graph_clear(g_studio.studio_graph, false);
-  ladish_graph_clear(g_studio.jack_graph, true);
-
-  jack_conf_clear();
-
-  g_studio.modified = false;
-  g_studio.persisted = false;
-  g_studio.automatic = false;
-
-  if (g_studio.dbus_object != NULL)
-  {
-    dbus_object_path_destroy(g_dbus_connection, g_studio.dbus_object);
-    g_studio.dbus_object = NULL;
-    emit_studio_disappeared();
-  }
-
-  if (g_studio.name != NULL)
-  {
-    free(g_studio.name);
-    g_studio.name = NULL;
-  }
-
-  if (g_studio.filename != NULL)
-  {
-    free(g_studio.filename);
-    g_studio.filename = NULL;
-  }
-
-  return true;
-}
-
-void
-studio_clear_if_automatic(void)
-{
-  if (g_studio.automatic)
-  {
-    log_info("Unloading automatic studio.");
-    studio_clear();
-    return;
-  }
 }
 
 void on_event_jack_started(void)
@@ -225,7 +132,6 @@ void on_event_jack_started(void)
   {
     log_error("studio_fetch_jack_settings() failed.");
 
-    studio_clear_if_automatic();
     return;
   }
 
@@ -255,7 +161,13 @@ void on_event_jack_started(void)
 void on_event_jack_stopped(void)
 {
   emit_studio_stopped();
-  studio_clear_if_automatic();
+
+  if (g_studio.automatic)
+  {
+    log_info("Unloading automatic studio.");
+    ladish_command_unload_studio(NULL, &g_studio.cmd_queue);
+    return;
+  }
 
   if (g_studio.jack_dispatcher)
   {
@@ -280,6 +192,8 @@ void studio_run(void)
 
   if (ladish_environment_consume_change(&g_studio.env_store, ladish_environment_jack_server_started, &state))
   {
+    ladish_cqueue_clear(&g_studio.cmd_queue);
+
     if (state)
     {
       on_event_jack_started();
@@ -382,7 +296,6 @@ studio_graph_destroy:
 jack_graph_destroy:
   ladish_graph_destroy(g_studio.jack_graph, false);
 free_studios_dir:
-  studio_clear();
   free(g_studios_dir);
 fail:
   return false;
@@ -394,9 +307,7 @@ void studio_uninit(void)
 
   jack_proxy_uninit();
 
-  studio_clear();
-
-  ladish_cqueue_uninit(&g_studio.cmd_queue);
+  ladish_cqueue_clear(&g_studio.cmd_queue);
 
   free(g_studios_dir);
 
@@ -406,6 +317,11 @@ void studio_uninit(void)
 bool studio_is_loaded(void)
 {
   return g_studio.dbus_object != NULL;
+}
+
+bool studio_is_started(void)
+{
+  return ladish_environment_get(&g_studio.env_store, ladish_environment_jack_server_started);
 }
 
 bool studio_compose_filename(const char * name, char ** filename_ptr_ptr, char ** backup_filename_ptr_ptr)
@@ -599,7 +515,9 @@ static void ladish_rename_studio(struct dbus_method_call * call_ptr)
 
 static void ladish_save_studio(struct dbus_method_call * call_ptr)
 {
-  if (studio_save(call_ptr))
+  log_info("Save studio request");
+
+  if (ladish_command_unload_studio(call_ptr, &g_studio.cmd_queue))
   {
     method_return_new_void(call_ptr);
   }
@@ -608,54 +526,20 @@ static void ladish_save_studio(struct dbus_method_call * call_ptr)
 static void ladish_unload_studio(struct dbus_method_call * call_ptr)
 {
   log_info("Unload studio request");
-  studio_clear();
-  method_return_new_void(call_ptr);
-}
 
-bool studio_new(void * call_ptr, const char * studio_name)
-{
-  log_info("New studio request (%s)", studio_name);
-  if (!studio_clear())
+  if (ladish_command_unload_studio(call_ptr, &g_studio.cmd_queue))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Cannot create new studio when other studio is running.");
-    return false;
+    method_return_new_void(call_ptr);
   }
-
-  ASSERT(g_studio.name == NULL);
-  if (*studio_name != 0)
-  {
-    g_studio.name = strdup(studio_name);
-    if (g_studio.name == NULL)
-    {
-      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup() failed to allocate studio name.");
-      return false;
-    }
-  }
-  else if (!studio_name_generate(&g_studio.name))
-  {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "studio_name_generate() failed.");
-    return false;
-  }
-
-  if (!studio_publish())
-  {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "studio_publish() failed.");
-    studio_clear();
-    return false;
-  }
-
-  return true;
 }
 
 static void ladish_stop_studio(struct dbus_method_call * call_ptr)
 {
-  log_info("Studio stop requested");
+  log_info("Stop studio request");
 
-  if (!studio_stop())
-  {
-      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Failed to stop studio.");
-  }
-  else
+  g_studio.automatic = false;   /* even if it was automatic, it is not anymore because user knows about it */
+
+  if (ladish_command_stop_studio(call_ptr, &g_studio.cmd_queue))
   {
     method_return_new_void(call_ptr);
   }
@@ -663,13 +547,11 @@ static void ladish_stop_studio(struct dbus_method_call * call_ptr)
 
 static void ladish_start_studio(struct dbus_method_call * call_ptr)
 {
-  log_info("Studio start requested");
+  log_info("Start studio request");
 
-  if (!studio_start())
-  {
-      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Failed to start studio.");
-  }
-  else
+  g_studio.automatic = false;   /* even if it was automatic, it is not anymore because user knows about it */
+
+  if (ladish_command_start_studio(call_ptr, &g_studio.cmd_queue))
   {
     method_return_new_void(call_ptr);
   }

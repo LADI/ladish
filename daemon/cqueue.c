@@ -51,7 +51,7 @@ loop:
 
   if (!cmd_ptr->run(cmd_ptr->context))
   {
-    ladish_cqueue_uninit(queue_ptr);
+    ladish_cqueue_clear(queue_ptr);
     return;
   }
 
@@ -64,7 +64,7 @@ loop:
   default:
     log_error("unexpected cmd state %u after run()", cmd_ptr->state);
     ASSERT_NO_PASS;
-    ladish_cqueue_uninit(queue_ptr);
+    ladish_cqueue_clear(queue_ptr);
     return;
   }
 
@@ -95,11 +95,11 @@ void ladish_cqueue_cancel(struct ladish_cqueue * queue_ptr)
     return;
   }
 
-  node_ptr = queue_ptr->queue.prev;
+  node_ptr = queue_ptr->queue.next; /* current command */
   cmd_ptr = list_entry(node_ptr, struct ladish_command, siblings);
   if (cmd_ptr->state != LADISH_COMMAND_STATE_WAITING)
   {
-    ladish_cqueue_uninit(queue_ptr);
+    ladish_cqueue_clear(queue_ptr);
     return;
   }
 
@@ -121,7 +121,6 @@ void ladish_cqueue_cancel(struct ladish_cqueue * queue_ptr)
 
   queue_ptr->cancel = true;
   cmd_ptr->cancel = true;
-  ladish_cqueue_run(queue_ptr);
 }
 
 bool ladish_cqueue_add_command(struct ladish_cqueue * queue_ptr, struct ladish_command * cmd_ptr)
@@ -133,12 +132,14 @@ bool ladish_cqueue_add_command(struct ladish_cqueue * queue_ptr, struct ladish_c
     return false;
   }
 
+  ASSERT(cmd_ptr->state == LADISH_COMMAND_STATE_PREPARE);
+  cmd_ptr->state = LADISH_COMMAND_STATE_PENDING;
+
   list_add_tail(&cmd_ptr->siblings, &queue_ptr->queue);
-  ladish_cqueue_run(queue_ptr);
   return true;
 }
 
-void ladish_cqueue_uninit(struct ladish_cqueue * queue_ptr)
+void ladish_cqueue_clear(struct ladish_cqueue * queue_ptr)
 {
   struct list_head * node_ptr;
   struct ladish_command * cmd_ptr;
@@ -159,6 +160,32 @@ void ladish_cqueue_uninit(struct ladish_cqueue * queue_ptr)
   }
 
   queue_ptr->cancel = false;
+}
+
+void ladish_cqueue_drop_command(struct ladish_cqueue * queue_ptr)
+{
+  struct list_head * node_ptr;
+  struct ladish_command * cmd_ptr;
+
+  ASSERT(!list_empty(&queue_ptr->queue)); /* there is nothing to drop */
+
+  /* remove the last command from the queue */
+  node_ptr = queue_ptr->queue.prev;
+  list_del(node_ptr);
+  cmd_ptr = list_entry(node_ptr, struct ladish_command, siblings);
+
+  ASSERT(cmd_ptr->run != NULL);
+
+  /* waiting commands are not supposed to be dropped */
+  /* commands that are not yet prepared and those that are already processed are not supposed to be in the queue */
+  ASSERT(cmd_ptr->state == LADISH_COMMAND_STATE_PENDING);
+
+  if (cmd_ptr->destructor != NULL)
+  {
+    cmd_ptr->destructor(cmd_ptr->context);
+  }
+
+  free(cmd_ptr);
 }
 
 void * ladish_command_new(size_t size)
