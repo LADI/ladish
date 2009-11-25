@@ -63,6 +63,7 @@ static void client_appeared(void * context, uint64_t id, const char * name)
     log_info("found existing client");
     ASSERT(ladish_client_get_jack_id(client) == 0); /* two JACK clients with same name? */
     ladish_client_set_jack_id(client, id);
+    ladish_graph_show_client(dispatcher_ptr->jack_graph, client);
     goto exit;
   }
 
