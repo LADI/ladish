@@ -64,7 +64,9 @@ static bool run(void * context)
     log_info("Wait for JACK server stop complete.");
 
     ASSERT(!jack_server_started);
-    emit_studio_stopped();
+
+    on_event_jack_stopped();
+
     cmd_ptr->state = LADISH_COMMAND_STATE_DONE;
     return true;
   }

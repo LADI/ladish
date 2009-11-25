@@ -178,5 +178,7 @@ bool studio_is_started(void);
 void emit_studio_started(void);
 void emit_studio_stopped(void);
 void emit_studio_renamed(void);
+void on_event_jack_started(void);
+void on_event_jack_stopped(void);
 
 #endif /* #ifndef STUDIO_INTERNAL_H__B4CB73EC_8E89_401A_9E49_F0AEEF361D09__INCLUDED */
