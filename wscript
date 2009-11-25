@@ -216,6 +216,7 @@ def build(bld):
         'cmd_start_studio.c',
         'cmd_stop_studio.c',
         'cmd_unload_studio.c',
+        'cmd_exit.c',
         'cqueue.c',
         ]:
         daemon.source.append(os.path.join("daemon", source))

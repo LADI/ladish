@@ -68,5 +68,6 @@ bool ladish_command_save_studio(void * call_ptr, struct ladish_cqueue * queue_pt
 bool ladish_command_start_studio(void * call_ptr, struct ladish_cqueue * queue_ptr);
 bool ladish_command_stop_studio(void * call_ptr, struct ladish_cqueue * queue_ptr);
 bool ladish_command_unload_studio(void * call_ptr, struct ladish_cqueue * queue_ptr);
+bool ladish_command_exit(void * call_ptr, struct ladish_cqueue * queue_ptr);
 
 #endif /* #ifndef CMD_H__28542C9B_7CB8_40F8_BBB6_DCE13CBB1E7F__INCLUDED */

@@ -189,6 +189,10 @@ void studio_run(void)
   bool state;
 
   ladish_cqueue_run(&g_studio.cmd_queue);
+  if (g_quit)
+  { /* if quit is requested, don't bother to process external events */
+    return;
+  }
 
   if (ladish_environment_consume_change(&g_studio.env_store, ladish_environment_jack_server_started, &state))
   {

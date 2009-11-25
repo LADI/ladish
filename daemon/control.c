@@ -283,7 +283,15 @@ fail:
 static void ladish_exit(struct dbus_method_call * call_ptr)
 {
   log_info("Exit command received through D-Bus");
-  g_quit = true;
+
+  if (!ladish_command_exit(NULL, &g_studio.cmd_queue))
+  { /* if queuing of command failed, force exit anyway,
+       JACK server will be left started,
+       but refusing exit command is worse */
+    g_quit = true;
+  }
+
+  method_return_new_void(call_ptr);
 }
 
 void emit_studio_appeared()
