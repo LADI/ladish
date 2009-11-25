@@ -56,16 +56,18 @@ void ladish_cqueue_init(struct ladish_cqueue * queue_ptr);
 void ladish_cqueue_run(struct ladish_cqueue * queue_ptr);
 void ladish_cqueue_cancel(struct ladish_cqueue * queue_ptr);
 bool ladish_cqueue_add_command(struct ladish_cqueue * queue_ptr, struct ladish_command * command_ptr);
-void ladish_cqueue_uninit(struct ladish_cqueue * queue_ptr);
+void ladish_cqueue_drop_command(struct ladish_cqueue * queue_ptr);
+void ladish_cqueue_clear(struct ladish_cqueue * queue_ptr);
 
 void * ladish_command_new(size_t size);
 
-bool ladish_command_new_studio(const char * studio_name);
-bool ladish_command_load_studio(const char * studio_name);
-bool ladish_command_rename_studio(const char * studio_name);
-bool ladish_command_save_studio(void);
-bool ladish_command_start_studio(void);
-bool ladish_command_stop_studio(void);
-bool ladish_command_unload_studio(void);
+bool ladish_command_new_studio(void * call_ptr, struct ladish_cqueue * queue_ptr, const char * studio_name);
+bool ladish_command_load_studio(void * call_ptr, struct ladish_cqueue * queue_ptr, const char * studio_name);
+bool ladish_command_rename_studio(void * call_ptr, struct ladish_cqueue * queue_ptr, const char * studio_name);
+bool ladish_command_save_studio(void * call_ptr, struct ladish_cqueue * queue_ptr);
+bool ladish_command_start_studio(void * call_ptr, struct ladish_cqueue * queue_ptr);
+bool ladish_command_stop_studio(void * call_ptr, struct ladish_cqueue * queue_ptr);
+bool ladish_command_unload_studio(void * call_ptr, struct ladish_cqueue * queue_ptr);
+bool ladish_command_exit(void * call_ptr, struct ladish_cqueue * queue_ptr);
 
 #endif /* #ifndef CMD_H__28542C9B_7CB8_40F8_BBB6_DCE13CBB1E7F__INCLUDED */

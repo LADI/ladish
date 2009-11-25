@@ -25,8 +25,82 @@
  */
 
 #include "cmd.h"
+#include "studio_internal.h"
 
-bool ladish_command_start_studio(void)
+#define cmd_ptr ((struct ladish_command *)context)
+
+static bool run(void * context)
 {
+  bool jack_server_started;
+
+  switch (cmd_ptr->state)
+  {
+  case LADISH_COMMAND_STATE_PENDING:
+    if (studio_is_started())
+    {
+      /* nothing to do, studio is already running */
+      cmd_ptr->state = LADISH_COMMAND_STATE_DONE;
+      return true;
+    }
+
+    log_info("Starting JACK server.");
+
+    if (!jack_proxy_start_server())
+    {
+      log_error("Starting JACK server failed.");
+      return false;
+    }
+
+    cmd_ptr->state = LADISH_COMMAND_STATE_WAITING;
+    /* fall through */
+  case LADISH_COMMAND_STATE_WAITING:
+    if (!ladish_environment_consume_change(&g_studio.env_store, ladish_environment_jack_server_started, &jack_server_started))
+    {
+      /* we are still waiting for the JACK server start */
+      ASSERT(!ladish_environment_get(&g_studio.env_store, ladish_environment_jack_server_started)); /* someone else consumed the state change? */
+      return true;
+    }
+
+    log_info("Wait for JACK server start complete.");
+
+    ASSERT(jack_server_started);
+
+    on_event_jack_started();    /* fetch configuration and announce start */
+
+    cmd_ptr->state = LADISH_COMMAND_STATE_DONE;
+    return true;
+  }
+
+  ASSERT_NO_PASS;
+  return false;
+}
+
+#undef cmd_ptr
+
+bool ladish_command_start_studio(void * call_ptr, struct ladish_cqueue * queue_ptr)
+{
+  struct ladish_command * cmd_ptr;
+
+  cmd_ptr = ladish_command_new(sizeof(struct ladish_command));
+  if (cmd_ptr == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_command_new() failed.");
+    goto fail;
+  }
+
+  cmd_ptr->run = run;
+
+  if (!ladish_cqueue_add_command(queue_ptr, cmd_ptr))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_cqueue_add_command() failed.");
+    goto fail_destroy_command;
+  }
+
+  return true;
+
+fail_destroy_command:
+  free(cmd_ptr);
+
+fail:
   return false;
 }

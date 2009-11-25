@@ -5,7 +5,7 @@
  * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains implementation of the "stop studio" command
+ * This file contains implementation of the "deactivate daemon" command
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -26,66 +26,34 @@
 
 #include "cmd.h"
 #include "studio_internal.h"
+#include "control.h"
 
 #define cmd_ptr ((struct ladish_command *)context)
 
 static bool run(void * context)
 {
-  bool jack_server_started;
-
-  switch (cmd_ptr->state)
-  {
-  case LADISH_COMMAND_STATE_PENDING:
-    if (!studio_is_started())
-    {
-      /* nothing to do, studio is not running */
-      cmd_ptr->state = LADISH_COMMAND_STATE_DONE;
-      return true;
-    }
-
-    log_info("Stopping JACK server...");
-
-    if (!jack_proxy_stop_server())
-    {
-      log_error("Stopping JACK server failed.");
-      return false;
-    }
-
-    cmd_ptr->state = LADISH_COMMAND_STATE_WAITING;
-    /* fall through */
-  case LADISH_COMMAND_STATE_WAITING:
-    if (!ladish_environment_consume_change(&g_studio.env_store, ladish_environment_jack_server_started, &jack_server_started))
-    {
-      /* we are still waiting for the JACK server stop */
-      ASSERT(ladish_environment_get(&g_studio.env_store, ladish_environment_jack_server_started)); /* someone else consumed the state change? */
-      return true;
-    }
-
-    log_info("Wait for JACK server stop complete.");
-
-    ASSERT(!jack_server_started);
-
-    on_event_jack_stopped();
-
-    cmd_ptr->state = LADISH_COMMAND_STATE_DONE;
-    return true;
-  }
-
-  ASSERT_NO_PASS;
-  return false;
+  ASSERT(cmd_ptr->state == LADISH_COMMAND_STATE_PENDING);
+  cmd_ptr->state = LADISH_COMMAND_STATE_DONE;
+  g_quit = true;                /* cause main loop quit */
+  return false;                 /* cause command queue clear  */
 }
 
 #undef cmd_ptr
 
-bool ladish_command_stop_studio(void * call_ptr, struct ladish_cqueue * queue_ptr)
+bool ladish_command_exit(void * call_ptr, struct ladish_cqueue * queue_ptr)
 {
   struct ladish_command * cmd_ptr;
+
+  if (!ladish_command_unload_studio(call_ptr, queue_ptr))
+  {
+    goto fail;
+  }
 
   cmd_ptr = ladish_command_new(sizeof(struct ladish_command));
   if (cmd_ptr == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_command_new() failed.");
-    goto fail;
+    log_error("ladish_command_new() failed.");
+    goto fail_drop_unload_command;
   }
 
   cmd_ptr->run = run;
@@ -100,6 +68,9 @@ bool ladish_command_stop_studio(void * call_ptr, struct ladish_cqueue * queue_pt
 
 fail_destroy_command:
   free(cmd_ptr);
+
+fail_drop_unload_command:
+  ladish_cqueue_drop_command(queue_ptr);
 
 fail:
   return false;
