@@ -75,6 +75,7 @@ bool ladish_graph_is_client_looks_empty(ladish_graph_handle graph_handle, ladish
 bool ladish_graph_is_port_present(ladish_graph_handle graph_handle, ladish_port_handle port_handle);
 void ladish_graph_show_port(ladish_graph_handle graph_handle, ladish_port_handle port_handle);
 void ladish_graph_hide_port(ladish_graph_handle graph_handle, ladish_port_handle port_handle);
+void ladish_graph_show_client(ladish_graph_handle graph_handle, ladish_client_handle client_handle);
 void ladish_graph_hide_client(ladish_graph_handle graph_handle, ladish_client_handle client_handle);
 void ladish_graph_adjust_port(ladish_graph_handle graph_handle, ladish_port_handle port_handle, uint32_t type, uint32_t flags);
 

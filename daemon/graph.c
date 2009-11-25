@@ -732,6 +732,37 @@ void ladish_graph_hide_client(ladish_graph_handle graph_handle, ladish_client_ha
   }
 }
 
+void ladish_graph_show_client(ladish_graph_handle graph_handle, ladish_client_handle client_handle)
+{
+  struct ladish_graph_client * client_ptr;
+
+  log_info("ladish_graph_show_client() called.");
+
+  client_ptr = ladish_graph_find_client(graph_ptr, client_handle);
+  if (client_ptr == NULL)
+  {
+    ASSERT_NO_PASS;
+    return;
+  }
+
+  ASSERT(client_ptr->hidden);
+  client_ptr->hidden = false;
+  graph_ptr->graph_version++;
+
+  if (graph_ptr->opath != NULL)
+  {
+    dbus_signal_emit(
+      g_dbus_connection,
+      graph_ptr->opath,
+      JACKDBUS_IFACE_PATCHBAY,
+      "ClientAppeared",
+      "tts",
+      &graph_ptr->graph_version,
+      &client_ptr->id,
+      &client_ptr->name);
+  }
+}
+
 void ladish_graph_adjust_port(ladish_graph_handle graph_handle, ladish_port_handle port_handle, uint32_t type, uint32_t flags)
 {
   struct ladish_graph_port * port_ptr;
