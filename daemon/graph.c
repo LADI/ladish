@@ -65,6 +65,23 @@ struct ladish_graph
   uint64_t next_connection_id;
 };
 
+struct ladish_graph_port * ladish_graph_find_port_by_id_internal(struct ladish_graph * graph_ptr, uint64_t port_id)
+{
+  struct list_head * node_ptr;
+  struct ladish_graph_port * port_ptr;
+
+  list_for_each(node_ptr, &graph_ptr->ports)
+  {
+    port_ptr = list_entry(node_ptr, struct ladish_graph_port, siblings_graph);
+    if (port_ptr->id == port_id)
+    {
+      return port_ptr;
+    }
+  }
+
+  return NULL;
+}
+
 #define graph_ptr ((struct ladish_graph *)call_ptr->iface_context)
 
 static void get_all_ports(struct dbus_method_call * call_ptr)
@@ -355,27 +372,90 @@ exit:
 
 static void connect_ports_by_name(struct dbus_method_call * call_ptr)
 {
-  method_return_new_void(call_ptr);
+  log_info("connect_ports_by_name() called.");
+  lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "connect by name is not implemented yet");
 }
 
 static void connect_ports_by_id(struct dbus_method_call * call_ptr)
 {
+  dbus_uint64_t port1_id;
+  dbus_uint64_t port2_id;
+  struct ladish_graph_port * port1_ptr;
+  struct ladish_graph_port * port2_ptr;
+
+  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_UINT64, &port1_id, DBUS_TYPE_UINT64, &port2_id, DBUS_TYPE_INVALID))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s", call_ptr->method_name, g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return;
+  }
+
+  log_info("connect_ports_by_id(%"PRIu64",%"PRIu64") called.", port1_id, port2_id);
+
+  port1_ptr = ladish_graph_find_port_by_id_internal(graph_ptr, port1_id);
+  if (port1_ptr == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot connect unknown port with id %"PRIu64, port1_id);
+    return;
+  }
+
+  port2_ptr = ladish_graph_find_port_by_id_internal(graph_ptr, port2_id);
+  if (port2_ptr == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot connect unknown port with id %"PRIu64, port2_id);
+    return;
+  }
+
+  log_info("connecting '%s':'%s' to '%s':'%s'", port1_ptr->client_ptr->name, port1_ptr->name, port2_ptr->client_ptr->name, port2_ptr->name);
+
   method_return_new_void(call_ptr);
 }
 
 static void disconnect_ports_by_name(struct dbus_method_call * call_ptr)
 {
-  method_return_new_void(call_ptr);
+  log_info("disconnect_ports_by_name() called.");
+  lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "disconnect by name is not implemented yet");
 }
 
 static void disconnect_ports_by_id(struct dbus_method_call * call_ptr)
 {
+  dbus_uint64_t port1_id;
+  dbus_uint64_t port2_id;
+  struct ladish_graph_port * port1_ptr;
+  struct ladish_graph_port * port2_ptr;
+
+  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_UINT64, &port1_id, DBUS_TYPE_UINT64, &port2_id, DBUS_TYPE_INVALID))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s", call_ptr->method_name, g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return;
+  }
+
+  log_info("disconnect_ports_by_id(%"PRIu64",%"PRIu64") called.", port1_id, port2_id);
+
+  port1_ptr = ladish_graph_find_port_by_id_internal(graph_ptr, port1_id);
+  if (port1_ptr == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot disconnect unknown port with id %"PRIu64, port1_id);
+    return;
+  }
+
+  port2_ptr = ladish_graph_find_port_by_id_internal(graph_ptr, port2_id);
+  if (port2_ptr == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot disconnect unknown port with id %"PRIu64, port2_id);
+    return;
+  }
+
+  log_info("disconnecting '%s':'%s' to '%s':'%s'", port1_ptr->client_ptr->name, port1_ptr->name, port2_ptr->client_ptr->name, port2_ptr->name);
+
   method_return_new_void(call_ptr);
 }
 
 static void disconnect_ports_by_connection_id(struct dbus_method_call * call_ptr)
 {
-  method_return_new_void(call_ptr);
+  log_info("disconnect_ports_by_connection_id() called.");
+  lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "disconnect by connection id is not implemented yet");
 }
 
 static void get_client_pid(struct dbus_method_call * call_ptr)
@@ -1035,19 +1115,15 @@ ladish_client_handle ladish_graph_find_client_by_id(ladish_graph_handle graph_ha
 
 ladish_port_handle ladish_graph_find_port_by_id(ladish_graph_handle graph_handle, uint64_t port_id)
 {
-  struct list_head * node_ptr;
   struct ladish_graph_port * port_ptr;
 
-  list_for_each(node_ptr, &graph_ptr->ports)
+  port_ptr = ladish_graph_find_port_by_id_internal(graph_ptr, port_id);
+  if (port_ptr == NULL)
   {
-    port_ptr = list_entry(node_ptr, struct ladish_graph_port, siblings_graph);
-    if (port_ptr->id == port_id)
-    {
-      return port_ptr->port;
-    }
+    return NULL;
   }
 
-  return NULL;
+  return port_ptr->port;
 }
 
 ladish_client_handle ladish_graph_find_client_by_jack_id(ladish_graph_handle graph_handle, uint64_t client_id)
