@@ -498,6 +498,68 @@ save_studio_port(
   return true;
 }
 
+bool save_studio_connection(void * context, ladish_port_handle port1_handle, ladish_port_handle port2_handle, ladish_dict_handle dict)
+{
+  uuid_t uuid;
+  char str[37];
+
+  log_info("saving studio connection");
+
+  if (!write_string(fd, "    <connection port1=\""))
+  {
+    return false;
+  }
+
+  ladish_port_get_uuid(port1_handle, uuid);
+  uuid_unparse(uuid, str);
+
+  if (!write_string(fd, str))
+  {
+    return false;
+  }
+
+  if (!write_string(fd, "\" port2=\""))
+  {
+    return false;
+  }
+
+  ladish_port_get_uuid(port2_handle, uuid);
+  uuid_unparse(uuid, str);
+
+  if (!write_string(fd, str))
+  {
+    return false;
+  }
+
+  if (ladish_dict_is_empty(dict))
+  {
+    if (!write_string(fd, "\" />\n"))
+    {
+      return false;
+    }
+  }
+  else
+  {
+    if (!write_string(fd, "\">\n"))
+    {
+      return false;
+    }
+
+    if (!write_dict(fd, "      ", dict))
+    {
+      return false;
+    }
+
+    if (!write_string(fd, "    </connection>\n"))
+    {
+      return false;
+    }
+  }
+
+  return true;
+  return true;
+}
+
 #undef indent
 #undef fd
 
@@ -685,6 +747,22 @@ static bool run(void * command_context)
   }
 
   if (!write_string(fd, "  </clients>\n"))
+  {
+    goto close;
+  }
+
+  if (!write_string(fd, "  <connections>\n"))
+  {
+    goto close;
+  }
+
+  if (!ladish_graph_iterate_connections(g_studio.studio_graph, &save_context, save_studio_connection))
+  {
+    log_error("ladish_graph_iterate_connections() failed");
+    goto close;
+  }
+
+  if (!write_string(fd, "  </connections>\n"))
   {
     goto close;
   }

@@ -358,6 +358,7 @@ static void ports_connected(void * context, uint64_t client1_id, uint64_t port1_
 {
   ladish_port_handle port1;
   ladish_port_handle port2;
+  uint64_t connection_id;
 
   log_info("ports_connected %"PRIu64":%"PRIu64" %"PRIu64":%"PRIu64"", client1_id, port1_id, client2_id, port2_id);
 
@@ -376,7 +377,17 @@ static void ports_connected(void * context, uint64_t client1_id, uint64_t port1_
   }
 
   ladish_graph_add_connection(virtualizer_ptr->jack_graph, port1, port2, false);
-  ladish_graph_add_connection(virtualizer_ptr->studio_graph, port1, port2, false);
+
+  if (ladish_graph_find_connection(virtualizer_ptr->studio_graph, port1, port2, &connection_id))
+  {
+    log_info("showing hidden connection");
+    ladish_graph_show_connection(virtualizer_ptr->studio_graph, connection_id);
+  }
+  else
+  {
+    log_info("creating new connection");
+    ladish_graph_add_connection(virtualizer_ptr->studio_graph, port1, port2, false);
+  }
 }
 
 static void ports_disconnected(void * context, uint64_t client1_id, uint64_t port1_id, uint64_t client2_id, uint64_t port2_id)

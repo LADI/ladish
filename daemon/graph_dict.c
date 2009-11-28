@@ -36,6 +36,7 @@ bool find_dict(struct dbus_method_call * call_ptr, uint32_t object_type, uint64_
 {
   ladish_client_handle client;
   ladish_port_handle port;
+  ladish_dict_handle dict;
 
   switch (object_type)
   {
@@ -61,7 +62,13 @@ bool find_dict(struct dbus_method_call * call_ptr, uint32_t object_type, uint64_
     *dict_handle_ptr = ladish_port_get_dict(port);
     return true;
   case GRAPH_DICT_OBJECT_TYPE_CONNECTION:
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "find_dict() not implemented for connections.");
+    dict = ladish_graph_get_connection_dict(graph_handle, object_id);
+    if (dict == NULL)
+    {
+      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "cannot find connection %"PRIu64".", object_id);
+    }
+
+    *dict_handle_ptr = dict;
     return false;
   }
 

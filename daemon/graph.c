@@ -60,6 +60,7 @@ struct ladish_graph_connection
   bool hidden;
   struct ladish_graph_port * port1_ptr;
   struct ladish_graph_port * port2_ptr;
+  ladish_dict_handle dict;
 };
 
 struct ladish_graph
@@ -328,6 +329,11 @@ static void get_graph(struct dbus_method_call * call_ptr)
     list_for_each(connection_node_ptr, &graph_ptr->connections)
     {
       connection_ptr = list_entry(connection_node_ptr, struct ladish_graph_connection, siblings);
+
+      if (connection_ptr->hidden)
+      {
+        continue;
+      }
 
       if (!dbus_message_iter_open_container(&connections_array_iter, DBUS_TYPE_STRUCT, NULL, &connection_struct_iter))
       {
@@ -824,6 +830,42 @@ ladish_dict_handle ladish_graph_get_dict(ladish_graph_handle graph_handle)
   return graph_ptr->dict;
 }
 
+void ladish_graph_show_connection(ladish_graph_handle graph_handle, uint64_t connection_id)
+{
+  struct ladish_graph_connection * connection_ptr;
+
+  log_info("ladish_graph_show_connection() called.");
+
+  connection_ptr = ladish_graph_find_connection_by_id(graph_ptr, connection_id);
+  if (connection_ptr == NULL)
+  {
+    ASSERT_NO_PASS;
+    return;
+  }
+
+  ASSERT(graph_ptr->opath != NULL);
+  ASSERT(connection_ptr->hidden);
+  connection_ptr->hidden = false;
+  graph_ptr->graph_version++;
+
+  dbus_signal_emit(
+    g_dbus_connection,
+    graph_ptr->opath,
+    JACKDBUS_IFACE_PATCHBAY,
+    "PortsConnected",
+    "ttstststst",
+    &graph_ptr->graph_version,
+    &connection_ptr->port1_ptr->client_ptr->id,
+    &connection_ptr->port1_ptr->client_ptr->name,
+    &connection_ptr->port1_ptr->id,
+    &connection_ptr->port1_ptr->name,
+    &connection_ptr->port2_ptr->client_ptr->id,
+    &connection_ptr->port2_ptr->client_ptr->name,
+    &connection_ptr->port2_ptr->id,
+    &connection_ptr->port2_ptr->name,
+    &connection_ptr->id);
+}
+
 void ladish_graph_show_port(ladish_graph_handle graph_handle, ladish_port_handle port_handle)
 {
   struct ladish_graph_port * port_ptr;
@@ -1150,6 +1192,13 @@ ladish_graph_add_connection(
     return 0;
   }
 
+  if (!ladish_dict_create(&connection_ptr->dict))
+  {
+    log_error("ladish_dict_create() failed for connection");
+    free(connection_ptr);
+    return 0;
+  }
+
   connection_ptr->id = graph_ptr->next_connection_id++;
   connection_ptr->port1_ptr = port1_ptr;
   connection_ptr->port2_ptr = port2_ptr;
@@ -1218,6 +1267,7 @@ ladish_graph_remove_connection(
       &connection_ptr->id);
   }
 
+  ladish_dict_destroy(connection_ptr->dict);
   free(connection_ptr);
 }
 
@@ -1240,6 +1290,19 @@ ladish_graph_get_connection_ports(
   *port2_handle_ptr = connection_ptr->port2_ptr->port;
 
   return true;
+}
+
+ladish_dict_handle ladish_graph_get_connection_dict(ladish_graph_handle graph_handle, uint64_t connection_id)
+{
+  struct ladish_graph_connection * connection_ptr;
+
+  connection_ptr = ladish_graph_find_connection_by_id(graph_ptr, connection_id);
+  if (connection_ptr == NULL)
+  {
+    return NULL;
+  }
+
+  return connection_ptr->dict;
 }
 
 bool
@@ -1583,6 +1646,28 @@ ladish_graph_iterate_nodes(
   return true;
 }
 
+bool
+ladish_graph_iterate_connections(
+  ladish_graph_handle graph_handle,
+  void * callback_context,
+  bool (* callback)(void * context, ladish_port_handle port1_handle, ladish_port_handle port2_handle, ladish_dict_handle dict))
+{
+  struct list_head * node_ptr;
+  struct ladish_graph_connection * connection_ptr;
+
+  list_for_each(node_ptr, &graph_ptr->connections)
+  {
+    connection_ptr = list_entry(node_ptr, struct ladish_graph_connection, siblings);
+
+    if (!callback(callback_context, connection_ptr->port1_ptr->port, connection_ptr->port2_ptr->port, connection_ptr->dict))
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 static
 bool
 dump_dict_entry(
@@ -1615,6 +1700,8 @@ void ladish_graph_dump(ladish_graph_handle graph_handle)
   struct ladish_graph_client * client_ptr;
   struct list_head * port_node_ptr;
   struct ladish_graph_port * port_ptr;
+  struct list_head * connection_node_ptr;
+  struct ladish_graph_connection * connection_ptr;
 
   log_info("graph %s", graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
   log_info("  version %"PRIu64, graph_ptr->graph_version);
@@ -1633,6 +1720,20 @@ void ladish_graph_dump(ladish_graph_handle graph_handle)
       log_info("        %s port '%s', id=%"PRIu64", type=0x%"PRIX32", flags=0x%"PRIX32", ptr=%p", port_ptr->hidden ? "invisible" : "visible", port_ptr->name, port_ptr->id, port_ptr->type, port_ptr->flags, port_ptr->port);
       dump_dict("        ", ladish_port_get_dict(port_ptr->port));
     }
+  }
+  log_info("  connections:");
+  list_for_each(connection_node_ptr, &graph_ptr->connections)
+  {
+    connection_ptr = list_entry(connection_node_ptr, struct ladish_graph_connection, siblings);
+
+    log_info(
+      "    %s connection '%s':'%s' - '%s':'%s'",
+      connection_ptr->hidden ? "invisible" : "visible",
+      connection_ptr->port1_ptr->client_ptr->name,
+      connection_ptr->port1_ptr->name,
+      connection_ptr->port2_ptr->client_ptr->name,
+      connection_ptr->port2_ptr->name);
+    dump_dict("      ", ladish_port_get_dict(port_ptr->port));
   }
 }
 

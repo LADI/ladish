@@ -47,6 +47,8 @@
 #define PARSE_CONTEXT_PORT                8
 #define PARSE_CONTEXT_DICT                9
 #define PARSE_CONTEXT_KEY                10
+#define PARSE_CONTEXT_CONNECTIONS        11
+#define PARSE_CONTEXT_CONNECTION         12
 
 #define MAX_STACK_DEPTH       10
 #define MAX_DATA_SIZE         1024
@@ -62,6 +64,7 @@ struct parse_context
   ladish_client_handle client;
   ladish_port_handle port;
   ladish_dict_handle dict;
+  uint64_t connection_id;
 };
 
 #define context_ptr ((struct parse_context *)data)
@@ -91,6 +94,9 @@ static void callback_chrdata(void * data, const XML_Char * s, int len)
 static void callback_elstart(void * data, const char * el, const char ** attr)
 {
   uuid_t uuid;
+  uuid_t uuid2;
+  ladish_port_handle port1;
+  ladish_port_handle port2;
 
   if (context_ptr->error)
   {
@@ -375,6 +381,73 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
     return;
   }
 
+  if (strcmp(el, "connections") == 0)
+  {
+    //log_info("<connections>");
+    context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_CONNECTIONS;
+    return;
+  }
+
+  if (strcmp(el, "connection") == 0)
+  {
+    //log_info("<connection>");
+    context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_CONNECTION;
+
+    if (attr[0] == NULL ||
+        attr[1] == NULL ||
+        attr[2] == NULL ||
+        attr[3] == NULL ||
+        attr[4] != NULL ||
+        strcmp(attr[0], "port1") != 0 ||
+        strcmp(attr[2], "port2") != 0)
+    {
+      log_error("studio/connections/connection XML element must contain exactly two attributes, named \"port1\" and \"port2\", in this order");
+      context_ptr->error = XML_TRUE;
+      return;
+    }
+
+    if (uuid_parse(attr[1], uuid) != 0)
+    {
+      log_error("cannot parse uuid \"%s\"", attr[1]);
+      context_ptr->error = XML_TRUE;
+      return;
+    }
+
+    if (uuid_parse(attr[3], uuid2) != 0)
+    {
+      log_error("cannot parse uuid \"%s\"", attr[3]);
+      context_ptr->error = XML_TRUE;
+      return;
+    }
+
+    log_info("studio connection between port %s and port %s", attr[1], attr[3]);
+
+    port1 = ladish_graph_find_port_by_uuid(g_studio.studio_graph, uuid);
+    if (port1 == NULL)
+    {
+      log_error("studio client with unknown port %s", attr[1]);
+      context_ptr->error = XML_TRUE;
+      return;
+    }
+
+    port2 = ladish_graph_find_port_by_uuid(g_studio.studio_graph, uuid2);
+    if (port2 == NULL)
+    {
+      log_error("studio client with unknown port %s", attr[3]);
+      context_ptr->error = XML_TRUE;
+      return;
+    }
+
+    context_ptr->connection_id = ladish_graph_add_connection(g_studio.studio_graph, port1, port2, true);
+    if (context_ptr->connection_id == 0)
+    {
+      log_error("ladish_graph_add_connection() failed.");
+      return;
+    }
+
+    return;
+  }
+
   if (strcmp(el, "dict") == 0)
   {
     //log_info("<dict>");
@@ -405,6 +478,13 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
     {
       ASSERT(context_ptr->port != NULL);
       context_ptr->dict = ladish_port_get_dict(context_ptr->port);
+      ASSERT(context_ptr->dict != NULL);
+    }
+    else if (context_ptr->depth > 0 &&
+             context_ptr->element[context_ptr->depth - 1] == PARSE_CONTEXT_CONNECTION)
+    {
+      ASSERT(context_ptr->port != NULL);
+      context_ptr->dict = ladish_graph_get_connection_dict(g_studio.studio_graph, context_ptr->connection_id);
       ASSERT(context_ptr->dict != NULL);
     }
     else
