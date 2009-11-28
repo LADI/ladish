@@ -42,7 +42,6 @@
 #include "../catdup.h"
 #include "../dbus/error.h"
 #include "dirhelpers.h"
-#include "jack_dispatch.h"
 #include "graph_dict.h"
 #include "escape.h"
 #include "studio_internal.h"

@@ -204,7 +204,7 @@ def build(bld):
         'graph.c',
         'client.c',
         'port.c',
-        'jack_dispatch.c',
+        'virtualizer.c',
         'dict.c',
         'graph_dict.c',
         'escape.c',

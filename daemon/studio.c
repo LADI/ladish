@@ -144,9 +144,9 @@ void on_event_jack_started(void)
   }
   else
   {
-    if (!ladish_jack_dispatcher_create(g_studio.jack_graph_proxy, g_studio.jack_graph, g_studio.studio_graph, &g_studio.jack_dispatcher))
+    if (!ladish_virtualizer_create(g_studio.jack_graph_proxy, g_studio.jack_graph, g_studio.studio_graph, &g_studio.virtualizer))
     {
-      log_error("ladish_jack_dispatcher_create() failed.");
+      log_error("ladish_virtualizer_create() failed.");
     }
 
     if (!graph_proxy_activate(g_studio.jack_graph_proxy))
@@ -169,10 +169,10 @@ void on_event_jack_stopped(void)
     return;
   }
 
-  if (g_studio.jack_dispatcher)
+  if (g_studio.virtualizer)
   {
-    ladish_jack_dispatcher_destroy(g_studio.jack_dispatcher);
-    g_studio.jack_dispatcher = NULL;
+    ladish_virtualizer_destroy(g_studio.virtualizer);
+    g_studio.virtualizer = NULL;
   }
 
   if (g_studio.jack_graph_proxy)

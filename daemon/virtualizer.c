@@ -5,7 +5,7 @@
  * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains implementation of the graph dispatcher object
+ * This file contains implementation of the graph virtualizer object
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -24,10 +24,10 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "jack_dispatch.h"
+#include "virtualizer.h"
 #include "../dbus_constants.h"
 
-struct jack_dispatcher
+struct virtualizer
 {
 
   graph_proxy_handle jack_graph_proxy;
@@ -44,7 +44,7 @@ UUID_DEFINE(g_system_capture_uuid,0x47,0xC1,0xCD,0x18,0x7B,0x21,0x43,0x89,0xBE,0
 /* b2a0bb06-28d8-4bfe-956e-eb24378f9629 */
 UUID_DEFINE(g_system_playback_uuid,0xB2,0xA0,0xBB,0x06,0x28,0xD8,0x4B,0xFE,0x95,0x6E,0xEB,0x24,0x37,0x8F,0x96,0x29);
 
-#define dispatcher_ptr ((struct jack_dispatcher *)context)
+#define virtualizer_ptr ((struct virtualizer *)context)
 
 static void clear(void * context)
 {
@@ -57,13 +57,13 @@ static void client_appeared(void * context, uint64_t id, const char * name)
 
   log_info("client_appeared(%"PRIu64", %s)", id, name);
 
-  client = ladish_graph_find_client_by_name(dispatcher_ptr->jack_graph, name);
+  client = ladish_graph_find_client_by_name(virtualizer_ptr->jack_graph, name);
   if (client != NULL)
   {
     log_info("found existing client");
     ASSERT(ladish_client_get_jack_id(client) == 0); /* two JACK clients with same name? */
     ladish_client_set_jack_id(client, id);
-    ladish_graph_show_client(dispatcher_ptr->jack_graph, client);
+    ladish_graph_show_client(virtualizer_ptr->jack_graph, client);
     goto exit;
   }
 
@@ -75,7 +75,7 @@ static void client_appeared(void * context, uint64_t id, const char * name)
 
   ladish_client_set_jack_id(client, id);
 
-  if (!ladish_graph_add_client(dispatcher_ptr->jack_graph, client, name, false))
+  if (!ladish_graph_add_client(virtualizer_ptr->jack_graph, client, name, false))
   {
     log_error("ladish_graph_add_client() failed to add client %"PRIu64" (%s) to JACK graph", id, name);
     ladish_client_destroy(client);
@@ -85,7 +85,7 @@ static void client_appeared(void * context, uint64_t id, const char * name)
 exit:
   if (strcmp(name, "system") == 0)
   {
-    dispatcher_ptr->system_client_id = id;
+    virtualizer_ptr->system_client_id = id;
   }
 }
 
@@ -95,26 +95,26 @@ static void client_disappeared(void * context, uint64_t id)
 
   log_info("client_disappeared(%"PRIu64")", id);
 
-  client = ladish_graph_find_client_by_jack_id(dispatcher_ptr->jack_graph, id);
+  client = ladish_graph_find_client_by_jack_id(virtualizer_ptr->jack_graph, id);
   if (client == NULL)
   {
     log_error("Unknown JACK client with id %"PRIu64" disappeared", id);
     return;
   }
 
-  if (id == dispatcher_ptr->system_client_id)
+  if (id == virtualizer_ptr->system_client_id)
   {
-    dispatcher_ptr->system_client_id = 0;
+    virtualizer_ptr->system_client_id = 0;
   }
 
   if (true)                     /* if client is supposed to be persisted */
   {
     ladish_client_set_jack_id(client, 0);
-    ladish_graph_hide_client(dispatcher_ptr->jack_graph, client);
+    ladish_graph_hide_client(virtualizer_ptr->jack_graph, client);
   }
   else
   {
-    ladish_graph_remove_client(dispatcher_ptr->jack_graph, client, false);
+    ladish_graph_remove_client(virtualizer_ptr->jack_graph, client, false);
     ladish_client_destroy(client);
   }
 }
@@ -129,14 +129,14 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
 
   log_info("port_appeared(%"PRIu64", %"PRIu64", %s (%s, %s))", client_id, port_id, port_name, is_input ? "in" : "out", is_midi ? "midi" : "audio");
 
-  client = ladish_graph_find_client_by_jack_id(dispatcher_ptr->jack_graph, client_id);
+  client = ladish_graph_find_client_by_jack_id(virtualizer_ptr->jack_graph, client_id);
   if (client == NULL)
   {
     log_error("Port of unknown JACK client with id %"PRIu64" appeared", client_id);
     return;
   }
 
-  jack_client_name = ladish_graph_get_client_name(dispatcher_ptr->jack_graph, client);
+  jack_client_name = ladish_graph_get_client_name(virtualizer_ptr->jack_graph, client);
 
   type = is_midi ? JACKDBUS_PORT_TYPE_MIDI : JACKDBUS_PORT_TYPE_AUDIO;
   flags = is_input ? JACKDBUS_PORT_FLAG_INPUT : JACKDBUS_PORT_FLAG_OUTPUT;
@@ -145,17 +145,17 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
     flags |= JACKDBUS_PORT_FLAG_TERMINAL;
   }
 
-  port = ladish_graph_find_port_by_name(dispatcher_ptr->jack_graph, client, port_name);
+  port = ladish_graph_find_port_by_name(virtualizer_ptr->jack_graph, client, port_name);
   if (port != NULL)
   {
     log_info("found existing port");
 
     ASSERT(ladish_port_get_jack_id(port) == 0); /* two JACK ports with same name? */
     ladish_port_set_jack_id(port, port_id);
-    ladish_graph_adjust_port(dispatcher_ptr->jack_graph, port, type, flags);
-    ladish_graph_show_port(dispatcher_ptr->jack_graph, port);
+    ladish_graph_adjust_port(virtualizer_ptr->jack_graph, port, type, flags);
+    ladish_graph_show_port(virtualizer_ptr->jack_graph, port);
 
-    if (!ladish_graph_is_port_present(dispatcher_ptr->studio_graph, port))
+    if (!ladish_graph_is_port_present(virtualizer_ptr->studio_graph, port))
     {
       log_error("JACK port not found in studio graph");
       ASSERT_NO_PASS;
@@ -163,8 +163,8 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
     }
     else
     {
-      ladish_graph_adjust_port(dispatcher_ptr->studio_graph, port, type, flags);
-      ladish_graph_show_port(dispatcher_ptr->studio_graph, port);
+      ladish_graph_adjust_port(virtualizer_ptr->studio_graph, port, type, flags);
+      ladish_graph_show_port(virtualizer_ptr->studio_graph, port);
       return;
     }
   }
@@ -177,60 +177,60 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
 
   ladish_port_set_jack_id(port, port_id);
 
-  if (!ladish_graph_add_port(dispatcher_ptr->jack_graph, client, port, port_name, type, flags, false))
+  if (!ladish_graph_add_port(virtualizer_ptr->jack_graph, client, port, port_name, type, flags, false))
   {
     log_error("ladish_graph_add_port() failed.");
     ladish_port_destroy(port);
     return;
   }
 
-  if (client_id == dispatcher_ptr->system_client_id)
+  if (client_id == virtualizer_ptr->system_client_id)
   {
     if (!is_input)
     { /* output capture port */
-      if (dispatcher_ptr->system_capture_client == NULL)
+      if (virtualizer_ptr->system_capture_client == NULL)
       {
-        if (!ladish_client_create(g_system_capture_uuid, true, false, true, &dispatcher_ptr->system_capture_client))
+        if (!ladish_client_create(g_system_capture_uuid, true, false, true, &virtualizer_ptr->system_capture_client))
         {
           log_error("ladish_client_create() failed.");
           return;
         }
 
-        if (!ladish_graph_add_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_capture_client, "Hardware Capture", false))
+        if (!ladish_graph_add_client(virtualizer_ptr->studio_graph, virtualizer_ptr->system_capture_client, "Hardware Capture", false))
         {
           log_error("ladish_graph_add_client() failed.");
-          ladish_graph_remove_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_capture_client, true);
-          dispatcher_ptr->system_capture_client = NULL;
+          ladish_graph_remove_client(virtualizer_ptr->studio_graph, virtualizer_ptr->system_capture_client, true);
+          virtualizer_ptr->system_capture_client = NULL;
           return;
         }
       }
 
-      client = dispatcher_ptr->system_capture_client;
+      client = virtualizer_ptr->system_capture_client;
     }
     else
     { /* input capture port */
-      if (dispatcher_ptr->system_playback_client == NULL)
+      if (virtualizer_ptr->system_playback_client == NULL)
       {
-        if (!ladish_client_create(g_system_playback_uuid, true, false, true, &dispatcher_ptr->system_playback_client))
+        if (!ladish_client_create(g_system_playback_uuid, true, false, true, &virtualizer_ptr->system_playback_client))
         {
           log_error("ladish_client_create() failed.");
           return;
         }
 
-        if (!ladish_graph_add_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_playback_client, "Hardware Playback", false))
+        if (!ladish_graph_add_client(virtualizer_ptr->studio_graph, virtualizer_ptr->system_playback_client, "Hardware Playback", false))
         {
-          ladish_graph_remove_client(dispatcher_ptr->studio_graph, dispatcher_ptr->system_playback_client, true);
-          dispatcher_ptr->system_playback_client = NULL;
+          ladish_graph_remove_client(virtualizer_ptr->studio_graph, virtualizer_ptr->system_playback_client, true);
+          virtualizer_ptr->system_playback_client = NULL;
           return;
         }
       }
 
-      client = dispatcher_ptr->system_playback_client;
+      client = virtualizer_ptr->system_playback_client;
     }
   }
   else
   { /* non-system client */
-    client = ladish_graph_find_client_by_jack_id(dispatcher_ptr->studio_graph, client_id);
+    client = ladish_graph_find_client_by_jack_id(virtualizer_ptr->studio_graph, client_id);
     if (client == NULL)
     {
       if (!ladish_client_create(NULL, false, false, false, &client))
@@ -241,7 +241,7 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
 
       ladish_client_set_jack_id(client, client_id);
 
-      if (!ladish_graph_add_client(dispatcher_ptr->studio_graph, client, jack_client_name, false))
+      if (!ladish_graph_add_client(virtualizer_ptr->studio_graph, client, jack_client_name, false))
       {
         log_error("ladish_graph_add_client() failed to add client '%s' to studio graph", jack_client_name);
         ladish_client_destroy(client);
@@ -250,7 +250,7 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
     }
   }
 
-  if (!ladish_graph_add_port(dispatcher_ptr->studio_graph, client, port, port_name, type, flags, false))
+  if (!ladish_graph_add_port(virtualizer_ptr->studio_graph, client, port, port_name, type, flags, false))
   {
     log_error("ladish_graph_add_port() failed.");
     return;
@@ -264,14 +264,14 @@ static void port_disappeared(void * context, uint64_t client_id, uint64_t port_i
 
   log_info("port_disappeared(%"PRIu64")", port_id);
 
-  client = ladish_graph_find_client_by_jack_id(dispatcher_ptr->jack_graph, client_id);
+  client = ladish_graph_find_client_by_jack_id(virtualizer_ptr->jack_graph, client_id);
   if (client == NULL)
   {
     log_error("Port of unknown JACK client with id %"PRIu64" disappeared", client_id);
     return;
   }
 
-  port = ladish_graph_find_port_by_jack_id(dispatcher_ptr->jack_graph, port_id);
+  port = ladish_graph_find_port_by_jack_id(virtualizer_ptr->jack_graph, port_id);
   if (client == NULL)
   {
     log_error("Unknown JACK port with id %"PRIu64" disappeared", port_id);
@@ -281,31 +281,31 @@ static void port_disappeared(void * context, uint64_t client_id, uint64_t port_i
   if (true)                     /* if client is supposed to be persisted */
   {
     ladish_port_set_jack_id(port, 0);
-    ladish_graph_hide_port(dispatcher_ptr->jack_graph, port);
-    ladish_graph_hide_port(dispatcher_ptr->studio_graph, port);
-    client = ladish_graph_get_port_client(dispatcher_ptr->studio_graph, port);
-    if (ladish_graph_is_client_looks_empty(dispatcher_ptr->studio_graph, client))
+    ladish_graph_hide_port(virtualizer_ptr->jack_graph, port);
+    ladish_graph_hide_port(virtualizer_ptr->studio_graph, port);
+    client = ladish_graph_get_port_client(virtualizer_ptr->studio_graph, port);
+    if (ladish_graph_is_client_looks_empty(virtualizer_ptr->studio_graph, client))
     {
-        ladish_graph_hide_client(dispatcher_ptr->studio_graph, client);
+        ladish_graph_hide_client(virtualizer_ptr->studio_graph, client);
     }
   }
   else
   {
-    ladish_graph_remove_port(dispatcher_ptr->jack_graph, port);
+    ladish_graph_remove_port(virtualizer_ptr->jack_graph, port);
 
-    client = ladish_graph_remove_port(dispatcher_ptr->studio_graph, port);
+    client = ladish_graph_remove_port(virtualizer_ptr->studio_graph, port);
     if (client != NULL)
     {
-      if (ladish_graph_is_client_empty(dispatcher_ptr->studio_graph, client))
+      if (ladish_graph_is_client_empty(virtualizer_ptr->studio_graph, client))
       {
-        ladish_graph_remove_client(dispatcher_ptr->studio_graph, client, false);
-        if (client == dispatcher_ptr->system_capture_client)
+        ladish_graph_remove_client(virtualizer_ptr->studio_graph, client, false);
+        if (client == virtualizer_ptr->system_capture_client)
         {
-          dispatcher_ptr->system_capture_client = NULL;
+          virtualizer_ptr->system_capture_client = NULL;
         }
-        if (client == dispatcher_ptr->system_playback_client)
+        if (client == virtualizer_ptr->system_playback_client)
         {
-          dispatcher_ptr->system_playback_client = NULL;
+          virtualizer_ptr->system_playback_client = NULL;
         }
       }
     }
@@ -322,34 +322,34 @@ static void ports_disconnected(void * context, uint64_t client1_id, uint64_t por
   log_info("ports_disconnected");
 }
 
-#undef dispatcher_ptr
+#undef virtualizer_ptr
 
 bool
-ladish_jack_dispatcher_create(
+ladish_virtualizer_create(
   graph_proxy_handle jack_graph_proxy,
   ladish_graph_handle jack_graph,
   ladish_graph_handle studio_graph,
-  ladish_jack_dispatcher_handle * handle_ptr)
+  ladish_virtualizer_handle * handle_ptr)
 {
-  struct jack_dispatcher * dispatcher_ptr;
+  struct virtualizer * virtualizer_ptr;
 
-  dispatcher_ptr = malloc(sizeof(struct jack_dispatcher));
-  if (dispatcher_ptr == NULL)
+  virtualizer_ptr = malloc(sizeof(struct virtualizer));
+  if (virtualizer_ptr == NULL)
   {
-    log_error("malloc() failed for struct jack_dispatcher");
+    log_error("malloc() failed for struct virtualizer");
     return false;
   }
 
-  dispatcher_ptr->jack_graph_proxy = jack_graph_proxy;
-  dispatcher_ptr->jack_graph = jack_graph;
-  dispatcher_ptr->studio_graph = studio_graph;
-  dispatcher_ptr->system_client_id = 0;
-  dispatcher_ptr->system_capture_client = NULL;
-  dispatcher_ptr->system_playback_client = NULL;
+  virtualizer_ptr->jack_graph_proxy = jack_graph_proxy;
+  virtualizer_ptr->jack_graph = jack_graph;
+  virtualizer_ptr->studio_graph = studio_graph;
+  virtualizer_ptr->system_client_id = 0;
+  virtualizer_ptr->system_capture_client = NULL;
+  virtualizer_ptr->system_playback_client = NULL;
 
   if (!graph_proxy_attach(
         jack_graph_proxy,
-        dispatcher_ptr,
+        virtualizer_ptr,
         clear,
         client_appeared,
         client_disappeared,
@@ -358,23 +358,23 @@ ladish_jack_dispatcher_create(
         ports_connected,
         ports_disconnected))
   {
-    free(dispatcher_ptr);
+    free(virtualizer_ptr);
     return false;
   }
 
-  *handle_ptr = (ladish_jack_dispatcher_handle)dispatcher_ptr;
+  *handle_ptr = (ladish_virtualizer_handle)virtualizer_ptr;
   return true;
 }
 
-#define dispatcher_ptr ((struct jack_dispatcher *)handle)
+#define virtualizer_ptr ((struct virtualizer *)handle)
 
 void
-ladish_jack_dispatcher_destroy(
-  ladish_jack_dispatcher_handle handle)
+ladish_virtualizer_destroy(
+  ladish_virtualizer_handle handle)
 {
-  log_info("ladish_jack_dispatcher_destroy() called");
+  log_info("ladish_virtualizer_destroy() called");
 
-  graph_proxy_detach((graph_proxy_handle)handle, dispatcher_ptr);
+  graph_proxy_detach((graph_proxy_handle)handle, virtualizer_ptr);
 }
 
-#undef dispatcher_ptr
+#undef virtualizer_ptr

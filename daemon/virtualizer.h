@@ -31,17 +31,17 @@
 #include "../graph_proxy.h"
 #include "graph.h"
 
-typedef struct ladish_jack_dispatcher { int unused; } * ladish_jack_dispatcher_handle;
+typedef struct ladish_virtualizer { int unused; } * ladish_virtualizer_handle;
 
 bool
-ladish_jack_dispatcher_create(
+ladish_virtualizer_create(
   graph_proxy_handle jack_graph_proxy,
   ladish_graph_handle jack_graph,
   ladish_graph_handle studio_graph,
-  ladish_jack_dispatcher_handle * handle_ptr);
+  ladish_virtualizer_handle * handle_ptr);
 
 void
-ladish_jack_dispatcher_destroy(
-  ladish_jack_dispatcher_handle handle);
+ladish_virtualizer_destroy(
+  ladish_virtualizer_handle handle);
 
 #endif /* #ifndef JACK_DISPATCH_H__C7566B66_081D_4D00_A702_7C18F7CC0735__INCLUDED */
