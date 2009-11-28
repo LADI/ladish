@@ -330,9 +330,28 @@ static bool ports_connect_request(void * context, ladish_graph_handle graph_hand
 
 static bool ports_disconnect_request(void * context, ladish_graph_handle graph_handle, uint64_t connection_id)
 {
-  ASSERT(graph_handle == virtualizer_ptr->studio_graph);
+  ladish_port_handle port1;
+  ladish_port_handle port2;
+  uint64_t port1_id;
+  uint64_t port2_id;
+
   log_info("virtualizer: ports disconnect request");
-  return false;
+
+  ASSERT(graph_handle == virtualizer_ptr->studio_graph);
+
+  if (!ladish_graph_get_connection_ports(virtualizer_ptr->jack_graph, connection_id, &port1, &port2))
+  {
+    log_error("cannot find ports that are disconnect-requested");
+    ASSERT_NO_PASS;
+    return false;
+  }
+
+  port1_id = ladish_port_get_jack_id(port1);
+  port2_id = ladish_port_get_jack_id(port2);
+
+  graph_proxy_disconnect_ports(virtualizer_ptr->jack_graph_proxy, port1_id, port2_id);
+
+  return true;
 }
 
 static void ports_connected(void * context, uint64_t client1_id, uint64_t port1_id, uint64_t client2_id, uint64_t port2_id)
@@ -362,7 +381,43 @@ static void ports_connected(void * context, uint64_t client1_id, uint64_t port1_
 
 static void ports_disconnected(void * context, uint64_t client1_id, uint64_t port1_id, uint64_t client2_id, uint64_t port2_id)
 {
-  log_info("ports_disconnected");
+  ladish_port_handle port1;
+  ladish_port_handle port2;
+  uint64_t connection_id;
+
+  log_info("ports_disconnected %"PRIu64":%"PRIu64" %"PRIu64":%"PRIu64"", client1_id, port1_id, client2_id, port2_id);
+
+  port1 = ladish_graph_find_port_by_jack_id(virtualizer_ptr->jack_graph, port1_id);
+  if (port1 == NULL)
+  {
+    log_error("Unknown JACK port with id %"PRIu64" disconnected", port1_id);
+    return;
+  }
+
+  port2 = ladish_graph_find_port_by_jack_id(virtualizer_ptr->jack_graph, port2_id);
+  if (port2 == NULL)
+  {
+    log_error("Unknown JACK port with id %"PRIu64" disconnected", port2_id);
+    return;
+  }
+
+  if (ladish_graph_find_connection(virtualizer_ptr->jack_graph, port1, port2, &connection_id))
+  {
+    ladish_graph_remove_connection(virtualizer_ptr->jack_graph, connection_id);
+  }
+  else
+  {
+    log_error("ports %"PRIu64":%"PRIu64" and %"PRIu64":%"PRIu64" are not connected in the JACK graph", client1_id, port1_id, client2_id, port2_id);
+  }
+
+  if (ladish_graph_find_connection(virtualizer_ptr->studio_graph, port1, port2, &connection_id))
+  {
+    ladish_graph_remove_connection(virtualizer_ptr->studio_graph, connection_id);
+  }
+  else
+  {
+    log_error("ports %"PRIu64":%"PRIu64" and %"PRIu64":%"PRIu64" are not connected in the Studio graph", client1_id, port1_id, client2_id, port2_id);
+  }
 }
 
 #undef virtualizer_ptr

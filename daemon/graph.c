@@ -96,6 +96,45 @@ struct ladish_graph_port * ladish_graph_find_port_by_id_internal(struct ladish_g
   return NULL;
 }
 
+struct ladish_graph_connection * ladish_graph_find_connection_by_id(struct ladish_graph * graph_ptr, uint64_t connection_id)
+{
+  struct list_head * node_ptr;
+  struct ladish_graph_connection * connection_ptr;
+
+  list_for_each(node_ptr, &graph_ptr->connections)
+  {
+    connection_ptr = list_entry(node_ptr, struct ladish_graph_connection, siblings);
+    if (connection_ptr->id == connection_id)
+    {
+      return connection_ptr;
+    }
+  }
+
+  return NULL;
+}
+
+struct ladish_graph_connection *
+ladish_graph_find_connection_by_ports(
+  struct ladish_graph * graph_ptr,
+  struct ladish_graph_port * port1_ptr,
+  struct ladish_graph_port * port2_ptr)
+{
+  struct list_head * node_ptr;
+  struct ladish_graph_connection * connection_ptr;
+
+  list_for_each(node_ptr, &graph_ptr->connections)
+  {
+    connection_ptr = list_entry(node_ptr, struct ladish_graph_connection, siblings);
+    if ((connection_ptr->port1_ptr == port1_ptr && connection_ptr->port2_ptr == port2_ptr) ||
+        (connection_ptr->port1_ptr == port2_ptr && connection_ptr->port2_ptr == port1_ptr))
+    {
+      return connection_ptr;
+    }
+  }
+
+  return NULL;
+}
+
 #define graph_ptr ((struct ladish_graph *)call_ptr->iface_context)
 
 static void get_all_ports(struct dbus_method_call * call_ptr)
@@ -436,6 +475,25 @@ static void connect_ports_by_id(struct dbus_method_call * call_ptr)
   }
 }
 
+static void disconnect_ports(struct dbus_method_call * call_ptr, struct ladish_graph_connection * connection_ptr)
+{
+  log_info(
+    "disconnecting '%s':'%s' from '%s':'%s'",
+    connection_ptr->port1_ptr->client_ptr->name,
+    connection_ptr->port1_ptr->name,
+    connection_ptr->port2_ptr->client_ptr->name,
+    connection_ptr->port2_ptr->name);
+
+  if (graph_ptr->disconnect_handler(graph_ptr->context, (ladish_graph_handle)graph_ptr, connection_ptr->id))
+  {
+    method_return_new_void(call_ptr);
+  }
+  else
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "connect failed");
+  }
+}
+
 static void disconnect_ports_by_name(struct dbus_method_call * call_ptr)
 {
   log_info("disconnect_ports_by_name() called.");
@@ -446,6 +504,9 @@ static void disconnect_ports_by_id(struct dbus_method_call * call_ptr)
 {
   dbus_uint64_t port1_id;
   dbus_uint64_t port2_id;
+  struct ladish_graph_port * port1_ptr;
+  struct ladish_graph_port * port2_ptr;
+  struct ladish_graph_connection * connection_ptr;
 
   if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_UINT64, &port1_id, DBUS_TYPE_UINT64, &port2_id, DBUS_TYPE_INVALID))
   {
@@ -455,13 +516,59 @@ static void disconnect_ports_by_id(struct dbus_method_call * call_ptr)
   }
 
   log_info("disconnect_ports_by_id(%"PRIu64",%"PRIu64") called.", port1_id, port2_id);
-  lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "disconnect by ports id is not implemented yet");
+
+  if (graph_ptr->disconnect_handler == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "disconnect requests on this graph cannot be handlined");
+    return;
+  }
+
+  port1_ptr = ladish_graph_find_port_by_id_internal(graph_ptr, port1_id);
+  if (port1_ptr == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot disconnect unknown port with id %"PRIu64, port1_id);
+    return;
+  }
+
+  port2_ptr = ladish_graph_find_port_by_id_internal(graph_ptr, port2_id);
+  if (port2_ptr == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot disconnect unknown port with id %"PRIu64, port2_id);
+    return;
+  }
+
+  connection_ptr = ladish_graph_find_connection_by_ports(graph_ptr, port1_ptr, port2_ptr);
+  if (connection_ptr == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot disconnect not connected ports %"PRIu64" and %"PRIu64, port1_id, port2_id);
+    return;
+  }
+
+  disconnect_ports(call_ptr, connection_ptr);
 }
 
 static void disconnect_ports_by_connection_id(struct dbus_method_call * call_ptr)
 {
-  log_info("disconnect_ports_by_connection_id() called.");
-  lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "disconnect by connection id is not implemented yet");
+  dbus_uint64_t connection_id;
+  struct ladish_graph_connection * connection_ptr;
+
+  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_UINT64, &connection_id, DBUS_TYPE_INVALID))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s", call_ptr->method_name, g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return;
+  }
+
+  log_info("disconnect_ports_by_connection_id(%"PRIu64") called.", connection_id);
+
+  connection_ptr = ladish_graph_find_connection_by_id(graph_ptr, connection_id);
+  if (connection_ptr == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot find connection with id %"PRIu64, connection_id);
+    return;
+  }
+
+  disconnect_ports(call_ptr, connection_ptr);
 }
 
 static void get_client_pid(struct dbus_method_call * call_ptr)
@@ -1020,7 +1127,7 @@ ladish_graph_add_port(
   return true;
 }
 
-bool
+uint64_t
 ladish_graph_add_connection(
   ladish_graph_handle graph_handle,
   ladish_port_handle port1_handle,
@@ -1040,7 +1147,7 @@ ladish_graph_add_connection(
   if (connection_ptr == NULL)
   {
     log_error("malloc() failed for struct ladish_graph_connection");
-    return false;
+    return 0;
   }
 
   connection_ptr->id = graph_ptr->next_connection_id++;
@@ -1070,6 +1177,101 @@ ladish_graph_add_connection(
       &port2_ptr->name,
       &connection_ptr->id);
   }
+
+  return connection_ptr->id;
+}
+
+void
+ladish_graph_remove_connection(
+  ladish_graph_handle graph_handle,
+  uint64_t connection_id)
+{
+  struct ladish_graph_connection * connection_ptr;
+
+  connection_ptr = ladish_graph_find_connection_by_id(graph_ptr, connection_id);
+  if (connection_ptr == NULL)
+  {
+    ASSERT_NO_PASS;
+    return;
+  }
+
+  list_del(&connection_ptr->siblings);
+  graph_ptr->graph_version++;
+
+  if (!connection_ptr->hidden && graph_ptr->opath != NULL)
+  {
+    dbus_signal_emit(
+      g_dbus_connection,
+      graph_ptr->opath,
+      JACKDBUS_IFACE_PATCHBAY,
+      "PortsDisconnected",
+      "ttstststst",
+      &graph_ptr->graph_version,
+      &connection_ptr->port1_ptr->client_ptr->id,
+      &connection_ptr->port1_ptr->client_ptr->name,
+      &connection_ptr->port1_ptr->id,
+      &connection_ptr->port1_ptr->name,
+      &connection_ptr->port2_ptr->client_ptr->id,
+      &connection_ptr->port2_ptr->client_ptr->name,
+      &connection_ptr->port2_ptr->id,
+      &connection_ptr->port2_ptr->name,
+      &connection_ptr->id);
+  }
+
+  free(connection_ptr);
+}
+
+bool
+ladish_graph_get_connection_ports(
+  ladish_graph_handle graph_handle,
+  uint64_t connection_id,
+  ladish_port_handle * port1_handle_ptr,
+  ladish_port_handle * port2_handle_ptr)
+{
+  struct ladish_graph_connection * connection_ptr;
+
+  connection_ptr = ladish_graph_find_connection_by_id(graph_ptr, connection_id);
+  if (connection_ptr == NULL)
+  {
+    return false;
+  }
+
+  *port1_handle_ptr = connection_ptr->port1_ptr->port;
+  *port2_handle_ptr = connection_ptr->port2_ptr->port;
+
+  return true;
+}
+
+bool
+ladish_graph_find_connection(
+  ladish_graph_handle graph_handle,
+  ladish_port_handle port1_handle,
+  ladish_port_handle port2_handle,
+  uint64_t * connection_id_ptr)
+{
+  struct ladish_graph_port * port1_ptr;
+  struct ladish_graph_port * port2_ptr;
+  struct ladish_graph_connection * connection_ptr;
+
+  port1_ptr = ladish_graph_find_port(graph_ptr, port1_handle);
+  if (port1_ptr == NULL)
+  {
+    return false;
+  }
+     
+  port2_ptr = ladish_graph_find_port(graph_ptr, port2_handle);
+  if (port1_ptr == NULL)
+  {
+    return false;
+  }
+
+  connection_ptr = ladish_graph_find_connection_by_ports(graph_ptr, port1_ptr, port2_ptr);
+  if (connection_ptr == NULL)
+  {
+    return false;
+  }
+
+  *connection_id_ptr = connection_ptr->id;
 
   return true;
 }
