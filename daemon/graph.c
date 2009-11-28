@@ -706,6 +706,35 @@ ladish_graph_find_client_port(
 }
 #endif
 
+static void ladish_graph_remove_connection_internal(struct ladish_graph * graph_ptr, struct ladish_graph_connection * connection_ptr)
+{
+  list_del(&connection_ptr->siblings);
+  graph_ptr->graph_version++;
+
+  if (!connection_ptr->hidden && graph_ptr->opath != NULL)
+  {
+    dbus_signal_emit(
+      g_dbus_connection,
+      graph_ptr->opath,
+      JACKDBUS_IFACE_PATCHBAY,
+      "PortsDisconnected",
+      "ttstststst",
+      &graph_ptr->graph_version,
+      &connection_ptr->port1_ptr->client_ptr->id,
+      &connection_ptr->port1_ptr->client_ptr->name,
+      &connection_ptr->port1_ptr->id,
+      &connection_ptr->port1_ptr->name,
+      &connection_ptr->port2_ptr->client_ptr->id,
+      &connection_ptr->port2_ptr->client_ptr->name,
+      &connection_ptr->port2_ptr->id,
+      &connection_ptr->port2_ptr->name,
+      &connection_ptr->id);
+  }
+
+  ladish_dict_destroy(connection_ptr->dict);
+  free(connection_ptr);
+}
+
 void
 ladish_graph_remove_port_internal(
   struct ladish_graph * graph_ptr,
@@ -811,8 +840,15 @@ ladish_graph_set_connection_handlers(
 void ladish_graph_clear(ladish_graph_handle graph_handle, bool destroy_ports)
 {
   struct ladish_graph_client * client_ptr;
+  struct ladish_graph_connection * connection_ptr;
 
   log_info("ladish_graph_clear() called for graph '%s'", graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
+
+  while (!list_empty(&graph_ptr->connections))
+  {
+    connection_ptr = list_entry(graph_ptr->connections.next, struct ladish_graph_connection, siblings);
+    ladish_graph_remove_connection_internal(graph_ptr, connection_ptr);
+  }
 
   while (!list_empty(&graph_ptr->clients))
   {
@@ -1248,31 +1284,7 @@ ladish_graph_remove_connection(
     return;
   }
 
-  list_del(&connection_ptr->siblings);
-  graph_ptr->graph_version++;
-
-  if (!connection_ptr->hidden && graph_ptr->opath != NULL)
-  {
-    dbus_signal_emit(
-      g_dbus_connection,
-      graph_ptr->opath,
-      JACKDBUS_IFACE_PATCHBAY,
-      "PortsDisconnected",
-      "ttstststst",
-      &graph_ptr->graph_version,
-      &connection_ptr->port1_ptr->client_ptr->id,
-      &connection_ptr->port1_ptr->client_ptr->name,
-      &connection_ptr->port1_ptr->id,
-      &connection_ptr->port1_ptr->name,
-      &connection_ptr->port2_ptr->client_ptr->id,
-      &connection_ptr->port2_ptr->client_ptr->name,
-      &connection_ptr->port2_ptr->id,
-      &connection_ptr->port2_ptr->name,
-      &connection_ptr->id);
-  }
-
-  ladish_dict_destroy(connection_ptr->dict);
-  free(connection_ptr);
+  ladish_graph_remove_connection_internal(graph_ptr, connection_ptr);
 }
 
 bool
