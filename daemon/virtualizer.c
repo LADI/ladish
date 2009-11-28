@@ -312,6 +312,20 @@ static void port_disappeared(void * context, uint64_t client_id, uint64_t port_i
   }
 }
 
+static bool ports_connect_request(void * context, ladish_graph_handle graph_handle, ladish_port_handle port1, ladish_port_handle port2)
+{
+  ASSERT(graph_handle == virtualizer_ptr->studio_graph);
+  log_info("virtualizer: ports connect request");
+  return false;
+}
+
+static bool ports_disconnect_request(void * context, ladish_graph_handle graph_handle, uint64_t connection_id)
+{
+  ASSERT(graph_handle == virtualizer_ptr->studio_graph);
+  log_info("virtualizer: ports disconnect request");
+  return false;
+}
+
 static void ports_connected(void * context, uint64_t client1_id, uint64_t port1_id, uint64_t client2_id, uint64_t port2_id)
 {
   log_info("ports_connected");
@@ -361,6 +375,8 @@ ladish_virtualizer_create(
     free(virtualizer_ptr);
     return false;
   }
+
+  ladish_graph_set_connection_handlers(studio_graph, virtualizer_ptr, ports_connect_request, ports_disconnect_request);
 
   *handle_ptr = (ladish_virtualizer_handle)virtualizer_ptr;
   return true;

@@ -32,8 +32,31 @@
 
 typedef struct ladish_graph_tag { int unused; } * ladish_graph_handle;
 
+typedef
+bool
+(* ladish_graph_connect_request_handler)(
+  void * context,
+  ladish_graph_handle graph_handle,
+  ladish_port_handle port1,
+  ladish_port_handle port2);
+
+typedef
+bool
+(* ladish_graph_disconnect_request_handler)(
+  void * context,
+  ladish_graph_handle graph_handle,
+  uint64_t connection_id);
+
 bool ladish_graph_create(ladish_graph_handle * graph_handle_ptr, const char * opath);
 void ladish_graph_destroy(ladish_graph_handle graph_handle, bool destroy_ports);
+
+void
+ladish_graph_set_connection_handlers(
+  ladish_graph_handle graph_handle,
+  void * graph_context,
+  ladish_graph_connect_request_handler connect_handler,
+  ladish_graph_disconnect_request_handler disconnect_handler);
+
 void ladish_graph_clear(ladish_graph_handle graph_handle, bool destroy_ports);
 void * ladish_graph_get_dbus_context(ladish_graph_handle graph_handle);
 ladish_dict_handle ladish_graph_get_dict(ladish_graph_handle graph_handle);

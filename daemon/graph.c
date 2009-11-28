@@ -63,6 +63,10 @@ struct ladish_graph
   uint64_t next_client_id;
   uint64_t next_port_id;
   uint64_t next_connection_id;
+
+  void * context;
+  ladish_graph_connect_request_handler connect_handler;
+  ladish_graph_disconnect_request_handler disconnect_handler;
 };
 
 struct ladish_graph_port * ladish_graph_find_port_by_id_internal(struct ladish_graph * graph_ptr, uint64_t port_id)
@@ -392,6 +396,12 @@ static void connect_ports_by_id(struct dbus_method_call * call_ptr)
 
   log_info("connect_ports_by_id(%"PRIu64",%"PRIu64") called.", port1_id, port2_id);
 
+  if (graph_ptr->connect_handler == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "connect requests on this graph cannot be handlined");
+    return;
+  }
+
   port1_ptr = ladish_graph_find_port_by_id_internal(graph_ptr, port1_id);
   if (port1_ptr == NULL)
   {
@@ -408,7 +418,14 @@ static void connect_ports_by_id(struct dbus_method_call * call_ptr)
 
   log_info("connecting '%s':'%s' to '%s':'%s'", port1_ptr->client_ptr->name, port1_ptr->name, port2_ptr->client_ptr->name, port2_ptr->name);
 
-  method_return_new_void(call_ptr);
+  if (graph_ptr->connect_handler(graph_ptr->context, (ladish_graph_handle)graph_ptr, port1_ptr->port, port2_ptr->port))
+  {
+    method_return_new_void(call_ptr);
+  }
+  else
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "connect failed");
+  }
 }
 
 static void disconnect_ports_by_name(struct dbus_method_call * call_ptr)
@@ -421,8 +438,6 @@ static void disconnect_ports_by_id(struct dbus_method_call * call_ptr)
 {
   dbus_uint64_t port1_id;
   dbus_uint64_t port2_id;
-  struct ladish_graph_port * port1_ptr;
-  struct ladish_graph_port * port2_ptr;
 
   if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_UINT64, &port1_id, DBUS_TYPE_UINT64, &port2_id, DBUS_TYPE_INVALID))
   {
@@ -432,24 +447,7 @@ static void disconnect_ports_by_id(struct dbus_method_call * call_ptr)
   }
 
   log_info("disconnect_ports_by_id(%"PRIu64",%"PRIu64") called.", port1_id, port2_id);
-
-  port1_ptr = ladish_graph_find_port_by_id_internal(graph_ptr, port1_id);
-  if (port1_ptr == NULL)
-  {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot disconnect unknown port with id %"PRIu64, port1_id);
-    return;
-  }
-
-  port2_ptr = ladish_graph_find_port_by_id_internal(graph_ptr, port2_id);
-  if (port2_ptr == NULL)
-  {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot disconnect unknown port with id %"PRIu64, port2_id);
-    return;
-  }
-
-  log_info("disconnecting '%s':'%s' to '%s':'%s'", port1_ptr->client_ptr->name, port1_ptr->name, port2_ptr->client_ptr->name, port2_ptr->name);
-
-  method_return_new_void(call_ptr);
+  lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "disconnect by ports id is not implemented yet");
 }
 
 static void disconnect_ports_by_connection_id(struct dbus_method_call * call_ptr)
@@ -510,6 +508,10 @@ bool ladish_graph_create(ladish_graph_handle * graph_handle_ptr, const char * op
   graph_ptr->next_client_id = 1;
   graph_ptr->next_port_id = 1;
   graph_ptr->next_connection_id = 1;
+
+  graph_ptr->context = NULL;
+  graph_ptr->connect_handler = NULL;
+  graph_ptr->disconnect_handler = NULL;
 
   *graph_handle_ptr = (ladish_graph_handle)graph_ptr;
   return true;
@@ -669,6 +671,18 @@ void ladish_graph_destroy(ladish_graph_handle graph_handle, bool destroy_ports)
     free(graph_ptr->opath);
   }
   free(graph_ptr);
+}
+
+void
+ladish_graph_set_connection_handlers(
+  ladish_graph_handle graph_handle,
+  void * graph_context,
+  ladish_graph_connect_request_handler connect_handler,
+  ladish_graph_disconnect_request_handler disconnect_handler)
+{
+  graph_ptr->context = graph_context;
+  graph_ptr->connect_handler = connect_handler;
+  graph_ptr->disconnect_handler = disconnect_handler;
 }
 
 void ladish_graph_clear(ladish_graph_handle graph_handle, bool destroy_ports)
