@@ -61,6 +61,7 @@ struct ladish_graph_connection
   struct ladish_graph_port * port1_ptr;
   struct ladish_graph_port * port2_ptr;
   ladish_dict_handle dict;
+  bool connecting;
 };
 
 struct ladish_graph
@@ -917,6 +918,8 @@ void ladish_graph_show_port(ladish_graph_handle graph_handle, ladish_port_handle
       &port_ptr->name,
       &port_ptr->flags,
       &port_ptr->type);
+
+    ladish_try_connect_hidden_connections(graph_handle);
   }
 }
 
@@ -1203,6 +1206,7 @@ ladish_graph_add_connection(
   connection_ptr->port1_ptr = port1_ptr;
   connection_ptr->port2_ptr = port2_ptr;
   connection_ptr->hidden = hidden;
+  connection_ptr->connecting = false;
   graph_ptr->graph_version++;
 
   list_add_tail(&connection_ptr->siblings, &graph_ptr->connections);
@@ -1578,6 +1582,44 @@ bool ladish_graph_is_client_looks_empty(ladish_graph_handle graph_handle, ladish
   return true;
 }
 
+void ladish_try_connect_hidden_connections(ladish_graph_handle graph_handle)
+{
+  struct list_head * node_ptr;
+  struct ladish_graph_connection * connection_ptr;
+
+  if (graph_ptr->connect_handler == NULL)
+  {
+    ASSERT_NO_PASS;
+    return;
+  }
+
+  ASSERT(graph_ptr->opath != NULL);
+
+  list_for_each(node_ptr, &graph_ptr->connections)
+  {
+    connection_ptr = list_entry(node_ptr, struct ladish_graph_connection, siblings);
+    if (connection_ptr->hidden &&
+        !connection_ptr->connecting &&
+        !connection_ptr->port1_ptr->hidden &&
+        !connection_ptr->port2_ptr->hidden)
+    {
+      log_info(
+        "auto connecting '%s':'%s' to '%s':'%s'",
+        connection_ptr->port1_ptr->client_ptr->name,
+        connection_ptr->port1_ptr->name,
+        connection_ptr->port2_ptr->client_ptr->name,
+        connection_ptr->port2_ptr->name);
+
+      connection_ptr->connecting = true;
+      if (!graph_ptr->connect_handler(graph_ptr->context, graph_handle, connection_ptr->port1_ptr->port, connection_ptr->port2_ptr->port))
+      {
+        connection_ptr->connecting = false;
+        log_error("auto connect failed.");
+      }
+    }
+  }
+}
+
 bool
 ladish_graph_iterate_nodes(
   ladish_graph_handle graph_handle,
@@ -1727,12 +1769,13 @@ void ladish_graph_dump(ladish_graph_handle graph_handle)
     connection_ptr = list_entry(connection_node_ptr, struct ladish_graph_connection, siblings);
 
     log_info(
-      "    %s connection '%s':'%s' - '%s':'%s'",
+      "    %s connection '%s':'%s' - '%s':'%s'%s",
       connection_ptr->hidden ? "invisible" : "visible",
       connection_ptr->port1_ptr->client_ptr->name,
       connection_ptr->port1_ptr->name,
       connection_ptr->port2_ptr->client_ptr->name,
-      connection_ptr->port2_ptr->name);
+      connection_ptr->port2_ptr->name,
+      connection_ptr->connecting ? " [connecting]" : "");
     dump_dict("      ", ladish_port_get_dict(port_ptr->port));
   }
 }
