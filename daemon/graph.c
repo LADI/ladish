@@ -53,12 +53,22 @@ struct ladish_graph_client
   bool hidden;
 };
 
+struct ladish_graph_connection
+{
+  struct list_head siblings;
+  uint64_t id;
+  bool hidden;
+  struct ladish_graph_port * port1_ptr;
+  struct ladish_graph_port * port2_ptr;
+};
+
 struct ladish_graph
 {
   char * opath;
   ladish_dict_handle dict;
   struct list_head clients;
   struct list_head ports;
+  struct list_head connections;
   uint64_t graph_version;
   uint64_t next_client_id;
   uint64_t next_port_id;
@@ -134,7 +144,9 @@ static void get_graph(struct dbus_method_call * call_ptr)
   struct list_head * port_node_ptr;
   struct ladish_graph_port * port_ptr;
   DBusMessageIter port_struct_iter;
-  //DBusMessageIter connection_struct_iter;
+  struct list_head * connection_node_ptr;
+  struct ladish_graph_connection * connection_ptr;
+  DBusMessageIter connection_struct_iter;
 
   //log_info("get_graph() called");
 
@@ -274,52 +286,51 @@ static void get_graph(struct dbus_method_call * call_ptr)
 
   if (known_version < current_version)
   {
-#if 0
-    list_for_each(connection_node_ptr, &patchbay_ptr->graph.connections)
+    list_for_each(connection_node_ptr, &graph_ptr->connections)
     {
-      connection_ptr = list_entry(connection_node_ptr, struct jack_graph_connection, siblings);
+      connection_ptr = list_entry(connection_node_ptr, struct ladish_graph_connection, siblings);
 
       if (!dbus_message_iter_open_container(&connections_array_iter, DBUS_TYPE_STRUCT, NULL, &connection_struct_iter))
       {
         goto nomem_close_connections_array;
       }
 
-      if (!dbus_message_iter_append_basic(&connection_struct_iter, DBUS_TYPE_UINT64, &connection_ptr->port1->client->id))
+      if (!dbus_message_iter_append_basic(&connection_struct_iter, DBUS_TYPE_UINT64, &connection_ptr->port1_ptr->client_ptr->id))
       {
         goto nomem_close_connection_struct;
       }
 
-      if (!dbus_message_iter_append_basic(&connection_struct_iter, DBUS_TYPE_STRING, &connection_ptr->port1->client->name))
+      if (!dbus_message_iter_append_basic(&connection_struct_iter, DBUS_TYPE_STRING, &connection_ptr->port1_ptr->client_ptr->name))
       {
         goto nomem_close_connection_struct;
       }
 
-      if (!dbus_message_iter_append_basic(&connection_struct_iter, DBUS_TYPE_UINT64, &connection_ptr->port1->id))
+      if (!dbus_message_iter_append_basic(&connection_struct_iter, DBUS_TYPE_UINT64, &connection_ptr->port1_ptr->id))
       {
         goto nomem_close_connection_struct;
       }
 
-      if (!dbus_message_iter_append_basic(&connection_struct_iter, DBUS_TYPE_STRING, &connection_ptr->port1->name))
+      if (!dbus_message_iter_append_basic(&connection_struct_iter, DBUS_TYPE_STRING, &connection_ptr->port1_ptr->name))
       {
         goto nomem_close_connection_struct;
       }
 
-      if (!dbus_message_iter_append_basic(&connection_struct_iter, DBUS_TYPE_UINT64, &connection_ptr->port2->client->id))
+      if (!dbus_message_iter_append_basic(&connection_struct_iter, DBUS_TYPE_UINT64, &connection_ptr->port2_ptr->client_ptr->id))
       {
         goto nomem_close_connection_struct;
       }
 
-      if (!dbus_message_iter_append_basic(&connection_struct_iter, DBUS_TYPE_STRING, &connection_ptr->port2->client->name))
+      if (!dbus_message_iter_append_basic(&connection_struct_iter, DBUS_TYPE_STRING, &connection_ptr->port2_ptr->client_ptr->name))
       {
         goto nomem_close_connection_struct;
       }
 
-      if (!dbus_message_iter_append_basic(&connection_struct_iter, DBUS_TYPE_UINT64, &connection_ptr->port2->id))
+      if (!dbus_message_iter_append_basic(&connection_struct_iter, DBUS_TYPE_UINT64, &connection_ptr->port2_ptr->id))
       {
         goto nomem_close_connection_struct;
       }
 
-      if (!dbus_message_iter_append_basic(&connection_struct_iter, DBUS_TYPE_STRING, &connection_ptr->port2->name))
+      if (!dbus_message_iter_append_basic(&connection_struct_iter, DBUS_TYPE_STRING, &connection_ptr->port2_ptr->name))
       {
         goto nomem_close_connection_struct;
       }
@@ -334,7 +345,6 @@ static void get_graph(struct dbus_method_call * call_ptr)
         goto nomem_close_connections_array;
       }
     }
-#endif
   }
 
   if (!dbus_message_iter_close_container(&iter, &connections_array_iter))
@@ -344,14 +354,12 @@ static void get_graph(struct dbus_method_call * call_ptr)
 
   return;
 
-#if 0
 nomem_close_connection_struct:
   dbus_message_iter_close_container(&connections_array_iter, &connection_struct_iter);
 
 nomem_close_connections_array:
   dbus_message_iter_close_container(&iter, &connections_array_iter);
-  goto nomem_unlock;
-#endif
+  goto nomem;
 
 nomem_close_port_struct:
   dbus_message_iter_close_container(&ports_array_iter, &port_struct_iter);
@@ -503,6 +511,7 @@ bool ladish_graph_create(ladish_graph_handle * graph_handle_ptr, const char * op
 
   INIT_LIST_HEAD(&graph_ptr->clients);
   INIT_LIST_HEAD(&graph_ptr->ports);
+  INIT_LIST_HEAD(&graph_ptr->connections);
 
   graph_ptr->graph_version = 1;
   graph_ptr->next_client_id = 1;
@@ -1006,6 +1015,60 @@ ladish_graph_add_port(
       &port_ptr->name,
       &flags,
       &type);
+  }
+
+  return true;
+}
+
+bool
+ladish_graph_add_connection(
+  ladish_graph_handle graph_handle,
+  ladish_port_handle port1_handle,
+  ladish_port_handle port2_handle,
+  bool hidden)
+{
+  struct ladish_graph_port * port1_ptr;
+  struct ladish_graph_port * port2_ptr;
+  struct ladish_graph_connection * connection_ptr;
+
+  port1_ptr = ladish_graph_find_port(graph_ptr, port1_handle);
+  ASSERT(port1_ptr != NULL);
+  port2_ptr = ladish_graph_find_port(graph_ptr, port2_handle);
+  ASSERT(port2_ptr != NULL);
+
+  connection_ptr = malloc(sizeof(struct ladish_graph_connection));
+  if (connection_ptr == NULL)
+  {
+    log_error("malloc() failed for struct ladish_graph_connection");
+    return false;
+  }
+
+  connection_ptr->id = graph_ptr->next_connection_id++;
+  connection_ptr->port1_ptr = port1_ptr;
+  connection_ptr->port2_ptr = port2_ptr;
+  connection_ptr->hidden = hidden;
+  graph_ptr->graph_version++;
+
+  list_add_tail(&connection_ptr->siblings, &graph_ptr->connections);
+
+  if (!hidden && graph_ptr->opath != NULL)
+  {
+    dbus_signal_emit(
+      g_dbus_connection,
+      graph_ptr->opath,
+      JACKDBUS_IFACE_PATCHBAY,
+      "PortsConnected",
+      "ttstststst",
+      &graph_ptr->graph_version,
+      &port1_ptr->client_ptr->id,
+      &port1_ptr->client_ptr->name,
+      &port1_ptr->id,
+      &port1_ptr->name,
+      &port2_ptr->client_ptr->id,
+      &port2_ptr->client_ptr->name,
+      &port2_ptr->id,
+      &port2_ptr->name,
+      &connection_ptr->id);
   }
 
   return true;

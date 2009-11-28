@@ -83,6 +83,13 @@ ladish_graph_remove_port(
   ladish_graph_handle graph_handle,
   ladish_port_handle port_handle);
 
+bool
+ladish_graph_add_connection(
+  ladish_graph_handle graph_handle,
+  ladish_port_handle port1_handle,
+  ladish_port_handle port2_handle,
+  bool hidden);
+
 ladish_client_handle ladish_graph_find_client_by_id(ladish_graph_handle graph_handle, uint64_t client_id);
 ladish_port_handle ladish_graph_find_port_by_id(ladish_graph_handle graph_handle, uint64_t port_id);
 ladish_client_handle ladish_graph_find_client_by_jack_id(ladish_graph_handle graph_handle, uint64_t client_id);
