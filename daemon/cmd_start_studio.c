@@ -45,6 +45,8 @@ static bool run(void * context)
 
     log_info("Starting JACK server.");
 
+    ladish_graph_dump(g_studio.studio_graph);
+
     if (!jack_proxy_start_server())
     {
       log_error("Starting JACK server failed.");

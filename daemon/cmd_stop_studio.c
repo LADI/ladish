@@ -45,6 +45,8 @@ static bool run(void * context)
 
     log_info("Stopping JACK server...");
 
+    ladish_graph_dump(g_studio.studio_graph);
+
     if (!jack_proxy_stop_server())
     {
       log_error("Stopping JACK server failed.");
@@ -64,6 +66,8 @@ static bool run(void * context)
     log_info("Wait for JACK server stop complete.");
 
     ASSERT(!jack_server_started);
+
+    ladish_graph_dump(g_studio.studio_graph);
 
     on_event_jack_stopped();
 

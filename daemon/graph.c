@@ -61,7 +61,7 @@ struct ladish_graph_connection
   struct ladish_graph_port * port1_ptr;
   struct ladish_graph_port * port2_ptr;
   ladish_dict_handle dict;
-  bool connecting;
+  bool changing;
 };
 
 struct ladish_graph
@@ -491,13 +491,15 @@ static void disconnect_ports(struct dbus_method_call * call_ptr, struct ladish_g
     connection_ptr->port2_ptr->client_ptr->name,
     connection_ptr->port2_ptr->name);
 
+  connection_ptr->changing = true;
   if (graph_ptr->disconnect_handler(graph_ptr->context, (ladish_graph_handle)graph_ptr, connection_ptr->id))
   {
     method_return_new_void(call_ptr);
   }
   else
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "connect failed");
+    connection_ptr->changing = false;
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "disconnect failed");
   }
 }
 
@@ -706,6 +708,51 @@ ladish_graph_find_client_port(
 }
 #endif
 
+static void ladish_graph_hide_connection_internal(struct ladish_graph * graph_ptr, struct ladish_graph_connection * connection_ptr)
+{
+  connection_ptr->hidden = true;
+  graph_ptr->graph_version++;
+
+  if (graph_ptr->opath != NULL)
+  {
+    dbus_signal_emit(
+      g_dbus_connection,
+      graph_ptr->opath,
+      JACKDBUS_IFACE_PATCHBAY,
+      "PortsDisconnected",
+      "ttstststst",
+      &graph_ptr->graph_version,
+      &connection_ptr->port1_ptr->client_ptr->id,
+      &connection_ptr->port1_ptr->client_ptr->name,
+      &connection_ptr->port1_ptr->id,
+      &connection_ptr->port1_ptr->name,
+      &connection_ptr->port2_ptr->client_ptr->id,
+      &connection_ptr->port2_ptr->client_ptr->name,
+      &connection_ptr->port2_ptr->id,
+      &connection_ptr->port2_ptr->name,
+      &connection_ptr->id);
+  }
+}
+
+void ladish_hide_connections(struct ladish_graph * graph_ptr, struct ladish_graph_port * port_ptr)
+{
+  struct list_head * node_ptr;
+  struct ladish_graph_connection * connection_ptr;
+
+  ASSERT(graph_ptr->opath != NULL);
+
+  list_for_each(node_ptr, &graph_ptr->connections)
+  {
+    connection_ptr = list_entry(node_ptr, struct ladish_graph_connection, siblings);
+    if (!connection_ptr->hidden &&
+        (connection_ptr->port1_ptr == port_ptr || connection_ptr->port2_ptr == port_ptr) &&
+        (connection_ptr->port1_ptr->hidden || connection_ptr->port2_ptr->hidden))
+    {
+      ladish_graph_hide_connection_internal(graph_ptr, connection_ptr);
+    }
+  }
+}
+
 static void ladish_graph_remove_connection_internal(struct ladish_graph * graph_ptr, struct ladish_graph_connection * connection_ptr)
 {
   list_del(&connection_ptr->siblings);
@@ -883,6 +930,7 @@ void ladish_graph_show_connection(ladish_graph_handle graph_handle, uint64_t con
   ASSERT(graph_ptr->opath != NULL);
   ASSERT(connection_ptr->hidden);
   connection_ptr->hidden = false;
+  connection_ptr->changing = false;
   graph_ptr->graph_version++;
 
   dbus_signal_emit(
@@ -970,6 +1018,11 @@ void ladish_graph_hide_port(ladish_graph_handle graph_handle, ladish_port_handle
   {
     ASSERT_NO_PASS;
     return;
+  }
+
+  if (graph_ptr->opath != NULL)
+  {
+    ladish_hide_connections(graph_ptr, port_ptr);
   }
 
   ASSERT(!port_ptr->hidden);
@@ -1242,7 +1295,7 @@ ladish_graph_add_connection(
   connection_ptr->port1_ptr = port1_ptr;
   connection_ptr->port2_ptr = port2_ptr;
   connection_ptr->hidden = hidden;
-  connection_ptr->connecting = false;
+  connection_ptr->changing = false;
   graph_ptr->graph_version++;
 
   list_add_tail(&connection_ptr->siblings, &graph_ptr->connections);
@@ -1284,7 +1337,16 @@ ladish_graph_remove_connection(
     return;
   }
 
-  ladish_graph_remove_connection_internal(graph_ptr, connection_ptr);
+  if (connection_ptr->changing)
+  {
+    log_info("removing connection");
+    ladish_graph_remove_connection_internal(graph_ptr, connection_ptr);
+  }
+  else
+  {
+    log_info("hiding connection");
+    ladish_graph_hide_connection_internal(graph_ptr, connection_ptr);
+  }
 }
 
 bool
@@ -1611,7 +1673,7 @@ void ladish_try_connect_hidden_connections(ladish_graph_handle graph_handle)
   {
     connection_ptr = list_entry(node_ptr, struct ladish_graph_connection, siblings);
     if (connection_ptr->hidden &&
-        !connection_ptr->connecting &&
+        !connection_ptr->changing &&
         !connection_ptr->port1_ptr->hidden &&
         !connection_ptr->port2_ptr->hidden)
     {
@@ -1622,10 +1684,10 @@ void ladish_try_connect_hidden_connections(ladish_graph_handle graph_handle)
         connection_ptr->port2_ptr->client_ptr->name,
         connection_ptr->port2_ptr->name);
 
-      connection_ptr->connecting = true;
+      connection_ptr->changing = true;
       if (!graph_ptr->connect_handler(graph_ptr->context, graph_handle, connection_ptr->port1_ptr->port, connection_ptr->port2_ptr->port))
       {
-        connection_ptr->connecting = false;
+        connection_ptr->changing = false;
         log_error("auto connect failed.");
       }
     }
@@ -1787,7 +1849,7 @@ void ladish_graph_dump(ladish_graph_handle graph_handle)
       connection_ptr->port1_ptr->name,
       connection_ptr->port2_ptr->client_ptr->name,
       connection_ptr->port2_ptr->name,
-      connection_ptr->connecting ? " [connecting]" : "");
+      connection_ptr->changing ? " [changing]" : "");
     dump_dict("      ", ladish_port_get_dict(port_ptr->port));
   }
 }
