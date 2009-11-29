@@ -955,7 +955,7 @@ void ladish_graph_show_port(ladish_graph_handle graph_handle, ladish_port_handle
 {
   struct ladish_graph_port * port_ptr;
 
-  log_info("ladish_graph_show_port() called.");
+  //log_info("ladish_graph_show_port() called.");
 
   port_ptr = ladish_graph_find_port(graph_ptr, port_handle);
   if (port_ptr == NULL)
@@ -1111,7 +1111,7 @@ void ladish_graph_adjust_port(ladish_graph_handle graph_handle, ladish_port_hand
 {
   struct ladish_graph_port * port_ptr;
 
-  log_info("ladish_graph_adjust_port() called.");
+  //log_info("ladish_graph_adjust_port() called.");
 
   port_ptr = ladish_graph_find_port(graph_ptr, port_handle);
   if (port_ptr == NULL)
@@ -1300,6 +1300,14 @@ ladish_graph_add_connection(
 
   list_add_tail(&connection_ptr->siblings, &graph_ptr->connections);
 
+  /* log_info( */
+  /*   "new connection %"PRIu64" between '%s':'%s' and '%s':'%s'", */
+  /*   connection_ptr->id, */
+  /*   port1_ptr->client_ptr->name, */
+  /*   port1_ptr->name, */
+  /*   port2_ptr->client_ptr->name, */
+  /*   port2_ptr->name); */
+
   if (!hidden && graph_ptr->opath != NULL)
   {
     dbus_signal_emit(
@@ -1339,12 +1347,24 @@ ladish_graph_remove_connection(
 
   if (connection_ptr->changing)
   {
-    log_info("removing connection");
+    /* log_info( */
+    /*   "removing connection '%s':'%s' - '%s':'%s'", */
+    /*   connection_ptr->port1_ptr->client_ptr->name, */
+    /*   connection_ptr->port1_ptr->name, */
+    /*   connection_ptr->port2_ptr->client_ptr->name, */
+    /*   connection_ptr->port2_ptr->name); */
+
     ladish_graph_remove_connection_internal(graph_ptr, connection_ptr);
   }
   else
   {
-    log_info("hiding connection");
+    /* log_info( */
+    /*   "hiding connection '%s':'%s' - '%s':'%s'", */
+    /*   connection_ptr->port1_ptr->client_ptr->name, */
+    /*   connection_ptr->port1_ptr->name, */
+    /*   connection_ptr->port2_ptr->client_ptr->name, */
+    /*   connection_ptr->port2_ptr->name); */
+
     ladish_graph_hide_connection_internal(graph_ptr, connection_ptr);
   }
 }
