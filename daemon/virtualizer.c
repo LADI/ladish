@@ -339,7 +339,7 @@ static bool ports_disconnect_request(void * context, ladish_graph_handle graph_h
 
   ASSERT(graph_handle == virtualizer_ptr->studio_graph);
 
-  if (!ladish_graph_get_connection_ports(virtualizer_ptr->jack_graph, connection_id, &port1, &port2))
+  if (!ladish_graph_get_connection_ports(virtualizer_ptr->studio_graph, connection_id, &port1, &port2))
   {
     log_error("cannot find ports that are disconnect-requested");
     ASSERT_NO_PASS;
