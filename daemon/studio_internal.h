@@ -31,6 +31,7 @@
 #include "../jack_proxy.h"
 #include "../dbus/error.h"
 #include "virtualizer.h"
+#include "app_supervisor.h"
 #include "cmd.h"
 
 #define JACK_CONF_MAX_ADDRESS_SIZE 1024
@@ -137,6 +138,7 @@ struct studio
   ladish_graph_handle jack_graph;
   ladish_graph_handle studio_graph;
   ladish_virtualizer_handle virtualizer;
+  ladish_app_supervisor_handle app_supervisor;
 };
 
 struct jack_conf_parameter

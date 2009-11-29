@@ -79,6 +79,7 @@ studio_publish(void)
     &g_interface_studio, &g_studio,
     &g_interface_patchbay, ladish_graph_get_dbus_context(g_studio.studio_graph),
     &g_iface_graph_dict, g_studio.studio_graph,
+    &g_iface_app_supervisor, g_studio.app_supervisor,
     NULL);
   if (object == NULL)
   {
@@ -280,6 +281,12 @@ bool studio_init(void)
     goto jack_graph_destroy;
   }
 
+  if (!ladish_app_supervisor_create(&g_studio.app_supervisor, STUDIO_OBJECT_PATH))
+  {
+    log_error("ladish_app_supervisor_create() failed.");
+    goto studio_graph_destroy;
+  }
+
   ladish_cqueue_init(&g_studio.cmd_queue);
   ladish_environment_init(&g_studio.env_store);
 
@@ -290,11 +297,13 @@ bool studio_init(void)
         on_jack_server_disappeared))
   {
     log_error("jack_proxy_init() failed.");
-    goto studio_graph_destroy;
+    goto app_supervisor_destroy;
   }
 
   return true;
 
+app_supervisor_destroy:
+  ladish_app_supervisor_destroy(g_studio.app_supervisor);
 studio_graph_destroy:
   ladish_graph_destroy(g_studio.studio_graph, false);
 jack_graph_destroy:

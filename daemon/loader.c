@@ -26,6 +26,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#define LADISH_DEBUG
+
 #include "common.h"
 
 #include <unistd.h>
@@ -135,8 +137,8 @@ loader_childs_bury(void)
 
       list_del(&child_ptr->siblings);
 
-      free(&child_ptr->project_name);
-      free(&child_ptr->argv0);
+      free(child_ptr->project_name);
+      free(child_ptr->argv0);
 
       if (!child_ptr->terminal)
       {
@@ -186,6 +188,7 @@ static void loader_sigchld_handler(int signum)
 
 void loader_init(void (* on_child_exit)(pid_t pid))
 {
+  g_on_child_exit = on_child_exit;
   signal(SIGCHLD, loader_sigchld_handler);
   INIT_LIST_HEAD(&g_childs_list);
 }
@@ -466,7 +469,7 @@ loader_execute(
   }
 
   child_ptr->argv0 = strdup(argv[0]);
-  if (child_ptr->project_name == NULL)
+  if (child_ptr->argv0 == NULL)
   {
     log_error("strdup() failed to duplicate argv[0] '%s'", argv[0]);
     goto free_project_name;
