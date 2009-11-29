@@ -155,18 +155,18 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
     ladish_graph_adjust_port(virtualizer_ptr->jack_graph, port, type, flags);
     ladish_graph_show_port(virtualizer_ptr->jack_graph, port);
 
-    if (!ladish_graph_is_port_present(virtualizer_ptr->studio_graph, port))
+    client = ladish_graph_get_port_client(virtualizer_ptr->studio_graph, port);
+    if (client == NULL)
     {
       log_error("JACK port not found in studio graph");
       ASSERT_NO_PASS;
       return;
     }
-    else
-    {
-      ladish_graph_adjust_port(virtualizer_ptr->studio_graph, port, type, flags);
-      ladish_graph_show_port(virtualizer_ptr->studio_graph, port);
-      return;
-    }
+
+    ladish_client_set_jack_id(client, client_id);
+    ladish_graph_adjust_port(virtualizer_ptr->studio_graph, port, type, flags);
+    ladish_graph_show_port(virtualizer_ptr->studio_graph, port);
+    return;
   }
 
   if (!ladish_port_create(NULL, &port))
