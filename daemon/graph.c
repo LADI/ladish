@@ -1755,9 +1755,19 @@ ladish_graph_iterate_nodes(
       return false;
     }
 
+    if (client_ptr->hidden)
+    {
+      continue;
+    }
+
     list_for_each(port_node_ptr, &client_ptr->ports)
     {
       port_ptr = list_entry(port_node_ptr, struct ladish_graph_port, siblings_client);
+
+      if (port_ptr->hidden)
+      {
+        continue;
+      }
 
       if (!port_callback(
             callback_context,
@@ -1794,6 +1804,11 @@ ladish_graph_iterate_connections(
   list_for_each(node_ptr, &graph_ptr->connections)
   {
     connection_ptr = list_entry(node_ptr, struct ladish_graph_connection, siblings);
+
+    if (connection_ptr->hidden)
+    {
+      continue;
+    }
 
     if (!callback(callback_context, connection_ptr->port1_ptr->port, connection_ptr->port2_ptr->port, connection_ptr->dict))
     {
