@@ -475,6 +475,7 @@ loader_execute(
     goto free_project_name;
   }
 
+  child_ptr->dead = false;
   child_ptr->terminal = run_in_terminal;
   child_ptr->stdout_buffer_ptr = child_ptr->stdout_buffer;
   child_ptr->stderr_buffer_ptr = child_ptr->stderr_buffer;
