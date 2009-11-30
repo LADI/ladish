@@ -35,4 +35,6 @@ bool studio_is_loaded(void);
 bool studios_iterate(void * call_ptr, void * context, bool (* callback)(void * call_ptr, void * context, const char * studio, uint32_t modtime));
 bool studio_delete(void * call_ptr, const char * studio_name);
 
+void studio_on_child_exit(pid_t pid);
+
 #endif /* #ifndef STUDIO_H__0BEDE85E_4FB3_4D74_BC08_C373A22409C0__INCLUDED */

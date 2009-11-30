@@ -327,6 +327,14 @@ void studio_uninit(void)
   log_info("studio object destroy");
 }
 
+void studio_on_child_exit(pid_t pid)
+{
+  if (!ladish_app_supervisor_child_exit(g_studio.app_supervisor, pid))
+  {
+    log_error("non-studio child exit detected. pid is %llu", (unsigned long long)pid);
+  }
+}
+
 bool studio_is_loaded(void)
 {
   return g_studio.dbus_object != NULL;

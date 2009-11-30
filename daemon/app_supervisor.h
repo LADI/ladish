@@ -34,6 +34,8 @@ typedef struct ladish_app_supervisor_tag { int unused; } * ladish_app_supervisor
 bool ladish_app_supervisor_create(ladish_app_supervisor_handle * supervisor_handle_ptr, const char * opath, const char * name);
 void ladish_app_supervisor_destroy(ladish_app_supervisor_handle supervisor_handle);
 
+bool ladish_app_supervisor_child_exit(ladish_app_supervisor_handle supervisor_handle, pid_t pid);
+
 extern const struct dbus_interface_descriptor g_iface_app_supervisor;
 
 #endif /* #ifndef APP_SUPERVISOR_H__712E6589_DCB1_4CE9_9812_4F250D55E8A2__INCLUDED */

@@ -24,6 +24,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <ctype.h>
+
 #include "app_supervisor.h"
 #include "../dbus/error.h"
 #include "../dbus_constants.h"
@@ -35,6 +37,7 @@ struct ladish_app
   uint64_t id;
   char * name;
   char * commandline;
+  pid_t pid;
 };
 
 struct ladish_app_supervisor
@@ -84,6 +87,23 @@ bool ladish_app_supervisor_create(ladish_app_supervisor_handle * supervisor_hand
   return true;
 }
 
+struct ladish_app * ladish_app_supervisor_find_app_by_name(struct ladish_app_supervisor * supervisor_ptr, const char * name)
+{
+  struct list_head * node_ptr;
+  struct ladish_app * app_ptr;
+
+  list_for_each(node_ptr, &supervisor_ptr->applist)
+  {
+    app_ptr = list_entry(node_ptr, struct ladish_app, siblings);
+    if (strcmp(app_ptr->name, name) == 0)
+    {
+      return app_ptr;
+    }
+  }
+
+  return NULL;
+}
+
 #define supervisor_ptr ((struct ladish_app_supervisor *)supervisor_handle)
 
 void ladish_app_supervisor_destroy(ladish_app_supervisor_handle supervisor_handle)
@@ -102,6 +122,28 @@ void ladish_app_supervisor_destroy(ladish_app_supervisor_handle supervisor_handl
   free(supervisor_ptr->name);
   free(supervisor_ptr->opath);
   free(supervisor_ptr);
+}
+
+bool ladish_app_supervisor_child_exit(ladish_app_supervisor_handle supervisor_handle, pid_t pid)
+{
+  struct list_head * node_ptr;
+  struct ladish_app * app_ptr;
+
+  list_for_each(node_ptr, &supervisor_ptr->applist)
+  {
+    app_ptr = list_entry(node_ptr, struct ladish_app, siblings);
+    if (app_ptr->pid == pid)
+    {
+      log_info("exit of studio child '%s' detected.", app_ptr->name);
+      list_del(&app_ptr->siblings);
+      free(app_ptr->name);
+      free(app_ptr->commandline);
+      free(app_ptr);
+      return true;
+    }
+  }
+
+  return false;
 }
 
 #undef supervisor_ptr
@@ -178,24 +220,111 @@ static void run_custom(struct dbus_method_call * call_ptr)
 {
   dbus_bool_t terminal;
   const char * commandline;
-  pid_t pid;
+  const char * name_param;
+  char * name;
+  size_t len;
+  char * end;
+  unsigned int index;
+  struct ladish_app * app_ptr;
 
-  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_BOOLEAN, &terminal, DBUS_TYPE_STRING, &commandline, DBUS_TYPE_INVALID))
+  if (!dbus_message_get_args(
+        call_ptr->message,
+        &g_dbus_error,
+        DBUS_TYPE_BOOLEAN, &terminal,
+        DBUS_TYPE_STRING, &commandline,
+        DBUS_TYPE_STRING, &name_param,
+        DBUS_TYPE_INVALID))
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
     dbus_error_free(&g_dbus_error);
     return;
   }
 
-  log_info("run_custom(%s,'%s') called", terminal ? "terminal" : "shell", commandline);
+  log_info("run_custom('%s', %s, '%s') called", name_param, terminal ? "terminal" : "shell", commandline);
 
-  if (!loader_execute(supervisor_ptr->name, "xxx", "/", terminal, commandline, &pid))
+  if (*name_param)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Execution of '%s' failed",  commandline);
+    /* allocate and copy app name */
+    len = strlen(name_param);
+    name = malloc(len + 100);
+    if (name == NULL)
+    {
+      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "malloc of app name failed");
+      return;
+    }
+
+    strcpy(name, name_param);
+
+    end = name + len;
+  }
+  else
+  {
+    /* allocate app name */
+    len = strlen(commandline) + 100;
+    name = malloc(len);
+    if (name == NULL)
+    {
+      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "malloc of app name failed");
+      return;
+    }
+
+    strcpy(name, commandline);
+
+    /* use first word as name */
+    end = name;
+    while (*end)
+    {
+      if (isspace(*end))
+      {
+        *end = 0;
+        break;
+      }
+
+      end++;
+    }
+  }
+
+  /* make the app name unique */
+  index = 2;
+  while (ladish_app_supervisor_find_app_by_name(supervisor_ptr, name) != NULL)
+  {
+    sprintf(end, "-%u", index);
+    index++;
+  }
+
+  app_ptr = malloc(sizeof(struct ladish_app));
+  if (app_ptr == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "malloc of struct ladish_app failed");
+    free(name);
     return;
   }
 
-  log_info("pid is %lu", (unsigned long)pid);
+  app_ptr->id = supervisor_ptr->next_id++;
+  app_ptr->name = name;
+  app_ptr->commandline = strdup(commandline);
+  app_ptr->pid = 0;
+  if (app_ptr->commandline == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup() failed for commandline");
+    free(app_ptr);
+    free(name);
+    return;
+  }
+
+  list_add_tail(&app_ptr->siblings, &supervisor_ptr->applist);
+
+  if (!loader_execute(supervisor_ptr->name, name, "/", terminal, commandline, &app_ptr->pid))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Execution of '%s' failed",  commandline);
+    list_del(&app_ptr->siblings);
+    free(app_ptr->commandline);
+    free(app_ptr);
+    free(name);
+    return;
+  }
+
+  log_info("%s pid is %lu", app_ptr->name, (unsigned long)app_ptr->pid);
 
   method_return_new_void(call_ptr);
 }
@@ -210,6 +339,7 @@ METHOD_ARGS_END
 METHOD_ARGS_BEGIN(RunCustom, "Start application by supplying commandline")
   METHOD_ARG_DESCRIBE_IN("terminal", "b", "Whether to run in terminal")
   METHOD_ARG_DESCRIBE_IN("commandline", "s", "Commandline")
+  METHOD_ARG_DESCRIBE_IN("name", "s", "Name")
 METHOD_ARGS_END
 
 METHODS_BEGIN

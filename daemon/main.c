@@ -182,11 +182,6 @@ static void disconnect_dbus(void)
   dbus_connection_unref(g_dbus_connection);
 }
 
-static void on_child_exit(pid_t pid)
-{
-  //client_disconnected(server_find_client_by_pid(child_ptr->pid));
-}
-
 void term_signal_handler(int signum)
 {
   log_info("Caught signal %d (%s), terminating", signum, strsignal(signum));
@@ -269,7 +264,7 @@ int main(int argc, char ** argv, char ** envp)
     goto exit;
   }
 
-  loader_init(on_child_exit);
+  loader_init(studio_on_child_exit);
 
   if (!connect_dbus())
   {
