@@ -281,7 +281,7 @@ bool studio_init(void)
     goto jack_graph_destroy;
   }
 
-  if (!ladish_app_supervisor_create(&g_studio.app_supervisor, STUDIO_OBJECT_PATH))
+  if (!ladish_app_supervisor_create(&g_studio.app_supervisor, STUDIO_OBJECT_PATH, "studio"))
   {
     log_error("ladish_app_supervisor_create() failed.");
     goto studio_graph_destroy;

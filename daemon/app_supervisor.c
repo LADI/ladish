@@ -39,13 +39,14 @@ struct ladish_app
 
 struct ladish_app_supervisor
 {
+  char * name;
   char * opath;
   uint64_t version;
   uint64_t next_id;
   struct list_head applist;
 };
 
-bool ladish_app_supervisor_create(ladish_app_supervisor_handle * supervisor_handle_ptr, const char * opath)
+bool ladish_app_supervisor_create(ladish_app_supervisor_handle * supervisor_handle_ptr, const char * opath, const char * name)
 {
   struct ladish_app_supervisor * supervisor_ptr;
 
@@ -60,6 +61,15 @@ bool ladish_app_supervisor_create(ladish_app_supervisor_handle * supervisor_hand
   if (supervisor_ptr->opath == NULL)
   {
     log_error("strdup() failed for app supervisor opath");
+    free(supervisor_ptr);
+    return false;
+  }
+
+  supervisor_ptr->name = strdup(name);
+  if (supervisor_ptr->name == NULL)
+  {
+    log_error("strdup() failed for app supervisor name");
+    free(supervisor_ptr->opath);
     free(supervisor_ptr);
     return false;
   }
@@ -89,6 +99,8 @@ void ladish_app_supervisor_destroy(ladish_app_supervisor_handle supervisor_handl
     free(app_ptr);
   }
 
+  free(supervisor_ptr->name);
+  free(supervisor_ptr->opath);
   free(supervisor_ptr);
 }
 
@@ -166,7 +178,6 @@ static void run_custom(struct dbus_method_call * call_ptr)
 {
   dbus_bool_t terminal;
   const char * commandline;
-  const char * argv[4];
   pid_t pid;
 
   if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_BOOLEAN, &terminal, DBUS_TYPE_STRING, &commandline, DBUS_TYPE_INVALID))
@@ -178,21 +189,7 @@ static void run_custom(struct dbus_method_call * call_ptr)
 
   log_info("run_custom(%s,'%s') called", terminal ? "terminal" : "shell", commandline);
 
-  if (terminal)
-  {
-    argv[0] = "xterm";
-    argv[1] = "-e";
-  }
-  else
-  {
-    argv[0] = "sh";
-    argv[1] = "-c";
-  }
-
-  argv[2] = commandline;
-  argv[3] = NULL;
-
-  if (!loader_execute(argv, "/", "xxx", false, &pid))
+  if (!loader_execute(supervisor_ptr->name, "xxx", "/", terminal, commandline, &pid))
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Execution of '%s' failed",  commandline);
     return;

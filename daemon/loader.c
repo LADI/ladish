@@ -46,7 +46,7 @@ struct loader_child
   struct list_head  siblings;
 
   char * project_name;
-  char * argv0;
+  char * app_name;
 
   bool dead;
   pid_t pid;
@@ -92,7 +92,7 @@ static
 void
 loader_check_line_repeat_end(
   char * project,
-  char * argv0,
+  char * app_name,
   bool error,
   unsigned int last_line_repeat_count)
 {
@@ -100,11 +100,11 @@ loader_check_line_repeat_end(
   {
     if (error)
     {
-      log_error_plain("%s:%s: stderr line repeated %u times", project, argv0, last_line_repeat_count);
+      log_error_plain("%s:%s: stderr line repeated %u times", project, app_name, last_line_repeat_count);
     }
     else
     {
-      log_info("%s:%s: stdout line repeated %u times", project, argv0, last_line_repeat_count);
+      log_info("%s:%s: stdout line repeated %u times", project, app_name, last_line_repeat_count);
     }
   }
 }
@@ -123,22 +123,22 @@ loader_childs_bury(void)
     {
       loader_check_line_repeat_end(
         child_ptr->project_name,
-        child_ptr->argv0,
+        child_ptr->app_name,
         false,
         child_ptr->stdout_last_line_repeat_count);
 
       loader_check_line_repeat_end(
         child_ptr->project_name,
-        child_ptr->argv0,
+        child_ptr->app_name,
         true,
         child_ptr->stderr_last_line_repeat_count);
 
-      log_debug("Bury child '%s' with PID %llu", child_ptr->argv0, (unsigned long long)child_ptr->pid);
+      log_debug("Bury child '%s' with PID %llu", child_ptr->app_name, (unsigned long long)child_ptr->pid);
 
       list_del(&child_ptr->siblings);
 
       free(child_ptr->project_name);
-      free(child_ptr->argv0);
+      free(child_ptr->app_name);
 
       if (!child_ptr->terminal)
       {
@@ -168,7 +168,7 @@ static void loader_sigchld_handler(int signum)
     }
     else
     {
-      log_info("LASH loader detected termination of child process '%s' with PID %llu", child_ptr->argv0, (unsigned long long)pid);
+      log_info("LASH loader detected termination of child process '%s' with PID %llu", child_ptr->app_name, (unsigned long long)pid);
     }
 
     if (WIFEXITED(status))
@@ -198,6 +198,7 @@ void loader_uninit(void)
   loader_childs_bury();
 }
 
+#if 0
 static void loader_exec_program_in_xterm(const char * const * argv)
 {
   char * dst_ptr;
@@ -238,9 +239,12 @@ static void loader_exec_program_in_xterm(const char * const * argv)
 
   exit(1);
 }
+#endif
 
-static void loader_exec_program(const char * const * argv, const char * working_dir, bool run_in_terminal)
+static void loader_exec_program(const char * commandline, const char * working_dir, bool run_in_terminal)
 {
+  const char * argv[4];
+
   /* for non terminal processes we use forkpty() that calls login_tty() that calls setsid() */
   /* we can successful call setsid() only once */
   if (run_in_terminal)
@@ -258,44 +262,26 @@ static void loader_exec_program(const char * const * argv, const char * working_
     log_error("Could not change directory to working dir '%s' for program '%s': %s", working_dir, argv[0], strerror(errno));
   }
 
-#ifdef LASH_DEBUG
-  char *ptr;
-  const char * const * aptr;
-  size_t len = 0;
-
-  for (aptr = argv; *aptr; ++aptr)
-  {
-    len += strlen(*aptr) + 1;
-  }
-
-  char buf[len];
-  ptr = (char *) buf;
-
-  for (aptr = argv; *aptr; ++aptr)
-  {
-    strcpy(ptr, *aptr);
-    ptr += strlen(*aptr);
-    *ptr = ' ';
-    ++ptr;
-  }
-  *ptr = '\0';
-
-  log_debug("Running command: %s", buf);
-#endif
-
-  log_info("Executing program '%s' with PID %llu", argv[0], (unsigned long long)getpid());
-
   if (run_in_terminal)
   {
-    loader_exec_program_in_xterm(argv);
+    argv[0] = "xterm";
+    argv[1] = "-e";
   }
   else
   {
-    /* Execute it */
-    execvp(argv[0], (char **)argv);
-
-    log_error("Executing program '%s' failed: %s", argv[0], strerror(errno));
+    argv[0] = "sh";
+    argv[1] = "-c";
   }
+
+  argv[2] = commandline;
+  argv[3] = NULL;
+
+  log_info("Executing '%s' with PID %llu", commandline, (unsigned long long)getpid());
+
+  /* Execute it */
+  execvp(argv[0], (char **)argv);
+
+  log_error("Executing program '%s' failed: %s", argv[0], strerror(errno));
 
   exit(1);
 }
@@ -304,7 +290,7 @@ static
 void
 loader_read_child_output(
   char * project,
-  char * argv0,
+  char * app_name,
   int fd,
   bool error,
   char * buffer_ptr,
@@ -337,11 +323,11 @@ loader_read_child_output(
           {
             if (error)
             {
-              log_error_plain("%s:%s: last stderr line repeating..", project, argv0);
+              log_error_plain("%s:%s: last stderr line repeating..", project, app_name);
             }
             else
             {
-              log_info("%s:%s: last stdout line repeating...", project, argv0);
+              log_info("%s:%s: last stdout line repeating...", project, app_name);
             }
           }
 
@@ -349,18 +335,18 @@ loader_read_child_output(
         }
         else
         {
-          loader_check_line_repeat_end(project, argv0, error, *last_line_repeat_count);
+          loader_check_line_repeat_end(project, app_name, error, *last_line_repeat_count);
 
           strcpy(last_line, char_ptr);
           *last_line_repeat_count = 1;
 
           if (error)
           {
-            log_error_plain("%s:%s: %s", project, argv0, char_ptr);
+            log_error_plain("%s:%s: %s", project, app_name, char_ptr);
           }
           else
           {
-            log_info("%s:%s: %s", project, argv0, char_ptr);
+            log_info("%s:%s: %s", project, app_name, char_ptr);
           }
         }
 
@@ -379,11 +365,11 @@ loader_read_child_output(
 
           if (error)
           {
-            log_error_plain("%s:%s: %s " ANSI_RESET ANSI_COLOR_RED "(truncated) " ANSI_RESET, project, argv0, char_ptr);
+            log_error_plain("%s:%s: %s " ANSI_RESET ANSI_COLOR_RED "(truncated) " ANSI_RESET, project, app_name, char_ptr);
           }
           else
           {
-            log_info("%s:%s: %s " ANSI_RESET ANSI_COLOR_RED "(truncated) " ANSI_RESET, project, argv0, char_ptr);
+            log_info("%s:%s: %s " ANSI_RESET ANSI_COLOR_RED "(truncated) " ANSI_RESET, project, app_name, char_ptr);
           }
 
           left = 0;
@@ -414,7 +400,7 @@ loader_read_childs_output(void)
     {
       loader_read_child_output(
         child_ptr->project_name,
-        child_ptr->argv0,
+        child_ptr->app_name,
         child_ptr->stdout,
         false,
         child_ptr->stdout_buffer,
@@ -424,7 +410,7 @@ loader_read_childs_output(void)
 
       loader_read_child_output(
         child_ptr->project_name,
-        child_ptr->argv0,
+        child_ptr->app_name,
         child_ptr->stderr,
         true,
         child_ptr->stderr_buffer,
@@ -444,10 +430,11 @@ loader_run(void)
 
 bool
 loader_execute(
-  const char * const * argv,
-  const char * working_dir,
   const char * project_name,
+  const char * app_name,
+  const char * working_dir,
   bool run_in_terminal,
+  const char * commandline,
   pid_t * pid_ptr)
 {
   pid_t pid;
@@ -468,10 +455,10 @@ loader_execute(
     goto free_struct;
   }
 
-  child_ptr->argv0 = strdup(argv[0]);
-  if (child_ptr->argv0 == NULL)
+  child_ptr->app_name = strdup(app_name);
+  if (child_ptr->app_name == NULL)
   {
-    log_error("strdup() failed to duplicate argv[0] '%s'", argv[0]);
+    log_error("strdup() failed to duplicate app name '%s'", app_name);
     goto free_project_name;
   }
 
@@ -517,7 +504,7 @@ loader_execute(
 
   if (pid == -1)
   {
-    log_error("Could not fork to exec program '%s': %s", argv[0], strerror(errno));
+    log_error("Could not fork to exec program %s:%s: %s", project_name, app_name, strerror(errno));
     list_del(&child_ptr->siblings); /* fork failed so it is not really a child process to watch for. */
     return false;
   }
@@ -543,7 +530,7 @@ loader_execute(
       dup2(stderr_pipe[1], fileno(stderr));
     }
 
-    loader_exec_program(argv, working_dir, run_in_terminal);
+    loader_exec_program(commandline, working_dir, run_in_terminal);
 
     return false;  /* We should never get here */
   }
@@ -562,7 +549,7 @@ loader_execute(
     }
   }
 
-  log_info("Forked to run program '%s' pid = %llu", argv[0], (unsigned long long)pid);
+  log_info("Forked to run program %s:%s pid = %llu", project_name, app_name, (unsigned long long)pid);
 
   *pid_ptr = child_ptr->pid = pid;
 

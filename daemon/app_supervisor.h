@@ -31,7 +31,7 @@
 
 typedef struct ladish_app_supervisor_tag { int unused; } * ladish_app_supervisor_handle;
 
-bool ladish_app_supervisor_create(ladish_app_supervisor_handle * supervisor_handle_ptr, const char * opath);
+bool ladish_app_supervisor_create(ladish_app_supervisor_handle * supervisor_handle_ptr, const char * opath, const char * name);
 void ladish_app_supervisor_destroy(ladish_app_supervisor_handle supervisor_handle);
 
 extern const struct dbus_interface_descriptor g_iface_app_supervisor;

@@ -31,10 +31,11 @@ void loader_init(void (* on_child_exit)(pid_t pid));
 
 bool
 loader_execute(
-  const char * const * argv,
-  const char * working_dir,
   const char * project_name,
+  const char * app_name,
+  const char * working_dir,
   bool run_in_terminal,
+  const char * commandline,
   pid_t * pid_ptr);
 
 void loader_run(void);
