@@ -57,14 +57,15 @@ GtkWidget * g_menu_item_rename_studio;
 GtkWidget * g_menu_item_create_room;
 GtkWidget * g_menu_item_destroy_room;
 GtkWidget * g_menu_item_load_project;
-GtkWidget * g_menu_item_start_app;
 GtkWidget * g_menu_item_daemon_exit;
 GtkWidget * g_menu_item_jack_configure;
 GtkWidget * g_studio_status_label;
 GtkWidget * g_menu_item_view_toolbar;
 GtkWidget * g_toolbar;
+GtkWidget * g_menu_item_start_app;
 
 GtkWidget * g_name_dialog;
+GtkWidget * g_app_dialog;
 
 graph_view_handle g_jack_view = NULL;
 graph_view_handle g_studio_view = NULL;
@@ -222,6 +223,32 @@ void error_message_box(const char * failed_operation)
   gtk_widget_show(dialog);
   gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_hide(dialog);
+}
+
+void run_custom_command_dialog(void)
+{
+  guint result;
+  GtkEntry * command_entry = GTK_ENTRY(get_glade_widget("app_command_entry"));
+  GtkEntry * name_entry = GTK_ENTRY(get_glade_widget("app_name_entry"));
+  GtkToggleButton * terminal_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_terminal_check_button"));
+  /* GtkToggleButton * level0_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level0")); */
+  /* GtkToggleButton * level1_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level1")); */
+  /* GtkToggleButton * level2_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level2")); */
+  /* GtkToggleButton * level3_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level3")); */
+
+  gtk_entry_set_text(name_entry, "");
+  gtk_entry_set_text(command_entry, "");
+  gtk_toggle_button_set_active(terminal_button, FALSE);
+
+  gtk_widget_show(g_app_dialog);
+
+  result = gtk_dialog_run(GTK_DIALOG(g_app_dialog));
+  if (result == 2)
+  {
+    log_info("'%s':'%s' %s", gtk_entry_get_text(name_entry), gtk_entry_get_text(command_entry), gtk_toggle_button_get_active(terminal_button) ? "terminal" : "shell");
+  }
+
+  gtk_widget_hide(g_app_dialog);
 }
 
 static void arrange(void)
@@ -392,6 +419,11 @@ static void new_studio(void)
   }
 }
 
+static void start_app(void)
+{
+  run_custom_command_dialog();
+}
+
 static void start_studio(void)
 {
   log_info("start studio request");
@@ -469,10 +501,10 @@ void control_proxy_on_studio_appeared(void)
   gtk_widget_set_sensitive(g_menu_item_save_studio, true);
   gtk_widget_set_sensitive(g_menu_item_unload_studio, true);
   gtk_widget_set_sensitive(g_menu_item_rename_studio, true);
+  gtk_widget_set_sensitive(g_menu_item_start_app, true);
   //gtk_widget_set_sensitive(g_menu_item_create_room, true);
   //gtk_widget_set_sensitive(g_menu_item_destroy_room, true);
   //gtk_widget_set_sensitive(g_menu_item_load_project, true);
-  //gtk_widget_set_sensitive(g_menu_item_start_app, true);
 
   gtk_label_set_text(GTK_LABEL(g_studio_status_label), name);
 
@@ -496,10 +528,10 @@ void control_proxy_on_studio_disappeared(void)
   gtk_widget_set_sensitive(g_menu_item_save_studio, false);
   gtk_widget_set_sensitive(g_menu_item_unload_studio, false);
   gtk_widget_set_sensitive(g_menu_item_rename_studio, false);
+  gtk_widget_set_sensitive(g_menu_item_start_app, false);
   //gtk_widget_set_sensitive(g_menu_item_create_room, false);
   //gtk_widget_set_sensitive(g_menu_item_destroy_room, false);
   //gtk_widget_set_sensitive(g_menu_item_load_project, false);
-  //gtk_widget_set_sensitive(g_menu_item_start_app, false);
 
   gtk_label_set_text(GTK_LABEL(g_studio_status_label), "No studio loaded");
 
@@ -643,6 +675,7 @@ int main(int argc, char** argv)
   g_xrun_progress_bar = get_glade_widget("xrun_progress_bar");
   g_buffer_size_combo = get_glade_widget("buffer_size_combo");
   g_menu_item_new_studio = get_glade_widget("menu_item_new_studio");
+  g_menu_item_start_app = get_glade_widget("menu_item_start_app");
   g_menu_item_start_studio = get_glade_widget("menu_item_start_studio");
   g_menu_item_stop_studio = get_glade_widget("menu_item_stop_studio");
   g_menu_item_save_studio = get_glade_widget("menu_item_save_studio");
@@ -651,7 +684,6 @@ int main(int argc, char** argv)
   g_menu_item_create_room = get_glade_widget("menu_item_create_room");
   g_menu_item_destroy_room = get_glade_widget("menu_item_destroy_room");
   g_menu_item_load_project = get_glade_widget("menu_item_load_project");
-  g_menu_item_start_app = get_glade_widget("menu_item_start_app");
   g_menu_item_daemon_exit = get_glade_widget("menu_item_daemon_exit");
   g_menu_item_jack_configure = get_glade_widget("menu_item_jack_configure");
   g_studio_status_label = get_glade_widget("studio_status_label");
@@ -659,6 +691,7 @@ int main(int argc, char** argv)
   g_toolbar = get_glade_widget("toolbar");
 
   g_name_dialog = get_glade_widget("name_dialog");
+  g_app_dialog = get_glade_widget("app_dialog");
 
   init_studio_list(&g_load_studio_list, "menu_item_load_studio", "load_studio_menu", on_load_studio);
   init_studio_list(&g_delete_studio_list, "menu_item_delete_studio", "delete_studio_menu", on_delete_studio);
@@ -702,6 +735,7 @@ int main(int argc, char** argv)
   g_signal_connect(G_OBJECT(g_menu_item_daemon_exit), "activate", G_CALLBACK(daemon_exit), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_jack_configure), "activate", G_CALLBACK(jack_configure), NULL);
   g_signal_connect(G_OBJECT(get_glade_widget("menu_item_help_about")), "activate", G_CALLBACK(show_about), NULL);
+  g_signal_connect(G_OBJECT(g_menu_item_start_app), "activate", G_CALLBACK(start_app), NULL);
 
   gtk_widget_show(g_main_win);
 
