@@ -70,7 +70,11 @@ GtkWidget * get_glade_widget(const char * name)
 
   ptr = GTK_WIDGET(glade_xml_get_widget(g_glade, name));
 
-  ASSERT(ptr != NULL);
+  if (ptr == NULL)
+  {
+    log_error("glade object with id '%s' not found", name);
+    ASSERT_NO_PASS;
+  }
 
   return ptr;
 }
