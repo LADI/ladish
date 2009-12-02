@@ -41,6 +41,7 @@
 #include "../catdup.h"
 #include "../studio_proxy.h"
 #include "ask_dialog.h"
+#include "app_supervisor_proxy.h"
 
 GtkWidget * g_main_win;
 
@@ -246,6 +247,10 @@ void run_custom_command_dialog(void)
   if (result == 2)
   {
     log_info("'%s':'%s' %s", gtk_entry_get_text(name_entry), gtk_entry_get_text(command_entry), gtk_toggle_button_get_active(terminal_button) ? "terminal" : "shell");
+    if (!app_run_custom(g_studio_view, gtk_entry_get_text(command_entry), gtk_entry_get_text(name_entry), gtk_toggle_button_get_active(terminal_button)))
+    {
+      error_message_box("Execution failed. I know you want to know more for the reson but currently you can only check the log file.");
+    }
   }
 
   gtk_widget_hide(g_app_dialog);
@@ -490,7 +495,7 @@ void control_proxy_on_studio_appeared(void)
     goto free_name;
   }
 
-  if (!create_view(name, SERVICE_NAME, STUDIO_OBJECT_PATH, true, false, &g_studio_view))
+  if (!create_view(name, SERVICE_NAME, STUDIO_OBJECT_PATH, true, true, false, &g_studio_view))
   {
     log_error("create_view() failed for studio");
     goto free_name;
@@ -578,7 +583,7 @@ void jack_appeared(void)
   log_info("JACK appeared");
 
 #if defined(SHOW_RAW_JACK)
-  if (!create_view("Raw JACK", JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, false, true, &g_jack_view))
+  if (!create_view("Raw JACK", JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, false, false, true, &g_jack_view))
   {
     log_error("create_view() failed for jack");
     return;

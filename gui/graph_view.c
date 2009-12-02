@@ -28,6 +28,7 @@
 #include "graph_view.h"
 #include "glade.h"
 #include "world_tree.h"
+#include "app_supervisor_proxy.h"
 
 struct graph_view
 {
@@ -36,6 +37,7 @@ struct graph_view
   graph_canvas_handle graph_canvas;
   graph_proxy_handle graph;
   GtkWidget * canvas_widget;
+  ladish_app_supervisor_proxy_handle app_supervisor;
 };
 
 struct list_head g_views;
@@ -56,6 +58,7 @@ create_view(
   const char * service,
   const char * object,
   bool graph_dict_supported,
+  bool app_supervisor_supported,
   bool force_activate,
   graph_view_handle * handle_ptr)
 {
@@ -75,9 +78,21 @@ create_view(
     goto free_view;
   }
 
+  if (app_supervisor_supported)
+  {
+    if (!ladish_app_supervisor_proxy_create(service, object, &view_ptr->app_supervisor))
+    {
+      goto free_name;
+    }
+  }
+  else
+  {
+    view_ptr->app_supervisor = NULL;
+  }
+
   if (!graph_proxy_create(service, object, graph_dict_supported, &view_ptr->graph))
   {
-    goto free_name;
+    goto free_app_supervisor;
   }
 
   if (!graph_canvas_create(1600 * 2, 1200 * 2, &view_ptr->graph_canvas))
@@ -113,6 +128,11 @@ destroy_graph_canvas:
   graph_canvas_destroy(view_ptr->graph_canvas);
 destroy_graph:
   graph_proxy_destroy(view_ptr->graph);
+free_app_supervisor:
+  if (view_ptr->app_supervisor != NULL)
+  {
+    ladish_app_supervisor_proxy_destroy(view_ptr->app_supervisor);
+  }
 free_name:
   free(view_ptr->name);
 free_view:
@@ -177,6 +197,12 @@ void destroy_view(graph_view_handle view)
   graph_canvas_detach(view_ptr->graph_canvas);
   graph_canvas_destroy(view_ptr->graph_canvas);
   graph_proxy_destroy(view_ptr->graph);
+
+  if (view_ptr->app_supervisor != NULL)
+  {
+    ladish_app_supervisor_proxy_destroy(view_ptr->app_supervisor);
+  }
+
   free(view_ptr->name);
   free(view_ptr);
 }
@@ -224,4 +250,9 @@ canvas_handle get_current_canvas()
   }
 
   return graph_canvas_get_canvas(g_current_view->graph_canvas);
+}
+
+bool app_run_custom(graph_view_handle view, const char * command, const char * name, bool run_in_terminal)
+{
+  return ladish_app_supervisor_proxy_run_custom(view_ptr->app_supervisor, command, name, run_in_terminal);
 }

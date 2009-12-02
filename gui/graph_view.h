@@ -39,6 +39,7 @@ create_view(
   const char * service,
   const char * object,
   bool graph_dict_supported,
+  bool app_supervisor_supported,
   bool force_activate,
   graph_view_handle * handle_ptr);
 
@@ -47,6 +48,8 @@ void activate_view(graph_view_handle view);
 const char * get_view_name(graph_view_handle view);
 bool set_view_name(graph_view_handle view, const char * name);
 canvas_handle get_current_canvas();
+
+bool app_run_custom(graph_view_handle view, const char * command, const char * name, bool run_in_terminal);
 
 /* not very good place for this prototype, because it is not implemented in graph_view.c */
 void set_main_window_title(graph_view_handle view);
