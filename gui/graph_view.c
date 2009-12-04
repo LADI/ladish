@@ -54,12 +54,14 @@ void view_init(void)
 
 static void app_added(void * context, uint64_t id, const char * name, bool running, bool terminal, uint8_t level)
 {
-  log_info("app added. id=%"PRIu64", name='%s', %srunning, %s, level %u", id, name, running ? "" : "not ", terminal ? "terminal" : "shell", (unsigned int)level);
+  //log_info("app added. id=%"PRIu64", name='%s', %srunning, %s, level %u", id, name, running ? "" : "not ", terminal ? "terminal" : "shell", (unsigned int)level);
+  world_tree_name_add_app(context, id, name, running, terminal, level);
 }
 
 static void app_removed(void * context, uint64_t id)
 {
-  log_info("app removed. id=%"PRIu64, id);
+  //log_info("app removed. id=%"PRIu64, id);
+  world_tree_name_remove_app(context, id);
 }
 
 bool
@@ -88,21 +90,11 @@ create_view(
     goto free_view;
   }
 
-  if (app_supervisor_supported)
-  {
-    if (!ladish_app_supervisor_proxy_create(service, object, view_ptr, app_added, app_removed, &view_ptr->app_supervisor))
-    {
-      goto free_name;
-    }
-  }
-  else
-  {
-    view_ptr->app_supervisor = NULL;
-  }
+  view_ptr->app_supervisor = NULL;
 
   if (!graph_proxy_create(service, object, graph_dict_supported, &view_ptr->graph))
   {
-    goto free_app_supervisor;
+    goto free_name;
   }
 
   if (!graph_canvas_create(1600 * 2, 1200 * 2, &view_ptr->graph_canvas))
@@ -115,11 +107,6 @@ create_view(
     goto destroy_graph_canvas;
   }
 
-  if (!graph_proxy_activate(view_ptr->graph))
-  {
-    goto detach_graph_canvas;
-  }
-
   view_ptr->canvas_widget = canvas_get_widget(graph_canvas_get_canvas(view_ptr->graph_canvas));
 
   list_add_tail(&view_ptr->siblings, &g_views);
@@ -128,21 +115,34 @@ create_view(
 
   world_tree_add((graph_view_handle)view_ptr, force_activate);
 
+  if (app_supervisor_supported)
+  {
+    if (!ladish_app_supervisor_proxy_create(service, object, view_ptr, app_added, app_removed, &view_ptr->app_supervisor))
+    {
+      goto detach_graph_canvas;
+    }
+  }
+
+  if (!graph_proxy_activate(view_ptr->graph))
+  {
+    goto free_app_supervisor;
+  }
+
   *handle_ptr = (graph_view_handle)view_ptr;
 
   return true;
 
+free_app_supervisor:
+  if (view_ptr->app_supervisor != NULL)
+  {
+    ladish_app_supervisor_proxy_destroy(view_ptr->app_supervisor);
+  }
 detach_graph_canvas:
   graph_canvas_detach(view_ptr->graph_canvas);
 destroy_graph_canvas:
   graph_canvas_destroy(view_ptr->graph_canvas);
 destroy_graph:
   graph_proxy_destroy(view_ptr->graph);
-free_app_supervisor:
-  if (view_ptr->app_supervisor != NULL)
-  {
-    ladish_app_supervisor_proxy_destroy(view_ptr->app_supervisor);
-  }
 free_name:
   free(view_ptr->name);
 free_view:

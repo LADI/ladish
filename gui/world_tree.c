@@ -379,10 +379,18 @@ project_list::set_lash_availability(
 }
 #endif
 
+enum entry_type
+{
+  entry_type_view,
+  entry_type_app
+};
+
 enum
 {
-  COL_VIEW = 0,
+  COL_TYPE = 0,
   COL_NAME,
+  COL_VIEW,
+  COL_ID,
   NUM_COLS
 };
 
@@ -404,10 +412,13 @@ on_select(
   if (gtk_tree_model_get_iter(model, &iter, path))
   {
     gtk_tree_model_get(model, &iter, COL_VIEW, &view, -1);
-    //lash_info("%s is going to be %s.", get_view_name(view), path_currently_selected ? "unselected" : "selected");
-    if (!path_currently_selected)
+    if (view != NULL)
     {
-      activate_view(view);
+      //lash_info("%s is going to be %s.", get_view_name(view), path_currently_selected ? "unselected" : "selected");
+      if (!path_currently_selected)
+      {
+        activate_view(view);
+      }
     }
   }
 
@@ -430,7 +441,7 @@ void world_tree_init(void)
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_tree_view_column_add_attribute(col, renderer, "text", COL_NAME);
 
-  g_treestore = gtk_tree_store_new(NUM_COLS, G_TYPE_POINTER, G_TYPE_STRING);
+  g_treestore = gtk_tree_store_new(NUM_COLS, G_TYPE_INT, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_UINT64);
   gtk_tree_view_set_model(GTK_TREE_VIEW(g_world_tree_widget), GTK_TREE_MODEL(g_treestore));
 
   selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(g_world_tree_widget));
@@ -442,7 +453,7 @@ void world_tree_add(graph_view_handle view, bool force_activate)
   GtkTreeIter iter;
 
   gtk_tree_store_append(g_treestore, &iter, NULL);
-  gtk_tree_store_set(g_treestore, &iter, COL_VIEW, view, COL_NAME, get_view_name(view), -1);
+  gtk_tree_store_set(g_treestore, &iter, COL_TYPE, entry_type_view, COL_VIEW, view, COL_NAME, get_view_name(view), -1);
 
   /* select the first top level item */
   if (force_activate || gtk_tree_model_iter_n_children(GTK_TREE_MODEL(g_treestore), NULL) == 1)
@@ -499,4 +510,76 @@ void world_tree_name_changed(graph_view_handle view)
   {
     gtk_tree_store_set(g_treestore, &iter, COL_NAME, get_view_name(view), -1);
   }
+}
+
+void world_tree_name_add_app(graph_view_handle view, uint64_t id, const char * app_name, bool running, bool terminal, uint8_t level)
+{
+  GtkTreeIter iter;
+  const char * view_name;
+  GtkTreeIter child;
+  GtkTreePath * path;
+
+  if (!find_view(view, &iter))
+  {
+    ASSERT_NO_PASS;
+    return;
+  }
+
+  path = gtk_tree_model_get_path(GTK_TREE_MODEL(g_treestore), &iter);
+
+  gtk_tree_model_get(GTK_TREE_MODEL(g_treestore), &iter, COL_NAME, &view_name, -1);
+
+  log_info("adding app '%s' to '%s'", app_name, view_name);
+
+  gtk_tree_store_append(g_treestore, &child, &iter);
+  gtk_tree_store_set(g_treestore, &child, COL_TYPE, entry_type_app, COL_NAME, app_name, COL_ID, id, -1);
+  gtk_tree_view_expand_row(GTK_TREE_VIEW(g_world_tree_widget), path, false);
+
+  gtk_tree_path_free(path);
+}
+
+void world_tree_name_remove_app(graph_view_handle view, uint64_t id)
+{
+  GtkTreeIter iter;
+  GtkTreeIter child;
+  const char * view_name;
+  uint64_t id2;
+  const char * app_name;
+  GtkTreePath * path;
+
+  if (!find_view(view, &iter))
+  {
+    ASSERT_NO_PASS;
+    return;
+  }
+
+  path = gtk_tree_model_get_path(GTK_TREE_MODEL(g_treestore), &iter);
+
+  gtk_tree_model_get(GTK_TREE_MODEL(g_treestore), &iter, COL_NAME, &view_name, -1);
+
+  log_info("removing app from '%s'", view_name);
+
+  if (!gtk_tree_model_iter_children(GTK_TREE_MODEL(g_treestore), &child, &iter))
+  {
+    log_error("view has no children");
+    goto free_path;
+  }
+
+  do
+  {
+    gtk_tree_model_get(GTK_TREE_MODEL(g_treestore), &child, COL_NAME, &app_name, COL_ID, &id2, -1);
+    if (id == id2)
+    {
+      //log_info("found '%s'", app_name);
+      gtk_tree_view_expand_row(GTK_TREE_VIEW(g_world_tree_widget), path, false);
+      gtk_tree_store_remove(g_treestore, &child);
+      goto free_path;
+    }
+  }
+  while (gtk_tree_model_iter_next(GTK_TREE_MODEL(g_treestore), &child));
+
+  log_error("removed app not found");
+
+free_path:
+  gtk_tree_path_free(path);
 }
