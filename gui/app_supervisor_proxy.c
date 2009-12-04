@@ -34,9 +34,197 @@ struct ladish_app_supervisor_proxy
   char * service;
   char * object;
   uint64_t version;
+
+  void * context;
+  void (* app_added)(void * context, uint64_t id, const char * name, bool running, bool terminal, uint8_t level);
+  void (* app_removed)(void * context, uint64_t id);
 };
 
-bool ladish_app_supervisor_proxy_create(const char * service, const char * object, ladish_app_supervisor_proxy_handle * handle_ptr)
+static const char * g_signals[] =
+{
+  "AppAdded",
+  "AppRemoved",
+  "AppStateChanged",
+  NULL
+};
+
+#define proxy_ptr ((struct ladish_app_supervisor_proxy *)proxy)
+
+static
+DBusHandlerResult
+message_hook(
+  DBusConnection * connection,
+  DBusMessage * message,
+  void * proxy)
+{
+  const char * object_path;
+  uint64_t new_list_version;
+  uint64_t id;
+  const char * name;
+  dbus_bool_t running;
+  dbus_bool_t terminal;
+  uint8_t level;
+
+  object_path = dbus_message_get_path(message);
+  if (object_path == NULL || strcmp(object_path, proxy_ptr->object) != 0)
+  {
+    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+  }
+
+  if (dbus_message_is_signal(message, IFACE_APP_SUPERVISOR, "AppAdded"))
+  {
+    if (!dbus_message_get_args(
+          message,
+          &g_dbus_error,
+          DBUS_TYPE_UINT64, &new_list_version,
+          DBUS_TYPE_UINT64, &id,
+          DBUS_TYPE_STRING, &name,
+          DBUS_TYPE_BOOLEAN, &running,
+          DBUS_TYPE_BOOLEAN, &terminal,
+          DBUS_TYPE_BYTE, &level,
+          DBUS_TYPE_INVALID))
+    {
+      log_error("dbus_message_get_args() failed to extract AppAdded signal arguments (%s)", g_dbus_error.message);
+      dbus_error_free(&g_dbus_error);
+      return DBUS_HANDLER_RESULT_HANDLED;
+    }
+
+    //log_info("AppAdded signal received. id=%"PRIu64", name='%s', %srunning, %s, level %u", id, name, running ? "" : "not ", terminal ? "terminal" : "shell", (unsigned int)level);
+    proxy_ptr->app_added(proxy_ptr->context, id, name, running, terminal, level);
+    return DBUS_HANDLER_RESULT_HANDLED;
+  }
+
+  if (dbus_message_is_signal(message, IFACE_APP_SUPERVISOR, "AppRemoved"))
+  {
+    if (!dbus_message_get_args(
+          message,
+          &g_dbus_error,
+          DBUS_TYPE_UINT64, &new_list_version,
+          DBUS_TYPE_UINT64, &id,
+          DBUS_TYPE_INVALID))
+    {
+      log_error("dbus_message_get_args() failed to extract AppRemoved signal arguments (%s)", g_dbus_error.message);
+      dbus_error_free(&g_dbus_error);
+      return DBUS_HANDLER_RESULT_HANDLED;
+    }
+
+    //log_info("AppRemoved signal received, id=%"PRIu64, id);
+    proxy_ptr->app_removed(proxy_ptr->context, id);
+    return DBUS_HANDLER_RESULT_HANDLED;
+  }
+
+  if (dbus_message_is_signal(message, IFACE_APP_SUPERVISOR, "AppStateChanged"))
+  {
+    if (!dbus_message_get_args(
+          message,
+          &g_dbus_error,
+          DBUS_TYPE_UINT64, &new_list_version,
+          DBUS_TYPE_UINT64, &id,
+          DBUS_TYPE_STRING, &name,
+          DBUS_TYPE_BOOLEAN, &running,
+          DBUS_TYPE_BOOLEAN, &terminal,
+          DBUS_TYPE_BYTE, &level,
+          DBUS_TYPE_INVALID))
+    {
+      log_error("dbus_message_get_args() failed to extract AppStateChanged signal arguments (%s)", g_dbus_error.message);
+      dbus_error_free(&g_dbus_error);
+      return DBUS_HANDLER_RESULT_HANDLED;
+    }
+
+    log_info("AppStateChanged signal received");
+    return DBUS_HANDLER_RESULT_HANDLED;
+  }
+
+  return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+#undef proxy_ptr
+
+static void refresh_internal(struct ladish_app_supervisor_proxy * proxy_ptr, bool force)
+{
+  DBusMessage* reply_ptr;
+  DBusMessageIter iter;
+  dbus_uint64_t version;
+  const char * reply_signature;
+  DBusMessageIter array_iter;
+  DBusMessageIter struct_iter;
+  uint64_t id;
+  const char * name;
+  dbus_bool_t running;
+  dbus_bool_t terminal;
+  uint8_t level;
+
+  log_info("refresh_internal() called");
+
+  version = proxy_ptr->version;
+
+  if (!dbus_call(proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "GetAll", "t", &version, NULL, &reply_ptr))
+  {
+    log_error("GetAll() failed.");
+    return;
+  }
+
+  reply_signature = dbus_message_get_signature(reply_ptr);
+
+  if (strcmp(reply_signature, "ta(tsbby)") != 0)
+  {
+    log_error("GetAll() reply signature mismatch. '%s'", reply_signature);
+    goto unref;
+  }
+
+  dbus_message_iter_init(reply_ptr, &iter);
+
+  //log_info_msg("version " + (char)dbus_message_iter_get_arg_type(&iter));
+  dbus_message_iter_get_basic(&iter, &version);
+  dbus_message_iter_next(&iter);
+
+  if (!force && version <= proxy_ptr->version)
+  {
+    goto unref;
+  }
+
+  //log_info("got new list version %llu", (unsigned long long)version);
+  proxy_ptr->version = version;
+
+  for (dbus_message_iter_recurse(&iter, &array_iter);
+       dbus_message_iter_get_arg_type(&array_iter) != DBUS_TYPE_INVALID;
+       dbus_message_iter_next(&array_iter))
+  {
+    dbus_message_iter_recurse(&array_iter, &struct_iter);
+
+    dbus_message_iter_get_basic(&struct_iter, &id);
+    dbus_message_iter_next(&struct_iter);
+
+    dbus_message_iter_get_basic(&struct_iter, &name);
+    dbus_message_iter_next(&struct_iter);
+
+    dbus_message_iter_get_basic(&struct_iter, &running);
+    dbus_message_iter_next(&struct_iter);
+
+    dbus_message_iter_get_basic(&struct_iter, &terminal);
+    dbus_message_iter_next(&struct_iter);
+
+    dbus_message_iter_get_basic(&struct_iter, &level);
+    dbus_message_iter_next(&struct_iter);
+
+    //log_info("App id=%"PRIu64", name='%s', %srunning, %s, level %u", id, name, running ? "" : "not ", terminal ? "terminal" : "shell", (unsigned int)level);
+    proxy_ptr->app_added(proxy_ptr->context, id, name, running, terminal, level);
+
+    dbus_message_iter_next(&struct_iter);
+  }
+
+unref:
+  dbus_message_unref(reply_ptr);
+}
+
+bool
+ladish_app_supervisor_proxy_create(
+  const char * service,
+  const char * object,
+  void * context,
+  void (* app_added)(void * context, uint64_t id, const char * name, bool running, bool terminal, uint8_t level),
+  void (* app_removed)(void * context, uint64_t id),
+  ladish_app_supervisor_proxy_handle * handle_ptr)
 {
   struct ladish_app_supervisor_proxy * proxy_ptr;
 
@@ -63,6 +251,24 @@ bool ladish_app_supervisor_proxy_create(const char * service, const char * objec
 
   proxy_ptr->version = 0;
 
+  proxy_ptr->context = context;
+  proxy_ptr->app_added = app_added;
+  proxy_ptr->app_removed = app_removed;
+
+  if (!dbus_register_object_signal_handler(
+        g_dbus_connection,
+        proxy_ptr->service,
+        proxy_ptr->object,
+        IFACE_APP_SUPERVISOR,
+        g_signals,
+        message_hook,
+        proxy_ptr))
+  {
+    return false;
+  }
+
+  refresh_internal(proxy_ptr, true);
+
   *handle_ptr = (ladish_app_supervisor_proxy_handle)proxy_ptr;
 
   return true;
@@ -81,6 +287,15 @@ fail:
 
 void ladish_app_supervisor_proxy_destroy(ladish_app_supervisor_proxy_handle proxy)
 {
+  dbus_unregister_object_signal_handler(
+    g_dbus_connection,
+    proxy_ptr->service,
+    proxy_ptr->object,
+    IFACE_APP_SUPERVISOR,
+    g_signals,
+    message_hook,
+    proxy_ptr);
+
   free(proxy_ptr->object);
   free(proxy_ptr->service);
   free(proxy_ptr);

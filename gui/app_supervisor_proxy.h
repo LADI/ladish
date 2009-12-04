@@ -31,7 +31,15 @@
 
 typedef struct ladish_app_supervisor_proxy_tag { int unused; } * ladish_app_supervisor_proxy_handle;
 
-bool ladish_app_supervisor_proxy_create(const char * service, const char * object, ladish_app_supervisor_proxy_handle * proxy_ptr);
+bool
+ladish_app_supervisor_proxy_create(
+  const char * service,
+  const char * object,
+  void * context,
+  void (* app_added)(void * context, uint64_t id, const char * name, bool running, bool terminal, uint8_t level),
+  void (* app_removed)(void * context, uint64_t id),
+  ladish_app_supervisor_proxy_handle * proxy_ptr);
+
 void ladish_app_supervisor_proxy_destroy(ladish_app_supervisor_proxy_handle proxy);
 bool ladish_app_supervisor_proxy_run_custom(ladish_app_supervisor_proxy_handle proxy, const char * command, const char * name, bool run_in_terminal);
 
