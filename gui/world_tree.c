@@ -27,6 +27,7 @@
 #include "common.h"
 #include "world_tree.h"
 #include "glade.h"
+#include "../catdup.h"
 
 #if 0
 #include <iostream>
@@ -464,20 +465,49 @@ void world_tree_add(graph_view_handle view, bool force_activate)
 
 static bool find_view(graph_view_handle view, GtkTreeIter * iter_ptr)
 {
+  gint type;
   graph_view_handle view2;
 
   if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(g_treestore), iter_ptr))
   {
     do
     {
-      gtk_tree_model_get(GTK_TREE_MODEL(g_treestore), iter_ptr, COL_VIEW, &view2, -1);
-      if (view == view2)
+      gtk_tree_model_get(GTK_TREE_MODEL(g_treestore), iter_ptr, COL_TYPE, &type, COL_VIEW, &view2, -1);
+      if (type == entry_type_view && view == view2)
       {
         return true;
       }
     }
     while (gtk_tree_model_iter_next(GTK_TREE_MODEL(g_treestore), iter_ptr));
   }
+
+  return false;
+}
+
+static bool find_app(graph_view_handle view, uint64_t id, GtkTreeIter * view_iter_ptr, GtkTreeIter * app_iter_ptr)
+{
+  gint type;
+  uint64_t id2;
+
+  if (!find_view(view, view_iter_ptr))
+  {
+    return false;
+  }
+
+  if (!gtk_tree_model_iter_children(GTK_TREE_MODEL(g_treestore), app_iter_ptr, view_iter_ptr))
+  {
+    return false;
+  }
+
+  do
+  {
+    gtk_tree_model_get(GTK_TREE_MODEL(g_treestore), app_iter_ptr, COL_TYPE, &type, COL_ID, &id2, -1);
+    if (type == entry_type_app && id == id2)
+    {
+      return true;
+    }
+  }
+  while (gtk_tree_model_iter_next(GTK_TREE_MODEL(g_treestore), app_iter_ptr));
 
   return false;
 }
@@ -512,12 +542,27 @@ void world_tree_name_changed(graph_view_handle view)
   }
 }
 
-void world_tree_name_add_app(graph_view_handle view, uint64_t id, const char * app_name, bool running, bool terminal, uint8_t level)
+static char * get_app_name_string(const char * app_name, bool running, bool terminal, uint8_t level)
+{
+  char * app_name_with_status;
+
+  app_name_with_status = catdup(running ? "" : "(inactive) ", app_name);
+  if (app_name_with_status == NULL)
+  {
+    log_error("catdup failed for app name");
+    return NULL;
+  }
+
+  return app_name_with_status;
+}
+
+void world_tree_add_app(graph_view_handle view, uint64_t id, const char * app_name, bool running, bool terminal, uint8_t level)
 {
   GtkTreeIter iter;
   const char * view_name;
   GtkTreeIter child;
   GtkTreePath * path;
+  char * app_name_with_status;
 
   if (!find_view(view, &iter))
   {
@@ -531,55 +576,80 @@ void world_tree_name_add_app(graph_view_handle view, uint64_t id, const char * a
 
   log_info("adding app '%s' to '%s'", app_name, view_name);
 
-  gtk_tree_store_append(g_treestore, &child, &iter);
-  gtk_tree_store_set(g_treestore, &child, COL_TYPE, entry_type_app, COL_NAME, app_name, COL_ID, id, -1);
-  gtk_tree_view_expand_row(GTK_TREE_VIEW(g_world_tree_widget), path, false);
-
-  gtk_tree_path_free(path);
-}
-
-void world_tree_name_remove_app(graph_view_handle view, uint64_t id)
-{
-  GtkTreeIter iter;
-  GtkTreeIter child;
-  const char * view_name;
-  uint64_t id2;
-  const char * app_name;
-  GtkTreePath * path;
-
-  if (!find_view(view, &iter))
+  app_name_with_status = get_app_name_string(app_name, running, terminal, level);
+  if (app_name_with_status == NULL)
   {
-    ASSERT_NO_PASS;
-    return;
-  }
-
-  path = gtk_tree_model_get_path(GTK_TREE_MODEL(g_treestore), &iter);
-
-  gtk_tree_model_get(GTK_TREE_MODEL(g_treestore), &iter, COL_NAME, &view_name, -1);
-
-  log_info("removing app from '%s'", view_name);
-
-  if (!gtk_tree_model_iter_children(GTK_TREE_MODEL(g_treestore), &child, &iter))
-  {
-    log_error("view has no children");
     goto free_path;
   }
 
-  do
-  {
-    gtk_tree_model_get(GTK_TREE_MODEL(g_treestore), &child, COL_NAME, &app_name, COL_ID, &id2, -1);
-    if (id == id2)
-    {
-      //log_info("found '%s'", app_name);
-      gtk_tree_view_expand_row(GTK_TREE_VIEW(g_world_tree_widget), path, false);
-      gtk_tree_store_remove(g_treestore, &child);
-      goto free_path;
-    }
-  }
-  while (gtk_tree_model_iter_next(GTK_TREE_MODEL(g_treestore), &child));
+  gtk_tree_store_append(g_treestore, &child, &iter);
+  gtk_tree_store_set(g_treestore, &child, COL_TYPE, entry_type_app, COL_NAME, app_name_with_status, COL_ID, id, -1);
+  gtk_tree_view_expand_row(GTK_TREE_VIEW(g_world_tree_widget), path, false);
 
-  log_error("removed app not found");
-
+  free(app_name_with_status);
 free_path:
+  gtk_tree_path_free(path);
+}
+
+void world_tree_app_state_changed(graph_view_handle view, uint64_t id, const char * name, bool running, bool terminal, uint8_t level)
+{
+  GtkTreeIter view_iter;
+  GtkTreeIter app_iter;
+  const char * view_name;
+  const char * app_name;
+  GtkTreePath * path;
+  char * app_name_with_status;
+
+  if (!find_app(view, id, &view_iter, &app_iter))
+  {
+    log_error("removed app not found");
+    return;
+  }
+
+  path = gtk_tree_model_get_path(GTK_TREE_MODEL(g_treestore), &view_iter);
+
+  gtk_tree_model_get(GTK_TREE_MODEL(g_treestore), &view_iter, COL_NAME, &view_name, -1);
+  gtk_tree_model_get(GTK_TREE_MODEL(g_treestore), &app_iter, COL_NAME, &app_name, -1);
+
+  log_info("changing app state '%s':'%s'", view_name, app_name);
+
+  app_name_with_status = get_app_name_string(app_name, running, terminal, level);
+  if (app_name_with_status == NULL)
+  {
+    goto free_path;
+  }
+
+  gtk_tree_view_expand_row(GTK_TREE_VIEW(g_world_tree_widget), path, false);
+  gtk_tree_store_set(g_treestore, &app_iter, COL_NAME, app_name_with_status, -1);
+
+  free(app_name_with_status);
+free_path:
+  gtk_tree_path_free(path);
+}
+
+void world_tree_remove_app(graph_view_handle view, uint64_t id)
+{
+  GtkTreeIter view_iter;
+  GtkTreeIter app_iter;
+  const char * view_name;
+  const char * app_name;
+  GtkTreePath * path;
+
+  if (!find_app(view, id, &view_iter, &app_iter))
+  {
+    log_error("removed app not found");
+    return;
+  }
+
+  path = gtk_tree_model_get_path(GTK_TREE_MODEL(g_treestore), &view_iter);
+
+  gtk_tree_model_get(GTK_TREE_MODEL(g_treestore), &view_iter, COL_NAME, &view_name, -1);
+  gtk_tree_model_get(GTK_TREE_MODEL(g_treestore), &app_iter, COL_NAME, &app_name, -1);
+
+  log_info("removing app '%s' from '%s'", app_name, view_name);
+
+  gtk_tree_view_expand_row(GTK_TREE_VIEW(g_world_tree_widget), path, false);
+  gtk_tree_store_remove(g_treestore, &app_iter);
+
   gtk_tree_path_free(path);
 }

@@ -37,6 +37,7 @@ struct ladish_app_supervisor_proxy
 
   void * context;
   void (* app_added)(void * context, uint64_t id, const char * name, bool running, bool terminal, uint8_t level);
+  void (* app_state_changed)(void * context, uint64_t id, const char * name, bool running, bool terminal, uint8_t level);
   void (* app_removed)(void * context, uint64_t id);
 };
 
@@ -118,7 +119,6 @@ message_hook(
     if (!dbus_message_get_args(
           message,
           &g_dbus_error,
-          DBUS_TYPE_UINT64, &new_list_version,
           DBUS_TYPE_UINT64, &id,
           DBUS_TYPE_STRING, &name,
           DBUS_TYPE_BOOLEAN, &running,
@@ -131,7 +131,8 @@ message_hook(
       return DBUS_HANDLER_RESULT_HANDLED;
     }
 
-    log_info("AppStateChanged signal received");
+    //log_info("AppStateChanged signal received");
+    proxy_ptr->app_state_changed(proxy_ptr->context, id, name, running, terminal, level);
     return DBUS_HANDLER_RESULT_HANDLED;
   }
 
@@ -223,6 +224,7 @@ ladish_app_supervisor_proxy_create(
   const char * object,
   void * context,
   void (* app_added)(void * context, uint64_t id, const char * name, bool running, bool terminal, uint8_t level),
+  void (* app_state_changed)(void * context, uint64_t id, const char * name, bool running, bool terminal, uint8_t level),
   void (* app_removed)(void * context, uint64_t id),
   ladish_app_supervisor_proxy_handle * handle_ptr)
 {
@@ -253,6 +255,7 @@ ladish_app_supervisor_proxy_create(
 
   proxy_ptr->context = context;
   proxy_ptr->app_added = app_added;
+  proxy_ptr->app_state_changed = app_state_changed;
   proxy_ptr->app_removed = app_removed;
 
   if (!dbus_register_object_signal_handler(

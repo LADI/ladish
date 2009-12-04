@@ -37,6 +37,7 @@ ladish_app_supervisor_proxy_create(
   const char * object,
   void * context,
   void (* app_added)(void * context, uint64_t id, const char * name, bool running, bool terminal, uint8_t level),
+  void (* app_state_changed)(void * context, uint64_t id, const char * name, bool running, bool terminal, uint8_t level),
   void (* app_removed)(void * context, uint64_t id),
   ladish_app_supervisor_proxy_handle * proxy_ptr);
 

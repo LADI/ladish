@@ -55,13 +55,19 @@ void view_init(void)
 static void app_added(void * context, uint64_t id, const char * name, bool running, bool terminal, uint8_t level)
 {
   //log_info("app added. id=%"PRIu64", name='%s', %srunning, %s, level %u", id, name, running ? "" : "not ", terminal ? "terminal" : "shell", (unsigned int)level);
-  world_tree_name_add_app(context, id, name, running, terminal, level);
+  world_tree_add_app(context, id, name, running, terminal, level);
+}
+
+static void app_state_changed(void * context, uint64_t id, const char * name, bool running, bool terminal, uint8_t level)
+{
+  //log_info("app state changed. id=%"PRIu64", name='%s', %srunning, %s, level %u", id, name, running ? "" : "not ", terminal ? "terminal" : "shell", (unsigned int)level);
+  world_tree_app_state_changed(context, id, name, running, terminal, level);
 }
 
 static void app_removed(void * context, uint64_t id)
 {
   //log_info("app removed. id=%"PRIu64, id);
-  world_tree_name_remove_app(context, id);
+  world_tree_remove_app(context, id);
 }
 
 bool
@@ -117,7 +123,7 @@ create_view(
 
   if (app_supervisor_supported)
   {
-    if (!ladish_app_supervisor_proxy_create(service, object, view_ptr, app_added, app_removed, &view_ptr->app_supervisor))
+    if (!ladish_app_supervisor_proxy_create(service, object, view_ptr, app_added, app_state_changed, app_removed, &view_ptr->app_supervisor))
     {
       goto detach_graph_canvas;
     }
