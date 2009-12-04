@@ -42,6 +42,7 @@ struct ladish_app
   bool terminal;
   uint8_t level;
   pid_t pid;
+  bool zombie;
 };
 
 struct ladish_app_supervisor
@@ -125,6 +126,45 @@ struct ladish_app * ladish_app_supervisor_find_app_by_id(struct ladish_app_super
   return NULL;
 }
 
+void remove_app_internal(struct ladish_app_supervisor * supervisor_ptr, struct ladish_app * app_ptr)
+{
+  list_del(&app_ptr->siblings);
+
+  dbus_signal_emit(
+    g_dbus_connection,
+    supervisor_ptr->opath,
+    IFACE_APP_SUPERVISOR,
+    "AppRemoved",
+    "tt",
+    &supervisor_ptr->version,
+    &app_ptr->id);
+
+  free(app_ptr->name);
+  free(app_ptr->commandline);
+  free(app_ptr);
+}
+
+void emit_app_state_changed(struct ladish_app_supervisor * supervisor_ptr, struct ladish_app * app_ptr)
+{
+  dbus_bool_t running;
+  dbus_bool_t terminal;
+
+  running = app_ptr->pid != 0;
+  terminal = app_ptr->terminal;
+
+  dbus_signal_emit(
+    g_dbus_connection,
+    supervisor_ptr->opath,
+    IFACE_APP_SUPERVISOR,
+    "AppStateChanged",
+    "tsbby",
+    &app_ptr->id,
+    &app_ptr->name,
+    &running,
+    &terminal,
+    &app_ptr->level);
+}
+
 #define supervisor_ptr ((struct ladish_app_supervisor *)supervisor_handle)
 
 void ladish_app_supervisor_destroy(ladish_app_supervisor_handle supervisor_handle)
@@ -134,10 +174,7 @@ void ladish_app_supervisor_destroy(ladish_app_supervisor_handle supervisor_handl
   while (!list_empty(&supervisor_ptr->applist))
   {
     app_ptr = list_entry(supervisor_ptr->applist.next, struct ladish_app, siblings);
-    list_del(&app_ptr->siblings);
-    free(app_ptr->name);
-    free(app_ptr->commandline);
-    free(app_ptr);
+    remove_app_internal(supervisor_ptr, app_ptr);
   }
 
   free(supervisor_ptr->name);
@@ -157,20 +194,16 @@ bool ladish_app_supervisor_child_exit(ladish_app_supervisor_handle supervisor_ha
     {
       log_info("exit of studio child '%s' detected.", app_ptr->name);
 
-      list_del(&app_ptr->siblings);
+      app_ptr->pid = 0;
+      if (app_ptr->zombie)
+      {
+        remove_app_internal(supervisor_ptr, app_ptr);
+      }
+      else
+      {
+        emit_app_state_changed(supervisor_ptr, app_ptr);
+      }
 
-      dbus_signal_emit(
-        g_dbus_connection,
-        supervisor_ptr->opath,
-        IFACE_APP_SUPERVISOR,
-        "AppRemoved",
-        "tt",
-        &supervisor_ptr->version,
-        &app_ptr->id);
-
-      free(app_ptr->name);
-      free(app_ptr->commandline);
-      free(app_ptr);
       return true;
     }
   }
@@ -356,6 +389,7 @@ static void run_custom(struct dbus_method_call * call_ptr)
   app_ptr->id = supervisor_ptr->next_id++;
   app_ptr->name = name;
   app_ptr->commandline = strdup(commandline);
+  app_ptr->terminal = terminal;
   app_ptr->pid = 0;
   if (app_ptr->commandline == NULL)
   {
@@ -365,6 +399,7 @@ static void run_custom(struct dbus_method_call * call_ptr)
     return;
   }
 
+  app_ptr->zombie = false;
   list_add_tail(&app_ptr->siblings, &supervisor_ptr->applist);
 
   if (!loader_execute(supervisor_ptr->name, name, "/", terminal, commandline, &app_ptr->pid))
@@ -427,12 +462,14 @@ static void start_app(struct dbus_method_call * call_ptr)
     return;
   }
 
+  app_ptr->zombie = false;
   if (!loader_execute(supervisor_ptr->name, app_ptr->name, "/", app_ptr->terminal, app_ptr->commandline, &app_ptr->pid))
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Execution of '%s' failed",  app_ptr->commandline);
     return;
   }
 
+  emit_app_state_changed(supervisor_ptr, app_ptr);
   log_info("%s pid is %lu", app_ptr->name, (unsigned long)app_ptr->pid);
 
   method_return_new_void(call_ptr);
@@ -516,6 +553,38 @@ static void set_app_properties(struct dbus_method_call * call_ptr)
 
 static void remove_app(struct dbus_method_call * call_ptr)
 {
+  uint64_t id;
+  struct ladish_app * app_ptr;
+
+  if (!dbus_message_get_args(
+        call_ptr->message,
+        &g_dbus_error,
+        DBUS_TYPE_UINT64, &id,
+        DBUS_TYPE_INVALID))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return;
+  }
+
+  app_ptr = ladish_app_supervisor_find_app_by_id(supervisor_ptr, id);
+  if (app_ptr == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "App with ID %"PRIu64" not found", id);
+    return;
+  }
+
+  if (app_ptr->pid != 0)
+  {
+    app_ptr->zombie = true;
+    kill(app_ptr->pid, SIGTERM);
+  }
+  else
+  {
+    remove_app_internal(supervisor_ptr, app_ptr);
+  }
+
+  method_return_new_void(call_ptr);
 }
 
 static void is_app_running(struct dbus_method_call * call_ptr)
@@ -573,6 +642,10 @@ METHOD_ARGS_BEGIN(KillApp, "Kill application")
   METHOD_ARG_DESCRIBE_IN("id", DBUS_TYPE_UINT64_AS_STRING, "id of app")
 METHOD_ARGS_END
 
+METHOD_ARGS_BEGIN(RemoveApp, "Remove application")
+  METHOD_ARG_DESCRIBE_IN("id", DBUS_TYPE_UINT64_AS_STRING, "id of app")
+METHOD_ARGS_END
+
 METHOD_ARGS_BEGIN(GetAppProperties, "Get properties of an application")
   METHOD_ARG_DESCRIBE_IN("id", DBUS_TYPE_UINT64_AS_STRING, "id of app")
   METHOD_ARG_DESCRIBE_OUT("name", DBUS_TYPE_STRING_AS_STRING, "")
@@ -603,7 +676,7 @@ METHODS_BEGIN
   METHOD_DESCRIBE(KillApp, kill_app)
   METHOD_DESCRIBE(GetAppProperties, get_app_properties)
   METHOD_DESCRIBE(SetAppProperties, set_app_properties)
-  METHOD_DESCRIBE(KillApp, remove_app)
+  METHOD_DESCRIBE(RemoveApp, remove_app)
   METHOD_DESCRIBE(IsAppRunning, is_app_running)
 METHODS_END
 

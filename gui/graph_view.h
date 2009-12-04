@@ -28,6 +28,7 @@
 #define GRAPH_VIEW_H__05B5CE46_5239_43F1_9F31_79F13EBF0DFA__INCLUDED
 
 #include "graph_canvas.h"
+#include "app_supervisor_proxy.h"
 
 typedef struct graph_view_tag { int unused; } * graph_view_handle;
 
@@ -49,6 +50,7 @@ const char * get_view_name(graph_view_handle view);
 bool set_view_name(graph_view_handle view, const char * name);
 canvas_handle get_current_canvas();
 
+ladish_app_supervisor_proxy_handle graph_view_get_app_supervisor(graph_view_handle view);
 bool app_run_custom(graph_view_handle view, const char * command, const char * name, bool run_in_terminal);
 
 /* not very good place for this prototype, because it is not implemented in graph_view.c */

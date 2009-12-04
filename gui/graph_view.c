@@ -272,3 +272,8 @@ bool app_run_custom(graph_view_handle view, const char * command, const char * n
 {
   return ladish_app_supervisor_proxy_run_custom(view_ptr->app_supervisor, command, name, run_in_terminal);
 }
+
+ladish_app_supervisor_proxy_handle graph_view_get_app_supervisor(graph_view_handle view)
+{
+  return view_ptr->app_supervisor;
+}

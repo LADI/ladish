@@ -316,4 +316,48 @@ bool ladish_app_supervisor_proxy_run_custom(ladish_app_supervisor_proxy_handle p
   return true;
 }
 
+bool ladish_app_supervisor_proxy_start_app(ladish_app_supervisor_proxy_handle proxy, uint64_t id)
+{
+  if (!dbus_call(proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "StartApp", "t", &id, ""))
+  {
+    log_error("StartApp() failed.");
+    return false;
+  }
+
+  return true;
+}
+
+bool ladish_app_supervisor_proxy_stop_app(ladish_app_supervisor_proxy_handle proxy, uint64_t id)
+{
+  if (!dbus_call(proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "StopApp", "t", &id, ""))
+  {
+    log_error("StopApp() failed.");
+    return false;
+  }
+
+  return true;
+}
+
+bool ladish_app_supervisor_proxy_kill_app(ladish_app_supervisor_proxy_handle proxy, uint64_t id)
+{
+  if (!dbus_call(proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "KillApp", "t", &id, ""))
+  {
+    log_error("KillApp() failed.");
+    return false;
+  }
+
+  return true;
+}
+
+bool ladish_app_supervisor_proxy_remove_app(ladish_app_supervisor_proxy_handle proxy, uint64_t id)
+{
+  if (!dbus_call(proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "RemoveApp", "t", &id, ""))
+  {
+    log_error("RemoveApp() failed.");
+    return false;
+  }
+
+  return true;
+}
+
 #undef proxy_ptr

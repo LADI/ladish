@@ -79,22 +79,24 @@ on_select(
   return TRUE;
 }
 
-bool get_selected_app_id(uint64_t * id_ptr)
+bool get_selected_app_id(graph_view_handle * view_ptr, uint64_t * id_ptr)
 {
   GtkTreeSelection * selection;
-  GtkTreeIter iter;
+  GtkTreeIter app_iter;
+  GtkTreeIter view_iter;
   gint type;
   uint64_t id;
+  graph_view_handle view;
 
   selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(g_world_tree_widget));
-  if (!gtk_tree_selection_get_selected(selection, NULL, &iter))
+  if (!gtk_tree_selection_get_selected(selection, NULL, &app_iter))
   {
     return false;
   }
 
   gtk_tree_model_get(
     GTK_TREE_MODEL(g_treestore),
-    &iter,
+    &app_iter,
     COL_TYPE, &type,
     COL_ID, &id,
     -1);
@@ -103,6 +105,25 @@ bool get_selected_app_id(uint64_t * id_ptr)
     return false;
   }
 
+  if (!gtk_tree_model_iter_parent(GTK_TREE_MODEL(g_treestore), &view_iter, &app_iter))
+  {
+    ASSERT_NO_PASS;
+    return false;
+  }
+
+  gtk_tree_model_get(
+    GTK_TREE_MODEL(g_treestore),
+    &view_iter,
+    COL_TYPE, &type,
+    COL_VIEW, &view,
+    -1);
+  if (type != entry_type_view)
+  {
+    ASSERT_NO_PASS;
+    return false;
+  }
+
+  *view_ptr = view;
   *id_ptr = id;
 
   return true;
@@ -111,37 +132,69 @@ bool get_selected_app_id(uint64_t * id_ptr)
 void on_popup_menu_action_app_start(GtkWidget * menuitem, gpointer userdata)
 {
   uint64_t id;
+  ladish_app_supervisor_proxy_handle proxy;
+  graph_view_handle view;
 
-  if (!get_selected_app_id(&id))
+  if (!get_selected_app_id(&view, &id))
   {
     return;
   }
 
   log_info("start app %"PRIu64, id);
+
+  proxy = graph_view_get_app_supervisor(view);
+  ladish_app_supervisor_proxy_start_app(proxy, id);
 }
 
 void on_popup_menu_action_app_stop(GtkWidget * menuitem, gpointer userdata)
 {
   uint64_t id;
+  ladish_app_supervisor_proxy_handle proxy;
+  graph_view_handle view;
 
-  if (!get_selected_app_id(&id))
+  if (!get_selected_app_id(&view, &id))
   {
     return;
   }
 
   log_info("stop app %"PRIu64, id);
+
+  proxy = graph_view_get_app_supervisor(view);
+  ladish_app_supervisor_proxy_stop_app(proxy, id);
+}
+
+void on_popup_menu_action_app_kill(GtkWidget * menuitem, gpointer userdata)
+{
+  uint64_t id;
+  ladish_app_supervisor_proxy_handle proxy;
+  graph_view_handle view;
+
+  if (!get_selected_app_id(&view, &id))
+  {
+    return;
+  }
+
+  log_info("kill app %"PRIu64, id);
+
+  proxy = graph_view_get_app_supervisor(view);
+  ladish_app_supervisor_proxy_kill_app(proxy, id);
 }
 
 void on_popup_menu_action_app_remove(GtkWidget * menuitem, gpointer userdata)
 {
   uint64_t id;
+  ladish_app_supervisor_proxy_handle proxy;
+  graph_view_handle view;
 
-  if (!get_selected_app_id(&id))
+  if (!get_selected_app_id(&view, &id))
   {
     return;
   }
 
   log_info("remove app %"PRIu64, id);
+
+  proxy = graph_view_get_app_supervisor(view);
+  ladish_app_supervisor_proxy_remove_app(proxy, id);
 }
 
 void popup_menu(GtkWidget * treeview, GdkEventButton * event)
@@ -196,6 +249,13 @@ void popup_menu(GtkWidget * treeview, GdkEventButton * event)
   menuitem = gtk_menu_item_new_with_label("Remove");
   g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_remove, NULL);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+
+  if (running)
+  {
+    menuitem = gtk_menu_item_new_with_label("Kill");
+    g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_kill, NULL);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+  }
 
   gtk_widget_show_all(menu);
 
@@ -429,12 +489,11 @@ free_path:
   gtk_tree_path_free(path);
 }
 
-void world_tree_app_state_changed(graph_view_handle view, uint64_t id, const char * name, bool running, bool terminal, uint8_t level)
+void world_tree_app_state_changed(graph_view_handle view, uint64_t id, const char * app_name, bool running, bool terminal, uint8_t level)
 {
   GtkTreeIter view_iter;
   GtkTreeIter app_iter;
   const char * view_name;
-  const char * app_name;
   GtkTreePath * path;
   char * app_name_with_status;
 
@@ -447,7 +506,6 @@ void world_tree_app_state_changed(graph_view_handle view, uint64_t id, const cha
   path = gtk_tree_model_get_path(GTK_TREE_MODEL(g_treestore), &view_iter);
 
   gtk_tree_model_get(GTK_TREE_MODEL(g_treestore), &view_iter, COL_NAME, &view_name, -1);
-  gtk_tree_model_get(GTK_TREE_MODEL(g_treestore), &app_iter, COL_NAME, &app_name, -1);
 
   log_info("changing app state '%s':'%s'", view_name, app_name);
 

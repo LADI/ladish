@@ -43,5 +43,9 @@ ladish_app_supervisor_proxy_create(
 
 void ladish_app_supervisor_proxy_destroy(ladish_app_supervisor_proxy_handle proxy);
 bool ladish_app_supervisor_proxy_run_custom(ladish_app_supervisor_proxy_handle proxy, const char * command, const char * name, bool run_in_terminal);
+bool ladish_app_supervisor_proxy_start_app(ladish_app_supervisor_proxy_handle proxy, uint64_t id);
+bool ladish_app_supervisor_proxy_stop_app(ladish_app_supervisor_proxy_handle proxy, uint64_t id);
+bool ladish_app_supervisor_proxy_kill_app(ladish_app_supervisor_proxy_handle proxy, uint64_t id);
+bool ladish_app_supervisor_proxy_remove_app(ladish_app_supervisor_proxy_handle proxy, uint64_t id);
 
 #endif /* #ifndef APP_SUPERVISOR_PROXY_H__A48C609D_0AB6_4C91_A9B0_BC7F1B7E4CB4__INCLUDED */
