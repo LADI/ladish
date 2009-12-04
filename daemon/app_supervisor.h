@@ -36,6 +36,25 @@ void ladish_app_supervisor_destroy(ladish_app_supervisor_handle supervisor_handl
 
 bool ladish_app_supervisor_child_exit(ladish_app_supervisor_handle supervisor_handle, pid_t pid);
 
+bool
+ladish_app_supervisor_enum(
+  ladish_app_supervisor_handle supervisor_handle,
+  void * context,
+  bool (* callback)(void * context, const char * name, bool running, const char * command, bool terminal, uint8_t level));
+
+void ladish_app_supervisor_clear(ladish_app_supervisor_handle supervisor_handle);
+
+bool
+ladish_app_supervisor_add(
+  ladish_app_supervisor_handle supervisor_handle,
+  const char * name,
+  bool autorun,
+  const char * command,
+  bool terminal,
+  uint8_t level);
+
+void ladish_app_supervisor_autorun(ladish_app_supervisor_handle supervisor_handle);
+
 extern const struct dbus_interface_descriptor g_iface_app_supervisor;
 
 #endif /* #ifndef APP_SUPERVISOR_H__712E6589_DCB1_4CE9_9812_4F250D55E8A2__INCLUDED */

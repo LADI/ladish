@@ -43,6 +43,8 @@ struct ladish_app
   uint8_t level;
   pid_t pid;
   bool zombie;
+  bool hidden;
+  bool autorun;
 };
 
 struct ladish_app_supervisor
@@ -126,18 +128,85 @@ struct ladish_app * ladish_app_supervisor_find_app_by_id(struct ladish_app_super
   return NULL;
 }
 
-void remove_app_internal(struct ladish_app_supervisor * supervisor_ptr, struct ladish_app * app_ptr)
+static
+struct ladish_app *
+add_app_internal(
+  struct ladish_app_supervisor * supervisor_ptr,
+  const char * name,
+  const char * commandline,
+  dbus_bool_t terminal,
+  dbus_bool_t autorun,
+  uint8_t level)
 {
-  list_del(&app_ptr->siblings);
+  struct ladish_app * app_ptr;
+  dbus_bool_t running;
 
+  app_ptr = malloc(sizeof(struct ladish_app));
+  if (app_ptr == NULL)
+  {
+    log_error("malloc of struct ladish_app failed");
+    return NULL;
+  }
+
+  app_ptr->name = strdup(name);
+  if (app_ptr->name == NULL)
+  {
+    log_error("strdup() failed for app name");
+    free(app_ptr);
+    return NULL;
+  }
+
+  app_ptr->commandline = strdup(commandline);
+  if (app_ptr->commandline == NULL)
+  {
+    log_error("strdup() failed for app commandline");
+    free(app_ptr->name);
+    free(app_ptr);
+    return NULL;
+  }
+
+  app_ptr->terminal = terminal;
+  app_ptr->level = level;
+  app_ptr->pid = 0;
+
+  app_ptr->id = supervisor_ptr->next_id++;
+  app_ptr->zombie = false;
+  app_ptr->hidden = false;
+  app_ptr->autorun = autorun;
+  list_add_tail(&app_ptr->siblings, &supervisor_ptr->applist);
+
+  running = false;
   dbus_signal_emit(
     g_dbus_connection,
     supervisor_ptr->opath,
     IFACE_APP_SUPERVISOR,
-    "AppRemoved",
-    "tt",
+    "AppAdded",
+    "ttsbby",
     &supervisor_ptr->version,
-    &app_ptr->id);
+    &app_ptr->id,
+    &app_ptr->name,
+    &running,
+    &terminal,
+    &app_ptr->level);
+
+  return app_ptr;
+}
+
+void remove_app_internal(struct ladish_app_supervisor * supervisor_ptr, struct ladish_app * app_ptr)
+{
+  list_del(&app_ptr->siblings);
+
+  if (!app_ptr->hidden)
+  {
+    dbus_signal_emit(
+      g_dbus_connection,
+      supervisor_ptr->opath,
+      IFACE_APP_SUPERVISOR,
+      "AppRemoved",
+      "tt",
+      &supervisor_ptr->version,
+      &app_ptr->id);
+  }
 
   free(app_ptr->name);
   free(app_ptr->commandline);
@@ -148,6 +217,11 @@ void emit_app_state_changed(struct ladish_app_supervisor * supervisor_ptr, struc
 {
   dbus_bool_t running;
   dbus_bool_t terminal;
+
+  if (app_ptr->hidden)
+  {
+    return;
+  }
 
   running = app_ptr->pid != 0;
   terminal = app_ptr->terminal;
@@ -167,16 +241,32 @@ void emit_app_state_changed(struct ladish_app_supervisor * supervisor_ptr, struc
 
 #define supervisor_ptr ((struct ladish_app_supervisor *)supervisor_handle)
 
-void ladish_app_supervisor_destroy(ladish_app_supervisor_handle supervisor_handle)
+void ladish_app_supervisor_clear(ladish_app_supervisor_handle supervisor_handle)
 {
+  struct list_head * node_ptr;
+  struct list_head * safe_node_ptr;
   struct ladish_app * app_ptr;
 
-  while (!list_empty(&supervisor_ptr->applist))
+  list_for_each_safe(node_ptr, safe_node_ptr, &supervisor_ptr->applist)
   {
-    app_ptr = list_entry(supervisor_ptr->applist.next, struct ladish_app, siblings);
-    remove_app_internal(supervisor_ptr, app_ptr);
+    app_ptr = list_entry(node_ptr, struct ladish_app, siblings);
+    if (app_ptr->pid != 0)
+    {
+      log_info("terminating '%s'...", app_ptr->name);
+      app_ptr->zombie = true;
+      kill(app_ptr->pid, SIGTERM);
+    }
+    else
+    {
+      log_info("removing '%s'", app_ptr->name);
+      remove_app_internal(supervisor_ptr, app_ptr);
+    }
   }
+}
 
+void ladish_app_supervisor_destroy(ladish_app_supervisor_handle supervisor_handle)
+{
+  ladish_app_supervisor_clear(supervisor_handle);
   free(supervisor_ptr->name);
   free(supervisor_ptr->opath);
   free(supervisor_ptr);
@@ -209,6 +299,82 @@ bool ladish_app_supervisor_child_exit(ladish_app_supervisor_handle supervisor_ha
   }
 
   return false;
+}
+
+bool
+ladish_app_supervisor_enum(
+  ladish_app_supervisor_handle supervisor_handle,
+  void * context,
+  bool (* callback)(void * context, const char * name, bool running, const char * command, bool terminal, uint8_t level))
+{
+  struct list_head * node_ptr;
+  struct ladish_app * app_ptr;
+
+  list_for_each(node_ptr, &supervisor_ptr->applist)
+  {
+    app_ptr = list_entry(node_ptr, struct ladish_app, siblings);
+
+    if (app_ptr->hidden)
+    {
+      continue;
+    }
+
+    if (!callback(context, app_ptr->name, app_ptr->pid != 0, app_ptr->commandline, app_ptr->terminal, app_ptr->level))
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool
+ladish_app_supervisor_add(
+  ladish_app_supervisor_handle supervisor_handle,
+  const char * name,
+  bool autorun,
+  const char * command,
+  bool terminal,
+  uint8_t level)
+{
+  struct ladish_app * app_ptr;
+
+  app_ptr = add_app_internal(supervisor_ptr, name, command, terminal, autorun, level);
+  if (app_ptr == NULL)
+  {
+    log_error("add_app_internal() failed");
+    return false;
+  }
+
+  return true;
+}
+
+void ladish_app_supervisor_autorun(ladish_app_supervisor_handle supervisor_handle)
+{
+  struct list_head * node_ptr;
+  struct ladish_app * app_ptr;
+
+  list_for_each(node_ptr, &supervisor_ptr->applist)
+  {
+    app_ptr = list_entry(node_ptr, struct ladish_app, siblings);
+
+    if (!app_ptr->autorun)
+    {
+      continue;
+    }
+
+    app_ptr->autorun = false;
+
+    log_info("autorun('%s', %s, '%s') called", app_ptr->name, app_ptr->terminal ? "terminal" : "shell", app_ptr->commandline);
+
+    if (!loader_execute(supervisor_ptr->name, app_ptr->name, "/", app_ptr->terminal, app_ptr->commandline, &app_ptr->pid))
+    {
+      log_error("Execution of '%s' failed",  app_ptr->commandline);
+      return;
+    }
+
+    emit_app_state_changed(supervisor_ptr, app_ptr);
+  }
 }
 
 #undef supervisor_ptr
@@ -245,6 +411,11 @@ static void get_all(struct dbus_method_call * call_ptr)
   list_for_each(node_ptr, &supervisor_ptr->applist)
   {
     app_ptr = list_entry(node_ptr, struct ladish_app, siblings);
+
+    if (app_ptr->hidden)
+    {
+      continue;
+    }
 
     log_info("app '%s' (%llu)", app_ptr->name, (unsigned long long)app_ptr->id);
 
@@ -311,7 +482,6 @@ static void run_custom(struct dbus_method_call * call_ptr)
   char * end;
   unsigned int index;
   struct ladish_app * app_ptr;
-  dbus_bool_t running;
 
   if (!dbus_message_get_args(
         call_ptr->message,
@@ -378,57 +548,25 @@ static void run_custom(struct dbus_method_call * call_ptr)
     index++;
   }
 
-  app_ptr = malloc(sizeof(struct ladish_app));
+  app_ptr = add_app_internal(supervisor_ptr, name, commandline, terminal, false, 0);
   if (app_ptr == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "malloc of struct ladish_app failed");
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "add_app_internal() failed");
     free(name);
     return;
   }
-
-  app_ptr->id = supervisor_ptr->next_id++;
-  app_ptr->name = name;
-  app_ptr->commandline = strdup(commandline);
-  app_ptr->terminal = terminal;
-  app_ptr->pid = 0;
-  if (app_ptr->commandline == NULL)
-  {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup() failed for commandline");
-    free(app_ptr);
-    free(name);
-    return;
-  }
-
-  app_ptr->zombie = false;
-  list_add_tail(&app_ptr->siblings, &supervisor_ptr->applist);
 
   if (!loader_execute(supervisor_ptr->name, name, "/", terminal, commandline, &app_ptr->pid))
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Execution of '%s' failed",  commandline);
-    list_del(&app_ptr->siblings);
-    free(app_ptr->commandline);
-    free(app_ptr);
+    remove_app_internal(supervisor_ptr, app_ptr);
     free(name);
     return;
   }
 
   log_info("%s pid is %lu", app_ptr->name, (unsigned long)app_ptr->pid);
 
-  running = true;
-  terminal = app_ptr->terminal;
-
-  dbus_signal_emit(
-    g_dbus_connection,
-    supervisor_ptr->opath,
-    IFACE_APP_SUPERVISOR,
-    "AppAdded",
-    "ttsbby",
-    &supervisor_ptr->version,
-    &app_ptr->id,
-    &app_ptr->name,
-    &running,
-    &terminal,
-    &app_ptr->level);
+  emit_app_state_changed(supervisor_ptr, app_ptr);
 
   method_return_new_void(call_ptr);
 }

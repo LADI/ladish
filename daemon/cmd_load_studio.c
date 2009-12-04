@@ -31,6 +31,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <expat.h>
+#include <limits.h>
 
 #include "escape.h"
 #include "cmd.h"
@@ -49,9 +50,11 @@
 #define PARSE_CONTEXT_KEY                10
 #define PARSE_CONTEXT_CONNECTIONS        11
 #define PARSE_CONTEXT_CONNECTION         12
+#define PARSE_CONTEXT_APPLICATIONS       13
+#define PARSE_CONTEXT_APPLICATION        14
 
 #define MAX_STACK_DEPTH       10
-#define MAX_DATA_SIZE         1024
+#define MAX_DATA_SIZE         10240
 
 struct parse_context
 {
@@ -65,6 +68,9 @@ struct parse_context
   ladish_port_handle port;
   ladish_dict_handle dict;
   uint64_t connection_id;
+  bool terminal;
+  bool autorun;
+  uint8_t level;
 };
 
 #define context_ptr ((struct parse_context *)data)
@@ -77,7 +83,8 @@ static void callback_chrdata(void * data, const XML_Char * s, int len)
   }
 
   if (context_ptr->element[context_ptr->depth] == PARSE_CONTEXT_PARAMETER ||
-      context_ptr->element[context_ptr->depth] == PARSE_CONTEXT_KEY)
+      context_ptr->element[context_ptr->depth] == PARSE_CONTEXT_KEY ||
+      context_ptr->element[context_ptr->depth] == PARSE_CONTEXT_APPLICATION)
   {
     if (context_ptr->data_used + len >= sizeof(context_ptr->data))
     {
@@ -97,6 +104,8 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
   uuid_t uuid2;
   ladish_port_handle port1;
   ladish_port_handle port2;
+  long int li_value;
+  char * end_ptr;
 
   if (context_ptr->error)
   {
@@ -448,6 +457,83 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
     return;
   }
 
+  if (strcmp(el, "applications") == 0)
+  {
+    //log_info("<applications>");
+    context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_APPLICATIONS;
+    return;
+  }
+
+  if (strcmp(el, "application") == 0)
+  {
+    //log_info("<application>");
+    context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_APPLICATION;
+
+    if (attr[0] == NULL ||
+        attr[1] == NULL ||
+        attr[2] == NULL ||
+        attr[3] == NULL ||
+        attr[4] == NULL ||
+        attr[5] == NULL ||
+        attr[6] == NULL ||
+        attr[7] == NULL ||
+        attr[8] != NULL ||
+        strcmp(attr[0], "name") != 0 ||
+        strcmp(attr[2], "terminal") != 0 ||
+        strcmp(attr[4], "level") != 0 ||
+        strcmp(attr[6], "autorun") != 0)
+    {
+      log_error("'application' XML element must contain exactly four attributes, named \"name\", \"terminal\", \"level\" and \"autorun\", in this order");
+      context_ptr->error = XML_TRUE;
+      return;
+    }
+
+    if (strcmp(attr[3], "true") != 0 && strcmp(attr[3], "false") != 0)
+    {
+      log_error("'application@terminal' XML attribute is boolean and the only valid values are \"true\" and \"false\"");
+      context_ptr->error = XML_TRUE;
+      return;
+    }
+
+    if (strcmp(attr[7], "true") != 0 && strcmp(attr[7], "false") != 0)
+    {
+      log_error("'application@autorun' XML attribute is boolean and the only valid values are \"true\" and \"false\"");
+      context_ptr->error = XML_TRUE;
+      return;
+    }
+
+    errno = 0;    /* To distinguish success/failure after call */
+    li_value = strtol(attr[5], &end_ptr, 10);
+    if ((errno == ERANGE && (li_value == LONG_MAX || li_value == LONG_MIN)) || (errno != 0 && li_value == 0) || end_ptr == attr[5])
+    {
+      log_error("'application@level' XML attribute '%s' is not valid integer.", attr[5]);
+      context_ptr->error = XML_TRUE;
+      return;
+    }
+
+    if (li_value < 0 || li_value > 255)
+    {
+      log_error("'application@level' XML attribute '%s' is not valid uint8.", attr[5]);
+      context_ptr->error = XML_TRUE;
+      return;
+    }
+
+    context_ptr->str = strdup(attr[1]);
+    if (context_ptr->str == NULL)
+    {
+      log_error("strdup() failed");
+      context_ptr->error = XML_TRUE;
+      return;
+    }
+
+    context_ptr->terminal = strcmp(attr[3], "true") == 0;
+    context_ptr->autorun = strcmp(attr[7], "true") == 0;
+    context_ptr->level = (uint8_t)li_value;
+
+    context_ptr->data_used = 0;
+    return;
+  }
+
   if (strcmp(el, "dict") == 0)
   {
     //log_info("<dict>");
@@ -699,6 +785,17 @@ static void callback_elend(void * data, const char * el)
     //log_info("</port>");
     ASSERT(context_ptr->port != NULL);
     context_ptr->port = NULL;
+  }
+  else if (context_ptr->element[context_ptr->depth] == PARSE_CONTEXT_APPLICATION)
+  {
+    context_ptr->data[context_ptr->data_used] = 0;
+    log_info("application '%s' (%s, %s, level %u) with commandline '%s'", context_ptr->str, context_ptr->terminal ? "terminal" : "shell", context_ptr->autorun ? "autorun" : "stopped", (unsigned int)context_ptr->level, context_ptr->data);
+
+    if (!ladish_app_supervisor_add(g_studio.app_supervisor, context_ptr->str, context_ptr->autorun, context_ptr->data, context_ptr->terminal, context_ptr->level))
+    {
+      log_error("ladish_app_supervisor_add() failed.");
+      context_ptr->error = XML_TRUE;
+    }
   }
 
   context_ptr->depth--;

@@ -63,6 +63,8 @@ static bool run(void * context)
     g_studio.filename = NULL;
   }
 
+  ladish_app_supervisor_clear(g_studio.app_supervisor);
+
   cmd_ptr->state = LADISH_COMMAND_STATE_DONE;
   return true;
 }

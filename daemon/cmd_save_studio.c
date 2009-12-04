@@ -557,6 +557,71 @@ bool save_studio_connection(void * context, ladish_port_handle port1_handle, lad
   }
 
   return true;
+}
+
+bool save_studio_app(void * context, const char * name, bool running, const char * command, bool terminal, uint8_t level)
+{
+  char buf[100];
+
+  log_info("saving app: name='%s', %srunning, %s, level %u, commandline='%s'", name, running ? "" : "not ", terminal ? "terminal" : "shell", (unsigned int)level, command);
+
+  if (!write_string(fd, "    <application name=\""))
+  {
+    return false;
+  }
+
+  if (!write_string(fd, name))
+  {
+    return false;
+  }
+
+  if (!write_string(fd, "\" terminal=\""))
+  {
+    return false;
+  }
+
+  if (!write_string(fd, terminal ? "true" : "false"))
+  {
+    return false;
+  }
+
+  if (!write_string(fd, "\" level=\""))
+  {
+    return false;
+  }
+
+  sprintf(buf, "%u", (unsigned int)level);
+
+  if (!write_string(fd, buf))
+  {
+    return false;
+  }
+
+  if (!write_string(fd, "\" autorun=\""))
+  {
+    return false;
+  }
+
+  if (!write_string(fd, running ? "true" : "false"))
+  {
+    return false;
+  }
+
+  if (!write_string(fd, "\">"))
+  {
+    return false;
+  }
+
+  if (!write_string(fd, command))
+  {
+    return false;
+  }
+
+  if (!write_string(fd, "</application>\n"))
+  {
+    return false;
+  }
+
   return true;
 }
 
@@ -767,9 +832,24 @@ static bool run(void * command_context)
     goto close;
   }
 
+  if (!write_string(fd, "  <applications>\n"))
+  {
+    goto close;
+  }
+
+  if (!ladish_app_supervisor_enum(g_studio.app_supervisor, &save_context, save_studio_app))
+  {
+    goto close;
+  }
+
+  if (!write_string(fd, "  </applications>\n"))
+  {
+    goto close;
+  }
+
   if (!write_dict(fd, "  ", ladish_graph_get_dict(g_studio.studio_graph)))
   {
-    return false;
+    goto close;
   }
 
   if (!write_string(fd, "</studio>\n"))

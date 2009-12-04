@@ -156,6 +156,8 @@ void on_event_jack_started(void)
     }
   }
 
+  ladish_app_supervisor_autorun(g_studio.app_supervisor);
+
   emit_studio_started();
 }
 
