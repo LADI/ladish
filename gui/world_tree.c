@@ -29,357 +29,6 @@
 #include "glade.h"
 #include "../catdup.h"
 
-#if 0
-#include <iostream>
-#include <gtkmm.h>
-#include <libglademm/xml.h>
-
-#include "project_list.hpp"
-#include "Widget.hpp"
-#include "Patchage.hpp"
-#include "session.hpp"
-#include "project.hpp"
-#include "project_properties.hpp"
-#include "lash_client.hpp"
-#include "globals.hpp"
-
-struct project_list_column_record : public Gtk::TreeModel::ColumnRecord
-{
-  Gtk::TreeModelColumn<Glib::ustring> name;
-  Gtk::TreeModelColumn<boost::shared_ptr<project> > project_ptr;
-  Gtk::TreeModelColumn<boost::shared_ptr<lash_client> > client_ptr;
-};
-
-struct project_list_impl : public sigc::trackable
-{
-  Patchage *_app;
-  Widget<Gtk::TreeView> _widget;
-  project_list_column_record _columns;
-  Glib::RefPtr<Gtk::TreeStore> _model;
-  Gtk::Menu _menu_popup;
-
-  project_list_impl(
-    Glib::RefPtr<Gnome::Glade::Xml> xml,
-    Patchage * app);
-
-  void project_added(boost::shared_ptr<project> project_ptr);
-  void project_closed(boost::shared_ptr<project> project_ptr);
-  void project_renamed(Gtk::TreeModel::iterator iter);
-  void client_added(boost::shared_ptr<lash_client> client_ptr, Gtk::TreeModel::iterator iter);
-  void client_removed(boost::shared_ptr<lash_client> client_ptr, Gtk::TreeModel::iterator iter);
-  void client_renamed(Gtk::TreeModel::iterator iter);
-
-  bool on_button_press_event(GdkEventButton * event);
-
-  void on_menu_popup_load_project();
-  void on_menu_popup_save_all_projects();
-  void on_menu_popup_save_project(boost::shared_ptr<project> project_ptr);
-  void on_menu_popup_close_project(boost::shared_ptr<project> project_ptr);
-  void on_menu_popup_project_properties(boost::shared_ptr<project> project_ptr);
-  void on_menu_popup_close_all_projects();
-};
-
-project_list::project_list(
-  Patchage * app,
-  session * session_ptr)
-{
-  _impl_ptr = new project_list_impl(g_xml, app);
-  session_ptr->_signal_project_added.connect(mem_fun(_impl_ptr, &project_list_impl::project_added));
-  session_ptr->_signal_project_closed.connect(mem_fun(_impl_ptr, &project_list_impl::project_closed));
-}
-
-project_list::~project_list()
-{
-  delete _impl_ptr;
-}
-
-project_list_impl::project_list_impl(
-  Glib::RefPtr<Gnome::Glade::Xml> xml,
-  Patchage * app)
-  : _app(app)
-{
-  _widget.init(xml, "projects_list");
-
-  _columns.add(_columns.name);
-  _columns.add(_columns.project_ptr);
-  _columns.add(_columns.client_ptr);
-
-  _model = Gtk::TreeStore::create(_columns);
-  _widget->set_model(_model);
-
-  _widget->append_column("LASH projects", _columns.name);
-
-  _menu_popup.accelerate(*_widget);
-
-  _widget->signal_button_press_event().connect(sigc::mem_fun(*this, &project_list_impl::on_button_press_event), false);
-}
-
-bool
-project_list_impl::on_button_press_event(GdkEventButton * event_ptr)
-{
-  // Then do our custom stuff:
-  if (event_ptr->type == GDK_BUTTON_PRESS && event_ptr->button == 3)
-  {
-    Glib::RefPtr<Gtk::TreeView::Selection> selection = _widget->get_selection();
-
-    Gtk::TreeModel::Path path;
-    Gtk::TreeViewColumn * column_ptr;
-    int cell_x;
-    int cell_y;
-
-    Gtk::Menu::MenuList& menulist = _menu_popup.items();
-
-    menulist.clear();
-
-    menulist.push_back(Gtk::Menu_Helpers::MenuElem("_Load project...", sigc::mem_fun(*this, &project_list_impl::on_menu_popup_load_project)));
-
-    menulist.push_back(Gtk::Menu_Helpers::MenuElem("Save _all projects", sigc::mem_fun(*this, &project_list_impl::on_menu_popup_save_all_projects)));
-
-    if (_widget->get_path_at_pos((int)event_ptr->x, (int)event_ptr->y, path, column_ptr, cell_x, cell_y))
-    {
-      //cout << path.to_string() << endl;
-      selection->unselect_all();
-      selection->select(path);
-
-      Gtk::TreeIter iter = selection->get_selected();
-      boost::shared_ptr<project> project_ptr = (*iter)[_columns.project_ptr];
-      std::string name;
-
-      if (project_ptr)
-      {
-        project_ptr->get_name(name);
-
-        menulist.push_back(
-          Gtk::Menu_Helpers::MenuElem(
-            (std::string)"_Save project '" + name + "'",
-            sigc::bind(
-              sigc::mem_fun(
-                *this,
-                &project_list_impl::on_menu_popup_save_project),
-              project_ptr)));
-        menulist.push_back(
-          Gtk::Menu_Helpers::MenuElem(
-            (std::string)"_Close project '" + name + "'",
-            sigc::bind(
-              sigc::mem_fun(
-                *this,
-                &project_list_impl::on_menu_popup_close_project),
-              project_ptr)));
-
-        menulist.push_back(
-          Gtk::Menu_Helpers::MenuElem(
-            (std::string)"_Project '" + name + "' properties",
-            sigc::bind(
-              sigc::mem_fun(
-                *this,
-                &project_list_impl::on_menu_popup_project_properties),
-              project_ptr)));
-      }
-    }
-    else
-    {
-      //cout << "No row" << endl;
-      selection->unselect_all();
-    }
-
-    menulist.push_back(Gtk::Menu_Helpers::MenuElem("Cl_ose all projects", sigc::mem_fun(*this, &project_list_impl::on_menu_popup_close_all_projects)));
-
-    _menu_popup.popup(event_ptr->button, event_ptr->time);
-
-    return true;
-  }
-
-  return false;
-}
-
-void
-project_list_impl::on_menu_popup_load_project()
-{
-  _app->load_project_ask();
-}
-
-void
-project_list_impl::on_menu_popup_save_all_projects()
-{
-  _app->save_all_projects();
-}
-
-void
-project_list_impl::on_menu_popup_save_project(
-  boost::shared_ptr<project> project_ptr)
-{
-  std::string name;
-
-  project_ptr->get_name(name);
-  _app->save_project(name);
-}
-
-void
-project_list_impl::on_menu_popup_close_project(
-  boost::shared_ptr<project> project_ptr)
-{
-  std::string name;
-
-  project_ptr->get_name(name);
-  _app->close_project(name);
-}
-
-void
-project_list_impl::on_menu_popup_project_properties(
-  boost::shared_ptr<project> project_ptr)
-{
-  project_properties_dialog dialog;
-
-  dialog.run(project_ptr);
-}
-
-void
-project_list_impl::on_menu_popup_close_all_projects()
-{
-  _app->close_all_projects();
-}
-
-void
-project_list_impl::project_added(
-  boost::shared_ptr<project> project_ptr)
-{
-  Gtk::TreeModel::iterator iter;
-  Gtk::TreeModel::iterator child_iter;
-  Gtk::TreeModel::Row row;
-  std::string project_name;
-
-  project_ptr->get_name(project_name);
-
-  if (project_ptr->get_modified_status())
-  {
-    project_name += " *";
-  }
-
-  iter = _model->append();
-  row = *iter;
-  row[_columns.name] = project_name;
-  row[_columns.project_ptr] = project_ptr;
-
-  project_ptr->_signal_renamed.connect(bind(mem_fun(this, &project_list_impl::project_renamed), iter));
-  project_ptr->_signal_modified_status_changed.connect(bind(mem_fun(this, &project_list_impl::project_renamed), iter));
-  project_ptr->_signal_client_added.connect(bind(mem_fun(this, &project_list_impl::client_added), iter));
-  project_ptr->_signal_client_removed.connect(bind(mem_fun(this, &project_list_impl::client_removed), iter));
-}
-
-void
-project_list_impl::project_closed(
-  boost::shared_ptr<project> project_ptr)
-{
-  boost::shared_ptr<project> temp_project_ptr;
-  Gtk::TreeModel::Children children = _model->children();
-  Gtk::TreeModel::Children::iterator iter = children.begin();
-
-  while(iter != children.end())
-  {
-    Gtk::TreeModel::Row row = *iter;
-
-    temp_project_ptr = row[_columns.project_ptr];
-
-    if (temp_project_ptr == project_ptr)
-    {
-      _model->erase(iter);
-      return;
-    }
-
-    iter++;
-  }
-}
-
-void
-project_list_impl::project_renamed(
-  Gtk::TreeModel::iterator iter)
-{
-  boost::shared_ptr<project> project_ptr;
-  std::string project_name;
-
-  Gtk::TreeModel::Row row = *iter;
-
-  project_ptr = row[_columns.project_ptr];
-  project_ptr->get_name(project_name);
-
-  if (project_ptr->get_modified_status())
-  {
-    project_name += " *";
-  }
-
-  row[_columns.name] = project_name;
-}
-
-void
-project_list_impl::client_added(
-  boost::shared_ptr<lash_client> client_ptr,
-  Gtk::TreeModel::iterator iter)
-{
-  std::string name;
-  Gtk::TreeModel::Path path = _model->get_path(iter);
-  Gtk::TreeModel::Row row = *iter;
-
-  client_ptr->get_name(name);
-
-  iter = _model->append(row.children());
-  row = *iter;
-  row[_columns.name] = name;
-  row[_columns.client_ptr] = client_ptr;
-
-  client_ptr->_signal_renamed.connect(bind(mem_fun(this, &project_list_impl::client_renamed), iter));
-
-  _widget->expand_row(path, false);
-}
-
-void
-project_list_impl::client_renamed(
-  Gtk::TreeModel::iterator iter)
-{
-  boost::shared_ptr<lash_client> client_ptr;
-  std::string client_name;
-
-  Gtk::TreeModel::Row row = *iter;
-
-  client_ptr = row[_columns.client_ptr];
-  client_ptr->get_name(client_name);
-
-  row[_columns.name] = client_name;
-}
-
-void
-project_list_impl::client_removed(
-  boost::shared_ptr<lash_client> client_ptr,
-  Gtk::TreeModel::iterator iter)
-{
-  std::string name;
-  Gtk::TreeModel::Path path = _model->get_path(iter);
-  Gtk::TreeModel::Row row = *iter;
-
-  client_ptr->get_name(name);
-
-  Gtk::TreeNodeChildren childs = row.children();
-
-  for (Gtk::TreeModel::iterator child_iter = childs.begin(); iter != childs.end(); child_iter++)
-  {
-    row = *child_iter;
-
-    if (row[_columns.name] == name)
-    {
-      _widget->expand_row(path, false);
-      _model->erase(child_iter);
-      return;
-    }
-  }
-}
-
-void
-project_list::set_lash_availability(
-  bool lash_active)
-{
-  _impl_ptr->_widget->set_sensitive(lash_active);
-}
-#endif
-
 enum entry_type
 {
   entry_type_view,
@@ -392,6 +41,9 @@ enum
   COL_NAME,
   COL_VIEW,
   COL_ID,
+  COL_RUNNING,
+  COL_TERMINAL,
+  COL_LEVEL,
   NUM_COLS
 };
 
@@ -409,13 +61,14 @@ on_select(
 {
   GtkTreeIter iter;
   graph_view_handle view;
+  gint type;
 
   if (gtk_tree_model_get_iter(model, &iter, path))
   {
-    gtk_tree_model_get(model, &iter, COL_VIEW, &view, -1);
-    if (view != NULL)
+    gtk_tree_model_get(model, &iter, COL_TYPE, &type, COL_VIEW, &view, -1);
+    if (type == entry_type_view)
     {
-      //lash_info("%s is going to be %s.", get_view_name(view), path_currently_selected ? "unselected" : "selected");
+      //log_info("%s is going to be %s.", get_view_name(view), path_currently_selected ? "unselected" : "selected");
       if (!path_currently_selected)
       {
         activate_view(view);
@@ -424,6 +77,171 @@ on_select(
   }
 
   return TRUE;
+}
+
+bool get_selected_app_id(uint64_t * id_ptr)
+{
+  GtkTreeSelection * selection;
+  GtkTreeIter iter;
+  gint type;
+  uint64_t id;
+
+  selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(g_world_tree_widget));
+  if (!gtk_tree_selection_get_selected(selection, NULL, &iter))
+  {
+    return false;
+  }
+
+  gtk_tree_model_get(
+    GTK_TREE_MODEL(g_treestore),
+    &iter,
+    COL_TYPE, &type,
+    COL_ID, &id,
+    -1);
+  if (type != entry_type_app)
+  {
+    return false;
+  }
+
+  *id_ptr = id;
+
+  return true;
+}
+
+void on_popup_menu_action_app_start(GtkWidget * menuitem, gpointer userdata)
+{
+  uint64_t id;
+
+  if (!get_selected_app_id(&id))
+  {
+    return;
+  }
+
+  log_info("start app %"PRIu64, id);
+}
+
+void on_popup_menu_action_app_stop(GtkWidget * menuitem, gpointer userdata)
+{
+  uint64_t id;
+
+  if (!get_selected_app_id(&id))
+  {
+    return;
+  }
+
+  log_info("stop app %"PRIu64, id);
+}
+
+void on_popup_menu_action_app_remove(GtkWidget * menuitem, gpointer userdata)
+{
+  uint64_t id;
+
+  if (!get_selected_app_id(&id))
+  {
+    return;
+  }
+
+  log_info("remove app %"PRIu64, id);
+}
+
+void popup_menu(GtkWidget * treeview, GdkEventButton * event)
+{
+  GtkTreeSelection * selection;
+  GtkTreeIter iter;
+  GtkWidget * menu;
+  GtkWidget * menuitem;
+  gint type;
+  graph_view_handle view;
+  uint64_t id;
+  gboolean running;
+  gboolean terminal;
+  uint8_t level;
+
+  selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(g_world_tree_widget));
+  if (!gtk_tree_selection_get_selected(selection, NULL, &iter))
+  {
+    return;
+  }
+
+  gtk_tree_model_get(
+    GTK_TREE_MODEL(g_treestore),
+    &iter,
+    COL_TYPE, &type,
+    COL_VIEW, &view,
+    COL_ID, &id,
+    COL_RUNNING, &running,
+    COL_TERMINAL, &terminal,
+    COL_LEVEL, &level,
+    -1);
+  if (type != entry_type_app)
+  {
+    return;
+  }
+
+  menu = gtk_menu_new();
+
+  if (running)
+  {
+    menuitem = gtk_menu_item_new_with_label("Stop");
+    g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_stop, NULL);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+  }
+  else
+  {
+    menuitem = gtk_menu_item_new_with_label("Start");
+    g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_start, NULL);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+  }
+
+  menuitem = gtk_menu_item_new_with_label("Remove");
+  g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_remove, NULL);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+
+  gtk_widget_show_all(menu);
+
+  /* Note: event can be NULL here when called from view_onPopupMenu;
+   *  gdk_event_get_time() accepts a NULL argument */
+  gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, (event != NULL) ? event->button : 0, gdk_event_get_time((GdkEvent *)event));
+}
+
+gboolean on_button_pressed(GtkWidget * treeview, GdkEventButton * event, gpointer userdata)
+{
+  /* single click with the right mouse button? */
+  if (event->type == GDK_BUTTON_PRESS && event->button == 3)
+  {
+    /* select row if no row is selected or only one other row is selected */
+    {
+      GtkTreeSelection *selection;
+
+      selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
+
+      /* Note: gtk_tree_selection_count_selected_rows() does not exist in gtk+-2.0, only in gtk+ >= v2.2 ! */
+      if (gtk_tree_selection_count_selected_rows(selection) <= 1)
+      {
+        GtkTreePath *path;
+
+        /* Get tree path for row that was clicked */
+        if (gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview), (gint)event->x, (gint)event->y, &path, NULL, NULL, NULL))
+        {
+          gtk_tree_selection_unselect_all(selection);
+          gtk_tree_selection_select_path(selection, path);
+          gtk_tree_path_free(path);
+        }
+      }
+    }
+
+    popup_menu(treeview, event);
+
+    return TRUE; /* we handled this */
+  }
+
+  return FALSE; /* we did not handle this */
+}
+
+gboolean on_popup_menu(GtkWidget * treeview, gpointer userdata)
+{
+  popup_menu(treeview, NULL);
+  return TRUE; /* we handled this */
 }
 
 void world_tree_init(void)
@@ -442,11 +260,22 @@ void world_tree_init(void)
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_tree_view_column_add_attribute(col, renderer, "text", COL_NAME);
 
-  g_treestore = gtk_tree_store_new(NUM_COLS, G_TYPE_INT, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_UINT64);
+  g_treestore = gtk_tree_store_new(
+    NUM_COLS,
+    G_TYPE_INT,
+    G_TYPE_STRING,
+    G_TYPE_POINTER,
+    G_TYPE_UINT64,
+    G_TYPE_BOOLEAN,
+    G_TYPE_BOOLEAN,
+    G_TYPE_CHAR);
   gtk_tree_view_set_model(GTK_TREE_VIEW(g_world_tree_widget), GTK_TREE_MODEL(g_treestore));
 
   selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(g_world_tree_widget));
   gtk_tree_selection_set_select_function(selection, on_select, NULL, NULL);
+
+  g_signal_connect(g_world_tree_widget, "button-press-event", (GCallback)on_button_pressed, NULL);
+  g_signal_connect(g_world_tree_widget, "popup-menu", (GCallback)on_popup_menu, NULL);
 }
 
 void world_tree_add(graph_view_handle view, bool force_activate)
@@ -583,7 +412,16 @@ void world_tree_add_app(graph_view_handle view, uint64_t id, const char * app_na
   }
 
   gtk_tree_store_append(g_treestore, &child, &iter);
-  gtk_tree_store_set(g_treestore, &child, COL_TYPE, entry_type_app, COL_NAME, app_name_with_status, COL_ID, id, -1);
+  gtk_tree_store_set(
+    g_treestore,
+    &child,
+    COL_TYPE, entry_type_app,
+    COL_NAME, app_name_with_status,
+    COL_ID, id,
+    COL_RUNNING, running,
+    COL_TERMINAL, terminal,
+    COL_LEVEL, level,
+    -1);
   gtk_tree_view_expand_row(GTK_TREE_VIEW(g_world_tree_widget), path, false);
 
   free(app_name_with_status);
@@ -620,7 +458,14 @@ void world_tree_app_state_changed(graph_view_handle view, uint64_t id, const cha
   }
 
   gtk_tree_view_expand_row(GTK_TREE_VIEW(g_world_tree_widget), path, false);
-  gtk_tree_store_set(g_treestore, &app_iter, COL_NAME, app_name_with_status, -1);
+  gtk_tree_store_set(
+    g_treestore,
+    &app_iter,
+    COL_NAME, app_name_with_status,
+    COL_RUNNING, running,
+    COL_TERMINAL, terminal,
+    COL_LEVEL, level,
+    -1);
 
   free(app_name_with_status);
 free_path:
