@@ -377,6 +377,23 @@ void ladish_app_supervisor_autorun(ladish_app_supervisor_handle supervisor_handl
   }
 }
 
+void ladish_app_supervisor_stop(ladish_app_supervisor_handle supervisor_handle)
+{
+  struct list_head * node_ptr;
+  struct ladish_app * app_ptr;
+
+  list_for_each(node_ptr, &supervisor_ptr->applist)
+  {
+    app_ptr = list_entry(node_ptr, struct ladish_app, siblings);
+    if (app_ptr->pid != 0)
+    {
+      app_ptr->autorun = true;
+      log_info("terminating '%s'...", app_ptr->name);
+      kill(app_ptr->pid, SIGTERM);
+    }
+  }
+}
+
 #undef supervisor_ptr
 #define supervisor_ptr ((struct ladish_app_supervisor *)call_ptr->iface_context)
 

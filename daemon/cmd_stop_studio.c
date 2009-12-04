@@ -43,6 +43,8 @@ static bool run(void * context)
       return true;
     }
 
+    ladish_app_supervisor_stop(g_studio.app_supervisor);
+
     log_info("Stopping JACK server...");
 
     ladish_graph_dump(g_studio.studio_graph);

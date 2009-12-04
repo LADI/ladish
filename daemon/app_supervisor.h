@@ -53,6 +53,7 @@ ladish_app_supervisor_add(
   bool terminal,
   uint8_t level);
 
+void ladish_app_supervisor_stop(ladish_app_supervisor_handle supervisor_handle);
 void ladish_app_supervisor_autorun(ladish_app_supervisor_handle supervisor_handle);
 
 extern const struct dbus_interface_descriptor g_iface_app_supervisor;
