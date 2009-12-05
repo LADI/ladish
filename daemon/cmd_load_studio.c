@@ -975,7 +975,7 @@ bool ladish_command_load_studio(void * call_ptr, struct ladish_cqueue * queue_pt
     goto fail_free_name;
   }
 
-  cmd_ptr = ladish_command_new(sizeof(struct ladish_command));
+  cmd_ptr = ladish_command_new(sizeof(struct ladish_command_load_studio));
   if (cmd_ptr == NULL)
   {
     log_error("ladish_command_new() failed.");
