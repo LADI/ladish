@@ -24,6 +24,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <unistd.h>
+
 #include "cmd.h"
 #include "studio_internal.h"
 
@@ -44,6 +46,8 @@ static bool run(void * context)
     }
 
     ladish_app_supervisor_stop(g_studio.app_supervisor);
+
+    usleep(3000000);
 
     log_info("Stopping JACK server...");
 
