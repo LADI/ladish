@@ -580,6 +580,15 @@ static void ladish_start_studio(struct dbus_method_call * call_ptr)
   }
 }
 
+static void ladish_studio_is_started(struct dbus_method_call * call_ptr)
+{
+  dbus_bool_t started;
+
+  started = g_studio.jack_graph_proxy != NULL;
+
+  method_return_new_single(call_ptr, DBUS_TYPE_BOOLEAN, &started);
+}
+
 METHOD_ARGS_BEGIN(GetName, "Get studio name")
   METHOD_ARG_DESCRIBE_OUT("studio_name", "s", "Name of studio")
 METHOD_ARGS_END
@@ -600,6 +609,10 @@ METHOD_ARGS_END
 METHOD_ARGS_BEGIN(Stop, "Stop studio")
 METHOD_ARGS_END
 
+METHOD_ARGS_BEGIN(IsStarted, "Check whether studio is started")
+  METHOD_ARG_DESCRIBE_OUT("started", "b", "Whether studio is started")
+METHOD_ARGS_END
+
 METHODS_BEGIN
   METHOD_DESCRIBE(GetName, ladish_get_studio_name)
   METHOD_DESCRIBE(Rename, ladish_rename_studio)
@@ -607,6 +620,7 @@ METHODS_BEGIN
   METHOD_DESCRIBE(Unload, ladish_unload_studio)
   METHOD_DESCRIBE(Start, ladish_start_studio)
   METHOD_DESCRIBE(Stop, ladish_stop_studio)
+  METHOD_DESCRIBE(IsStarted, ladish_studio_is_started)
 METHODS_END
 
 SIGNAL_ARGS_BEGIN(StudioRenamed, "Studio name changed")
