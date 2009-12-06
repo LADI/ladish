@@ -34,8 +34,6 @@ struct virtualizer
   ladish_graph_handle jack_graph;
   ladish_graph_handle studio_graph;
   uint64_t system_client_id;
-  ladish_client_handle system_capture_client;
-  ladish_client_handle system_playback_client;
 };
 
 /* 47c1cd18-7b21-4389-bec4-6e0658e1d6b1 */
@@ -186,50 +184,51 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
 
   if (client_id == virtualizer_ptr->system_client_id)
   {
+    log_info("system client port appeared");
+
     if (!is_input)
     { /* output capture port */
-      if (virtualizer_ptr->system_capture_client == NULL)
+
+      client = ladish_graph_find_client_by_uuid(virtualizer_ptr->studio_graph, g_system_capture_uuid);
+      if (client == NULL)
       {
-        if (!ladish_client_create(g_system_capture_uuid, true, false, true, &virtualizer_ptr->system_capture_client))
+        if (!ladish_client_create(g_system_capture_uuid, true, false, true, &client))
         {
           log_error("ladish_client_create() failed.");
           return;
         }
 
-        if (!ladish_graph_add_client(virtualizer_ptr->studio_graph, virtualizer_ptr->system_capture_client, "Hardware Capture", false))
+        if (!ladish_graph_add_client(virtualizer_ptr->studio_graph, client, "Hardware Capture", false))
         {
           log_error("ladish_graph_add_client() failed.");
-          ladish_graph_remove_client(virtualizer_ptr->studio_graph, virtualizer_ptr->system_capture_client, true);
-          virtualizer_ptr->system_capture_client = NULL;
+          ladish_graph_remove_client(virtualizer_ptr->studio_graph, client, true);
           return;
         }
       }
-
-      client = virtualizer_ptr->system_capture_client;
     }
     else
-    { /* input capture port */
-      if (virtualizer_ptr->system_playback_client == NULL)
+    { /* input playback port */
+      client = ladish_graph_find_client_by_uuid(virtualizer_ptr->studio_graph, g_system_playback_uuid);
+      if (client == NULL)
       {
-        if (!ladish_client_create(g_system_playback_uuid, true, false, true, &virtualizer_ptr->system_playback_client))
+        if (!ladish_client_create(g_system_playback_uuid, true, false, true, &client))
         {
           log_error("ladish_client_create() failed.");
           return;
         }
 
-        if (!ladish_graph_add_client(virtualizer_ptr->studio_graph, virtualizer_ptr->system_playback_client, "Hardware Playback", false))
+        if (!ladish_graph_add_client(virtualizer_ptr->studio_graph, client, "Hardware Playback", false))
         {
-          ladish_graph_remove_client(virtualizer_ptr->studio_graph, virtualizer_ptr->system_playback_client, true);
-          virtualizer_ptr->system_playback_client = NULL;
+          ladish_graph_remove_client(virtualizer_ptr->studio_graph, client, true);
           return;
         }
       }
-
-      client = virtualizer_ptr->system_playback_client;
     }
   }
   else
   { /* non-system client */
+    log_info("non-system client port appeared");
+
     client = ladish_graph_find_client_by_jack_id(virtualizer_ptr->studio_graph, client_id);
     if (client == NULL)
     {
@@ -299,14 +298,6 @@ static void port_disappeared(void * context, uint64_t client_id, uint64_t port_i
       if (ladish_graph_is_client_empty(virtualizer_ptr->studio_graph, client))
       {
         ladish_graph_remove_client(virtualizer_ptr->studio_graph, client, false);
-        if (client == virtualizer_ptr->system_capture_client)
-        {
-          virtualizer_ptr->system_capture_client = NULL;
-        }
-        if (client == virtualizer_ptr->system_playback_client)
-        {
-          virtualizer_ptr->system_playback_client = NULL;
-        }
       }
     }
   }
@@ -453,8 +444,6 @@ ladish_virtualizer_create(
   virtualizer_ptr->jack_graph = jack_graph;
   virtualizer_ptr->studio_graph = studio_graph;
   virtualizer_ptr->system_client_id = 0;
-  virtualizer_ptr->system_capture_client = NULL;
-  virtualizer_ptr->system_playback_client = NULL;
 
   if (!graph_proxy_attach(
         jack_graph_proxy,
