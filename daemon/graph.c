@@ -1025,13 +1025,14 @@ void ladish_graph_hide_port(ladish_graph_handle graph_handle, ladish_port_handle
 
   log_info("Hidding port %"PRIu64, port_ptr->id);
 
+  ASSERT(!port_ptr->hidden);
+  port_ptr->hidden = true;
+
   if (graph_ptr->opath != NULL)
   {
     ladish_hide_connections(graph_ptr, port_ptr);
   }
 
-  ASSERT(!port_ptr->hidden);
-  port_ptr->hidden = true;
   graph_ptr->graph_version++;
 
   if (graph_ptr->opath != NULL)
