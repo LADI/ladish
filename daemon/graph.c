@@ -1486,7 +1486,7 @@ ladish_port_handle ladish_graph_find_port_by_name(ladish_graph_handle graph_hand
   return NULL;
 }
 
-ladish_client_handle ladish_graph_find_client_by_uuid(ladish_graph_handle graph_handle, uuid_t uuid)
+ladish_client_handle ladish_graph_find_client_by_uuid(ladish_graph_handle graph_handle, const uuid_t uuid)
 {
   struct list_head * node_ptr;
   struct ladish_graph_client * client_ptr;
@@ -1505,7 +1505,7 @@ ladish_client_handle ladish_graph_find_client_by_uuid(ladish_graph_handle graph_
   return NULL;
 }
 
-ladish_port_handle ladish_graph_find_port_by_uuid(ladish_graph_handle graph_handle, uuid_t uuid)
+ladish_port_handle ladish_graph_find_port_by_uuid(ladish_graph_handle graph_handle, const uuid_t uuid)
 {
   struct list_head * node_ptr;
   struct ladish_graph_port * port_ptr;

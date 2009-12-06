@@ -116,8 +116,8 @@ ladish_client_handle ladish_graph_find_client_by_jack_id(ladish_graph_handle gra
 ladish_port_handle ladish_graph_find_port_by_jack_id(ladish_graph_handle graph_handle, uint64_t port_id);
 ladish_client_handle ladish_graph_find_client_by_name(ladish_graph_handle graph_handle, const char * name);
 ladish_port_handle ladish_graph_find_port_by_name(ladish_graph_handle graph_handle, ladish_client_handle client_handle, const char * name);
-ladish_client_handle ladish_graph_find_client_by_uuid(ladish_graph_handle graph_handle, uuid_t uuid);
-ladish_port_handle ladish_graph_find_port_by_uuid(ladish_graph_handle graph_handle, uuid_t uuid);
+ladish_client_handle ladish_graph_find_client_by_uuid(ladish_graph_handle graph_handle, const uuid_t uuid);
+ladish_port_handle ladish_graph_find_port_by_uuid(ladish_graph_handle graph_handle, const uuid_t uuid);
 ladish_client_handle ladish_graph_get_port_client(ladish_graph_handle graph_handle, ladish_port_handle port_handle);
 const char * ladish_graph_get_client_name(ladish_graph_handle graph_handle, ladish_client_handle client_handle);
 bool ladish_graph_is_client_empty(ladish_graph_handle graph_handle, ladish_client_handle client_handle);
