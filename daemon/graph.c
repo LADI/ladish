@@ -739,6 +739,8 @@ void ladish_hide_connections(struct ladish_graph * graph_ptr, struct ladish_grap
   struct list_head * node_ptr;
   struct ladish_graph_connection * connection_ptr;
 
+  log_info("hidding connections of port %"PRIu64, port_ptr->id);
+
   ASSERT(graph_ptr->opath != NULL);
 
   list_for_each(node_ptr, &graph_ptr->connections)
@@ -748,6 +750,7 @@ void ladish_hide_connections(struct ladish_graph * graph_ptr, struct ladish_grap
         (connection_ptr->port1_ptr == port_ptr || connection_ptr->port2_ptr == port_ptr) &&
         (connection_ptr->port1_ptr->hidden || connection_ptr->port2_ptr->hidden))
     {
+      log_info("hidding connection between ports %"PRIu64" and %"PRIu64, connection_ptr->port1_ptr->id, connection_ptr->port2_ptr->id);
       ladish_graph_hide_connection_internal(graph_ptr, connection_ptr);
     }
   }
@@ -1019,6 +1022,8 @@ void ladish_graph_hide_port(ladish_graph_handle graph_handle, ladish_port_handle
     ASSERT_NO_PASS;
     return;
   }
+
+  log_info("Hidding port %"PRIu64, port_ptr->id);
 
   if (graph_ptr->opath != NULL)
   {
