@@ -41,6 +41,7 @@
 #include "../dbus_constants.h"
 #include "../catdup.h"
 #include "dirhelpers.h"
+#include "a2j_proxy.h"
 
 bool g_quit;
 const char * g_dbus_unique_name;
@@ -284,6 +285,8 @@ int main(int argc, char ** argv, char ** envp)
   /* setup our SIGSEGV magic that prints nice stack in our logfile */ 
   setup_sigsegv();
 
+  a2j_proxy_init();
+
   if (!studio_init())
   {
     goto uninit_dbus;
@@ -301,6 +304,8 @@ int main(int argc, char ** argv, char ** envp)
   log_debug("Finished, cleaning up");
 
   studio_uninit();
+
+  a2j_proxy_uninit();
 
 uninit_dbus:
   disconnect_dbus();

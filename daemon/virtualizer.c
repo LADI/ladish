@@ -26,6 +26,7 @@
 
 #include "virtualizer.h"
 #include "../dbus_constants.h"
+#include "a2j_proxy.h"
 
 struct virtualizer
 {
@@ -42,6 +43,9 @@ UUID_DEFINE(g_system_capture_uuid,0x47,0xC1,0xCD,0x18,0x7B,0x21,0x43,0x89,0xBE,0
 /* b2a0bb06-28d8-4bfe-956e-eb24378f9629 */
 UUID_DEFINE(g_system_playback_uuid,0xB2,0xA0,0xBB,0x06,0x28,0xD8,0x4B,0xFE,0x95,0x6E,0xEB,0x24,0x37,0x8F,0x96,0x29);
 
+/* be23a242-e2b2-11de-b795-002618af5e42 */
+UUID_DEFINE(g_a2j_uuid,0xBE,0x23,0xA2,0x42,0xE2,0xB2,0x11,0xDE,0xB7,0x95,0x00,0x26,0x18,0xAF,0x5E,0x42);
+
 #define virtualizer_ptr ((struct virtualizer *)context)
 
 static void clear(void * context)
@@ -52,10 +56,23 @@ static void clear(void * context)
 static void client_appeared(void * context, uint64_t id, const char * name)
 {
   ladish_client_handle client;
+  const char * a2j_name;
+  bool is_a2j;
 
   log_info("client_appeared(%"PRIu64", %s)", id, name);
 
-  client = ladish_graph_find_client_by_name(virtualizer_ptr->jack_graph, name);
+  a2j_name = a2j_proxy_get_jack_client_name_cached();
+  is_a2j = a2j_name != NULL && strcmp(a2j_name, name) == 0;
+
+  if (is_a2j)
+  {
+    client = ladish_graph_find_client_by_uuid(virtualizer_ptr->jack_graph, g_a2j_uuid);
+  }
+  else
+  {
+    client = ladish_graph_find_client_by_name(virtualizer_ptr->jack_graph, name);
+  }
+
   if (client != NULL)
   {
     log_info("found existing client");
@@ -65,7 +82,7 @@ static void client_appeared(void * context, uint64_t id, const char * name)
     goto exit;
   }
 
-  if (!ladish_client_create(NULL, true, false, false, &client))
+  if (!ladish_client_create(is_a2j ? g_a2j_uuid : NULL, true, false, false, &client))
   {
     log_error("ladish_client_create() failed. Ignoring client %"PRIu64" (%s)", id, name);
     return;
@@ -119,22 +136,43 @@ static void client_disappeared(void * context, uint64_t id)
 
 static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, const char * port_name, bool is_input, bool is_terminal, bool is_midi)
 {
-  ladish_client_handle client;
+  ladish_client_handle jack_client;
+  ladish_client_handle studio_client;
   ladish_port_handle port;
   uint32_t type;
   uint32_t flags;
   const char * jack_client_name;
+  bool is_a2j;
+  uuid_t client_uuid;
+  char * alsa_client_name;
+  char * alsa_port_name;
+  uint32_t alsa_client_id;
 
   log_info("port_appeared(%"PRIu64", %"PRIu64", %s (%s, %s))", client_id, port_id, port_name, is_input ? "in" : "out", is_midi ? "midi" : "audio");
 
-  client = ladish_graph_find_client_by_jack_id(virtualizer_ptr->jack_graph, client_id);
-  if (client == NULL)
+  jack_client = ladish_graph_find_client_by_jack_id(virtualizer_ptr->jack_graph, client_id);
+  if (jack_client == NULL)
   {
     log_error("Port of unknown JACK client with id %"PRIu64" appeared", client_id);
-    return;
+    goto fail;
   }
 
-  jack_client_name = ladish_graph_get_client_name(virtualizer_ptr->jack_graph, client);
+  ladish_client_get_uuid(jack_client, client_uuid);
+  is_a2j = uuid_compare(client_uuid, g_a2j_uuid) == 0;
+  if (is_a2j)
+  {
+    log_info("a2j port appeared");
+    if (!a2j_proxy_map_jack_port(port_name, &alsa_client_name, &alsa_port_name, &alsa_client_id))
+    {
+      is_a2j = false;
+    }
+    else
+    {
+      log_info("a2j: '%s':'%s' (%"PRIu32")", alsa_client_name, alsa_port_name, alsa_client_id);
+    }
+  }
+
+  jack_client_name = ladish_graph_get_client_name(virtualizer_ptr->jack_graph, jack_client);
 
   type = is_midi ? JACKDBUS_PORT_TYPE_MIDI : JACKDBUS_PORT_TYPE_AUDIO;
   flags = is_input ? JACKDBUS_PORT_FLAG_INPUT : JACKDBUS_PORT_FLAG_OUTPUT;
@@ -143,7 +181,7 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
     flags |= JACKDBUS_PORT_FLAG_TERMINAL;
   }
 
-  port = ladish_graph_find_port_by_name(virtualizer_ptr->jack_graph, client, port_name);
+  port = ladish_graph_find_port_by_name(virtualizer_ptr->jack_graph, jack_client, port_name);
   if (port != NULL)
   {
     log_info("found existing port");
@@ -153,74 +191,95 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
     ladish_graph_adjust_port(virtualizer_ptr->jack_graph, port, type, flags);
     ladish_graph_show_port(virtualizer_ptr->jack_graph, port);
 
-    client = ladish_graph_get_port_client(virtualizer_ptr->studio_graph, port);
-    if (client == NULL)
+    studio_client = ladish_graph_get_port_client(virtualizer_ptr->studio_graph, port);
+    if (studio_client == NULL)
     {
       log_error("JACK port not found in studio graph");
       ASSERT_NO_PASS;
-      return;
+      goto free_alsa_names;
     }
 
-    ladish_client_set_jack_id(client, client_id);
+    ladish_client_set_jack_id(studio_client, client_id);
     ladish_graph_adjust_port(virtualizer_ptr->studio_graph, port, type, flags);
     ladish_graph_show_port(virtualizer_ptr->studio_graph, port);
-    return;
+    goto free_alsa_names;
   }
 
   if (!ladish_port_create(NULL, &port))
   {
     log_error("ladish_port_create() failed.");
-    return;
+    goto free_alsa_names;
   }
 
   ladish_port_set_jack_id(port, port_id);
 
-  if (!ladish_graph_add_port(virtualizer_ptr->jack_graph, client, port, port_name, type, flags, false))
+  if (!ladish_graph_add_port(virtualizer_ptr->jack_graph, jack_client, port, port_name, type, flags, false))
   {
     log_error("ladish_graph_add_port() failed.");
     ladish_port_destroy(port);
-    return;
+    goto free_alsa_names;
   }
 
-  if (client_id == virtualizer_ptr->system_client_id)
+  if (is_a2j)
+  {
+    studio_client = ladish_graph_find_client_by_name(virtualizer_ptr->studio_graph, alsa_client_name);
+    if (studio_client == NULL)
+    {
+        if (!ladish_client_create(g_a2j_uuid, true, false, true, &studio_client))
+        {
+          log_error("ladish_client_create() failed.");
+          goto free_alsa_names;
+        }
+
+        if (!ladish_graph_add_client(virtualizer_ptr->studio_graph, studio_client, alsa_client_name, false))
+        {
+          log_error("ladish_graph_add_client() failed.");
+          ladish_client_destroy(studio_client);
+          goto free_alsa_names;
+        }
+    }
+
+    port_name = alsa_port_name;
+  }
+  else if (client_id == virtualizer_ptr->system_client_id)
   {
     log_info("system client port appeared");
 
     if (!is_input)
     { /* output capture port */
 
-      client = ladish_graph_find_client_by_uuid(virtualizer_ptr->studio_graph, g_system_capture_uuid);
-      if (client == NULL)
+      studio_client = ladish_graph_find_client_by_uuid(virtualizer_ptr->studio_graph, g_system_capture_uuid);
+      if (studio_client == NULL)
       {
-        if (!ladish_client_create(g_system_capture_uuid, true, false, true, &client))
+        if (!ladish_client_create(g_system_capture_uuid, true, false, true, &studio_client))
         {
           log_error("ladish_client_create() failed.");
-          return;
+          goto free_alsa_names;
         }
 
-        if (!ladish_graph_add_client(virtualizer_ptr->studio_graph, client, "Hardware Capture", false))
+        if (!ladish_graph_add_client(virtualizer_ptr->studio_graph, studio_client, "Hardware Capture", false))
         {
           log_error("ladish_graph_add_client() failed.");
-          ladish_graph_remove_client(virtualizer_ptr->studio_graph, client, true);
-          return;
+          ladish_client_destroy(studio_client);
+          goto free_alsa_names;
         }
       }
     }
     else
     { /* input playback port */
-      client = ladish_graph_find_client_by_uuid(virtualizer_ptr->studio_graph, g_system_playback_uuid);
-      if (client == NULL)
+      studio_client = ladish_graph_find_client_by_uuid(virtualizer_ptr->studio_graph, g_system_playback_uuid);
+      if (studio_client == NULL)
       {
-        if (!ladish_client_create(g_system_playback_uuid, true, false, true, &client))
+        if (!ladish_client_create(g_system_playback_uuid, true, false, true, &studio_client))
         {
           log_error("ladish_client_create() failed.");
-          return;
+          goto free_alsa_names;
         }
 
-        if (!ladish_graph_add_client(virtualizer_ptr->studio_graph, client, "Hardware Playback", false))
+        if (!ladish_graph_add_client(virtualizer_ptr->studio_graph, studio_client, "Hardware Playback", false))
         {
-          ladish_graph_remove_client(virtualizer_ptr->studio_graph, client, true);
-          return;
+          ladish_client_destroy(studio_client);
+          goto free_alsa_names;
         }
       }
     }
@@ -229,31 +288,41 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
   { /* non-system client */
     log_info("non-system client port appeared");
 
-    client = ladish_graph_find_client_by_jack_id(virtualizer_ptr->studio_graph, client_id);
-    if (client == NULL)
+    studio_client = ladish_graph_find_client_by_jack_id(virtualizer_ptr->studio_graph, client_id);
+    if (studio_client == NULL)
     {
-      if (!ladish_client_create(NULL, false, false, false, &client))
+      if (!ladish_client_create(NULL, false, false, false, &studio_client))
       {
         log_error("ladish_client_create() failed.");
-        return;
+        goto free_alsa_names;
       }
 
-      ladish_client_set_jack_id(client, client_id);
+      ladish_client_set_jack_id(studio_client, client_id);
 
-      if (!ladish_graph_add_client(virtualizer_ptr->studio_graph, client, jack_client_name, false))
+      if (!ladish_graph_add_client(virtualizer_ptr->studio_graph, studio_client, jack_client_name, false))
       {
         log_error("ladish_graph_add_client() failed to add client '%s' to studio graph", jack_client_name);
-        ladish_client_destroy(client);
-        return;
+        ladish_client_destroy(studio_client);
+        goto free_alsa_names;
       }
     }
   }
 
-  if (!ladish_graph_add_port(virtualizer_ptr->studio_graph, client, port, port_name, type, flags, false))
+  if (!ladish_graph_add_port(virtualizer_ptr->studio_graph, studio_client, port, port_name, type, flags, false))
   {
     log_error("ladish_graph_add_port() failed.");
-    return;
+    goto free_alsa_names;
   }
+
+free_alsa_names:
+  if (is_a2j)
+  {
+    free(alsa_client_name);
+    free(alsa_port_name);
+  }
+
+fail:
+  return;
 }
 
 static void port_disappeared(void * context, uint64_t client_id, uint64_t port_id)

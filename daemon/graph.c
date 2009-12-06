@@ -1213,7 +1213,7 @@ ladish_graph_add_port(
   client_ptr = ladish_graph_find_client(graph_ptr, client_handle);
   if (client_ptr == NULL)
   {
-    log_error("cannot find client to add port to");
+    log_error("cannot find client to add port to. graph is %s", graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
     ASSERT_NO_PASS;
     return false;
   }
