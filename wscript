@@ -290,7 +290,7 @@ def build(bld):
             'graph_view.c',
             #'project_properties.cpp',
             #'session.cpp',
-            #'a2j_proxy.cpp',
+            'a2j_proxy.c',
             'dbus_helpers.c',
             'canvas.cpp',
             'graph_canvas.c',

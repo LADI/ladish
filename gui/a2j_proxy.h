@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to code that interfaces a2jmidid through D-Bus
@@ -27,36 +27,22 @@
 #ifndef A2J_PROXY_HPP__24525CB1_8AED_4697_8C56_5C57473839CC__INCLUDED
 #define A2J_PROXY_HPP__24525CB1_8AED_4697_8C56_5C57473839CC__INCLUDED
 
-struct a2j_proxy_impl;
+typedef struct a2j_proxy_tag { int unused; } * a2j_proxy_handle;
 
-#define A2J_STATUS_NO_RESPONSE     0
-#define A2J_STATUS_BRIDGE_STOPPED  1
-#define A2J_STATUS_BRIDGE_STARTED  2
+bool a2j_proxy_init(void);
+void a2j_proxy_uninit(void);
+const char * a2j_proxy_get_jack_client_name_cached(void);
+bool a2j_proxy_get_jack_client_name_noncached(char ** client_name_ptr_ptr);
 
-class a2j_proxy
-{
-public:
-  a2j_proxy();
-  ~a2j_proxy();
-
-  const char *
-  get_jack_client_name();
-
-  bool
-  map_jack_port(
+bool
+a2j_proxy_map_jack_port(
     const char * jack_port_name,
-    std::string& alsa_client_name,
-    std::string& alsa_port_name,
-    uint32_t& alsa_client_id);
+    char ** alsa_client_name_ptr_ptr,
+    char ** alsa_port_name_ptr_ptr,
+    uint32_t * alsa_client_id_ptr);
 
-  void
-  start_bridge();
-
-  void
-  stop_bridge();
-
-private:
-  a2j_proxy_impl * _impl_ptr;
-};
+bool a2j_proxy_is_started(void);
+bool a2j_proxy_start_bridge(void);
+bool a2j_proxy_stop_bridge(void);
 
 #endif // #ifndef A2J_PROXY_HPP__24525CB1_8AED_4697_8C56_5C57473839CC__INCLUDED
