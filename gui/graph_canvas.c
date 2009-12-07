@@ -308,6 +308,11 @@ client_appeared(
     return;
   }
 
+  if (x_str == NULL || y_str == NULL)
+  { /* we have generated random value, store it */
+    module_location_changed(client_ptr, x, y);
+  }
+
   list_add_tail(&client_ptr->siblings, &graph_canvas_ptr->clients);
 }
 
