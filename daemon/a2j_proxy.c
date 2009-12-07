@@ -171,11 +171,6 @@ void a2j_proxy_uninit(void)
 
 const char * a2j_proxy_get_jack_client_name_cached(void)
 {
-  if (!g_a2j_started)
-  {
-    return NULL;
-  }
-
   if (g_a2j_jack_client_name == NULL)
   {
     a2j_proxy_get_jack_client_name_noncached(&g_a2j_jack_client_name);
