@@ -307,6 +307,9 @@ void ladish_app_supervisor_proxy_destroy(ladish_app_supervisor_proxy_handle prox
 bool ladish_app_supervisor_proxy_run_custom(ladish_app_supervisor_proxy_handle proxy, const char * command, const char * name, bool run_in_terminal)
 {
   dbus_bool_t terminal;
+
+  terminal = run_in_terminal;
+
   if (!dbus_call(proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "RunCustom", "bss", &terminal, &command, &name, ""))
   {
     log_error("RunCustom() failed.");
