@@ -48,14 +48,12 @@ public:
 
   virtual ~canvas_cls() {}
 
-#if 0
   virtual void on_realize()
   {
     log_info("canvas_cls::on_realize");
     FlowCanvas::Canvas::on_realize();
-    //scroll_to_center();
+    scroll_to_center();
   }
-#endif
 
   virtual void on_size_allocate(Gtk::Allocation& allocation)
   {
