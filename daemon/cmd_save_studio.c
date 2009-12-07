@@ -652,6 +652,12 @@ static bool run(void * command_context)
 
   ret = false;
 
+  if (!studio_is_started())
+  {
+    log_error("Cannot save not-started studio");
+    goto exit;
+  }
+
   if (!studio_compose_filename(g_studio.name, &filename, &bak_filename))
   {
     log_error("failed to compose studio filename");

@@ -540,6 +540,18 @@ static void ladish_save_studio(struct dbus_method_call * call_ptr)
 {
   log_info("Save studio request");
 
+  /* FIXME: this is wrong place to do such check because state before
+     command execution needs to be checked and not state before
+     command is submited, but doing it here will show error to
+     user. Once notification mechanism is implemented, the
+     studio_is_started() check in save command run menthod
+     will send a notification and this check must be removed. */
+  if (!studio_is_started())
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Cannot save not-started studio");
+    return;
+  }
+
   if (ladish_command_save_studio(call_ptr, &g_studio.cmd_queue))
   {
     method_return_new_void(call_ptr);

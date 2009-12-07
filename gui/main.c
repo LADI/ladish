@@ -73,6 +73,8 @@ graph_view_handle g_studio_view = NULL;
 
 static guint g_jack_poll_source_tag;
 static double g_jack_max_dsp_load = 0.0;
+static bool g_studio_started = false;
+static bool g_studio_loaded = false;
 
 struct studio_list
 {
@@ -479,9 +481,24 @@ static gboolean poll_jack(gpointer data)
   return TRUE;
 }
 
+void studio_state_changed(void)
+{
+  gtk_widget_set_sensitive(g_menu_item_start_studio, g_studio_loaded);
+  gtk_widget_set_sensitive(g_menu_item_stop_studio, g_studio_loaded);
+  gtk_widget_set_sensitive(g_menu_item_save_studio, g_studio_loaded && g_studio_started);
+  gtk_widget_set_sensitive(g_menu_item_unload_studio, g_studio_loaded);
+  gtk_widget_set_sensitive(g_menu_item_rename_studio, g_studio_loaded);
+  gtk_widget_set_sensitive(g_menu_item_start_app, g_studio_loaded);
+  //gtk_widget_set_sensitive(g_menu_item_create_room, g_studio_loaded);
+  //gtk_widget_set_sensitive(g_menu_item_destroy_room, g_studio_loaded);
+  //gtk_widget_set_sensitive(g_menu_item_load_project, g_studio_loaded);
+}
+
 void control_proxy_on_studio_appeared(void)
 {
   char * name;
+
+  g_studio_loaded = true;
 
   if (!studio_proxy_get_name(&name))
   {
@@ -501,15 +518,7 @@ void control_proxy_on_studio_appeared(void)
     goto free_name;
   }
 
-  gtk_widget_set_sensitive(g_menu_item_start_studio, true);
-  gtk_widget_set_sensitive(g_menu_item_stop_studio, true);
-  gtk_widget_set_sensitive(g_menu_item_save_studio, true);
-  gtk_widget_set_sensitive(g_menu_item_unload_studio, true);
-  gtk_widget_set_sensitive(g_menu_item_rename_studio, true);
-  gtk_widget_set_sensitive(g_menu_item_start_app, true);
-  //gtk_widget_set_sensitive(g_menu_item_create_room, true);
-  //gtk_widget_set_sensitive(g_menu_item_destroy_room, true);
-  //gtk_widget_set_sensitive(g_menu_item_load_project, true);
+  studio_state_changed();
 
   gtk_label_set_text(GTK_LABEL(g_studio_status_label), name);
 
@@ -528,15 +537,9 @@ void control_proxy_on_studio_disappeared(void)
     return;
   }
 
-  gtk_widget_set_sensitive(g_menu_item_start_studio, false);
-  gtk_widget_set_sensitive(g_menu_item_stop_studio, false);
-  gtk_widget_set_sensitive(g_menu_item_save_studio, false);
-  gtk_widget_set_sensitive(g_menu_item_unload_studio, false);
-  gtk_widget_set_sensitive(g_menu_item_rename_studio, false);
-  gtk_widget_set_sensitive(g_menu_item_start_app, false);
-  //gtk_widget_set_sensitive(g_menu_item_create_room, false);
-  //gtk_widget_set_sensitive(g_menu_item_destroy_room, false);
-  //gtk_widget_set_sensitive(g_menu_item_load_project, false);
+  g_studio_loaded = false;
+
+  studio_state_changed();
 
   gtk_label_set_text(GTK_LABEL(g_studio_status_label), "No studio loaded");
 
@@ -559,6 +562,10 @@ void jack_started(void)
 {
   log_info("JACK started");
 
+  g_studio_started = true;
+
+  studio_state_changed();
+
   gtk_widget_set_sensitive(g_buffer_size_combo, true);
   gtk_widget_set_sensitive(g_clear_load_button, true);
 
@@ -569,7 +576,11 @@ void jack_stopped(void)
 {
   log_info("JACK stopped");
 
+  g_studio_started = false;
+
   g_source_remove(g_jack_poll_source_tag);
+
+  studio_state_changed();
 
   gtk_widget_set_sensitive(g_buffer_size_combo, false);
   buffer_size_clear();
