@@ -1756,14 +1756,15 @@ ladish_graph_iterate_nodes(
   list_for_each(client_node_ptr, &graph_ptr->clients)
   {
     client_ptr = list_entry(client_node_ptr, struct ladish_graph_client, siblings);
-    if (!client_begin_callback(callback_context, client_ptr->client, client_ptr->name, &client_context))
-    {
-      return false;
-    }
 
     if (client_ptr->hidden)
     {
       continue;
+    }
+
+    if (!client_begin_callback(callback_context, client_ptr->client, client_ptr->name, &client_context))
+    {
+      return false;
     }
 
     list_for_each(port_node_ptr, &client_ptr->ports)
