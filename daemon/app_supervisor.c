@@ -32,6 +32,7 @@
 #include "../dbus/error.h"
 #include "../dbus_constants.h"
 #include "loader.h"
+#include "studio_internal.h"
 
 struct ladish_app
 {
@@ -565,7 +566,7 @@ static void run_custom(struct dbus_method_call * call_ptr)
     index++;
   }
 
-  app_ptr = add_app_internal(supervisor_ptr, name, commandline, terminal, false, 0);
+  app_ptr = add_app_internal(supervisor_ptr, name, commandline, terminal, true, 0);
 
   free(name);
 
@@ -575,16 +576,19 @@ static void run_custom(struct dbus_method_call * call_ptr)
     return;
   }
 
-  if (!loader_execute(supervisor_ptr->name, app_ptr->name, "/", terminal, commandline, &app_ptr->pid))
+  if (studio_is_started())
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Execution of '%s' failed",  commandline);
-    remove_app_internal(supervisor_ptr, app_ptr);
-    return;
+    if (!loader_execute(supervisor_ptr->name, app_ptr->name, "/", terminal, commandline, &app_ptr->pid))
+    {
+      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Execution of '%s' failed",  commandline);
+      remove_app_internal(supervisor_ptr, app_ptr);
+      return;
+    }
+
+    log_info("%s pid is %lu", app_ptr->name, (unsigned long)app_ptr->pid);
+
+    emit_app_state_changed(supervisor_ptr, app_ptr);
   }
-
-  log_info("%s pid is %lu", app_ptr->name, (unsigned long)app_ptr->pid);
-
-  emit_app_state_changed(supervisor_ptr, app_ptr);
 
   method_return_new_void(call_ptr);
 }
