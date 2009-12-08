@@ -566,18 +566,19 @@ static void run_custom(struct dbus_method_call * call_ptr)
   }
 
   app_ptr = add_app_internal(supervisor_ptr, name, commandline, terminal, false, 0);
+
+  free(name);
+
   if (app_ptr == NULL)
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "add_app_internal() failed");
-    free(name);
     return;
   }
 
-  if (!loader_execute(supervisor_ptr->name, name, "/", terminal, commandline, &app_ptr->pid))
+  if (!loader_execute(supervisor_ptr->name, app_ptr->name, "/", terminal, commandline, &app_ptr->pid))
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Execution of '%s' failed",  commandline);
     remove_app_internal(supervisor_ptr, app_ptr);
-    free(name);
     return;
   }
 
