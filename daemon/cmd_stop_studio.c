@@ -46,6 +46,7 @@ static bool run(void * context)
   case LADISH_COMMAND_STATE_PENDING:
     if (!studio_is_started())
     {
+      log_info("Ignoring stop request because studio is already stopped.");
       /* nothing to do, studio is not running */
       cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;
       return true;
@@ -82,6 +83,7 @@ static bool run(void * context)
 
       if (!jack_server_started)
       {
+        ladish_environment_reset_stealth(&g_studio.env_store, ladish_environment_jack_server_started);
         goto done;
       }
 
@@ -106,6 +108,8 @@ static bool run(void * context)
   done:
     log_info("Wait for JACK server stop complete.");
 
+    ladish_graph_hide_all(g_studio.jack_graph);
+    ladish_graph_hide_all(g_studio.studio_graph);
     ASSERT(!jack_server_started);
 
     ladish_graph_dump(g_studio.studio_graph);

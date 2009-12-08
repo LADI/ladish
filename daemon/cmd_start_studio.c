@@ -38,6 +38,7 @@ static bool run(void * context)
   case LADISH_COMMAND_STATE_PENDING:
     if (studio_is_started())
     {
+      log_info("Ignoring start request because studio is already started.");
       /* nothing to do, studio is already running */
       cmd_ptr->state = LADISH_COMMAND_STATE_DONE;
       return true;

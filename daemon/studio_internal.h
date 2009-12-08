@@ -66,11 +66,23 @@ static inline void ladish_environment_set(ladish_environment_store * store_ptr, 
   store_ptr->changed |= state;
 }
 
+static inline void ladish_environment_set_stealth(ladish_environment_store * store_ptr, ladish_environment_id id)
+{
+  uint64_t state = ladish_environment_state(id);
+  store_ptr->state |= state;
+}
+
 static inline void ladish_environment_reset(ladish_environment_store * store_ptr, ladish_environment_id id)
 {
   uint64_t state = ladish_environment_state(id);
   store_ptr->state &= ~state;
   store_ptr->changed |= state;
+}
+
+static inline void ladish_environment_reset_stealth(ladish_environment_store * store_ptr, ladish_environment_id id)
+{
+  uint64_t state = ladish_environment_state(id);
+  store_ptr->state &= ~state;
 }
 
 static inline bool ladish_environment_get(ladish_environment_store * store_ptr, ladish_environment_id id)
