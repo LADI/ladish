@@ -606,6 +606,8 @@ void jack_disappeared(void)
 {
   log_info("JACK disappeared");
 
+  jack_stopped();
+
 #if defined(SHOW_RAW_JACK)
   if (g_jack_view != NULL)
   {
