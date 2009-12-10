@@ -58,8 +58,16 @@ static void client_appeared(void * context, uint64_t id, const char * name)
   ladish_client_handle client;
   const char * a2j_name;
   bool is_a2j;
+  int64_t pid;
 
   log_info("client_appeared(%"PRIu64", %s)", id, name);
+
+  if (!graph_proxy_get_client_pid(virtualizer_ptr->jack_graph_proxy, id, &pid))
+  {
+    pid = 0;
+  }
+
+  log_info("client pid is %"PRId64, pid);
 
   a2j_name = a2j_proxy_get_jack_client_name_cached();
   is_a2j = a2j_name != NULL && strcmp(a2j_name, name) == 0;

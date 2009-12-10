@@ -862,3 +862,14 @@ graph_proxy_dict_entry_drop(
 
   return true;
 }
+
+bool graph_proxy_get_client_pid(graph_proxy_handle graph, uint64_t client_id, int64_t * pid_ptr)
+{
+  if (!dbus_call(graph_ptr->service, graph_ptr->object, JACKDBUS_IFACE_PATCHBAY, "GetClientPID", "t", &client_id, "x", pid_ptr))
+  {
+    log_error("GetClientPID() failed.");
+    return false;
+  }
+
+  return true;
+}
