@@ -10,6 +10,7 @@ import re
 APPNAME='ladish'
 VERSION='0.2'
 DBUS_NAME_BASE = 'org.ladish'
+RELEASE = False
 
 # these variables are mandatory ('/' are converted automatically)
 srcdir = '.'
@@ -40,10 +41,15 @@ def set_options(opt):
     opt.tool_options('boost')
     opt.add_option('--enable-pkg-config-dbus-service-dir', action='store_true', default=False, help='force D-Bus service install dir to be one returned by pkg-config')
     opt.add_option('--enable-liblash', action='store_true', default=False, help='Build LASH compatibility library')
+    if RELEASE:
+        opt.add_option('--debug', action='store_true', default=False, dest='debug', help="Build debuggable binaries")
 
 def add_cflag(conf, flag):
     conf.env.append_unique('CXXFLAGS', flag)
     conf.env.append_unique('CCFLAGS', flag)
+
+def add_linkflag(conf, flag):
+    conf.env.append_unique('LINKFLAGS', flag)
 
 def configure(conf):
     conf.check_tool('compiler_cc')
@@ -129,9 +135,15 @@ def configure(conf):
 
     conf.env['BUILD_GLADISH'] = build_gui
 
-    add_cflag(conf, '-g')
-    add_cflag(conf, '-Wall')
-    add_cflag(conf, '-Werror')
+    conf.env['BUILD_WERROR'] = not RELEASE
+    if conf.env['BUILD_WERROR']:
+        add_cflag(conf, '-Wall')
+        add_cflag(conf, '-Werror')
+
+    conf.env['BUILD_DEBUG'] = not RELEASE or Options.options.debug
+    if conf.env['BUILD_DEBUG']:
+        add_cflag(conf, '-g')
+        add_linkflag(conf, '-g')
 
     conf.define('DATA_DIR', os.path.normpath(os.path.join(conf.env['PREFIX'], 'share', APPNAME)))
     conf.define('PACKAGE_VERSION', VERSION)
@@ -161,6 +173,8 @@ def configure(conf):
 
     display_msg(conf, 'Build gladish', yesno(conf.env['BUILD_GLADISH']))
     display_msg(conf, 'Build liblash', yesno(Options.options.enable_liblash))
+    display_msg(conf, 'Treat warnings as errors', yesno(conf.env['BUILD_WERROR']))
+    display_msg(conf, 'Debuggable binaries', yesno(conf.env['BUILD_DEBUG']))
 
     if conf.env['DBUS_SERVICES_DIR'] != conf.env['DBUS_SERVICES_DIR_REAL']:
         display_msg(conf)
