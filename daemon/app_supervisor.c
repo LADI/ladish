@@ -520,6 +520,7 @@ static void run_custom(struct dbus_method_call * call_ptr)
   const char * commandline;
   const char * name_param;
   char * name;
+  char * name_buffer;
   size_t len;
   char * end;
   unsigned int index;
@@ -544,12 +545,14 @@ static void run_custom(struct dbus_method_call * call_ptr)
   {
     /* allocate and copy app name */
     len = strlen(name_param);
-    name = malloc(len + 100);
-    if (name == NULL)
+    name_buffer = malloc(len + 100);
+    if (name_buffer == NULL)
     {
       lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "malloc of app name failed");
       return;
     }
+
+    name = name_buffer;
 
     strcpy(name, name_param);
 
@@ -559,17 +562,17 @@ static void run_custom(struct dbus_method_call * call_ptr)
   {
     /* allocate app name */
     len = strlen(commandline) + 100;
-    name = malloc(len);
-    if (name == NULL)
+    name_buffer = malloc(len);
+    if (name_buffer == NULL)
     {
       lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "malloc of app name failed");
       return;
     }
 
-    strcpy(name, commandline);
+    strcpy(name_buffer, commandline);
 
     /* use first word as name */
-    end = name;
+    end = name_buffer;
     while (*end)
     {
       if (isspace(*end))
@@ -579,6 +582,16 @@ static void run_custom(struct dbus_method_call * call_ptr)
       }
 
       end++;
+    }
+
+    name = strrchr(name_buffer, '/');
+    if (name == NULL)
+    {
+      name = name_buffer;
+    }
+    else
+    {
+      name++;
     }
   }
 
@@ -592,7 +605,7 @@ static void run_custom(struct dbus_method_call * call_ptr)
 
   app_ptr = add_app_internal(supervisor_ptr, name, commandline, terminal, true, 0);
 
-  free(name);
+  free(name_buffer);
 
   if (app_ptr == NULL)
   {
