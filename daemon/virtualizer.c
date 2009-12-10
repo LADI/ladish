@@ -49,25 +49,13 @@ UUID_DEFINE(g_system_playback_uuid,0xB2,0xA0,0xBB,0x06,0x28,0xD8,0x4B,0xFE,0x95,
 /* be23a242-e2b2-11de-b795-002618af5e42 */
 UUID_DEFINE(g_a2j_uuid,0xBE,0x23,0xA2,0x42,0xE2,0xB2,0x11,0xDE,0xB7,0x95,0x00,0x26,0x18,0xAF,0x5E,0x42);
 
-#define virtualizer_ptr ((struct virtualizer *)context)
-
-static void clear(void * context)
+char * get_app_name(struct virtualizer * virtualizer_ptr, uint64_t client_id)
 {
-  log_info("clear");
-}
-
-static void client_appeared(void * context, uint64_t id, const char * name)
-{
-  ladish_client_handle client;
-  const char * a2j_name;
-  bool is_a2j;
   int64_t pid;
   unsigned long long ppid;
   char * app_name;
 
-  log_info("client_appeared(%"PRIu64", %s)", id, name);
-
-  if (!graph_proxy_get_client_pid(virtualizer_ptr->jack_graph_proxy, id, &pid))
+  if (!graph_proxy_get_client_pid(virtualizer_ptr->jack_graph_proxy, client_id, &pid))
   {
     pid = 0;
   }
@@ -90,9 +78,30 @@ static void client_appeared(void * context, uint64_t id, const char * name)
     }
   }
 
+  return app_name;
+}
+
+#define virtualizer_ptr ((struct virtualizer *)context)
+
+static void clear(void * context)
+{
+  log_info("clear");
+}
+
+static void client_appeared(void * context, uint64_t id, const char * name)
+{
+  ladish_client_handle client;
+  const char * a2j_name;
+  bool is_a2j;
+  char * app_name;
+
+  log_info("client_appeared(%"PRIu64", %s)", id, name);
+
+  app_name = get_app_name(virtualizer_ptr, id);
   if (app_name != NULL)
   {
     log_info("app name is '%s'", app_name);
+    name = app_name;
   }
 
   a2j_name = a2j_proxy_get_jack_client_name_cached();
