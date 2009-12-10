@@ -32,6 +32,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <errno.h>
 
 #include "procfs.h"
 
@@ -110,6 +111,18 @@ loop:
     close(fd);
     return false;
   }
+
+  if (used_size == buffer_size)
+  {
+    buffer_ptr = realloc(buffer_ptr, buffer_size + 1);
+    if (buffer_ptr == NULL)
+    {
+      log_error("realloc failed to allocate buffer with size %zu", buffer_size + 1);
+      return false;
+    }
+  }
+
+  buffer_ptr[buffer_size] = 0;
 
   *buffer_ptr_ptr = buffer_ptr;
   *size_ptr = used_size;
@@ -233,4 +246,67 @@ procfs_get_process_cwd(
   unsigned long long pid)
 {
   return procfs_get_process_link(pid, "cwd");
+}
+
+unsigned long long
+procfs_get_process_parent(
+  unsigned long long pid)
+{
+  char * buffer_ptr;
+  size_t buffer_size;
+  char * begin;
+  char * end;
+  unsigned long long ppid;
+
+  if (!procfs_get_process_file(pid, "status", &buffer_ptr, &buffer_size))
+  {
+    return 0;
+  }
+
+  begin = strstr(buffer_ptr, "\nPPid:\t");
+  if (begin == NULL)
+  {
+    log_error("parent pid not parsed for %llu", pid);
+    log_error("-----------------------------");
+    log_error("%s", buffer_ptr);
+    log_error("-----------------------------");
+    return 0;
+  }
+
+  begin += 7;
+
+  end = strchr(begin, '\n');
+  if (end == NULL)
+  {
+    log_error("parent pid not parsed for %llu (end)", pid);
+    log_error("-----------------------------");
+    log_error("%s", buffer_ptr);
+    log_error("-----------------------------");
+    return 0;
+  }
+
+  *end = 0;
+  //log_info("parent pid is %s", begin);
+
+  errno = 0;
+  ppid = strtoull(begin, &end, 10);
+  if (errno != 0)
+  {
+    log_error("strtoull failed to convert '%s' to integer", begin);
+    ppid = 0;
+  }
+  else
+  {
+    //log_info("parent pid is %llu", ppid);
+  }
+
+  /* avoid infinite cycles (should not happen because init has pid 1 and parent 0) */
+  if (ppid == pid)
+  {
+    ppid = 0;
+  }
+
+  free(buffer_ptr);
+
+  return ppid;
 }

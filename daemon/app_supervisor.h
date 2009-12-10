@@ -58,4 +58,6 @@ void ladish_app_supervisor_autorun(ladish_app_supervisor_handle supervisor_handl
 
 extern const struct dbus_interface_descriptor g_iface_app_supervisor;
 
+char * ladish_app_supervisor_search_app(ladish_app_supervisor_handle supervisor_handle, pid_t pid);
+
 #endif /* #ifndef APP_SUPERVISOR_H__712E6589_DCB1_4CE9_9812_4F250D55E8A2__INCLUDED */

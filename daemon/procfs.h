@@ -39,4 +39,8 @@ char *
 procfs_get_process_cwd(
   unsigned long long pid);
 
+unsigned long long
+procfs_get_process_parent(
+  unsigned long long pid);
+
 #endif /* #ifndef PROCFS_H__604D0D94_1609_4BB4_BFA7_5DC47830011A__INCLUDED */

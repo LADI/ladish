@@ -27,6 +27,9 @@
 #include "virtualizer.h"
 #include "../dbus_constants.h"
 #include "a2j_proxy.h"
+#include "procfs.h"
+#include "app_supervisor.h"
+#include "studio_internal.h"
 
 struct virtualizer
 {
@@ -59,6 +62,8 @@ static void client_appeared(void * context, uint64_t id, const char * name)
   const char * a2j_name;
   bool is_a2j;
   int64_t pid;
+  unsigned long long ppid;
+  char * app_name;
 
   log_info("client_appeared(%"PRIu64", %s)", id, name);
 
@@ -68,6 +73,27 @@ static void client_appeared(void * context, uint64_t id, const char * name)
   }
 
   log_info("client pid is %"PRId64, pid);
+  app_name = NULL;
+  if (pid != 0)
+  {
+    ppid = (unsigned long long)pid;
+  loop:
+    app_name = ladish_app_supervisor_search_app(g_studio.app_supervisor, ppid);
+    if (app_name == NULL)
+    {
+      ppid = procfs_get_process_parent(ppid);
+      if (ppid != 0)
+      {
+        //log_info("parent pid %llu", ppid);
+        goto loop;
+      }
+    }
+  }
+
+  if (app_name != NULL)
+  {
+    log_info("app name is '%s'", app_name);
+  }
 
   a2j_name = a2j_proxy_get_jack_client_name_cached();
   is_a2j = a2j_name != NULL && strcmp(a2j_name, name) == 0;
@@ -109,6 +135,11 @@ exit:
   if (strcmp(name, "system") == 0)
   {
     virtualizer_ptr->system_client_id = id;
+  }
+
+  if (app_name != NULL)
+  {
+    free(app_name);
   }
 }
 
