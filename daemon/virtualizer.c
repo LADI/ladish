@@ -249,9 +249,9 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
 
   /********************/
 
-  if (!is_a2j)                  /* a2j ports dont exist in JACK graph */
+  if (!is_a2j) /* a2j jack port names are not persistent because they contain ALSA client ID */
   {
-    /* search the appeared port in jack graph
+    /* search (by name) the appeared port in jack graph
      * if found - show it in both graphs.
      * if not found - create new port and add it to the jack graph.
      * The process to adding it to studio graph */
@@ -298,8 +298,8 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
   }
   else
   {
-    /* a2j ports are present and referenced from the jack graph so the port
-     * will be found/created later, when studio graph is inspected */
+    /* a2j ports are present and referenced from the jack graph their names in the JACK graph are invalid
+     * so they will be searched by uuid when studio graph is inspected later. */
     port = NULL;
   }
 
@@ -336,8 +336,13 @@ static void port_appeared(void * context, uint64_t client_id, uint64_t port_id, 
       { /* found existing port - show it */
         ASSERT(ladish_port_get_jack_id(port) == 0); /* two a2j ports with same name? */
         ladish_port_set_jack_id(port, port_id); /* set port jack id so invisible connections to/from it can be restored */
+
+        ladish_graph_adjust_port(virtualizer_ptr->jack_graph, port, type, flags);
+        ladish_graph_show_port(virtualizer_ptr->jack_graph, port);
+
         ladish_graph_adjust_port(virtualizer_ptr->studio_graph, port, type, flags);
         ladish_graph_show_port(virtualizer_ptr->studio_graph, port);
+
         goto free_alsa_names;
       }
     }
