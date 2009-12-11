@@ -592,6 +592,7 @@ ladish_virtualizer_destroy(
   log_info("ladish_virtualizer_destroy() called");
 
   graph_proxy_detach((graph_proxy_handle)handle, virtualizer_ptr);
+  free(virtualizer_ptr);
 }
 
 #undef virtualizer_ptr
