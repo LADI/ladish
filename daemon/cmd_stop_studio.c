@@ -57,6 +57,9 @@ static bool run(void * context)
       return true;
     }
 
+    ladish_graph_dump(g_studio.jack_graph);
+    ladish_graph_dump(g_studio.studio_graph);
+
     ladish_app_supervisor_stop(g_studio.app_supervisor);
 
     cmd_ptr->command.state = LADISH_COMMAND_STATE_WAITING;
