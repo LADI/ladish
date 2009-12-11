@@ -114,6 +114,7 @@ void ladish_port_get_uuid(ladish_port_handle port_handle, uuid_t uuid)
 
 void ladish_port_set_jack_id(ladish_port_handle port_handle, uint64_t jack_id)
 {
+  log_info("port jack id set to %"PRIu64, jack_id);
   port_ptr->jack_id = jack_id;
 }
 

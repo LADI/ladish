@@ -1228,7 +1228,7 @@ ladish_graph_add_port(
     return false;
   }
 
-  log_info("adding port '%s':'%s' (%p) to graph %s", client_ptr->name, name, port_handle, graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
+  log_info("adding port '%s':'%s' (%p) to client '%s' in graph %s", client_ptr->name, name, port_handle, client_ptr->name, graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
 
   port_ptr = malloc(sizeof(struct ladish_graph_port));
   if (port_ptr == NULL)
@@ -1675,12 +1675,12 @@ bool ladish_graph_is_client_looks_empty(ladish_graph_handle graph_handle, ladish
       port_ptr = list_entry(node_ptr, struct ladish_graph_port, siblings_client);
       if (!port_ptr->hidden)
       {
-        log_info("port '%s' is visible, client '%s' does not look empty", port_ptr->name, client_ptr->name);
+        //log_info("port '%s' is visible, client '%s' does not look empty", port_ptr->name, client_ptr->name);
         return false;
       }
       else
       {
-        log_info("port '%s' is invisible", port_ptr->name);
+        //log_info("port '%s' is invisible", port_ptr->name);
       }
     }
 
