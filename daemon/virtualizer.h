@@ -40,6 +40,10 @@ ladish_virtualizer_create(
   ladish_graph_handle studio_graph,
   ladish_virtualizer_handle * handle_ptr);
 
+unsigned int
+ladish_virtualizer_get_our_clients_count(
+  ladish_virtualizer_handle handle);
+
 void
 ladish_virtualizer_destroy(
   ladish_virtualizer_handle handle);

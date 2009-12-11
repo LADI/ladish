@@ -143,4 +143,14 @@ uint64_t ladish_client_get_jack_id(ladish_client_handle client_handle)
   return client_ptr->jack_id;
 }
 
+void ladish_client_set_pid(ladish_client_handle client_handle, pid_t pid)
+{
+  client_ptr->pid = pid;
+}
+
+pid_t ladish_client_get_pid(ladish_client_handle client_handle)
+{
+  return client_ptr->pid;
+}
+
 #undef client_ptr

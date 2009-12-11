@@ -38,6 +38,7 @@ struct virtualizer
   ladish_graph_handle jack_graph;
   ladish_graph_handle studio_graph;
   uint64_t system_client_id;
+  unsigned int our_clients_count;
 };
 
 /* 47c1cd18-7b21-4389-bec4-6e0658e1d6b1 */
@@ -49,7 +50,7 @@ UUID_DEFINE(g_system_playback_uuid,0xB2,0xA0,0xBB,0x06,0x28,0xD8,0x4B,0xFE,0x95,
 /* be23a242-e2b2-11de-b795-002618af5e42 */
 UUID_DEFINE(g_a2j_uuid,0xBE,0x23,0xA2,0x42,0xE2,0xB2,0x11,0xDE,0xB7,0x95,0x00,0x26,0x18,0xAF,0x5E,0x42);
 
-char * get_app_name(struct virtualizer * virtualizer_ptr, uint64_t client_id)
+char * get_app_name(struct virtualizer * virtualizer_ptr, uint64_t client_id, pid_t * app_pid_ptr)
 {
   int64_t pid;
   unsigned long long ppid;
@@ -78,6 +79,8 @@ char * get_app_name(struct virtualizer * virtualizer_ptr, uint64_t client_id)
     }
   }
 
+  *app_pid_ptr = (pid_t)ppid;
+
   return app_name;
 }
 
@@ -94,6 +97,7 @@ static void client_appeared(void * context, uint64_t id, const char * name)
   const char * a2j_name;
   bool is_a2j;
   char * app_name = NULL;
+  pid_t pid;
 
   log_info("client_appeared(%"PRIu64", %s)", id, name);
 
@@ -106,7 +110,7 @@ static void client_appeared(void * context, uint64_t id, const char * name)
   }
   else
   {
-    app_name = get_app_name(virtualizer_ptr, id);
+    app_name = get_app_name(virtualizer_ptr, id, &pid);
     if (app_name != NULL)
     {
       log_info("app name is '%s'", app_name);
@@ -148,6 +152,8 @@ exit:
 
   if (app_name != NULL)
   {
+    ladish_client_set_pid(client, pid);
+    virtualizer_ptr->our_clients_count++;
     free(app_name);
   }
 }
@@ -155,6 +161,7 @@ exit:
 static void client_disappeared(void * context, uint64_t id)
 {
   ladish_client_handle client;
+  pid_t pid;
 
   log_info("client_disappeared(%"PRIu64")", id);
 
@@ -163,6 +170,12 @@ static void client_disappeared(void * context, uint64_t id)
   {
     log_error("Unknown JACK client with id %"PRIu64" disappeared", id);
     return;
+  }
+
+  pid = ladish_client_get_pid(client);
+  if (pid != 0)
+  {
+    virtualizer_ptr->our_clients_count--;
   }
 
   if (id == virtualizer_ptr->system_client_id)
@@ -561,6 +574,7 @@ ladish_virtualizer_create(
   virtualizer_ptr->jack_graph = jack_graph;
   virtualizer_ptr->studio_graph = studio_graph;
   virtualizer_ptr->system_client_id = 0;
+  virtualizer_ptr->our_clients_count = 0;
 
   if (!graph_proxy_attach(
         jack_graph_proxy,
@@ -584,6 +598,13 @@ ladish_virtualizer_create(
 }
 
 #define virtualizer_ptr ((struct virtualizer *)handle)
+
+unsigned int
+ladish_virtualizer_get_our_clients_count(
+  ladish_virtualizer_handle handle)
+{
+  return virtualizer_ptr->our_clients_count;
+}
 
 void
 ladish_virtualizer_destroy(
