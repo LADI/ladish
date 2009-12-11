@@ -1737,6 +1737,8 @@ void ladish_graph_hide_all(ladish_graph_handle graph_handle)
   struct ladish_graph_port * port_ptr;
   struct ladish_graph_client * client_ptr;
 
+  log_info("hiding everything in graph %s", graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
+
   list_for_each(node_ptr, &graph_ptr->connections)
   {
     connection_ptr = list_entry(node_ptr, struct ladish_graph_connection, siblings);

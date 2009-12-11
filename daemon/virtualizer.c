@@ -172,6 +172,8 @@ static void client_disappeared(void * context, uint64_t id)
     return;
   }
 
+  log_info("client disappeared: '%s'", ladish_graph_get_client_name(virtualizer_ptr->jack_graph, client));
+
   pid = ladish_client_get_pid(client);
   if (pid != 0)
   {
