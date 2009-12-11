@@ -96,7 +96,7 @@ static void client_appeared(void * context, uint64_t id, const char * name)
   ladish_client_handle client;
   const char * a2j_name;
   bool is_a2j;
-  char * app_name = NULL;
+  char * app_name;
   pid_t pid;
 
   log_info("client_appeared(%"PRIu64", %s)", id, name);
@@ -104,19 +104,19 @@ static void client_appeared(void * context, uint64_t id, const char * name)
   a2j_name = a2j_proxy_get_jack_client_name_cached();
   is_a2j = a2j_name != NULL && strcmp(a2j_name, name) == 0;
 
+  app_name = get_app_name(virtualizer_ptr, id, &pid);
+  if (app_name != NULL)
+  {
+    log_info("app name is '%s'", app_name);
+    name = app_name;
+  }
+
   if (is_a2j)
   {
     client = ladish_graph_find_client_by_uuid(virtualizer_ptr->jack_graph, g_a2j_uuid);
   }
   else
   {
-    app_name = get_app_name(virtualizer_ptr, id, &pid);
-    if (app_name != NULL)
-    {
-      log_info("app name is '%s'", app_name);
-      name = app_name;
-    }
-
     client = ladish_graph_find_client_by_name(virtualizer_ptr->jack_graph, name);
   }
 
@@ -145,7 +145,7 @@ static void client_appeared(void * context, uint64_t id, const char * name)
   }
 
 exit:
-  if (strcmp(name, "system") == 0)
+  if (!is_a2j && strcmp(name, "system") == 0)
   {
     virtualizer_ptr->system_client_id = id;
   }
