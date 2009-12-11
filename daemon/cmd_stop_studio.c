@@ -28,9 +28,11 @@
 
 #include "cmd.h"
 #include "studio_internal.h"
+#include "loader.h"
 
 #define STOP_STATE_WAITING_FOR_JACK_CLIENTS_DISAPPEAR   1
-#define STOP_STATE_WAITING_FOR_JACK_SERVER_STOP         2
+#define STOP_STATE_WAITING_FOR_CHILDS_TERMINATION       2
+#define STOP_STATE_WAITING_FOR_JACK_SERVER_STOP         3
 
 struct ladish_command_stop_studio
 {
@@ -70,6 +72,18 @@ static bool run(void * context)
     {
       clients_count = ladish_virtualizer_get_our_clients_count(g_studio.virtualizer);
       log_info("%u JACK clients started by ladish are visible", clients_count);
+      if (clients_count != 0)
+      {
+        return true;
+      }
+
+      cmd_ptr->stop_state = STOP_STATE_WAITING_FOR_CHILDS_TERMINATION;
+    }
+
+    if (cmd_ptr->stop_state == STOP_STATE_WAITING_FOR_CHILDS_TERMINATION)
+    {
+      clients_count = loader_get_app_count();
+      log_info("%u child processes are running", clients_count);
       if (clients_count != 0)
       {
         return true;

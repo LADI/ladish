@@ -42,4 +42,6 @@ void loader_run(void);
 
 void loader_uninit(void);
 
+unsigned int loader_get_app_count(void);
+
 #endif /* __LASHD_LOADER_H__ */

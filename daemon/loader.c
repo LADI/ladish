@@ -564,3 +564,18 @@ free_struct:
 fail:
   return false;
 }
+
+unsigned int loader_get_app_count(void)
+{
+  struct list_head * node_ptr;
+  unsigned int count;
+
+  count = 0;
+
+  list_for_each(node_ptr, &g_childs_list)
+  {
+    count++;
+  }
+
+  return count;
+}
