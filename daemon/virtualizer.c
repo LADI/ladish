@@ -91,15 +91,16 @@ static void clear(void * context)
   log_info("clear");
 }
 
-static void client_appeared(void * context, uint64_t id, const char * name)
+static void client_appeared(void * context, uint64_t id, const char * jack_name)
 {
   ladish_client_handle client;
   const char * a2j_name;
   bool is_a2j;
   char * app_name;
+  const char * name;
   pid_t pid;
 
-  log_info("client_appeared(%"PRIu64", %s)", id, name);
+  log_info("client_appeared(%"PRIu64", %s)", id, jack_name);
 
   a2j_name = a2j_proxy_get_jack_client_name_cached();
   is_a2j = a2j_name != NULL && strcmp(a2j_name, name) == 0;
@@ -109,6 +110,10 @@ static void client_appeared(void * context, uint64_t id, const char * name)
   {
     log_info("app name is '%s'", app_name);
     name = app_name;
+  }
+  else
+  {
+    name = jack_name;
   }
 
   if (is_a2j)
@@ -131,7 +136,7 @@ static void client_appeared(void * context, uint64_t id, const char * name)
 
   if (!ladish_client_create(is_a2j ? g_a2j_uuid : NULL, true, false, false, &client))
   {
-    log_error("ladish_client_create() failed. Ignoring client %"PRIu64" (%s)", id, name);
+    log_error("ladish_client_create() failed. Ignoring client %"PRIu64" (%s)", id, jack_name);
     return;
   }
 
@@ -145,7 +150,7 @@ static void client_appeared(void * context, uint64_t id, const char * name)
   }
 
 exit:
-  if (!is_a2j && strcmp(name, "system") == 0)
+  if (strcmp(jack_name, "system") == 0)
   {
     virtualizer_ptr->system_client_id = id;
   }
