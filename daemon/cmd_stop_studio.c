@@ -29,10 +29,14 @@
 #include "cmd.h"
 #include "studio_internal.h"
 
+#define STOP_STATE_WAITING_FOR_JACK_CLIENTS_DISAPPEAR   1
+#define STOP_STATE_WAITING_FOR_JACK_SERVER_STOP         2
+
 struct ladish_command_stop_studio
 {
   struct ladish_command command;
   int stop_waits;
+  unsigned int stop_state;
 };
 
 #define cmd_ptr ((struct ladish_command_stop_studio *)context)
@@ -40,6 +44,7 @@ struct ladish_command_stop_studio
 static bool run(void * context)
 {
   bool jack_server_started;
+  unsigned int clients_count;
 
   switch (cmd_ptr->command.state)
   {
@@ -54,25 +59,39 @@ static bool run(void * context)
 
     ladish_app_supervisor_stop(g_studio.app_supervisor);
 
-    log_info("Stopping JACK server...");
-
-    ladish_graph_dump(g_studio.studio_graph);
-
-    if (!jack_proxy_stop_server())
-    {
-      log_error("Stopping JACK server failed. Waiting stop for 5 seconds anyway...");
-
-      /* JACK server stop sometimes fail, even if it actually succeeds after some time */
-      /* Reproducable with yoshimi-0.0.45 */
-
-      cmd_ptr->stop_waits = 5000;
-      cmd_ptr->command.state = LADISH_COMMAND_STATE_WAITING;
-      return true;
-    }
-
     cmd_ptr->command.state = LADISH_COMMAND_STATE_WAITING;
+    cmd_ptr->stop_state = STOP_STATE_WAITING_FOR_JACK_CLIENTS_DISAPPEAR;
     /* fall through */
   case LADISH_COMMAND_STATE_WAITING:
+    if (cmd_ptr->stop_state == STOP_STATE_WAITING_FOR_JACK_CLIENTS_DISAPPEAR)
+    {
+      clients_count = ladish_virtualizer_get_our_clients_count(g_studio.virtualizer);
+      log_info("%u JACK clients started by ladish are visible", clients_count);
+      if (clients_count != 0)
+      {
+        return true;
+      }
+
+      log_info("Stopping JACK server...");
+
+      ladish_graph_dump(g_studio.studio_graph);
+
+      cmd_ptr->stop_state = STOP_STATE_WAITING_FOR_JACK_SERVER_STOP;
+
+      if (!jack_proxy_stop_server())
+      {
+        log_error("Stopping JACK server failed. Waiting stop for 5 seconds anyway...");
+
+        /* JACK server stop sometimes fail, even if it actually succeeds after some time */
+        /* Reproducable with yoshimi-0.0.45 */
+
+        cmd_ptr->stop_waits = 5000;
+        return true;
+      }
+    }
+
+    ASSERT(cmd_ptr->stop_state == STOP_STATE_WAITING_FOR_JACK_SERVER_STOP);
+
     if (cmd_ptr->stop_waits > 0)
     {
       if (!jack_proxy_is_started(&jack_server_started))
