@@ -103,7 +103,7 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
   log_info("client_appeared(%"PRIu64", %s)", id, jack_name);
 
   a2j_name = a2j_proxy_get_jack_client_name_cached();
-  is_a2j = a2j_name != NULL && strcmp(a2j_name, name) == 0;
+  is_a2j = a2j_name != NULL && strcmp(a2j_name, jack_name) == 0;
 
   app_name = get_app_name(virtualizer_ptr, id, &pid);
   if (app_name != NULL)
