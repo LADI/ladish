@@ -1228,7 +1228,7 @@ ladish_graph_add_port(
     return false;
   }
 
-  log_info("adding port '%s':'%s' (%p) to client '%s' in graph %s", client_ptr->name, name, port_handle, client_ptr->name, graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
+  log_info("adding port '%s' (%p) to client '%s' in graph %s", name, port_handle, client_ptr->name, graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
 
   port_ptr = malloc(sizeof(struct ladish_graph_port));
   if (port_ptr == NULL)
