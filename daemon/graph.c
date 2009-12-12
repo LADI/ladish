@@ -735,6 +735,49 @@ static void ladish_graph_hide_connection_internal(struct ladish_graph * graph_pt
   }
 }
 
+void ladish_graph_show_port_internal(struct ladish_graph * graph_ptr, struct ladish_graph_port * port_ptr)
+{
+  if (port_ptr->client_ptr->hidden)
+  {
+    port_ptr->client_ptr->hidden = false;
+    graph_ptr->graph_version++;
+    if (graph_ptr->opath != NULL)
+    {
+      dbus_signal_emit(
+        g_dbus_connection,
+        graph_ptr->opath,
+        JACKDBUS_IFACE_PATCHBAY,
+        "ClientAppeared",
+        "tts",
+        &graph_ptr->graph_version,
+        &port_ptr->client_ptr->id,
+        &port_ptr->client_ptr->name);
+    }
+  }
+
+  ASSERT(port_ptr->hidden);
+  port_ptr->hidden = false;
+  graph_ptr->graph_version++;
+  if (graph_ptr->opath != NULL)
+  {
+    dbus_signal_emit(
+      g_dbus_connection,
+      graph_ptr->opath,
+      JACKDBUS_IFACE_PATCHBAY,
+      "PortAppeared",
+      "ttstsuu",
+      &graph_ptr->graph_version,
+      &port_ptr->client_ptr->id,
+      &port_ptr->client_ptr->name,
+      &port_ptr->id,
+      &port_ptr->name,
+      &port_ptr->flags,
+      &port_ptr->type);
+
+    ladish_try_connect_hidden_connections((ladish_graph_handle)graph_ptr);
+  }
+}
+
 void ladish_graph_hide_port_internal(struct ladish_graph * graph_ptr, struct ladish_graph_port * port_ptr)
 {
   ASSERT(!port_ptr->hidden);
@@ -1010,45 +1053,7 @@ void ladish_graph_show_port(ladish_graph_handle graph_handle, ladish_port_handle
 
   //log_info("port '%s' is %s", port_ptr->name, port_ptr->hidden ? "invisible" : "visible");
 
-  if (port_ptr->client_ptr->hidden)
-  {
-    port_ptr->client_ptr->hidden = false;
-    graph_ptr->graph_version++;
-    if (graph_ptr->opath != NULL)
-    {
-      dbus_signal_emit(
-        g_dbus_connection,
-        graph_ptr->opath,
-        JACKDBUS_IFACE_PATCHBAY,
-        "ClientAppeared",
-        "tts",
-        &graph_ptr->graph_version,
-        &port_ptr->client_ptr->id,
-        &port_ptr->client_ptr->name);
-    }
-  }
-
-  ASSERT(port_ptr->hidden);
-  port_ptr->hidden = false;
-  graph_ptr->graph_version++;
-  if (graph_ptr->opath != NULL)
-  {
-    dbus_signal_emit(
-      g_dbus_connection,
-      graph_ptr->opath,
-      JACKDBUS_IFACE_PATCHBAY,
-      "PortAppeared",
-      "ttstsuu",
-      &graph_ptr->graph_version,
-      &port_ptr->client_ptr->id,
-      &port_ptr->client_ptr->name,
-      &port_ptr->id,
-      &port_ptr->name,
-      &port_ptr->flags,
-      &port_ptr->type);
-
-    ladish_try_connect_hidden_connections(graph_handle);
-  }
+  ladish_graph_show_port_internal(graph_ptr, port_ptr);
 }
 
 void ladish_graph_hide_port(ladish_graph_handle graph_handle, ladish_port_handle port_handle)
@@ -1250,28 +1255,15 @@ ladish_graph_add_port(
 
   port_ptr->id = graph_ptr->next_port_id++;
   port_ptr->port = port_handle;
-  port_ptr->hidden = hidden;
-  graph_ptr->graph_version++;
+  port_ptr->hidden = true;
 
   port_ptr->client_ptr = client_ptr;
   list_add_tail(&port_ptr->siblings_client, &client_ptr->ports);
   list_add_tail(&port_ptr->siblings_graph, &graph_ptr->ports);
 
-  if (!hidden && graph_ptr->opath != NULL)
+  if (!hidden)
   {
-    dbus_signal_emit(
-      g_dbus_connection,
-      graph_ptr->opath,
-      JACKDBUS_IFACE_PATCHBAY,
-      "PortAppeared",
-      "ttstsuu",
-      &graph_ptr->graph_version,
-      &client_ptr->id,
-      &client_ptr->name,
-      &port_ptr->id,
-      &port_ptr->name,
-      &flags,
-      &type);
+    ladish_graph_show_port_internal(graph_ptr, port_ptr);
   }
 
   return true;
