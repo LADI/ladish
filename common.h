@@ -43,4 +43,7 @@
 #include "log.h"    /* log macros */
 #include "assert.h" /* assert macros */
 
+#define ladish_max(a, b) ((a) > (b) ? (a) : (b))
+#define ladish_min(a, b) ((a) < (b) ? (a) : (b))
+
 #endif /* #ifndef COMMON_H__82C9504A_ACD2_435D_9743_781943473E6A__INCLUDED */
