@@ -76,3 +76,31 @@ char * catdup3(const char * s1, const char * s2, const char * s3)
 
   return buffer;
 }
+
+char * catdup4(const char * s1, const char * s2, const char * s3, const char * s4)
+{
+  char * buffer;
+  size_t s1_len, s2_len, s3_len, s4_len;
+
+  ASSERT(s1 != NULL && s2 != NULL && s3 != NULL && s4 != NULL);
+
+  s1_len = strlen(s1);
+  s2_len = strlen(s2);
+  s3_len = strlen(s3);
+  s4_len = strlen(s4);
+
+  buffer = malloc(s1_len + s2_len + s3_len + s4_len + 1);
+  if (buffer == NULL)
+  {
+    log_error("malloc() failed.");
+    return NULL;
+  }
+
+  memcpy(buffer, s1, s1_len);
+  memcpy(buffer + s1_len, s2, s2_len);
+  memcpy(buffer + s1_len + s2_len, s3, s3_len);
+  memcpy(buffer + s1_len + s2_len + s3_len, s4, s4_len);
+  buffer[s1_len + s2_len + s3_len + s4_len] = 0;
+
+  return buffer;
+}

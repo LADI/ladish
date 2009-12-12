@@ -29,5 +29,6 @@
 
 char * catdup(const char * s1, const char * s2);
 char * catdup3(const char * s1, const char * s2, const char * s3);
+char * catdup4(const char * s1, const char * s2, const char * s3, const char * s4);
 
 #endif /* #ifndef CATDUP_H__D42302F1_4D96_4EE4_AC09_E97ED5748277__INCLUDED */
