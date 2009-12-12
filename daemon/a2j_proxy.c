@@ -86,7 +86,7 @@ message_hook(
 
   if (dbus_message_is_signal(message, A2J_IFACE_CONTROL, "bridge_started"))
   {
-    log_info("a2j bridge started.");
+    log_info("a2j bridge start detected.");
 
     if (g_a2j_jack_client_name != NULL)
     {
@@ -109,7 +109,7 @@ message_hook(
 
     g_a2j_started = false;
 
-    log_info("a2j bridge stopped.");
+    log_info("a2j bridge stop detected.");
     return DBUS_HANDLER_RESULT_HANDLED;
   }
 
