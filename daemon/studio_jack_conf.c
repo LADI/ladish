@@ -34,16 +34,6 @@
 #include <dirent.h>
 #include <expat.h>
 
-#include "../jack_proxy.h"
-#include "../graph_proxy.h"
-#include "graph.h"
-#include "../dbus_constants.h"
-#include "control.h"
-#include "../catdup.h"
-#include "../dbus/error.h"
-#include "dirhelpers.h"
-#include "graph_dict.h"
-#include "escape.h"
 #include "studio_internal.h"
 
 bool
