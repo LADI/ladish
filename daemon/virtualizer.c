@@ -569,12 +569,12 @@ static void ports_connected(void * context, uint64_t client1_id, uint64_t port1_
 
   if (ladish_graph_find_connection(virtualizer_ptr->studio_graph, port1, port2, &connection_id))
   {
-    log_info("showing hidden connection");
+    log_info("showing hidden studio connection");
     ladish_graph_show_connection(virtualizer_ptr->studio_graph, connection_id);
   }
   else
   {
-    log_info("creating new connection");
+    log_info("creating new studio connection");
     ladish_graph_add_connection(virtualizer_ptr->studio_graph, port1, port2, false);
   }
 }
@@ -603,7 +603,7 @@ static void ports_disconnected(void * context, uint64_t client1_id, uint64_t por
 
   if (ladish_graph_find_connection(virtualizer_ptr->jack_graph, port1, port2, &connection_id))
   {
-    ladish_graph_remove_connection(virtualizer_ptr->jack_graph, connection_id);
+    ladish_graph_remove_connection(virtualizer_ptr->jack_graph, connection_id, true);
   }
   else
   {
@@ -612,7 +612,7 @@ static void ports_disconnected(void * context, uint64_t client1_id, uint64_t por
 
   if (ladish_graph_find_connection(virtualizer_ptr->studio_graph, port1, port2, &connection_id))
   {
-    ladish_graph_remove_connection(virtualizer_ptr->studio_graph, connection_id);
+    ladish_graph_remove_connection(virtualizer_ptr->studio_graph, connection_id, false);
   }
   else
   {

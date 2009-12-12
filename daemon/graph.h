@@ -94,7 +94,8 @@ ladish_graph_add_connection(
 void
 ladish_graph_remove_connection(
   ladish_graph_handle graph_handle,
-  uint64_t connection_id);
+  uint64_t connection_id,
+  bool force);
 
 bool
 ladish_graph_get_connection_ports(

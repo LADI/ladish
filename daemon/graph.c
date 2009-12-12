@@ -1342,7 +1342,8 @@ ladish_graph_add_connection(
 void
 ladish_graph_remove_connection(
   ladish_graph_handle graph_handle,
-  uint64_t connection_id)
+  uint64_t connection_id,
+  bool force)
 {
   struct ladish_graph_connection * connection_ptr;
 
@@ -1353,7 +1354,7 @@ ladish_graph_remove_connection(
     return;
   }
 
-  if (connection_ptr->changing)
+  if (force || connection_ptr->changing)
   {
     /* log_info( */
     /*   "removing connection '%s':'%s' - '%s':'%s'", */
