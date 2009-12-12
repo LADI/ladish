@@ -46,6 +46,8 @@ void escape(const char ** src_ptr, char ** dst_ptr)
     case '<':               /* invalid attribute value char (XML spec) */
     case '&':               /* invalid attribute value char (XML spec) */
     case '"':               /* we store attribute values in double quotes - invalid attribute value char (XML spec) */
+    case '\'':
+    case '>':
     case '%':
       dst[0] = '%';
       dst[1] = hex_digits[*src >> 4];

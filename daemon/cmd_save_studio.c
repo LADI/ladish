@@ -562,67 +562,94 @@ bool save_studio_connection(void * context, ladish_port_handle port1_handle, lad
 bool save_studio_app(void * context, const char * name, bool running, const char * command, bool terminal, uint8_t level)
 {
   char buf[100];
+  const char * unescaped_string;
+  char * escaped_string;
+  char * escaped_buffer;
+  bool ret;
 
   log_info("saving app: name='%s', %srunning, %s, level %u, commandline='%s'", name, running ? "" : "not ", terminal ? "terminal" : "shell", (unsigned int)level, command);
 
-  if (!write_string(fd, "    <application name=\""))
+  ret = false;
+
+  escaped_buffer = malloc(ladish_max(strlen(name), strlen(command)) * 3 + 1); /* encode each char in three bytes (percent encoding) */
+  if (escaped_buffer == NULL)
   {
-    return false;
+    log_error("malloc() failed.");
+    goto exit;
   }
 
-  if (!write_string(fd, name))
+  if (!write_string(fd, "    <application name=\""))
   {
-    return false;
+    goto free_buffer;
+  }
+
+  unescaped_string = name;
+  escaped_string = escaped_buffer;
+  escape(&unescaped_string, &escaped_string);
+  *escaped_string = 0;
+  if (!write_string(fd, escaped_buffer))
+  {
+    goto free_buffer;
   }
 
   if (!write_string(fd, "\" terminal=\""))
   {
-    return false;
+    goto free_buffer;
   }
 
   if (!write_string(fd, terminal ? "true" : "false"))
   {
-    return false;
+    goto free_buffer;
   }
 
   if (!write_string(fd, "\" level=\""))
   {
-    return false;
+    goto free_buffer;
   }
 
   sprintf(buf, "%u", (unsigned int)level);
 
   if (!write_string(fd, buf))
   {
-    return false;
+    goto free_buffer;
   }
 
   if (!write_string(fd, "\" autorun=\""))
   {
-    return false;
+    goto free_buffer;
   }
 
   if (!write_string(fd, running ? "true" : "false"))
   {
-    return false;
+    goto free_buffer;
   }
 
   if (!write_string(fd, "\">"))
   {
-    return false;
+    goto free_buffer;
   }
 
-  if (!write_string(fd, command))
+  unescaped_string = command;
+  escaped_string = escaped_buffer;
+  escape(&unescaped_string, &escaped_string);
+  *escaped_string = 0;
+  if (!write_string(fd, escaped_buffer))
   {
-    return false;
+    goto free_buffer;
   }
 
   if (!write_string(fd, "</application>\n"))
   {
-    return false;
+    goto free_buffer;
   }
 
-  return true;
+  ret = true;
+
+free_buffer:
+  free(escaped_buffer);
+
+exit:
+  return ret;
 }
 
 #undef indent
