@@ -290,7 +290,12 @@ port_appeared(
   {
     log_info("found existing port");
 
-    ASSERT(ladish_port_get_jack_id(port) == 0); /* two JACK ports with same name? */
+    if (ladish_port_get_jack_id(port) != 0)
+    {
+      log_error("Ignoring duplicate JACK port '%s':'%s'", jack_client_name, jack_port_name);
+      goto free_alsa_names;
+    }
+
     ladish_port_set_jack_id(port, port_id);
     ladish_graph_adjust_port(virtualizer_ptr->jack_graph, port, type, flags);
     ladish_graph_show_port(virtualizer_ptr->jack_graph, port);
