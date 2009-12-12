@@ -1684,7 +1684,7 @@ bool ladish_graph_is_client_looks_empty(ladish_graph_handle graph_handle, ladish
       }
     }
 
-    log_info("client '%s' looks empty", client_ptr->name);
+    log_info("client '%s' looks empty in graph %s", client_ptr->name, graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
     return true;
   }
 
