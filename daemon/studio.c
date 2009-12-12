@@ -439,6 +439,13 @@ bool studios_iterate(void * call_ptr, void * context, bool (* callback)(void * c
     free(path);
 
     name = malloc(len - 4 + 1);
+    if (name == NULL)
+    {
+      log_error("malloc() failed.");
+      closedir(dir);
+      return false;
+    }
+
     name[unescape(dentry->d_name, len - 4, name)] = 0;
     //log_info("name = '%s'", name);
 
