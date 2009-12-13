@@ -124,6 +124,8 @@ static bool connect_dbus(void)
 {
   int ret;
 
+  dbus_error_init(&g_dbus_error);
+
   g_dbus_connection = dbus_bus_get(DBUS_BUS_SESSION, &g_dbus_error);
   if (dbus_error_is_set(&g_dbus_error))
   {
