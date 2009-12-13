@@ -115,20 +115,6 @@ void emit_studio_stopped()
 
 void on_event_jack_started(void)
 {
-  if (g_studio.dbus_object == NULL)
-  {
-    ASSERT(g_studio.name == NULL);
-    if (!studio_name_generate(&g_studio.name))
-    {
-      log_error("studio_name_generate() failed.");
-      return;
-    }
-
-    g_studio.automatic = true;
-
-    studio_publish();
-  }
-
   if (!studio_fetch_jack_settings())
   {
     log_error("studio_fetch_jack_settings() failed.");
@@ -183,7 +169,10 @@ void on_event_jack_stopped(void)
     graph_proxy_destroy(g_studio.jack_graph_proxy);
     g_studio.jack_graph_proxy = NULL;
   }
+}
 
+void handle_unexpected_jack_server_stop(void)
+{
   /* TODO: if user wants, restart jack server and reconnect all jack apps to it */
 }
 
@@ -203,15 +192,53 @@ void studio_run(void)
 
     if (state)
     {
+      /* Automatic studio creation on JACK server start */
+      if (g_studio.dbus_object == NULL)
+      {
+        ASSERT(g_studio.name == NULL);
+        if (!studio_name_generate(&g_studio.name))
+        {
+          log_error("studio_name_generate() failed.");
+          return;
+        }
+
+        g_studio.automatic = true;
+
+        studio_publish();
+      }
+
       on_event_jack_started();
     }
     else
     {
+      /* JACK stopped but this was not expected. When expected.
+       * the change will be consumed by the run method of the studio stop command */
+      log_error("JACK stopped unexpectedly.");
+      log_error("Save your work, then unload and reload the studio.");
       on_event_jack_stopped();
+      handle_unexpected_jack_server_stop();
     }
   }
 
-  ladish_environment_ignore(&g_studio.env_store, ladish_environment_jack_server_present);
+  if (ladish_environment_consume_change(&g_studio.env_store, ladish_environment_jack_server_present, &state))
+  {
+    if (g_studio.jack_graph_proxy != NULL)
+    {
+      ladish_cqueue_clear(&g_studio.cmd_queue);
+
+      /* jack was started, this probably means that jackdbus has crashed */
+      log_error("JACK disappeared unexpectedly. Maybe it crashed.");
+      log_error("Save your work, then unload and reload the studio.");
+      ladish_environment_reset_stealth(&g_studio.env_store, ladish_environment_jack_server_started);
+
+      ladish_graph_clear(g_studio.studio_graph, false);
+      ladish_graph_clear(g_studio.jack_graph, true);
+
+      on_event_jack_stopped();
+      handle_unexpected_jack_server_stop();
+    }
+  }
+
   ladish_environment_assert_consumed(&g_studio.env_store);
 }
 
@@ -324,6 +351,9 @@ void studio_uninit(void)
   jack_proxy_uninit();
 
   ladish_cqueue_clear(&g_studio.cmd_queue);
+
+  ladish_graph_destroy(g_studio.studio_graph, false);
+  ladish_graph_destroy(g_studio.jack_graph, false);
 
   free(g_studios_dir);
 

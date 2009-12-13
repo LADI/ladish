@@ -26,12 +26,14 @@
 
 #include "cmd.h"
 #include "studio_internal.h"
+#include "loader.h"
 
 #define cmd_ptr ((struct ladish_command *)context)
 
 static bool run(void * context)
 {
   bool jack_server_started;
+  unsigned int app_count;
 
   switch (cmd_ptr->state)
   {
@@ -42,6 +44,15 @@ static bool run(void * context)
       /* nothing to do, studio is already running */
       cmd_ptr->state = LADISH_COMMAND_STATE_DONE;
       return true;
+    }
+
+    app_count = loader_get_app_count();
+    if (app_count != 0)
+    {
+      log_error("Ignoring start request because there are apps running.");
+      log_error("This could happen when JACK has crashed or when JACK stopped unexpectedly.");
+      log_error("Save your work, then unload and reload the studio.");
+      return false;
     }
 
     log_info("Starting JACK server.");
