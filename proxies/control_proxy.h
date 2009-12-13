@@ -5,7 +5,8 @@
  * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains interface to graph canvas object
+ * This file contains interface to code that interfaces
+ * the ladishd Control object through D-Bus
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -24,35 +25,19 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef GRAPH_CANVAS_H__F145C6FA_633C_4E64_9117_ED301618B587__INCLUDED
-#define GRAPH_CANVAS_H__F145C6FA_633C_4E64_9117_ED301618B587__INCLUDED
+#ifndef CONTROL_PROXY_H__8BC89E98_FE1B_4831_8B89_1A48F676E019__INCLUDED
+#define CONTROL_PROXY_H__8BC89E98_FE1B_4831_8B89_1A48F676E019__INCLUDED
 
-#include "../proxies/graph_proxy.h"
-#include "canvas.h"
+#include "common.h"
 
-typedef struct graph_canvas_tag { int unused; } * graph_canvas_handle;
+bool control_proxy_init(void);
+void control_proxy_uninit(void);
+void control_proxy_on_studio_appeared(void);
+void control_proxy_on_studio_disappeared(void);
+bool control_proxy_get_studio_list(void (* callback)(void * context, const char * studio_name), void * context);
+bool control_proxy_new_studio(const char * studio_name);
+bool control_proxy_load_studio(const char * studio_name);
+bool control_proxy_delete_studio(const char * studio_name);
+bool control_proxy_exit(void);
 
-bool
-graph_canvas_create(
-  int width,
-  int height,
-  graph_canvas_handle * graph_canvas_ptr);
-
-void
-graph_canvas_destroy(
-  graph_canvas_handle graph_canvas);
-
-bool
-graph_canvas_attach(
-  graph_canvas_handle graph_canvas,
-  graph_proxy_handle graph);
-
-void
-graph_canvas_detach(
-  graph_canvas_handle graph_canvas);
-
-canvas_handle
-graph_canvas_get_canvas(
-  graph_canvas_handle graph_canvas);
-
-#endif /* #ifndef GRAPH_CANVAS_H__F145C6FA_633C_4E64_9117_ED301618B587__INCLUDED */
+#endif /* #ifndef CONTROL_PROXY_H__8BC89E98_FE1B_4831_8B89_1A48F676E019__INCLUDED */

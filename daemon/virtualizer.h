@@ -28,7 +28,7 @@
 #define JACK_DISPATCH_H__C7566B66_081D_4D00_A702_7C18F7CC0735__INCLUDED
 
 #include "common.h"
-#include "../graph_proxy.h"
+#include "../proxies/graph_proxy.h"
 #include "graph.h"
 
 typedef struct ladish_virtualizer { int unused; } * ladish_virtualizer_handle;

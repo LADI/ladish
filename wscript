@@ -199,8 +199,6 @@ def build(bld):
     daemon.env.append_value("LINKFLAGS", ["-lutil", "-ldl", "-Wl,-E"])
 
     daemon.source = [
-        'jack_proxy.c',
-        'graph_proxy.c',
         'catdup.c',
         ]
 
@@ -233,9 +231,15 @@ def build(bld):
         'cmd_exit.c',
         'cqueue.c',
         'app_supervisor.c',
-        'a2j_proxy.c',
         ]:
         daemon.source.append(os.path.join("daemon", source))
+
+    for source in [
+        'jack_proxy.c',
+        'graph_proxy.c',
+        'a2j_proxy.c',
+        ]:
+        daemon.source.append(os.path.join("proxies", source))
 
     for source in [
         'signal.c',
@@ -289,9 +293,6 @@ def build(bld):
         gladish.uselib = 'DBUS-1 DBUS-GLIB-1 LIBGLADE-2.0 FLOWCANVAS'
 
         gladish.source = [
-            'jack_proxy.c',
-            'graph_proxy.c',
-            'studio_proxy.c',
             'catdup.c',
             ]
 
@@ -309,11 +310,18 @@ def build(bld):
             'canvas.cpp',
             'graph_canvas.c',
             'glade.c',
-            'control_proxy.c',
-            'app_supervisor_proxy.c',
             'ask_dialog.c',
             ]:
             gladish.source.append(os.path.join("gui", source))
+
+        for source in [
+            'jack_proxy.c',
+            'graph_proxy.c',
+            'studio_proxy.c',
+            'control_proxy.c',
+            'app_supervisor_proxy.c',
+            ]:
+            gladish.source.append(os.path.join("proxies", source))
 
         for source in [
             'method.c',

@@ -26,7 +26,7 @@
 
 #include "virtualizer.h"
 #include "../dbus_constants.h"
-#include "a2j_proxy.h"
+#include "../proxies/a2j_proxy.h"
 #include "procfs.h"
 #include "app_supervisor.h"
 #include "studio_internal.h"

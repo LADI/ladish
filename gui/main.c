@@ -32,16 +32,16 @@
 #include "glade.h"
 #include "canvas.h"
 #include "graph_canvas.h"
-#include "../jack_proxy.h"
-#include "dbus_helpers.h"
-#include "control_proxy.h"
+#include "../proxies/jack_proxy.h"
+#include "../proxies/control_proxy.h"
 #include "../dbus_constants.h"
 #include "world_tree.h"
 #include "graph_view.h"
 #include "../catdup.h"
-#include "../studio_proxy.h"
+#include "../proxies/studio_proxy.h"
 #include "ask_dialog.h"
-#include "app_supervisor_proxy.h"
+#include "../proxies/app_supervisor_proxy.h"
+#include "dbus_helpers.h"
 
 GtkWidget * g_main_win;
 

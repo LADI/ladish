@@ -26,8 +26,6 @@
  */
 
 #include "app_supervisor_proxy.h"
-#include "../dbus/helpers.h"
-#include "../dbus_constants.h"
 
 struct ladish_app_supervisor_proxy
 {

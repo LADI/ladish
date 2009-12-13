@@ -26,8 +26,6 @@
  */
 
 #include "common.h"
-#include "dbus_constants.h"
-#include "dbus/helpers.h"
 
 static void (* g_renamed_callback)(const char * new_studio_name) = NULL;
 static void (* g_started_callback)(void) = NULL;

@@ -24,14 +24,7 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <dbus/dbus.h>
-#include <stdlib.h>
-
-#include "common.h"
 #include "graph_proxy.h"
-#include "common/klist.h"
-#include "dbus/helpers.h"
-#include "dbus_constants.h"
 
 struct monitor
 {

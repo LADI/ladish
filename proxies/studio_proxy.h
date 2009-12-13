@@ -5,8 +5,8 @@
  * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains interface to code that interfaces
- * the ladishd Control object through D-Bus
+ * This file contains interface to the helper functionality for accessing
+ * Studio object through D-Bus
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -25,20 +25,21 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef CONTROL_PROXY_H__8BC89E98_FE1B_4831_8B89_1A48F676E019__INCLUDED
-#define CONTROL_PROXY_H__8BC89E98_FE1B_4831_8B89_1A48F676E019__INCLUDED
+#ifndef STUDIO_PROXY_H__2CEC623F_C998_4618_A947_D1A0016DF978__INCLUDED
+#define STUDIO_PROXY_H__2CEC623F_C998_4618_A947_D1A0016DF978__INCLUDED
 
 #include "common.h"
-#include "../common/klist.h"
 
-bool control_proxy_init(void);
-void control_proxy_uninit(void);
-void control_proxy_on_studio_appeared(void);
-void control_proxy_on_studio_disappeared(void);
-bool control_proxy_get_studio_list(void (* callback)(void * context, const char * studio_name), void * context);
-bool control_proxy_new_studio(const char * studio_name);
-bool control_proxy_load_studio(const char * studio_name);
-bool control_proxy_delete_studio(const char * studio_name);
-bool control_proxy_exit(void);
+bool studio_proxy_init(void);
+void studio_proxy_uninit(void);
+bool studio_proxy_get_name(char ** name);
+bool studio_proxy_rename(const char * name);
+bool studio_proxy_save(void);
+bool studio_proxy_unload(void);
+void studio_proxy_set_renamed_callback(void (* callback)(const char * new_studio_name));
 
-#endif /* #ifndef CONTROL_PROXY_H__8BC89E98_FE1B_4831_8B89_1A48F676E019__INCLUDED */
+void studio_proxy_set_startstop_callbacks(void (* started_callback)(void), void (* stopped_callback)(void));
+bool studio_proxy_start(void);
+bool studio_proxy_stop(void);
+
+#endif /* #ifndef STUDIO_PROXY_H__2CEC623F_C998_4618_A947_D1A0016DF978__INCLUDED */

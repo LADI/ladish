@@ -24,9 +24,7 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "common.h"
 #include "a2j_proxy.h"
-#include "../dbus/helpers.h"
 
 #define A2J_SERVICE       "org.gna.home.a2jmidid"
 #define A2J_OBJECT        "/"

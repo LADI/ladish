@@ -26,8 +26,6 @@
  */
 
 #include "control_proxy.h"
-#include "../dbus/helpers.h"
-#include "../dbus_constants.h"
 
 static void on_studio_appeared(void * context, DBusMessage * message_ptr)
 {

@@ -41,7 +41,7 @@
 #include "../dbus_constants.h"
 #include "../catdup.h"
 #include "dirhelpers.h"
-#include "a2j_proxy.h"
+#include "../proxies/a2j_proxy.h"
 
 bool g_quit;
 const char * g_dbus_unique_name;

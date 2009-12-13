@@ -28,7 +28,6 @@
 #include "graph_view.h"
 #include "glade.h"
 #include "world_tree.h"
-#include "app_supervisor_proxy.h"
 
 struct graph_view
 {

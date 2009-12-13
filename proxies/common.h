@@ -5,8 +5,7 @@
  * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains interface to the helper functionality for accessing
- * Studio object through D-Bus
+ * This file contains stuff that is needed my almost every proxy
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -25,19 +24,11 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef STUDIO_PROXY_H__2CEC623F_C998_4618_A947_D1A0016DF978__INCLUDED
-#define STUDIO_PROXY_H__2CEC623F_C998_4618_A947_D1A0016DF978__INCLUDED
+#ifndef COMMON_H__0710E3D5_9B69_4C10_BDDB_80E0D92F44AF__INCLUDED
+#define COMMON_H__0710E3D5_9B69_4C10_BDDB_80E0D92F44AF__INCLUDED
 
-bool studio_proxy_init(void);
-void studio_proxy_uninit(void);
-bool studio_proxy_get_name(char ** name);
-bool studio_proxy_rename(const char * name);
-bool studio_proxy_save(void);
-bool studio_proxy_unload(void);
-void studio_proxy_set_renamed_callback(void (* callback)(const char * new_studio_name));
+#include "../common.h"
+#include "../dbus/helpers.h"
+#include "../dbus_constants.h"
 
-void studio_proxy_set_startstop_callbacks(void (* started_callback)(void), void (* stopped_callback)(void));
-bool studio_proxy_start(void);
-bool studio_proxy_stop(void);
-
-#endif /* #ifndef STUDIO_PROXY_H__2CEC623F_C998_4618_A947_D1A0016DF978__INCLUDED */
+#endif /* #ifndef COMMON_H__0710E3D5_9B69_4C10_BDDB_80E0D92F44AF__INCLUDED */

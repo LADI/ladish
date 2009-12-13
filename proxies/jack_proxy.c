@@ -26,10 +26,7 @@
 
 //#define LADISH_DEBUG
 
-#include "common.h"
 #include "jack_proxy.h"
-#include "dbus/helpers.h"
-#include "dbus_constants.h"
 
 jack_proxy_callback_server_started g_on_server_started;
 jack_proxy_callback_server_stopped g_on_server_stopped;

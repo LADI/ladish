@@ -28,7 +28,7 @@
 #define GRAPH_VIEW_H__05B5CE46_5239_43F1_9F31_79F13EBF0DFA__INCLUDED
 
 #include "graph_canvas.h"
-#include "app_supervisor_proxy.h"
+#include "../proxies/app_supervisor_proxy.h"
 
 typedef struct graph_view_tag { int unused; } * graph_view_handle;
 
