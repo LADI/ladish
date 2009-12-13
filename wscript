@@ -306,7 +306,6 @@ def build(bld):
             'graph_view.c',
             #'project_properties.cpp',
             #'session.cpp',
-            'dbus_helpers.c',
             'canvas.cpp',
             'graph_canvas.c',
             'glade.c',

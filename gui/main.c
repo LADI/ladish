@@ -27,6 +27,9 @@
 
 #include "common.h"
 
+#include <dbus/dbus-glib.h>
+#include <dbus/dbus-glib-lowlevel.h>
+
 #include <math.h>
 
 #include "glade.h"
@@ -41,7 +44,6 @@
 #include "../proxies/studio_proxy.h"
 #include "ask_dialog.h"
 #include "../proxies/app_supervisor_proxy.h"
-#include "dbus_helpers.h"
 
 GtkWidget * g_main_win;
 
@@ -673,6 +675,35 @@ static void show_about(void)
   gtk_widget_hide(dialog);
 }
 
+static void dbus_init(void)
+{
+  dbus_error_init(&g_dbus_error);
+
+  // Connect to the bus
+  g_dbus_connection = dbus_bus_get(DBUS_BUS_SESSION, &g_dbus_error);
+  if (dbus_error_is_set(&g_dbus_error))
+  {
+    //error_msg("dbus_bus_get() failed");
+    //error_msg(g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+  }
+
+  dbus_connection_setup_with_g_main(g_dbus_connection, NULL);
+}
+
+void dbus_uninit(void)
+{
+  if (g_dbus_connection)
+  {
+    dbus_connection_flush(g_dbus_connection);
+  }
+
+  if (dbus_error_is_set(&g_dbus_error))
+  {
+    dbus_error_free(&g_dbus_error);
+  }
+}
+
 int main(int argc, char** argv)
 {
   gtk_init(&argc, &argv);
@@ -717,7 +748,7 @@ int main(int argc, char** argv)
   world_tree_init();
   view_init();
 
-  patchage_dbus_init();
+  dbus_init();
 
   if (!jack_proxy_init(jack_started, jack_stopped, jack_appeared, jack_disappeared))
   {
@@ -763,6 +794,7 @@ int main(int argc, char** argv)
 
   studio_proxy_uninit();
   control_proxy_uninit();
+  dbus_uninit();
   uninit_glade();
 
   return 0;
