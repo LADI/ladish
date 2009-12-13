@@ -30,14 +30,35 @@
 #include <stdbool.h>
 #include <dbus/dbus.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "helpers.h"
 #include "method.h"
 #include "../log.h"
 #include "../assert.h"
+#include "../common/klist.h"
 
 DBusConnection * g_dbus_connection;
 DBusError g_dbus_error;
+
+struct dbus_signal_hook_descriptor
+{
+  struct list_head siblings;
+  char * object;
+  char * interface;
+  void * hook_context;
+  const struct dbus_signal_hook * signal_hooks;
+};
+
+struct dbus_service_descriptor
+{
+  struct list_head siblings;
+  char * service_name;
+  void (* lifetime_hook_function)(bool appeared);
+  struct list_head hooks;
+};
+
+LIST_HEAD(g_dbus_services);
 
 bool dbus_iter_get_dict_entry(DBusMessageIter * iter, const char ** key_ptr, void * value_ptr, int * type_ptr, int * size_ptr)
 {
@@ -409,6 +430,13 @@ compose_signal_match(
   return rule;
 }
 
+static const char * compose_name_owner_match(const char * service)
+{
+  static char rule[1024];
+  snprintf(rule, sizeof(rule), "type='signal',interface='"DBUS_INTERFACE_DBUS"',member=NameOwnerChanged,arg0='%s'", service);
+  return rule;
+}
+
 bool
 dbus_register_object_signal_handler(
   DBusConnection * connection,
@@ -454,7 +482,7 @@ dbus_unregister_object_signal_handler(
     dbus_bus_remove_match(connection, compose_signal_match(service, object, iface, *signal), &g_dbus_error);
     if (dbus_error_is_set(&g_dbus_error))
     {
-      log_error("Failed to add D-Bus match rule: %s", g_dbus_error.message);
+      log_error("Failed to remove D-Bus match rule: %s", g_dbus_error.message);
       dbus_error_free(&g_dbus_error);
       return false;
     }
@@ -463,4 +491,455 @@ dbus_unregister_object_signal_handler(
   dbus_connection_remove_filter(g_dbus_connection, handler, handler_data);
 
   return true;
+}
+
+static
+struct dbus_signal_hook_descriptor *
+find_signal_hook_descriptor(
+  struct dbus_service_descriptor * service_ptr,
+  const char * object,
+  const char * interface)
+{
+  struct list_head * node_ptr;
+  struct dbus_signal_hook_descriptor * hook_ptr;
+
+  list_for_each(node_ptr, &service_ptr->hooks)
+  {
+    hook_ptr = list_entry(node_ptr, struct dbus_signal_hook_descriptor, siblings);
+    if (strcmp(hook_ptr->object, object) == 0 &&
+        strcmp(hook_ptr->interface, interface) == 0)
+    {
+      return hook_ptr;
+    }
+  }
+
+  return NULL;
+}
+
+#define service_ptr ((struct dbus_service_descriptor *)data)
+
+static
+DBusHandlerResult
+dbus_signal_handler(
+  DBusConnection * connection_ptr,
+  DBusMessage * message_ptr,
+  void * data)
+{
+  const char * object_path;
+  const char * interface;
+  const char * signal_name;
+  const char * object_name;
+  const char * old_owner;
+  const char * new_owner;
+  struct dbus_signal_hook_descriptor * hook_ptr;
+  const struct dbus_signal_hook * signal_ptr;
+
+  /* Non-signal messages are ignored */
+  if (dbus_message_get_type(message_ptr) != DBUS_MESSAGE_TYPE_SIGNAL)
+  {
+    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+  }
+
+  interface = dbus_message_get_interface(message_ptr);
+  if (interface == NULL)
+  {
+    /* Signals with no interface are ignored */
+    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+  }
+
+  object_path = dbus_message_get_path(message_ptr);
+
+  signal_name = dbus_message_get_member(message_ptr);
+  if (signal_name == NULL)
+  {
+    log_error("Received signal with NULL member");
+    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+  }
+
+  log_debug("'%s' sent signal '%s'::'%s'", object_path, interface, signal_name);
+
+  /* Handle session bus signals to track service alive state */
+  if (strcmp(interface, DBUS_INTERFACE_DBUS) == 0)
+  {
+    if (strcmp(signal_name, "NameOwnerChanged") != 0)
+    {
+      return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+    }
+
+    if (service_ptr->lifetime_hook_function == NULL)
+    {
+      return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+    }
+
+    //log_info("NameOwnerChanged signal received");
+
+    dbus_error_init(&g_dbus_error);
+    if (!dbus_message_get_args(
+          message_ptr,
+          &g_dbus_error,
+          DBUS_TYPE_STRING, &object_name,
+          DBUS_TYPE_STRING, &old_owner,
+          DBUS_TYPE_STRING, &new_owner,
+          DBUS_TYPE_INVALID))
+    {
+      log_error("Cannot get message arguments: %s", g_dbus_error.message);
+      dbus_error_free(&g_dbus_error);
+      return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+    }
+
+    if (strcmp(object_name, service_ptr->service_name) != 0)
+    {
+      return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+    }
+
+    if (old_owner[0] == '\0')
+    {
+      service_ptr->lifetime_hook_function(true);
+    }
+    else if (new_owner[0] == '\0')
+    {
+      service_ptr->lifetime_hook_function(false);
+    }
+
+    return DBUS_HANDLER_RESULT_HANDLED;
+  }
+
+  /* Handle object interface signals */
+  if (object_path != NULL)
+  {
+    hook_ptr = find_signal_hook_descriptor(service_ptr, object_path, interface);
+    if (hook_ptr != NULL)
+    {
+      for (signal_ptr = hook_ptr->signal_hooks; signal_ptr->signal_name != NULL; signal_ptr++)
+      {
+        if (strcmp(signal_name, signal_ptr->signal_name) == 0)
+        {
+          signal_ptr->hook_function(hook_ptr->hook_context, message_ptr);
+          return DBUS_HANDLER_RESULT_HANDLED;
+        }
+      }
+    }
+  }
+
+  /* Let everything else pass through */
+  return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+}
+
+#undef service_ptr
+
+static struct dbus_service_descriptor * find_service_descriptor(const char * service_name)
+{
+  struct list_head * node_ptr;
+  struct dbus_service_descriptor * descr_ptr;
+
+  list_for_each(node_ptr, &g_dbus_services)
+  {
+    descr_ptr = list_entry(node_ptr, struct dbus_service_descriptor, siblings);
+    if (strcmp(descr_ptr->service_name, service_name) == 0)
+    {
+      return descr_ptr;
+    }
+  }
+
+  return NULL;
+}
+
+static struct dbus_service_descriptor * find_or_create_service_descriptor(const char * service_name)
+{
+  struct dbus_service_descriptor * descr_ptr;
+
+  descr_ptr = find_service_descriptor(service_name);
+  if (descr_ptr != NULL)
+  {
+    return descr_ptr;
+  }
+
+  descr_ptr = malloc(sizeof(struct dbus_service_descriptor));
+  if (descr_ptr == NULL)
+  {
+    log_error("malloc() failed to allocate struct dbus_service_descriptor");
+    return NULL;
+  }
+
+  descr_ptr->service_name = strdup(service_name);
+  if (descr_ptr->service_name == NULL)
+  {
+    log_error("strdup() failed for service name '%s'", service_name);
+    free(descr_ptr);
+    return NULL;
+  }
+
+  descr_ptr->lifetime_hook_function = NULL;
+  INIT_LIST_HEAD(&descr_ptr->hooks);
+
+  list_add_tail(&descr_ptr->siblings, &g_dbus_services);
+
+  dbus_connection_add_filter(g_dbus_connection, dbus_signal_handler, descr_ptr, NULL);
+
+  return descr_ptr;
+}
+
+static void free_service_descriptor_if_empty(struct dbus_service_descriptor * service_ptr)
+{
+  if (service_ptr->lifetime_hook_function != NULL)
+  {
+    return;
+  }
+
+  if (!list_empty(&service_ptr->hooks))
+  {
+    return;
+  }
+
+  dbus_connection_remove_filter(g_dbus_connection, dbus_signal_handler, service_ptr);
+
+  list_del(&service_ptr->siblings);
+  free(service_ptr->service_name);
+  free(service_ptr);
+}
+
+bool
+dbus_register_object_signal_hooks(
+  DBusConnection * connection,
+  const char * service_name,
+  const char * object,
+  const char * iface,
+  void * hook_context,
+  const struct dbus_signal_hook * signal_hooks)
+{
+  struct dbus_service_descriptor * service_ptr;
+  struct dbus_signal_hook_descriptor * hook_ptr;
+  const struct dbus_signal_hook * signal_ptr;
+
+  if (connection != g_dbus_connection)
+  {
+    log_error("multiple connections are not implemented yet");
+    ASSERT_NO_PASS;
+    goto fail;
+  }
+
+  service_ptr = find_or_create_service_descriptor(service_name);
+  if (service_ptr == NULL)
+  {
+    log_error("find_or_create_service_descriptor() failed.");
+    goto fail;
+  }
+
+  hook_ptr = find_signal_hook_descriptor(service_ptr, object, iface);
+  if (hook_ptr != NULL)
+  {
+    log_error("refusing to register two signal monitors for '%s':'%s':'%s'", service_name, object, iface);
+    ASSERT_NO_PASS;
+    goto maybe_free_service;
+  }
+
+  hook_ptr = malloc(sizeof(struct dbus_signal_hook_descriptor));
+  if (hook_ptr == NULL)
+  {
+    log_error("malloc() failed to allocate struct dbus_signal_hook_descriptor");
+    goto maybe_free_service;
+  }
+
+  hook_ptr->object = strdup(object);
+  if (hook_ptr->object == NULL)
+  {
+    log_error("strdup() failed for object name");
+    goto free_hook;
+  }
+
+  hook_ptr->interface = strdup(iface);
+  if (hook_ptr->interface == NULL)
+  {
+    log_error("strdup() failed for interface name");
+    goto free_object_name;
+  }
+
+  hook_ptr->hook_context = hook_context;
+  hook_ptr->signal_hooks = signal_hooks;
+
+  list_add_tail(&hook_ptr->siblings, &service_ptr->hooks);
+
+  for (signal_ptr = signal_hooks; signal_ptr->signal_name != NULL; signal_ptr++)
+  {
+    dbus_bus_add_match(connection, compose_signal_match(service_name, object, iface, signal_ptr->signal_name), &g_dbus_error);
+    if (dbus_error_is_set(&g_dbus_error))
+    {
+      log_error("Failed to add D-Bus match rule: %s", g_dbus_error.message);
+      dbus_error_free(&g_dbus_error);
+
+      while (signal_ptr != signal_hooks)
+      {
+        ASSERT(signal_ptr > signal_hooks);
+        signal_ptr--;
+
+        dbus_bus_remove_match(connection, compose_signal_match(service_name, object, iface, signal_ptr->signal_name), &g_dbus_error);
+        if (dbus_error_is_set(&g_dbus_error))
+        {
+          log_error("Failed to remove D-Bus match rule: %s", g_dbus_error.message);
+          dbus_error_free(&g_dbus_error);
+        }
+      }
+
+      goto remove_hook;
+    }
+  }
+
+  return true;
+
+remove_hook:
+  list_del(&hook_ptr->siblings);
+  free(hook_ptr->interface);
+free_object_name:
+  free(hook_ptr->object);
+free_hook:
+  free(hook_ptr);
+maybe_free_service:
+  free_service_descriptor_if_empty(service_ptr);
+fail:
+  return false;
+}
+
+void
+dbus_unregister_object_signal_hooks(
+  DBusConnection * connection,
+  const char * service_name,
+  const char * object,
+  const char * iface)
+{
+  struct dbus_service_descriptor * service_ptr;
+  struct dbus_signal_hook_descriptor * hook_ptr;
+  const struct dbus_signal_hook * signal_ptr;
+
+  if (connection != g_dbus_connection)
+  {
+    log_error("multiple connections are not implemented yet");
+    ASSERT_NO_PASS;
+    return;
+  }
+
+  service_ptr = find_service_descriptor(service_name);
+  if (service_ptr == NULL)
+  {
+    log_error("find_service_descriptor() failed.");
+    ASSERT_NO_PASS;
+    return;
+  }
+
+  hook_ptr = find_signal_hook_descriptor(service_ptr, object, iface);
+  if (hook_ptr == NULL)
+  {
+    log_error("cannot unregister non-existing signal monitor for '%s':'%s':'%s'", service_name, object, iface);
+    ASSERT_NO_PASS;
+    return;
+  }
+
+  for (signal_ptr = hook_ptr->signal_hooks; signal_ptr->signal_name != NULL; signal_ptr++)
+  {
+    dbus_bus_remove_match(connection, compose_signal_match(service_name, object, iface, signal_ptr->signal_name), &g_dbus_error);
+    if (dbus_error_is_set(&g_dbus_error))
+    {
+      if (dbus_error_is_set(&g_dbus_error))
+      {
+        log_error("Failed to remove D-Bus match rule: %s", g_dbus_error.message);
+        dbus_error_free(&g_dbus_error);
+      }
+    }
+  }
+
+  list_del(&hook_ptr->siblings);
+
+  free(hook_ptr->interface);
+  free(hook_ptr->object);
+  free(hook_ptr);
+
+  free_service_descriptor_if_empty(service_ptr);
+}
+
+bool
+dbus_register_service_lifetime_hook(
+  DBusConnection * connection,
+  const char * service_name,
+  void (* hook_function)(bool appeared))
+{
+  struct dbus_service_descriptor * service_ptr;
+
+  if (connection != g_dbus_connection)
+  {
+    log_error("multiple connections are not implemented yet");
+    ASSERT_NO_PASS;
+    goto fail;
+  }
+
+  service_ptr = find_or_create_service_descriptor(service_name);
+  if (service_ptr == NULL)
+  {
+    log_error("find_or_create_service_descriptor() failed.");
+    goto fail;
+  }
+
+  if (service_ptr->lifetime_hook_function != NULL)
+  {
+    log_error("cannot register two lifetime hooks for '%s'", service_name);
+    ASSERT_NO_PASS;
+    goto maybe_free_service;
+  }
+
+  service_ptr->lifetime_hook_function = hook_function;
+
+  dbus_bus_add_match(connection, compose_name_owner_match(service_name), &g_dbus_error);
+  if (dbus_error_is_set(&g_dbus_error))
+  {
+    log_error("Failed to add D-Bus match rule: %s", g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    goto clear_hook;
+  }
+
+  return true;
+
+clear_hook:
+  service_ptr->lifetime_hook_function = NULL;
+maybe_free_service:
+  free_service_descriptor_if_empty(service_ptr);
+fail:
+  return false;
+}
+
+void
+dbus_unregister_service_lifetime_hook(
+  DBusConnection * connection,
+  const char * service_name)
+{
+  struct dbus_service_descriptor * service_ptr;
+
+  if (connection != g_dbus_connection)
+  {
+    log_error("multiple connections are not implemented yet");
+    ASSERT_NO_PASS;
+    return;
+  }
+
+  service_ptr = find_service_descriptor(service_name);
+  if (service_ptr == NULL)
+  {
+    log_error("find_service_descriptor() failed.");
+    return;
+  }
+
+  if (service_ptr->lifetime_hook_function == NULL)
+  {
+    log_error("cannot unregister non-existent lifetime hook for '%s'", service_name);
+    ASSERT_NO_PASS;
+    return;
+  }
+
+  service_ptr->lifetime_hook_function = NULL;
+
+  dbus_bus_remove_match(connection, compose_name_owner_match(service_name), &g_dbus_error);
+  if (dbus_error_is_set(&g_dbus_error))
+  {
+    log_error("Failed to remove D-Bus match rule: %s", g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+  }
+
+  free_service_descriptor_if_empty(service_ptr);
 }

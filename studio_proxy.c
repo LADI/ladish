@@ -33,98 +33,79 @@ static void (* g_renamed_callback)(const char * new_studio_name) = NULL;
 static void (* g_started_callback)(void) = NULL;
 static void (* g_stopped_callback)(void) = NULL;
 
-static const char * g_signals[] =
+static void on_studio_renamed(void * context, DBusMessage * message_ptr)
 {
-  "StudioRenamed",
-  "StudioStarted",
-  "StudioStopped",
-  "RoomAppeared",
-  "RoomDisappeared",
-  NULL
-};
-
-static DBusHandlerResult message_hook(DBusConnection * connection, DBusMessage * message, void * data)
-{
-  const char * object_path;
   char * name;
 
-  object_path = dbus_message_get_path(message);
-  if (object_path == NULL || strcmp(object_path, STUDIO_OBJECT_PATH) != 0)
+  if (!dbus_message_get_args(message_ptr, &g_dbus_error, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
   {
-    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+    log_error("Invalid parameters of StudioRenamed signal: %s",  g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
   }
-
-  if (dbus_message_is_signal(message, IFACE_STUDIO, "StudioRenamed"))
+  else
   {
-    if (!dbus_message_get_args(message, &g_dbus_error, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
+    log_info("StudioRenamed");
+
+    if (g_renamed_callback != NULL)
     {
-      log_error("Invalid parameters of StudioRenamed signal: %s",  g_dbus_error.message);
-      dbus_error_free(&g_dbus_error);
+      g_renamed_callback(name);
     }
-    else
-    {
-      log_info("StudioRenamed");
-
-      if (g_renamed_callback != NULL)
-      {
-        g_renamed_callback(name);
-      }
-    }
-
-    return DBUS_HANDLER_RESULT_HANDLED;
   }
-
-  if (dbus_message_is_signal(message, IFACE_STUDIO, "StudioStarted"))
-  {
-    log_info("StudioStarted");
-
-    if (g_started_callback != NULL)
-    {
-      g_started_callback();
-    }
-
-    return DBUS_HANDLER_RESULT_HANDLED;
-  }
-
-  if (dbus_message_is_signal(message, IFACE_STUDIO, "StudioStopped"))
-  {
-    log_info("StudioStopped");
-
-    if (g_stopped_callback != NULL)
-    {
-      g_stopped_callback();
-    }
-
-    return DBUS_HANDLER_RESULT_HANDLED;
-  }
-
-  if (dbus_message_is_signal(message, IFACE_STUDIO, "RoomAppeared"))
-  {
-    log_info("RoomAppeared");
-    return DBUS_HANDLER_RESULT_HANDLED;
-  }
-
-  if (dbus_message_is_signal(message, IFACE_STUDIO, "RoomDisappeared"))
-  {
-    log_info("RoomDisappeared");
-    return DBUS_HANDLER_RESULT_HANDLED;
-  }
-
-  return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
+
+static void on_studio_started(void * context, DBusMessage * message_ptr)
+{
+  log_info("StudioStarted");
+
+  if (g_started_callback != NULL)
+  {
+    g_started_callback();
+  }
+}
+
+static void on_studio_stopped(void * context, DBusMessage * message_ptr)
+{
+  log_info("StudioStopped");
+
+  if (g_stopped_callback != NULL)
+  {
+    g_stopped_callback();
+  }
+}
+
+static void on_room_appeared(void * context, DBusMessage * message_ptr)
+{
+  log_info("RoomAppeared");
+}
+
+static void on_room_disappeared(void * context, DBusMessage * message_ptr)
+{
+  log_info("RoomDisappeared");
+}
+
+/* this must be static because it is referenced by the
+ * dbus helper layer when hooks are active */
+static struct dbus_signal_hook g_signal_hooks[] =
+{
+  {"StudioRenamed", on_studio_renamed},
+  {"StudioStarted", on_studio_started},
+  {"StudioStopped", on_studio_stopped},
+  {"RoomAppeared", on_room_appeared},
+  {"RoomDisappeared", on_room_disappeared},
+  {NULL, NULL}
+};
 
 bool studio_proxy_init(void)
 {
-  if (!dbus_register_object_signal_handler(
+  if (!dbus_register_object_signal_hooks(
         g_dbus_connection,
         SERVICE_NAME,
         STUDIO_OBJECT_PATH,
         IFACE_STUDIO,
-        g_signals,
-        message_hook,
-        NULL))
+        NULL,
+        g_signal_hooks))
   {
-    log_error("studio_object_path() failed");
+    log_error("dbus_register_object_signal_hooks() failed");
     return false;
   }
 
@@ -133,17 +114,7 @@ bool studio_proxy_init(void)
 
 void studio_proxy_uninit(void)
 {
-  if (!dbus_unregister_object_signal_handler(
-        g_dbus_connection,
-        SERVICE_NAME,
-        STUDIO_OBJECT_PATH,
-        IFACE_STUDIO,
-        g_signals,
-        message_hook,
-        NULL))
-  {
-    log_error("studio_object_path() failed");
-  }
+  dbus_unregister_object_signal_hooks(g_dbus_connection, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO);
 }
 
 bool studio_proxy_get_name(char ** name_ptr)

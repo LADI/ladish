@@ -64,6 +64,39 @@ dbus_unregister_object_signal_handler(
   DBusHandleMessageFunction handler,
   void * handler_data);
 
+struct dbus_signal_hook
+{
+  const char * signal_name;
+  void (* hook_function)(void * context, DBusMessage * message_ptr);
+};
+
+bool
+dbus_register_object_signal_hooks(
+  DBusConnection * connection,
+  const char * service,
+  const char * object,
+  const char * iface,
+  void * hook_context,
+  const struct dbus_signal_hook * signal_hooks);
+
+void
+dbus_unregister_object_signal_hooks(
+  DBusConnection * connection,
+  const char * service,
+  const char * object,
+  const char * iface);
+
+bool
+dbus_register_service_lifetime_hook(
+  DBusConnection * connection,
+  const char * service,
+  void (* hook_function)(bool appeared));
+
+void
+dbus_unregister_service_lifetime_hook(
+  DBusConnection * connection,
+  const char * service);
+
 #define DBUS_CALL_DEFAULT_TIMEOUT 1000 // in milliseconds
 
 #include "method.h"

@@ -56,18 +56,7 @@ struct graph
   bool graph_dict_supported;
 };
 
-static DBusHandlerResult message_hook(DBusConnection *, DBusMessage *, void *);
-
-static const char * g_signals[] =
-{
-  "ClientAppeared",
-  "ClientDisappeared",
-  "PortAppeared",
-  "PortDisappeared",
-  "PortsConnected",
-  "PortsDisconnected",
-  NULL
-};
+static struct dbus_signal_hook g_signal_hooks[];
 
 static void clear(struct graph * graph_ptr)
 {
@@ -429,14 +418,11 @@ graph_proxy_destroy(
 
   if (graph_ptr->active)
   {
-    dbus_unregister_object_signal_handler(
+    dbus_unregister_object_signal_hooks(
       g_dbus_connection,
       graph_ptr->service,
       graph_ptr->object,
-      JACKDBUS_IFACE_PATCHBAY,
-      g_signals,
-      message_hook,
-      graph_ptr);
+      JACKDBUS_IFACE_PATCHBAY);
   }
 
   free(graph_ptr->object);
@@ -460,14 +446,13 @@ graph_proxy_activate(
     return false;
   }
 
-  if (!dbus_register_object_signal_handler(
+  if (!dbus_register_object_signal_hooks(
         g_dbus_connection,
         graph_ptr->service,
         graph_ptr->object,
         JACKDBUS_IFACE_PATCHBAY,
-        g_signals,
-        message_hook,
-        graph_ptr))
+        graph_ptr,
+        g_signal_hooks))
   {
     return false;
   }
@@ -565,212 +550,214 @@ graph_proxy_disconnect_ports(
   }
 }
 
-static
-DBusHandlerResult
-message_hook(
-  DBusConnection * connection,
-  DBusMessage * message,
-  void * graph)
+static void on_client_appeared(void * graph, DBusMessage * message_ptr)
 {
-  const char * object_path;
   dbus_uint64_t new_graph_version;
   dbus_uint64_t client_id;
-  const char *client_name;
+  const char * client_name;
+
+  if (!dbus_message_get_args(
+        message_ptr,
+        &g_dbus_error,
+        DBUS_TYPE_UINT64, &new_graph_version,
+        DBUS_TYPE_UINT64, &client_id,
+        DBUS_TYPE_STRING, &client_name,
+        DBUS_TYPE_INVALID))
+  {
+    log_error("dbus_message_get_args() failed to extract ClientAppeared signal arguments (%s)", g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return;
+  }
+
+  //log_info("ClientAppeared, %s(%llu), graph %llu", client_name, client_id, new_graph_version);
+
+  if (new_graph_version > graph_ptr->version)
+  {
+    //log_info("got new graph version %llu", (unsigned long long)new_graph_version);
+    graph_ptr->version = new_graph_version;
+    client_appeared(graph_ptr, client_id, client_name);
+  }
+}
+
+static void on_client_disappeared(void * graph, DBusMessage * message_ptr)
+{
+  dbus_uint64_t new_graph_version;
+  dbus_uint64_t client_id;
+  const char * client_name;
+
+  if (!dbus_message_get_args(
+        message_ptr,
+        &g_dbus_error,
+        DBUS_TYPE_UINT64, &new_graph_version,
+        DBUS_TYPE_UINT64, &client_id,
+        DBUS_TYPE_STRING, &client_name,
+        DBUS_TYPE_INVALID))
+  {
+    log_error("dbus_message_get_args() failed to extract ClientDisappeared signal arguments (%s)", g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return;
+  }
+
+  //log_info("ClientDisappeared, %s(%llu)", client_name, client_id);
+
+  if (new_graph_version > graph_ptr->version)
+  {
+    //log_info("got new graph version %llu", (unsigned long long)new_graph_version);
+    graph_ptr->version = new_graph_version;
+    client_disappeared(graph_ptr, client_id);
+  }
+}
+
+static void on_port_appeared(void * graph, DBusMessage * message_ptr)
+{
+  dbus_uint64_t new_graph_version;
+  dbus_uint64_t client_id;
+  const char * client_name;
   dbus_uint64_t port_id;
-  const char *port_name;
+  const char * port_name;
   dbus_uint32_t port_flags;
   dbus_uint32_t port_type;
+
+  if (!dbus_message_get_args(
+        message_ptr,
+        &g_dbus_error,
+        DBUS_TYPE_UINT64, &new_graph_version,
+        DBUS_TYPE_UINT64, &client_id,
+        DBUS_TYPE_STRING, &client_name,
+        DBUS_TYPE_UINT64, &port_id,
+        DBUS_TYPE_STRING, &port_name,
+        DBUS_TYPE_UINT32, &port_flags,
+        DBUS_TYPE_UINT32, &port_type,
+        DBUS_TYPE_INVALID))
+  {
+    log_error("dbus_message_get_args() failed to extract PortAppeared signal arguments (%s)", g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return;
+  }
+
+  //me->info_msg(str(boost::format("PortAppeared, %s(%llu):%s(%llu), %lu, %lu") % client_name % client_id % port_name % port_id % port_flags % port_type));
+
+  if (new_graph_version > graph_ptr->version)
+  {
+    //log_info("got new graph version %llu", (unsigned long long)new_graph_version);
+    graph_ptr->version = new_graph_version;
+    port_appeared(graph_ptr, client_id, port_id, port_name, port_flags, port_type);
+  }
+}
+
+static void on_port_disappeared(void * graph, DBusMessage * message_ptr)
+{
+  dbus_uint64_t new_graph_version;
+  dbus_uint64_t client_id;
+  const char * client_name;
+  dbus_uint64_t port_id;
+  const char * port_name;
+
+  if (!dbus_message_get_args(
+        message_ptr,
+        &g_dbus_error,
+        DBUS_TYPE_UINT64, &new_graph_version,
+        DBUS_TYPE_UINT64, &client_id,
+        DBUS_TYPE_STRING, &client_name,
+        DBUS_TYPE_UINT64, &port_id,
+        DBUS_TYPE_STRING, &port_name,
+        DBUS_TYPE_INVALID))
+  {
+    log_error("dbus_message_get_args() failed to extract PortDisappeared signal arguments (%s)", g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return;
+  }
+
+  //me->info_msg(str(boost::format("PortDisappeared, %s(%llu):%s(%llu)") % client_name % client_id % port_name % port_id));
+
+  if (new_graph_version > graph_ptr->version)
+  {
+    //log_info("got new graph version %llu", (unsigned long long)new_graph_version);
+    graph_ptr->version = new_graph_version;
+    port_disappeared(graph_ptr, client_id, port_id);
+  }
+}
+
+static void on_ports_connected(void * graph, DBusMessage * message_ptr)
+{
+  dbus_uint64_t new_graph_version;
+  dbus_uint64_t client_id;
+  const char * client_name;
+  dbus_uint64_t port_id;
+  const char * port_name;
   dbus_uint64_t client2_id;
-  const char *client2_name;
+  const char * client2_name;
   dbus_uint64_t port2_id;
-  const char *port2_name;
+  const char * port2_name;
   dbus_uint64_t connection_id;
 
-  object_path = dbus_message_get_path(message);
-  if (object_path == NULL || strcmp(object_path, graph_ptr->object) != 0)
+  if (!dbus_message_get_args(
+        message_ptr,
+        &g_dbus_error,
+        DBUS_TYPE_UINT64, &new_graph_version,
+        DBUS_TYPE_UINT64, &client_id,
+        DBUS_TYPE_STRING, &client_name,
+        DBUS_TYPE_UINT64, &port_id,
+        DBUS_TYPE_STRING, &port_name,
+        DBUS_TYPE_UINT64, &client2_id,
+        DBUS_TYPE_STRING, &client2_name,
+        DBUS_TYPE_UINT64, &port2_id,
+        DBUS_TYPE_STRING, &port2_name,
+        DBUS_TYPE_UINT64, &connection_id,
+        DBUS_TYPE_INVALID))
   {
-    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+    log_error("dbus_message_get_args() failed to extract PortsConnected signal arguments (%s)", g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return;
   }
 
-  if (dbus_message_is_signal(message, JACKDBUS_IFACE_PATCHBAY, "ClientAppeared"))
+  if (new_graph_version > graph_ptr->version)
   {
-    if (!dbus_message_get_args(
-          message,
-          &g_dbus_error,
-          DBUS_TYPE_UINT64, &new_graph_version,
-          DBUS_TYPE_UINT64, &client_id,
-          DBUS_TYPE_STRING, &client_name,
-          DBUS_TYPE_INVALID))
-    {
-      log_error("dbus_message_get_args() failed to extract ClientAppeared signal arguments (%s)", g_dbus_error.message);
-      dbus_error_free(&g_dbus_error);
-      return DBUS_HANDLER_RESULT_HANDLED;
-    }
+    //log_info("got new graph version %llu", (unsigned long long)new_graph_version);
+    graph_ptr->version = new_graph_version;
+    ports_connected(graph_ptr, client_id, port_id, client2_id, port2_id);
+  }
+}
 
-    //log_info("ClientAppeared, %s(%llu), graph %llu", client_name, client_id, new_graph_version);
+static void on_ports_disconnected(void * graph, DBusMessage * message_ptr)
+{
+  dbus_uint64_t new_graph_version;
+  dbus_uint64_t client_id;
+  const char * client_name;
+  dbus_uint64_t port_id;
+  const char * port_name;
+  dbus_uint64_t client2_id;
+  const char * client2_name;
+  dbus_uint64_t port2_id;
+  const char * port2_name;
+  dbus_uint64_t connection_id;
 
-    if (new_graph_version > graph_ptr->version)
-    {
-      //log_info("got new graph version %llu", (unsigned long long)new_graph_version);
-      graph_ptr->version = new_graph_version;
-      client_appeared(graph_ptr, client_id, client_name);
-    }
-
-    return DBUS_HANDLER_RESULT_HANDLED;
+  if (!dbus_message_get_args(
+        message_ptr,
+        &g_dbus_error,
+        DBUS_TYPE_UINT64, &new_graph_version,
+        DBUS_TYPE_UINT64, &client_id,
+        DBUS_TYPE_STRING, &client_name,
+        DBUS_TYPE_UINT64, &port_id,
+        DBUS_TYPE_STRING, &port_name,
+        DBUS_TYPE_UINT64, &client2_id,
+        DBUS_TYPE_STRING, &client2_name,
+        DBUS_TYPE_UINT64, &port2_id,
+        DBUS_TYPE_STRING, &port2_name,
+        DBUS_TYPE_UINT64, &connection_id,
+        DBUS_TYPE_INVALID))
+  {
+    log_error("dbus_message_get_args() failed to extract PortsConnected signal arguments (%s)", g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return;
   }
 
-  if (dbus_message_is_signal(message, JACKDBUS_IFACE_PATCHBAY, "ClientDisappeared"))
+  if (new_graph_version > graph_ptr->version)
   {
-    if (!dbus_message_get_args(
-          message,
-          &g_dbus_error,
-          DBUS_TYPE_UINT64, &new_graph_version,
-          DBUS_TYPE_UINT64, &client_id,
-          DBUS_TYPE_STRING, &client_name,
-          DBUS_TYPE_INVALID))
-    {
-      log_error("dbus_message_get_args() failed to extract ClientDisappeared signal arguments (%s)", g_dbus_error.message);
-      dbus_error_free(&g_dbus_error);
-      return DBUS_HANDLER_RESULT_HANDLED;
-    }
-
-    //log_info("ClientDisappeared, %s(%llu)", client_name, client_id);
-
-    if (new_graph_version > graph_ptr->version)
-    {
-      //log_info("got new graph version %llu", (unsigned long long)new_graph_version);
-      graph_ptr->version = new_graph_version;
-      client_disappeared(graph_ptr, client_id);
-    }
-
-    return DBUS_HANDLER_RESULT_HANDLED;
+    //log_info("got new graph version %llu", (unsigned long long)new_graph_version);
+    graph_ptr->version = new_graph_version;
+    ports_disconnected(graph_ptr, client_id, port_id, client2_id, port2_id);
   }
-
-  if (dbus_message_is_signal(message, JACKDBUS_IFACE_PATCHBAY, "PortAppeared"))
-  {
-    if (!dbus_message_get_args(
-          message,
-          &g_dbus_error,
-          DBUS_TYPE_UINT64, &new_graph_version,
-          DBUS_TYPE_UINT64, &client_id,
-          DBUS_TYPE_STRING, &client_name,
-          DBUS_TYPE_UINT64, &port_id,
-          DBUS_TYPE_STRING, &port_name,
-          DBUS_TYPE_UINT32, &port_flags,
-          DBUS_TYPE_UINT32, &port_type,
-          DBUS_TYPE_INVALID))
-    {
-      log_error("dbus_message_get_args() failed to extract PortAppeared signal arguments (%s)", g_dbus_error.message);
-      dbus_error_free(&g_dbus_error);
-      return DBUS_HANDLER_RESULT_HANDLED;
-    }
-
-    //me->info_msg(str(boost::format("PortAppeared, %s(%llu):%s(%llu), %lu, %lu") % client_name % client_id % port_name % port_id % port_flags % port_type));
-
-    if (new_graph_version > graph_ptr->version)
-    {
-      //log_info("got new graph version %llu", (unsigned long long)new_graph_version);
-      graph_ptr->version = new_graph_version;
-      port_appeared(graph_ptr, client_id, port_id, port_name, port_flags, port_type);
-    }
-
-    return DBUS_HANDLER_RESULT_HANDLED;
-  }
-
-  if (dbus_message_is_signal(message, JACKDBUS_IFACE_PATCHBAY, "PortDisappeared"))
-  {
-    if (!dbus_message_get_args(
-          message,
-          &g_dbus_error,
-          DBUS_TYPE_UINT64, &new_graph_version,
-          DBUS_TYPE_UINT64, &client_id,
-          DBUS_TYPE_STRING, &client_name,
-          DBUS_TYPE_UINT64, &port_id,
-          DBUS_TYPE_STRING, &port_name,
-          DBUS_TYPE_INVALID))
-    {
-      log_error("dbus_message_get_args() failed to extract PortDisappeared signal arguments (%s)", g_dbus_error.message);
-      dbus_error_free(&g_dbus_error);
-      return DBUS_HANDLER_RESULT_HANDLED;
-    }
-
-    //me->info_msg(str(boost::format("PortDisappeared, %s(%llu):%s(%llu)") % client_name % client_id % port_name % port_id));
-
-    if (new_graph_version > graph_ptr->version)
-    {
-      //log_info("got new graph version %llu", (unsigned long long)new_graph_version);
-      graph_ptr->version = new_graph_version;
-      port_disappeared(graph_ptr, client_id, port_id);
-    }
-
-    return DBUS_HANDLER_RESULT_HANDLED;
-  }
-
-  if (dbus_message_is_signal(message, JACKDBUS_IFACE_PATCHBAY, "PortsConnected"))
-  {
-    if (!dbus_message_get_args(
-          message,
-          &g_dbus_error,
-          DBUS_TYPE_UINT64, &new_graph_version,
-          DBUS_TYPE_UINT64, &client_id,
-          DBUS_TYPE_STRING, &client_name,
-          DBUS_TYPE_UINT64, &port_id,
-          DBUS_TYPE_STRING, &port_name,
-          DBUS_TYPE_UINT64, &client2_id,
-          DBUS_TYPE_STRING, &client2_name,
-          DBUS_TYPE_UINT64, &port2_id,
-          DBUS_TYPE_STRING, &port2_name,
-          DBUS_TYPE_UINT64, &connection_id,
-          DBUS_TYPE_INVALID))
-    {
-      log_error("dbus_message_get_args() failed to extract PortsConnected signal arguments (%s)", g_dbus_error.message);
-      dbus_error_free(&g_dbus_error);
-      return DBUS_HANDLER_RESULT_HANDLED;
-    }
-
-    if (new_graph_version > graph_ptr->version)
-    {
-      //log_info("got new graph version %llu", (unsigned long long)new_graph_version);
-      graph_ptr->version = new_graph_version;
-      ports_connected(graph_ptr, client_id, port_id, client2_id, port2_id);
-    }
-
-    return DBUS_HANDLER_RESULT_HANDLED;
-  }
-
-  if (dbus_message_is_signal(message, JACKDBUS_IFACE_PATCHBAY, "PortsDisconnected"))
-  {
-    if (!dbus_message_get_args(
-          message,
-          &g_dbus_error,
-          DBUS_TYPE_UINT64, &new_graph_version,
-          DBUS_TYPE_UINT64, &client_id,
-          DBUS_TYPE_STRING, &client_name,
-          DBUS_TYPE_UINT64, &port_id,
-          DBUS_TYPE_STRING, &port_name,
-          DBUS_TYPE_UINT64, &client2_id,
-          DBUS_TYPE_STRING, &client2_name,
-          DBUS_TYPE_UINT64, &port2_id,
-          DBUS_TYPE_STRING, &port2_name,
-          DBUS_TYPE_UINT64, &connection_id,
-          DBUS_TYPE_INVALID))
-    {
-      log_error("dbus_message_get_args() failed to extract PortsConnected signal arguments (%s)", g_dbus_error.message);
-      dbus_error_free(&g_dbus_error);
-      return DBUS_HANDLER_RESULT_HANDLED;
-    }
-
-    if (new_graph_version > graph_ptr->version)
-    {
-      //log_info("got new graph version %llu", (unsigned long long)new_graph_version);
-      graph_ptr->version = new_graph_version;
-      ports_disconnected(graph_ptr, client_id, port_id, client2_id, port2_id);
-    }
-
-    return DBUS_HANDLER_RESULT_HANDLED;
-  }
-
-  return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
 bool
@@ -873,3 +860,16 @@ bool graph_proxy_get_client_pid(graph_proxy_handle graph, uint64_t client_id, in
 
   return true;
 }
+
+/* this must be static because it is referenced by the
+ * dbus helper layer when hooks are active */
+static struct dbus_signal_hook g_signal_hooks[] =
+{
+  {"ClientAppeared", on_client_appeared},
+  {"ClientDisappeared", on_client_disappeared},
+  {"PortAppeared", on_port_appeared},
+  {"PortDisappeared", on_port_disappeared},
+  {"PortsConnected", on_ports_connected},
+  {"PortsDisconnected", on_ports_disconnected},
+  {NULL, NULL}
+};

@@ -29,39 +29,26 @@
 #include "../dbus/helpers.h"
 #include "../dbus_constants.h"
 
-static const char * g_signals[] =
+static void on_studio_appeared(void * context, DBusMessage * message_ptr)
 {
-  "StudioAppeared",
-  "StudioDisappeared",
-  NULL
-};
-
-static DBusHandlerResult message_hook(DBusConnection * connection, DBusMessage * message, void * data)
-{
-  const char * object_path;
-
-  object_path = dbus_message_get_path(message);
-  if (object_path == NULL || strcmp(object_path, CONTROL_OBJECT_PATH) != 0)
-  {
-    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-  }
-
-  if (dbus_message_is_signal(message, IFACE_CONTROL, "StudioAppeared"))
-  {
-    log_info("StudioAppeared");
-    control_proxy_on_studio_appeared();
-    return DBUS_HANDLER_RESULT_HANDLED;
-  }
-
-  if (dbus_message_is_signal(message, IFACE_CONTROL, "StudioDisappeared"))
-  {
-    log_info("StudioDisappeared");
-    control_proxy_on_studio_disappeared();
-    return DBUS_HANDLER_RESULT_HANDLED;
-  }
-
-  return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+  log_info("StudioAppeared");
+  control_proxy_on_studio_appeared();
 }
+
+static void on_studio_disappeared(void * context, DBusMessage * message_ptr)
+{
+  log_info("StudioDisappeared");
+  control_proxy_on_studio_disappeared();
+}
+
+/* this must be static because it is referenced by the
+ * dbus helper layer when hooks are active */
+static struct dbus_signal_hook g_signal_hooks[] =
+{
+  {"StudioAppeared", on_studio_appeared},
+  {"StudioDisappeared", on_studio_disappeared},
+  {NULL, NULL}
+};
 
 static bool control_proxy_is_studio_loaded(bool * present_ptr)
 {
@@ -92,7 +79,7 @@ bool control_proxy_init(void)
     control_proxy_on_studio_appeared();
   }
 
-  if (!dbus_register_object_signal_handler(g_dbus_connection, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, g_signals, message_hook, NULL))
+  if (!dbus_register_object_signal_hooks(g_dbus_connection, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, NULL, g_signal_hooks))
   {
     if (studio_present)
     {
@@ -107,7 +94,7 @@ bool control_proxy_init(void)
 
 void control_proxy_uninit(void)
 {
-  dbus_unregister_object_signal_handler(g_dbus_connection, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, g_signals, message_hook, NULL);
+  dbus_unregister_object_signal_hooks(g_dbus_connection, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL);
 }
 
 bool control_proxy_get_studio_list(void (* callback)(void * context, const char * studio_name), void * context)

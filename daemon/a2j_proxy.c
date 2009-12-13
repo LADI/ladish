@@ -32,132 +32,80 @@
 #define A2J_OBJECT        "/"
 #define A2J_IFACE_CONTROL "org.gna.home.a2jmidid.control"
 
-static const char * g_signals[] =
-{
-  "bridge_started",
-  "bridge_stopped",
-  NULL
-};
-
 static bool g_a2j_started = false;
 static char * g_a2j_jack_client_name = NULL;
 
-static
-DBusHandlerResult
-message_hook(
-  DBusConnection * connection,
-  DBusMessage * message,
-  void * proxy)
+static void on_a2j_bridge_started(void * context, DBusMessage * message_ptr)
 {
-  const char * object_name;
-  const char * old_owner;
-  const char * new_owner;
+  log_info("a2j bridge start detected.");
 
-  if (dbus_message_is_signal(message, DBUS_INTERFACE_DBUS, "NameOwnerChanged"))
+  if (g_a2j_jack_client_name != NULL)
   {
-    if (!dbus_message_get_args(
-          message, &g_dbus_error,
-          DBUS_TYPE_STRING, &object_name,
-          DBUS_TYPE_STRING, &old_owner,
-          DBUS_TYPE_STRING, &new_owner,
-          DBUS_TYPE_INVALID))
-    {
-      log_error("dbus_message_get_args() failed to extract NameOwnerChanged signal arguments (%s)", g_dbus_error.message);
-      dbus_error_free(&g_dbus_error);
-      return DBUS_HANDLER_RESULT_HANDLED;
-    }
-
-    if (strcmp(object_name, A2J_SERVICE) != 0)
-    {
-      return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-    }
-
-    if (old_owner[0] == '\0')
-    {
-      log_info("a2j activatation detected.");
-    }
-    else if (new_owner[0] == '\0')
-    {
-      log_info("a2j deactivatation detected.");
-    }
-
-    return DBUS_HANDLER_RESULT_HANDLED;
+    free(g_a2j_jack_client_name);
+    g_a2j_jack_client_name = NULL;
   }
 
-  if (dbus_message_is_signal(message, A2J_IFACE_CONTROL, "bridge_started"))
-  {
-    log_info("a2j bridge start detected.");
-
-    if (g_a2j_jack_client_name != NULL)
-    {
-      free(g_a2j_jack_client_name);
-      g_a2j_jack_client_name = NULL;
-    }
-
-    g_a2j_started = true;
-
-    return DBUS_HANDLER_RESULT_HANDLED;
-  }
-
-  if (dbus_message_is_signal(message, A2J_IFACE_CONTROL, "bridge_stopped"))
-  {
-    if (g_a2j_jack_client_name != NULL)
-    {
-      free(g_a2j_jack_client_name);
-      g_a2j_jack_client_name = NULL;
-    }
-
-    g_a2j_started = false;
-
-    log_info("a2j bridge stop detected.");
-    return DBUS_HANDLER_RESULT_HANDLED;
-  }
-
-  return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+  g_a2j_started = true;
 }
+
+static void on_a2j_bridge_stopped(void * context, DBusMessage * message_ptr)
+{
+  if (g_a2j_jack_client_name != NULL)
+  {
+    free(g_a2j_jack_client_name);
+    g_a2j_jack_client_name = NULL;
+  }
+
+  g_a2j_started = false;
+
+  log_info("a2j bridge stop detected.");
+}
+
+static void on_a2j_life_status_changed(bool appeared)
+{
+  if (appeared)
+  {
+      log_info("a2j activatation detected.");
+  }
+  else
+  {
+      log_info("a2j deactivatation detected.");
+  }
+}
+
+/* this must be static because it is referenced by the
+ * dbus helper layer when hooks are active */
+static struct dbus_signal_hook g_signal_hooks[] =
+{
+  {"bridge_started", on_a2j_bridge_started},
+  {"bridge_stopped", on_a2j_bridge_stopped},
+  {NULL, NULL}
+};
 
 bool a2j_proxy_init(void)
 {
-  char rule[1024];
-  const char ** signal;
-
-  dbus_bus_add_match(
-    g_dbus_connection,
-    "type='signal',interface='"DBUS_INTERFACE_DBUS"',member=NameOwnerChanged,arg0='"A2J_SERVICE"'",
-    &g_dbus_error);
-  if (dbus_error_is_set(&g_dbus_error))
-  {
-    log_error("Failed to add D-Bus match rule: %s", g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
-    return false;
-  }
-
   g_a2j_started = a2j_proxy_is_started();
   if (g_a2j_started)
   {
     a2j_proxy_get_jack_client_name_noncached(&g_a2j_jack_client_name);
   }
 
-  for (signal = g_signals; *signal != NULL; signal++)
+  if (!dbus_register_service_lifetime_hook(g_dbus_connection, A2J_SERVICE, on_a2j_life_status_changed))
   {
-    snprintf(
-      rule,
-      sizeof(rule),
-      "type='signal',sender='"A2J_SERVICE"',path='"A2J_OBJECT"',interface='"A2J_IFACE_CONTROL"',member='%s'",
-      *signal);
-
-    dbus_bus_add_match(g_dbus_connection, rule, &g_dbus_error);
-    if (dbus_error_is_set(&g_dbus_error))
-    {
-      log_error("Failed to add D-Bus match rule: %s", g_dbus_error.message);
-      dbus_error_free(&g_dbus_error);
-      return false;
-    }
+    log_error("dbus_register_service_lifetime_hook() failed for a2j service");
+    return false;
   }
 
-  if (!dbus_connection_add_filter(g_dbus_connection, message_hook, NULL, NULL))
+  if (!dbus_register_object_signal_hooks(
+        g_dbus_connection,
+        A2J_SERVICE,
+        A2J_OBJECT,
+        A2J_IFACE_CONTROL,
+        NULL,
+        g_signal_hooks))
   {
-    log_error("Failed to add D-Bus filter");
+    dbus_unregister_service_lifetime_hook(g_dbus_connection, A2J_SERVICE);
+    log_error("dbus_register_object_signal_hooks() failed for a2j control interface");
     return false;
   }
 
@@ -166,7 +114,8 @@ bool a2j_proxy_init(void)
 
 void a2j_proxy_uninit(void)
 {
-  dbus_connection_remove_filter(g_dbus_connection, message_hook, NULL);
+  dbus_unregister_object_signal_hooks(g_dbus_connection, A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL);
+  dbus_unregister_service_lifetime_hook(g_dbus_connection, A2J_SERVICE);
 }
 
 const char * a2j_proxy_get_jack_client_name_cached(void)

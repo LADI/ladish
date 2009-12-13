@@ -223,6 +223,7 @@ static void on_jack_server_started(void)
 
 static void on_jack_server_stopped(void)
 {
+  log_info("JACK server stop detected.");
   ladish_environment_reset(&g_studio.env_store, ladish_environment_jack_server_started);
 }
 

@@ -36,149 +36,52 @@ jack_proxy_callback_server_stopped g_on_server_stopped;
 jack_proxy_callback_server_appeared g_on_server_appeared;
 jack_proxy_callback_server_disappeared g_on_server_disappeared;
 
-static
-void
-on_jack_control_signal(
-  DBusMessage * message_ptr,
-  const char * signal_name)
+static void on_jack_server_started(void * context, DBusMessage * message_ptr)
 {
-  if (strcmp(signal_name, "ServerStarted") == 0)
+  log_debug("JACK server start signal received.");
+  if (g_on_server_started != NULL)
   {
-    log_debug("JACK server start detected.");
-    if (g_on_server_started != NULL)
-    {
-      g_on_server_started();
-    }
-
-    return;
-  }
-
-  if (strcmp(signal_name, "ServerStopped") == 0)
-  {
-    log_debug("JACK server stop detected.");
-    if (g_on_server_stopped != NULL)
-    {
-      g_on_server_stopped();
-    }
-
-    return;
+    g_on_server_started();
   }
 }
 
-static
-DBusHandlerResult
-on_bus_signal(
-  DBusMessage * message_ptr,
-  const char * signal_name)
+static void on_jack_server_stopped(void * context, DBusMessage * message_ptr)
 {
-  const char * object_name;
-  const char * old_owner;
-  const char * new_owner;
-
-  //log_info("bus signal '%s' received", signal_name);
-
-  dbus_error_init(&g_dbus_error);
-
-  if (strcmp(signal_name, "NameOwnerChanged") == 0)
+  log_debug("JACK server stop signal received.");
+  if (g_on_server_stopped != NULL)
   {
-    //log_info("NameOwnerChanged signal received");
-
-    if (!dbus_message_get_args(
-          message_ptr,
-          &g_dbus_error,
-          DBUS_TYPE_STRING, &object_name,
-          DBUS_TYPE_STRING, &old_owner,
-          DBUS_TYPE_STRING, &new_owner,
-          DBUS_TYPE_INVALID)) {
-      log_error("Cannot get message arguments: %s", g_dbus_error.message);
-      dbus_error_free(&g_dbus_error);
-      return DBUS_HANDLER_RESULT_HANDLED;
-    }
-
-    if (strcmp(object_name, JACKDBUS_SERVICE_NAME) != 0)
-    {
-      return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-    }
-
-    if (old_owner[0] == '\0')
-    {
-      log_debug("JACK serivce appeared");
-      if (g_on_server_appeared != NULL)
-      {
-        g_on_server_appeared();
-      }
-    }
-    else if (new_owner[0] == '\0')
-    {
-      log_debug("JACK serivce disappeared");
-      if (g_on_server_disappeared != NULL)
-      {
-        g_on_server_disappeared();
-      }
-    }
-
-    return DBUS_HANDLER_RESULT_HANDLED;
+    g_on_server_stopped();
   }
-
-  return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
-static
-DBusHandlerResult
-dbus_signal_handler(
-  DBusConnection * connection_ptr,
-  DBusMessage * message_ptr,
-  void * data)
+static void on_jack_life_status_changed(bool appeared)
 {
-  const char * object_path;
-  const char * interface;
-  const char * signal_name;
-
-  /* Non-signal messages are ignored */
-  if (dbus_message_get_type(message_ptr) != DBUS_MESSAGE_TYPE_SIGNAL)
+  if (appeared)
   {
-    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-  }
-
-  interface = dbus_message_get_interface(message_ptr);
-  if (interface == NULL)
-  {
-    /* Signals with no interface are ignored */
-    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-  }
-
-  object_path = dbus_message_get_path(message_ptr);
-
-  signal_name = dbus_message_get_member(message_ptr);
-  if (signal_name == NULL)
-  {
-    log_error("Received signal with NULL member");
-    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
-  }
-
-  log_debug("'%s' sent signal '%s'::'%s'", object_path, interface, signal_name);
-
-  /* Handle JACK patchbay and control interface signals */
-  if (object_path != NULL && strcmp(object_path, JACKDBUS_OBJECT_PATH) == 0)
-  {
-    if (strcmp(interface, JACKDBUS_IFACE_CONTROL) == 0)
+    log_debug("JACK serivce appeared");
+    if (g_on_server_appeared != NULL)
     {
-      on_jack_control_signal(message_ptr, signal_name);
-      return DBUS_HANDLER_RESULT_HANDLED;
+      g_on_server_appeared();
     }
-
-    return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
   }
-
-  /* Handle session bus signals to track JACK service alive state */
-  if (strcmp(interface, DBUS_INTERFACE_DBUS) == 0)
+  else
   {
-    return on_bus_signal(message_ptr, signal_name);
+    log_debug("JACK serivce disappeared");
+    if (g_on_server_disappeared != NULL)
+    {
+      g_on_server_disappeared();
+    }
   }
-
-  /* Let everything else pass through */
-  return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
+
+/* this must be static because it is referenced by the
+ * dbus helper layer when hooks are active */
+static struct dbus_signal_hook g_control_signal_hooks[] =
+{
+  {"ServerStarted", on_jack_server_started},
+  {"ServerStopped", on_jack_server_stopped},
+  {NULL, NULL}
+};
 
 bool
 jack_proxy_init(
@@ -187,52 +90,29 @@ jack_proxy_init(
   jack_proxy_callback_server_appeared server_appeared,
   jack_proxy_callback_server_disappeared server_disappeared)
 {
-  char rule[1024];
-  const char ** signal;
-
-  const char * control_signals[] = {
-    "ServerStarted",
-    "ServerStopped",
-    NULL};
-
-  dbus_bus_add_match(
-    g_dbus_connection,
-    "type='signal',interface='"DBUS_INTERFACE_DBUS"',member=NameOwnerChanged,arg0='"JACKDBUS_SERVICE_NAME"'",
-    &g_dbus_error);
-  if (dbus_error_is_set(&g_dbus_error))
-  {
-    log_error("Failed to add D-Bus match rule: %s", g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
-    return false;
-  }
-
-  for (signal = control_signals; *signal != NULL; signal++)
-  {
-    snprintf(
-      rule,
-      sizeof(rule),
-      "type='signal',sender='"JACKDBUS_SERVICE_NAME"',path='"JACKDBUS_OBJECT_PATH"',interface='"JACKDBUS_IFACE_CONTROL"',member='%s'",
-      *signal);
-
-    dbus_bus_add_match(g_dbus_connection, rule, &g_dbus_error);
-    if (dbus_error_is_set(&g_dbus_error))
-    {
-      log_error("Failed to add D-Bus match rule: %s", g_dbus_error.message);
-      dbus_error_free(&g_dbus_error);
-      return false;
-    }
-  }
-
-  if (!dbus_connection_add_filter(g_dbus_connection, dbus_signal_handler, NULL, NULL))
-  {
-    log_error("Failed to add D-Bus filter");
-    return false;
-  }
-
   g_on_server_started = server_started;
   g_on_server_stopped = server_stopped;
   g_on_server_appeared = server_appeared;
   g_on_server_disappeared = server_disappeared;
+
+  if (!dbus_register_service_lifetime_hook(g_dbus_connection, JACKDBUS_SERVICE_NAME, on_jack_life_status_changed))
+  {
+    log_error("dbus_register_service_lifetime_hook() failed for jackdbus service");
+    return false;
+  }
+
+  if (!dbus_register_object_signal_hooks(
+        g_dbus_connection,
+        JACKDBUS_SERVICE_NAME,
+        JACKDBUS_OBJECT_PATH,
+        JACKDBUS_IFACE_CONTROL,
+        NULL,
+        g_control_signal_hooks))
+  {
+    dbus_unregister_service_lifetime_hook(g_dbus_connection, JACKDBUS_SERVICE_NAME);
+    log_error("dbus_register_object_signal_hooks() failed for jackdbus control interface");
+    return false;
+  }
 
   {
     bool started;
@@ -258,7 +138,8 @@ void
 jack_proxy_uninit(
   void)
 {
-  dbus_connection_remove_filter(g_dbus_connection, dbus_signal_handler, NULL);
+  dbus_unregister_object_signal_hooks(g_dbus_connection, JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONTROL);
+  dbus_unregister_service_lifetime_hook(g_dbus_connection, JACKDBUS_SERVICE_NAME);
 }
 
 bool
