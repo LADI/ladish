@@ -129,16 +129,21 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
   if (client != NULL)
   {
     log_info("found existing client");
-    ASSERT(ladish_client_get_jack_id(client) == 0); /* two JACK clients with same name? */
+    if (ladish_client_get_jack_id(client) != 0)
+    {
+      log_error("Ignoring client with duplicate name '%s' ('%s')", name, jack_name);
+      goto free_app_name;
+    }
+
     ladish_client_set_jack_id(client, id);
     ladish_graph_show_client(virtualizer_ptr->jack_graph, client);
-    goto exit;
+    goto done;
   }
 
   if (!ladish_client_create(is_a2j ? g_a2j_uuid : NULL, true, false, false, &client))
   {
     log_error("ladish_client_create() failed. Ignoring client %"PRIu64" (%s)", id, jack_name);
-    return;
+    goto free_app_name;
   }
 
   ladish_client_set_jack_id(client, id);
@@ -147,10 +152,10 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
   {
     log_error("ladish_graph_add_client() failed to add client %"PRIu64" (%s) to JACK graph", id, name);
     ladish_client_destroy(client);
-    return;
+    goto free_app_name;
   }
 
-exit:
+done:
   if (strcmp(jack_name, "system") == 0)
   {
     virtualizer_ptr->system_client_id = id;
@@ -160,6 +165,11 @@ exit:
   {
     ladish_client_set_pid(client, pid);
     virtualizer_ptr->our_clients_count++;
+  }
+
+free_app_name:
+  if (app_name != NULL)
+  {
     free(app_name);
   }
 }
