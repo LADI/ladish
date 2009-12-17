@@ -27,6 +27,8 @@
 
 #include "control_proxy.h"
 
+static bool g_clean_exit;
+
 static void on_studio_appeared(void * context, DBusMessage * message_ptr)
 {
   log_info("StudioAppeared");
@@ -39,12 +41,18 @@ static void on_studio_disappeared(void * context, DBusMessage * message_ptr)
   control_proxy_on_studio_disappeared();
 }
 
+static void on_clean_exit(void * context, DBusMessage * message_ptr)
+{
+  g_clean_exit = true;
+}
+
 /* this must be static because it is referenced by the
  * dbus helper layer when hooks are active */
 static struct dbus_signal_hook g_signal_hooks[] =
 {
   {"StudioAppeared", on_studio_appeared},
   {"StudioDisappeared", on_studio_disappeared},
+  {"CleanExit", on_clean_exit},
   {NULL, NULL}
 };
 
@@ -62,12 +70,36 @@ static bool control_proxy_is_studio_loaded(bool * present_ptr)
   return true;
 }
 
+void on_lifestatus_changed(bool appeared)
+{
+  if (appeared)
+  {
+    control_proxy_on_daemon_appeared();
+  }
+  else
+  {
+    control_proxy_on_daemon_disappeared(g_clean_exit);
+  }
+
+  g_clean_exit = false;
+}
+
 bool control_proxy_init(void)
 {
   bool studio_present;
 
+  g_clean_exit = false;
+
   if (!control_proxy_is_studio_loaded(&studio_present))
   {
+    return true;
+  }
+
+  control_proxy_on_daemon_appeared();
+
+  if (!dbus_register_service_lifetime_hook(g_dbus_connection, SERVICE_NAME, on_lifestatus_changed))
+  {
+    control_proxy_on_daemon_disappeared(true);
     return false;
   }
 
@@ -84,6 +116,8 @@ bool control_proxy_init(void)
       control_proxy_on_studio_disappeared();
     }
 
+    control_proxy_on_daemon_disappeared(true);
+
     return false;
   }
 
@@ -93,6 +127,14 @@ bool control_proxy_init(void)
 void control_proxy_uninit(void)
 {
   dbus_unregister_object_signal_hooks(g_dbus_connection, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL);
+  dbus_unregister_service_lifetime_hook(g_dbus_connection, SERVICE_NAME);
+}
+
+void control_proxy_ping(void)
+{
+  bool studio_present;
+
+  control_proxy_is_studio_loaded(&studio_present);
 }
 
 bool control_proxy_get_studio_list(void (* callback)(void * context, const char * studio_name), void * context)

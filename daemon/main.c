@@ -301,6 +301,8 @@ int main(int argc, char ** argv, char ** envp)
     studio_run();
   }
 
+  emit_clean_exit();
+
   ret = EXIT_SUCCESS;
 
   log_debug("Finished, cleaning up");

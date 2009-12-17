@@ -294,14 +294,19 @@ static void ladish_exit(struct dbus_method_call * call_ptr)
   method_return_new_void(call_ptr);
 }
 
-void emit_studio_appeared()
+void emit_studio_appeared(void)
 {
   dbus_signal_emit(g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "StudioAppeared", "");
 }
 
-void emit_studio_disappeared()
+void emit_studio_disappeared(void)
 {
   dbus_signal_emit(g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "StudioDisappeared", "");
+}
+
+void emit_clean_exit(void)
+{
+  dbus_signal_emit(g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "CleanExit", "");
 }
 
 METHOD_ARGS_BEGIN(IsStudioLoaded, "Check whether studio D-Bus object is present")
@@ -348,9 +353,13 @@ SIGNAL_ARGS_END
 SIGNAL_ARGS_BEGIN(StudioDisappeared, "Studio D-Bus object disappeared")
 SIGNAL_ARGS_END
 
+SIGNAL_ARGS_BEGIN(CleanExit, "Exit was requested")
+SIGNAL_ARGS_END
+
 SIGNALS_BEGIN
   SIGNAL_DESCRIBE(StudioAppeared)
   SIGNAL_DESCRIBE(StudioDisappeared)
+  SIGNAL_DESCRIBE(CleanExit)
 SIGNALS_END
 
 /*

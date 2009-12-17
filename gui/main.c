@@ -74,15 +74,18 @@ graph_view_handle g_jack_view = NULL;
 graph_view_handle g_studio_view = NULL;
 
 static guint g_jack_poll_source_tag;
+static guint g_ladishd_poll_source_tag;
 static double g_jack_max_dsp_load = 0.0;
 
-#define STUDIO_STATE_NA         0
+#define STUDIO_STATE_UNKNOWN    0
 #define STUDIO_STATE_UNLOADED   1
 #define STUDIO_STATE_STOPPED    2
 #define STUDIO_STATE_STARTED    3
 #define STUDIO_STATE_CRASHED    4
+#define STUDIO_STATE_NA         5
+#define STUDIO_STATE_SICK       6
 
-static unsigned int g_studio_state = STUDIO_STATE_UNLOADED;
+static unsigned int g_studio_state = STUDIO_STATE_UNKNOWN;
 
 #define JACK_STATE_NA         0
 #define JACK_STATE_STOPPED    1
@@ -495,6 +498,12 @@ static gboolean poll_jack(gpointer data)
   return TRUE;
 }
 
+static gboolean poll_ladishd(gpointer data)
+{
+  control_proxy_ping();
+  return TRUE;
+}
+
 bool studio_state_changed(char ** name_ptr_ptr)
 {
   const char * status;
@@ -533,6 +542,9 @@ bool studio_state_changed(char ** name_ptr_ptr)
   switch (g_studio_state)
   {
   case STUDIO_STATE_NA:
+    name = "ladishd is down";
+    break;
+  case STUDIO_STATE_SICK:
     name = "ladishd is sick";
     break;
   case STUDIO_STATE_UNLOADED:
@@ -574,6 +586,43 @@ bool studio_state_changed(char ** name_ptr_ptr)
   }
 
   return true;
+}
+
+void control_proxy_on_daemon_appeared(void)
+{
+  if (g_studio_state == STUDIO_STATE_NA || g_studio_state == STUDIO_STATE_SICK)
+  {
+    log_info("ladishd appeared");
+    g_source_remove(g_ladishd_poll_source_tag);
+  }
+
+  g_studio_state = STUDIO_STATE_UNLOADED;
+  studio_state_changed(NULL);
+}
+
+void control_proxy_on_daemon_disappeared(bool clean_exit)
+{
+  log_info("ladishd disappeared");
+
+  if (!clean_exit)
+  {
+    error_message_box("ladish daemon crashed");
+    g_studio_state = STUDIO_STATE_SICK;
+  }
+  else
+  {
+    g_studio_state = STUDIO_STATE_NA;
+  }
+
+  studio_state_changed(NULL);
+
+  if (g_studio_view != NULL)
+  {
+    destroy_view(g_studio_view);
+    g_studio_view = NULL;
+  }
+
+  g_ladishd_poll_source_tag = g_timeout_add(500, poll_ladishd, NULL);
 }
 
 void control_proxy_on_studio_appeared(void)
@@ -657,9 +706,12 @@ void jack_started(void)
 
 void jack_stopped(void)
 {
-  log_info("JACK stopped");
+  if (g_jack_state == JACK_STATE_STARTED)
+  {
+    log_info("JACK stopped");
 
-  g_source_remove(g_jack_poll_source_tag);
+    g_source_remove(g_jack_poll_source_tag);
+  }
 
   g_jack_state = JACK_STATE_STOPPED;
   studio_state_changed(NULL);

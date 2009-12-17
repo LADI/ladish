@@ -30,7 +30,8 @@
 
 extern const struct dbus_interface_descriptor g_lashd_interface_control;
 
-void emit_studio_appeared();
-void emit_studio_disappeared();
+void emit_studio_appeared(void);
+void emit_studio_disappeared(void);
+void emit_clean_exit(void);
 
 #endif /* __LASHD_DBUS_IFACE_CONTROL_H__ */

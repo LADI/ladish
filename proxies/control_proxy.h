@@ -32,6 +32,8 @@
 
 bool control_proxy_init(void);
 void control_proxy_uninit(void);
+void control_proxy_on_daemon_appeared(void);
+void control_proxy_on_daemon_disappeared(bool clean_exit);
 void control_proxy_on_studio_appeared(void);
 void control_proxy_on_studio_disappeared(void);
 bool control_proxy_get_studio_list(void (* callback)(void * context, const char * studio_name), void * context);
@@ -39,5 +41,6 @@ bool control_proxy_new_studio(const char * studio_name);
 bool control_proxy_load_studio(const char * studio_name);
 bool control_proxy_delete_studio(const char * studio_name);
 bool control_proxy_exit(void);
+void control_proxy_ping(void);
 
 #endif /* #ifndef CONTROL_PROXY_H__8BC89E98_FE1B_4831_8B89_1A48F676E019__INCLUDED */
