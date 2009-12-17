@@ -204,6 +204,8 @@ void studio_run(void)
 
     if (state)
     {
+      ladish_environment_ignore(&g_studio.env_store, ladish_environment_jack_server_present);
+
       /* Automatic studio creation on JACK server start */
       if (g_studio.dbus_object == NULL)
       {
