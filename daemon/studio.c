@@ -103,12 +103,17 @@ studio_publish(void)
   return true;
 }
 
-void emit_studio_started()
+void emit_studio_started(void)
 {
   dbus_signal_emit(g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioStarted", "");
 }
 
-void emit_studio_stopped()
+void emit_studio_crashed(void)
+{
+  dbus_signal_emit(g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioCrashed", "");
+}
+
+void emit_studio_stopped(void)
 {
   dbus_signal_emit(g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioStopped", "");
 }
@@ -147,10 +152,8 @@ void on_event_jack_started(void)
   emit_studio_started();
 }
 
-void on_event_jack_stopped(void)
+static void on_jack_stopped_internal(void)
 {
-  emit_studio_stopped();
-
   if (g_studio.automatic)
   {
     log_info("Unloading automatic studio.");
@@ -171,8 +174,17 @@ void on_event_jack_stopped(void)
   }
 }
 
+void on_event_jack_stopped(void)
+{
+    emit_studio_stopped();
+    on_jack_stopped_internal();
+}
+
 void handle_unexpected_jack_server_stop(void)
 {
+    emit_studio_crashed();
+    on_jack_stopped_internal();
+
   /* TODO: if user wants, restart jack server and reconnect all jack apps to it */
 }
 
@@ -215,7 +227,6 @@ void studio_run(void)
        * the change will be consumed by the run method of the studio stop command */
       log_error("JACK stopped unexpectedly.");
       log_error("Save your work, then unload and reload the studio.");
-      on_event_jack_stopped();
       handle_unexpected_jack_server_stop();
     }
   }
@@ -234,7 +245,6 @@ void studio_run(void)
       ladish_graph_clear(g_studio.studio_graph, false);
       ladish_graph_clear(g_studio.jack_graph, true);
 
-      on_event_jack_stopped();
       handle_unexpected_jack_server_stop();
     }
   }
@@ -680,6 +690,9 @@ SIGNAL_ARGS_END
 SIGNAL_ARGS_BEGIN(StudioStarted, "Studio started")
 SIGNAL_ARGS_END
 
+SIGNAL_ARGS_BEGIN(StudioCrashed, "Studio crashed")
+SIGNAL_ARGS_END
+
 SIGNAL_ARGS_BEGIN(StudioStopped, "Studio stopped")
 SIGNAL_ARGS_END
 
@@ -694,6 +707,7 @@ SIGNAL_ARGS_END
 SIGNALS_BEGIN
   SIGNAL_DESCRIBE(StudioRenamed)
   SIGNAL_DESCRIBE(StudioStarted)
+  SIGNAL_DESCRIBE(StudioCrashed)
   SIGNAL_DESCRIBE(StudioStopped)
   SIGNAL_DESCRIBE(RoomAppeared)
   SIGNAL_DESCRIBE(RoomDisappeared)

@@ -75,8 +75,20 @@ graph_view_handle g_studio_view = NULL;
 
 static guint g_jack_poll_source_tag;
 static double g_jack_max_dsp_load = 0.0;
-static bool g_studio_started = false;
-static bool g_studio_loaded = false;
+
+#define STUDIO_STATE_NA         0
+#define STUDIO_STATE_UNLOADED   1
+#define STUDIO_STATE_STOPPED    2
+#define STUDIO_STATE_STARTED    3
+#define STUDIO_STATE_CRASHED    4
+
+static unsigned int g_studio_state = STUDIO_STATE_UNLOADED;
+
+#define JACK_STATE_NA         0
+#define JACK_STATE_STOPPED    1
+#define JACK_STATE_STARTED    2
+
+static unsigned int g_jack_state = JACK_STATE_NA;
 
 struct studio_list
 {
@@ -483,67 +495,117 @@ static gboolean poll_jack(gpointer data)
   return TRUE;
 }
 
-void studio_state_changed(void)
+bool studio_state_changed(char ** name_ptr_ptr)
 {
-  gtk_widget_set_sensitive(g_menu_item_start_studio, g_studio_loaded);
-  gtk_widget_set_sensitive(g_menu_item_stop_studio, g_studio_loaded);
-  gtk_widget_set_sensitive(g_menu_item_save_studio, g_studio_loaded && g_studio_started);
-  gtk_widget_set_sensitive(g_menu_item_unload_studio, g_studio_loaded);
-  gtk_widget_set_sensitive(g_menu_item_rename_studio, g_studio_loaded);
-  gtk_widget_set_sensitive(g_menu_item_start_app, g_studio_loaded);
+  const char * status;
+  const char * name;
+  char * buffer;
+
+  gtk_widget_set_sensitive(g_menu_item_start_studio, g_studio_state == STUDIO_STATE_STOPPED);
+  gtk_widget_set_sensitive(g_menu_item_stop_studio, g_studio_state == STUDIO_STATE_STARTED);
+  gtk_widget_set_sensitive(g_menu_item_save_studio, g_studio_state == STUDIO_STATE_STARTED);
+  gtk_widget_set_sensitive(g_menu_item_unload_studio, g_studio_state != STUDIO_STATE_UNLOADED);
+  gtk_widget_set_sensitive(g_menu_item_rename_studio, g_studio_state == STUDIO_STATE_STOPPED || g_studio_state == STUDIO_STATE_STARTED);
+  gtk_widget_set_sensitive(g_menu_item_start_app, g_studio_state == STUDIO_STATE_STOPPED || g_studio_state == STUDIO_STATE_STARTED);
   //gtk_widget_set_sensitive(g_menu_item_create_room, g_studio_loaded);
   //gtk_widget_set_sensitive(g_menu_item_destroy_room, g_studio_loaded);
   //gtk_widget_set_sensitive(g_menu_item_load_project, g_studio_loaded);
+
+  gtk_label_set_text(GTK_LABEL(g_studio_status_label), name);
+
+  switch (g_jack_state)
+  {
+  case JACK_STATE_NA:
+    status = "JACK is sick";
+    break;
+  case JACK_STATE_STOPPED:
+    status = "Stopped";
+    break;
+  case JACK_STATE_STARTED:
+    status = "xruns";
+    break;
+  default:
+    status = "???";
+  }
+
+  buffer = NULL;
+
+  switch (g_studio_state)
+  {
+  case STUDIO_STATE_NA:
+    name = "ladishd is sick";
+    break;
+  case STUDIO_STATE_UNLOADED:
+    name = "No studio loaded";
+    break;
+  case STUDIO_STATE_CRASHED:
+    status = "Crashed";
+    /* fall through */
+  case STUDIO_STATE_STOPPED:
+  case STUDIO_STATE_STARTED:
+    if (!studio_proxy_get_name(&buffer))
+    {
+      log_error("failed to get studio name");
+    }
+    else
+    {
+      name = buffer;
+      break;
+    }
+  default:
+    name = "???";
+  }
+
+  gtk_progress_bar_set_text(GTK_PROGRESS_BAR(g_xrun_progress_bar), status);
+  gtk_label_set_text(GTK_LABEL(g_studio_status_label), name);
+
+  if (buffer == NULL)
+  {
+    return false;
+  }
+
+  if (name_ptr_ptr != NULL)
+  {
+    *name_ptr_ptr = buffer;
+  }
+  else
+  {
+    free(buffer);
+  }
+
+  return true;
 }
 
 void control_proxy_on_studio_appeared(void)
 {
-  char * name;
+  char * name;  
 
-  g_studio_loaded = true;
-
-  if (!studio_proxy_get_name(&name))
+  g_studio_state = STUDIO_STATE_STOPPED;
+  if (studio_state_changed(&name))
   {
-    log_error("failed to get studio name");
-    goto exit;
+    if (g_studio_view != NULL)
+    {
+      log_error("studio appear signal received but studio already exists");
+    }
+    else if (!create_view(name, SERVICE_NAME, STUDIO_OBJECT_PATH, true, true, false, &g_studio_view))
+    {
+      log_error("create_view() failed for studio");
+    }
+
+    free(name);
   }
-
-  if (g_studio_view != NULL)
-  {
-    log_error("studio appear signal received but studio already exists");
-    goto free_name;
-  }
-
-  if (!create_view(name, SERVICE_NAME, STUDIO_OBJECT_PATH, true, true, false, &g_studio_view))
-  {
-    log_error("create_view() failed for studio");
-    goto free_name;
-  }
-
-  studio_state_changed();
-
-  gtk_label_set_text(GTK_LABEL(g_studio_status_label), name);
-
-free_name:
-  free(name);
-
-exit:
-  return;
 }
 
 void control_proxy_on_studio_disappeared(void)
 {
+  g_studio_state = STUDIO_STATE_UNLOADED;
+  studio_state_changed(NULL);
+
   if (g_studio_view == NULL)
   {
     log_error("studio disappear signal received but studio does not exists");
     return;
   }
-
-  g_studio_loaded = false;
-
-  studio_state_changed();
-
-  gtk_label_set_text(GTK_LABEL(g_studio_status_label), "No studio loaded");
 
   if (g_studio_view != NULL)
   {
@@ -557,16 +619,35 @@ static void on_studio_renamed(const char * new_studio_name)
   if (g_studio_view != NULL)
   {
     set_view_name(g_studio_view, new_studio_name);
+    gtk_label_set_text(GTK_LABEL(g_studio_status_label), new_studio_name);
   }
+}
+
+void on_studio_started(void)
+{
+  g_studio_state = STUDIO_STATE_STARTED;
+  studio_state_changed(NULL);
+}
+
+void on_studio_stopped(void)
+{
+  g_studio_state = STUDIO_STATE_STOPPED;
+  studio_state_changed(NULL);
+}
+
+void on_studio_crashed(void)
+{
+  g_studio_state = STUDIO_STATE_CRASHED;
+  studio_state_changed(NULL);
+  error_message_box("JACK crashed or stopped unexpectedly. Save your work, then unload and reload the studio.");
 }
 
 void jack_started(void)
 {
   log_info("JACK started");
 
-  g_studio_started = true;
-
-  studio_state_changed();
+  g_jack_state = JACK_STATE_STARTED;
+  studio_state_changed(NULL);
 
   gtk_widget_set_sensitive(g_buffer_size_combo, true);
   gtk_widget_set_sensitive(g_clear_load_button, true);
@@ -578,22 +659,23 @@ void jack_stopped(void)
 {
   log_info("JACK stopped");
 
-  g_studio_started = false;
-
   g_source_remove(g_jack_poll_source_tag);
 
-  studio_state_changed();
+  g_jack_state = JACK_STATE_STOPPED;
+  studio_state_changed(NULL);
 
   gtk_widget_set_sensitive(g_buffer_size_combo, false);
   buffer_size_clear();
   gtk_widget_set_sensitive(g_clear_load_button, false);
   gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_xrun_progress_bar), 0.0);
-  gtk_progress_bar_set_text(GTK_PROGRESS_BAR(g_xrun_progress_bar), "Stopped");
 }
 
 void jack_appeared(void)
 {
   log_info("JACK appeared");
+
+  g_jack_state = JACK_STATE_STOPPED;
+  studio_state_changed(NULL);
 
 #if defined(SHOW_RAW_JACK)
   if (!create_view("Raw JACK", JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, false, false, true, &g_jack_view))
@@ -609,6 +691,9 @@ void jack_disappeared(void)
   log_info("JACK disappeared");
 
   jack_stopped();
+
+  g_jack_state = JACK_STATE_NA;
+  studio_state_changed(NULL);
 
 #if defined(SHOW_RAW_JACK)
   if (g_jack_view != NULL)
@@ -764,6 +849,8 @@ int main(int argc, char** argv)
   {
     return 1;
   }
+
+  studio_proxy_set_startstop_callbacks(on_studio_started, on_studio_stopped, on_studio_crashed);
 
   studio_proxy_set_renamed_callback(on_studio_renamed);
 

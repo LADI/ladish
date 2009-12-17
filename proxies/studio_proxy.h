@@ -38,7 +38,7 @@ bool studio_proxy_save(void);
 bool studio_proxy_unload(void);
 void studio_proxy_set_renamed_callback(void (* callback)(const char * new_studio_name));
 
-void studio_proxy_set_startstop_callbacks(void (* started_callback)(void), void (* stopped_callback)(void));
+void studio_proxy_set_startstop_callbacks(void (* started_callback)(void), void (* stopped_callback)(void), void (* crashed_callback)(void));
 bool studio_proxy_start(void);
 bool studio_proxy_stop(void);
 

@@ -30,6 +30,7 @@
 static void (* g_renamed_callback)(const char * new_studio_name) = NULL;
 static void (* g_started_callback)(void) = NULL;
 static void (* g_stopped_callback)(void) = NULL;
+static void (* g_crashed_callback)(void) = NULL;
 
 static void on_studio_renamed(void * context, DBusMessage * message_ptr)
 {
@@ -71,6 +72,16 @@ static void on_studio_stopped(void * context, DBusMessage * message_ptr)
   }
 }
 
+static void on_studio_crashed(void * context, DBusMessage * message_ptr)
+{
+  log_info("StudioCrashed");
+
+  if (g_crashed_callback != NULL)
+  {
+    g_crashed_callback();
+  }
+}
+
 static void on_room_appeared(void * context, DBusMessage * message_ptr)
 {
   log_info("RoomAppeared");
@@ -88,6 +99,7 @@ static struct dbus_signal_hook g_signal_hooks[] =
   {"StudioRenamed", on_studio_renamed},
   {"StudioStarted", on_studio_started},
   {"StudioStopped", on_studio_stopped},
+  {"StudioCrashed", on_studio_crashed},
   {"RoomAppeared", on_room_appeared},
   {"RoomDisappeared", on_room_disappeared},
   {NULL, NULL}
@@ -153,10 +165,11 @@ void studio_proxy_set_renamed_callback(void (* callback)(const char * new_studio
   g_renamed_callback = callback;
 }
 
-void studio_proxy_set_startstop_callbacks(void (* started_callback)(void), void (* stopped_callback)(void))
+void studio_proxy_set_startstop_callbacks(void (* started_callback)(void), void (* stopped_callback)(void), void (* crashed_callback)(void))
 {
   g_started_callback = started_callback;
   g_stopped_callback = stopped_callback;
+  g_crashed_callback = crashed_callback;
 }
 
 bool studio_proxy_start(void)
