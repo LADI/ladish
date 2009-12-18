@@ -97,7 +97,7 @@ dbus_unregister_service_lifetime_hook(
   DBusConnection * connection,
   const char * service);
 
-#define DBUS_CALL_DEFAULT_TIMEOUT 1000 // in milliseconds
+#define DBUS_CALL_DEFAULT_TIMEOUT 3000 // in milliseconds
 
 #include "method.h"
 #include "signal.h"
