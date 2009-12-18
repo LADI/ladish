@@ -520,8 +520,6 @@ bool studio_state_changed(char ** name_ptr_ptr)
   //gtk_widget_set_sensitive(g_menu_item_destroy_room, g_studio_loaded);
   //gtk_widget_set_sensitive(g_menu_item_load_project, g_studio_loaded);
 
-  gtk_label_set_text(GTK_LABEL(g_studio_status_label), name);
-
   switch (g_jack_state)
   {
   case JACK_STATE_NA:
