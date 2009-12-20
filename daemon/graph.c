@@ -1935,7 +1935,7 @@ void ladish_graph_dump(ladish_graph_handle graph_handle)
       connection_ptr->port2_ptr->client_ptr->name,
       connection_ptr->port2_ptr->name,
       connection_ptr->changing ? " [changing]" : "");
-    dump_dict("      ", ladish_port_get_dict(port_ptr->port));
+    dump_dict("      ", connection_ptr->dict);
   }
 }
 
