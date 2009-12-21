@@ -5,8 +5,8 @@
   <widget class="GtkWindow" id="main_win">
     <property name="border_width">1</property>
     <property name="title" translatable="yes">LADI Session Handler</property>
-    <property name="default_width">70</property>
-    <property name="default_height">400</property>
+    <property name="default_width">800</property>
+    <property name="default_height">600</property>
     <child>
       <widget class="GtkVBox" id="main_vbox">
         <property name="visible">True</property>

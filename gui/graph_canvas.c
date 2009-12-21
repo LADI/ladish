@@ -252,7 +252,7 @@ client_appeared(
         &x_str))
   {
     x_str = NULL;
-    x = width / 2 - 100 + rand() % 400;
+    x = width / 2 - 200 + rand() % 300;
   }
 
   if (!graph_proxy_dict_entry_get(
@@ -263,7 +263,7 @@ client_appeared(
         &y_str))
   {
     y_str = NULL;
-    y = height / 2 - 100 + rand() % 400;
+    y = height / 2 - 200 + rand() % 300;
   }
 
   if (x_str != NULL || y_str != NULL)
