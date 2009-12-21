@@ -79,6 +79,10 @@ char * get_app_name(struct virtualizer * virtualizer_ptr, uint64_t client_id, pi
       }
     }
   }
+  else
+  {
+    ppid = 0;
+  }
 
   *app_pid_ptr = (pid_t)ppid;
 
