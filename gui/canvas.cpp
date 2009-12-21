@@ -306,6 +306,14 @@ canvas_get_port_color(
   return port_ptr->get()->color();
 }
 
+void
+canvas_set_port_name(
+  canvas_port_handle port,
+  const char * name)
+{
+  port_ptr->get()->set_name(name);
+}
+
 #undef port_ptr
 #define port1_ptr ((boost::shared_ptr<port_cls> *)port1)
 #define port2_ptr ((boost::shared_ptr<port_cls> *)port2)

@@ -34,6 +34,7 @@ struct monitor
   void (* client_appeared)(void * context, uint64_t id, const char * name);
   void (* client_disappeared)(void * context, uint64_t id);
   void (* port_appeared)(void * context, uint64_t client_id, uint64_t port_id, const char * port_name, bool is_input, bool is_terminal, bool is_midi);
+  void (* port_renamed)(void * context, uint64_t client_id, uint64_t port_id, const char * old_port_name, const char * new_port_name);
   void (* port_disappeared)(void * context, uint64_t client_id, uint64_t port_id);
   void (* ports_connected)(void * context, uint64_t client1_id, uint64_t port1_id, uint64_t client2_id, uint64_t port2_id);
   void (* ports_disconnected)(void * context, uint64_t client1_id, uint64_t port1_id, uint64_t client2_id, uint64_t port2_id);
@@ -134,6 +135,25 @@ port_disappeared(
   {
     monitor_ptr = list_entry(node_ptr, struct monitor, siblings);
     monitor_ptr->port_disappeared(monitor_ptr->context, client_id, port_id);
+  }
+}
+
+static
+void
+port_renamed(
+  struct graph * graph_ptr,
+  uint64_t client_id,
+  uint64_t port_id,
+  const char * old_port_name,
+  const char * new_port_name)
+{
+  struct list_head * node_ptr;
+  struct monitor * monitor_ptr;
+
+  list_for_each(node_ptr, &graph_ptr->monitors)
+  {
+    monitor_ptr = list_entry(node_ptr, struct monitor, siblings);
+    monitor_ptr->port_renamed(monitor_ptr->context, client_id, port_id, old_port_name, new_port_name);
   }
 }
 
@@ -465,6 +485,7 @@ graph_proxy_attach(
   void (* client_appeared)(void * context, uint64_t id, const char * name),
   void (* client_disappeared)(void * context, uint64_t id),
   void (* port_appeared)(void * context, uint64_t client_id, uint64_t port_id, const char * port_name, bool is_input, bool is_terminal, bool is_midi),
+  void (* port_renamed)(void * context, uint64_t client_id, uint64_t port_id, const char * old_port_name, const char * new_port_name),
   void (* port_disappeared)(void * context, uint64_t client_id, uint64_t port_id),
   void (* ports_connected)(void * context, uint64_t client1_id, uint64_t port1_id, uint64_t client2_id, uint64_t port2_id),
   void (* ports_disconnected)(void * context, uint64_t client1_id, uint64_t port1_id, uint64_t client2_id, uint64_t port2_id))
@@ -488,6 +509,7 @@ graph_proxy_attach(
   monitor_ptr->client_appeared = client_appeared;
   monitor_ptr->client_disappeared = client_disappeared;
   monitor_ptr->port_appeared = port_appeared;
+  monitor_ptr->port_renamed = port_renamed;
   monitor_ptr->port_disappeared = port_disappeared;
   monitor_ptr->ports_connected = ports_connected;
   monitor_ptr->ports_disconnected = ports_disconnected;
@@ -635,6 +657,39 @@ static void on_port_appeared(void * graph, DBusMessage * message_ptr)
     //log_info("got new graph version %llu", (unsigned long long)new_graph_version);
     graph_ptr->version = new_graph_version;
     port_appeared(graph_ptr, client_id, port_id, port_name, port_flags, port_type);
+  }
+}
+
+static void on_port_renamed(void * graph, DBusMessage * message_ptr)
+{
+  dbus_uint64_t new_graph_version;
+  dbus_uint64_t client_id;
+  const char * client_name;
+  dbus_uint64_t port_id;
+  const char * old_port_name;
+  const char * new_port_name;
+
+  if (!dbus_message_get_args(
+        message_ptr,
+        &g_dbus_error,
+        DBUS_TYPE_UINT64, &new_graph_version,
+        DBUS_TYPE_UINT64, &client_id,
+        DBUS_TYPE_STRING, &client_name,
+        DBUS_TYPE_UINT64, &port_id,
+        DBUS_TYPE_STRING, &old_port_name,
+        DBUS_TYPE_STRING, &new_port_name,
+        DBUS_TYPE_INVALID))
+  {
+    log_error("dbus_message_get_args() failed to extract PortRenamed signal arguments (%s)", g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return;
+  }
+
+  if (new_graph_version > graph_ptr->version)
+  {
+    //log_info("got new graph version %llu", (unsigned long long)new_graph_version);
+    graph_ptr->version = new_graph_version;
+    port_renamed(graph_ptr, client_id, port_id, old_port_name, new_port_name);
   }
 }
 
@@ -861,6 +916,7 @@ static struct dbus_signal_hook g_signal_hooks[] =
   {"ClientAppeared", on_client_appeared},
   {"ClientDisappeared", on_client_disappeared},
   {"PortAppeared", on_port_appeared},
+  {"PortRenamed", on_port_renamed},
   {"PortDisappeared", on_port_disappeared},
   {"PortsConnected", on_ports_connected},
   {"PortsDisconnected", on_ports_disconnected},

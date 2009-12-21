@@ -1626,6 +1626,57 @@ ladish_graph_remove_port(
   return port_ptr->client_ptr->client;
 }
 
+bool
+ladish_graph_rename_port(
+  ladish_graph_handle graph_handle,
+  ladish_port_handle port_handle,
+  const char * new_port_name)
+{
+  char * name;
+  struct ladish_graph_port * port_ptr;
+  char * old_name;
+
+  name = strdup(new_port_name);
+  if (name == NULL)
+  {
+    log_error("strdup('%s') failed.", new_port_name);
+    return false;
+  }
+
+  port_ptr = ladish_graph_find_port(graph_ptr, port_handle);
+  if (port_ptr == NULL)
+  {
+    ASSERT_NO_PASS;
+    free(name);
+    return false;
+  }
+
+  old_name = port_ptr->name;
+  port_ptr->name = name;
+
+  graph_ptr->graph_version++;
+
+  if (!port_ptr->hidden && graph_ptr->opath != NULL)
+  {
+    dbus_signal_emit(
+      g_dbus_connection,
+      graph_ptr->opath,
+      JACKDBUS_IFACE_PATCHBAY,
+      "PortRenamed",
+      "ttstss",
+      &graph_ptr->graph_version,
+      &port_ptr->client_ptr->id,
+      &port_ptr->client_ptr->name,
+      &port_ptr->id,
+      &old_name,
+      &port_ptr->name);
+  }
+
+  free(old_name);
+
+  return true;
+}
+
 const char * ladish_graph_get_client_name(ladish_graph_handle graph_handle, ladish_client_handle client_handle)
 {
   struct ladish_graph_client * client_ptr;

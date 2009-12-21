@@ -425,6 +425,37 @@ port_disappeared(
 
 static
 void
+port_renamed(
+  void * graph_canvas,
+  uint64_t client_id,
+  uint64_t port_id,
+  const char * old_port_name,
+  const char * new_port_name)
+{
+  struct client * client_ptr;
+  struct port * port_ptr;
+
+  log_info("canvas::port_renamed(%"PRIu64", %"PRIu64", '%s', '%s')", client_id, port_id, old_port_name, new_port_name);
+
+  client_ptr = find_client(graph_canvas_ptr, client_id);
+  if (client_ptr == NULL)
+  {
+    log_error("cannot find client %"PRIu64" of renamed port %"PRIu64"", client_id, port_id);
+    return;
+  }
+
+  port_ptr = find_port(client_ptr, port_id);
+  if (client_ptr == NULL)
+  {
+    log_error("cannot find renamed port %"PRIu64" of client %"PRIu64"", port_id, client_id);
+    return;
+  }
+
+  canvas_set_port_name(port_ptr->canvas_port, new_port_name);
+}
+
+static
+void
 ports_connected(
   void * graph_canvas,
   uint64_t client1_id,
@@ -550,6 +581,7 @@ graph_canvas_attach(
         client_appeared,
         client_disappeared,
         port_appeared,
+        port_renamed,
         port_disappeared,
         ports_connected,
         ports_disconnected))

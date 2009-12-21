@@ -119,6 +119,11 @@ int
 canvas_get_port_color(
   canvas_port_handle port);
 
+void
+canvas_set_port_name(
+  canvas_port_handle port,
+  const char * name);
+
 bool
 canvas_add_connection(
   canvas_handle canvas,

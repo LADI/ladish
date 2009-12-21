@@ -84,6 +84,12 @@ ladish_graph_remove_port(
   ladish_graph_handle graph_handle,
   ladish_port_handle port_handle);
 
+bool
+ladish_graph_rename_port(
+  ladish_graph_handle graph_handle,
+  ladish_port_handle port_handle,
+  const char * new_port_name);
+
 uint64_t
 ladish_graph_add_connection(
   ladish_graph_handle graph_handle,

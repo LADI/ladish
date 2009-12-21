@@ -511,6 +511,38 @@ static void port_disappeared(void * context, uint64_t client_id, uint64_t port_i
   }
 }
 
+static void port_renamed(void * context, uint64_t client_id, uint64_t port_id, const char * old_port_name, const char * new_port_name)
+{
+  ladish_client_handle client;
+  ladish_port_handle port;
+
+  log_info("port_renamed(%"PRIu64", '%s', '%s')", port_id, old_port_name, new_port_name);
+
+  client = ladish_graph_find_client_by_jack_id(virtualizer_ptr->jack_graph, client_id);
+  if (client == NULL)
+  {
+    log_error("Port of unknown JACK client with id %"PRIu64" was renamed", client_id);
+    return;
+  }
+
+  port = ladish_graph_find_port_by_jack_id(virtualizer_ptr->jack_graph, port_id);
+  if (port == NULL)
+  {
+    log_error("Unknown JACK port with id %"PRIu64" was renamed", port_id);
+    return;
+  }
+
+  if (!ladish_graph_rename_port(virtualizer_ptr->jack_graph, port, new_port_name))
+  {
+    log_error("renaming of port in jack graph failed");
+  }
+
+  if (!ladish_graph_rename_port(virtualizer_ptr->studio_graph, port, new_port_name))
+  {
+    log_error("renaming of port in jack studio failed");
+  }
+}
+
 static bool ports_connect_request(void * context, ladish_graph_handle graph_handle, ladish_port_handle port1, ladish_port_handle port2)
 {
   uint64_t port1_id;
@@ -661,6 +693,7 @@ ladish_virtualizer_create(
         client_appeared,
         client_disappeared,
         port_appeared,
+        port_renamed,
         port_disappeared,
         ports_connected,
         ports_disconnected))
