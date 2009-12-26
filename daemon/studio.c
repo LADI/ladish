@@ -603,10 +603,8 @@ static void ladish_rename_studio(struct dbus_method_call * call_ptr)
   emit_studio_renamed();
 }
 
-static void ladish_save_studio(struct dbus_method_call * call_ptr)
+static bool ladish_save_studio_internal(struct dbus_method_call * call_ptr, const char * new_studio_name)
 {
-  log_info("Save studio request");
-
   /* FIXME: this is wrong place to do such check because state before
      command execution needs to be checked and not state before
      command is submited, but doing it here will show error to
@@ -616,10 +614,36 @@ static void ladish_save_studio(struct dbus_method_call * call_ptr)
   if (!studio_is_started())
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Cannot save not-started studio");
+    return false;
+  }
+
+  return ladish_command_save_studio(call_ptr, &g_studio.cmd_queue, new_studio_name);
+}
+
+static void ladish_save_studio(struct dbus_method_call * call_ptr)
+{
+  log_info("Save studio request");
+
+  if (ladish_save_studio_internal(call_ptr, g_studio.name))
+  {
+    method_return_new_void(call_ptr);
+  }
+}
+
+static void ladish_save_as_studio(struct dbus_method_call * call_ptr)
+{
+  const char * new_name;
+
+  log_info("SaveAs studio request");
+
+  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_STRING, &new_name, DBUS_TYPE_INVALID))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
     return;
   }
 
-  if (ladish_command_save_studio(call_ptr, &g_studio.cmd_queue))
+  if (ladish_save_studio_internal(call_ptr, new_name))
   {
     method_return_new_void(call_ptr);
   }
@@ -679,6 +703,10 @@ METHOD_ARGS_END
 METHOD_ARGS_BEGIN(Save, "Save studio")
 METHOD_ARGS_END
 
+METHOD_ARGS_BEGIN(SaveAs, "SaveAs studio")
+  METHOD_ARG_DESCRIBE_IN("studio_name", "s", "New name")
+METHOD_ARGS_END
+
 METHOD_ARGS_BEGIN(Unload, "Unload studio")
 METHOD_ARGS_END
 
@@ -696,6 +724,7 @@ METHODS_BEGIN
   METHOD_DESCRIBE(GetName, ladish_get_studio_name)
   METHOD_DESCRIBE(Rename, ladish_rename_studio)
   METHOD_DESCRIBE(Save, ladish_save_studio)
+  METHOD_DESCRIBE(SaveAs, ladish_save_as_studio)
   METHOD_DESCRIBE(Unload, ladish_unload_studio)
   METHOD_DESCRIBE(Start, ladish_start_studio)
   METHOD_DESCRIBE(Stop, ladish_stop_studio)

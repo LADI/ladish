@@ -655,7 +655,13 @@ exit:
 #undef indent
 #undef fd
 
-#define cmd_ptr ((struct ladish_command *)command_context)
+struct ladish_command_save_studio
+{
+  struct ladish_command command;
+  char * studio_name;
+};
+
+#define cmd_ptr ((struct ladish_command_save_studio *)command_context)
 
 static bool run(void * command_context)
 {
@@ -671,7 +677,7 @@ static bool run(void * command_context)
   struct stat st;
   struct save_context save_context;
 
-  ASSERT(cmd_ptr->state == LADISH_COMMAND_STATE_PENDING);
+  ASSERT(cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING);
 
   time(&timestamp);
   ctime_r(&timestamp, timestamp_str);
@@ -685,7 +691,7 @@ static bool run(void * command_context)
     goto exit;
   }
 
-  if (!studio_compose_filename(g_studio.name, &filename, &bak_filename))
+  if (!studio_compose_filename(cmd_ptr->studio_name, &filename, &bak_filename))
   {
     log_error("failed to compose studio filename");
     goto exit;
@@ -704,16 +710,21 @@ static bool run(void * command_context)
     /* saving already persisted studio that was not renamed */
     old_filename = filename;
   }
-  else
+  else if (strcmp(cmd_ptr->studio_name, g_studio.name) == 0)
   {
     /* saving renamed studio */
     old_filename = g_studio.filename;
     g_studio.filename = filename;
   }
+  else
+  {
+    /* saving studio copy (save as) */
+    old_filename = filename;
+    g_studio.filename = filename;
+  }
 
   filename = NULL;
   ASSERT(g_studio.filename != NULL);
-  ASSERT(g_studio.filename != old_filename);
   ASSERT(g_studio.filename != bak_filename);
 
   if (bak_filename != NULL)
@@ -894,9 +905,17 @@ static bool run(void * command_context)
   g_studio.persisted = true;
   g_studio.automatic = false;   /* even if it was automatic, it is not anymore because it is saved */
 
-  cmd_ptr->state = LADISH_COMMAND_STATE_DONE;
+  cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;
 
   ret = true;
+
+  if (old_filename == g_studio.filename && strcmp(g_studio.name, cmd_ptr->studio_name) != 0)
+  {
+    free(g_studio.name);
+    g_studio.name = cmd_ptr->studio_name;
+    cmd_ptr->studio_name = NULL;
+    emit_studio_renamed();
+  }
 
 close:
   close(fd);
@@ -905,7 +924,8 @@ rename_back:
   if (!ret && bak_filename != NULL)
   {
     /* save failed - try to rename the backup file back */
-    if (rename(bak_filename, g_studio.filename) != 0)
+    ASSERT(old_filename != NULL);
+    if (rename(bak_filename, old_filename) != 0)
     {
       log_error("rename(%s, %s) failed: %d (%s)", bak_filename, g_studio.filename, errno, strerror(errno));
     }
@@ -917,7 +937,7 @@ free_filenames:
     free(bak_filename);
   }
 
-  if (old_filename != NULL)
+  if (old_filename != NULL && old_filename != g_studio.filename)
   {
     free(old_filename);
   }
@@ -929,22 +949,41 @@ exit:
   return ret;
 }
 
+static void destructor(void * command_context)
+{
+  log_info("save studio command destructor");
+  if (cmd_ptr->studio_name != NULL)
+  {
+    free(cmd_ptr->studio_name);
+  }
+}
+
 #undef cmd_ptr
 
-bool ladish_command_save_studio(void * call_ptr, struct ladish_cqueue * queue_ptr)
+bool ladish_command_save_studio(void * call_ptr, struct ladish_cqueue * queue_ptr, const char * new_studio_name)
 {
-  struct ladish_command * cmd_ptr;
+  struct ladish_command_save_studio * cmd_ptr;
+  char * studio_name_dup;
 
-  cmd_ptr = ladish_command_new(sizeof(struct ladish_command));
-  if (cmd_ptr == NULL)
+  studio_name_dup = strdup(new_studio_name);
+  if (studio_name_dup == NULL)
   {
-    log_error("ladish_command_new() failed.");
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup('%s') failed.", new_studio_name);
     goto fail;
   }
 
-  cmd_ptr->run = run;
+  cmd_ptr = ladish_command_new(sizeof(struct ladish_command_save_studio));
+  if (cmd_ptr == NULL)
+  {
+    log_error("ladish_command_new() failed.");
+    goto fail_free_name;
+  }
 
-  if (!ladish_cqueue_add_command(queue_ptr, cmd_ptr))
+  cmd_ptr->command.run = run;
+  cmd_ptr->command.destructor = destructor;
+  cmd_ptr->studio_name = studio_name_dup;
+
+  if (!ladish_cqueue_add_command(queue_ptr, &cmd_ptr->command))
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_cqueue_add_command() failed.");
     goto fail_destroy_command;
@@ -954,7 +993,8 @@ bool ladish_command_save_studio(void * call_ptr, struct ladish_cqueue * queue_pt
 
 fail_destroy_command:
   free(cmd_ptr);
-
+fail_free_name:
+  free(studio_name_dup);
 fail:
   return false;
 }

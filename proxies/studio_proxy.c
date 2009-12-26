@@ -155,6 +155,11 @@ bool studio_proxy_save(void)
   return dbus_call(SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Save", "", "");
 }
 
+bool studio_proxy_save_as(const char * name)
+{
+  return dbus_call(SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "SaveAs", "s", &name, "");
+}
+
 bool studio_proxy_unload(void)
 {
   return dbus_call(SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Unload", "", "");

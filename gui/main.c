@@ -55,6 +55,7 @@ GtkWidget * g_menu_item_new_studio;
 GtkWidget * g_menu_item_start_studio;
 GtkWidget * g_menu_item_stop_studio;
 GtkWidget * g_menu_item_save_studio;
+GtkWidget * g_menu_item_save_as_studio;
 GtkWidget * g_menu_item_unload_studio;
 GtkWidget * g_menu_item_rename_studio;
 GtkWidget * g_menu_item_create_room;
@@ -210,6 +211,8 @@ bool name_dialog(const char * title, const char * object, const char * old_name,
   guint result;
   bool ok;
   GtkEntry * entry = GTK_ENTRY(get_glade_widget("name_entry"));
+
+  gtk_window_set_title(GTK_WINDOW(g_app_dialog), title);
 
   gtk_widget_show(g_name_dialog);
 
@@ -433,6 +436,23 @@ static void save_studio(void)
   }
 }
 
+static void save_as_studio(void)
+{
+  char * new_name;
+
+  log_info("save as studio request");
+
+  if (name_dialog("Save studio as", "Studio name", "", &new_name))
+  {
+    if (!studio_proxy_save_as(new_name))
+    {
+      error_message_box("Saving of studio failed, please inspect logs.");
+    }
+
+    free(new_name);
+  }
+}
+
 static void new_studio(void)
 {
   char * new_name;
@@ -520,6 +540,7 @@ bool studio_state_changed(char ** name_ptr_ptr)
   gtk_widget_set_sensitive(g_menu_item_start_studio, g_studio_state == STUDIO_STATE_STOPPED);
   gtk_widget_set_sensitive(g_menu_item_stop_studio, g_studio_state == STUDIO_STATE_STARTED);
   gtk_widget_set_sensitive(g_menu_item_save_studio, g_studio_state == STUDIO_STATE_STARTED);
+  gtk_widget_set_sensitive(g_menu_item_save_as_studio, g_studio_state == STUDIO_STATE_STARTED);
   gtk_widget_set_sensitive(g_menu_item_unload_studio, g_studio_state != STUDIO_STATE_UNLOADED);
   gtk_widget_set_sensitive(g_menu_item_rename_studio, g_studio_state == STUDIO_STATE_STOPPED || g_studio_state == STUDIO_STATE_STARTED);
   gtk_widget_set_sensitive(g_menu_item_start_app, g_studio_state == STUDIO_STATE_STOPPED || g_studio_state == STUDIO_STATE_STARTED);
@@ -886,6 +907,7 @@ int main(int argc, char** argv)
   g_menu_item_start_studio = get_glade_widget("menu_item_start_studio");
   g_menu_item_stop_studio = get_glade_widget("menu_item_stop_studio");
   g_menu_item_save_studio = get_glade_widget("menu_item_save_studio");
+  g_menu_item_save_as_studio = get_glade_widget("menu_item_save_as_studio");
   g_menu_item_unload_studio = get_glade_widget("menu_item_unload_studio");
   g_menu_item_rename_studio = get_glade_widget("menu_item_rename_studio");
   g_menu_item_create_room = get_glade_widget("menu_item_create_room");
@@ -940,6 +962,7 @@ int main(int argc, char** argv)
   g_signal_connect(G_OBJECT(g_menu_item_stop_studio), "activate", G_CALLBACK(stop_studio), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_unload_studio), "activate", G_CALLBACK(unload_studio), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_save_studio), "activate", G_CALLBACK(save_studio), NULL);
+  g_signal_connect(G_OBJECT(g_menu_item_save_as_studio), "activate", G_CALLBACK(save_as_studio), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_rename_studio), "activate", G_CALLBACK(rename_studio), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_daemon_exit), "activate", G_CALLBACK(daemon_exit), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_jack_configure), "activate", G_CALLBACK(jack_configure), NULL);

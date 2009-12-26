@@ -35,6 +35,7 @@ void studio_proxy_uninit(void);
 bool studio_proxy_get_name(char ** name);
 bool studio_proxy_rename(const char * name);
 bool studio_proxy_save(void);
+bool studio_proxy_save_as(const char * name);
 bool studio_proxy_unload(void);
 void studio_proxy_set_renamed_callback(void (* callback)(const char * new_studio_name));
 
