@@ -181,3 +181,17 @@ bool studio_proxy_stop(void)
 {
   return dbus_call(SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Stop", "", "");
 }
+
+bool studio_proxy_is_started(bool * is_started_ptr)
+{
+  dbus_bool_t is_started;
+
+  if (!dbus_call(SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "IsStarted", "", "b", &is_started))
+  {
+    return false;
+  }
+
+  *is_started_ptr = is_started;
+
+  return true;
+}

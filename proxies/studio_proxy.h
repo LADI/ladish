@@ -41,5 +41,6 @@ void studio_proxy_set_renamed_callback(void (* callback)(const char * new_studio
 void studio_proxy_set_startstop_callbacks(void (* started_callback)(void), void (* stopped_callback)(void), void (* crashed_callback)(void));
 bool studio_proxy_start(void);
 bool studio_proxy_stop(void);
+bool studio_proxy_is_started(bool * is_started_ptr);
 
 #endif /* #ifndef STUDIO_PROXY_H__2CEC623F_C998_4618_A947_D1A0016DF978__INCLUDED */

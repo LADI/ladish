@@ -623,11 +623,27 @@ void control_proxy_on_daemon_disappeared(bool clean_exit)
   g_ladishd_poll_source_tag = g_timeout_add(500, poll_ladishd, NULL);
 }
 
-void control_proxy_on_studio_appeared(void)
+void control_proxy_on_studio_appeared(bool initial)
 {
-  char * name;  
+  char * name;
+  bool started;
 
   g_studio_state = STUDIO_STATE_STOPPED;
+
+  if (initial)
+  {
+    if (!studio_proxy_is_started(&started))
+    {
+      log_error("intially, studio is present but is_started() check failed.");
+      return;
+    }
+
+    if (started)
+    {
+      g_studio_state = STUDIO_STATE_STARTED;
+    }
+  }
+
   if (studio_state_changed(&name))
   {
     if (g_studio_view != NULL)

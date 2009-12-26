@@ -32,7 +32,7 @@ static bool g_clean_exit;
 static void on_studio_appeared(void * context, DBusMessage * message_ptr)
 {
   log_info("StudioAppeared");
-  control_proxy_on_studio_appeared();
+  control_proxy_on_studio_appeared(false);
 }
 
 static void on_studio_disappeared(void * context, DBusMessage * message_ptr)
@@ -106,7 +106,7 @@ bool control_proxy_init(void)
   if (studio_present)
   {
     log_info("Initial studio appear");
-    control_proxy_on_studio_appeared();
+    control_proxy_on_studio_appeared(true);
   }
 
   if (!dbus_register_object_signal_hooks(g_dbus_connection, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, NULL, g_signal_hooks))
