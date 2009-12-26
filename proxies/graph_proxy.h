@@ -62,6 +62,7 @@ graph_proxy_attach(
   void * context,
   void (* clear)(void * context),
   void (* client_appeared)(void * context, uint64_t id, const char * name),
+  void (* client_renamed)(void * context, uint64_t client_id, const char * old_client_name, const char * new_client_name),
   void (* client_disappeared)(void * context, uint64_t id),
   void (* port_appeared)(void * context, uint64_t client_id, uint64_t port_id, const char * port_name, bool is_input, bool is_terminal, bool is_midi),
   void (* port_renamed)(void * context, uint64_t client_id, uint64_t port_id, const char * old_port_name, const char * new_port_name),

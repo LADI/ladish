@@ -100,6 +100,11 @@ canvas_destroy_module(
   canvas_handle canvas,
   canvas_module_handle module);
 
+void
+canvas_set_module_name(
+  canvas_module_handle module,
+  const char * name);
+
 bool
 canvas_create_port(
   canvas_handle canvas,

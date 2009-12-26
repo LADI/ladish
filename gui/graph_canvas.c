@@ -338,6 +338,22 @@ client_disappeared(
   free(client_ptr);
 }
 
+static void client_renamed(void * graph_canvas, uint64_t id, const char * old_name, const char * new_name)
+{
+  struct client * client_ptr;
+
+  log_info("canvas::client_renamed(%"PRIu64", '%s', '%s')", id, old_name, new_name);
+
+  client_ptr = find_client(graph_canvas_ptr, id);
+  if (client_ptr == NULL)
+  {
+    log_error("cannot find renamed client %"PRIu64, id);
+    return;
+  }
+
+  canvas_set_module_name(client_ptr->canvas_module, new_name);
+}
+
 static
 void
 port_appeared(
@@ -579,6 +595,7 @@ graph_canvas_attach(
         graph_canvas,
         clear,
         client_appeared,
+        client_renamed,
         client_disappeared,
         port_appeared,
         port_renamed,

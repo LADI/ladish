@@ -695,6 +695,7 @@ ladish_virtualizer_create(
         virtualizer_ptr,
         clear,
         client_appeared,
+        NULL,                   /* jackdbus does not have client rename functionality (yet) */
         client_disappeared,
         port_appeared,
         port_renamed,

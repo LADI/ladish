@@ -70,6 +70,12 @@ ladish_graph_remove_client(
   bool destroy_ports);
 
 bool
+ladish_graph_rename_client(
+  ladish_graph_handle graph_handle,
+  ladish_client_handle client_handle,
+  const char * new_client_name);
+
+bool
 ladish_graph_add_port(
   ladish_graph_handle graph_handle,
   ladish_client_handle client_handle,

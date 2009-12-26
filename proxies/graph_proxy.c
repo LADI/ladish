@@ -32,6 +32,7 @@ struct monitor
   void * context;
   void (* clear)(void * context);
   void (* client_appeared)(void * context, uint64_t id, const char * name);
+  void (* client_renamed)(void * context, uint64_t client_id, const char * old_client_name, const char * new_client_name);
   void (* client_disappeared)(void * context, uint64_t id);
   void (* port_appeared)(void * context, uint64_t client_id, uint64_t port_id, const char * port_name, bool is_input, bool is_terminal, bool is_midi);
   void (* port_renamed)(void * context, uint64_t client_id, uint64_t port_id, const char * old_port_name, const char * new_port_name);
@@ -73,6 +74,27 @@ static void client_appeared(struct graph * graph_ptr, uint64_t id, const char * 
   {
     monitor_ptr = list_entry(node_ptr, struct monitor, siblings);
     monitor_ptr->client_appeared(monitor_ptr->context, id, name);
+  }
+}
+
+static
+void
+client_renamed(
+  struct graph * graph_ptr,
+  uint64_t client_id,
+  const char * old_client_name,
+  const char * new_client_name)
+{
+  struct list_head * node_ptr;
+  struct monitor * monitor_ptr;
+
+  list_for_each(node_ptr, &graph_ptr->monitors)
+  {
+    monitor_ptr = list_entry(node_ptr, struct monitor, siblings);
+    if (monitor_ptr->client_renamed != NULL)
+    {
+      monitor_ptr->client_renamed(monitor_ptr->context, client_id, old_client_name, new_client_name);
+    }
   }
 }
 
@@ -483,6 +505,7 @@ graph_proxy_attach(
   void * context,
   void (* clear)(void * context),
   void (* client_appeared)(void * context, uint64_t id, const char * name),
+  void (* client_renamed)(void * context, uint64_t client_id, const char * old_client_name, const char * new_client_name),
   void (* client_disappeared)(void * context, uint64_t id),
   void (* port_appeared)(void * context, uint64_t client_id, uint64_t port_id, const char * port_name, bool is_input, bool is_terminal, bool is_midi),
   void (* port_renamed)(void * context, uint64_t client_id, uint64_t port_id, const char * old_port_name, const char * new_port_name),
@@ -507,6 +530,7 @@ graph_proxy_attach(
   monitor_ptr->context = context;
   monitor_ptr->clear = clear;
   monitor_ptr->client_appeared = client_appeared;
+  monitor_ptr->client_renamed = client_renamed;
   monitor_ptr->client_disappeared = client_disappeared;
   monitor_ptr->port_appeared = port_appeared;
   monitor_ptr->port_renamed = port_renamed;
@@ -591,6 +615,35 @@ static void on_client_appeared(void * graph, DBusMessage * message_ptr)
     //log_info("got new graph version %llu", (unsigned long long)new_graph_version);
     graph_ptr->version = new_graph_version;
     client_appeared(graph_ptr, client_id, client_name);
+  }
+}
+
+static void on_client_renamed(void * graph, DBusMessage * message_ptr)
+{
+  dbus_uint64_t new_graph_version;
+  dbus_uint64_t client_id;
+  const char * old_client_name;
+  const char * new_client_name;
+
+  if (!dbus_message_get_args(
+        message_ptr,
+        &g_dbus_error,
+        DBUS_TYPE_UINT64, &new_graph_version,
+        DBUS_TYPE_UINT64, &client_id,
+        DBUS_TYPE_STRING, &old_client_name,
+        DBUS_TYPE_STRING, &new_client_name,
+        DBUS_TYPE_INVALID))
+  {
+    log_error("dbus_message_get_args() failed to extract ClientRenamed signal arguments (%s)", g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return;
+  }
+
+  if (new_graph_version > graph_ptr->version)
+  {
+    //log_info("got new graph version %llu", (unsigned long long)new_graph_version);
+    graph_ptr->version = new_graph_version;
+    client_renamed(graph_ptr, client_id, old_client_name, new_client_name);
   }
 }
 
@@ -914,6 +967,7 @@ bool graph_proxy_get_client_pid(graph_proxy_handle graph, uint64_t client_id, in
 static struct dbus_signal_hook g_signal_hooks[] =
 {
   {"ClientAppeared", on_client_appeared},
+  {"ClientRenamed", on_client_renamed},
   {"ClientDisappeared", on_client_disappeared},
   {"PortAppeared", on_port_appeared},
   {"PortRenamed", on_port_renamed},

@@ -252,6 +252,14 @@ canvas_create_module(
 
 #define module_ptr ((boost::shared_ptr<FlowCanvas::Module> *)module)
 
+void
+canvas_set_module_name(
+  canvas_module_handle module,
+  const char * name)
+{
+  module_ptr->get()->set_name(name);
+}
+
 bool
 canvas_destroy_module(
   canvas_handle canvas,
