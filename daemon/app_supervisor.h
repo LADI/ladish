@@ -31,10 +31,20 @@
 
 typedef struct ladish_app_supervisor_tag { int unused; } * ladish_app_supervisor_handle;
 
-bool ladish_app_supervisor_create(ladish_app_supervisor_handle * supervisor_handle_ptr, const char * opath, const char * name);
-void ladish_app_supervisor_destroy(ladish_app_supervisor_handle supervisor_handle);
+bool
+ladish_app_supervisor_create(
+  ladish_app_supervisor_handle * supervisor_handle_ptr,
+  const char * opath,
+  const char * name);
 
-bool ladish_app_supervisor_child_exit(ladish_app_supervisor_handle supervisor_handle, pid_t pid);
+void
+ladish_app_supervisor_destroy(
+  ladish_app_supervisor_handle supervisor_handle);
+
+bool
+ladish_app_supervisor_child_exit(
+  ladish_app_supervisor_handle supervisor_handle,
+  pid_t pid);
 
 bool
 ladish_app_supervisor_enum(
@@ -42,7 +52,9 @@ ladish_app_supervisor_enum(
   void * context,
   bool (* callback)(void * context, const char * name, bool running, const char * command, bool terminal, uint8_t level));
 
-void ladish_app_supervisor_clear(ladish_app_supervisor_handle supervisor_handle);
+void
+ladish_app_supervisor_clear(
+  ladish_app_supervisor_handle supervisor_handle);
 
 bool
 ladish_app_supervisor_add(
@@ -53,11 +65,19 @@ ladish_app_supervisor_add(
   bool terminal,
   uint8_t level);
 
-void ladish_app_supervisor_stop(ladish_app_supervisor_handle supervisor_handle);
-void ladish_app_supervisor_autorun(ladish_app_supervisor_handle supervisor_handle);
+void
+ladish_app_supervisor_stop(
+  ladish_app_supervisor_handle supervisor_handle);
+
+void
+ladish_app_supervisor_autorun(
+  ladish_app_supervisor_handle supervisor_handle);
+
+char *
+ladish_app_supervisor_search_app(
+  ladish_app_supervisor_handle supervisor_handle,
+  pid_t pid);
 
 extern const struct dbus_interface_descriptor g_iface_app_supervisor;
-
-char * ladish_app_supervisor_search_app(ladish_app_supervisor_handle supervisor_handle, pid_t pid);
 
 #endif /* #ifndef APP_SUPERVISOR_H__712E6589_DCB1_4CE9_9812_4F250D55E8A2__INCLUDED */
