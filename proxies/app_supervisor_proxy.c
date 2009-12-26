@@ -345,4 +345,104 @@ bool ladish_app_supervisor_proxy_remove_app(ladish_app_supervisor_proxy_handle p
   return true;
 }
 
+bool
+ladish_app_supervisor_get_app_properties(
+  ladish_app_supervisor_proxy_handle proxy,
+  uint64_t id,
+  char ** name_ptr_ptr,
+  char ** command_ptr_ptr,
+  bool * running_ptr,
+  bool * terminal_ptr,
+  uint8_t * level_ptr)
+{
+  DBusMessage * reply_ptr;
+  const char * name;
+  const char * commandline;
+  dbus_bool_t running;
+  dbus_bool_t terminal;
+  uint8_t level;
+  char * name_buffer;
+  char * commandline_buffer;
+
+  if (!dbus_call(proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "GetAppProperties", "t", &id, NULL, &reply_ptr))
+  {
+    log_error("GetAppProperties() failed.");
+    return false;
+  }
+
+  if (!dbus_message_get_args(
+        reply_ptr,
+        &g_dbus_error,
+        DBUS_TYPE_STRING, &name,
+        DBUS_TYPE_STRING, &commandline,
+        DBUS_TYPE_BOOLEAN, &running,
+        DBUS_TYPE_BOOLEAN, &terminal,
+        DBUS_TYPE_BYTE, &level,
+        DBUS_TYPE_INVALID))
+  {
+    dbus_message_unref(reply_ptr);
+    dbus_error_free(&g_dbus_error);
+    log_error("decoding reply of GetAppProperties failed.");
+    return false;
+  }
+
+  name_buffer = strdup(name);
+  if (name_buffer == NULL)
+  {
+    log_error("strdup() for app name failed.");
+    dbus_message_unref(reply_ptr);
+    return false;
+  }
+
+  commandline_buffer = strdup(commandline);
+  if (commandline_buffer == NULL)
+  {
+    log_error("strdup() for app commandline failed.");
+    free(name_buffer);
+    dbus_message_unref(reply_ptr);
+    return false;
+  }
+
+  *name_ptr_ptr = name_buffer;
+  *command_ptr_ptr = commandline_buffer;
+  *running_ptr = running;
+  *terminal_ptr = terminal;
+  *level_ptr = level;
+
+  return true;
+}
+
+bool
+ladish_app_supervisor_set_app_properties(
+  ladish_app_supervisor_proxy_handle proxy,
+  uint64_t id,
+  const char * name,
+  const char * command,
+  bool run_in_terminal,
+  uint8_t level)
+{
+  dbus_bool_t terminal;
+
+  terminal = run_in_terminal;
+
+  if (!dbus_call(
+        proxy_ptr->service,
+        proxy_ptr->object,
+        IFACE_APP_SUPERVISOR,
+        "SetAppProperties",
+        "tssby",
+        &id,
+        &name,
+        &command,
+        &terminal,
+        &level,
+        ""))
+  {
+    log_error("SetAppProperties() failed.");
+    return false;
+  }
+
+  return true;
+}
+
 #undef proxy_ptr

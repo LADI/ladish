@@ -251,7 +251,7 @@ void run_custom_command_dialog(void)
   GtkEntry * command_entry = GTK_ENTRY(get_glade_widget("app_command_entry"));
   GtkEntry * name_entry = GTK_ENTRY(get_glade_widget("app_name_entry"));
   GtkToggleButton * terminal_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_terminal_check_button"));
-  /* GtkToggleButton * level0_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level0")); */
+  GtkToggleButton * level0_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level0"));
   /* GtkToggleButton * level1_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level1")); */
   /* GtkToggleButton * level2_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level2")); */
   /* GtkToggleButton * level3_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level3")); */
@@ -259,6 +259,13 @@ void run_custom_command_dialog(void)
   gtk_entry_set_text(name_entry, "");
   gtk_entry_set_text(command_entry, "");
   gtk_toggle_button_set_active(terminal_button, FALSE);
+
+  gtk_widget_set_sensitive(GTK_WIDGET(command_entry), TRUE);
+  gtk_widget_set_sensitive(GTK_WIDGET(terminal_button), TRUE);
+  gtk_widget_set_sensitive(GTK_WIDGET(level0_button), TRUE);
+
+  gtk_window_set_focus(GTK_WINDOW(g_app_dialog), GTK_WIDGET(command_entry));
+  gtk_window_set_title(GTK_WINDOW(g_app_dialog), "New application");
 
   gtk_widget_show(g_app_dialog);
 

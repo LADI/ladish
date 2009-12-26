@@ -197,6 +197,69 @@ void on_popup_menu_action_app_remove(GtkWidget * menuitem, gpointer userdata)
   ladish_app_supervisor_proxy_remove_app(proxy, id);
 }
 
+void on_popup_menu_action_app_properties(GtkWidget * menuitem, gpointer userdata)
+{
+  uint64_t id;
+  ladish_app_supervisor_proxy_handle proxy;
+  graph_view_handle view;
+  char * name;
+  char * command;
+  bool running;
+  bool terminal;
+  uint8_t level;
+  guint result;
+  GtkEntry * command_entry = GTK_ENTRY(get_glade_widget("app_command_entry"));
+  GtkEntry * name_entry = GTK_ENTRY(get_glade_widget("app_name_entry"));
+  GtkToggleButton * terminal_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_terminal_check_button"));
+  GtkToggleButton * level0_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level0"));
+  /* GtkToggleButton * level1_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level1")); */
+  /* GtkToggleButton * level2_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level2")); */
+  /* GtkToggleButton * level3_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level3")); */
+
+  if (!get_selected_app_id(&view, &id))
+  {
+    return;
+  }
+
+  log_info("app %"PRIu64" properties", id);
+
+  proxy = graph_view_get_app_supervisor(view);
+
+  if (!ladish_app_supervisor_get_app_properties(proxy, id, &name, &command, &running, &terminal, &level))
+  {
+    error_message_box("Cannot get app properties");
+    return;
+  }
+
+  gtk_entry_set_text(name_entry, name);
+  gtk_entry_set_text(command_entry, command);
+  gtk_toggle_button_set_active(terminal_button, terminal);
+
+  gtk_widget_set_sensitive(GTK_WIDGET(command_entry), !running);
+  gtk_widget_set_sensitive(GTK_WIDGET(terminal_button), !running);
+  gtk_widget_set_sensitive(GTK_WIDGET(level0_button), !running);
+
+  free(name);
+  free(command);
+
+  gtk_window_set_focus(GTK_WINDOW(g_app_dialog), running ? GTK_WIDGET(name_entry) : GTK_WIDGET(command_entry));
+  gtk_window_set_title(GTK_WINDOW(g_app_dialog), "App properties");
+
+  gtk_widget_show(g_app_dialog);
+
+  result = gtk_dialog_run(GTK_DIALOG(g_app_dialog));
+  if (result == 2)
+  {
+    log_info("'%s':'%s' %s", gtk_entry_get_text(name_entry), gtk_entry_get_text(command_entry), gtk_toggle_button_get_active(terminal_button) ? "terminal" : "shell");
+    if (!ladish_app_supervisor_set_app_properties(proxy, id, gtk_entry_get_text(name_entry), gtk_entry_get_text(command_entry), gtk_toggle_button_get_active(terminal_button), level))
+    {
+      error_message_box("Cannot set app properties.");
+    }
+  }
+
+  gtk_widget_hide(g_app_dialog);
+}
+
 void popup_menu(GtkWidget * treeview, GdkEventButton * event)
 {
   GtkTreeSelection * selection;
@@ -256,6 +319,10 @@ void popup_menu(GtkWidget * treeview, GdkEventButton * event)
     g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_kill, NULL);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
   }
+
+  menuitem = gtk_menu_item_new_with_label("Properties");
+  g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_properties, NULL);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
   gtk_widget_show_all(menu);
 

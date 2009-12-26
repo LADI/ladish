@@ -1038,7 +1038,6 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
   </widget>
   <widget class="GtkDialog" id="app_dialog">
     <property name="border_width">5</property>
-    <property name="title" translatable="yes">Run custom command</property>
     <property name="window_position">GTK_WIN_POS_CENTER_ON_PARENT</property>
     <property name="default_width">400</property>
     <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>

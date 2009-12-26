@@ -742,10 +742,161 @@ static void kill_app(struct dbus_method_call * call_ptr)
 
 static void get_app_properties(struct dbus_method_call * call_ptr)
 {
+  uint64_t id;
+  struct ladish_app * app_ptr;
+  dbus_bool_t running;
+  dbus_bool_t terminal;
+
+  if (!dbus_message_get_args(
+        call_ptr->message,
+        &g_dbus_error,
+        DBUS_TYPE_UINT64, &id,
+        DBUS_TYPE_INVALID))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return;
+  }
+
+  app_ptr = ladish_app_supervisor_find_app_by_id(supervisor_ptr, id);
+  if (app_ptr == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "App with ID %"PRIu64" not found", id);
+    return;
+  }
+
+  running = app_ptr->pid != 0;
+  terminal = app_ptr->terminal;
+
+  call_ptr->reply = dbus_message_new_method_return(call_ptr->message);
+  if (call_ptr->reply == NULL)
+  {
+    goto fail;
+  }
+
+  if (!dbus_message_append_args(
+        call_ptr->reply,
+        DBUS_TYPE_STRING, &app_ptr->name,
+        DBUS_TYPE_STRING, &app_ptr->commandline,
+        DBUS_TYPE_BOOLEAN, &running,
+        DBUS_TYPE_BOOLEAN, &terminal,
+        DBUS_TYPE_BYTE, &app_ptr->level,
+        DBUS_TYPE_INVALID))
+  {
+    goto fail_unref;
+  }
+
+  return;
+
+fail_unref:
+  dbus_message_unref(call_ptr->reply);
+  call_ptr->reply = NULL;
+
+fail:
+  log_error("Ran out of memory trying to construct method return");
 }
 
 static void set_app_properties(struct dbus_method_call * call_ptr)
 {
+  uint64_t id;
+  dbus_bool_t terminal;
+  const char * name;
+  const char * commandline;
+  uint8_t level;
+  struct ladish_app * app_ptr;
+  char * name_buffer;
+  char * commandline_buffer;
+
+  if (!dbus_message_get_args(
+        call_ptr->message,
+        &g_dbus_error,
+        DBUS_TYPE_UINT64, &id,
+        DBUS_TYPE_STRING, &name,
+        DBUS_TYPE_STRING, &commandline,
+        DBUS_TYPE_BOOLEAN, &terminal,
+        DBUS_TYPE_BYTE, &level,
+        DBUS_TYPE_INVALID))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return;
+  }
+
+  app_ptr = ladish_app_supervisor_find_app_by_id(supervisor_ptr, id);
+  if (app_ptr == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "App with ID %"PRIu64" not found", id);
+    return;
+  }
+
+  if (app_ptr->pid != 0 && strcmp(commandline, app_ptr->commandline) != 0)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Cannot change commandline when app is running. '%s' -> '%s'", app_ptr->commandline, commandline);
+    return;
+  }
+
+  if (app_ptr->pid != 0 && ((app_ptr->terminal && !terminal) || (!app_ptr->terminal && terminal)))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Cannot change whether to run in terminal when app is running");
+    return;
+  }
+
+  if (app_ptr->pid != 0 && app_ptr->level != level)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Cannot change app level when app is running");
+    return;
+  }
+
+  if (strcmp(commandline, app_ptr->commandline) != 0)
+  {
+    commandline_buffer = strdup(commandline);
+    if (commandline_buffer == NULL)
+    {
+      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup() failed for app commandline");
+      return;
+    }
+  }
+  else
+  {
+    commandline_buffer = NULL;
+  }
+
+  if (strcmp(name, app_ptr->name) != 0)
+  {
+    name_buffer = strdup(name);
+    if (name_buffer == NULL)
+    {
+      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup() failed for app nam");
+      if (commandline_buffer != NULL)
+      {
+        free(commandline_buffer);
+      }
+      return;
+    }
+  }
+  else
+  {
+    name_buffer = NULL;
+  }
+
+  if (name_buffer != NULL)
+  {
+    free(app_ptr->name);
+    app_ptr->name = name_buffer;
+  }
+
+  if (commandline_buffer != NULL)
+  {
+    free(app_ptr->commandline);
+    app_ptr->commandline = commandline_buffer;
+  }
+
+  app_ptr->level = level;
+  app_ptr->terminal = terminal;
+
+  emit_app_state_changed(supervisor_ptr, app_ptr);
+
+  method_return_new_void(call_ptr);
 }
 
 static void remove_app(struct dbus_method_call * call_ptr)
@@ -847,6 +998,7 @@ METHOD_ARGS_BEGIN(GetAppProperties, "Get properties of an application")
   METHOD_ARG_DESCRIBE_IN("id", DBUS_TYPE_UINT64_AS_STRING, "id of app")
   METHOD_ARG_DESCRIBE_OUT("name", DBUS_TYPE_STRING_AS_STRING, "")
   METHOD_ARG_DESCRIBE_OUT("commandline", DBUS_TYPE_STRING_AS_STRING, "Commandline")
+  METHOD_ARG_DESCRIBE_OUT("running", DBUS_TYPE_BOOLEAN_AS_STRING, "")
   METHOD_ARG_DESCRIBE_OUT("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
   METHOD_ARG_DESCRIBE_OUT("level", DBUS_TYPE_BYTE_AS_STRING, "Level")
 METHOD_ARGS_END

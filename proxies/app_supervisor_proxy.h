@@ -48,4 +48,23 @@ bool ladish_app_supervisor_proxy_stop_app(ladish_app_supervisor_proxy_handle pro
 bool ladish_app_supervisor_proxy_kill_app(ladish_app_supervisor_proxy_handle proxy, uint64_t id);
 bool ladish_app_supervisor_proxy_remove_app(ladish_app_supervisor_proxy_handle proxy, uint64_t id);
 
+bool
+ladish_app_supervisor_get_app_properties(
+  ladish_app_supervisor_proxy_handle proxy,
+  uint64_t id,
+  char ** name_ptr_ptr,
+  char ** command_ptr_ptr,
+  bool * running_ptr,
+  bool * terminal_ptr,
+  uint8_t * level_ptr);
+
+bool
+ladish_app_supervisor_set_app_properties(
+  ladish_app_supervisor_proxy_handle proxy,
+  uint64_t id,
+  const char * name,
+  const char * command,
+  bool terminal,
+  uint8_t level);
+
 #endif /* #ifndef APP_SUPERVISOR_PROXY_H__A48C609D_0AB6_4C91_A9B0_BC7F1B7E4CB4__INCLUDED */

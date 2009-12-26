@@ -31,4 +31,7 @@
 
 #include <gtk/gtk.h>
 
+void error_message_box(const char * failed_operation);
+extern GtkWidget * g_app_dialog;
+
 #endif /* #ifndef COMMON_H__15E63B7A_8350_4ABD_B04C_592158354949__INCLUDED */
