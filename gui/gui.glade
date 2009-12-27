@@ -10,6 +10,7 @@
     <child>
       <widget class="GtkVBox" id="main_vbox">
         <property name="visible">True</property>
+        <property name="orientation">GTK_ORIENTATION_VERTICAL</property>
         <child>
           <widget class="GtkMenuBar" id="menubar">
             <property name="visible">True</property>
@@ -394,7 +395,7 @@
             <property name="visible">True</property>
             <property name="toolbar_style">GTK_TOOLBAR_ICONS</property>
             <property name="show_arrow">False</property>
-            <property name="icon_size">GTK_ICON_SIZE_SMALL_TOOLBAR</property>
+            <property name="icon_size">4</property>
             <property name="icon_size_set">True</property>
             <child>
               <widget class="GtkToolItem" id="toolitem28">
@@ -584,6 +585,25 @@ The bar represents the percentage of available time used for audio processing (i
               </widget>
               <packing>
                 <property name="expand">False</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkSeparatorToolItem" id="separatortoolitem1">
+                <property name="visible">True</property>
+              </widget>
+            </child>
+            <child>
+              <widget class="GtkToolItem" id="startstop_item">
+                <property name="visible">True</property>
+                <child>
+                  <widget class="GtkImage" id="startstop">
+                    <property name="visible">True</property>
+                    <property name="stock">gtk-dialog-warning</property>
+                  </widget>
+                </child>
+              </widget>
+              <packing>
+                <property name="homogeneous">True</property>
               </packing>
             </child>
           </widget>

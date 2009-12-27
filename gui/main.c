@@ -72,6 +72,8 @@ GtkWidget * g_studio_status_label;
 GtkWidget * g_menu_item_view_toolbar;
 GtkWidget * g_toolbar;
 GtkWidget * g_menu_item_start_app;
+GtkWidget * g_status_image;
+GtkWidget * g_status_tool_item;
 
 GtkWidget * g_name_dialog;
 GtkWidget * g_app_dialog;
@@ -571,6 +573,8 @@ bool studio_state_changed(char ** name_ptr_ptr)
   const char * status;
   const char * name;
   char * buffer;
+  const gchar * stock_id;
+  const char * tooltip;
 
   gtk_widget_set_sensitive(g_menu_item_start_studio, g_studio_state == STUDIO_STATE_STOPPED);
   gtk_widget_set_sensitive(g_menu_item_stop_studio, g_studio_state == STUDIO_STATE_STARTED);
@@ -583,10 +587,14 @@ bool studio_state_changed(char ** name_ptr_ptr)
   //gtk_widget_set_sensitive(g_menu_item_destroy_room, g_studio_loaded);
   //gtk_widget_set_sensitive(g_menu_item_load_project, g_studio_loaded);
 
+  stock_id = NULL;
+  tooltip = NULL;
+
   switch (g_jack_state)
   {
   case JACK_STATE_NA:
-    status = "JACK is sick";
+    tooltip = status = "JACK is sick";
+    stock_id = GTK_STOCK_DIALOG_WARNING;
     break;
   case JACK_STATE_STOPPED:
     status = "Stopped";
@@ -596,6 +604,8 @@ bool studio_state_changed(char ** name_ptr_ptr)
     break;
   default:
     status = "???";
+    tooltip = "Internal error - unknown jack state";
+    stock_id = GTK_STOCK_DIALOG_WARNING;
   }
 
   buffer = NULL;
@@ -606,31 +616,53 @@ bool studio_state_changed(char ** name_ptr_ptr)
     name = "ladishd is down";
     break;
   case STUDIO_STATE_SICK:
-    name = "ladishd is sick";
+  case STUDIO_STATE_UNKNOWN:
+    tooltip = name = "ladishd is sick";
+    stock_id = GTK_STOCK_DIALOG_WARNING;
     break;
   case STUDIO_STATE_UNLOADED:
     name = "No studio loaded";
     break;
   case STUDIO_STATE_CRASHED:
     status = "Crashed";
+    tooltip = "Crashed studio, save your work if you can and unload the studio";
+    stock_id = GTK_STOCK_DIALOG_WARNING;
     /* fall through */
   case STUDIO_STATE_STOPPED:
   case STUDIO_STATE_STARTED:
     if (!studio_proxy_get_name(&buffer))
     {
-      log_error("failed to get studio name");
+      tooltip = "failed to get studio name";
+      log_error("%s", tooltip);
+      stock_id = GTK_STOCK_DIALOG_WARNING;
     }
     else
     {
       name = buffer;
+      switch (g_studio_state)
+      {
+      case STUDIO_STATE_STARTED:
+        stock_id = GTK_STOCK_YES;
+        tooltip = "Studio is started";
+        break;
+      case STUDIO_STATE_STOPPED:
+        stock_id = GTK_STOCK_NO;
+        tooltip = "Studio is stopped";
+        break;
+      }
       break;
     }
   default:
     name = "???";
+    tooltip = "Internal error - unknown studio state";
+    stock_id = GTK_STOCK_DIALOG_WARNING;
   }
 
   gtk_progress_bar_set_text(GTK_PROGRESS_BAR(g_xrun_progress_bar), status);
   gtk_label_set_text(GTK_LABEL(g_studio_status_label), name);
+
+  gtk_image_set_from_stock(GTK_IMAGE(g_status_image), stock_id, GTK_ICON_SIZE_SMALL_TOOLBAR);
+  gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(g_status_tool_item), tooltip);
 
   if (buffer == NULL)
   {
@@ -1023,6 +1055,8 @@ int main(int argc, char** argv)
   g_studio_status_label = get_glade_widget("studio_status_label");
   g_menu_item_view_toolbar = get_glade_widget("menu_item_view_toolbar");
   g_toolbar = get_glade_widget("toolbar");
+  g_status_image = get_glade_widget("startstop");
+  g_status_tool_item = get_glade_widget("startstop_item");
 
   g_name_dialog = get_glade_widget("name_dialog");
   g_app_dialog = get_glade_widget("app_dialog");
