@@ -267,9 +267,9 @@ canvas_handle get_current_canvas()
   return graph_canvas_get_canvas(g_current_view->graph_canvas);
 }
 
-bool app_run_custom(graph_view_handle view, const char * command, const char * name, bool run_in_terminal)
+bool app_run_custom(graph_view_handle view, const char * command, const char * name, bool run_in_terminal, uint8_t level)
 {
-  return ladish_app_supervisor_proxy_run_custom(view_ptr->app_supervisor, command, name, run_in_terminal);
+  return ladish_app_supervisor_proxy_run_custom(view_ptr->app_supervisor, command, name, run_in_terminal, level);
 }
 
 ladish_app_supervisor_proxy_handle graph_view_get_app_supervisor(graph_view_handle view)

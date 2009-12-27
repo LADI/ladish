@@ -212,9 +212,9 @@ void on_popup_menu_action_app_properties(GtkWidget * menuitem, gpointer userdata
   GtkEntry * name_entry = GTK_ENTRY(get_glade_widget("app_name_entry"));
   GtkToggleButton * terminal_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_terminal_check_button"));
   GtkToggleButton * level0_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level0"));
-  /* GtkToggleButton * level1_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level1")); */
-  /* GtkToggleButton * level2_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level2")); */
-  /* GtkToggleButton * level3_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level3")); */
+  GtkToggleButton * level1_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level1"));
+  GtkToggleButton * level2_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level2"));
+  GtkToggleButton * level3_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level3"));
 
   if (!get_selected_app_id(&view, &id))
   {
@@ -231,6 +231,8 @@ void on_popup_menu_action_app_properties(GtkWidget * menuitem, gpointer userdata
     return;
   }
 
+  log_info("'%s':'%s' %s level %"PRIu8, name, command, terminal ? "terminal" : "shell", level);
+
   gtk_entry_set_text(name_entry, name);
   gtk_entry_set_text(command_entry, command);
   gtk_toggle_button_set_active(terminal_button, terminal);
@@ -238,6 +240,27 @@ void on_popup_menu_action_app_properties(GtkWidget * menuitem, gpointer userdata
   gtk_widget_set_sensitive(GTK_WIDGET(command_entry), !running);
   gtk_widget_set_sensitive(GTK_WIDGET(terminal_button), !running);
   gtk_widget_set_sensitive(GTK_WIDGET(level0_button), !running);
+  gtk_widget_set_sensitive(GTK_WIDGET(level1_button), !running);
+
+  switch (level)
+  {
+  case 0:
+    gtk_toggle_button_set_active(level0_button, TRUE);
+    break;
+  case 1:
+    gtk_toggle_button_set_active(level1_button, TRUE);
+    break;
+  case 2:
+    gtk_toggle_button_set_active(level2_button, TRUE);
+    break;
+  case 3:
+    gtk_toggle_button_set_active(level3_button, TRUE);
+    break;
+  default:
+    log_error("unknown level");
+    ASSERT_NO_PASS;
+    gtk_toggle_button_set_active(level0_button, TRUE);
+  }
 
   free(name);
   free(command);
@@ -250,7 +273,30 @@ void on_popup_menu_action_app_properties(GtkWidget * menuitem, gpointer userdata
   result = gtk_dialog_run(GTK_DIALOG(g_app_dialog));
   if (result == 2)
   {
-    log_info("'%s':'%s' %s", gtk_entry_get_text(name_entry), gtk_entry_get_text(command_entry), gtk_toggle_button_get_active(terminal_button) ? "terminal" : "shell");
+    if (gtk_toggle_button_get_active(level0_button))
+    {
+      level = 0;
+    }
+    else if (gtk_toggle_button_get_active(level1_button))
+    {
+      level = 1;
+    }
+    else if (gtk_toggle_button_get_active(level2_button))
+    {
+      level = 2;
+    }
+    else if (gtk_toggle_button_get_active(level3_button))
+    {
+      level = 3;
+    }
+    else
+    {
+      log_error("unknown level");
+      ASSERT_NO_PASS;
+      level = 0;
+    }
+
+    log_info("'%s':'%s' %s level %"PRIu8, gtk_entry_get_text(name_entry), gtk_entry_get_text(command_entry), gtk_toggle_button_get_active(terminal_button) ? "terminal" : "shell", level);
     if (!ladish_app_supervisor_set_app_properties(proxy, id, gtk_entry_get_text(name_entry), gtk_entry_get_text(command_entry), gtk_toggle_button_get_active(terminal_button), level))
     {
       error_message_box("Cannot set app properties.");

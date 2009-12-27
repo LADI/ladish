@@ -51,7 +51,7 @@ bool
 ladish_app_supervisor_enum(
   ladish_app_supervisor_handle supervisor_handle,
   void * context,
-  bool (* callback)(void * context, const char * name, bool running, const char * command, bool terminal, uint8_t level));
+  bool (* callback)(void * context, const char * name, bool running, const char * command, bool terminal, uint8_t level, pid_t pid));
 
 void
 ladish_app_supervisor_clear(

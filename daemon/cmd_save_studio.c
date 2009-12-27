@@ -24,6 +24,9 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <sys/types.h>
+#include <signal.h>
+
 #include "common.h"
 
 #include <sys/types.h>
@@ -559,7 +562,7 @@ bool save_studio_connection(void * context, ladish_port_handle port1_handle, lad
   return true;
 }
 
-bool save_studio_app(void * context, const char * name, bool running, const char * command, bool terminal, uint8_t level)
+bool save_studio_app(void * context, const char * name, bool running, const char * command, bool terminal, uint8_t level, pid_t pid)
 {
   char buf[100];
   const char * unescaped_string;
@@ -661,6 +664,22 @@ struct ladish_command_save_studio
   char * studio_name;
 };
 
+static bool save_app(void * context, const char * name, bool running, const char * command, bool terminal, uint8_t level, pid_t pid)
+{
+  if (level == 1)
+  {
+    log_info("sending SIGUSR1 to '%s' with pid %u", name, (unsigned int)pid);
+    kill(pid, SIGUSR1);
+  }
+
+  return true;
+}
+
+static void save_apps(void)
+{
+  ladish_app_supervisor_enum(g_studio.app_supervisor, NULL, save_app);
+}
+
 #define cmd_ptr ((struct ladish_command_save_studio *)command_context)
 
 static bool run(void * command_context)
@@ -684,6 +703,8 @@ static bool run(void * command_context)
   timestamp_str[24] = 0;
 
   ret = false;
+
+  save_apps();
 
   if (!studio_is_started())
   {

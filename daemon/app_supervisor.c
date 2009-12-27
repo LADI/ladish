@@ -314,7 +314,7 @@ bool
 ladish_app_supervisor_enum(
   ladish_app_supervisor_handle supervisor_handle,
   void * context,
-  bool (* callback)(void * context, const char * name, bool running, const char * command, bool terminal, uint8_t level))
+  bool (* callback)(void * context, const char * name, bool running, const char * command, bool terminal, uint8_t level, pid_t pid))
 {
   struct list_head * node_ptr;
   struct ladish_app * app_ptr;
@@ -328,7 +328,7 @@ ladish_app_supervisor_enum(
       continue;
     }
 
-    if (!callback(context, app_ptr->name, app_ptr->pid != 0, app_ptr->commandline, app_ptr->terminal, app_ptr->level))
+    if (!callback(context, app_ptr->name, app_ptr->pid != 0, app_ptr->commandline, app_ptr->terminal, app_ptr->level, app_ptr->pid))
     {
       return false;
     }
@@ -527,6 +527,7 @@ static void run_custom(struct dbus_method_call * call_ptr)
   dbus_bool_t terminal;
   const char * commandline;
   const char * name_param;
+  uint8_t level;
   char * name;
   char * name_buffer;
   size_t len;
@@ -540,6 +541,7 @@ static void run_custom(struct dbus_method_call * call_ptr)
         DBUS_TYPE_BOOLEAN, &terminal,
         DBUS_TYPE_STRING, &commandline,
         DBUS_TYPE_STRING, &name_param,
+        DBUS_TYPE_BYTE, &level,
         DBUS_TYPE_INVALID))
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
@@ -547,7 +549,7 @@ static void run_custom(struct dbus_method_call * call_ptr)
     return;
   }
 
-  log_info("run_custom('%s', %s, '%s') called", name_param, terminal ? "terminal" : "shell", commandline);
+  log_info("run_custom('%s', %s, '%s', %"PRIu8") called", name_param, terminal ? "terminal" : "shell", commandline, level);
 
   if (*name_param)
   {
@@ -611,7 +613,7 @@ static void run_custom(struct dbus_method_call * call_ptr)
     index++;
   }
 
-  app_ptr = add_app_internal(supervisor_ptr, name, commandline, terminal, true, 0);
+  app_ptr = add_app_internal(supervisor_ptr, name, commandline, terminal, true, level);
 
   free(name_buffer);
 

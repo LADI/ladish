@@ -42,7 +42,15 @@ ladish_app_supervisor_proxy_create(
   ladish_app_supervisor_proxy_handle * proxy_ptr);
 
 void ladish_app_supervisor_proxy_destroy(ladish_app_supervisor_proxy_handle proxy);
-bool ladish_app_supervisor_proxy_run_custom(ladish_app_supervisor_proxy_handle proxy, const char * command, const char * name, bool run_in_terminal);
+
+bool
+ladish_app_supervisor_proxy_run_custom(
+  ladish_app_supervisor_proxy_handle proxy,
+  const char * command,
+  const char * name,
+  bool run_in_terminal,
+  uint8_t level);
+
 bool ladish_app_supervisor_proxy_start_app(ladish_app_supervisor_proxy_handle proxy, uint64_t id);
 bool ladish_app_supervisor_proxy_stop_app(ladish_app_supervisor_proxy_handle proxy, uint64_t id);
 bool ladish_app_supervisor_proxy_kill_app(ladish_app_supervisor_proxy_handle proxy, uint64_t id);

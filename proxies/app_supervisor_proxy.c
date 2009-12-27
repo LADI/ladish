@@ -286,13 +286,19 @@ void ladish_app_supervisor_proxy_destroy(ladish_app_supervisor_proxy_handle prox
   free(proxy_ptr);
 }
 
-bool ladish_app_supervisor_proxy_run_custom(ladish_app_supervisor_proxy_handle proxy, const char * command, const char * name, bool run_in_terminal)
+bool
+ladish_app_supervisor_proxy_run_custom(
+  ladish_app_supervisor_proxy_handle proxy,
+  const char * command,
+  const char * name,
+  bool run_in_terminal,
+  uint8_t level)
 {
   dbus_bool_t terminal;
 
   terminal = run_in_terminal;
 
-  if (!dbus_call(proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "RunCustom", "bss", &terminal, &command, &name, ""))
+  if (!dbus_call(proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "RunCustom", "bssy", &terminal, &command, &name, &level, ""))
   {
     log_error("RunCustom() failed.");
     return false;

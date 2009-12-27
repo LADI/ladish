@@ -255,9 +255,10 @@ void run_custom_command_dialog(void)
   GtkEntry * name_entry = GTK_ENTRY(get_glade_widget("app_name_entry"));
   GtkToggleButton * terminal_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_terminal_check_button"));
   GtkToggleButton * level0_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level0"));
-  /* GtkToggleButton * level1_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level1")); */
-  /* GtkToggleButton * level2_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level2")); */
-  /* GtkToggleButton * level3_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level3")); */
+  GtkToggleButton * level1_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level1"));
+  GtkToggleButton * level2_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level2"));
+  GtkToggleButton * level3_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level3"));
+  uint8_t level;
 
   gtk_entry_set_text(name_entry, "");
   gtk_entry_set_text(command_entry, "");
@@ -266,6 +267,7 @@ void run_custom_command_dialog(void)
   gtk_widget_set_sensitive(GTK_WIDGET(command_entry), TRUE);
   gtk_widget_set_sensitive(GTK_WIDGET(terminal_button), TRUE);
   gtk_widget_set_sensitive(GTK_WIDGET(level0_button), TRUE);
+  gtk_widget_set_sensitive(GTK_WIDGET(level1_button), TRUE);
 
   gtk_window_set_focus(GTK_WINDOW(g_app_dialog), GTK_WIDGET(command_entry));
   gtk_window_set_title(GTK_WINDOW(g_app_dialog), "New application");
@@ -275,8 +277,36 @@ void run_custom_command_dialog(void)
   result = gtk_dialog_run(GTK_DIALOG(g_app_dialog));
   if (result == 2)
   {
-    log_info("'%s':'%s' %s", gtk_entry_get_text(name_entry), gtk_entry_get_text(command_entry), gtk_toggle_button_get_active(terminal_button) ? "terminal" : "shell");
-    if (!app_run_custom(g_studio_view, gtk_entry_get_text(command_entry), gtk_entry_get_text(name_entry), gtk_toggle_button_get_active(terminal_button)))
+    if (gtk_toggle_button_get_active(level0_button))
+    {
+      level = 0;
+    }
+    else if (gtk_toggle_button_get_active(level1_button))
+    {
+      level = 1;
+    }
+    else if (gtk_toggle_button_get_active(level2_button))
+    {
+      level = 2;
+    }
+    else if (gtk_toggle_button_get_active(level3_button))
+    {
+      level = 3;
+    }
+    else
+    {
+      log_error("unknown level");
+      ASSERT_NO_PASS;
+      level = 0;
+    }
+
+    log_info("'%s':'%s' %s level %"PRIu8, gtk_entry_get_text(name_entry), gtk_entry_get_text(command_entry), gtk_toggle_button_get_active(terminal_button) ? "terminal" : "shell", level);
+    if (!app_run_custom(
+          g_studio_view,
+          gtk_entry_get_text(command_entry),
+          gtk_entry_get_text(name_entry),
+          gtk_toggle_button_get_active(terminal_button),
+          level))
     {
       error_message_box("Execution failed. I know you want to know more for the reson but currently you can only check the log file.");
     }
