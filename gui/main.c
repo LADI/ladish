@@ -32,6 +32,11 @@
 
 #include <math.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+
 #include "glade.h"
 #include "canvas.h"
 #include "graph_canvas.h"
@@ -874,11 +879,81 @@ static void toggle_toolbar(void)
   }
 }
 
+static char * read_file_contents(const char * filename)
+{
+  int fd;
+  struct stat st;
+  char * buffer;
+
+  if (stat(filename, &st) != 0)
+  {
+    return NULL;
+  }
+
+  fd = open(filename, O_RDONLY);
+  if (fd == -1)
+  {
+    return NULL;
+  }
+
+  buffer = malloc(st.st_size + 1);
+  if (buffer == NULL)
+  {
+    close(fd);
+    return NULL;
+  }
+
+  if (read(fd, buffer, (size_t)st.st_size) != (ssize_t)st.st_size)
+  {
+    free(buffer);
+    buffer = NULL;
+  }
+  else
+  {
+    buffer[st.st_size] = 0;
+  }
+
+  close(fd);
+
+  return buffer;
+}
+
+#define ABOUT_DIALOG_LOGO "ladish-logo-128x128.png"
+
 static void show_about(void)
 {
   GtkWidget * dialog;
+  GdkPixbuf * pixbuf;
+  const char * authors[] = {"Nedko Arnaudov", NULL};
+  const char * artists[] = {"Lapo Calamandrei", NULL};
+  char * license;
+
+  pixbuf = gdk_pixbuf_new_from_file("./art/" ABOUT_DIALOG_LOGO, NULL);
+  if (pixbuf == NULL)
+  {
+    pixbuf = gdk_pixbuf_new_from_file(DATA_DIR "/" ABOUT_DIALOG_LOGO, NULL);
+  }
+
+  license = read_file_contents(DATA_DIR "/COPYING");
+
   dialog = get_glade_widget("about_win");
   gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), PACKAGE_VERSION);
+
+  if (pixbuf != NULL)
+  {
+    gtk_about_dialog_set_logo(GTK_ABOUT_DIALOG(dialog), pixbuf);
+    g_object_unref(pixbuf);
+  }
+
+  if (license != NULL)
+  {
+    gtk_about_dialog_set_license(GTK_ABOUT_DIALOG(dialog), license);
+    free(license);
+  }
+
+  gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(dialog), authors);
+  gtk_about_dialog_set_artists(GTK_ABOUT_DIALOG(dialog), artists);
+
   gtk_widget_show(dialog);
   gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_hide(dialog);
