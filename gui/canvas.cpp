@@ -96,6 +96,20 @@ public:
     boost::dynamic_pointer_cast<canvas_cls>(canvas().lock())->m_module_location_changed(m_context, property_x(), property_y());
   }
 
+  void create_menu()
+  {
+    _menu = new Gtk::Menu();
+    _menu->items().push_back(Gtk::Menu_Helpers::MenuElem("Disconnect All", sigc::mem_fun(this, &module_cls::menu_disconnect_all)));
+  }
+
+  void menu_disconnect_all()
+  {
+    for (FlowCanvas::PortVector::iterator p = _ports.begin(); p != _ports.end(); p++)
+    {
+      (*p)->disconnect_all();
+    }
+  }
+
   void * m_context;
 };
 
