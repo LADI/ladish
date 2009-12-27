@@ -43,12 +43,28 @@ struct list_head g_views;
 
 GtkScrolledWindow * g_main_scrolledwin;
 static struct graph_view * g_current_view;
+GtkWidget * g_view_label;
+
+const char * g_view_lavel_text =
+  "If you've started ladish for the first time, you should:\n\n"
+  " 1. Create a new studio (in the menu, Studio -> New Studio)\n"
+  " 2. Configure JACK (in the menu, Tools -> Configure JACK)\n"
+  " 3. Start the studio (in the menu, Studio -> Start Studio)\n"
+  " 4. Start apps (in the menu, Application -> Run)\n"
+  " 5. Connect their ports by click & drag on canvas\n"
+  " 6. Save the studio (in the menu, Studio -> Save Studio)\n";
 
 void view_init(void)
 {
   g_main_scrolledwin = GTK_SCROLLED_WINDOW(get_glade_widget("main_scrolledwin"));
   INIT_LIST_HEAD(&g_views);
+
+  g_view_label = gtk_label_new(g_view_lavel_text);
+  g_object_ref(g_view_label);
+  gtk_widget_show(g_view_label);
+
   g_current_view = NULL;
+  gtk_scrolled_window_add_with_viewport(g_main_scrolledwin, g_view_label);
 }
 
 static void app_added(void * context, uint64_t id, const char * name, bool running, bool terminal, uint8_t level)
@@ -188,6 +204,8 @@ static void detach_canvas(struct graph_view * view_ptr)
   {
     gtk_container_remove(GTK_CONTAINER(g_main_scrolledwin), view_ptr->canvas_widget);
     g_current_view = NULL;
+    gtk_widget_show(g_view_label);
+    gtk_scrolled_window_add_with_viewport(g_main_scrolledwin, g_view_label);
   }
 }
 
