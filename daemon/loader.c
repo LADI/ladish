@@ -164,11 +164,11 @@ static void loader_sigchld_handler(int signum)
 
     if (!child_ptr)
     {
-      log_error("LASH loader detected termination of unknown child process with PID %llu", (unsigned long long)pid);
+      log_error("Termination of unknown child process with PID %llu detected", (unsigned long long)pid);
     }
     else
     {
-      log_info("LASH loader detected termination of child process '%s' with PID %llu", child_ptr->app_name, (unsigned long long)pid);
+      log_info("Termination of child process '%s' with PID %llu detected", child_ptr->app_name, (unsigned long long)pid);
     }
 
     if (WIFEXITED(status))
