@@ -8,9 +8,9 @@ import shutil
 import re
 
 APPNAME='ladish'
-VERSION='0.2'
+VERSION='0.3'
 DBUS_NAME_BASE = 'org.ladish'
-RELEASE = True
+RELEASE = False
 
 # these variables are mandatory ('/' are converted automatically)
 srcdir = '.'
