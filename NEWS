@@ -1,3 +1,11 @@
+= Version 0.2 "preview 2" on 2009-12-29 =
+ * Persist canvas box positions
+ * Save/restore connections
+ * Launch new applications (level 0 and level 1)
+ * Save/restore applications as part of studio
+ * Handle external JACK clients
+ * a2jmidid support
+
 = Version 0.1 "preview 1" on 2009-09-01 =
  * JACK multiconfig (Save/restore jack settings by saving and then
    loading and activating studios)
