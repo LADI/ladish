@@ -10,7 +10,7 @@ import re
 APPNAME='ladish'
 VERSION='0.2'
 DBUS_NAME_BASE = 'org.ladish'
-RELEASE = False
+RELEASE = True
 
 # these variables are mandatory ('/' are converted automatically)
 srcdir = '.'
