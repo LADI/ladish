@@ -118,6 +118,7 @@ loop:
     if (buffer_ptr == NULL)
     {
       log_error("realloc failed to allocate buffer with size %zu", buffer_size + 1);
+      free(buffer_ptr);
       return false;
     }
   }
@@ -270,6 +271,7 @@ procfs_get_process_parent(
     log_error("-----------------------------");
     log_error("%s", buffer_ptr);
     log_error("-----------------------------");
+    free(buffer_ptr);
     return 0;
   }
 
@@ -282,6 +284,7 @@ procfs_get_process_parent(
     log_error("-----------------------------");
     log_error("%s", buffer_ptr);
     log_error("-----------------------------");
+    free(buffer_ptr);
     return 0;
   }
 
