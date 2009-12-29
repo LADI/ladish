@@ -4,3 +4,9 @@
 [submodule "flowcanvas"]
 	path = flowcanvas
 	url = http://nedko.arnaudov.name/git/flowcanvas.git
+[submodule "a2jmidid"]
+	path = a2jmidid
+	url = git://repo.or.cz/a2jmidid.git
+[submodule "jack2"]
+	path = jack2
+	url = git://repo.or.cz/jack2.git
