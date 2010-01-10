@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -280,6 +280,78 @@ fail:
   return;
 }
 
+static void ladish_get_room_list(struct dbus_method_call * call_ptr)
+{
+  DBusMessageIter iter, array_iter;
+
+  call_ptr->reply = dbus_message_new_method_return(call_ptr->message);
+  if (call_ptr->reply == NULL)
+  {
+    goto fail;
+  }
+
+  dbus_message_iter_init_append(call_ptr->reply, &iter);
+
+  if (!dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "(sa{sv})", &array_iter))
+  {
+    goto fail_unref;
+  }
+
+  if (!dbus_message_iter_close_container(&iter, &array_iter))
+  {
+    goto fail_unref;
+  }
+
+  return;
+
+fail_unref:
+  dbus_message_unref(call_ptr->reply);
+  call_ptr->reply = NULL;
+
+fail:
+  log_error("Ran out of memory trying to construct method return");
+}
+
+static void ladish_delete_room(struct dbus_method_call * call_ptr)
+{
+  const char * name;
+
+  dbus_error_init(&g_dbus_error);
+
+  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return;
+  }
+
+  log_info("Delete room request (%s)", name);
+
+  {
+    method_return_new_void(call_ptr);
+  }
+}
+
+static void ladish_new_room(struct dbus_method_call * call_ptr)
+{
+  const char * name;
+
+  dbus_error_init(&g_dbus_error);
+
+  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return;
+  }
+
+  log_info("New room request (%s)", name);
+
+  {
+    method_return_new_void(call_ptr);
+  }
+}
+
 static void ladish_exit(struct dbus_method_call * call_ptr)
 {
   log_info("Exit command received through D-Bus");
@@ -334,6 +406,18 @@ METHOD_ARGS_BEGIN(GetApplicationList, "Get list of applications that can be laun
   METHOD_ARG_DESCRIBE_OUT("applications", "a(sa{sv})", "List of applications, name and properties")
 METHOD_ARGS_END
 
+METHOD_ARGS_BEGIN(GetRoomList, "Get list of rooms")
+  METHOD_ARG_DESCRIBE_OUT("room_list", "a(sa{sv})", "List of rooms, name and properties")
+METHOD_ARGS_END
+
+METHOD_ARGS_BEGIN(NewRoom, "New room")
+  METHOD_ARG_DESCRIBE_IN("room_name", "s", "Name of the room")
+METHOD_ARGS_END
+
+METHOD_ARGS_BEGIN(DeleteRoom, "Delete room")
+  METHOD_ARG_DESCRIBE_IN("room_name", "s", "Name of room to delete")
+METHOD_ARGS_END
+
 METHOD_ARGS_BEGIN(Exit, "Tell ladish D-Bus service to exit")
 METHOD_ARGS_END
 
@@ -344,6 +428,9 @@ METHODS_BEGIN
   METHOD_DESCRIBE(LoadStudio, ladish_load_studio)
   METHOD_DESCRIBE(DeleteStudio, ladish_delete_studio)
   METHOD_DESCRIBE(GetApplicationList, ladish_get_application_list)
+  METHOD_DESCRIBE(GetRoomList, ladish_get_room_list)
+  METHOD_DESCRIBE(NewRoom, ladish_new_room)
+  METHOD_DESCRIBE(DeleteRoom, ladish_delete_room)
   METHOD_DESCRIBE(Exit, ladish_exit)
 METHODS_END
 
