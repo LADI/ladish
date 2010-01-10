@@ -231,6 +231,7 @@ def build(bld):
         'cmd_exit.c',
         'cqueue.c',
         'app_supervisor.c',
+        'room.c',
         ]:
         daemon.source.append(os.path.join("daemon", source))
 

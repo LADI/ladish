@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains stuff that is needed almost everywhere in the ladishd
@@ -53,17 +53,6 @@ struct connection
 
   struct port * capture_port_ptr;          /* The capture output port */
   struct port * playback_port_ptr;         /* The playback input port */
-};
-
-struct room
-{
-  struct list_head siblings;               /* link for studio::rooms list */
-  struct list_head clients;                /* non-virtual room clients */
-  struct list_head ports;                  /* ports of the room clients */
-  uuid_t uuid;                             /* The UUID of the room */
-  char * name;                             /* Name of the room */
-  struct client * link_client_ptr;         /* client that connects the room to studio */
-  struct studio * studio_ptr;              /* Studio connected to the room */
 };
 
 #include "studio.h"
