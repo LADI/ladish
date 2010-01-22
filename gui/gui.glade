@@ -3,7 +3,7 @@
 <!--*- mode: xml -*-->
 <glade-interface>
   <widget class="GtkWindow" id="main_win">
-    <property name="border_width">1</property>
+    <property name="border_width">0</property>
     <property name="title" translatable="yes">LADI Session Handler</property>
     <property name="default_width">800</property>
     <property name="default_height">600</property>
