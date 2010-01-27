@@ -31,8 +31,85 @@
 #include "control.h"
 #include "../dbus_constants.h"
 #include "studio_internal.h"
+#include "room.h"
+#include "../lib/wkports.h"
 
 #define INTERFACE_NAME IFACE_CONTROL
+
+/* c603f2a0-d96a-493e-a8cf-55581d950aa9 */
+UUID_DEFINE(basic_room,0xC6,0x03,0xF2,0xA0,0xD9,0x6A,0x49,0x3E,0xA8,0xCF,0x55,0x58,0x1D,0x95,0x0A,0xA9);
+
+static struct list_head g_rooms;
+
+bool create_builtin_rooms(void)
+{
+  ladish_room_handle room;
+
+  if (!ladish_room_create(basic_room, "Basic", &room))
+  {
+    log_error("ladish_room_create() failed.");
+    return false;
+  }
+
+  list_add_tail(ladish_room_get_list_node(room), &g_rooms);
+  return true;
+}
+
+bool create_rooms(void)
+{
+  if (!create_builtin_rooms())
+  {
+    return false;
+  }
+
+  return true;
+}
+
+void maybe_create_rooms(void)
+{
+  if (list_empty(&g_rooms))
+  {
+    create_rooms();
+  }
+}
+
+bool rooms_init(void)
+{
+  INIT_LIST_HEAD(&g_rooms);
+
+  return true;
+}
+
+void rooms_uninit(void)
+{
+  struct list_head * node_ptr;
+  ladish_room_handle room;
+
+  while (!list_empty(&g_rooms))
+  {
+    node_ptr = g_rooms.next;
+    list_del(node_ptr);
+    room = ladish_room_from_list_node(node_ptr);
+    ladish_room_destroy(room);
+  }
+}
+
+bool rooms_enum(void * context, bool (* callback)(void * context, ladish_room_handle room))
+{
+  struct list_head * node_ptr;
+
+  maybe_create_rooms();
+
+  list_for_each(node_ptr, &g_rooms)
+  {
+    if (!callback(context, ladish_room_from_list_node(node_ptr)))
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
 
 static void ladish_is_studio_loaded(struct dbus_method_call * call_ptr)
 {
@@ -280,6 +357,36 @@ fail:
   return;
 }
 
+#define array_iter_ptr ((DBusMessageIter *)context)
+
+bool room_list_filler(void * context, ladish_room_handle room)
+{
+  DBusMessageIter struct_iter;
+  DBusMessageIter dict_iter;
+  const char * name;
+
+  name = ladish_room_get_name(room);
+
+  if (!dbus_message_iter_open_container(array_iter_ptr, DBUS_TYPE_STRUCT, NULL, &struct_iter))
+    return false;
+
+  if (!dbus_message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &name))
+    return false;
+
+  if (!dbus_message_iter_open_container(&struct_iter, DBUS_TYPE_ARRAY, "{sv}", &dict_iter))
+    return false;
+
+  if (!dbus_message_iter_close_container(&struct_iter, &dict_iter))
+    return false;
+
+  if (!dbus_message_iter_close_container(array_iter_ptr, &struct_iter))
+    return false;
+
+  return true;
+}
+
+#undef array_iter_ptr
+
 static void ladish_get_room_list(struct dbus_method_call * call_ptr)
 {
   DBusMessageIter iter, array_iter;
@@ -293,6 +400,11 @@ static void ladish_get_room_list(struct dbus_method_call * call_ptr)
   dbus_message_iter_init_append(call_ptr->reply, &iter);
 
   if (!dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "(sa{sv})", &array_iter))
+  {
+    goto fail_unref;
+  }
+
+  if (!rooms_enum(&array_iter, room_list_filler))
   {
     goto fail_unref;
   }

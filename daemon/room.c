@@ -28,6 +28,7 @@
 
 struct ladish_room
 {
+  struct list_head siblings;
   uuid_t uuid;
   char * name;
 };
@@ -78,4 +79,19 @@ ladish_room_destroy(
   free(room_ptr);
 }
 
+struct list_head * ladish_room_get_list_node(ladish_room_handle room_handle)
+{
+  return &room_ptr->siblings;
+}
+
+const char * ladish_room_get_name(ladish_room_handle room_handle)
+{
+  return room_ptr->name;
+}
+
 #undef room_ptr
+
+ladish_room_handle ladish_room_from_list_node(struct list_head * node_ptr)
+{
+  return (ladish_room_handle)list_entry(node_ptr, struct ladish_room, siblings);
+}

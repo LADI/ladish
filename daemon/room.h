@@ -41,4 +41,9 @@ void
 ladish_room_destroy(
   ladish_room_handle room_handle);
 
+struct list_head * ladish_room_get_list_node(ladish_room_handle room_handle);
+ladish_room_handle ladish_room_from_list_node(struct list_head * node_ptr);
+
+const char * ladish_room_get_name(ladish_room_handle room_handle);
+
 #endif /* #ifndef ROOM_H__9A1CF253_0A17_402A_BDF8_9BD72B467118__INCLUDED */

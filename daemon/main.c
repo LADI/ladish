@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  * Copyright (C) 2002 Robert Ham <rah@bash.sh>
  *
@@ -269,10 +269,15 @@ int main(int argc, char ** argv, char ** envp)
 
   loader_init(studio_on_child_exit);
 
+  if (!rooms_init())
+  {
+    goto uninit_loader;
+  }
+
   if (!connect_dbus())
   {
     log_error("Failed to connecto to D-Bus");
-    goto uninit_loader;
+    goto uninit_rooms;
   }
 
   /* install the signal handlers */
@@ -313,6 +318,9 @@ int main(int argc, char ** argv, char ** envp)
 
 uninit_dbus:
   disconnect_dbus();
+
+uninit_rooms:
+  rooms_uninit();
 
 uninit_loader:
   loader_uninit();
