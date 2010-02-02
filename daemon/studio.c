@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains part of the studio singleton object implementation
@@ -475,9 +475,6 @@ bool studios_iterate(void * call_ptr, void * context, bool (* callback)(void * c
 
   while ((dentry = readdir(dir)) != NULL)
   {
-    if (dentry->d_type != DT_REG)
-      continue;
-
     len = strlen(dentry->d_name);
     if (len <= 4 || strcmp(dentry->d_name + (len - 4), ".xml") != 0)
       continue;
@@ -497,6 +494,12 @@ bool studios_iterate(void * call_ptr, void * context, bool (* callback)(void * c
     }
 
     free(path);
+
+    if (!S_ISREG(st.st_mode))
+    {
+      //log_info("Ignoring direntry that is not regular file. Mode is %07o", st.st_mode);
+      continue;
+    }
 
     name = malloc(len - 4 + 1);
     if (name == NULL)
