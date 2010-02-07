@@ -109,14 +109,8 @@ def configure(conf):
     if build_gui and not conf.check_cfg(
         package = 'gtk+-2.0',
         mandatory = False,
+        atleast_version = '2.16.0',
         errmsg = "not installed, see http://www.gtk.org/",
-        args = '--cflags --libs'):
-        build_gui = False
-
-    if build_gui and not conf.check_cfg(
-        package = 'libglade-2.0',
-        mandatory = False,
-        errmsg = "not installed, see http://ftp.gnome.org/pub/GNOME/sources/libglade/",
         args = '--cflags --libs'):
         build_gui = False
 
@@ -309,7 +303,7 @@ def build(bld):
             #'session.cpp',
             'canvas.cpp',
             'graph_canvas.c',
-            'glade.c',
+            'gtk_builder.c',
             'ask_dialog.c',
             ]:
             gladish.source.append(os.path.join("gui", source))

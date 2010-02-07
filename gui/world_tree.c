@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the project_list class
@@ -26,7 +26,7 @@
 
 #include "common.h"
 #include "world_tree.h"
-#include "glade.h"
+#include "gtk_builder.h"
 #include "../catdup.h"
 
 enum entry_type
@@ -208,13 +208,13 @@ void on_popup_menu_action_app_properties(GtkWidget * menuitem, gpointer userdata
   bool terminal;
   uint8_t level;
   guint result;
-  GtkEntry * command_entry = GTK_ENTRY(get_glade_widget("app_command_entry"));
-  GtkEntry * name_entry = GTK_ENTRY(get_glade_widget("app_name_entry"));
-  GtkToggleButton * terminal_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_terminal_check_button"));
-  GtkToggleButton * level0_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level0"));
-  GtkToggleButton * level1_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level1"));
-  GtkToggleButton * level2_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level2"));
-  GtkToggleButton * level3_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level3"));
+  GtkEntry * command_entry = GTK_ENTRY(get_gtk_builder_widget("app_command_entry"));
+  GtkEntry * name_entry = GTK_ENTRY(get_gtk_builder_widget("app_name_entry"));
+  GtkToggleButton * terminal_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("app_terminal_check_button"));
+  GtkToggleButton * level0_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("app_level0"));
+  GtkToggleButton * level1_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("app_level1"));
+  GtkToggleButton * level2_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("app_level2"));
+  GtkToggleButton * level3_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("app_level3"));
 
   if (!get_selected_app_id(&view, &id))
   {
@@ -423,7 +423,7 @@ void world_tree_init(void)
   GtkCellRenderer * renderer;
   GtkTreeSelection * selection;
 
-  g_world_tree_widget = get_glade_widget("world_tree");
+  g_world_tree_widget = get_gtk_builder_widget("world_tree");
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(g_world_tree_widget), FALSE);
 
   col = gtk_tree_view_column_new();

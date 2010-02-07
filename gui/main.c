@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
  *
  **************************************************************************
@@ -37,7 +37,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include "glade.h"
+#include "gtk_builder.h"
 #include "canvas.h"
 #include "graph_canvas.h"
 #include "../proxies/jack_proxy.h"
@@ -149,7 +149,7 @@ static void set_buffer_size_combo_width(void)
 
 static void buffer_size_clear()
 {
-  gtk_entry_set_text(GTK_ENTRY(get_glade_widget("comboboxentry")), "");
+  gtk_entry_set_text(GTK_ENTRY(get_gtk_builder_widget("comboboxentry")), "");
 }
 
 static void buffer_size_set(uint32_t size)
@@ -217,13 +217,13 @@ bool name_dialog(const char * title, const char * object, const char * old_name,
 {
   guint result;
   bool ok;
-  GtkEntry * entry = GTK_ENTRY(get_glade_widget("name_entry"));
+  GtkEntry * entry = GTK_ENTRY(get_gtk_builder_widget("name_entry"));
 
   gtk_window_set_title(GTK_WINDOW(g_app_dialog), title);
 
   gtk_widget_show(g_name_dialog);
 
-  gtk_label_set_text(GTK_LABEL(get_glade_widget("name_label")), object);
+  gtk_label_set_text(GTK_LABEL(get_gtk_builder_widget("name_label")), object);
   gtk_entry_set_text(entry, old_name);
   gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);
 
@@ -247,7 +247,7 @@ bool name_dialog(const char * title, const char * object, const char * old_name,
 void error_message_box(const char * failed_operation)
 {
   GtkWidget * dialog;
-  dialog = get_glade_widget("error_dialog");
+  dialog = get_gtk_builder_widget("error_dialog");
   gtk_message_dialog_set_markup(GTK_MESSAGE_DIALOG(dialog), "<b><big>Error</big></b>");
   gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(dialog), "%s", failed_operation);
   gtk_widget_show(dialog);
@@ -258,13 +258,13 @@ void error_message_box(const char * failed_operation)
 void run_custom_command_dialog(void)
 {
   guint result;
-  GtkEntry * command_entry = GTK_ENTRY(get_glade_widget("app_command_entry"));
-  GtkEntry * name_entry = GTK_ENTRY(get_glade_widget("app_name_entry"));
-  GtkToggleButton * terminal_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_terminal_check_button"));
-  GtkToggleButton * level0_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level0"));
-  GtkToggleButton * level1_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level1"));
-  GtkToggleButton * level2_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level2"));
-  GtkToggleButton * level3_button = GTK_TOGGLE_BUTTON(get_glade_widget("app_level3"));
+  GtkEntry * command_entry = GTK_ENTRY(get_gtk_builder_widget("app_command_entry"));
+  GtkEntry * name_entry = GTK_ENTRY(get_gtk_builder_widget("app_name_entry"));
+  GtkToggleButton * terminal_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("app_terminal_check_button"));
+  GtkToggleButton * level0_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("app_level0"));
+  GtkToggleButton * level1_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("app_level1"));
+  GtkToggleButton * level2_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("app_level2"));
+  GtkToggleButton * level3_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("app_level3"));
   uint8_t level;
 
   gtk_entry_set_text(name_entry, "");
@@ -364,7 +364,7 @@ static void jack_configure(GtkWidget * item)
         NULL,
         &error_ptr))
   {
-    dialog = get_glade_widget("error_dialog");
+    dialog = get_gtk_builder_widget("error_dialog");
     gtk_message_dialog_set_markup(GTK_MESSAGE_DIALOG(dialog), "<b><big>Error executing ladiconf.\nAre LADI Tools installed?</big></b>");
     gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(dialog), "%s", error_ptr->message);
     gtk_widget_show(dialog);
@@ -892,8 +892,8 @@ init_studio_list(
   void (* item_activate_callback)(GtkWidget * item))
 {
   studio_list_ptr->count = 0;
-  studio_list_ptr->menu_item = get_glade_widget(menu_item);
-  studio_list_ptr->menu = get_glade_widget(menu);
+  studio_list_ptr->menu_item = get_gtk_builder_widget(menu_item);
+  studio_list_ptr->menu = get_gtk_builder_widget(menu);
   studio_list_ptr->item_activate_callback = item_activate_callback;
   gtk_menu_item_set_submenu(GTK_MENU_ITEM(studio_list_ptr->menu_item), studio_list_ptr->menu);
   g_signal_connect(G_OBJECT(studio_list_ptr->menu_item), "activate", G_CALLBACK(populate_studio_list_menu), studio_list_ptr);
@@ -968,7 +968,7 @@ static void show_about(void)
 
   license = read_file_contents(DATA_DIR "/COPYING");
 
-  dialog = get_glade_widget("about_win");
+  dialog = get_gtk_builder_widget("about_win");
   gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), PACKAGE_VERSION);
 
   if (pixbuf != NULL)
@@ -1030,36 +1030,36 @@ int main(int argc, char** argv)
     return 1;
   }
 
-  if (!init_glade())
+  if (!init_gtk_builder())
   {
     return 1;
   }
 
-  g_main_win = get_glade_widget("main_win");
-  g_clear_load_button = get_glade_widget("clear_load_button");
-  g_xrun_progress_bar = get_glade_widget("xrun_progress_bar");
-  g_buffer_size_combo = get_glade_widget("buffer_size_combo");
-  g_menu_item_new_studio = get_glade_widget("menu_item_new_studio");
-  g_menu_item_start_app = get_glade_widget("menu_item_start_app");
-  g_menu_item_start_studio = get_glade_widget("menu_item_start_studio");
-  g_menu_item_stop_studio = get_glade_widget("menu_item_stop_studio");
-  g_menu_item_save_studio = get_glade_widget("menu_item_save_studio");
-  g_menu_item_save_as_studio = get_glade_widget("menu_item_save_as_studio");
-  g_menu_item_unload_studio = get_glade_widget("menu_item_unload_studio");
-  g_menu_item_rename_studio = get_glade_widget("menu_item_rename_studio");
-  g_menu_item_create_room = get_glade_widget("menu_item_create_room");
-  g_menu_item_destroy_room = get_glade_widget("menu_item_destroy_room");
-  g_menu_item_load_project = get_glade_widget("menu_item_load_project");
-  g_menu_item_daemon_exit = get_glade_widget("menu_item_daemon_exit");
-  g_menu_item_jack_configure = get_glade_widget("menu_item_jack_configure");
-  g_studio_status_label = get_glade_widget("studio_status_label");
-  g_menu_item_view_toolbar = get_glade_widget("menu_item_view_toolbar");
-  g_toolbar = get_glade_widget("toolbar");
-  g_status_image = get_glade_widget("startstop");
-  g_status_tool_item = get_glade_widget("startstop_item");
+  g_main_win = get_gtk_builder_widget("main_win");
+  g_clear_load_button = get_gtk_builder_widget("clear_load_button");
+  g_xrun_progress_bar = get_gtk_builder_widget("xrun_progress_bar");
+  g_buffer_size_combo = get_gtk_builder_widget("buffer_size_combo");
+  g_menu_item_new_studio = get_gtk_builder_widget("menu_item_new_studio");
+  g_menu_item_start_app = get_gtk_builder_widget("menu_item_start_app");
+  g_menu_item_start_studio = get_gtk_builder_widget("menu_item_start_studio");
+  g_menu_item_stop_studio = get_gtk_builder_widget("menu_item_stop_studio");
+  g_menu_item_save_studio = get_gtk_builder_widget("menu_item_save_studio");
+  g_menu_item_save_as_studio = get_gtk_builder_widget("menu_item_save_as_studio");
+  g_menu_item_unload_studio = get_gtk_builder_widget("menu_item_unload_studio");
+  g_menu_item_rename_studio = get_gtk_builder_widget("menu_item_rename_studio");
+  g_menu_item_create_room = get_gtk_builder_widget("menu_item_create_room");
+  g_menu_item_destroy_room = get_gtk_builder_widget("menu_item_destroy_room");
+  g_menu_item_load_project = get_gtk_builder_widget("menu_item_load_project");
+  g_menu_item_daemon_exit = get_gtk_builder_widget("menu_item_daemon_exit");
+  g_menu_item_jack_configure = get_gtk_builder_widget("menu_item_jack_configure");
+  g_studio_status_label = get_gtk_builder_widget("studio_status_label");
+  g_menu_item_view_toolbar = get_gtk_builder_widget("menu_item_view_toolbar");
+  g_toolbar = get_gtk_builder_widget("toolbar");
+  g_status_image = get_gtk_builder_widget("startstop");
+  g_status_tool_item = get_gtk_builder_widget("startstop_item");
 
-  g_name_dialog = get_glade_widget("name_dialog");
-  g_app_dialog = get_glade_widget("app_dialog");
+  g_name_dialog = get_gtk_builder_widget("name_dialog");
+  g_app_dialog = get_gtk_builder_widget("app_dialog");
 
   init_studio_list(&g_load_studio_list, "menu_item_load_studio", "load_studio_menu", on_load_studio);
   init_studio_list(&g_delete_studio_list, "menu_item_delete_studio", "delete_studio_menu", on_delete_studio);
@@ -1091,10 +1091,10 @@ int main(int argc, char** argv)
   set_buffer_size_combo_width();
 
   g_signal_connect(G_OBJECT(g_main_win), "destroy", G_CALLBACK(gtk_main_quit), NULL);
-  g_signal_connect(G_OBJECT(get_glade_widget("menu_item_quit")), "activate", G_CALLBACK(gtk_main_quit), NULL);
+  g_signal_connect(G_OBJECT(get_gtk_builder_widget("menu_item_quit")), "activate", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(G_OBJECT(g_buffer_size_combo), "changed", G_CALLBACK(buffer_size_change_request), NULL);
   g_signal_connect(G_OBJECT(g_clear_load_button), "clicked", G_CALLBACK(clear_load), NULL);
-  g_signal_connect(G_OBJECT(get_glade_widget("menu_item_view_arrange")), "activate", G_CALLBACK(arrange), NULL);
+  g_signal_connect(G_OBJECT(get_gtk_builder_widget("menu_item_view_arrange")), "activate", G_CALLBACK(arrange), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_view_toolbar), "activate", G_CALLBACK(toggle_toolbar), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_new_studio), "activate", G_CALLBACK(new_studio), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_start_studio), "activate", G_CALLBACK(start_studio), NULL);
@@ -1105,7 +1105,7 @@ int main(int argc, char** argv)
   g_signal_connect(G_OBJECT(g_menu_item_rename_studio), "activate", G_CALLBACK(rename_studio), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_daemon_exit), "activate", G_CALLBACK(daemon_exit), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_jack_configure), "activate", G_CALLBACK(jack_configure), NULL);
-  g_signal_connect(G_OBJECT(get_glade_widget("menu_item_help_about")), "activate", G_CALLBACK(show_about), NULL);
+  g_signal_connect(G_OBJECT(get_gtk_builder_widget("menu_item_help_about")), "activate", G_CALLBACK(show_about), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_start_app), "activate", G_CALLBACK(start_app), NULL);
 
   gtk_widget_show(g_main_win);
@@ -1117,7 +1117,7 @@ int main(int argc, char** argv)
   studio_proxy_uninit();
   control_proxy_uninit();
   dbus_uninit();
-  uninit_glade();
+  uninit_gtk_builder();
 
   return 0;
 }

@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the graph view object
@@ -26,7 +26,7 @@
 
 #include "common.h"
 #include "graph_view.h"
-#include "glade.h"
+#include "gtk_builder.h"
 #include "world_tree.h"
 
 struct graph_view
@@ -56,7 +56,7 @@ const char * g_view_lavel_text =
 
 void view_init(void)
 {
-  g_main_scrolledwin = GTK_SCROLLED_WINDOW(get_glade_widget("main_scrolledwin"));
+  g_main_scrolledwin = GTK_SCROLLED_WINDOW(get_gtk_builder_widget("main_scrolledwin"));
   INIT_LIST_HEAD(&g_views);
 
   g_view_label = gtk_label_new(g_view_lavel_text);

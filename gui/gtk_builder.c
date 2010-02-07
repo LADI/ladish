@@ -2,10 +2,10 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains the glade (gtk_builder) helpers
+ * This file contains the GtkBuilder helpers
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -25,50 +25,66 @@
  */
 
 #include "common.h"
-#include "glade.h"
+#include "gtk_builder.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <glade/glade.h>
 
-GladeXML * g_glade;
+GtkBuilder * g_builder;
 
-bool init_glade(void)
+bool init_gtk_builder(void)
 {
   const char * path;
   struct stat st;
+  GError * error_ptr;
 
-  path = "./gui/gui.glade";
+  path = "./gui/gladish.ui";
   if (stat(path, &st) == 0)
   {
     goto found;
   }
 
-  path = DATA_DIR "/gui.glade";
+  path = DATA_DIR "/gladish.ui";
   if (stat(path, &st) == 0)
   {
     goto found;
   }
 
-  log_error("Unable to find the gui.glade file");
-  uninit_glade();
+  log_error("Unable to find the gladish.ui file");
   return false;
 
 found:
   log_info("Loading glade from %s", path);
-  g_glade = glade_xml_new(path, NULL, NULL);
+
+  g_builder = gtk_builder_new();
+  if (g_builder == NULL)
+  {
+    log_error("gtk_builder_new() failed.");
+    return false;
+  }
+
+  error_ptr = NULL;
+  if (gtk_builder_add_from_file(g_builder, path, &error_ptr) == 0)
+  {
+    log_error("gtk_builder_add_from_file(\"%s\") failed: %s", path, error_ptr->message);
+    g_error_free(error_ptr);
+    g_object_unref(g_builder);
+    return false;
+  }
+
   return true;
 }
 
-void uninit_glade(void)
+void uninit_gtk_builder(void)
 {
+  g_object_unref(g_builder);
 }
 
-GtkWidget * get_glade_widget(const char * name)
+GtkWidget * get_gtk_builder_widget(const char * name)
 {
   GtkWidget * ptr;
 
-  ptr = GTK_WIDGET(glade_xml_get_widget(g_glade, name));
+  ptr = GTK_WIDGET(gtk_builder_get_object(g_builder, name));
 
   if (ptr == NULL)
   {

@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the code that implements ask dialog
@@ -26,7 +26,7 @@
 
 #include <stdarg.h>
 #include "ask_dialog.h"
-#include "glade.h"
+#include "gtk_builder.h"
 
 bool
 ask_dialog(
@@ -40,7 +40,7 @@ ask_dialog(
   gchar * msg;
   va_list ap;
 
-  dialog = get_glade_widget("ask_dialog");
+  dialog = get_gtk_builder_widget("ask_dialog");
 
   va_start(ap, secondary_text_format);
   msg = g_markup_vprintf_escaped(secondary_text_format, ap);
