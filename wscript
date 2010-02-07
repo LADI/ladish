@@ -285,7 +285,7 @@ def build(bld):
         gladish.target = 'gladish'
         gladish.defines = ['LOG_OUTPUT_STDOUT']
         gladish.includes = "build/default" # XXX config.h version.h and other generated files
-        gladish.uselib = 'DBUS-1 DBUS-GLIB-1 LIBGLADE-2.0 FLOWCANVAS'
+        gladish.uselib = 'DBUS-1 DBUS-GLIB-1 FLOWCANVAS'
 
         gladish.source = [
             'catdup.c',
@@ -323,8 +323,8 @@ def build(bld):
             ]:
             gladish.source.append(os.path.join("dbus", source))
 
-        # Glade UI definitions (XML)
-        bld.install_files(bld.env['DATA_DIR'], 'gui/gui.glade')
+        # GtkBuilder UI definitions (XML)
+        bld.install_files(bld.env['DATA_DIR'], 'gui/gladish.ui')
     
     bld.install_files('${PREFIX}/bin', 'ladish_control', chmod=0755)
 
