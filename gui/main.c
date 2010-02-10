@@ -149,7 +149,7 @@ static void set_buffer_size_combo_width(void)
 
 static void buffer_size_clear()
 {
-  gtk_entry_set_text(GTK_ENTRY(get_gtk_builder_widget("comboboxentry")), "");
+  //gtk_entry_set_text(GTK_ENTRY(get_gtk_builder_widget("comboboxentry")), "");
 }
 
 static void buffer_size_set(uint32_t size)
