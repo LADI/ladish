@@ -262,6 +262,89 @@
                         <property name="use_stock">True</property>
                       </object>
                     </child>
+                    <child>
+                      <object class="GtkMenuItem" id="menu_item_jack_latency">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">JACK _Latency</property>
+                        <property name="use_underline">True</property>
+                        <child type="submenu">
+                          <object class="GtkMenu" id="menu_jack_latencies">
+                            <property name="visible">True</property>
+                            <child>
+                              <object class="GtkRadioMenuItem" id="menu_item_jack_latency_32">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">32</property>
+                                <property name="draw_as_radio">True</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkRadioMenuItem" id="menu_item_jack_latency_64">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">64</property>
+                                <property name="draw_as_radio">True</property>
+                                <property name="group">menu_item_jack_latency_32</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkRadioMenuItem" id="menu_item_jack_latency_128">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">128</property>
+                                <property name="draw_as_radio">True</property>
+                                <property name="group">menu_item_jack_latency_32</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkRadioMenuItem" id="menu_item_jack_latency_256">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">256</property>
+                                <property name="draw_as_radio">True</property>
+                                <property name="group">menu_item_jack_latency_32</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkRadioMenuItem" id="menu_item_jack_latency_512">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">512</property>
+                                <property name="draw_as_radio">True</property>
+                                <property name="group">menu_item_jack_latency_32</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkRadioMenuItem" id="menu_item_jack_latency_1024">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">1024</property>
+                                <property name="draw_as_radio">True</property>
+                                <property name="group">menu_item_jack_latency_32</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkRadioMenuItem" id="menu_item_jack_latency_2048">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">2048</property>
+                                <property name="draw_as_radio">True</property>
+                                <property name="group">menu_item_jack_latency_32</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkRadioMenuItem" id="menu_item_jack_latency_4096">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">4096</property>
+                                <property name="draw_as_radio">True</property>
+                                <property name="group">menu_item_jack_latency_32</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkRadioMenuItem" id="menu_item_jack_latency_8192">
+                                <property name="visible">True</property>
+                                <property name="label" translatable="yes">8192</property>
+                                <property name="draw_as_radio">True</property>
+                                <property name="group">menu_item_jack_latency_32</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>
@@ -305,57 +388,31 @@
                 <property name="visible">True</property>
                 <property name="visible_vertical">False</property>
                 <child>
-                  <object class="GtkAlignment" id="alignment2">
+                  <object class="GtkHBox" id="hbox4">
                     <property name="visible">True</property>
-                    <property name="yscale">0</property>
                     <child>
-                      <object class="GtkHBox" id="hbox4">
+                      <object class="GtkLabel" id="sample_rate_label">
                         <property name="visible">True</property>
-                        <child>
-                          <object class="GtkLabel" id="label10">
-                            <property name="visible">True</property>
-                            <property name="label" translatable="yes">  Latency: </property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkComboBoxEntry" id="buffer_size_combo">
-                            <property name="visible">True</property>
-                            <property name="sensitive">False</property>
-                            <property name="border_width">1</property>
-                          </object>
-                          <packing>
-                            <property name="padding">1</property>
-                            <property name="position">1</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel" id="sample_rate_label">
-                            <property name="label" translatable="yes">48</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-                            <property name="padding">1</property>
-                            <property name="position">2</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel" id="label9">
-                            <property name="xpad">1</property>
-                            <property name="label" translatable="yes">kHz</property>
-                          </object>
-                          <packing>
-                            <property name="expand">False</property>
-                            <property name="fill">False</property>
-                            <property name="position">3</property>
-                          </packing>
-                        </child>
+                        <property name="label" translatable="yes">48</property>
                       </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="padding">1</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label9">
+                        <property name="visible">True</property>
+                        <property name="xpad">1</property>
+                        <property name="label" translatable="yes">kHz</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">False</property>
+                        <property name="position">1</property>
+                      </packing>
                     </child>
                   </object>
                 </child>
