@@ -384,53 +384,6 @@
             <property name="icon_size">4</property>
             <property name="icon_size_set">True</property>
             <child>
-              <object class="GtkToolItem" id="toolitem28">
-                <property name="visible">True</property>
-                <property name="visible_vertical">False</property>
-                <child>
-                  <object class="GtkHBox" id="hbox4">
-                    <property name="visible">True</property>
-                    <child>
-                      <object class="GtkLabel" id="sample_rate_label">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">48</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="padding">1</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="label9">
-                        <property name="visible">True</property>
-                        <property name="xpad">1</property>
-                        <property name="label" translatable="yes">kHz</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkSeparatorToolItem" id="separatortoolitem3">
-                <property name="visible">True</property>
-                <property name="border_width">8</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkToolButton" id="clear_load_button">
                 <property name="visible">True</property>
                 <property name="sensitive">False</property>

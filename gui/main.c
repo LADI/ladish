@@ -54,6 +54,7 @@ GtkWidget * g_main_win;
 
 GtkWidget * g_clear_load_button;
 GtkWidget * g_xrun_progress_bar;
+GtkStatusbar * g_statusbar;
 
 GtkWidget * g_menu_item_new_studio;
 GtkWidget * g_menu_item_start_studio;
@@ -85,6 +86,11 @@ GtkWidget * g_status_tool_item;
 
 GtkWidget * g_name_dialog;
 GtkWidget * g_app_dialog;
+
+GtkWidget * g_sample_rate_label;
+uint32_t g_sample_rate;
+
+GtkWidget * g_latency_label;
 
 graph_view_handle g_jack_view = NULL;
 graph_view_handle g_studio_view = NULL;
@@ -166,11 +172,12 @@ void set_latency_items_sensivity(bool sensitive)
 static void buffer_size_clear(void)
 {
   set_latency_items_sensivity(false);
+  gtk_label_set_text(GTK_LABEL(g_latency_label), "");
 }
 
 static bool latency_changing = false;
 
-static void buffer_size_set(uint32_t size)
+static void buffer_size_set(uint32_t size, bool force)
 {
   GtkCheckMenuItem * item_ptr;
 
@@ -209,12 +216,18 @@ static void buffer_size_set(uint32_t size)
     return;
   }
 
-  if (!item_ptr->active)
+  if (force || !item_ptr->active)
   {
     log_info("JACK latency changed: %"PRIu32" samples", size);
     latency_changing = true;
     gtk_check_menu_item_set_active(item_ptr, TRUE);
     latency_changing = false;
+
+    {
+      char buf[100];
+      snprintf(buf, sizeof(buf), "Latency: %4.1f ms (%"PRIu32")", (float)size / (float)g_sample_rate * 1000.0f, size);
+      gtk_label_set_text(GTK_LABEL(g_latency_label), buf);
+    }
   }
 }
 
@@ -242,13 +255,13 @@ static void buffer_size_change_request(GtkCheckMenuItem * item_ptr, gpointer use
   }
 }
 
-static void update_buffer_size(void)
+static void update_buffer_size(bool force)
 {
   uint32_t size;
 
   if (jack_proxy_get_buffer_size(&size))
   {
-    buffer_size_set(size);
+    buffer_size_set(size, force);
   }
   else
   {
@@ -631,7 +644,7 @@ static void rename_studio(void)
 static gboolean poll_jack(gpointer data)
 {
   update_load();
-  update_buffer_size();
+  update_buffer_size(false);
 
   return TRUE;
 }
@@ -737,6 +750,26 @@ bool studio_state_changed(char ** name_ptr_ptr)
 
   gtk_image_set_from_stock(GTK_IMAGE(g_status_image), stock_id, GTK_ICON_SIZE_SMALL_TOOLBAR);
   gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(g_status_tool_item), tooltip);
+
+  if (g_jack_state == JACK_STATE_STARTED && jack_proxy_sample_rate(&g_sample_rate))
+  {
+    char buf[100];
+
+    if (fmod(g_sample_rate, 1000.0) != 0.0)
+    {
+      snprintf(buf, sizeof(buf), "Sample rate: %.1f kHz", (float)g_sample_rate / 1000.0f);
+    }
+    else
+    {
+      snprintf(buf, sizeof(buf), "Sample rate: %u kHz", g_sample_rate / 1000);
+    }
+
+    gtk_label_set_text(GTK_LABEL(g_sample_rate_label), buf);
+  }
+  else
+  {
+    gtk_label_set_text(GTK_LABEL(g_sample_rate_label), "");
+  }
 
   if (buffer == NULL)
   {
@@ -882,6 +915,7 @@ void jack_started(void)
   studio_state_changed(NULL);
 
   set_latency_items_sensivity(true);
+  update_buffer_size(true);
   gtk_widget_set_sensitive(g_clear_load_button, true);
 
   g_jack_poll_source_tag = g_timeout_add(100, poll_jack, NULL);
@@ -1130,6 +1164,7 @@ int main(int argc, char** argv)
   g_toolbar = get_gtk_builder_widget("toolbar");
   g_status_image = get_gtk_builder_widget("startstop");
   g_status_tool_item = get_gtk_builder_widget("startstop_item");
+  g_statusbar = GTK_STATUSBAR(get_gtk_builder_widget("statusbar"));
 
   g_name_dialog = get_gtk_builder_widget("name_dialog");
   g_app_dialog = get_gtk_builder_widget("app_dialog");
@@ -1146,6 +1181,16 @@ int main(int argc, char** argv)
   g_menu_item_jack_latency_2048 = GTK_CHECK_MENU_ITEM(get_gtk_builder_widget("menu_item_jack_latency_2048"));
   g_menu_item_jack_latency_4096 = GTK_CHECK_MENU_ITEM(get_gtk_builder_widget("menu_item_jack_latency_4096"));
   g_menu_item_jack_latency_8192 = GTK_CHECK_MENU_ITEM(get_gtk_builder_widget("menu_item_jack_latency_8192"));
+
+  g_sample_rate_label = gtk_label_new("srate");
+  gtk_widget_show(g_sample_rate_label);
+  gtk_box_pack_start(GTK_BOX(g_statusbar), g_sample_rate_label, FALSE, TRUE, 10);
+  gtk_box_reorder_child(GTK_BOX(g_statusbar), g_sample_rate_label, 0);
+
+  g_latency_label = gtk_label_new("latency");
+  gtk_widget_show(g_latency_label);
+  gtk_box_pack_start(GTK_BOX(g_statusbar), g_latency_label, FALSE, TRUE, 10);
+  gtk_box_reorder_child(GTK_BOX(g_statusbar), g_latency_label, 1);
 
   buffer_size_clear();
 
