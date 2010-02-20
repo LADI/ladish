@@ -53,7 +53,6 @@
 GtkWidget * g_main_win;
 
 GtkWidget * g_clear_load_button;
-GtkWidget * g_xrun_progress_bar;
 GtkStatusbar * g_statusbar;
 
 GtkWidget * g_menu_item_new_studio;
@@ -82,7 +81,6 @@ GtkWidget * g_menu_item_view_toolbar;
 GtkWidget * g_toolbar;
 GtkWidget * g_menu_item_start_app;
 GtkWidget * g_status_image;
-GtkWidget * g_status_tool_item;
 
 GtkWidget * g_name_dialog;
 GtkWidget * g_app_dialog;
@@ -91,6 +89,8 @@ GtkWidget * g_sample_rate_label;
 uint32_t g_sample_rate;
 
 GtkWidget * g_latency_label;
+GtkWidget * g_dsp_load_label;
+GtkWidget * g_xruns_label;
 
 graph_view_handle g_jack_view = NULL;
 graph_view_handle g_studio_view = NULL;
@@ -225,7 +225,7 @@ static void buffer_size_set(uint32_t size, bool force)
 
     {
       char buf[100];
-      snprintf(buf, sizeof(buf), "Latency: %4.1f ms (%"PRIu32")", (float)size / (float)g_sample_rate * 1000.0f, size);
+      snprintf(buf, sizeof(buf), "%4.1f ms (%"PRIu32")", (float)size / (float)g_sample_rate * 1000.0f, size);
       gtk_label_set_text(GTK_LABEL(g_latency_label), buf);
     }
   }
@@ -275,21 +275,29 @@ static void update_load(void)
   double load;
   char tmp_buf[100];
 
-  if (!jack_proxy_get_xruns(&xruns) || !jack_proxy_get_dsp_load(&load))
+  if (jack_proxy_get_xruns(&xruns))
   {
-    gtk_progress_bar_set_text(GTK_PROGRESS_BAR(g_xrun_progress_bar), "error");
-    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_xrun_progress_bar), 0.0);
+    snprintf(tmp_buf, sizeof(tmp_buf), "%" PRIu32 " dropouts", xruns);
+    gtk_label_set_text(GTK_LABEL(g_xruns_label), tmp_buf);
+  }
+  else
+  {
+    gtk_label_set_text(GTK_LABEL(g_xruns_label), "?");
   }
 
-  snprintf(tmp_buf, sizeof(tmp_buf), "%" PRIu32 " Dropouts", xruns);
-  gtk_progress_bar_set_text(GTK_PROGRESS_BAR(g_xrun_progress_bar), tmp_buf);
-
-  load /= 100.0;           // dbus returns it in percents, we use 0..1
-
-  if (load > g_jack_max_dsp_load)
+  if (jack_proxy_get_dsp_load(&load))
   {
-    g_jack_max_dsp_load = load;
-    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_xrun_progress_bar), load);
+    if (load > g_jack_max_dsp_load)
+    {
+      g_jack_max_dsp_load = load;
+    }
+
+    snprintf(tmp_buf, sizeof(tmp_buf), "DSP: %5.1f%% (%5.1f%%)", (float)load, (float)g_jack_max_dsp_load);
+    gtk_label_set_text(GTK_LABEL(g_dsp_load_label), tmp_buf);
+  }
+  else
+  {
+    gtk_label_set_text(GTK_LABEL(g_xruns_label), "?");
   }
 }
 
@@ -297,7 +305,6 @@ static void clear_load(void)
 {
   jack_proxy_reset_xruns();
   g_jack_max_dsp_load = 0.0;
-  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_xrun_progress_bar), 0.0);
 }
 
 bool name_dialog(const char * title, const char * object, const char * old_name, char ** new_name)
@@ -745,30 +752,41 @@ bool studio_state_changed(char ** name_ptr_ptr)
     stock_id = GTK_STOCK_DIALOG_WARNING;
   }
 
-  gtk_progress_bar_set_text(GTK_PROGRESS_BAR(g_xrun_progress_bar), status);
+  //gtk_progress_bar_set_text(GTK_PROGRESS_BAR(g_xrun_progress_bar), status);
   gtk_label_set_text(GTK_LABEL(g_studio_status_label), name);
 
+  log_error("status icon stock id: %s", stock_id);
   gtk_image_set_from_stock(GTK_IMAGE(g_status_image), stock_id, GTK_ICON_SIZE_SMALL_TOOLBAR);
-  gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(g_status_tool_item), tooltip);
+  //gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(g_status_tool_item), tooltip);
 
-  if (g_jack_state == JACK_STATE_STARTED && jack_proxy_sample_rate(&g_sample_rate))
+  if (g_jack_state == JACK_STATE_STARTED)
   {
-    char buf[100];
-
-    if (fmod(g_sample_rate, 1000.0) != 0.0)
+    if (jack_proxy_sample_rate(&g_sample_rate))
     {
-      snprintf(buf, sizeof(buf), "Sample rate: %.1f kHz", (float)g_sample_rate / 1000.0f);
+      char buf[100];
+
+      if (fmod(g_sample_rate, 1000.0) != 0.0)
+      {
+        snprintf(buf, sizeof(buf), "%.1f kHz", (float)g_sample_rate / 1000.0f);
+      }
+      else
+      {
+        snprintf(buf, sizeof(buf), "%u kHz", g_sample_rate / 1000);
+      }
+
+      gtk_label_set_text(GTK_LABEL(g_sample_rate_label), buf);
     }
     else
     {
-      snprintf(buf, sizeof(buf), "Sample rate: %u kHz", g_sample_rate / 1000);
+      gtk_label_set_text(GTK_LABEL(g_sample_rate_label), "");
     }
-
-    gtk_label_set_text(GTK_LABEL(g_sample_rate_label), buf);
   }
   else
   {
-    gtk_label_set_text(GTK_LABEL(g_sample_rate_label), "");
+    gtk_label_set_text(GTK_LABEL(g_sample_rate_label), g_jack_state == JACK_STATE_NA ? "JACK is sick" : "JACK is stopped");
+    gtk_label_set_text(GTK_LABEL(g_latency_label), "");
+    gtk_label_set_text(GTK_LABEL(g_dsp_load_label), "");
+    gtk_label_set_text(GTK_LABEL(g_xruns_label), "");
   }
 
   if (buffer == NULL)
@@ -936,7 +954,6 @@ void jack_stopped(void)
   set_latency_items_sensivity(false);
   buffer_size_clear();
   gtk_widget_set_sensitive(g_clear_load_button, false);
-  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_xrun_progress_bar), 0.0);
 }
 
 void jack_appeared(void)
@@ -1145,7 +1162,6 @@ int main(int argc, char** argv)
 
   g_main_win = get_gtk_builder_widget("main_win");
   g_clear_load_button = get_gtk_builder_widget("clear_load_button");
-  g_xrun_progress_bar = get_gtk_builder_widget("xrun_progress_bar");
   g_menu_item_new_studio = get_gtk_builder_widget("menu_item_new_studio");
   g_menu_item_start_app = get_gtk_builder_widget("menu_item_start_app");
   g_menu_item_start_studio = get_gtk_builder_widget("menu_item_start_studio");
@@ -1159,11 +1175,8 @@ int main(int argc, char** argv)
   g_menu_item_load_project = get_gtk_builder_widget("menu_item_load_project");
   g_menu_item_daemon_exit = get_gtk_builder_widget("menu_item_daemon_exit");
   g_menu_item_jack_configure = get_gtk_builder_widget("menu_item_jack_configure");
-  g_studio_status_label = get_gtk_builder_widget("studio_status_label");
   g_menu_item_view_toolbar = get_gtk_builder_widget("menu_item_view_toolbar");
   g_toolbar = get_gtk_builder_widget("toolbar");
-  g_status_image = get_gtk_builder_widget("startstop");
-  g_status_tool_item = get_gtk_builder_widget("startstop_item");
   g_statusbar = GTK_STATUSBAR(get_gtk_builder_widget("statusbar"));
 
   g_name_dialog = get_gtk_builder_widget("name_dialog");
@@ -1182,15 +1195,35 @@ int main(int argc, char** argv)
   g_menu_item_jack_latency_4096 = GTK_CHECK_MENU_ITEM(get_gtk_builder_widget("menu_item_jack_latency_4096"));
   g_menu_item_jack_latency_8192 = GTK_CHECK_MENU_ITEM(get_gtk_builder_widget("menu_item_jack_latency_8192"));
 
+  g_studio_status_label = gtk_label_new("studioname");
+  gtk_widget_show(g_studio_status_label);
+  gtk_box_pack_start(GTK_BOX(g_statusbar), g_studio_status_label, FALSE, TRUE, 10);
+  gtk_box_reorder_child(GTK_BOX(g_statusbar), g_studio_status_label, 0);
+
+  g_status_image = gtk_image_new();
+  gtk_widget_show(g_status_image);
+  gtk_box_pack_start(GTK_BOX(g_statusbar), g_status_image, FALSE, TRUE, 10);
+  gtk_box_reorder_child(GTK_BOX(g_statusbar), g_status_image, 1);
+
   g_sample_rate_label = gtk_label_new("srate");
   gtk_widget_show(g_sample_rate_label);
   gtk_box_pack_start(GTK_BOX(g_statusbar), g_sample_rate_label, FALSE, TRUE, 10);
-  gtk_box_reorder_child(GTK_BOX(g_statusbar), g_sample_rate_label, 0);
+  gtk_box_reorder_child(GTK_BOX(g_statusbar), g_sample_rate_label, 2);
 
   g_latency_label = gtk_label_new("latency");
   gtk_widget_show(g_latency_label);
   gtk_box_pack_start(GTK_BOX(g_statusbar), g_latency_label, FALSE, TRUE, 10);
-  gtk_box_reorder_child(GTK_BOX(g_statusbar), g_latency_label, 1);
+  gtk_box_reorder_child(GTK_BOX(g_statusbar), g_latency_label, 3);
+
+  g_xruns_label = gtk_label_new("xruns");
+  gtk_widget_show(g_xruns_label);
+  gtk_box_pack_start(GTK_BOX(g_statusbar), g_xruns_label, FALSE, TRUE, 10);
+  gtk_box_reorder_child(GTK_BOX(g_statusbar), g_xruns_label, 4);
+
+  g_dsp_load_label = gtk_label_new("load");
+  gtk_widget_show(g_dsp_load_label);
+  gtk_box_pack_start(GTK_BOX(g_statusbar), g_dsp_load_label, FALSE, TRUE, 10);
+  gtk_box_reorder_child(GTK_BOX(g_statusbar), g_dsp_load_label, 5);
 
   buffer_size_clear();
 
