@@ -245,6 +245,14 @@
                     <property name="visible">True</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                     <child>
+                      <object class="GtkImageMenuItem" id="menu_item_jack_clear">
+                        <property name="visible">True</property>
+                        <property name="related_action">clear_xruns_and_max_dsp_load_action</property>
+                        <property name="use_action_appearance">True</property>
+                        <property name="use_stock">True</property>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkImageMenuItem" id="menu_item_jack_configure">
                         <property name="label">_Configure JACK</property>
                         <property name="visible">True</property>
@@ -386,9 +394,9 @@
             <child>
               <object class="GtkToolButton" id="clear_load_button">
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
+                <property name="related_action">clear_xruns_and_max_dsp_load_action</property>
+                <property name="use_action_appearance">True</property>
                 <property name="label" translatable="yes">Clear XRuns</property>
-                <property name="stock_id">gtk-clear</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1141,5 +1149,11 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
       <action-widget response="1">button1</action-widget>
       <action-widget response="2">button2</action-widget>
     </action-widgets>
+  </object>
+  <object class="GtkAction" id="clear_xruns_and_max_dsp_load_action">
+    <property name="label">Clear XRuns and Max DSP Load</property>
+    <property name="short_label">Clear</property>
+    <property name="stock_id">gtk-clear</property>
+    <property name="is_important">True</property>
   </object>
 </interface>

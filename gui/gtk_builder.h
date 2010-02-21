@@ -30,5 +30,6 @@
 bool init_gtk_builder(void);
 void uninit_gtk_builder(void);
 GtkWidget * get_gtk_builder_widget(const char * name);
+GObject * get_gtk_builder_object(const char * name);
 
 #endif /* #ifndef GTK_BUILDER_H__E2BF7CFC_1B04_4160_9165_A1B433C6B3C2__INCLUDED */

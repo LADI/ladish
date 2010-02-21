@@ -52,7 +52,7 @@
 
 GtkWidget * g_main_win;
 
-GtkWidget * g_clear_load_button;
+GtkAction * g_clear_load_and_max_dsp_action;
 GtkStatusbar * g_statusbar;
 
 GtkWidget * g_menu_item_new_studio;
@@ -345,7 +345,7 @@ static void update_load(void)
   }
 }
 
-static void clear_load(void)
+static void clear_load_and_max_dsp(void)
 {
   jack_proxy_reset_xruns();
   g_jack_max_dsp_load = 0.0;
@@ -989,7 +989,7 @@ void jack_started(void)
 
   set_latency_items_sensivity(true);
   update_buffer_size(true);
-  gtk_widget_set_sensitive(g_clear_load_button, true);
+  gtk_action_set_sensitive(g_clear_load_and_max_dsp_action, true);
 
   g_jack_poll_source_tag = g_timeout_add(100, poll_jack, NULL);
 }
@@ -1008,7 +1008,7 @@ void jack_stopped(void)
 
   set_latency_items_sensivity(false);
   buffer_size_clear();
-  gtk_widget_set_sensitive(g_clear_load_button, false);
+  gtk_action_set_sensitive(g_clear_load_and_max_dsp_action, false);
 }
 
 void jack_appeared(void)
@@ -1209,7 +1209,7 @@ int main(int argc, char** argv)
   }
 
   g_main_win = get_gtk_builder_widget("main_win");
-  g_clear_load_button = get_gtk_builder_widget("clear_load_button");
+  g_clear_load_and_max_dsp_action = GTK_ACTION(get_gtk_builder_object("clear_xruns_and_max_dsp_load_action"));
   g_menu_item_new_studio = get_gtk_builder_widget("menu_item_new_studio");
   g_menu_item_start_app = get_gtk_builder_widget("menu_item_start_app");
   g_menu_item_start_studio = get_gtk_builder_widget("menu_item_start_studio");
@@ -1301,7 +1301,6 @@ int main(int argc, char** argv)
 
   g_signal_connect(G_OBJECT(g_main_win), "destroy", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(G_OBJECT(get_gtk_builder_widget("menu_item_quit")), "activate", G_CALLBACK(gtk_main_quit), NULL);
-  g_signal_connect(G_OBJECT(g_clear_load_button), "clicked", G_CALLBACK(clear_load), NULL);
   g_signal_connect(G_OBJECT(get_gtk_builder_widget("menu_item_view_arrange")), "activate", G_CALLBACK(arrange), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_view_toolbar), "activate", G_CALLBACK(toggle_toolbar), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_new_studio), "activate", G_CALLBACK(new_studio), NULL);
@@ -1325,6 +1324,8 @@ int main(int argc, char** argv)
   g_signal_connect(G_OBJECT(g_menu_item_jack_latency_2048), "toggled", G_CALLBACK(buffer_size_change_request), (gpointer)2048);
   g_signal_connect(G_OBJECT(g_menu_item_jack_latency_4096), "toggled", G_CALLBACK(buffer_size_change_request), (gpointer)4096);
   g_signal_connect(G_OBJECT(g_menu_item_jack_latency_8192), "toggled", G_CALLBACK(buffer_size_change_request), (gpointer)8192);
+
+  g_signal_connect(G_OBJECT(g_clear_load_and_max_dsp_action), "activate", G_CALLBACK(clear_load_and_max_dsp), NULL);
 
   gtk_widget_show(g_main_win);
 

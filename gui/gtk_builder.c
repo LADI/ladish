@@ -80,11 +80,11 @@ void uninit_gtk_builder(void)
   g_object_unref(g_builder);
 }
 
-GtkWidget * get_gtk_builder_widget(const char * name)
+GObject * get_gtk_builder_object(const char * name)
 {
-  GtkWidget * ptr;
+  GObject * ptr;
 
-  ptr = GTK_WIDGET(gtk_builder_get_object(g_builder, name));
+  ptr = gtk_builder_get_object(g_builder, name);
 
   if (ptr == NULL)
   {
@@ -93,4 +93,9 @@ GtkWidget * get_gtk_builder_widget(const char * name)
   }
 
   return ptr;
+}
+
+GtkWidget * get_gtk_builder_widget(const char * name)
+{
+  return GTK_WIDGET(get_gtk_builder_object(name));
 }
