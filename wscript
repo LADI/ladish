@@ -362,6 +362,11 @@ def build(bld):
     #for icon_size in icon_sizes:
     #    install_as(os.path.normpath(bld.env()['DATADIR'] + '/icons/hicolor/' + icon_size + '/apps/'), bld.env()['APP_INSTALL_NAME'] + '.png', 'icons/' + icon_size + '/patchage.png')
 
+    status_images = []
+    for status in ["down", "unloaded", "started", "stopped", "warning", "error"]:
+        status_images.append("art/status_" + status + ".png")
+
+    bld.install_files(bld.env['DATA_DIR'], status_images)
     bld.install_files(bld.env['DATA_DIR'], "art/ladish-logo-128x128.png")
     bld.install_files(bld.env['DATA_DIR'], ["COPYING", "AUTHORS", "README", "NEWS"])
 

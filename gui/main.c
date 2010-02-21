@@ -115,6 +115,14 @@ static unsigned int g_studio_state = STUDIO_STATE_UNKNOWN;
 
 static unsigned int g_jack_state = JACK_STATE_NA;
 
+#define ABOUT_DIALOG_LOGO     "ladish-logo-128x128.png"
+#define STATUS_ICON_DOWN      "status_down.png"         /* temporary down during service restart */
+#define STATUS_ICON_UNLOADED  "status_unloaded.png"
+#define STATUS_ICON_STARTED   "status_started.png"
+#define STATUS_ICON_STOPPED   "status_stopped.png"
+#define STATUS_ICON_WARNING   "status_warning.png"      /* xruns */
+#define STATUS_ICON_ERROR     "status_error.png"        /* bad error */
+
 struct studio_list
 {
   int count;
@@ -155,6 +163,42 @@ gtkmm_set_width_for_given_text (Gtk::Widget &w, const gchar *text,
 }
 
 #endif
+
+static GdkPixbuf * load_pixbuf_internal(const char * directory, const char * filename)
+{
+  char * fullpath;
+  GdkPixbuf * pixbuf;
+
+  fullpath = catdup(directory, filename);
+  if (fullpath == NULL)
+  {
+    return NULL;
+  }
+
+  pixbuf = gdk_pixbuf_new_from_file(fullpath, NULL);
+
+  free(fullpath);
+
+  return pixbuf;
+}
+
+static GdkPixbuf * load_pixbuf(const char * filename)
+{
+  GdkPixbuf * pixbuf;
+  static const char * pixbuf_dirs[] = {"./art/", DATA_DIR "/", NULL};
+  const char ** dir;
+
+  for (dir = pixbuf_dirs; *dir != NULL; dir++)
+  {
+    pixbuf = load_pixbuf_internal(*dir, filename);
+    if (pixbuf != NULL)
+    {
+      return pixbuf;
+    }
+  }
+
+  return NULL;
+}
 
 void set_latency_items_sensivity(bool sensitive)
 {
@@ -667,8 +711,9 @@ bool studio_state_changed(char ** name_ptr_ptr)
   const char * status;
   const char * name;
   char * buffer;
-  const gchar * stock_id;
+  const char * status_image_path;
   const char * tooltip;
+  GdkPixbuf * pixbuf;
 
   gtk_widget_set_sensitive(g_menu_item_start_studio, g_studio_state == STUDIO_STATE_STOPPED);
   gtk_widget_set_sensitive(g_menu_item_stop_studio, g_studio_state == STUDIO_STATE_STARTED);
@@ -681,14 +726,14 @@ bool studio_state_changed(char ** name_ptr_ptr)
   //gtk_widget_set_sensitive(g_menu_item_destroy_room, g_studio_loaded);
   //gtk_widget_set_sensitive(g_menu_item_load_project, g_studio_loaded);
 
-  stock_id = NULL;
   tooltip = NULL;
+  status_image_path = NULL;
 
   switch (g_jack_state)
   {
   case JACK_STATE_NA:
     tooltip = status = "JACK is sick";
-    stock_id = GTK_STOCK_DIALOG_WARNING;
+    status_image_path = STATUS_ICON_ERROR;
     break;
   case JACK_STATE_STOPPED:
     status = "Stopped";
@@ -699,7 +744,7 @@ bool studio_state_changed(char ** name_ptr_ptr)
   default:
     status = "???";
     tooltip = "Internal error - unknown jack state";
-    stock_id = GTK_STOCK_DIALOG_WARNING;
+    status_image_path = STATUS_ICON_ERROR;
   }
 
   buffer = NULL;
@@ -708,19 +753,21 @@ bool studio_state_changed(char ** name_ptr_ptr)
   {
   case STUDIO_STATE_NA:
     name = "ladishd is down";
+    status_image_path = STATUS_ICON_DOWN;
     break;
   case STUDIO_STATE_SICK:
   case STUDIO_STATE_UNKNOWN:
     tooltip = name = "ladishd is sick";
-    stock_id = GTK_STOCK_DIALOG_WARNING;
+    status_image_path = STATUS_ICON_ERROR;
     break;
   case STUDIO_STATE_UNLOADED:
     name = "No studio loaded";
+    status_image_path = STATUS_ICON_UNLOADED;
     break;
   case STUDIO_STATE_CRASHED:
     status = "Crashed";
     tooltip = "Crashed studio, save your work if you can and unload the studio";
-    stock_id = GTK_STOCK_DIALOG_WARNING;
+    status_image_path = STATUS_ICON_ERROR;
     /* fall through */
   case STUDIO_STATE_STOPPED:
   case STUDIO_STATE_STARTED:
@@ -728,7 +775,7 @@ bool studio_state_changed(char ** name_ptr_ptr)
     {
       tooltip = "failed to get studio name";
       log_error("%s", tooltip);
-      stock_id = GTK_STOCK_DIALOG_WARNING;
+      status_image_path = STATUS_ICON_ERROR;
     }
     else
     {
@@ -736,11 +783,11 @@ bool studio_state_changed(char ** name_ptr_ptr)
       switch (g_studio_state)
       {
       case STUDIO_STATE_STARTED:
-        stock_id = GTK_STOCK_YES;
+        status_image_path = STATUS_ICON_STARTED;
         tooltip = "Studio is started";
         break;
       case STUDIO_STATE_STOPPED:
-        stock_id = GTK_STOCK_NO;
+        status_image_path = STATUS_ICON_STOPPED;
         tooltip = "Studio is stopped";
         break;
       }
@@ -749,14 +796,22 @@ bool studio_state_changed(char ** name_ptr_ptr)
   default:
     name = "???";
     tooltip = "Internal error - unknown studio state";
-    stock_id = GTK_STOCK_DIALOG_WARNING;
+    status_image_path = STATUS_ICON_ERROR;
   }
 
   //gtk_progress_bar_set_text(GTK_PROGRESS_BAR(g_xrun_progress_bar), status);
   gtk_label_set_text(GTK_LABEL(g_studio_status_label), name);
 
-  log_error("status icon stock id: %s", stock_id);
-  gtk_image_set_from_stock(GTK_IMAGE(g_status_image), stock_id, GTK_ICON_SIZE_SMALL_TOOLBAR);
+  if (status_image_path == NULL || (pixbuf = load_pixbuf(status_image_path)) == NULL)
+  {
+    gtk_image_set_from_stock(GTK_IMAGE(g_status_image), GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_SMALL_TOOLBAR);
+  }
+  else
+  {
+    gtk_image_set_from_pixbuf(GTK_IMAGE(g_status_image), pixbuf);
+    g_object_unref(pixbuf);
+  }
+
   //gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(g_status_tool_item), tooltip);
 
   if (g_jack_state == JACK_STATE_STARTED)
@@ -1075,8 +1130,6 @@ static char * read_file_contents(const char * filename)
   return buffer;
 }
 
-#define ABOUT_DIALOG_LOGO "ladish-logo-128x128.png"
-
 static void show_about(void)
 {
   GtkWidget * dialog;
@@ -1085,12 +1138,7 @@ static void show_about(void)
   const char * artists[] = {"Lapo Calamandrei", NULL};
   char * license;
 
-  pixbuf = gdk_pixbuf_new_from_file("./art/" ABOUT_DIALOG_LOGO, NULL);
-  if (pixbuf == NULL)
-  {
-    pixbuf = gdk_pixbuf_new_from_file(DATA_DIR "/" ABOUT_DIALOG_LOGO, NULL);
-  }
-
+  pixbuf =  load_pixbuf(ABOUT_DIALOG_LOGO);
   license = read_file_contents(DATA_DIR "/COPYING");
 
   dialog = get_gtk_builder_widget("about_win");
