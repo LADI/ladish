@@ -249,6 +249,7 @@
                         <property name="visible">True</property>
                         <property name="related_action">clear_xruns_and_max_dsp_load_action</property>
                         <property name="use_action_appearance">True</property>
+                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
                     </child>
@@ -438,15 +439,33 @@
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
             <property name="position">204</property>
             <child>
-              <object class="GtkViewport" id="world_tree_viewport">
+              <object class="GtkVBox" id="left_pane_vbox">
                 <property name="visible">True</property>
-                <property name="resize_mode">queue</property>
+                <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkTreeView" id="world_tree">
+                  <object class="GtkViewport" id="world_tree_viewport">
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                    <property name="resize_mode">queue</property>
+                    <child>
+                      <object class="GtkTreeView" id="world_tree">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                      </object>
+                    </child>
                   </object>
+                  <packing>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkProgressBar" id="xrun_progress_bar">
+                    <property name="visible">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="position">1</property>
+                  </packing>
                 </child>
               </object>
               <packing>

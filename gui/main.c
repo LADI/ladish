@@ -92,6 +92,8 @@ GtkWidget * g_latency_label;
 GtkWidget * g_dsp_load_label;
 GtkWidget * g_xruns_label;
 
+GtkWidget * g_xrun_progress_bar;
+
 graph_view_handle g_jack_view = NULL;
 graph_view_handle g_studio_view = NULL;
 
@@ -323,9 +325,12 @@ static void update_load(void)
   {
     snprintf(tmp_buf, sizeof(tmp_buf), "%" PRIu32 " dropouts", xruns);
     gtk_label_set_text(GTK_LABEL(g_xruns_label), tmp_buf);
+    gtk_progress_bar_set_text(GTK_PROGRESS_BAR(g_xrun_progress_bar), tmp_buf);
   }
   else
   {
+    gtk_progress_bar_set_text(GTK_PROGRESS_BAR(g_xrun_progress_bar), "error");
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_xrun_progress_bar), 0.0);
     gtk_label_set_text(GTK_LABEL(g_xruns_label), "?");
   }
 
@@ -334,6 +339,7 @@ static void update_load(void)
     if (load > g_jack_max_dsp_load)
     {
       g_jack_max_dsp_load = load;
+      gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_xrun_progress_bar), load / 100.0);
     }
 
     snprintf(tmp_buf, sizeof(tmp_buf), "DSP: %5.1f%% (%5.1f%%)", (float)load, (float)g_jack_max_dsp_load);
@@ -799,7 +805,7 @@ bool studio_state_changed(char ** name_ptr_ptr)
     status_image_path = STATUS_ICON_ERROR;
   }
 
-  //gtk_progress_bar_set_text(GTK_PROGRESS_BAR(g_xrun_progress_bar), status);
+  gtk_progress_bar_set_text(GTK_PROGRESS_BAR(g_xrun_progress_bar), status);
   gtk_label_set_text(GTK_LABEL(g_studio_status_label), name);
 
   if (status_image_path == NULL || (pixbuf = load_pixbuf(status_image_path)) == NULL)
@@ -838,7 +844,7 @@ bool studio_state_changed(char ** name_ptr_ptr)
   }
   else
   {
-    gtk_label_set_text(GTK_LABEL(g_sample_rate_label), g_jack_state == JACK_STATE_NA ? "JACK is sick" : "JACK is stopped");
+    gtk_label_set_text(GTK_LABEL(g_sample_rate_label), "");
     gtk_label_set_text(GTK_LABEL(g_latency_label), "");
     gtk_label_set_text(GTK_LABEL(g_dsp_load_label), "");
     gtk_label_set_text(GTK_LABEL(g_xruns_label), "");
@@ -1009,6 +1015,7 @@ void jack_stopped(void)
   set_latency_items_sensivity(false);
   buffer_size_clear();
   gtk_action_set_sensitive(g_clear_load_and_max_dsp_action, false);
+  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_xrun_progress_bar), 0.0);
 }
 
 void jack_appeared(void)
@@ -1226,6 +1233,7 @@ int main(int argc, char** argv)
   g_menu_item_view_toolbar = get_gtk_builder_widget("menu_item_view_toolbar");
   g_toolbar = get_gtk_builder_widget("toolbar");
   g_statusbar = GTK_STATUSBAR(get_gtk_builder_widget("statusbar"));
+  g_xrun_progress_bar = get_gtk_builder_widget("xrun_progress_bar");
 
   g_name_dialog = get_gtk_builder_widget("name_dialog");
   g_app_dialog = get_gtk_builder_widget("app_dialog");
