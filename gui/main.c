@@ -52,7 +52,7 @@
 
 GtkWidget * g_main_win;
 
-GtkAction * g_clear_load_and_max_dsp_action;
+GtkAction * g_clear_xruns_and_max_dsp_action;
 GtkStatusbar * g_statusbar;
 
 GtkWidget * g_menu_item_new_studio;
@@ -351,8 +351,9 @@ static void update_load(void)
   }
 }
 
-static void clear_load_and_max_dsp(void)
+static void clear_xruns_and_max_dsp(void)
 {
+  log_info("clearing xruns and max dsp load");
   jack_proxy_reset_xruns();
   g_jack_max_dsp_load = 0.0;
 }
@@ -995,7 +996,7 @@ void jack_started(void)
 
   set_latency_items_sensivity(true);
   update_buffer_size(true);
-  gtk_action_set_sensitive(g_clear_load_and_max_dsp_action, true);
+  gtk_action_set_sensitive(g_clear_xruns_and_max_dsp_action, true);
 
   g_jack_poll_source_tag = g_timeout_add(100, poll_jack, NULL);
 }
@@ -1014,7 +1015,7 @@ void jack_stopped(void)
 
   set_latency_items_sensivity(false);
   buffer_size_clear();
-  gtk_action_set_sensitive(g_clear_load_and_max_dsp_action, false);
+  gtk_action_set_sensitive(g_clear_xruns_and_max_dsp_action, false);
   gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_xrun_progress_bar), 0.0);
 }
 
@@ -1216,7 +1217,7 @@ int main(int argc, char** argv)
   }
 
   g_main_win = get_gtk_builder_widget("main_win");
-  g_clear_load_and_max_dsp_action = GTK_ACTION(get_gtk_builder_object("clear_xruns_and_max_dsp_load_action"));
+  g_clear_xruns_and_max_dsp_action = GTK_ACTION(get_gtk_builder_object("clear_xruns_and_max_dsp_load_action"));
   g_menu_item_new_studio = get_gtk_builder_widget("menu_item_new_studio");
   g_menu_item_start_app = get_gtk_builder_widget("menu_item_start_app");
   g_menu_item_start_studio = get_gtk_builder_widget("menu_item_start_studio");
@@ -1333,7 +1334,7 @@ int main(int argc, char** argv)
   g_signal_connect(G_OBJECT(g_menu_item_jack_latency_4096), "toggled", G_CALLBACK(buffer_size_change_request), (gpointer)4096);
   g_signal_connect(G_OBJECT(g_menu_item_jack_latency_8192), "toggled", G_CALLBACK(buffer_size_change_request), (gpointer)8192);
 
-  g_signal_connect(G_OBJECT(g_clear_load_and_max_dsp_action), "activate", G_CALLBACK(clear_load_and_max_dsp), NULL);
+  g_signal_connect(G_OBJECT(g_clear_xruns_and_max_dsp_action), "activate", G_CALLBACK(clear_xruns_and_max_dsp), NULL);
 
   gtk_widget_show(g_main_win);
 
