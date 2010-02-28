@@ -547,8 +547,21 @@ void world_tree_name_changed(graph_view_handle view)
 static char * get_app_name_string(const char * app_name, bool running, bool terminal, uint8_t level)
 {
   char * app_name_with_status;
+  const char * level_string;
 
-  app_name_with_status = catdup(running ? "" : "(inactive) ", app_name);
+  switch (level)
+  {
+  case 0:
+    level_string = "[L0]";
+    break;
+  case 1:
+    level_string = "[L1]";
+    break;
+  default:
+    level_string = "[L?]";
+  }
+
+  app_name_with_status = catdup3(level_string, running ? " " : " (inactive) ", app_name);
   if (app_name_with_status == NULL)
   {
     log_error("catdup failed for app name");
