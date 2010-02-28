@@ -1201,6 +1201,34 @@ void dbus_uninit(void)
   }
 }
 
+void setup_accelerators(void)
+{
+  static GtkActionGroup * action_group_ptr;
+  static GtkAccelGroup * accel_group_ptr;
+  struct
+  {
+    GtkAction * action_ptr;
+    const char * shortcut;
+  } * descriptor_ptr, descriptors [] =
+      {
+        {g_clear_xruns_and_max_dsp_action, "c"},
+        {NULL, NULL}
+      };
+
+  action_group_ptr = gtk_action_group_new("main");
+  accel_group_ptr = gtk_accel_group_new();
+
+  for (descriptor_ptr = descriptors; descriptor_ptr->action_ptr != NULL; descriptor_ptr++)
+  {
+    //log_info("action '%s' -> shortcut \"%s\"", gtk_action_get_name(descriptor_ptr->action_ptr), descriptor_ptr->shortcut);
+    gtk_action_group_add_action_with_accel(action_group_ptr, descriptor_ptr->action_ptr, descriptor_ptr->shortcut);
+    gtk_action_set_accel_group(descriptor_ptr->action_ptr, accel_group_ptr);
+    gtk_action_connect_accelerator(descriptor_ptr->action_ptr);
+  }
+
+  gtk_window_add_accel_group(GTK_WINDOW(g_main_win), accel_group_ptr);
+}
+
 int main(int argc, char** argv)
 {
   gtk_init(&argc, &argv);
@@ -1286,6 +1314,8 @@ int main(int argc, char** argv)
 
   world_tree_init();
   view_init();
+
+  setup_accelerators();
 
   dbus_init();
 
