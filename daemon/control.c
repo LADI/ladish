@@ -48,7 +48,7 @@ bool create_builtin_rooms(void)
 {
   ladish_room_handle room;
 
-  if (!ladish_room_create(empty_room, "Empty", &room))
+  if (!ladish_room_create(empty_room, "Empty", NULL, &room))
   {
     log_error("ladish_room_create() failed.");
     return false;
@@ -56,7 +56,7 @@ bool create_builtin_rooms(void)
 
   list_add_tail(ladish_room_get_list_node(room), &g_rooms);
 
-  if (!ladish_room_create(basic_room, "Basic", &room))
+  if (!ladish_room_create(basic_room, "Basic", NULL, &room))
   {
     log_error("ladish_room_create() failed.");
     return false;
@@ -121,6 +121,46 @@ bool rooms_enum(void * context, bool (* callback)(void * context, ladish_room_ha
   }
 
   return true;
+}
+
+ladish_room_handle find_room_template_by_name(const char * name)
+{
+  ladish_room_handle room;
+  struct list_head * node_ptr;
+
+  maybe_create_rooms();
+
+  list_for_each(node_ptr, &g_rooms)
+  {
+    room = ladish_room_from_list_node(node_ptr);
+    if (strcmp(ladish_room_get_name(room), name) == 0)
+    {
+      return room;
+    }
+  }
+
+  return NULL;
+}
+
+ladish_room_handle find_room_template_by_uuid(const uuid_t uuid_ptr)
+{
+  ladish_room_handle room;
+  struct list_head * node_ptr;
+  uuid_t uuid;
+
+  maybe_create_rooms();
+
+  list_for_each(node_ptr, &g_rooms)
+  {
+    room = ladish_room_from_list_node(node_ptr);
+    ladish_room_get_uuid(room, uuid);
+    if (uuid_compare(uuid, uuid_ptr) == 0)
+    {
+      return room;
+    }
+  }
+
+  return NULL;
 }
 
 static void ladish_is_studio_loaded(struct dbus_method_call * call_ptr)

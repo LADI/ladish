@@ -28,6 +28,8 @@
 #ifndef __LASHD_DBUS_IFACE_CONTROL_H__
 #define __LASHD_DBUS_IFACE_CONTROL_H__
 
+#include "room.h"
+
 extern const struct dbus_interface_descriptor g_lashd_interface_control;
 
 void emit_studio_appeared(void);
@@ -36,5 +38,7 @@ void emit_clean_exit(void);
 
 bool rooms_init(void);
 void rooms_uninit(void);
+ladish_room_handle find_room_template_by_name(const char * name);
+ladish_room_handle find_room_template_by_uuid(const uuid_t uuid_ptr);
 
 #endif /* __LASHD_DBUS_IFACE_CONTROL_H__ */

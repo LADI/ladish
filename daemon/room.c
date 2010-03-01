@@ -31,12 +31,14 @@ struct ladish_room
   struct list_head siblings;
   uuid_t uuid;
   char * name;
+  uuid_t template_uuid;
 };
 
 bool
 ladish_room_create(
   const uuid_t uuid_ptr,
   const char * name,
+  ladish_room_handle template,
   ladish_room_handle * room_handle_ptr)
 {
   struct ladish_room * room_ptr;
@@ -50,11 +52,27 @@ ladish_room_create(
 
   if (uuid_ptr == NULL)
   {
-    uuid_generate(room_ptr->uuid);
+    if (template == NULL)
+    {
+      uuid_generate(room_ptr->uuid);
+    }
+    else
+    {
+      ladish_room_get_uuid(template, room_ptr->uuid);
+    }
   }
   else
   {
     uuid_copy(room_ptr->uuid, uuid_ptr);
+  }
+
+  if (template != NULL)
+  {
+    ladish_room_get_uuid(template, room_ptr->template_uuid);
+  }
+  else
+  {
+    uuid_clear(room_ptr->template_uuid);
   }
 
   room_ptr->name = strdup(name);
@@ -87,6 +105,22 @@ struct list_head * ladish_room_get_list_node(ladish_room_handle room_handle)
 const char * ladish_room_get_name(ladish_room_handle room_handle)
 {
   return room_ptr->name;
+}
+
+bool ladish_room_get_template_uuid(ladish_room_handle room_handle, uuid_t uuid_ptr)
+{
+  if (uuid_is_null(room_ptr->template_uuid))
+  {
+    return false;
+  }
+
+  uuid_copy(uuid_ptr, room_ptr->template_uuid);
+  return true;
+}
+
+void ladish_room_get_uuid(ladish_room_handle room_handle, uuid_t uuid_ptr)
+{
+  uuid_copy(uuid_ptr, room_ptr->uuid);
 }
 
 #undef room_ptr

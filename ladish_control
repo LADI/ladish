@@ -113,6 +113,9 @@ def main():
         print("    rlist                - list rooms")
         print("    rdel <roomname>      - delete room")
         print("    rnew <roomname>      - new room")
+        print("    snewroom <name> <tname> - new studio room")
+        print("    srlist               - list studio rooms")
+        print("    sdelroom <name>      - delete studio room")
         sys.exit(0)
     
     bus = dbus.SessionBus()
@@ -202,7 +205,7 @@ def main():
             elif arg == 'rdel':
                 print("--- room delete")
                 if index >= len(sys.argv):
-                    print("delete room command requires studio name argument")
+                    print("delete room command requires room name argument")
                     sys.exit()
 
                 arg = sys.argv[index]
@@ -241,6 +244,42 @@ def main():
                 elif arg == 'sstop':
                     print("--- studio stop")
                     studio_iface.Stop()
+                elif arg == 'snewroom':
+                    print("--- new studio room")
+                    if index + 1 >= len(sys.argv):
+                        print("creation of studio room requires room name and room template name arguments")
+                        sys.exit()
+
+                    room_name = sys.argv[index]
+                    index += 1
+                    room_template_name = sys.argv[index]
+                    index += 1
+
+                    studio_iface.NewRoom(room_name, room_template_name)
+                elif arg == 'srlist':
+                    print("--- studio room list")
+                    for room in studio_iface.GetRoomList():
+                        #print repr(room)
+                        name = room[0]
+                        if room[1].has_key("template"):
+                            template = str(room[1]["template"])
+                        else:
+                            template = None
+
+                        if template:
+                            print('"%s" from template "%s"' % (name, template))
+                        else:
+                            print('"%s"' % name)
+                elif arg == 'sdelroom':
+                    print("--- studio room delete")
+                    if index >= len(sys.argv):
+                        print("delete studio room command requires room name argument")
+                        sys.exit()
+
+                    arg = sys.argv[index]
+                    index += 1
+
+                    studio_iface.DeleteRoom(arg)
                 else:
                     print("Unknown command '%s'" % arg)
         except dbus.DBusException, e:

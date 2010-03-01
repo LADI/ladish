@@ -695,6 +695,145 @@ static void ladish_studio_is_started(struct dbus_method_call * call_ptr)
   method_return_new_single(call_ptr, DBUS_TYPE_BOOLEAN, &started);
 }
 
+static void ladish_studio_new_room(struct dbus_method_call * call_ptr)
+{
+  const char * room_name;
+  const char * template_name;
+  ladish_room_handle room;
+
+  dbus_error_init(&g_dbus_error);
+
+  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_STRING, &room_name, DBUS_TYPE_STRING, &template_name, DBUS_TYPE_INVALID))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return;
+  }
+
+  log_info("Request to create new studio room \"%s\" from template \"%s\".", room_name, template_name);
+
+  room = find_room_template_by_name(template_name);
+  if (room == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Unknown room template \"%s\"",  template_name);
+    return;
+  }
+
+  if (!ladish_room_create(NULL, room_name, room, &room))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_room_create() failed.");
+    return;
+  }
+
+  list_add_tail(ladish_room_get_list_node(room), &g_studio.rooms);
+
+  //dbus_signal_emit(g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "RoomAppeared", "");
+
+  method_return_new_void(call_ptr);
+}
+
+static void ladish_studio_get_room_list(struct dbus_method_call * call_ptr)
+{
+  DBusMessageIter iter, array_iter;
+  DBusMessageIter struct_iter;
+  DBusMessageIter dict_iter;
+  struct list_head * node_ptr;
+  ladish_room_handle room;
+  const char * name;
+  uuid_t template_uuid;
+  ladish_room_handle template;
+  const char * template_name;
+
+  call_ptr->reply = dbus_message_new_method_return(call_ptr->message);
+  if (call_ptr->reply == NULL)
+  {
+    goto fail;
+  }
+
+  dbus_message_iter_init_append(call_ptr->reply, &iter);
+
+  if (!dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "(sa{sv})", &array_iter))
+  {
+    goto fail_unref;
+  }
+
+  list_for_each(node_ptr, &g_studio.rooms)
+  {
+    room = ladish_room_from_list_node(node_ptr);
+    name = ladish_room_get_name(room);
+
+    if (!ladish_room_get_template_uuid(room, template_uuid))
+    {
+      template = NULL;
+      template_name = NULL;
+    }
+    else
+    {
+      template = find_room_template_by_uuid(template_uuid);
+      if (template != NULL)
+      {
+        template_name = ladish_room_get_name(template);
+      }
+      else
+      {
+        template_name = NULL;
+      }
+    }
+
+    if (!dbus_message_iter_open_container(&array_iter, DBUS_TYPE_STRUCT, NULL, &struct_iter))
+      goto fail_unref;
+
+    if (!dbus_message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &name))
+      goto fail_unref;
+
+    if (!dbus_message_iter_open_container(&struct_iter, DBUS_TYPE_ARRAY, "{sv}", &dict_iter))
+      goto fail_unref;
+
+    if (!dbus_maybe_add_dict_entry_string(&dict_iter, "template", template_name))
+      goto fail_unref;
+
+    if (!dbus_message_iter_close_container(&struct_iter, &dict_iter))
+      goto fail_unref;
+
+    if (!dbus_message_iter_close_container(&array_iter, &struct_iter))
+      goto fail_unref;
+  }
+
+  if (!dbus_message_iter_close_container(&iter, &array_iter))
+  {
+    goto fail_unref;
+  }
+
+  return;
+
+fail_unref:
+  dbus_message_unref(call_ptr->reply);
+  call_ptr->reply = NULL;
+
+fail:
+  log_error("Ran out of memory trying to construct method return");
+}
+
+static void ladish_studio_delete_room(struct dbus_method_call * call_ptr)
+{
+  const char * name;
+
+  dbus_error_init(&g_dbus_error);
+
+  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return;
+  }
+
+  log_info("Delete studio room request (%s)", name);
+
+  {
+    method_return_new_void(call_ptr);
+  }
+}
+
 METHOD_ARGS_BEGIN(GetName, "Get studio name")
   METHOD_ARG_DESCRIBE_OUT("studio_name", "s", "Name of studio")
 METHOD_ARGS_END
@@ -723,6 +862,19 @@ METHOD_ARGS_BEGIN(IsStarted, "Check whether studio is started")
   METHOD_ARG_DESCRIBE_OUT("started", "b", "Whether studio is started")
 METHOD_ARGS_END
 
+METHOD_ARGS_BEGIN(NewRoom, "New studio room")
+  METHOD_ARG_DESCRIBE_IN("room_name", "s", "Studio room name")
+  METHOD_ARG_DESCRIBE_IN("room_template_name", "s", "Room template name")
+METHOD_ARGS_END
+
+METHOD_ARGS_BEGIN(GetRoomList, "Get list of rooms in this studio")
+  METHOD_ARG_DESCRIBE_OUT("room_list", "a(sa{sv})", "List of studio rooms, name and properties")
+METHOD_ARGS_END
+
+METHOD_ARGS_BEGIN(DeleteRoom, "Delete studio room")
+  METHOD_ARG_DESCRIBE_IN("room_name", "s", "Name of studio room to delete")
+METHOD_ARGS_END
+
 METHODS_BEGIN
   METHOD_DESCRIBE(GetName, ladish_get_studio_name)
   METHOD_DESCRIBE(Rename, ladish_rename_studio)
@@ -732,6 +884,9 @@ METHODS_BEGIN
   METHOD_DESCRIBE(Start, ladish_start_studio)
   METHOD_DESCRIBE(Stop, ladish_stop_studio)
   METHOD_DESCRIBE(IsStarted, ladish_studio_is_started)
+  METHOD_DESCRIBE(NewRoom, ladish_studio_new_room)
+  METHOD_DESCRIBE(GetRoomList, ladish_studio_get_room_list)
+  METHOD_DESCRIBE(DeleteRoom, ladish_studio_delete_room)
 METHODS_END
 
 SIGNAL_ARGS_BEGIN(StudioRenamed, "Studio name changed")
