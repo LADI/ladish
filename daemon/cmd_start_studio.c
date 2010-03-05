@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the "start studio" command
@@ -24,25 +24,43 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <unistd.h>
+
 #include "cmd.h"
 #include "studio_internal.h"
 #include "loader.h"
 
-#define cmd_ptr ((struct ladish_command *)context)
+struct ladish_command_start_studio
+{
+  struct ladish_command command;
+  uint64_t deadline;
+};
+
+static uint64_t get_current_microseconds(void)
+{
+  struct timeval time;
+
+  if (gettimeofday(&time, NULL) != 0)
+    return 0;
+
+  return (uint64_t)time.tv_sec * 1000000 + (uint64_t)time.tv_usec;
+}
+
+#define cmd_ptr ((struct ladish_command_start_studio *)context)
 
 static bool run(void * context)
 {
   bool jack_server_started;
   unsigned int app_count;
 
-  switch (cmd_ptr->state)
+  switch (cmd_ptr->command.state)
   {
   case LADISH_COMMAND_STATE_PENDING:
     if (studio_is_started())
     {
       log_info("Ignoring start request because studio is already started.");
       /* nothing to do, studio is already running */
-      cmd_ptr->state = LADISH_COMMAND_STATE_DONE;
+      cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;
       return true;
     }
 
@@ -65,13 +83,27 @@ static bool run(void * context)
       return false;
     }
 
-    cmd_ptr->state = LADISH_COMMAND_STATE_WAITING;
+    cmd_ptr->deadline = get_current_microseconds();
+    if (cmd_ptr->deadline != 0)
+    {
+      cmd_ptr->deadline += 5000000;
+    }
+
+    cmd_ptr->command.state = LADISH_COMMAND_STATE_WAITING;
     /* fall through */
   case LADISH_COMMAND_STATE_WAITING:
     if (!ladish_environment_consume_change(&g_studio.env_store, ladish_environment_jack_server_started, &jack_server_started))
     {
       /* we are still waiting for the JACK server start */
       ASSERT(!ladish_environment_get(&g_studio.env_store, ladish_environment_jack_server_started)); /* someone else consumed the state change? */
+
+      if (cmd_ptr->deadline != 0 && get_current_microseconds() >= cmd_ptr->deadline)
+      {
+        log_error("Starting JACK server succeded, but 'started' signal was not received within 5 seconds.");
+        cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;
+        return false;
+      }
+
       return true;
     }
 
@@ -81,7 +113,7 @@ static bool run(void * context)
 
     on_event_jack_started();    /* fetch configuration and announce start */
 
-    cmd_ptr->state = LADISH_COMMAND_STATE_DONE;
+    cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;
     return true;
   }
 
@@ -93,18 +125,19 @@ static bool run(void * context)
 
 bool ladish_command_start_studio(void * call_ptr, struct ladish_cqueue * queue_ptr)
 {
-  struct ladish_command * cmd_ptr;
+  struct ladish_command_start_studio * cmd_ptr;
 
-  cmd_ptr = ladish_command_new(sizeof(struct ladish_command));
+  cmd_ptr = ladish_command_new(sizeof(struct ladish_command_start_studio));
   if (cmd_ptr == NULL)
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_command_new() failed.");
     goto fail;
   }
 
-  cmd_ptr->run = run;
+  cmd_ptr->command.run = run;
+  cmd_ptr->deadline = 0;
 
-  if (!ladish_cqueue_add_command(queue_ptr, cmd_ptr))
+  if (!ladish_cqueue_add_command(queue_ptr, &cmd_ptr->command))
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_cqueue_add_command() failed.");
     goto fail_destroy_command;
