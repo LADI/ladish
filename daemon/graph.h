@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to the D-Bus patchbay interface helpers
@@ -49,6 +49,8 @@ bool
 
 bool ladish_graph_create(ladish_graph_handle * graph_handle_ptr, const char * opath);
 void ladish_graph_destroy(ladish_graph_handle graph_handle, bool destroy_ports);
+
+const char * ladish_graph_get_opath(ladish_graph_handle graph_handle);
 
 void
 ladish_graph_set_connection_handlers(

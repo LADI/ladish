@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari
  *
  **************************************************************************
@@ -957,6 +957,11 @@ void ladish_graph_destroy(ladish_graph_handle graph_handle, bool destroy_ports)
     free(graph_ptr->opath);
   }
   free(graph_ptr);
+}
+
+const char * ladish_graph_get_opath(ladish_graph_handle graph_handle)
+{
+  return graph_ptr->opath;
 }
 
 void

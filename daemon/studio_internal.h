@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains declaration of internal stuff used by
@@ -151,6 +151,8 @@ struct studio
   ladish_graph_handle studio_graph;
   ladish_virtualizer_handle virtualizer;
   ladish_app_supervisor_handle app_supervisor;
+
+  unsigned int room_count;
 };
 
 struct jack_conf_parameter

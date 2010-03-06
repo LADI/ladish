@@ -328,6 +328,8 @@ bool studio_init(void)
   g_studio.name = NULL;
   g_studio.filename = NULL;
 
+  g_studio.room_count = 0;
+
   if (!ladish_graph_create(&g_studio.jack_graph, NULL))
   {
     log_error("ladish_graph_create() failed to create jack graph object.");
@@ -700,6 +702,8 @@ static void ladish_studio_new_room(struct dbus_method_call * call_ptr)
   const char * room_name;
   const char * template_name;
   ladish_room_handle room;
+  char room_dbus_name[1024];
+  const char * arg;
 
   dbus_error_init(&g_dbus_error);
 
@@ -719,15 +723,21 @@ static void ladish_studio_new_room(struct dbus_method_call * call_ptr)
     return;
   }
 
-  if (!ladish_room_create(NULL, room_name, room, &room))
+  g_studio.room_count++;
+
+  sprintf(room_dbus_name, DBUS_BASE_PATH "/Room%u", g_studio.room_count);
+
+  if (!ladish_room_create(NULL, room_name, room, room_dbus_name, &room))
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_room_create() failed.");
+    g_studio.room_count--;
     return;
   }
 
   list_add_tail(ladish_room_get_list_node(room), &g_studio.rooms);
 
-  //dbus_signal_emit(g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "RoomAppeared", "");
+  arg = room_dbus_name;
+  dbus_signal_emit(g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "RoomAppeared", "s", &arg);
 
   method_return_new_void(call_ptr);
 }
@@ -743,6 +753,7 @@ static void ladish_studio_get_room_list(struct dbus_method_call * call_ptr)
   uuid_t template_uuid;
   ladish_room_handle template;
   const char * template_name;
+  const char * opath;
 
   call_ptr->reply = dbus_message_new_method_return(call_ptr->message);
   if (call_ptr->reply == NULL)
@@ -761,6 +772,7 @@ static void ladish_studio_get_room_list(struct dbus_method_call * call_ptr)
   {
     room = ladish_room_from_list_node(node_ptr);
     name = ladish_room_get_name(room);
+    opath = ladish_room_get_opath(room);
 
     if (!ladish_room_get_template_uuid(room, template_uuid))
     {
@@ -790,6 +802,9 @@ static void ladish_studio_get_room_list(struct dbus_method_call * call_ptr)
       goto fail_unref;
 
     if (!dbus_maybe_add_dict_entry_string(&dict_iter, "template", template_name))
+      goto fail_unref;
+
+    if (!dbus_maybe_add_dict_entry_string(&dict_iter, "opath", opath))
       goto fail_unref;
 
     if (!dbus_message_iter_close_container(&struct_iter, &dict_iter))

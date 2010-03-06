@@ -48,7 +48,7 @@ bool create_builtin_rooms(void)
 {
   ladish_room_handle room;
 
-  if (!ladish_room_create(empty_room, "Empty", NULL, &room))
+  if (!ladish_room_create(empty_room, "Empty", NULL, NULL, &room))
   {
     log_error("ladish_room_create() failed.");
     return false;
@@ -56,7 +56,7 @@ bool create_builtin_rooms(void)
 
   list_add_tail(ladish_room_get_list_node(room), &g_rooms);
 
-  if (!ladish_room_create(basic_room, "Basic", NULL, &room))
+  if (!ladish_room_create(basic_room, "Basic", NULL, NULL, &room))
   {
     log_error("ladish_room_create() failed.");
     return false;

@@ -25,6 +25,9 @@
  */
 
 #include "room.h"
+#include "../dbus_constants.h"
+#include "graph.h"
+#include "graph_dict.h"
 
 struct ladish_room
 {
@@ -32,13 +35,18 @@ struct ladish_room
   uuid_t uuid;
   char * name;
   uuid_t template_uuid;
+  dbus_object_path dbus_object;
+  ladish_graph_handle graph;
 };
+
+extern const struct dbus_interface_descriptor g_interface_room;
 
 bool
 ladish_room_create(
   const uuid_t uuid_ptr,
   const char * name,
   ladish_room_handle template,
+  const char * object_path,
   ladish_room_handle * room_handle_ptr)
 {
   struct ladish_room * room_ptr;
@@ -83,6 +91,46 @@ ladish_room_create(
     return false;
   }
 
+  if (object_path)
+  {
+    if (!ladish_graph_create(&room_ptr->graph, object_path))
+    {
+      free(room_ptr);
+      return false;
+    }
+
+    room_ptr->dbus_object = dbus_object_path_new(
+      object_path,
+      &g_interface_room, room_ptr,
+      &g_interface_patchbay, ladish_graph_get_dbus_context(room_ptr->graph),
+      &g_iface_graph_dict, room_ptr->graph,
+      //&g_iface_app_supervisor, room_ptr->app_supervisor,
+      NULL);
+    if (room_ptr->dbus_object == NULL)
+    {
+      log_error("dbus_object_path_new() failed");
+      ladish_graph_destroy(room_ptr->graph, true);
+      free(room_ptr);
+      return false;
+    }
+
+    if (!dbus_object_path_register(g_dbus_connection, room_ptr->dbus_object))
+    {
+      log_error("object_path_register() failed");
+      dbus_object_path_destroy(g_dbus_connection, room_ptr->dbus_object);
+      ladish_graph_destroy(room_ptr->graph, true);
+      free(room_ptr);
+      return false;
+    }
+
+    log_info("D-Bus object \"%s\" created for room \"%s\".", object_path, room_ptr->name);
+  }
+  else
+  {
+    room_ptr->dbus_object = NULL;
+    room_ptr->graph = NULL;
+  }
+
   *room_handle_ptr = (ladish_room_handle)room_ptr;
   return true;
 }
@@ -93,6 +141,12 @@ void
 ladish_room_destroy(
   ladish_room_handle room_handle)
 {
+  if (room_ptr->dbus_object != NULL)
+  {
+    dbus_object_path_destroy(g_dbus_connection, room_ptr->dbus_object);
+    ladish_graph_destroy(room_ptr->graph, true);
+  }
+
   free(room_ptr->name);
   free(room_ptr);
 }
@@ -105,6 +159,16 @@ struct list_head * ladish_room_get_list_node(ladish_room_handle room_handle)
 const char * ladish_room_get_name(ladish_room_handle room_handle)
 {
   return room_ptr->name;
+}
+
+const char * ladish_room_get_opath(ladish_room_handle room_handle)
+{
+  if (room_ptr->graph == NULL)
+  {
+    return NULL;
+  }
+
+  return ladish_graph_get_opath(room_ptr->graph);
 }
 
 bool ladish_room_get_template_uuid(ladish_room_handle room_handle, uuid_t uuid_ptr)
@@ -129,3 +193,29 @@ ladish_room_handle ladish_room_from_list_node(struct list_head * node_ptr)
 {
   return (ladish_room_handle)list_entry(node_ptr, struct ladish_room, siblings);
 }
+
+#define room_ptr ((struct ladish_room *)call_ptr->iface_context)
+
+static void ladish_get_room_name(struct dbus_method_call * call_ptr)
+{
+  method_return_new_single(call_ptr, DBUS_TYPE_STRING, &room_ptr->name);
+}
+
+#undef room_ptr
+
+METHOD_ARGS_BEGIN(GetName, "Get room name")
+  METHOD_ARG_DESCRIBE_OUT("room_name", "s", "Name of room")
+METHOD_ARGS_END
+
+METHODS_BEGIN
+  METHOD_DESCRIBE(GetName, ladish_get_room_name)
+METHODS_END
+
+SIGNALS_BEGIN
+SIGNALS_END
+
+INTERFACE_BEGIN(g_interface_room, IFACE_ROOM)
+  INTERFACE_DEFAULT_HANDLER
+  INTERFACE_EXPOSE_METHODS
+  INTERFACE_EXPOSE_SIGNALS
+INTERFACE_END

@@ -36,6 +36,7 @@ ladish_room_create(
   const uuid_t uuid_ptr,
   const char * name,
   ladish_room_handle template,
+  const char * object_path,
   ladish_room_handle * room_handle_ptr);
 
 void
@@ -46,6 +47,7 @@ struct list_head * ladish_room_get_list_node(ladish_room_handle room_handle);
 ladish_room_handle ladish_room_from_list_node(struct list_head * node_ptr);
 
 const char * ladish_room_get_name(ladish_room_handle room_handle);
+const char * ladish_room_get_opath(ladish_room_handle room_handle);
 bool ladish_room_get_template_uuid(ladish_room_handle room_handle, uuid_t uuid_ptr);
 void ladish_room_get_uuid(ladish_room_handle room_handle, uuid_t uuid_ptr);
 
