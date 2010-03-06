@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  * Copyright (C) 2002 Robert Ham <rah@bash.sh>
  *
@@ -157,6 +157,7 @@ static void loader_sigchld_handler(int signum)
   int status;
   pid_t pid;
   struct loader_child *child_ptr;
+  int signal;
 
   while ((pid = waitpid(-1, &status, WNOHANG)) > 0)
   {
@@ -177,7 +178,18 @@ static void loader_sigchld_handler(int signum)
     }
     else if (WIFSIGNALED(status))
     {
-      log_info("Child was killed by signal %d", WTERMSIG(status));
+      signal = WTERMSIG(status);
+      switch (signal)
+      {
+      case SIGILL:
+      case SIGABRT:
+      case SIGSEGV:
+      case SIGFPE:
+        log_error("Child was killed by signal %d", signal);
+        break;
+      default:
+        log_info("Child was killed by signal %d", signal);
+      }
     }
     else if (WIFSTOPPED(status))
     {
