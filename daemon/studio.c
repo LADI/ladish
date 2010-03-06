@@ -795,7 +795,7 @@ static void ladish_studio_get_room_list(struct dbus_method_call * call_ptr)
     if (!dbus_message_iter_open_container(&array_iter, DBUS_TYPE_STRUCT, NULL, &struct_iter))
       goto fail_unref;
 
-    if (!dbus_message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &name))
+    if (!dbus_message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &opath))
       goto fail_unref;
 
     if (!dbus_message_iter_open_container(&struct_iter, DBUS_TYPE_ARRAY, "{sv}", &dict_iter))
@@ -804,7 +804,7 @@ static void ladish_studio_get_room_list(struct dbus_method_call * call_ptr)
     if (!dbus_maybe_add_dict_entry_string(&dict_iter, "template", template_name))
       goto fail_unref;
 
-    if (!dbus_maybe_add_dict_entry_string(&dict_iter, "opath", opath))
+    if (!dbus_maybe_add_dict_entry_string(&dict_iter, "name", name))
       goto fail_unref;
 
     if (!dbus_message_iter_close_container(&struct_iter, &dict_iter))
@@ -883,7 +883,7 @@ METHOD_ARGS_BEGIN(NewRoom, "New studio room")
 METHOD_ARGS_END
 
 METHOD_ARGS_BEGIN(GetRoomList, "Get list of rooms in this studio")
-  METHOD_ARG_DESCRIBE_OUT("room_list", "a(sa{sv})", "List of studio rooms, name and properties")
+  METHOD_ARG_DESCRIBE_OUT("room_list", "a(sa{sv})", "List of studio rooms: opaths and properties")
 METHOD_ARGS_END
 
 METHOD_ARGS_BEGIN(DeleteRoom, "Delete studio room")

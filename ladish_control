@@ -260,16 +260,17 @@ def main():
                     print("--- studio room list")
                     for room in studio_iface.GetRoomList():
                         #print repr(room)
-                        name = room[0]
+                        opath = room[0]
+                        name = room[1]["name"]
                         if room[1].has_key("template"):
                             template = str(room[1]["template"])
                         else:
                             template = None
 
                         if template:
-                            print('"%s" from template "%s"' % (name, template))
+                            print('"%s" from template "%s" (%s)' % (name, template, opath))
                         else:
-                            print('"%s"' % name)
+                            print('"%s" (%s)' % (name, opath))
                 elif arg == 'sdelroom':
                     print("--- studio room delete")
                     if index >= len(sys.argv):
