@@ -246,7 +246,11 @@ def build(bld):
         ]:
         daemon.source.append(os.path.join("dbus", source))
 
-    daemon.source.append(os.path.join("common", "safety.c"))
+    for source in [
+        'safety.c',
+        'time.c',
+        ]:
+        daemon.source.append(os.path.join("common", source))
 
     # process name.arnaudov.nedko.ladish.service.in -> name.arnaudov.nedko.ladish.service
     import misc

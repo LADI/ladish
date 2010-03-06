@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the "stop studio" command
@@ -29,6 +29,7 @@
 #include "cmd.h"
 #include "studio_internal.h"
 #include "loader.h"
+#include "../common/time.h"
 
 #define STOP_STATE_WAITING_FOR_JACK_CLIENTS_DISAPPEAR   1
 #define STOP_STATE_WAITING_FOR_CHILDS_TERMINATION       2
@@ -37,7 +38,7 @@
 struct ladish_command_stop_studio
 {
   struct ladish_command command;
-  int stop_waits;
+  uint64_t deadline;
   unsigned int stop_state;
 };
 
@@ -102,35 +103,33 @@ static bool run(void * context)
         /* JACK server stop sometimes fail, even if it actually succeeds after some time */
         /* Reproducable with yoshimi-0.0.45 */
 
-        cmd_ptr->stop_waits = 5000;
+        cmd_ptr->deadline = ladish_get_current_microseconds();
+        if (cmd_ptr->deadline != 0)
+        {
+          cmd_ptr->deadline += 5000000;
+        }
+
         return true;
       }
     }
 
     ASSERT(cmd_ptr->stop_state == STOP_STATE_WAITING_FOR_JACK_SERVER_STOP);
 
-    if (cmd_ptr->stop_waits > 0)
+    if (cmd_ptr->deadline != 0)
     {
-      if (!jack_proxy_is_started(&jack_server_started))
-      {
-        log_error("jack_proxy_is_started() failed.");
-        return false;
-      }
-
-      if (!jack_server_started)
+      if (jack_proxy_is_started(&jack_server_started) && !jack_server_started)
       {
         ladish_environment_reset_stealth(&g_studio.env_store, ladish_environment_jack_server_started);
         goto done;
       }
 
-      if (cmd_ptr->stop_waits == 1)
+      if (ladish_get_current_microseconds() >= cmd_ptr->deadline)
       {
-        log_error("JACK server stop wait after stop request expired.");
+        log_error("JACK server stop wait after stop request expired (5 seconds).");
+        cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;
         return false;
       }
 
-      cmd_ptr->stop_waits--;
-      usleep(1000);
       return true;
     }
 
@@ -174,7 +173,7 @@ bool ladish_command_stop_studio(void * call_ptr, struct ladish_cqueue * queue_pt
   }
 
   cmd_ptr->command.run = run;
-  cmd_ptr->stop_waits = -1;
+  cmd_ptr->deadline = 0;
 
   if (!ladish_cqueue_add_command(queue_ptr, &cmd_ptr->command))
   {

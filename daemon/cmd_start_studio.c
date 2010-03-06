@@ -29,22 +29,13 @@
 #include "cmd.h"
 #include "studio_internal.h"
 #include "loader.h"
+#include "../common/time.h"
 
 struct ladish_command_start_studio
 {
   struct ladish_command command;
   uint64_t deadline;
 };
-
-static uint64_t get_current_microseconds(void)
-{
-  struct timeval time;
-
-  if (gettimeofday(&time, NULL) != 0)
-    return 0;
-
-  return (uint64_t)time.tv_sec * 1000000 + (uint64_t)time.tv_usec;
-}
 
 #define cmd_ptr ((struct ladish_command_start_studio *)context)
 
@@ -83,7 +74,7 @@ static bool run(void * context)
       return false;
     }
 
-    cmd_ptr->deadline = get_current_microseconds();
+    cmd_ptr->deadline = ladish_get_current_microseconds();
     if (cmd_ptr->deadline != 0)
     {
       cmd_ptr->deadline += 5000000;
@@ -97,7 +88,7 @@ static bool run(void * context)
       /* we are still waiting for the JACK server start */
       ASSERT(!ladish_environment_get(&g_studio.env_store, ladish_environment_jack_server_started)); /* someone else consumed the state change? */
 
-      if (cmd_ptr->deadline != 0 && get_current_microseconds() >= cmd_ptr->deadline)
+      if (cmd_ptr->deadline != 0 && ladish_get_current_microseconds() >= cmd_ptr->deadline)
       {
         log_error("Starting JACK server succeded, but 'started' signal was not received within 5 seconds.");
         cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;
