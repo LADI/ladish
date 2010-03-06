@@ -403,9 +403,7 @@ bool dbus_object_path_register(DBusConnection * connection_ptr, dbus_object_path
     NULL, NULL, NULL, NULL
   };
 
-  dbus_connection_register_object_path(connection_ptr, opath_ptr->name, &vtable, opath_ptr);
-
-  return true;
+  return dbus_connection_register_object_path(connection_ptr, opath_ptr->name, &vtable, opath_ptr);
 }
 
 #undef opath_ptr
