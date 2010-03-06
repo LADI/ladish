@@ -394,7 +394,7 @@ static void dbus_object_path_handler_unregister(DBusConnection * connection_ptr,
 
 bool dbus_object_path_register(DBusConnection * connection_ptr, dbus_object_path data)
 {
-  log_debug("Registering object path");
+  log_debug("Registering object path \"%s\"", opath_ptr->name);
 
   DBusObjectPathVTable vtable =
   {
