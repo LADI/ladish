@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -110,7 +110,7 @@ introspection_new(struct dbus_object_path * opath_ptr)
     }
     write_buf("  </interface>\n");
   }
-  write_buf("</node>");
+  write_buf("</node>\n");
 
   /*
    * Create a D-Bus message from the XML data.
