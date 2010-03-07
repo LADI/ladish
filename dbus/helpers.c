@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -60,61 +60,101 @@ struct dbus_service_descriptor
 
 LIST_HEAD(g_dbus_services);
 
-bool dbus_iter_get_dict_entry(DBusMessageIter * iter, const char ** key_ptr, void * value_ptr, int * type_ptr, int * size_ptr)
+bool dbus_iter_get_dict_entry(DBusMessageIter * iter_ptr, const char * key, void * value, int * type, int * size)
 {
-  if (!iter || !key_ptr || !value_ptr || !type_ptr) {
-    log_error("Invalid arguments");
+  DBusMessageIter dict_iter;
+  DBusMessageIter entry_iter;
+  DBusMessageIter variant_iter;
+  const char * current_key;
+  DBusMessageIter array_iter;
+  int n;
+  int detype;
+
+  dbus_message_iter_recurse(iter_ptr, &dict_iter);
+
+loop:
+  detype = dbus_message_iter_get_arg_type(&dict_iter);
+
+  if (detype == DBUS_TYPE_INVALID)
+  {
     return false;
   }
 
-  DBusMessageIter dict_iter, variant_iter;
-
-  if (dbus_message_iter_get_arg_type(iter) != DBUS_TYPE_DICT_ENTRY) {
+  if (detype != DBUS_TYPE_DICT_ENTRY)
+  {
     log_error("Iterator does not point to a dict entry container");
     return false;
   }
 
-  dbus_message_iter_recurse(iter, &dict_iter);
+  dbus_message_iter_recurse(&dict_iter, &entry_iter);
 
-  if (dbus_message_iter_get_arg_type(&dict_iter) != DBUS_TYPE_STRING) {
+  if (dbus_message_iter_get_arg_type(&entry_iter) != DBUS_TYPE_STRING)
+  {
     log_error("Cannot find key in dict entry container");
     return false;
   }
 
-  dbus_message_iter_get_basic(&dict_iter, key_ptr);
+  dbus_message_iter_get_basic(&entry_iter, &current_key);
+  if (strcmp(current_key, key) != 0)
+  {
+    dbus_message_iter_next(&dict_iter);
+    goto loop;
+  }
 
-  if (!dbus_message_iter_next(&dict_iter)
-      || dbus_message_iter_get_arg_type(&dict_iter) != DBUS_TYPE_VARIANT) {
+  if (!dbus_message_iter_next(&entry_iter) || dbus_message_iter_get_arg_type(&entry_iter) != DBUS_TYPE_VARIANT)
+  {
     log_error("Cannot find variant container in dict entry");
     return false;
   }
 
-  dbus_message_iter_recurse(&dict_iter, &variant_iter);
+  dbus_message_iter_recurse(&entry_iter, &variant_iter);
 
-  *type_ptr = dbus_message_iter_get_arg_type(&variant_iter);
-  if (*type_ptr == DBUS_TYPE_INVALID) {
+  *type = dbus_message_iter_get_arg_type(&variant_iter);
+  if (*type == DBUS_TYPE_INVALID)
+  {
     log_error("Cannot find value in variant container");
     return false;
   }
 
-  if (*type_ptr == DBUS_TYPE_ARRAY) {
-    DBusMessageIter array_iter;
-    int n;
-
-    if (dbus_message_iter_get_element_type(&variant_iter)
-        != DBUS_TYPE_BYTE) {
+  if (*type == DBUS_TYPE_ARRAY)
+  {
+    if (dbus_message_iter_get_element_type(&variant_iter) != DBUS_TYPE_BYTE)
+    {
       log_error("Dict entry value is a non-byte array");
       return false;
     }
-    *type_ptr = '-';
+    *type = '-';
 
     dbus_message_iter_recurse(&variant_iter, &array_iter);
-    dbus_message_iter_get_fixed_array(&array_iter, value_ptr, &n);
+    dbus_message_iter_get_fixed_array(&array_iter, value, &n);
 
-    if (size_ptr)
-      *size_ptr = n;
-  } else
-    dbus_message_iter_get_basic(&variant_iter, value_ptr);
+    if (size != NULL)
+    {
+      *size = n;
+    }
+  }
+  else
+  {
+    dbus_message_iter_get_basic(&variant_iter, value);
+  }
+
+  return true;
+}
+
+bool dbus_iter_get_dict_entry_string(DBusMessageIter * iter_ptr, const char * key, const char ** value)
+{
+  int type;
+
+  if (!dbus_iter_get_dict_entry(iter_ptr, key, value, &type, NULL))
+  {
+    return false;
+  }
+
+  if (type != DBUS_TYPE_STRING)
+  {
+    log_error("value of the dict entry '%s' is not a string", key);
+    return false;
+  }
 
   return true;
 }
