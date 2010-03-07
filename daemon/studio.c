@@ -118,6 +118,91 @@ void emit_studio_stopped(void)
   dbus_signal_emit(g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioStopped", "");
 }
 
+static bool fill_room_info(DBusMessageIter * iter_ptr, ladish_room_handle room)
+{
+  DBusMessageIter dict_iter;
+  const char * name;
+  uuid_t template_uuid;
+  ladish_room_handle template;
+  const char * template_name;
+  const char * opath;
+
+  name = ladish_room_get_name(room);
+  opath = ladish_room_get_opath(room);
+
+  if (!ladish_room_get_template_uuid(room, template_uuid))
+  {
+    template = NULL;
+    template_name = NULL;
+  }
+  else
+  {
+    template = find_room_template_by_uuid(template_uuid);
+    if (template != NULL)
+    {
+      template_name = ladish_room_get_name(template);
+    }
+    else
+    {
+      template_name = NULL;
+    }
+  }
+
+  if (!dbus_message_iter_append_basic(iter_ptr, DBUS_TYPE_STRING, &opath))
+  {
+    log_error("dbus_message_iter_append_basic() failed.");
+    return false;
+  }
+
+  if (!dbus_message_iter_open_container(iter_ptr, DBUS_TYPE_ARRAY, "{sv}", &dict_iter))
+  {
+    log_error("dbus_message_iter_open_container() failed.");
+    return false;
+  }
+
+  if (!dbus_maybe_add_dict_entry_string(&dict_iter, "template", template_name))
+  {
+    log_error("dbus_maybe_add_dict_entry_string() failed.");
+    return false;
+  }
+
+  if (!dbus_maybe_add_dict_entry_string(&dict_iter, "name", name))
+  {
+    log_error("dbus_maybe_add_dict_entry_string() failed.");
+    return false;
+  }
+
+  if (!dbus_message_iter_close_container(iter_ptr, &dict_iter))
+  {
+    log_error("dbus_message_iter_close_container() failed.");
+    return false;
+  }
+
+  return true;
+}
+
+static void emit_room_appeared(ladish_room_handle room)
+{
+  DBusMessage * message_ptr;
+  DBusMessageIter iter;
+
+  message_ptr = dbus_message_new_signal(STUDIO_OBJECT_PATH, IFACE_STUDIO, "RoomAppeared");
+  if (message_ptr == NULL)
+  {
+    log_error("dbus_message_new_signal() failed.");
+    return;
+  }
+
+  dbus_message_iter_init_append(message_ptr, &iter);
+
+  if (fill_room_info(&iter, room))
+  {
+    dbus_signal_send(g_dbus_connection, message_ptr);
+  }
+
+  dbus_message_unref(message_ptr);
+}
+
 void on_event_jack_started(void)
 {
   if (!studio_fetch_jack_settings())
@@ -703,7 +788,6 @@ static void ladish_studio_new_room(struct dbus_method_call * call_ptr)
   const char * template_name;
   ladish_room_handle room;
   char room_dbus_name[1024];
-  const char * arg;
 
   dbus_error_init(&g_dbus_error);
 
@@ -736,8 +820,7 @@ static void ladish_studio_new_room(struct dbus_method_call * call_ptr)
 
   list_add_tail(ladish_room_get_list_node(room), &g_studio.rooms);
 
-  arg = room_dbus_name;
-  dbus_signal_emit(g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "RoomAppeared", "s", &arg);
+  emit_room_appeared(room);
 
   method_return_new_void(call_ptr);
 }
@@ -746,14 +829,8 @@ static void ladish_studio_get_room_list(struct dbus_method_call * call_ptr)
 {
   DBusMessageIter iter, array_iter;
   DBusMessageIter struct_iter;
-  DBusMessageIter dict_iter;
   struct list_head * node_ptr;
   ladish_room_handle room;
-  const char * name;
-  uuid_t template_uuid;
-  ladish_room_handle template;
-  const char * template_name;
-  const char * opath;
 
   call_ptr->reply = dbus_message_new_method_return(call_ptr->message);
   if (call_ptr->reply == NULL)
@@ -771,43 +848,11 @@ static void ladish_studio_get_room_list(struct dbus_method_call * call_ptr)
   list_for_each(node_ptr, &g_studio.rooms)
   {
     room = ladish_room_from_list_node(node_ptr);
-    name = ladish_room_get_name(room);
-    opath = ladish_room_get_opath(room);
-
-    if (!ladish_room_get_template_uuid(room, template_uuid))
-    {
-      template = NULL;
-      template_name = NULL;
-    }
-    else
-    {
-      template = find_room_template_by_uuid(template_uuid);
-      if (template != NULL)
-      {
-        template_name = ladish_room_get_name(template);
-      }
-      else
-      {
-        template_name = NULL;
-      }
-    }
 
     if (!dbus_message_iter_open_container(&array_iter, DBUS_TYPE_STRUCT, NULL, &struct_iter))
       goto fail_unref;
 
-    if (!dbus_message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &opath))
-      goto fail_unref;
-
-    if (!dbus_message_iter_open_container(&struct_iter, DBUS_TYPE_ARRAY, "{sv}", &dict_iter))
-      goto fail_unref;
-
-    if (!dbus_maybe_add_dict_entry_string(&dict_iter, "template", template_name))
-      goto fail_unref;
-
-    if (!dbus_maybe_add_dict_entry_string(&dict_iter, "name", name))
-      goto fail_unref;
-
-    if (!dbus_message_iter_close_container(&struct_iter, &dict_iter))
+    if (!fill_room_info(&struct_iter, room))
       goto fail_unref;
 
     if (!dbus_message_iter_close_container(&array_iter, &struct_iter))
@@ -918,11 +963,18 @@ SIGNAL_ARGS_BEGIN(StudioStopped, "Studio stopped")
 SIGNAL_ARGS_END
 
 SIGNAL_ARGS_BEGIN(RoomAppeared, "Room D-Bus object appeared")
-  SIGNAL_ARG_DESCRIBE("room_path", "s", "room object path")
+  SIGNAL_ARG_DESCRIBE("opath", "s", "room object path")
+  SIGNAL_ARG_DESCRIBE("properties", "a{sv}", "room object path and props")
+SIGNAL_ARGS_END
+
+SIGNAL_ARGS_BEGIN(RoomChanged, "Room D-Bus object changed")
+  SIGNAL_ARG_DESCRIBE("opath", "s", "room object path")
+  SIGNAL_ARG_DESCRIBE("properties", "a{sv}", "room object path and props")
 SIGNAL_ARGS_END
 
 SIGNAL_ARGS_BEGIN(RoomDisappeared, "Room D-Bus object disappeared")
-  SIGNAL_ARG_DESCRIBE("room_path", "s", "room object path")
+  SIGNAL_ARG_DESCRIBE("opath", "s", "room object path")
+  SIGNAL_ARG_DESCRIBE("properties", "a{sv}", "room object path and props")
 SIGNAL_ARGS_END
 
 SIGNALS_BEGIN
@@ -932,6 +984,7 @@ SIGNALS_BEGIN
   SIGNAL_DESCRIBE(StudioStopped)
   SIGNAL_DESCRIBE(RoomAppeared)
   SIGNAL_DESCRIBE(RoomDisappeared)
+  SIGNAL_DESCRIBE(RoomChanged)
 SIGNALS_END
 
 INTERFACE_BEGIN(g_interface_studio, IFACE_STUDIO)
