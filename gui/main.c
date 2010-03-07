@@ -1053,6 +1053,21 @@ void jack_disappeared(void)
 #endif
 }
 
+static void room_appeared(const char * opath, const char * name, const char * template)
+{
+  log_info("room \"%s\" appeared (%s). template is \"%s\"", name, opath, template);
+}
+
+static void room_disappeared(const char * opath, const char * name, const char * template)
+{
+  log_info("room \"%s\" disappeared (%s). template is \"%s\"", name, opath, template);
+}
+
+static void room_changed(const char * opath, const char * name, const char * template)
+{
+  log_info("%s changed. name is \"%s\". template is \"%s\"", opath, name, template);
+}
+
 void
 set_main_window_title(
   graph_view_handle view)
@@ -1337,6 +1352,7 @@ int main(int argc, char** argv)
   studio_proxy_set_startstop_callbacks(on_studio_started, on_studio_stopped, on_studio_crashed);
 
   studio_proxy_set_renamed_callback(on_studio_renamed);
+  studio_proxy_set_room_callbacks(room_appeared, room_disappeared, room_changed);
 
   g_signal_connect(G_OBJECT(g_main_win), "destroy", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(G_OBJECT(get_gtk_builder_widget("menu_item_quit")), "activate", G_CALLBACK(gtk_main_quit), NULL);

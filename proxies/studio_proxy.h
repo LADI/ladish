@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to the helper functionality for accessing
@@ -43,5 +43,11 @@ void studio_proxy_set_startstop_callbacks(void (* started_callback)(void), void 
 bool studio_proxy_start(void);
 bool studio_proxy_stop(void);
 bool studio_proxy_is_started(bool * is_started_ptr);
+
+void
+studio_proxy_set_room_callbacks(
+  void (* appeared)(const char * opath, const char * name, const char * template),
+  void (* disappeared)(const char * opath, const char * name, const char * template),
+  void (* changed)(const char * opath, const char * name, const char * template));
 
 #endif /* #ifndef STUDIO_PROXY_H__2CEC623F_C998_4618_A947_D1A0016DF978__INCLUDED */
