@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -31,7 +31,7 @@
 #include <stdarg.h>
 #include "helpers.h"
 
-static void dbus_signal_send(DBusConnection * connection_ptr, DBusMessage * message_ptr)
+void dbus_signal_send(DBusConnection * connection_ptr, DBusMessage * message_ptr)
 {
   if (!dbus_connection_send(connection_ptr, message_ptr, NULL))
   {
@@ -61,56 +61,50 @@ dbus_signal_emit(
 
   va_start(ap, signature);
 
-  if (signature != NULL)
+  ASSERT(signature != NULL);
+
+  if (!dbus_signature_validate(signature, NULL))
   {
-    if (!dbus_signature_validate(signature, NULL))
-    {
-      log_error("signature '%s' is invalid", signature);
-      goto exit;
-    }
-
-    dbus_signature_iter_init(&sig_iter, signature);
-
-    message_ptr = dbus_message_new_signal(path, interface, name);
-    if (message_ptr == NULL)
-    {
-      log_error("dbus_message_new_signal() failed.");
-      goto exit;
-    }
-
-    dbus_message_iter_init_append(message_ptr, &iter);
-
-    while (*signature != '\0')
-    {
-      type = dbus_signature_iter_get_current_type(&sig_iter);
-      if (!dbus_type_is_basic(type))
-      {
-        log_error("non-basic input parameter '%c' (%d)", *signature, type);
-        goto unref;
-      }
-
-      parameter_ptr = va_arg(ap, void *);
-
-      if (!dbus_message_iter_append_basic(&iter, type, parameter_ptr))
-      {
-        log_error("dbus_message_iter_append_basic() failed.");
-        goto unref;
-      }
-
-      dbus_signature_iter_next(&sig_iter);
-      signature++;
-    }
-
-    dbus_signal_send(connection_ptr, message_ptr);
-
-  unref:
-    dbus_message_unref(message_ptr);
+    log_error("signature '%s' is invalid", signature);
+    goto exit;
   }
-  else
+
+  dbus_signature_iter_init(&sig_iter, signature);
+
+  message_ptr = dbus_message_new_signal(path, interface, name);
+  if (message_ptr == NULL)
   {
-    message_ptr = va_arg(ap, DBusMessage *);
-    dbus_signal_send(connection_ptr, message_ptr);
+    log_error("dbus_message_new_signal() failed.");
+    goto exit;
   }
+
+  dbus_message_iter_init_append(message_ptr, &iter);
+
+  while (*signature != '\0')
+  {
+    type = dbus_signature_iter_get_current_type(&sig_iter);
+    if (!dbus_type_is_basic(type))
+    {
+      log_error("non-basic input parameter '%c' (%d)", *signature, type);
+      goto unref;
+    }
+
+    parameter_ptr = va_arg(ap, void *);
+
+    if (!dbus_message_iter_append_basic(&iter, type, parameter_ptr))
+    {
+      log_error("dbus_message_iter_append_basic() failed.");
+      goto unref;
+    }
+
+    dbus_signature_iter_next(&sig_iter);
+    signature++;
+  }
+
+  dbus_signal_send(connection_ptr, message_ptr);
+
+unref:
+  dbus_message_unref(message_ptr);
 
 exit:
   va_end(ap);

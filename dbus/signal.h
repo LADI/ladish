@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -41,6 +41,8 @@ struct dbus_signal_descriptor
   const char * name;
   const struct dbus_signal_arg_descriptor * args;
 };
+
+void dbus_signal_send(DBusConnection * connection_ptr, DBusMessage * message_ptr);
 
 void
 dbus_signal_emit(
