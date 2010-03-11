@@ -125,6 +125,8 @@ static unsigned int g_jack_state = JACK_STATE_NA;
 #define STATUS_ICON_WARNING   "status_warning.png"      /* xruns */
 #define STATUS_ICON_ERROR     "status_error.png"        /* bad error */
 
+static uint32_t g_xruns;
+
 struct studio_list
 {
   int count;
@@ -200,6 +202,161 @@ static GdkPixbuf * load_pixbuf(const char * filename)
   }
 
   return NULL;
+}
+
+bool studio_state_changed(char ** name_ptr_ptr)
+{
+  const char * status;
+  const char * name;
+  char * buffer;
+  const char * status_image_path;
+  const char * tooltip;
+  GdkPixbuf * pixbuf;
+
+  gtk_widget_set_sensitive(g_menu_item_start_studio, g_studio_state == STUDIO_STATE_STOPPED);
+  gtk_widget_set_sensitive(g_menu_item_stop_studio, g_studio_state == STUDIO_STATE_STARTED);
+  gtk_widget_set_sensitive(g_menu_item_save_studio, g_studio_state == STUDIO_STATE_STARTED);
+  gtk_widget_set_sensitive(g_menu_item_save_as_studio, g_studio_state == STUDIO_STATE_STARTED);
+  gtk_widget_set_sensitive(g_menu_item_unload_studio, g_studio_state != STUDIO_STATE_UNLOADED);
+  gtk_widget_set_sensitive(g_menu_item_rename_studio, g_studio_state == STUDIO_STATE_STOPPED || g_studio_state == STUDIO_STATE_STARTED);
+  gtk_widget_set_sensitive(g_menu_item_start_app, g_studio_state == STUDIO_STATE_STOPPED || g_studio_state == STUDIO_STATE_STARTED);
+  //gtk_widget_set_sensitive(g_menu_item_create_room, g_studio_loaded);
+  //gtk_widget_set_sensitive(g_menu_item_destroy_room, g_studio_loaded);
+  //gtk_widget_set_sensitive(g_menu_item_load_project, g_studio_loaded);
+
+  tooltip = NULL;
+  status_image_path = NULL;
+
+  switch (g_jack_state)
+  {
+  case JACK_STATE_NA:
+    tooltip = status = "JACK is sick";
+    status_image_path = STATUS_ICON_ERROR;
+    break;
+  case JACK_STATE_STOPPED:
+    status = "Stopped";
+    break;
+  case JACK_STATE_STARTED:
+    status = "xruns";
+    break;
+  default:
+    status = "???";
+    tooltip = "Internal error - unknown jack state";
+    status_image_path = STATUS_ICON_ERROR;
+  }
+
+  buffer = NULL;
+
+  switch (g_studio_state)
+  {
+  case STUDIO_STATE_NA:
+    name = "ladishd is down";
+    status_image_path = STATUS_ICON_DOWN;
+    break;
+  case STUDIO_STATE_SICK:
+  case STUDIO_STATE_UNKNOWN:
+    tooltip = name = "ladishd is sick";
+    status_image_path = STATUS_ICON_ERROR;
+    break;
+  case STUDIO_STATE_UNLOADED:
+    name = "No studio loaded";
+    status_image_path = STATUS_ICON_UNLOADED;
+    break;
+  case STUDIO_STATE_CRASHED:
+    status = "Crashed";
+    tooltip = "Crashed studio, save your work if you can and unload the studio";
+    status_image_path = STATUS_ICON_ERROR;
+    /* fall through */
+  case STUDIO_STATE_STOPPED:
+  case STUDIO_STATE_STARTED:
+    if (!studio_proxy_get_name(&buffer))
+    {
+      tooltip = "failed to get studio name";
+      log_error("%s", tooltip);
+      status_image_path = STATUS_ICON_ERROR;
+    }
+    else
+    {
+      name = buffer;
+      switch (g_studio_state)
+      {
+      case STUDIO_STATE_STARTED:
+        status_image_path = g_xruns > 0 ? STATUS_ICON_WARNING : STATUS_ICON_STARTED;
+        tooltip = "Studio is started";
+        break;
+      case STUDIO_STATE_STOPPED:
+        status_image_path = STATUS_ICON_STOPPED;
+        tooltip = "Studio is stopped";
+        break;
+      }
+      break;
+    }
+  default:
+    name = "???";
+    tooltip = "Internal error - unknown studio state";
+    status_image_path = STATUS_ICON_ERROR;
+  }
+
+  gtk_progress_bar_set_text(GTK_PROGRESS_BAR(g_xrun_progress_bar), status);
+  gtk_label_set_text(GTK_LABEL(g_studio_status_label), name);
+
+  if (status_image_path == NULL || (pixbuf = load_pixbuf(status_image_path)) == NULL)
+  {
+    gtk_image_set_from_stock(GTK_IMAGE(g_status_image), GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_SMALL_TOOLBAR);
+  }
+  else
+  {
+    gtk_image_set_from_pixbuf(GTK_IMAGE(g_status_image), pixbuf);
+    g_object_unref(pixbuf);
+  }
+
+  //gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(g_status_tool_item), tooltip);
+
+  if (g_jack_state == JACK_STATE_STARTED)
+  {
+    if (jack_proxy_sample_rate(&g_sample_rate))
+    {
+      char buf[100];
+
+      if (fmod(g_sample_rate, 1000.0) != 0.0)
+      {
+        snprintf(buf, sizeof(buf), "%.1f kHz", (float)g_sample_rate / 1000.0f);
+      }
+      else
+      {
+        snprintf(buf, sizeof(buf), "%u kHz", g_sample_rate / 1000);
+      }
+
+      gtk_label_set_text(GTK_LABEL(g_sample_rate_label), buf);
+    }
+    else
+    {
+      gtk_label_set_text(GTK_LABEL(g_sample_rate_label), "");
+    }
+  }
+  else
+  {
+    gtk_label_set_text(GTK_LABEL(g_sample_rate_label), "");
+    gtk_label_set_text(GTK_LABEL(g_latency_label), "");
+    gtk_label_set_text(GTK_LABEL(g_dsp_load_label), "");
+    gtk_label_set_text(GTK_LABEL(g_xruns_label), "");
+  }
+
+  if (buffer == NULL)
+  {
+    return false;
+  }
+
+  if (name_ptr_ptr != NULL)
+  {
+    *name_ptr_ptr = buffer;
+  }
+  else
+  {
+    free(buffer);
+  }
+
+  return true;
 }
 
 void set_latency_items_sensivity(bool sensitive)
@@ -317,9 +474,9 @@ static void update_buffer_size(bool force)
 
 static void update_load(void)
 {
-  uint32_t xruns;
   double load;
   char tmp_buf[100];
+  uint32_t xruns;
 
   if (jack_proxy_get_xruns(&xruns))
   {
@@ -348,6 +505,16 @@ static void update_load(void)
   else
   {
     gtk_label_set_text(GTK_LABEL(g_xruns_label), "?");
+  }
+
+  if ((g_xruns == 0 && xruns != 0) || (g_xruns != 0 && xruns == 0))
+  {
+    g_xruns = xruns;
+    studio_state_changed(NULL);
+  }
+  else
+  {
+    g_xruns = xruns;
   }
 }
 
@@ -711,161 +878,6 @@ static gboolean poll_ladishd(gpointer data)
 {
   control_proxy_ping();
   return TRUE;
-}
-
-bool studio_state_changed(char ** name_ptr_ptr)
-{
-  const char * status;
-  const char * name;
-  char * buffer;
-  const char * status_image_path;
-  const char * tooltip;
-  GdkPixbuf * pixbuf;
-
-  gtk_widget_set_sensitive(g_menu_item_start_studio, g_studio_state == STUDIO_STATE_STOPPED);
-  gtk_widget_set_sensitive(g_menu_item_stop_studio, g_studio_state == STUDIO_STATE_STARTED);
-  gtk_widget_set_sensitive(g_menu_item_save_studio, g_studio_state == STUDIO_STATE_STARTED);
-  gtk_widget_set_sensitive(g_menu_item_save_as_studio, g_studio_state == STUDIO_STATE_STARTED);
-  gtk_widget_set_sensitive(g_menu_item_unload_studio, g_studio_state != STUDIO_STATE_UNLOADED);
-  gtk_widget_set_sensitive(g_menu_item_rename_studio, g_studio_state == STUDIO_STATE_STOPPED || g_studio_state == STUDIO_STATE_STARTED);
-  gtk_widget_set_sensitive(g_menu_item_start_app, g_studio_state == STUDIO_STATE_STOPPED || g_studio_state == STUDIO_STATE_STARTED);
-  //gtk_widget_set_sensitive(g_menu_item_create_room, g_studio_loaded);
-  //gtk_widget_set_sensitive(g_menu_item_destroy_room, g_studio_loaded);
-  //gtk_widget_set_sensitive(g_menu_item_load_project, g_studio_loaded);
-
-  tooltip = NULL;
-  status_image_path = NULL;
-
-  switch (g_jack_state)
-  {
-  case JACK_STATE_NA:
-    tooltip = status = "JACK is sick";
-    status_image_path = STATUS_ICON_ERROR;
-    break;
-  case JACK_STATE_STOPPED:
-    status = "Stopped";
-    break;
-  case JACK_STATE_STARTED:
-    status = "xruns";
-    break;
-  default:
-    status = "???";
-    tooltip = "Internal error - unknown jack state";
-    status_image_path = STATUS_ICON_ERROR;
-  }
-
-  buffer = NULL;
-
-  switch (g_studio_state)
-  {
-  case STUDIO_STATE_NA:
-    name = "ladishd is down";
-    status_image_path = STATUS_ICON_DOWN;
-    break;
-  case STUDIO_STATE_SICK:
-  case STUDIO_STATE_UNKNOWN:
-    tooltip = name = "ladishd is sick";
-    status_image_path = STATUS_ICON_ERROR;
-    break;
-  case STUDIO_STATE_UNLOADED:
-    name = "No studio loaded";
-    status_image_path = STATUS_ICON_UNLOADED;
-    break;
-  case STUDIO_STATE_CRASHED:
-    status = "Crashed";
-    tooltip = "Crashed studio, save your work if you can and unload the studio";
-    status_image_path = STATUS_ICON_ERROR;
-    /* fall through */
-  case STUDIO_STATE_STOPPED:
-  case STUDIO_STATE_STARTED:
-    if (!studio_proxy_get_name(&buffer))
-    {
-      tooltip = "failed to get studio name";
-      log_error("%s", tooltip);
-      status_image_path = STATUS_ICON_ERROR;
-    }
-    else
-    {
-      name = buffer;
-      switch (g_studio_state)
-      {
-      case STUDIO_STATE_STARTED:
-        status_image_path = STATUS_ICON_STARTED;
-        tooltip = "Studio is started";
-        break;
-      case STUDIO_STATE_STOPPED:
-        status_image_path = STATUS_ICON_STOPPED;
-        tooltip = "Studio is stopped";
-        break;
-      }
-      break;
-    }
-  default:
-    name = "???";
-    tooltip = "Internal error - unknown studio state";
-    status_image_path = STATUS_ICON_ERROR;
-  }
-
-  gtk_progress_bar_set_text(GTK_PROGRESS_BAR(g_xrun_progress_bar), status);
-  gtk_label_set_text(GTK_LABEL(g_studio_status_label), name);
-
-  if (status_image_path == NULL || (pixbuf = load_pixbuf(status_image_path)) == NULL)
-  {
-    gtk_image_set_from_stock(GTK_IMAGE(g_status_image), GTK_STOCK_MISSING_IMAGE, GTK_ICON_SIZE_SMALL_TOOLBAR);
-  }
-  else
-  {
-    gtk_image_set_from_pixbuf(GTK_IMAGE(g_status_image), pixbuf);
-    g_object_unref(pixbuf);
-  }
-
-  //gtk_tool_item_set_tooltip_text(GTK_TOOL_ITEM(g_status_tool_item), tooltip);
-
-  if (g_jack_state == JACK_STATE_STARTED)
-  {
-    if (jack_proxy_sample_rate(&g_sample_rate))
-    {
-      char buf[100];
-
-      if (fmod(g_sample_rate, 1000.0) != 0.0)
-      {
-        snprintf(buf, sizeof(buf), "%.1f kHz", (float)g_sample_rate / 1000.0f);
-      }
-      else
-      {
-        snprintf(buf, sizeof(buf), "%u kHz", g_sample_rate / 1000);
-      }
-
-      gtk_label_set_text(GTK_LABEL(g_sample_rate_label), buf);
-    }
-    else
-    {
-      gtk_label_set_text(GTK_LABEL(g_sample_rate_label), "");
-    }
-  }
-  else
-  {
-    gtk_label_set_text(GTK_LABEL(g_sample_rate_label), "");
-    gtk_label_set_text(GTK_LABEL(g_latency_label), "");
-    gtk_label_set_text(GTK_LABEL(g_dsp_load_label), "");
-    gtk_label_set_text(GTK_LABEL(g_xruns_label), "");
-  }
-
-  if (buffer == NULL)
-  {
-    return false;
-  }
-
-  if (name_ptr_ptr != NULL)
-  {
-    *name_ptr_ptr = buffer;
-  }
-  else
-  {
-    free(buffer);
-  }
-
-  return true;
 }
 
 void control_proxy_on_daemon_appeared(void)
