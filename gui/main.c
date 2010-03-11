@@ -1158,7 +1158,7 @@ static void show_about(void)
   GtkWidget * dialog;
   GdkPixbuf * pixbuf;
   const char * authors[] = {"Nedko Arnaudov", NULL};
-  const char * artists[] = {"Lapo Calamandrei", NULL};
+  const char * artists[] = {"Lapo Calamandrei", "Nadejda Pancheva-Arnaudova", NULL};
   char * license;
 
   pixbuf =  load_pixbuf(ABOUT_DIALOG_LOGO);
