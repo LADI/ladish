@@ -1067,12 +1067,30 @@ void jack_disappeared(void)
 
 static void room_appeared(const char * opath, const char * name, const char * template)
 {
+  graph_view_handle graph_view;
+
   log_info("room \"%s\" appeared (%s). template is \"%s\"", name, opath, template);
+
+  if (!create_view(name, SERVICE_NAME, opath, true, false, false, &graph_view))
+  {
+    log_error("create_view() failed for room \"%s\"", name);
+  }
 }
 
 static void room_disappeared(const char * opath, const char * name, const char * template)
 {
+  graph_view_handle graph_view;
+
   log_info("room \"%s\" disappeared (%s). template is \"%s\"", name, opath, template);
+
+  graph_view = world_tree_find_by_opath(opath);
+  if (graph_view == NULL)
+  {
+    log_error("Unknown room disappeared");
+    return;
+  }
+
+  destroy_view(graph_view);
 }
 
 static void room_changed(const char * opath, const char * name, const char * template)

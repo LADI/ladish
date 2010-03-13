@@ -251,6 +251,11 @@ const char * get_view_name(graph_view_handle view)
   return view_ptr->name;
 }
 
+const char * get_view_opath(graph_view_handle view)
+{
+  return graph_proxy_get_object(view_ptr->graph);
+}
+
 bool set_view_name(graph_view_handle view, const char * cname)
 {
   char * name;

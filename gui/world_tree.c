@@ -465,6 +465,31 @@ void world_tree_add(graph_view_handle view, bool force_activate)
   }
 }
 
+graph_view_handle world_tree_find_by_opath(const char * opath)
+{
+  gint type;
+  graph_view_handle view;
+  GtkTreeIter iter;
+
+  if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(g_treestore), &iter))
+  {
+    do
+    {
+      gtk_tree_model_get(GTK_TREE_MODEL(g_treestore), &iter, COL_TYPE, &type, COL_VIEW, &view, -1);
+      if (type == entry_type_view)
+      {
+        if (strcmp(get_view_opath(view), opath) == 0)
+        {
+          return view;
+        }
+      }
+    }
+    while (gtk_tree_model_iter_next(GTK_TREE_MODEL(g_treestore), &iter));
+  }
+
+  return NULL;
+}
+
 static bool find_view(graph_view_handle view, GtkTreeIter * iter_ptr)
 {
   gint type;
