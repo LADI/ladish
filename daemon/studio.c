@@ -203,6 +203,28 @@ static void emit_room_appeared(ladish_room_handle room)
   dbus_message_unref(message_ptr);
 }
 
+static void emit_room_disappeared(ladish_room_handle room)
+{
+  DBusMessage * message_ptr;
+  DBusMessageIter iter;
+
+  message_ptr = dbus_message_new_signal(STUDIO_OBJECT_PATH, IFACE_STUDIO, "RoomDisappeared");
+  if (message_ptr == NULL)
+  {
+    log_error("dbus_message_new_signal() failed.");
+    return;
+  }
+
+  dbus_message_iter_init_append(message_ptr, &iter);
+
+  if (fill_room_info(&iter, room))
+  {
+    dbus_signal_send(g_dbus_connection, message_ptr);
+  }
+
+  dbus_message_unref(message_ptr);
+}
+
 void on_event_jack_started(void)
 {
   if (!studio_fetch_jack_settings())
@@ -877,6 +899,8 @@ fail:
 static void ladish_studio_delete_room(struct dbus_method_call * call_ptr)
 {
   const char * name;
+  struct list_head * node_ptr;
+  ladish_room_handle room;
 
   dbus_error_init(&g_dbus_error);
 
@@ -889,9 +913,22 @@ static void ladish_studio_delete_room(struct dbus_method_call * call_ptr)
 
   log_info("Delete studio room request (%s)", name);
 
+  list_for_each(node_ptr, &g_studio.rooms)
   {
-    method_return_new_void(call_ptr);
+    room = ladish_room_from_list_node(node_ptr);
+    if (strcmp(ladish_room_get_name(room), name) == 0)
+    {
+      list_del(node_ptr);
+      g_studio.room_count--;
+      emit_room_disappeared(room);
+      ladish_room_destroy(room);
+      method_return_new_void(call_ptr);
+      return;
+    }
   }
+
+  lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": Cannot find room with name \"%s\"",  call_ptr->method_name, name);
+  return;
 }
 
 METHOD_ARGS_BEGIN(GetName, "Get studio name")
