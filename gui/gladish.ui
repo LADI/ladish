@@ -546,6 +546,7 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
 </property>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox1">
+        <property name="orientation">vertical</property>
         <child internal-child="action_area">
           <object class="GtkHButtonBox" id="dialog-action_area1"/>
           <packing>
@@ -570,6 +571,7 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
       <object class="GtkVBox" id="dialog-vbox4">
         <property name="visible">True</property>
         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+        <property name="orientation">vertical</property>
         <property name="spacing">2</property>
         <child>
           <object class="GtkScrolledWindow" id="scrolledwindow1">
@@ -654,11 +656,13 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
       <object class="GtkVBox" id="dialog-vbox5">
         <property name="visible">True</property>
         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+        <property name="orientation">vertical</property>
         <property name="spacing">2</property>
         <child>
           <object class="GtkVBox" id="vbox1">
             <property name="visible">True</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+            <property name="orientation">vertical</property>
             <property name="spacing">10</property>
             <child>
               <object class="GtkFrame" id="frame1">
@@ -818,11 +822,13 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
       <object class="GtkVBox" id="dialog-vbox7">
         <property name="visible">True</property>
         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+        <property name="orientation">vertical</property>
         <property name="spacing">2</property>
         <child>
           <object class="GtkVBox" id="vbox3">
             <property name="visible">True</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+            <property name="orientation">vertical</property>
             <property name="spacing">10</property>
             <child>
               <object class="GtkFrame" id="frame7">
@@ -929,6 +935,7 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
     <property name="buttons">yes-no</property>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox6">
+        <property name="orientation">vertical</property>
         <child internal-child="action_area">
           <object class="GtkHButtonBox" id="dialog-action_area6"/>
           <packing>
@@ -952,6 +959,7 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
     <property name="buttons">close</property>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox8">
+        <property name="orientation">vertical</property>
         <child internal-child="action_area">
           <object class="GtkHButtonBox" id="dialog-action_area8"/>
           <packing>
