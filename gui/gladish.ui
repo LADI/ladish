@@ -25,7 +25,7 @@
                         <property name="label">_New Studio...</property>
                         <property name="visible">True</property>
                         <property name="use_underline">True</property>
-                        <property name="image">image5</property>
+                        <property name="image">image_new_studio</property>
                         <property name="use_stock">False</property>
                         <accelerator key="N" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                       </object>
@@ -35,7 +35,7 @@
                         <property name="label">_Load Studio</property>
                         <property name="visible">True</property>
                         <property name="use_underline">True</property>
-                        <property name="image">image6</property>
+                        <property name="image">image_load_studio</property>
                         <property name="use_stock">False</property>
                         <signal name="activate" handler="on_load_project_menuitem_activate"/>
                       </object>
@@ -53,7 +53,7 @@
                         <property name="sensitive">False</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="use_underline">True</property>
-                        <property name="image">image7</property>
+                        <property name="image">image_start_studio</property>
                         <property name="use_stock">False</property>
                         <accelerator key="F5" signal="activate"/>
                       </object>
@@ -64,7 +64,7 @@
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                        <property name="image">image8</property>
+                        <property name="image">image_stop_studio</property>
                         <property name="use_stock">False</property>
                         <accelerator key="F6" signal="activate"/>
                       </object>
@@ -81,7 +81,7 @@
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="use_underline">True</property>
-                        <property name="image">image9</property>
+                        <property name="image">image_rename_studio</property>
                         <property name="use_stock">False</property>
                         <accelerator key="R" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                       </object>
@@ -92,7 +92,7 @@
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="use_underline">True</property>
-                        <property name="image">image10</property>
+                        <property name="image">image_save_studio</property>
                         <property name="use_stock">False</property>
                         <accelerator key="S" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
@@ -103,7 +103,7 @@
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="use_underline">True</property>
-                        <property name="image">image11</property>
+                        <property name="image">image_save_studio_as</property>
                         <property name="use_stock">False</property>
                         <accelerator key="S" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                       </object>
@@ -114,7 +114,7 @@
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="use_underline">True</property>
-                        <property name="image">image12</property>
+                        <property name="image">image_unload_studio</property>
                         <property name="use_stock">False</property>
                         <accelerator key="U" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                       </object>
@@ -124,7 +124,7 @@
                         <property name="label">_Delete Studio</property>
                         <property name="visible">True</property>
                         <property name="use_underline">True</property>
-                        <property name="image">image13</property>
+                        <property name="image">image_delete_studio</property>
                         <property name="use_stock">False</property>
                         <signal name="activate" handler="on_delete_project_menuitem_activate"/>
                       </object>
@@ -135,7 +135,7 @@
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="use_underline">True</property>
-                        <property name="image">image14</property>
+                        <property name="image">image_create_room</property>
                         <property name="use_stock">False</property>
                         <accelerator key="C" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
@@ -171,7 +171,7 @@
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="use_underline">True</property>
-                        <property name="image">image15</property>
+                        <property name="image">image_destroy_room</property>
                         <property name="use_stock">False</property>
                         <accelerator key="D" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
@@ -182,7 +182,7 @@
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="use_underline">True</property>
-                        <property name="image">image16</property>
+                        <property name="image">image_load_project</property>
                         <property name="use_stock">False</property>
                         <accelerator key="L" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
@@ -205,7 +205,7 @@
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                        <property name="image">image4</property>
+                        <property name="image">image_start_app</property>
                         <property name="use_stock">False</property>
                         <accelerator key="F2" signal="activate"/>
                       </object>
@@ -235,7 +235,7 @@
                         <property name="label">_Arrange</property>
                         <property name="visible">True</property>
                         <property name="use_underline">True</property>
-                        <property name="image">image3</property>
+                        <property name="image">image_arrange_canvas</property>
                         <property name="use_stock">False</property>
                         <accelerator key="G" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                         <signal name="activate" handler="on_menu_view_arrange"/>
@@ -270,7 +270,7 @@
                         <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="use_underline">True</property>
-                        <property name="image">image1</property>
+                        <property name="image">image_configure_jack</property>
                         <property name="use_stock">False</property>
                       </object>
                     </child>
@@ -279,7 +279,7 @@
                         <property name="label">Reactivate ladishd</property>
                         <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                        <property name="image">image2</property>
+                        <property name="image">image_reactivate_ladishd</property>
                         <property name="use_stock">False</property>
                       </object>
                     </child>
@@ -1186,67 +1186,67 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
     <property name="stock_id">gtk-clear</property>
     <property name="is_important">True</property>
   </object>
-  <object class="GtkImage" id="image1">
+  <object class="GtkImage" id="image_configure_jack">
     <property name="visible">True</property>
     <property name="stock">gtk-preferences</property>
   </object>
-  <object class="GtkImage" id="image2">
+  <object class="GtkImage" id="image_reactivate_ladishd">
     <property name="visible">True</property>
     <property name="stock">gtk-refresh</property>
   </object>
-  <object class="GtkImage" id="image3">
+  <object class="GtkImage" id="image_arrange_canvas">
     <property name="visible">True</property>
     <property name="stock">gtk-sort-ascending</property>
   </object>
-  <object class="GtkImage" id="image4">
+  <object class="GtkImage" id="image_start_app">
     <property name="visible">True</property>
     <property name="stock">gtk-execute</property>
   </object>
-  <object class="GtkImage" id="image5">
+  <object class="GtkImage" id="image_new_studio">
     <property name="visible">True</property>
     <property name="stock">gtk-new</property>
   </object>
-  <object class="GtkImage" id="image6">
+  <object class="GtkImage" id="image_load_studio">
     <property name="visible">True</property>
     <property name="stock">gtk-open</property>
   </object>
-  <object class="GtkImage" id="image7">
+  <object class="GtkImage" id="image_start_studio">
     <property name="visible">True</property>
     <property name="stock">gtk-media-play</property>
   </object>
-  <object class="GtkImage" id="image8">
+  <object class="GtkImage" id="image_stop_studio">
     <property name="visible">True</property>
     <property name="stock">gtk-media-stop</property>
   </object>
-  <object class="GtkImage" id="image9">
+  <object class="GtkImage" id="image_rename_studio">
     <property name="visible">True</property>
     <property name="stock">gtk-edit</property>
   </object>
-  <object class="GtkImage" id="image10">
+  <object class="GtkImage" id="image_save_studio">
     <property name="visible">True</property>
     <property name="stock">gtk-save</property>
   </object>
-  <object class="GtkImage" id="image11">
+  <object class="GtkImage" id="image_save_studio_as">
     <property name="visible">True</property>
     <property name="stock">gtk-save-as</property>
   </object>
-  <object class="GtkImage" id="image12">
+  <object class="GtkImage" id="image_unload_studio">
     <property name="visible">True</property>
     <property name="stock">gtk-close</property>
   </object>
-  <object class="GtkImage" id="image13">
+  <object class="GtkImage" id="image_delete_studio">
     <property name="visible">True</property>
     <property name="stock">gtk-delete</property>
   </object>
-  <object class="GtkImage" id="image14">
+  <object class="GtkImage" id="image_create_room">
     <property name="visible">True</property>
     <property name="stock">gtk-add</property>
   </object>
-  <object class="GtkImage" id="image15">
+  <object class="GtkImage" id="image_destroy_room">
     <property name="visible">True</property>
     <property name="stock">gtk-delete</property>
   </object>
-  <object class="GtkImage" id="image16">
+  <object class="GtkImage" id="image_load_project">
     <property name="visible">True</property>
     <property name="stock">gtk-open</property>
   </object>
