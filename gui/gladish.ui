@@ -258,8 +258,8 @@
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_jack_clear">
                         <property name="visible">True</property>
-                        <property name="related_action">clear_xruns_and_max_dsp_load_action</property>
                         <property name="use_action_appearance">True</property>
+                        <property name="related_action">clear_xruns_and_max_dsp_load_action</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
@@ -406,8 +406,8 @@
             <child>
               <object class="GtkToolButton" id="clear_load_button">
                 <property name="visible">True</property>
-                <property name="related_action">clear_xruns_and_max_dsp_load_action</property>
                 <property name="use_action_appearance">True</property>
+                <property name="related_action">clear_xruns_and_max_dsp_load_action</property>
                 <property name="label" translatable="yes">Clear XRuns</property>
               </object>
               <packing>
@@ -937,7 +937,9 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
       <object class="GtkVBox" id="dialog-vbox6">
         <property name="orientation">vertical</property>
         <child internal-child="action_area">
-          <object class="GtkHButtonBox" id="dialog-action_area6"/>
+          <object class="GtkHButtonBox" id="dialog-action_area6">
+            <property name="layout_style">end</property>
+          </object>
           <packing>
             <property name="expand">False</property>
             <property name="pack_type">end</property>
@@ -961,7 +963,9 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
       <object class="GtkVBox" id="dialog-vbox8">
         <property name="orientation">vertical</property>
         <child internal-child="action_area">
-          <object class="GtkHButtonBox" id="dialog-action_area8"/>
+          <object class="GtkHButtonBox" id="dialog-action_area8">
+            <property name="layout_style">end</property>
+          </object>
           <packing>
             <property name="expand">False</property>
             <property name="pack_type">end</property>
