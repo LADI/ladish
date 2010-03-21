@@ -280,7 +280,7 @@ bool set_view_name(graph_view_handle view, const char * cname)
   return true;
 }
 
-canvas_handle get_current_canvas()
+canvas_handle get_current_canvas(void)
 {
   if (g_current_view == NULL)
   {
