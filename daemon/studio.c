@@ -804,7 +804,7 @@ static void ladish_studio_is_started(struct dbus_method_call * call_ptr)
   method_return_new_single(call_ptr, DBUS_TYPE_BOOLEAN, &started);
 }
 
-static void ladish_studio_new_room(struct dbus_method_call * call_ptr)
+static void ladish_studio_create_room(struct dbus_method_call * call_ptr)
 {
   const char * room_name;
   const char * template_name;
@@ -978,7 +978,7 @@ METHOD_ARGS_BEGIN(IsStarted, "Check whether studio is started")
   METHOD_ARG_DESCRIBE_OUT("started", "b", "Whether studio is started")
 METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(NewRoom, "New studio room")
+METHOD_ARGS_BEGIN(CreateRoom, "Create new studio room")
   METHOD_ARG_DESCRIBE_IN("room_name", "s", "Studio room name")
   METHOD_ARG_DESCRIBE_IN("room_template_name", "s", "Room template name")
 METHOD_ARGS_END
@@ -1000,7 +1000,7 @@ METHODS_BEGIN
   METHOD_DESCRIBE(Start, ladish_start_studio)
   METHOD_DESCRIBE(Stop, ladish_stop_studio)
   METHOD_DESCRIBE(IsStarted, ladish_studio_is_started)
-  METHOD_DESCRIBE(NewRoom, ladish_studio_new_room)
+  METHOD_DESCRIBE(CreateRoom, ladish_studio_create_room)
   METHOD_DESCRIBE(GetRoomList, ladish_studio_get_room_list)
   METHOD_DESCRIBE(DeleteRoom, ladish_studio_delete_room)
 METHODS_END

@@ -411,7 +411,7 @@ fail:
 
 #define array_iter_ptr ((DBusMessageIter *)context)
 
-bool room_list_filler(void * context, ladish_room_handle room)
+bool room_template_list_filler(void * context, ladish_room_handle room)
 {
   DBusMessageIter struct_iter;
   DBusMessageIter dict_iter;
@@ -439,7 +439,7 @@ bool room_list_filler(void * context, ladish_room_handle room)
 
 #undef array_iter_ptr
 
-static void ladish_get_room_list(struct dbus_method_call * call_ptr)
+static void ladish_get_room_template_list(struct dbus_method_call * call_ptr)
 {
   DBusMessageIter iter, array_iter;
 
@@ -456,7 +456,7 @@ static void ladish_get_room_list(struct dbus_method_call * call_ptr)
     goto fail_unref;
   }
 
-  if (!rooms_enum(&array_iter, room_list_filler))
+  if (!rooms_enum(&array_iter, room_template_list_filler))
   {
     goto fail_unref;
   }
@@ -476,7 +476,7 @@ fail:
   log_error("Ran out of memory trying to construct method return");
 }
 
-static void ladish_delete_room(struct dbus_method_call * call_ptr)
+static void ladish_delete_room_template(struct dbus_method_call * call_ptr)
 {
   const char * name;
 
@@ -496,7 +496,7 @@ static void ladish_delete_room(struct dbus_method_call * call_ptr)
   }
 }
 
-static void ladish_new_room(struct dbus_method_call * call_ptr)
+static void ladish_create_room_template(struct dbus_method_call * call_ptr)
 {
   const char * name;
 
@@ -570,16 +570,16 @@ METHOD_ARGS_BEGIN(GetApplicationList, "Get list of applications that can be laun
   METHOD_ARG_DESCRIBE_OUT("applications", "a(sa{sv})", "List of applications, name and properties")
 METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(GetRoomList, "Get list of rooms")
-  METHOD_ARG_DESCRIBE_OUT("room_list", "a(sa{sv})", "List of rooms, name and properties")
+METHOD_ARGS_BEGIN(GetRoomTemplateList, "Get list of room templates")
+  METHOD_ARG_DESCRIBE_OUT("room_template_list", "a(sa{sv})", "List of room templates (name and properties)")
 METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(NewRoom, "New room")
-  METHOD_ARG_DESCRIBE_IN("room_name", "s", "Name of the room")
+METHOD_ARGS_BEGIN(CreateRoomTemplate, "New room template")
+  METHOD_ARG_DESCRIBE_IN("room_template name", "s", "Name of the room template")
 METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(DeleteRoom, "Delete room")
-  METHOD_ARG_DESCRIBE_IN("room_name", "s", "Name of room to delete")
+METHOD_ARGS_BEGIN(DeleteRoomTemplate, "Delete room template")
+  METHOD_ARG_DESCRIBE_IN("room_template_name", "s", "Name of room template to delete")
 METHOD_ARGS_END
 
 METHOD_ARGS_BEGIN(Exit, "Tell ladish D-Bus service to exit")
@@ -592,9 +592,9 @@ METHODS_BEGIN
   METHOD_DESCRIBE(LoadStudio, ladish_load_studio)
   METHOD_DESCRIBE(DeleteStudio, ladish_delete_studio)
   METHOD_DESCRIBE(GetApplicationList, ladish_get_application_list)
-  METHOD_DESCRIBE(GetRoomList, ladish_get_room_list)
-  METHOD_DESCRIBE(NewRoom, ladish_new_room)
-  METHOD_DESCRIBE(DeleteRoom, ladish_delete_room)
+  METHOD_DESCRIBE(GetRoomTemplateList, ladish_get_room_template_list)
+  METHOD_DESCRIBE(CreateRoomTemplate, ladish_create_room_template)
+  METHOD_DESCRIBE(DeleteRoomTemplate, ladish_delete_room_template)
   METHOD_DESCRIBE(Exit, ladish_exit)
 METHODS_END
 

@@ -234,16 +234,16 @@ bool control_proxy_get_room_template_list(void (* callback)(void * context, cons
   DBusMessageIter array_iter;
   const char * name;
 
-  if (!dbus_call(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "GetRoomList", "", NULL, &reply_ptr))
+  if (!dbus_call(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "GetRoomTemplateList", "", NULL, &reply_ptr))
   {
-    log_error("GetRoomList() failed.");
+    log_error("GetRoomTemplateList() failed.");
     return false;
   }
 
   reply_signature = dbus_message_get_signature(reply_ptr);
   if (strcmp(reply_signature, "a(sa{sv})") != 0)
   {
-    log_error("GetRoomList() reply signature mismatch. '%s'", reply_signature);
+    log_error("GetRoomTemplateList() reply signature mismatch. '%s'", reply_signature);
     dbus_message_unref(reply_ptr);
     return false;
   }

@@ -97,25 +97,25 @@ def main():
     if len(sys.argv) == 1:
         print("Usage: %s [command] [command] ..." % os.path.basename(sys.argv[0]))
         print("Commands:")
-        print("    exit                 - exit ladish dbus service")
-        print("    slist                - list studios")
-        print("    alist                - list apps")
-        print("    sload <studioname>   - load studio")
-        print("    sdel <studioname>    - delete studio")
-        print("    snew [studioname]    - new studio")
-        print("    sisloaded            - is studio loaded?")
-        print("    sname                - get studio name")
-        print("    ssave                - save studio")
-        print("    sunload              - unload studio")
-        print("    srename <studioname> - rename studio")
-        print("    sstart               - start studio")
-        print("    sstop                - stop studio")
-        print("    rlist                - list rooms")
-        print("    rdel <roomname>      - delete room")
-        print("    rnew <roomname>      - new room")
-        print("    snewroom <name> <tname> - new studio room")
-        print("    srlist               - list studio rooms")
-        print("    sdelroom <name>      - delete studio room")
+        print("    exit                      - exit ladish dbus service")
+        print("    slist                     - list studios")
+        print("    alist                     - list apps")
+        print("    sload <studioname>        - load studio")
+        print("    sdel <studioname>         - delete studio")
+        print("    snew [studioname]         - new studio")
+        print("    sisloaded                 - is studio loaded?")
+        print("    sname                     - get studio name")
+        print("    ssave                     - save studio")
+        print("    sunload                   - unload studio")
+        print("    srename <studioname>      - rename studio")
+        print("    sstart                    - start studio")
+        print("    sstop                     - stop studio")
+        print("    rtlist                    - list room templates")
+        print("    rtdel <roomtemplatename>  - delete room template")
+        print("    rtnew <roomtemplatename>  - create new room template")
+        print("    snewroom <rname> <rtname> - create new studio room")
+        print("    srlist                    - list studio rooms")
+        print("    sdelroom <rname>          - delete studio room")
         sys.exit(0)
     
     bus = dbus.SessionBus()
@@ -187,31 +187,31 @@ def main():
                     print("yes")
                 else:
                     print("no")
-            elif arg == 'rlist':
-                print("--- room list")
-                for studio in control_iface.GetRoomList():
+            elif arg == 'rtlist':
+                print("--- list room templates")
+                for studio in control_iface.GetRoomTemplateList():
                     name = studio[0]
                     print('"%s"' % name)
-            elif arg == 'rnew':
-                print("--- room new")
+            elif arg == 'rtnew':
+                print("--- create new room template")
                 if index >= len(sys.argv):
-                    print("new room command requires room name argument")
+                    print("create new room template command requires room template name argument")
                     sys.exit()
 
                 arg = sys.argv[index]
                 index += 1
 
-                control_iface.NewRoom(arg)
-            elif arg == 'rdel':
-                print("--- room delete")
+                control_iface.CreateRoomTemplate(arg)
+            elif arg == 'rtdel':
+                print("--- delete room template")
                 if index >= len(sys.argv):
-                    print("delete room command requires room name argument")
+                    print("delete room template command requires room template name argument")
                     sys.exit()
 
                 arg = sys.argv[index]
                 index += 1
 
-                control_iface.DeleteRoom(arg)
+                control_iface.DeleteRoomTemplate(arg)
             else:
                 if not studio_obj:
                     studio_obj = bus.get_object(service_name, studio_object_path)
@@ -245,7 +245,7 @@ def main():
                     print("--- studio stop")
                     studio_iface.Stop()
                 elif arg == 'snewroom':
-                    print("--- new studio room")
+                    print("--- create new studio room")
                     if index + 1 >= len(sys.argv):
                         print("creation of studio room requires room name and room template name arguments")
                         sys.exit()
@@ -255,9 +255,9 @@ def main():
                     room_template_name = sys.argv[index]
                     index += 1
 
-                    studio_iface.NewRoom(room_name, room_template_name)
+                    studio_iface.CreateRoom(room_name, room_template_name)
                 elif arg == 'srlist':
-                    print("--- studio room list")
+                    print("--- list studio rooms")
                     for room in studio_iface.GetRoomList():
                         #print repr(room)
                         opath = room[0]
@@ -272,7 +272,7 @@ def main():
                         else:
                             print('"%s" (%s)' % (name, opath))
                 elif arg == 'sdelroom':
-                    print("--- studio room delete")
+                    print("--- delete studio room")
                     if index >= len(sys.argv):
                         print("delete studio room command requires room name argument")
                         sys.exit()
