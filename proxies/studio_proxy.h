@@ -50,4 +50,6 @@ studio_proxy_set_room_callbacks(
   void (* disappeared)(const char * opath, const char * name, const char * template),
   void (* changed)(const char * opath, const char * name, const char * template));
 
+bool studio_proxy_create_room(const char * name, const char * template);
+
 #endif /* #ifndef STUDIO_PROXY_H__2CEC623F_C998_4618_A947_D1A0016DF978__INCLUDED */

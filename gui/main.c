@@ -49,6 +49,7 @@
 #include "../proxies/studio_proxy.h"
 #include "ask_dialog.h"
 #include "../proxies/app_supervisor_proxy.h"
+#include "create_room_dialog.h"
 
 GtkWidget * g_main_win;
 
@@ -220,9 +221,9 @@ bool studio_state_changed(char ** name_ptr_ptr)
   gtk_widget_set_sensitive(g_menu_item_unload_studio, g_studio_state != STUDIO_STATE_UNLOADED);
   gtk_widget_set_sensitive(g_menu_item_rename_studio, g_studio_state == STUDIO_STATE_STOPPED || g_studio_state == STUDIO_STATE_STARTED);
   gtk_widget_set_sensitive(g_menu_item_start_app, g_studio_state == STUDIO_STATE_STOPPED || g_studio_state == STUDIO_STATE_STARTED);
-  //gtk_widget_set_sensitive(g_menu_item_create_room, g_studio_loaded);
-  //gtk_widget_set_sensitive(g_menu_item_destroy_room, g_studio_loaded);
-  //gtk_widget_set_sensitive(g_menu_item_load_project, g_studio_loaded);
+  gtk_widget_set_sensitive(g_menu_item_create_room, g_studio_state == STUDIO_STATE_STOPPED || g_studio_state == STUDIO_STATE_STARTED);
+  //gtk_widget_set_sensitive(g_menu_item_destroy_room, g_studio_state == STUDIO_STATE_STOPPED || g_studio_state == STUDIO_STATE_STARTED);
+  //gtk_widget_set_sensitive(g_menu_item_load_project, g_studio_state == STUDIO_STATE_STARTED);
 
   tooltip = NULL;
   status_image_path = NULL;
@@ -866,6 +867,27 @@ static void rename_studio(void)
   }
 }
 
+static void create_room(void)
+{
+  char * name;
+  char * template;
+
+  log_info("create room request");
+
+  if (create_room_dialog_run(&name, &template))
+  {
+    log_info("Creating new room '%s' from template '%s'", name, template);
+
+    if (!studio_proxy_create_room(name, template))
+    {
+      error_message_box("Room creation failed, please inspect logs.");
+    }
+
+    free(name);
+    free(template);
+  }
+}
+
 static gboolean poll_jack(gpointer data)
 {
   update_load();
@@ -1355,6 +1377,8 @@ int main(int argc, char** argv)
   gtk_box_pack_start(GTK_BOX(g_statusbar), g_dsp_load_label, FALSE, TRUE, 10);
   gtk_box_reorder_child(GTK_BOX(g_statusbar), g_dsp_load_label, 5);
 
+  create_room_dialog_init();
+
   buffer_size_clear();
 
   world_tree_init();
@@ -1399,6 +1423,7 @@ int main(int argc, char** argv)
   g_signal_connect(G_OBJECT(g_menu_item_jack_configure), "activate", G_CALLBACK(jack_configure), NULL);
   g_signal_connect(G_OBJECT(get_gtk_builder_widget("menu_item_help_about")), "activate", G_CALLBACK(show_about), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_start_app), "activate", G_CALLBACK(start_app), NULL);
+  g_signal_connect(G_OBJECT(g_menu_item_create_room), "activate", G_CALLBACK(create_room), NULL);
 
   g_signal_connect(G_OBJECT(g_menu_item_jack_latency_32), "toggled", G_CALLBACK(buffer_size_change_request), (gpointer)32);
   g_signal_connect(G_OBJECT(g_menu_item_jack_latency_64), "toggled", G_CALLBACK(buffer_size_change_request), (gpointer)64);
@@ -1421,6 +1446,7 @@ int main(int argc, char** argv)
   studio_proxy_uninit();
   control_proxy_uninit();
   dbus_uninit();
+  create_room_dialog_uninit();
   uninit_gtk_builder();
 
   return 0;

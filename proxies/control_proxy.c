@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of code that interfaces
@@ -222,5 +222,44 @@ bool control_proxy_exit(void)
     return false;
   }
 
+  return true;
+}
+
+bool control_proxy_get_room_template_list(void (* callback)(void * context, const char * template_name), void * context)
+{
+  DBusMessage * reply_ptr;
+  const char * reply_signature;
+  DBusMessageIter top_iter;
+  DBusMessageIter struct_iter;
+  DBusMessageIter array_iter;
+  const char * name;
+
+  if (!dbus_call(SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "GetRoomList", "", NULL, &reply_ptr))
+  {
+    log_error("GetRoomList() failed.");
+    return false;
+  }
+
+  reply_signature = dbus_message_get_signature(reply_ptr);
+  if (strcmp(reply_signature, "a(sa{sv})") != 0)
+  {
+    log_error("GetRoomList() reply signature mismatch. '%s'", reply_signature);
+    dbus_message_unref(reply_ptr);
+    return false;
+  }
+
+  dbus_message_iter_init(reply_ptr, &top_iter);
+  for (dbus_message_iter_recurse(&top_iter, &array_iter);
+       dbus_message_iter_get_arg_type(&array_iter) != DBUS_TYPE_INVALID;
+       dbus_message_iter_next(&array_iter))
+  {
+    dbus_message_iter_recurse(&array_iter, &struct_iter);
+    dbus_message_iter_get_basic(&struct_iter, &name);
+    callback(context, name);
+    dbus_message_iter_next(&struct_iter);
+    dbus_message_iter_next(&struct_iter);
+  }
+
+  dbus_message_unref(reply_ptr);
   return true;
 }

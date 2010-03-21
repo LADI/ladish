@@ -329,3 +329,8 @@ studio_proxy_set_room_callbacks(
 unref:
   dbus_message_unref(reply_ptr);
 }
+
+bool studio_proxy_create_room(const char * name, const char * template)
+{
+  return dbus_call(SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "NewRoom", "ss", &name, &template, "");
+}

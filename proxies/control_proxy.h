@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to code that interfaces
@@ -42,5 +42,6 @@ bool control_proxy_load_studio(const char * studio_name);
 bool control_proxy_delete_studio(const char * studio_name);
 bool control_proxy_exit(void);
 void control_proxy_ping(void);
+bool control_proxy_get_room_template_list(void (* callback)(void * context, const char * template_name), void * context);
 
 #endif /* #ifndef CONTROL_PROXY_H__8BC89E98_FE1B_4831_8B89_1A48F676E019__INCLUDED */
