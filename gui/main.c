@@ -786,6 +786,25 @@ void menu_request_create_room(void)
   }
 }
 
+void menu_request_destroy_room(void)
+{
+  const char * room;
+
+  room = get_current_view_room_name();
+  if (room == NULL)
+  {
+    ASSERT_NO_PASS;
+    return;
+  }
+
+  log_info("destroy room '%s' request", room);
+
+  if (!studio_proxy_delete_room(room))
+  {
+    error_message_box("Room deletion failed, please inspect logs.");
+  }
+}
+
 static gboolean poll_jack(gpointer data)
 {
   update_load();

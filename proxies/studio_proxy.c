@@ -334,3 +334,8 @@ bool studio_proxy_create_room(const char * name, const char * template)
 {
   return dbus_call(SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "NewRoom", "ss", &name, &template, "");
 }
+
+bool studio_proxy_delete_room(const char * name)
+{
+  return dbus_call(SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "DeleteRoom", "s", &name, "");
+}

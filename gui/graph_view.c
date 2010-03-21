@@ -28,6 +28,7 @@
 #include "graph_view.h"
 #include "gtk_builder.h"
 #include "world_tree.h"
+#include "menu.h"
 
 struct graph_view
 {
@@ -244,6 +245,7 @@ void activate_view(graph_view_handle view)
 {
   attach_canvas(view_ptr);
   set_main_window_title(view);
+  menu_view_activated(is_room_view(view));
 }
 
 const char * get_view_name(graph_view_handle view)
@@ -288,6 +290,21 @@ canvas_handle get_current_canvas(void)
   }
 
   return graph_canvas_get_canvas(g_current_view->graph_canvas);
+}
+
+const char * get_current_view_room_name(void)
+{
+  if (g_current_view == NULL || !is_room_view((graph_view_handle)g_current_view))
+  {
+    return NULL;
+  }
+
+  return g_current_view->name;
+}
+
+bool is_room_view(graph_view_handle view)
+{
+  return strcmp(graph_proxy_get_object(view_ptr->graph), STUDIO_OBJECT_PATH) != 0;
 }
 
 bool app_run_custom(graph_view_handle view, const char * command, const char * name, bool run_in_terminal, uint8_t level)

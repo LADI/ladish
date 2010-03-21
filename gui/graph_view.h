@@ -50,6 +50,8 @@ const char * get_view_name(graph_view_handle view);
 const char * get_view_opath(graph_view_handle view);
 bool set_view_name(graph_view_handle view, const char * name);
 canvas_handle get_current_canvas(void);
+const char * get_current_view_room_name(void);
+bool is_room_view(graph_view_handle view);
 
 ladish_app_supervisor_proxy_handle graph_view_get_app_supervisor(graph_view_handle view);
 bool app_run_custom(graph_view_handle view, const char * command, const char * name, bool run_in_terminal, uint8_t level);

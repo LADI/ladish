@@ -113,6 +113,7 @@ void menu_init(void)
   g_signal_connect(G_OBJECT(g_menu_item_jack_configure), "activate", G_CALLBACK(menu_request_jack_configure), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_start_app), "activate", G_CALLBACK(menu_request_start_app), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_create_room), "activate", G_CALLBACK(menu_request_create_room), NULL);
+  g_signal_connect(G_OBJECT(g_menu_item_destroy_room), "activate", G_CALLBACK(menu_request_destroy_room), NULL);
 
   g_signal_connect(G_OBJECT(g_menu_item_jack_latency_32), "toggled", G_CALLBACK(buffer_size_change_request), (gpointer)32);
   g_signal_connect(G_OBJECT(g_menu_item_jack_latency_64), "toggled", G_CALLBACK(buffer_size_change_request), (gpointer)64);
@@ -135,8 +136,6 @@ void menu_studio_state_changed(unsigned int studio_state)
   gtk_widget_set_sensitive(g_menu_item_rename_studio, studio_state == STUDIO_STATE_STOPPED || studio_state == STUDIO_STATE_STARTED);
   gtk_widget_set_sensitive(g_menu_item_start_app, studio_state == STUDIO_STATE_STOPPED || studio_state == STUDIO_STATE_STARTED);
   gtk_widget_set_sensitive(g_menu_item_create_room, studio_state == STUDIO_STATE_STOPPED || studio_state == STUDIO_STATE_STARTED);
-  //gtk_widget_set_sensitive(g_menu_item_destroy_room, studio_state == STUDIO_STATE_STOPPED || studio_state == STUDIO_STATE_STARTED);
-  //gtk_widget_set_sensitive(g_menu_item_load_project, studio_state == STUDIO_STATE_STARTED);
 }
 
 void menu_set_jack_latency_items_sensivity(bool sensitive)
@@ -199,4 +198,10 @@ bool menu_set_jack_latency(uint32_t buffer_size, bool force, bool * changed_ptr)
   }
 
   return true;
+}
+
+void menu_view_activated(bool room)
+{
+  gtk_widget_set_sensitive(g_menu_item_destroy_room, room);
+  //gtk_widget_set_sensitive(g_menu_item_load_project, room);
 }
