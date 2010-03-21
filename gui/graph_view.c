@@ -45,7 +45,7 @@ GtkScrolledWindow * g_main_scrolledwin;
 static struct graph_view * g_current_view;
 GtkWidget * g_view_label;
 
-const char * g_view_lavel_text =
+const char * g_view_label_text =
   "If you've started ladish for the first time, you should:\n\n"
   " 1. Create a new studio (in the menu, Studio -> New Studio)\n"
   " 2. Configure JACK (in the menu, Tools -> Configure JACK)\n"
@@ -59,7 +59,7 @@ void view_init(void)
   g_main_scrolledwin = GTK_SCROLLED_WINDOW(get_gtk_builder_widget("main_scrolledwin"));
   INIT_LIST_HEAD(&g_views);
 
-  g_view_label = gtk_label_new(g_view_lavel_text);
+  g_view_label = gtk_label_new(g_view_label_text);
   g_object_ref(g_view_label);
   gtk_widget_show(g_view_label);
 
