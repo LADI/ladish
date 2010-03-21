@@ -310,6 +310,7 @@ def build(bld):
             'gtk_builder.c',
             'ask_dialog.c',
             'create_room_dialog.c',
+            'menu.c',
             ]:
             gladish.source.append(os.path.join("gui", source))
 

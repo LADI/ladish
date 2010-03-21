@@ -25,7 +25,7 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "common.h"
+#include "internal.h"
 
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-lowlevel.h>
@@ -50,37 +50,15 @@
 #include "ask_dialog.h"
 #include "../proxies/app_supervisor_proxy.h"
 #include "create_room_dialog.h"
+#include "menu.h"
 
 GtkWidget * g_main_win;
 
 GtkAction * g_clear_xruns_and_max_dsp_action;
 GtkStatusbar * g_statusbar;
 
-GtkWidget * g_menu_item_new_studio;
-GtkWidget * g_menu_item_start_studio;
-GtkWidget * g_menu_item_stop_studio;
-GtkWidget * g_menu_item_save_studio;
-GtkWidget * g_menu_item_save_as_studio;
-GtkWidget * g_menu_item_unload_studio;
-GtkWidget * g_menu_item_rename_studio;
-GtkWidget * g_menu_item_create_room;
-GtkWidget * g_menu_item_destroy_room;
-GtkWidget * g_menu_item_load_project;
-GtkWidget * g_menu_item_daemon_exit;
-GtkWidget * g_menu_item_jack_configure;
-GtkCheckMenuItem * g_menu_item_jack_latency_32;
-GtkCheckMenuItem * g_menu_item_jack_latency_64;
-GtkCheckMenuItem * g_menu_item_jack_latency_128;
-GtkCheckMenuItem * g_menu_item_jack_latency_256;
-GtkCheckMenuItem * g_menu_item_jack_latency_512;
-GtkCheckMenuItem * g_menu_item_jack_latency_1024;
-GtkCheckMenuItem * g_menu_item_jack_latency_2048;
-GtkCheckMenuItem * g_menu_item_jack_latency_4096;
-GtkCheckMenuItem * g_menu_item_jack_latency_8192;
 GtkWidget * g_studio_status_label;
-GtkWidget * g_menu_item_view_toolbar;
 GtkWidget * g_toolbar;
-GtkWidget * g_menu_item_start_app;
 GtkWidget * g_status_image;
 
 GtkWidget * g_name_dialog;
@@ -101,14 +79,6 @@ graph_view_handle g_studio_view = NULL;
 static guint g_jack_poll_source_tag;
 static guint g_ladishd_poll_source_tag;
 static double g_jack_max_dsp_load = 0.0;
-
-#define STUDIO_STATE_UNKNOWN    0
-#define STUDIO_STATE_UNLOADED   1
-#define STUDIO_STATE_STOPPED    2
-#define STUDIO_STATE_STARTED    3
-#define STUDIO_STATE_CRASHED    4
-#define STUDIO_STATE_NA         5
-#define STUDIO_STATE_SICK       6
 
 static unsigned int g_studio_state = STUDIO_STATE_UNKNOWN;
 
@@ -214,16 +184,7 @@ bool studio_state_changed(char ** name_ptr_ptr)
   const char * tooltip;
   GdkPixbuf * pixbuf;
 
-  gtk_widget_set_sensitive(g_menu_item_start_studio, g_studio_state == STUDIO_STATE_STOPPED);
-  gtk_widget_set_sensitive(g_menu_item_stop_studio, g_studio_state == STUDIO_STATE_STARTED);
-  gtk_widget_set_sensitive(g_menu_item_save_studio, g_studio_state == STUDIO_STATE_STARTED);
-  gtk_widget_set_sensitive(g_menu_item_save_as_studio, g_studio_state == STUDIO_STATE_STARTED);
-  gtk_widget_set_sensitive(g_menu_item_unload_studio, g_studio_state != STUDIO_STATE_UNLOADED);
-  gtk_widget_set_sensitive(g_menu_item_rename_studio, g_studio_state == STUDIO_STATE_STOPPED || g_studio_state == STUDIO_STATE_STARTED);
-  gtk_widget_set_sensitive(g_menu_item_start_app, g_studio_state == STUDIO_STATE_STOPPED || g_studio_state == STUDIO_STATE_STARTED);
-  gtk_widget_set_sensitive(g_menu_item_create_room, g_studio_state == STUDIO_STATE_STOPPED || g_studio_state == STUDIO_STATE_STARTED);
-  //gtk_widget_set_sensitive(g_menu_item_destroy_room, g_studio_state == STUDIO_STATE_STOPPED || g_studio_state == STUDIO_STATE_STARTED);
-  //gtk_widget_set_sensitive(g_menu_item_load_project, g_studio_state == STUDIO_STATE_STARTED);
+  menu_studio_state_changed(g_studio_state);
 
   tooltip = NULL;
   status_image_path = NULL;
@@ -360,100 +321,37 @@ bool studio_state_changed(char ** name_ptr_ptr)
   return true;
 }
 
-void set_latency_items_sensivity(bool sensitive)
-{
-  gtk_widget_set_sensitive(GTK_WIDGET(g_menu_item_jack_latency_32), sensitive);
-  gtk_widget_set_sensitive(GTK_WIDGET(g_menu_item_jack_latency_64), sensitive);
-  gtk_widget_set_sensitive(GTK_WIDGET(g_menu_item_jack_latency_128), sensitive);
-  gtk_widget_set_sensitive(GTK_WIDGET(g_menu_item_jack_latency_256), sensitive);
-  gtk_widget_set_sensitive(GTK_WIDGET(g_menu_item_jack_latency_512), sensitive);
-  gtk_widget_set_sensitive(GTK_WIDGET(g_menu_item_jack_latency_1024), sensitive);
-  gtk_widget_set_sensitive(GTK_WIDGET(g_menu_item_jack_latency_2048), sensitive);
-  gtk_widget_set_sensitive(GTK_WIDGET(g_menu_item_jack_latency_4096), sensitive);
-  gtk_widget_set_sensitive(GTK_WIDGET(g_menu_item_jack_latency_8192), sensitive);
-}
-
 static void buffer_size_clear(void)
 {
-  set_latency_items_sensivity(false);
+  menu_set_jack_latency_items_sensivity(false);
   gtk_label_set_text(GTK_LABEL(g_latency_label), "");
 }
 
-static bool latency_changing = false;
-
 static void buffer_size_set(uint32_t size, bool force)
 {
-  GtkCheckMenuItem * item_ptr;
+  bool changed;
+  char buf[100];
 
-  switch (size)
+  if (!menu_set_jack_latency(size, force, &changed))
   {
-  case 32:
-    item_ptr = g_menu_item_jack_latency_32;
-    break;
-  case 64:
-    item_ptr = g_menu_item_jack_latency_64;
-    break;
-  case 128:
-    item_ptr = g_menu_item_jack_latency_128;
-    break;
-  case 256:
-    item_ptr = g_menu_item_jack_latency_256;
-    break;
-  case 512:
-    item_ptr = g_menu_item_jack_latency_512;
-    break;
-  case 1024:
-    item_ptr = g_menu_item_jack_latency_1024;
-    break;
-  case 2048:
-    item_ptr = g_menu_item_jack_latency_2048;
-    break;
-  case 4096:
-    item_ptr = g_menu_item_jack_latency_4096;
-    break;
-  case 8192:
-    item_ptr = g_menu_item_jack_latency_8192;
-    break;
-  default:
-    //log_error("unknown jack buffer size %"PRIu32, size);
     buffer_size_clear();
     return;
   }
 
-  if (force || !item_ptr->active)
+  if (changed)
   {
     log_info("JACK latency changed: %"PRIu32" samples", size);
-    latency_changing = true;
-    gtk_check_menu_item_set_active(item_ptr, TRUE);
-    latency_changing = false;
 
-    {
-      char buf[100];
-      snprintf(buf, sizeof(buf), "%4.1f ms (%"PRIu32")", (float)size / (float)g_sample_rate * 1000.0f, size);
-      gtk_label_set_text(GTK_LABEL(g_latency_label), buf);
-    }
+    snprintf(buf, sizeof(buf), "%4.1f ms (%"PRIu32")", (float)size / (float)g_sample_rate * 1000.0f, size);
+    gtk_label_set_text(GTK_LABEL(g_latency_label), buf);
   }
 }
 
-static void buffer_size_change_request(GtkCheckMenuItem * item_ptr, gpointer user_data)
+void menu_request_jack_latency_change(uint32_t buffer_size)
 {
-  uint32_t size;
+  log_info("JACK latency change request: %"PRIu32" samples", buffer_size);
 
-  if (latency_changing)
-  { /* skip activations because of gtk_check_menu_item_set_active() called from buffer_size_set() */
-    return;
-  }
-
-  if (!item_ptr->active)
-  { /* skip radio button deactivations, we are interested only in activations */
-    return;
-  }
-
-  size = (uint32_t)(guintptr)user_data;
-
-  log_info("JACK latency change request: %"PRIu32" samples", size);
-
-  if (!jack_proxy_set_buffer_size(size))
+  if (!jack_proxy_set_buffer_size(buffer_size))
   {
     log_error("cannot set JACK buffer size");
   }
@@ -648,7 +546,7 @@ static void arrange(void)
   }
 }
 
-static void daemon_exit(GtkWidget * item)
+void menu_request_daemon_exit(void)
 {
   log_info("Daemon exit request");
 
@@ -658,7 +556,7 @@ static void daemon_exit(GtkWidget * item)
   }
 }
 
-static void jack_configure(GtkWidget * item)
+void menu_request_jack_configure(void)
 {
   GError * error_ptr;
   gchar * argv[] = {"ladiconf", NULL};
@@ -777,7 +675,7 @@ static void populate_studio_list_menu(GtkMenuItem * menu_item, struct studio_lis
   }
 }
 
-static void save_studio(void)
+void menu_request_save_studio(void)
 {
   log_info("save studio request");
   if (!studio_proxy_save())
@@ -786,7 +684,7 @@ static void save_studio(void)
   }
 }
 
-static void save_as_studio(void)
+void menu_request_save_as_studio(void)
 {
   char * new_name;
 
@@ -803,7 +701,7 @@ static void save_as_studio(void)
   }
 }
 
-static void new_studio(void)
+void menu_request_new_studio(void)
 {
   char * new_name;
 
@@ -820,12 +718,12 @@ static void new_studio(void)
   }
 }
 
-static void start_app(void)
+void menu_request_start_app(void)
 {
   run_custom_command_dialog();
 }
 
-static void start_studio(void)
+void menu_request_start_studio(void)
 {
   log_info("start studio request");
   if (!studio_proxy_start())
@@ -834,7 +732,7 @@ static void start_studio(void)
   }
 }
 
-static void stop_studio(void)
+void menu_request_stop_studio(void)
 {
   log_info("stop studio request");
   if (!studio_proxy_stop())
@@ -843,7 +741,7 @@ static void stop_studio(void)
   }
 }
 
-static void unload_studio(void)
+void menu_request_unload_studio(void)
 {
   log_info("unload studio request");
   if (!studio_proxy_unload())
@@ -852,7 +750,7 @@ static void unload_studio(void)
   }
 }
 
-static void rename_studio(void)
+void menu_request_rename_studio(void)
 {
   char * new_name;
 
@@ -867,7 +765,7 @@ static void rename_studio(void)
   }
 }
 
-static void create_room(void)
+void menu_request_create_room(void)
 {
   char * name;
   char * template;
@@ -1028,7 +926,7 @@ void jack_started(void)
   g_jack_state = JACK_STATE_STARTED;
   studio_state_changed(NULL);
 
-  set_latency_items_sensivity(true);
+  menu_set_jack_latency_items_sensivity(true);
   update_buffer_size(true);
   gtk_action_set_sensitive(g_clear_xruns_and_max_dsp_action, true);
 
@@ -1047,7 +945,7 @@ void jack_stopped(void)
   g_jack_state = JACK_STATE_STOPPED;
   studio_state_changed(NULL);
 
-  set_latency_items_sensivity(false);
+  menu_set_jack_latency_items_sensivity(false);
   buffer_size_clear();
   gtk_action_set_sensitive(g_clear_xruns_and_max_dsp_action, false);
   gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_xrun_progress_bar), 0.0);
@@ -1154,9 +1052,9 @@ init_studio_list(
   g_signal_connect(G_OBJECT(studio_list_ptr->menu_item), "activate", G_CALLBACK(populate_studio_list_menu), studio_list_ptr);
 }
 
-static void toggle_toolbar(void)
+void menu_request_toggle_toolbar(bool visible)
 {
-	if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(g_menu_item_view_toolbar)))
+	if (visible)
   {
 		gtk_widget_show(g_toolbar);
   }
@@ -1313,20 +1211,6 @@ int main(int argc, char** argv)
 
   g_main_win = get_gtk_builder_widget("main_win");
   g_clear_xruns_and_max_dsp_action = GTK_ACTION(get_gtk_builder_object("clear_xruns_and_max_dsp_load_action"));
-  g_menu_item_new_studio = get_gtk_builder_widget("menu_item_new_studio");
-  g_menu_item_start_app = get_gtk_builder_widget("menu_item_start_app");
-  g_menu_item_start_studio = get_gtk_builder_widget("menu_item_start_studio");
-  g_menu_item_stop_studio = get_gtk_builder_widget("menu_item_stop_studio");
-  g_menu_item_save_studio = get_gtk_builder_widget("menu_item_save_studio");
-  g_menu_item_save_as_studio = get_gtk_builder_widget("menu_item_save_as_studio");
-  g_menu_item_unload_studio = get_gtk_builder_widget("menu_item_unload_studio");
-  g_menu_item_rename_studio = get_gtk_builder_widget("menu_item_rename_studio");
-  g_menu_item_create_room = get_gtk_builder_widget("menu_item_create_room");
-  g_menu_item_destroy_room = get_gtk_builder_widget("menu_item_destroy_room");
-  g_menu_item_load_project = get_gtk_builder_widget("menu_item_load_project");
-  g_menu_item_daemon_exit = get_gtk_builder_widget("menu_item_daemon_exit");
-  g_menu_item_jack_configure = get_gtk_builder_widget("menu_item_jack_configure");
-  g_menu_item_view_toolbar = get_gtk_builder_widget("menu_item_view_toolbar");
   g_toolbar = get_gtk_builder_widget("toolbar");
   g_statusbar = GTK_STATUSBAR(get_gtk_builder_widget("statusbar"));
   g_xrun_progress_bar = get_gtk_builder_widget("xrun_progress_bar");
@@ -1336,16 +1220,6 @@ int main(int argc, char** argv)
 
   init_studio_list(&g_load_studio_list, "menu_item_load_studio", "load_studio_menu", on_load_studio);
   init_studio_list(&g_delete_studio_list, "menu_item_delete_studio", "delete_studio_menu", on_delete_studio);
-
-  g_menu_item_jack_latency_32   = GTK_CHECK_MENU_ITEM(get_gtk_builder_widget("menu_item_jack_latency_32"));
-  g_menu_item_jack_latency_64   = GTK_CHECK_MENU_ITEM(get_gtk_builder_widget("menu_item_jack_latency_64"));
-  g_menu_item_jack_latency_128  = GTK_CHECK_MENU_ITEM(get_gtk_builder_widget("menu_item_jack_latency_128"));
-  g_menu_item_jack_latency_256  = GTK_CHECK_MENU_ITEM(get_gtk_builder_widget("menu_item_jack_latency_256"));
-  g_menu_item_jack_latency_512  = GTK_CHECK_MENU_ITEM(get_gtk_builder_widget("menu_item_jack_latency_512"));
-  g_menu_item_jack_latency_1024 = GTK_CHECK_MENU_ITEM(get_gtk_builder_widget("menu_item_jack_latency_1024"));
-  g_menu_item_jack_latency_2048 = GTK_CHECK_MENU_ITEM(get_gtk_builder_widget("menu_item_jack_latency_2048"));
-  g_menu_item_jack_latency_4096 = GTK_CHECK_MENU_ITEM(get_gtk_builder_widget("menu_item_jack_latency_4096"));
-  g_menu_item_jack_latency_8192 = GTK_CHECK_MENU_ITEM(get_gtk_builder_widget("menu_item_jack_latency_8192"));
 
   g_studio_status_label = gtk_label_new("studioname");
   gtk_widget_show(g_studio_status_label);
@@ -1386,6 +1260,8 @@ int main(int argc, char** argv)
 
   setup_accelerators();
 
+  menu_init();
+
   dbus_init();
 
   if (!jack_proxy_init(jack_started, jack_stopped, jack_appeared, jack_disappeared))
@@ -1411,29 +1287,7 @@ int main(int argc, char** argv)
   g_signal_connect(G_OBJECT(g_main_win), "destroy", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(G_OBJECT(get_gtk_builder_widget("menu_item_quit")), "activate", G_CALLBACK(gtk_main_quit), NULL);
   g_signal_connect(G_OBJECT(get_gtk_builder_widget("menu_item_view_arrange")), "activate", G_CALLBACK(arrange), NULL);
-  g_signal_connect(G_OBJECT(g_menu_item_view_toolbar), "activate", G_CALLBACK(toggle_toolbar), NULL);
-  g_signal_connect(G_OBJECT(g_menu_item_new_studio), "activate", G_CALLBACK(new_studio), NULL);
-  g_signal_connect(G_OBJECT(g_menu_item_start_studio), "activate", G_CALLBACK(start_studio), NULL);
-  g_signal_connect(G_OBJECT(g_menu_item_stop_studio), "activate", G_CALLBACK(stop_studio), NULL);
-  g_signal_connect(G_OBJECT(g_menu_item_unload_studio), "activate", G_CALLBACK(unload_studio), NULL);
-  g_signal_connect(G_OBJECT(g_menu_item_save_studio), "activate", G_CALLBACK(save_studio), NULL);
-  g_signal_connect(G_OBJECT(g_menu_item_save_as_studio), "activate", G_CALLBACK(save_as_studio), NULL);
-  g_signal_connect(G_OBJECT(g_menu_item_rename_studio), "activate", G_CALLBACK(rename_studio), NULL);
-  g_signal_connect(G_OBJECT(g_menu_item_daemon_exit), "activate", G_CALLBACK(daemon_exit), NULL);
-  g_signal_connect(G_OBJECT(g_menu_item_jack_configure), "activate", G_CALLBACK(jack_configure), NULL);
   g_signal_connect(G_OBJECT(get_gtk_builder_widget("menu_item_help_about")), "activate", G_CALLBACK(show_about), NULL);
-  g_signal_connect(G_OBJECT(g_menu_item_start_app), "activate", G_CALLBACK(start_app), NULL);
-  g_signal_connect(G_OBJECT(g_menu_item_create_room), "activate", G_CALLBACK(create_room), NULL);
-
-  g_signal_connect(G_OBJECT(g_menu_item_jack_latency_32), "toggled", G_CALLBACK(buffer_size_change_request), (gpointer)32);
-  g_signal_connect(G_OBJECT(g_menu_item_jack_latency_64), "toggled", G_CALLBACK(buffer_size_change_request), (gpointer)64);
-  g_signal_connect(G_OBJECT(g_menu_item_jack_latency_128), "toggled", G_CALLBACK(buffer_size_change_request), (gpointer)128);
-  g_signal_connect(G_OBJECT(g_menu_item_jack_latency_256), "toggled", G_CALLBACK(buffer_size_change_request), (gpointer)256);
-  g_signal_connect(G_OBJECT(g_menu_item_jack_latency_512), "toggled", G_CALLBACK(buffer_size_change_request), (gpointer)512);
-  g_signal_connect(G_OBJECT(g_menu_item_jack_latency_1024), "toggled", G_CALLBACK(buffer_size_change_request), (gpointer)1024);
-  g_signal_connect(G_OBJECT(g_menu_item_jack_latency_2048), "toggled", G_CALLBACK(buffer_size_change_request), (gpointer)2048);
-  g_signal_connect(G_OBJECT(g_menu_item_jack_latency_4096), "toggled", G_CALLBACK(buffer_size_change_request), (gpointer)4096);
-  g_signal_connect(G_OBJECT(g_menu_item_jack_latency_8192), "toggled", G_CALLBACK(buffer_size_change_request), (gpointer)8192);
 
   g_signal_connect(G_OBJECT(g_clear_xruns_and_max_dsp_action), "activate", G_CALLBACK(clear_xruns_and_max_dsp), NULL);
 
