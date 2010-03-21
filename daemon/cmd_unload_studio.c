@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the "unload studio" command
@@ -38,6 +38,8 @@ static bool run(void * context)
   ladish_graph_dump(g_studio.jack_graph);
   ladish_graph_clear(g_studio.studio_graph, false);
   ladish_graph_clear(g_studio.jack_graph, true);
+
+  studio_remove_all_rooms();
 
   jack_conf_clear();
 

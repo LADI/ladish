@@ -931,6 +931,25 @@ static void ladish_studio_delete_room(struct dbus_method_call * call_ptr)
   return;
 }
 
+void studio_remove_all_rooms(void)
+{
+  struct list_head * node_ptr;
+  ladish_room_handle room;
+
+  while (!list_empty(&g_studio.rooms))
+  {
+    node_ptr = g_studio.rooms.next;
+    list_del(node_ptr);
+    room = ladish_room_from_list_node(node_ptr);
+    ASSERT(g_studio.room_count > 0);
+    g_studio.room_count--;
+    emit_room_disappeared(room);
+    ladish_room_destroy(room);
+  }
+
+  ASSERT(g_studio.room_count == 0);
+}
+
 METHOD_ARGS_BEGIN(GetName, "Get studio name")
   METHOD_ARG_DESCRIBE_OUT("studio_name", "s", "Name of studio")
 METHOD_ARGS_END
