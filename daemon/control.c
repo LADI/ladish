@@ -42,9 +42,9 @@ UUID_DEFINE(empty_room,0x80,0x5E,0x48,0x5F,0x65,0xE4,0x4C,0x37,0xA9,0x59,0x2A,0x
 /* c603f2a0-d96a-493e-a8cf-55581d950aa9 */
 UUID_DEFINE(basic_room,0xC6,0x03,0xF2,0xA0,0xD9,0x6A,0x49,0x3E,0xA8,0xCF,0x55,0x58,0x1D,0x95,0x0A,0xA9);
 
-static struct list_head g_rooms;
+static struct list_head g_room_templates;
 
-bool create_builtin_rooms(void)
+bool create_builtin_room_templates(void)
 {
   ladish_room_handle room;
 
@@ -54,7 +54,7 @@ bool create_builtin_rooms(void)
     return false;
   }
 
-  list_add_tail(ladish_room_get_list_node(room), &g_rooms);
+  list_add_tail(ladish_room_get_list_node(room), &g_room_templates);
 
   if (!ladish_room_create(basic_room, "Basic", NULL, NULL, &room))
   {
@@ -62,14 +62,14 @@ bool create_builtin_rooms(void)
     return false;
   }
 
-  list_add_tail(ladish_room_get_list_node(room), &g_rooms);
+  list_add_tail(ladish_room_get_list_node(room), &g_room_templates);
 
   return true;
 }
 
-bool create_rooms(void)
+bool create_room_templates(void)
 {
-  if (!create_builtin_rooms())
+  if (!create_builtin_room_templates())
   {
     return false;
   }
@@ -77,42 +77,42 @@ bool create_rooms(void)
   return true;
 }
 
-void maybe_create_rooms(void)
+void maybe_create_room_templates(void)
 {
-  if (list_empty(&g_rooms))
+  if (list_empty(&g_room_templates))
   {
-    create_rooms();
+    create_room_templates();
   }
 }
 
-bool rooms_init(void)
+bool room_templates_init(void)
 {
-  INIT_LIST_HEAD(&g_rooms);
+  INIT_LIST_HEAD(&g_room_templates);
 
   return true;
 }
 
-void rooms_uninit(void)
+void room_templates_uninit(void)
 {
   struct list_head * node_ptr;
   ladish_room_handle room;
 
-  while (!list_empty(&g_rooms))
+  while (!list_empty(&g_room_templates))
   {
-    node_ptr = g_rooms.next;
+    node_ptr = g_room_templates.next;
     list_del(node_ptr);
     room = ladish_room_from_list_node(node_ptr);
     ladish_room_destroy(room);
   }
 }
 
-bool rooms_enum(void * context, bool (* callback)(void * context, ladish_room_handle room))
+bool room_templates_enum(void * context, bool (* callback)(void * context, ladish_room_handle room))
 {
   struct list_head * node_ptr;
 
-  maybe_create_rooms();
+  maybe_create_room_templates();
 
-  list_for_each(node_ptr, &g_rooms)
+  list_for_each(node_ptr, &g_room_templates)
   {
     if (!callback(context, ladish_room_from_list_node(node_ptr)))
     {
@@ -128,9 +128,9 @@ ladish_room_handle find_room_template_by_name(const char * name)
   ladish_room_handle room;
   struct list_head * node_ptr;
 
-  maybe_create_rooms();
+  maybe_create_room_templates();
 
-  list_for_each(node_ptr, &g_rooms)
+  list_for_each(node_ptr, &g_room_templates)
   {
     room = ladish_room_from_list_node(node_ptr);
     if (strcmp(ladish_room_get_name(room), name) == 0)
@@ -148,9 +148,9 @@ ladish_room_handle find_room_template_by_uuid(const uuid_t uuid_ptr)
   struct list_head * node_ptr;
   uuid_t uuid;
 
-  maybe_create_rooms();
+  maybe_create_room_templates();
 
-  list_for_each(node_ptr, &g_rooms)
+  list_for_each(node_ptr, &g_room_templates)
   {
     room = ladish_room_from_list_node(node_ptr);
     ladish_room_get_uuid(room, uuid);
@@ -456,7 +456,7 @@ static void ladish_get_room_template_list(struct dbus_method_call * call_ptr)
     goto fail_unref;
   }
 
-  if (!rooms_enum(&array_iter, room_template_list_filler))
+  if (!room_templates_enum(&array_iter, room_template_list_filler))
   {
     goto fail_unref;
   }

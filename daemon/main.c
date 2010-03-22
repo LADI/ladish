@@ -269,7 +269,7 @@ int main(int argc, char ** argv, char ** envp)
 
   loader_init(studio_on_child_exit);
 
-  if (!rooms_init())
+  if (!room_templates_init())
   {
     goto uninit_loader;
   }
@@ -277,7 +277,7 @@ int main(int argc, char ** argv, char ** envp)
   if (!connect_dbus())
   {
     log_error("Failed to connecto to D-Bus");
-    goto uninit_rooms;
+    goto uninit_room_templates;
   }
 
   /* install the signal handlers */
@@ -319,8 +319,8 @@ int main(int argc, char ** argv, char ** envp)
 uninit_dbus:
   disconnect_dbus();
 
-uninit_rooms:
-  rooms_uninit();
+uninit_room_templates:
+  room_templates_uninit();
 
 uninit_loader:
   loader_uninit();

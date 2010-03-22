@@ -36,8 +36,8 @@ void emit_studio_appeared(void);
 void emit_studio_disappeared(void);
 void emit_clean_exit(void);
 
-bool rooms_init(void);
-void rooms_uninit(void);
+bool room_templates_init(void);
+void room_templates_uninit(void);
 ladish_room_handle find_room_template_by_name(const char * name);
 ladish_room_handle find_room_template_by_uuid(const uuid_t uuid_ptr);
 
