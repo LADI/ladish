@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the interface of the port objects
@@ -31,7 +31,8 @@
 
 typedef struct ladish_port_tag { int unused; } * ladish_port_handle;
 
-bool ladish_port_create(uuid_t uuid_ptr, ladish_port_handle * port_handle_ptr);
+bool ladish_port_create(const uuid_t uuid_ptr, ladish_port_handle * port_handle_ptr);
+bool ladish_port_create_copy(ladish_port_handle port_handle, ladish_port_handle * port_handle_ptr);
 void ladish_port_destroy(ladish_port_handle port_handle);
 ladish_dict_handle ladish_port_get_dict(ladish_port_handle port_handle);
 void ladish_port_get_uuid(ladish_port_handle port_handle, uuid_t uuid);

@@ -44,37 +44,181 @@ UUID_DEFINE(basic_room,0xC6,0x03,0xF2,0xA0,0xD9,0x6A,0x49,0x3E,0xA8,0xCF,0x55,0x
 
 static struct list_head g_room_templates;
 
-bool create_builtin_room_templates(void)
+static bool create_empty_room_template(const uuid_t uuid_ptr, const char * name, ladish_room_handle * room_ptr)
 {
-  ladish_room_handle room;
-
-  if (!ladish_room_create(empty_room, "Empty", NULL, NULL, &room))
+  if (!ladish_room_create(uuid_ptr, name, NULL, NULL, room_ptr))
   {
-    log_error("ladish_room_create() failed.");
+    log_error("ladish_room_create() failed for room template \"%s\".", name);
     return false;
   }
-
-  list_add_tail(ladish_room_get_list_node(room), &g_room_templates);
-
-  if (!ladish_room_create(basic_room, "Basic", NULL, NULL, &room))
-  {
-    log_error("ladish_room_create() failed.");
-    return false;
-  }
-
-  list_add_tail(ladish_room_get_list_node(room), &g_room_templates);
 
   return true;
 }
 
-bool create_room_templates(void)
+struct room_descriptor
 {
-  if (!create_builtin_room_templates())
+  const char * name;
+  ladish_room_handle room;
+  ladish_graph_handle graph;
+  ladish_client_handle capture;
+  ladish_client_handle playback;
+};
+
+static
+bool
+create_room_template(
+  const uuid_t uuid_ptr,
+  const char * name,
+  struct room_descriptor * room_descriptor_ptr)
+{
+  ladish_room_handle room;
+  ladish_graph_handle graph;
+  ladish_client_handle capture;
+  ladish_client_handle playback;
+
+  if (!create_empty_room_template(uuid_ptr, name, &room))
   {
+    log_error("ladish_room_create() failed for room template \"%s\".", name);
+    goto fail;
+  }
+
+  graph = ladish_room_get_graph(room);
+
+  if (!ladish_client_create(ladish_wkclient_capture, true, true, false, &capture))
+  {
+    log_error("ladish_client_create() failed to create capture client to room template \"%s\".", name);
+    goto fail_destroy;
+  }
+
+  if (!ladish_graph_add_client(graph, capture, "Capture", false))
+  {
+    log_error("ladish_graph_add_client() failed to add capture client to room template \"%s\".", name);
+    goto fail_destroy;
+  }
+
+  if (!ladish_client_create(ladish_wkclient_playback, true, true, false, &playback))
+  {
+    log_error("ladish_client_create() failed to create playback client to room template \"%s\".", name);
+    goto fail_destroy;
+  }
+
+  if (!ladish_graph_add_client(graph, playback, "Playback", false))
+  {
+    log_error("ladish_graph_add_client() failed to add playback client to room template \"%s\".", name);
+    goto fail_destroy;
+  }
+
+  room_descriptor_ptr->name = ladish_room_get_name(room);
+  room_descriptor_ptr->room = room;
+  room_descriptor_ptr->graph = graph;
+  room_descriptor_ptr->capture = capture;
+  room_descriptor_ptr->playback = playback;
+
+  return true;
+
+fail_destroy:
+  ladish_room_destroy(room);    /* this will destroy the graph clients as well */
+fail:
+  return false;
+}
+
+static
+bool
+create_room_template_port(
+  struct room_descriptor * room_descriptor_ptr,
+  const uuid_t uuid_ptr,
+  const char * name,
+  uint32_t type,
+  uint32_t flags)
+{
+  ladish_port_handle port;
+  bool playback;
+  ladish_client_handle client;
+
+  playback = (flags & JACKDBUS_PORT_FLAG_INPUT) != 0;
+  ASSERT(playback || (flags & JACKDBUS_PORT_FLAG_OUTPUT) != 0); /* playback or capture */
+  ASSERT(!(playback && (flags & JACKDBUS_PORT_FLAG_OUTPUT) != 0)); /* but not both */
+  client = playback ? room_descriptor_ptr->playback : room_descriptor_ptr->capture;
+
+  if (!ladish_port_create(uuid_ptr, &port))
+  {
+    log_error("Creation of room template \"%s\" %s port \"%s\" failed.", room_descriptor_ptr->name, playback ? "playback" : "capture", name);
+    return false;
+  }
+
+  if (!ladish_graph_add_port(room_descriptor_ptr->graph, client, port, name, type, flags, false))
+  {
+    log_error("Adding of room template \"%s\" %s port \"%s\" to graph failed.", room_descriptor_ptr->name, playback ? "playback" : "capture", name);
+    ladish_port_destroy(port);
     return false;
   }
 
   return true;
+}
+
+void create_builtin_room_templates(void)
+{
+  struct room_descriptor room_descriptor;
+
+  if (create_empty_room_template(empty_room, "Empty", &room_descriptor.room))
+  {
+    list_add_tail(ladish_room_get_list_node(room_descriptor.room), &g_room_templates);
+  }
+
+  if (create_room_template(basic_room, "Basic", &room_descriptor))
+  {
+    if (!create_room_template_port(&room_descriptor, ladish_wkport_capture_left, "Left", JACKDBUS_PORT_TYPE_AUDIO, JACKDBUS_PORT_FLAG_OUTPUT))
+    {
+      goto fail;
+    }
+
+    if (!create_room_template_port(&room_descriptor, ladish_wkport_capture_right, "Right", JACKDBUS_PORT_TYPE_AUDIO, JACKDBUS_PORT_FLAG_OUTPUT))
+    {
+      goto fail;
+    }
+
+    if (!create_room_template_port(&room_descriptor, ladish_wkport_midi_capture, "MIDI", JACKDBUS_PORT_TYPE_MIDI, JACKDBUS_PORT_FLAG_OUTPUT))
+    {
+      goto fail;
+    }
+
+    if (!create_room_template_port(&room_descriptor, ladish_wkport_playback_left, "Left", JACKDBUS_PORT_TYPE_AUDIO, JACKDBUS_PORT_FLAG_INPUT))
+    {
+      goto fail;
+    }
+
+    if (!create_room_template_port(&room_descriptor, ladish_wkport_playback_right, "Right", JACKDBUS_PORT_TYPE_AUDIO, JACKDBUS_PORT_FLAG_INPUT))
+    {
+      goto fail;
+    }
+
+    if (!create_room_template_port(&room_descriptor, ladish_wkport_monitor_left, "Monitor Left", JACKDBUS_PORT_TYPE_AUDIO, JACKDBUS_PORT_FLAG_INPUT))
+    {
+      goto fail;
+    }
+
+    if (!create_room_template_port(&room_descriptor, ladish_wkport_monitor_right, "Monitor Right", JACKDBUS_PORT_TYPE_AUDIO, JACKDBUS_PORT_FLAG_INPUT))
+    {
+      goto fail;
+    }
+
+    if (!create_room_template_port(&room_descriptor, ladish_wkport_midi_playback, "MIDI", JACKDBUS_PORT_TYPE_MIDI, JACKDBUS_PORT_FLAG_INPUT))
+    {
+      goto fail;
+    }
+
+    list_add_tail(ladish_room_get_list_node(room_descriptor.room), &g_room_templates);
+  }
+
+  return;
+
+fail:
+  ladish_room_destroy(room_descriptor.room); /* this will destroy the graph clients and ports as well */
+}
+
+void create_room_templates(void)
+{
+  create_builtin_room_templates();
 }
 
 void maybe_create_room_templates(void)

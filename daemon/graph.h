@@ -48,6 +48,7 @@ bool
   uint64_t connection_id);
 
 bool ladish_graph_create(ladish_graph_handle * graph_handle_ptr, const char * opath);
+bool ladish_graph_copy(ladish_graph_handle src, ladish_graph_handle dest);
 void ladish_graph_destroy(ladish_graph_handle graph_handle, bool destroy_ports);
 
 const char * ladish_graph_get_opath(ladish_graph_handle graph_handle);

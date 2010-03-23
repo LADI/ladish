@@ -1795,7 +1795,7 @@ void ladish_try_connect_hidden_connections(ladish_graph_handle graph_handle)
   struct list_head * node_ptr;
   struct ladish_graph_connection * connection_ptr;
 
-  if (graph_ptr->connect_handler == NULL)
+  if (!list_empty(&graph_ptr->connections) && graph_ptr->connect_handler == NULL)
   {
     ASSERT_NO_PASS;
     return;
@@ -2045,6 +2045,84 @@ void ladish_graph_dump(ladish_graph_handle graph_handle)
 }
 
 #undef graph_ptr
+#define graph_ptr ((struct ladish_graph *)context)
+
+static
+bool
+ladish_graph_copy_client_begin_callback(
+  void * context,
+  ladish_client_handle client_handle,
+  const char * client_name,
+  void ** client_iteration_context_ptr_ptr)
+{
+  ladish_client_handle copy;
+
+  if (!ladish_client_create_copy(client_handle, &copy))
+  {
+    return false;
+  }
+
+  if (!ladish_graph_add_client(context, copy, client_name, false))
+  {
+    ladish_client_destroy(copy);
+    return false;
+  }
+
+  *client_iteration_context_ptr_ptr = copy;
+
+  return true;
+}
+
+static
+bool
+ladish_graph_copy_port_callback(
+  void * context,
+  void * client_iteration_context_ptr,
+  ladish_client_handle client_handle,
+  const char * client_name,
+  ladish_port_handle port_handle,
+  const char * port_name,
+  uint32_t port_type,
+  uint32_t port_flags)
+{
+  ladish_port_handle copy;
+
+  if (!ladish_port_create_copy(port_handle, &copy))
+  {
+    return false;
+  }
+
+  if (!ladish_graph_add_port(context, client_iteration_context_ptr, copy, port_name, port_type, port_flags, false))
+  {
+    ladish_port_destroy(copy);
+    return false;
+  }
+
+  return true;
+}
+
+static
+bool
+ladish_graph_copy_client_end_callback(
+  void * context,
+  ladish_client_handle client_handle,
+  const char * client_name,
+  void * client_iteration_context_ptr)
+{
+  return true;
+}
+
+#undef graph_ptr
+
+bool ladish_graph_copy(ladish_graph_handle src, ladish_graph_handle dest)
+{
+  return ladish_graph_iterate_nodes(
+    src,
+    dest,
+    ladish_graph_copy_client_begin_callback,
+    ladish_graph_copy_port_callback,
+    ladish_graph_copy_client_end_callback);
+}
 
 METHOD_ARGS_BEGIN(GetAllPorts, "Get all ports")
   METHOD_ARG_DESCRIBE_IN("ports_list", "as", "List of all ports")

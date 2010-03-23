@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the implementation of the client objects
@@ -101,6 +101,14 @@ ladish_client_create(
 }
 
 #define client_ptr ((struct ladish_client *)client_handle)
+
+bool
+ladish_client_create_copy(
+  ladish_client_handle client_handle,
+  ladish_client_handle * client_handle_ptr)
+{
+  return ladish_client_create(client_ptr->uuid, client_ptr->virtual, client_ptr->link, client_ptr->system, client_handle_ptr);
+}
 
 void
 ladish_client_destroy(

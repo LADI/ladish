@@ -26,7 +26,6 @@
 
 #include "room.h"
 #include "../dbus_constants.h"
-#include "graph.h"
 #include "graph_dict.h"
 
 struct ladish_room
@@ -91,14 +90,24 @@ ladish_room_create(
     return false;
   }
 
-  if (object_path)
+  if (!ladish_graph_create(&room_ptr->graph, object_path))
   {
-    if (!ladish_graph_create(&room_ptr->graph, object_path))
+    free(room_ptr);
+    return false;
+  }
+
+  if (template != NULL)
+  {
+    if (!ladish_graph_copy(ladish_room_get_graph(template), room_ptr->graph))
     {
+      ladish_graph_destroy(room_ptr->graph, true);
       free(room_ptr);
       return false;
     }
+  }
 
+  if (object_path)
+  {
     room_ptr->dbus_object = dbus_object_path_new(
       object_path,
       &g_interface_room, room_ptr,
@@ -128,7 +137,6 @@ ladish_room_create(
   else
   {
     room_ptr->dbus_object = NULL;
-    room_ptr->graph = NULL;
   }
 
   *room_handle_ptr = (ladish_room_handle)room_ptr;
@@ -144,9 +152,9 @@ ladish_room_destroy(
   if (room_ptr->dbus_object != NULL)
   {
     dbus_object_path_destroy(g_dbus_connection, room_ptr->dbus_object);
-    ladish_graph_destroy(room_ptr->graph, true);
   }
 
+  ladish_graph_destroy(room_ptr->graph, true);
   free(room_ptr->name);
   free(room_ptr);
 }
@@ -163,11 +171,6 @@ const char * ladish_room_get_name(ladish_room_handle room_handle)
 
 const char * ladish_room_get_opath(ladish_room_handle room_handle)
 {
-  if (room_ptr->graph == NULL)
-  {
-    return NULL;
-  }
-
   return ladish_graph_get_opath(room_ptr->graph);
 }
 
@@ -185,6 +188,11 @@ bool ladish_room_get_template_uuid(ladish_room_handle room_handle, uuid_t uuid_p
 void ladish_room_get_uuid(ladish_room_handle room_handle, uuid_t uuid_ptr)
 {
   uuid_copy(uuid_ptr, room_ptr->uuid);
+}
+
+ladish_graph_handle ladish_room_get_graph(ladish_room_handle room_handle)
+{
+  return room_ptr->graph;
 }
 
 #undef room_ptr

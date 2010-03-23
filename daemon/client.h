@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the interface of the client objects
@@ -37,6 +37,11 @@ ladish_client_create(
   bool virtual,
   bool link,
   bool system,
+  ladish_client_handle * client_handle_ptr);
+
+bool
+ladish_client_create_copy(
+  ladish_client_handle client_handle,
   ladish_client_handle * client_handle_ptr);
 
 void

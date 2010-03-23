@@ -28,6 +28,7 @@
 #define ROOM_H__9A1CF253_0A17_402A_BDF8_9BD72B467118__INCLUDED
 
 #include "common.h"
+#include "graph.h"
 
 typedef struct ladish_room_tag { int unused; } * ladish_room_handle;
 
@@ -50,5 +51,6 @@ const char * ladish_room_get_name(ladish_room_handle room_handle);
 const char * ladish_room_get_opath(ladish_room_handle room_handle);
 bool ladish_room_get_template_uuid(ladish_room_handle room_handle, uuid_t uuid_ptr);
 void ladish_room_get_uuid(ladish_room_handle room_handle, uuid_t uuid_ptr);
+ladish_graph_handle ladish_room_get_graph(ladish_room_handle room_handle);
 
 #endif /* #ifndef ROOM_H__9A1CF253_0A17_402A_BDF8_9BD72B467118__INCLUDED */
