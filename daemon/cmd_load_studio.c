@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the "load studio" command
@@ -209,7 +209,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
 
       log_info("jack client \"%s\" with uuid %s", attr[1], attr[3]);
 
-      if (!ladish_client_create(uuid, false, false, false, &context_ptr->client))
+      if (!ladish_client_create(uuid, &context_ptr->client))
       {
         log_error("ladish_client_create() failed.");
         context_ptr->error = XML_TRUE;
@@ -252,7 +252,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
 
       log_info("studio client \"%s\" with uuid %s", attr[1], attr[3]);
 
-      if (!ladish_client_create(uuid, true, false, false, &context_ptr->client))
+      if (!ladish_client_create(uuid, &context_ptr->client))
       {
         log_error("ladish_client_create() failed.");
         context_ptr->error = XML_TRUE;

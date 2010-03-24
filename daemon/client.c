@@ -35,10 +35,7 @@ struct ladish_client
   uuid_t uuid;                             /* The UUID of the client */
   uint64_t jack_id;                        /* JACK client ID */
   char * jack_name;                        /* JACK name, not valid for virtual clients */
-  bool virtual:1;                          /* Whether client is virtual */
-  bool link:1;                             /* Whether client is a studio-room link */
-  bool system:1;                           /* Whether client is system (server in-process) */
-  pid_t pid;                               /* process id. Not valid for system and virtual clients */
+  pid_t pid;                               /* process id. */
   struct room * room_ptr;                  /* Room this client belongs to. If NULL, client belongs only to studio guts. */
   ladish_dict_handle dict;
 };
@@ -46,9 +43,6 @@ struct ladish_client
 bool
 ladish_client_create(
   const uuid_t uuid_ptr,
-  bool virtual,
-  bool link,
-  bool system,
   ladish_client_handle * client_handle_ptr)
 {
   struct ladish_client * client_ptr;
@@ -81,9 +75,6 @@ ladish_client_create(
   INIT_LIST_HEAD(&client_ptr->ports);
   client_ptr->jack_id = 0;
   client_ptr->jack_name = NULL;
-  client_ptr->virtual = virtual;
-  client_ptr->link = link;
-  client_ptr->system = system;
   client_ptr->pid = 0;
   client_ptr->room_ptr = NULL;
 
@@ -107,7 +98,7 @@ ladish_client_create_copy(
   ladish_client_handle client_handle,
   ladish_client_handle * client_handle_ptr)
 {
-  return ladish_client_create(client_ptr->uuid, client_ptr->virtual, client_ptr->link, client_ptr->system, client_handle_ptr);
+  return ladish_client_create(client_ptr->uuid, client_handle_ptr);
 }
 
 void

@@ -84,7 +84,7 @@ create_room_template(
 
   graph = ladish_room_get_graph(room);
 
-  if (!ladish_client_create(ladish_wkclient_capture, true, true, false, &capture))
+  if (!ladish_client_create(ladish_wkclient_capture, &capture))
   {
     log_error("ladish_client_create() failed to create capture client to room template \"%s\".", name);
     goto fail_destroy;
@@ -96,7 +96,7 @@ create_room_template(
     goto fail_destroy;
   }
 
-  if (!ladish_client_create(ladish_wkclient_playback, true, true, false, &playback))
+  if (!ladish_client_create(ladish_wkclient_playback, &playback))
   {
     log_error("ladish_client_create() failed to create playback client to room template \"%s\".", name);
     goto fail_destroy;

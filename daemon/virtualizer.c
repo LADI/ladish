@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the graph virtualizer object
@@ -144,7 +144,7 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
     goto done;
   }
 
-  if (!ladish_client_create(is_a2j ? g_a2j_uuid : NULL, true, false, false, &client))
+  if (!ladish_client_create(is_a2j ? g_a2j_uuid : NULL, &client))
   {
     log_error("ladish_client_create() failed. Ignoring client %"PRIu64" (%s)", id, jack_name);
     goto free_app_name;
@@ -352,7 +352,7 @@ port_appeared(
     studio_client = ladish_graph_find_client_by_name(virtualizer_ptr->studio_graph, alsa_client_name);
     if (studio_client == NULL)
     {
-        if (!ladish_client_create(NULL, true, false, true, &studio_client))
+        if (!ladish_client_create(NULL, &studio_client))
         {
           log_error("ladish_client_create() failed.");
           goto free_alsa_names;
@@ -377,7 +377,7 @@ port_appeared(
       studio_client = ladish_graph_find_client_by_uuid(virtualizer_ptr->studio_graph, g_system_capture_uuid);
       if (studio_client == NULL)
       {
-        if (!ladish_client_create(g_system_capture_uuid, true, false, true, &studio_client))
+        if (!ladish_client_create(g_system_capture_uuid, &studio_client))
         {
           log_error("ladish_client_create() failed.");
           goto free_alsa_names;
@@ -396,7 +396,7 @@ port_appeared(
       studio_client = ladish_graph_find_client_by_uuid(virtualizer_ptr->studio_graph, g_system_playback_uuid);
       if (studio_client == NULL)
       {
-        if (!ladish_client_create(g_system_playback_uuid, true, false, true, &studio_client))
+        if (!ladish_client_create(g_system_playback_uuid, &studio_client))
         {
           log_error("ladish_client_create() failed.");
           goto free_alsa_names;
@@ -417,7 +417,7 @@ port_appeared(
     studio_client = ladish_graph_find_client_by_jack_id(virtualizer_ptr->studio_graph, client_id);
     if (studio_client == NULL)
     {
-      if (!ladish_client_create(NULL, false, false, false, &studio_client))
+      if (!ladish_client_create(NULL, &studio_client))
       {
         log_error("ladish_client_create() failed.");
         goto free_alsa_names;
