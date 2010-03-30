@@ -29,24 +29,9 @@
 /* JACK port or virtual port */
 struct ladish_port
 {
-  struct list_head siblings_studio_all;    /* link for the studio::all_ports list */
-  struct list_head siblings_studio;        /* link for the studio::ports list */
-  struct list_head siblings_room;          /* link for the room::ports list */
-  struct list_head siblings_client;        /* link for the port list of the client */
-  struct list_head siblings_vclient;       /* link for the port list of the virtual client */
-
   uuid_t uuid;                             /* The UUID of the port */
   bool virtual;                            /* Whether the port is virtual or JACK port */
-  char * jack_name;                        /* JACK name (short). Not valid for virtual ports. */
-  uint64_t jack_id;                        /* JACK port ID. Not valid for virtual ports. */
-  char * human_name;                       /* User assigned name */
-
-  struct client * client_ptr;              /* JACK client this port belongs to. Not valid for virtual ports. */
-  struct client * vclient_ptr;             /* Virtual client this port belongs to. NULL if there is no virtual client associated. */
-
-  /* superconnections are not in these lists */
-  struct list_head input_connections;      /* list of input connections, i.e. connections that play to this port */
-  struct list_head output_connections;     /* list of output connections, i.e. connections that capture from this port */
+  uint64_t jack_id;                        /* JACK port ID. zero for virtual ports. */
 
   ladish_dict_handle dict;
 };
@@ -81,11 +66,7 @@ ladish_port_create(
     uuid_copy(port_ptr->uuid, uuid_ptr);
   }
 
-  INIT_LIST_HEAD(&port_ptr->siblings_studio_all);
-  INIT_LIST_HEAD(&port_ptr->siblings_room);
   port_ptr->jack_id = 0;
-  port_ptr->jack_name = NULL;
-  port_ptr->human_name = NULL;
   port_ptr->virtual = true;
 
   log_info("port %p created", port_ptr);
