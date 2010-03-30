@@ -27,6 +27,7 @@
 #include "room.h"
 #include "../dbus_constants.h"
 #include "graph_dict.h"
+#include "../lib/wkports.h"
 
 struct ladish_room
 {
@@ -193,6 +194,93 @@ void ladish_room_get_uuid(ladish_room_handle room_handle, uuid_t uuid_ptr)
 ladish_graph_handle ladish_room_get_graph(ladish_room_handle room_handle)
 {
   return room_ptr->graph;
+}
+
+struct ladish_room_iterate_link_ports_context
+{
+  void * context;
+  bool
+  (* callback)(
+    void * context,
+    ladish_port_handle port_handle,
+    const char * port_name,
+    uint32_t port_type,
+    uint32_t port_flags);
+};
+
+#define context_ptr ((struct ladish_room_iterate_link_ports_context *)context)
+
+static
+bool
+ladish_room_iterate_link_ports_client_callback(
+  void * context,
+  ladish_client_handle client_handle,
+  const char * client_name,
+  void ** client_iteration_context_ptr_ptr)
+{
+  uuid_t uuid;
+
+  ladish_client_get_uuid(client_handle, uuid);
+
+  if (uuid_compare(uuid, ladish_wkclient_capture) == 0 ||
+      uuid_compare(uuid, ladish_wkclient_playback) == 0)
+  {
+    *client_iteration_context_ptr_ptr = (void *)1;
+  }
+  else
+  {
+    *client_iteration_context_ptr_ptr = (void *)0;
+  }
+
+  return true;
+}
+
+static
+bool
+ladish_room_iterate_link_ports_port_callback(
+  void * context,
+  void * client_iteration_context_ptr,
+  ladish_client_handle client_handle,
+  const char * client_name,
+  ladish_port_handle port_handle,
+  const char * port_name,
+  uint32_t port_type,
+  uint32_t port_flags)
+{
+  if (client_iteration_context_ptr == (void *)0)
+  {
+    /* port of non-link client */
+    return true;
+  }
+
+  return context_ptr->callback(context_ptr->context, port_handle, port_name, port_type, port_flags);
+}
+
+#undef context_ptr
+
+bool
+ladish_room_iterate_link_ports(
+  ladish_room_handle room_handle,
+  void * callback_context,
+  bool
+  (* callback)(
+    void * context,
+    ladish_port_handle port_handle,
+    const char * port_name,
+    uint32_t port_type,
+    uint32_t port_flags))
+{
+  struct ladish_room_iterate_link_ports_context context;
+
+  context.context = callback_context;
+  context.callback = callback;
+
+  return ladish_graph_iterate_nodes(
+    room_ptr->graph,
+    &context,
+    ladish_room_iterate_link_ports_client_callback,
+    ladish_room_iterate_link_ports_port_callback,
+    NULL);
 }
 
 #undef room_ptr

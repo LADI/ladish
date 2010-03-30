@@ -53,4 +53,16 @@ bool ladish_room_get_template_uuid(ladish_room_handle room_handle, uuid_t uuid_p
 void ladish_room_get_uuid(ladish_room_handle room_handle, uuid_t uuid_ptr);
 ladish_graph_handle ladish_room_get_graph(ladish_room_handle room_handle);
 
+bool
+ladish_room_iterate_link_ports(
+  ladish_room_handle room_handle,
+  void * callback_context,
+  bool
+  (* callback)(
+    void * context,
+    ladish_port_handle port_handle,
+    const char * port_name,
+    uint32_t port_type,
+    uint32_t port_flags));
+
 #endif /* #ifndef ROOM_H__9A1CF253_0A17_402A_BDF8_9BD72B467118__INCLUDED */

@@ -804,12 +804,27 @@ static void ladish_studio_is_started(struct dbus_method_call * call_ptr)
   method_return_new_single(call_ptr, DBUS_TYPE_BOOLEAN, &started);
 }
 
+static
+bool
+add_room_ports(
+  void * context,
+  ladish_port_handle port_handle,
+  const char * port_name,
+  uint32_t port_type,
+  uint32_t port_flags)
+{
+  //log_info("Studio room port \"%s\"", port_name);
+  return ladish_graph_add_port(g_studio.studio_graph, context, port_handle, port_name, port_type, port_flags, false);
+}
+
 static void ladish_studio_create_room(struct dbus_method_call * call_ptr)
 {
   const char * room_name;
   const char * template_name;
   ladish_room_handle room;
   char room_dbus_name[1024];
+  ladish_client_handle room_client;
+  uuid_t room_uuid;
 
   dbus_error_init(&g_dbus_error);
 
@@ -817,7 +832,7 @@ static void ladish_studio_create_room(struct dbus_method_call * call_ptr)
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
     dbus_error_free(&g_dbus_error);
-    return;
+    goto fail;
   }
 
   log_info("Request to create new studio room \"%s\" from template \"%s\".", room_name, template_name);
@@ -826,7 +841,7 @@ static void ladish_studio_create_room(struct dbus_method_call * call_ptr)
   if (room == NULL)
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Unknown room template \"%s\"",  template_name);
-    return;
+    goto fail;
   }
 
   g_studio.room_count++;
@@ -836,8 +851,27 @@ static void ladish_studio_create_room(struct dbus_method_call * call_ptr)
   if (!ladish_room_create(NULL, room_name, room, room_dbus_name, &room))
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_room_create() failed.");
-    g_studio.room_count--;
-    return;
+    goto fail_decrement_room_count;
+  }
+
+  ladish_room_get_uuid(room, room_uuid);
+
+  if (!ladish_client_create(room_uuid, &room_client))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_client_create() failed.");
+    goto fail_destroy_room;
+  }
+
+  if (!ladish_graph_add_client(g_studio.studio_graph, room_client, room_name, false))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_graph_add_client() failed to add room client to studio graph.");
+    goto fail_destroy_room_client;
+  }
+
+  if (!ladish_room_iterate_link_ports(room, room_client, add_room_ports))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Creation of studio room link ports failed.");
+    goto fail_remove_room_client;
   }
 
   list_add_tail(ladish_room_get_list_node(room), &g_studio.rooms);
@@ -845,6 +879,18 @@ static void ladish_studio_create_room(struct dbus_method_call * call_ptr)
   emit_room_appeared(room);
 
   method_return_new_void(call_ptr);
+  return;
+
+fail_remove_room_client:
+  ladish_graph_remove_client(g_studio.studio_graph, room_client, false);
+fail_destroy_room_client:
+  ladish_client_destroy(room_client);
+fail_destroy_room:
+  ladish_room_destroy(room);
+fail_decrement_room_count:
+  g_studio.room_count--;
+fail:
+  return;
 }
 
 static void ladish_studio_get_room_list(struct dbus_method_call * call_ptr)
@@ -901,6 +947,7 @@ static void ladish_studio_delete_room(struct dbus_method_call * call_ptr)
   const char * name;
   struct list_head * node_ptr;
   ladish_room_handle room;
+  ladish_client_handle room_client;
 
   dbus_error_init(&g_dbus_error);
 
@@ -921,6 +968,12 @@ static void ladish_studio_delete_room(struct dbus_method_call * call_ptr)
       list_del(node_ptr);
       g_studio.room_count--;
       emit_room_disappeared(room);
+
+      room_client = ladish_graph_find_client_by_name(g_studio.studio_graph, ladish_room_get_name(room));
+      ASSERT(room_client != NULL);
+      ladish_graph_remove_client(g_studio.studio_graph, room_client, false);
+      ladish_client_destroy(room_client);
+
       ladish_room_destroy(room);
       method_return_new_void(call_ptr);
       return;
