@@ -1910,9 +1910,21 @@ ladish_graph_iterate_nodes(
       continue;
     }
 
-    if (!client_begin_callback(callback_context, client_ptr->client, client_ptr->name, &client_context))
+    if (client_begin_callback != NULL)
     {
-      return false;
+      if (!client_begin_callback(callback_context, client_ptr->client, client_ptr->name, &client_context))
+      {
+        return false;
+      }
+    }
+    else
+    {
+      client_context = NULL;
+    }
+
+    if (port_callback == NULL)
+    {
+      continue;
     }
 
     list_for_each(port_node_ptr, &client_ptr->ports)
@@ -1938,9 +1950,12 @@ ladish_graph_iterate_nodes(
       }
     }
 
-    if (!client_end_callback(callback_context, client_ptr->client, client_ptr->name, &client_context))
+    if (client_end_callback != NULL)
     {
-      return false;
+      if (!client_end_callback(callback_context, client_ptr->client, client_ptr->name, &client_context))
+      {
+        return false;
+      }
     }
   }
 
@@ -2101,17 +2116,6 @@ ladish_graph_copy_port_callback(
   return true;
 }
 
-static
-bool
-ladish_graph_copy_client_end_callback(
-  void * context,
-  ladish_client_handle client_handle,
-  const char * client_name,
-  void * client_iteration_context_ptr)
-{
-  return true;
-}
-
 #undef graph_ptr
 
 bool ladish_graph_copy(ladish_graph_handle src, ladish_graph_handle dest)
@@ -2121,7 +2125,7 @@ bool ladish_graph_copy(ladish_graph_handle src, ladish_graph_handle dest)
     dest,
     ladish_graph_copy_client_begin_callback,
     ladish_graph_copy_port_callback,
-    ladish_graph_copy_client_end_callback);
+    NULL);
 }
 
 METHOD_ARGS_BEGIN(GetAllPorts, "Get all ports")
