@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains constants for D-Bus service and interface names and for D-Bus object paths
@@ -62,5 +62,14 @@
 #define URI_CANVAS_HEIGHT   "http://ladish.org/ns/canvas/height"
 #define URI_CANVAS_X        "http://ladish.org/ns/canvas/x"
 #define URI_CANVAS_Y        "http://ladish.org/ns/canvas/y"
+
+#define JACKDBUS_PORT_IS_INPUT(flags) (((flags) & JACKDBUS_PORT_FLAG_INPUT) != 0)
+#define JACKDBUS_PORT_IS_OUTPUT(flags) (((flags) & JACKDBUS_PORT_FLAG_OUTPUT) != 0)
+
+#define JACKDBUS_PORT_SET_INPUT(flags) (flags) |= JACKDBUS_PORT_FLAG_INPUT
+#define JACKDBUS_PORT_SET_OUTPUT(flags) (flags) |= JACKDBUS_PORT_FLAG_OUTPUT
+
+#define JACKDBUS_PORT_CLEAR_INPUT(flags) (flags) &= ~JACKDBUS_PORT_FLAG_INPUT
+#define JACKDBUS_PORT_CLEAR_OUTPUT(flags) (flags) &= ~JACKDBUS_PORT_FLAG_OUTPUT
 
 #endif /* #ifndef DBUS_CONSTANTS_H__C21DE0EE_C19C_42F0_8D63_D613E4806C0E__INCLUDED */

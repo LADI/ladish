@@ -814,6 +814,23 @@ add_room_ports(
   uint32_t port_flags)
 {
   //log_info("Studio room port \"%s\"", port_name);
+
+  if (JACKDBUS_PORT_IS_INPUT(port_flags))
+  {
+    JACKDBUS_PORT_CLEAR_INPUT(port_flags);
+    JACKDBUS_PORT_SET_OUTPUT(port_flags);
+  }
+  else if (JACKDBUS_PORT_IS_OUTPUT(port_flags))
+  {
+    JACKDBUS_PORT_CLEAR_OUTPUT(port_flags);
+    JACKDBUS_PORT_SET_INPUT(port_flags);
+  }
+  else
+  {
+    log_error("room link port with bad flags %"PRIu32, port_flags);
+    return false;
+  }
+
   return ladish_graph_add_port(g_studio.studio_graph, context, port_handle, port_name, port_type, port_flags, false);
 }
 
