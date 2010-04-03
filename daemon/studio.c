@@ -511,6 +511,7 @@ static
 bool
 studio_on_child_exit_callback(
   void * context,
+  ladish_graph_handle graph,
   ladish_app_supervisor_handle app_supervisor)
 {
   child_exit_context_ptr->found = ladish_app_supervisor_child_exit(app_supervisor, child_exit_context_ptr->pid);
@@ -528,7 +529,7 @@ void studio_on_child_exit(pid_t pid)
   context.pid = pid;
   context.found = false;
 
-  studio_iterate_app_supervisors(&context, studio_on_child_exit_callback);
+  studio_iterate_virtual_graphs(&context, studio_on_child_exit_callback);
 
   if (!context.found)
   {
@@ -708,17 +709,19 @@ exit:
 }
 
 bool
-studio_iterate_app_supervisors(
+studio_iterate_virtual_graphs(
   void * context,
   bool (* callback)(
     void * context,
+    ladish_graph_handle graph,
     ladish_app_supervisor_handle app_supervisor))
 {
   struct list_head * node_ptr;
   ladish_room_handle room;
   ladish_app_supervisor_handle room_app_supervisor;
+  ladish_graph_handle room_graph;
 
-  if (!callback(context, g_studio.app_supervisor))
+  if (!callback(context, g_studio.studio_graph, g_studio.app_supervisor))
   {
     return false;
   }
@@ -728,8 +731,9 @@ studio_iterate_app_supervisors(
     room = ladish_room_from_list_node(node_ptr);
     room_app_supervisor = ladish_room_get_app_supervisor(room);
     ASSERT(room_app_supervisor != NULL);
+    room_graph = ladish_room_get_graph(room);
 
-    if (!callback(context, room_app_supervisor))
+    if (!callback(context, room_graph, room_app_supervisor))
     {
       return false;
     }
@@ -738,7 +742,7 @@ studio_iterate_app_supervisors(
   return true;
 }
 
-static bool studio_stop_app_supervisor(void * context, ladish_app_supervisor_handle app_supervisor)
+static bool studio_stop_app_supervisor(void * context, ladish_graph_handle graph, ladish_app_supervisor_handle app_supervisor)
 {
   ladish_app_supervisor_stop(app_supervisor);
   return true;                  /* iterate all supervisors */
@@ -746,7 +750,7 @@ static bool studio_stop_app_supervisor(void * context, ladish_app_supervisor_han
 
 void studio_stop_app_supervisors(void)
 {
-  studio_iterate_app_supervisors(NULL, studio_stop_app_supervisor);
+  studio_iterate_virtual_graphs(NULL, studio_stop_app_supervisor);
 }
 
 void emit_studio_renamed()

@@ -61,7 +61,7 @@ struct app_find_context
 
 #define app_find_context_ptr ((struct app_find_context *)context)
 
-bool get_app_name_from_supervisor(void * context, ladish_app_supervisor_handle app_supervisor)
+bool get_app_name_from_supervisor(void * context, ladish_graph_handle graph, ladish_app_supervisor_handle app_supervisor)
 {
   pid_t pid;
   char * app_name;
@@ -114,7 +114,7 @@ char * get_app_name(struct virtualizer * virtualizer_ptr, uint64_t client_id, pi
   context.pid = (pid_t)pid;
   context.app_name = NULL;
 
-  studio_iterate_app_supervisors(&context, get_app_name_from_supervisor);
+  studio_iterate_virtual_graphs(&context, get_app_name_from_supervisor);
 
   if (context.app_name != NULL)
   {

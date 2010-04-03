@@ -28,6 +28,7 @@
 #define STUDIO_H__0BEDE85E_4FB3_4D74_BC08_C373A22409C0__INCLUDED
 
 #include "app_supervisor.h"
+#include "graph.h"
 
 bool studio_init(void);
 void studio_uninit(void);
@@ -40,10 +41,11 @@ bool studio_delete(void * call_ptr, const char * studio_name);
 void studio_on_child_exit(pid_t pid);
 
 bool
-studio_iterate_app_supervisors(
+studio_iterate_virtual_graphs(
   void * context,
   bool (* callback)(
     void * context,
+    ladish_graph_handle graph,
     ladish_app_supervisor_handle app_supervisor));
 
 void studio_stop_app_supervisors(void);
