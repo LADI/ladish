@@ -336,7 +336,7 @@ port_appeared(
   /* search (by name) the appeared port in jack graph
    * if found - show it in both graphs.
    * if not found - create new port and add it to the jack graph.
-   * The process to adding it to studio graph */
+   * Then process to adding it to studio graph */
 
   port = ladish_graph_find_port_by_name(virtualizer_ptr->jack_graph, jack_client, jack_port_name);
   if (port != NULL)
