@@ -262,13 +262,6 @@ void on_event_jack_started(void)
 
 static void on_jack_stopped_internal(void)
 {
-  if (g_studio.automatic)
-  {
-    log_info("Unloading automatic studio.");
-    ladish_command_unload_studio(NULL, &g_studio.cmd_queue);
-    return;
-  }
-
   if (g_studio.virtualizer)
   {
     ladish_virtualizer_destroy(g_studio.virtualizer);
@@ -335,6 +328,16 @@ void studio_run(void)
     {
       /* JACK stopped but this was not expected. When expected.
        * the change will be consumed by the run method of the studio stop command */
+
+      if (g_studio.automatic)
+      {
+        log_info("Unloading automatic studio.");
+        ladish_command_unload_studio(NULL, &g_studio.cmd_queue);
+
+        on_event_jack_stopped();
+        return;
+      }
+
       log_error("JACK stopped unexpectedly.");
       log_error("Save your work, then unload and reload the studio.");
       handle_unexpected_jack_server_stop();
