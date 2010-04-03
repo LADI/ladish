@@ -80,11 +80,36 @@ on_select(
   return TRUE;
 }
 
+bool get_app_view(GtkTreeIter * app_iter_ptr, graph_view_handle * view_ptr)
+{
+  GtkTreeIter view_iter;
+  gint type;
+
+  if (!gtk_tree_model_iter_parent(GTK_TREE_MODEL(g_treestore), &view_iter, app_iter_ptr))
+  {
+    ASSERT_NO_PASS;
+    return false;
+  }
+
+  gtk_tree_model_get(
+    GTK_TREE_MODEL(g_treestore),
+    &view_iter,
+    COL_TYPE, &type,
+    COL_VIEW, view_ptr,
+    -1);
+  if (type != entry_type_view)
+  {
+    ASSERT_NO_PASS;
+    return false;
+  }
+
+  return true;
+}
+
 bool get_selected_app_id(graph_view_handle * view_ptr, uint64_t * id_ptr)
 {
   GtkTreeSelection * selection;
   GtkTreeIter app_iter;
-  GtkTreeIter view_iter;
   gint type;
   uint64_t id;
   graph_view_handle view;
@@ -106,19 +131,7 @@ bool get_selected_app_id(graph_view_handle * view_ptr, uint64_t * id_ptr)
     return false;
   }
 
-  if (!gtk_tree_model_iter_parent(GTK_TREE_MODEL(g_treestore), &view_iter, &app_iter))
-  {
-    ASSERT_NO_PASS;
-    return false;
-  }
-
-  gtk_tree_model_get(
-    GTK_TREE_MODEL(g_treestore),
-    &view_iter,
-    COL_TYPE, &type,
-    COL_VIEW, &view,
-    -1);
-  if (type != entry_type_view)
+  if (!get_app_view(&app_iter, &view))
   {
     ASSERT_NO_PASS;
     return false;
@@ -460,6 +473,36 @@ gboolean on_popup_menu(GtkWidget * treeview, gpointer userdata)
   return TRUE; /* we handled this */
 }
 
+static void on_row_activated(GtkTreeView * treeview, GtkTreePath * path, GtkTreeViewColumn * col, gpointer userdata)
+{
+  GtkTreeIter iter;
+  gint type;
+  graph_view_handle view;
+  uint64_t id;
+  gboolean running;
+  ladish_app_supervisor_proxy_handle proxy;
+
+  if (!gtk_tree_model_get_iter(GTK_TREE_MODEL(g_treestore), &iter, path))
+  {
+    return;
+  }
+
+  gtk_tree_model_get(GTK_TREE_MODEL(g_treestore), &iter, COL_TYPE, &type, COL_ID, &id, COL_RUNNING, &running, -1);
+  if (type == entry_type_app)
+  {
+    log_info("%s app %"PRIu64, running ? "stop" : "start", id);
+
+    if (!get_app_view(&iter, &view))
+    {
+      ASSERT_NO_PASS;
+      return;
+    }
+
+    proxy = graph_view_get_app_supervisor(view);
+    (running ? ladish_app_supervisor_proxy_stop_app : ladish_app_supervisor_proxy_start_app)(proxy, id);
+  }
+}
+
 void world_tree_init(void)
 {
   GtkTreeViewColumn * col;
@@ -492,6 +535,7 @@ void world_tree_init(void)
 
   g_signal_connect(g_world_tree_widget, "button-press-event", (GCallback)on_button_pressed, NULL);
   g_signal_connect(g_world_tree_widget, "popup-menu", (GCallback)on_popup_menu, NULL);
+  g_signal_connect(g_world_tree_widget, "row-activated", (GCallback)on_row_activated, NULL);
 }
 
 void world_tree_add(graph_view_handle view, bool force_activate)
