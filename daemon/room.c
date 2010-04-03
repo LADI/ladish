@@ -55,7 +55,7 @@ ladish_room_create(
   if (room_ptr == NULL)
   {
     log_error("malloc() failed to allocate struct ladish_room");
-    return false;
+    goto fail;
   }
 
   if (uuid_ptr == NULL)
@@ -87,23 +87,19 @@ ladish_room_create(
   if (room_ptr->name == NULL)
   {
     log_error("strdup() failed for room name");
-    free(room_ptr);
-    return false;
+    goto free_room;
   }
 
   if (!ladish_graph_create(&room_ptr->graph, object_path))
   {
-    free(room_ptr);
-    return false;
+    goto free_name;
   }
 
   if (template != NULL)
   {
     if (!ladish_graph_copy(ladish_room_get_graph(template), room_ptr->graph))
     {
-      ladish_graph_destroy(room_ptr->graph, true);
-      free(room_ptr);
-      return false;
+      goto destroy_graph;
     }
   }
 
@@ -119,18 +115,13 @@ ladish_room_create(
     if (room_ptr->dbus_object == NULL)
     {
       log_error("dbus_object_path_new() failed");
-      ladish_graph_destroy(room_ptr->graph, true);
-      free(room_ptr);
-      return false;
+      goto destroy_graph;
     }
 
     if (!dbus_object_path_register(g_dbus_connection, room_ptr->dbus_object))
     {
       log_error("object_path_register() failed");
-      dbus_object_path_destroy(g_dbus_connection, room_ptr->dbus_object);
-      ladish_graph_destroy(room_ptr->graph, true);
-      free(room_ptr);
-      return false;
+      goto destroy_dbus_object;
     }
 
     log_info("D-Bus object \"%s\" created for room \"%s\".", object_path, room_ptr->name);
@@ -142,6 +133,17 @@ ladish_room_create(
 
   *room_handle_ptr = (ladish_room_handle)room_ptr;
   return true;
+
+destroy_dbus_object:
+  dbus_object_path_destroy(g_dbus_connection, room_ptr->dbus_object);
+destroy_graph:
+  ladish_graph_destroy(room_ptr->graph, true);
+free_name:
+  free(room_ptr->name);
+free_room:
+  free(room_ptr);
+fail:
+  return false;
 }
 
 #define room_ptr ((struct ladish_room *)room_handle)
