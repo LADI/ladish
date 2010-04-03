@@ -28,6 +28,7 @@
 #include "world_tree.h"
 #include "gtk_builder.h"
 #include "../catdup.h"
+#include "menu.h"
 
 enum entry_type
 {
@@ -306,6 +307,21 @@ void on_popup_menu_action_app_properties(GtkWidget * menuitem, gpointer userdata
   gtk_widget_hide(g_app_dialog);
 }
 
+void on_popup_menu_action_start_app(GtkWidget * menuitem, gpointer userdata)
+{
+  menu_request_start_app();
+}
+
+void on_popup_menu_action_create_room(GtkWidget * menuitem, gpointer userdata)
+{
+  menu_request_create_room();
+}
+
+void on_popup_menu_action_destroy_room(GtkWidget * menuitem, gpointer userdata)
+{
+  menu_request_destroy_room();
+}
+
 void popup_menu(GtkWidget * treeview, GdkEventButton * event)
 {
   GtkTreeSelection * selection;
@@ -335,40 +351,64 @@ void popup_menu(GtkWidget * treeview, GdkEventButton * event)
     COL_TERMINAL, &terminal,
     COL_LEVEL, &level,
     -1);
-  if (type != entry_type_app)
-  {
-    return;
-  }
 
   menu = gtk_menu_new();
 
-  if (running)
+  if (type == entry_type_app)
   {
-    menuitem = gtk_menu_item_new_with_label("Stop");
-    g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_stop, NULL);
+    if (running)
+    {
+      menuitem = gtk_menu_item_new_with_label("Stop");
+      g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_stop, NULL);
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+    }
+    else
+    {
+      menuitem = gtk_menu_item_new_with_label("Start");
+      g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_start, NULL);
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+    }
+
+    menuitem = gtk_menu_item_new_with_label("Remove");
+    g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_remove, NULL);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+
+    if (running)
+    {
+      menuitem = gtk_menu_item_new_with_label("Kill");
+      g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_kill, NULL);
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+    }
+
+    menuitem = gtk_menu_item_new_with_label("Properties");
+    g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_properties, NULL);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+  }
+  else if (type == entry_type_view)
+  {
+    menuitem = gtk_menu_item_new_with_label("Run...");
+    g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_start_app, NULL);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+
+    if (is_room_view(view))
+    {
+      menuitem = gtk_menu_item_new_with_label("Destroy Room");
+      g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_destroy_room, NULL);
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+    }
+    else
+    {
+      menuitem = gtk_menu_item_new_with_label("Create Room...");
+      g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_create_room, NULL);
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+    }
   }
   else
   {
-    menuitem = gtk_menu_item_new_with_label("Start");
-    g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_start, NULL);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+    g_object_ref(menu);
+    g_object_unref(menu);
+    return;
   }
-
-  menuitem = gtk_menu_item_new_with_label("Remove");
-  g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_remove, NULL);
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-
-  if (running)
-  {
-    menuitem = gtk_menu_item_new_with_label("Kill");
-    g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_kill, NULL);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-  }
-
-  menuitem = gtk_menu_item_new_with_label("Properties");
-  g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_properties, NULL);
-  gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
   gtk_widget_show_all(menu);
 
