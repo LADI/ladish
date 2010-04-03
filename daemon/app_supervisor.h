@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to app supervisor object
@@ -78,6 +78,8 @@ char *
 ladish_app_supervisor_search_app(
   ladish_app_supervisor_handle supervisor_handle,
   pid_t pid);
+
+const char * ladish_app_supervisor_get_name(ladish_app_supervisor_handle supervisor_handle);
 
 extern const struct dbus_interface_descriptor g_iface_app_supervisor;
 

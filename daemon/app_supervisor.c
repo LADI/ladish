@@ -414,6 +414,7 @@ char * ladish_app_supervisor_search_app(ladish_app_supervisor_handle supervisor_
     app_ptr = list_entry(node_ptr, struct ladish_app, siblings);
     if (app_ptr->pid == pid)
     {
+      //log_info("app \"%s\" found by pid %llu", app_ptr->name, (unsigned long long)pid);
       name = strdup(app_ptr->name);
       if (name == NULL)
       {
@@ -425,6 +426,11 @@ char * ladish_app_supervisor_search_app(ladish_app_supervisor_handle supervisor_
   }
 
   return NULL;
+}
+
+const char * ladish_app_supervisor_get_name(ladish_app_supervisor_handle supervisor_handle)
+{
+  return supervisor_ptr->name;
 }
 
 #undef supervisor_ptr
