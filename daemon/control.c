@@ -26,7 +26,7 @@
  */
 
 #include "common.h"
-
+#include "studio.h"
 #include "../dbus/error.h"
 #include "control.h"
 #include "../dbus_constants.h"
