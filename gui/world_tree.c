@@ -386,9 +386,12 @@ void popup_menu(GtkWidget * treeview, GdkEventButton * event)
   }
   else if (type == entry_type_view)
   {
-    menuitem = gtk_menu_item_new_with_label("Run...");
-    g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_start_app, NULL);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+    if (graph_view_get_app_supervisor(view) != NULL)
+    {
+      menuitem = gtk_menu_item_new_with_label("Run...");
+      g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_start_app, NULL);
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+    }
 
     if (is_room_view(view))
     {
