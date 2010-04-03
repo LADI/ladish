@@ -53,6 +53,11 @@ bool on_key_press_event(GtkWidget * widget_ptr, GdkEventKey * event_ptr, gpointe
   return false;
 }
 
+static void on_row_activated(GtkTreeView * treeview, GtkTreePath * path, GtkTreeViewColumn * col, gpointer userdata)
+{
+  gtk_dialog_response(GTK_DIALOG(g_dialog), 2);
+}
+
 void create_room_dialog_init(void)
 {
   GtkTreeViewColumn * col;
@@ -75,6 +80,7 @@ void create_room_dialog_init(void)
   gtk_tree_view_set_model(g_treeview, GTK_TREE_MODEL(g_liststore));
 
   g_signal_connect(G_OBJECT(g_treeview), "key-press-event", G_CALLBACK(on_key_press_event), NULL);
+  g_signal_connect(G_OBJECT(g_treeview), "row-activated", G_CALLBACK(on_row_activated), NULL);
 }
 
 void create_room_dialog_uninit(void)
