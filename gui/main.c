@@ -1272,14 +1272,13 @@ int main(int argc, char** argv)
 
   create_room_dialog_init();
 
-  buffer_size_clear();
-
   world_tree_init();
   view_init();
 
   setup_accelerators();
 
   menu_init();
+  buffer_size_clear();
 
   dbus_init();
 
