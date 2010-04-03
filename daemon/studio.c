@@ -500,10 +500,28 @@ void studio_uninit(void)
 
 void studio_on_child_exit(pid_t pid)
 {
-  if (!ladish_app_supervisor_child_exit(g_studio.app_supervisor, pid))
+  struct list_head * node_ptr;
+  ladish_room_handle room;
+  ladish_app_supervisor_handle room_app_supervisor;
+
+  if (ladish_app_supervisor_child_exit(g_studio.app_supervisor, pid))
   {
-    log_error("non-studio child exit detected. pid is %llu", (unsigned long long)pid);
+    return;
   }
+
+  list_for_each(node_ptr, &g_studio.rooms)
+  {
+    room = ladish_room_from_list_node(node_ptr);
+    room_app_supervisor = ladish_room_get_app_supervisor(room);
+    ASSERT(room_app_supervisor != NULL);
+
+    if (ladish_app_supervisor_child_exit(room_app_supervisor, pid))
+    {
+      return;
+    }
+  }
+
+  log_error("unknown child exit detected. pid is %llu", (unsigned long long)pid);
 }
 
 bool studio_is_loaded(void)

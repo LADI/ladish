@@ -28,7 +28,6 @@
 #include "../dbus_constants.h"
 #include "graph_dict.h"
 #include "../lib/wkports.h"
-#include "app_supervisor.h"
 
 struct ladish_room
 {
@@ -217,6 +216,11 @@ void ladish_room_get_uuid(ladish_room_handle room_handle, uuid_t uuid_ptr)
 ladish_graph_handle ladish_room_get_graph(ladish_room_handle room_handle)
 {
   return room_ptr->graph;
+}
+
+ladish_app_supervisor_handle ladish_room_get_app_supervisor(ladish_room_handle room_handle)
+{
+  return room_ptr->app_supervisor;
 }
 
 struct ladish_room_iterate_link_ports_context

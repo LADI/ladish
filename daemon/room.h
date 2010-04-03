@@ -29,6 +29,7 @@
 
 #include "common.h"
 #include "graph.h"
+#include "app_supervisor.h"
 
 typedef struct ladish_room_tag { int unused; } * ladish_room_handle;
 
@@ -52,6 +53,7 @@ const char * ladish_room_get_opath(ladish_room_handle room_handle);
 bool ladish_room_get_template_uuid(ladish_room_handle room_handle, uuid_t uuid_ptr);
 void ladish_room_get_uuid(ladish_room_handle room_handle, uuid_t uuid_ptr);
 ladish_graph_handle ladish_room_get_graph(ladish_room_handle room_handle);
+ladish_app_supervisor_handle ladish_room_get_app_supervisor(ladish_room_handle room_handle);
 
 bool
 ladish_room_iterate_link_ports(
