@@ -361,6 +361,10 @@ void popup_menu(GtkWidget * treeview, GdkEventButton * event)
       menuitem = gtk_menu_item_new_with_label("Stop");
       g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_stop, NULL);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+
+      menuitem = gtk_menu_item_new_with_label("Kill");
+      g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_kill, NULL);
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
     }
     else
     {
@@ -369,19 +373,15 @@ void popup_menu(GtkWidget * treeview, GdkEventButton * event)
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
     }
 
-    menuitem = gtk_menu_item_new_with_label("Remove");
-    g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_remove, NULL);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-
-    if (running)
-    {
-      menuitem = gtk_menu_item_new_with_label("Kill");
-      g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_kill, NULL);
-      gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-    }
-
     menuitem = gtk_menu_item_new_with_label("Properties");
     g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_properties, NULL);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+
+    menuitem = gtk_separator_menu_item_new(); /* separator */
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+
+    menuitem = gtk_menu_item_new_with_label("Remove");
+    g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_remove, NULL);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
   }
   else if (type == entry_type_view)
