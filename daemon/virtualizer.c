@@ -116,7 +116,10 @@ char * get_app_name(struct virtualizer * virtualizer_ptr, uint64_t client_id, pi
   context.pid = (pid_t)pid;
   context.app_name = NULL;
 
-  studio_iterate_virtual_graphs(&context, get_app_name_from_supervisor);
+  if (pid != 0)                 /* skip internal clients that will match the pending clients in the graph, both have zero pid */
+  {
+    studio_iterate_virtual_graphs(&context, get_app_name_from_supervisor);
+  }
 
   if (context.app_name != NULL)
   {
