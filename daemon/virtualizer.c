@@ -31,6 +31,8 @@
 #include "app_supervisor.h"
 #include "studio_internal.h"
 #include "../catdup.h"
+#include "room.h"
+#include "studio.h"
 
 struct virtualizer
 {
@@ -51,42 +53,79 @@ UUID_DEFINE(g_system_playback_uuid,0xB2,0xA0,0xBB,0x06,0x28,0xD8,0x4B,0xFE,0x95,
 /* be23a242-e2b2-11de-b795-002618af5e42 */
 UUID_DEFINE(g_a2j_uuid,0xBE,0x23,0xA2,0x42,0xE2,0xB2,0x11,0xDE,0xB7,0x95,0x00,0x26,0x18,0xAF,0x5E,0x42);
 
+struct app_find_context
+{
+  pid_t pid;
+  char * app_name;
+};
+
+#define app_find_context_ptr ((struct app_find_context *)context)
+
+bool get_app_name_from_supervisor(void * context, ladish_app_supervisor_handle app_supervisor)
+{
+  pid_t pid;
+  char * app_name;
+
+  ASSERT(app_find_context_ptr->app_name == NULL); /* we stop app supervisor iteration when app is found */
+
+  pid = app_find_context_ptr->pid;
+  do
+  {
+    app_name = ladish_app_supervisor_search_app(app_supervisor, pid);
+    if (app_name != NULL)
+      break;
+
+    pid = (pid_t)procfs_get_process_parent((unsigned long long)pid);
+#if 0
+    if (pid != 0)
+    {
+      log_info("parent pid %llu", (unsigned long long)pid);
+    }
+#endif
+  }
+  while (pid != 0);
+
+  if (app_name != NULL)
+  {
+    app_find_context_ptr->app_name = app_name;
+    app_find_context_ptr->pid = pid;
+    return false;               /* stop app supervisor iteration */
+  }
+
+  return true;                  /* continue app supervisor iteration */
+}
+
+#undef app_find_context_ptr
+
 char * get_app_name(struct virtualizer * virtualizer_ptr, uint64_t client_id, pid_t * app_pid_ptr)
 {
   int64_t pid;
-  unsigned long long ppid;
-  char * app_name;
+  struct app_find_context context;
 
   if (!graph_proxy_get_client_pid(virtualizer_ptr->jack_graph_proxy, client_id, &pid))
   {
-    pid = 0;
+    log_info("client %"PRIu64" pid is unknown", client_id);
+    *app_pid_ptr = 0;
+    return NULL;
   }
 
   log_info("client pid is %"PRId64, pid);
-  app_name = NULL;
-  if (pid != 0)
+
+  context.pid = (pid_t)pid;
+  context.app_name = NULL;
+
+  studio_iterate_app_supervisors(&context, get_app_name_from_supervisor);
+
+  if (context.app_name != NULL)
   {
-    ppid = (unsigned long long)pid;
-  loop:
-    app_name = ladish_app_supervisor_search_app(g_studio.app_supervisor, ppid);
-    if (app_name == NULL)
-    {
-      ppid = procfs_get_process_parent(ppid);
-      if (ppid != 0)
-      {
-        //log_info("parent pid %llu", ppid);
-        goto loop;
-      }
-    }
+    *app_pid_ptr = context.pid;
   }
   else
   {
-    ppid = 0;
+    *app_pid_ptr = 0;
   }
 
-  *app_pid_ptr = (pid_t)ppid;
-
-  return app_name;
+  return context.app_name;
 }
 
 #define virtualizer_ptr ((struct virtualizer *)context)
