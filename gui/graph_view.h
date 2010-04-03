@@ -49,6 +49,7 @@ void activate_view(graph_view_handle view);
 const char * get_view_name(graph_view_handle view);
 const char * get_view_opath(graph_view_handle view);
 bool set_view_name(graph_view_handle view, const char * name);
+graph_view_handle get_current_view(void);
 canvas_handle get_current_canvas(void);
 const char * get_current_view_room_name(void);
 bool is_room_view(graph_view_handle view);

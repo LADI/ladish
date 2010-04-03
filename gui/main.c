@@ -468,6 +468,7 @@ void error_message_box(const char * failed_operation)
 
 void run_custom_command_dialog(void)
 {
+  graph_view_handle view;
   guint result;
   GtkEntry * command_entry = GTK_ENTRY(get_gtk_builder_widget("app_command_entry"));
   GtkEntry * name_entry = GTK_ENTRY(get_gtk_builder_widget("app_name_entry"));
@@ -477,6 +478,8 @@ void run_custom_command_dialog(void)
   GtkToggleButton * level2_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("app_level2"));
   GtkToggleButton * level3_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("app_level3"));
   uint8_t level;
+
+  view = get_current_view();
 
   gtk_entry_set_text(name_entry, "");
   gtk_entry_set_text(command_entry, "");
@@ -520,7 +523,7 @@ void run_custom_command_dialog(void)
 
     log_info("'%s':'%s' %s level %"PRIu8, gtk_entry_get_text(name_entry), gtk_entry_get_text(command_entry), gtk_toggle_button_get_active(terminal_button) ? "terminal" : "shell", level);
     if (!app_run_custom(
-          g_studio_view,
+          view,
           gtk_entry_get_text(command_entry),
           gtk_entry_get_text(name_entry),
           gtk_toggle_button_get_active(terminal_button),
@@ -1010,7 +1013,7 @@ static void room_appeared(const char * opath, const char * name, const char * te
 
   log_info("room \"%s\" appeared (%s). template is \"%s\"", name, opath, template);
 
-  if (!create_view(name, SERVICE_NAME, opath, true, false, false, &graph_view))
+  if (!create_view(name, SERVICE_NAME, opath, true, true, false, &graph_view))
   {
     log_error("create_view() failed for room \"%s\"", name);
   }

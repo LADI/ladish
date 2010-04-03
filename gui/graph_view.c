@@ -302,6 +302,11 @@ const char * get_current_view_room_name(void)
   return g_current_view->name;
 }
 
+graph_view_handle get_current_view(void)
+{
+  return (graph_view_handle)g_current_view;
+}
+
 bool is_room_view(graph_view_handle view)
 {
   return strcmp(graph_proxy_get_object(view_ptr->graph), STUDIO_OBJECT_PATH) != 0;

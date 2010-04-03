@@ -28,6 +28,7 @@
 #include "../dbus_constants.h"
 #include "graph_dict.h"
 #include "../lib/wkports.h"
+#include "app_supervisor.h"
 
 struct ladish_room
 {
@@ -37,9 +38,15 @@ struct ladish_room
   uuid_t template_uuid;
   dbus_object_path dbus_object;
   ladish_graph_handle graph;
+  ladish_app_supervisor_handle app_supervisor;
 };
 
 extern const struct dbus_interface_descriptor g_interface_room;
+
+static void on_app_renamed(const char * old_name, const char * new_app_name)
+{
+  /* TODO */
+}
 
 bool
 ladish_room_create(
@@ -105,17 +112,23 @@ ladish_room_create(
 
   if (object_path)
   {
+    if (!ladish_app_supervisor_create(&room_ptr->app_supervisor, object_path, room_ptr->name, on_app_renamed))
+    {
+      log_error("ladish_app_supervisor_create() failed.");
+      goto destroy_graph;
+    }
+
     room_ptr->dbus_object = dbus_object_path_new(
       object_path,
       &g_interface_room, room_ptr,
       &g_interface_patchbay, ladish_graph_get_dbus_context(room_ptr->graph),
       &g_iface_graph_dict, room_ptr->graph,
-      //&g_iface_app_supervisor, room_ptr->app_supervisor,
+      &g_iface_app_supervisor, room_ptr->app_supervisor,
       NULL);
     if (room_ptr->dbus_object == NULL)
     {
       log_error("dbus_object_path_new() failed");
-      goto destroy_graph;
+      goto destroy_app_supervisor;
     }
 
     if (!dbus_object_path_register(g_dbus_connection, room_ptr->dbus_object))
@@ -129,6 +142,7 @@ ladish_room_create(
   else
   {
     room_ptr->dbus_object = NULL;
+    room_ptr->app_supervisor = NULL;
   }
 
   *room_handle_ptr = (ladish_room_handle)room_ptr;
@@ -136,6 +150,8 @@ ladish_room_create(
 
 destroy_dbus_object:
   dbus_object_path_destroy(g_dbus_connection, room_ptr->dbus_object);
+destroy_app_supervisor:
+  ladish_app_supervisor_destroy(room_ptr->app_supervisor);
 destroy_graph:
   ladish_graph_destroy(room_ptr->graph, true);
 free_name:
@@ -155,6 +171,11 @@ ladish_room_destroy(
   if (room_ptr->dbus_object != NULL)
   {
     dbus_object_path_destroy(g_dbus_connection, room_ptr->dbus_object);
+  }
+
+  if (room_ptr->app_supervisor != NULL)
+  {
+    ladish_app_supervisor_destroy(room_ptr->app_supervisor);
   }
 
   ladish_graph_destroy(room_ptr->graph, true);
