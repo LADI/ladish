@@ -39,6 +39,7 @@
 #include "dirhelpers.h"
 #include "graph_dict.h"
 #include "escape.h"
+#include "studio.h"
 
 #define STUDIOS_DIR "/studios/"
 char * g_studios_dir;
@@ -498,30 +499,41 @@ void studio_uninit(void)
   log_info("studio object destroy");
 }
 
+struct on_child_exit_context
+{
+  pid_t pid;
+  bool found;
+};
+
+#define child_exit_context_ptr ((struct on_child_exit_context *)context)
+
+static
+bool
+studio_on_child_exit_callback(
+  void * context,
+  ladish_app_supervisor_handle app_supervisor)
+{
+  child_exit_context_ptr->found = ladish_app_supervisor_child_exit(app_supervisor, child_exit_context_ptr->pid);
+  /* if child is found, return false - it will cause iteration to stop */
+  /* if child is not found, return true - it will cause next supervisor to be checked */
+  return !child_exit_context_ptr->found;
+}
+
+#undef child_exit_context_ptr
+
 void studio_on_child_exit(pid_t pid)
 {
-  struct list_head * node_ptr;
-  ladish_room_handle room;
-  ladish_app_supervisor_handle room_app_supervisor;
+  struct on_child_exit_context context;
 
-  if (ladish_app_supervisor_child_exit(g_studio.app_supervisor, pid))
+  context.pid = pid;
+  context.found = false;
+
+  studio_iterate_app_supervisors(&context, studio_on_child_exit_callback);
+
+  if (!context.found)
   {
-    return;
+    log_error("unknown child exit detected. pid is %llu", (unsigned long long)pid);
   }
-
-  list_for_each(node_ptr, &g_studio.rooms)
-  {
-    room = ladish_room_from_list_node(node_ptr);
-    room_app_supervisor = ladish_room_get_app_supervisor(room);
-    ASSERT(room_app_supervisor != NULL);
-
-    if (ladish_app_supervisor_child_exit(room_app_supervisor, pid))
-    {
-      return;
-    }
-  }
-
-  log_error("unknown child exit detected. pid is %llu", (unsigned long long)pid);
 }
 
 bool studio_is_loaded(void)
@@ -693,6 +705,48 @@ free:
   free(bak_filename);
 exit:
   return ret;
+}
+
+bool
+studio_iterate_app_supervisors(
+  void * context,
+  bool (* callback)(
+    void * context,
+    ladish_app_supervisor_handle app_supervisor))
+{
+  struct list_head * node_ptr;
+  ladish_room_handle room;
+  ladish_app_supervisor_handle room_app_supervisor;
+
+  if (!callback(context, g_studio.app_supervisor))
+  {
+    return false;
+  }
+
+  list_for_each(node_ptr, &g_studio.rooms)
+  {
+    room = ladish_room_from_list_node(node_ptr);
+    room_app_supervisor = ladish_room_get_app_supervisor(room);
+    ASSERT(room_app_supervisor != NULL);
+
+    if (!callback(context, room_app_supervisor))
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+static bool studio_stop_app_supervisor(void * context, ladish_app_supervisor_handle app_supervisor)
+{
+  ladish_app_supervisor_stop(app_supervisor);
+  return true;                  /* iterate all supervisors */
+}
+
+void studio_stop_app_supervisors(void)
+{
+  studio_iterate_app_supervisors(NULL, studio_stop_app_supervisor);
 }
 
 void emit_studio_renamed()

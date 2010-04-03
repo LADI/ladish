@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface of the studio singleton object
@@ -27,6 +27,8 @@
 #ifndef STUDIO_H__0BEDE85E_4FB3_4D74_BC08_C373A22409C0__INCLUDED
 #define STUDIO_H__0BEDE85E_4FB3_4D74_BC08_C373A22409C0__INCLUDED
 
+#include "app_supervisor.h"
+
 bool studio_init(void);
 void studio_uninit(void);
 void studio_run(void);
@@ -36,5 +38,14 @@ bool studios_iterate(void * call_ptr, void * context, bool (* callback)(void * c
 bool studio_delete(void * call_ptr, const char * studio_name);
 
 void studio_on_child_exit(pid_t pid);
+
+bool
+studio_iterate_app_supervisors(
+  void * context,
+  bool (* callback)(
+    void * context,
+    ladish_app_supervisor_handle app_supervisor));
+
+void studio_stop_app_supervisors(void);
 
 #endif /* #ifndef STUDIO_H__0BEDE85E_4FB3_4D74_BC08_C373A22409C0__INCLUDED */

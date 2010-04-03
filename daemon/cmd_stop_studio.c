@@ -30,6 +30,7 @@
 #include "studio_internal.h"
 #include "loader.h"
 #include "../common/time.h"
+#include "studio.h"
 
 #define STOP_STATE_WAITING_FOR_JACK_CLIENTS_DISAPPEAR   1
 #define STOP_STATE_WAITING_FOR_CHILDS_TERMINATION       2
@@ -63,7 +64,7 @@ static bool run(void * context)
     ladish_graph_dump(g_studio.jack_graph);
     ladish_graph_dump(g_studio.studio_graph);
 
-    ladish_app_supervisor_stop(g_studio.app_supervisor);
+    studio_stop_app_supervisors();
 
     cmd_ptr->command.state = LADISH_COMMAND_STATE_WAITING;
     cmd_ptr->stop_state = STOP_STATE_WAITING_FOR_JACK_CLIENTS_DISAPPEAR;
