@@ -66,7 +66,7 @@ bool get_app_name_from_supervisor(void * context, ladish_graph_handle graph, lad
   pid_t pid;
   char * app_name;
 
-  ASSERT(app_find_context_ptr->app_name == NULL); /* we stop app supervisor iteration when app is found */
+  ASSERT(app_find_context_ptr->app_name == NULL); /* we stop iteration when app is found */
 
   //log_info("checking app supervisor \"%s\" for pid %llu", ladish_app_supervisor_get_name(app_supervisor), (unsigned long long)pid);
 
