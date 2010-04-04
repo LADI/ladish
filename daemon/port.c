@@ -29,6 +29,7 @@
 /* JACK port or virtual port */
 struct ladish_port
 {
+  int refcount;
   uuid_t uuid;                             /* The UUID of the port */
   bool virtual;                            /* Whether the port is virtual or JACK port */
   uint64_t jack_id;                        /* JACK port ID. zero for virtual ports. */
@@ -68,6 +69,7 @@ ladish_port_create(
 
   port_ptr->jack_id = 0;
   port_ptr->virtual = true;
+  port_ptr->refcount = 0;
 
   log_info("port %p created", port_ptr);
   *port_handle_ptr = (ladish_port_handle)port_ptr;
@@ -84,6 +86,7 @@ bool ladish_port_create_copy(ladish_port_handle port_handle, ladish_port_handle 
 void ladish_port_destroy(ladish_port_handle port_handle)
 {
   log_info("port %p destroy", port_ptr);
+  ASSERT(port_ptr->refcount == 0);
   ladish_dict_destroy(port_ptr->dict);
   free(port_ptr);
 }
@@ -107,6 +110,22 @@ void ladish_port_set_jack_id(ladish_port_handle port_handle, uint64_t jack_id)
 uint64_t ladish_port_get_jack_id(ladish_port_handle port_handle)
 {
   return port_ptr->jack_id;
+}
+
+void ladish_port_add_ref(ladish_port_handle port_handle)
+{
+  port_ptr->refcount++;
+}
+
+void ladish_port_del_ref(ladish_port_handle port_handle)
+{
+  ASSERT(port_ptr->refcount > 0);
+  port_ptr->refcount--;
+
+  if (port_ptr->refcount == 0)
+  {
+    ladish_port_destroy(port_handle);
+  }
 }
 
 #undef port_ptr

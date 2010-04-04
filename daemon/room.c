@@ -152,7 +152,7 @@ destroy_dbus_object:
 destroy_app_supervisor:
   ladish_app_supervisor_destroy(room_ptr->app_supervisor);
 destroy_graph:
-  ladish_graph_destroy(room_ptr->graph, true);
+  ladish_graph_destroy(room_ptr->graph);
 free_name:
   free(room_ptr->name);
 free_room:
@@ -177,7 +177,7 @@ ladish_room_destroy(
     ladish_app_supervisor_destroy(room_ptr->app_supervisor);
   }
 
-  ladish_graph_destroy(room_ptr->graph, true);
+  ladish_graph_destroy(room_ptr->graph);
   free(room_ptr->name);
   free(room_ptr);
 }

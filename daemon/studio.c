@@ -355,8 +355,8 @@ void studio_run(void)
       log_error("Save your work, then unload and reload the studio.");
       ladish_environment_reset_stealth(&g_studio.env_store, ladish_environment_jack_server_started);
 
-      ladish_graph_clear(g_studio.studio_graph, false);
-      ladish_graph_clear(g_studio.jack_graph, true);
+      ladish_graph_clear(g_studio.studio_graph);
+      ladish_graph_clear(g_studio.jack_graph);
 
       handle_unexpected_jack_server_stop();
     }
@@ -477,9 +477,9 @@ bool studio_init(void)
 app_supervisor_destroy:
   ladish_app_supervisor_destroy(g_studio.app_supervisor);
 studio_graph_destroy:
-  ladish_graph_destroy(g_studio.studio_graph, false);
+  ladish_graph_destroy(g_studio.studio_graph);
 jack_graph_destroy:
-  ladish_graph_destroy(g_studio.jack_graph, false);
+  ladish_graph_destroy(g_studio.jack_graph);
 free_studios_dir:
   free(g_studios_dir);
 fail:
@@ -494,8 +494,8 @@ void studio_uninit(void)
 
   ladish_cqueue_clear(&g_studio.cmd_queue);
 
-  ladish_graph_destroy(g_studio.studio_graph, false);
-  ladish_graph_destroy(g_studio.jack_graph, false);
+  ladish_graph_destroy(g_studio.studio_graph);
+  ladish_graph_destroy(g_studio.jack_graph);
 
   free(g_studios_dir);
 
@@ -978,7 +978,7 @@ static void ladish_studio_create_room(struct dbus_method_call * call_ptr)
   return;
 
 fail_remove_room_client:
-  ladish_graph_remove_client(g_studio.studio_graph, room_client, false);
+  ladish_graph_remove_client(g_studio.studio_graph, room_client);
 fail_destroy_room_client:
   ladish_client_destroy(room_client);
 fail_destroy_room:
@@ -1067,7 +1067,7 @@ static void ladish_studio_delete_room(struct dbus_method_call * call_ptr)
 
       room_client = ladish_graph_find_client_by_name(g_studio.studio_graph, ladish_room_get_name(room));
       ASSERT(room_client != NULL);
-      ladish_graph_remove_client(g_studio.studio_graph, room_client, false);
+      ladish_graph_remove_client(g_studio.studio_graph, room_client);
       ladish_client_destroy(room_client);
 
       ladish_room_destroy(room);

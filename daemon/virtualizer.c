@@ -306,7 +306,7 @@ static void client_disappeared(void * context, uint64_t id)
   }
   else
   {
-    ladish_graph_remove_client(virtualizer_ptr->jack_graph, client, false);
+    ladish_graph_remove_client(virtualizer_ptr->jack_graph, client);
     ladish_client_destroy(client);
   }
 }
@@ -611,7 +611,7 @@ static void port_disappeared(void * context, uint64_t client_id, uint64_t port_i
     {
       if (ladish_graph_is_client_empty(vgraph, client))
       {
-        ladish_graph_remove_client(vgraph, client, false);
+        ladish_graph_remove_client(vgraph, client);
       }
     }
   }

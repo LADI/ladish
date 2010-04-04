@@ -49,7 +49,7 @@ bool
 
 bool ladish_graph_create(ladish_graph_handle * graph_handle_ptr, const char * opath);
 bool ladish_graph_copy(ladish_graph_handle src, ladish_graph_handle dest);
-void ladish_graph_destroy(ladish_graph_handle graph_handle, bool destroy_ports);
+void ladish_graph_destroy(ladish_graph_handle graph_handle);
 
 const char * ladish_graph_get_opath(ladish_graph_handle graph_handle);
 
@@ -60,7 +60,7 @@ ladish_graph_set_connection_handlers(
   ladish_graph_connect_request_handler connect_handler,
   ladish_graph_disconnect_request_handler disconnect_handler);
 
-void ladish_graph_clear(ladish_graph_handle graph_handle, bool destroy_ports);
+void ladish_graph_clear(ladish_graph_handle graph_handle);
 void * ladish_graph_get_dbus_context(ladish_graph_handle graph_handle);
 ladish_dict_handle ladish_graph_get_dict(ladish_graph_handle graph_handle);
 ladish_dict_handle ladish_graph_get_connection_dict(ladish_graph_handle graph_handle, uint64_t connection_id);
@@ -69,8 +69,7 @@ bool ladish_graph_add_client(ladish_graph_handle graph_handle, ladish_client_han
 void
 ladish_graph_remove_client(
   ladish_graph_handle graph_handle,
-  ladish_client_handle client_handle,
-  bool destroy_ports);
+  ladish_client_handle client_handle);
 
 bool
 ladish_graph_rename_client(

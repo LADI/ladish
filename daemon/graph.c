@@ -873,13 +873,9 @@ void
 ladish_graph_remove_port_internal(
   struct ladish_graph * graph_ptr,
   struct ladish_graph_client * client_ptr,
-  struct ladish_graph_port * port_ptr,
-  bool destroy)
+  struct ladish_graph_port * port_ptr)
 {
-  if (destroy)
-  {
-    ladish_port_destroy(port_ptr->port);
-  }
+  ladish_port_del_ref(port_ptr->port);
 
   list_del(&port_ptr->siblings_client);
   list_del(&port_ptr->siblings_graph);
@@ -909,15 +905,14 @@ void
 ladish_graph_remove_client_internal(
   struct ladish_graph * graph_ptr,
   struct ladish_graph_client * client_ptr,
-  bool destroy_client,
-  bool destroy_ports)
+  bool destroy_client)
 {
   struct ladish_graph_port * port_ptr;
 
   while (!list_empty(&client_ptr->ports))
   {
     port_ptr = list_entry(client_ptr->ports.next, struct ladish_graph_port, siblings_client);
-    ladish_graph_remove_port_internal(graph_ptr, client_ptr, port_ptr, destroy_ports);
+    ladish_graph_remove_port_internal(graph_ptr, client_ptr, port_ptr);
   }
 
   graph_ptr->graph_version++;
@@ -948,9 +943,9 @@ ladish_graph_remove_client_internal(
 
 #define graph_ptr ((struct ladish_graph *)graph_handle)
 
-void ladish_graph_destroy(ladish_graph_handle graph_handle, bool destroy_ports)
+void ladish_graph_destroy(ladish_graph_handle graph_handle)
 {
-  ladish_graph_clear(graph_handle, destroy_ports);
+  ladish_graph_clear(graph_handle);
   ladish_dict_destroy(graph_ptr->dict);
   if (graph_ptr->opath != NULL)
   {
@@ -976,7 +971,7 @@ ladish_graph_set_connection_handlers(
   graph_ptr->disconnect_handler = disconnect_handler;
 }
 
-void ladish_graph_clear(ladish_graph_handle graph_handle, bool destroy_ports)
+void ladish_graph_clear(ladish_graph_handle graph_handle)
 {
   struct ladish_graph_client * client_ptr;
   struct ladish_graph_connection * connection_ptr;
@@ -992,7 +987,7 @@ void ladish_graph_clear(ladish_graph_handle graph_handle, bool destroy_ports)
   while (!list_empty(&graph_ptr->clients))
   {
     client_ptr = list_entry(graph_ptr->clients.next, struct ladish_graph_client, siblings);
-    ladish_graph_remove_client_internal(graph_ptr, client_ptr, true, destroy_ports);
+    ladish_graph_remove_client_internal(graph_ptr, client_ptr, true);
   }
 }
 
@@ -1199,8 +1194,7 @@ bool ladish_graph_add_client(ladish_graph_handle graph_handle, ladish_client_han
 void
 ladish_graph_remove_client(
   ladish_graph_handle graph_handle,
-  ladish_client_handle client_handle,
-  bool destroy_ports)
+  ladish_client_handle client_handle)
 {
   struct ladish_graph_client * client_ptr;
 
@@ -1209,7 +1203,7 @@ ladish_graph_remove_client(
   client_ptr = ladish_graph_find_client(graph_ptr, client_handle);
   if (client_ptr != NULL)
   {
-    ladish_graph_remove_client_internal(graph_ptr, client_ptr, false, destroy_ports);
+    ladish_graph_remove_client_internal(graph_ptr, client_ptr, false);
   }
   else
   {
@@ -1260,6 +1254,7 @@ ladish_graph_add_port(
 
   port_ptr->id = graph_ptr->next_port_id++;
   port_ptr->port = port_handle;
+  ladish_port_add_ref(port_ptr->port);
   port_ptr->hidden = true;
 
   port_ptr->client_ptr = client_ptr;
@@ -1627,7 +1622,7 @@ ladish_graph_remove_port(
     return NULL;
   }
 
-  ladish_graph_remove_port_internal(graph_ptr, port_ptr->client_ptr, port_ptr, false);
+  ladish_graph_remove_port_internal(graph_ptr, port_ptr->client_ptr, port_ptr);
   return port_ptr->client_ptr->client;
 }
 

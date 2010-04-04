@@ -39,4 +39,7 @@ void ladish_port_get_uuid(ladish_port_handle port_handle, uuid_t uuid);
 void ladish_port_set_jack_id(ladish_port_handle port_handle, uint64_t jack_id);
 uint64_t ladish_port_get_jack_id(ladish_port_handle port_handle);
 
+void ladish_port_add_ref(ladish_port_handle port_handle);
+void ladish_port_del_ref(ladish_port_handle port_handle);
+
 #endif /* #ifndef PORT_H__62F81E7C_91FA_44AB_94A9_E0E2D226ED58__INCLUDED */
