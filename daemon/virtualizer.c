@@ -693,15 +693,15 @@ static bool ports_disconnect_request(void * context, ladish_graph_handle graph_h
     return false;
   }
 
+  port1_id = ladish_port_get_jack_id(port1);
+  port2_id = ladish_port_get_jack_id(port2);
+
   if (port1_id == 0 || port2_id == 0)
   {
     /* TODO */
     log_error("disconnecting room-studio link ports is not implemented yet");
     return false;
   }
-
-  port1_id = ladish_port_get_jack_id(port1);
-  port2_id = ladish_port_get_jack_id(port2);
 
   graph_proxy_disconnect_ports(virtualizer_ptr->jack_graph_proxy, port1_id, port2_id);
 
