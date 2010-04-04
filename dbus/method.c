@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -70,11 +70,6 @@ method_return_new_single(struct dbus_method_call * call_ptr,
 
   if (!call_ptr->reply)
     goto fail_no_mem;
-
-  /* Void method return requested by caller. */
-  // TODO: do we really need this?
-  if (type == DBUS_TYPE_INVALID)
-    return;
 
   /* Prevent crash on NULL input string. */
   if (type == DBUS_TYPE_STRING && !(*((const char **) arg)))
