@@ -28,7 +28,6 @@
  */
 
 #include "../common.h"
-#include "../common/safety.h"
 #include "helpers.h"
 #include "method.h"
 

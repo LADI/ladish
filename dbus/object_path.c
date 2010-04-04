@@ -29,7 +29,6 @@
 
 #include "../common.h"
 #include "helpers.h"
-#include "../common/safety.h"
 #include "error.h"  /* lash_dbus_error() */
 
 struct dbus_object_path_interface
@@ -65,7 +64,15 @@ introspection_new(struct dbus_object_path * opath_ptr)
    * Create introspection XML data.
    */
 
-  xml_data = lash_malloc(1, 16384);
+  /* TODO: we assume that 16 KiB is enough to hold introspection xml.
+   * If it gets larger, memory corruption will occur.
+   * Use realloc-like algorithm instead */
+  xml_data = malloc(16384);
+  if (xml_data == NULL)
+  {
+    return NULL;
+  }
+
   buf_ptr = xml_data;
 
   write_buf("<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\"\n"

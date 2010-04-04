@@ -247,7 +247,6 @@ def build(bld):
         daemon.source.append(os.path.join("dbus", source))
 
     for source in [
-        'safety.c',
         'time.c',
         ]:
         daemon.source.append(os.path.join("common", source))
