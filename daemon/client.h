@@ -55,4 +55,7 @@ uint64_t ladish_client_get_jack_id(ladish_client_handle client_handle);
 void ladish_client_set_pid(ladish_client_handle client_handle, pid_t pid);
 pid_t ladish_client_get_pid(ladish_client_handle client_handle);
 
+void ladish_client_set_vgraph(ladish_client_handle client_handle, void * vgraph);
+void * ladish_client_get_vgraph(ladish_client_handle client_handle);
+
 #endif /* #ifndef CLIENT_H__2160B4BA_D6D1_464D_9DC5_ECA50B0958AD__INCLUDED */

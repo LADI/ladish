@@ -33,6 +33,7 @@ struct ladish_client
   uint64_t jack_id;                        /* JACK client ID */
   pid_t pid;                               /* process id. */
   ladish_dict_handle dict;
+  void * vgraph;                /* virtual graph */
 };
 
 bool
@@ -67,6 +68,7 @@ ladish_client_create(
 
   client_ptr->jack_id = 0;
   client_ptr->pid = 0;
+  client_ptr->vgraph = NULL;
 
 #if 0
   {
@@ -131,6 +133,16 @@ void ladish_client_set_pid(ladish_client_handle client_handle, pid_t pid)
 pid_t ladish_client_get_pid(ladish_client_handle client_handle)
 {
   return client_ptr->pid;
+}
+
+void ladish_client_set_vgraph(ladish_client_handle client_handle, void * vgraph)
+{
+  client_ptr->vgraph = vgraph;
+}
+
+void * ladish_client_get_vgraph(ladish_client_handle client_handle)
+{
+  return client_ptr->vgraph;
 }
 
 #undef client_ptr
