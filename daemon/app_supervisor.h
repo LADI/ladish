@@ -36,7 +36,8 @@ ladish_app_supervisor_create(
   ladish_app_supervisor_handle * supervisor_handle_ptr,
   const char * opath,
   const char * name,
-  void (* on_app_renamed)(const char * old_name, const char * new_app_name));
+  void * context,
+  void (* on_app_renamed)(void * context, const char * old_name, const char * new_app_name));
 
 void
 ladish_app_supervisor_destroy(

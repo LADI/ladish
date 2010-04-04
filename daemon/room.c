@@ -42,10 +42,8 @@ struct ladish_room
 
 extern const struct dbus_interface_descriptor g_interface_room;
 
-static void on_app_renamed(const char * old_name, const char * new_app_name)
-{
-  /* TODO */
-}
+/* implemented in studio.c */
+void ladish_on_app_renamed(void * context, const char * old_name, const char * new_app_name);
 
 bool
 ladish_room_create(
@@ -111,7 +109,7 @@ ladish_room_create(
 
   if (object_path)
   {
-    if (!ladish_app_supervisor_create(&room_ptr->app_supervisor, object_path, room_ptr->name, on_app_renamed))
+    if (!ladish_app_supervisor_create(&room_ptr->app_supervisor, object_path, room_ptr->name, room_ptr->graph, ladish_on_app_renamed))
     {
       log_error("ladish_app_supervisor_create() failed.");
       goto destroy_graph;
