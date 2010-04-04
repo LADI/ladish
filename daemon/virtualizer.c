@@ -666,6 +666,7 @@ static bool ports_connect_request(void * context, ladish_graph_handle graph_hand
 
   if (port1_id == 0 || port2_id == 0)
   {
+    /* TODO */
     log_error("connecting room-studio link ports is not implemented yet");
     return false;
   }
@@ -694,6 +695,7 @@ static bool ports_disconnect_request(void * context, ladish_graph_handle graph_h
 
   if (port1_id == 0 || port2_id == 0)
   {
+    /* TODO */
     log_error("disconnecting room-studio link ports is not implemented yet");
     return false;
   }

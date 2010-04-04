@@ -452,7 +452,7 @@ static void connect_ports_by_id(struct dbus_method_call * call_ptr)
 
   if (graph_ptr->connect_handler == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "connect requests on this graph cannot be handlined");
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "connect requests on graph %s cannot be handlined", graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
     return;
   }
 
@@ -528,7 +528,7 @@ static void disconnect_ports_by_id(struct dbus_method_call * call_ptr)
 
   if (graph_ptr->disconnect_handler == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "disconnect requests on this graph cannot be handlined");
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "disconnect requests on graph %s cannot be handlined", graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
     return;
   }
 
