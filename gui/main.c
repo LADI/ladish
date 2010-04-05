@@ -262,6 +262,13 @@ bool studio_state_changed(char ** name_ptr_ptr)
   }
 
   gtk_progress_bar_set_text(GTK_PROGRESS_BAR(g_xrun_progress_bar), status);
+
+  /* workaround a bug in GtkProgressBar. it needs fraction change in order to redraw the changed text
+   * GtkProgressBar tracks the dirty state and it is checked before painting, so sending redraw request
+   * through gtk_widget_queue_draw() will not help because expose handler will ignore the redraw request */
+  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_xrun_progress_bar), 1.0);
+  gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_xrun_progress_bar), 0.0);
+
   gtk_label_set_text(GTK_LABEL(g_studio_status_label), name);
 
   if (status_image_path == NULL || (pixbuf = load_pixbuf(status_image_path)) == NULL)
