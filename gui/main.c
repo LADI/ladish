@@ -73,8 +73,10 @@ GtkWidget * g_xruns_label;
 
 GtkWidget * g_xrun_progress_bar;
 
-graph_view_handle g_jack_view = NULL;
 graph_view_handle g_studio_view = NULL;
+
+bool g_jack_view_enabled = false;
+graph_view_handle g_jack_view = NULL;
 
 static guint g_jack_poll_source_tag;
 static guint g_ladishd_poll_source_tag;
@@ -973,20 +975,33 @@ void jack_stopped(void)
   gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_xrun_progress_bar), 0.0);
 }
 
+static void update_raw_jack_visibility(void)
+{
+  /* if there is no jack view and its display is enabled and jack is avaialable, create the raw jack view */
+  if (g_jack_view == NULL && g_jack_view_enabled && g_jack_state != JACK_STATE_NA)
+  {
+    if (!create_view("Raw JACK", JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, false, false, true, &g_jack_view))
+    {
+      log_error("create_view() failed for jack");
+      return;
+    }
+  }
+
+  /* if there is jack view and its display is disabled or it is enabled byt jack is not avaialable, destroy the raw jack view */
+  if (g_jack_view != NULL && (!g_jack_view_enabled || g_jack_state == JACK_STATE_NA))
+  {
+    destroy_view(g_jack_view);
+    g_jack_view = NULL;
+  }
+}
+
 void jack_appeared(void)
 {
   log_info("JACK appeared");
 
   g_jack_state = JACK_STATE_STOPPED;
   studio_state_changed(NULL);
-
-#if defined(SHOW_RAW_JACK)
-  if (!create_view("Raw JACK", JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, false, false, true, &g_jack_view))
-  {
-    log_error("create_view() failed for jack");
-    return;
-  }
-#endif
+  update_raw_jack_visibility();
 }
 
 void jack_disappeared(void)
@@ -997,14 +1012,7 @@ void jack_disappeared(void)
 
   g_jack_state = JACK_STATE_NA;
   studio_state_changed(NULL);
-
-#if defined(SHOW_RAW_JACK)
-  if (g_jack_view != NULL)
-  {
-    destroy_view(g_jack_view);
-    g_jack_view = NULL;
-  }
-#endif
+  update_raw_jack_visibility();
 }
 
 static void room_appeared(const char * opath, const char * name, const char * template)
@@ -1084,6 +1092,13 @@ void menu_request_toggle_toolbar(bool visible)
   {
 		gtk_widget_hide(g_toolbar);
   }
+}
+
+void menu_request_toggle_raw_jack(bool visible)
+{
+  //log_info("toogle raw jack visibility -> %s", visible ? "visible" : "invisible");
+  g_jack_view_enabled = visible;
+  update_raw_jack_visibility();
 }
 
 static char * read_file_contents(const char * filename)

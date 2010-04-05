@@ -231,6 +231,14 @@
                       </object>
                     </child>
                     <child>
+                      <object class="GtkCheckMenuItem" id="menu_item_view_raw_jack">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">_JACK</property>
+                        <property name="use_underline">True</property>
+                        <accelerator key="J" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkImageMenuItem" id="menu_item_view_arrange">
                         <property name="label">_Arrange</property>
                         <property name="visible">True</property>

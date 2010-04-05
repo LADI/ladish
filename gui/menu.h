@@ -34,7 +34,6 @@ bool menu_set_jack_latency(uint32_t buffer_size, bool force, bool * changed_ptr)
 void menu_view_activated(bool room);
 
 void menu_request_daemon_exit(void);
-void menu_request_toggle_toolbar(bool visible);
 void menu_request_jack_configure(void);
 void menu_request_save_studio(void);
 void menu_request_save_as_studio(void);
@@ -47,5 +46,8 @@ void menu_request_rename_studio(void);
 void menu_request_create_room(void);
 void menu_request_destroy_room(void);
 void menu_request_jack_latency_change(uint32_t buffer_size);
+
+void menu_request_toggle_toolbar(bool visible);
+void menu_request_toggle_raw_jack(bool visible);
 
 #endif /* #ifndef MENU_H__37ACA2FE_C43D_4FA8_B7CF_6DD345F17CD1__INCLUDED */

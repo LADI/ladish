@@ -50,13 +50,16 @@ static GtkCheckMenuItem * g_menu_item_jack_latency_2048;
 static GtkCheckMenuItem * g_menu_item_jack_latency_4096;
 static GtkCheckMenuItem * g_menu_item_jack_latency_8192;
 static GtkWidget * g_menu_item_view_toolbar;
+static GtkWidget * g_menu_item_view_raw_jack;
 static GtkWidget * g_menu_item_start_app;
 
 static bool g_latency_changing;
 
-static void toggle_toolbar(void)
+typedef void (* menu_request_toggle_func)(bool visible);
+
+static void toggled(GtkCheckMenuItem * checkmenuitem, gpointer user_data)
 {
-  menu_request_toggle_toolbar(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(g_menu_item_view_toolbar)));
+  ((menu_request_toggle_func)user_data)(gtk_check_menu_item_get_active(checkmenuitem));
 }
 
 static void buffer_size_change_request(GtkCheckMenuItem * item_ptr, gpointer user_data)
@@ -90,6 +93,7 @@ void menu_init(void)
   g_menu_item_daemon_exit = get_gtk_builder_widget("menu_item_daemon_exit");
   g_menu_item_jack_configure = get_gtk_builder_widget("menu_item_jack_configure");
   g_menu_item_view_toolbar = get_gtk_builder_widget("menu_item_view_toolbar");
+  g_menu_item_view_raw_jack = get_gtk_builder_widget("menu_item_view_raw_jack");
 
   g_menu_item_jack_latency_32   = GTK_CHECK_MENU_ITEM(get_gtk_builder_widget("menu_item_jack_latency_32"));
   g_menu_item_jack_latency_64   = GTK_CHECK_MENU_ITEM(get_gtk_builder_widget("menu_item_jack_latency_64"));
@@ -101,7 +105,9 @@ void menu_init(void)
   g_menu_item_jack_latency_4096 = GTK_CHECK_MENU_ITEM(get_gtk_builder_widget("menu_item_jack_latency_4096"));
   g_menu_item_jack_latency_8192 = GTK_CHECK_MENU_ITEM(get_gtk_builder_widget("menu_item_jack_latency_8192"));
 
-  g_signal_connect(G_OBJECT(g_menu_item_view_toolbar), "activate", G_CALLBACK(toggle_toolbar), NULL);
+  g_signal_connect(G_OBJECT(g_menu_item_view_toolbar), "toggled", G_CALLBACK(toggled), menu_request_toggle_toolbar);
+  g_signal_connect(G_OBJECT(g_menu_item_view_raw_jack), "toggled", G_CALLBACK(toggled), menu_request_toggle_raw_jack);
+
   g_signal_connect(G_OBJECT(g_menu_item_new_studio), "activate", G_CALLBACK(menu_request_new_studio), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_start_studio), "activate", G_CALLBACK(menu_request_start_studio), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_stop_studio), "activate", G_CALLBACK(menu_request_stop_studio), NULL);
