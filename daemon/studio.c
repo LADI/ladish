@@ -1067,6 +1067,7 @@ static void ladish_studio_delete_room(struct dbus_method_call * call_ptr)
   const char * name;
   struct list_head * node_ptr;
   ladish_room_handle room;
+  uuid_t room_uuid;
   ladish_client_handle room_client;
 
   dbus_error_init(&g_dbus_error);
@@ -1089,7 +1090,8 @@ static void ladish_studio_delete_room(struct dbus_method_call * call_ptr)
       g_studio.room_count--;
       emit_room_disappeared(room);
 
-      room_client = ladish_graph_find_client_by_name(g_studio.studio_graph, ladish_room_get_name(room));
+      ladish_room_get_uuid(room, room_uuid);
+      room_client = ladish_graph_find_client_by_uuid(g_studio.studio_graph, room_uuid);
       ASSERT(room_client != NULL);
       ladish_graph_remove_client(g_studio.studio_graph, room_client);
       ladish_client_destroy(room_client);
