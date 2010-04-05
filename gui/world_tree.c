@@ -51,35 +51,6 @@ enum
 GtkWidget * g_world_tree_widget;
 GtkTreeStore * g_treestore;
 
-static
-gboolean
-on_select(
-  GtkTreeSelection * selection,
-  GtkTreeModel * model,
-  GtkTreePath * path,
-  gboolean path_currently_selected,
-  gpointer data)
-{
-  GtkTreeIter iter;
-  graph_view_handle view;
-  gint type;
-
-  if (gtk_tree_model_get_iter(model, &iter, path))
-  {
-    gtk_tree_model_get(model, &iter, COL_TYPE, &type, COL_VIEW, &view, -1);
-    if (type == entry_type_view)
-    {
-      //log_info("%s is going to be %s.", get_view_name(view), path_currently_selected ? "unselected" : "selected");
-      if (!path_currently_selected)
-      {
-        activate_view(view);
-      }
-    }
-  }
-
-  return TRUE;
-}
-
 bool get_app_view(GtkTreeIter * app_iter_ptr, graph_view_handle * view_ptr)
 {
   GtkTreeIter view_iter;
@@ -104,6 +75,44 @@ bool get_app_view(GtkTreeIter * app_iter_ptr, graph_view_handle * view_ptr)
   }
 
   return true;
+}
+
+static
+gboolean
+on_select(
+  GtkTreeSelection * selection,
+  GtkTreeModel * model,
+  GtkTreePath * path,
+  gboolean path_currently_selected,
+  gpointer data)
+{
+  GtkTreeIter iter;
+  graph_view_handle view;
+  gint type;
+  uint64_t id;
+
+  if (gtk_tree_model_get_iter(model, &iter, path))
+  {
+    gtk_tree_model_get(model, &iter, COL_TYPE, &type, COL_VIEW, &view, COL_ID, &id, -1);
+    switch (type)
+    {
+    case entry_type_app:
+      if (!get_app_view(&iter, &view))
+      {
+        ASSERT_NO_PASS;
+        break;
+      }
+    case entry_type_view:
+      //log_info("%s is going to be %s.", get_view_name(view), path_currently_selected ? "unselected" : "selected");
+      if (!path_currently_selected)
+      {
+        activate_view(view);
+      }
+      break;
+    }
+  }
+
+  return TRUE;
 }
 
 bool get_selected_app_id(graph_view_handle * view_ptr, uint64_t * id_ptr)
