@@ -1824,7 +1824,7 @@ void ladish_try_connect_hidden_connections(ladish_graph_handle graph_handle)
   }
 }
 
-void ladish_graph_hide_all(ladish_graph_handle graph_handle)
+void ladish_graph_hide_non_virtual(ladish_graph_handle graph_handle)
 {
   struct list_head * node_ptr;
   struct ladish_graph_connection * connection_ptr;
@@ -1836,7 +1836,9 @@ void ladish_graph_hide_all(ladish_graph_handle graph_handle)
   list_for_each(node_ptr, &graph_ptr->connections)
   {
     connection_ptr = list_entry(node_ptr, struct ladish_graph_connection, siblings);
-    if (!connection_ptr->hidden)
+    if (!connection_ptr->hidden &&
+        (ladish_client_get_jack_id(connection_ptr->port1_ptr->client_ptr->client) != 0 ||
+         ladish_client_get_jack_id(connection_ptr->port2_ptr->client_ptr->client) != 0))
     {
       log_debug("hidding connection between ports %"PRIu64" and %"PRIu64, connection_ptr->port1_ptr->id, connection_ptr->port2_ptr->id);
       ladish_graph_hide_connection_internal(graph_ptr, connection_ptr);
@@ -1846,7 +1848,7 @@ void ladish_graph_hide_all(ladish_graph_handle graph_handle)
   list_for_each(node_ptr, &graph_ptr->ports)
   {
     port_ptr = list_entry(node_ptr, struct ladish_graph_port, siblings_graph);
-    if (!port_ptr->hidden)
+    if (!port_ptr->hidden && ladish_client_get_jack_id(port_ptr->client_ptr->client) != 0)
     {
       ladish_port_set_jack_id(port_ptr->port, 0);
       ladish_graph_hide_port_internal(graph_ptr, port_ptr);
@@ -1856,7 +1858,7 @@ void ladish_graph_hide_all(ladish_graph_handle graph_handle)
   list_for_each(node_ptr, &graph_ptr->clients)
   {
     client_ptr = list_entry(node_ptr, struct ladish_graph_client, siblings);
-    if (!client_ptr->hidden)
+    if (!client_ptr->hidden && ladish_client_get_jack_id(client_ptr->client) != 0)
     {
       ladish_client_set_jack_id(client_ptr->client, 0);
       ladish_graph_hide_client_internal(graph_ptr, client_ptr);

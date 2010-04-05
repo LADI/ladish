@@ -145,7 +145,7 @@ void ladish_graph_hide_client(ladish_graph_handle graph_handle, ladish_client_ha
 void ladish_graph_adjust_port(ladish_graph_handle graph_handle, ladish_port_handle port_handle, uint32_t type, uint32_t flags);
 void ladish_graph_show_connection(ladish_graph_handle graph_handle, uint64_t connection_id);
 void ladish_try_connect_hidden_connections(ladish_graph_handle graph_handle);
-void ladish_graph_hide_all(ladish_graph_handle graph_handle);
+void ladish_graph_hide_non_virtual(ladish_graph_handle graph_handle);
 
 void ladish_graph_dump(ladish_graph_handle graph_handle);
 

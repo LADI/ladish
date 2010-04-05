@@ -144,8 +144,8 @@ static bool run(void * context)
   done:
     log_info("Wait for JACK server stop complete.");
 
-    ladish_graph_hide_all(g_studio.jack_graph);
-    ladish_graph_hide_all(g_studio.studio_graph);
+    ladish_graph_hide_non_virtual(g_studio.jack_graph);
+    ladish_graph_hide_non_virtual(g_studio.studio_graph);
     ASSERT(!jack_server_started);
 
     ladish_graph_dump(g_studio.studio_graph);
