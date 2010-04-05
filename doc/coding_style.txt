@@ -1,0 +1,79 @@
+This document describes the coding style that must be used for ladish code. It applies to C/C++ and to Python.
+For other languages, rules should be applied if possible.
+
+= Indention and whitespace =
+ * Two spaces must used for indentation in C/C++ files.
+ * Four spaces must used for indention in Python files.
+ * No tabs are allowed in text files.
+ * Pointer types must be written with one space before and after the (group of) asterisk(s).
+ * One space char must be used between type and variable or struct/class member identifiers.
+ * Whitespace is not allowed at the end of the line, even if this will make the line empty.
+ * Whitespace is not allowed before ';', ')' and ','. Same applies for '(', unless it is used after condition keyword (if, for, while, switch).
+ * Whitespace is not allowed after '('.
+ * One space char must be used after each comma (',') char.
+ * One space char before and after boolean, bitwise and arithmetic operators must be used.
+ * No space is allowed before postfix and after prefix increment/decrement.
+ * No extra space must be introduced because of the array element operator ('[]').
+ * No space is allowed before and after pointer to structure member operator ('->'),  structure or union member operator ('.') and type cast ('(type)').
+ * The conditional operator ('?:') must have one space before and after '?' and ':'.
+ * Compound and simple assignment operators must have have one space before and after them.
+ * No space is allowed after Indirection ('*'), address ('&'), unary plus and minus, bitwise ('~') and logical ('!') not operators.
+ * No extra space must be introduced because of the sizeof operator (around its braces).
+
+= C/C++ block curly braces =
+ * The opening brace must be put in the next line with indentation +0. (ANSI style, not K&R style)
+ * The block statements must be indented by two spaces.
+ * The closing brace must be at same column as the matching opening brace.
+ * Block braces must be always used for conditional expressions with the only
+   possible (but not forced) exception for break, continue, goto and return.
+ * do-while statements must have the while keyword at line after the closing brace and at same column as the closing brace.
+
+= C/C++ switch =
+ * switch 'case's and 'default' must start at indentation +0.
+ * 'case' and 'default' statements, including the possible 'break', must be indented by two spaces.
+
+= Identifiers =
+ * Descriptive names must be used, with the only possible exception of 'i' ,'j' and 'k' for array index vars.
+ * CamelCase must not be used. Instead, identifiers_with_underscores must be used.
+ * For C/C++, when it is desired to specify the type of the variable/parameter in its name, append it like this: source_string
+ * For C/C++, wWhen it is desired to specify that variable/parameter is a pointer, '_ptr' must be appended. For double pointers, use _ptr_ptr.
+
+= C variables =
+ * Variables must be declared only at the beginning of the function.
+
+= C booleans =
+ * For internal booleans, C99 bool, true and false must be used. For interfacing with external libraries, follow their policy for booleans.
+ * Conditional statements must contain only checks on booleans. The implicit "non-zero is true" feature of the C must not be used.
+   Pointers must be explicitly compared with NULL. Integers must be explicitly compared with 0.
+
+= C/C++ functions and C++ methods ==
+ * Function calls and declarations must be either one liners or have their name in separate line.
+ * 'const type *' must be used for input parameter function parameters that are pointers.
+ * For multiline function declarations/calls, grouping of parameters could be used only if parameters are grouped by their semantics.
+ * For multiline function declarations/calls, the opening brace of the parameter list must be on the same line.
+ * For multiline function declarations/calls, closing brace of the parameter list must be on the same line as the last parameter.
+   If there are no parameters, the closing brace must be at same line as the opening brace.
+ * For multiline function declarations, return type and 'static'-like modifiers must be put in the same line.
+ * For multiline function declarations, return type and 'static'-like modifiers must be put in the separate lines (one modifier per line).
+
+= C/C++ pointers =
+ * NULL must be used for pointers, not 0.
+
+= C/C++ header inclusion =
+ * Any header that is included from a part of the ladish source tree must be included using quotes, not angle brackets.
+   Angle bracket includes are for out-of-tree ('system') includes only.
+
+= Error cleanup in C =
+ * 'goto' cleanup must be used instead of nested if-else cleanup.
+ * For exit code paths, either goto or return must be used but not both.
+
+= C/C++ global function and variables scope =
+ * Global variables must be prefixed with g_ or ladish_g_
+ * When not used from other files, global functions and variables must be declared as static.
+   Making them unique is encouraged because it helps debugging.
+
+= Interface/implementation separation in C/C++ =
+ * Separation between interface and implementation of modules/classes must be used.
+ * In C, handles that point to anonymous structs to track module/object instances must be used.
+ * In C++, class/struct that is private for the implementation must be used.
+ * In interface headers, ladish headers containing implementation must not be included.
