@@ -303,6 +303,12 @@ void handle_unexpected_jack_server_stop(void)
   /* TODO: if user wants, restart jack server and reconnect all jack apps to it */
 }
 
+static bool hide_vgraph_non_virtual(void * context, ladish_graph_handle graph, ladish_app_supervisor_handle app_supervisor)
+{
+  ladish_graph_hide_non_virtual(graph);
+  return true;                  /* iterate all vgraphs */
+}
+
 void studio_run(void)
 {
   bool state;
@@ -369,8 +375,7 @@ void studio_run(void)
       log_error("Save your work, then unload and reload the studio.");
       ladish_environment_reset_stealth(&g_studio.env_store, ladish_environment_jack_server_started);
 
-      ladish_graph_clear(g_studio.studio_graph);
-      ladish_graph_clear(g_studio.jack_graph);
+      studio_iterate_virtual_graphs(NULL, hide_vgraph_non_virtual);
 
       handle_unexpected_jack_server_stop();
     }
