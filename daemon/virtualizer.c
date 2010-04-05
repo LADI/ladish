@@ -801,7 +801,6 @@ bool
 ladish_virtualizer_create(
   graph_proxy_handle jack_graph_proxy,
   ladish_graph_handle jack_graph,
-  ladish_graph_handle studio_graph,
   ladish_virtualizer_handle * handle_ptr)
 {
   struct virtualizer * virtualizer_ptr;
@@ -835,13 +834,19 @@ ladish_virtualizer_create(
     return false;
   }
 
-  ladish_graph_set_connection_handlers(studio_graph, virtualizer_ptr, ports_connect_request, ports_disconnect_request);
-
   *handle_ptr = (ladish_virtualizer_handle)virtualizer_ptr;
   return true;
 }
 
 #define virtualizer_ptr ((struct virtualizer *)handle)
+
+void
+ladish_virtualizer_set_graph_connection_handlers(
+  ladish_virtualizer_handle handle,
+  ladish_graph_handle graph)
+{
+  ladish_graph_set_connection_handlers(graph, virtualizer_ptr, ports_connect_request, ports_disconnect_request);
+}
 
 unsigned int
 ladish_virtualizer_get_our_clients_count(

@@ -966,6 +966,7 @@ ladish_graph_set_connection_handlers(
   ladish_graph_connect_request_handler connect_handler,
   ladish_graph_disconnect_request_handler disconnect_handler)
 {
+  log_info("setting connection handlers for graph '%s'", graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
   graph_ptr->context = graph_context;
   graph_ptr->connect_handler = connect_handler;
   graph_ptr->disconnect_handler = disconnect_handler;

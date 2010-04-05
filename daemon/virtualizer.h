@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to graph dispatcher object
@@ -37,8 +37,12 @@ bool
 ladish_virtualizer_create(
   graph_proxy_handle jack_graph_proxy,
   ladish_graph_handle jack_graph,
-  ladish_graph_handle studio_graph,
   ladish_virtualizer_handle * handle_ptr);
+
+void
+ladish_virtualizer_set_graph_connection_handlers(
+  ladish_virtualizer_handle handle,
+  ladish_graph_handle graph);
 
 unsigned int
 ladish_virtualizer_get_our_clients_count(

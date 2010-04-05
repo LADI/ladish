@@ -226,6 +226,16 @@ static void emit_room_disappeared(ladish_room_handle room)
   dbus_message_unref(message_ptr);
 }
 
+bool
+set_graph_connection_handlers(
+  void * context,
+  ladish_graph_handle graph,
+  ladish_app_supervisor_handle app_supervisor)
+{
+  ladish_virtualizer_set_graph_connection_handlers(context, graph);
+  return true;                  /* iterate all graphs */
+}
+
 void on_event_jack_started(void)
 {
   if (!studio_fetch_jack_settings())
@@ -244,9 +254,13 @@ void on_event_jack_started(void)
   }
   else
   {
-    if (!ladish_virtualizer_create(g_studio.jack_graph_proxy, g_studio.jack_graph, g_studio.studio_graph, &g_studio.virtualizer))
+    if (!ladish_virtualizer_create(g_studio.jack_graph_proxy, g_studio.jack_graph, &g_studio.virtualizer))
     {
       log_error("ladish_virtualizer_create() failed.");
+    }
+    else
+    {
+      studio_iterate_virtual_graphs(g_studio.virtualizer, set_graph_connection_handlers);
     }
 
     if (!graph_proxy_activate(g_studio.jack_graph_proxy))
@@ -948,6 +962,11 @@ static void ladish_studio_create_room(struct dbus_method_call * call_ptr)
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_room_create() failed.");
     goto fail_decrement_room_count;
+  }
+
+  if (g_studio.virtualizer != NULL)
+  {
+    ladish_virtualizer_set_graph_connection_handlers(g_studio.virtualizer, ladish_room_get_graph(room));
   }
 
   ladish_room_get_uuid(room, room_uuid);
