@@ -119,7 +119,11 @@ bool create_room_dialog_run(char ** name_ptr_ptr, char ** template_ptr_ptr)
   char * template;
   char * name;
 
-  gtk_entry_set_text(entry, "");
+  /* text-select old name so it is cleared if user starts typing
+   * but keep it so user can use slighly modified name */
+  gtk_editable_select_region(GTK_EDITABLE(entry), 0, -1);
+  gtk_window_set_focus(GTK_WINDOW(dialog), GTK_WIDGET(entry));
+
   if (!fill_templates())
   {
     log_error("Cannot fetch room template list");
