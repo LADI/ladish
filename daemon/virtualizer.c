@@ -36,7 +36,6 @@
 
 struct virtualizer
 {
-
   graph_proxy_handle jack_graph_proxy;
   ladish_graph_handle jack_graph;
   uint64_t system_client_id;
