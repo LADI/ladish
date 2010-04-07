@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<gaphor xmlns="http://gaphor.sourceforge.net/model" version="3.0" gaphor-version="0.14.1">
+<gaphor xmlns="http://gaphor.sourceforge.net/model" version="3.0" gaphor-version="0.15.0">
 <Package id="b0ad3658-8963-11de-bd33-00508de79d8e">
 <name>
 <val><![CDATA[LADI session handler]]></val>
@@ -70,9 +70,6 @@
 <name>
 <val><![CDATA[IsStudioLoaded]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 </Operation>
 <Interface id="ddbbd988-8968-11de-9e8b-00508de79d8e">
 <name>
@@ -191,9 +188,6 @@
 <name>
 <val><![CDATA[GetAllPorts]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 </Operation>
 <Operation id="50ddbf4e-8969-11de-9e8b-00508de79d8e">
 <interface_>
@@ -202,9 +196,6 @@
 <name>
 <val><![CDATA[GetGraph]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 </Operation>
 <Operation id="5716bc76-8969-11de-9e8b-00508de79d8e">
 <interface_>
@@ -213,9 +204,6 @@
 <name>
 <val><![CDATA[ConnectPortsByID]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 </Operation>
 <Operation id="b7a7a992-8969-11de-9a27-00508de79d8e">
 <interface_>
@@ -224,9 +212,6 @@
 <name>
 <val><![CDATA[DisconnectPortsByID]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 </Operation>
 <Operation id="e0e2c71a-8969-11de-9a27-00508de79d8e">
 <interface_>
@@ -235,9 +220,6 @@
 <name>
 <val><![CDATA[-> ClientAppeared()]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 </Operation>
 <Operation id="e524d4a8-8969-11de-9a27-00508de79d8e">
 <interface_>
@@ -246,9 +228,6 @@
 <name>
 <val><![CDATA[-> ClientDisappeared()]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 </Operation>
 <Operation id="e9adae3c-8969-11de-9a27-00508de79d8e">
 <interface_>
@@ -257,9 +236,6 @@
 <name>
 <val><![CDATA[-> PortAppeared()]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 </Operation>
 <Operation id="ea8ec07e-896a-11de-9a27-00508de79d8e">
 <interface_>
@@ -268,9 +244,6 @@
 <name>
 <val><![CDATA[-> PortDisappeared()]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 </Operation>
 <Operation id="fa461238-896a-11de-9a27-00508de79d8e">
 <interface_>
@@ -279,9 +252,6 @@
 <name>
 <val><![CDATA[-> PortsConnected()]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 </Operation>
 <Operation id="01487260-896b-11de-9a27-00508de79d8e">
 <interface_>
@@ -290,9 +260,6 @@
 <name>
 <val><![CDATA[-> PortsDisconnected()]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 </Operation>
 <Operation id="15b0e6e2-896b-11de-9a27-00508de79d8e">
 <interface_>
@@ -301,9 +268,6 @@
 <name>
 <val><![CDATA[GetClientPID]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 <returnResult>
 <reflist>
 <ref refid="18b826c0-896b-11de-9a27-00508de79d8e"/>
@@ -337,9 +301,6 @@
 <name>
 <val><![CDATA[GetStudioList]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 </Operation>
 <Operation id="ac9c1da4-896d-11de-b1fa-00508de79d8e">
 <interface_>
@@ -348,9 +309,6 @@
 <name>
 <val><![CDATA[LoadStudio]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 </Operation>
 <Operation id="b2c66fae-896d-11de-b1fa-00508de79d8e">
 <interface_>
@@ -359,9 +317,6 @@
 <name>
 <val><![CDATA[Exit]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 </Operation>
 <Parameter id="ecb02fca-896d-11de-b1fa-00508de79d8e">
 <defaultValue>
@@ -395,9 +350,6 @@
 <name>
 <val><![CDATA[-> StudioAppeared()]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 </Operation>
 <Operation id="806dc5ce-896e-11de-b1fa-00508de79d8e">
 <interface_>
@@ -406,9 +358,6 @@
 <name>
 <val><![CDATA[-> StudioDisappeared()]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 </Operation>
 <Operation id="efd0005c-896f-11de-8bcf-00508de79d8e">
 <interface_>
@@ -417,9 +366,6 @@
 <name>
 <val><![CDATA[CreateRoom]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 </Operation>
 <Operation id="f5716d20-896f-11de-8bcf-00508de79d8e">
 <interface_>
@@ -428,9 +374,6 @@
 <name>
 <val><![CDATA[DestroyRoom]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 </Operation>
 <Operation id="f9125a70-896f-11de-8bcf-00508de79d8e">
 <interface_>
@@ -439,9 +382,6 @@
 <name>
 <val><![CDATA[-> RoomAppeared()]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 </Operation>
 <Operation id="fc8ea9c4-896f-11de-8bcf-00508de79d8e">
 <interface_>
@@ -450,9 +390,6 @@
 <name>
 <val><![CDATA[-> RoomDisappeared()]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 </Operation>
 <Operation id="12249e9c-8970-11de-8bcf-00508de79d8e">
 <interface_>
@@ -461,9 +398,6 @@
 <name>
 <val><![CDATA[LoadProject]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 </Operation>
 <Operation id="1a87c5aa-8970-11de-8bcf-00508de79d8e">
 <interface_>
@@ -472,9 +406,6 @@
 <name>
 <val><![CDATA[GetProjectList]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 </Operation>
 <Operation id="351f6e54-8970-11de-8bcf-00508de79d8e">
 <interface_>
@@ -483,9 +414,6 @@
 <name>
 <val><![CDATA[SaveProject]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 </Operation>
 <Operation id="3e76b8b8-8970-11de-8bcf-00508de79d8e">
 <interface_>
@@ -494,9 +422,6 @@
 <name>
 <val><![CDATA[LaunchApplication]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 </Operation>
 <Operation id="5234473a-8970-11de-8bcf-00508de79d8e">
 <interface_>
@@ -505,9 +430,6 @@
 <name>
 <val><![CDATA[GetApplicationList]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 </Operation>
 <Operation id="595eef06-8970-11de-8bcf-00508de79d8e">
 <interface_>
@@ -516,9 +438,6 @@
 <name>
 <val><![CDATA[LaunchApplication]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 </Operation>
 <Diagram id="7eb5ff62-8973-11de-8bcf-00508de79d8e">
 <name>
@@ -961,7 +880,7 @@
 <val>100.0</val>
 </width>
 <height>
-<val>63.0</val>
+<val>64.0</val>
 </height>
 <subject>
 <ref refid="1cc51820-8981-11de-8bcf-00508de79d8e"/>
@@ -978,7 +897,7 @@
 <val>0</val>
 </show_stereotypes_attrs>
 <matrix>
-<val>(1.0, 0.0, 0.0, 1.0, 937.0, 82.0)</val>
+<val>(1.0, 0.0, 0.0, 1.0, 937.0, 83.0)</val>
 </matrix>
 <orthogonal>
 <val>0</val>
@@ -987,7 +906,7 @@
 <val>0</val>
 </horizontal>
 <points>
-<val>[(0.0, 0.0), (0.0, 110.0)]</val>
+<val>[(0.0, 0.0), (0.0, 109.0)]</val>
 </points>
 <head-connection>
 <ref refid="1cc56dde-8981-11de-8bcf-00508de79d8e"/>
@@ -1004,7 +923,7 @@
 <val>114.0</val>
 </width>
 <height>
-<val>45.0</val>
+<val>64.0</val>
 </height>
 <subject>
 <ref refid="a11cc794-8981-11de-8bcf-00508de79d8e"/>
@@ -1018,7 +937,7 @@
 <val>0</val>
 </show_stereotypes_attrs>
 <matrix>
-<val>(1.0, 0.0, 0.0, 1.0, 335.0, 223.0)</val>
+<val>(1.0, 0.0, 0.0, 1.0, 335.0, 242.0)</val>
 </matrix>
 <orthogonal>
 <val>0</val>
@@ -1027,7 +946,7 @@
 <val>0</val>
 </horizontal>
 <points>
-<val>[(0.0, 0.0), (5.8770614692654135, 142.0)]</val>
+<val>[(0.0, 0.0), (5.8770614692654135, 123.0)]</val>
 </points>
 <head-connection>
 <ref refid="a11cda04-8981-11de-8bcf-00508de79d8e"/>
@@ -1354,7 +1273,7 @@
 <val>0</val>
 </horizontal>
 <points>
-<val>[(0.0, 0.0), (5.4709015584928125, -74.74080883803515)]</val>
+<val>[(0.0, 0.0), (5.4709015584928125, -55.74080883803515)]</val>
 </points>
 <head-connection>
 <ref refid="6e73c754-8984-11de-8bcf-00508de79d8e"/>
@@ -2059,9 +1978,6 @@
 <name>
 <val><![CDATA[-> Appeared()]]></val>
 </name>
-<presentation>
-<reflist/>
-</presentation>
 </Operation>
 <Implementation id="3aa6f5de-8981-11de-8bcf-00508de79d8e">
 <client>
