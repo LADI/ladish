@@ -922,9 +922,11 @@ add_room_ports(
 {
   uuid_t uuid_in_studio;
   uuid_t uuid_in_room;
-  char input_str[37];
-  char output_str[37];
+  char uuid_in_studio_str[37];
+  char uuid_in_room_str[37];
   bool room_input;
+  const char * input_port;
+  const char * output_port;
 
   //log_info("Studio room port \"%s\"", port_name);
 
@@ -955,18 +957,23 @@ add_room_ports(
   ladish_graph_get_port_uuid(add_room_ports_context_ptr->room_graph, port_handle, uuid_in_room);
   ladish_graph_get_port_uuid(g_studio.studio_graph, port_handle, uuid_in_studio);
 
+  uuid_unparse(uuid_in_room, uuid_in_room_str);
+  uuid_unparse(uuid_in_studio, uuid_in_studio_str);
+
   if (room_input)
   {
-    uuid_unparse(uuid_in_room, input_str);
-    uuid_unparse(uuid_in_studio, output_str);
+    input_port = uuid_in_room_str;
+    output_port = uuid_in_studio_str;
+    log_info("room input port %s is linked to studio output port %s", input_port, output_port);
   }
   else
   {
-    uuid_unparse(uuid_in_room, output_str);
-    uuid_unparse(uuid_in_studio, input_str);
+    input_port = uuid_in_studio_str;
+    output_port = uuid_in_room_str;
+    log_info("studio input port %s is linked to room output port %s", input_port, output_port);
   }
 
-  if (!jmcore_proxy_create_link(port_type == JACKDBUS_PORT_TYPE_MIDI, input_str, output_str))
+  if (!jmcore_proxy_create_link(port_type == JACKDBUS_PORT_TYPE_MIDI, input_port, output_port))
   {
     log_error("jmcore_proxy_create_link() failed.");
     return false;

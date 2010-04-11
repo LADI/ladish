@@ -52,6 +52,7 @@ bool ladish_graph_copy(ladish_graph_handle src, ladish_graph_handle dest, bool s
 void ladish_graph_destroy(ladish_graph_handle graph_handle);
 
 const char * ladish_graph_get_opath(ladish_graph_handle graph_handle);
+const char * ladish_graph_get_description(ladish_graph_handle graph_handle);
 
 void
 ladish_graph_set_connection_handlers(
@@ -92,6 +93,13 @@ ladish_graph_remove_port(
   ladish_graph_handle graph_handle,
   ladish_port_handle port_handle);
 
+ladish_client_handle
+ladish_graph_remove_port_by_jack_id(
+  ladish_graph_handle graph_handle,
+  uint64_t jack_port_id,
+  bool room,
+  bool studio);
+
 bool
 ladish_graph_rename_port(
   ladish_graph_handle graph_handle,
@@ -128,13 +136,14 @@ ladish_graph_find_connection(
 ladish_client_handle ladish_graph_find_client_by_id(ladish_graph_handle graph_handle, uint64_t client_id);
 ladish_port_handle ladish_graph_find_port_by_id(ladish_graph_handle graph_handle, uint64_t port_id);
 ladish_client_handle ladish_graph_find_client_by_jack_id(ladish_graph_handle graph_handle, uint64_t client_id);
-ladish_port_handle ladish_graph_find_port_by_jack_id(ladish_graph_handle graph_handle, uint64_t port_id);
+ladish_port_handle ladish_graph_find_port_by_jack_id(ladish_graph_handle graph_handle, uint64_t port_id, bool room, bool studio);
 ladish_client_handle ladish_graph_find_client_by_name(ladish_graph_handle graph_handle, const char * name);
 ladish_port_handle ladish_graph_find_port_by_name(ladish_graph_handle graph_handle, ladish_client_handle client_handle, const char * name);
 ladish_client_handle ladish_graph_find_client_by_uuid(ladish_graph_handle graph_handle, const uuid_t uuid);
-ladish_port_handle ladish_graph_find_port_by_uuid(ladish_graph_handle graph_handle, const uuid_t uuid);
+ladish_port_handle ladish_graph_find_port_by_uuid(ladish_graph_handle graph_handle, const uuid_t uuid, bool use_link_override_uuids);
 ladish_client_handle ladish_graph_get_port_client(ladish_graph_handle graph_handle, ladish_port_handle port_handle);
 const char * ladish_graph_get_client_name(ladish_graph_handle graph_handle, ladish_client_handle client_handle);
+const char * ladish_graph_get_port_name(ladish_graph_handle graph, ladish_port_handle port);
 bool ladish_graph_is_client_empty(ladish_graph_handle graph_handle, ladish_client_handle client_handle);
 bool ladish_graph_is_client_looks_empty(ladish_graph_handle graph_handle, ladish_client_handle client_handle);
 bool ladish_graph_is_port_present(ladish_graph_handle graph_handle, ladish_port_handle port_handle);

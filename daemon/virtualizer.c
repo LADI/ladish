@@ -27,6 +27,7 @@
 #include "virtualizer.h"
 #include "../dbus_constants.h"
 #include "../proxies/a2j_proxy.h"
+#include "../proxies/jmcore_proxy.h"
 #include "procfs.h"
 #include "app_supervisor.h"
 #include "studio_internal.h"
@@ -50,9 +51,6 @@ UUID_DEFINE(g_system_playback_uuid,0xB2,0xA0,0xBB,0x06,0x28,0xD8,0x4B,0xFE,0x95,
 
 /* be23a242-e2b2-11de-b795-002618af5e42 */
 UUID_DEFINE(g_a2j_uuid,0xBE,0x23,0xA2,0x42,0xE2,0xB2,0x11,0xDE,0xB7,0x95,0x00,0x26,0x18,0xAF,0x5E,0x42);
-
-/* 25836767-2611-4268-9f33-a8a76ce8353f */
-UUID_DEFINE(g_jmcore_uuid,0x25,0x83,0x67,0x67,0x26,0x11,0x42,0x68,0x9F,0x33,0xA8,0xA7,0x6C,0xE8,0x35,0x3F);
 
 struct app_find_context
 {
@@ -102,42 +100,106 @@ bool get_app_name_from_supervisor(void * context, ladish_graph_handle graph, lad
 
 #undef app_find_context_ptr
 
-char * get_app_name(struct virtualizer * virtualizer_ptr, uint64_t client_id, pid_t * app_pid_ptr, ladish_graph_handle * graph_ptr)
+char * get_app_name(struct virtualizer * virtualizer_ptr, uint64_t client_id, pid_t pid, ladish_graph_handle * graph_ptr)
 {
-  int64_t pid;
   struct app_find_context context;
-
-  if (!graph_proxy_get_client_pid(virtualizer_ptr->jack_graph_proxy, client_id, &pid))
-  {
-    log_info("client %"PRIu64" pid is unknown", client_id);
-    *app_pid_ptr = 0;
-    return NULL;
-  }
-
-  log_info("client pid is %"PRId64, pid);
 
   context.pid = (pid_t)pid;
   context.app_name = NULL;
   context.graph = NULL;
 
-  if (pid != 0)                 /* skip internal clients that will match the pending clients in the graph, both have zero pid */
-  {
-    studio_iterate_virtual_graphs(&context, get_app_name_from_supervisor);
-  }
+  studio_iterate_virtual_graphs(&context, get_app_name_from_supervisor);
 
   if (context.app_name != NULL)
   {
     ASSERT(context.graph != NULL);
-    ASSERT(context.pid != 0);
     *graph_ptr = context.graph;
-    *app_pid_ptr = context.pid;
-  }
-  else
-  {
-    *app_pid_ptr = 0;
   }
 
   return context.app_name;
+}
+
+struct find_link_port_context
+{
+  uuid_t uuid;
+  uint64_t jack_id;
+  ladish_port_handle port;
+  ladish_graph_handle graph;
+};
+
+#define find_link_port_context_ptr ((struct find_link_port_context *)context)
+
+static bool find_link_port_vgraph_callback_by_uuid(void * context, ladish_graph_handle graph, ladish_app_supervisor_handle app_supervisor)
+{
+  ladish_port_handle port;
+
+  port = ladish_graph_find_port_by_uuid(graph, find_link_port_context_ptr->uuid, true);
+  if (port != NULL)
+  {
+    find_link_port_context_ptr->port = port;
+    find_link_port_context_ptr->graph = graph;
+    return false;
+  }
+
+  return true;                  /* continue vgraph iteration */
+}
+
+static bool find_link_port_vgraph_callback_by_jack_id(void * context, ladish_graph_handle graph, ladish_app_supervisor_handle app_supervisor)
+{
+  ladish_port_handle port;
+  bool room;
+
+  log_info("searching link port with jack id %"PRIu64" in graph %s", find_link_port_context_ptr->jack_id, ladish_graph_get_description(graph));
+
+  room = graph != g_studio.studio_graph;
+
+  port = ladish_graph_find_port_by_jack_id(graph, find_link_port_context_ptr->jack_id, room, !room);
+  if (port != NULL)
+  {
+    find_link_port_context_ptr->port = port;
+    find_link_port_context_ptr->graph = graph;
+    return false;
+  }
+
+  return true;                  /* continue vgraph iteration */
+}
+
+#undef find_link_port_context_ptr
+
+static ladish_graph_handle find_link_port_vgraph_by_uuid(struct virtualizer * virtualizer_ptr, const char * port_name, ladish_port_handle * port_ptr)
+{
+  struct find_link_port_context context;
+
+  uuid_parse(port_name, context.uuid);
+  context.graph = NULL;
+  context.port = NULL;
+
+  studio_iterate_virtual_graphs(&context, find_link_port_vgraph_callback_by_uuid);
+
+  if (port_ptr != NULL && context.graph != NULL)
+  {
+    *port_ptr = context.port;
+  }
+
+  return context.graph;
+}
+
+static ladish_graph_handle find_link_port_vgraph_by_jack_id(struct virtualizer * virtualizer_ptr, uint64_t jack_id, ladish_port_handle * port_ptr)
+{
+  struct find_link_port_context context;
+
+  context.jack_id = jack_id;
+  context.graph = NULL;
+  context.port = NULL;
+
+  studio_iterate_virtual_graphs(&context, find_link_port_vgraph_callback_by_jack_id);
+
+  if (port_ptr != NULL && context.graph != NULL)
+  {
+    *port_ptr = context.port;
+  }
+
+  return context.graph;
 }
 
 static
@@ -152,7 +214,7 @@ lookup_port(
   ladish_client_handle jclient;
   ladish_graph_handle vgraph;
 
-  port = ladish_graph_find_port_by_jack_id(virtualizer_ptr->jack_graph, port_id);
+  port = ladish_graph_find_port_by_jack_id(virtualizer_ptr->jack_graph, port_id, true, true);
   if (port == NULL)
   {
     log_error("Unknown JACK port with id %"PRIu64" (dis)connected", port_id);
@@ -169,8 +231,14 @@ lookup_port(
   vgraph = ladish_client_get_vgraph(jclient);
   if (vgraph == NULL)
   {
-    log_error("port %"PRIu64" of jack client without vgraph was (dis)connected");
-    return false;
+    vgraph = find_link_port_vgraph_by_jack_id(virtualizer_ptr, port_id, NULL);
+    if (vgraph == NULL)
+    {
+      log_error("Cannot find vgraph for (dis)connected jmcore port");
+      return false;
+    }
+
+    log_info("link port found in graph %s", ladish_graph_get_description(vgraph));
   }
 
   *port_ptr = port;
@@ -194,44 +262,68 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
   const char * name;
   pid_t pid;
   ladish_graph_handle graph;
+  bool jmcore;
 
   log_info("client_appeared(%"PRIu64", %s)", id, jack_name);
 
   a2j_name = a2j_proxy_get_jack_client_name_cached();
   is_a2j = a2j_name != NULL && strcmp(a2j_name, jack_name) == 0;
 
-  app_name = get_app_name(virtualizer_ptr, id, &pid, &graph);
-  if (app_name != NULL)
+  name = jack_name;
+  app_name = NULL;
+  jmcore = false;
+
+  if (!graph_proxy_get_client_pid(virtualizer_ptr->jack_graph_proxy, id, &pid))
   {
-    log_info("app name is '%s'", app_name);
-    name = app_name;
+    log_info("client %"PRIu64" pid is unknown", id);
   }
   else
   {
-    name = jack_name;
-  }
+    log_info("client pid is %"PRId64, pid);
 
-  if (is_a2j)
-  {
-    client = ladish_graph_find_client_by_uuid(virtualizer_ptr->jack_graph, g_a2j_uuid);
-  }
-  else
-  {
-    client = ladish_graph_find_client_by_name(virtualizer_ptr->jack_graph, name);
-  }
-
-  if (client != NULL)
-  {
-    log_info("found existing client");
-    if (ladish_client_get_jack_id(client) != 0)
+    if (pid != 0) /* skip internal clients that will match the pending clients in the graph, both have zero pid */
     {
-      log_error("Ignoring client with duplicate name '%s' ('%s')", name, jack_name);
-      goto free_app_name;
+      jmcore = pid == jmcore_proxy_get_pid_cached();
+      if (jmcore)
+      {
+        log_info("jmcore client appeared");
+      }
+      else
+      {
+        app_name = get_app_name(virtualizer_ptr, id, pid, &graph);
+        if (app_name != NULL)
+        {
+          log_info("app name is '%s'", app_name);
+          name = app_name;
+        }
+      }
+    }
+  }
+
+  if (!jmcore)
+  {
+    if (is_a2j)
+    {
+      client = ladish_graph_find_client_by_uuid(virtualizer_ptr->jack_graph, g_a2j_uuid);
+    }
+    else
+    {
+      client = ladish_graph_find_client_by_name(virtualizer_ptr->jack_graph, name);
     }
 
-    ladish_client_set_jack_id(client, id);
-    ladish_graph_show_client(virtualizer_ptr->jack_graph, client);
-    goto done;
+    if (client != NULL)
+    {
+      log_info("found existing client");
+      if (ladish_client_get_jack_id(client) != 0)
+      {
+        log_error("Ignoring client with duplicate name '%s' ('%s')", name, jack_name);
+        goto free_app_name;
+      }
+
+      ladish_client_set_jack_id(client, id);
+      ladish_graph_show_client(virtualizer_ptr->jack_graph, client);
+      goto done;
+    }
   }
 
   if (!ladish_client_create(is_a2j ? g_a2j_uuid : NULL, &client))
@@ -261,6 +353,11 @@ done:
     ladish_client_set_vgraph(client, graph);
     virtualizer_ptr->our_clients_count++;
   }
+  else if (jmcore)
+  {
+    ladish_client_set_pid(client, pid);
+    ASSERT(ladish_client_get_vgraph(client) == NULL);
+  }
   else
   {
     /* unknown and internal clients appear in the studio graph */
@@ -289,6 +386,13 @@ static void client_disappeared(void * context, uint64_t id)
   }
 
   log_info("client disappeared: '%s'", ladish_graph_get_client_name(virtualizer_ptr->jack_graph, client));
+
+  if (ladish_client_get_vgraph(client) == NULL)
+  { /* remove jmcore clients, the are not persisted in the jack graph */
+    ladish_graph_remove_client(virtualizer_ptr->jack_graph, client);
+    ladish_client_destroy(client);
+    return;
+  }
 
   pid = ladish_client_get_pid(client);
   if (pid != 0)
@@ -342,6 +446,13 @@ port_appeared(
 
   log_info("port_appeared(%"PRIu64", %"PRIu64", %s (%s, %s))", client_id, port_id, real_jack_port_name, is_input ? "in" : "out", is_midi ? "midi" : "audio");
 
+  type = is_midi ? JACKDBUS_PORT_TYPE_MIDI : JACKDBUS_PORT_TYPE_AUDIO;
+  flags = is_input ? JACKDBUS_PORT_FLAG_INPUT : JACKDBUS_PORT_FLAG_OUTPUT;
+  if (is_terminal)
+  {
+    flags |= JACKDBUS_PORT_FLAG_TERMINAL;
+  }
+
   /********************/
   /* gather info about the appeared port */
 
@@ -349,11 +460,50 @@ port_appeared(
   if (jack_client == NULL)
   {
     log_error("Port of unknown JACK client with id %"PRIu64" appeared", client_id);
-    goto fail;
+    goto exit;
   }
 
   /* find the virtual graph that owns the app that owns the client that owns the appeared port */
   vgraph = ladish_client_get_vgraph(jack_client);
+  if (vgraph == NULL)
+  {
+    vgraph = find_link_port_vgraph_by_uuid(virtualizer_ptr, real_jack_port_name, &port);
+    if (vgraph == NULL)
+    {
+      log_error("Cannot find vgraph for appeared jmcore port '%s'", real_jack_port_name);
+      goto exit;
+    }
+
+    /* jmcore port appeared */
+
+    log_info("jmcore port appeared in vgraph %s", ladish_graph_get_description(vgraph));
+
+    if (!ladish_graph_add_port(virtualizer_ptr->jack_graph, jack_client, port, real_jack_port_name, type, flags, false))
+    {
+      log_error("ladish_graph_add_port() failed.");
+      goto free_alsa_names;
+    }
+
+    if (vgraph == g_studio.studio_graph)
+    {
+      ladish_port_set_jack_id(port, port_id);
+    }
+    else
+    {
+      ladish_port_set_jack_id_room(port, port_id);
+    }
+
+    vclient = ladish_graph_get_port_client(vgraph, port);
+    if (vclient == NULL)
+    {
+      log_error("link port client not found in vgraph %s", ladish_graph_get_description(vgraph));
+      ASSERT_NO_PASS;
+      goto exit;
+    }
+
+    ladish_graph_show_port(vgraph, port);
+    goto exit;
+  }
 
   ladish_client_get_uuid(jack_client, client_uuid);
   is_a2j = uuid_compare(client_uuid, g_a2j_uuid) == 0;
@@ -384,13 +534,6 @@ port_appeared(
   }
 
   jack_client_name = ladish_graph_get_client_name(virtualizer_ptr->jack_graph, jack_client);
-
-  type = is_midi ? JACKDBUS_PORT_TYPE_MIDI : JACKDBUS_PORT_TYPE_AUDIO;
-  flags = is_input ? JACKDBUS_PORT_FLAG_INPUT : JACKDBUS_PORT_FLAG_OUTPUT;
-  if (is_terminal)
-  {
-    flags |= JACKDBUS_PORT_FLAG_TERMINAL;
-  }
 
   /********************/
 
@@ -564,7 +707,7 @@ free_alsa_names:
     free(alsa_port_name);
   }
 
-fail:
+exit:
   return;
 }
 
@@ -573,8 +716,9 @@ static void port_disappeared(void * context, uint64_t client_id, uint64_t port_i
   ladish_client_handle client;
   ladish_port_handle port;
   ladish_graph_handle vgraph;
+  bool jmcore;
 
-  log_info("port_disappeared(%"PRIu64")", port_id);
+  log_info("port_disappeared(%"PRIu64", %"PRIu64")", client_id, port_id);
 
   client = ladish_graph_find_client_by_jack_id(virtualizer_ptr->jack_graph, client_id);
   if (client == NULL)
@@ -583,37 +727,63 @@ static void port_disappeared(void * context, uint64_t client_id, uint64_t port_i
     return;
   }
 
-  /* find the virtual graph that owns the app that owns the client that owns the disappeared port */
-  vgraph = ladish_client_get_vgraph(client);
-
-  port = ladish_graph_find_port_by_jack_id(virtualizer_ptr->jack_graph, port_id);
+  port = ladish_graph_find_port_by_jack_id(virtualizer_ptr->jack_graph, port_id, true, true);
   if (port == NULL)
   {
     log_error("Unknown JACK port with id %"PRIu64" disappeared", port_id);
     return;
   }
 
+  /* find the virtual graph that owns the app that owns the client that owns the disappeared port */
+  jmcore = false;
+  vgraph = ladish_client_get_vgraph(client);
+  if (vgraph == NULL)
+  {
+    vgraph = find_link_port_vgraph_by_uuid(virtualizer_ptr, ladish_graph_get_port_name(virtualizer_ptr->jack_graph, port), NULL);
+    if (vgraph == NULL)
+    {
+      log_error("Cannot find vgraph for disappeared jmcore port");
+    }
+    else
+    {
+      jmcore = true;
+      ladish_graph_remove_port_by_jack_id(virtualizer_ptr->jack_graph, port_id, true, true);
+    }
+  }
+
   if (true)                     /* if client is supposed to be persisted */
   {
-    ladish_port_set_jack_id(port, 0);
-    ladish_graph_hide_port(virtualizer_ptr->jack_graph, port);
-    ladish_graph_hide_port(vgraph, port);
-    client = ladish_graph_get_port_client(vgraph, port);
-    if (ladish_graph_is_client_looks_empty(vgraph, client))
+    if (!jmcore)
     {
+      ladish_port_set_jack_id(port, 0);
+      ladish_graph_hide_port(virtualizer_ptr->jack_graph, port);
+    }
+    if (vgraph != NULL)
+    {
+      ladish_graph_hide_port(vgraph, port);
+      client = ladish_graph_get_port_client(vgraph, port);
+      if (ladish_graph_is_client_looks_empty(vgraph, client))
+      {
         ladish_graph_hide_client(vgraph, client);
+      }
     }
   }
   else
   {
-    ladish_graph_remove_port(virtualizer_ptr->jack_graph, port);
-
-    client = ladish_graph_remove_port(vgraph, port);
-    if (client != NULL)
+    if (!jmcore)
     {
-      if (ladish_graph_is_client_empty(vgraph, client))
+      ladish_graph_remove_port(virtualizer_ptr->jack_graph, port);
+    }
+
+    if (vgraph != NULL)
+    {
+      client = ladish_graph_remove_port(vgraph, port);
+      if (client != NULL)
       {
-        ladish_graph_remove_client(vgraph, client);
+        if (ladish_graph_is_client_empty(vgraph, client))
+        {
+          ladish_graph_remove_client(vgraph, client);
+        }
       }
     }
   }
@@ -637,7 +807,7 @@ static void port_renamed(void * context, uint64_t client_id, uint64_t port_id, c
   /* find the virtual graph that owns the app that owns the client that owns the renamed port */
   vgraph = ladish_client_get_vgraph(client);
 
-  port = ladish_graph_find_port_by_jack_id(virtualizer_ptr->jack_graph, port_id);
+  port = ladish_graph_find_port_by_jack_id(virtualizer_ptr->jack_graph, port_id, true, true);
   if (port == NULL)
   {
     log_error("Unknown JACK port with id %"PRIu64" was renamed", port_id);
@@ -663,14 +833,15 @@ static bool ports_connect_request(void * context, ladish_graph_handle graph_hand
   ASSERT(ladish_graph_get_opath(graph_handle)); /* studio or room virtual graph */
   log_info("virtualizer: ports connect request");
 
-  port1_id = ladish_port_get_jack_id(port1);
-  port2_id = ladish_port_get_jack_id(port2);
-
-  if (port1_id == 0 || port2_id == 0)
+  if (graph_handle == g_studio.studio_graph)
   {
-    /* TODO */
-    log_error("connecting room-studio link ports is not implemented yet");
-    return false;
+    port1_id = ladish_port_get_jack_id(port1);
+    port2_id = ladish_port_get_jack_id(port2);
+  }
+  else
+  {
+    port1_id = ladish_port_get_jack_id_room(port1);
+    port2_id = ladish_port_get_jack_id_room(port2);
   }
 
   graph_proxy_connect_ports(virtualizer_ptr->jack_graph_proxy, port1_id, port2_id);
@@ -695,14 +866,15 @@ static bool ports_disconnect_request(void * context, ladish_graph_handle graph_h
     return false;
   }
 
-  port1_id = ladish_port_get_jack_id(port1);
-  port2_id = ladish_port_get_jack_id(port2);
-
-  if (port1_id == 0 || port2_id == 0)
+  if (graph_handle == g_studio.studio_graph)
   {
-    /* TODO */
-    log_error("disconnecting room-studio link ports is not implemented yet");
-    return false;
+    port1_id = ladish_port_get_jack_id(port1);
+    port2_id = ladish_port_get_jack_id(port2);
+  }
+  else
+  {
+    port1_id = ladish_port_get_jack_id_room(port1);
+    port2_id = ladish_port_get_jack_id_room(port2);
   }
 
   graph_proxy_disconnect_ports(virtualizer_ptr->jack_graph_proxy, port1_id, port2_id);

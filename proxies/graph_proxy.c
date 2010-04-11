@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation graph object that is backed through D-Bus
@@ -951,13 +951,17 @@ graph_proxy_dict_entry_drop(
   return true;
 }
 
-bool graph_proxy_get_client_pid(graph_proxy_handle graph, uint64_t client_id, int64_t * pid_ptr)
+bool graph_proxy_get_client_pid(graph_proxy_handle graph, uint64_t client_id, pid_t * pid_ptr)
 {
-  if (!dbus_call(graph_ptr->service, graph_ptr->object, JACKDBUS_IFACE_PATCHBAY, "GetClientPID", "t", &client_id, "x", pid_ptr))
+  int64_t pid;
+
+  if (!dbus_call(graph_ptr->service, graph_ptr->object, JACKDBUS_IFACE_PATCHBAY, "GetClientPID", "t", &client_id, "x", &pid))
   {
     log_error("GetClientPID() failed.");
     return false;
   }
+
+  *pid_ptr = pid;
 
   return true;
 }

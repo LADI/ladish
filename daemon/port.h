@@ -36,8 +36,11 @@ bool ladish_port_create_copy(ladish_port_handle port_handle, ladish_port_handle 
 void ladish_port_destroy(ladish_port_handle port_handle);
 ladish_dict_handle ladish_port_get_dict(ladish_port_handle port_handle);
 void ladish_port_get_uuid(ladish_port_handle port_handle, uuid_t uuid);
+
 void ladish_port_set_jack_id(ladish_port_handle port_handle, uint64_t jack_id);
 uint64_t ladish_port_get_jack_id(ladish_port_handle port_handle);
+void ladish_port_set_jack_id_room(ladish_port_handle port_handle, uint64_t jack_id);
+uint64_t ladish_port_get_jack_id_room(ladish_port_handle port_handle);
 
 void ladish_port_add_ref(ladish_port_handle port_handle);
 void ladish_port_del_ref(ladish_port_handle port_handle);

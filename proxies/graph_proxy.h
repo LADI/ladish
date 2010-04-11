@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to graph object that is backed through D-Bus
@@ -110,7 +110,7 @@ graph_proxy_dict_entry_drop(
   uint64_t object_id,
   const char * key);
 
-bool graph_proxy_get_client_pid(graph_proxy_handle graph, uint64_t client_id, int64_t * pid_ptr);
+bool graph_proxy_get_client_pid(graph_proxy_handle graph, uint64_t client_id, pid_t * pid_ptr);
 
 #if 0
 { /* Adjust editor indent */

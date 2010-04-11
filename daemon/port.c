@@ -33,6 +33,7 @@ struct ladish_port
   uuid_t uuid;                             /* The UUID of the port */
   bool link;                               /* Whether the port is studio-room link port */
   uint64_t jack_id;                        /* JACK port ID. */
+  uint64_t jack_id_room;                   /* JACK port ID in room. valid only for link ports */
 
   ladish_dict_handle dict;
 };
@@ -69,6 +70,7 @@ ladish_port_create(
   }
 
   port_ptr->jack_id = 0;
+  port_ptr->jack_id_room = 0;
   port_ptr->link = link;
   port_ptr->refcount = 0;
 
@@ -104,13 +106,32 @@ void ladish_port_get_uuid(ladish_port_handle port_handle, uuid_t uuid)
 
 void ladish_port_set_jack_id(ladish_port_handle port_handle, uint64_t jack_id)
 {
-  log_info("port jack id set to %"PRIu64, jack_id);
+  log_info("port %p jack id set to %"PRIu64, port_handle, jack_id);
   port_ptr->jack_id = jack_id;
 }
 
 uint64_t ladish_port_get_jack_id(ladish_port_handle port_handle)
 {
   return port_ptr->jack_id;
+}
+
+void ladish_port_set_jack_id_room(ladish_port_handle port_handle, uint64_t jack_id)
+{
+  log_info("port %p jack id (room) set to %"PRIu64, port_handle, jack_id);
+  ASSERT(port_ptr->link);
+  port_ptr->jack_id_room = jack_id;
+}
+
+uint64_t ladish_port_get_jack_id_room(ladish_port_handle port_handle)
+{
+  if (port_ptr->link)
+  {
+    return port_ptr->jack_id_room;
+  }
+  else
+  {
+    return port_ptr->jack_id;
+  }
 }
 
 void ladish_port_add_ref(ladish_port_handle port_handle)

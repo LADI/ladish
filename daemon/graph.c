@@ -674,11 +674,42 @@ ladish_graph_find_port(
   struct list_head * node_ptr;
   struct ladish_graph_port * port_ptr;
 
+  //log_info("searching port %p", port);
+
   list_for_each(node_ptr, &graph_ptr->ports)
   {
     port_ptr = list_entry(node_ptr, struct ladish_graph_port, siblings_graph);
+    //log_info("checking port %s:%s, %p", port_ptr->client_ptr->name, port_ptr->name, port_ptr->port);
     if (port_ptr->port == port)
     {
+      return port_ptr;
+    }
+  }
+
+  return NULL;
+}
+
+static
+struct ladish_graph_port *
+ladish_graph_find_port_by_jack_id_internal(
+  struct ladish_graph * graph_ptr,
+  uint64_t port_id,
+  bool room,
+  bool studio)
+{
+  struct list_head * node_ptr;
+  struct ladish_graph_port * port_ptr;
+
+  ASSERT(room || studio);
+
+  list_for_each(node_ptr, &graph_ptr->ports)
+  {
+    port_ptr = list_entry(node_ptr, struct ladish_graph_port, siblings_graph);
+    //log_info("checking jack port id of port %s:%s, %p", port_ptr->client_ptr->name, port_ptr->name, port_ptr->port);
+    if ((studio && ladish_port_get_jack_id(port_ptr->port) == port_id) ||
+        (room && port_ptr->link && ladish_port_get_jack_id_room(port_ptr->port) == port_id))
+    {
+      //log_info("found");
       return port_ptr;
     }
   }
@@ -959,6 +990,11 @@ void ladish_graph_destroy(ladish_graph_handle graph_handle)
 const char * ladish_graph_get_opath(ladish_graph_handle graph_handle)
 {
   return graph_ptr->opath;
+}
+
+const char * ladish_graph_get_description(ladish_graph_handle graph_handle)
+{
+  return graph_ptr->opath != NULL ? graph_ptr->opath : "JACK";
 }
 
 void
@@ -1517,16 +1553,36 @@ ladish_client_handle ladish_graph_find_client_by_uuid(ladish_graph_handle graph_
   return NULL;
 }
 
-ladish_port_handle ladish_graph_find_port_by_uuid(ladish_graph_handle graph_handle, const uuid_t uuid)
+ladish_port_handle ladish_graph_find_port_by_uuid(ladish_graph_handle graph_handle, const uuid_t uuid, bool use_link_override_uuids)
 {
   struct list_head * node_ptr;
   struct ladish_graph_port * port_ptr;
   uuid_t current_uuid;
+  /* char uuid1_str[37]; */
+  /* char uuid2_str[37]; */
+
+  /* log_info("searching by uuid for port in graph %s", ladish_graph_get_description(graph_handle)); */
+  /* uuid_unparse(uuid, uuid1_str); */
 
   list_for_each(node_ptr, &graph_ptr->ports)
   {
     port_ptr = list_entry(node_ptr, struct ladish_graph_port, siblings_graph);
+
+    /* if (port_ptr->link) */
+    /* { */
+    /*   uuid_unparse(port_ptr->link_uuid_override, uuid2_str); */
+    /*   log_info("comparing link uuid %s with %s", uuid2_str, uuid1_str); */
+    /* } */
+
+    if (port_ptr->link && uuid_compare(port_ptr->link_uuid_override, uuid) == 0)
+    {
+      /* log_info("found port %p of client '%s'", port_ptr->port, port_ptr->client_ptr->name); */
+      return port_ptr->port;
+    }
+
     ladish_port_get_uuid(port_ptr->port, current_uuid);
+    /* uuid_unparse(current_uuid, uuid2_str); */
+    /* log_info("comparing port uuid %s with %s", uuid2_str, uuid1_str); */
     if (uuid_compare(current_uuid, uuid) == 0)
     {
       return port_ptr->port;
@@ -1601,21 +1657,17 @@ ladish_client_handle ladish_graph_find_client_by_jack_id(ladish_graph_handle gra
   return NULL;
 }
 
-ladish_port_handle ladish_graph_find_port_by_jack_id(ladish_graph_handle graph_handle, uint64_t port_id)
+ladish_port_handle ladish_graph_find_port_by_jack_id(ladish_graph_handle graph_handle, uint64_t port_id, bool room, bool studio)
 {
-  struct list_head * node_ptr;
   struct ladish_graph_port * port_ptr;
 
-  list_for_each(node_ptr, &graph_ptr->ports)
+  port_ptr = ladish_graph_find_port_by_jack_id_internal(graph_ptr, port_id, room, studio);
+  if (port_ptr == NULL)
   {
-    port_ptr = list_entry(node_ptr, struct ladish_graph_port, siblings_graph);
-    if (ladish_port_get_jack_id(port_ptr->port) == port_id)
-    {
-      return port_ptr->port;
-    }
+    return NULL;
   }
 
-  return NULL;
+  return port_ptr->port;
 }
 
 ladish_client_handle
@@ -1626,6 +1678,25 @@ ladish_graph_remove_port(
   struct ladish_graph_port * port_ptr;
 
   port_ptr = ladish_graph_find_port(graph_ptr, port);
+  if (port_ptr == NULL)
+  {
+    return NULL;
+  }
+
+  ladish_graph_remove_port_internal(graph_ptr, port_ptr->client_ptr, port_ptr);
+  return port_ptr->client_ptr->client;
+}
+
+ladish_client_handle
+ladish_graph_remove_port_by_jack_id(
+  ladish_graph_handle graph_handle,
+  uint64_t jack_port_id,
+  bool room,
+  bool studio)
+{
+  struct ladish_graph_port * port_ptr;
+
+  port_ptr = ladish_graph_find_port_by_jack_id_internal(graph_ptr, jack_port_id, room, studio);
   if (port_ptr == NULL)
   {
     return NULL;
@@ -1883,6 +1954,16 @@ void ladish_graph_get_port_uuid(ladish_graph_handle graph_handle, ladish_port_ha
   ASSERT(port_ptr->link);
 
   uuid_copy(uuid_ptr, port_ptr->link_uuid_override);
+}
+
+const char * ladish_graph_get_port_name(ladish_graph_handle graph_handle, ladish_port_handle port)
+{
+  struct ladish_graph_port * port_ptr;
+
+  port_ptr = ladish_graph_find_port(graph_ptr, port);
+  ASSERT(port_ptr != NULL);
+
+  return port_ptr->name;
 }
 
 bool
