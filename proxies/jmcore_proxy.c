@@ -47,6 +47,8 @@ bool jmcore_proxy_init(void)
 
 void jmcore_proxy_uninit(void)
 {
+  dbus_unregister_object_signal_hooks(g_dbus_connection, JMCORE_SERVICE_NAME, JMCORE_OBJECT_PATH, JMCORE_IFACE);
+  dbus_unregister_service_lifetime_hook(g_dbus_connection, JMCORE_SERVICE_NAME);
 }
 
 const int64_t jmcore_proxy_get_pid_cached(void)

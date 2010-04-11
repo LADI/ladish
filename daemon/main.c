@@ -42,6 +42,7 @@
 #include "../catdup.h"
 #include "dirhelpers.h"
 #include "../proxies/a2j_proxy.h"
+#include "../proxies/jmcore_proxy.h"
 
 bool g_quit;
 const char * g_dbus_unique_name;
@@ -292,11 +293,19 @@ int main(int argc, char ** argv, char ** envp)
   /* setup our SIGSEGV magic that prints nice stack in our logfile */ 
   setup_sigsegv();
 
-  a2j_proxy_init();
+  if (!a2j_proxy_init())
+  {
+    goto uninit_dbus;
+  }
+
+  if (!jmcore_proxy_init())
+  {
+    goto uninit_a2j;
+  }
 
   if (!studio_init())
   {
-    goto uninit_dbus;
+    goto uninit_jmcore;
   }
 
   while (!g_quit)
@@ -314,6 +323,10 @@ int main(int argc, char ** argv, char ** envp)
 
   studio_uninit();
 
+uninit_jmcore:
+  jmcore_proxy_uninit();
+
+uninit_a2j:
   a2j_proxy_uninit();
 
 uninit_dbus:
