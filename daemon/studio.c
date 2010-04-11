@@ -1087,7 +1087,6 @@ static void ladish_studio_delete_room(struct dbus_method_call * call_ptr)
     if (strcmp(ladish_room_get_name(room), name) == 0)
     {
       list_del(node_ptr);
-      g_studio.room_count--;
       emit_room_disappeared(room);
 
       ladish_room_get_uuid(room, room_uuid);
@@ -1116,13 +1115,9 @@ void studio_remove_all_rooms(void)
     node_ptr = g_studio.rooms.next;
     list_del(node_ptr);
     room = ladish_room_from_list_node(node_ptr);
-    ASSERT(g_studio.room_count > 0);
-    g_studio.room_count--;
     emit_room_disappeared(room);
     ladish_room_destroy(room);
   }
-
-  ASSERT(g_studio.room_count == 0);
 }
 
 METHOD_ARGS_BEGIN(GetName, "Get studio name")
