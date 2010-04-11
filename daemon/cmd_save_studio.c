@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the "save studio" command
@@ -849,7 +849,7 @@ static bool run(void * command_context)
 
   save_context.fd = fd;
 
-  if (!ladish_graph_iterate_nodes(g_studio.jack_graph, &save_context, save_jack_client_begin, save_jack_port, save_jack_client_end))
+  if (!ladish_graph_iterate_nodes(g_studio.jack_graph, true, &save_context, save_jack_client_begin, save_jack_port, save_jack_client_end))
   {
     log_error("ladish_graph_iterate_nodes() failed");
     goto close;
@@ -870,7 +870,7 @@ static bool run(void * command_context)
     goto close;
   }
 
-  if (!ladish_graph_iterate_nodes(g_studio.studio_graph, &save_context, save_studio_client_begin, save_studio_port, save_studio_client_end))
+  if (!ladish_graph_iterate_nodes(g_studio.studio_graph, true, &save_context, save_studio_client_begin, save_studio_port, save_studio_client_end))
   {
     log_error("ladish_graph_iterate_nodes() failed");
     goto close;
@@ -886,7 +886,7 @@ static bool run(void * command_context)
     goto close;
   }
 
-  if (!ladish_graph_iterate_connections(g_studio.studio_graph, &save_context, save_studio_connection))
+  if (!ladish_graph_iterate_connections(g_studio.studio_graph, true, &save_context, save_studio_connection))
   {
     log_error("ladish_graph_iterate_connections() failed");
     goto close;

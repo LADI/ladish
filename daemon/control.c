@@ -140,7 +140,7 @@ create_room_template_port(
   ASSERT(!(playback && (flags & JACKDBUS_PORT_FLAG_OUTPUT) != 0)); /* but not both */
   client = playback ? room_descriptor_ptr->playback : room_descriptor_ptr->capture;
 
-  if (!ladish_port_create(uuid_ptr, &port))
+  if (!ladish_port_create(uuid_ptr, true, &port))
   {
     log_error("Creation of room template \"%s\" %s port \"%s\" failed.", room_descriptor_ptr->name, playback ? "playback" : "capture", name);
     return false;

@@ -26,13 +26,13 @@
 
 #include "port.h"
 
-/* JACK port or virtual port */
+/* JACK port */
 struct ladish_port
 {
   int refcount;
   uuid_t uuid;                             /* The UUID of the port */
-  bool virtual;                            /* Whether the port is virtual or JACK port */
-  uint64_t jack_id;                        /* JACK port ID. zero for virtual ports. */
+  bool link;                               /* Whether the port is studio-room link port */
+  uint64_t jack_id;                        /* JACK port ID. */
 
   ladish_dict_handle dict;
 };
@@ -40,6 +40,7 @@ struct ladish_port
 bool
 ladish_port_create(
   const uuid_t uuid_ptr,
+  bool link,
   ladish_port_handle * port_handle_ptr)
 {
   struct ladish_port * port_ptr;
@@ -68,7 +69,7 @@ ladish_port_create(
   }
 
   port_ptr->jack_id = 0;
-  port_ptr->virtual = true;
+  port_ptr->link = link;
   port_ptr->refcount = 0;
 
   log_info("port %p created", port_ptr);
@@ -80,7 +81,7 @@ ladish_port_create(
 
 bool ladish_port_create_copy(ladish_port_handle port_handle, ladish_port_handle * port_handle_ptr)
 {
-  return ladish_port_create(port_ptr->uuid, port_handle_ptr);
+  return ladish_port_create(port_ptr->uuid, port_ptr->link, port_handle_ptr);
 }
 
 void ladish_port_destroy(ladish_port_handle port_handle)
@@ -126,6 +127,11 @@ void ladish_port_del_ref(ladish_port_handle port_handle)
   {
     ladish_port_destroy(port_handle);
   }
+}
+
+bool ladish_port_is_link(ladish_port_handle port_handle)
+{
+  return port_ptr->link;
 }
 
 #undef port_ptr

@@ -48,7 +48,7 @@ bool
   uint64_t connection_id);
 
 bool ladish_graph_create(ladish_graph_handle * graph_handle_ptr, const char * opath);
-bool ladish_graph_copy(ladish_graph_handle src, ladish_graph_handle dest);
+bool ladish_graph_copy(ladish_graph_handle src, ladish_graph_handle dest, bool skip_hidden);
 void ladish_graph_destroy(ladish_graph_handle graph_handle);
 
 const char * ladish_graph_get_opath(ladish_graph_handle graph_handle);
@@ -146,12 +146,14 @@ void ladish_graph_adjust_port(ladish_graph_handle graph_handle, ladish_port_hand
 void ladish_graph_show_connection(ladish_graph_handle graph_handle, uint64_t connection_id);
 void ladish_try_connect_hidden_connections(ladish_graph_handle graph_handle);
 void ladish_graph_hide_non_virtual(ladish_graph_handle graph_handle);
+void ladish_graph_get_port_uuid(ladish_graph_handle graph, ladish_port_handle port, uuid_t uuid_ptr);
 
 void ladish_graph_dump(ladish_graph_handle graph_handle);
 
 bool
 ladish_graph_iterate_nodes(
   ladish_graph_handle graph_handle,
+  bool skip_hidden,
   void * callback_context,
   bool
   (* client_begin_callback)(
@@ -179,6 +181,7 @@ ladish_graph_iterate_nodes(
 bool
 ladish_graph_iterate_connections(
   ladish_graph_handle graph_handle,
+  bool skip_hidden,
   void * callback_context,
   bool (* callback)(void * context, ladish_port_handle port1_handle, ladish_port_handle port2_handle, ladish_dict_handle dict));
 

@@ -328,7 +328,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
 
       log_info("jack port \"%s\" with uuid %s", attr[1], attr[3]);
 
-      if (!ladish_port_create(uuid, &context_ptr->port))
+      if (!ladish_port_create(uuid, false, &context_ptr->port))
       {
         log_error("ladish_port_create() failed.");
         return;

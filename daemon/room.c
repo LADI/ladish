@@ -101,7 +101,7 @@ ladish_room_create(
 
   if (template != NULL)
   {
-    if (!ladish_graph_copy(ladish_room_get_graph(template), room_ptr->graph))
+    if (!ladish_graph_copy(ladish_room_get_graph(template), room_ptr->graph, false))
     {
       goto destroy_graph;
     }
@@ -302,6 +302,7 @@ ladish_room_iterate_link_ports(
 
   return ladish_graph_iterate_nodes(
     room_ptr->graph,
+    false,
     &context,
     ladish_room_iterate_link_ports_client_callback,
     ladish_room_iterate_link_ports_port_callback,

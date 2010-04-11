@@ -40,6 +40,7 @@
 #include "graph_dict.h"
 #include "escape.h"
 #include "studio.h"
+#include "../proxies/jmcore_proxy.h"
 
 #define STUDIOS_DIR "/studios/"
 char * g_studios_dir;
@@ -902,6 +903,14 @@ static void ladish_studio_is_started(struct dbus_method_call * call_ptr)
   method_return_new_single(call_ptr, DBUS_TYPE_BOOLEAN, &started);
 }
 
+struct add_room_ports_context
+{
+  ladish_client_handle room_client;
+  ladish_graph_handle room_graph;
+};
+
+#define add_room_ports_context_ptr ((struct add_room_ports_context *)context)
+
 static
 bool
 add_room_ports(
@@ -911,17 +920,25 @@ add_room_ports(
   uint32_t port_type,
   uint32_t port_flags)
 {
+  uuid_t uuid_in_studio;
+  uuid_t uuid_in_room;
+  char input_str[37];
+  char output_str[37];
+  bool room_input;
+
   //log_info("Studio room port \"%s\"", port_name);
 
   if (JACKDBUS_PORT_IS_INPUT(port_flags))
   {
     JACKDBUS_PORT_CLEAR_INPUT(port_flags);
     JACKDBUS_PORT_SET_OUTPUT(port_flags);
+    room_input = true;
   }
   else if (JACKDBUS_PORT_IS_OUTPUT(port_flags))
   {
     JACKDBUS_PORT_CLEAR_OUTPUT(port_flags);
     JACKDBUS_PORT_SET_INPUT(port_flags);
+    room_input = false;
   }
   else
   {
@@ -929,8 +946,36 @@ add_room_ports(
     return false;
   }
 
-  return ladish_graph_add_port(g_studio.studio_graph, context, port_handle, port_name, port_type, port_flags, false);
+  if (!ladish_graph_add_port(g_studio.studio_graph, add_room_ports_context_ptr->room_client, port_handle, port_name, port_type, port_flags, true))
+  {
+    log_error("ladish_graph_add_port() failed to add link port to studio graph");
+    return false;
+  }
+
+  ladish_graph_get_port_uuid(add_room_ports_context_ptr->room_graph, port_handle, uuid_in_room);
+  ladish_graph_get_port_uuid(g_studio.studio_graph, port_handle, uuid_in_studio);
+
+  if (room_input)
+  {
+    uuid_unparse(uuid_in_room, input_str);
+    uuid_unparse(uuid_in_studio, output_str);
+  }
+  else
+  {
+    uuid_unparse(uuid_in_room, output_str);
+    uuid_unparse(uuid_in_studio, input_str);
+  }
+
+  if (!jmcore_proxy_create_link(port_type == JACKDBUS_PORT_TYPE_MIDI, input_str, output_str))
+  {
+    log_error("jmcore_proxy_create_link() failed.");
+    return false;
+  }
+
+  return true;
 }
+
+#undef add_room_ports_context_ptr
 
 static void ladish_studio_create_room(struct dbus_method_call * call_ptr)
 {
@@ -940,6 +985,8 @@ static void ladish_studio_create_room(struct dbus_method_call * call_ptr)
   char room_dbus_name[1024];
   ladish_client_handle room_client;
   uuid_t room_uuid;
+  ladish_graph_handle room_graph;
+  struct add_room_ports_context context;
 
   dbus_error_init(&g_dbus_error);
 
@@ -969,9 +1016,10 @@ static void ladish_studio_create_room(struct dbus_method_call * call_ptr)
     goto fail_decrement_room_count;
   }
 
+  room_graph = ladish_room_get_graph(room);
   if (g_studio.virtualizer != NULL)
   {
-    ladish_virtualizer_set_graph_connection_handlers(g_studio.virtualizer, ladish_room_get_graph(room));
+    ladish_virtualizer_set_graph_connection_handlers(g_studio.virtualizer, room_graph);
   }
 
   ladish_room_get_uuid(room, room_uuid);
@@ -988,7 +1036,10 @@ static void ladish_studio_create_room(struct dbus_method_call * call_ptr)
     goto fail_destroy_room_client;
   }
 
-  if (!ladish_room_iterate_link_ports(room, room_client, add_room_ports))
+  context.room_client = room_client;
+  context.room_graph = room_graph;
+
+  if (!ladish_room_iterate_link_ports(room, &context, add_room_ports))
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Creation of studio room link ports failed.");
     goto fail_remove_room_client;

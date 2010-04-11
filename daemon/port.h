@@ -31,7 +31,7 @@
 
 typedef struct ladish_port_tag { int unused; } * ladish_port_handle;
 
-bool ladish_port_create(const uuid_t uuid_ptr, ladish_port_handle * port_handle_ptr);
+bool ladish_port_create(const uuid_t uuid_ptr, bool link, ladish_port_handle * port_handle_ptr);
 bool ladish_port_create_copy(ladish_port_handle port_handle, ladish_port_handle * port_handle_ptr);
 void ladish_port_destroy(ladish_port_handle port_handle);
 ladish_dict_handle ladish_port_get_dict(ladish_port_handle port_handle);
@@ -41,5 +41,7 @@ uint64_t ladish_port_get_jack_id(ladish_port_handle port_handle);
 
 void ladish_port_add_ref(ladish_port_handle port_handle);
 void ladish_port_del_ref(ladish_port_handle port_handle);
+
+bool ladish_port_is_link(ladish_port_handle port_handle);
 
 #endif /* #ifndef PORT_H__62F81E7C_91FA_44AB_94A9_E0E2D226ED58__INCLUDED */

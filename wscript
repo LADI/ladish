@@ -239,6 +239,7 @@ def build(bld):
         'jack_proxy.c',
         'graph_proxy.c',
         'a2j_proxy.c',
+        "jmcore_proxy.c",
         ]:
         daemon.source.append(os.path.join("proxies", source))
 

@@ -41,6 +41,8 @@ struct ladish_graph_port
   uint64_t id;
   ladish_port_handle port;
   bool hidden;
+  bool link;
+  uuid_t link_uuid_override;
 };
 
 struct ladish_graph_client
@@ -1258,6 +1260,12 @@ ladish_graph_add_port(
   ladish_port_add_ref(port_ptr->port);
   port_ptr->hidden = true;
 
+  port_ptr->link = ladish_port_is_link(port_handle);
+  if (port_ptr->link)
+  {
+    uuid_generate(port_ptr->link_uuid_override);
+  }
+
   port_ptr->client_ptr = client_ptr;
   list_add_tail(&port_ptr->siblings_client, &client_ptr->ports);
   list_add_tail(&port_ptr->siblings_graph, &graph_ptr->ports);
@@ -1866,9 +1874,21 @@ void ladish_graph_hide_non_virtual(ladish_graph_handle graph_handle)
   }
 }
 
+void ladish_graph_get_port_uuid(ladish_graph_handle graph_handle, ladish_port_handle port, uuid_t uuid_ptr)
+{
+  struct ladish_graph_port * port_ptr;
+
+  port_ptr = ladish_graph_find_port(graph_ptr, port);
+  ASSERT(port_ptr != NULL);
+  ASSERT(port_ptr->link);
+
+  uuid_copy(uuid_ptr, port_ptr->link_uuid_override);
+}
+
 bool
 ladish_graph_iterate_nodes(
   ladish_graph_handle graph_handle,
+  bool skip_hidden,
   void * callback_context,
   bool
   (* client_begin_callback)(
@@ -1903,7 +1923,7 @@ ladish_graph_iterate_nodes(
   {
     client_ptr = list_entry(client_node_ptr, struct ladish_graph_client, siblings);
 
-    if (client_ptr->hidden)
+    if (skip_hidden && client_ptr->hidden)
     {
       continue;
     }
@@ -1929,7 +1949,7 @@ ladish_graph_iterate_nodes(
     {
       port_ptr = list_entry(port_node_ptr, struct ladish_graph_port, siblings_client);
 
-      if (port_ptr->hidden)
+      if (skip_hidden && port_ptr->hidden)
       {
         continue;
       }
@@ -1963,6 +1983,7 @@ ladish_graph_iterate_nodes(
 bool
 ladish_graph_iterate_connections(
   ladish_graph_handle graph_handle,
+  bool skip_hidden,
   void * callback_context,
   bool (* callback)(void * context, ladish_port_handle port1_handle, ladish_port_handle port2_handle, ladish_dict_handle dict))
 {
@@ -1973,7 +1994,7 @@ ladish_graph_iterate_connections(
   {
     connection_ptr = list_entry(node_ptr, struct ladish_graph_connection, siblings);
 
-    if (connection_ptr->hidden)
+    if (skip_hidden && connection_ptr->hidden)
     {
       continue;
     }
@@ -2105,7 +2126,7 @@ ladish_graph_copy_port_callback(
     return false;
   }
 
-  if (!ladish_graph_add_port(context, client_iteration_context_ptr, copy, port_name, port_type, port_flags, false))
+  if (!ladish_graph_add_port(context, client_iteration_context_ptr, copy, port_name, port_type, port_flags, true))
   {
     ladish_port_destroy(copy);
     return false;
@@ -2116,10 +2137,11 @@ ladish_graph_copy_port_callback(
 
 #undef graph_ptr
 
-bool ladish_graph_copy(ladish_graph_handle src, ladish_graph_handle dest)
+bool ladish_graph_copy(ladish_graph_handle src, ladish_graph_handle dest, bool skip_hidden)
 {
   return ladish_graph_iterate_nodes(
     src,
+    skip_hidden,
     dest,
     ladish_graph_copy_client_begin_callback,
     ladish_graph_copy_port_callback,
