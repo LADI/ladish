@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008,2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009,2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to code that interfaces a2jmidid through D-Bus
@@ -28,8 +28,6 @@
 #define A2J_PROXY_HPP__24525CB1_8AED_4697_8C56_5C57473839CC__INCLUDED
 
 #include "common.h"
-
-typedef struct a2j_proxy_tag { int unused; } * a2j_proxy_handle;
 
 bool a2j_proxy_init(void);
 void a2j_proxy_uninit(void);
