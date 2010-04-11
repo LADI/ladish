@@ -481,7 +481,7 @@ port_appeared(
     if (!ladish_graph_add_port(virtualizer_ptr->jack_graph, jack_client, port, real_jack_port_name, type, flags, false))
     {
       log_error("ladish_graph_add_port() failed.");
-      goto free_alsa_names;
+      goto exit;
     }
 
     if (vgraph == g_studio.studio_graph)
