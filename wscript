@@ -251,7 +251,7 @@ def build(bld):
         ]:
         daemon.source.append(os.path.join("common", source))
 
-    # process name.arnaudov.nedko.ladish.service.in -> name.arnaudov.nedko.ladish.service
+    # process dbus.service.in -> ladish.service
     import misc
     obj = bld.new_task_gen('subst')
     obj.source = os.path.join('daemon', 'dbus.service.in')
