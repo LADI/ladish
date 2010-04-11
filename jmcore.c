@@ -40,17 +40,14 @@ extern const struct dbus_interface_descriptor g_interface;
 static const char * g_dbus_unique_name;
 static dbus_object_path g_object;
 static bool g_quit;
-static jack_client_t * g_jack_client;
-static bool g_jack_client_died;
 
-pthread_mutex_t g_mutex;
-struct list_head g_new_pairs;
-struct list_head g_active_pairs;
+struct list_head g_pairs;
 
 struct port_pair
 {
   struct list_head siblings;
-  bool active;
+  jack_client_t * client;
+  bool dead;
   bool midi;
   jack_port_t * input_port;
   jack_port_t * output_port;
@@ -58,94 +55,66 @@ struct port_pair
   char * output_port_name;
 };
 
+#define pair_ptr ((struct port_pair *)arg)
+
 void shutdown_callback(void * arg)
 {
-  g_jack_client_died = true;
+  pair_ptr->dead = true;
 }
 
 int process_callback(jack_nframes_t nframes, void * arg)
 {
-  struct list_head * node_ptr;
-  struct list_head * temp_node_ptr;
-  struct port_pair * pair_ptr;
-  bool locked;
   void * input;
   void * output;
   jack_midi_event_t midi_event;
   jack_nframes_t midi_event_index;
 
-  locked = pthread_mutex_trylock(&g_mutex) == 0;
+  input = jack_port_get_buffer(pair_ptr->input_port, nframes);
+  output = jack_port_get_buffer(pair_ptr->output_port, nframes);
 
-  if (locked)
+  if (!pair_ptr->midi)
   {
-    while (!list_empty(&g_new_pairs))
-    {
-      node_ptr = g_new_pairs.next;
-      list_del(node_ptr);
-      list_add_tail(node_ptr, &g_active_pairs);
-      pair_ptr = list_entry(node_ptr, struct port_pair, siblings);
-      pair_ptr->active = true;
-    }
+    memcpy(output, input, nframes * sizeof(jack_default_audio_sample_t));
   }
-
-  list_for_each_safe(node_ptr, temp_node_ptr, &g_active_pairs)
+  else
   {
-    pair_ptr = list_entry(node_ptr, struct port_pair, siblings);
-    if (locked && !pair_ptr->active)
+    jack_midi_clear_buffer(output);
+    midi_event_index = 0;
+    while (jack_midi_event_get(&midi_event, input, midi_event_index) == 0)
     {
-      list_del_init(node_ptr);
-      continue;
+      jack_midi_event_write(output, midi_event.time, midi_event.buffer, midi_event.size);
+      midi_event_index++;
     }
-
-    input = jack_port_get_buffer(pair_ptr->input_port, nframes);
-    output = jack_port_get_buffer(pair_ptr->output_port, nframes);
-
-    if (!pair_ptr->midi)
-    {
-      memcpy(output, input, nframes * sizeof(jack_default_audio_sample_t));
-    }
-    else
-    {
-      jack_midi_clear_buffer(output);
-      midi_event_index = 0;
-      while (jack_midi_event_get(&midi_event, input, midi_event_index) == 0)
-      {
-        jack_midi_event_write(output, midi_event.time, midi_event.buffer, midi_event.size);
-        midi_event_index++;
-      }
-    }
-  }
-
-  if (locked)
-  {
-    pthread_mutex_unlock(&g_mutex);
   }
 
   return 0;
 }
 
-static void free_pair(struct port_pair * pair_ptr)
-{
-  if (g_jack_client != NULL)
-  {
-    jack_port_unregister(g_jack_client, pair_ptr->input_port);
-    jack_port_unregister(g_jack_client, pair_ptr->output_port);
-  }
+#undef pair_ptr
 
+static void destroy_pair(struct port_pair * pair_ptr)
+{
+  list_del(&pair_ptr->siblings);
+  jack_client_close(pair_ptr->client);
   free(pair_ptr->input_port_name);
   free(pair_ptr->output_port_name);
   free(pair_ptr);
 }
 
-static void eat_pair_list(struct list_head * list)
+static void bury_zombie_pairs(void)
 {
   struct list_head * node_ptr;
+  struct list_head * temp_node_ptr;
+  struct port_pair * pair_ptr;
 
-  while (!list_empty(list))
+  list_for_each_safe(node_ptr, temp_node_ptr, &g_pairs)
   {
-    node_ptr = list->next;
-    list_del(node_ptr);
-    free_pair(list_entry(node_ptr, struct port_pair, siblings));
+    pair_ptr = list_entry(node_ptr, struct port_pair, siblings);
+    if (pair_ptr->dead)
+    {
+      log_info("Bury zombie '%s':'%s'", pair_ptr->input_port_name, pair_ptr->output_port_name);
+      destroy_pair(pair_ptr);
+    }
   }
 }
 
@@ -243,16 +212,7 @@ int main(int argc, char ** argv)
 {
   int ret;
 
-  INIT_LIST_HEAD(&g_new_pairs);
-  INIT_LIST_HEAD(&g_active_pairs);
-
-  ret = pthread_mutex_init(&g_mutex, NULL);
-  if (ret != 0)
-  {
-    log_error("Mutex initialization failed with %d.", ret);
-    ret = 1;
-    goto exit;
-  }
+  INIT_LIST_HEAD(&g_pairs);
 
   install_term_signal_handler(SIGTERM, false);
   install_term_signal_handler(SIGINT, true);
@@ -260,74 +220,36 @@ int main(int argc, char ** argv)
   if (!connect_dbus())
   {
     log_error("Failed to connect to D-Bus");
-    ret = 1;
-    goto destroy_mutex;
+    return 1;
   }
 
   while (!g_quit)
   {
     dbus_connection_read_write_dispatch(g_dbus_connection, 50);
+    bury_zombie_pairs();
   }
 
   ret = 0;
 
-  eat_pair_list(&g_new_pairs);
-  eat_pair_list(&g_active_pairs);
-
-  if (g_jack_client != NULL)
+  while (!list_empty(&g_pairs))
   {
-    jack_deactivate(g_jack_client);
-    jack_client_close(g_jack_client);
+    destroy_pair(list_entry(g_pairs.next, struct port_pair, siblings));
   }
 
   disconnect_dbus();
-destroy_mutex:
-  pthread_mutex_destroy(&g_mutex);
-exit:
-  return ret;
+  return 0;
 }
 
-static void jmcore_connect_to_jack(struct dbus_method_call * call_ptr)
+/***************************************************************************/
+/* D-Bus interface implementation */
+
+static void jmcore_get_pid(struct dbus_method_call * call_ptr)
 {
-  int ret;
-  const char * jack_client_name;
+  dbus_int64_t pid;
 
-  if (g_jack_client != NULL)
-  {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "JACK server is already connected");
-    return;
-  }
+  pid = getpid();
 
-  g_jack_client = jack_client_open("jmcore", JackNoStartServer, NULL);
-  if (g_jack_client == NULL)
-  {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Cannot connect to JACK server");
-    return;
-  }
-
-  ret = jack_set_process_callback(g_jack_client, process_callback, NULL);
-  if (ret != 0)
-  {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "JACK process callback setup failed");
-    jack_client_close(g_jack_client);
-    g_jack_client = NULL;
-    return;
-  }
-
-  jack_on_shutdown(g_jack_client, shutdown_callback, NULL);
-
-  ret = jack_activate(g_jack_client);
-  if (ret != 0)
-  {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "JACK client activation failed");
-    jack_client_close(g_jack_client);
-    g_jack_client = NULL;
-    return;
-  }
-
-  jack_client_name = jack_get_client_name(g_jack_client);
-
-  method_return_new_single(call_ptr, DBUS_TYPE_STRING, &jack_client_name);
+  method_return_new_single(call_ptr, DBUS_TYPE_INT64, &pid);
 }
 
 static void jmcore_create(struct dbus_method_call * call_ptr)
@@ -336,12 +258,7 @@ static void jmcore_create(struct dbus_method_call * call_ptr)
   const char * input;
   const char * output;
   struct port_pair * pair_ptr;
-
-  if (g_jack_client == NULL || g_jack_client_died)
-  {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "JACK server is not connected");
-    goto exit;
-  }
+  int ret;
 
   dbus_error_init(&g_dbus_error);
   if (!dbus_message_get_args(
@@ -378,52 +295,59 @@ static void jmcore_create(struct dbus_method_call * call_ptr)
     goto free_input_name;
   }
 
-  pair_ptr->input_port = jack_port_register(g_jack_client, input, midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
+  pair_ptr->client = jack_client_open("jmcore", JackNoStartServer, NULL);
+  if (pair_ptr->client == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Cannot connect to JACK server");
+    goto free_output_name;
+  }
+
+  pair_ptr->midi = midi;
+  pair_ptr->dead = false;
+
+  ret = jack_set_process_callback(pair_ptr->client, process_callback, pair_ptr);
+  if (ret != 0)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "JACK process callback setup failed");
+    goto close_client;
+  }
+
+  jack_on_shutdown(pair_ptr->client, shutdown_callback, pair_ptr);
+
+  pair_ptr->input_port = jack_port_register(pair_ptr->client, input, midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
   if (pair_ptr->input_port == NULL)
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Port '%s' registration failed.", input);
     goto free_output_name;
   }
 
-  pair_ptr->output_port = jack_port_register(g_jack_client, output, midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
+  pair_ptr->output_port = jack_port_register(pair_ptr->client, output, midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
   if (pair_ptr->input_port == NULL)
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Port '%s' registration failed.", output);
     goto unregister_input_port;
   }
 
-  pair_ptr->midi = midi;
+  list_add_tail(&pair_ptr->siblings, &g_pairs);
 
-  pair_ptr->active = false;
-  pthread_mutex_lock(&g_mutex);
-  list_add_tail(&pair_ptr->siblings, &g_new_pairs);
-  pthread_mutex_unlock(&g_mutex);
-
-  /* wait pair to become active */
-  pthread_mutex_lock(&g_mutex);
-  while (!pair_ptr->active)
+  ret = jack_activate(pair_ptr->client);
+  if (ret != 0)
   {
-    if (g_jack_client_died)
-    {
-      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "JACK server died.");
-      list_del(&pair_ptr->siblings);
-      pthread_mutex_unlock(&g_mutex);
-      goto unregister_output_port;
-    }
-
-    pthread_mutex_unlock(&g_mutex);
-    usleep(50);
-    pthread_mutex_lock(&g_mutex);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "JACK client activation failed");
+    goto remove_from_list;
   }
-  pthread_mutex_unlock(&g_mutex);
 
   method_return_new_void(call_ptr);
   goto exit;
 
-unregister_output_port:
-  jack_port_unregister(g_jack_client, pair_ptr->output_port);
+remove_from_list:
+  list_del(&pair_ptr->siblings);
+//unregister_output_port:
+  jack_port_unregister(pair_ptr->client, pair_ptr->output_port);
 unregister_input_port:
-  jack_port_unregister(g_jack_client, pair_ptr->input_port);
+  jack_port_unregister(pair_ptr->client, pair_ptr->input_port);
+close_client:
+  jack_client_close(pair_ptr->client);
 free_output_name:
   free(pair_ptr->output_port_name);
 free_input_name:
@@ -440,12 +364,6 @@ static void jmcore_destroy(struct dbus_method_call * call_ptr)
   struct list_head * node_ptr;
   struct port_pair * pair_ptr;
 
-  if (g_jack_client == NULL || g_jack_client_died)
-  {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "JACK server is not connected");
-    return;
-  }
-
   dbus_error_init(&g_dbus_error);
   if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_STRING, &port, DBUS_TYPE_INVALID))
   {
@@ -454,49 +372,20 @@ static void jmcore_destroy(struct dbus_method_call * call_ptr)
     return;
   }
 
-  pthread_mutex_lock(&g_mutex);
-  list_for_each(node_ptr, &g_active_pairs)
+  list_for_each(node_ptr, &g_pairs)
   {
     pair_ptr = list_entry(node_ptr, struct port_pair, siblings);
     if (strcmp(pair_ptr->input_port_name, port) == 0 ||
         strcmp(pair_ptr->output_port_name, port) == 0)
     {
-      goto found;
+      destroy_pair(pair_ptr);
+      method_return_new_void(call_ptr);
+      return;
     }
   }
-  pthread_mutex_unlock(&g_mutex);
 
   lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "port '%s' not found.", port);
   return;
-
-found:
-  pair_ptr->active = false;
-  pthread_mutex_unlock(&g_mutex);
-
-  /* wait pair to become non-active */
-  pthread_mutex_lock(&g_mutex);
-  while (!list_empty(&pair_ptr->siblings))
-  {
-    if (g_jack_client_died)
-    {
-      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "JACK server died.");
-      pthread_mutex_unlock(&g_mutex);
-      if (list_empty(&pair_ptr->siblings))
-      {
-        free_pair(pair_ptr);
-      }
-      return;
-    }
-
-    pthread_mutex_unlock(&g_mutex);
-    usleep(50);
-    pthread_mutex_lock(&g_mutex);
-  }
-  pthread_mutex_unlock(&g_mutex);
-
-  free_pair(pair_ptr);
-
-  method_return_new_void(call_ptr);
 }
 
 static void jmcore_exit(struct dbus_method_call * call_ptr)
@@ -506,8 +395,8 @@ static void jmcore_exit(struct dbus_method_call * call_ptr)
   method_return_new_void(call_ptr);
 }
 
-METHOD_ARGS_BEGIN(connect_to_jack, "Connect to JACK server")
-  METHOD_ARG_DESCRIBE_OUT("jack_client_name", "s", "JACK client name")
+METHOD_ARGS_BEGIN(get_pid, "Get process ID")
+  METHOD_ARG_DESCRIBE_OUT("process_id", DBUS_TYPE_INT64_AS_STRING, "Process ID")
 METHOD_ARGS_END
 
 METHOD_ARGS_BEGIN(create, "Create port pair")
@@ -524,7 +413,7 @@ METHOD_ARGS_BEGIN(exit, "Tell jmcore D-Bus service to exit")
 METHOD_ARGS_END
 
 METHODS_BEGIN
-  METHOD_DESCRIBE(connect_to_jack, jmcore_connect_to_jack)
+  METHOD_DESCRIBE(get_pid, jmcore_get_pid)
   METHOD_DESCRIBE(create, jmcore_create)
   METHOD_DESCRIBE(destroy, jmcore_destroy)
   METHOD_DESCRIBE(exit, jmcore_exit)
