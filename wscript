@@ -57,6 +57,12 @@ def configure(conf):
     conf.check_tool('boost')
 
     conf.check_cfg(
+        package = 'jack',
+        mandatory = True,
+        errmsg = "not installed, see http://jackaudio.org/",
+        args = '--cflags --libs')
+
+    conf.check_cfg(
         package = 'dbus-1',
         atleast_version = '1.0.0',
         mandatory = True,
@@ -261,6 +267,25 @@ def build(bld):
     obj.install_path = bld.env['DBUS_SERVICES_DIR'] + os.path.sep
     obj.fun = misc.subst_func
 
+    #####################################################
+    # jmcore
+    jmcore = bld.new_task_gen('cc', 'program')
+    jmcore.target = 'jmcore'
+    jmcore.includes = "build/default" # XXX config.h version.h and other generated files
+    jmcore.uselib = 'DBUS-1 JACK'
+    jmcore.defines = ['LOG_OUTPUT_STDOUT']
+    jmcore.source = ['jmcore.c']
+
+    for source in [
+        #'signal.c',
+        'method.c',
+        'error.c',
+        'object_path.c',
+        'interface.c',
+        'helpers.c',
+        ]:
+        jmcore.source.append(os.path.join("dbus", source))
+
     if bld.env['BUILD_LIBLASH']:
         liblash = bld.new_task_gen('cc', 'shlib')
         liblash.includes = "build/default" # XXX config.h version.h and other generated files
@@ -269,6 +294,17 @@ def build(bld):
         liblash.vnum = "1.1.1"
         liblash.defines = ['LOG_OUTPUT_STDOUT']
         liblash.source = [os.path.join("lash_compat", "liblash", 'lash.c')]
+
+    obj = bld.new_task_gen('subst')
+    obj.source = os.path.join('daemon', 'dbus.service.in')
+    obj.target = DBUS_NAME_BASE + '.jmcore.service'
+    obj.dict = {'dbus_object_path': DBUS_NAME_BASE + ".jmcore",
+                'daemon_bin_path': os.path.join(bld.env['PREFIX'], 'bin', jmcore.target)}
+    obj.install_path = bld.env['DBUS_SERVICES_DIR'] + os.path.sep
+    obj.fun = misc.subst_func
+
+    #####################################################
+    # pylash
 
     # pkgpyexec_LTLIBRARIES = _lash.la
     # INCLUDES = $(PYTHON_INCLUDES)

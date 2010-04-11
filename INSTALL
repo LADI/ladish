@@ -3,6 +3,7 @@
 Requirements (tools, headers and libraries):
 
  * You need gcc for C and C++ (4.2.2 should work)
+ * You need JACK (1.9.5 should work)
  * You need dbus (1.2.16 should work)
  * You need libuuid from e2fsprogs (1.40.2 should work)
  * You need the expat XML parser (2.0.1 should work)
