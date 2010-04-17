@@ -43,6 +43,7 @@
 #include "dirhelpers.h"
 #include "../proxies/a2j_proxy.h"
 #include "../proxies/jmcore_proxy.h"
+#include "../proxies/notify_proxy.h"
 
 bool g_quit;
 const char * g_dbus_unique_name;
@@ -293,9 +294,14 @@ int main(int argc, char ** argv, char ** envp)
   /* setup our SIGSEGV magic that prints nice stack in our logfile */ 
   setup_sigsegv();
 
-  if (!a2j_proxy_init())
+  if (!ladish_notify_init("LADI Session Handler"))
   {
     goto uninit_dbus;
+  }
+
+  if (!a2j_proxy_init())
+  {
+    goto uninit_notify;
   }
 
   if (!jmcore_proxy_init())
@@ -308,6 +314,8 @@ int main(int argc, char ** argv, char ** envp)
     goto uninit_jmcore;
   }
 
+  ladish_notify_simple(LADISH_NOTIFY_URGENCY_LOW, "LADI Session Handler daemon activated", NULL);
+
   while (!g_quit)
   {
     dbus_connection_read_write_dispatch(g_dbus_connection, 50);
@@ -316,6 +324,7 @@ int main(int argc, char ** argv, char ** envp)
   }
 
   emit_clean_exit();
+  ladish_notify_simple(LADISH_NOTIFY_URGENCY_LOW, "LADI Session Handler daemon deactivated", NULL);
 
   ret = EXIT_SUCCESS;
 
@@ -328,6 +337,9 @@ uninit_jmcore:
 
 uninit_a2j:
   a2j_proxy_uninit();
+
+uninit_notify:
+  ladish_notify_uninit();
 
 uninit_dbus:
   disconnect_dbus();

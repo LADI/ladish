@@ -41,6 +41,7 @@
 #include "escape.h"
 #include "studio.h"
 #include "../proxies/jmcore_proxy.h"
+#include "../proxies/notify_proxy.h"
 
 #define STUDIOS_DIR "/studios/"
 char * g_studios_dir;
@@ -101,6 +102,7 @@ studio_publish(void)
   g_studio.dbus_object = object;
 
   emit_studio_appeared();
+  ladish_notify_simple(LADISH_NOTIFY_URGENCY_NORMAL, "Studio loaded", NULL);
 
   return true;
 }
@@ -273,6 +275,7 @@ void on_event_jack_started(void)
   ladish_app_supervisor_autorun(g_studio.app_supervisor);
 
   emit_studio_started();
+  ladish_notify_simple(LADISH_NOTIFY_URGENCY_NORMAL, "Studio started", NULL);
 }
 
 static void on_jack_stopped_internal(void)
@@ -292,14 +295,15 @@ static void on_jack_stopped_internal(void)
 
 void on_event_jack_stopped(void)
 {
-    emit_studio_stopped();
-    on_jack_stopped_internal();
+  emit_studio_stopped();
+  on_jack_stopped_internal();
+  ladish_notify_simple(LADISH_NOTIFY_URGENCY_NORMAL, "Studio stopped", NULL);
 }
 
 void handle_unexpected_jack_server_stop(void)
 {
-    emit_studio_crashed();
-    on_jack_stopped_internal();
+  emit_studio_crashed();
+  on_jack_stopped_internal();
 
   /* TODO: if user wants, restart jack server and reconnect all jack apps to it */
 }
@@ -361,6 +365,11 @@ void studio_run(void)
 
       log_error("JACK stopped unexpectedly.");
       log_error("Save your work, then unload and reload the studio.");
+      ladish_notify_simple(
+        LADISH_NOTIFY_URGENCY_HIGH,
+        "Studio crashed",
+        "JACK stopped unexpectedly.\n\n"
+        "Save your work, then unload and reload the studio.");
       handle_unexpected_jack_server_stop();
     }
   }
@@ -374,6 +383,11 @@ void studio_run(void)
       /* jack was started, this probably means that jackdbus has crashed */
       log_error("JACK disappeared unexpectedly. Maybe it crashed.");
       log_error("Save your work, then unload and reload the studio.");
+      ladish_notify_simple(
+        LADISH_NOTIFY_URGENCY_HIGH,
+        "Studio crashed",
+        "JACK disappeared unexpectedly. Maybe it crashed.\n\n"
+        "Save your work, then unload and reload the studio.");
       ladish_environment_reset_stealth(&g_studio.env_store, ladish_environment_jack_server_started);
 
       studio_iterate_virtual_graphs(NULL, hide_vgraph_non_virtual);

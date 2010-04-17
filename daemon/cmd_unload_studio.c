@@ -27,6 +27,7 @@
 #include "cmd.h"
 #include "studio_internal.h"
 #include "control.h"
+#include "../proxies/notify_proxy.h"
 
 #define cmd_ptr ((struct ladish_command *)context)
 
@@ -51,6 +52,7 @@ static bool run(void * context)
     dbus_object_path_destroy(g_dbus_connection, g_studio.dbus_object);
     g_studio.dbus_object = NULL;
     emit_studio_disappeared();
+    ladish_notify_simple(LADISH_NOTIFY_URGENCY_NORMAL, "Studio unloaded", NULL);
   }
 
   if (g_studio.name != NULL)
