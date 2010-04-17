@@ -30,6 +30,7 @@
 #include "studio_internal.h"
 #include "loader.h"
 #include "../common/time.h"
+#include "../proxies/notify_proxy.h"
 
 struct ladish_command_start_studio
 {
@@ -71,6 +72,14 @@ static bool run(void * context)
     if (!jack_proxy_start_server())
     {
       log_error("Starting JACK server failed.");
+      ladish_notify_simple(
+        LADISH_NOTIFY_URGENCY_HIGH,
+        "JACK start failed",
+        "You may want to inspect the <a href=\"http://ladish.org/wiki/diagnose_files\">JACK log file</a>\n\n"
+        "Check if the sound device is connected.\n"
+        "Check the JACK configuration.\n"
+        "If your sound device does not support hardware mixing, check that it is not in use.\n"
+        "If you have more than one sound device, check that their order is correct.");
       return false;
     }
 
