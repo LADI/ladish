@@ -37,6 +37,7 @@
 #include "escape.h"
 #include "studio_internal.h"
 #include "cmd.h"
+#include "../proxies/notify_proxy.h"
 
 struct save_context
 {
@@ -709,6 +710,7 @@ static bool run(void * command_context)
   if (!studio_is_started())
   {
     log_error("Cannot save not-started studio");
+    ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Cannot save not-started studio", NULL);
     goto exit;
   }
 
