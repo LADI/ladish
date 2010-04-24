@@ -803,3 +803,39 @@ void world_tree_remove_app(graph_view_handle view, uint64_t id)
 
   gtk_tree_path_free(path);
 }
+
+void world_tree_destroy_room_views(void)
+{
+  gint type;
+  graph_view_handle view;
+  GtkTreeIter iter;
+  bool valid;
+
+  if (!gtk_tree_model_get_iter_first(GTK_TREE_MODEL(g_treestore), &iter))
+  {
+    return;
+  }
+
+loop:
+  gtk_tree_model_get(GTK_TREE_MODEL(g_treestore), &iter, COL_TYPE, &type, COL_VIEW, &view, -1);
+  if (type == entry_type_view && is_room_view(view))
+  {
+    //log_info("removing view for room %s", get_view_opath(view));
+    valid = gtk_tree_store_remove(g_treestore, &iter);
+
+    destroy_view(view);
+
+    if (!valid)
+    {
+      /* no more entries */
+      return;
+    }
+
+    goto loop;
+  }
+
+  if (gtk_tree_model_iter_next(GTK_TREE_MODEL(g_treestore), &iter))
+  {
+    goto loop;
+  }
+}

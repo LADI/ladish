@@ -39,5 +39,6 @@ void world_tree_name_changed(graph_view_handle view);
 void world_tree_add_app(graph_view_handle view, uint64_t id, const char * name, bool running, bool terminal, uint8_t level);
 void world_tree_app_state_changed(graph_view_handle view, uint64_t id, const char * name, bool running, bool terminal, uint8_t level);
 void world_tree_remove_app(graph_view_handle view, uint64_t id);
+void world_tree_destroy_room_views(void);
 
 #endif // #ifndef WORLD_TREE_H__D786489B_E400_4E92_85C7_2BAE606DE56D__INCLUDED

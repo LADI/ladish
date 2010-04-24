@@ -865,6 +865,8 @@ void control_proxy_on_daemon_disappeared(bool clean_exit)
     g_studio_view = NULL;
   }
 
+  world_tree_destroy_room_views();
+
   g_ladishd_poll_source_tag = g_timeout_add(500, poll_ladishd, NULL);
 }
 
