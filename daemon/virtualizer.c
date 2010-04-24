@@ -224,7 +224,7 @@ lookup_port(
   jclient = ladish_graph_get_port_client(virtualizer_ptr->jack_graph, port);
   if (jclient == NULL)
   {
-    log_error("Port %"PRIu64" without jack client was (dis)connected");
+    log_error("Port %"PRIu64" without jack client was (dis)connected", port_id);
     return false;
   }
 
@@ -279,7 +279,7 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
   }
   else
   {
-    log_info("client pid is %"PRId64, pid);
+    log_info("client pid is %"PRId64, (int64_t)pid);
 
     if (pid != 0) /* skip internal clients that will match the pending clients in the graph, both have zero pid */
     {
