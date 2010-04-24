@@ -309,7 +309,11 @@ graph_view_handle get_current_view(void)
 
 bool is_room_view(graph_view_handle view)
 {
-  return strcmp(graph_proxy_get_object(view_ptr->graph), STUDIO_OBJECT_PATH) != 0;
+  const char * opath;
+
+  opath = graph_proxy_get_object(view_ptr->graph);
+
+  return strcmp(opath, STUDIO_OBJECT_PATH) != 0 && strcmp(opath, JACKDBUS_OBJECT_PATH) != 0;
 }
 
 bool app_run_custom(graph_view_handle view, const char * command, const char * name, bool run_in_terminal, uint8_t level)
