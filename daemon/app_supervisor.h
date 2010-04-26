@@ -81,6 +81,7 @@ ladish_app_supervisor_search_app(
   pid_t pid);
 
 const char * ladish_app_supervisor_get_name(ladish_app_supervisor_handle supervisor_handle);
+unsigned int ladish_app_supervisor_get_running_app_count(ladish_app_supervisor_handle supervisor_handle);
 
 extern const struct dbus_interface_descriptor g_iface_app_supervisor;
 

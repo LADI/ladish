@@ -1129,6 +1129,7 @@ static void ladish_studio_delete_room(struct dbus_method_call * call_ptr)
   ladish_room_handle room;
   uuid_t room_uuid;
   ladish_client_handle room_client;
+  unsigned int running_app_count;
 
   dbus_error_init(&g_dbus_error);
 
@@ -1146,6 +1147,16 @@ static void ladish_studio_delete_room(struct dbus_method_call * call_ptr)
     room = ladish_room_from_list_node(node_ptr);
     if (strcmp(ladish_room_get_name(room), name) == 0)
     {
+      running_app_count = ladish_app_supervisor_get_running_app_count(ladish_room_get_app_supervisor(room));
+      if (running_app_count != 0)
+      {
+        /* TODO: instead of rejecting the room deletion, use the command queue and wait for room apps to stop.
+           This requires proper "project in room" implementation because project needs to be
+           unloaded anyway and unloading project should initiate and wait apps termination */
+        lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot delete room \"%s\" because it has %u app(s) running", name, running_app_count);
+        return;
+      }
+
       list_del(node_ptr);
       emit_room_disappeared(room);
 
