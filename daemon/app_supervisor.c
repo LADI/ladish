@@ -466,7 +466,7 @@ static void get_all(struct dbus_method_call * call_ptr)
   dbus_bool_t running;
   dbus_bool_t terminal;
 
-  log_info("get_all called");
+  //log_info("get_all called");
 
   call_ptr->reply = dbus_message_new_method_return(call_ptr->message);
   if (call_ptr->reply == NULL)
