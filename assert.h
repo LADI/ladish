@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains assert macros
@@ -40,7 +40,7 @@
                 __FUNCTION__,                                         \
                 __FILE__,                                             \
                 __LINE__);                                            \
-      assert(expr);                                                   \
+      assert(false);                                                  \
     }                                                                 \
   }                                                                   \
   while(false)
