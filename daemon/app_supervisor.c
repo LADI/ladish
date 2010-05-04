@@ -44,7 +44,6 @@ struct ladish_app
   uint8_t level;
   pid_t pid;
   bool zombie;
-  bool hidden;
   bool autorun;
   bool expected_death;
 };
@@ -128,17 +127,14 @@ void remove_app_internal(struct ladish_app_supervisor * supervisor_ptr, struct l
 {
   list_del(&app_ptr->siblings);
 
-  if (!app_ptr->hidden)
-  {
-    dbus_signal_emit(
-      g_dbus_connection,
-      supervisor_ptr->opath,
-      IFACE_APP_SUPERVISOR,
-      "AppRemoved",
-      "tt",
-      &supervisor_ptr->version,
-      &app_ptr->id);
-  }
+  dbus_signal_emit(
+    g_dbus_connection,
+    supervisor_ptr->opath,
+    IFACE_APP_SUPERVISOR,
+    "AppRemoved",
+    "tt",
+    &supervisor_ptr->version,
+    &app_ptr->id);
 
   free(app_ptr->name);
   free(app_ptr->commandline);
@@ -149,11 +145,6 @@ void emit_app_state_changed(struct ladish_app_supervisor * supervisor_ptr, struc
 {
   dbus_bool_t running;
   dbus_bool_t terminal;
-
-  if (app_ptr->hidden)
-  {
-    return;
-  }
 
   running = app_ptr->pid != 0;
   terminal = app_ptr->terminal;
@@ -242,7 +233,6 @@ ladish_app_supervisor_add(
 
   app_ptr->id = supervisor_ptr->next_id++;
   app_ptr->zombie = false;
-  app_ptr->hidden = false;
   app_ptr->expected_death = false;
   app_ptr->autorun = autorun;
   list_add_tail(&app_ptr->siblings, &supervisor_ptr->applist);
@@ -345,11 +335,6 @@ ladish_app_supervisor_enum(
   list_for_each(node_ptr, &supervisor_ptr->applist)
   {
     app_ptr = list_entry(node_ptr, struct ladish_app, siblings);
-
-    if (app_ptr->hidden)
-    {
-      continue;
-    }
 
     if (!callback(context, app_ptr->name, app_ptr->pid != 0, app_ptr->commandline, app_ptr->terminal, app_ptr->level, app_ptr->pid))
     {
@@ -519,11 +504,6 @@ static void get_all(struct dbus_method_call * call_ptr)
   list_for_each(node_ptr, &supervisor_ptr->applist)
   {
     app_ptr = list_entry(node_ptr, struct ladish_app, siblings);
-
-    if (app_ptr->hidden)
-    {
-      continue;
-    }
 
     log_info("app '%s' (%llu)", app_ptr->name, (unsigned long long)app_ptr->id);
 
