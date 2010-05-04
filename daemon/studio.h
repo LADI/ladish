@@ -50,6 +50,7 @@ studio_iterate_virtual_graphs(
     ladish_app_supervisor_handle app_supervisor));
 
 void studio_stop_app_supervisors(void);
+ladish_app_supervisor_handle ladish_studio_find_app_supervisor(const char * opath);
 struct ladish_cqueue * ladish_studio_get_cmd_queue(void);
 
 #endif /* #ifndef STUDIO_H__0BEDE85E_4FB3_4D74_BC08_C373A22409C0__INCLUDED */

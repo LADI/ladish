@@ -793,7 +793,7 @@ static void callback_elend(void * data, const char * el)
 
     log_info("application '%s' (%s, %s, level %u) with commandline '%s'", context_ptr->str, context_ptr->terminal ? "terminal" : "shell", context_ptr->autorun ? "autorun" : "stopped", (unsigned int)context_ptr->level, context_ptr->data);
 
-    if (!ladish_app_supervisor_add(g_studio.app_supervisor, context_ptr->str, context_ptr->autorun, context_ptr->data, context_ptr->terminal, context_ptr->level))
+    if (ladish_app_supervisor_add(g_studio.app_supervisor, context_ptr->str, context_ptr->autorun, context_ptr->data, context_ptr->terminal, context_ptr->level) == NULL)
     {
       log_error("ladish_app_supervisor_add() failed.");
       context_ptr->error = XML_TRUE;

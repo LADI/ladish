@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to the command queue stuff
@@ -69,5 +69,15 @@ bool ladish_command_start_studio(void * call_ptr, struct ladish_cqueue * queue_p
 bool ladish_command_stop_studio(void * call_ptr, struct ladish_cqueue * queue_ptr);
 bool ladish_command_unload_studio(void * call_ptr, struct ladish_cqueue * queue_ptr);
 bool ladish_command_exit(void * call_ptr, struct ladish_cqueue * queue_ptr);
+
+bool
+ladish_command_new_app(
+  void * call_ptr,
+  struct ladish_cqueue * queue_ptr,
+  const char * opath,
+  bool terminal,
+  const char * commandline,
+  const char * name,
+  uint8_t level);
 
 #endif /* #ifndef CMD_H__28542C9B_7CB8_40F8_BBB6_DCE13CBB1E7F__INCLUDED */

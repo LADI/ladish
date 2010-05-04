@@ -24,7 +24,6 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include <ctype.h>
 #include <sys/types.h>
 #include <signal.h>
 
@@ -106,23 +105,6 @@ ladish_app_supervisor_create(
   return true;
 }
 
-struct ladish_app * ladish_app_supervisor_find_app_by_name(struct ladish_app_supervisor * supervisor_ptr, const char * name)
-{
-  struct list_head * node_ptr;
-  struct ladish_app * app_ptr;
-
-  list_for_each(node_ptr, &supervisor_ptr->applist)
-  {
-    app_ptr = list_entry(node_ptr, struct ladish_app, siblings);
-    if (strcmp(app_ptr->name, name) == 0)
-    {
-      return app_ptr;
-    }
-  }
-
-  return NULL;
-}
-
 struct ladish_app * ladish_app_supervisor_find_app_by_id(struct ladish_app_supervisor * supervisor_ptr, uint64_t id)
 {
   struct list_head * node_ptr;
@@ -138,70 +120,6 @@ struct ladish_app * ladish_app_supervisor_find_app_by_id(struct ladish_app_super
   }
 
   return NULL;
-}
-
-static
-struct ladish_app *
-add_app_internal(
-  struct ladish_app_supervisor * supervisor_ptr,
-  const char * name,
-  const char * commandline,
-  dbus_bool_t terminal,
-  dbus_bool_t autorun,
-  uint8_t level)
-{
-  struct ladish_app * app_ptr;
-  dbus_bool_t running;
-
-  app_ptr = malloc(sizeof(struct ladish_app));
-  if (app_ptr == NULL)
-  {
-    log_error("malloc of struct ladish_app failed");
-    return NULL;
-  }
-
-  app_ptr->name = strdup(name);
-  if (app_ptr->name == NULL)
-  {
-    log_error("strdup() failed for app name");
-    free(app_ptr);
-    return NULL;
-  }
-
-  app_ptr->commandline = strdup(commandline);
-  if (app_ptr->commandline == NULL)
-  {
-    log_error("strdup() failed for app commandline");
-    free(app_ptr->name);
-    free(app_ptr);
-    return NULL;
-  }
-
-  app_ptr->terminal = terminal;
-  app_ptr->level = level;
-  app_ptr->pid = 0;
-
-  app_ptr->id = supervisor_ptr->next_id++;
-  app_ptr->zombie = false;
-  app_ptr->hidden = false;
-  app_ptr->autorun = autorun;
-  list_add_tail(&app_ptr->siblings, &supervisor_ptr->applist);
-
-  running = false;
-  dbus_signal_emit(
-    g_dbus_connection,
-    supervisor_ptr->opath,
-    IFACE_APP_SUPERVISOR,
-    "AppAdded",
-    "ttsbby",
-    &supervisor_ptr->version,
-    &app_ptr->id,
-    &app_ptr->name,
-    &running,
-    &terminal,
-    &app_ptr->level);
-
-  return app_ptr;
 }
 
 void remove_app_internal(struct ladish_app_supervisor * supervisor_ptr, struct ladish_app * app_ptr)
@@ -252,6 +170,91 @@ void emit_app_state_changed(struct ladish_app_supervisor * supervisor_ptr, struc
 }
 
 #define supervisor_ptr ((struct ladish_app_supervisor *)supervisor_handle)
+
+const char * ladish_app_supervisor_get_opath(ladish_app_supervisor_handle supervisor_handle)
+{
+  return supervisor_ptr->opath;
+}
+
+ladish_app_handle ladish_app_supervisor_find_app_by_name(ladish_app_supervisor_handle supervisor_handle, const char * name)
+{
+  struct list_head * node_ptr;
+  struct ladish_app * app_ptr;
+
+  list_for_each(node_ptr, &supervisor_ptr->applist)
+  {
+    app_ptr = list_entry(node_ptr, struct ladish_app, siblings);
+    if (strcmp(app_ptr->name, name) == 0)
+    {
+      return (ladish_app_handle)app_ptr;
+    }
+  }
+
+  return NULL;
+}
+
+ladish_app_handle
+ladish_app_supervisor_add(
+  ladish_app_supervisor_handle supervisor_handle,
+  const char * name,
+  bool autorun,
+  const char * command,
+  bool terminal,
+  uint8_t level)
+{
+  struct ladish_app * app_ptr;
+  dbus_bool_t running;
+
+  app_ptr = malloc(sizeof(struct ladish_app));
+  if (app_ptr == NULL)
+  {
+    log_error("malloc of struct ladish_app failed");
+    return NULL;
+  }
+
+  app_ptr->name = strdup(name);
+  if (app_ptr->name == NULL)
+  {
+    log_error("strdup() failed for app name");
+    free(app_ptr);
+    return NULL;
+  }
+
+  app_ptr->commandline = strdup(command);
+  if (app_ptr->commandline == NULL)
+  {
+    log_error("strdup() failed for app commandline");
+    free(app_ptr->name);
+    free(app_ptr);
+    return NULL;
+  }
+
+  app_ptr->terminal = terminal;
+  app_ptr->level = level;
+  app_ptr->pid = 0;
+
+  app_ptr->id = supervisor_ptr->next_id++;
+  app_ptr->zombie = false;
+  app_ptr->hidden = false;
+  app_ptr->autorun = autorun;
+  list_add_tail(&app_ptr->siblings, &supervisor_ptr->applist);
+
+  running = false;
+  dbus_signal_emit(
+    g_dbus_connection,
+    supervisor_ptr->opath,
+    IFACE_APP_SUPERVISOR,
+    "AppAdded",
+    "ttsbby",
+    &supervisor_ptr->version,
+    &app_ptr->id,
+    &app_ptr->name,
+    &running,
+    &terminal,
+    &app_ptr->level);
+
+  return (ladish_app_handle)app_ptr;
+}
 
 void ladish_app_supervisor_clear(ladish_app_supervisor_handle supervisor_handle)
 {
@@ -340,26 +343,25 @@ ladish_app_supervisor_enum(
   return true;
 }
 
-bool
-ladish_app_supervisor_add(
-  ladish_app_supervisor_handle supervisor_handle,
-  const char * name,
-  bool autorun,
-  const char * command,
-  bool terminal,
-  uint8_t level)
-{
-  struct ladish_app * app_ptr;
+#define app_ptr ((struct ladish_app *)app_handle)
 
-  app_ptr = add_app_internal(supervisor_ptr, name, command, terminal, autorun, level);
-  if (app_ptr == NULL)
+bool ladish_app_supervisor_run(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle)
+{
+  if (!loader_execute(supervisor_ptr->name, app_ptr->name, "/", app_ptr->terminal, app_ptr->commandline, &app_ptr->pid))
   {
-    log_error("add_app_internal() failed");
     return false;
   }
 
+  emit_app_state_changed(supervisor_ptr, app_ptr);
   return true;
 }
+
+void ladish_app_supervisor_remove(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle)
+{
+  remove_app_internal(supervisor_ptr, app_ptr);
+}
+
+#undef app_ptr
 
 void ladish_app_supervisor_autorun(ladish_app_supervisor_handle supervisor_handle)
 {
@@ -379,7 +381,7 @@ void ladish_app_supervisor_autorun(ladish_app_supervisor_handle supervisor_handl
 
     log_info("autorun('%s', %s, '%s') called", app_ptr->name, app_ptr->terminal ? "terminal" : "shell", app_ptr->commandline);
 
-    if (!loader_execute(supervisor_ptr->name, app_ptr->name, "/", app_ptr->terminal, app_ptr->commandline, &app_ptr->pid))
+    if (!ladish_app_supervisor_run((ladish_app_supervisor_handle)supervisor_ptr, (ladish_app_handle)app_ptr))
     {
       log_error("Execution of '%s' failed",  app_ptr->commandline);
       return;
@@ -554,21 +556,15 @@ static void run_custom(struct dbus_method_call * call_ptr)
 {
   dbus_bool_t terminal;
   const char * commandline;
-  const char * name_param;
+  const char * name;
   uint8_t level;
-  char * name;
-  char * name_buffer;
-  size_t len;
-  char * end;
-  unsigned int index;
-  struct ladish_app * app_ptr;
 
   if (!dbus_message_get_args(
         call_ptr->message,
         &g_dbus_error,
         DBUS_TYPE_BOOLEAN, &terminal,
         DBUS_TYPE_STRING, &commandline,
-        DBUS_TYPE_STRING, &name_param,
+        DBUS_TYPE_STRING, &name,
         DBUS_TYPE_BYTE, &level,
         DBUS_TYPE_INVALID))
   {
@@ -577,95 +573,19 @@ static void run_custom(struct dbus_method_call * call_ptr)
     return;
   }
 
-  log_info("run_custom('%s', %s, '%s', %"PRIu8") called", name_param, terminal ? "terminal" : "shell", commandline, level);
+  log_info("run_custom('%s', %s, '%s', %"PRIu8") called", name, terminal ? "terminal" : "shell", commandline, level);
 
-  if (*name_param)
+  if (ladish_command_new_app(
+        call_ptr,
+        ladish_studio_get_cmd_queue(),
+        supervisor_ptr->opath,
+        terminal,
+        commandline,
+        name,
+        level))
   {
-    /* allocate and copy app name */
-    len = strlen(name_param);
-    name_buffer = malloc(len + 100);
-    if (name_buffer == NULL)
-    {
-      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "malloc of app name failed");
-      return;
-    }
-
-    name = name_buffer;
-
-    strcpy(name, name_param);
-
-    end = name + len;
+    method_return_new_void(call_ptr);
   }
-  else
-  {
-    /* allocate app name */
-    len = strlen(commandline) + 100;
-    name_buffer = malloc(len);
-    if (name_buffer == NULL)
-    {
-      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "malloc of app name failed");
-      return;
-    }
-
-    strcpy(name_buffer, commandline);
-
-    /* use first word as name */
-    end = name_buffer;
-    while (*end)
-    {
-      if (isspace(*end))
-      {
-        *end = 0;
-        break;
-      }
-
-      end++;
-    }
-
-    name = strrchr(name_buffer, '/');
-    if (name == NULL)
-    {
-      name = name_buffer;
-    }
-    else
-    {
-      name++;
-    }
-  }
-
-  /* make the app name unique */
-  index = 2;
-  while (ladish_app_supervisor_find_app_by_name(supervisor_ptr, name) != NULL)
-  {
-    sprintf(end, "-%u", index);
-    index++;
-  }
-
-  app_ptr = add_app_internal(supervisor_ptr, name, commandline, terminal, true, level);
-
-  free(name_buffer);
-
-  if (app_ptr == NULL)
-  {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "add_app_internal() failed");
-    return;
-  }
-
-  if (studio_is_started())
-  {
-    if (!loader_execute(supervisor_ptr->name, app_ptr->name, "/", terminal, commandline, &app_ptr->pid))
-    {
-      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Execution of '%s' failed",  commandline);
-      remove_app_internal(supervisor_ptr, app_ptr);
-      return;
-    }
-
-    log_info("%s pid is %lu", app_ptr->name, (unsigned long)app_ptr->pid);
-
-    emit_app_state_changed(supervisor_ptr, app_ptr);
-  }
-
-  method_return_new_void(call_ptr);
 }
 
 static void start_app(struct dbus_method_call * call_ptr)
@@ -698,7 +618,7 @@ static void start_app(struct dbus_method_call * call_ptr)
   }
 
   app_ptr->zombie = false;
-  if (!loader_execute(supervisor_ptr->name, app_ptr->name, "/", app_ptr->terminal, app_ptr->commandline, &app_ptr->pid))
+  if (!ladish_app_supervisor_run((ladish_app_supervisor_handle)supervisor_ptr, (ladish_app_handle)app_ptr))
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Execution of '%s' failed",  app_ptr->commandline);
     return;

@@ -639,6 +639,39 @@ struct ladish_cqueue * ladish_studio_get_cmd_queue(void)
   return &g_studio.cmd_queue;
 }
 
+struct ladish_studio_app_supervisor_match_context
+{
+  const char * opath;
+  ladish_app_supervisor_handle supervisor;
+};
+
+#define iterate_context_ptr ((struct ladish_studio_app_supervisor_match_context *)context)
+
+static bool ladish_studio_app_supervisor_match(void * context, ladish_graph_handle graph, ladish_app_supervisor_handle app_supervisor)
+{
+  ASSERT(strcmp(ladish_app_supervisor_get_opath(app_supervisor), ladish_graph_get_opath(graph)) == 0);
+  if (strcmp(ladish_app_supervisor_get_opath(app_supervisor), iterate_context_ptr->opath) == 0)
+  {
+    ASSERT(iterate_context_ptr->supervisor == NULL);
+    iterate_context_ptr->supervisor = app_supervisor;
+    return false;               /* stop iteration */
+  }
+
+  return true;                  /* continue iteration */
+}
+
+#undef iterate_context_ptr
+
+ladish_app_supervisor_handle ladish_studio_find_app_supervisor(const char * opath)
+{
+  struct ladish_studio_app_supervisor_match_context ctx;
+
+  ctx.opath = opath;
+  ctx.supervisor = NULL;
+  studio_iterate_virtual_graphs(&ctx, ladish_studio_app_supervisor_match);
+  return ctx.supervisor;
+}
+
 bool studios_iterate(void * call_ptr, void * context, bool (* callback)(void * call_ptr, void * context, const char * studio, uint32_t modtime))
 {
   DIR * dir;
