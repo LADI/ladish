@@ -32,6 +32,7 @@
 #include "../dbus_constants.h"
 #include "loader.h"
 #include "studio_internal.h"
+#include "../proxies/notify_proxy.h"
 
 struct ladish_app
 {
@@ -45,6 +46,7 @@ struct ladish_app
   bool zombie;
   bool hidden;
   bool autorun;
+  bool expected_death;
 };
 
 struct ladish_app_supervisor
@@ -241,6 +243,7 @@ ladish_app_supervisor_add(
   app_ptr->id = supervisor_ptr->next_id++;
   app_ptr->zombie = false;
   app_ptr->hidden = false;
+  app_ptr->expected_death = false;
   app_ptr->autorun = autorun;
   list_add_tail(&app_ptr->siblings, &supervisor_ptr->applist);
 
@@ -274,6 +277,7 @@ void ladish_app_supervisor_clear(ladish_app_supervisor_handle supervisor_handle)
     {
       log_info("terminating '%s'...", app_ptr->name);
       app_ptr->zombie = true;
+      app_ptr->expected_death = true;
       kill(app_ptr->pid, SIGTERM);
     }
     else
@@ -311,6 +315,14 @@ bool ladish_app_supervisor_child_exit(ladish_app_supervisor_handle supervisor_ha
       }
       else
       {
+        if (!app_ptr->expected_death)
+        {
+          ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "App terminated unexpectedly", app_ptr->name);
+        }
+        else
+        {
+          app_ptr->expected_death = false;
+        }
         emit_app_state_changed(supervisor_ptr, app_ptr);
       }
 
@@ -417,6 +429,7 @@ void ladish_app_supervisor_stop(ladish_app_supervisor_handle supervisor_handle)
     if (app_ptr->pid != 0)
     {
       app_ptr->autorun = true;
+      app_ptr->expected_death = true;
       log_info("terminating '%s'...", app_ptr->name);
       kill(app_ptr->pid, SIGTERM);
     }
@@ -653,6 +666,7 @@ static void stop_app(struct dbus_method_call * call_ptr)
     return;
   }
 
+  app_ptr->expected_death = true;
   kill(app_ptr->pid, SIGTERM);
 
   method_return_new_void(call_ptr);
@@ -687,6 +701,7 @@ static void kill_app(struct dbus_method_call * call_ptr)
     return;
   }
 
+  app_ptr->expected_death = true;
   kill(app_ptr->pid, SIGKILL);
 
   method_return_new_void(call_ptr);
@@ -878,6 +893,7 @@ static void remove_app(struct dbus_method_call * call_ptr)
   if (app_ptr->pid != 0)
   {
     app_ptr->zombie = true;
+    app_ptr->expected_death = true;
     kill(app_ptr->pid, SIGTERM);
   }
   else
