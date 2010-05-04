@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the studio functionality
@@ -36,8 +36,9 @@
 
 #include "studio_internal.h"
 
+static
 bool
-jack_conf_container_create(
+ladish_studio_jack_conf_container_create(
   struct jack_conf_container ** container_ptr_ptr,
   const char * name)
 {
@@ -70,8 +71,9 @@ fail:
   return false;
 }
 
+static
 bool
-jack_conf_parameter_create(
+ladish_studio_jack_conf_parameter_create(
   struct jack_conf_parameter ** parameter_ptr_ptr,
   const char * name)
 {
@@ -101,8 +103,9 @@ fail:
   return false;
 }
 
+static
 void
-jack_conf_parameter_destroy(
+ladish_studio_jack_conf_parameter_destroy(
   struct jack_conf_parameter * parameter_ptr)
 {
 #if 0
@@ -140,8 +143,9 @@ jack_conf_parameter_destroy(
   free(parameter_ptr);
 }
 
+static
 void
-jack_conf_container_destroy(
+ladish_studio_jack_conf_container_destroy(
   struct jack_conf_container * container_ptr)
 {
   struct list_head * node_ptr;
@@ -154,7 +158,7 @@ jack_conf_container_destroy(
     {
       node_ptr = container_ptr->children.next;
       list_del(node_ptr);
-      jack_conf_container_destroy(list_entry(node_ptr, struct jack_conf_container, siblings));
+      ladish_studio_jack_conf_container_destroy(list_entry(node_ptr, struct jack_conf_container, siblings));
     }
   }
   else
@@ -163,7 +167,7 @@ jack_conf_container_destroy(
     {
       node_ptr = container_ptr->children.next;
       list_del(node_ptr);
-      jack_conf_parameter_destroy(list_entry(node_ptr, struct jack_conf_parameter, siblings));
+      ladish_studio_jack_conf_parameter_destroy(list_entry(node_ptr, struct jack_conf_parameter, siblings));
     }
   }
 
@@ -175,7 +179,7 @@ jack_conf_container_destroy(
 
 static
 bool
-conf_callback(
+ladish_studio_jack_conf_callback(
   void * context,
   bool leaf,
   const char * address,
@@ -240,7 +244,7 @@ conf_callback(
       parent_ptr->children_leafs = true;
     }
 
-    if (!jack_conf_parameter_create(&parameter_ptr, child))
+    if (!ladish_studio_jack_conf_parameter_create(&parameter_ptr, child))
     {
       log_error("jack_conf_parameter_create() failed");
       return false;
@@ -286,7 +290,7 @@ conf_callback(
     }
     else
     {
-      jack_conf_parameter_destroy(parameter_ptr);
+      ladish_studio_jack_conf_parameter_destroy(parameter_ptr);
     }
   }
   else
@@ -299,7 +303,7 @@ conf_callback(
       return false;
     }
 
-    if (!jack_conf_container_create(&container_ptr, child))
+    if (!ladish_studio_jack_conf_container_create(&container_ptr, child))
     {
       log_error("jack_conf_container_create() failed");
       return false;
@@ -318,7 +322,7 @@ conf_callback(
 
     context_ptr->parent_ptr = container_ptr;
 
-    if (!jack_proxy_read_conf_container(context_ptr->address, context, conf_callback))
+    if (!jack_proxy_read_conf_container(context_ptr->address, context, ladish_studio_jack_conf_callback))
     {
       log_error("cannot read container %s", path);
       return false;
@@ -334,7 +338,7 @@ conf_callback(
 
 #undef context_ptr
 
-void jack_conf_clear(void)
+void ladish_studio_jack_conf_clear(void)
 {
   struct list_head * node_ptr;
 
@@ -343,23 +347,23 @@ void jack_conf_clear(void)
   {
     node_ptr = g_studio.jack_conf.next;
     list_del(node_ptr);
-    jack_conf_container_destroy(list_entry(node_ptr, struct jack_conf_container, siblings));
+    ladish_studio_jack_conf_container_destroy(list_entry(node_ptr, struct jack_conf_container, siblings));
   }
 
   g_studio.jack_conf_valid = false;
 }
 
-bool studio_fetch_jack_settings(void)
+bool ladish_studio_fetch_jack_settings(void)
 {
   struct conf_callback_context context;
 
-  jack_conf_clear();
+  ladish_studio_jack_conf_clear();
 
   context.address[0] = 0;
   context.container_ptr = &g_studio.jack_conf;
   context.parent_ptr = NULL;
 
-  if (!jack_proxy_read_conf_container(context.address, &context, conf_callback))
+  if (!jack_proxy_read_conf_container(context.address, &context, ladish_studio_jack_conf_callback))
   {
     log_error("jack_proxy_read_conf_container() failed.");
     return false;

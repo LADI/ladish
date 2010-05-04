@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the "rename studio" command
@@ -48,7 +48,7 @@ static bool run(void * context)
   free(g_studio.name);
   g_studio.name = cmd_ptr->studio_name;
   cmd_ptr->studio_name = NULL;
-  emit_studio_renamed();
+  ladish_studio_emit_renamed();
   cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;
   return true;
 }

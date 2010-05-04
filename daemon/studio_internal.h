@@ -186,16 +186,16 @@ extern struct studio g_studio;
 
 extern const struct dbus_interface_descriptor g_interface_studio;
 
-void jack_conf_clear(void);
-bool studio_fetch_jack_settings(void);
-bool studio_compose_filename(const char * name, char ** filename_ptr_ptr, char ** backup_filename_ptr_ptr);
-bool studio_publish(void);
-bool studio_name_generate(char ** name_ptr);
-void emit_studio_started(void);
-void emit_studio_stopped(void);
-void emit_studio_renamed(void);
-void on_event_jack_started(void);
-void on_event_jack_stopped(void);
-void studio_remove_all_rooms(void);
+void ladish_studio_jack_conf_clear(void);
+bool ladish_studio_fetch_jack_settings(void);
+bool ladish_studio_compose_filename(const char * name, char ** filename_ptr_ptr, char ** backup_filename_ptr_ptr);
+bool ladish_studio_publish(void);
+bool ladish_studio_name_generate(char ** name_ptr);
+void ladish_studio_emit_started(void);
+void ladish_studio_emit_stopped(void);
+void ladish_studio_emit_renamed(void);
+void ladish_studio_on_event_jack_started(void);
+void ladish_studio_on_event_jack_stopped(void);
+void ladish_studio_remove_all_rooms(void);
 
 #endif /* #ifndef STUDIO_INTERNAL_H__B4CB73EC_8E89_401A_9E49_F0AEEF361D09__INCLUDED */

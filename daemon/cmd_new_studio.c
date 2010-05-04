@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the "new studio" command
@@ -45,13 +45,13 @@ static bool run(void * context)
     g_studio.name = cmd_ptr->studio_name;
     cmd_ptr->studio_name = NULL;
   }
-  else if (!studio_name_generate(&g_studio.name))
+  else if (!ladish_studio_name_generate(&g_studio.name))
   {
     log_error("studio_name_generate() failed.");
     return false;
   }
 
-  if (!studio_publish())
+  if (!ladish_studio_publish())
   {
     log_error("studio_publish() failed.");
     free(g_studio.name);

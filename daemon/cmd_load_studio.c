@@ -839,7 +839,7 @@ static bool run(void * command_context)
 
   ASSERT(cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING);
 
-  if (!studio_compose_filename(cmd_ptr->studio_name, &path, NULL))
+  if (!ladish_studio_compose_filename(cmd_ptr->studio_name, &path, NULL))
   {
     log_error("failed to compose path of studio \%s\" file", cmd_ptr->studio_name);
     return false;
@@ -939,7 +939,7 @@ static bool run(void * command_context)
   ladish_graph_dump(g_studio.jack_graph);
   ladish_graph_dump(g_studio.studio_graph);
 
-  if (!studio_publish())
+  if (!ladish_studio_publish())
   {
     log_error("studio_publish() failed.");
     return false;

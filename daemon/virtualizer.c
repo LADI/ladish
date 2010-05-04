@@ -108,7 +108,7 @@ char * get_app_name(struct virtualizer * virtualizer_ptr, uint64_t client_id, pi
   context.app_name = NULL;
   context.graph = NULL;
 
-  studio_iterate_virtual_graphs(&context, get_app_name_from_supervisor);
+  ladish_studio_iterate_virtual_graphs(&context, get_app_name_from_supervisor);
 
   if (context.app_name != NULL)
   {
@@ -174,7 +174,7 @@ static ladish_graph_handle find_link_port_vgraph_by_uuid(struct virtualizer * vi
   context.graph = NULL;
   context.port = NULL;
 
-  studio_iterate_virtual_graphs(&context, find_link_port_vgraph_callback_by_uuid);
+  ladish_studio_iterate_virtual_graphs(&context, find_link_port_vgraph_callback_by_uuid);
 
   if (port_ptr != NULL && context.graph != NULL)
   {
@@ -192,7 +192,7 @@ static ladish_graph_handle find_link_port_vgraph_by_jack_id(struct virtualizer *
   context.graph = NULL;
   context.port = NULL;
 
-  studio_iterate_virtual_graphs(&context, find_link_port_vgraph_callback_by_jack_id);
+  ladish_studio_iterate_virtual_graphs(&context, find_link_port_vgraph_callback_by_jack_id);
 
   if (port_ptr != NULL && context.graph != NULL)
   {

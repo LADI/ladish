@@ -48,7 +48,7 @@ static bool run(void * context)
   switch (cmd_ptr->command.state)
   {
   case LADISH_COMMAND_STATE_PENDING:
-    if (studio_is_started())
+    if (ladish_studio_is_started())
     {
       log_info("Ignoring start request because studio is already started.");
       /* nothing to do, studio is already running */
@@ -111,7 +111,7 @@ static bool run(void * context)
 
     ASSERT(jack_server_started);
 
-    on_event_jack_started();    /* fetch configuration and announce start */
+    ladish_studio_on_event_jack_started(); /* fetch configuration and announce start */
 
     cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;
     return true;

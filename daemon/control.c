@@ -312,7 +312,7 @@ static void ladish_is_studio_loaded(struct dbus_method_call * call_ptr)
   DBusMessageIter iter;
   dbus_bool_t is_loaded;
 
-  is_loaded = studio_is_loaded();
+  is_loaded = ladish_studio_is_loaded();
 
   call_ptr->reply = dbus_message_new_method_return(call_ptr->message);
   if (call_ptr->reply == NULL)
@@ -393,7 +393,7 @@ static void ladish_get_studio_list(struct dbus_method_call * call_ptr)
     goto fail_unref;
   }
 
-  if (!studios_iterate(call_ptr, &array_iter, get_studio_list_callback))
+  if (!ladish_studios_iterate(call_ptr, &array_iter, get_studio_list_callback))
   {
     dbus_message_iter_close_container(&iter, &array_iter);
     if (call_ptr->reply == NULL)
@@ -452,7 +452,7 @@ static void ladish_delete_studio(struct dbus_method_call * call_ptr)
     return;
   }
 
-  if (studio_delete(call_ptr, name))
+  if (ladish_studio_delete(call_ptr, name))
   {
     method_return_new_void(call_ptr);
   }

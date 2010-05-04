@@ -134,7 +134,7 @@ static bool run(void * context)
     return false;
   }
 
-  if (studio_is_started())
+  if (ladish_studio_is_started())
   {
     if (!ladish_app_supervisor_run(supervisor, app))
     {

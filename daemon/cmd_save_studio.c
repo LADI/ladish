@@ -707,14 +707,14 @@ static bool run(void * command_context)
 
   save_apps();
 
-  if (!studio_is_started())
+  if (!ladish_studio_is_started())
   {
     log_error("Cannot save not-started studio");
     ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Cannot save not-started studio", NULL);
     goto exit;
   }
 
-  if (!studio_compose_filename(cmd_ptr->studio_name, &filename, &bak_filename))
+  if (!ladish_studio_compose_filename(cmd_ptr->studio_name, &filename, &bak_filename))
   {
     log_error("failed to compose studio filename");
     goto exit;
@@ -937,7 +937,7 @@ static bool run(void * command_context)
     free(g_studio.name);
     g_studio.name = cmd_ptr->studio_name;
     cmd_ptr->studio_name = NULL;
-    emit_studio_renamed();
+    ladish_studio_emit_renamed();
   }
 
 close:

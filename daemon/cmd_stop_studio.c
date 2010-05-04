@@ -53,7 +53,7 @@ static bool run(void * context)
   switch (cmd_ptr->command.state)
   {
   case LADISH_COMMAND_STATE_PENDING:
-    if (!studio_is_started())
+    if (!ladish_studio_is_started())
     {
       log_info("Ignoring stop request because studio is already stopped.");
       /* nothing to do, studio is not running */
@@ -64,7 +64,7 @@ static bool run(void * context)
     ladish_graph_dump(g_studio.jack_graph);
     ladish_graph_dump(g_studio.studio_graph);
 
-    studio_stop_app_supervisors();
+    ladish_studio_stop_app_supervisors();
 
     cmd_ptr->command.state = LADISH_COMMAND_STATE_WAITING;
     cmd_ptr->stop_state = STOP_STATE_WAITING_FOR_JACK_CLIENTS_DISAPPEAR;
@@ -150,7 +150,7 @@ static bool run(void * context)
 
     ladish_graph_dump(g_studio.studio_graph);
 
-    on_event_jack_stopped();
+    ladish_studio_on_event_jack_stopped();
 
     cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;
     return true;

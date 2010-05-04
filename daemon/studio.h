@@ -30,26 +30,26 @@
 #include "app_supervisor.h"
 #include "graph.h"
 
-bool studio_init(void);
-void studio_uninit(void);
-void studio_run(void);
-bool studio_is_loaded(void);
-bool studio_is_started(void);
+bool ladish_studio_init(void);
+void ladish_studio_uninit(void);
+void ladish_studio_run(void);
+bool ladish_studio_is_loaded(void);
+bool ladish_studio_is_started(void);
 
-bool studios_iterate(void * call_ptr, void * context, bool (* callback)(void * call_ptr, void * context, const char * studio, uint32_t modtime));
-bool studio_delete(void * call_ptr, const char * studio_name);
+bool ladish_studios_iterate(void * call_ptr, void * context, bool (* callback)(void * call_ptr, void * context, const char * studio, uint32_t modtime));
+bool ladish_studio_delete(void * call_ptr, const char * studio_name);
 
-void studio_on_child_exit(pid_t pid);
+void ladish_studio_on_child_exit(pid_t pid);
 
 bool
-studio_iterate_virtual_graphs(
+ladish_studio_iterate_virtual_graphs(
   void * context,
   bool (* callback)(
     void * context,
     ladish_graph_handle graph,
     ladish_app_supervisor_handle app_supervisor));
 
-void studio_stop_app_supervisors(void);
+void ladish_studio_stop_app_supervisors(void);
 ladish_app_supervisor_handle ladish_studio_find_app_supervisor(const char * opath);
 struct ladish_cqueue * ladish_studio_get_cmd_queue(void);
 

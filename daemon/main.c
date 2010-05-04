@@ -269,7 +269,7 @@ int main(int argc, char ** argv, char ** envp)
     goto exit;
   }
 
-  loader_init(studio_on_child_exit);
+  loader_init(ladish_studio_on_child_exit);
 
   if (!room_templates_init())
   {
@@ -309,7 +309,7 @@ int main(int argc, char ** argv, char ** envp)
     goto uninit_a2j;
   }
 
-  if (!studio_init())
+  if (!ladish_studio_init())
   {
     goto uninit_jmcore;
   }
@@ -320,7 +320,7 @@ int main(int argc, char ** argv, char ** envp)
   {
     dbus_connection_read_write_dispatch(g_dbus_connection, 50);
     loader_run();
-    studio_run();
+    ladish_studio_run();
   }
 
   emit_clean_exit();
@@ -330,7 +330,7 @@ int main(int argc, char ** argv, char ** envp)
 
   log_debug("Finished, cleaning up");
 
-  studio_uninit();
+  ladish_studio_uninit();
 
 uninit_jmcore:
   jmcore_proxy_uninit();

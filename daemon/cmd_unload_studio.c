@@ -40,9 +40,9 @@ static bool run(void * context)
   ladish_graph_clear(g_studio.studio_graph);
   ladish_graph_clear(g_studio.jack_graph);
 
-  studio_remove_all_rooms();
+  ladish_studio_remove_all_rooms();
 
-  jack_conf_clear();
+  ladish_studio_jack_conf_clear();
 
   g_studio.modified = false;
   g_studio.persisted = false;
