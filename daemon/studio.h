@@ -34,6 +34,7 @@ bool studio_init(void);
 void studio_uninit(void);
 void studio_run(void);
 bool studio_is_loaded(void);
+bool studio_is_started(void);
 
 bool studios_iterate(void * call_ptr, void * context, bool (* callback)(void * call_ptr, void * context, const char * studio, uint32_t modtime));
 bool studio_delete(void * call_ptr, const char * studio_name);
@@ -49,5 +50,6 @@ studio_iterate_virtual_graphs(
     ladish_app_supervisor_handle app_supervisor));
 
 void studio_stop_app_supervisors(void);
+struct ladish_cqueue * ladish_studio_get_cmd_queue(void);
 
 #endif /* #ifndef STUDIO_H__0BEDE85E_4FB3_4D74_BC08_C373A22409C0__INCLUDED */

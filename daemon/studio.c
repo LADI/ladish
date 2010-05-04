@@ -634,6 +634,11 @@ bool studio_compose_filename(const char * name, char ** filename_ptr_ptr, char *
   return true;
 }
 
+struct ladish_cqueue * ladish_studio_get_cmd_queue(void)
+{
+  return &g_studio.cmd_queue;
+}
+
 bool studios_iterate(void * call_ptr, void * context, bool (* callback)(void * call_ptr, void * context, const char * studio, uint32_t modtime))
 {
   DIR * dir;

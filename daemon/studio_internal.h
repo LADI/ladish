@@ -33,6 +33,7 @@
 #include "virtualizer.h"
 #include "app_supervisor.h"
 #include "cmd.h"
+#include "studio.h"
 
 #define JACK_CONF_MAX_ADDRESS_SIZE 1024
 
@@ -190,7 +191,6 @@ bool studio_fetch_jack_settings(void);
 bool studio_compose_filename(const char * name, char ** filename_ptr_ptr, char ** backup_filename_ptr_ptr);
 bool studio_publish(void);
 bool studio_name_generate(char ** name_ptr);
-bool studio_is_started(void);
 void emit_studio_started(void);
 void emit_studio_stopped(void);
 void emit_studio_renamed(void);

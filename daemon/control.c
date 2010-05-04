@@ -30,7 +30,7 @@
 #include "../dbus/error.h"
 #include "control.h"
 #include "../dbus_constants.h"
-#include "studio_internal.h"
+#include "cmd.h"
 #include "room.h"
 #include "../lib/wkports.h"
 
@@ -433,7 +433,7 @@ static void ladish_load_studio(struct dbus_method_call * call_ptr)
 
   log_info("Load studio request (%s)", name);
 
-  if (ladish_command_load_studio(call_ptr, &g_studio.cmd_queue, name))
+  if (ladish_command_load_studio(call_ptr, ladish_studio_get_cmd_queue(), name))
   {
     method_return_new_void(call_ptr);
   }
@@ -473,7 +473,7 @@ static void ladish_new_studio(struct dbus_method_call * call_ptr)
 
   log_info("New studio request (%s)", name);
 
-  if (ladish_command_new_studio(call_ptr, &g_studio.cmd_queue, name))
+  if (ladish_command_new_studio(call_ptr, ladish_studio_get_cmd_queue(), name))
   {
     method_return_new_void(call_ptr);
   }
@@ -664,7 +664,7 @@ static void ladish_exit(struct dbus_method_call * call_ptr)
 {
   log_info("Exit command received through D-Bus");
 
-  if (!ladish_command_exit(NULL, &g_studio.cmd_queue))
+  if (!ladish_command_exit(NULL, ladish_studio_get_cmd_queue()))
   { /* if queuing of command failed, force exit anyway,
        JACK server will be left started,
        but refusing exit command is worse */
