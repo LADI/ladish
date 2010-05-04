@@ -80,4 +80,6 @@ ladish_command_new_app(
   const char * name,
   uint8_t level);
 
+bool ladish_command_start_app(void * call_ptr, struct ladish_cqueue * queue_ptr, const char * opath, uint64_t id);
+
 #endif /* #ifndef CMD_H__28542C9B_7CB8_40F8_BBB6_DCE13CBB1E7F__INCLUDED */

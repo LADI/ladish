@@ -84,9 +84,13 @@ ladish_app_supervisor_search_app(
 const char * ladish_app_supervisor_get_name(ladish_app_supervisor_handle supervisor_handle);
 unsigned int ladish_app_supervisor_get_running_app_count(ladish_app_supervisor_handle supervisor_handle);
 ladish_app_handle ladish_app_supervisor_find_app_by_name(ladish_app_supervisor_handle supervisor_handle, const char * name);
+ladish_app_handle ladish_app_supervisor_find_app_by_id(ladish_app_supervisor_handle supervisor_handle, uint64_t id);
 const char * ladish_app_supervisor_get_opath(ladish_app_supervisor_handle supervisor_handle);
 bool ladish_app_supervisor_run(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle);
 void ladish_app_supervisor_remove(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle);
+const char * ladish_app_get_commandline(ladish_app_handle app_handle);
+bool ladish_app_is_running(ladish_app_handle app_handle);
+const char * ladish_app_get_name(ladish_app_handle app_handle);
 
 extern const struct dbus_interface_descriptor g_iface_app_supervisor;
 

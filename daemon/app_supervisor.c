@@ -105,7 +105,7 @@ ladish_app_supervisor_create(
   return true;
 }
 
-struct ladish_app * ladish_app_supervisor_find_app_by_id(struct ladish_app_supervisor * supervisor_ptr, uint64_t id)
+struct ladish_app * ladish_app_supervisor_find_app_by_id_internal(struct ladish_app_supervisor * supervisor_ptr, uint64_t id)
 {
   struct list_head * node_ptr;
   struct ladish_app * app_ptr;
@@ -191,6 +191,11 @@ ladish_app_handle ladish_app_supervisor_find_app_by_name(ladish_app_supervisor_h
   }
 
   return NULL;
+}
+
+ladish_app_handle ladish_app_supervisor_find_app_by_id(ladish_app_supervisor_handle supervisor_handle, uint64_t id)
+{
+  return (ladish_app_handle)ladish_app_supervisor_find_app_by_id_internal(supervisor_ptr, id);
 }
 
 ladish_app_handle
@@ -347,6 +352,8 @@ ladish_app_supervisor_enum(
 
 bool ladish_app_supervisor_run(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle)
 {
+  app_ptr->zombie = false;
+
   if (!loader_execute(supervisor_ptr->name, app_ptr->name, "/", app_ptr->terminal, app_ptr->commandline, &app_ptr->pid))
   {
     return false;
@@ -359,6 +366,16 @@ bool ladish_app_supervisor_run(ladish_app_supervisor_handle supervisor_handle, l
 void ladish_app_supervisor_remove(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle)
 {
   remove_app_internal(supervisor_ptr, app_ptr);
+}
+
+bool ladish_app_is_running(ladish_app_handle app_handle)
+{
+  return app_ptr->pid != 0;
+}
+
+const char * ladish_app_get_name(ladish_app_handle app_handle)
+{
+  return app_ptr->name;
 }
 
 #undef app_ptr
@@ -386,8 +403,6 @@ void ladish_app_supervisor_autorun(ladish_app_supervisor_handle supervisor_handl
       log_error("Execution of '%s' failed",  app_ptr->commandline);
       return;
     }
-
-    emit_app_state_changed(supervisor_ptr, app_ptr);
   }
 }
 
@@ -591,7 +606,6 @@ static void run_custom(struct dbus_method_call * call_ptr)
 static void start_app(struct dbus_method_call * call_ptr)
 {
   uint64_t id;
-  struct ladish_app * app_ptr;
 
   if (!dbus_message_get_args(
         call_ptr->message,
@@ -604,30 +618,10 @@ static void start_app(struct dbus_method_call * call_ptr)
     return;
   }
 
-  app_ptr = ladish_app_supervisor_find_app_by_id(supervisor_ptr, id);
-  if (app_ptr == NULL)
+  if (ladish_command_start_app(call_ptr, ladish_studio_get_cmd_queue(), supervisor_ptr->opath, id))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "App with ID %"PRIu64" not found", id);
-    return;
+    method_return_new_void(call_ptr);
   }
-
-  if (app_ptr->pid != 0)
-  {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "App %s is already running", app_ptr->name);
-    return;
-  }
-
-  app_ptr->zombie = false;
-  if (!ladish_app_supervisor_run((ladish_app_supervisor_handle)supervisor_ptr, (ladish_app_handle)app_ptr))
-  {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Execution of '%s' failed",  app_ptr->commandline);
-    return;
-  }
-
-  emit_app_state_changed(supervisor_ptr, app_ptr);
-  log_info("%s pid is %lu", app_ptr->name, (unsigned long)app_ptr->pid);
-
-  method_return_new_void(call_ptr);
 }
 
 static void stop_app(struct dbus_method_call * call_ptr)
@@ -646,7 +640,7 @@ static void stop_app(struct dbus_method_call * call_ptr)
     return;
   }
 
-  app_ptr = ladish_app_supervisor_find_app_by_id(supervisor_ptr, id);
+  app_ptr = ladish_app_supervisor_find_app_by_id_internal(supervisor_ptr, id);
   if (app_ptr == NULL)
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "App with ID %"PRIu64" not found", id);
@@ -680,7 +674,7 @@ static void kill_app(struct dbus_method_call * call_ptr)
     return;
   }
 
-  app_ptr = ladish_app_supervisor_find_app_by_id(supervisor_ptr, id);
+  app_ptr = ladish_app_supervisor_find_app_by_id_internal(supervisor_ptr, id);
   if (app_ptr == NULL)
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "App with ID %"PRIu64" not found", id);
@@ -716,7 +710,7 @@ static void get_app_properties(struct dbus_method_call * call_ptr)
     return;
   }
 
-  app_ptr = ladish_app_supervisor_find_app_by_id(supervisor_ptr, id);
+  app_ptr = ladish_app_supervisor_find_app_by_id_internal(supervisor_ptr, id);
   if (app_ptr == NULL)
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "App with ID %"PRIu64" not found", id);
@@ -780,7 +774,7 @@ static void set_app_properties(struct dbus_method_call * call_ptr)
     return;
   }
 
-  app_ptr = ladish_app_supervisor_find_app_by_id(supervisor_ptr, id);
+  app_ptr = ladish_app_supervisor_find_app_by_id_internal(supervisor_ptr, id);
   if (app_ptr == NULL)
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "App with ID %"PRIu64" not found", id);
@@ -874,7 +868,7 @@ static void remove_app(struct dbus_method_call * call_ptr)
     return;
   }
 
-  app_ptr = ladish_app_supervisor_find_app_by_id(supervisor_ptr, id);
+  app_ptr = ladish_app_supervisor_find_app_by_id_internal(supervisor_ptr, id);
   if (app_ptr == NULL)
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "App with ID %"PRIu64" not found", id);
@@ -911,7 +905,7 @@ static void is_app_running(struct dbus_method_call * call_ptr)
     return;
   }
 
-  app_ptr = ladish_app_supervisor_find_app_by_id(supervisor_ptr, id);
+  app_ptr = ladish_app_supervisor_find_app_by_id_internal(supervisor_ptr, id);
   if (app_ptr == NULL)
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "App with ID %"PRIu64" not found", id);
