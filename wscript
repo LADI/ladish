@@ -232,7 +232,7 @@ def build(bld):
         'cmd_stop_studio.c',
         'cmd_unload_studio.c',
         'cmd_new_app.c',
-        'cmd_start_app.c',
+        'cmd_change_app_state.c',
         'cmd_exit.c',
         'cqueue.c',
         'app_supervisor.c',

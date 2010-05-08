@@ -625,7 +625,7 @@ static void start_app(struct dbus_method_call * call_ptr)
     return;
   }
 
-  if (ladish_command_start_app(call_ptr, ladish_studio_get_cmd_queue(), supervisor_ptr->opath, id))
+  if (ladish_command_change_app_state(call_ptr, ladish_studio_get_cmd_queue(), supervisor_ptr->opath, id, LADISH_APP_STATE_STARTED))
   {
     method_return_new_void(call_ptr);
   }

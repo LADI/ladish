@@ -35,6 +35,7 @@ struct ladish_command_start_app
   struct ladish_command command; /* must be the first member */
   char * opath;
   uint64_t id;
+  unsigned int target_state;
 };
 
 #define cmd_ptr ((struct ladish_command_start_app *)context)
@@ -47,6 +48,12 @@ static bool run(void * context)
   ASSERT(cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING);
 
   log_info("start_app command. opath='%s'", cmd_ptr->opath);
+
+  if (cmd_ptr->target_state != LADISH_APP_STATE_STARTED)
+  {
+    log_error("ATM only starting apps is implemented in the change app state command");
+    return false;
+  }
 
   if (!ladish_studio_is_started())
   {
@@ -96,7 +103,7 @@ static void destructor(void * context)
 
 #undef cmd_ptr
 
-bool ladish_command_start_app(void * call_ptr, struct ladish_cqueue * queue_ptr, const char * opath, uint64_t id)
+bool ladish_command_change_app_state(void * call_ptr, struct ladish_cqueue * queue_ptr, const char * opath, uint64_t id, unsigned int target_state)
 {
   struct ladish_command_start_app * cmd_ptr;
   char * opath_dup;
@@ -119,6 +126,7 @@ bool ladish_command_start_app(void * call_ptr, struct ladish_cqueue * queue_ptr,
   cmd_ptr->command.destructor = destructor;
   cmd_ptr->opath = opath_dup;
   cmd_ptr->id = id;
+  cmd_ptr->target_state = target_state;
 
   if (!ladish_cqueue_add_command(queue_ptr, &cmd_ptr->command))
   {
