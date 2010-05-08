@@ -43,9 +43,9 @@ struct ladish_app
   bool terminal;
   uint8_t level;
   pid_t pid;
-  bool zombie;
+  bool zombie;                  /* if true, remove when stopped */
   bool autorun;
-  bool expected_death;
+  unsigned int state;
 };
 
 struct ladish_app_supervisor
@@ -233,7 +233,7 @@ ladish_app_supervisor_add(
 
   app_ptr->id = supervisor_ptr->next_id++;
   app_ptr->zombie = false;
-  app_ptr->expected_death = false;
+  app_ptr->state = LADISH_APP_STATE_STOPPED;
   app_ptr->autorun = autorun;
   list_add_tail(&app_ptr->siblings, &supervisor_ptr->applist);
 
@@ -267,7 +267,7 @@ void ladish_app_supervisor_clear(ladish_app_supervisor_handle supervisor_handle)
     {
       log_info("terminating '%s'...", app_ptr->name);
       app_ptr->zombie = true;
-      app_ptr->expected_death = true;
+      app_ptr->state = LADISH_APP_STATE_STOPPING;
       kill(app_ptr->pid, SIGTERM);
     }
     else
@@ -305,14 +305,13 @@ bool ladish_app_supervisor_child_exit(ladish_app_supervisor_handle supervisor_ha
       }
       else
       {
-        if (!app_ptr->expected_death)
+        if (app_ptr->state == LADISH_APP_STATE_STARTED)
         {
           ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "App terminated unexpectedly", app_ptr->name);
         }
-        else
-        {
-          app_ptr->expected_death = false;
-        }
+
+        app_ptr->state = LADISH_APP_STATE_STOPPED;
+
         emit_app_state_changed(supervisor_ptr, app_ptr);
       }
 
@@ -351,10 +350,15 @@ bool ladish_app_supervisor_run(ladish_app_supervisor_handle supervisor_handle, l
 {
   app_ptr->zombie = false;
 
+  ASSERT(app_ptr->pid == 0);
+
   if (!loader_execute(supervisor_ptr->name, app_ptr->name, "/", app_ptr->terminal, app_ptr->commandline, &app_ptr->pid))
   {
     return false;
   }
+
+  ASSERT(app_ptr->pid != 0);
+  app_ptr->state = LADISH_APP_STATE_STARTED;
 
   emit_app_state_changed(supervisor_ptr, app_ptr);
   return true;
@@ -363,6 +367,11 @@ bool ladish_app_supervisor_run(ladish_app_supervisor_handle supervisor_handle, l
 void ladish_app_supervisor_remove(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle)
 {
   remove_app_internal(supervisor_ptr, app_ptr);
+}
+
+unsigned int ladish_app_get_state(ladish_app_handle app_handle)
+{
+  return app_ptr->state;
 }
 
 bool ladish_app_is_running(ladish_app_handle app_handle)
@@ -414,7 +423,7 @@ void ladish_app_supervisor_stop(ladish_app_supervisor_handle supervisor_handle)
     if (app_ptr->pid != 0)
     {
       app_ptr->autorun = true;
-      app_ptr->expected_death = true;
+      app_ptr->state = LADISH_APP_STATE_STOPPING;
       log_info("terminating '%s'...", app_ptr->name);
       kill(app_ptr->pid, SIGTERM);
     }
@@ -651,7 +660,7 @@ static void stop_app(struct dbus_method_call * call_ptr)
     return;
   }
 
-  app_ptr->expected_death = true;
+  app_ptr->state = LADISH_APP_STATE_STOPPING;
   kill(app_ptr->pid, SIGTERM);
 
   method_return_new_void(call_ptr);
@@ -686,7 +695,7 @@ static void kill_app(struct dbus_method_call * call_ptr)
     return;
   }
 
-  app_ptr->expected_death = true;
+  app_ptr->state = LADISH_APP_STATE_KILL;
   kill(app_ptr->pid, SIGKILL);
 
   method_return_new_void(call_ptr);
@@ -878,7 +887,7 @@ static void remove_app(struct dbus_method_call * call_ptr)
   if (app_ptr->pid != 0)
   {
     app_ptr->zombie = true;
-    app_ptr->expected_death = true;
+    app_ptr->state = LADISH_APP_STATE_STOPPING;
     kill(app_ptr->pid, SIGTERM);
   }
   else

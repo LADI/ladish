@@ -30,6 +30,11 @@
 
 #include "common.h"
 
+#define LADISH_APP_STATE_STOPPED    0 /**< @brief app is stopped (not running) */
+#define LADISH_APP_STATE_STARTED    1 /**< @brief app is running and not stopping */
+#define LADISH_APP_STATE_STOPPING   2 /**< @brief app is stopping */
+#define LADISH_APP_STATE_KILL       3 /**< @brief app is being force killed */
+
 /**
  * App supervisor object handle (pointer to opaque data)
  */
@@ -268,6 +273,19 @@ void ladish_app_supervisor_remove(ladish_app_supervisor_handle supervisor_handle
  * @retval app commandline; the buffer is owned by the app supervisor object
  */
 const char * ladish_app_get_commandline(ladish_app_handle app_handle);
+
+/**
+ * Get app state
+ *
+ * @param[in] app_handle app object handle
+ *
+ * @return app state
+ * @retval LADISH_APP_STATE_STOPPED app is stopped (not running)
+ * @retval LADISH_APP_STATE_STARTED app is running and not stopping or being killed
+ * @retval LADISH_APP_STATE_STOPPING app is stopping
+ * @retval LADISH_APP_STATE_KILL app is being force killed
+ */
+unsigned int ladish_app_get_state(ladish_app_handle app_handle);
 
 /**
  * Check whether app is currently running
