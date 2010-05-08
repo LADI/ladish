@@ -255,7 +255,23 @@ const char * ladish_app_supervisor_get_opath(ladish_app_supervisor_handle superv
  *
  * @return success status
  */
-bool ladish_app_supervisor_run(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle);
+bool ladish_app_supervisor_start_app(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle);
+
+/**
+ * Stop an app. The app must be in started state.
+ *
+ * @param[in] supervisor_handle supervisor object handle
+ * @param[in] app_handle Handle of app to stop
+ */
+void ladish_app_supervisor_stop_app(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle);
+
+/**
+ * Force kill an app. The app must be in started state.
+ *
+ * @param[in] supervisor_handle supervisor object handle
+ * @param[in] app_handle Handle of app to stop
+ */
+void ladish_app_supervisor_kill_app(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle);
 
 /**
  * Remove an app. The app must be in stopped state.
@@ -263,7 +279,7 @@ bool ladish_app_supervisor_run(ladish_app_supervisor_handle supervisor_handle, l
  * @param[in] supervisor_handle supervisor object handle
  * @param[in] app_handle Handle of app to start
  */
-void ladish_app_supervisor_remove(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle);
+void ladish_app_supervisor_remove_app(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle);
 
 /**
  * Get commandline for an app.

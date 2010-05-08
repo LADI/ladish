@@ -136,10 +136,10 @@ static bool run(void * context)
 
   if (ladish_studio_is_started())
   {
-    if (!ladish_app_supervisor_run(supervisor, app))
+    if (!ladish_app_supervisor_start_app(supervisor, app))
     {
       log_error("Execution of '%s' failed",  cmd_ptr->commandline);
-      ladish_app_supervisor_remove(supervisor, app);
+      ladish_app_supervisor_remove_app(supervisor, app);
       return false;
     }
   }

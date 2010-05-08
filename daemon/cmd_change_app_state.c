@@ -38,43 +38,14 @@ struct ladish_command_start_app
   unsigned int target_state;
 };
 
-#define cmd_ptr ((struct ladish_command_start_app *)context)
-
-static bool run(void * context)
+static bool run_target_start(struct ladish_command_start_app * cmd_ptr, ladish_app_supervisor_handle supervisor, ladish_app_handle app)
 {
-  ladish_app_supervisor_handle supervisor;
-  ladish_app_handle app;
-
   ASSERT(cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING);
-
-  log_info("start_app command. opath='%s'", cmd_ptr->opath);
-
-  if (cmd_ptr->target_state != LADISH_APP_STATE_STARTED)
-  {
-    log_error("ATM only starting apps is implemented in the change app state command");
-    return false;
-  }
 
   if (!ladish_studio_is_started())
   {
     log_error("cannot start app because studio is not started", cmd_ptr->opath);
     ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Cannot start app because studio is not started", NULL);
-    return false;
-  }
-
-  supervisor = ladish_studio_find_app_supervisor(cmd_ptr->opath);
-  if (supervisor == NULL)
-  {
-    log_error("cannot find supervisor '%s' to start app", cmd_ptr->opath);
-    ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Cannot start app because of internal error (unknown supervisor)", NULL);
-    return false;
-  }
-
-  app = ladish_app_supervisor_find_app_by_id(supervisor, cmd_ptr->id);
-  if (app == NULL)
-  {
-    log_error("App with ID %"PRIu64" not found", cmd_ptr->id);
-    ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Cannot start app because it is not found", NULL);
     return false;
   }
 
@@ -85,7 +56,7 @@ static bool run(void * context)
     return false;
   }
 
-  if (!ladish_app_supervisor_run(supervisor, app))
+  if (!ladish_app_supervisor_start_app(supervisor, app))
   {
     ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Cannot start app (execution failed)", NULL);
     return false;
@@ -93,6 +64,106 @@ static bool run(void * context)
 
   cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;
   return true;
+}
+
+static bool run_target_stop(struct ladish_command_start_app * cmd_ptr, ladish_app_supervisor_handle supervisor, ladish_app_handle app)
+{
+  if (!ladish_app_is_running(app))
+  {
+    if (cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING)
+    {
+      log_info("App %s is already stopped (stop)", ladish_app_get_name(app));
+    }
+    cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;
+    return true;
+  }
+
+  if (cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING)
+  {
+    ladish_app_supervisor_stop_app(supervisor, app);
+    cmd_ptr->command.state = LADISH_COMMAND_STATE_WAITING;
+    return true;
+  }
+
+  log_info("Waiting '%s' process termination (stop)...", ladish_app_get_name(app));
+
+  return true;
+}
+
+static bool run_target_kill(struct ladish_command_start_app * cmd_ptr, ladish_app_supervisor_handle supervisor, ladish_app_handle app)
+{
+  if (!ladish_app_is_running(app))
+  {
+    if (cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING)
+    {
+      log_info("App %s is already stopped (kill)", ladish_app_get_name(app));
+    }
+    cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;
+    return true;
+  }
+
+  if (cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING)
+  {
+    ladish_app_supervisor_kill_app(supervisor, app);
+    cmd_ptr->command.state = LADISH_COMMAND_STATE_WAITING;
+    return true;
+  }
+
+  log_info("Waiting '%s' process termination(kill)...", ladish_app_get_name(app));
+
+  return true;
+}
+
+#define cmd_ptr ((struct ladish_command_start_app *)context)
+
+static bool run(void * context)
+{
+  ladish_app_supervisor_handle supervisor;
+  ladish_app_handle app;
+  const char * target_state_description;
+  bool (* run_target)(struct ladish_command_start_app *, ladish_app_supervisor_handle, ladish_app_handle);
+
+  switch (cmd_ptr->target_state)
+  {
+  case LADISH_APP_STATE_STARTED:
+    target_state_description = "start";
+    run_target = run_target_start;
+    break;
+  case LADISH_APP_STATE_STOPPED:
+    target_state_description = "stopped";
+    run_target = run_target_stop;
+    break;
+  case LADISH_APP_STATE_KILL:
+    target_state_description = "kill";
+    run_target = run_target_kill;
+    break;
+  default:
+    ASSERT_NO_PASS;
+    return false;
+  }
+
+  if (cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING)
+  {
+    log_info("%s app command. opath='%s'", target_state_description, cmd_ptr->opath);
+  }
+
+  supervisor = ladish_studio_find_app_supervisor(cmd_ptr->opath);
+  if (supervisor == NULL)
+  {
+    log_error("cannot find supervisor '%s' to %s app", cmd_ptr->opath, target_state_description);
+    ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Cannot change app state because of internal error (unknown supervisor)", NULL);
+    return false;
+  }
+
+  app = ladish_app_supervisor_find_app_by_id(supervisor, cmd_ptr->id);
+  if (app == NULL)
+  {
+    log_error("App with ID %"PRIu64" not found (%s)", cmd_ptr->id, target_state_description);
+    ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Cannot change app state because it is not found", NULL);
+    return false;
+  }
+
+  return run_target(cmd_ptr, supervisor, app);
 }
 
 static void destructor(void * context)

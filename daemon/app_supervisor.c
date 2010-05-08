@@ -346,7 +346,7 @@ ladish_app_supervisor_enum(
 
 #define app_ptr ((struct ladish_app *)app_handle)
 
-bool ladish_app_supervisor_run(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle)
+bool ladish_app_supervisor_start_app(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle)
 {
   app_ptr->zombie = false;
 
@@ -364,7 +364,19 @@ bool ladish_app_supervisor_run(ladish_app_supervisor_handle supervisor_handle, l
   return true;
 }
 
-void ladish_app_supervisor_remove(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle)
+void ladish_app_supervisor_stop_app(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle)
+{
+  app_ptr->state = LADISH_APP_STATE_STOPPING;
+  kill(app_ptr->pid, SIGTERM);
+}
+
+void ladish_app_supervisor_kill_app(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle)
+{
+  app_ptr->state = LADISH_APP_STATE_KILL;
+  kill(app_ptr->pid, SIGKILL);
+}
+
+void ladish_app_supervisor_remove_app(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle)
 {
   remove_app_internal(supervisor_ptr, app_ptr);
 }
@@ -404,7 +416,7 @@ void ladish_app_supervisor_autorun(ladish_app_supervisor_handle supervisor_handl
 
     log_info("autorun('%s', %s, '%s') called", app_ptr->name, app_ptr->terminal ? "terminal" : "shell", app_ptr->commandline);
 
-    if (!ladish_app_supervisor_run((ladish_app_supervisor_handle)supervisor_ptr, (ladish_app_handle)app_ptr))
+    if (!ladish_app_supervisor_start_app((ladish_app_supervisor_handle)supervisor_ptr, (ladish_app_handle)app_ptr))
     {
       log_error("Execution of '%s' failed",  app_ptr->commandline);
       return;
@@ -634,7 +646,6 @@ static void start_app(struct dbus_method_call * call_ptr)
 static void stop_app(struct dbus_method_call * call_ptr)
 {
   uint64_t id;
-  struct ladish_app * app_ptr;
 
   if (!dbus_message_get_args(
         call_ptr->message,
@@ -647,29 +658,15 @@ static void stop_app(struct dbus_method_call * call_ptr)
     return;
   }
 
-  app_ptr = ladish_app_supervisor_find_app_by_id_internal(supervisor_ptr, id);
-  if (app_ptr == NULL)
+  if (ladish_command_change_app_state(call_ptr, ladish_studio_get_cmd_queue(), supervisor_ptr->opath, id, LADISH_APP_STATE_STOPPED))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "App with ID %"PRIu64" not found", id);
-    return;
+    method_return_new_void(call_ptr);
   }
-
-  if (app_ptr->pid == 0)
-  {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "App %s is not running", app_ptr->name);
-    return;
-  }
-
-  app_ptr->state = LADISH_APP_STATE_STOPPING;
-  kill(app_ptr->pid, SIGTERM);
-
-  method_return_new_void(call_ptr);
 }
 
 static void kill_app(struct dbus_method_call * call_ptr)
 {
   uint64_t id;
-  struct ladish_app * app_ptr;
 
   if (!dbus_message_get_args(
         call_ptr->message,
@@ -682,23 +679,10 @@ static void kill_app(struct dbus_method_call * call_ptr)
     return;
   }
 
-  app_ptr = ladish_app_supervisor_find_app_by_id_internal(supervisor_ptr, id);
-  if (app_ptr == NULL)
+  if (ladish_command_change_app_state(call_ptr, ladish_studio_get_cmd_queue(), supervisor_ptr->opath, id, LADISH_APP_STATE_KILL))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "App with ID %"PRIu64" not found", id);
-    return;
+    method_return_new_void(call_ptr);
   }
-
-  if (app_ptr->pid == 0)
-  {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "App %s is not running", app_ptr->name);
-    return;
-  }
-
-  app_ptr->state = LADISH_APP_STATE_KILL;
-  kill(app_ptr->pid, SIGKILL);
-
-  method_return_new_void(call_ptr);
 }
 
 static void get_app_properties(struct dbus_method_call * call_ptr)
@@ -984,8 +968,8 @@ METHODS_BEGIN
   METHOD_DESCRIBE(GetAll, get_all)                      /* sync */
   METHOD_DESCRIBE(RunCustom, run_custom)                /* async */
   METHOD_DESCRIBE(StartApp, start_app)                  /* async */
-  METHOD_DESCRIBE(StopApp, stop_app)                    /* sync */
-  METHOD_DESCRIBE(KillApp, kill_app)                    /* sync */
+  METHOD_DESCRIBE(StopApp, stop_app)                    /* async */
+  METHOD_DESCRIBE(KillApp, kill_app)                    /* async */
   METHOD_DESCRIBE(GetAppProperties, get_app_properties) /* sync */
   METHOD_DESCRIBE(SetAppProperties, set_app_properties) /* sync */
   METHOD_DESCRIBE(RemoveApp, remove_app)                /* sync */
