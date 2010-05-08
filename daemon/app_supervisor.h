@@ -269,7 +269,7 @@ void ladish_app_supervisor_stop_app(ladish_app_supervisor_handle supervisor_hand
  * Force kill an app. The app must be in started state.
  *
  * @param[in] supervisor_handle supervisor object handle
- * @param[in] app_handle Handle of app to stop
+ * @param[in] app_handle Handle of app to kill
  */
 void ladish_app_supervisor_kill_app(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle);
 
@@ -277,7 +277,7 @@ void ladish_app_supervisor_kill_app(ladish_app_supervisor_handle supervisor_hand
  * Remove an app. The app must be in stopped state.
  *
  * @param[in] supervisor_handle supervisor object handle
- * @param[in] app_handle Handle of app to start
+ * @param[in] app_handle Handle of app to remove
  */
 void ladish_app_supervisor_remove_app(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle);
 
