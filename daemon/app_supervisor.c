@@ -169,7 +169,7 @@ const char * ladish_app_supervisor_get_opath(ladish_app_supervisor_handle superv
   return supervisor_ptr->opath;
 }
 
-ladish_app_handle ladish_app_supervisor_find_app_by_name(ladish_app_supervisor_handle supervisor_handle, const char * name)
+bool ladish_app_supervisor_check_app_name(ladish_app_supervisor_handle supervisor_handle, const char * name)
 {
   struct list_head * node_ptr;
   struct ladish_app * app_ptr;
@@ -179,11 +179,11 @@ ladish_app_handle ladish_app_supervisor_find_app_by_name(ladish_app_supervisor_h
     app_ptr = list_entry(node_ptr, struct ladish_app, siblings);
     if (strcmp(app_ptr->name, name) == 0)
     {
-      return (ladish_app_handle)app_ptr;
+      return true;
     }
   }
 
-  return NULL;
+  return false;
 }
 
 ladish_app_handle ladish_app_supervisor_find_app_by_id(ladish_app_supervisor_handle supervisor_handle, uint64_t id)

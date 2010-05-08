@@ -213,16 +213,15 @@ const char * ladish_app_supervisor_get_name(ladish_app_supervisor_handle supervi
 unsigned int ladish_app_supervisor_get_running_app_count(ladish_app_supervisor_handle supervisor_handle);
 
 /**
- * Find app by name
- *
- * TODO: ladish_app_supervisor_check_app_name() should be created and exported instead
+ * Check whether app with name supplied name exists
  *
  * @param[in] supervisor_handle supervisor object handle
  * @param[in] name name of the app to search for
  *
- * @return app handle on success; NULL if app is not found; the app handle is owned by the app supervisor object
+ * @retval true app with supplied name exists
+ * @retval false app with supplied name does not exist
  */
-ladish_app_handle ladish_app_supervisor_find_app_by_name(ladish_app_supervisor_handle supervisor_handle, const char * name);
+bool ladish_app_supervisor_check_app_name(ladish_app_supervisor_handle supervisor_handle, const char * name);
 
 /**
  * Find app by id (as exposed through the D-Bus interface)

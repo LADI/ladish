@@ -118,7 +118,7 @@ static bool run(void * context)
 
   /* make the app name unique */
   index = 2;
-  while (ladish_app_supervisor_find_app_by_name(supervisor, name) != NULL)
+  while (ladish_app_supervisor_check_app_name(supervisor, name))
   {
     sprintf(end, "-%u", index);
     index++;
