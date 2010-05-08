@@ -43,6 +43,7 @@ def set_options(opt):
     opt.add_option('--enable-liblash', action='store_true', default=False, help='Build LASH compatibility library')
     if RELEASE:
         opt.add_option('--debug', action='store_true', default=False, dest='debug', help="Build debuggable binaries")
+    opt.add_option('--doxygen', action='store_true', default=False, help='Enable build of doxygen documentation')
 
 def add_cflag(conf, flag):
     conf.env.append_unique('CXXFLAGS', flag)
@@ -82,6 +83,7 @@ def configure(conf):
         conf.env['DBUS_SERVICES_DIR'] = os.path.join(os.path.normpath(conf.env['PREFIX']), 'share', 'dbus-1', 'services')
 
     conf.env['BUILD_LIBLASH'] = Options.options.enable_liblash
+    conf.env['BUILD_DOXYGEN_DOCS'] = Options.options.doxygen
 
     conf.check_cfg(
         package = 'uuid',
@@ -175,6 +177,7 @@ def configure(conf):
     display_msg(conf, 'Build liblash', yesno(Options.options.enable_liblash))
     display_msg(conf, 'Treat warnings as errors', yesno(conf.env['BUILD_WERROR']))
     display_msg(conf, 'Debuggable binaries', yesno(conf.env['BUILD_DEBUG']))
+    display_msg(conf, 'Build doxygen documentation', yesno(conf.env['BUILD_DOXYGEN_DOCS']))
 
     if conf.env['DBUS_SERVICES_DIR'] != conf.env['DBUS_SERVICES_DIR_REAL']:
         display_msg(conf)
@@ -414,6 +417,19 @@ def build(bld):
     bld.install_files(bld.env['DATA_DIR'], status_images)
     bld.install_files(bld.env['DATA_DIR'], "art/ladish-logo-128x128.png")
     bld.install_files(bld.env['DATA_DIR'], ["COPYING", "AUTHORS", "README", "NEWS"])
+
+    if bld.env['BUILD_DOXYGEN_DOCS'] == True:
+        html_docs_source_dir = "build/default/html"
+        if Options.commands['clean']:
+            if os.access(html_docs_source_dir, os.R_OK):
+                Utils.pprint('CYAN', "Removing doxygen generated documentation...")
+                shutil.rmtree(html_docs_source_dir)
+                Utils.pprint('CYAN', "Removing doxygen generated documentation done.")
+        elif Options.commands['build']:
+            if not os.access(html_docs_source_dir, os.R_OK):
+                os.popen("doxygen").read()
+            else:
+                Utils.pprint('CYAN', "doxygen documentation already built.")
 
 def dist_hook():
     shutil.copy('../build/default/version.h', "./")
