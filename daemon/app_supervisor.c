@@ -471,6 +471,11 @@ unsigned int ladish_app_supervisor_get_running_app_count(ladish_app_supervisor_h
 }
 
 #undef supervisor_ptr
+
+/**********************************************************************************/
+/*                                D-Bus methods                                   */
+/**********************************************************************************/
+
 #define supervisor_ptr ((struct ladish_app_supervisor *)call_ptr->iface_context)
 
 static void get_all(struct dbus_method_call * call_ptr)
@@ -967,15 +972,15 @@ METHOD_ARGS_END
 
 
 METHODS_BEGIN
-  METHOD_DESCRIBE(GetAll, get_all)
-  METHOD_DESCRIBE(RunCustom, run_custom)
-  METHOD_DESCRIBE(StartApp, start_app)
-  METHOD_DESCRIBE(StopApp, stop_app)
-  METHOD_DESCRIBE(KillApp, kill_app)
-  METHOD_DESCRIBE(GetAppProperties, get_app_properties)
-  METHOD_DESCRIBE(SetAppProperties, set_app_properties)
-  METHOD_DESCRIBE(RemoveApp, remove_app)
-  METHOD_DESCRIBE(IsAppRunning, is_app_running)
+  METHOD_DESCRIBE(GetAll, get_all)                      /* sync */
+  METHOD_DESCRIBE(RunCustom, run_custom)                /* async */
+  METHOD_DESCRIBE(StartApp, start_app)                  /* async */
+  METHOD_DESCRIBE(StopApp, stop_app)                    /* sync */
+  METHOD_DESCRIBE(KillApp, kill_app)                    /* sync */
+  METHOD_DESCRIBE(GetAppProperties, get_app_properties) /* sync */
+  METHOD_DESCRIBE(SetAppProperties, set_app_properties) /* sync */
+  METHOD_DESCRIBE(RemoveApp, remove_app)                /* sync */
+  METHOD_DESCRIBE(IsAppRunning, is_app_running)         /* sync */
 METHODS_END
 
 SIGNAL_ARGS_BEGIN(AppAdded, "")
