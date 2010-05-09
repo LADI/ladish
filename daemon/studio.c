@@ -832,6 +832,10 @@ void ladish_studio_emit_renamed(void)
   dbus_signal_emit(g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioRenamed", "s", &g_studio.name);
 }
 
+/**********************************************************************************/
+/*                                D-Bus methods                                   */
+/**********************************************************************************/
+
 static void ladish_studio_dbus_get_name(struct dbus_method_call * call_ptr)
 {
   method_return_new_single(call_ptr, DBUS_TYPE_STRING, &g_studio.name);
@@ -1265,17 +1269,17 @@ METHOD_ARGS_BEGIN(DeleteRoom, "Delete studio room")
 METHOD_ARGS_END
 
 METHODS_BEGIN
-  METHOD_DESCRIBE(GetName, ladish_studio_dbus_get_name)
-  METHOD_DESCRIBE(Rename, ladish_studio_dbus_rename)
-  METHOD_DESCRIBE(Save, ladish_studio_dbus_save)
-  METHOD_DESCRIBE(SaveAs, ladish_studio_dbus_save_as)
-  METHOD_DESCRIBE(Unload, ladish_studio_dbus_unload)
-  METHOD_DESCRIBE(Start, ladish_studio_dbus_start)
-  METHOD_DESCRIBE(Stop, ladish_studio_dbus_stop)
-  METHOD_DESCRIBE(IsStarted, ladish_studio_dbus_is_started)
-  METHOD_DESCRIBE(CreateRoom, ladish_studio_dbus_create_room)
-  METHOD_DESCRIBE(GetRoomList, ladish_studio_dbus_get_room_list)
-  METHOD_DESCRIBE(DeleteRoom, ladish_studio_dbus_delete_room)
+  METHOD_DESCRIBE(GetName, ladish_studio_dbus_get_name)          /* sync */
+  METHOD_DESCRIBE(Rename, ladish_studio_dbus_rename)             /* sync */
+  METHOD_DESCRIBE(Save, ladish_studio_dbus_save)                 /* async */
+  METHOD_DESCRIBE(SaveAs, ladish_studio_dbus_save_as)            /* async */
+  METHOD_DESCRIBE(Unload, ladish_studio_dbus_unload)             /* async */
+  METHOD_DESCRIBE(Start, ladish_studio_dbus_start)               /* async */
+  METHOD_DESCRIBE(Stop, ladish_studio_dbus_stop)                 /* async */
+  METHOD_DESCRIBE(IsStarted, ladish_studio_dbus_is_started)      /* sync */
+  METHOD_DESCRIBE(CreateRoom, ladish_studio_dbus_create_room)    /* sync */
+  METHOD_DESCRIBE(GetRoomList, ladish_studio_dbus_get_room_list) /* sync */
+  METHOD_DESCRIBE(DeleteRoom, ladish_studio_dbus_delete_room)    /* sync */
 METHODS_END
 
 SIGNAL_ARGS_BEGIN(StudioRenamed, "Studio name changed")
