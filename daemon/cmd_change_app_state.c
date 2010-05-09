@@ -182,7 +182,7 @@ bool ladish_command_change_app_state(void * call_ptr, struct ladish_cqueue * que
   opath_dup = strdup(opath);
   if (opath_dup == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup('%s') failed.", opath_dup);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup('%s') failed.", opath);
     goto fail;
   }
 

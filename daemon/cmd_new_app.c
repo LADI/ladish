@@ -176,21 +176,21 @@ ladish_command_new_app(
   opath_dup = strdup(opath);
   if (opath_dup == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup('%s') failed.", opath_dup);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup('%s') failed.", opath);
     goto fail;
   }
 
   commandline_dup = strdup(commandline);
   if (commandline_dup == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup('%s') failed.", commandline_dup);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup('%s') failed.", commandline);
     goto fail_free_opath;
   }
 
   name_dup = strdup(name);
   if (name_dup == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup('%s') failed.", name_dup);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup('%s') failed.", name);
     goto fail_free_commandline;
   }
 
