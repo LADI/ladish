@@ -77,6 +77,7 @@ struct ladish_graph
   uint64_t next_client_id;
   uint64_t next_port_id;
   uint64_t next_connection_id;
+  bool persist;
 
   void * context;
   ladish_graph_connect_request_handler connect_handler;
@@ -639,6 +640,8 @@ bool ladish_graph_create(ladish_graph_handle * graph_handle_ptr, const char * op
   graph_ptr->context = NULL;
   graph_ptr->connect_handler = NULL;
   graph_ptr->disconnect_handler = NULL;
+
+  graph_ptr->persist = true;
 
   *graph_handle_ptr = (ladish_graph_handle)graph_ptr;
   return true;
@@ -2157,6 +2160,21 @@ void ladish_graph_dump(ladish_graph_handle graph_handle)
       connection_ptr->changing ? " [changing]" : "");
     dump_dict("      ", connection_ptr->dict);
   }
+}
+
+void ladish_graph_clear_persist(ladish_graph_handle graph_handle)
+{
+  graph_ptr->persist = false;
+}
+
+bool ladish_graph_is_persist(ladish_graph_handle graph_handle)
+{
+  return graph_ptr->persist;
+}
+
+bool ladish_graph_is_empty(ladish_graph_handle graph_handle)
+{
+  return list_empty(&graph_ptr->clients) && list_empty(&graph_ptr->ports) && list_empty(&graph_ptr->connections);
 }
 
 #undef graph_ptr

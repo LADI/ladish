@@ -194,6 +194,10 @@ ladish_graph_iterate_connections(
   void * callback_context,
   bool (* callback)(void * context, ladish_port_handle port1_handle, ladish_port_handle port2_handle, ladish_dict_handle dict));
 
+void ladish_graph_clear_persist(ladish_graph_handle graph_handle);
+bool ladish_graph_is_persist(ladish_graph_handle graph_handle);
+bool ladish_graph_is_empty(ladish_graph_handle graph_handle);
+
 extern const struct dbus_interface_descriptor g_interface_patchbay;
 
 #endif /* #ifndef PATCHBAY_H__30334B9A_8847_4E8C_AFF9_73DB13406C8E__INCLUDED */

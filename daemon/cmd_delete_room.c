@@ -27,12 +27,44 @@
 #include "cmd.h"
 #include "studio_internal.h"
 #include "../dbus/error.h"
+#include "../proxies/jmcore_proxy.h"
 
 struct ladish_command_delete_room
 {
   struct ladish_command command; /* must be the first member */
   char * name;
 };
+
+static
+bool
+uninit_room_ports(
+  void * context,
+  void * client_iteration_context_ptr,
+  ladish_client_handle client_handle,
+  const char * client_name,
+  ladish_port_handle port_handle,
+  const char * port_name,
+  uint32_t port_type,
+  uint32_t port_flags)
+{
+  uuid_t uuid_in_room;
+  char uuid_in_room_str[37];
+
+  if (ladish_port_is_link(port_handle))
+  {
+    log_info("link port %s", port_name);
+
+    ladish_graph_get_port_uuid(ladish_room_get_graph(context), port_handle, uuid_in_room);
+    uuid_unparse(uuid_in_room, uuid_in_room_str);
+    jmcore_proxy_destroy_link(uuid_in_room_str);
+  }
+  else
+  {
+    log_info("jack port %s", port_name);
+  }
+
+  return true;
+}
 
 #define cmd_ptr ((struct ladish_command_delete_room *)context)
 
@@ -43,44 +75,78 @@ static bool run(void * context)
   uuid_t room_uuid;
   ladish_client_handle room_client;
   unsigned int running_app_count;
+  ladish_app_supervisor_handle supervisor;
+  ladish_graph_handle graph;
 
-  ASSERT(cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING);
-
-  log_info("Delete studio room request (%s)", cmd_ptr->name);
+  if (cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING)
+  {
+    log_info("Delete studio room request (%s)", cmd_ptr->name);
+  }
 
   list_for_each(node_ptr, &g_studio.rooms)
   {
     room = ladish_room_from_list_node(node_ptr);
     if (strcmp(ladish_room_get_name(room), cmd_ptr->name) == 0)
     {
-      running_app_count = ladish_app_supervisor_get_running_app_count(ladish_room_get_app_supervisor(room));
-      if (running_app_count != 0)
-      {
-        /* TODO: instead of rejecting the room deletion, use the command queue and wait for room apps to stop.
-           This requires proper "project in room" implementation because project needs to be
-           unloaded anyway and unloading project should initiate and wait apps termination */
-        log_error("Cannot delete room \"%s\" because it has %u app(s) running", cmd_ptr->name, running_app_count);
-        return false;
-      }
-
-      list_del(node_ptr);
-      ladish_studio_emit_room_disappeared(room);
-
-      ladish_room_get_uuid(room, room_uuid);
-      room_client = ladish_graph_find_client_by_uuid(g_studio.studio_graph, room_uuid);
-      ASSERT(room_client != NULL);
-      ladish_graph_remove_client(g_studio.studio_graph, room_client);
-      ladish_client_destroy(room_client);
-
-      ladish_room_destroy(room);
-
-      cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;
-      return true;
+      goto found;
     }
   }
 
   log_error("Cannot delete room with name \"%s\" because it is unknown", cmd_ptr->name);
   return false;
+
+found:
+  supervisor = ladish_room_get_app_supervisor(room);
+  graph = ladish_room_get_graph(room);
+  ladish_room_get_uuid(room, room_uuid);
+  room_client = ladish_graph_find_client_by_uuid(g_studio.studio_graph, room_uuid);
+  ASSERT(room_client != NULL);
+
+  if (cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING)
+  {
+    ladish_graph_clear_persist(graph);
+    ladish_graph_iterate_nodes(ladish_room_get_graph(room), false, room, NULL, uninit_room_ports, NULL);
+    ladish_app_supervisor_stop(supervisor);
+
+    cmd_ptr->command.state = LADISH_COMMAND_STATE_WAITING;
+    return true;
+  }
+
+  ASSERT(cmd_ptr->command.state == LADISH_COMMAND_STATE_WAITING);
+
+  running_app_count = ladish_app_supervisor_get_running_app_count(supervisor);
+  if (running_app_count != 0)
+  {
+    log_info("there are %u running app(s) in room \"%s\"", running_app_count, cmd_ptr->name);
+    return true;
+  }
+
+  if (!ladish_graph_is_empty(graph))
+  {
+    log_info("the room \"%s\" graph is still not empty", cmd_ptr->name);
+    return true;
+  }
+
+  if (!ladish_graph_is_client_looks_empty(g_studio.studio_graph, room_client))
+  {
+    log_info("the room \"%s\" studio client still does not look empty", cmd_ptr->name);
+    return true;
+  }
+
+  /* ladish_graph_dump(graph); */
+  /* ladish_graph_dump(g_studio.studio_graph); */
+  /* ladish_graph_dump(g_studio.jack_graph); */
+
+  list_del(node_ptr);
+  ladish_studio_emit_room_disappeared(room);
+
+  ladish_graph_remove_client(g_studio.studio_graph, room_client);
+  ladish_client_destroy(room_client);
+
+  ladish_room_destroy(room);
+
+  cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;
+  return true;
 }
 
 static void destructor(void * context)

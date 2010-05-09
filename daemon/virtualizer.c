@@ -375,6 +375,7 @@ static void client_disappeared(void * context, uint64_t id)
 {
   ladish_client_handle client;
   pid_t pid;
+  ladish_graph_handle vgraph;
 
   log_info("client_disappeared(%"PRIu64")", id);
 
@@ -387,12 +388,7 @@ static void client_disappeared(void * context, uint64_t id)
 
   log_info("client disappeared: '%s'", ladish_graph_get_client_name(virtualizer_ptr->jack_graph, client));
 
-  if (ladish_client_get_vgraph(client) == NULL)
-  { /* remove jmcore clients, the are not persisted in the jack graph */
-    ladish_graph_remove_client(virtualizer_ptr->jack_graph, client);
-    ladish_client_destroy(client);
-    return;
-  }
+  vgraph = ladish_client_get_vgraph(client);
 
   pid = ladish_client_get_pid(client);
   if (pid != 0 && pid != jmcore_proxy_get_pid_cached())
@@ -405,7 +401,7 @@ static void client_disappeared(void * context, uint64_t id)
     virtualizer_ptr->system_client_id = 0;
   }
 
-  if (true)                     /* if client is supposed to be persisted */
+  if (vgraph != NULL && ladish_graph_is_persist(vgraph)) /* if client is supposed to be persisted */
   {
     ladish_client_set_jack_id(client, 0);
     ladish_graph_hide_client(virtualizer_ptr->jack_graph, client);
@@ -743,15 +739,15 @@ static void port_disappeared(void * context, uint64_t client_id, uint64_t port_i
     if (vgraph == NULL)
     {
       log_error("Cannot find vgraph for disappeared jmcore port");
+      ASSERT_NO_PASS;
+      return;
     }
-    else
-    {
-      jmcore = true;
-      ladish_graph_remove_port_by_jack_id(virtualizer_ptr->jack_graph, port_id, true, true);
-    }
+
+    jmcore = true;
+    ladish_graph_remove_port_by_jack_id(virtualizer_ptr->jack_graph, port_id, true, true);
   }
 
-  if (true)                     /* if client is supposed to be persisted */
+  if (ladish_graph_is_persist(vgraph)) /* if port is supposed to be persisted */
   {
     if (!jmcore)
     {
