@@ -5,7 +5,7 @@
  * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains implementation of the "start app" command
+ * This file contains implementation of the "change app state" command
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
