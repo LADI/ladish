@@ -81,5 +81,7 @@ ladish_command_new_app(
   uint8_t level);
 
 bool ladish_command_change_app_state(void * call_ptr, struct ladish_cqueue * queue_ptr, const char * opath, uint64_t id, unsigned int target_state);
+bool ladish_command_create_room(void * call_ptr, struct ladish_cqueue * queue_ptr, const char * room_name, const char * template_name);
+bool ladish_command_delete_room(void * call_ptr, struct ladish_cqueue * queue_ptr, const char * room_name);
 
 #endif /* #ifndef CMD_H__28542C9B_7CB8_40F8_BBB6_DCE13CBB1E7F__INCLUDED */

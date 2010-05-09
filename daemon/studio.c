@@ -40,7 +40,6 @@
 #include "graph_dict.h"
 #include "escape.h"
 #include "studio.h"
-#include "../proxies/jmcore_proxy.h"
 #include "../proxies/notify_proxy.h"
 
 #define STUDIOS_DIR "/studios/"
@@ -184,7 +183,7 @@ static bool ladish_studio_fill_room_info(DBusMessageIter * iter_ptr, ladish_room
   return true;
 }
 
-static void ladish_studio_emit_room_appeared(ladish_room_handle room)
+void ladish_studio_emit_room_appeared(ladish_room_handle room)
 {
   DBusMessage * message_ptr;
   DBusMessageIter iter;
@@ -206,7 +205,7 @@ static void ladish_studio_emit_room_appeared(ladish_room_handle room)
   dbus_message_unref(message_ptr);
 }
 
-static void ladish_studio_emit_room_disappeared(ladish_room_handle room)
+void ladish_studio_emit_room_disappeared(ladish_room_handle room)
 {
   DBusMessage * message_ptr;
   DBusMessageIter iter;
@@ -941,97 +940,10 @@ static void ladish_studio_dbus_is_started(struct dbus_method_call * call_ptr)
   method_return_new_single(call_ptr, DBUS_TYPE_BOOLEAN, &started);
 }
 
-struct add_room_ports_context
-{
-  ladish_client_handle room_client;
-  ladish_graph_handle room_graph;
-};
-
-#define add_room_ports_context_ptr ((struct add_room_ports_context *)context)
-
-static
-bool
-ladish_studio_add_room_ports(
-  void * context,
-  ladish_port_handle port_handle,
-  const char * port_name,
-  uint32_t port_type,
-  uint32_t port_flags)
-{
-  uuid_t uuid_in_studio;
-  uuid_t uuid_in_room;
-  char uuid_in_studio_str[37];
-  char uuid_in_room_str[37];
-  bool room_input;
-  const char * input_port;
-  const char * output_port;
-
-  //log_info("Studio room port \"%s\"", port_name);
-
-  if (JACKDBUS_PORT_IS_INPUT(port_flags))
-  {
-    JACKDBUS_PORT_CLEAR_INPUT(port_flags);
-    JACKDBUS_PORT_SET_OUTPUT(port_flags);
-    room_input = true;
-  }
-  else if (JACKDBUS_PORT_IS_OUTPUT(port_flags))
-  {
-    JACKDBUS_PORT_CLEAR_OUTPUT(port_flags);
-    JACKDBUS_PORT_SET_INPUT(port_flags);
-    room_input = false;
-  }
-  else
-  {
-    log_error("room link port with bad flags %"PRIu32, port_flags);
-    return false;
-  }
-
-  if (!ladish_graph_add_port(g_studio.studio_graph, add_room_ports_context_ptr->room_client, port_handle, port_name, port_type, port_flags, true))
-  {
-    log_error("ladish_graph_add_port() failed to add link port to studio graph");
-    return false;
-  }
-
-  ladish_graph_get_port_uuid(add_room_ports_context_ptr->room_graph, port_handle, uuid_in_room);
-  ladish_graph_get_port_uuid(g_studio.studio_graph, port_handle, uuid_in_studio);
-
-  uuid_unparse(uuid_in_room, uuid_in_room_str);
-  uuid_unparse(uuid_in_studio, uuid_in_studio_str);
-
-  if (room_input)
-  {
-    input_port = uuid_in_room_str;
-    output_port = uuid_in_studio_str;
-    log_info("room input port %s is linked to studio output port %s", input_port, output_port);
-  }
-  else
-  {
-    input_port = uuid_in_studio_str;
-    output_port = uuid_in_room_str;
-    log_info("studio input port %s is linked to room output port %s", input_port, output_port);
-  }
-
-  if (!jmcore_proxy_create_link(port_type == JACKDBUS_PORT_TYPE_MIDI, input_port, output_port))
-  {
-    log_error("jmcore_proxy_create_link() failed.");
-    return false;
-  }
-
-  return true;
-}
-
-#undef add_room_ports_context_ptr
-
 static void ladish_studio_dbus_create_room(struct dbus_method_call * call_ptr)
 {
   const char * room_name;
   const char * template_name;
-  ladish_room_handle room;
-  char room_dbus_name[1024];
-  ladish_client_handle room_client;
-  uuid_t room_uuid;
-  ladish_graph_handle room_graph;
-  struct add_room_ports_context context;
 
   dbus_error_init(&g_dbus_error);
 
@@ -1039,74 +951,13 @@ static void ladish_studio_dbus_create_room(struct dbus_method_call * call_ptr)
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
     dbus_error_free(&g_dbus_error);
-    goto fail;
+    return;
   }
 
-  log_info("Request to create new studio room \"%s\" from template \"%s\".", room_name, template_name);
-
-  room = find_room_template_by_name(template_name);
-  if (room == NULL)
+  if (ladish_command_create_room(call_ptr, ladish_studio_get_cmd_queue(), room_name, template_name))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Unknown room template \"%s\"",  template_name);
-    goto fail;
+    method_return_new_void(call_ptr);
   }
-
-  g_studio.room_count++;
-
-  sprintf(room_dbus_name, DBUS_BASE_PATH "/Room%u", g_studio.room_count);
-
-  if (!ladish_room_create(NULL, room_name, room, room_dbus_name, &room))
-  {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_room_create() failed.");
-    goto fail_decrement_room_count;
-  }
-
-  room_graph = ladish_room_get_graph(room);
-  if (g_studio.virtualizer != NULL)
-  {
-    ladish_virtualizer_set_graph_connection_handlers(g_studio.virtualizer, room_graph);
-  }
-
-  ladish_room_get_uuid(room, room_uuid);
-
-  if (!ladish_client_create(room_uuid, &room_client))
-  {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_client_create() failed.");
-    goto fail_destroy_room;
-  }
-
-  if (!ladish_graph_add_client(g_studio.studio_graph, room_client, room_name, false))
-  {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_graph_add_client() failed to add room client to studio graph.");
-    goto fail_destroy_room_client;
-  }
-
-  context.room_client = room_client;
-  context.room_graph = room_graph;
-
-  if (!ladish_room_iterate_link_ports(room, &context, ladish_studio_add_room_ports))
-  {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Creation of studio room link ports failed.");
-    goto fail_remove_room_client;
-  }
-
-  list_add_tail(ladish_room_get_list_node(room), &g_studio.rooms);
-
-  ladish_studio_emit_room_appeared(room);
-
-  method_return_new_void(call_ptr);
-  return;
-
-fail_remove_room_client:
-  ladish_graph_remove_client(g_studio.studio_graph, room_client);
-fail_destroy_room_client:
-  ladish_client_destroy(room_client);
-fail_destroy_room:
-  ladish_room_destroy(room);
-fail_decrement_room_count:
-  g_studio.room_count--;
-fail:
-  return;
 }
 
 static void ladish_studio_dbus_get_room_list(struct dbus_method_call * call_ptr)
@@ -1161,11 +1012,6 @@ fail:
 static void ladish_studio_dbus_delete_room(struct dbus_method_call * call_ptr)
 {
   const char * name;
-  struct list_head * node_ptr;
-  ladish_room_handle room;
-  uuid_t room_uuid;
-  ladish_client_handle room_client;
-  unsigned int running_app_count;
 
   dbus_error_init(&g_dbus_error);
 
@@ -1176,40 +1022,10 @@ static void ladish_studio_dbus_delete_room(struct dbus_method_call * call_ptr)
     return;
   }
 
-  log_info("Delete studio room request (%s)", name);
-
-  list_for_each(node_ptr, &g_studio.rooms)
+  if (ladish_command_delete_room(call_ptr, ladish_studio_get_cmd_queue(), name))
   {
-    room = ladish_room_from_list_node(node_ptr);
-    if (strcmp(ladish_room_get_name(room), name) == 0)
-    {
-      running_app_count = ladish_app_supervisor_get_running_app_count(ladish_room_get_app_supervisor(room));
-      if (running_app_count != 0)
-      {
-        /* TODO: instead of rejecting the room deletion, use the command queue and wait for room apps to stop.
-           This requires proper "project in room" implementation because project needs to be
-           unloaded anyway and unloading project should initiate and wait apps termination */
-        lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot delete room \"%s\" because it has %u app(s) running", name, running_app_count);
-        return;
-      }
-
-      list_del(node_ptr);
-      ladish_studio_emit_room_disappeared(room);
-
-      ladish_room_get_uuid(room, room_uuid);
-      room_client = ladish_graph_find_client_by_uuid(g_studio.studio_graph, room_uuid);
-      ASSERT(room_client != NULL);
-      ladish_graph_remove_client(g_studio.studio_graph, room_client);
-      ladish_client_destroy(room_client);
-
-      ladish_room_destroy(room);
-      method_return_new_void(call_ptr);
-      return;
-    }
+    method_return_new_void(call_ptr);
   }
-
-  lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": Cannot find room with name \"%s\"",  call_ptr->method_name, name);
-  return;
 }
 
 void ladish_studio_remove_all_rooms(void)
@@ -1277,9 +1093,9 @@ METHODS_BEGIN
   METHOD_DESCRIBE(Start, ladish_studio_dbus_start)               /* async */
   METHOD_DESCRIBE(Stop, ladish_studio_dbus_stop)                 /* async */
   METHOD_DESCRIBE(IsStarted, ladish_studio_dbus_is_started)      /* sync */
-  METHOD_DESCRIBE(CreateRoom, ladish_studio_dbus_create_room)    /* sync */
+  METHOD_DESCRIBE(CreateRoom, ladish_studio_dbus_create_room)    /* async */
   METHOD_DESCRIBE(GetRoomList, ladish_studio_dbus_get_room_list) /* sync */
-  METHOD_DESCRIBE(DeleteRoom, ladish_studio_dbus_delete_room)    /* sync */
+  METHOD_DESCRIBE(DeleteRoom, ladish_studio_dbus_delete_room)    /* async */
 METHODS_END
 
 SIGNAL_ARGS_BEGIN(StudioRenamed, "Studio name changed")
