@@ -330,6 +330,12 @@ void ladish_studio_run(void)
     {
       ladish_environment_ignore(&g_studio.env_store, ladish_environment_jack_server_present);
 
+      if (g_studio.jack_graph_proxy != NULL)
+      {
+        log_error("Ignoring \"JACK started\" notification because it is already known that JACK is currently started.");
+        return;
+      }
+
       /* Automatic studio creation on JACK server start */
       if (g_studio.dbus_object == NULL)
       {
