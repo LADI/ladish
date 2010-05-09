@@ -1402,7 +1402,7 @@ ladish_graph_remove_connection(
     return;
   }
 
-  if (force || connection_ptr->changing)
+  if (force || connection_ptr->changing || !graph_ptr->persist)
   {
     /* log_info( */
     /*   "removing connection '%s':'%s' - '%s':'%s'", */
