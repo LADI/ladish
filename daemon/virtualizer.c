@@ -395,7 +395,7 @@ static void client_disappeared(void * context, uint64_t id)
   }
 
   pid = ladish_client_get_pid(client);
-  if (pid != 0)
+  if (pid != 0 && pid != jmcore_proxy_get_pid_cached())
   {
     virtualizer_ptr->our_clients_count--;
   }
