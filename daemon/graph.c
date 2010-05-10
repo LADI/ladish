@@ -906,6 +906,23 @@ static void ladish_graph_remove_connection_internal(struct ladish_graph * graph_
   free(connection_ptr);
 }
 
+static void ladish_graph_remove_port_connections(struct ladish_graph * graph_ptr, struct ladish_graph_port * port_ptr)
+{
+  struct list_head * node_ptr;
+  struct list_head * temp_node_ptr;
+  struct ladish_graph_connection * connection_ptr;
+
+  list_for_each_safe(node_ptr, temp_node_ptr, &graph_ptr->connections)
+  {
+    connection_ptr = list_entry(node_ptr, struct ladish_graph_connection, siblings);
+    if (connection_ptr->port1_ptr == port_ptr || connection_ptr->port2_ptr == port_ptr)
+    {
+      log_info("removing connection between ports %"PRIu64" and %"PRIu64, connection_ptr->port1_ptr->id, connection_ptr->port2_ptr->id);
+      ladish_graph_remove_connection_internal(graph_ptr, connection_ptr);
+    }
+  }
+}
+
 static
 void
 ladish_graph_remove_port_internal(
@@ -913,6 +930,8 @@ ladish_graph_remove_port_internal(
   struct ladish_graph_client * client_ptr,
   struct ladish_graph_port * port_ptr)
 {
+  ladish_graph_remove_port_connections(graph_ptr, port_ptr);
+
   ladish_port_del_ref(port_ptr->port);
 
   list_del(&port_ptr->siblings_client);

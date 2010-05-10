@@ -145,6 +145,9 @@ found:
 
   ladish_room_destroy(room);
 
+  ladish_graph_dump(g_studio.studio_graph);
+  ladish_graph_dump(g_studio.jack_graph);
+
   cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;
   return true;
 }
