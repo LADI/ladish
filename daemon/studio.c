@@ -358,6 +358,12 @@ void ladish_studio_run(void)
       /* JACK stopped but this was not expected. When expected.
        * the change will be consumed by the run method of the studio stop command */
 
+      if (g_studio.jack_graph_proxy == NULL)
+      {
+        log_error("Ignoring \"JACK stopped\" notification because it is already known that JACK is currently stopped.");
+        return;
+      }
+
       if (g_studio.automatic)
       {
         log_info("Unloading automatic studio.");
