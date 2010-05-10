@@ -1728,6 +1728,7 @@ ladish_graph_remove_port(
   ladish_port_handle port)
 {
   struct ladish_graph_port * port_ptr;
+  ladish_client_handle client;
 
   port_ptr = ladish_graph_find_port(graph_ptr, port);
   if (port_ptr == NULL)
@@ -1735,8 +1736,9 @@ ladish_graph_remove_port(
     return NULL;
   }
 
+  client = port_ptr->client_ptr->client;
   ladish_graph_remove_port_internal(graph_ptr, port_ptr->client_ptr, port_ptr);
-  return port_ptr->client_ptr->client;
+  return client;
 }
 
 ladish_client_handle
@@ -1747,6 +1749,7 @@ ladish_graph_remove_port_by_jack_id(
   bool studio)
 {
   struct ladish_graph_port * port_ptr;
+  ladish_client_handle client;
 
   port_ptr = ladish_graph_find_port_by_jack_id_internal(graph_ptr, jack_port_id, room, studio);
   if (port_ptr == NULL)
@@ -1754,8 +1757,9 @@ ladish_graph_remove_port_by_jack_id(
     return NULL;
   }
 
+  client = port_ptr->client_ptr->client;
   ladish_graph_remove_port_internal(graph_ptr, port_ptr->client_ptr, port_ptr);
-  return port_ptr->client_ptr->client;
+  return client;
 }
 
 bool
