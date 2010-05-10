@@ -50,7 +50,7 @@ void jmcore_proxy_uninit(void)
   dbus_unregister_service_lifetime_hook(g_dbus_connection, JMCORE_SERVICE_NAME);
 }
 
-const int64_t jmcore_proxy_get_pid_cached(void)
+int64_t jmcore_proxy_get_pid_cached(void)
 {
   if (g_jmcore_pid == 0)
   {

@@ -31,7 +31,7 @@
 
 bool jmcore_proxy_init(void);
 void jmcore_proxy_uninit(void);
-const int64_t jmcore_proxy_get_pid_cached(void);
+int64_t jmcore_proxy_get_pid_cached(void);
 bool jmcore_proxy_get_pid_noncached(int64_t * pid_ptr);
 bool jmcore_proxy_create_link(bool midi, const char * input_port_name, const char * output_port_name);
 bool jmcore_proxy_destroy_link(const char * port_name);
