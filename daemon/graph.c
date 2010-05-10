@@ -84,7 +84,7 @@ struct ladish_graph
   ladish_graph_disconnect_request_handler disconnect_handler;
 };
 
-struct ladish_graph_port * ladish_graph_find_port_by_id_internal(struct ladish_graph * graph_ptr, uint64_t port_id)
+static struct ladish_graph_port * ladish_graph_find_port_by_id_internal(struct ladish_graph * graph_ptr, uint64_t port_id)
 {
   struct list_head * node_ptr;
   struct ladish_graph_port * port_ptr;
@@ -101,7 +101,7 @@ struct ladish_graph_port * ladish_graph_find_port_by_id_internal(struct ladish_g
   return NULL;
 }
 
-struct ladish_graph_connection * ladish_graph_find_connection_by_id(struct ladish_graph * graph_ptr, uint64_t connection_id)
+static struct ladish_graph_connection * ladish_graph_find_connection_by_id(struct ladish_graph * graph_ptr, uint64_t connection_id)
 {
   struct list_head * node_ptr;
   struct ladish_graph_connection * connection_ptr;
@@ -118,6 +118,7 @@ struct ladish_graph_connection * ladish_graph_find_connection_by_id(struct ladis
   return NULL;
 }
 
+static
 struct ladish_graph_connection *
 ladish_graph_find_connection_by_ports(
   struct ladish_graph * graph_ptr,
@@ -771,7 +772,7 @@ static void ladish_graph_hide_connection_internal(struct ladish_graph * graph_pt
   }
 }
 
-void ladish_graph_show_port_internal(struct ladish_graph * graph_ptr, struct ladish_graph_port * port_ptr)
+static void ladish_graph_show_port_internal(struct ladish_graph * graph_ptr, struct ladish_graph_port * port_ptr)
 {
   if (port_ptr->client_ptr->hidden)
   {
@@ -814,7 +815,7 @@ void ladish_graph_show_port_internal(struct ladish_graph * graph_ptr, struct lad
   }
 }
 
-void ladish_graph_hide_port_internal(struct ladish_graph * graph_ptr, struct ladish_graph_port * port_ptr)
+static void ladish_graph_hide_port_internal(struct ladish_graph * graph_ptr, struct ladish_graph_port * port_ptr)
 {
   ASSERT(!port_ptr->hidden);
   port_ptr->hidden = true;
@@ -836,7 +837,7 @@ void ladish_graph_hide_port_internal(struct ladish_graph * graph_ptr, struct lad
   }
 }
 
-void ladish_graph_hide_client_internal(struct ladish_graph * graph_ptr, struct ladish_graph_client * client_ptr)
+static void ladish_graph_hide_client_internal(struct ladish_graph * graph_ptr, struct ladish_graph_client * client_ptr)
 {
   ASSERT(!client_ptr->hidden);
   client_ptr->hidden = true;
@@ -856,7 +857,7 @@ void ladish_graph_hide_client_internal(struct ladish_graph * graph_ptr, struct l
   }
 }
 
-void ladish_hide_connections(struct ladish_graph * graph_ptr, struct ladish_graph_port * port_ptr)
+static void ladish_hide_connections(struct ladish_graph * graph_ptr, struct ladish_graph_port * port_ptr)
 {
   struct list_head * node_ptr;
   struct ladish_graph_connection * connection_ptr;
@@ -905,6 +906,7 @@ static void ladish_graph_remove_connection_internal(struct ladish_graph * graph_
   free(connection_ptr);
 }
 
+static
 void
 ladish_graph_remove_port_internal(
   struct ladish_graph * graph_ptr,
