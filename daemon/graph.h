@@ -47,6 +47,8 @@ bool
   ladish_graph_handle graph_handle,
   uint64_t connection_id);
 
+typedef void (* ladish_graph_simple_port_callback)(ladish_port_handle port_handle);
+
 bool ladish_graph_create(ladish_graph_handle * graph_handle_ptr, const char * opath);
 bool ladish_graph_copy(ladish_graph_handle src, ladish_graph_handle dest, bool skip_hidden);
 void ladish_graph_destroy(ladish_graph_handle graph_handle);
@@ -61,7 +63,7 @@ ladish_graph_set_connection_handlers(
   ladish_graph_connect_request_handler connect_handler,
   ladish_graph_disconnect_request_handler disconnect_handler);
 
-void ladish_graph_clear(ladish_graph_handle graph_handle);
+void ladish_graph_clear(ladish_graph_handle graph_handle, ladish_graph_simple_port_callback port_callback);
 void * ladish_graph_get_dbus_context(ladish_graph_handle graph_handle);
 ladish_dict_handle ladish_graph_get_dict(ladish_graph_handle graph_handle);
 ladish_dict_handle ladish_graph_get_connection_dict(ladish_graph_handle graph_handle, uint64_t connection_id);
@@ -144,8 +146,8 @@ ladish_port_handle ladish_graph_find_port_by_uuid(ladish_graph_handle graph_hand
 ladish_client_handle ladish_graph_get_port_client(ladish_graph_handle graph_handle, ladish_port_handle port_handle);
 const char * ladish_graph_get_client_name(ladish_graph_handle graph_handle, ladish_client_handle client_handle);
 const char * ladish_graph_get_port_name(ladish_graph_handle graph, ladish_port_handle port);
-bool ladish_graph_is_client_empty(ladish_graph_handle graph_handle, ladish_client_handle client_handle);
-bool ladish_graph_is_client_looks_empty(ladish_graph_handle graph_handle, ladish_client_handle client_handle);
+bool ladish_graph_client_is_empty(ladish_graph_handle graph_handle, ladish_client_handle client_handle);
+bool ladish_graph_client_looks_empty(ladish_graph_handle graph_handle, ladish_client_handle client_handle);
 bool ladish_graph_is_port_present(ladish_graph_handle graph_handle, ladish_port_handle port_handle);
 void ladish_graph_show_port(ladish_graph_handle graph_handle, ladish_port_handle port_handle);
 void ladish_graph_hide_port(ladish_graph_handle graph_handle, ladish_port_handle port_handle);
@@ -196,7 +198,7 @@ ladish_graph_iterate_connections(
 
 void ladish_graph_clear_persist(ladish_graph_handle graph_handle);
 bool ladish_graph_is_persist(ladish_graph_handle graph_handle);
-bool ladish_graph_is_empty(ladish_graph_handle graph_handle);
+bool ladish_graph_looks_empty(ladish_graph_handle graph_handle);
 
 extern const struct dbus_interface_descriptor g_interface_patchbay;
 

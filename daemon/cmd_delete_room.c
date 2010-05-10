@@ -66,6 +66,18 @@ uninit_room_ports(
   return true;
 }
 
+static void remove_port_callback(ladish_port_handle port)
+{
+  ladish_client_handle jack_client;
+
+  jack_client = ladish_graph_remove_port(g_studio.jack_graph, port);
+  ASSERT(jack_client != NULL);  /* room app port not found in jack graph */
+  if (ladish_graph_client_is_empty(g_studio.jack_graph, jack_client))
+  {
+    ladish_graph_remove_client(g_studio.jack_graph, jack_client);
+  }
+}
+
 #define cmd_ptr ((struct ladish_command_delete_room *)context)
 
 static bool run(void * context)
@@ -121,13 +133,13 @@ found:
     return true;
   }
 
-  if (!ladish_graph_is_empty(graph))
+  if (!ladish_graph_looks_empty(graph))
   {
     log_info("the room \"%s\" graph is still not empty", cmd_ptr->name);
     return true;
   }
 
-  if (!ladish_graph_is_client_looks_empty(g_studio.studio_graph, room_client))
+  if (!ladish_graph_client_looks_empty(g_studio.studio_graph, room_client))
   {
     log_info("the room \"%s\" studio client still does not look empty", cmd_ptr->name);
     return true;
@@ -136,6 +148,8 @@ found:
   /* ladish_graph_dump(graph); */
   /* ladish_graph_dump(g_studio.studio_graph); */
   /* ladish_graph_dump(g_studio.jack_graph); */
+
+  ladish_graph_clear(graph, remove_port_callback);
 
   list_del(node_ptr);
   ladish_studio_emit_room_disappeared(room);

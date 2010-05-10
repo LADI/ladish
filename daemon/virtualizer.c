@@ -758,7 +758,7 @@ static void port_disappeared(void * context, uint64_t client_id, uint64_t port_i
     {
       ladish_graph_hide_port(vgraph, port);
       client = ladish_graph_get_port_client(vgraph, port);
-      if (ladish_graph_is_client_looks_empty(vgraph, client))
+      if (ladish_graph_client_looks_empty(vgraph, client))
       {
         ladish_graph_hide_client(vgraph, client);
       }
@@ -776,7 +776,7 @@ static void port_disappeared(void * context, uint64_t client_id, uint64_t port_i
       client = ladish_graph_remove_port(vgraph, port);
       if (client != NULL)
       {
-        if (ladish_graph_is_client_empty(vgraph, client))
+        if (ladish_graph_client_is_empty(vgraph, client))
         {
           ladish_graph_remove_client(vgraph, client);
         }

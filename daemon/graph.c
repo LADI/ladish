@@ -962,13 +962,18 @@ void
 ladish_graph_remove_client_internal(
   struct ladish_graph * graph_ptr,
   struct ladish_graph_client * client_ptr,
-  bool destroy_client)
+  bool destroy_client,
+  ladish_graph_simple_port_callback port_callback)
 {
   struct ladish_graph_port * port_ptr;
 
   while (!list_empty(&client_ptr->ports))
   {
     port_ptr = list_entry(client_ptr->ports.next, struct ladish_graph_port, siblings_client);
+    if (port_callback != NULL)
+    {
+      port_callback(port_ptr->port);
+    }
     ladish_graph_remove_port_internal(graph_ptr, client_ptr, port_ptr);
   }
 
@@ -998,11 +1003,34 @@ ladish_graph_remove_client_internal(
   free(client_ptr);
 }
 
+bool ladish_graph_client_looks_empty_internal(struct ladish_graph * graph_ptr, struct ladish_graph_client * client_ptr)
+{
+  struct list_head * node_ptr;
+  struct ladish_graph_port * port_ptr;
+
+  list_for_each(node_ptr, &client_ptr->ports)
+  {
+    port_ptr = list_entry(node_ptr, struct ladish_graph_port, siblings_client);
+    if (!port_ptr->hidden)
+    {
+      //log_info("port '%s' is visible, client '%s' does not look empty", port_ptr->name, client_ptr->name);
+      return false;
+    }
+    else
+    {
+      //log_info("port '%s' is invisible", port_ptr->name);
+    }
+  }
+
+  //log_info("client '%s' looks empty in graph %s", client_ptr->name, graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
+  return true;
+}
+
 #define graph_ptr ((struct ladish_graph *)graph_handle)
 
 void ladish_graph_destroy(ladish_graph_handle graph_handle)
 {
-  ladish_graph_clear(graph_handle);
+  ladish_graph_clear(graph_handle, NULL);
   ladish_dict_destroy(graph_ptr->dict);
   if (graph_ptr->opath != NULL)
   {
@@ -1034,7 +1062,7 @@ ladish_graph_set_connection_handlers(
   graph_ptr->disconnect_handler = disconnect_handler;
 }
 
-void ladish_graph_clear(ladish_graph_handle graph_handle)
+void ladish_graph_clear(ladish_graph_handle graph_handle, ladish_graph_simple_port_callback port_callback)
 {
   struct ladish_graph_client * client_ptr;
   struct ladish_graph_connection * connection_ptr;
@@ -1050,7 +1078,7 @@ void ladish_graph_clear(ladish_graph_handle graph_handle)
   while (!list_empty(&graph_ptr->clients))
   {
     client_ptr = list_entry(graph_ptr->clients.next, struct ladish_graph_client, siblings);
-    ladish_graph_remove_client_internal(graph_ptr, client_ptr, true);
+    ladish_graph_remove_client_internal(graph_ptr, client_ptr, true, port_callback);
   }
 }
 
@@ -1266,7 +1294,7 @@ ladish_graph_remove_client(
   client_ptr = ladish_graph_find_client(graph_ptr, client_handle);
   if (client_ptr != NULL)
   {
-    ladish_graph_remove_client_internal(graph_ptr, client_ptr, false);
+    ladish_graph_remove_client_internal(graph_ptr, client_ptr, false, NULL);
   }
   else
   {
@@ -1844,7 +1872,7 @@ const char * ladish_graph_get_client_name(ladish_graph_handle graph_handle, ladi
   return NULL;
 }
 
-bool ladish_graph_is_client_empty(ladish_graph_handle graph_handle, ladish_client_handle client_handle)
+bool ladish_graph_client_is_empty(ladish_graph_handle graph_handle, ladish_client_handle client_handle)
 {
   struct ladish_graph_client * client_ptr;
 
@@ -1858,35 +1886,24 @@ bool ladish_graph_is_client_empty(ladish_graph_handle graph_handle, ladish_clien
   return true;
 }
 
-bool ladish_graph_is_client_looks_empty(ladish_graph_handle graph_handle, ladish_client_handle client_handle)
+bool ladish_graph_client_looks_empty(ladish_graph_handle graph_handle, ladish_client_handle client_handle)
 {
   struct ladish_graph_client * client_ptr;
-  struct list_head * node_ptr;
-  struct ladish_graph_port * port_ptr;
 
   client_ptr = ladish_graph_find_client(graph_ptr, client_handle);
-  if (client_ptr != NULL)
+  if (client_ptr == NULL)
   {
-    list_for_each(node_ptr, &client_ptr->ports)
-    {
-      port_ptr = list_entry(node_ptr, struct ladish_graph_port, siblings_client);
-      if (!port_ptr->hidden)
-      {
-        //log_info("port '%s' is visible, client '%s' does not look empty", port_ptr->name, client_ptr->name);
-        return false;
-      }
-      else
-      {
-        //log_info("port '%s' is invisible", port_ptr->name);
-      }
-    }
-
-    log_info("client '%s' looks empty in graph %s", client_ptr->name, graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
+    ASSERT_NO_PASS;
     return true;
   }
 
-  ASSERT_NO_PASS;
-  return true;
+  if (ladish_graph_client_looks_empty_internal(graph_ptr, client_ptr))
+  {
+    //log_info("client '%s' looks empty in graph %s", client_ptr->name, graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
+    return true;
+  }
+
+  return false;
 }
 
 void ladish_try_connect_hidden_connections(ladish_graph_handle graph_handle)
@@ -2193,9 +2210,32 @@ bool ladish_graph_is_persist(ladish_graph_handle graph_handle)
   return graph_ptr->persist;
 }
 
-bool ladish_graph_is_empty(ladish_graph_handle graph_handle)
+bool ladish_graph_looks_empty(ladish_graph_handle graph_handle)
 {
-  return list_empty(&graph_ptr->clients) && list_empty(&graph_ptr->ports) && list_empty(&graph_ptr->connections);
+  struct list_head * node_ptr;
+  struct ladish_graph_connection * connection_ptr;
+  struct ladish_graph_client * client_ptr;
+
+  list_for_each(node_ptr, &graph_ptr->connections)
+  {
+    connection_ptr = list_entry(node_ptr, struct ladish_graph_connection, siblings);
+
+    if (!connection_ptr->hidden)
+    {
+      return false;
+    }
+  }
+
+  list_for_each(node_ptr, &graph_ptr->clients)
+  {
+    client_ptr = list_entry(node_ptr, struct ladish_graph_client, siblings);
+    if (!ladish_graph_client_looks_empty_internal(graph_ptr, client_ptr))
+    {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 #undef graph_ptr
