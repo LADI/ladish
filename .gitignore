@@ -6,6 +6,10 @@
 # *~
 
 /TAGS
+/GPATH
+/GRTAGS
+/GSYMS
+/GTAGS
 /.waf-*
 /.lock-wscript
 /build

@@ -433,8 +433,7 @@ def build(bld):
             else:
                 Utils.pprint('CYAN', "doxygen documentation already built.")
 
-def etags(ctx):
-    '''build TAGS file using etags'''
+def get_tags_dirs():
     source_root = os.path.relpath(os.path.dirname(Utils.g_module.root_path))
     paths = source_root
     paths += " " + os.path.join(source_root, "common")
@@ -446,8 +445,17 @@ def etags(ctx):
     paths += " " + os.path.join(source_root, "lib")
     paths += " " + os.path.join(source_root, "lash_compat", "liblash")
     paths += " " + os.path.join(source_root, "lash_compat", "liblash", "lash")
+    return paths
 
-    cmd = "find %s -mindepth 1 -maxdepth 1 -name '*.[ch]' -print | etags -" % paths
+def gtags(ctx):
+    '''build tag files for GNU global'''
+    cmd = "find %s -mindepth 1 -maxdepth 1 -name '*.[ch]' -print | gtags --statistics -f -" % get_tags_dirs()
+    #print("Running: %s" % cmd)
+    os.system(cmd)
+
+def etags(ctx):
+    '''build TAGS file using etags'''
+    cmd = "find %s -mindepth 1 -maxdepth 1 -name '*.[ch]' -print | etags -" % get_tags_dirs()
     #print("Running: %s" % cmd)
     os.system(cmd)
     os.system("stat -c '%y' TAGS")
