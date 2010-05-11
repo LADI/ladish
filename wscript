@@ -433,6 +433,25 @@ def build(bld):
             else:
                 Utils.pprint('CYAN', "doxygen documentation already built.")
 
+def etags(ctx):
+    '''build TAGS file using etags'''
+    source_root = os.path.relpath(os.path.dirname(Utils.g_module.root_path))
+    paths = source_root
+    paths += " " + os.path.join(source_root, "common")
+    paths += " " + os.path.join(source_root, "dbus")
+    paths += " " + os.path.join(source_root, "proxies")
+    paths += " " + os.path.join(source_root, "daemon")
+    paths += " " + os.path.join(source_root, "gui")
+    paths += " " + os.path.join(source_root, "example-apps")
+    paths += " " + os.path.join(source_root, "lib")
+    paths += " " + os.path.join(source_root, "lash_compat", "liblash")
+    paths += " " + os.path.join(source_root, "lash_compat", "liblash", "lash")
+
+    cmd = "find %s -mindepth 1 -maxdepth 1 -name '*.[ch]' -print | etags -" % paths
+    #print("Running: %s" % cmd)
+    os.system(cmd)
+    os.system("stat -c '%y' TAGS")
+
 def dist_hook():
     shutil.copy('../build/default/version.h', "./")
 
