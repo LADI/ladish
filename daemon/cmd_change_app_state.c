@@ -30,7 +30,7 @@
 #include "../dbus/error.h"
 #include "../proxies/notify_proxy.h"
 
-struct ladish_command_start_app
+struct ladish_command_change_app_state
 {
   struct ladish_command command; /* must be the first member */
   char * opath;
@@ -38,7 +38,7 @@ struct ladish_command_start_app
   unsigned int target_state;
 };
 
-static bool run_target_start(struct ladish_command_start_app * cmd_ptr, ladish_app_supervisor_handle supervisor, ladish_app_handle app)
+static bool run_target_start(struct ladish_command_change_app_state * cmd_ptr, ladish_app_supervisor_handle supervisor, ladish_app_handle app)
 {
   ASSERT(cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING);
 
@@ -66,7 +66,7 @@ static bool run_target_start(struct ladish_command_start_app * cmd_ptr, ladish_a
   return true;
 }
 
-static bool run_target_stop(struct ladish_command_start_app * cmd_ptr, ladish_app_supervisor_handle supervisor, ladish_app_handle app)
+static bool run_target_stop(struct ladish_command_change_app_state * cmd_ptr, ladish_app_supervisor_handle supervisor, ladish_app_handle app)
 {
   if (!ladish_app_is_running(app))
   {
@@ -90,7 +90,7 @@ static bool run_target_stop(struct ladish_command_start_app * cmd_ptr, ladish_ap
   return true;
 }
 
-static bool run_target_kill(struct ladish_command_start_app * cmd_ptr, ladish_app_supervisor_handle supervisor, ladish_app_handle app)
+static bool run_target_kill(struct ladish_command_change_app_state * cmd_ptr, ladish_app_supervisor_handle supervisor, ladish_app_handle app)
 {
   if (!ladish_app_is_running(app))
   {
@@ -114,14 +114,14 @@ static bool run_target_kill(struct ladish_command_start_app * cmd_ptr, ladish_ap
   return true;
 }
 
-#define cmd_ptr ((struct ladish_command_start_app *)context)
+#define cmd_ptr ((struct ladish_command_change_app_state *)context)
 
 static bool run(void * context)
 {
   ladish_app_supervisor_handle supervisor;
   ladish_app_handle app;
   const char * target_state_description;
-  bool (* run_target)(struct ladish_command_start_app *, ladish_app_supervisor_handle, ladish_app_handle);
+  bool (* run_target)(struct ladish_command_change_app_state *, ladish_app_supervisor_handle, ladish_app_handle);
 
   switch (cmd_ptr->target_state)
   {
@@ -168,7 +168,7 @@ static bool run(void * context)
 
 static void destructor(void * context)
 {
-  log_info("start_app command destructor");
+  log_info("change_app_state command destructor");
   free(cmd_ptr->opath);
 }
 
@@ -176,7 +176,7 @@ static void destructor(void * context)
 
 bool ladish_command_change_app_state(void * call_ptr, struct ladish_cqueue * queue_ptr, const char * opath, uint64_t id, unsigned int target_state)
 {
-  struct ladish_command_start_app * cmd_ptr;
+  struct ladish_command_change_app_state * cmd_ptr;
   char * opath_dup;
 
   opath_dup = strdup(opath);
@@ -186,7 +186,7 @@ bool ladish_command_change_app_state(void * call_ptr, struct ladish_cqueue * que
     goto fail;
   }
 
-  cmd_ptr = ladish_command_new(sizeof(struct ladish_command_start_app));
+  cmd_ptr = ladish_command_new(sizeof(struct ladish_command_change_app_state));
   if (cmd_ptr == NULL)
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_command_new() failed.");
