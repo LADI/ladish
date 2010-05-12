@@ -30,6 +30,7 @@
 struct ladish_client
 {
   uuid_t uuid;                             /* The UUID of the client */
+  uuid_t uuid_interlink;                   /* The UUID of the linked client (vgraph <-> jack graph) */
   uint64_t jack_id;                        /* JACK client ID */
   pid_t pid;                               /* process id. */
   ladish_dict_handle dict;
@@ -65,6 +66,8 @@ ladish_client_create(
   {
     uuid_copy(client_ptr->uuid, uuid_ptr);
   }
+
+  uuid_clear(client_ptr->uuid_interlink);
 
   client_ptr->jack_id = 0;
   client_ptr->pid = 0;
@@ -143,6 +146,32 @@ void ladish_client_set_vgraph(ladish_client_handle client_handle, void * vgraph)
 void * ladish_client_get_vgraph(ladish_client_handle client_handle)
 {
   return client_ptr->vgraph;
+}
+
+#define client2_ptr ((struct ladish_client *)client2_handle)
+
+void ladish_client_interlink(ladish_client_handle client_handle, ladish_client_handle client2_handle)
+{
+  uuid_copy(client_ptr->uuid_interlink, client2_ptr->uuid);
+  uuid_copy(client2_ptr->uuid_interlink, client_ptr->uuid);
+}
+
+#undef client2_ptr
+
+bool ladish_client_get_interlink(ladish_client_handle client_handle, uuid_t uuid)
+{
+  if (uuid_is_null(client_ptr->uuid_interlink))
+  {
+    return false;
+  }
+
+  uuid_copy(uuid, client_ptr->uuid_interlink);
+  return true;
+}
+
+void ladish_client_clear_interlink(ladish_client_handle client_handle)
+{
+  uuid_clear(client_ptr->uuid_interlink);
 }
 
 #undef client_ptr

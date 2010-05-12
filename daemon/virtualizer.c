@@ -410,6 +410,8 @@ static void client_disappeared(void * context, uint64_t id)
   {
     ladish_graph_remove_client(virtualizer_ptr->jack_graph, client);
     ladish_client_destroy(client);
+    /* no need to clear vclient interlink because it either does not exist (vgraph is NULL) or
+     * it will be destroyed before it is accessed (persist flag is cleared on room deletion) */
   }
 }
 
@@ -431,7 +433,8 @@ port_appeared(
   uint32_t flags;
   const char * jack_client_name;
   bool is_a2j;
-  uuid_t client_uuid;
+  uuid_t jclient_uuid;
+  uuid_t vclient_uuid;
   char * alsa_client_name;
   char * alsa_port_name;
   char * a2j_fake_jack_port_name = NULL;
@@ -501,8 +504,8 @@ port_appeared(
     goto exit;
   }
 
-  ladish_client_get_uuid(jack_client, client_uuid);
-  is_a2j = uuid_compare(client_uuid, g_a2j_uuid) == 0;
+  ladish_client_get_uuid(jack_client, jclient_uuid);
+  is_a2j = uuid_compare(jclient_uuid, g_a2j_uuid) == 0;
   if (is_a2j)
   {
     log_info("a2j port appeared");
@@ -653,8 +656,12 @@ port_appeared(
   { /* non-system client */
     log_info("non-system client port appeared");
 
-    vclient = ladish_graph_find_client_by_jack_id(vgraph, client_id);
-    if (vclient == NULL)
+    if (ladish_client_get_interlink(jack_client, vclient_uuid))
+    {
+      vclient = ladish_graph_find_client_by_uuid(vgraph, vclient_uuid);
+      ASSERT(vclient != NULL);
+    }
+    else
     {
       if (!ladish_client_create(NULL, &vclient))
       {
@@ -662,7 +669,7 @@ port_appeared(
         goto free_alsa_names;
       }
 
-      ladish_client_set_jack_id(vclient, client_id);
+      ladish_client_interlink(vclient, jack_client);
 
       if (!ladish_graph_add_client(vgraph, vclient, jack_client_name, false))
       {
@@ -709,15 +716,16 @@ exit:
 
 static void port_disappeared(void * context, uint64_t client_id, uint64_t port_id)
 {
-  ladish_client_handle client;
+  ladish_client_handle jclient;
+  ladish_client_handle vclient;
   ladish_port_handle port;
   ladish_graph_handle vgraph;
   bool jmcore;
 
   log_info("port_disappeared(%"PRIu64", %"PRIu64")", client_id, port_id);
 
-  client = ladish_graph_find_client_by_jack_id(virtualizer_ptr->jack_graph, client_id);
-  if (client == NULL)
+  jclient = ladish_graph_find_client_by_jack_id(virtualizer_ptr->jack_graph, client_id);
+  if (jclient == NULL)
   {
     log_error("Port of unknown JACK client with id %"PRIu64" disappeared", client_id);
     return;
@@ -732,7 +740,7 @@ static void port_disappeared(void * context, uint64_t client_id, uint64_t port_i
 
   /* find the virtual graph that owns the app that owns the client that owns the disappeared port */
   jmcore = false;
-  vgraph = ladish_client_get_vgraph(client);
+  vgraph = ladish_client_get_vgraph(jclient);
   if (vgraph == NULL)
   {
     vgraph = find_link_port_vgraph_by_uuid(virtualizer_ptr, ladish_graph_get_port_name(virtualizer_ptr->jack_graph, port), NULL);
@@ -757,10 +765,10 @@ static void port_disappeared(void * context, uint64_t client_id, uint64_t port_i
     if (vgraph != NULL)
     {
       ladish_graph_hide_port(vgraph, port);
-      client = ladish_graph_get_port_client(vgraph, port);
-      if (ladish_graph_client_looks_empty(vgraph, client))
+      vclient = ladish_graph_get_port_client(vgraph, port);
+      if (ladish_graph_client_looks_empty(vgraph, vclient))
       {
-        ladish_graph_hide_client(vgraph, client);
+        ladish_graph_hide_client(vgraph, vclient);
       }
     }
   }
@@ -773,12 +781,13 @@ static void port_disappeared(void * context, uint64_t client_id, uint64_t port_i
 
     if (vgraph != NULL)
     {
-      client = ladish_graph_remove_port(vgraph, port);
-      if (client != NULL)
+      vclient = ladish_graph_remove_port(vgraph, port);
+      if (vclient != NULL)
       {
-        if (ladish_graph_client_is_empty(vgraph, client))
+        if (ladish_graph_client_is_empty(vgraph, vclient))
         {
-          ladish_graph_remove_client(vgraph, client);
+          ladish_graph_remove_client(vgraph, vclient);
+          ladish_client_clear_interlink(jclient);
         }
       }
     }
