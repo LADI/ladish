@@ -2168,6 +2168,8 @@ void ladish_graph_dump(ladish_graph_handle graph_handle)
   struct ladish_graph_port * port_ptr;
   struct list_head * connection_node_ptr;
   struct ladish_graph_connection * connection_ptr;
+  uuid_t uuid;
+  char uuid_str[37];
 
   log_info("graph %s", graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
   log_info("  version %"PRIu64, graph_ptr->graph_version);
@@ -2176,7 +2178,19 @@ void ladish_graph_dump(ladish_graph_handle graph_handle)
   list_for_each(client_node_ptr, &graph_ptr->clients)
   {
     client_ptr = list_entry(client_node_ptr, struct ladish_graph_client, siblings);
-    log_info("    %s client '%s', id=%"PRIu64", ptr=%p", client_ptr->hidden ? "invisible" : "visible", client_ptr->name, client_ptr->id, client_ptr->client);
+    log_info("    %s client '%s', id=%"PRIu64", ptr=%p%", client_ptr->hidden ? "invisible" : "visible", client_ptr->name, client_ptr->id, client_ptr->client);
+    ladish_client_get_uuid(client_ptr->client, uuid);
+    uuid_unparse(uuid, uuid_str);
+    log_info("    uuid=%s", uuid_str);
+    if (ladish_client_get_interlink(client_ptr->client, uuid))
+    {
+      uuid_unparse(uuid, uuid_str);
+      log_info("    interlink=%s", uuid_str);
+    }
+    else
+    {
+      log_info("    no interlink");
+    }
     dump_dict("      ", ladish_client_get_dict(client_ptr->client));
     log_info("      ports:");
     list_for_each(port_node_ptr, &client_ptr->ports)
