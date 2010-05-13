@@ -824,6 +824,45 @@ struct ladish_command_load_studio
   char * studio_name;
 };
 
+static
+bool
+interlink_client(
+    void * context,
+    ladish_client_handle jclient,
+    const char * name,
+    void ** client_iteration_context_ptr_ptr)
+{
+  uuid_t uuid;
+  ladish_client_handle vclient;
+
+  if (strcmp(name, "system") == 0)
+  {
+    return true;
+  }
+
+  if (ladish_client_get_interlink(jclient, uuid))
+  {
+    ASSERT_NO_PASS;             /* interlinks are not stored in xml yet */
+    return true;
+  }
+
+  vclient = ladish_graph_find_client_by_name(g_studio.studio_graph, name);
+  if (vclient == NULL)
+  {
+    log_error("JACK client '%s' has no vclient associated", name);
+    return true;
+  }
+
+  log_info("Interlinking clients of app '%s'", name);
+  ladish_client_interlink(jclient, vclient);
+  return true;
+}
+
+static void interlink_clients(void)
+{
+  ladish_graph_iterate_nodes(g_studio.jack_graph, false, NULL, interlink_client, NULL, NULL);
+}
+
 #define cmd_ptr ((struct ladish_command_load_studio *)command_context)
 
 static bool run(void * command_context)
@@ -932,6 +971,8 @@ static bool run(void * command_context)
   {
     return false;
   }
+
+  interlink_clients();
 
   g_studio.persisted = true;
   log_info("Studio loaded. ('%s')", path);

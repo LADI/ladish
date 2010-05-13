@@ -663,6 +663,7 @@ port_appeared(
     }
     else
     {
+      log_info("creating new vclient");
       if (!ladish_client_create(NULL, &vclient))
       {
         log_error("ladish_client_create() failed.");
