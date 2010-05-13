@@ -29,6 +29,7 @@
 #include "studio.h"
 #include "../dbus/error.h"
 #include "../proxies/notify_proxy.h"
+#include "virtualizer.h"
 
 struct ladish_command_change_app_state
 {
@@ -36,11 +37,15 @@ struct ladish_command_change_app_state
   char * opath;
   uint64_t id;
   unsigned int target_state;
+  const char * target_state_description;
+  bool (* run_target)(struct ladish_command_change_app_state *, ladish_app_supervisor_handle, ladish_app_handle);
+  void (* initiate_stop)(ladish_app_supervisor_handle supervisor, ladish_app_handle app);
 };
 
 static bool run_target_start(struct ladish_command_change_app_state * cmd_ptr, ladish_app_supervisor_handle supervisor, ladish_app_handle app)
 {
   ASSERT(cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING);
+  ASSERT(cmd_ptr->initiate_stop == NULL);
 
   if (!ladish_studio_is_started())
   {
@@ -68,49 +73,38 @@ static bool run_target_start(struct ladish_command_change_app_state * cmd_ptr, l
 
 static bool run_target_stop(struct ladish_command_change_app_state * cmd_ptr, ladish_app_supervisor_handle supervisor, ladish_app_handle app)
 {
-  if (!ladish_app_is_running(app))
+  const char * app_name;
+
+  ASSERT(cmd_ptr->initiate_stop != NULL);
+
+  app_name = ladish_app_get_name(app);
+
+  if (ladish_app_is_running(app))
   {
     if (cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING)
     {
-      log_info("App %s is already stopped (stop)", ladish_app_get_name(app));
+      cmd_ptr->initiate_stop(supervisor, app);
+      cmd_ptr->command.state = LADISH_COMMAND_STATE_WAITING;
+      return true;
     }
-    cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;
+
+    ASSERT(cmd_ptr->command.state == LADISH_COMMAND_STATE_WAITING);
+    log_info("Waiting '%s' process termination (%s)...", app_name, cmd_ptr->target_state_description);
+    return true;
+  }
+
+  if (!ladish_virtualizer_is_hidden_app(ladish_studio_get_virtualizer(), app_name))
+  {
+    log_info("Waiting '%s' client disappear (%s)...", app_name, cmd_ptr->target_state_description);
     return true;
   }
 
   if (cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING)
   {
-    ladish_app_supervisor_stop_app(supervisor, app);
-    cmd_ptr->command.state = LADISH_COMMAND_STATE_WAITING;
-    return true;
+    log_info("App %s is already stopped (%s)", app_name, cmd_ptr->target_state_description);
   }
 
-  log_info("Waiting '%s' process termination (stop)...", ladish_app_get_name(app));
-
-  return true;
-}
-
-static bool run_target_kill(struct ladish_command_change_app_state * cmd_ptr, ladish_app_supervisor_handle supervisor, ladish_app_handle app)
-{
-  if (!ladish_app_is_running(app))
-  {
-    if (cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING)
-    {
-      log_info("App %s is already stopped (kill)", ladish_app_get_name(app));
-    }
-    cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;
-    return true;
-  }
-
-  if (cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING)
-  {
-    ladish_app_supervisor_kill_app(supervisor, app);
-    cmd_ptr->command.state = LADISH_COMMAND_STATE_WAITING;
-    return true;
-  }
-
-  log_info("Waiting '%s' process termination(kill)...", ladish_app_get_name(app));
-
+  cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;
   return true;
 }
 
@@ -120,37 +114,16 @@ static bool run(void * context)
 {
   ladish_app_supervisor_handle supervisor;
   ladish_app_handle app;
-  const char * target_state_description;
-  bool (* run_target)(struct ladish_command_change_app_state *, ladish_app_supervisor_handle, ladish_app_handle);
-
-  switch (cmd_ptr->target_state)
-  {
-  case LADISH_APP_STATE_STARTED:
-    target_state_description = "start";
-    run_target = run_target_start;
-    break;
-  case LADISH_APP_STATE_STOPPED:
-    target_state_description = "stopped";
-    run_target = run_target_stop;
-    break;
-  case LADISH_APP_STATE_KILL:
-    target_state_description = "kill";
-    run_target = run_target_kill;
-    break;
-  default:
-    ASSERT_NO_PASS;
-    return false;
-  }
 
   if (cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING)
   {
-    log_info("%s app command. opath='%s'", target_state_description, cmd_ptr->opath);
+    log_info("%s app command. opath='%s'", cmd_ptr->target_state_description, cmd_ptr->opath);
   }
 
   supervisor = ladish_studio_find_app_supervisor(cmd_ptr->opath);
   if (supervisor == NULL)
   {
-    log_error("cannot find supervisor '%s' to %s app", cmd_ptr->opath, target_state_description);
+    log_error("cannot find supervisor '%s' to %s app", cmd_ptr->opath, cmd_ptr->target_state_description);
     ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Cannot change app state because of internal error (unknown supervisor)", NULL);
     return false;
   }
@@ -158,12 +131,12 @@ static bool run(void * context)
   app = ladish_app_supervisor_find_app_by_id(supervisor, cmd_ptr->id);
   if (app == NULL)
   {
-    log_error("App with ID %"PRIu64" not found (%s)", cmd_ptr->id, target_state_description);
+    log_error("App with ID %"PRIu64" not found (%s)", cmd_ptr->id, cmd_ptr->target_state_description);
     ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Cannot change app state because it is not found", NULL);
     return false;
   }
 
-  return run_target(cmd_ptr, supervisor, app);
+  return cmd_ptr->run_target(cmd_ptr, supervisor, app);
 }
 
 static void destructor(void * context)
@@ -198,6 +171,29 @@ bool ladish_command_change_app_state(void * call_ptr, struct ladish_cqueue * que
   cmd_ptr->opath = opath_dup;
   cmd_ptr->id = id;
   cmd_ptr->target_state = target_state;
+
+  switch (target_state)
+  {
+  case LADISH_APP_STATE_STARTED:
+    cmd_ptr->target_state_description = "start";
+    cmd_ptr->run_target = run_target_start;
+    cmd_ptr->initiate_stop = NULL;
+    break;
+  case LADISH_APP_STATE_STOPPED:
+    cmd_ptr->target_state_description = "stop";
+    cmd_ptr->run_target = run_target_stop;
+    cmd_ptr->initiate_stop = ladish_app_supervisor_stop_app;
+    break;
+  case LADISH_APP_STATE_KILL:
+    cmd_ptr->target_state_description = "kill";
+    cmd_ptr->run_target = run_target_stop;
+    cmd_ptr->initiate_stop = ladish_app_supervisor_kill_app;
+    break;
+  default:
+    ASSERT_NO_PASS;
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Invalid target state (internal error).", opath);
+    goto fail_destroy_command;
+  }
 
   if (!ladish_cqueue_add_command(queue_ptr, &cmd_ptr->command))
   {

@@ -148,6 +148,7 @@ const char * ladish_graph_get_client_name(ladish_graph_handle graph_handle, ladi
 const char * ladish_graph_get_port_name(ladish_graph_handle graph, ladish_port_handle port);
 bool ladish_graph_client_is_empty(ladish_graph_handle graph_handle, ladish_client_handle client_handle);
 bool ladish_graph_client_looks_empty(ladish_graph_handle graph_handle, ladish_client_handle client_handle);
+bool ladish_graph_client_is_hidden(ladish_graph_handle graph_handle, ladish_client_handle client_handle);
 bool ladish_graph_is_port_present(ladish_graph_handle graph_handle, ladish_port_handle port_handle);
 void ladish_graph_show_port(ladish_graph_handle graph_handle, ladish_port_handle port_handle);
 void ladish_graph_hide_port(ladish_graph_handle graph_handle, ladish_port_handle port_handle);

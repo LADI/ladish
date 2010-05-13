@@ -30,6 +30,7 @@
 #include "app_supervisor.h"
 #include "graph.h"
 #include "room.h"
+#include "virtualizer.h"
 
 bool ladish_studio_init(void);
 void ladish_studio_uninit(void);
@@ -53,6 +54,7 @@ ladish_studio_iterate_virtual_graphs(
 void ladish_studio_stop_app_supervisors(void);
 ladish_app_supervisor_handle ladish_studio_find_app_supervisor(const char * opath);
 struct ladish_cqueue * ladish_studio_get_cmd_queue(void);
+ladish_virtualizer_handle ladish_studio_get_virtualizer(void);
 
 void ladish_studio_emit_room_appeared(ladish_room_handle room);
 void ladish_studio_emit_room_disappeared(ladish_room_handle room);

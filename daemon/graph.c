@@ -1910,6 +1910,20 @@ bool ladish_graph_client_looks_empty(ladish_graph_handle graph_handle, ladish_cl
   return false;
 }
 
+bool ladish_graph_client_is_hidden(ladish_graph_handle graph_handle, ladish_client_handle client_handle)
+{
+  struct ladish_graph_client * client_ptr;
+
+  client_ptr = ladish_graph_find_client(graph_ptr, client_handle);
+  if (client_ptr != NULL)
+  {
+    return client_ptr->hidden;
+  }
+
+  ASSERT_NO_PASS;
+  return true;
+}
+
 void ladish_try_connect_hidden_connections(ladish_graph_handle graph_handle)
 {
   struct list_head * node_ptr;

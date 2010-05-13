@@ -48,6 +48,16 @@ unsigned int
 ladish_virtualizer_get_our_clients_count(
   ladish_virtualizer_handle handle);
 
+bool
+ladish_virtualizer_is_hidden_app(
+  ladish_virtualizer_handle handle,
+  const char * app_name);
+
+void
+ladish_virtualizer_remove_app(
+  ladish_virtualizer_handle handle,
+  const char * app_name);
+
 void
 ladish_virtualizer_destroy(
   ladish_virtualizer_handle handle);

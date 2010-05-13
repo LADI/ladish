@@ -1035,6 +1035,113 @@ ladish_virtualizer_get_our_clients_count(
   return virtualizer_ptr->our_clients_count;
 }
 
+bool
+ladish_virtualizer_is_hidden_app(
+  ladish_virtualizer_handle handle,
+  const char * app_name)
+{
+  ladish_client_handle jclient;
+  ladish_graph_handle vgraph;
+  uuid_t vclient_uuid;
+  ladish_client_handle vclient;
+
+  //ladish_graph_dump(g_studio.jack_graph);
+
+  jclient = ladish_graph_find_client_by_name(virtualizer_ptr->jack_graph, app_name);
+  if (jclient == NULL)
+  {
+    ASSERT_NO_PASS;
+    return true;
+  }
+
+  vgraph = ladish_client_get_vgraph(jclient);
+  if (vgraph == NULL)
+  {
+    ASSERT_NO_PASS;
+    return true;
+  }
+
+  //ladish_graph_dump(vgraph);
+
+  if (!ladish_graph_client_looks_empty(virtualizer_ptr->jack_graph, jclient) ||
+      !ladish_graph_client_is_hidden(virtualizer_ptr->jack_graph, jclient))
+  {
+    return false;
+  }
+
+  if (!ladish_client_get_interlink(jclient, vclient_uuid))
+  {
+    log_error("jack client of app '%s' has no interlinked vgraph client", app_name);
+    ASSERT_NO_PASS;
+    return true;
+  }
+
+  vclient = ladish_graph_find_client_by_uuid(vgraph, vclient_uuid);
+  if (vclient == NULL)
+  {
+    ASSERT_NO_PASS;
+    return true;
+  }
+
+  if (!ladish_graph_client_looks_empty(vgraph, vclient))
+  {
+    return false;
+  }
+
+  ASSERT(ladish_graph_client_is_hidden(vgraph, vclient)); /* vclients are automatically hidden when they start looking empty (on port disappear) */
+  return true;
+}
+
+void
+ladish_virtualizer_remove_app(
+  ladish_virtualizer_handle handle,
+  const char * app_name)
+{
+  ladish_client_handle jclient;
+  ladish_graph_handle vgraph;
+  uuid_t vclient_uuid;
+  ladish_client_handle vclient;
+
+  //ladish_graph_dump(g_studio.jack_graph);
+
+  jclient = ladish_graph_find_client_by_name(virtualizer_ptr->jack_graph, app_name);
+  if (jclient == NULL)
+  {
+    ASSERT_NO_PASS;
+    return;
+  }
+
+  vgraph = ladish_client_get_vgraph(jclient);
+  if (vgraph == NULL)
+  {
+    ASSERT_NO_PASS;
+    return;
+  }
+
+  //ladish_graph_dump(vgraph);
+
+  ladish_graph_remove_client(virtualizer_ptr->jack_graph, jclient);
+  if (!ladish_client_get_interlink(jclient, vclient_uuid))
+  {
+    log_error("jack client of app '%s' has no interlinked vgraph client", app_name);
+    ladish_graph_dump(g_studio.jack_graph);
+    ladish_graph_dump(vgraph);
+    ASSERT_NO_PASS;
+    return;
+  }
+
+  vclient = ladish_graph_find_client_by_uuid(vgraph, vclient_uuid);
+  if (vclient == NULL)
+  {
+    ASSERT_NO_PASS;
+    return;
+  }
+
+  ladish_graph_remove_client(vgraph, vclient);
+  ladish_graph_dump(g_studio.jack_graph);
+  ladish_graph_dump(vgraph);
+}
+
 void
 ladish_virtualizer_destroy(
   ladish_virtualizer_handle handle)

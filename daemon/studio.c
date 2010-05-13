@@ -649,6 +649,11 @@ struct ladish_cqueue * ladish_studio_get_cmd_queue(void)
   return &g_studio.cmd_queue;
 }
 
+ladish_virtualizer_handle ladish_studio_get_virtualizer(void)
+{
+  return g_studio.virtualizer;
+}
+
 struct ladish_studio_app_supervisor_match_context
 {
   const char * opath;
