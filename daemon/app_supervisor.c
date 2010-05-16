@@ -125,6 +125,8 @@ struct ladish_app * ladish_app_supervisor_find_app_by_id_internal(struct ladish_
 
 void remove_app_internal(struct ladish_app_supervisor * supervisor_ptr, struct ladish_app * app_ptr)
 {
+  ASSERT(app_ptr->pid == 0);    /* Removing not-stoped app? Zombies will make a rebellion! */
+
   list_del(&app_ptr->siblings);
 
   dbus_signal_emit(
@@ -848,7 +850,6 @@ static void set_app_properties(struct dbus_method_call * call_ptr)
 static void remove_app(struct dbus_method_call * call_ptr)
 {
   uint64_t id;
-  struct ladish_app * app_ptr;
 
   if (!dbus_message_get_args(
         call_ptr->message,
@@ -861,25 +862,10 @@ static void remove_app(struct dbus_method_call * call_ptr)
     return;
   }
 
-  app_ptr = ladish_app_supervisor_find_app_by_id_internal(supervisor_ptr, id);
-  if (app_ptr == NULL)
+  if (ladish_command_remove_app(call_ptr, ladish_studio_get_cmd_queue(), supervisor_ptr->opath, id))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "App with ID %"PRIu64" not found", id);
-    return;
+    method_return_new_void(call_ptr);
   }
-
-  if (app_ptr->pid != 0)
-  {
-    app_ptr->zombie = true;
-    app_ptr->state = LADISH_APP_STATE_STOPPING;
-    kill(app_ptr->pid, SIGTERM);
-  }
-  else
-  {
-    remove_app_internal(supervisor_ptr, app_ptr);
-  }
-
-  method_return_new_void(call_ptr);
 }
 
 static void is_app_running(struct dbus_method_call * call_ptr)
