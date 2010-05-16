@@ -93,7 +93,7 @@ static bool run_target_stop(struct ladish_command_change_app_state * cmd_ptr, la
     return true;
   }
 
-  if (!ladish_virtualizer_is_hidden_app(ladish_studio_get_virtualizer(), app_name))
+  if (!ladish_virtualizer_is_hidden_app(ladish_studio_get_jack_graph(), app_name))
   {
     log_info("Waiting '%s' client disappear (%s)...", app_name, cmd_ptr->target_state_description);
     return true;

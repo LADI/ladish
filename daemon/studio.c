@@ -654,6 +654,11 @@ ladish_virtualizer_handle ladish_studio_get_virtualizer(void)
   return g_studio.virtualizer;
 }
 
+ladish_graph_handle ladish_studio_get_jack_graph(void)
+{
+  return g_studio.jack_graph;
+}
+
 struct ladish_studio_app_supervisor_match_context
 {
   const char * opath;
