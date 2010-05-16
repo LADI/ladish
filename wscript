@@ -434,7 +434,9 @@ def build(bld):
                 Utils.pprint('CYAN', "doxygen documentation already built.")
 
 def get_tags_dirs():
-    source_root = os.path.relpath(os.path.dirname(Utils.g_module.root_path))
+    source_root = os.path.dirname(Utils.g_module.root_path)
+    if 'relpath' in os.path.__all__:
+        source_root = os.path.relpath(source_root)
     paths = source_root
     paths += " " + os.path.join(source_root, "common")
     paths += " " + os.path.join(source_root, "dbus")
