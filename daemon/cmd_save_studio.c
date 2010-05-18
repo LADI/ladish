@@ -772,7 +772,7 @@ static bool run(void * command_context)
 
   log_info("saving studio... (%s)", g_studio.filename);
 
-  fd = open(g_studio.filename, O_WRONLY | O_TRUNC | O_CREAT, 0700);
+  fd = open(g_studio.filename, O_WRONLY | O_TRUNC | O_CREAT, 0666);
   if (fd == -1)
   {
     log_error("open(%s) failed: %d (%s)", g_studio.filename, errno, strerror(errno));
