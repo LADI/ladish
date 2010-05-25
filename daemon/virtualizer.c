@@ -1050,7 +1050,7 @@ ladish_virtualizer_is_hidden_app(
   jclient = ladish_graph_find_client_by_name(jack_graph, app_name);
   if (jclient == NULL)
   {
-    ASSERT_NO_PASS;
+    log_info("destroying app without JACK client");
     return true;
   }
 
