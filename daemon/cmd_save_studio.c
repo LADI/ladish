@@ -665,22 +665,6 @@ struct ladish_command_save_studio
   char * studio_name;
 };
 
-static bool save_app(void * context, const char * name, bool running, const char * command, bool terminal, uint8_t level, pid_t pid)
-{
-  if (level == 1)
-  {
-    log_info("sending SIGUSR1 to '%s' with pid %u", name, (unsigned int)pid);
-    kill(pid, SIGUSR1);
-  }
-
-  return true;
-}
-
-static void save_apps(void)
-{
-  ladish_app_supervisor_enum(g_studio.app_supervisor, NULL, save_app);
-}
-
 #define cmd_ptr ((struct ladish_command_save_studio *)command_context)
 
 static bool run(void * command_context)
@@ -705,7 +689,7 @@ static bool run(void * command_context)
 
   ret = false;
 
-  save_apps();
+  ladish_app_supervisor_save_L1(g_studio.app_supervisor);
 
   if (!ladish_studio_is_started())
   {

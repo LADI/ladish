@@ -134,12 +134,23 @@ ladish_app_supervisor_enum(
   ladish_app_supervisor_enum_callback callback);
 
 /**
- * It is not clear what this function is supposed to do
+ * Remove stopped apps; For running apps, initiate stop and
+ * mark them as zombies thus causing app autoremove
+ * once it quits.
  *
  * @param[in] supervisor_handle supervisor object handle
  */
 void
 ladish_app_supervisor_clear(
+  ladish_app_supervisor_handle supervisor_handle);
+
+/**
+ * Send SIGUSR1 to all currently running L1 apps.
+ *
+ * @param[in] supervisor_handle supervisor object handle
+ */
+void
+ladish_app_supervisor_save_L1(
   ladish_app_supervisor_handle supervisor_handle);
 
 /**
@@ -258,22 +269,6 @@ const char * ladish_app_supervisor_get_opath(ladish_app_supervisor_handle superv
 bool ladish_app_supervisor_start_app(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle);
 
 /**
- * Stop an app. The app must be in started state.
- *
- * @param[in] supervisor_handle supervisor object handle
- * @param[in] app_handle Handle of app to stop
- */
-void ladish_app_supervisor_stop_app(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle);
-
-/**
- * Force kill an app. The app must be in started state.
- *
- * @param[in] supervisor_handle supervisor object handle
- * @param[in] app_handle Handle of app to kill
- */
-void ladish_app_supervisor_kill_app(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle);
-
-/**
  * Remove an app. The app must be in stopped state.
  *
  * @param[in] supervisor_handle supervisor object handle
@@ -321,6 +316,27 @@ bool ladish_app_is_running(ladish_app_handle app_handle);
  * @retval app name; the buffer is owned by the app supervisor
  */
 const char * ladish_app_get_name(ladish_app_handle app_handle);
+
+/**
+ * Stop an app. The app must be in started state.
+ *
+ * @param[in] app_handle Handle of app to stop
+ */
+void ladish_app_stop(ladish_app_handle app_handle);
+
+/**
+ * Force kill an app. The app must be in started state.
+ *
+ * @param[in] app_handle Handle of app to kill
+ */
+void ladish_app_kill(ladish_app_handle app_handle);
+
+/**
+ * Send SIGUSR1 signal to app. The app must be in started state.
+ *
+ * @param[in] app_handle Handle of app to send signal to
+ */
+void ladish_app_save_L1(ladish_app_handle app_handle);
 
 /**
  * D-Bus interface descriptor for the app supervisor interface. The call context must be a ::ladish_app_supervisor_handle

@@ -256,6 +256,17 @@ ladish_app_supervisor_add(
   return (ladish_app_handle)app_ptr;
 }
 
+static void ladish_app_send_signal(struct ladish_app * app_ptr, int sig)
+{
+  ASSERT(app_ptr->state = LADISH_APP_STATE_STARTED);
+  if (app_ptr->pid <= 0)
+  {
+    ASSERT_NO_PASS;
+    return;
+  }
+  kill(app_ptr->pid, sig);
+}
+
 void ladish_app_supervisor_clear(ladish_app_supervisor_handle supervisor_handle)
 {
   struct list_head * node_ptr;
@@ -268,9 +279,9 @@ void ladish_app_supervisor_clear(ladish_app_supervisor_handle supervisor_handle)
     if (app_ptr->pid != 0)
     {
       log_info("terminating '%s'...", app_ptr->name);
+      ladish_app_send_signal(app_ptr, SIGTERM);
       app_ptr->zombie = true;
       app_ptr->state = LADISH_APP_STATE_STOPPING;
-      kill(app_ptr->pid, SIGTERM);
     }
     else
     {
@@ -366,18 +377,6 @@ bool ladish_app_supervisor_start_app(ladish_app_supervisor_handle supervisor_han
   return true;
 }
 
-void ladish_app_supervisor_stop_app(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle)
-{
-  app_ptr->state = LADISH_APP_STATE_STOPPING;
-  kill(app_ptr->pid, SIGTERM);
-}
-
-void ladish_app_supervisor_kill_app(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle)
-{
-  app_ptr->state = LADISH_APP_STATE_KILL;
-  kill(app_ptr->pid, SIGKILL);
-}
-
 void ladish_app_supervisor_remove_app(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle)
 {
   remove_app_internal(supervisor_ptr, app_ptr);
@@ -396,6 +395,27 @@ bool ladish_app_is_running(ladish_app_handle app_handle)
 const char * ladish_app_get_name(ladish_app_handle app_handle)
 {
   return app_ptr->name;
+}
+
+void ladish_app_stop(ladish_app_handle app_handle)
+{
+  ladish_app_send_signal(app_ptr, SIGTERM);
+  app_ptr->state = LADISH_APP_STATE_STOPPING;
+}
+
+void ladish_app_kill(ladish_app_handle app_handle)
+{
+  ladish_app_send_signal(app_ptr, SIGKILL);
+  app_ptr->state = LADISH_APP_STATE_KILL;
+}
+
+void ladish_app_save_L1(ladish_app_handle app_handle)
+{
+  if (app_ptr->level == 1)
+  {
+    log_info("sending SIGUSR1 to '%s' with pid %u", app_ptr->name, (unsigned int)app_ptr->pid);
+    ladish_app_send_signal(app_ptr, SIGUSR1);
+  }
 }
 
 #undef app_ptr
@@ -436,10 +456,37 @@ void ladish_app_supervisor_stop(ladish_app_supervisor_handle supervisor_handle)
     app_ptr = list_entry(node_ptr, struct ladish_app, siblings);
     if (app_ptr->pid != 0)
     {
+      log_info("terminating '%s'...", app_ptr->name);
+      ladish_app_send_signal(app_ptr, SIGTERM);
       app_ptr->autorun = true;
       app_ptr->state = LADISH_APP_STATE_STOPPING;
-      log_info("terminating '%s'...", app_ptr->name);
-      kill(app_ptr->pid, SIGTERM);
+    }
+  }
+}
+
+void ladish_app_supervisor_save_L1(ladish_app_supervisor_handle supervisor_handle)
+{
+  struct list_head * node_ptr;
+  struct ladish_app * app_ptr;
+
+  list_for_each(node_ptr, &supervisor_ptr->applist)
+  {
+    app_ptr = list_entry(node_ptr, struct ladish_app, siblings);
+    if (app_ptr->state != LADISH_APP_STATE_STARTED)
+    {
+      continue;
+    }
+
+    if (app_ptr->pid == 0)
+    {
+      ASSERT_NO_PASS;
+      continue;
+    }
+
+    if (app_ptr->level == 1)
+    {
+      log_info("sending SIGUSR1 to '%s' with pid %u", app_ptr->name, (unsigned int)app_ptr->pid);
+      ladish_app_send_signal(app_ptr, SIGUSR1);
     }
   }
 }

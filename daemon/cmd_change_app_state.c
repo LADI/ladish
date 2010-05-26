@@ -39,7 +39,7 @@ struct ladish_command_change_app_state
   unsigned int target_state;
   const char * target_state_description;
   bool (* run_target)(struct ladish_command_change_app_state *, ladish_app_supervisor_handle, ladish_app_handle);
-  void (* initiate_stop)(ladish_app_supervisor_handle supervisor, ladish_app_handle app);
+  void (* initiate_stop)(ladish_app_handle app);
 };
 
 static bool run_target_start(struct ladish_command_change_app_state * cmd_ptr, ladish_app_supervisor_handle supervisor, ladish_app_handle app)
@@ -83,7 +83,7 @@ static bool run_target_stop(struct ladish_command_change_app_state * cmd_ptr, la
   {
     if (cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING)
     {
-      cmd_ptr->initiate_stop(supervisor, app);
+      cmd_ptr->initiate_stop(app);
       cmd_ptr->command.state = LADISH_COMMAND_STATE_WAITING;
       return true;
     }
@@ -182,12 +182,12 @@ bool ladish_command_change_app_state(void * call_ptr, struct ladish_cqueue * que
   case LADISH_APP_STATE_STOPPED:
     cmd_ptr->target_state_description = "stop";
     cmd_ptr->run_target = run_target_stop;
-    cmd_ptr->initiate_stop = ladish_app_supervisor_stop_app;
+    cmd_ptr->initiate_stop = ladish_app_stop;
     break;
   case LADISH_APP_STATE_KILL:
     cmd_ptr->target_state_description = "kill";
     cmd_ptr->run_target = run_target_stop;
-    cmd_ptr->initiate_stop = ladish_app_supervisor_kill_app;
+    cmd_ptr->initiate_stop = ladish_app_kill;
     break;
   default:
     ASSERT_NO_PASS;
