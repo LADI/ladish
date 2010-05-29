@@ -1071,8 +1071,15 @@ ladish_virtualizer_is_hidden_app(
 
   if (!ladish_client_get_interlink(jclient, vclient_uuid))
   {
-    log_error("jack client of app '%s' has no interlinked vgraph client", app_name);
-    ASSERT_NO_PASS;
+    if (ladish_graph_client_is_empty(jack_graph, jclient))
+    {
+      log_info("jack client of app '%s' has no interlinked vgraph client and no ports", app_name);
+    }
+    else
+    {
+      log_error("jack client of app '%s' has no interlinked vgraph client", app_name);
+      ASSERT_NO_PASS;
+    }
     return true;
   }
 
