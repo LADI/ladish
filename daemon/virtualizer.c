@@ -1044,6 +1044,9 @@ ladish_virtualizer_is_hidden_app(
   ladish_graph_handle vgraph;
   uuid_t vclient_uuid;
   ladish_client_handle vclient;
+  bool is_empty;
+  uuid_t jclient_uuid;
+  bool is_a2j;
 
   //ladish_graph_dump(g_studio.jack_graph);
 
@@ -1053,6 +1056,10 @@ ladish_virtualizer_is_hidden_app(
     log_info("App without JACK client is treated as hidden one");
     return true;
   }
+
+  ladish_client_get_uuid(jclient, jclient_uuid);
+  is_a2j = uuid_compare(jclient_uuid, g_a2j_uuid) == 0;
+  is_empty = ladish_graph_client_is_empty(jack_graph, jclient);
 
   vgraph = ladish_client_get_vgraph(jclient);
   if (vgraph == NULL)
@@ -1069,9 +1076,15 @@ ladish_virtualizer_is_hidden_app(
     return false;
   }
 
+  if (is_a2j)
+  {
+    /* The a2j jclient has no interlinked vclient */
+    return true;
+  }
+
   if (!ladish_client_get_interlink(jclient, vclient_uuid))
   {
-    if (ladish_graph_client_is_empty(jack_graph, jclient))
+    if (is_empty)
     {
       log_info("jack client of app '%s' has no interlinked vgraph client and no ports", app_name);
     }
@@ -1108,6 +1121,9 @@ ladish_virtualizer_remove_app(
   ladish_graph_handle vgraph;
   uuid_t vclient_uuid;
   ladish_client_handle vclient;
+  bool is_empty;
+  uuid_t jclient_uuid;
+  bool is_a2j;
 
   //ladish_graph_dump(g_studio.jack_graph);
 
@@ -1117,6 +1133,10 @@ ladish_virtualizer_remove_app(
     log_info("removing app without JACK client");
     return;
   }
+
+  ladish_client_get_uuid(jclient, jclient_uuid);
+  is_a2j = uuid_compare(jclient_uuid, g_a2j_uuid) == 0;
+  is_empty = ladish_graph_client_is_empty(jack_graph, jclient);
 
   vgraph = ladish_client_get_vgraph(jclient);
   if (vgraph == NULL)
@@ -1128,8 +1148,21 @@ ladish_virtualizer_remove_app(
   //ladish_graph_dump(vgraph);
 
   ladish_graph_remove_client(jack_graph, jclient);
+
+  if (is_a2j)
+  {
+    /* The a2j jclient has no interlinked vclient */
+    return;
+  }
+
   if (!ladish_client_get_interlink(jclient, vclient_uuid))
   {
+    if (is_empty)
+    {
+      /* jack client without ports and thus without vgraph client */
+      return;
+    }
+
     log_error("jack client of app '%s' has no interlinked vgraph client", app_name);
     ladish_graph_dump(g_studio.jack_graph);
     ladish_graph_dump(vgraph);
