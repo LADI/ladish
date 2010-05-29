@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to the D-Bus graph dict interface helpers
@@ -145,7 +145,7 @@ void ladish_dict_get_dbus(struct dbus_method_call * call_ptr)
   value = ladish_dict_get(dict, key);
   if (value == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_KEY_NOT_FOUND, "Key '%s' not found",  key);
+    //lash_dbus_error(call_ptr, LASH_DBUS_ERROR_KEY_NOT_FOUND, "Key '%s' not found",  key);
     return;
   }
 
