@@ -837,6 +837,11 @@ ladish_studio_iterate_virtual_graphs(
   return true;
 }
 
+bool ladish_studio_has_rooms(void)
+{
+  return !list_empty(&g_studio.rooms);
+}
+
 static bool ladish_studio_stop_app_supervisor(void * context, ladish_graph_handle graph, ladish_app_supervisor_handle app_supervisor)
 {
   ladish_app_supervisor_stop(app_supervisor);

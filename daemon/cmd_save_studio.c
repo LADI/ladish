@@ -698,6 +698,13 @@ static bool run(void * command_context)
     goto exit;
   }
 
+  if (ladish_studio_has_rooms())
+  {
+    log_error("Saving of studio with rooms is not implemented yet");
+    ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Saving of studio with rooms is not implemented yet", NULL);
+    goto exit;
+  }
+
   if (!ladish_studio_compose_filename(cmd_ptr->studio_name, &filename, &bak_filename))
   {
     log_error("failed to compose studio filename");
