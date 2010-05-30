@@ -860,7 +860,7 @@ interlink_client(
 
 static void interlink_clients(void)
 {
-  ladish_graph_iterate_nodes(g_studio.jack_graph, false, NULL, interlink_client, NULL, NULL);
+  ladish_graph_iterate_nodes(g_studio.jack_graph, false, NULL, NULL, interlink_client, NULL, NULL);
 }
 
 #define cmd_ptr ((struct ladish_command_load_studio *)command_context)

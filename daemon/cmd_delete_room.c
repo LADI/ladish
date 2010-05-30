@@ -117,7 +117,7 @@ found:
   if (cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING)
   {
     ladish_graph_clear_persist(graph);
-    ladish_graph_iterate_nodes(ladish_room_get_graph(room), false, room, NULL, uninit_room_ports, NULL);
+    ladish_graph_iterate_nodes(ladish_room_get_graph(room), false, NULL, room, NULL, uninit_room_ports, NULL);
     ladish_app_supervisor_stop(supervisor);
 
     cmd_ptr->command.state = LADISH_COMMAND_STATE_WAITING;

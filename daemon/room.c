@@ -303,6 +303,7 @@ ladish_room_iterate_link_ports(
   return ladish_graph_iterate_nodes(
     room_ptr->graph,
     false,
+    NULL,
     &context,
     ladish_room_iterate_link_ports_client_callback,
     ladish_room_iterate_link_ports_port_callback,
