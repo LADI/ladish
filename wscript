@@ -52,6 +52,17 @@ def add_cflag(conf, flag):
 def add_linkflag(conf, flag):
     conf.env.append_unique('LINKFLAGS', flag)
 
+def check_gcc_optimizations_enabled(flags):
+    gcc_optimizations_enabled = False
+    for flag in flags:
+        if len(flag) < 2 or flag[0] != '-' or flag[1] != 'O':
+            continue
+        if len(flag) == 2:
+            gcc_optimizations_enabled = True;
+        else:
+            gcc_optimizations_enabled = flag[2] != '0';
+    return gcc_optimizations_enabled
+
 def configure(conf):
     conf.check_tool('compiler_cc')
     conf.check_tool('compiler_cxx')
@@ -141,6 +152,20 @@ def configure(conf):
     if conf.env['BUILD_WERROR']:
         add_cflag(conf, '-Wall')
         add_cflag(conf, '-Werror')
+        # for pre gcc-4.4, enable optimizations so use of uninitialized variables gets detected
+        try:
+            is_gcc = conf.env['CC_NAME'] == 'gcc'
+            if is_gcc:
+                gcc_ver = []
+                for n in conf.env['CC_VERSION']:
+                    gcc_ver.append(int(n))
+                if gcc_ver[0] < 4 or gcc_ver[1] < 4:
+                    #print "optimize force enable is required"
+                    if not check_gcc_optimizations_enabled(conf.env['CCFLAGS']):
+                        print "C optimization forced in order to enable -Wuninitialized"
+                        conf.env.append_unique('CCFLAGS', "-O")
+        except:
+            pass
 
     conf.env['BUILD_DEBUG'] = not RELEASE or Options.options.debug
     if conf.env['BUILD_DEBUG']:
@@ -190,6 +215,9 @@ def configure(conf):
         display_line(conf,     'WARNING: You may need to adjust your D-Bus configuration after installing ladish', 'RED')
         display_line(conf,     'WARNING: You can override dbus service install directory', 'RED')
         display_line(conf,     'WARNING: with --enable-pkg-config-dbus-service-dir option to this script', 'RED')
+
+    display_msg(conf, 'C compiler flags', conf.env['CCFLAGS'])
+    display_msg(conf, 'C++ compiler flags', conf.env['CXXFLAGS'])
 
     display_msg(conf)
 
