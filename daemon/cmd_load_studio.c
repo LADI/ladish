@@ -73,6 +73,128 @@ struct parse_context
   uint8_t level;
 };
 
+static const char * get_string_attribute(const char * const * attr, const char * key)
+{
+  while (attr[0] != NULL)
+  {
+    ASSERT(attr[1] != NULL);
+    if (strcmp(attr[0], key) == 0)
+    {
+      return attr[1];
+    }
+    attr += 2;
+  }
+
+  log_error("attribute \"%s\" is missing");
+  return NULL;
+}
+
+static const char * get_uuid_attribute(const char * const * attr, const char * key, uuid_t uuid)
+{
+  const char * value;
+
+  value = get_string_attribute(attr, key);
+  if (value == NULL)
+  {
+    return NULL;
+  }
+
+  if (uuid_parse(value, uuid) != 0)
+  {
+    log_error("cannot parse uuid \"%s\"", value);
+    return NULL;
+  }
+
+  return value;
+}
+
+static const char * get_bool_attribute(const char * const * attr, const char * key, bool * bool_value_ptr)
+{
+  const char * value_str;
+
+  value_str = get_string_attribute(attr, key);
+  if (value_str == NULL)
+  {
+    return NULL;
+  }
+
+  if (strcmp(value_str, "true") == 0)
+  {
+    *bool_value_ptr = true;
+    return value_str;
+  }
+
+  if (strcmp(value_str, "false") == 0)
+  {
+    *bool_value_ptr = false;
+    return value_str;
+  }
+
+  log_error("boolean XML attribute has value of \"%s\" but only \"true\" and \"false\" are valid", value_str);
+  return NULL;
+}
+
+static const char * get_byte_attribute(const char * const * attr, const char * key, uint8_t * byte_value_ptr)
+{
+  const char * value_str;
+  long int li_value;
+  char * end_ptr;
+
+  value_str = get_string_attribute(attr, key);
+  if (value_str == NULL)
+  {
+    return NULL;
+  }
+
+  errno = 0;    /* To distinguish success/failure after call */
+  li_value = strtol(value_str, &end_ptr, 10);
+  if ((errno == ERANGE && (li_value == LONG_MAX || li_value == LONG_MIN)) || (errno != 0 && li_value == 0) || end_ptr == value_str)
+  {
+    log_error("value '%s' of attribute '%s' is not valid integer.", value_str, key);
+    return NULL;
+  }
+
+  if (li_value < 0 || li_value > 255)
+  {
+    log_error("value '%s' of attribute '%s' is not valid uint8.", value_str, key);
+    return NULL;
+  }
+
+  *byte_value_ptr = (uint8_t)li_value;
+  return value_str;
+}
+
+static
+bool
+get_name_and_uuid_attributes(
+  const char * element_description,
+  const char * const * attr,
+  const char ** name_str_ptr,
+  const char ** uuid_str_ptr,
+  uuid_t uuid)
+{
+  const char * name_str;
+  const char * uuid_str;
+
+  name_str = get_string_attribute(attr, "name");
+  if (name_str == NULL)
+  {
+    log_error("%s \"name\" attribute is not available", element_description);
+    return false;
+  }
+
+  uuid_str = get_uuid_attribute(attr, "uuid", uuid);
+  if (uuid_str == NULL)
+  {
+    log_error("%s \"uuid\" attribute is not available. name=\"%s\"", element_description, name_str);
+    return false;
+  }
+
+  *name_str_ptr = name_str;
+  *uuid_str_ptr = uuid_str;
+  return true;
+}
+
 #define context_ptr ((struct parse_context *)data)
 
 static void callback_chrdata(void * data, const XML_Char * s, int len)
@@ -100,12 +222,14 @@ static void callback_chrdata(void * data, const XML_Char * s, int len)
 
 static void callback_elstart(void * data, const char * el, const char ** attr)
 {
+  const char * name;
+  const char * path;
+  const char * uuid_str;
   uuid_t uuid;
+  const char * uuid2_str;
   uuid_t uuid2;
   ladish_port_handle port1;
   ladish_port_handle port2;
-  long int li_value;
-  char * end_ptr;
 
   if (context_ptr->error)
   {
@@ -143,14 +267,15 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
   if (strcmp(el, "parameter") == 0)
   {
     //log_info("<parameter>");
-    if ((attr[0] == NULL || attr[2] != NULL) || strcmp(attr[0], "path") != 0)
+    path = get_string_attribute(attr, "path");
+    if (path == NULL)
     {
-      log_error("<parameter> XML element must contain exactly one attribute, named \"path\"");
+      log_error("<parameter> XML element without \"path\" attribute");
       context_ptr->error = XML_TRUE;
       return;
     }
 
-    context_ptr->str = strdup(attr[1]);
+    context_ptr->str = strdup(path);
     if (context_ptr->str == NULL)
     {
       log_error("strdup() failed");
@@ -187,27 +312,13 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
         context_ptr->element[1] == PARSE_CONTEXT_JACK &&
         context_ptr->element[2] == PARSE_CONTEXT_CLIENTS)
     {
-      if (attr[0] == NULL ||
-          attr[1] == NULL ||
-          attr[2] == NULL ||
-          attr[3] == NULL ||
-          attr[4] != NULL ||
-          strcmp(attr[0], "name") != 0 ||
-          strcmp(attr[2], "uuid") != 0)
+      if (!get_name_and_uuid_attributes("/studio/jack/clients/client", attr, &name, &uuid_str, uuid))
       {
-        log_error("studio/jack/clients/client XML element must contain exactly two attributes, named \"name\" and \"uuid\", in this order");
         context_ptr->error = XML_TRUE;
         return;
       }
 
-      if (uuid_parse(attr[3], uuid) != 0)
-      {
-        log_error("cannot parse uuid \"%s\"", attr[3]);
-        context_ptr->error = XML_TRUE;
-        return;
-      }
-
-      log_info("jack client \"%s\" with uuid %s", attr[1], attr[3]);
+      log_info("jack client \"%s\" with uuid %s", name, uuid_str);
 
       if (!ladish_client_create(uuid, &context_ptr->client))
       {
@@ -217,9 +328,9 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
         return;
       }
 
-      if (!ladish_graph_add_client(g_studio.jack_graph, context_ptr->client, attr[1], true))
+      if (!ladish_graph_add_client(g_studio.jack_graph, context_ptr->client, name, true))
       {
-        log_error("ladish_graph_add_client() failed to add client '%s' to JACK graph", attr[1]);
+        log_error("ladish_graph_add_client() failed to add client '%s' to JACK graph", name);
         context_ptr->error = XML_TRUE;
         ladish_client_destroy(context_ptr->client);
         context_ptr->client = NULL;
@@ -230,27 +341,13 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
              context_ptr->element[0] == PARSE_CONTEXT_STUDIO &&
              context_ptr->element[1] == PARSE_CONTEXT_CLIENTS)
     {
-      if (attr[0] == NULL ||
-          attr[1] == NULL ||
-          attr[2] == NULL ||
-          attr[3] == NULL ||
-          attr[4] != NULL ||
-          strcmp(attr[0], "name") != 0 ||
-          strcmp(attr[2], "uuid") != 0)
+      if (!get_name_and_uuid_attributes("/studio/clients/client", attr, &name, &uuid_str, uuid))
       {
-        log_error("studio/clients/client XML element must contain exactly two attributes, named \"name\" and \"uuid\", in this order");
         context_ptr->error = XML_TRUE;
         return;
       }
 
-      if (uuid_parse(attr[3], uuid) != 0)
-      {
-        log_error("cannot parse uuid \"%s\"", attr[3]);
-        context_ptr->error = XML_TRUE;
-        return;
-      }
-
-      log_info("studio client \"%s\" with uuid %s", attr[1], attr[3]);
+      log_info("studio client \"%s\" with uuid %s", name, uuid_str);
 
       if (!ladish_client_create(uuid, &context_ptr->client))
       {
@@ -260,9 +357,9 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
         return;
       }
 
-      if (!ladish_graph_add_client(g_studio.studio_graph, context_ptr->client, attr[1], true))
+      if (!ladish_graph_add_client(g_studio.studio_graph, context_ptr->client, name, true))
       {
-        log_error("ladish_graph_add_client() failed to add client '%s' to studio graph", attr[1]);
+        log_error("ladish_graph_add_client() failed to add client '%s' to studio graph", name);
         context_ptr->error = XML_TRUE;
         ladish_client_destroy(context_ptr->client);
         context_ptr->client = NULL;
@@ -306,27 +403,13 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
         context_ptr->element[3] == PARSE_CONTEXT_CLIENT &&
         context_ptr->element[4] == PARSE_CONTEXT_PORTS)
     {
-      if (attr[0] == NULL ||
-          attr[1] == NULL ||
-          attr[2] == NULL ||
-          attr[3] == NULL ||
-          attr[4] != NULL ||
-          strcmp(attr[0], "name") != 0 ||
-          strcmp(attr[2], "uuid") != 0)
+      if (!get_name_and_uuid_attributes("/studio/jack/clients/client/ports/port", attr, &name, &uuid_str, uuid))
       {
-        log_error("studio/jack/clients/client/ports/port XML element must contain exactly two attributes, named \"name\" and \"uuid\", in this order");
         context_ptr->error = XML_TRUE;
         return;
       }
 
-      if (uuid_parse(attr[3], uuid) != 0)
-      {
-        log_error("cannot parse uuid \"%s\"", attr[3]);
-        context_ptr->error = XML_TRUE;
-        return;
-      }
-
-      log_info("jack port \"%s\" with uuid %s", attr[1], attr[3]);
+      log_info("jack port \"%s\" with uuid %s", name, uuid_str);
 
       if (!ladish_port_create(uuid, false, &context_ptr->port))
       {
@@ -334,7 +417,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
         return;
       }
 
-      if (!ladish_graph_add_port(g_studio.jack_graph, context_ptr->client, context_ptr->port, attr[1], 0, 0, true))
+      if (!ladish_graph_add_port(g_studio.jack_graph, context_ptr->client, context_ptr->port, name, 0, 0, true))
       {
         log_error("ladish_graph_add_port() failed.");
         ladish_port_destroy(context_ptr->port);
@@ -348,37 +431,23 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
              context_ptr->element[2] == PARSE_CONTEXT_CLIENT &&
              context_ptr->element[3] == PARSE_CONTEXT_PORTS)
     {
-      if (attr[0] == NULL ||
-          attr[1] == NULL ||
-          attr[2] == NULL ||
-          attr[3] == NULL ||
-          attr[4] != NULL ||
-          strcmp(attr[0], "name") != 0 ||
-          strcmp(attr[2], "uuid") != 0)
+      if (!get_name_and_uuid_attributes("/studio/clients/client/ports/port", attr, &name, &uuid_str, uuid))
       {
-        log_error("studio/clients/client/ports/port XML element must contain exactly two attributes, named \"name\" and \"uuid\", in this order");
         context_ptr->error = XML_TRUE;
         return;
       }
 
-      if (uuid_parse(attr[3], uuid) != 0)
-      {
-        log_error("cannot parse uuid \"%s\"", attr[3]);
-        context_ptr->error = XML_TRUE;
-        return;
-      }
-
-      log_info("studio port \"%s\" with uuid %s", attr[1], attr[3]);
+      log_info("studio port \"%s\" with uuid %s", name, uuid_str);
 
       context_ptr->port = ladish_graph_find_port_by_uuid(g_studio.jack_graph, uuid, false);
       if (context_ptr->port == NULL)
       {
-        log_error("studio client with non-jack port %s", attr[3]);
+        log_error("studio client with non-jack port %s", uuid_str);
         context_ptr->error = XML_TRUE;
         return;
       }
 
-      if (!ladish_graph_add_port(g_studio.studio_graph, context_ptr->client, context_ptr->port, attr[1], 0, 0, true))
+      if (!ladish_graph_add_port(g_studio.studio_graph, context_ptr->client, context_ptr->port, name, 0, 0, true))
       {
         log_error("ladish_graph_add_port() failed.");
         ladish_port_destroy(context_ptr->port);
@@ -402,39 +471,28 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
     //log_info("<connection>");
     context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_CONNECTION;
 
-    if (attr[0] == NULL ||
-        attr[1] == NULL ||
-        attr[2] == NULL ||
-        attr[3] == NULL ||
-        attr[4] != NULL ||
-        strcmp(attr[0], "port1") != 0 ||
-        strcmp(attr[2], "port2") != 0)
+    uuid_str = get_uuid_attribute(attr, "port1", uuid);
+    if (uuid_str == NULL)
     {
-      log_error("studio/connections/connection XML element must contain exactly two attributes, named \"port1\" and \"port2\", in this order");
+      log_error("/studio/connections/connection \"port1\" attribute is not available.");
       context_ptr->error = XML_TRUE;
       return;
     }
 
-    if (uuid_parse(attr[1], uuid) != 0)
+    uuid2_str = get_uuid_attribute(attr, "port2", uuid2);
+    if (uuid2_str == NULL)
     {
-      log_error("cannot parse uuid \"%s\"", attr[1]);
+      log_error("/studio/connections/connection \"port2\" attribute is not available.");
       context_ptr->error = XML_TRUE;
       return;
     }
 
-    if (uuid_parse(attr[3], uuid2) != 0)
-    {
-      log_error("cannot parse uuid \"%s\"", attr[3]);
-      context_ptr->error = XML_TRUE;
-      return;
-    }
-
-    log_info("studio connection between port %s and port %s", attr[1], attr[3]);
+    log_info("studio connection between port %s and port %s", uuid_str, uuid2_str);
 
     port1 = ladish_graph_find_port_by_uuid(g_studio.studio_graph, uuid, false);
     if (port1 == NULL)
     {
-      log_error("studio client with unknown port %s", attr[1]);
+      log_error("studio client with unknown port %s", uuid_str);
       context_ptr->error = XML_TRUE;
       return;
     }
@@ -442,7 +500,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
     port2 = ladish_graph_find_port_by_uuid(g_studio.studio_graph, uuid2, false);
     if (port2 == NULL)
     {
-      log_error("studio client with unknown port %s", attr[3]);
+      log_error("studio client with unknown port %s", uuid2_str);
       context_ptr->error = XML_TRUE;
       return;
     }
@@ -469,66 +527,42 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
     //log_info("<application>");
     context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_APPLICATION;
 
-    if (attr[0] == NULL ||
-        attr[1] == NULL ||
-        attr[2] == NULL ||
-        attr[3] == NULL ||
-        attr[4] == NULL ||
-        attr[5] == NULL ||
-        attr[6] == NULL ||
-        attr[7] == NULL ||
-        attr[8] != NULL ||
-        strcmp(attr[0], "name") != 0 ||
-        strcmp(attr[2], "terminal") != 0 ||
-        strcmp(attr[4], "level") != 0 ||
-        strcmp(attr[6], "autorun") != 0)
+    name = get_string_attribute(attr, "name");
+    if (name == NULL)
     {
-      log_error("'application' XML element must contain exactly four attributes, named \"name\", \"terminal\", \"level\" and \"autorun\", in this order");
+      log_error("application \"name\" attribute is not available.");
       context_ptr->error = XML_TRUE;
       return;
     }
 
-    if (strcmp(attr[3], "true") != 0 && strcmp(attr[3], "false") != 0)
+    if (get_bool_attribute(attr, "terminal", &context_ptr->terminal) == NULL)
     {
-      log_error("'application@terminal' XML attribute is boolean and the only valid values are \"true\" and \"false\"");
+      log_error("application \"terminal\" attribute is not available. name=\"%s\"", name);
       context_ptr->error = XML_TRUE;
       return;
     }
 
-    if (strcmp(attr[7], "true") != 0 && strcmp(attr[7], "false") != 0)
+    if (get_bool_attribute(attr, "autorun", &context_ptr->autorun) == NULL)
     {
-      log_error("'application@autorun' XML attribute is boolean and the only valid values are \"true\" and \"false\"");
+      log_error("application \"autorun\" attribute is not available. name=\"%s\"", name);
       context_ptr->error = XML_TRUE;
       return;
     }
 
-    errno = 0;    /* To distinguish success/failure after call */
-    li_value = strtol(attr[5], &end_ptr, 10);
-    if ((errno == ERANGE && (li_value == LONG_MAX || li_value == LONG_MIN)) || (errno != 0 && li_value == 0) || end_ptr == attr[5])
+    if (get_byte_attribute(attr, "level", &context_ptr->level) == NULL)
     {
-      log_error("'application@level' XML attribute '%s' is not valid integer.", attr[5]);
+      log_error("application \"level\" attribute is not available. name=\"%s\"", name);
       context_ptr->error = XML_TRUE;
       return;
     }
 
-    if (li_value < 0 || li_value > 255)
-    {
-      log_error("'application@level' XML attribute '%s' is not valid uint8.", attr[5]);
-      context_ptr->error = XML_TRUE;
-      return;
-    }
-
-    context_ptr->str = strdup(attr[1]);
+    context_ptr->str = strdup(name);
     if (context_ptr->str == NULL)
     {
       log_error("strdup() failed");
       context_ptr->error = XML_TRUE;
       return;
     }
-
-    context_ptr->terminal = strcmp(attr[3], "true") == 0;
-    context_ptr->autorun = strcmp(attr[7], "true") == 0;
-    context_ptr->level = (uint8_t)li_value;
 
     context_ptr->data_used = 0;
     return;
@@ -595,17 +629,15 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
         return;
     }
 
-    if (attr[0] == NULL ||
-        attr[1] == NULL ||
-        attr[2] != NULL ||
-        strcmp(attr[0], "name") != 0)
+    name = get_string_attribute(attr, "name");
+    if (name == NULL)
     {
-      log_error("dict/key XML element must contain exactly one attributes, named \"name\".");
+      log_error("dict/key \"name\" attribute is not available.");
       context_ptr->error = XML_TRUE;
       return;
     }
 
-    context_ptr->str = strdup(attr[1]);
+    context_ptr->str = strdup(name);
     if (context_ptr->str == NULL)
     {
       log_error("strdup() failed");
