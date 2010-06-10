@@ -51,6 +51,13 @@ ladish_studio_iterate_virtual_graphs(
     ladish_graph_handle graph,
     ladish_app_supervisor_handle app_supervisor));
 
+bool
+ladish_studio_iterate_rooms(
+  void * context,
+  bool (* callback)(
+    void * context,
+    ladish_room_handle room));
+
 void ladish_studio_stop_app_supervisors(void);
 ladish_app_supervisor_handle ladish_studio_find_app_supervisor(const char * opath);
 struct ladish_cqueue * ladish_studio_get_cmd_queue(void);

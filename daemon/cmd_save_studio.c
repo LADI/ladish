@@ -360,6 +360,156 @@ save_jack_port(
   return true;
 }
 
+static
+bool
+save_room_port(
+  void * context,
+  ladish_port_handle port,
+  const char * name,
+  uint32_t type,
+  uint32_t flags)
+{
+  uuid_t uuid;
+  char str[37];
+  bool midi;
+  const char * type_str;
+  bool playback;
+  const char * direction_str;
+  ladish_dict_handle dict;
+
+  ladish_port_get_uuid(port, uuid);
+  uuid_unparse(uuid, str);
+
+  playback = (flags & JACKDBUS_PORT_FLAG_INPUT) != 0;
+  ASSERT(playback || (flags & JACKDBUS_PORT_FLAG_OUTPUT) != 0); /* playback or capture */
+  ASSERT(!(playback && (flags & JACKDBUS_PORT_FLAG_OUTPUT) != 0)); /* but not both */
+  direction_str = playback ? "playback" : "capture";
+
+  midi = type == JACKDBUS_PORT_TYPE_MIDI;
+  ASSERT(midi || type == JACKDBUS_PORT_TYPE_AUDIO); /* midi or audio */
+  ASSERT(!(midi && type == JACKDBUS_PORT_TYPE_AUDIO)); /* but not both */
+  type_str = midi ? "midi" : "audio";
+
+  log_info("saving studio room %s %s port '%s' (%s)", direction_str, type_str, name, str);
+
+  if (!write_string(fd, "      <port name=\""))
+  {
+    return false;
+  }
+
+  if (!write_string(fd, name))
+  {
+    return false;
+  }
+
+  if (!write_string(fd, "\" uuid=\""))
+  {
+    return false;
+  }
+
+  if (!write_string(fd, str))
+  {
+    return false;
+  }
+
+  if (!write_string(fd, "\" type=\""))
+  {
+    return false;
+  }
+
+  if (!write_string(fd, type_str))
+  {
+    return false;
+  }
+
+  if (!write_string(fd, "\" direction=\""))
+  {
+    return false;
+  }
+
+  if (!write_string(fd, direction_str))
+  {
+    return false;
+  }
+
+  dict = ladish_port_get_dict(port);
+  if (ladish_dict_is_empty(dict))
+  {
+    if (!write_string(fd, "\" />\n"))
+    {
+      return false;
+    }
+  }
+  else
+  {
+    if (!write_string(fd, "\">\n"))
+    {
+      return false;
+    }
+
+    if (!write_dict(fd, "        ", dict))
+    {
+      return false;
+    }
+
+    if (!write_string(fd, "      </port>\n"))
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+static bool save_studio_room(void * context, ladish_room_handle room)
+{
+  uuid_t uuid;
+  char str[37];
+
+  log_info("saving room '%s'", ladish_room_get_name(room));
+
+  if (!write_string(fd, "    <room name=\""))
+  {
+    return false;
+  }
+
+  if (!write_string(fd, ladish_room_get_name(room)))
+  {
+    return false;
+  }
+
+  if (!write_string(fd, "\" uuid=\""))
+  {
+    return false;
+  }
+
+  ladish_room_get_uuid(room, uuid);
+  uuid_unparse(uuid, str);
+
+  if (!write_string(fd, str))
+  {
+    return false;
+  }
+
+  if (!write_string(fd, "\">\n"))
+  {
+    return false;
+  }
+
+  if (!ladish_room_iterate_link_ports(room, context, save_room_port))
+  {
+    log_error("ladish_room_iterate_link_ports() failed");
+    return false;
+  }
+
+  if (!write_string(fd, "    </room>\n"))
+  {
+    return false;
+  }
+
+  return true;
+}
+
 bool
 save_studio_client_begin(
   void * context,
@@ -433,6 +583,26 @@ save_studio_client_end(
   return true;
 }
 
+static bool get_studio_port_uuids(ladish_port_handle port, uuid_t uuid, uuid_t link_uuid)
+{
+  bool link;
+
+  link = ladish_port_is_link(port);
+  if (link)
+  {
+    /* get the generated port uuid that is used for identification in studio graph */
+    ladish_graph_get_port_uuid(g_studio.studio_graph, port, uuid);
+  }
+
+  if (!link || link_uuid != NULL)
+  {
+    /* get the real port uuid that is same in both room and studio graphs */
+    ladish_port_get_uuid(port, link ? link_uuid : uuid);
+  }
+
+  return link;
+}
+
 bool
 save_studio_port(
   void * context,
@@ -445,13 +615,23 @@ save_studio_port(
   uint32_t port_flags)
 {
   uuid_t uuid;
+  bool link;
+  uuid_t link_uuid;
   char str[37];
+  char link_str[37];
   ladish_dict_handle dict;
 
-  ladish_port_get_uuid(port_handle, uuid);
+  link = get_studio_port_uuids(port_handle, uuid, link_uuid);
   uuid_unparse(uuid, str);
-
-  log_info("saving studio port '%s':'%s' (%s)", client_name, port_name, str);
+  if (link)
+  {
+    uuid_unparse(link_uuid, link_str);
+    log_info("saving studio link port '%s':'%s' (%s link=%s)", client_name, port_name, str, link_str);
+  }
+  else
+  {
+    log_info("saving studio port '%s':'%s' (%s)", client_name, port_name, str);
+  }
 
   if (!write_string(fd, "        <port name=\""))
   {
@@ -471,6 +651,19 @@ save_studio_port(
   if (!write_string(fd, str))
   {
     return false;
+  }
+
+  if (link)
+  {
+    if (!write_string(fd, "\" link_uuid=\""))
+    {
+      return false;
+    }
+
+    if (!write_string(fd, link_str))
+    {
+      return false;
+    }
   }
 
   dict = ladish_port_get_dict(port_handle);
@@ -514,7 +707,7 @@ bool save_studio_connection(void * context, ladish_port_handle port1_handle, lad
     return false;
   }
 
-  ladish_port_get_uuid(port1_handle, uuid);
+  get_studio_port_uuids(port1_handle, uuid, NULL);
   uuid_unparse(uuid, str);
 
   if (!write_string(fd, str))
@@ -527,7 +720,7 @@ bool save_studio_connection(void * context, ladish_port_handle port1_handle, lad
     return false;
   }
 
-  ladish_port_get_uuid(port2_handle, uuid);
+  get_studio_port_uuids(port2_handle, uuid, NULL);
   uuid_unparse(uuid, str);
 
   if (!write_string(fd, str))
@@ -698,13 +891,6 @@ static bool run(void * command_context)
     goto exit;
   }
 
-  if (ladish_studio_has_rooms())
-  {
-    log_error("Saving of studio with rooms is not implemented yet");
-    ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Saving of studio with rooms is not implemented yet", NULL);
-    goto exit;
-  }
-
   if (!ladish_studio_compose_filename(cmd_ptr->studio_name, &filename, &bak_filename))
   {
     log_error("failed to compose studio filename");
@@ -856,6 +1042,25 @@ static bool run(void * command_context)
   if (!write_string(fd, "  </jack>\n"))
   {
     goto close;
+  }
+
+  if (ladish_studio_has_rooms())
+  {
+    if (!write_string(fd, "  <rooms>\n"))
+    {
+      goto close;
+    }
+
+    if (!ladish_studio_iterate_rooms(&save_context, save_studio_room))
+    {
+      log_error("ladish_studio_iterate_rooms() failed");
+      goto close;
+    }
+
+    if (!write_string(fd, "  </rooms>\n"))
+    {
+      goto close;
+    }
   }
 
   if (!write_string(fd, "  <clients>\n"))
