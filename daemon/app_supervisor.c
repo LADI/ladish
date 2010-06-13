@@ -658,6 +658,12 @@ static void run_custom(struct dbus_method_call * call_ptr)
 
   log_info("run_custom('%s', %s, '%s', %"PRIu8") called", name, terminal ? "terminal" : "shell", commandline, level);
 
+  if (level != 0 && level != 1)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "invalid level %"PRIu8, level);
+    return;
+  }
+
   if (ladish_command_new_app(
         call_ptr,
         ladish_studio_get_cmd_queue(),
