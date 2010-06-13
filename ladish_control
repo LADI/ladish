@@ -30,6 +30,7 @@ studio_object_path = "/org/ladish/Studio"
 
 control_interface_name = 'org.ladish.Control'
 studio_interface_name = 'org.ladish.Studio'
+app_supervisor_interface_name = 'org.ladish.AppSupervisor'
 
 import sys
 import os
@@ -93,9 +94,55 @@ def dbus_typesig_to_type_string(type_char):
     print('unknown dbus typesig')
     return None                         # throw exception here?
 
+def parse_new_app_args(params_array):
+    #print params_array
+    cmdline = params_array[0]
+    index = 1
+
+    name = ''
+    level = 0
+    term = False
+
+    if index < len(params_array):
+        if params_array[index] == '-':
+            return index + 1, cmdline, name, level, term
+        name = params_array[index]
+        index += 1
+
+    if index < len(params_array):
+        if params_array[index] == '-':
+            return index + 1, cmdline, name, level, term
+        # direct conversion to dbus.Byte is wrong because ord() is used ("1" -> 0x31 instead of "1" -> 0x01)
+        level = int(params_array[index])
+        index += 1
+
+    if index < len(params_array):
+        if params_array[index] == '-':
+            return index + 1, cmdline, name, level, term
+        if params_array[index] == 'term':
+            term = True
+            index += 1
+
+    if index < len(params_array) and  params_array[index] == '-':
+        index += 1
+
+    return index, cmdline, name, level, term
+
+def add_app(obj, cmdline, name, level, term):
+    dbus.Interface(obj, app_supervisor_interface_name).RunCustom(term, cmdline, name, level)
+
+def get_room_obj_by_name(bus, studio_iface, room_name):
+    for room in studio_iface.GetRoomList():
+        #print repr(room)
+        opath = room[0]
+        name = room[1]["name"]
+        if name == room_name:
+            return bus.get_object(service_name, opath)
+
 def main():
     if len(sys.argv) == 1:
-        print("Usage: %s [command] [command] ..." % os.path.basename(sys.argv[0]))
+        argv0 = os.path.basename(sys.argv[0])
+        print("Usage: %s [command] [command] ..." % argv0)
         print("Commands:")
         print("    exit                      - exit ladish dbus service")
         print("    slist                     - list studios")
@@ -116,6 +163,28 @@ def main():
         print("    snewroom <rname> <rtname> - create new studio room")
         print("    srlist                    - list studio rooms")
         print("    sdelroom <rname>          - delete studio room")
+        print("    snewapp <appargs>         - add new app to studio (see below for more info)")
+        print("    rnewapp <rname> <appargs> - add new app to room (see below for more info)")
+        print("");
+        print("Add new app arguments:");
+        print("    <commandline> [<name> [<level>] [term]] [-]");
+        print("");
+        print("    <commandline> - the commandline to execut");
+        print("    <name>  - app name");
+        print("    <level> - level, default is 0");
+        print("    term    - if specified, app will be run in terminal");
+        print("    -       - marks end of new app params, useful if there are other commands following");
+        print("");
+        print("Examples:");
+        print("");
+        print(" * Add to studio jack_mixer instance named \"mixer\", at level 1, without terminal");
+        print("");
+        print("    $ %s snewapp jack_mixer mixer 1" % argv0);
+        print("");
+        print(" * Add to room \"main\" fluidjack instance named \"fluid\", at level 0, with terminal");
+        print("");
+        print("    $ %s rnewapp main \"fluidjack FluidR3.SF2\" fluid 0 term" % argv0);
+        print("");
         sys.exit(0)
     
     bus = dbus.SessionBus()
@@ -281,6 +350,20 @@ def main():
                     index += 1
 
                     studio_iface.DeleteRoom(arg)
+                elif arg == 'snewapp':
+                    print("--- new studio app")
+                    count, cmdline, name, level, term = parse_new_app_args(sys.argv[index:])
+                    index += count
+                    add_app(studio_obj, cmdline, name, level, term)
+                elif arg == 'rnewapp':
+                    print("--- new room app")
+                    arg = sys.argv[index]
+                    index += 1
+
+                    count, cmdline, name, level, term = parse_new_app_args(sys.argv[index:])
+                    index += count
+
+                    add_app(get_room_obj_by_name(bus, studio_iface, arg), cmdline, name, level, term)
                 else:
                     print("Unknown command '%s'" % arg)
         except dbus.DBusException, e:
