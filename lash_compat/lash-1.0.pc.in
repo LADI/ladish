@@ -3,10 +3,9 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: LASH
+Name: LASH (ladish)
 Description: Audio session management
-Requires: @PC_REQUIRES@
-Version: @PACKAGE_VERSION@
+Version: 0.6.0
 Libs: -L${libdir} -llash
-Libs.static: -lpthread -luuid
+Libs.static:
 Cflags: -I${includedir}/lash-1.0

@@ -93,6 +93,8 @@ def configure(conf):
     else:
         conf.env['DBUS_SERVICES_DIR'] = os.path.join(os.path.normpath(conf.env['PREFIX']), 'share', 'dbus-1', 'services')
 
+    conf.env['LIBDIR'] = os.path.join(os.path.normpath(conf.env['PREFIX']), 'lib')
+
     conf.env['BUILD_LIBLASH'] = Options.options.enable_liblash
     conf.env['BUILD_DOXYGEN_DOCS'] = Options.options.doxygen
 
@@ -332,6 +334,20 @@ def build(bld):
         liblash.vnum = "1.1.1"
         liblash.defines = ['LOG_OUTPUT_STDOUT']
         liblash.source = [os.path.join("lash_compat", "liblash", 'lash.c')]
+
+        bld.install_files('${PREFIX}/include/lash', 'lash_compat/liblash/lash/*.h')
+
+        # process lash-1.0.pc.in -> lash-1.0.pc
+        obj = bld.new_task_gen('subst')
+        obj.source = [os.path.join("lash_compat", 'lash-1.0.pc.in')]
+        obj.target = 'lash-1.0.pc'
+        obj.dict = {'prefix': bld.env['PREFIX'],
+                    'exec_prefix': bld.env['PREFIX'],
+                    'libdir': bld.env['LIBDIR'],
+                    'includedir': os.path.normpath(bld.env['PREFIX'] + '/include'),
+                    }
+        obj.install_path = '${LIBDIR}/pkgconfig/'
+        obj.fun = misc.subst_func
 
     obj = bld.new_task_gen('subst')
     obj.source = os.path.join('daemon', 'dbus.service.in')
