@@ -42,6 +42,7 @@ struct dbus_object_path
   char * name;
   DBusMessage * introspection;
   struct dbus_object_path_interface * ifaces;
+  bool registered;
 };
 
 #define write_buf(args...) buf_ptr += sprintf(buf_ptr, ## args)
@@ -288,6 +289,8 @@ dbus_object_path dbus_object_path_new(const char *name, const struct dbus_interf
   iface_dst_ptr++;
   iface_dst_ptr->iface = NULL;
 
+  opath_ptr->registered = false;
+
   return (dbus_object_path)opath_ptr;
 
 free_ifaces:
@@ -302,11 +305,21 @@ fail:
 
 #define opath_ptr ((struct dbus_object_path *)data)
 
+void dbus_object_path_unregister(DBusConnection * connection_ptr, dbus_object_path data)
+{
+  ASSERT(opath_ptr->registered);
+
+  if (!dbus_connection_unregister_object_path(connection_ptr, opath_ptr->name))
+  {
+    log_error("dbus_connection_unregister_object_path() failed.");
+  }
+}
+
 void dbus_object_path_destroy(DBusConnection * connection_ptr, dbus_object_path data)
 {
   log_debug("Destroying object path");
 
-  if (connection_ptr != NULL && !dbus_connection_unregister_object_path(connection_ptr, opath_ptr->name))
+  if (opath_ptr->registered && connection_ptr != NULL && !dbus_connection_unregister_object_path(connection_ptr, opath_ptr->name))
   {
     log_error("dbus_connection_unregister_object_path() failed.");
   }
@@ -403,6 +416,8 @@ bool dbus_object_path_register(DBusConnection * connection_ptr, dbus_object_path
 {
   log_debug("Registering object path \"%s\"", opath_ptr->name);
 
+  ASSERT(!opath_ptr->registered);
+
   DBusObjectPathVTable vtable =
   {
     dbus_object_path_handler_unregister,
@@ -410,7 +425,13 @@ bool dbus_object_path_register(DBusConnection * connection_ptr, dbus_object_path
     NULL, NULL, NULL, NULL
   };
 
-  return dbus_connection_register_object_path(connection_ptr, opath_ptr->name, &vtable, opath_ptr);
+  if (!dbus_connection_register_object_path(connection_ptr, opath_ptr->name, &vtable, opath_ptr))
+  {
+    return false;
+  }
+
+  opath_ptr->registered = true;
+  return true;
 }
 
 #undef opath_ptr

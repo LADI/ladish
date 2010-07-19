@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -34,6 +34,7 @@ typedef struct dbus_object_path_tag { int unused; } * dbus_object_path;
 
 dbus_object_path dbus_object_path_new(const char * name, const struct dbus_interface_descriptor * iface, ...);
 bool dbus_object_path_register(DBusConnection * connection_ptr, dbus_object_path opath);
+void dbus_object_path_unregister(DBusConnection * connection_ptr, dbus_object_path opath);
 void dbus_object_path_destroy(DBusConnection * connection_ptr, dbus_object_path opath);
 
 #endif /* __LASH_DBUS_OBJECT_PATH_H__ */
