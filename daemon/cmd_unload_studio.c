@@ -37,10 +37,12 @@ static bool run(void * context)
 
   ladish_graph_dump(g_studio.studio_graph);
   ladish_graph_dump(g_studio.jack_graph);
+
+  /* remove rooms that own clients in studio graph before clearing it */
+  ladish_studio_remove_all_rooms();
+
   ladish_graph_clear(g_studio.studio_graph, NULL);
   ladish_graph_clear(g_studio.jack_graph, NULL);
-
-  ladish_studio_remove_all_rooms();
 
   ladish_studio_jack_conf_clear();
 

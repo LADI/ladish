@@ -183,7 +183,7 @@ static bool ladish_studio_fill_room_info(DBusMessageIter * iter_ptr, ladish_room
   return true;
 }
 
-void ladish_studio_emit_room_appeared(ladish_room_handle room)
+static void ladish_studio_emit_room_appeared(ladish_room_handle room)
 {
   DBusMessage * message_ptr;
   DBusMessageIter iter;
@@ -225,6 +225,18 @@ void ladish_studio_emit_room_disappeared(ladish_room_handle room)
   }
 
   dbus_message_unref(message_ptr);
+}
+
+void ladish_studio_room_appeared(ladish_room_handle room)
+{
+  list_add_tail(ladish_room_get_list_node(room), &g_studio.rooms);
+  ladish_studio_emit_room_appeared(room);
+}
+
+void ladish_studio_room_disappeared(ladish_room_handle room)
+{
+  list_del(ladish_room_get_list_node(room));
+  ladish_studio_emit_room_disappeared(room);
 }
 
 bool
@@ -880,6 +892,27 @@ void ladish_studio_emit_renamed(void)
   dbus_signal_emit(g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioRenamed", "s", &g_studio.name);
 }
 
+unsigned int ladish_studio_get_room_index(void)
+{
+  return ++g_studio.room_count;
+}
+
+void ladish_studio_release_room_index(unsigned int index)
+{
+  if (index == g_studio.room_count)
+  {
+    g_studio.room_count--;
+  }
+}
+
+void ladish_studio_remove_all_rooms(void)
+{
+  while (!list_empty(&g_studio.rooms))
+  {
+    ladish_room_destroy(ladish_room_from_list_node(g_studio.rooms.next));
+  }
+}
+
 /**********************************************************************************/
 /*                                D-Bus methods                                   */
 /**********************************************************************************/
@@ -1074,21 +1107,6 @@ static void ladish_studio_dbus_delete_room(struct dbus_method_call * call_ptr)
   if (ladish_command_delete_room(call_ptr, ladish_studio_get_cmd_queue(), name))
   {
     method_return_new_void(call_ptr);
-  }
-}
-
-void ladish_studio_remove_all_rooms(void)
-{
-  struct list_head * node_ptr;
-  ladish_room_handle room;
-
-  while (!list_empty(&g_studio.rooms))
-  {
-    node_ptr = g_studio.rooms.next;
-    list_del(node_ptr);
-    room = ladish_room_from_list_node(node_ptr);
-    ladish_studio_emit_room_disappeared(room);
-    ladish_room_destroy(room);
   }
 }
 

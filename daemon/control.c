@@ -46,9 +46,9 @@ static struct list_head g_room_templates;
 
 static bool create_empty_room_template(const uuid_t uuid_ptr, const char * name, ladish_room_handle * room_ptr)
 {
-  if (!ladish_room_create(uuid_ptr, name, NULL, NULL, room_ptr))
+  if (!ladish_room_create_template(uuid_ptr, name, room_ptr))
   {
-    log_error("ladish_room_create() failed for room template \"%s\".", name);
+    log_error("ladish_room_create_template() failed for room template \"%s\".", name);
     return false;
   }
 

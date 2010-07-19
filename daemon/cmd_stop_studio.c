@@ -32,9 +32,10 @@
 #include "../common/time.h"
 #include "studio.h"
 
-#define STOP_STATE_WAITING_FOR_JACK_CLIENTS_DISAPPEAR   1
-#define STOP_STATE_WAITING_FOR_CHILDS_TERMINATION       2
-#define STOP_STATE_WAITING_FOR_JACK_SERVER_STOP         3
+#define STOP_STATE_WAITING_FOR_ROOM_STOP                1
+#define STOP_STATE_WAITING_FOR_JACK_CLIENTS_DISAPPEAR   2
+#define STOP_STATE_WAITING_FOR_CHILDS_TERMINATION       3
+#define STOP_STATE_WAITING_FOR_JACK_SERVER_STOP         4
 
 struct ladish_command_stop_studio
 {
@@ -42,6 +43,17 @@ struct ladish_command_stop_studio
   uint64_t deadline;
   unsigned int stop_state;
 };
+
+static bool stop_room(void * context, ladish_room_handle room)
+{
+  ladish_room_initiate_stop(room, false);
+  return true;
+}
+
+static bool room_stopped(void * context, ladish_room_handle room)
+{
+  return ladish_room_stopped(room);
+}
 
 #define cmd_ptr ((struct ladish_command_stop_studio *)context)
 
@@ -67,9 +79,26 @@ static bool run(void * context)
     ladish_studio_stop_app_supervisors();
 
     cmd_ptr->command.state = LADISH_COMMAND_STATE_WAITING;
-    cmd_ptr->stop_state = STOP_STATE_WAITING_FOR_JACK_CLIENTS_DISAPPEAR;
+    cmd_ptr->stop_state = STOP_STATE_WAITING_FOR_ROOM_STOP;
+
+    if (!ladish_studio_iterate_rooms(ladish_studio_get_virtualizer(), stop_room))
+    {
+      log_error("room stop initiation failed");
+      return false;
+    }
+
     /* fall through */
   case LADISH_COMMAND_STATE_WAITING:
+    if (cmd_ptr->stop_state == STOP_STATE_WAITING_FOR_ROOM_STOP)
+    {
+      if (!ladish_studio_iterate_rooms(ladish_studio_get_virtualizer(), room_stopped))
+      {
+        return true;
+      }
+
+      cmd_ptr->stop_state = STOP_STATE_WAITING_FOR_JACK_CLIENTS_DISAPPEAR;
+    }
+
     if (cmd_ptr->stop_state == STOP_STATE_WAITING_FOR_JACK_CLIENTS_DISAPPEAR)
     {
       clients_count = ladish_virtualizer_get_our_clients_count(g_studio.virtualizer);

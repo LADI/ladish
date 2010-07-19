@@ -65,7 +65,10 @@ ladish_virtualizer_handle ladish_studio_get_virtualizer(void);
 ladish_graph_handle ladish_studio_get_jack_graph(void);
 bool ladish_studio_has_rooms(void);
 
-void ladish_studio_emit_room_appeared(ladish_room_handle room);
-void ladish_studio_emit_room_disappeared(ladish_room_handle room);
+unsigned int ladish_studio_get_room_index(void);
+void ladish_studio_release_room_index(unsigned int index);
+
+void ladish_studio_room_appeared(ladish_room_handle room);
+void ladish_studio_room_disappeared(ladish_room_handle room);
 
 #endif /* #ifndef STUDIO_H__0BEDE85E_4FB3_4D74_BC08_C373A22409C0__INCLUDED */

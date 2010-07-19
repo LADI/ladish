@@ -38,6 +38,11 @@ struct ladish_command_start_studio
   uint64_t deadline;
 };
 
+static bool start_room(void * context, ladish_room_handle room)
+{
+  return ladish_room_start(room, context);
+}
+
 #define cmd_ptr ((struct ladish_command_start_studio *)context)
 
 static bool run(void * context)
@@ -112,6 +117,8 @@ static bool run(void * context)
     ASSERT(jack_server_started);
 
     ladish_studio_on_event_jack_started(); /* fetch configuration and announce start */
+
+    ladish_studio_iterate_rooms(ladish_studio_get_virtualizer(), start_room);
 
     cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;
     return true;

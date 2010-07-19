@@ -30,15 +30,22 @@
 #include "common.h"
 #include "graph.h"
 #include "app_supervisor.h"
+#include "virtualizer.h"
 
 typedef struct ladish_room_tag { int unused; } * ladish_room_handle;
+
+bool
+ladish_room_create_template(
+  const uuid_t uuid_ptr,
+  const char * name,
+  ladish_room_handle * room_handle_ptr);
 
 bool
 ladish_room_create(
   const uuid_t uuid_ptr,
   const char * name,
   ladish_room_handle template,
-  const char * object_path,
+  ladish_graph_handle owner,
   ladish_room_handle * room_handle_ptr);
 
 void
@@ -66,5 +73,9 @@ ladish_room_iterate_link_ports(
     const char * port_name,
     uint32_t port_type,
     uint32_t port_flags));
+
+bool ladish_room_start(ladish_room_handle room_handle, ladish_virtualizer_handle virtualizer);
+void ladish_room_initiate_stop(ladish_room_handle room_handle, bool clear_persist);
+bool ladish_room_stopped(ladish_room_handle room_handle);
 
 #endif /* #ifndef ROOM_H__9A1CF253_0A17_402A_BDF8_9BD72B467118__INCLUDED */
