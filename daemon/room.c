@@ -36,9 +36,10 @@ struct ladish_room
   struct list_head siblings;
   uuid_t uuid;
   char * name;
-  uuid_t template_uuid;
+  bool template;
 
   /* these are not valid for templates */
+  uuid_t template_uuid;
   ladish_graph_handle owner;
   unsigned int index;
   char * object_path;
@@ -121,7 +122,7 @@ ladish_room_create_template(
     return false;
   }
 
-  uuid_clear(room_ptr->template_uuid);
+  room_ptr->template = true;
 
   *room_handle_ptr = (ladish_room_handle)room_ptr;
   return true;
@@ -280,6 +281,7 @@ ladish_room_create(
     goto release_index;
   }
 
+  room_ptr->template = false;
   room_ptr->index = index;
   room_ptr->owner = owner;
   room_ptr->started = false;
@@ -370,7 +372,7 @@ release_index:
 
 void ladish_room_destroy(ladish_room_handle room_handle)
 {
-  if (!uuid_is_null(room_ptr->template_uuid))
+  if (!room_ptr->template)
   {
     ASSERT(!room_ptr->started); /* attempt to destroy not stopped room */
 
@@ -386,10 +388,10 @@ void ladish_room_destroy(ladish_room_handle room_handle)
 
     ladish_graph_remove_client(room_ptr->owner, room_ptr->client);
     ladish_client_destroy(room_ptr->client);
-  }
 
-  ladish_studio_room_disappeared((ladish_room_handle)room_ptr);
-  ladish_studio_release_room_index(room_ptr->index);
+    ladish_studio_room_disappeared((ladish_room_handle)room_ptr);
+    ladish_studio_release_room_index(room_ptr->index);
+  }
 
   ladish_graph_destroy(room_ptr->graph);
   free(room_ptr->name);
