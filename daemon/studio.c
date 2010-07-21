@@ -229,12 +229,14 @@ void ladish_studio_emit_room_disappeared(ladish_room_handle room)
 
 void ladish_studio_room_appeared(ladish_room_handle room)
 {
+  log_info("Room \"%s\" appeared", ladish_room_get_name(room));
   list_add_tail(ladish_room_get_list_node(room), &g_studio.rooms);
   ladish_studio_emit_room_appeared(room);
 }
 
 void ladish_studio_room_disappeared(ladish_room_handle room)
 {
+  log_info("Room \"%s\" disappeared", ladish_room_get_name(room));
   list_del(ladish_room_get_list_node(room));
   ladish_studio_emit_room_disappeared(room);
 }

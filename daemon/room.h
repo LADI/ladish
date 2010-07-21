@@ -78,4 +78,12 @@ bool ladish_room_start(ladish_room_handle room_handle, ladish_virtualizer_handle
 void ladish_room_initiate_stop(ladish_room_handle room_handle, bool clear_persist);
 bool ladish_room_stopped(ladish_room_handle room_handle);
 
+ladish_port_handle
+ladish_room_add_port(
+  ladish_room_handle room_handle,
+  const uuid_t uuid_ptr,
+  const char * name,
+  uint32_t type,
+  uint32_t flags);
+
 #endif /* #ifndef ROOM_H__9A1CF253_0A17_402A_BDF8_9BD72B467118__INCLUDED */

@@ -101,6 +101,49 @@ static struct ladish_graph_port * ladish_graph_find_port_by_id_internal(struct l
   return NULL;
 }
 
+static struct ladish_graph_port *
+ladish_graph_find_port_by_uuid_internal(
+  struct ladish_graph * graph_ptr,
+  const uuid_t uuid,
+  bool use_link_override_uuids)
+{
+  struct list_head * node_ptr;
+  struct ladish_graph_port * port_ptr;
+  uuid_t current_uuid;
+  /* char uuid1_str[37]; */
+  /* char uuid2_str[37]; */
+
+  /* log_info("searching by uuid for port in graph %s", ladish_graph_get_description(graph_handle)); */
+  /* uuid_unparse(uuid, uuid1_str); */
+
+  list_for_each(node_ptr, &graph_ptr->ports)
+  {
+    port_ptr = list_entry(node_ptr, struct ladish_graph_port, siblings_graph);
+
+    /* if (port_ptr->link) */
+    /* { */
+    /*   uuid_unparse(port_ptr->link_uuid_override, uuid2_str); */
+    /*   log_info("comparing link uuid %s with %s", uuid2_str, uuid1_str); */
+    /* } */
+
+    if (use_link_override_uuids && port_ptr->link && uuid_compare(port_ptr->link_uuid_override, uuid) == 0)
+    {
+      /* log_info("found port %p of client '%s'", port_ptr->port, port_ptr->client_ptr->name); */
+      return port_ptr;
+    }
+
+    ladish_port_get_uuid(port_ptr->port, current_uuid);
+    /* uuid_unparse(current_uuid, uuid2_str); */
+    /* log_info("comparing port uuid %s with %s", uuid2_str, uuid1_str); */
+    if (uuid_compare(current_uuid, uuid) == 0)
+    {
+      return port_ptr;
+    }
+  }
+
+  return NULL;
+}
+
 static struct ladish_graph_connection * ladish_graph_find_connection_by_id(struct ladish_graph * graph_ptr, uint64_t connection_id)
 {
   struct list_head * node_ptr;
@@ -1607,38 +1650,12 @@ ladish_client_handle ladish_graph_find_client_by_uuid(ladish_graph_handle graph_
 
 ladish_port_handle ladish_graph_find_port_by_uuid(ladish_graph_handle graph_handle, const uuid_t uuid, bool use_link_override_uuids)
 {
-  struct list_head * node_ptr;
   struct ladish_graph_port * port_ptr;
-  uuid_t current_uuid;
-  /* char uuid1_str[37]; */
-  /* char uuid2_str[37]; */
 
-  /* log_info("searching by uuid for port in graph %s", ladish_graph_get_description(graph_handle)); */
-  /* uuid_unparse(uuid, uuid1_str); */
-
-  list_for_each(node_ptr, &graph_ptr->ports)
+  port_ptr = ladish_graph_find_port_by_uuid_internal(graph_ptr, uuid, use_link_override_uuids);
+  if (port_ptr != NULL)
   {
-    port_ptr = list_entry(node_ptr, struct ladish_graph_port, siblings_graph);
-
-    /* if (port_ptr->link) */
-    /* { */
-    /*   uuid_unparse(port_ptr->link_uuid_override, uuid2_str); */
-    /*   log_info("comparing link uuid %s with %s", uuid2_str, uuid1_str); */
-    /* } */
-
-    if (port_ptr->link && uuid_compare(port_ptr->link_uuid_override, uuid) == 0)
-    {
-      /* log_info("found port %p of client '%s'", port_ptr->port, port_ptr->client_ptr->name); */
-      return port_ptr->port;
-    }
-
-    ladish_port_get_uuid(port_ptr->port, current_uuid);
-    /* uuid_unparse(current_uuid, uuid2_str); */
-    /* log_info("comparing port uuid %s with %s", uuid2_str, uuid1_str); */
-    if (uuid_compare(current_uuid, uuid) == 0)
-    {
-      return port_ptr->port;
-    }
+    return port_ptr->port;
   }
 
   return NULL;
@@ -2023,6 +2040,15 @@ const char * ladish_graph_get_port_name(ladish_graph_handle graph_handle, ladish
   ASSERT(port_ptr != NULL);
 
   return port_ptr->name;
+}
+
+void ladish_graph_set_link_port_override_uuid(ladish_graph_handle graph_handle, const uuid_t uuid, const uuid_t override_uuid)
+{
+  struct ladish_graph_port * port_ptr;
+
+  port_ptr = ladish_graph_find_port_by_uuid_internal(graph_ptr, uuid, false);
+  ASSERT(ladish_port_is_link(port_ptr->port));
+  uuid_copy(port_ptr->link_uuid_override, override_uuid);
 }
 
 bool

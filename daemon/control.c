@@ -135,9 +135,9 @@ create_room_template_port(
   bool playback;
   ladish_client_handle client;
 
-  playback = (flags & JACKDBUS_PORT_FLAG_INPUT) != 0;
-  ASSERT(playback || (flags & JACKDBUS_PORT_FLAG_OUTPUT) != 0); /* playback or capture */
-  ASSERT(!(playback && (flags & JACKDBUS_PORT_FLAG_OUTPUT) != 0)); /* but not both */
+  playback = JACKDBUS_PORT_IS_INPUT(flags);
+  ASSERT(playback || JACKDBUS_PORT_IS_OUTPUT(flags)); /* playback or capture */
+  ASSERT(!(playback && JACKDBUS_PORT_IS_OUTPUT(flags))); /* but not both */
   client = playback ? room_descriptor_ptr->playback : room_descriptor_ptr->capture;
 
   if (!ladish_port_create(uuid_ptr, true, &port))

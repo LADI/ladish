@@ -54,22 +54,15 @@ extern const struct dbus_interface_descriptor g_interface_room;
 /* implemented in studio.c */
 void ladish_on_app_renamed(void * context, const char * old_name, const char * new_app_name);
 
-static bool get_port_direction(uint32_t port_flags, bool * room_input_ptr)
+static bool port_is_input(uint32_t flags)
 {
-  if (JACKDBUS_PORT_IS_INPUT(port_flags))
-  {
-    *room_input_ptr = true;
-    return true;
-  }
+  bool playback;
 
-  if (JACKDBUS_PORT_IS_OUTPUT(port_flags))
-  {
-    *room_input_ptr = false;
-    return true;
-  }
+  playback = JACKDBUS_PORT_IS_INPUT(flags);
+  ASSERT(playback || JACKDBUS_PORT_IS_OUTPUT(flags)); /* playback or capture */
+  ASSERT(!(playback && JACKDBUS_PORT_IS_OUTPUT(flags))); /* but not both */
 
-  log_error("room link port with bad flags %"PRIu32, port_flags);
-  return false;
+  return playback;
 }
 
 struct ladish_room * ladish_room_create_internal(const uuid_t uuid_ptr, const char * name, const char * object_path)
@@ -145,16 +138,9 @@ create_shadow_port(
   uint32_t port_type,
   uint32_t port_flags)
 {
-  bool room_input;
-
   //log_info("Studio room port \"%s\"", port_name);
 
-  if (!get_port_direction(port_flags, &room_input))
-  {
-    return false;
-  }
-
-  if (room_input)
+  if (port_is_input(port_flags))
   {
     JACKDBUS_PORT_CLEAR_INPUT(port_flags);
     JACKDBUS_PORT_SET_OUTPUT(port_flags);
@@ -187,16 +173,10 @@ create_port_link(
   uuid_t uuid_in_room;
   char uuid_in_owner_str[37];
   char uuid_in_room_str[37];
-  bool room_input;
   const char * input_port;
   const char * output_port;
 
   //log_info("Room port \"%s\"", port_name);
-
-  if (!get_port_direction(port_flags, &room_input))
-  {
-    return false;
-  }
 
   ladish_graph_get_port_uuid(room_ptr->graph, port_handle, uuid_in_room);
   ladish_graph_get_port_uuid(room_ptr->owner, port_handle, uuid_in_owner);
@@ -204,7 +184,7 @@ create_port_link(
   uuid_unparse(uuid_in_room, uuid_in_room_str);
   uuid_unparse(uuid_in_owner, uuid_in_owner_str);
 
-  if (room_input)
+  if (port_is_input(port_flags))
   {
     input_port = uuid_in_room_str;
     output_port = uuid_in_owner_str;
@@ -301,13 +281,20 @@ ladish_room_create(
   }
 
   room_ptr->index = index;
-  ladish_room_get_uuid(template, room_ptr->template_uuid);
   room_ptr->owner = owner;
   room_ptr->started = false;
 
-  if (!ladish_graph_copy(ladish_room_get_graph(template), room_ptr->graph, false))
+  if (template != NULL)
   {
-    goto destroy;
+    ladish_room_get_uuid(template, room_ptr->template_uuid);
+    if (!ladish_graph_copy(ladish_room_get_graph(template), room_ptr->graph, false))
+    {
+      goto destroy;
+    }
+  }
+  else
+  {
+    uuid_clear(room_ptr->template_uuid);
   }
 
   if (!ladish_app_supervisor_create(&room_ptr->app_supervisor, object_path, room_ptr->name, room_ptr->graph, ladish_on_app_renamed))
@@ -399,10 +386,10 @@ void ladish_room_destroy(ladish_room_handle room_handle)
 
     ladish_graph_remove_client(room_ptr->owner, room_ptr->client);
     ladish_client_destroy(room_ptr->client);
-
-    ladish_studio_room_disappeared((ladish_room_handle)room_ptr);
-    ladish_studio_release_room_index(room_ptr->index);
   }
+
+  ladish_studio_room_disappeared((ladish_room_handle)room_ptr);
+  ladish_studio_release_room_index(room_ptr->index);
 
   ladish_graph_destroy(room_ptr->graph);
   free(room_ptr->name);
@@ -601,6 +588,82 @@ bool ladish_room_stopped(ladish_room_handle room_handle)
 
   room_ptr->started = false;
   return true;
+}
+
+ladish_port_handle
+ladish_room_add_port(
+  ladish_room_handle room_handle,
+  const uuid_t uuid_ptr,
+  const char * name,
+  uint32_t type,
+  uint32_t flags)
+{
+  ladish_port_handle port;
+  bool playback;
+  ladish_client_handle client;
+  const char * client_name;
+  uuid_t client_uuid;
+  bool new_client;
+
+  playback = port_is_input(flags);
+
+  ASSERT(!uuid_is_null(uuid_ptr));
+  if (!ladish_port_create(uuid_ptr, true, &port))
+  {
+    log_error("Creation of room port \"%s\" failed.", name);
+    goto fail;
+  }
+
+  client_name = playback ? "Playback" : "Capture";
+  uuid_copy(client_uuid, playback ? ladish_wkclient_playback : ladish_wkclient_capture);
+
+  /* if client is not found, create it and add it to graph */
+  client = ladish_graph_find_client_by_uuid(room_ptr->graph, client_uuid);
+  new_client = client == NULL;
+  if (new_client)
+  {
+    if (!ladish_client_create(client_uuid, &client))
+    {
+      log_error("ladish_client_create() failed to create %s room client.", playback ? "playback" : "capture");
+      goto fail_destroy_port;
+    }
+
+    if (!ladish_graph_add_client(room_ptr->graph, client, client_name, true))
+    {
+      log_error("ladish_graph_add_client() failed to add %s room client to room graph.", playback ? "playback" : "capture");
+      goto fail_destroy_client;
+    }
+  }
+
+  if (!ladish_graph_add_port(room_ptr->graph, client, port, name, type, flags, true))
+  {
+    log_error("ladish_graph_add_port() failed to add %s room port \"%s\" to room graph.", playback ? "playback" : "capture", name);
+    goto fail_destroy_client;
+  }
+
+  if (!create_shadow_port(room_ptr, port, name, type, flags))
+  {
+    log_error("ladish_graph_add_port() failed to add port \"%s\" to room owner graph.", name);
+    goto fail_remove_port;
+  }
+
+  return port;
+
+fail_remove_port:
+  ASSERT(client != NULL);
+  if (ladish_graph_remove_port(room_ptr->graph, port) != client)
+  {
+    ASSERT_NO_PASS;
+  }
+fail_destroy_client:
+  if (new_client)
+  {
+    ladish_client_destroy(client);
+  }
+fail_destroy_port:
+  ladish_port_destroy(port);
+fail:
+  return NULL;
 }
 
 #undef room_ptr
