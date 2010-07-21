@@ -140,6 +140,7 @@ struct studio
   struct list_head jack_params; /* list of conf tree leaves */
 
   dbus_object_path dbus_object;
+  bool announced;
 
   struct ladish_cqueue cmd_queue;
   ladish_environment_store env_store;
@@ -189,7 +190,10 @@ extern const struct dbus_interface_descriptor g_interface_studio;
 void ladish_studio_jack_conf_clear(void);
 bool ladish_studio_fetch_jack_settings(void);
 bool ladish_studio_compose_filename(const char * name, char ** filename_ptr_ptr, char ** backup_filename_ptr_ptr);
+bool ladish_studio_show(void);
+void ladish_studio_announce(void);
 bool ladish_studio_publish(void);
+void ladish_studio_clear(void);
 bool ladish_studio_name_generate(char ** name_ptr);
 void ladish_studio_emit_started(void);
 void ladish_studio_emit_stopped(void);

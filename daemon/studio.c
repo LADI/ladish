@@ -69,11 +69,12 @@ bool ladish_studio_name_generate(char ** name_ptr)
   return true;
 }
 
-bool ladish_studio_publish(void)
+bool ladish_studio_show(void)
 {
   dbus_object_path object;
 
   ASSERT(g_studio.name != NULL);
+  ASSERT(!g_studio.announced);
 
   object = dbus_object_path_new(
     STUDIO_OBJECT_PATH,
@@ -100,9 +101,70 @@ bool ladish_studio_publish(void)
   g_studio.dbus_object = object;
 
   emit_studio_appeared();
-  ladish_notify_simple(LADISH_NOTIFY_URGENCY_NORMAL, "Studio loaded", NULL);
 
   return true;
+}
+
+void ladish_studio_announce(void)
+{
+  ASSERT(!g_studio.announced);
+  ladish_notify_simple(LADISH_NOTIFY_URGENCY_NORMAL, "Studio loaded", NULL);
+  g_studio.announced = true;
+}
+
+bool ladish_studio_publish(void)
+{
+  if (!ladish_studio_show())
+  {
+    return false;
+  }
+
+  ladish_studio_announce();
+  return true;
+}
+
+void ladish_studio_clear(void)
+{
+  ladish_graph_dump(g_studio.studio_graph);
+  ladish_graph_dump(g_studio.jack_graph);
+
+  /* remove rooms that own clients in studio graph before clearing it */
+  ladish_studio_remove_all_rooms();
+
+  ladish_graph_clear(g_studio.studio_graph, NULL);
+  ladish_graph_clear(g_studio.jack_graph, NULL);
+
+  ladish_studio_jack_conf_clear();
+
+  g_studio.modified = false;
+  g_studio.persisted = false;
+
+  if (g_studio.dbus_object != NULL)
+  {
+    dbus_object_path_destroy(g_dbus_connection, g_studio.dbus_object);
+    g_studio.dbus_object = NULL;
+    emit_studio_disappeared();
+  }
+
+  if (g_studio.announced)
+  {
+    ladish_notify_simple(LADISH_NOTIFY_URGENCY_NORMAL, "Studio unloaded", NULL);
+    g_studio.announced = false;
+  }
+
+  if (g_studio.name != NULL)
+  {
+    free(g_studio.name);
+    g_studio.name = NULL;
+  }
+
+  if (g_studio.filename != NULL)
+  {
+    free(g_studio.filename);
+    g_studio.filename = NULL;
+  }
+
+  ladish_app_supervisor_clear(g_studio.app_supervisor);
 }
 
 void ladish_studio_emit_started(void)
@@ -494,6 +556,7 @@ bool ladish_studio_init(void)
   INIT_LIST_HEAD(&g_studio.jack_params);
 
   g_studio.dbus_object = NULL;
+  g_studio.announced = false;
   g_studio.name = NULL;
   g_studio.filename = NULL;
 
@@ -600,7 +663,7 @@ void ladish_studio_on_child_exit(pid_t pid)
 
 bool ladish_studio_is_loaded(void)
 {
-  return g_studio.dbus_object != NULL;
+  return g_studio.dbus_object != NULL && g_studio.announced;
 }
 
 bool ladish_studio_is_started(void)

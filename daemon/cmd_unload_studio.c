@@ -35,41 +35,7 @@ static bool run(void * context)
 {
   ASSERT(cmd_ptr->state == LADISH_COMMAND_STATE_PENDING);
 
-  ladish_graph_dump(g_studio.studio_graph);
-  ladish_graph_dump(g_studio.jack_graph);
-
-  /* remove rooms that own clients in studio graph before clearing it */
-  ladish_studio_remove_all_rooms();
-
-  ladish_graph_clear(g_studio.studio_graph, NULL);
-  ladish_graph_clear(g_studio.jack_graph, NULL);
-
-  ladish_studio_jack_conf_clear();
-
-  g_studio.modified = false;
-  g_studio.persisted = false;
-
-  if (g_studio.dbus_object != NULL)
-  {
-    dbus_object_path_destroy(g_dbus_connection, g_studio.dbus_object);
-    g_studio.dbus_object = NULL;
-    emit_studio_disappeared();
-    ladish_notify_simple(LADISH_NOTIFY_URGENCY_NORMAL, "Studio unloaded", NULL);
-  }
-
-  if (g_studio.name != NULL)
-  {
-    free(g_studio.name);
-    g_studio.name = NULL;
-  }
-
-  if (g_studio.filename != NULL)
-  {
-    free(g_studio.filename);
-    g_studio.filename = NULL;
-  }
-
-  ladish_app_supervisor_clear(g_studio.app_supervisor);
+  ladish_studio_clear();
 
   cmd_ptr->state = LADISH_COMMAND_STATE_DONE;
   return true;

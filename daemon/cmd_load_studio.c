@@ -1236,6 +1236,14 @@ static bool run(void * command_context)
   XML_SetCharacterDataHandler(parser, callback_chrdata);
   XML_SetUserData(parser, &parse_context);
 
+  if (!ladish_studio_show())
+  {
+    log_error("ladish_studio_show() failed.");
+    XML_ParserFree(parser);
+    close(fd);
+    return false;
+  }
+
   xmls = XML_ParseBuffer(parser, bytes_read, XML_TRUE);
   if (xmls == XML_STATUS_ERROR)
   {
@@ -1243,6 +1251,7 @@ static bool run(void * command_context)
     {
       log_error("XML_ParseBuffer() failed.");
     }
+    ladish_studio_clear();
     XML_ParserFree(parser);
     close(fd);
     return false;
@@ -1253,6 +1262,7 @@ static bool run(void * command_context)
 
   if (parse_context.error)
   {
+    ladish_studio_clear();
     return false;
   }
 
@@ -1264,11 +1274,7 @@ static bool run(void * command_context)
   ladish_graph_dump(g_studio.jack_graph);
   ladish_graph_dump(g_studio.studio_graph);
 
-  if (!ladish_studio_publish())
-  {
-    log_error("studio_publish() failed.");
-    return false;
-  }
+  ladish_studio_announce();
 
   cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;
   return true;
