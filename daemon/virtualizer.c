@@ -504,6 +504,8 @@ port_appeared(
     goto exit;
   }
 
+  jack_client_name = ladish_graph_get_client_name(virtualizer_ptr->jack_graph, jack_client);
+
   ladish_client_get_uuid(jack_client, jclient_uuid);
   is_a2j = uuid_compare(jclient_uuid, g_a2j_uuid) == 0;
   if (is_a2j)
@@ -512,6 +514,20 @@ port_appeared(
     if (!a2j_proxy_map_jack_port(real_jack_port_name, &alsa_client_name, &alsa_port_name, &alsa_client_id))
     {
       is_a2j = false;
+      alsa_client_name = catdup("FAILED ", jack_client_name);
+      if (alsa_client_name == NULL)
+      {
+        log_error("catdup failed to duplicate a2j jack client name after map failure");
+        goto exit;
+      }
+
+      alsa_port_name = strdup(real_jack_port_name);
+      if (alsa_port_name == NULL)
+      {
+        log_error("catdup failed to duplicate a2j jack port name after map failure");
+        free(alsa_client_name);
+        goto exit;
+      }
     }
     else
     {
@@ -531,8 +547,6 @@ port_appeared(
   {
     jack_port_name = real_jack_port_name;
   }
-
-  jack_client_name = ladish_graph_get_client_name(virtualizer_ptr->jack_graph, jack_client);
 
   /********************/
 
