@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to the command queue
@@ -25,6 +25,7 @@
  */
 
 #include "cmd.h"
+#include "control.h"
 
 void ladish_cqueue_init(struct ladish_cqueue * queue_ptr)
 {
@@ -57,6 +58,7 @@ loop:
   if (!cmd_ptr->run(cmd_ptr->context))
   {
     ladish_cqueue_clear(queue_ptr);
+    emit_queue_execution_halted();
     return;
   }
 
@@ -70,6 +72,7 @@ loop:
     log_error("unexpected cmd state %u after run()", cmd_ptr->state);
     ASSERT_NO_PASS;
     ladish_cqueue_clear(queue_ptr);
+    emit_queue_execution_halted();
     return;
   }
 

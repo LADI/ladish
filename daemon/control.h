@@ -34,6 +34,7 @@ extern const struct dbus_interface_descriptor g_lashd_interface_control;
 
 void emit_studio_appeared(void);
 void emit_studio_disappeared(void);
+void emit_queue_execution_halted(void);
 void emit_clean_exit(void);
 
 bool room_templates_init(void);

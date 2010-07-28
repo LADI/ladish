@@ -684,6 +684,11 @@ void emit_studio_disappeared(void)
   dbus_signal_emit(g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "StudioDisappeared", "");
 }
 
+void emit_queue_execution_halted(void)
+{
+  dbus_signal_emit(g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "QueueExecutionHalted", "");
+}
+
 void emit_clean_exit(void)
 {
   dbus_signal_emit(g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "CleanExit", "");
@@ -748,12 +753,16 @@ SIGNAL_ARGS_END
 SIGNAL_ARGS_BEGIN(StudioDisappeared, "Studio D-Bus object disappeared")
 SIGNAL_ARGS_END
 
+SIGNAL_ARGS_BEGIN(QueueExecutionHalted, "Queue execution is halted because of error")
+SIGNAL_ARGS_END
+
 SIGNAL_ARGS_BEGIN(CleanExit, "Exit was requested")
 SIGNAL_ARGS_END
 
 SIGNALS_BEGIN
   SIGNAL_DESCRIBE(StudioAppeared)
   SIGNAL_DESCRIBE(StudioDisappeared)
+  SIGNAL_DESCRIBE(QueueExecutionHalted)
   SIGNAL_DESCRIBE(CleanExit)
 SIGNALS_END
 
