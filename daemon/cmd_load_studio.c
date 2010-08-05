@@ -36,6 +36,7 @@
 #include "escape.h"
 #include "cmd.h"
 #include "studio_internal.h"
+#include "../proxies/notify_proxy.h"
 
 #define PARSE_CONTEXT_ROOT                0
 #define PARSE_CONTEXT_STUDIO              1
@@ -1251,6 +1252,10 @@ static bool run(void * command_context)
     {
       log_error("XML_ParseBuffer() failed.");
     }
+    else
+    {
+      ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Studio load failed", "Please inspect the ladishd log (~/.ladish/ladish.log) for more info");
+    }
     ladish_studio_clear();
     XML_ParserFree(parser);
     close(fd);
@@ -1263,6 +1268,7 @@ static bool run(void * command_context)
   if (parse_context.error)
   {
     ladish_studio_clear();
+    ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Studio load failed", "Please inspect the ladishd log (~/.ladish/ladish.log) for more info");
     return false;
   }
 
