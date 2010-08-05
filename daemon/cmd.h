@@ -85,4 +85,12 @@ bool ladish_command_remove_app(void * call_ptr, struct ladish_cqueue * queue_ptr
 bool ladish_command_create_room(void * call_ptr, struct ladish_cqueue * queue_ptr, const char * room_name, const char * template_name);
 bool ladish_command_delete_room(void * call_ptr, struct ladish_cqueue * queue_ptr, const char * room_name);
 
+bool
+ladish_command_save_project(
+  void * call_ptr,
+  struct ladish_cqueue * queue_ptr,
+  const uuid_t room_uuid_ptr,
+  const char * project_dir,
+  const char * project_name);
+
 #endif /* #ifndef CMD_H__28542C9B_7CB8_40F8_BBB6_DCE13CBB1E7F__INCLUDED */

@@ -86,4 +86,6 @@ ladish_room_add_port(
   uint32_t type,
   uint32_t flags);
 
+bool ladish_room_save_project(ladish_room_handle room_handle, const char * project_dir, const char * project_name);
+
 #endif /* #ifndef ROOM_H__9A1CF253_0A17_402A_BDF8_9BD72B467118__INCLUDED */

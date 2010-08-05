@@ -266,6 +266,7 @@ def build(bld):
         'cmd_remove_app.c',
         'cmd_create_room.c',
         'cmd_delete_room.c',
+        'cmd_save_project.c',
         'cmd_exit.c',
         'cqueue.c',
         'app_supervisor.c',

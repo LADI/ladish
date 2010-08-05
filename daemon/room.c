@@ -30,6 +30,8 @@
 #include "../lib/wkports.h"
 #include "studio.h"
 #include "../proxies/jmcore_proxy.h"
+#include "cmd.h"
+#include "../dbus/error.h"
 
 struct ladish_room
 {
@@ -48,6 +50,9 @@ struct ladish_room
   ladish_app_supervisor_handle app_supervisor;
   ladish_client_handle client;
   bool started;
+
+  char * project_dir;
+  char * project_name;
 };
 
 extern const struct dbus_interface_descriptor g_interface_room;
@@ -286,6 +291,9 @@ ladish_room_create(
   room_ptr->owner = owner;
   room_ptr->started = false;
 
+  room_ptr->project_name = NULL;
+  room_ptr->project_dir = NULL;
+
   if (template != NULL)
   {
     ladish_room_get_uuid(template, room_ptr->template_uuid);
@@ -372,6 +380,17 @@ release_index:
 
 void ladish_room_destroy(ladish_room_handle room_handle)
 {
+  /* project has either both name and dir no none of them */
+  ASSERT((room_ptr->project_dir == NULL && room_ptr->project_name == NULL) || (room_ptr->project_dir != NULL && room_ptr->project_name != NULL));
+  if (room_ptr->project_dir == NULL)
+  {
+    free(room_ptr->project_dir);
+  }
+  if (room_ptr->project_name == NULL)
+  {
+    free(room_ptr->project_name);
+  }
+
   if (!room_ptr->template)
   {
     ASSERT(!room_ptr->started); /* attempt to destroy not stopped room */
@@ -668,6 +687,112 @@ fail:
   return NULL;
 }
 
+bool
+ladish_room_save_project(
+  ladish_room_handle room_handle,
+  const char * project_dir_param,
+  const char * project_name_param)
+{
+  bool first_time;
+  bool dir_supplied;
+  bool name_supplied;
+  char * project_dir;
+  char * project_name;
+  bool ret;
+
+  ret = false;
+  project_name = NULL;
+  project_dir = NULL;
+
+  /* project has either both name and dir no none of them */
+  ASSERT((room_ptr->project_dir == NULL && room_ptr->project_name == NULL) || (room_ptr->project_dir != NULL && room_ptr->project_name != NULL));
+  first_time = room_ptr->project_dir == NULL;
+
+  dir_supplied = strlen(project_dir_param) != 0;
+  name_supplied = strlen(project_name_param) != 0;
+
+  if (first_time)
+  {
+    if (!dir_supplied && !name_supplied)
+    {
+      log_error("Cannot save unnamed project in room '%s'", room_ptr->name);
+      goto exit;
+    }
+
+    if (dir_supplied && name_supplied)
+    {
+      project_dir = strdup(project_dir_param);
+      project_name = strdup(project_name_param);
+    }
+    else if (dir_supplied)
+    {
+      ASSERT(!name_supplied);
+      /* TODO */
+      log_error("Deducing project name from project dir is not implemented yet");
+      goto exit;
+    }
+    else if (name_supplied)
+    {
+      ASSERT(!dir_supplied);
+      /* TODO */
+      log_error("Deducing project dir from project name is not implemented yet");
+      goto exit;
+    }
+    else
+    {
+      ASSERT_NO_PASS;
+      goto exit;
+    }
+  }
+  else
+  {
+    ASSERT(room_ptr->project_name != NULL);
+    ASSERT(room_ptr->project_dir != NULL);
+
+    project_name = name_supplied ? strdup(project_name_param) : room_ptr->project_name;
+    project_dir = dir_supplied ? strdup(project_dir_param) : room_ptr->project_dir;
+  }
+
+  if (project_name == NULL || project_dir == NULL)
+  {
+    log_error("strdup() failed for project name or dir");
+    goto exit;
+  }
+
+  log_info("Saving project '%s' in room '%s' to '%s'", project_name, room_ptr->name, project_dir);
+  log_error("NOT IMPLEMENTED YET");
+  ret = true;
+
+exit:
+  if (ret)
+  {
+    ASSERT(project_name != NULL);
+    if (project_name != room_ptr->project_name)
+    {
+      free(room_ptr->project_name);
+      room_ptr->project_name = project_name;
+    }
+    ASSERT(project_dir != NULL);
+    if (project_dir != room_ptr->project_dir)
+    {
+      free(room_ptr->project_dir);
+      room_ptr->project_dir = project_dir;
+    }
+  }
+
+  /* free strings that are allocated and stored only in the stack */
+  if (project_name != NULL && project_name != room_ptr->project_name)
+  {
+    free(project_name);
+  }
+  if (project_dir != NULL && project_dir != room_ptr->project_dir)
+  {
+    free(project_dir);
+  }
+
+  return ret;
+}
+
 #undef room_ptr
 
 ladish_room_handle ladish_room_from_list_node(struct list_head * node_ptr)
@@ -675,11 +800,35 @@ ladish_room_handle ladish_room_from_list_node(struct list_head * node_ptr)
   return (ladish_room_handle)list_entry(node_ptr, struct ladish_room, siblings);
 }
 
+/**********************************************************************************/
+/*                                D-Bus methods                                   */
+/**********************************************************************************/
+
 #define room_ptr ((struct ladish_room *)call_ptr->iface_context)
 
-static void ladish_get_room_name(struct dbus_method_call * call_ptr)
+static void ladish_room_dbus_get_name(struct dbus_method_call * call_ptr)
 {
   method_return_new_single(call_ptr, DBUS_TYPE_STRING, &room_ptr->name);
+}
+
+static void ladish_room_dbus_save_project(struct dbus_method_call * call_ptr)
+{
+  const char * dir;
+  const char * name;
+
+  log_info("Save project request");
+
+  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_STRING, &dir, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return;
+  }
+
+  if (ladish_command_save_project(call_ptr, ladish_studio_get_cmd_queue(), room_ptr->uuid, dir, name))
+  {
+    method_return_new_void(call_ptr);
+  }
 }
 
 #undef room_ptr
@@ -688,8 +837,14 @@ METHOD_ARGS_BEGIN(GetName, "Get room name")
   METHOD_ARG_DESCRIBE_OUT("room_name", "s", "Name of room")
 METHOD_ARGS_END
 
+METHOD_ARGS_BEGIN(SaveProject, "Save the current project")
+  METHOD_ARG_DESCRIBE_IN("project_dir", "s", "Project directory. Can be an empty string if project has a path associated already")
+  METHOD_ARG_DESCRIBE_IN("project_name", "s", "Name of the project. Can be an empty string if project has a name associated already")
+METHOD_ARGS_END
+
 METHODS_BEGIN
-  METHOD_DESCRIBE(GetName, ladish_get_room_name)
+  METHOD_DESCRIBE(GetName, ladish_room_dbus_get_name) /* sync */
+  METHOD_DESCRIBE(SaveProject, ladish_room_dbus_save_project) /* async */
 METHODS_END
 
 SIGNALS_BEGIN

@@ -978,6 +978,25 @@ void ladish_studio_remove_all_rooms(void)
   }
 }
 
+ladish_room_handle ladish_studio_find_room_by_uuid(const uuid_t room_uuid_ptr)
+{
+  struct list_head * node_ptr;
+  ladish_room_handle room;
+  uuid_t room_uuid;
+
+  list_for_each(node_ptr, &g_studio.rooms)
+  {
+    room = ladish_room_from_list_node(node_ptr);
+    ladish_room_get_uuid(room, room_uuid);
+    if (uuid_compare(room_uuid, room_uuid_ptr) == 0)
+    {
+      return room;
+    }
+  }
+
+  return NULL;
+}
+
 /**********************************************************************************/
 /*                                D-Bus methods                                   */
 /**********************************************************************************/
