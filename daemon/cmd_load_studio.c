@@ -1111,10 +1111,11 @@ struct ladish_command_load_studio
 static
 bool
 interlink_client(
-    void * context,
-    ladish_client_handle jclient,
-    const char * name,
-    void ** client_iteration_context_ptr_ptr)
+  void * context,
+  ladish_graph_handle graph_handle,
+  ladish_client_handle jclient,
+  const char * name,
+  void ** client_iteration_context_ptr_ptr)
 {
   uuid_t uuid;
   ladish_client_handle vclient;

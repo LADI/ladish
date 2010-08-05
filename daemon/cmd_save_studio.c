@@ -38,35 +38,14 @@
 #include "studio_internal.h"
 #include "cmd.h"
 #include "../proxies/notify_proxy.h"
-
-struct save_context
-{
-  int fd;
-  const char * indent;
-};
+#include "save.h"
 
 #define STUDIO_HEADER_TEXT BASE_NAME " Studio configuration.\n"
 
 bool
-write_string(int fd, const char * string)
-{
-  size_t len;
-
-  len = strlen(string);
-
-  if (write(fd, string, len) != len)
-  {
-    log_error("write() failed to write config file.");
-    return false;
-  }
-
-  return true;
-}
-
-bool
 write_jack_parameter(
   int fd,
-  const char * indent,
+  int indent,
   struct jack_conf_parameter * parameter_ptr)
 {
   const char * src;
@@ -87,22 +66,17 @@ write_jack_parameter(
   while (*src != 0);
   *dst = 0;
 
-  if (!write_string(fd, indent))
+  if (!ladish_write_indented_string(fd, indent, "<parameter path=\""))
   {
     return false;
   }
 
-  if (!write_string(fd, "<parameter path=\""))
+  if (!ladish_write_string(fd, path))
   {
     return false;
   }
 
-  if (!write_string(fd, path))
-  {
-    return false;
-  }
-
-  if (!write_string(fd, "\">"))
+  if (!ladish_write_string(fd, "\">"))
   {
     return false;
   }
@@ -138,63 +112,12 @@ write_jack_parameter(
     return false;
   }
 
-  if (!write_string(fd, content))
+  if (!ladish_write_string(fd, content))
   {
     return false;
   }
 
-  if (!write_string(fd, "</parameter>\n"))
-  {
-    return false;
-  }
-
-  return true;
-}
-
-static
-bool
-write_dict_entry(
-  void * context,
-  const char * key,
-  const char * value);
-
-bool
-write_dict(
-  int fd,
-  const char * indent,
-  ladish_dict_handle dict)
-{
-  struct save_context context;
-
-  if (ladish_dict_is_empty(dict))
-  {
-    return true;
-  }
-
-  if (!write_string(fd, indent))
-  {
-    return false;
-  }
-
-  context.fd = fd;
-  context.indent = indent;
-
-  if (!write_string(fd, "<dict>\n"))
-  {
-    return false;
-  }
-
-  if (!ladish_dict_iterate(dict, &context, write_dict_entry))
-  {
-    return false;
-  }
-
-  if (!write_string(fd, indent))
-  {
-    return false;
-  }
-
-  if (!write_string(fd, "</dict>\n"))
+  if (!ladish_write_string(fd, "</parameter>\n"))
   {
     return false;
   }
@@ -202,52 +125,13 @@ write_dict(
   return true;
 }
 
-#define fd (((struct save_context *)context)->fd)
-#define indent (((struct save_context *)context)->indent)
-
-static
-bool
-write_dict_entry(
-  void * context,
-  const char * key,
-  const char * value)
-{
-  if (!write_string(fd, indent))
-  {
-    return false;
-  }
-
-  if (!write_string(fd, "  <key name=\""))
-  {
-    return false;
-  }
-
-  if (!write_string(fd, key))
-  {
-    return false;
-  }
-
-  if (!write_string(fd, "\">"))
-  {
-    return false;
-  }
-
-  if (!write_string(fd, value))
-  {
-    return false;
-  }
-
-  if (!write_string(fd, "</key>\n"))
-  {
-    return false;
-  }
-
-  return true;
-}
+#define fd (((struct ladish_write_context *)context)->fd)
+#define indent (((struct ladish_write_context *)context)->indent)
 
 bool
 save_jack_client_begin(
   void * context,
+  ladish_graph_handle graph_handle,
   ladish_client_handle client_handle,
   const char * client_name,
   void ** client_iteration_context_ptr_ptr)
@@ -260,32 +144,32 @@ save_jack_client_begin(
 
   log_info("saving jack client '%s' (%s)", client_name, str);
 
-  if (!write_string(fd, "      <client name=\""))
+  if (!ladish_write_indented_string(fd, indent, "<client name=\""))
   {
     return false;
   }
 
-  if (!write_string(fd, client_name))
+  if (!ladish_write_string(fd, client_name))
   {
     return false;
   }
 
-  if (!write_string(fd, "\" uuid=\""))
+  if (!ladish_write_string(fd, "\" uuid=\""))
   {
     return false;
   }
 
-  if (!write_string(fd, str))
+  if (!ladish_write_string(fd, str))
   {
     return false;
   }
 
-  if (!write_string(fd, "\">\n"))
+  if (!ladish_write_string(fd, "\">\n"))
   {
     return false;
   }
 
-  if (!write_string(fd, "        <ports>\n"))
+  if (!ladish_write_indented_string(fd, indent + 1, "<ports>\n"))
   {
     return false;
   }
@@ -296,16 +180,17 @@ save_jack_client_begin(
 bool
 save_jack_client_end(
   void * context,
+  ladish_graph_handle graph_handle,
   ladish_client_handle client_handle,
   const char * client_name,
   void * client_iteration_context_ptr)
 {
-  if (!write_string(fd, "        </ports>\n"))
+  if (!ladish_write_indented_string(fd, indent + 1, "</ports>\n"))
   {
     return false;
   }
 
-  if (!write_string(fd, "      </client>\n"))
+  if (!ladish_write_indented_string(fd, indent, "</client>\n"))
   {
     return false;
   }
@@ -316,6 +201,7 @@ save_jack_client_end(
 bool
 save_jack_port(
   void * context,
+  ladish_graph_handle graph_handle,
   void * client_iteration_context_ptr,
   ladish_client_handle client_handle,
   const char * client_name,
@@ -332,130 +218,29 @@ save_jack_port(
 
   log_info("saving jack port '%s':'%s' (%s)", client_name, port_name, str);
 
-  if (!write_string(fd, "          <port name=\""))
+  if (!ladish_write_indented_string(fd, indent + 2, "<port name=\""))
   {
     return false;
   }
 
-  if (!write_string(fd, port_name))
+  if (!ladish_write_string(fd, port_name))
   {
     return false;
   }
 
-  if (!write_string(fd, "\" uuid=\""))
+  if (!ladish_write_string(fd, "\" uuid=\""))
   {
     return false;
   }
 
-  if (!write_string(fd, str))
+  if (!ladish_write_string(fd, str))
   {
     return false;
   }
 
-  if (!write_string(fd, "\" />\n"))
+  if (!ladish_write_string(fd, "\" />\n"))
   {
     return false;
-  }
-
-  return true;
-}
-
-static
-bool
-save_room_port(
-  void * context,
-  ladish_port_handle port,
-  const char * name,
-  uint32_t type,
-  uint32_t flags)
-{
-  uuid_t uuid;
-  char str[37];
-  bool midi;
-  const char * type_str;
-  bool playback;
-  const char * direction_str;
-  ladish_dict_handle dict;
-
-  ladish_port_get_uuid(port, uuid);
-  uuid_unparse(uuid, str);
-
-  playback = (flags & JACKDBUS_PORT_FLAG_INPUT) != 0;
-  ASSERT(playback || (flags & JACKDBUS_PORT_FLAG_OUTPUT) != 0); /* playback or capture */
-  ASSERT(!(playback && (flags & JACKDBUS_PORT_FLAG_OUTPUT) != 0)); /* but not both */
-  direction_str = playback ? "playback" : "capture";
-
-  midi = type == JACKDBUS_PORT_TYPE_MIDI;
-  ASSERT(midi || type == JACKDBUS_PORT_TYPE_AUDIO); /* midi or audio */
-  ASSERT(!(midi && type == JACKDBUS_PORT_TYPE_AUDIO)); /* but not both */
-  type_str = midi ? "midi" : "audio";
-
-  log_info("saving studio room %s %s port '%s' (%s)", direction_str, type_str, name, str);
-
-  if (!write_string(fd, "      <port name=\""))
-  {
-    return false;
-  }
-
-  if (!write_string(fd, name))
-  {
-    return false;
-  }
-
-  if (!write_string(fd, "\" uuid=\""))
-  {
-    return false;
-  }
-
-  if (!write_string(fd, str))
-  {
-    return false;
-  }
-
-  if (!write_string(fd, "\" type=\""))
-  {
-    return false;
-  }
-
-  if (!write_string(fd, type_str))
-  {
-    return false;
-  }
-
-  if (!write_string(fd, "\" direction=\""))
-  {
-    return false;
-  }
-
-  if (!write_string(fd, direction_str))
-  {
-    return false;
-  }
-
-  dict = ladish_port_get_dict(port);
-  if (ladish_dict_is_empty(dict))
-  {
-    if (!write_string(fd, "\" />\n"))
-    {
-      return false;
-    }
-  }
-  else
-  {
-    if (!write_string(fd, "\">\n"))
-    {
-      return false;
-    }
-
-    if (!write_dict(fd, "        ", dict))
-    {
-      return false;
-    }
-
-    if (!write_string(fd, "      </port>\n"))
-    {
-      return false;
-    }
   }
 
   return true;
@@ -468,17 +253,17 @@ static bool save_studio_room(void * context, ladish_room_handle room)
 
   log_info("saving room '%s'", ladish_room_get_name(room));
 
-  if (!write_string(fd, "    <room name=\""))
+  if (!ladish_write_indented_string(fd, indent, "<room name=\""))
   {
     return false;
   }
 
-  if (!write_string(fd, ladish_room_get_name(room)))
+  if (!ladish_write_string(fd, ladish_room_get_name(room)))
   {
     return false;
   }
 
-  if (!write_string(fd, "\" uuid=\""))
+  if (!ladish_write_string(fd, "\" uuid=\""))
   {
     return false;
   }
@@ -486,367 +271,28 @@ static bool save_studio_room(void * context, ladish_room_handle room)
   ladish_room_get_uuid(room, uuid);
   uuid_unparse(uuid, str);
 
-  if (!write_string(fd, str))
+  if (!ladish_write_string(fd, str))
   {
     return false;
   }
 
-  if (!write_string(fd, "\">\n"))
+  if (!ladish_write_string(fd, "\">\n"))
   {
     return false;
   }
 
-  if (!ladish_room_iterate_link_ports(room, context, save_room_port))
+  if (!ladish_write_room_link_ports(fd, indent + 1, room))
   {
-    log_error("ladish_room_iterate_link_ports() failed");
+    log_error("ladish_write_room_link_ports() failed");
     return false;
   }
 
-  if (!write_string(fd, "    </room>\n"))
-  {
-    return false;
-  }
-
-  return true;
-}
-
-bool
-save_studio_client_begin(
-  void * context,
-  ladish_client_handle client_handle,
-  const char * client_name,
-  void ** client_iteration_context_ptr_ptr)
-{
-  uuid_t uuid;
-  char str[37];
-
-  ladish_client_get_uuid(client_handle, uuid);
-  uuid_unparse(uuid, str);
-
-  log_info("saving studio client '%s' (%s)", client_name, str);
-
-  if (!write_string(fd, "    <client name=\""))
-  {
-    return false;
-  }
-
-  if (!write_string(fd, client_name))
-  {
-    return false;
-  }
-
-  if (!write_string(fd, "\" uuid=\""))
-  {
-    return false;
-  }
-
-  if (!write_string(fd, str))
-  {
-    return false;
-  }
-
-  if (!write_string(fd, "\">\n"))
-  {
-    return false;
-  }
-
-  if (!write_string(fd, "      <ports>\n"))
+  if (!ladish_write_indented_string(fd, indent, " </room>\n"))
   {
     return false;
   }
 
   return true;
-}
-
-bool
-save_studio_client_end(
-  void * context,
-  ladish_client_handle client_handle,
-  const char * client_name,
-  void * client_iteration_context_ptr)
-{
-  if (!write_string(fd, "      </ports>\n"))
-  {
-    return false;
-  }
-
-  if (!write_dict(fd, "      ", ladish_client_get_dict(client_handle)))
-  {
-    return false;
-  }
-
-  if (!write_string(fd, "    </client>\n"))
-  {
-    return false;
-  }
-
-  return true;
-}
-
-static bool get_studio_port_uuids(ladish_port_handle port, uuid_t uuid, uuid_t link_uuid)
-{
-  bool link;
-
-  link = ladish_port_is_link(port);
-  if (link)
-  {
-    /* get the generated port uuid that is used for identification in studio graph */
-    ladish_graph_get_port_uuid(g_studio.studio_graph, port, uuid);
-  }
-
-  if (!link || link_uuid != NULL)
-  {
-    /* get the real port uuid that is same in both room and studio graphs */
-    ladish_port_get_uuid(port, link ? link_uuid : uuid);
-  }
-
-  return link;
-}
-
-bool
-save_studio_port(
-  void * context,
-  void * client_iteration_context_ptr,
-  ladish_client_handle client_handle,
-  const char * client_name,
-  ladish_port_handle port_handle,
-  const char * port_name,
-  uint32_t port_type,
-  uint32_t port_flags)
-{
-  uuid_t uuid;
-  bool link;
-  uuid_t link_uuid;
-  char str[37];
-  char link_str[37];
-  ladish_dict_handle dict;
-
-  link = get_studio_port_uuids(port_handle, uuid, link_uuid);
-  uuid_unparse(uuid, str);
-  if (link)
-  {
-    uuid_unparse(link_uuid, link_str);
-    log_info("saving studio link port '%s':'%s' (%s link=%s)", client_name, port_name, str, link_str);
-  }
-  else
-  {
-    log_info("saving studio port '%s':'%s' (%s)", client_name, port_name, str);
-  }
-
-  if (!write_string(fd, "        <port name=\""))
-  {
-    return false;
-  }
-
-  if (!write_string(fd, port_name))
-  {
-    return false;
-  }
-
-  if (!write_string(fd, "\" uuid=\""))
-  {
-    return false;
-  }
-
-  if (!write_string(fd, str))
-  {
-    return false;
-  }
-
-  if (link)
-  {
-    if (!write_string(fd, "\" link_uuid=\""))
-    {
-      return false;
-    }
-
-    if (!write_string(fd, link_str))
-    {
-      return false;
-    }
-  }
-
-  dict = ladish_port_get_dict(port_handle);
-  if (ladish_dict_is_empty(dict))
-  {
-    if (!write_string(fd, "\" />\n"))
-    {
-      return false;
-    }
-  }
-  else
-  {
-    if (!write_string(fd, "\">\n"))
-    {
-      return false;
-    }
-
-    if (!write_dict(fd, "          ", dict))
-    {
-      return false;
-    }
-
-    if (!write_string(fd, "        </port>\n"))
-    {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-bool save_studio_connection(void * context, ladish_port_handle port1_handle, ladish_port_handle port2_handle, ladish_dict_handle dict)
-{
-  uuid_t uuid;
-  char str[37];
-
-  log_info("saving studio connection");
-
-  if (!write_string(fd, "    <connection port1=\""))
-  {
-    return false;
-  }
-
-  get_studio_port_uuids(port1_handle, uuid, NULL);
-  uuid_unparse(uuid, str);
-
-  if (!write_string(fd, str))
-  {
-    return false;
-  }
-
-  if (!write_string(fd, "\" port2=\""))
-  {
-    return false;
-  }
-
-  get_studio_port_uuids(port2_handle, uuid, NULL);
-  uuid_unparse(uuid, str);
-
-  if (!write_string(fd, str))
-  {
-    return false;
-  }
-
-  if (ladish_dict_is_empty(dict))
-  {
-    if (!write_string(fd, "\" />\n"))
-    {
-      return false;
-    }
-  }
-  else
-  {
-    if (!write_string(fd, "\">\n"))
-    {
-      return false;
-    }
-
-    if (!write_dict(fd, "      ", dict))
-    {
-      return false;
-    }
-
-    if (!write_string(fd, "    </connection>\n"))
-    {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-bool save_studio_app(void * context, const char * name, bool running, const char * command, bool terminal, uint8_t level, pid_t pid)
-{
-  char buf[100];
-  const char * unescaped_string;
-  char * escaped_string;
-  char * escaped_buffer;
-  bool ret;
-
-  log_info("saving app: name='%s', %srunning, %s, level %u, commandline='%s'", name, running ? "" : "not ", terminal ? "terminal" : "shell", (unsigned int)level, command);
-
-  ret = false;
-
-  escaped_buffer = malloc(ladish_max(strlen(name), strlen(command)) * 3 + 1); /* encode each char in three bytes (percent encoding) */
-  if (escaped_buffer == NULL)
-  {
-    log_error("malloc() failed.");
-    goto exit;
-  }
-
-  if (!write_string(fd, "    <application name=\""))
-  {
-    goto free_buffer;
-  }
-
-  unescaped_string = name;
-  escaped_string = escaped_buffer;
-  escape(&unescaped_string, &escaped_string);
-  *escaped_string = 0;
-  if (!write_string(fd, escaped_buffer))
-  {
-    goto free_buffer;
-  }
-
-  if (!write_string(fd, "\" terminal=\""))
-  {
-    goto free_buffer;
-  }
-
-  if (!write_string(fd, terminal ? "true" : "false"))
-  {
-    goto free_buffer;
-  }
-
-  if (!write_string(fd, "\" level=\""))
-  {
-    goto free_buffer;
-  }
-
-  sprintf(buf, "%u", (unsigned int)level);
-
-  if (!write_string(fd, buf))
-  {
-    goto free_buffer;
-  }
-
-  if (!write_string(fd, "\" autorun=\""))
-  {
-    goto free_buffer;
-  }
-
-  if (!write_string(fd, running ? "true" : "false"))
-  {
-    goto free_buffer;
-  }
-
-  if (!write_string(fd, "\">"))
-  {
-    goto free_buffer;
-  }
-
-  unescaped_string = command;
-  escaped_string = escaped_buffer;
-  escape(&unescaped_string, &escaped_string);
-  *escaped_string = 0;
-  if (!write_string(fd, escaped_buffer))
-  {
-    goto free_buffer;
-  }
-
-  if (!write_string(fd, "</application>\n"))
-  {
-    goto free_buffer;
-  }
-
-  ret = true;
-
-free_buffer:
-  free(escaped_buffer);
-
-exit:
-  return ret;
 }
 
 #undef indent
@@ -872,7 +318,7 @@ static bool run(void * command_context)
   char * bak_filename;          /* filename of the backup file */
   char * old_filename;          /* filename where studio was persisted before save */
   struct stat st;
-  struct save_context save_context;
+  struct ladish_write_context save_context;
 
   ASSERT(cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING);
 
@@ -956,52 +402,52 @@ static bool run(void * command_context)
     goto rename_back;
   }
 
-  if (!write_string(fd, "<?xml version=\"1.0\"?>\n"))
+  if (!ladish_write_string(fd, "<?xml version=\"1.0\"?>\n"))
   {
     goto close;
   }
 
-  if (!write_string(fd, "<!--\n"))
+  if (!ladish_write_string(fd, "<!--\n"))
   {
     goto close;
   }
 
-  if (!write_string(fd, STUDIO_HEADER_TEXT))
+  if (!ladish_write_string(fd, STUDIO_HEADER_TEXT))
   {
     goto close;
   }
 
-  if (!write_string(fd, "-->\n"))
+  if (!ladish_write_string(fd, "-->\n"))
   {
     goto close;
   }
 
-  if (!write_string(fd, "<!-- "))
+  if (!ladish_write_string(fd, "<!-- "))
   {
     goto close;
   }
 
-  if (!write_string(fd, timestamp_str))
+  if (!ladish_write_string(fd, timestamp_str))
   {
     goto close;
   }
 
-  if (!write_string(fd, " -->\n"))
+  if (!ladish_write_string(fd, " -->\n"))
   {
     goto close;
   }
 
-  if (!write_string(fd, "<studio>\n"))
+  if (!ladish_write_string(fd, "<studio>\n"))
   {
     goto close;
   }
 
-  if (!write_string(fd, "  <jack>\n"))
+  if (!ladish_write_indented_string(fd, 1, "<jack>\n"))
   {
     goto close;
   }
 
-  if (!write_string(fd, "    <conf>\n"))
+  if (!ladish_write_indented_string(fd, 2, "<conf>\n"))
   {
     goto close;
   }
@@ -1010,23 +456,24 @@ static bool run(void * command_context)
   {
     parameter_ptr = list_entry(node_ptr, struct jack_conf_parameter, leaves);
 
-    if (!write_jack_parameter(fd, "      ", parameter_ptr))
+    if (!write_jack_parameter(fd, 3, parameter_ptr))
     {
       goto close;
     }
   }
 
-  if (!write_string(fd, "    </conf>\n"))
+  if (!ladish_write_indented_string(fd, 2, "</conf>\n"))
   {
     goto close;
   }
 
-  if (!write_string(fd, "    <clients>\n"))
+  if (!ladish_write_indented_string(fd, 2, "<clients>\n"))
   {
     goto close;
   }
 
   save_context.fd = fd;
+  save_context.indent = 3;
 
   if (!ladish_graph_iterate_nodes(g_studio.jack_graph, true, g_studio.studio_graph, &save_context, save_jack_client_begin, save_jack_port, save_jack_client_end))
   {
@@ -1034,22 +481,24 @@ static bool run(void * command_context)
     goto close;
   }
 
-  if (!write_string(fd, "    </clients>\n"))
+  if (!ladish_write_indented_string(fd, 2, "</clients>\n"))
   {
     goto close;
   }
 
-  if (!write_string(fd, "  </jack>\n"))
+  if (!ladish_write_indented_string(fd, 1, "</jack>\n"))
   {
     goto close;
   }
 
   if (ladish_studio_has_rooms())
   {
-    if (!write_string(fd, "  <rooms>\n"))
+    if (!ladish_write_indented_string(fd, 1, "<rooms>\n"))
     {
       goto close;
     }
+
+    save_context.indent = 2;
 
     if (!ladish_studio_iterate_rooms(&save_context, save_studio_room))
     {
@@ -1057,65 +506,24 @@ static bool run(void * command_context)
       goto close;
     }
 
-    if (!write_string(fd, "  </rooms>\n"))
+    if (!ladish_write_indented_string(fd, 1, "</rooms>\n"))
     {
       goto close;
     }
   }
 
-  if (!write_string(fd, "  <clients>\n"))
+  if (!ladish_write_vgraph(fd, 1, g_studio.studio_graph, g_studio.app_supervisor))
+  {
+    log_error("ladish_write_vgraph() failed for studio");
+    goto close;
+  }
+
+  if (!ladish_write_dict(fd, 1, ladish_graph_get_dict(g_studio.studio_graph)))
   {
     goto close;
   }
 
-  if (!ladish_graph_iterate_nodes(g_studio.studio_graph, true, NULL, &save_context, save_studio_client_begin, save_studio_port, save_studio_client_end))
-  {
-    log_error("ladish_graph_iterate_nodes() failed");
-    goto close;
-  }
-
-  if (!write_string(fd, "  </clients>\n"))
-  {
-    goto close;
-  }
-
-  if (!write_string(fd, "  <connections>\n"))
-  {
-    goto close;
-  }
-
-  if (!ladish_graph_iterate_connections(g_studio.studio_graph, true, &save_context, save_studio_connection))
-  {
-    log_error("ladish_graph_iterate_connections() failed");
-    goto close;
-  }
-
-  if (!write_string(fd, "  </connections>\n"))
-  {
-    goto close;
-  }
-
-  if (!write_string(fd, "  <applications>\n"))
-  {
-    goto close;
-  }
-
-  if (!ladish_app_supervisor_enum(g_studio.app_supervisor, &save_context, save_studio_app))
-  {
-    goto close;
-  }
-
-  if (!write_string(fd, "  </applications>\n"))
-  {
-    goto close;
-  }
-
-  if (!write_dict(fd, "  ", ladish_graph_get_dict(g_studio.studio_graph)))
-  {
-    goto close;
-  }
-
-  if (!write_string(fd, "</studio>\n"))
+  if (!ladish_write_string(fd, "</studio>\n"))
   {
     goto close;
   }

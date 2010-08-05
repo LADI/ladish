@@ -216,6 +216,7 @@ static
 bool
 destroy_port_link(
   void * context,
+  ladish_graph_handle graph_handle,
   void * client_iteration_context_ptr,
   ladish_client_handle client_handle,
   const char * client_name,
@@ -476,6 +477,7 @@ static
 bool
 ladish_room_iterate_link_ports_client_callback(
   void * context,
+  ladish_graph_handle graph_handle,
   ladish_client_handle client_handle,
   const char * client_name,
   void ** client_iteration_context_ptr_ptr)
@@ -501,6 +503,7 @@ static
 bool
 ladish_room_iterate_link_ports_port_callback(
   void * context,
+  ladish_graph_handle graph_handle,
   void * client_iteration_context_ptr,
   ladish_client_handle client_handle,
   const char * client_name,
