@@ -28,6 +28,7 @@
 
 #include "save.h"
 #include "escape.h"
+#include "studio.h"
 
 bool ladish_write_string(int fd, const char * string)
 {
@@ -182,11 +183,18 @@ static bool ladish_get_vgraph_port_uuids(ladish_graph_handle vgraph, ladish_port
 {
   bool link;
 
-  link = ladish_port_is_link(port);
-  if (link)
+  if (vgraph != ladish_studio_get_studio_graph())
   {
-    /* get the generated port uuid that is used for identification in the virtual graph */
-    ladish_graph_get_port_uuid(vgraph, port, uuid);
+    link = false;               /* room ports are saved using their fixed uuids */
+  }
+  else
+  {
+    link = ladish_port_is_link(port);
+    if (link)
+    {
+      /* get the generated port uuid that is used for identification in the virtual graph */
+      ladish_graph_get_port_uuid(vgraph, port, uuid);
+    }
   }
 
   if (!link || link_uuid != NULL)
@@ -483,7 +491,7 @@ ladish_write_room_port(
   ASSERT(!(midi && type == JACKDBUS_PORT_TYPE_AUDIO)); /* but not both */
   type_str = midi ? "midi" : "audio";
 
-  log_info("saving studio room %s %s port '%s' (%s)", direction_str, type_str, name, str);
+  log_info("saving room %s %s port '%s' (%s)", direction_str, type_str, name, str);
 
   if (!ladish_write_indented_string(fd, indent, "<port name=\""))
   {

@@ -5,7 +5,7 @@
  * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains implementation of the room object
+ * This file contains the core parts of room object implementation
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -24,7 +24,7 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "room.h"
+#include "room_internal.h"
 #include "../dbus_constants.h"
 #include "graph_dict.h"
 #include "../lib/wkports.h"
@@ -32,28 +32,6 @@
 #include "../proxies/jmcore_proxy.h"
 #include "cmd.h"
 #include "../dbus/error.h"
-
-struct ladish_room
-{
-  struct list_head siblings;
-  uuid_t uuid;
-  char * name;
-  bool template;
-
-  /* these are not valid for templates */
-  uuid_t template_uuid;
-  ladish_graph_handle owner;
-  unsigned int index;
-  char * object_path;
-  dbus_object_path dbus_object;
-  ladish_graph_handle graph;
-  ladish_app_supervisor_handle app_supervisor;
-  ladish_client_handle client;
-  bool started;
-
-  char * project_dir;
-  char * project_name;
-};
 
 extern const struct dbus_interface_descriptor g_interface_room;
 
@@ -688,112 +666,6 @@ fail_destroy_port:
   ladish_port_destroy(port);
 fail:
   return NULL;
-}
-
-bool
-ladish_room_save_project(
-  ladish_room_handle room_handle,
-  const char * project_dir_param,
-  const char * project_name_param)
-{
-  bool first_time;
-  bool dir_supplied;
-  bool name_supplied;
-  char * project_dir;
-  char * project_name;
-  bool ret;
-
-  ret = false;
-  project_name = NULL;
-  project_dir = NULL;
-
-  /* project has either both name and dir no none of them */
-  ASSERT((room_ptr->project_dir == NULL && room_ptr->project_name == NULL) || (room_ptr->project_dir != NULL && room_ptr->project_name != NULL));
-  first_time = room_ptr->project_dir == NULL;
-
-  dir_supplied = strlen(project_dir_param) != 0;
-  name_supplied = strlen(project_name_param) != 0;
-
-  if (first_time)
-  {
-    if (!dir_supplied && !name_supplied)
-    {
-      log_error("Cannot save unnamed project in room '%s'", room_ptr->name);
-      goto exit;
-    }
-
-    if (dir_supplied && name_supplied)
-    {
-      project_dir = strdup(project_dir_param);
-      project_name = strdup(project_name_param);
-    }
-    else if (dir_supplied)
-    {
-      ASSERT(!name_supplied);
-      /* TODO */
-      log_error("Deducing project name from project dir is not implemented yet");
-      goto exit;
-    }
-    else if (name_supplied)
-    {
-      ASSERT(!dir_supplied);
-      /* TODO */
-      log_error("Deducing project dir from project name is not implemented yet");
-      goto exit;
-    }
-    else
-    {
-      ASSERT_NO_PASS;
-      goto exit;
-    }
-  }
-  else
-  {
-    ASSERT(room_ptr->project_name != NULL);
-    ASSERT(room_ptr->project_dir != NULL);
-
-    project_name = name_supplied ? strdup(project_name_param) : room_ptr->project_name;
-    project_dir = dir_supplied ? strdup(project_dir_param) : room_ptr->project_dir;
-  }
-
-  if (project_name == NULL || project_dir == NULL)
-  {
-    log_error("strdup() failed for project name or dir");
-    goto exit;
-  }
-
-  log_info("Saving project '%s' in room '%s' to '%s'", project_name, room_ptr->name, project_dir);
-  log_error("NOT IMPLEMENTED YET");
-  ret = true;
-
-exit:
-  if (ret)
-  {
-    ASSERT(project_name != NULL);
-    if (project_name != room_ptr->project_name)
-    {
-      free(room_ptr->project_name);
-      room_ptr->project_name = project_name;
-    }
-    ASSERT(project_dir != NULL);
-    if (project_dir != room_ptr->project_dir)
-    {
-      free(room_ptr->project_dir);
-      room_ptr->project_dir = project_dir;
-    }
-  }
-
-  /* free strings that are allocated and stored only in the stack */
-  if (project_name != NULL && project_name != room_ptr->project_name)
-  {
-    free(project_name);
-  }
-  if (project_dir != NULL && project_dir != room_ptr->project_dir)
-  {
-    free(project_dir);
-  }
-
-  return ret;
 }
 
 #undef room_ptr

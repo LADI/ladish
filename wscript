@@ -272,6 +272,7 @@ def build(bld):
         'cqueue.c',
         'app_supervisor.c',
         'room.c',
+        'room_save.c',
         ]:
         daemon.source.append(os.path.join("daemon", source))
 

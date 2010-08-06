@@ -52,6 +52,7 @@ struct ladish_app_supervisor
 {
   char * name;
   char * opath;
+  char * dir;
   uint64_t version;
   uint64_t next_id;
   struct list_head applist;
@@ -92,6 +93,8 @@ ladish_app_supervisor_create(
     free(supervisor_ptr);
     return false;
   }
+
+  supervisor_ptr->dir = NULL;
 
   supervisor_ptr->version = 0;
   supervisor_ptr->next_id = 1;
@@ -273,6 +276,12 @@ void ladish_app_supervisor_clear(ladish_app_supervisor_handle supervisor_handle)
   struct list_head * safe_node_ptr;
   struct ladish_app * app_ptr;
 
+  if (supervisor_ptr->dir != NULL)
+  {
+    free(supervisor_ptr->dir);
+    supervisor_ptr->dir = NULL;
+  }
+
   list_for_each_safe(node_ptr, safe_node_ptr, &supervisor_ptr->applist)
   {
     app_ptr = list_entry(node_ptr, struct ladish_app, siblings);
@@ -297,6 +306,30 @@ void ladish_app_supervisor_destroy(ladish_app_supervisor_handle supervisor_handl
   free(supervisor_ptr->name);
   free(supervisor_ptr->opath);
   free(supervisor_ptr);
+}
+
+bool
+ladish_app_supervisor_set_directory(
+  ladish_app_supervisor_handle supervisor_handle,
+  const char * dir)
+{
+  char * dup;
+
+  dup = strdup(dir);
+  if (dup == NULL)
+  {
+    log_error("strdup(\"%s\") failed", dir);
+    return false;
+  }
+
+  if (supervisor_ptr->dir != NULL)
+  {
+    free(supervisor_ptr->dir);
+  }
+
+  supervisor_ptr->dir = dup;
+
+  return true;
 }
 
 bool ladish_app_supervisor_child_exit(ladish_app_supervisor_handle supervisor_handle, pid_t pid)
@@ -365,7 +398,13 @@ bool ladish_app_supervisor_start_app(ladish_app_supervisor_handle supervisor_han
 
   ASSERT(app_ptr->pid == 0);
 
-  if (!loader_execute(supervisor_ptr->name, app_ptr->name, "/", app_ptr->terminal, app_ptr->commandline, &app_ptr->pid))
+  if (!loader_execute(
+        supervisor_ptr->name,
+        app_ptr->name,
+        supervisor_ptr->dir != NULL ? supervisor_ptr->dir : "/",
+        app_ptr->terminal,
+        app_ptr->commandline,
+        &app_ptr->pid))
   {
     return false;
   }

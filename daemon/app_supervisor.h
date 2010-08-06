@@ -108,6 +108,18 @@ ladish_app_supervisor_destroy(
   ladish_app_supervisor_handle supervisor_handle);
 
 /**
+ * Set the directory where apps will be started. If never called, apps will be started in the root directory ("/")
+ *
+ * @param[in] supervisor_handle supervisor object handle
+ *
+ * @return success status
+ */
+bool
+ladish_app_supervisor_set_directory(
+  ladish_app_supervisor_handle supervisor_handle,
+  const char * dir);
+
+/**
  * Mark that app has quit
  *
  * This function is called to mark that app has quit. Must not be called from signal handler because app supervisor object is not thread safe.

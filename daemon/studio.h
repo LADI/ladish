@@ -63,6 +63,7 @@ ladish_app_supervisor_handle ladish_studio_find_app_supervisor(const char * opat
 struct ladish_cqueue * ladish_studio_get_cmd_queue(void);
 ladish_virtualizer_handle ladish_studio_get_virtualizer(void);
 ladish_graph_handle ladish_studio_get_jack_graph(void);
+ladish_graph_handle ladish_studio_get_studio_graph(void);
 bool ladish_studio_has_rooms(void);
 
 unsigned int ladish_studio_get_room_index(void);

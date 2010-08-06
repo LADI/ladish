@@ -736,6 +736,11 @@ ladish_graph_handle ladish_studio_get_jack_graph(void)
   return g_studio.jack_graph;
 }
 
+ladish_graph_handle ladish_studio_get_studio_graph(void)
+{
+  return g_studio.studio_graph;
+}
+
 struct ladish_studio_app_supervisor_match_context
 {
   const char * opath;
