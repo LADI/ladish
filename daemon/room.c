@@ -272,6 +272,7 @@ ladish_room_create(
 
   room_ptr->project_name = NULL;
   room_ptr->project_dir = NULL;
+  room_ptr->project_unloading = false;
 
   if (template != NULL)
   {
@@ -592,6 +593,75 @@ bool ladish_room_stopped(ladish_room_handle room_handle)
   return true;
 }
 
+static
+bool
+ladish_room_app_is_stopped(
+  void * context,
+  const char * name,
+  bool running,
+  const char * command,
+  bool terminal,
+  uint8_t level,
+  pid_t pid)
+{
+  if (pid != 0)
+  {
+    log_info("App '%s' is still running pid=%u", name, (unsigned int)pid);
+    return false;
+  }
+
+  if (!ladish_virtualizer_is_hidden_app(ladish_studio_get_jack_graph(), name))
+  {
+    log_info("App '%s' is still visible in the jack graph", name);
+    return false;
+  }
+
+  return true;
+}
+
+bool ladish_room_unload_project(ladish_room_handle room_handle)
+{
+  if (!room_ptr->project_unloading)
+  {
+    if (!ladish_app_supervisor_has_apps(room_ptr->app_supervisor))
+    {
+      return true;
+    }
+
+    log_info("Stopping room apps...");
+    ladish_graph_dump(room_ptr->graph);
+    room_ptr->project_unloading = true;
+    ladish_graph_clear_persist(room_ptr->graph);
+    ladish_app_supervisor_stop(room_ptr->app_supervisor);
+    return false;
+  }
+
+  if (!ladish_app_supervisor_enum(room_ptr->app_supervisor, room_ptr, ladish_room_app_is_stopped))
+  {
+    return false;
+  }
+
+  ladish_app_supervisor_clear(room_ptr->app_supervisor);
+  ASSERT(!ladish_app_supervisor_has_apps(room_ptr->app_supervisor));
+
+  ladish_graph_set_persist(room_ptr->graph);
+
+  log_info("Room apps stopped.");
+  ladish_graph_dump(room_ptr->graph);
+  room_ptr->project_unloading = false;
+  if (room_ptr->project_name != NULL)
+  {
+    free(room_ptr->project_name);
+    room_ptr->project_name = NULL;
+  }
+  if (room_ptr->project_dir != NULL)
+  {
+    free(room_ptr->project_dir);
+    room_ptr->project_dir = NULL;
+  }
+  return true;
+}
+
 ladish_port_handle
 ladish_room_add_port(
   ladish_room_handle room_handle,
@@ -706,6 +776,35 @@ static void ladish_room_dbus_save_project(struct dbus_method_call * call_ptr)
   }
 }
 
+static void ladish_room_dbus_unload_project(struct dbus_method_call * call_ptr)
+{
+  log_info("Unload project request");
+
+  if (ladish_command_unload_project(call_ptr, ladish_studio_get_cmd_queue(), room_ptr->uuid))
+  {
+    method_return_new_void(call_ptr);
+  }
+}
+
+static void ladish_room_dbus_load_project(struct dbus_method_call * call_ptr)
+{
+  const char * dir;
+
+  log_info("Load project request");
+
+  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_STRING, &dir, DBUS_TYPE_INVALID))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return;
+  }
+
+  if (ladish_command_load_project(call_ptr, ladish_studio_get_cmd_queue(), room_ptr->uuid, dir))
+  {
+    method_return_new_void(call_ptr);
+  }
+}
+
 #undef room_ptr
 
 METHOD_ARGS_BEGIN(GetName, "Get room name")
@@ -717,9 +816,18 @@ METHOD_ARGS_BEGIN(SaveProject, "Save the current project")
   METHOD_ARG_DESCRIBE_IN("project_name", "s", "Name of the project. Can be an empty string if project has a name associated already")
 METHOD_ARGS_END
 
+METHOD_ARGS_BEGIN(UnloadProject, "Unload project, if any")
+METHOD_ARGS_END
+
+METHOD_ARGS_BEGIN(LoadProject, "Load project")
+  METHOD_ARG_DESCRIBE_IN("project_dir", "s", "Project directory")
+METHOD_ARGS_END
+
 METHODS_BEGIN
   METHOD_DESCRIBE(GetName, ladish_room_dbus_get_name) /* sync */
   METHOD_DESCRIBE(SaveProject, ladish_room_dbus_save_project) /* async */
+  METHOD_DESCRIBE(UnloadProject, ladish_room_dbus_unload_project) /* async */
+  METHOD_DESCRIBE(LoadProject, ladish_room_dbus_load_project) /* async */
 METHODS_END
 
 SIGNALS_BEGIN

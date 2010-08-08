@@ -154,6 +154,22 @@ static bool ladish_room_save_project_do(struct ladish_room * room_ptr)
     goto close;
   }
 
+  if (!ladish_write_indented_string(fd, 1, "<jack>\n"))
+  {
+    goto close;
+  }
+
+  if (!ladish_write_jgraph(fd, 2, room_ptr->graph))
+  {
+    log_error("ladish_write_jgraph() failed for room graph");
+    goto close;
+  }
+
+  if (!ladish_write_indented_string(fd, 1, "</jack>\n"))
+  {
+    goto close;
+  }
+
   if (!ladish_write_vgraph(fd, 1, room_ptr->graph, room_ptr->app_supervisor))
   {
     log_error("ladish_write_vgraph() failed for studio");

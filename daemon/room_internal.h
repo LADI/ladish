@@ -49,6 +49,7 @@ struct ladish_room
   ladish_client_handle client;
   bool started;
 
+  bool project_unloading;
   uuid_t project_uuid;
   char * project_dir;
   char * project_name;

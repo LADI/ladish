@@ -579,6 +579,11 @@ unsigned int ladish_app_supervisor_get_running_app_count(ladish_app_supervisor_h
   return counter;
 }
 
+bool ladish_app_supervisor_has_apps(ladish_app_supervisor_handle supervisor_handle)
+{
+  return !list_empty(&supervisor_ptr->applist);
+}
+
 #undef supervisor_ptr
 
 /**********************************************************************************/

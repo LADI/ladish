@@ -46,5 +46,6 @@ bool ladish_write_indented_string(int fd, int indent, const char * string);
 bool ladish_write_dict(int fd, int indent, ladish_dict_handle dict);
 bool ladish_write_vgraph(int fd, int indent, ladish_graph_handle vgraph, ladish_app_supervisor_handle app_supervisor);
 bool ladish_write_room_link_ports(int fd, int indent, ladish_room_handle room);
+bool ladish_write_jgraph(int fd, int indent, ladish_graph_handle vgraph);
 
 #endif /* #ifndef SAVE_H__120D6D3D_90A9_4998_8F00_23FCB8BA8DE9__INCLUDED */

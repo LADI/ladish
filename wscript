@@ -255,6 +255,7 @@ def build(bld):
         'escape.c',
         'studio_jack_conf.c',
         'save.c',
+        'load.c',
         'cmd_load_studio.c',
         'cmd_new_studio.c',
         'cmd_rename_studio.c',
@@ -268,11 +269,14 @@ def build(bld):
         'cmd_create_room.c',
         'cmd_delete_room.c',
         'cmd_save_project.c',
+        'cmd_unload_project.c',
+        'cmd_load_project.c',
         'cmd_exit.c',
         'cqueue.c',
         'app_supervisor.c',
         'room.c',
         'room_save.c',
+        'room_load.c',
         ]:
         daemon.source.append(os.path.join("daemon", source))
 

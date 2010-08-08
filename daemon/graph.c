@@ -113,7 +113,7 @@ ladish_graph_find_port_by_uuid_internal(
   /* char uuid1_str[37]; */
   /* char uuid2_str[37]; */
 
-  /* log_info("searching by uuid for port in graph %s", ladish_graph_get_description(graph_handle)); */
+  /* log_info("searching by uuid for port in graph %s", ladish_graph_get_description((ladish_graph_handle)graph_ptr)); */
   /* uuid_unparse(uuid, uuid1_str); */
 
   list_for_each(node_ptr, &graph_ptr->ports)
@@ -2233,6 +2233,7 @@ void ladish_graph_dump(ladish_graph_handle graph_handle)
 
   log_info("graph %s", graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
   log_info("  version %"PRIu64, graph_ptr->graph_version);
+  log_info("  persist: %s", graph_ptr->persist ? "yes" : "no");
   dump_dict("  ", graph_ptr->dict);
   log_info("  clients:");
   list_for_each(client_node_ptr, &graph_ptr->clients)
@@ -2257,7 +2258,10 @@ void ladish_graph_dump(ladish_graph_handle graph_handle)
     {
       port_ptr = list_entry(port_node_ptr, struct ladish_graph_port, siblings_client);
 
-      log_info("        %s port '%s', id=%"PRIu64", type=0x%"PRIX32", flags=0x%"PRIX32", ptr=%p", port_ptr->hidden ? "invisible" : "visible", port_ptr->name, port_ptr->id, port_ptr->type, port_ptr->flags, port_ptr->port);
+      ladish_port_get_uuid(port_ptr->port, uuid);
+      uuid_unparse(uuid, uuid_str);
+
+      log_info("        %s port '%s', uuid=%s, id=%"PRIu64", type=0x%"PRIX32", flags=0x%"PRIX32", ptr=%p", port_ptr->hidden ? "invisible" : "visible", port_ptr->name, uuid_str, port_ptr->id, port_ptr->type, port_ptr->flags, port_ptr->port);
       dump_dict("        ", ladish_port_get_dict(port_ptr->port));
     }
   }
@@ -2280,7 +2284,14 @@ void ladish_graph_dump(ladish_graph_handle graph_handle)
 
 void ladish_graph_clear_persist(ladish_graph_handle graph_handle)
 {
+  log_info("Clearing persist flag for graph", graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
   graph_ptr->persist = false;
+}
+
+void ladish_graph_set_persist(ladish_graph_handle graph_handle)
+{
+  log_info("Setting persist flag for graph", graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
+  graph_ptr->persist = true;
 }
 
 bool ladish_graph_is_persist(ladish_graph_handle graph_handle)

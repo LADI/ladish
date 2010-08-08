@@ -208,6 +208,7 @@ ladish_graph_iterate_connections(
     ladish_dict_handle dict));
 
 void ladish_graph_clear_persist(ladish_graph_handle graph_handle);
+void ladish_graph_set_persist(ladish_graph_handle graph_handle);
 bool ladish_graph_is_persist(ladish_graph_handle graph_handle);
 bool ladish_graph_looks_empty(ladish_graph_handle graph_handle);
 

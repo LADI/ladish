@@ -68,7 +68,7 @@ typedef void (* ladish_app_supervisor_on_app_renamed_callback)(
  * @param[in] command Commandline that is used to start the app
  * @param[in] terminal Whether the app is started in terminal
  * @param[in] level The level that app was started in
- * @param[in] pid PID of the app; Zero if app is not start
+ * @param[in] pid PID of the app; Zero if app is not started
  */
 typedef bool (* ladish_app_supervisor_enum_callback)(
   void * context,
@@ -239,6 +239,15 @@ const char * ladish_app_supervisor_get_name(ladish_app_supervisor_handle supervi
  * @return Number of apps that are currently running
  */
 unsigned int ladish_app_supervisor_get_running_app_count(ladish_app_supervisor_handle supervisor_handle);
+
+/**
+ * Check whether there are apps (running or not)
+ *
+ * @param[in] supervisor_handle supervisor object handle
+ *
+ * @return whether there are apps
+ */
+bool ladish_app_supervisor_has_apps(ladish_app_supervisor_handle supervisor_handle);
 
 /**
  * Check whether app with name supplied name exists
