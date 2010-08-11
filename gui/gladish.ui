@@ -176,6 +176,18 @@
                         <accelerator key="D" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                       </object>
                     </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkMenuItem" id="project_menu_item">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">_Project</property>
+                <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="project_menu">
+                    <property name="visible">True</property>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_load_project">
                         <property name="label">_Load Project...</property>
@@ -185,6 +197,46 @@
                         <property name="image">image_load_project</property>
                         <property name="use_stock">False</property>
                         <accelerator key="O" signal="activate" modifiers="GDK_CONTROL_MASK"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="menu_item_unload_project">
+                        <property name="label" translatable="yes">_Unload Project</property>
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image_unload_project</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="menu_item_rename_project">
+                        <property name="label" translatable="yes">_Rename Project...</property>
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image_rename_project</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="menu_item_save_project">
+                        <property name="label" translatable="yes">_Save Project</property>
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image_save_project</property>
+                        <property name="use_stock">False</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="menu_item_save_as_project">
+                        <property name="label" translatable="yes">_Save Project As...</property>
+                        <property name="visible">True</property>
+                        <property name="sensitive">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="image">image_save_as_project</property>
+                        <property name="use_stock">False</property>
                       </object>
                     </child>
                   </object>
@@ -1266,10 +1318,6 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
     <property name="visible">True</property>
     <property name="stock">gtk-delete</property>
   </object>
-  <object class="GtkImage" id="image_load_project">
-    <property name="visible">True</property>
-    <property name="stock">gtk-open</property>
-  </object>
   <object class="GtkDialog" id="create_room_dialog">
     <property name="border_width">5</property>
     <property name="title" translatable="yes">Create room</property>
@@ -1389,5 +1437,25 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
       <action-widget response="1">create_room_cancel_button</action-widget>
       <action-widget response="2">create_room_ok_button</action-widget>
     </action-widgets>
+  </object>
+  <object class="GtkImage" id="image_load_project">
+    <property name="visible">True</property>
+    <property name="stock">gtk-open</property>
+  </object>
+  <object class="GtkImage" id="image_unload_project">
+    <property name="visible">True</property>
+    <property name="stock">gtk-close</property>
+  </object>
+  <object class="GtkImage" id="image_rename_project">
+    <property name="visible">True</property>
+    <property name="stock">gtk-edit</property>
+  </object>
+  <object class="GtkImage" id="image_save_project">
+    <property name="visible">True</property>
+    <property name="stock">gtk-save</property>
+  </object>
+  <object class="GtkImage" id="image_save_as_project">
+    <property name="visible">True</property>
+    <property name="stock">gtk-save-as</property>
   </object>
 </interface>
