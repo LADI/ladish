@@ -159,7 +159,8 @@ jack_proxy_get_client_pid(
   uint64_t client_id,
   pid_t * pid_ptr)
 {
-  return false;
+  return dbus_call( JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_PATCHBAY, "GetClientPID",
+				    "t", &client_id, "x", pid_ptr    );
 }
 
 bool
