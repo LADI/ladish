@@ -431,38 +431,12 @@ def build(bld):
     bld.install_files('${PREFIX}/bin', 'ladish_control', chmod=0755)
 
     # 'Desktop' file (menu entry, icon, etc)
-    #obj = bld.create_obj('subst')
-    #obj.source = 'patchage.desktop.in'
-    #obj.target = 'patchage.desktop'
-    #obj.dict = {
-    #    'BINDIR'           : bld.env()['BINDIR'],
-    #    'APP_INSTALL_NAME' : bld.env()['APP_INSTALL_NAME'],
-    #    'APP_HUMAN_NAME'   : bld.env()['APP_HUMAN_NAME'],
-    #}
-    #install_as(os.path.normpath(bld.env()['DATADIR'] + 'applications/'), bld.env()['APP_INSTALL_NAME'] + '.desktop', 'build/default/patchage.desktop')
+    bld.install_files('${PREFIX}/share/applications/', 'gui/gladish.desktop', chmod=0644)
 
     # Icons
-    #
-    # Installation layout (with /usr prefix)
-    # /usr/bin/patchage
-    # /usr/share/applications/patchage.desktop
-    # /usr/share/icons/hicolor/16x16/apps/patchage.png
-    # /usr/share/icons/hicolor/22x22/apps/patchage.png
-    # /usr/share/icons/hicolor/24x24/apps/patchage.png
-    # /usr/share/icons/hicolor/32x32/apps/patchage.png
-    # /usr/share/icons/hicolor/48x48/apps/patchage.png
-    # /usr/share/icons/hicolor/scalable/apps/patchage.svg
-    # /usr/share/patchage/patchage.glade
-    #
-    # icon cache is updated using:
-    # gtk-update-icon-cache -f -t $(datadir)/icons/hicolor
-
-    # Dave disabled this, ask why before removing this
-    #install_as(os.path.normpath(bld.env()['PREFIX'] + '/share/icons/hicolor/scalable/apps/'), bld.env()['APP_INSTALL_NAME'] + '.svg', 'icons/scalable/patchage.svg')
-
-    #icon_sizes = ['16x16', '22x22', '24x24', '32x32', '48x48']
-    #for icon_size in icon_sizes:
-    #    install_as(os.path.normpath(bld.env()['DATADIR'] + '/icons/hicolor/' + icon_size + '/apps/'), bld.env()['APP_INSTALL_NAME'] + '.png', 'icons/' + icon_size + '/patchage.png')
+    icon_sizes = ['16x16', '22x22', '24x24', '32x32', '48x48', '256x256']
+    for icon_size in icon_sizes:
+       bld.install_files('${PREFIX}/share/icons/hicolor/' + icon_size + '/apps/', 'art/' + icon_size + '/apps/gladish.png')
 
     status_images = []
     for status in ["down", "unloaded", "started", "stopped", "warning", "error"]:
