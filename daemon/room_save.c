@@ -186,6 +186,8 @@ static bool ladish_room_save_project_do(struct ladish_room * room_ptr)
     goto close;
   }
 
+  ladish_app_supervisor_save_L1(room_ptr->app_supervisor);
+
   ret = true;
 
 close:
