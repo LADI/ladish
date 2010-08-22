@@ -188,6 +188,8 @@ static bool ladish_room_save_project_do(struct ladish_room * room_ptr)
 
   ladish_app_supervisor_save_L1(room_ptr->app_supervisor);
 
+  ladish_room_emit_project_properties_changed(room_ptr);
+
   ret = true;
 
 close:

@@ -55,4 +55,6 @@ struct ladish_room
   char * project_name;
 };
 
+void ladish_room_emit_project_properties_changed(struct ladish_room * room_ptr);
+
 #endif /* #ifndef ROOM_INTERNAL_H__FAF5B68F_E419_442A_8F9B_C729BAC00422__INCLUDED */

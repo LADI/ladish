@@ -33,13 +33,24 @@ void ladish_run_save_project_dialog(ladish_room_proxy_handle room)
   GtkEntry * path;
   GtkEntry * name;
   GtkResponseType response;
+  char * project_dir;
+  char * project_name;
 
   dialog = get_gtk_builder_widget("project_save_as_dialog");
   path = GTK_ENTRY(get_gtk_builder_widget("project_save_as_path_entry"));
   name = GTK_ENTRY(get_gtk_builder_widget("project_save_as_name_entry"));
 
-  gtk_entry_set_text(path, "");
-  gtk_entry_set_text(name, "");
+  if (!ladish_room_proxy_get_project_properties(room, &project_dir, &project_name))
+  {
+    error_message_box("Get project properties failed, please inspect logs.");
+    return;
+  }
+
+  gtk_entry_set_text(path, project_dir);
+  gtk_entry_set_text(name, project_name);
+
+  free(project_name);
+  free(project_dir);
 
   gtk_widget_show(dialog);
   response = gtk_dialog_run(GTK_DIALOG(dialog));

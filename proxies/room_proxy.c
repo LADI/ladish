@@ -144,4 +144,56 @@ bool ladish_room_proxy_unload_project(ladish_room_proxy_handle proxy)
   return true;
 }
 
+bool ladish_room_proxy_get_project_properties(ladish_room_proxy_handle proxy, char ** project_dir, char ** project_name)
+{
+  DBusMessage * reply_ptr;
+  DBusMessageIter iter;
+  const char * name;
+  const char * dir;
+  char * name_buffer;
+  char * dir_buffer;
+
+  if (!dbus_call(proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "GetProjectProperties", "", NULL, &reply_ptr))
+  {
+    log_error("GetProjectProperties() failed.");
+    return false;
+  }
+
+  dbus_message_iter_init(reply_ptr, &iter);
+
+  if (!dbus_iter_get_dict_entry_string(&iter, "name", &name))
+  {
+    name = "";
+  }
+
+  if (!dbus_iter_get_dict_entry_string(&iter, "dir", &dir))
+  {
+    dir = "";
+  }
+
+  name_buffer = strdup(name);
+  if (name_buffer == NULL)
+  {
+    log_error("strdup() failed for project name");
+    dbus_message_unref(reply_ptr);
+    return false;
+  }
+
+  dir_buffer = strdup(dir);
+  if (dir_buffer == NULL)
+  {
+    log_error("strdup() failed for project dir");
+    free(name_buffer);
+    dbus_message_unref(reply_ptr);
+    return false;
+  }
+
+  dbus_message_unref(reply_ptr);
+
+  *project_name = name_buffer;
+  *project_dir = dir_buffer;
+
+  return true;
+}
+
 #undef proxy_ptr

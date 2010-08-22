@@ -76,13 +76,28 @@ struct ladish_room * ladish_room_create_internal(const uuid_t uuid_ptr, const ch
     goto free_room;
   }
 
+  if (object_path != NULL)
+  {
+    room_ptr->object_path = strdup(object_path);
+    if (room_ptr->object_path == NULL)
+    {
+      log_error("strdup() failed for room name");
+      goto free_name;
+    }
+  }
+
   if (!ladish_graph_create(&room_ptr->graph, object_path))
   {
-    goto free_name;
+    goto free_opath;
   }
 
   return room_ptr;
 
+free_opath:
+  if (object_path != NULL)
+  {
+    free(room_ptr->object_path);
+  }
 free_name:
   free(room_ptr->name);
 free_room:
@@ -745,6 +760,59 @@ ladish_room_handle ladish_room_from_list_node(struct list_head * node_ptr)
   return (ladish_room_handle)list_entry(node_ptr, struct ladish_room, siblings);
 }
 
+static bool ladish_room_fill_project_properties(DBusMessageIter * iter_ptr, struct ladish_room * room_ptr)
+{
+  DBusMessageIter dict_iter;
+
+  if (!dbus_message_iter_open_container(iter_ptr, DBUS_TYPE_ARRAY, "{sv}", &dict_iter))
+  {
+    log_error("dbus_message_iter_open_container() failed.");
+    return false;
+  }
+
+  if (!dbus_maybe_add_dict_entry_string(&dict_iter, "name", room_ptr->project_name))
+  {
+    log_error("dbus_maybe_add_dict_entry_string() failed.");
+    return false;
+  }
+
+  if (!dbus_maybe_add_dict_entry_string(&dict_iter, "dir", room_ptr->project_dir))
+  {
+    log_error("dbus_maybe_add_dict_entry_string() failed.");
+    return false;
+  }
+
+  if (!dbus_message_iter_close_container(iter_ptr, &dict_iter))
+  {
+    log_error("dbus_message_iter_close_container() failed.");
+    return false;
+  }
+
+  return true;
+}
+
+void ladish_room_emit_project_properties_changed(struct ladish_room * room_ptr)
+{
+  DBusMessage * message_ptr;
+  DBusMessageIter iter;
+
+  message_ptr = dbus_message_new_signal(room_ptr->object_path, IFACE_ROOM, "ProjectPropertiesChanged");
+  if (message_ptr == NULL)
+  {
+    log_error("dbus_message_new_signal() failed.");
+    return;
+  }
+
+  dbus_message_iter_init_append(message_ptr, &iter);
+
+  if (ladish_room_fill_project_properties(&iter, room_ptr))
+  {
+    dbus_signal_send(g_dbus_connection, message_ptr);
+  }
+
+  dbus_message_unref(message_ptr);
+}
+
 /**********************************************************************************/
 /*                                D-Bus methods                                   */
 /**********************************************************************************/
@@ -805,6 +873,33 @@ static void ladish_room_dbus_load_project(struct dbus_method_call * call_ptr)
   }
 }
 
+static void ladish_room_dbus_get_project_properties(struct dbus_method_call * call_ptr)
+{
+  DBusMessageIter iter;
+
+  call_ptr->reply = dbus_message_new_method_return(call_ptr->message);
+  if (call_ptr->reply == NULL)
+  {
+    goto fail;
+  }
+
+  dbus_message_iter_init_append(call_ptr->reply, &iter);
+
+  if (!ladish_room_fill_project_properties(&iter, room_ptr))
+  {
+    goto fail_unref;
+  }
+
+  return;
+
+fail_unref:
+  dbus_message_unref(call_ptr->reply);
+  call_ptr->reply = NULL;
+
+fail:
+  log_error("Ran out of memory trying to construct method return");
+}
+
 #undef room_ptr
 
 METHOD_ARGS_BEGIN(GetName, "Get room name")
@@ -823,14 +918,24 @@ METHOD_ARGS_BEGIN(LoadProject, "Load project")
   METHOD_ARG_DESCRIBE_IN("project_dir", "s", "Project directory")
 METHOD_ARGS_END
 
+METHOD_ARGS_BEGIN(GetProjectProperties, "Get project properties")
+  SIGNAL_ARG_DESCRIBE("properties", "a{sv}", "project properties")
+METHOD_ARGS_END
+
 METHODS_BEGIN
   METHOD_DESCRIBE(GetName, ladish_room_dbus_get_name) /* sync */
   METHOD_DESCRIBE(SaveProject, ladish_room_dbus_save_project) /* async */
   METHOD_DESCRIBE(UnloadProject, ladish_room_dbus_unload_project) /* async */
   METHOD_DESCRIBE(LoadProject, ladish_room_dbus_load_project) /* async */
+  METHOD_DESCRIBE(GetProjectProperties, ladish_room_dbus_get_project_properties) /* sync */
 METHODS_END
 
+SIGNAL_ARGS_BEGIN(ProjectPropertiesChanged, "Project properties changed")
+  SIGNAL_ARG_DESCRIBE("properties", "a{sv}", "project properties")
+SIGNAL_ARGS_END
+
 SIGNALS_BEGIN
+  SIGNAL_DESCRIBE(ProjectPropertiesChanged)
 SIGNALS_END
 
 INTERFACE_BEGIN(g_interface_room, IFACE_ROOM)
