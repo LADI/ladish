@@ -2,10 +2,10 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains the interface to the GtkBuilder helpers
+ * This file contains interface to room object that is backed through D-Bus
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -24,14 +24,18 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef GTK_BUILDER_H__E2BF7CFC_1B04_4160_9165_A1B433C6B3C2__INCLUDED
-#define GTK_BUILDER_H__E2BF7CFC_1B04_4160_9165_A1B433C6B3C2__INCLUDED
+#ifndef ROOM_PROXY_H__0FDD1790_EF07_4C6C_8C95_0F75E29A3E81__INCLUDED
+#define ROOM_PROXY_H__0FDD1790_EF07_4C6C_8C95_0F75E29A3E81__INCLUDED
 
 #include "common.h"
 
-bool init_gtk_builder(void);
-void uninit_gtk_builder(void);
-GtkWidget * get_gtk_builder_widget(const char * name);
-GObject * get_gtk_builder_object(const char * name);
+typedef struct ladish_room_proxy_tag { int unused; } * ladish_room_proxy_handle;
 
-#endif /* #ifndef GTK_BUILDER_H__E2BF7CFC_1B04_4160_9165_A1B433C6B3C2__INCLUDED */
+bool ladish_room_proxy_create(const char * service, const char * object, ladish_room_proxy_handle * proxy_ptr);
+void ladish_room_proxy_destroy(ladish_room_proxy_handle proxy);
+char * ladish_room_proxy_get_name(ladish_room_proxy_handle proxy);
+bool ladish_room_proxy_load_project(ladish_room_proxy_handle proxy, const char * project_dir);
+bool ladish_room_proxy_save_project(ladish_room_proxy_handle proxy, const char * project_dir, const char * project_name);
+bool ladish_room_proxy_unload_project(ladish_room_proxy_handle proxy);
+
+#endif /* #ifndef ROOM_PROXY_H__0FDD1790_EF07_4C6C_8C95_0F75E29A3E81__INCLUDED */

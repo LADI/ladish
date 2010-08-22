@@ -38,6 +38,9 @@ static GtkWidget * g_menu_item_rename_studio;
 static GtkWidget * g_menu_item_create_room;
 static GtkWidget * g_menu_item_destroy_room;
 static GtkWidget * g_menu_item_load_project;
+static GtkWidget * g_menu_item_unload_project;
+static GtkWidget * g_menu_item_save_project;
+static GtkWidget * g_menu_item_save_as_project;
 static GtkWidget * g_menu_item_daemon_exit;
 static GtkWidget * g_menu_item_jack_configure;
 static GtkCheckMenuItem * g_menu_item_jack_latency_32;
@@ -90,6 +93,9 @@ void menu_init(void)
   g_menu_item_create_room = get_gtk_builder_widget("menu_item_create_room");
   g_menu_item_destroy_room = get_gtk_builder_widget("menu_item_destroy_room");
   g_menu_item_load_project = get_gtk_builder_widget("menu_item_load_project");
+  g_menu_item_unload_project = get_gtk_builder_widget("menu_item_unload_project");
+  g_menu_item_save_project = get_gtk_builder_widget("menu_item_save_project");
+  g_menu_item_save_as_project = get_gtk_builder_widget("menu_item_save_as_project");
   g_menu_item_daemon_exit = get_gtk_builder_widget("menu_item_daemon_exit");
   g_menu_item_jack_configure = get_gtk_builder_widget("menu_item_jack_configure");
   g_menu_item_view_toolbar = get_gtk_builder_widget("menu_item_view_toolbar");
@@ -120,6 +126,10 @@ void menu_init(void)
   g_signal_connect(G_OBJECT(g_menu_item_start_app), "activate", G_CALLBACK(menu_request_start_app), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_create_room), "activate", G_CALLBACK(menu_request_create_room), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_destroy_room), "activate", G_CALLBACK(menu_request_destroy_room), NULL);
+  g_signal_connect(G_OBJECT(g_menu_item_load_project), "activate", G_CALLBACK(menu_request_load_project), NULL);
+  g_signal_connect(G_OBJECT(g_menu_item_unload_project), "activate", G_CALLBACK(menu_request_unload_project), NULL);
+  g_signal_connect(G_OBJECT(g_menu_item_save_project), "activate", G_CALLBACK(menu_request_save_project), NULL);
+  g_signal_connect(G_OBJECT(g_menu_item_save_as_project), "activate", G_CALLBACK(menu_request_save_as_project), NULL);
 
   g_signal_connect(G_OBJECT(g_menu_item_jack_latency_32), "toggled", G_CALLBACK(buffer_size_change_request), (gpointer)32);
   g_signal_connect(G_OBJECT(g_menu_item_jack_latency_64), "toggled", G_CALLBACK(buffer_size_change_request), (gpointer)64);
@@ -209,5 +219,8 @@ bool menu_set_jack_latency(uint32_t buffer_size, bool force, bool * changed_ptr)
 void menu_view_activated(bool room)
 {
   gtk_widget_set_sensitive(g_menu_item_destroy_room, room);
-  //gtk_widget_set_sensitive(g_menu_item_load_project, room);
+  gtk_widget_set_sensitive(g_menu_item_load_project, room);
+  gtk_widget_set_sensitive(g_menu_item_unload_project, room);
+  gtk_widget_set_sensitive(g_menu_item_save_project, room);
+  gtk_widget_set_sensitive(g_menu_item_save_as_project, room);
 }

@@ -29,6 +29,7 @@
 
 #include "graph_canvas.h"
 #include "../proxies/app_supervisor_proxy.h"
+#include "../proxies/room_proxy.h"
 
 typedef struct graph_view_tag { int unused; } * graph_view_handle;
 
@@ -56,6 +57,8 @@ bool is_room_view(graph_view_handle view);
 
 ladish_app_supervisor_proxy_handle graph_view_get_app_supervisor(graph_view_handle view);
 bool app_run_custom(graph_view_handle view, const char * command, const char * name, bool run_in_terminal, uint8_t level);
+
+ladish_room_proxy_handle graph_view_get_room(graph_view_handle view);
 
 /* not very good place for this prototype, because it is not implemented in graph_view.c */
 void set_main_window_title(graph_view_handle view);

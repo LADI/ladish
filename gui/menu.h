@@ -45,6 +45,10 @@ void menu_request_unload_studio(void);
 void menu_request_rename_studio(void);
 void menu_request_create_room(void);
 void menu_request_destroy_room(void);
+void menu_request_load_project(void);
+void menu_request_unload_project(void);
+void menu_request_save_project(void);
+void menu_request_save_as_project(void);
 void menu_request_jack_latency_change(uint32_t buffer_size);
 
 void menu_request_toggle_toolbar(bool visible);

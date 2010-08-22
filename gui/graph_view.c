@@ -29,6 +29,7 @@
 #include "gtk_builder.h"
 #include "world_tree.h"
 #include "menu.h"
+#include "../proxies/room_proxy.h"
 
 struct graph_view
 {
@@ -38,6 +39,7 @@ struct graph_view
   graph_proxy_handle graph;
   GtkWidget * canvas_widget;
   ladish_app_supervisor_proxy_handle app_supervisor;
+  ladish_room_proxy_handle room;
 };
 
 struct list_head g_views;
@@ -113,6 +115,7 @@ create_view(
   }
 
   view_ptr->app_supervisor = NULL;
+  view_ptr->room = NULL;
 
   if (!graph_proxy_create(service, object, graph_dict_supported, &view_ptr->graph))
   {
@@ -145,15 +148,28 @@ create_view(
     }
   }
 
+  if (strcmp(object, STUDIO_OBJECT_PATH) != 0 && strcmp(object, JACKDBUS_OBJECT_PATH) != 0) /* TODO: this is a quite lame way to detect room views */
+  {
+    if (!ladish_room_proxy_create(service, object, &view_ptr->room))
+    {
+      goto free_app_supervisor;
+    }
+  }
+
   if (!graph_proxy_activate(view_ptr->graph))
   {
-    goto free_app_supervisor;
+    goto free_room_proxy;
   }
 
   *handle_ptr = (graph_view_handle)view_ptr;
 
   return true;
 
+free_room_proxy:
+  if (view_ptr->room != NULL)
+  {
+    ladish_room_proxy_destroy(view_ptr->room);
+  }
 free_app_supervisor:
   if (view_ptr->app_supervisor != NULL)
   {
@@ -237,6 +253,11 @@ void destroy_view(graph_view_handle view)
     ladish_app_supervisor_proxy_destroy(view_ptr->app_supervisor);
   }
 
+  if (view_ptr->room != NULL)
+  {
+    ladish_room_proxy_destroy(view_ptr->room);
+  }
+
   free(view_ptr->name);
   free(view_ptr);
 }
@@ -309,11 +330,7 @@ graph_view_handle get_current_view(void)
 
 bool is_room_view(graph_view_handle view)
 {
-  const char * opath;
-
-  opath = graph_proxy_get_object(view_ptr->graph);
-
-  return strcmp(opath, STUDIO_OBJECT_PATH) != 0 && strcmp(opath, JACKDBUS_OBJECT_PATH) != 0;
+  return view_ptr->room != NULL;
 }
 
 bool app_run_custom(graph_view_handle view, const char * command, const char * name, bool run_in_terminal, uint8_t level)
@@ -324,4 +341,9 @@ bool app_run_custom(graph_view_handle view, const char * command, const char * n
 ladish_app_supervisor_proxy_handle graph_view_get_app_supervisor(graph_view_handle view)
 {
   return view_ptr->app_supervisor;
+}
+
+ladish_room_proxy_handle graph_view_get_room(graph_view_handle view)
+{
+  return view_ptr->room;
 }

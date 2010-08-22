@@ -2,11 +2,10 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008 Dave Robillard <dave@drobilla.net>
- * Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains interface to the load project dialog code
+ * This file contains interface to the save project dialog code
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -25,9 +24,11 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef PATCHAGE_LOAD_PROJECT_DIALOG_H
-#define PATCHAGE_LOAD_PROJECT_DIALOG_H
+#ifndef SAVE_PROJECT_DIALOG_H__7C9FB1FB_8582_451E_8959_1CD688E50A20__INCLUDED
+#define SAVE_PROJECT_DIALOG_H__7C9FB1FB_8582_451E_8959_1CD688E50A20__INCLUDED
 
-void run_load_project_dialog(std::list<lash_project_info>& projects);
+#include "../proxies/room_proxy.h"
 
-#endif // PATCHAGE_LOAD_PROJECT_DIALOG_H
+void ladish_run_save_project_dialog(ladish_room_proxy_handle room);
+
+#endif /* #ifndef SAVE_PROJECT_DIALOG_H__7C9FB1FB_8582_451E_8959_1CD688E50A20__INCLUDED */

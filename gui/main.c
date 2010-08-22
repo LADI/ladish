@@ -50,6 +50,8 @@
 #include "ask_dialog.h"
 #include "../proxies/app_supervisor_proxy.h"
 #include "create_room_dialog.h"
+#include "load_project_dialog.h"
+#include "save_project_dialog.h"
 #include "menu.h"
 
 GtkWidget * g_main_win;
@@ -815,6 +817,32 @@ void menu_request_destroy_room(void)
   {
     error_message_box("Room deletion failed, please inspect logs.");
   }
+}
+
+void menu_request_load_project(void)
+{
+  ladish_run_load_project_dialog(graph_view_get_room(get_current_view()));
+}
+
+void menu_request_unload_project(void)
+{
+  if (!ladish_room_proxy_unload_project(graph_view_get_room(get_current_view())))
+  {
+    log_error("ladish_room_proxy_unload_project() failed");
+  }
+}
+
+void menu_request_save_project(void)
+{
+  if (!ladish_room_proxy_save_project(graph_view_get_room(get_current_view()), "", ""))
+  {
+    log_error("ladish_room_proxy_unload_project() failed");
+  }
+}
+
+void menu_request_save_as_project(void)
+{
+  ladish_run_save_project_dialog(graph_view_get_room(get_current_view()));
 }
 
 static gboolean poll_jack(gpointer data)

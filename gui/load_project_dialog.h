@@ -2,10 +2,10 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains the interface to the GtkBuilder helpers
+ * This file contains interface to the load project dialog code
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -24,14 +24,11 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef GTK_BUILDER_H__E2BF7CFC_1B04_4160_9165_A1B433C6B3C2__INCLUDED
-#define GTK_BUILDER_H__E2BF7CFC_1B04_4160_9165_A1B433C6B3C2__INCLUDED
+#ifndef LOAD_PROJECT_DIALOG_H__CD70F7DD_6871_4D72_8087_DB26ABB8FC1F__INCLUDED
+#define LOAD_PROJECT_DIALOG_H__CD70F7DD_6871_4D72_8087_DB26ABB8FC1F__INCLUDED
 
-#include "common.h"
+#include "../proxies/room_proxy.h"
 
-bool init_gtk_builder(void);
-void uninit_gtk_builder(void);
-GtkWidget * get_gtk_builder_widget(const char * name);
-GObject * get_gtk_builder_object(const char * name);
+void ladish_run_load_project_dialog(ladish_room_proxy_handle room);
 
-#endif /* #ifndef GTK_BUILDER_H__E2BF7CFC_1B04_4160_9165_A1B433C6B3C2__INCLUDED */
+#endif /* #ifndef LOAD_PROJECT_DIALOG_H__CD70F7DD_6871_4D72_8087_DB26ABB8FC1F__INCLUDED */

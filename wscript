@@ -393,14 +393,10 @@ def build(bld):
 
         for source in [
             'main.c',
-            #'lash_client.cpp',
-            #'lash_proxy.cpp',
-            #'load_projects_dialog.cpp',
-            #'project.cpp',
+            'load_project_dialog.c',
+            'save_project_dialog.c',
             'world_tree.c',
             'graph_view.c',
-            #'project_properties.cpp',
-            #'session.cpp',
             'canvas.cpp',
             'graph_canvas.c',
             'gtk_builder.c',
@@ -416,6 +412,7 @@ def build(bld):
             'studio_proxy.c',
             'control_proxy.c',
             'app_supervisor_proxy.c',
+            "room_proxy.c",
             ]:
             gladish.source.append(os.path.join("proxies", source))
 
