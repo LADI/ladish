@@ -1269,17 +1269,17 @@ SIGNAL_ARGS_END
 
 SIGNAL_ARGS_BEGIN(RoomAppeared, "Room D-Bus object appeared")
   SIGNAL_ARG_DESCRIBE("opath", "s", "room object path")
-  SIGNAL_ARG_DESCRIBE("properties", "a{sv}", "room object path and props")
+  SIGNAL_ARG_DESCRIBE("properties", "a{sv}", "room properties")
 SIGNAL_ARGS_END
 
 SIGNAL_ARGS_BEGIN(RoomChanged, "Room D-Bus object changed")
   SIGNAL_ARG_DESCRIBE("opath", "s", "room object path")
-  SIGNAL_ARG_DESCRIBE("properties", "a{sv}", "room object path and props")
+  SIGNAL_ARG_DESCRIBE("properties", "a{sv}", "room properties")
 SIGNAL_ARGS_END
 
 SIGNAL_ARGS_BEGIN(RoomDisappeared, "Room D-Bus object disappeared")
   SIGNAL_ARG_DESCRIBE("opath", "s", "room object path")
-  SIGNAL_ARG_DESCRIBE("properties", "a{sv}", "room object path and props")
+  SIGNAL_ARG_DESCRIBE("properties", "a{sv}", "room properties")
 SIGNAL_ARGS_END
 
 SIGNALS_BEGIN
