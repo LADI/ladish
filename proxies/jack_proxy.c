@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains helper functionality for accessing JACK through D-Bus
@@ -159,8 +159,7 @@ jack_proxy_get_client_pid(
   uint64_t client_id,
   pid_t * pid_ptr)
 {
-  return dbus_call( JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_PATCHBAY, "GetClientPID",
-				    "t", &client_id, "x", pid_ptr    );
+  return dbus_call(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_PATCHBAY, "GetClientPID", "t", &client_id, "x", pid_ptr);
 }
 
 bool
