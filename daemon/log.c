@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Marc-Olivier Barre
  *
  **************************************************************************
@@ -30,6 +30,7 @@
 #include <errno.h>
 #include <time.h>
 #include <stdarg.h>
+#include <sys/stat.h>
 
 #include "../catdup.h"
 #include "dirhelpers.h"
@@ -38,15 +39,57 @@
 #define LADISH_XDG_SUBDIR "/" BASE_NAME
 #define LADISH_XDG_LOG "/" BASE_NAME ".log"
 
-FILE * g_logfile;
+static ino_t g_log_file_ino;
+static FILE * g_logfile;
+static char * g_log_filename;
+
+static bool ladish_log_open(void)
+{
+    struct stat st;
+    int ret;
+    int retry;
+
+    if (g_logfile != NULL)
+    {
+        ret = stat(g_log_filename, &st);
+        if (ret != 0 || g_log_file_ino != st.st_ino)
+        {
+            fclose(g_logfile);
+        }
+        else
+        {
+            return true;
+        }
+    }
+
+    for (retry = 0; retry < 10; retry++)
+    {
+        g_logfile = fopen(g_log_filename, "a");
+        if (g_logfile == NULL)
+        {
+            fprintf(stderr, "Cannot open ladishd log file \"%s\": %d (%s)\n", g_log_filename, errno, strerror(errno));
+            return false;
+        }
+
+        ret = stat(g_log_filename, &st);
+        if (ret == 0)
+        {
+            g_log_file_ino = st.st_ino;
+            return true;
+        }
+
+        fclose(g_logfile);
+        g_logfile = NULL;
+    }
+
+    fprintf(stderr, "Cannot stat just opened ladishd log file \"%s\": %d (%s). %d retries\n", g_log_filename, errno, strerror(errno), retry);
+    return false;
+}
 
 void ladish_log_init() __attribute__ ((constructor));
 void ladish_log_init()
 {
-  char * log_filename;
-  size_t log_len;
   char * ladish_log_dir;
-  size_t ladish_log_dir_len; /* without terminating '\0' char */
   const char * home_dir;
   char * xdg_log_home;
 
@@ -81,28 +124,14 @@ void ladish_log_init()
     goto free_log_dir;
   }
 
-  ladish_log_dir_len = strlen(ladish_log_dir);
-
-  log_len = strlen(LADISH_XDG_LOG);
-
-  log_filename = malloc(ladish_log_dir_len + log_len + 1);
-  if (log_filename == NULL)
+  g_log_filename = catdup(ladish_log_dir, LADISH_XDG_LOG);
+  if (g_log_filename == NULL)
   {
     log_error("Out of memory");
     goto free_log_dir;
   }
 
-  memcpy(log_filename, ladish_log_dir, ladish_log_dir_len);
-  memcpy(log_filename + ladish_log_dir_len, LADISH_XDG_LOG, log_len);
-  log_filename[ladish_log_dir_len + log_len] = 0;
-
-  g_logfile = fopen(log_filename, "a");
-  if (g_logfile == NULL)
-  {
-    log_error("Cannot open jackdbus log file \"%s\": %d (%s)\n", log_filename, errno, strerror(errno));
-  }
-
-  free(log_filename);
+  ladish_log_open();
 
 free_log_dir:
   free(ladish_log_dir);
@@ -121,6 +150,8 @@ void ladish_log_uninit()
   {
     fclose(g_logfile);
   }
+
+  free(g_log_filename);
 }
 
 void
@@ -134,7 +165,7 @@ ladish_log(
   time_t timestamp;
   char timestamp_str[26];
 
-  if (g_logfile != NULL)
+  if (g_logfile != NULL && ladish_log_open())
   {
     stream = g_logfile;
   }
