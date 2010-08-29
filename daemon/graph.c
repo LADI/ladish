@@ -106,6 +106,7 @@ static struct ladish_graph_port * ladish_graph_find_port_by_id_internal(struct l
 static struct ladish_graph_port *
 ladish_graph_find_port_by_uuid_internal(
   struct ladish_graph * graph_ptr,
+  struct ladish_graph_client * client_ptr,
   const uuid_t uuid,
   bool use_link_override_uuids)
 {
@@ -123,6 +124,11 @@ ladish_graph_find_port_by_uuid_internal(
   list_for_each(node_ptr, &graph_ptr->ports)
   {
     port_ptr = list_entry(node_ptr, struct ladish_graph_port, siblings_graph);
+
+    if (client_ptr != NULL && port_ptr->client_ptr != client_ptr)
+    {
+      continue;
+    }
 
 #if defined(LOG_PORT_LOOKUP)
     if (port_ptr->link)
@@ -1685,7 +1691,7 @@ ladish_port_handle ladish_graph_find_port_by_uuid(ladish_graph_handle graph_hand
 {
   struct ladish_graph_port * port_ptr;
 
-  port_ptr = ladish_graph_find_port_by_uuid_internal(graph_ptr, uuid, use_link_override_uuids);
+  port_ptr = ladish_graph_find_port_by_uuid_internal(graph_ptr, NULL, uuid, use_link_override_uuids);
   if (port_ptr != NULL)
   {
     return port_ptr->port;
@@ -2085,12 +2091,39 @@ const char * ladish_graph_get_port_name(ladish_graph_handle graph_handle, ladish
   return port_ptr->name;
 }
 
-void ladish_graph_set_link_port_override_uuid(ladish_graph_handle graph_handle, const uuid_t uuid, const uuid_t override_uuid)
+ladish_port_handle
+ladish_graph_find_client_port_by_uuid(
+  ladish_graph_handle graph_handle,
+  ladish_client_handle client,
+  const uuid_t uuid,
+  bool use_link_override_uuids)
+{
+  struct ladish_graph_client * client_ptr;
+  struct ladish_graph_port * port_ptr;
+
+  client_ptr = ladish_graph_find_client(graph_ptr, client);
+  ASSERT(client_ptr != NULL);
+
+  port_ptr = ladish_graph_find_port_by_uuid_internal(graph_ptr, client_ptr, uuid, use_link_override_uuids);
+  if (port_ptr != NULL)
+  {
+    return port_ptr->port;
+  }
+
+  return NULL;
+}
+
+void
+ladish_graph_set_link_port_override_uuid(
+  ladish_graph_handle graph_handle,
+  ladish_port_handle port,
+  const uuid_t override_uuid)
 {
   struct ladish_graph_port * port_ptr;
 
-  port_ptr = ladish_graph_find_port_by_uuid_internal(graph_ptr, uuid, false);
+  port_ptr = ladish_graph_find_port(graph_ptr, port);
   ASSERT(ladish_port_is_link(port_ptr->port));
+
   uuid_copy(port_ptr->link_uuid_override, override_uuid);
 }
 

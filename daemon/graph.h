@@ -144,6 +144,20 @@ ladish_client_handle ladish_graph_find_client_by_app(ladish_graph_handle graph_h
 ladish_port_handle ladish_graph_find_port_by_name(ladish_graph_handle graph_handle, ladish_client_handle client_handle, const char * name);
 ladish_client_handle ladish_graph_find_client_by_uuid(ladish_graph_handle graph_handle, const uuid_t uuid);
 ladish_port_handle ladish_graph_find_port_by_uuid(ladish_graph_handle graph_handle, const uuid_t uuid, bool use_link_override_uuids);
+
+ladish_port_handle
+ladish_graph_find_client_port_by_uuid(
+  ladish_graph_handle graph,
+  ladish_client_handle client,
+  const uuid_t uuid,
+  bool use_link_override_uuids);
+
+void
+ladish_graph_set_link_port_override_uuid(
+  ladish_graph_handle graph,
+  ladish_port_handle port,
+  const uuid_t override_uuid);
+
 ladish_client_handle ladish_graph_get_port_client(ladish_graph_handle graph_handle, ladish_port_handle port_handle);
 const char * ladish_graph_get_client_name(ladish_graph_handle graph_handle, ladish_client_handle client_handle);
 const char * ladish_graph_get_port_name(ladish_graph_handle graph, ladish_port_handle port);
@@ -160,7 +174,6 @@ void ladish_graph_show_connection(ladish_graph_handle graph_handle, uint64_t con
 void ladish_try_connect_hidden_connections(ladish_graph_handle graph_handle);
 void ladish_graph_hide_non_virtual(ladish_graph_handle graph_handle);
 void ladish_graph_get_port_uuid(ladish_graph_handle graph, ladish_port_handle port, uuid_t uuid_ptr);
-void ladish_graph_set_link_port_override_uuid(ladish_graph_handle graph_handle, const uuid_t uuid, const uuid_t override_uuid);
 
 void ladish_graph_dump(ladish_graph_handle graph_handle);
 

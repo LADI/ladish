@@ -356,15 +356,15 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
         }
 
         /* room link port */
-        context_ptr->port = ladish_graph_find_port_by_uuid(g_studio.studio_graph, uuid2, false);
+        context_ptr->port = ladish_graph_find_client_port_by_uuid(g_studio.studio_graph, context_ptr->client, uuid2, false);
         if (context_ptr->port == NULL)
         {
           log_error("room link port not found");
-          context_ptr->port = NULL;
+          context_ptr->error = XML_TRUE;
+          return;
         }
 
-        ladish_graph_set_link_port_override_uuid(g_studio.studio_graph, uuid2, uuid);
-
+        ladish_graph_set_link_port_override_uuid(g_studio.studio_graph, context_ptr->port, uuid);
         return;
       }
     }
