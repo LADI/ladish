@@ -368,6 +368,7 @@ static bool run(void * command_context)
     }
 
     save_context.indent = 2;
+    save_context.fd = fd;
 
     if (!ladish_studio_iterate_rooms(&save_context, save_studio_room))
     {
