@@ -58,7 +58,7 @@ struct ladish_app_supervisor
   uint64_t next_id;
   struct list_head applist;
   void * on_app_renamed_context;
-  void (* on_app_renamed)(void * context, const char * old_name, const char * new_app_name);
+  ladish_app_supervisor_on_app_renamed_callback on_app_renamed;
 };
 
 bool
@@ -67,7 +67,7 @@ ladish_app_supervisor_create(
   const char * opath,
   const char * name,
   void * context,
-  void (* on_app_renamed)(void * context, const char * old_name, const char * new_app_name))
+  ladish_app_supervisor_on_app_renamed_callback on_app_renamed)
 {
   struct ladish_app_supervisor * supervisor_ptr;
 
@@ -925,7 +925,7 @@ static void set_app_properties(struct dbus_method_call * call_ptr)
 
   if (name_buffer != NULL)
   {
-    supervisor_ptr->on_app_renamed(supervisor_ptr->on_app_renamed_context, app_ptr->name, name_buffer);
+    supervisor_ptr->on_app_renamed(supervisor_ptr->on_app_renamed_context, app_ptr->uuid, app_ptr->name, name_buffer);
     free(app_ptr->name);
     app_ptr->name = name_buffer;
   }

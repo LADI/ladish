@@ -35,9 +35,6 @@
 
 extern const struct dbus_interface_descriptor g_interface_room;
 
-/* implemented in studio.c */
-void ladish_on_app_renamed(void * context, const char * old_name, const char * new_app_name);
-
 static bool port_is_input(uint32_t flags)
 {
   bool playback;
@@ -302,7 +299,7 @@ ladish_room_create(
     uuid_clear(room_ptr->template_uuid);
   }
 
-  if (!ladish_app_supervisor_create(&room_ptr->app_supervisor, object_path, room_ptr->name, room_ptr->graph, ladish_on_app_renamed))
+  if (!ladish_app_supervisor_create(&room_ptr->app_supervisor, object_path, room_ptr->name, room_ptr->graph, ladish_virtualizer_rename_app))
   {
     log_error("ladish_app_supervisor_create() failed.");
     goto destroy;

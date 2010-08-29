@@ -60,7 +60,12 @@ ladish_virtualizer_remove_app(
   const uuid_t app_uuid,
   const char * app_name);
 
-void ladish_virtualizer_rename_app(void * context, const char * old_name, const char * new_app_name);
+void
+ladish_virtualizer_rename_app(
+  void * vgraph_context,
+  const uuid_t uuid,
+  const char * old_name,
+  const char * new_app_name);
 
 void
 ladish_virtualizer_destroy(

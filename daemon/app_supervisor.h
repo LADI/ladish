@@ -51,11 +51,13 @@ typedef struct ladish_app_tag { int unused; /**< fake */ } * ladish_app_handle;
  * Type of function that is called when app is renamed
  *
  * @param[in] context User defined context that was supplied to ladish_app_supervisor_create()
+ * @param[in] uuid uuid of the app
  * @param[in] old_name Old name of the app
  * @param[in] new_name New name of the app
  */
 typedef void (* ladish_app_supervisor_on_app_renamed_callback)(
   void * context,
+  const uuid_t uuid,
   const char * old_name,
   const char * new_app_name);
 

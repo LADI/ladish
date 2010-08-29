@@ -509,23 +509,6 @@ static void ladish_studio_on_jack_server_disappeared(void)
   ladish_environment_reset(&g_studio.env_store, ladish_environment_jack_server_present);
 }
 
-void ladish_on_app_renamed(void * context, const char * old_name, const char * new_app_name)
-{
-  ladish_client_handle client;
-
-  client = ladish_graph_find_client_by_name(g_studio.jack_graph, old_name, false);
-  if (client != NULL)
-  {
-    ladish_graph_rename_client(g_studio.jack_graph, client, new_app_name);
-  }
-
-  client = ladish_graph_find_client_by_name(context, old_name, false);
-  if (client != NULL)
-  {
-    ladish_graph_rename_client(context, client, new_app_name);
-  }
-}
-
 bool ladish_studio_init(void)
 {
   log_info("studio object construct");
@@ -574,7 +557,7 @@ bool ladish_studio_init(void)
     goto jack_graph_destroy;
   }
 
-  if (!ladish_app_supervisor_create(&g_studio.app_supervisor, STUDIO_OBJECT_PATH, "studio", g_studio.studio_graph, ladish_on_app_renamed))
+  if (!ladish_app_supervisor_create(&g_studio.app_supervisor, STUDIO_OBJECT_PATH, "studio", g_studio.studio_graph, ladish_virtualizer_rename_app))
   {
     log_error("ladish_app_supervisor_create() failed.");
     goto studio_graph_destroy;

@@ -1230,3 +1230,27 @@ ladish_virtualizer_destroy(
 }
 
 #undef virtualizer_ptr
+
+#define vgraph ((ladish_graph_handle)vgraph_context)
+void
+ladish_virtualizer_rename_app(
+  void * vgraph_context,
+  const uuid_t uuid,
+  const char * old_name,
+  const char * new_app_name)
+{
+  ladish_client_handle client;
+
+  client = ladish_graph_find_client_by_app(vgraph, uuid);
+  if (client != NULL)
+  {
+    ladish_graph_rename_client(vgraph, client, new_app_name);
+  }
+
+  client = ladish_graph_find_client_by_app(g_studio.jack_graph, uuid);
+  if (client != NULL)
+  {
+    ladish_graph_rename_client(g_studio.jack_graph, client, new_app_name);
+  }
+}
+#undef vgraph
