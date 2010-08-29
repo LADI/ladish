@@ -101,6 +101,8 @@ static struct ladish_graph_port * ladish_graph_find_port_by_id_internal(struct l
   return NULL;
 }
 
+//#define LOG_PORT_LOOKUP
+
 static struct ladish_graph_port *
 ladish_graph_find_port_by_uuid_internal(
   struct ladish_graph * graph_ptr,
@@ -110,33 +112,44 @@ ladish_graph_find_port_by_uuid_internal(
   struct list_head * node_ptr;
   struct ladish_graph_port * port_ptr;
   uuid_t current_uuid;
-  /* char uuid1_str[37]; */
-  /* char uuid2_str[37]; */
+#if defined(LOG_PORT_LOOKUP)
+  char uuid1_str[37];
+  char uuid2_str[37];
 
-  /* log_info("searching by uuid for port in graph %s", ladish_graph_get_description((ladish_graph_handle)graph_ptr)); */
-  /* uuid_unparse(uuid, uuid1_str); */
+  log_info("searching by uuid for port in graph %s", ladish_graph_get_description((ladish_graph_handle)graph_ptr));
+  uuid_unparse(uuid, uuid1_str);
+#endif
 
   list_for_each(node_ptr, &graph_ptr->ports)
   {
     port_ptr = list_entry(node_ptr, struct ladish_graph_port, siblings_graph);
 
-    /* if (port_ptr->link) */
-    /* { */
-    /*   uuid_unparse(port_ptr->link_uuid_override, uuid2_str); */
-    /*   log_info("comparing link uuid %s with %s", uuid2_str, uuid1_str); */
-    /* } */
+#if defined(LOG_PORT_LOOKUP)
+    if (port_ptr->link)
+    {
+      uuid_unparse(port_ptr->link_uuid_override, uuid2_str);
+      log_info("comparing link uuid %s with %s", uuid2_str, uuid1_str);
+    }
+#endif
 
     if (use_link_override_uuids && port_ptr->link && uuid_compare(port_ptr->link_uuid_override, uuid) == 0)
     {
-      /* log_info("found port %p of client '%s'", port_ptr->port, port_ptr->client_ptr->name); */
+#if defined(LOG_PORT_LOOKUP)
+      log_info("found link port %p of client '%s'", port_ptr->port, port_ptr->client_ptr->name);
+#endif
       return port_ptr;
     }
 
     ladish_port_get_uuid(port_ptr->port, current_uuid);
-    /* uuid_unparse(current_uuid, uuid2_str); */
-    /* log_info("comparing port uuid %s with %s", uuid2_str, uuid1_str); */
+#if defined(LOG_PORT_LOOKUP)
+    uuid_unparse(current_uuid, uuid2_str);
+    log_info("comparing port uuid %s with %s", uuid2_str, uuid1_str);
+#endif
     if (uuid_compare(current_uuid, uuid) == 0)
     {
+#if defined(LOG_PORT_LOOKUP)
+      log_info("found port %p of client '%s'", port_ptr->port, port_ptr->client_ptr->name);
+#endif
       return port_ptr;
     }
   }
