@@ -38,6 +38,7 @@ struct ladish_app
 {
   struct list_head siblings;
   uint64_t id;
+  uuid_t uuid;
   char * name;
   char * commandline;
   bool terminal;
@@ -174,7 +175,7 @@ const char * ladish_app_supervisor_get_opath(ladish_app_supervisor_handle superv
   return supervisor_ptr->opath;
 }
 
-bool ladish_app_supervisor_check_app_name(ladish_app_supervisor_handle supervisor_handle, const char * name)
+ladish_app_handle ladish_app_supervisor_find_app_by_name(ladish_app_supervisor_handle supervisor_handle, const char * name)
 {
   struct list_head * node_ptr;
   struct ladish_app * app_ptr;
@@ -184,16 +185,34 @@ bool ladish_app_supervisor_check_app_name(ladish_app_supervisor_handle superviso
     app_ptr = list_entry(node_ptr, struct ladish_app, siblings);
     if (strcmp(app_ptr->name, name) == 0)
     {
-      return true;
+      return (ladish_app_handle)app_ptr;
     }
   }
 
-  return false;
+  return NULL;
 }
 
 ladish_app_handle ladish_app_supervisor_find_app_by_id(ladish_app_supervisor_handle supervisor_handle, uint64_t id)
 {
   return (ladish_app_handle)ladish_app_supervisor_find_app_by_id_internal(supervisor_ptr, id);
+}
+
+ladish_app_handle ladish_app_supervisor_find_app_by_pid(ladish_app_supervisor_handle supervisor_handle, pid_t pid)
+{
+  struct list_head * node_ptr;
+  struct ladish_app * app_ptr;
+
+  list_for_each(node_ptr, &supervisor_ptr->applist)
+  {
+    app_ptr = list_entry(node_ptr, struct ladish_app, siblings);
+    if (app_ptr->pid == pid)
+    {
+      //log_info("app \"%s\" found by pid %llu", app_ptr->name, (unsigned long long)pid);
+      return (ladish_app_handle)app_ptr;
+    }
+  }
+
+  return NULL;
 }
 
 ladish_app_handle
@@ -237,6 +256,7 @@ ladish_app_supervisor_add(
   app_ptr->pid = 0;
 
   app_ptr->id = supervisor_ptr->next_id++;
+  uuid_generate(app_ptr->uuid);
   app_ptr->zombie = false;
   app_ptr->state = LADISH_APP_STATE_STOPPED;
   app_ptr->autorun = autorun;
@@ -372,7 +392,7 @@ bool
 ladish_app_supervisor_enum(
   ladish_app_supervisor_handle supervisor_handle,
   void * context,
-  bool (* callback)(void * context, const char * name, bool running, const char * command, bool terminal, uint8_t level, pid_t pid))
+  ladish_app_supervisor_enum_callback callback)
 {
   struct list_head * node_ptr;
   struct ladish_app * app_ptr;
@@ -381,7 +401,7 @@ ladish_app_supervisor_enum(
   {
     app_ptr = list_entry(node_ptr, struct ladish_app, siblings);
 
-    if (!callback(context, app_ptr->name, app_ptr->pid != 0, app_ptr->commandline, app_ptr->terminal, app_ptr->level, app_ptr->pid))
+    if (!callback(context, app_ptr->name, app_ptr->pid != 0, app_ptr->commandline, app_ptr->terminal, app_ptr->level, app_ptr->pid, app_ptr->uuid))
     {
       return false;
     }
@@ -434,6 +454,11 @@ bool ladish_app_is_running(ladish_app_handle app_handle)
 const char * ladish_app_get_name(ladish_app_handle app_handle)
 {
   return app_ptr->name;
+}
+
+void ladish_app_get_uuid(ladish_app_handle app_handle, uuid_t uuid)
+{
+  uuid_copy(uuid, app_ptr->uuid);
 }
 
 void ladish_app_stop(ladish_app_handle app_handle)
@@ -528,31 +553,6 @@ void ladish_app_supervisor_save_L1(ladish_app_supervisor_handle supervisor_handl
       ladish_app_send_signal(app_ptr, SIGUSR1);
     }
   }
-}
-
-char * ladish_app_supervisor_search_app(ladish_app_supervisor_handle supervisor_handle, pid_t pid)
-{
-  struct list_head * node_ptr;
-  struct ladish_app * app_ptr;
-  char * name;
-
-  list_for_each(node_ptr, &supervisor_ptr->applist)
-  {
-    app_ptr = list_entry(node_ptr, struct ladish_app, siblings);
-    if (app_ptr->pid == pid)
-    {
-      //log_info("app \"%s\" found by pid %llu", app_ptr->name, (unsigned long long)pid);
-      name = strdup(app_ptr->name);
-      if (name == NULL)
-      {
-        log_error("strdup() failed for '%s'", app_ptr->name);
-      }
-
-      return name;
-    }
-  }
-
-  return NULL;
 }
 
 const char * ladish_app_supervisor_get_name(ladish_app_supervisor_handle supervisor_handle)

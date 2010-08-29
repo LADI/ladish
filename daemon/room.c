@@ -617,7 +617,8 @@ ladish_room_app_is_stopped(
   const char * command,
   bool terminal,
   uint8_t level,
-  pid_t pid)
+  pid_t pid,
+  const uuid_t uuid)
 {
   if (pid != 0)
   {
@@ -625,7 +626,7 @@ ladish_room_app_is_stopped(
     return false;
   }
 
-  if (!ladish_virtualizer_is_hidden_app(ladish_studio_get_jack_graph(), name))
+  if (!ladish_virtualizer_is_hidden_app(ladish_studio_get_jack_graph(), uuid, name))
   {
     log_info("App '%s' is still visible in the jack graph", name);
     return false;

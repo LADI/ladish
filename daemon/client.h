@@ -62,4 +62,8 @@ void ladish_client_interlink(ladish_client_handle client1_handle, ladish_client_
 bool ladish_client_get_interlink(ladish_client_handle client_handle, uuid_t uuid);
 void ladish_client_clear_interlink(ladish_client_handle client_handle);
 
+void ladish_client_set_app(ladish_client_handle client_handle, const uuid_t uuid);
+bool ladish_client_get_app(ladish_client_handle client_handle, uuid_t uuid);
+bool ladish_client_has_app(ladish_client_handle client_handle);
+
 #endif /* #ifndef CLIENT_H__2160B4BA_D6D1_464D_9DC5_ECA50B0958AD__INCLUDED */

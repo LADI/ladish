@@ -375,7 +375,17 @@ ladish_save_vgraph_connection(
   return true;
 }
 
-static bool ladish_save_app(void * context, const char * name, bool running, const char * command, bool terminal, uint8_t level, pid_t pid)
+static
+bool
+ladish_save_app(
+  void * context,
+  const char * name,
+  bool running,
+  const char * command,
+  bool terminal,
+  uint8_t level,
+  pid_t pid,
+  const uuid_t uuid)
 {
   char buf[100];
   const char * unescaped_string;

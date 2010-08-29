@@ -729,7 +729,7 @@ bool ladish_room_load_project(ladish_room_handle room_handle, const char * proje
     goto free_parser;
   }
 
-  ladish_interlink_clients(room_ptr->graph);
+  ladish_interlink_clients(room_ptr->graph, room_ptr->app_supervisor);
   /* ladish_graph_dump(ladish_studio_get_jack_graph()); */
   /* ladish_graph_dump(room_ptr->graph); */
 

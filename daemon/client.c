@@ -31,6 +31,7 @@ struct ladish_client
 {
   uuid_t uuid;                             /* The UUID of the client */
   uuid_t uuid_interlink;                   /* The UUID of the linked client (vgraph <-> jack graph) */
+  uuid_t uuid_app;                         /* The UUID of the app that owns this client */
   uint64_t jack_id;                        /* JACK client ID */
   pid_t pid;                               /* process id. */
   ladish_dict_handle dict;
@@ -68,6 +69,7 @@ ladish_client_create(
   }
 
   uuid_clear(client_ptr->uuid_interlink);
+  uuid_clear(client_ptr->uuid_app);
 
   client_ptr->jack_id = 0;
   client_ptr->pid = 0;
@@ -172,6 +174,27 @@ bool ladish_client_get_interlink(ladish_client_handle client_handle, uuid_t uuid
 void ladish_client_clear_interlink(ladish_client_handle client_handle)
 {
   uuid_clear(client_ptr->uuid_interlink);
+}
+
+void ladish_client_set_app(ladish_client_handle client_handle, const uuid_t uuid)
+{
+  uuid_copy(client_ptr->uuid_app, uuid);
+}
+
+bool ladish_client_get_app(ladish_client_handle client_handle, uuid_t uuid)
+{
+  if (uuid_is_null(client_ptr->uuid_app))
+  {
+    return false;
+  }
+
+  uuid_copy(uuid, client_ptr->uuid_app);
+  return true;
+}
+
+bool ladish_client_has_app(ladish_client_handle client_handle)
+{
+  return !uuid_is_null(client_ptr->uuid_app);
 }
 
 #undef client_ptr

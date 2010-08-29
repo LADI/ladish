@@ -513,13 +513,13 @@ void ladish_on_app_renamed(void * context, const char * old_name, const char * n
 {
   ladish_client_handle client;
 
-  client = ladish_graph_find_client_by_name(g_studio.jack_graph, old_name);
+  client = ladish_graph_find_client_by_name(g_studio.jack_graph, old_name, false);
   if (client != NULL)
   {
     ladish_graph_rename_client(g_studio.jack_graph, client, new_app_name);
   }
 
-  client = ladish_graph_find_client_by_name(context, old_name);
+  client = ladish_graph_find_client_by_name(context, old_name, false);
   if (client != NULL)
   {
     ladish_graph_rename_client(context, client, new_app_name);
@@ -739,6 +739,11 @@ ladish_graph_handle ladish_studio_get_jack_graph(void)
 ladish_graph_handle ladish_studio_get_studio_graph(void)
 {
   return g_studio.studio_graph;
+}
+
+ladish_app_supervisor_handle ladish_studio_get_studio_app_supervisor(void)
+{
+  return g_studio.app_supervisor;
 }
 
 struct ladish_studio_app_supervisor_match_context

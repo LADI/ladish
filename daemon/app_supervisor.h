@@ -69,6 +69,7 @@ typedef void (* ladish_app_supervisor_on_app_renamed_callback)(
  * @param[in] terminal Whether the app is started in terminal
  * @param[in] level The level that app was started in
  * @param[in] pid PID of the app; Zero if app is not started
+ * @param[in] uuid uuid of the app
  */
 typedef bool (* ladish_app_supervisor_enum_callback)(
   void * context,
@@ -77,7 +78,8 @@ typedef bool (* ladish_app_supervisor_enum_callback)(
   const char * command,
   bool terminal,
   uint8_t level,
-  pid_t pid);
+  pid_t pid,
+  const uuid_t uuid);
 
 /**
  * Create app supervisor object
@@ -205,22 +207,6 @@ ladish_app_supervisor_autorun(
   ladish_app_supervisor_handle supervisor_handle);
 
 /**
- * Search app by pid and return its name
- *
- * TODO: this should be renamed to match the fact that it returns app name and not app handle.
- * Implementing ladish_app_supervisor_find_app_by_pid() makes sense as well.
- *
- * @param[in] supervisor_handle supervisor object handle
- * @param[in] pid pid of the app to search for
- *
- * @return app name on success; NULL if app is not found
- */
-char *
-ladish_app_supervisor_search_app(
-  ladish_app_supervisor_handle supervisor_handle,
-  pid_t pid);
-
-/**
  * Get name of the supervisor
  *
  * TODO: This should be probably removed in favour of ladish_app_supervisor_get_opath(); it is used for debuging purposes only
@@ -250,15 +236,14 @@ unsigned int ladish_app_supervisor_get_running_app_count(ladish_app_supervisor_h
 bool ladish_app_supervisor_has_apps(ladish_app_supervisor_handle supervisor_handle);
 
 /**
- * Check whether app with name supplied name exists
+ * Find app by name
  *
  * @param[in] supervisor_handle supervisor object handle
  * @param[in] name name of the app to search for
  *
- * @retval true app with supplied name exists
- * @retval false app with supplied name does not exist
+ * @return app handle on if found; NULL if app is not found; the app handle is owned by the app supervisor object
  */
-bool ladish_app_supervisor_check_app_name(ladish_app_supervisor_handle supervisor_handle, const char * name);
+ladish_app_handle ladish_app_supervisor_find_app_by_name(ladish_app_supervisor_handle supervisor_handle, const char * name);
 
 /**
  * Find app by id (as exposed through the D-Bus interface)
@@ -269,6 +254,19 @@ bool ladish_app_supervisor_check_app_name(ladish_app_supervisor_handle superviso
  * @return app handle on success; NULL if app is not found; the app handle is owned by the app supervisor object
  */
 ladish_app_handle ladish_app_supervisor_find_app_by_id(ladish_app_supervisor_handle supervisor_handle, uint64_t id);
+
+/**
+ * Search app by process id
+ *
+ * @param[in] supervisor_handle supervisor object handle
+ * @param[in] pid pid of the app to search for
+ *
+ * @return app handle on if found; NULL if app is not found; the app handle is owned by the app supervisor object
+ */
+ladish_app_handle
+ladish_app_supervisor_find_app_by_pid(
+  ladish_app_supervisor_handle supervisor_handle,
+  pid_t pid);
 
 /**
  * The the D-Bus object path for the supervisor.
@@ -337,6 +335,15 @@ bool ladish_app_is_running(ladish_app_handle app_handle);
  * @retval app name; the buffer is owned by the app supervisor
  */
 const char * ladish_app_get_name(ladish_app_handle app_handle);
+
+/**
+ * Get app uuid
+ *
+ * @param[in] app_handle app object handle
+ * @param[out] uuid pointer to uuid_t storage where the app uuid will be store
+ *
+ */
+void ladish_app_get_uuid(ladish_app_handle app_handle, uuid_t uuid);
 
 /**
  * Stop an app. The app must be in started state.

@@ -56,15 +56,16 @@ struct app_find_context
 {
   pid_t pid;
   char * app_name;
+  uuid_t app_uuid;
   ladish_graph_handle graph;
 };
 
 #define app_find_context_ptr ((struct app_find_context *)context)
 
-bool get_app_name_from_supervisor(void * context, ladish_graph_handle graph, ladish_app_supervisor_handle app_supervisor)
+static bool get_app_properties_from_supervisor(void * context, ladish_graph_handle graph, ladish_app_supervisor_handle app_supervisor)
 {
   pid_t pid;
-  char * app_name;
+  ladish_app_handle app;
 
   ASSERT(app_find_context_ptr->app_name == NULL); /* we stop iteration when app is found */
 
@@ -73,8 +74,8 @@ bool get_app_name_from_supervisor(void * context, ladish_graph_handle graph, lad
   pid = app_find_context_ptr->pid;
   do
   {
-    app_name = ladish_app_supervisor_search_app(app_supervisor, pid);
-    if (app_name != NULL)
+    app = ladish_app_supervisor_find_app_by_pid(app_supervisor, pid);
+    if (app != NULL)
       break;
 
     pid = (pid_t)procfs_get_process_parent((unsigned long long)pid);
@@ -87,33 +88,45 @@ bool get_app_name_from_supervisor(void * context, ladish_graph_handle graph, lad
   }
   while (pid != 0);
 
-  if (app_name != NULL)
-  {
-    app_find_context_ptr->app_name = app_name;
-    app_find_context_ptr->pid = pid;
-    app_find_context_ptr->graph = graph;
-    return false;               /* stop app supervisor iteration */
+  if (app == NULL)
+  {                            /* app not found in current supervisor */
+    return true;               /* continue app supervisor iteration */
   }
 
-  return true;                  /* continue app supervisor iteration */
+  app_find_context_ptr->app_name = strdup(ladish_app_get_name(app));
+  if (app_find_context_ptr->app_name == NULL)
+  {
+    log_error("strdup() failed for app name '%s'", ladish_app_get_name(app));
+  }
+  else
+  {
+    ladish_app_get_uuid(app, app_find_context_ptr->app_uuid);
+    app_find_context_ptr->pid = pid;
+    app_find_context_ptr->graph = graph;
+  }
+
+  return false;               /* stop app supervisor iteration */
 }
 
 #undef app_find_context_ptr
 
-char * get_app_name(struct virtualizer * virtualizer_ptr, uint64_t client_id, pid_t pid, ladish_graph_handle * graph_ptr)
+static char * get_app_properties(struct virtualizer * virtualizer_ptr, uint64_t client_id, pid_t pid, ladish_graph_handle * graph_ptr, uuid_t app_uuid)
 {
   struct app_find_context context;
 
   context.pid = (pid_t)pid;
   context.app_name = NULL;
   context.graph = NULL;
+  uuid_clear(context.app_uuid);
 
-  ladish_studio_iterate_virtual_graphs(&context, get_app_name_from_supervisor);
+  ladish_studio_iterate_virtual_graphs(&context, get_app_properties_from_supervisor);
 
   if (context.app_name != NULL)
   {
     ASSERT(context.graph != NULL);
+    ASSERT(!uuid_is_null(context.app_uuid));
     *graph_ptr = context.graph;
+    uuid_copy(app_uuid, context.app_uuid);
   }
 
   return context.app_name;
@@ -259,6 +272,7 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
   const char * a2j_name;
   bool is_a2j;
   char * app_name;
+  uuid_t app_uuid;
   const char * name;
   pid_t pid;
   ladish_graph_handle graph;
@@ -271,6 +285,7 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
 
   name = jack_name;
   app_name = NULL;
+  graph = NULL;
   jmcore = false;
 
   if (!graph_proxy_get_client_pid(virtualizer_ptr->jack_graph_proxy, id, &pid))
@@ -290,7 +305,7 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
       }
       else
       {
-        app_name = get_app_name(virtualizer_ptr, id, pid, &graph);
+        app_name = get_app_properties(virtualizer_ptr, id, pid, &graph, app_uuid);
         if (app_name != NULL)
         {
           log_info("app name is '%s'", app_name);
@@ -308,7 +323,12 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
     }
     else
     {
-      client = ladish_graph_find_client_by_name(virtualizer_ptr->jack_graph, name);
+      client = ladish_graph_find_client_by_app(virtualizer_ptr->jack_graph, app_uuid);
+      if (client == NULL)
+      {
+        log_info("Lookup by app uuid failed, attempting lookup by name '%s'", name);
+        client = ladish_graph_find_client_by_name(virtualizer_ptr->jack_graph, name, true);
+      }
     }
 
     if (client != NULL)
@@ -350,6 +370,8 @@ done:
   if (app_name != NULL)
   {
     ladish_client_set_pid(client, pid);
+    ladish_client_set_app(client, app_uuid);
+    ASSERT(graph);
     ladish_client_set_vgraph(client, graph);
     virtualizer_ptr->our_clients_count++;
   }
@@ -605,7 +627,7 @@ port_appeared(
 
   if (is_a2j)
   {
-    vclient = ladish_graph_find_client_by_name(vgraph, alsa_client_name);
+    vclient = ladish_graph_find_client_by_name(vgraph, alsa_client_name, false);
     if (vclient == NULL)
     {
         if (!ladish_client_create(NULL, &vclient))
@@ -621,7 +643,6 @@ port_appeared(
           goto free_alsa_names;
         }
     }
-
   }
   else if (client_id == virtualizer_ptr->system_client_id)
   {
@@ -1052,6 +1073,7 @@ ladish_virtualizer_get_our_clients_count(
 bool
 ladish_virtualizer_is_hidden_app(
   ladish_graph_handle jack_graph,
+  const uuid_t app_uuid,
   const char * app_name)
 {
   ladish_client_handle jclient;
@@ -1064,7 +1086,7 @@ ladish_virtualizer_is_hidden_app(
 
   //ladish_graph_dump(g_studio.jack_graph);
 
-  jclient = ladish_graph_find_client_by_name(jack_graph, app_name);
+  jclient = ladish_graph_find_client_by_app(jack_graph, app_uuid);
   if (jclient == NULL)
   {
     log_info("App without JACK client is treated as hidden one");
@@ -1129,6 +1151,7 @@ ladish_virtualizer_is_hidden_app(
 void
 ladish_virtualizer_remove_app(
   ladish_graph_handle jack_graph,
+  const uuid_t app_uuid,
   const char * app_name)
 {
   ladish_client_handle jclient;
@@ -1141,7 +1164,7 @@ ladish_virtualizer_remove_app(
 
   //ladish_graph_dump(g_studio.jack_graph);
 
-  jclient = ladish_graph_find_client_by_name(jack_graph, app_name);
+  jclient = ladish_graph_find_client_by_app(jack_graph, app_uuid);
   if (jclient == NULL)
   {
     log_info("removing app without JACK client");

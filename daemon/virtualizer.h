@@ -51,12 +51,16 @@ ladish_virtualizer_get_our_clients_count(
 bool
 ladish_virtualizer_is_hidden_app(
   ladish_graph_handle graph_hanle,
+  const uuid_t app_uuid,
   const char * app_name);
 
 void
 ladish_virtualizer_remove_app(
   ladish_graph_handle graph_hanle,
+  const uuid_t app_uuid,
   const char * app_name);
+
+void ladish_virtualizer_rename_app(void * context, const char * old_name, const char * new_app_name);
 
 void
 ladish_virtualizer_destroy(

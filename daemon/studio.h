@@ -64,6 +64,7 @@ struct ladish_cqueue * ladish_studio_get_cmd_queue(void);
 ladish_virtualizer_handle ladish_studio_get_virtualizer(void);
 ladish_graph_handle ladish_studio_get_jack_graph(void);
 ladish_graph_handle ladish_studio_get_studio_graph(void);
+ladish_app_supervisor_handle ladish_studio_get_studio_app_supervisor(void);
 bool ladish_studio_has_rooms(void);
 
 unsigned int ladish_studio_get_room_index(void);

@@ -74,10 +74,12 @@ static bool run_target_start(struct ladish_command_change_app_state * cmd_ptr, l
 static bool run_target_stop(struct ladish_command_change_app_state * cmd_ptr, ladish_app_supervisor_handle supervisor, ladish_app_handle app)
 {
   const char * app_name;
+  uuid_t app_uuid;
 
   ASSERT(cmd_ptr->initiate_stop != NULL);
 
   app_name = ladish_app_get_name(app);
+  ladish_app_get_uuid(app, app_uuid);
 
   if (ladish_app_is_running(app))
   {
@@ -93,7 +95,7 @@ static bool run_target_stop(struct ladish_command_change_app_state * cmd_ptr, la
     return true;
   }
 
-  if (!ladish_virtualizer_is_hidden_app(ladish_studio_get_jack_graph(), app_name))
+  if (!ladish_virtualizer_is_hidden_app(ladish_studio_get_jack_graph(), app_uuid, app_name))
   {
     log_info("Waiting '%s' client disappear (%s)...", app_name, cmd_ptr->target_state_description);
     return true;

@@ -45,6 +45,7 @@ static bool run(void * context)
   ladish_app_supervisor_handle supervisor;
   ladish_app_handle app;
   const char * app_name;
+  uuid_t app_uuid;
 
   ASSERT(cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING);
 
@@ -67,6 +68,7 @@ static bool run(void * context)
   }
 
   app_name = ladish_app_get_name(app);
+  ladish_app_get_uuid(app, app_uuid);
 
   if (ladish_app_is_running(app))
   {
@@ -80,7 +82,7 @@ static bool run(void * context)
 
   /* remove jclient and vclient for this app */
   log_info("Removing graph objects for app '%s'", app_name);
-  ladish_virtualizer_remove_app(ladish_studio_get_jack_graph(), app_name);
+  ladish_virtualizer_remove_app(ladish_studio_get_jack_graph(), app_uuid, app_name);
 
   ladish_app_supervisor_remove_app(supervisor, app);
   cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;

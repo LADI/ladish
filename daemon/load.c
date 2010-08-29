@@ -274,6 +274,14 @@ ladish_parse_port_type_and_direction_attributes(
   return true;
 }
 
+struct interlink_context
+{
+  ladish_graph_handle vgraph;
+  ladish_app_supervisor_handle app_supervisor;
+};
+
+#define ctx_ptr ((struct interlink_context *)context)
+
 static
 bool
 interlink_client(
@@ -283,39 +291,70 @@ interlink_client(
   const char * name,
   void ** client_iteration_context_ptr_ptr)
 {
-  uuid_t uuid;
+  uuid_t app_uuid;
+  uuid_t vclient_uuid;
   ladish_client_handle vclient;
   pid_t pid;
+  ladish_app_handle app;
+  bool interlinked;
+  bool jmcore;
 
   if (strcmp(name, "system") == 0)
   {
     return true;
   }
 
-  if (ladish_client_get_interlink(jclient, uuid))
+  interlinked = ladish_client_get_interlink(jclient, vclient_uuid);
+
+  if (ladish_client_has_app(jclient))
   {
-    ASSERT_NO_PASS;             /* interlinks are not stored in xml yet */
+    ASSERT(interlinked); /* jclient has app associated but is not interlinked */
+    return true;
+  }
+  else if (interlinked)
+  {
+    ASSERT_NO_PASS; /* jclient has no app associated but is interlinked */
+    return true;
+  }
+  ASSERT(!interlinked);
+
+  pid = ladish_client_get_pid(jclient);
+  jmcore = pid != 0 && pid != jmcore_proxy_get_pid_cached();
+  if (jmcore)
+  {
     return true;
   }
 
-  vclient = ladish_graph_find_client_by_name(context, name);
+  app = ladish_app_supervisor_find_app_by_name(ctx_ptr->app_supervisor, name);
+  if (app == NULL)
+  {
+    log_info("JACK client \"%s\" not found in app supervisor", name);
+    return true;
+  }
+
+  vclient = ladish_graph_find_client_by_name(ctx_ptr->vgraph, name, true);
   if (vclient == NULL)
   {
-    /* jmcore clients are running when projects are being loaded */
-    pid = ladish_client_get_pid(jclient);
-    if (pid != jmcore_proxy_get_pid_cached())
-    {
-      log_error("JACK client '%s' has no vclient associated", name);
-    }
+    log_error("JACK client '%s' has no vclient associated", name);
     return true;
   }
 
   log_info("Interlinking clients of app '%s'", name);
   ladish_client_interlink(jclient, vclient);
+
+  ladish_app_get_uuid(app, app_uuid);
+  ladish_client_set_app(jclient, app_uuid);
+  ladish_client_set_app(vclient, app_uuid);
+
   return true;
 }
 
-void ladish_interlink_clients(ladish_graph_handle vgraph)
+void ladish_interlink_clients(ladish_graph_handle vgraph, ladish_app_supervisor_handle app_supervisor)
 {
-  ladish_graph_iterate_nodes(ladish_studio_get_jack_graph(), false, NULL, vgraph, interlink_client, NULL, NULL);
+  struct interlink_context ctx;
+
+  ctx.vgraph = vgraph;
+  ctx.app_supervisor = app_supervisor;
+
+  ladish_graph_iterate_nodes(ladish_studio_get_jack_graph(), false, NULL, &ctx, interlink_client, NULL, NULL);
 }

@@ -1586,7 +1586,7 @@ ladish_graph_find_connection(
   return true;
 }
 
-ladish_client_handle ladish_graph_find_client_by_name(ladish_graph_handle graph_handle, const char * name)
+ladish_client_handle ladish_graph_find_client_by_name(ladish_graph_handle graph_handle, const char * name, bool appless)
 {
   struct list_head * node_ptr;
   struct ladish_graph_client * client_ptr;
@@ -1594,7 +1594,27 @@ ladish_client_handle ladish_graph_find_client_by_name(ladish_graph_handle graph_
   list_for_each(node_ptr, &graph_ptr->clients)
   {
     client_ptr = list_entry(node_ptr, struct ladish_graph_client, siblings);
-    if (strcmp(client_ptr->name, name) == 0)
+    if (strcmp(client_ptr->name, name) == 0 &&
+        (!appless || !ladish_client_has_app(client_ptr->client))) /* if appless is true, then an appless client is being searched */
+    {
+      return client_ptr->client;
+    }
+  }
+
+  return NULL;
+}
+
+ladish_client_handle ladish_graph_find_client_by_app(ladish_graph_handle graph_handle, const uuid_t app_uuid)
+{
+  struct list_head * node_ptr;
+  struct ladish_graph_client * client_ptr;
+  uuid_t current_uuid;
+
+  list_for_each(node_ptr, &graph_ptr->clients)
+  {
+    client_ptr = list_entry(node_ptr, struct ladish_graph_client, siblings);
+    ladish_client_get_app(client_ptr->client, current_uuid);
+    if (uuid_compare(current_uuid, app_uuid) == 0)
     {
       return client_ptr->client;
     }
@@ -1957,6 +1977,16 @@ void ladish_try_connect_hidden_connections(ladish_graph_handle graph_handle)
   list_for_each(node_ptr, &graph_ptr->connections)
   {
     connection_ptr = list_entry(node_ptr, struct ladish_graph_connection, siblings);
+    log_debug(
+      "checking connection (%s, %s) '%s':'%s' (%s) to '%s':'%s' (%s)",
+      connection_ptr->hidden ? "hidden" : "visible",
+      connection_ptr->changing ? "changing" : "not changing",
+      connection_ptr->port1_ptr->client_ptr->name,
+      connection_ptr->port1_ptr->name,
+      connection_ptr->port1_ptr->hidden ? "hidden" : "visible",
+      connection_ptr->port2_ptr->client_ptr->name,
+      connection_ptr->port2_ptr->name,
+      connection_ptr->port2_ptr->hidden ? "hidden" : "visible");
     if (connection_ptr->hidden &&
         !connection_ptr->changing &&
         !connection_ptr->port1_ptr->hidden &&
