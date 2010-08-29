@@ -914,10 +914,8 @@ static bool run(void * command_context)
     {
       log_error("XML_ParseBuffer() failed.");
     }
-    else
-    {
-      ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Studio load failed", "Please inspect the ladishd log (~/.ladish/ladish.log) for more info");
-    }
+
+    ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Studio load failed", "Please inspect the ladishd log (~/.ladish/ladish.log) for more info");
     ladish_studio_clear();
     XML_ParserFree(parser);
     close(fd);
@@ -934,7 +932,7 @@ static bool run(void * command_context)
     return false;
   }
 
-  ladish_interlink_clients(ladish_studio_get_studio_graph());
+  ladish_interlink_clients(ladish_studio_get_studio_graph(), ladish_studio_get_studio_app_supervisor());
 
   g_studio.persisted = true;
   log_info("Studio loaded. ('%s')", path);
