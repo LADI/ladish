@@ -442,6 +442,11 @@ free_filenames:
   ASSERT(g_studio.filename != NULL);
 
 exit:
+  if (!ret)
+  {
+    ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Studio save failed", "Please inspect the ladishd log (~/.ladish/ladish.log) for more info");
+  }
+
   return ret;
 }
 
