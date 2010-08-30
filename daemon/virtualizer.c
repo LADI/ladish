@@ -457,6 +457,8 @@ port_appeared(
   bool is_a2j;
   uuid_t jclient_uuid;
   uuid_t vclient_uuid;
+  bool has_app;
+  uuid_t app_uuid;
   char * alsa_client_name;
   char * alsa_port_name;
   char * a2j_fake_jack_port_name = NULL;
@@ -483,6 +485,8 @@ port_appeared(
     log_error("Port of unknown JACK client with id %"PRIu64" appeared", client_id);
     goto exit;
   }
+
+  has_app = ladish_client_get_app(jack_client, app_uuid);
 
   /* find the virtual graph that owns the app that owns the client that owns the appeared port */
   vgraph = ladish_client_get_vgraph(jack_client);
@@ -706,6 +710,11 @@ port_appeared(
       }
 
       ladish_client_interlink(vclient, jack_client);
+
+      if (has_app)
+      {
+        ladish_client_set_app(vclient, app_uuid);
+      }
 
       if (!ladish_graph_add_client(vgraph, vclient, jack_client_name, false))
       {
@@ -1254,3 +1263,20 @@ ladish_virtualizer_rename_app(
   }
 }
 #undef vgraph
+
+bool
+ladish_virtualizer_is_system_client(
+  uuid_t uuid)
+{
+  if (uuid_compare(uuid, g_system_capture_uuid) == 0)
+  {
+    return true;
+  }
+
+  if (uuid_compare(uuid, g_system_playback_uuid) == 0)
+  {
+    return true;
+  }
+
+  return false;
+}

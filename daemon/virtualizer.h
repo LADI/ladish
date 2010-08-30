@@ -67,6 +67,10 @@ ladish_virtualizer_rename_app(
   const char * old_name,
   const char * new_app_name);
 
+bool
+ladish_virtualizer_is_system_client(
+  uuid_t uuid);
+
 void
 ladish_virtualizer_destroy(
   ladish_virtualizer_handle handle);

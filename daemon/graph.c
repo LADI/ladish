@@ -29,6 +29,7 @@
 #include "graph.h"
 #include "../dbus/error.h"
 #include "../dbus_constants.h"
+#include "virtualizer.h"
 
 struct ladish_graph_port
 {
@@ -2170,7 +2171,7 @@ ladish_graph_iterate_nodes(
   {
     client_ptr = list_entry(client_node_ptr, struct ladish_graph_client, siblings);
 
-    if (skip_hidden && client_ptr->hidden)
+    if (skip_hidden && client_ptr->hidden && !ladish_client_has_app(client_ptr->client))
     {
       continue;
     }
@@ -2205,7 +2206,7 @@ ladish_graph_iterate_nodes(
     {
       port_ptr = list_entry(port_node_ptr, struct ladish_graph_port, siblings_client);
 
-      if (skip_hidden && port_ptr->hidden)
+      if (skip_hidden && port_ptr->hidden && !ladish_client_has_app(port_ptr->client_ptr->client))
       {
         continue;
       }
@@ -2237,6 +2238,19 @@ ladish_graph_iterate_nodes(
   return true;
 }
 
+static bool is_system_client(ladish_client_handle client)
+{
+  uuid_t uuid;
+  ladish_client_get_uuid(client, uuid);
+  return ladish_virtualizer_is_system_client(uuid);
+}
+
+#define is_port_interesting(port_ptr) (                     \
+    ladish_client_has_app(port_ptr->client_ptr->client) ||  \
+    ladish_port_is_link(port_ptr->port) ||                  \
+    is_system_client(port_ptr->client_ptr->client)          \
+    )
+
 bool
 ladish_graph_iterate_connections(
   ladish_graph_handle graph_handle,
@@ -2256,7 +2270,10 @@ ladish_graph_iterate_connections(
   {
     connection_ptr = list_entry(node_ptr, struct ladish_graph_connection, siblings);
 
-    if (skip_hidden && connection_ptr->hidden)
+    if (skip_hidden &&
+        connection_ptr->hidden &&
+        (!is_port_interesting(connection_ptr->port1_ptr) ||
+         !is_port_interesting(connection_ptr->port2_ptr)))
     {
       continue;
     }
