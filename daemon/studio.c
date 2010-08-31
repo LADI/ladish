@@ -139,6 +139,8 @@ void ladish_studio_clear(void)
   g_studio.modified = false;
   g_studio.persisted = false;
 
+  ladish_app_supervisor_clear(g_studio.app_supervisor);
+
   if (g_studio.dbus_object != NULL)
   {
     dbus_object_path_destroy(g_dbus_connection, g_studio.dbus_object);
@@ -163,8 +165,6 @@ void ladish_studio_clear(void)
     free(g_studio.filename);
     g_studio.filename = NULL;
   }
-
-  ladish_app_supervisor_clear(g_studio.app_supervisor);
 }
 
 void ladish_studio_emit_started(void)
