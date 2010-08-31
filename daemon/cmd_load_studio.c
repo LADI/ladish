@@ -332,7 +332,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
 
         uuid2_str = ladish_get_uuid_attribute(attr, "link_uuid", uuid2, true);
 
-        log_info("studio port \"%s\" with uuid %s (%s)", name, uuid_str, uuid_str == NULL ? "normal" : "room link");
+        log_info("studio port \"%s\" with uuid %s (%s)", name, uuid_str, uuid2_str == NULL ? "normal" : "room link");
 
         if (uuid2_str == NULL)
         { /* normal studio port */
