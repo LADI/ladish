@@ -33,6 +33,7 @@
 #include "room_internal.h"
 #include "../catdup.h"
 #include "save.h"
+#include "dirhelpers.h"
 
 #define PROJECT_HEADER_TEXT BASE_NAME " Project.\n"
 
@@ -53,6 +54,11 @@ static bool ladish_room_save_project_do(struct ladish_room * room_ptr)
   timestamp_str[24] = 0;
 
   ret = false;
+
+  if (!ensure_dir_exist(room_ptr->project_dir, 0777))
+  {
+    goto exit;
+  }
 
   uuid_generate(room_ptr->project_uuid); /* TODO: the uuid should be changed on "save as" but not on "rename" */
   uuid_unparse(room_ptr->project_uuid, uuid_str);
