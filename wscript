@@ -41,8 +41,7 @@ def set_options(opt):
     opt.tool_options('boost')
     opt.add_option('--enable-pkg-config-dbus-service-dir', action='store_true', default=False, help='force D-Bus service install dir to be one returned by pkg-config')
     opt.add_option('--enable-liblash', action='store_true', default=False, help='Build LASH compatibility library')
-    if RELEASE:
-        opt.add_option('--debug', action='store_true', default=False, dest='debug', help="Build debuggable binaries")
+    opt.add_option('--debug', action='store_true', default=False, dest='debug', help="Build debuggable binaries")
     opt.add_option('--doxygen', action='store_true', default=False, help='Enable build of doxygen documentation')
 
 def add_cflag(conf, flag):
@@ -164,14 +163,19 @@ def configure(conf):
                 if gcc_ver[0] < 4 or gcc_ver[1] < 4:
                     #print "optimize force enable is required"
                     if not check_gcc_optimizations_enabled(conf.env['CCFLAGS']):
-                        print "C optimization forced in order to enable -Wuninitialized"
-                        conf.env.append_unique('CCFLAGS', "-O")
+                        if Options.options.debug:
+                            print "C optimization must be forced in order to enable -Wuninitialized"
+                            print "However this will not be made because debug compilation is enabled"
+                        else:
+                            print "C optimization forced in order to enable -Wuninitialized"
+                            conf.env.append_unique('CCFLAGS', "-O")
         except:
             pass
 
-    conf.env['BUILD_DEBUG'] = not RELEASE or Options.options.debug
+    conf.env['BUILD_DEBUG'] = Options.options.debug
     if conf.env['BUILD_DEBUG']:
         add_cflag(conf, '-g')
+        add_cflag(conf, '-O0')
         add_linkflag(conf, '-g')
 
     conf.define('DATA_DIR', os.path.normpath(os.path.join(conf.env['PREFIX'], 'share', APPNAME)))
