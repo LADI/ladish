@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to the helper functionality for accessing
@@ -106,11 +106,6 @@ bool jack_proxy_get_dsp_load(double * dsp_load_ptr);
 bool jack_proxy_get_buffer_size(uint32_t * size_ptr);
 bool jack_proxy_set_buffer_size(uint32_t size);
 bool jack_proxy_reset_xruns(void);
-
-bool
-jack_proxy_get_client_pid(
-  uint64_t client_id,
-  pid_t * pid_ptr);
 
 bool
 jack_proxy_connect_ports(

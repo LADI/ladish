@@ -155,22 +155,6 @@ jack_proxy_is_started(
 }
 
 bool
-jack_proxy_get_client_pid(
-  uint64_t client_id,
-  pid_t * pid_ptr)
-{
-  int64_t pid;
-
-  if (!dbus_call(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_PATCHBAY, "GetClientPID", "t", &client_id, "x", &pid))
-  {
-    return false;
-  }
-
-  *pid_ptr = pid;
-  return true;
-}
-
-bool
 jack_proxy_connect_ports(
   uint64_t port1_id,
   uint64_t port2_id)
