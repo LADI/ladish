@@ -232,7 +232,7 @@
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_save_as_project">
-                        <property name="label" translatable="yes">_Save Project As...</property>
+                        <property name="label" translatable="yes">Save Project _As...</property>
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="use_underline">True</property>
