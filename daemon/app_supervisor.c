@@ -133,6 +133,8 @@ void remove_app_internal(struct ladish_app_supervisor * supervisor_ptr, struct l
 
   list_del(&app_ptr->siblings);
 
+  supervisor_ptr->version++;
+
   dbus_signal_emit(
     g_dbus_connection,
     supervisor_ptr->opath,
@@ -261,6 +263,8 @@ ladish_app_supervisor_add(
   app_ptr->state = LADISH_APP_STATE_STOPPED;
   app_ptr->autorun = autorun;
   list_add_tail(&app_ptr->siblings, &supervisor_ptr->applist);
+
+  supervisor_ptr->version++;
 
   running = false;
   dbus_signal_emit(
