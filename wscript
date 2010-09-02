@@ -137,7 +137,7 @@ def configure(conf):
     if build_gui and not conf.check_cfg(
         package = 'flowcanvas',
         mandatory = False,
-        atleast_version = '0.6.0',
+        atleast_version = '0.6.4',
         errmsg = "not installed, see http://drobilla.net/software/flowcanvas/",
         args = '--cflags --libs'):
         build_gui = False
