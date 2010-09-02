@@ -236,22 +236,9 @@ canvas_arrange(
   canvas_handle canvas)
 {
   Glib::RefPtr<Gdk::Window> win = canvas_ptr->get()->get_window();
-  if (!win)
+  if (win)
   {
-    return;
-  }
-
-  canvas_ptr->get()->arrange();
-
-  // arrange does not cause locations stored, emulate it
-  FlowCanvas::ItemList modules = canvas_ptr->get()->items(); // copy
-  for (FlowCanvas::ItemList::iterator m = modules.begin(); m != modules.end(); ++m)
-  {
-    boost::shared_ptr<FlowCanvas::Module> module = boost::dynamic_pointer_cast<FlowCanvas::Module>(*m);
-    if (!module)
-      continue;
-
-    module->store_location();
+    canvas_ptr->get()->arrange();
   }
 }
 
