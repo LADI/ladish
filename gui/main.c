@@ -834,6 +834,27 @@ void menu_request_unload_project(void)
 
 void menu_request_save_project(void)
 {
+  bool new_project;
+  char * project_dir;
+  char * project_name;
+
+  if (!ladish_room_proxy_get_project_properties(graph_view_get_room(get_current_view()), &project_dir, &project_name))
+  {
+    error_message_box("Get project properties failed, please inspect logs.");
+    return;
+  }
+
+  new_project = strlen(project_dir) == 0;
+
+  free(project_name);
+  free(project_dir);
+
+  if (new_project)
+  {
+    menu_request_save_as_project();
+    return;
+  }
+
   if (!ladish_room_proxy_save_project(graph_view_get_room(get_current_view()), "", ""))
   {
     log_error("ladish_room_proxy_unload_project() failed");
