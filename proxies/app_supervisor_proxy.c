@@ -74,6 +74,8 @@ static void on_app_added(void * context, DBusMessage * message_ptr)
   }
   else
   {
+    //log_info("got new list version %llu", (unsigned long long)version);
+    proxy_ptr->version = new_list_version;
     proxy_ptr->app_added(proxy_ptr->context, id, name, running, terminal, level);
   }
 }
@@ -102,6 +104,8 @@ static void on_app_removed(void * context, DBusMessage * message_ptr)
   }
   else
   {
+    //log_info("got new list version %llu", (unsigned long long)version);
+    proxy_ptr->version = new_list_version;
     proxy_ptr->app_removed(proxy_ptr->context, id);
   }
 }
@@ -139,6 +143,8 @@ static void on_app_state_changed(void * context, DBusMessage * message_ptr)
   }
   else
   {
+    //log_info("got new list version %llu", (unsigned long long)version);
+    proxy_ptr->version = new_list_version;
     proxy_ptr->app_state_changed(proxy_ptr->context, id, name, running, terminal, level);
   }
 }
