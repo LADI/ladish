@@ -157,12 +157,15 @@ void emit_app_state_changed(struct ladish_app_supervisor * supervisor_ptr, struc
   running = app_ptr->pid != 0;
   terminal = app_ptr->terminal;
 
+  supervisor_ptr->version++;
+
   dbus_signal_emit(
     g_dbus_connection,
     supervisor_ptr->opath,
     IFACE_APP_SUPERVISOR,
     "AppStateChanged",
-    "tsbby",
+    "ttsbby",
+    &supervisor_ptr->version,
     &app_ptr->id,
     &app_ptr->name,
     &running,
@@ -1078,6 +1081,7 @@ SIGNAL_ARGS_BEGIN(AppRemoved, "")
 SIGNAL_ARGS_END
 
 SIGNAL_ARGS_BEGIN(AppStateChanged, "")
+  SIGNAL_ARG_DESCRIBE("new_list_version", DBUS_TYPE_UINT64_AS_STRING, "")
   SIGNAL_ARG_DESCRIBE("id", DBUS_TYPE_UINT64_AS_STRING, "")
   SIGNAL_ARG_DESCRIBE("name", DBUS_TYPE_STRING_AS_STRING, "")
   SIGNAL_ARG_DESCRIBE("running", DBUS_TYPE_BOOLEAN_AS_STRING, "")

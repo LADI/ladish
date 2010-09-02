@@ -108,6 +108,7 @@ static void on_app_removed(void * context, DBusMessage * message_ptr)
 
 static void on_app_state_changed(void * context, DBusMessage * message_ptr)
 {
+  uint64_t new_list_version;
   uint64_t id;
   const char * name;
   dbus_bool_t running;
@@ -117,6 +118,7 @@ static void on_app_state_changed(void * context, DBusMessage * message_ptr)
   if (!dbus_message_get_args(
         message_ptr,
         &g_dbus_error,
+        DBUS_TYPE_UINT64, &new_list_version,
         DBUS_TYPE_UINT64, &id,
         DBUS_TYPE_STRING, &name,
         DBUS_TYPE_BOOLEAN, &running,
@@ -130,7 +132,15 @@ static void on_app_state_changed(void * context, DBusMessage * message_ptr)
   }
 
   //log_info("AppStateChanged signal received");
-  proxy_ptr->app_state_changed(proxy_ptr->context, id, name, running, terminal, level);
+  //log_info("AppRemoved signal received, id=%"PRIu64, id);
+  if (new_list_version <= proxy_ptr->version)
+  {
+    log_info("Ignoring signal for older version of the app list");
+  }
+  else
+  {
+    proxy_ptr->app_state_changed(proxy_ptr->context, id, name, running, terminal, level);
+  }
 }
 
 #undef proxy_ptr
