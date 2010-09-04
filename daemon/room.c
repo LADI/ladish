@@ -639,7 +639,7 @@ bool ladish_room_unload_project(ladish_room_handle room_handle)
   {
     if (!ladish_app_supervisor_has_apps(room_ptr->app_supervisor))
     {
-      return true;
+      goto done;
     }
 
     log_info("Stopping room apps...");
@@ -663,6 +663,8 @@ bool ladish_room_unload_project(ladish_room_handle room_handle)
   log_info("Room apps stopped.");
   ladish_graph_dump(room_ptr->graph);
   room_ptr->project_unloading = false;
+
+done:
   if (room_ptr->project_name != NULL)
   {
     free(room_ptr->project_name);
