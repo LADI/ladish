@@ -83,6 +83,20 @@ void announce_view_name_change(struct graph_view * view_ptr)
   }
 }
 
+static void detach_canvas(struct graph_view * view_ptr)
+{
+  GtkWidget * child;
+
+  child = gtk_bin_get_child(GTK_BIN(g_main_scrolledwin));
+  if (child == view_ptr->canvas_widget)
+  {
+    gtk_container_remove(GTK_CONTAINER(g_main_scrolledwin), view_ptr->canvas_widget);
+    g_current_view = NULL;
+    gtk_widget_show(g_view_label);
+    gtk_scrolled_window_add_with_viewport(g_main_scrolledwin, g_view_label);
+  }
+}
+
 #define view_ptr ((struct graph_view *)context)
 
 static void app_added(void * context, uint64_t id, const char * name, bool running, bool terminal, uint8_t level)
@@ -220,7 +234,7 @@ create_view(
   {
     if (!ladish_app_supervisor_proxy_create(service, object, view_ptr, app_added, app_state_changed, app_removed, &view_ptr->app_supervisor))
     {
-      goto detach_graph_canvas;
+      goto remove_from_world_tree;
     }
   }
 
@@ -251,8 +265,20 @@ free_app_supervisor:
   {
     ladish_app_supervisor_proxy_destroy(view_ptr->app_supervisor);
   }
-detach_graph_canvas:
-  graph_canvas_detach(view_ptr->graph_canvas);
+remove_from_world_tree:
+  list_del(&view_ptr->siblings);
+  if (!list_empty(&g_views))
+  {
+    world_tree_activate((graph_view_handle)list_entry(g_views.next, struct graph_view, siblings));
+  }
+  else
+  {
+    set_main_window_title(NULL);
+  }
+
+  detach_canvas(view_ptr);
+
+  world_tree_remove((graph_view_handle)view_ptr);
 destroy_graph_canvas:
   graph_canvas_destroy(view_ptr->graph_canvas);
 destroy_graph:
@@ -294,20 +320,6 @@ static void attach_canvas(struct graph_view * view_ptr)
 
   //_main_scrolledwin->property_hadjustment().get_value()->set_step_increment(10);
   //_main_scrolledwin->property_vadjustment().get_value()->set_step_increment(10);
-}
-
-static void detach_canvas(struct graph_view * view_ptr)
-{
-  GtkWidget * child;
-
-  child = gtk_bin_get_child(GTK_BIN(g_main_scrolledwin));
-  if (child == view_ptr->canvas_widget)
-  {
-    gtk_container_remove(GTK_CONTAINER(g_main_scrolledwin), view_ptr->canvas_widget);
-    g_current_view = NULL;
-    gtk_widget_show(g_view_label);
-    gtk_scrolled_window_add_with_viewport(g_main_scrolledwin, g_view_label);
-  }
 }
 
 #define view_ptr ((struct graph_view *)view)
