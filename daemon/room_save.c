@@ -29,6 +29,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <libgen.h>             /* POSIX basename() */
 
 #include "room_internal.h"
 #include "../catdup.h"
@@ -223,6 +224,7 @@ ladish_room_save_project(
   char * project_name;
   char * old_project_dir;
   char * old_project_name;
+  char * buffer;
   bool ret;
 
   ret = false;
@@ -252,16 +254,34 @@ ladish_room_save_project(
     else if (dir_supplied)
     {
       ASSERT(!name_supplied);
-      /* TODO */
-      log_error("Deducing project name from project dir is not implemented yet");
-      goto exit;
+
+      buffer = strdup(project_dir_param);
+      if (buffer == NULL)
+      {
+        log_error("strdup() failed for project dir");
+        goto exit;
+      }
+
+      project_name = basename(buffer);
+      log_info("Project name for dir '%s' will be '%s'", project_dir_param, project_name);
+      project_name = strdup(project_name);
+      free(buffer);
+      project_dir = strdup(project_dir_param); /* buffer cannot be used because it may be modified by basename() */
     }
     else if (name_supplied)
     {
       ASSERT(!dir_supplied);
-      /* TODO */
-      log_error("Deducing project dir from project name is not implemented yet");
-      goto exit;
+
+      project_dir = catdup3(getenv("HOME"), "/ladish-projects/", project_name_param); /* TODO: this must be a runtime setting */
+      if (project_dir == NULL)
+      {
+        log_error("catdup3() failed to compose project name");
+        goto exit;
+      }
+
+      log_info("Project dir for name '%s' will be '%s'", project_name_param, project_dir);
+
+      project_name = strdup(project_name_param);
     }
     else
     {
