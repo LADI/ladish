@@ -31,7 +31,17 @@
 
 typedef struct ladish_room_proxy_tag { int unused; } * ladish_room_proxy_handle;
 
-bool ladish_room_proxy_create(const char * service, const char * object, ladish_room_proxy_handle * proxy_ptr);
+bool
+ladish_room_proxy_create(
+  const char * service,
+  const char * object,
+  void * project_properties_changed_context,
+  void (* project_properties_changed)(
+    void * project_properties_changed_context,
+    const char * project_dir,
+    const char * project_name),
+  ladish_room_proxy_handle * proxy_ptr);
+
 void ladish_room_proxy_destroy(ladish_room_proxy_handle proxy);
 char * ladish_room_proxy_get_name(ladish_room_proxy_handle proxy);
 bool ladish_room_proxy_load_project(ladish_room_proxy_handle proxy, const char * project_dir);

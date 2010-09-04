@@ -30,11 +30,14 @@
 #include "world_tree.h"
 #include "menu.h"
 #include "../proxies/room_proxy.h"
+#include "../catdup.h"
 
 struct graph_view
 {
   struct list_head siblings;
-  char * name;
+  char * view_name;
+  char * project_name;
+  char * full_name;
   graph_canvas_handle graph_canvas;
   graph_proxy_handle graph;
   GtkWidget * canvas_widget;
@@ -70,6 +73,18 @@ void view_init(void)
   gtk_scrolled_window_add_with_viewport(g_main_scrolledwin, g_view_label);
 }
 
+void announce_view_name_change(struct graph_view * view_ptr)
+{
+  world_tree_name_changed((graph_view_handle)view_ptr);
+
+  if (g_current_view == view_ptr)
+  {
+    set_main_window_title((graph_view_handle)view_ptr);
+  }
+}
+
+#define view_ptr ((struct graph_view *)context)
+
 static void app_added(void * context, uint64_t id, const char * name, bool running, bool terminal, uint8_t level)
 {
   //log_info("app added. id=%"PRIu64", name='%s', %srunning, %s, level %u", id, name, running ? "" : "not ", terminal ? "terminal" : "shell", (unsigned int)level);
@@ -87,6 +102,65 @@ static void app_removed(void * context, uint64_t id)
   //log_info("app removed. id=%"PRIu64, id);
   world_tree_remove_app(context, id);
 }
+
+static void project_properties_changed(void * context, const char * project_dir, const char * project_name)
+{
+  bool empty;
+  char * project_name_buffer;
+  char * full_name_buffer;
+
+  log_info("Room '%s' project properties changed. name='%s', dir='%s'", view_ptr->view_name, project_name, project_dir);
+
+  empty = strlen(project_name) == 0;
+
+  if (!empty)
+  {
+    project_name_buffer = strdup(project_name);
+    if (project_name_buffer == NULL)
+    {
+      return;
+    }
+
+    full_name_buffer = catdup4(view_ptr->view_name, " (", project_name, ")");
+    if (full_name_buffer == NULL)
+    {
+      free(project_name_buffer);
+      return;
+    }
+
+    if (view_ptr->full_name != NULL && view_ptr->full_name != view_ptr->view_name)
+    {
+      free(view_ptr->full_name);
+    }
+
+    if (view_ptr->project_name != NULL)
+    {
+      free(view_ptr->project_name);
+    }
+
+    view_ptr->full_name = full_name_buffer;
+    view_ptr->project_name = project_name_buffer;
+  }
+  else
+  {
+    if (view_ptr->full_name != NULL && view_ptr->full_name != view_ptr->view_name)
+    {
+      free(view_ptr->full_name);
+    }
+
+    if (view_ptr->project_name != NULL)
+    {
+      free(view_ptr->project_name);
+    }
+
+    view_ptr->full_name = view_ptr->view_name;
+    view_ptr->project_name = NULL;
+  }
+
+  announce_view_name_change(view_ptr);
+}
+
+#undef view_ptr
 
 bool
 create_view(
@@ -107,8 +181,8 @@ create_view(
     goto fail;
   }
 
-  view_ptr->name = strdup(name);
-  if (view_ptr->name == NULL)
+  view_ptr->view_name = strdup(name);
+  if (view_ptr->view_name == NULL)
   {
     log_error("strdup() failed for \"%s\"", name);
     goto free_view;
@@ -116,6 +190,8 @@ create_view(
 
   view_ptr->app_supervisor = NULL;
   view_ptr->room = NULL;
+  view_ptr->full_name = view_ptr->view_name;
+  view_ptr->project_name = NULL;
 
   if (!graph_proxy_create(service, object, graph_dict_supported, &view_ptr->graph))
   {
@@ -150,7 +226,7 @@ create_view(
 
   if (strcmp(object, STUDIO_OBJECT_PATH) != 0 && strcmp(object, JACKDBUS_OBJECT_PATH) != 0) /* TODO: this is a quite lame way to detect room views */
   {
-    if (!ladish_room_proxy_create(service, object, &view_ptr->room))
+    if (!ladish_room_proxy_create(service, object, view_ptr, project_properties_changed, &view_ptr->room))
     {
       goto free_app_supervisor;
     }
@@ -182,7 +258,15 @@ destroy_graph_canvas:
 destroy_graph:
   graph_proxy_destroy(view_ptr->graph);
 free_name:
-  free(view_ptr->name);
+  if (view_ptr->full_name != NULL && view_ptr->full_name != view_ptr->view_name)
+  {
+    free(view_ptr->full_name);
+  }
+  if (view_ptr->project_name != NULL)
+  {
+    free(view_ptr->project_name);
+  }
+  free(view_ptr->view_name);
 free_view:
   free(view_ptr);
 fail:
@@ -258,7 +342,16 @@ void destroy_view(graph_view_handle view)
     ladish_room_proxy_destroy(view_ptr->room);
   }
 
-  free(view_ptr->name);
+  if (view_ptr->full_name != NULL && view_ptr->full_name != view_ptr->view_name)
+  {
+    free(view_ptr->full_name);
+  }
+  if (view_ptr->project_name != NULL)
+  {
+    free(view_ptr->project_name);
+  }
+  free(view_ptr->view_name);
+
   free(view_ptr);
 }
 
@@ -271,7 +364,7 @@ void activate_view(graph_view_handle view)
 
 const char * get_view_name(graph_view_handle view)
 {
-  return view_ptr->name;
+  return view_ptr->full_name;
 }
 
 const char * get_view_opath(graph_view_handle view)
@@ -290,15 +383,10 @@ bool set_view_name(graph_view_handle view, const char * cname)
     return false;
   }
 
-  free(view_ptr->name);
-  view_ptr->name = name;
+  free(view_ptr->view_name);
+  view_ptr->view_name = name;
 
-  world_tree_name_changed(view);
-
-  if (g_current_view == view_ptr)
-  {
-    set_main_window_title(view);
-  }
+  announce_view_name_change(view_ptr);
 
   return true;
 }
@@ -320,7 +408,7 @@ const char * get_current_view_room_name(void)
     return NULL;
   }
 
-  return g_current_view->name;
+  return g_current_view->view_name;
 }
 
 graph_view_handle get_current_view(void)

@@ -281,6 +281,7 @@ ladish_room_create(
   room_ptr->index = index;
   room_ptr->owner = owner;
   room_ptr->started = false;
+  room_ptr->version = 1;
 
   room_ptr->project_name = NULL;
   room_ptr->project_dir = NULL;
@@ -672,6 +673,9 @@ bool ladish_room_unload_project(ladish_room_handle room_handle)
     free(room_ptr->project_dir);
     room_ptr->project_dir = NULL;
   }
+
+  ladish_room_emit_project_properties_changed(room_ptr);
+
   return true;
 }
 
@@ -762,6 +766,12 @@ static bool ladish_room_fill_project_properties(DBusMessageIter * iter_ptr, stru
 {
   DBusMessageIter dict_iter;
 
+  if (!dbus_message_iter_append_basic(iter_ptr, DBUS_TYPE_UINT64, &room_ptr->version))
+  {
+    log_error("dbus_message_iter_append_basic() failed.");
+    return false;
+  }
+
   if (!dbus_message_iter_open_container(iter_ptr, DBUS_TYPE_ARRAY, "{sv}", &dict_iter))
   {
     log_error("dbus_message_iter_open_container() failed.");
@@ -793,6 +803,8 @@ void ladish_room_emit_project_properties_changed(struct ladish_room * room_ptr)
 {
   DBusMessage * message_ptr;
   DBusMessageIter iter;
+
+  room_ptr->version++;
 
   message_ptr = dbus_message_new_signal(room_ptr->object_path, IFACE_ROOM, "ProjectPropertiesChanged");
   if (message_ptr == NULL)
@@ -917,7 +929,8 @@ METHOD_ARGS_BEGIN(LoadProject, "Load project")
 METHOD_ARGS_END
 
 METHOD_ARGS_BEGIN(GetProjectProperties, "Get project properties")
-  SIGNAL_ARG_DESCRIBE("properties", "a{sv}", "project properties")
+  METHOD_ARG_DESCRIBE_OUT("new_version", DBUS_TYPE_UINT64_AS_STRING, "New version of the project properties")
+  METHOD_ARG_DESCRIBE_OUT("properties", "a{sv}", "project properties")
 METHOD_ARGS_END
 
 METHODS_BEGIN
@@ -929,6 +942,7 @@ METHODS_BEGIN
 METHODS_END
 
 SIGNAL_ARGS_BEGIN(ProjectPropertiesChanged, "Project properties changed")
+  SIGNAL_ARG_DESCRIBE("new_version", DBUS_TYPE_UINT64_AS_STRING, "New version of the project properties")
   SIGNAL_ARG_DESCRIBE("properties", "a{sv}", "project properties")
 SIGNAL_ARGS_END
 

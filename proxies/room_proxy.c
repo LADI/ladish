@@ -31,9 +31,152 @@ struct ladish_room_proxy
 {
   char * service;
   char * object;
+
+  void * project_properties_changed_context;
+  void (* project_properties_changed)(
+    void * project_properties_changed_context,
+    const char * project_dir,
+    const char * project_name);
+
+  uint64_t project_properties_version;
+  char * project_name;
+  char * project_dir;
 };
 
-bool ladish_room_proxy_create(const char * service, const char * object, ladish_room_proxy_handle * handle_ptr)
+static bool update_project_properties(struct ladish_room_proxy * proxy_ptr, DBusMessage * message_ptr, const char * context)
+{
+  const char * signature;
+  DBusMessageIter iter;
+  dbus_uint64_t version;
+  const char * name;
+  const char * dir;
+  char * name_buffer;
+  char * dir_buffer;
+
+  signature = dbus_message_get_signature(message_ptr);
+  if (strcmp(signature, "ta{sv}") != 0)
+  {
+    log_error("%s signature mismatch. '%s'", context, signature);
+    return false;
+  }
+
+  dbus_message_iter_init(message_ptr, &iter);
+
+  dbus_message_iter_get_basic(&iter, &version);
+  dbus_message_iter_next(&iter);
+
+  if (version == 0)
+  {
+    log_error("%s contains project properties version 0", context);
+    return false;
+  }
+
+  if (proxy_ptr->project_properties_version >= version)
+  {
+    return true;
+  }
+
+  if (!dbus_iter_get_dict_entry_string(&iter, "name", &name))
+  {
+    name = "";
+  }
+
+  if (!dbus_iter_get_dict_entry_string(&iter, "dir", &dir))
+  {
+    dir = "";
+  }
+
+  name_buffer = strdup(name);
+  if (name_buffer == NULL)
+  {
+    log_error("strdup() failed for project name");
+    return false;
+  }
+
+  dir_buffer = strdup(dir);
+  if (dir_buffer == NULL)
+  {
+    log_error("strdup() failed for project dir");
+    free(name_buffer);
+    return false;
+  }
+
+  proxy_ptr->project_properties_version = version;
+
+  if (proxy_ptr->project_name != NULL)
+  {
+    free(proxy_ptr->project_name);
+  }
+  proxy_ptr->project_name = name_buffer;
+
+  if (proxy_ptr->project_dir != NULL)
+  {
+    free(proxy_ptr->project_dir);
+  }
+  proxy_ptr->project_dir = dir_buffer;
+
+  /* log_info("Room '%s' project properties changed:", proxy_ptr->object); /\* TODO: cache project name *\/ */
+  /* log_info("  Properties version: %"PRIu64, proxy_ptr->project_properties_version); */
+  /* log_info("  Project name: '%s'", proxy_ptr->project_name); */
+  /* log_info("  Project dir: '%s'", proxy_ptr->project_dir); */
+
+  proxy_ptr->project_properties_changed(
+    proxy_ptr->project_properties_changed_context,
+    proxy_ptr->project_dir,
+    proxy_ptr->project_name);
+
+  return true;
+}
+
+bool ladish_room_proxy_get_project_properties_internal(struct ladish_room_proxy * proxy_ptr)
+{
+  DBusMessage * reply_ptr;
+
+  if (!dbus_call(proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "GetProjectProperties", "", NULL, &reply_ptr))
+  {
+    log_error("GetProjectProperties() failed.");
+    return false;
+  }
+
+  if (!update_project_properties(proxy_ptr, reply_ptr, "GetProjectProperties() reply"))
+  {
+    dbus_message_unref(reply_ptr);
+    return false;
+  }
+
+  dbus_message_unref(reply_ptr);
+
+  return true;
+}
+
+#define proxy_ptr ((struct ladish_room_proxy *)context)
+
+static void on_project_properties_changed(void * context, DBusMessage * message_ptr)
+{
+  log_info("ProjectPropertiesChanged signal received.");
+  update_project_properties(proxy_ptr, message_ptr, "ProjectPropertiesChanged() signal");
+}
+
+#undef proxy_ptr
+
+/* this must be static because it is referenced by the
+ * dbus helper layer when hooks are active */
+static struct dbus_signal_hook g_signal_hooks[] =
+{
+  {"ProjectPropertiesChanged", on_project_properties_changed},
+  {NULL, NULL}
+};
+
+bool
+ladish_room_proxy_create(
+  const char * service,
+  const char * object,
+  void * project_properties_changed_context,
+  void (* project_properties_changed)(
+    void * project_properties_changed_context,
+    const char * project_dir,
+    const char * project_name),
+  ladish_room_proxy_handle * handle_ptr)
 {
   struct ladish_room_proxy * proxy_ptr;
 
@@ -58,9 +201,37 @@ bool ladish_room_proxy_create(const char * service, const char * object, ladish_
     goto free_service;
   }
 
+  proxy_ptr->project_properties_version = 0;
+  proxy_ptr->project_name = NULL;
+  proxy_ptr->project_dir = NULL;
+
+  proxy_ptr->project_properties_changed_context = project_properties_changed_context;
+  proxy_ptr->project_properties_changed = project_properties_changed;
+
+  if (!dbus_register_object_signal_hooks(
+        g_dbus_connection,
+        proxy_ptr->service,
+        proxy_ptr->object,
+        IFACE_ROOM,
+        proxy_ptr,
+        g_signal_hooks))
+  {
+    log_error("dbus_register_object_signal_hooks() failed for room");
+    goto free_object;
+  }
+
+  if (!ladish_room_proxy_get_project_properties_internal(proxy_ptr))
+  {
+    goto unregister_signal_hooks;
+  }
+
   *handle_ptr = (ladish_room_proxy_handle)proxy_ptr;
   return true;
 
+unregister_signal_hooks:
+  dbus_unregister_object_signal_hooks(g_dbus_connection, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM);
+free_object:
+  free(proxy_ptr->object);
 free_service:
   free(proxy_ptr->service);
 free_proxy:
@@ -73,6 +244,18 @@ fail:
 
 void ladish_room_proxy_destroy(ladish_room_proxy_handle proxy)
 {
+  dbus_unregister_object_signal_hooks(g_dbus_connection, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM);
+
+  if (proxy_ptr->project_name != NULL)
+  {
+    free(proxy_ptr->project_name);
+  }
+
+  if (proxy_ptr->project_dir != NULL)
+  {
+    free(proxy_ptr->project_dir);
+  }
+
   free(proxy_ptr->object);
   free(proxy_ptr->service);
   free(proxy_ptr);
@@ -146,52 +329,28 @@ bool ladish_room_proxy_unload_project(ladish_room_proxy_handle proxy)
 
 bool ladish_room_proxy_get_project_properties(ladish_room_proxy_handle proxy, char ** project_dir, char ** project_name)
 {
-  DBusMessage * reply_ptr;
-  DBusMessageIter iter;
-  const char * name;
-  const char * dir;
-  char * name_buffer;
-  char * dir_buffer;
+  char * name;
+  char * dir;
 
-  if (!dbus_call(proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "GetProjectProperties", "", NULL, &reply_ptr))
-  {
-    log_error("GetProjectProperties() failed.");
-    return false;
-  }
+  ASSERT(proxy_ptr->project_properties_version > 0);
 
-  dbus_message_iter_init(reply_ptr, &iter);
-
-  if (!dbus_iter_get_dict_entry_string(&iter, "name", &name))
-  {
-    name = "";
-  }
-
-  if (!dbus_iter_get_dict_entry_string(&iter, "dir", &dir))
-  {
-    dir = "";
-  }
-
-  name_buffer = strdup(name);
-  if (name_buffer == NULL)
+  name = strdup(proxy_ptr->project_name);
+  if (name == NULL)
   {
     log_error("strdup() failed for project name");
-    dbus_message_unref(reply_ptr);
     return false;
   }
 
-  dir_buffer = strdup(dir);
-  if (dir_buffer == NULL)
+  dir = strdup(proxy_ptr->project_dir);
+  if (dir == NULL)
   {
     log_error("strdup() failed for project dir");
-    free(name_buffer);
-    dbus_message_unref(reply_ptr);
+    free(name);
     return false;
   }
 
-  dbus_message_unref(reply_ptr);
-
-  *project_name = name_buffer;
-  *project_dir = dir_buffer;
+  *project_name = name;
+  *project_dir = dir;
 
   return true;
 }

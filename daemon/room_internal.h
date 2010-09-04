@@ -44,6 +44,7 @@ struct ladish_room
   unsigned int index;
   char * object_path;
   dbus_object_path dbus_object;
+  uint64_t version;
   ladish_graph_handle graph;
   ladish_app_supervisor_handle app_supervisor;
   ladish_client_handle client;

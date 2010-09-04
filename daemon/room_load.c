@@ -737,6 +737,8 @@ bool ladish_room_load_project(ladish_room_handle room_handle, const char * proje
   ladish_graph_trick_dicts(room_ptr->graph);
   ladish_app_supervisor_autorun(room_ptr->app_supervisor);
 
+  ladish_room_emit_project_properties_changed(room_ptr);
+
   ret = true;
 
 free_parser:
