@@ -176,6 +176,11 @@ static void project_properties_changed(void * context, const char * project_dir,
 
 #undef view_ptr
 
+static void fill_canvas_menu(GtkMenu * menu)
+{
+  fill_view_popup_menu(menu, (graph_view_handle)g_current_view);
+}
+
 bool
 create_view(
   const char * name,
@@ -212,7 +217,7 @@ create_view(
     goto free_name;
   }
 
-  if (!graph_canvas_create(1600 * 2, 1200 * 2, &view_ptr->graph_canvas))
+  if (!graph_canvas_create(1600 * 2, 1200 * 2, fill_canvas_menu, &view_ptr->graph_canvas))
   {
     goto destroy_graph;
   }

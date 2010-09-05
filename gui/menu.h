@@ -27,11 +27,14 @@
 #ifndef MENU_H__37ACA2FE_C43D_4FA8_B7CF_6DD345F17CD1__INCLUDED
 #define MENU_H__37ACA2FE_C43D_4FA8_B7CF_6DD345F17CD1__INCLUDED
 
+#include "graph_view.h"
+
 void menu_init(void);
 void menu_studio_state_changed(unsigned int studio_state);
 void menu_set_jack_latency_items_sensivity(bool sensitive);
 bool menu_set_jack_latency(uint32_t buffer_size, bool force, bool * changed_ptr);
 void menu_view_activated(bool room);
+void fill_view_popup_menu(GtkMenu * menu, graph_view_handle view);
 
 void menu_request_daemon_exit(void);
 void menu_request_jack_configure(void);

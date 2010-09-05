@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to graph canvas object
@@ -36,6 +36,7 @@ bool
 graph_canvas_create(
   int width,
   int height,
+  void (* fill_canvas_menu)(GtkMenu * menu),
   graph_canvas_handle * graph_canvas_ptr);
 
 void

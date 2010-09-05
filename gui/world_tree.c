@@ -329,41 +329,6 @@ void on_popup_menu_action_app_properties(GtkWidget * menuitem, gpointer userdata
   gtk_widget_hide(g_app_dialog);
 }
 
-void on_popup_menu_action_start_app(GtkWidget * menuitem, gpointer userdata)
-{
-  menu_request_start_app();
-}
-
-void on_popup_menu_action_create_room(GtkWidget * menuitem, gpointer userdata)
-{
-  menu_request_create_room();
-}
-
-void on_popup_menu_action_destroy_room(GtkWidget * menuitem, gpointer userdata)
-{
-  menu_request_destroy_room();
-}
-
-void on_popup_menu_action_load_project(GtkWidget * menuitem, gpointer userdata)
-{
-  menu_request_load_project();
-}
-
-void on_popup_menu_action_unload_project(GtkWidget * menuitem, gpointer userdata)
-{
-  menu_request_unload_project();
-}
-
-void on_popup_menu_action_save_project(GtkWidget * menuitem, gpointer userdata)
-{
-  menu_request_save_project();
-}
-
-void on_popup_menu_action_save_project_as(GtkWidget * menuitem, gpointer userdata)
-{
-  menu_request_save_as_project();
-}
-
 void popup_menu(GtkWidget * treeview, GdkEventButton * event)
 {
   GtkTreeSelection * selection;
@@ -428,44 +393,7 @@ void popup_menu(GtkWidget * treeview, GdkEventButton * event)
   }
   else if (type == entry_type_view)
   {
-    if (graph_view_get_app_supervisor(view) != NULL)
-    {
-      menuitem = gtk_menu_item_new_with_label("Run...");
-      g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_start_app, NULL);
-      gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-    }
-
-    if (is_room_view(view))
-    {
-      menuitem = gtk_menu_item_new_with_label("Load Project...");
-      g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_load_project, NULL);
-      gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-
-      menuitem = gtk_menu_item_new_with_label("Unload Project");
-      g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_unload_project, NULL);
-      gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-
-      menuitem = gtk_menu_item_new_with_label("Save Project...");
-      g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_save_project, NULL);
-      gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-
-      menuitem = gtk_menu_item_new_with_label("Save Project As...");
-      g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_save_project_as, NULL);
-      gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-
-      menuitem = gtk_separator_menu_item_new(); /* separator */
-      gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-
-      menuitem = gtk_menu_item_new_with_label("Destroy Room");
-      g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_destroy_room, NULL);
-      gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-    }
-    else
-    {
-      menuitem = gtk_menu_item_new_with_label("Create Room...");
-      g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_create_room, NULL);
-      gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-    }
+    fill_view_popup_menu(GTK_MENU(menu), view);
   }
   else
   {

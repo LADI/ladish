@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of graph canvas object
@@ -174,6 +174,7 @@ bool
 graph_canvas_create(
   int width,
   int height,
+  void (* fill_canvas_menu)(GtkMenu * menu),
   graph_canvas_handle * graph_canvas_handle_ptr)
 {
   struct graph_canvas * graph_canvas_ptr;
@@ -184,7 +185,16 @@ graph_canvas_create(
     return false;
   }
 
-  if (!canvas_create(width, height, connect_request, disconnect_request, module_location_changed, &graph_canvas_ptr->canvas))
+  if (!canvas_create(
+        width,
+        height,
+        connect_request,
+        disconnect_request,
+        module_location_changed,
+        fill_canvas_menu,
+        NULL,
+        NULL,
+        &graph_canvas_ptr->canvas))
   {
     free(graph_canvas_ptr);
     return false;

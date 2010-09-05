@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the interface to the canvas functionality
@@ -51,6 +51,9 @@ canvas_create(
   void (* connect_request)(void * port1_context, void * port2_context),
   void (* disconnect_request)(void * port1_context, void * port2_context),
   void (* module_location_changed)(void * module_context, double x, double y),
+  void (* fill_canvas_menu)(GtkMenu * menu),
+  void (* fill_module_menu)(GtkMenu * menu, void * module_context),
+  void (* fill_port_menu)(GtkMenu * menu, void * port_context),
   canvas_handle * canvas_handle_ptr);
 
 GtkWidget *

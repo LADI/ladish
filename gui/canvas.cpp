@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
  *
  **************************************************************************
@@ -39,11 +39,17 @@ public:
     double height,
     void (* connect_request)(void * port1_context, void * port2_context),
     void (* disconnect_request)(void * port1_context, void * port2_context),
-    void (* module_location_changed)(void * module_context, double x, double y))
+    void (* module_location_changed)(void * module_context, double x, double y),
+    void (* fill_canvas_menu)(GtkMenu * menu),
+    void (* fill_module_menu)(GtkMenu * menu, void * module_context),
+    void (* fill_port_menu)(GtkMenu * menu, void * port_context))
     : FlowCanvas::Canvas(width, height)
     , m_connect_request(connect_request)
     , m_disconnect_request(disconnect_request)
     , m_module_location_changed(module_location_changed)
+    , m_fill_canvas_menu(fill_canvas_menu)
+    , m_fill_module_menu(fill_module_menu)
+    , m_fill_port_menu(fill_port_menu)
   {}
 
   virtual ~canvas_cls() {}
@@ -66,12 +72,17 @@ public:
     }
   }
 
+  virtual bool canvas_event(GdkEvent * event);
+
   virtual void connect(boost::shared_ptr<FlowCanvas::Connectable> port1, boost::shared_ptr<FlowCanvas::Connectable> port2);
   virtual void disconnect(boost::shared_ptr<FlowCanvas::Connectable> port1, boost::shared_ptr<FlowCanvas::Connectable> port2);
 
   void (* m_connect_request)(void * port1_context, void * port2_context);
   void (* m_disconnect_request)(void * port1_context, void * port2_context);
   void (* m_module_location_changed)(void * module_context, double x, double y);
+  void (* m_fill_canvas_menu)(GtkMenu * menu);
+  void (* m_fill_module_menu)(GtkMenu * menu, void * module_context);
+  void (* m_fill_port_menu)(GtkMenu * menu, void * port_context);
 };
 
 class module_cls: public FlowCanvas::Module
@@ -100,6 +111,11 @@ public:
   {
     _menu = new Gtk::Menu();
     _menu->items().push_back(Gtk::Menu_Helpers::MenuElem("Disconnect All", sigc::mem_fun(this, &module_cls::menu_disconnect_all)));
+    void (* fill_module_menu)(GtkMenu * menu, void * module_context) = boost::dynamic_pointer_cast<canvas_cls>(canvas().lock())->m_fill_module_menu;
+    if (fill_module_menu != NULL)
+    {
+      fill_module_menu(_menu->gobj(), m_context);
+    }
   }
 
   void menu_disconnect_all()
@@ -146,11 +162,21 @@ canvas_create(
   void (* connect_request)(void * port1_context, void * port2_context),
   void (* disconnect_request)(void * port1_context, void * port2_context),
   void (* module_location_changed)(void * module_context, double x, double y),
+  void (* fill_canvas_menu)(GtkMenu * menu),
+  void (* fill_module_menu)(GtkMenu * menu, void * module_context),
+  void (* fill_port_menu)(GtkMenu * menu, void * port_context),
   canvas_handle * canvas_handle_ptr)
 {
   boost::shared_ptr<canvas_cls> * canvas;
 
-  canvas = new boost::shared_ptr<canvas_cls>(new canvas_cls(width, height, connect_request, disconnect_request, module_location_changed));
+  canvas = new boost::shared_ptr<canvas_cls>(new canvas_cls(width,
+                                                            height,
+                                                            connect_request,
+                                                            disconnect_request,
+                                                            module_location_changed,
+                                                            fill_canvas_menu,
+                                                            fill_module_menu,
+                                                            fill_port_menu));
 
   *canvas_handle_ptr = (canvas_handle)canvas;
 
@@ -363,6 +389,23 @@ canvas_remove_connection(
 
 #undef port1_ptr
 #undef port2_ptr
+
+bool canvas_cls::canvas_event(GdkEvent * event)
+{
+	assert(event);
+
+	if (m_fill_canvas_menu != NULL && event->type == GDK_BUTTON_PRESS && event->button.button == 3)
+  {
+    Gtk::Menu * menu_ptr;
+    menu_ptr = new Gtk::Menu();
+    m_fill_canvas_menu(menu_ptr->gobj());
+    menu_ptr->show_all();
+    menu_ptr->popup(event->button.button, event->button.time);
+    return true;
+  }
+
+	return Canvas::canvas_event(event);
+}
 
 void
 canvas_cls::connect(
