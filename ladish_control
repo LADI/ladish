@@ -31,6 +31,7 @@ studio_object_path = "/org/ladish/Studio"
 control_interface_name = 'org.ladish.Control'
 studio_interface_name = 'org.ladish.Studio'
 app_supervisor_interface_name = 'org.ladish.AppSupervisor'
+room_interface_name = 'org.ladish.Room'
 
 import sys
 import os
@@ -163,6 +164,10 @@ def main():
         print("    snewroom <rname> <rtname> - create new studio room")
         print("    srlist                    - list studio rooms")
         print("    sdelroom <rname>          - delete studio room")
+        print("    pload <rname> <proj_dir>  - load project into room")
+        print("    punload <rname>           - unload project from room")
+        print("    psave <rname>             - save project")
+        print("    psaveas <rname> <proj_dir> <proj_name>  - save as project")
         print("    snewapp <appargs>         - add new app to studio (see below for more info)")
         print("    rnewapp <rname> <appargs> - add new app to room (see below for more info)")
         print("");
@@ -350,6 +355,52 @@ def main():
                     index += 1
 
                     studio_iface.DeleteRoom(arg)
+                elif arg == 'pload':
+                    print("--- load project")
+                    if index + 1 >= len(sys.argv):
+                        print("load project command requires room name and project dir arguments")
+                        sys.exit()
+
+                    room_name = sys.argv[index]
+                    index += 1
+                    project_dir = sys.argv[index]
+                    index += 1
+
+                    dbus.Interface(get_room_obj_by_name(bus, studio_iface, room_name), room_interface_name).LoadProject(project_dir)
+                elif arg == 'punload':
+                    print("--- unload project")
+                    if index >= len(sys.argv):
+                        print("load project command requires room name argument")
+                        sys.exit()
+
+                    room_name = sys.argv[index]
+                    index += 1
+
+                    dbus.Interface(get_room_obj_by_name(bus, studio_iface, room_name), room_interface_name).UnloadProject()
+                elif arg == 'psave':
+                    print("--- save project")
+                    if index >= len(sys.argv):
+                        print("save project command requires room name argument")
+                        sys.exit()
+
+                    room_name = sys.argv[index]
+                    index += 1
+
+                    dbus.Interface(get_room_obj_by_name(bus, studio_iface, room_name), room_interface_name).SaveProject("", "")
+                elif arg == 'psaveas':
+                    print("--- save project as")
+                    if index + 2 >= len(sys.argv):
+                        print("save project as command requires room name, project dir and project name arguments")
+                        sys.exit()
+
+                    room_name = sys.argv[index]
+                    index += 1
+                    project_dir = sys.argv[index]
+                    index += 1
+                    project_name = sys.argv[index]
+                    index += 1
+
+                    dbus.Interface(get_room_obj_by_name(bus, studio_iface, room_name), room_interface_name).SaveProject(project_dir, project_name)
                 elif arg == 'snewapp':
                     print("--- new studio app")
                     count, cmdline, name, level, term = parse_new_app_args(sys.argv[index:])
