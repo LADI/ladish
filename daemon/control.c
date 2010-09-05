@@ -160,10 +160,12 @@ void create_builtin_room_templates(void)
 {
   struct room_descriptor room_descriptor;
 
+#if 0 /* the empty template is useless until there is a functionality to add new room ports */
   if (create_empty_room_template(empty_room, "Empty", &room_descriptor.room))
   {
     list_add_tail(ladish_room_get_list_node(room_descriptor.room), &g_room_templates);
   }
+#endif
 
   if (create_room_template(basic_room, "Basic", &room_descriptor))
   {
