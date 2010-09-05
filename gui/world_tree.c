@@ -344,6 +344,26 @@ void on_popup_menu_action_destroy_room(GtkWidget * menuitem, gpointer userdata)
   menu_request_destroy_room();
 }
 
+void on_popup_menu_action_load_project(GtkWidget * menuitem, gpointer userdata)
+{
+  menu_request_load_project();
+}
+
+void on_popup_menu_action_unload_project(GtkWidget * menuitem, gpointer userdata)
+{
+  menu_request_unload_project();
+}
+
+void on_popup_menu_action_save_project(GtkWidget * menuitem, gpointer userdata)
+{
+  menu_request_save_project();
+}
+
+void on_popup_menu_action_save_project_as(GtkWidget * menuitem, gpointer userdata)
+{
+  menu_request_save_as_project();
+}
+
 void popup_menu(GtkWidget * treeview, GdkEventButton * event)
 {
   GtkTreeSelection * selection;
@@ -417,6 +437,25 @@ void popup_menu(GtkWidget * treeview, GdkEventButton * event)
 
     if (is_room_view(view))
     {
+      menuitem = gtk_menu_item_new_with_label("Load Project...");
+      g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_load_project, NULL);
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+
+      menuitem = gtk_menu_item_new_with_label("Unload Project");
+      g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_unload_project, NULL);
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+
+      menuitem = gtk_menu_item_new_with_label("Save Project...");
+      g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_save_project, NULL);
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+
+      menuitem = gtk_menu_item_new_with_label("Save Project As...");
+      g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_save_project_as, NULL);
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+
+      menuitem = gtk_separator_menu_item_new(); /* separator */
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+
       menuitem = gtk_menu_item_new_with_label("Destroy Room");
       g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_destroy_room, NULL);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
