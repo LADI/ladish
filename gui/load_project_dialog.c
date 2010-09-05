@@ -24,8 +24,11 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <sys/stat.h>
+
 #include "load_project_dialog.h"
 #include "gtk_builder.h"
+#include "../catdup.h"
 
 enum
 {
@@ -95,6 +98,7 @@ convert_timestamp_to_string(
 }
 #endif
 
+#if 0
 static int mtime_sorter(GtkTreeModel * model, GtkTreeIter * a, GtkTreeIter * b, gpointer user_data)
 {
   uint64_t ta;
@@ -105,10 +109,133 @@ static int mtime_sorter(GtkTreeModel * model, GtkTreeIter * a, GtkTreeIter * b, 
 
   return ta > tb ? -1 : (ta == tb ? 0 : 1);
 }
+#endif
 
+static gboolean reject_filter(const GtkFileFilterInfo * filter_info, gpointer data)
+{
+  //log_info("filter: '%s'", filter_info->filename);
+  return FALSE;
+}
+
+static bool is_project_dir(const char * dir)
+{
+  char * file;
+  struct stat st;
+  int ret;
+
+  file = catdup(dir, "/ladish-project.xml");
+  if (file == NULL)
+  {
+    log_error("catdup() failed to compose project file path");
+    return false;
+  }
+
+  ret = stat(file, &st);
+  free(file);
+
+  return ret == 0;
+}
+
+#if 0
+static void on_dir_select(GtkWidget * widget, gpointer data)
+{
+  char * dir;
+  gboolean sensitive;
+
+  //log_info("selection-changed signal");
+
+  dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(data));
+  sensitive = FALSE;
+  if (dir != NULL)
+  {
+    sensitive = is_project_dir(dir);
+    g_free(dir);
+  }
+
+  gtk_widget_set_sensitive(gtk_dialog_get_widget_for_response(GTK_DIALOG(data), GTK_RESPONSE_ACCEPT), sensitive);
+}
+#endif
+
+static void dir_changed(GtkWidget * widget, gpointer data)
+{
+  char * dir;
+
+  //log_info("current-folder-changed signal");
+
+  dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(data));
+  if (dir == NULL)
+  {
+    return;
+  }
+
+  //log_info("dir changed: '%s'", dir);
+
+  if (is_project_dir(dir))
+  {
+    gtk_widget_activate(gtk_dialog_get_widget_for_response(GTK_DIALOG(data), GTK_RESPONSE_ACCEPT));
+  }
+}
+
+//static void on_browse(GtkWidget * widget, gpointer data)
+void ladish_run_load_project_dialog(ladish_room_proxy_handle room)
+{
+  GtkFileFilter * filter;
+  GtkWidget * dialog;
+  char * filename;
+
+  dialog = gtk_file_chooser_dialog_new(
+    "Load project",
+    NULL,
+    GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
+    GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+    GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+    NULL);
+
+  gtk_file_chooser_set_create_folders(GTK_FILE_CHOOSER(dialog), FALSE);
+
+  filter = gtk_file_filter_new();
+  gtk_file_filter_add_custom(filter, GTK_FILE_FILTER_FILENAME, reject_filter, dialog, NULL); /* reject all files */
+  gtk_file_chooser_set_filter(GTK_FILE_CHOOSER(dialog), filter);
+  //g_signal_connect(G_OBJECT(dialog), "selection-changed", G_CALLBACK(on_dir_select), dialog);
+  g_signal_connect(G_OBJECT(dialog), "current-folder-changed", G_CALLBACK(dir_changed), dialog);
+
+loop:
+  if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+  {
+    filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+
+    if (!is_project_dir(filename))
+    {
+      GtkWidget * dialog;
+      dialog = get_gtk_builder_widget("error_dialog");
+      gtk_message_dialog_set_markup(GTK_MESSAGE_DIALOG(dialog), "<b><big>Not a project dir</big></b>");
+      gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(dialog), "%s", filename);
+      gtk_widget_show(dialog);
+      gtk_dialog_run(GTK_DIALOG(dialog));
+      gtk_widget_hide(dialog);
+      goto loop;
+    }
+
+    //gtk_entry_set_text(GTK_ENTRY(get_gtk_builder_widget("load_project_path_entry")), filename);
+    log_info("Loading project from '%s'", filename);
+    if (!ladish_room_proxy_load_project(room, filename))
+    {
+      log_error("ladish_room_proxy_load_project() failed.");
+    }
+
+    g_free(filename);
+
+    //gtk_widget_activate(gtk_dialog_get_widget_for_response(GTK_DIALOG(data), GTK_RESPONSE_OK));
+  }
+  gtk_widget_destroy(dialog);
+  return;
+}
+
+#if 0
 void ladish_run_load_project_dialog(ladish_room_proxy_handle room)
 {
   GtkWidget * dialog;
+  GtkWidget * browse_button;
   GtkTreeView * view;
   GtkResponseType response;
   GtkListStore * store;
@@ -119,6 +246,7 @@ void ladish_run_load_project_dialog(ladish_room_proxy_handle room)
   GtkEntry * path;
 
   dialog = get_gtk_builder_widget("load_project_dialog");
+  browse_button = get_gtk_builder_widget("load_project_path_browse_button");
   path = GTK_ENTRY(get_gtk_builder_widget("load_project_path_entry"));
   view = GTK_TREE_VIEW(get_gtk_builder_widget("loadable_project_list"));
 
@@ -165,6 +293,7 @@ void ladish_run_load_project_dialog(ladish_room_proxy_handle room)
   /* _widget->signal_button_press_event().connect(sigc::mem_fun(*this, &LoadProjectDialog::on_button_press_event), false); */
   /* _widget->signal_key_press_event().connect(sigc::mem_fun(*this, &LoadProjectDialog::on_key_press_event), false); */
 
+  g_signal_connect(G_OBJECT(browse_button), "clicked", G_CALLBACK(on_browse), dialog);
 
   gtk_entry_set_text(path, "");
 
@@ -180,3 +309,4 @@ void ladish_run_load_project_dialog(ladish_room_proxy_handle room)
     }
   }
 }
+#endif
