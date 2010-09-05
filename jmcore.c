@@ -40,6 +40,7 @@ extern const struct dbus_interface_descriptor g_interface;
 static const char * g_dbus_unique_name;
 static dbus_object_path g_object;
 static bool g_quit;
+static unsigned int g_unique_index;
 
 struct list_head g_pairs;
 
@@ -259,6 +260,10 @@ static void jmcore_create(struct dbus_method_call * call_ptr)
   const char * output;
   struct port_pair * pair_ptr;
   int ret;
+  char client_name[256];
+
+  g_unique_index++;
+  sprintf(client_name, "jmcore-%u", g_unique_index);
 
   dbus_error_init(&g_dbus_error);
   if (!dbus_message_get_args(
@@ -295,7 +300,7 @@ static void jmcore_create(struct dbus_method_call * call_ptr)
     goto free_input_name;
   }
 
-  pair_ptr->client = jack_client_open("jmcore", JackNoStartServer, NULL);
+  pair_ptr->client = jack_client_open(client_name, JackNoStartServer, NULL);
   if (pair_ptr->client == NULL)
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Cannot connect to JACK server");
