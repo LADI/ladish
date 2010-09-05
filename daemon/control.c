@@ -42,6 +42,146 @@ UUID_DEFINE(empty_room,0x80,0x5E,0x48,0x5F,0x65,0xE4,0x4C,0x37,0xA9,0x59,0x2A,0x
 /* c603f2a0-d96a-493e-a8cf-55581d950aa9 */
 UUID_DEFINE(basic_room,0xC6,0x03,0xF2,0xA0,0xD9,0x6A,0x49,0x3E,0xA8,0xCF,0x55,0x58,0x1D,0x95,0x0A,0xA9);
 
+/* f3c6070d-e60f-4449-8b62-8c232df3eb2c */
+/* room with 4 audio capture ports, 4 audio playback ports, 2 midi capture ports and 2 midi playback ports */
+UUID_DEFINE(router_4x4x2x2_room,0xF3,0xC6,0x07,0x0D,0xE6,0x0F,0x44,0x49,0x8B,0x62,0x8C,0x23,0x2D,0xF3,0xEB,0x2C);
+
+/* a791a5f7-a6a2-44d5-9113-9115960300a4 */
+/* room with 10 audio capture ports, 10 audio playback ports, 4 midi capture ports and 4 midi playback ports */
+UUID_DEFINE(router_10x10x4x4_room,0xA7,0x91,0xA5,0xF7,0xA6,0xA2,0x44,0xD5,0x91,0x13,0x91,0x15,0x96,0x03,0x00,0xA4);
+
+/* 42d580f4-c5e5-4909-bc65-dfd96b3cbfce */
+/* room with 40 audio capture ports, 40 audio playback ports, 16 midi capture ports and 16 midi playback ports */
+UUID_DEFINE(router_40x40x16x16_room,0x42,0xD5,0x80,0xF4,0xC5,0xE5,0x49,0x09,0xBC,0x65,0xDF,0xD9,0x6B,0x3C,0xBF,0xCE);
+
+const unsigned char * ladish_wkport_router_audio_capture[] =
+{
+  ladish_wkport_router_audio_capture_1,
+  ladish_wkport_router_audio_capture_2,
+  ladish_wkport_router_audio_capture_3,
+  ladish_wkport_router_audio_capture_4,
+  ladish_wkport_router_audio_capture_5,
+  ladish_wkport_router_audio_capture_6,
+  ladish_wkport_router_audio_capture_7,
+  ladish_wkport_router_audio_capture_8,
+  ladish_wkport_router_audio_capture_9,
+  ladish_wkport_router_audio_capture_10,
+  ladish_wkport_router_audio_capture_11,
+  ladish_wkport_router_audio_capture_12,
+  ladish_wkport_router_audio_capture_13,
+  ladish_wkport_router_audio_capture_14,
+  ladish_wkport_router_audio_capture_15,
+  ladish_wkport_router_audio_capture_16,
+  ladish_wkport_router_audio_capture_17,
+  ladish_wkport_router_audio_capture_18,
+  ladish_wkport_router_audio_capture_19,
+  ladish_wkport_router_audio_capture_20,
+  ladish_wkport_router_audio_capture_21,
+  ladish_wkport_router_audio_capture_22,
+  ladish_wkport_router_audio_capture_23,
+  ladish_wkport_router_audio_capture_24,
+  ladish_wkport_router_audio_capture_25,
+  ladish_wkport_router_audio_capture_26,
+  ladish_wkport_router_audio_capture_27,
+  ladish_wkport_router_audio_capture_28,
+  ladish_wkport_router_audio_capture_29,
+  ladish_wkport_router_audio_capture_30,
+  ladish_wkport_router_audio_capture_31,
+  ladish_wkport_router_audio_capture_32,
+  ladish_wkport_router_audio_capture_33,
+  ladish_wkport_router_audio_capture_34,
+  ladish_wkport_router_audio_capture_35,
+  ladish_wkport_router_audio_capture_36,
+  ladish_wkport_router_audio_capture_37,
+  ladish_wkport_router_audio_capture_38,
+  ladish_wkport_router_audio_capture_39,
+  ladish_wkport_router_audio_capture_40,
+};
+
+const unsigned char * ladish_wkport_router_audio_playback[] =
+{
+  ladish_wkport_router_audio_playback_1,
+  ladish_wkport_router_audio_playback_2,
+  ladish_wkport_router_audio_playback_3,
+  ladish_wkport_router_audio_playback_4,
+  ladish_wkport_router_audio_playback_5,
+  ladish_wkport_router_audio_playback_6,
+  ladish_wkport_router_audio_playback_7,
+  ladish_wkport_router_audio_playback_8,
+  ladish_wkport_router_audio_playback_9,
+  ladish_wkport_router_audio_playback_10,
+  ladish_wkport_router_audio_playback_11,
+  ladish_wkport_router_audio_playback_12,
+  ladish_wkport_router_audio_playback_13,
+  ladish_wkport_router_audio_playback_14,
+  ladish_wkport_router_audio_playback_15,
+  ladish_wkport_router_audio_playback_16,
+  ladish_wkport_router_audio_playback_17,
+  ladish_wkport_router_audio_playback_18,
+  ladish_wkport_router_audio_playback_19,
+  ladish_wkport_router_audio_playback_20,
+  ladish_wkport_router_audio_playback_21,
+  ladish_wkport_router_audio_playback_22,
+  ladish_wkport_router_audio_playback_23,
+  ladish_wkport_router_audio_playback_24,
+  ladish_wkport_router_audio_playback_25,
+  ladish_wkport_router_audio_playback_26,
+  ladish_wkport_router_audio_playback_27,
+  ladish_wkport_router_audio_playback_28,
+  ladish_wkport_router_audio_playback_29,
+  ladish_wkport_router_audio_playback_30,
+  ladish_wkport_router_audio_playback_31,
+  ladish_wkport_router_audio_playback_32,
+  ladish_wkport_router_audio_playback_33,
+  ladish_wkport_router_audio_playback_34,
+  ladish_wkport_router_audio_playback_35,
+  ladish_wkport_router_audio_playback_36,
+  ladish_wkport_router_audio_playback_37,
+  ladish_wkport_router_audio_playback_38,
+  ladish_wkport_router_audio_playback_39,
+  ladish_wkport_router_audio_playback_40,
+};
+
+const unsigned char * ladish_wkport_router_midi_capture[] =
+{
+  ladish_wkport_router_midi_capture_1,
+  ladish_wkport_router_midi_capture_2,
+  ladish_wkport_router_midi_capture_3,
+  ladish_wkport_router_midi_capture_4,
+  ladish_wkport_router_midi_capture_5,
+  ladish_wkport_router_midi_capture_6,
+  ladish_wkport_router_midi_capture_7,
+  ladish_wkport_router_midi_capture_8,
+  ladish_wkport_router_midi_capture_9,
+  ladish_wkport_router_midi_capture_10,
+  ladish_wkport_router_midi_capture_11,
+  ladish_wkport_router_midi_capture_12,
+  ladish_wkport_router_midi_capture_13,
+  ladish_wkport_router_midi_capture_14,
+  ladish_wkport_router_midi_capture_15,
+  ladish_wkport_router_midi_capture_16,
+};
+
+const unsigned char * ladish_wkport_router_midi_playback[] =
+{
+  ladish_wkport_router_midi_playback_1,
+  ladish_wkport_router_midi_playback_2,
+  ladish_wkport_router_midi_playback_3,
+  ladish_wkport_router_midi_playback_4,
+  ladish_wkport_router_midi_playback_5,
+  ladish_wkport_router_midi_playback_6,
+  ladish_wkport_router_midi_playback_7,
+  ladish_wkport_router_midi_playback_8,
+  ladish_wkport_router_midi_playback_9,
+  ladish_wkport_router_midi_playback_10,
+  ladish_wkport_router_midi_playback_11,
+  ladish_wkport_router_midi_playback_12,
+  ladish_wkport_router_midi_playback_13,
+  ladish_wkport_router_midi_playback_14,
+  ladish_wkport_router_midi_playback_15,
+  ladish_wkport_router_midi_playback_16,
+};
+
 static struct list_head g_room_templates;
 
 static bool create_empty_room_template(const uuid_t uuid_ptr, const char * name, ladish_room_handle * room_ptr)
@@ -156,6 +296,64 @@ create_room_template_port(
   return true;
 }
 
+#define ADD_ROUTER_PORT(index, prefix, uuid_ptr, protocol, flags)       \
+  sprintf(port_name_buffer, prefix "%u", index + 1);                    \
+  if (!create_room_template_port(                                       \
+        &room_descriptor,                                               \
+        uuid_ptr,                                                       \
+        port_name_buffer,                                               \
+        protocol,                                                       \
+        flags))                                                         \
+  {                                                                     \
+    goto fail;                                                          \
+  }
+
+void
+create_router_room_template(
+  const uuid_t uuid_ptr,
+  const char * name,
+  unsigned int audio_capture,
+  unsigned int audio_playback,
+  unsigned int midi_capture,
+  unsigned int midi_playback)
+{
+  struct room_descriptor room_descriptor;
+  char port_name_buffer[100];
+  unsigned int i;
+
+  if (create_room_template(uuid_ptr, name, &room_descriptor))
+  {
+    for (i = 0; i < audio_capture; i++)
+    {
+      ADD_ROUTER_PORT(i, "audio_capture_", ladish_wkport_router_audio_capture[i], JACKDBUS_PORT_TYPE_AUDIO, JACKDBUS_PORT_FLAG_OUTPUT);
+    }
+
+    for (i = 0; i < audio_playback; i++)
+    {
+      ADD_ROUTER_PORT(i, "audio_playback_", ladish_wkport_router_audio_playback[i], JACKDBUS_PORT_TYPE_AUDIO, JACKDBUS_PORT_FLAG_INPUT);
+    }
+
+    for (i = 0; i < midi_capture; i++)
+    {
+      ADD_ROUTER_PORT(i, "midi_capture_", ladish_wkport_router_midi_capture[i], JACKDBUS_PORT_TYPE_MIDI, JACKDBUS_PORT_FLAG_OUTPUT);
+    }
+
+    for (i = 0; i < midi_playback; i++)
+    {
+      ADD_ROUTER_PORT(i, "midi_playback_", ladish_wkport_router_midi_playback[i], JACKDBUS_PORT_TYPE_MIDI, JACKDBUS_PORT_FLAG_INPUT);
+    }
+
+    list_add_tail(ladish_room_get_list_node(room_descriptor.room), &g_room_templates);
+  }
+
+  return;
+
+fail:
+  ladish_room_destroy(room_descriptor.room); /* this will destroy the graph clients and ports as well */
+}
+
+#undef ADD_ROUTER_PORT
+
 void create_builtin_room_templates(void)
 {
   struct room_descriptor room_descriptor;
@@ -211,6 +409,10 @@ void create_builtin_room_templates(void)
 
     list_add_tail(ladish_room_get_list_node(room_descriptor.room), &g_room_templates);
   }
+
+  create_router_room_template(router_4x4x2x2_room, "Router 4x4x2x2", 4, 4, 2, 2);
+  create_router_room_template(router_10x10x4x4_room, "Router 10x10x4x4", 10, 10, 4, 4);
+  create_router_room_template(router_40x40x16x16_room, "Router 40x40x16x16", 40, 40, 16, 16);
 
   return;
 
