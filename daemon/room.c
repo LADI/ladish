@@ -633,6 +633,22 @@ ladish_room_app_is_stopped(
   return true;
 }
 
+static
+bool
+ladish_remove_room_app(
+  void * context,
+  const char * name,
+  bool running,
+  const char * command,
+  bool terminal,
+  uint8_t level,
+  pid_t pid,
+  const uuid_t uuid)
+{
+  ladish_virtualizer_remove_app(ladish_studio_get_jack_graph(), uuid, name);
+  return true;
+}
+
 bool ladish_room_unload_project(ladish_room_handle room_handle)
 {
   if (!room_ptr->project_unloading)
@@ -645,7 +661,7 @@ bool ladish_room_unload_project(ladish_room_handle room_handle)
     log_info("Stopping room apps...");
     ladish_graph_dump(room_ptr->graph);
     room_ptr->project_unloading = true;
-    ladish_graph_clear_persist(room_ptr->graph);
+    //ladish_graph_clear_persist(room_ptr->graph);
     ladish_app_supervisor_stop(room_ptr->app_supervisor);
     return false;
   }
@@ -655,10 +671,13 @@ bool ladish_room_unload_project(ladish_room_handle room_handle)
     return false;
   }
 
+  /* remove app clients, ports and connections */
+  ladish_app_supervisor_enum(room_ptr->app_supervisor, room_ptr, ladish_remove_room_app);
+
   ladish_app_supervisor_clear(room_ptr->app_supervisor);
   ASSERT(!ladish_app_supervisor_has_apps(room_ptr->app_supervisor));
 
-  ladish_graph_set_persist(room_ptr->graph);
+  //ladish_graph_set_persist(room_ptr->graph);
 
   log_info("Room apps stopped.");
   ladish_graph_dump(room_ptr->graph);
