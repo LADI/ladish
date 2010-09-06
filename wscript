@@ -8,7 +8,7 @@ import shutil
 import re
 
 APPNAME='ladish'
-VERSION='0.3'
+VERSION='0.3-rc'
 DBUS_NAME_BASE = 'org.ladish'
 RELEASE = False
 
