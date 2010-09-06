@@ -346,6 +346,8 @@ interlink_client(
   ladish_client_set_app(jclient, app_uuid);
   ladish_client_set_app(vclient, app_uuid);
 
+  ladish_client_set_vgraph(jclient, ctx_ptr->vgraph);
+
   return true;
 }
 
