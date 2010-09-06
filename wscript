@@ -43,6 +43,7 @@ def set_options(opt):
     opt.add_option('--enable-liblash', action='store_true', default=False, help='Build LASH compatibility library')
     opt.add_option('--debug', action='store_true', default=False, dest='debug', help="Build debuggable binaries")
     opt.add_option('--doxygen', action='store_true', default=False, help='Enable build of doxygen documentation')
+    opt.add_option('--distnodeps', action='store_true', default=False, help="When creating distribution tarball, don't package git submodules")
 
 def add_cflag(conf, flag):
     conf.env.append_unique('CXXFLAGS', flag)
@@ -490,6 +491,12 @@ def etags(ctx):
     os.system("stat -c '%y' TAGS")
 
 def dist_hook():
+    #print repr(Options.options)
+    if Options.options.distnodeps:
+        shutil.rmtree('laditools')
+        shutil.rmtree('flowcanvas')
+        shutil.rmtree('jack2')
+        shutil.rmtree('a2jmidid')
     nodist_files = ['.gitmodules', 'GTAGS', 'GRTAGS', 'GPATH', 'GSYMS'] # waf does not ignore these file
     for nodist_file in nodist_files:
         os.remove(nodist_file)
