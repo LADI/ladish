@@ -490,6 +490,7 @@ def etags(ctx):
     os.system("stat -c '%y' TAGS")
 
 def dist_hook():
+    os.remove(".gitmodules") # waf does not ignore this file
     shutil.copy('../build/default/version.h', "./")
 
 import commands
