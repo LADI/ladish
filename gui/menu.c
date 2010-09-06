@@ -69,7 +69,7 @@ static void toggled(GtkCheckMenuItem * checkmenuitem, gpointer user_data)
 static void buffer_size_change_request(GtkCheckMenuItem * item_ptr, gpointer user_data)
 {
   if (g_latency_changing)
-  { /* skip activations because of gtk_check_menu_item_set_active() called from buffer_size_set() */
+  { /* skip activations because of gtk_check_menu_item_set_active() called from menu_set_jack_latency() */
     return;
   }
 
@@ -168,7 +168,7 @@ void menu_set_jack_latency_items_sensivity(bool sensitive)
   gtk_widget_set_sensitive(GTK_WIDGET(g_menu_item_jack_latency_8192), sensitive);
 }
 
-bool menu_set_jack_latency(uint32_t buffer_size, bool force, bool * changed_ptr)
+bool menu_set_jack_latency(uint32_t buffer_size, bool force)
 {
   GtkCheckMenuItem * item_ptr;
 
@@ -206,10 +206,10 @@ bool menu_set_jack_latency(uint32_t buffer_size, bool force, bool * changed_ptr)
     return false;
   }
 
-  *changed_ptr = force || !item_ptr->active;
-  if (*changed_ptr)
+  if (force || !item_ptr->active)
   {
-    g_latency_changing = true;
+    log_info("menu_set_jack_latency() detects change");
+    g_latency_changing = true;  /* latency has changed externally, don't tell jack to change it again */
     gtk_check_menu_item_set_active(item_ptr, TRUE);
     g_latency_changing = false;
   }

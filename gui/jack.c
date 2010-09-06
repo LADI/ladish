@@ -77,22 +77,23 @@ void buffer_size_clear(void)
 
 static void buffer_size_set(uint32_t size, bool force)
 {
-  bool changed;
   char buf[100];
+  static uint32_t last_buffer_size;
 
-  if (!menu_set_jack_latency(size, force, &changed))
+  if (!menu_set_jack_latency(size, force))
   {
     buffer_size_clear();
     return;
   }
 
-  if (changed)
+  if (size != last_buffer_size)
   {
     log_info("JACK latency changed: %"PRIu32" samples", size);
 
     snprintf(buf, sizeof(buf), "%4.1f ms (%"PRIu32")", (float)size / (float)g_sample_rate * 1000.0f, size);
     set_latency_text(buf);
   }
+  last_buffer_size = size;
 }
 
 static void update_buffer_size(bool force)
