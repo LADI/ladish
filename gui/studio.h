@@ -5,7 +5,7 @@
  * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains declarations of internal stuff used to glue gui modules together
+ * This file contains interface to the studio handling code
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -24,27 +24,28 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef INTERNAL_H__725DFCCC_50F8_437A_9CD7_8B59125C6A11__INCLUDED
-#define INTERNAL_H__725DFCCC_50F8_437A_9CD7_8B59125C6A11__INCLUDED
+#ifndef STUDIO_H__5249923A_C9AE_4D74_8B62_EED013F49CB1__INCLUDED
+#define STUDIO_H__5249923A_C9AE_4D74_8B62_EED013F49CB1__INCLUDED
 
 #include "common.h"
 
-/* dbus.c */
-void dbus_init(void);
-void dbus_uninit(void);
+#define STUDIO_STATE_UNKNOWN    0
+#define STUDIO_STATE_UNLOADED   1
+#define STUDIO_STATE_STOPPED    2
+#define STUDIO_STATE_STARTED    3
+#define STUDIO_STATE_CRASHED    4
+#define STUDIO_STATE_NA         5
+#define STUDIO_STATE_SICK       6
 
-/* control.c */
-void on_load_studio(GtkWidget * item);
-void on_delete_studio(GtkWidget * item);
+unsigned int get_studio_state(void);
+void set_studio_state(unsigned int state);
 
-void init_studio_lists(void);
+bool studio_state_changed(char ** name_ptr_ptr);
 
-void set_room_callbacks(void);
+bool studio_loaded(void);
+void create_studio_view(const char * name);
+void destroy_studio_view(void);
 
-/* dialogs.c */
-void init_dialogs(void);
-bool name_dialog(const char * title, const char * object, const char * old_name, char ** new_name);
+void set_studio_callbacks(void);
 
-extern GtkWidget * g_main_win;
-
-#endif /* #ifndef INTERNAL_H__725DFCCC_50F8_437A_9CD7_8B59125C6A11__INCLUDED */
+#endif /* #ifndef STUDIO_H__5249923A_C9AE_4D74_8B62_EED013F49CB1__INCLUDED */

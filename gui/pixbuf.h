@@ -5,7 +5,7 @@
  * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains declarations of internal stuff used to glue gui modules together
+ * This file contains interface to the pixel buffer helper functionality
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -24,27 +24,11 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef INTERNAL_H__725DFCCC_50F8_437A_9CD7_8B59125C6A11__INCLUDED
-#define INTERNAL_H__725DFCCC_50F8_437A_9CD7_8B59125C6A11__INCLUDED
+#ifndef PIXBUF_H__472B6BF3_E199_46DA_8949_22E7986463AD__INCLUDED
+#define PIXBUF_H__472B6BF3_E199_46DA_8949_22E7986463AD__INCLUDED
 
 #include "common.h"
 
-/* dbus.c */
-void dbus_init(void);
-void dbus_uninit(void);
+GdkPixbuf * load_pixbuf(const char * filename);
 
-/* control.c */
-void on_load_studio(GtkWidget * item);
-void on_delete_studio(GtkWidget * item);
-
-void init_studio_lists(void);
-
-void set_room_callbacks(void);
-
-/* dialogs.c */
-void init_dialogs(void);
-bool name_dialog(const char * title, const char * object, const char * old_name, char ** new_name);
-
-extern GtkWidget * g_main_win;
-
-#endif /* #ifndef INTERNAL_H__725DFCCC_50F8_437A_9CD7_8B59125C6A11__INCLUDED */
+#endif /* #ifndef PIXBUF_H__472B6BF3_E199_46DA_8949_22E7986463AD__INCLUDED */

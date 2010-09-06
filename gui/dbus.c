@@ -5,7 +5,7 @@
  * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains declarations of internal stuff used to glue gui modules together
+ * This file contains D-Bus related code
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -24,27 +24,35 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef INTERNAL_H__725DFCCC_50F8_437A_9CD7_8B59125C6A11__INCLUDED
-#define INTERNAL_H__725DFCCC_50F8_437A_9CD7_8B59125C6A11__INCLUDED
+#include "internal.h"
+#include "../dbus/helpers.h"
+#include <dbus/dbus-glib-lowlevel.h>
 
-#include "common.h"
+void dbus_init(void)
+{
+  dbus_error_init(&g_dbus_error);
 
-/* dbus.c */
-void dbus_init(void);
-void dbus_uninit(void);
+  // Connect to the bus
+  g_dbus_connection = dbus_bus_get(DBUS_BUS_SESSION, &g_dbus_error);
+  if (dbus_error_is_set(&g_dbus_error))
+  {
+    //error_msg("dbus_bus_get() failed");
+    //error_msg(g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+  }
 
-/* control.c */
-void on_load_studio(GtkWidget * item);
-void on_delete_studio(GtkWidget * item);
+  dbus_connection_setup_with_g_main(g_dbus_connection, NULL);
+}
 
-void init_studio_lists(void);
+void dbus_uninit(void)
+{
+  if (g_dbus_connection)
+  {
+    dbus_connection_flush(g_dbus_connection);
+  }
 
-void set_room_callbacks(void);
-
-/* dialogs.c */
-void init_dialogs(void);
-bool name_dialog(const char * title, const char * object, const char * old_name, char ** new_name);
-
-extern GtkWidget * g_main_win;
-
-#endif /* #ifndef INTERNAL_H__725DFCCC_50F8_437A_9CD7_8B59125C6A11__INCLUDED */
+  if (dbus_error_is_set(&g_dbus_error))
+  {
+    dbus_error_free(&g_dbus_error);
+  }
+}

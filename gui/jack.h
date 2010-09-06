@@ -5,7 +5,7 @@
  * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains declarations of internal stuff used to glue gui modules together
+ * This file contains interface to the JACK related functionality
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -24,27 +24,22 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef INTERNAL_H__725DFCCC_50F8_437A_9CD7_8B59125C6A11__INCLUDED
-#define INTERNAL_H__725DFCCC_50F8_437A_9CD7_8B59125C6A11__INCLUDED
+#ifndef JACK_H__AA9BB099_1EAA_43A8_B84D_3DA221F1A1CF__INCLUDED
+#define JACK_H__AA9BB099_1EAA_43A8_B84D_3DA221F1A1CF__INCLUDED
 
-#include "common.h"
+/* JACK states */
+#define JACK_STATE_NA         0
+#define JACK_STATE_STOPPED    1
+#define JACK_STATE_STARTED    2
 
-/* dbus.c */
-void dbus_init(void);
-void dbus_uninit(void);
+unsigned int get_jack_state(void);
+void buffer_size_clear(void);
+void init_jack_widgets(void);
+bool init_jack(void);
+void uninit_jack(void);
+bool jack_xruns(void);
+void set_xrun_progress_bar_text(const char * text);
+void update_jack_sample_rate(void);
+void clear_xruns_and_max_dsp(void);
 
-/* control.c */
-void on_load_studio(GtkWidget * item);
-void on_delete_studio(GtkWidget * item);
-
-void init_studio_lists(void);
-
-void set_room_callbacks(void);
-
-/* dialogs.c */
-void init_dialogs(void);
-bool name_dialog(const char * title, const char * object, const char * old_name, char ** new_name);
-
-extern GtkWidget * g_main_win;
-
-#endif /* #ifndef INTERNAL_H__725DFCCC_50F8_437A_9CD7_8B59125C6A11__INCLUDED */
+#endif /* #ifndef JACK_H__AA9BB099_1EAA_43A8_B84D_3DA221F1A1CF__INCLUDED */

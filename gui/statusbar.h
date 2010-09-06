@@ -5,7 +5,7 @@
  * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains declarations of internal stuff used to glue gui modules together
+ * This file contains interface to the statusbar helpers
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -24,27 +24,26 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef INTERNAL_H__725DFCCC_50F8_437A_9CD7_8B59125C6A11__INCLUDED
-#define INTERNAL_H__725DFCCC_50F8_437A_9CD7_8B59125C6A11__INCLUDED
+#ifndef STATUSBAR_H__6A47F295_8858_4611_80D0_034A8FB3802A__INCLUDED
+#define STATUSBAR_H__6A47F295_8858_4611_80D0_034A8FB3802A__INCLUDED
 
 #include "common.h"
 
-/* dbus.c */
-void dbus_init(void);
-void dbus_uninit(void);
+void init_statusbar(void);
 
-/* control.c */
-void on_load_studio(GtkWidget * item);
-void on_delete_studio(GtkWidget * item);
+void set_studio_status_text(const char * text);
+GtkImage * get_status_image(void);
 
-void init_studio_lists(void);
+void set_latency_text(const char * text);
+void clear_latency_text(void);
 
-void set_room_callbacks(void);
+void set_dsp_load_text(const char * text);
+void clear_dsp_load_text(void);
 
-/* dialogs.c */
-void init_dialogs(void);
-bool name_dialog(const char * title, const char * object, const char * old_name, char ** new_name);
+void set_xruns_text(const char * text);
+void clear_xruns_text(void);
 
-extern GtkWidget * g_main_win;
+void set_sample_rate_text(const char * text);
+void clear_sample_rate_text(void);
 
-#endif /* #ifndef INTERNAL_H__725DFCCC_50F8_437A_9CD7_8B59125C6A11__INCLUDED */
+#endif /* #ifndef STATUSBAR_H__6A47F295_8858_4611_80D0_034A8FB3802A__INCLUDED */

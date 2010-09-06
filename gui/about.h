@@ -5,7 +5,7 @@
  * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains declarations of internal stuff used to glue gui modules together
+ * This file contains interface to the about dialog code
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -24,27 +24,10 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef INTERNAL_H__725DFCCC_50F8_437A_9CD7_8B59125C6A11__INCLUDED
-#define INTERNAL_H__725DFCCC_50F8_437A_9CD7_8B59125C6A11__INCLUDED
+#ifndef ABOUT_H__9E8842AA_1BF6_496A_A083_6D04E93A39BE__INCLUDED
+#define ABOUT_H__9E8842AA_1BF6_496A_A083_6D04E93A39BE__INCLUDED
 
-#include "common.h"
+void show_about(void);
 
-/* dbus.c */
-void dbus_init(void);
-void dbus_uninit(void);
+#endif /* #ifndef ABOUT_H__9E8842AA_1BF6_496A_A083_6D04E93A39BE__INCLUDED */
 
-/* control.c */
-void on_load_studio(GtkWidget * item);
-void on_delete_studio(GtkWidget * item);
-
-void init_studio_lists(void);
-
-void set_room_callbacks(void);
-
-/* dialogs.c */
-void init_dialogs(void);
-bool name_dialog(const char * title, const char * object, const char * old_name, char ** new_name);
-
-extern GtkWidget * g_main_win;
-
-#endif /* #ifndef INTERNAL_H__725DFCCC_50F8_437A_9CD7_8B59125C6A11__INCLUDED */

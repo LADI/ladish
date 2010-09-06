@@ -27,6 +27,7 @@
 #include "internal.h"
 #include "menu.h"
 #include "gtk_builder.h"
+#include "studio.h"
 
 static GtkWidget * g_menu_item_new_studio;
 static GtkWidget * g_menu_item_start_studio;

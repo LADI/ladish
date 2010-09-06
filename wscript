@@ -408,6 +408,17 @@ def build(bld):
             'ask_dialog.c',
             'create_room_dialog.c',
             'menu.c',
+            'about.c',
+            'dbus.c',
+            'studio.c',
+            'studio_list.c',
+            'dialogs.c',
+            'jack.c',
+            'control.c',
+            'pixbuf.c',
+            'room.c',
+            'statusbar.c',
+            'action.c',
             ]:
             gladish.source.append(os.path.join("gui", source))
 
