@@ -226,6 +226,10 @@ def configure(conf):
     display_msg(conf, 'C compiler flags', conf.env['CCFLAGS'])
     display_msg(conf, 'C++ compiler flags', conf.env['CXXFLAGS'])
 
+    if not conf.env['BUILD_GLADISH']:
+        display_msg(conf)
+        display_line(conf,     "WARNING: The GUI frontend will not built", 'RED')
+
     display_msg(conf)
 
 def build(bld):
