@@ -130,7 +130,7 @@ def configure(conf):
     if build_gui and not conf.check_cfg(
         package = 'gtk+-2.0',
         mandatory = False,
-        atleast_version = '2.16.0',
+        atleast_version = '2.20.0',
         errmsg = "not installed, see http://www.gtk.org/",
         args = '--cflags --libs'):
         build_gui = False
