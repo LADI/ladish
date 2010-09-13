@@ -67,6 +67,7 @@ def configure(conf):
     conf.check_tool('compiler_cc')
     conf.check_tool('compiler_cxx')
     conf.check_tool('boost')
+    #conf.check_tool('ParallelDebug')
 
     conf.check_cfg(
         package = 'jack',
@@ -530,6 +531,15 @@ def process_git(self):
         tsk = self.create_task('git_ver')
         tsk.set_outputs(self.path.find_or_declare(self.ver_header))
 
+        # needs some help with implicit dependencies
+        # http://code.google.com/p/waf/issues/detail?id=732
+        tg = self.bld.name_to_obj('ladishd', self.env)
+        if id(tg) != id(self):
+            tg.post()
+        for x in tg.tasks:
+            if x.inputs and x.inputs[0].name == 'main.c' and x.inputs[0].parent.name == 'daemon':
+                x.set_run_after(tsk)
+
 def git_ver(self):
     header = self.outputs[0].abspath(self.env)
     if os.access('../version.h', os.R_OK):
@@ -556,7 +566,7 @@ def git_ver(self):
     fi.write('#define GIT_VERSION "%s"\n' % self.ver)
     fi.close()
 
-cls = Task.task_type_from_func('git_ver', vars=[], func=git_ver, color='BLUE', before='cc')
+cls = Task.task_type_from_func('git_ver', vars=[], func=git_ver, color='BLUE')
 
 def always(self):
     return RUN_ME
@@ -568,3 +578,11 @@ def post_run(self):
     variant = node.variant(self.env)
     self.generator.bld.node_sigs[variant][node.id] = sg
 cls.post_run = post_run
+
+import Runner
+
+old_refill = Runner.Parallel.refill_task_list
+def refill_task_list(self):
+    old_refill(self)
+    self.outstanding.sort(cmp=lambda a, b: cmp(b.__class__.__name__, a.__class__.__name__))
+Runner.Parallel.refill_task_list = refill_task_list
