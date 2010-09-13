@@ -453,7 +453,8 @@ def build(bld):
     # Icons
     icon_sizes = ['16x16', '22x22', '24x24', '32x32', '48x48', '256x256']
     for icon_size in icon_sizes:
-       bld.install_files('${PREFIX}/share/icons/hicolor/' + icon_size + '/apps/', 'art/' + icon_size + '/apps/gladish.png')
+        bld.path.ant_glob('art/' + icon_size + '/apps/*.png')
+        bld.install_files('${PREFIX}/share/icons/hicolor/' + icon_size + '/apps/', 'art/' + icon_size + '/apps/gladish.png')
 
     status_images = []
     for status in ["down", "unloaded", "started", "stopped", "warning", "error"]:
