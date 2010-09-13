@@ -223,8 +223,8 @@ def configure(conf):
         display_line(conf,     'WARNING: You can override dbus service install directory', 'RED')
         display_line(conf,     'WARNING: with --enable-pkg-config-dbus-service-dir option to this script', 'RED')
 
-    display_msg(conf, 'C compiler flags', conf.env['CCFLAGS'])
-    display_msg(conf, 'C++ compiler flags', conf.env['CXXFLAGS'])
+    display_msg(conf, 'C compiler flags', repr(conf.env['CCFLAGS']))
+    display_msg(conf, 'C++ compiler flags', repr(conf.env['CXXFLAGS']))
 
     if not conf.env['BUILD_GLADISH']:
         display_msg(conf)
