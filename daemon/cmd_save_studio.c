@@ -201,6 +201,7 @@ static bool run(void * command_context)
   char * old_filename;          /* filename where studio was persisted before save */
   struct stat st;
   struct ladish_write_context save_context;
+  bool renaming;
 
   ASSERT(cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING);
 
@@ -225,6 +226,9 @@ static bool run(void * command_context)
     goto exit;
   }
 
+  /* whether save will initiate a rename */
+  renaming = strcmp(cmd_ptr->studio_name, g_studio.name) != 0;
+
   if (g_studio.filename == NULL)
   {
     /* saving studio for first time */
@@ -238,9 +242,9 @@ static bool run(void * command_context)
     /* saving already persisted studio that was not renamed */
     old_filename = filename;
   }
-  else if (strcmp(cmd_ptr->studio_name, g_studio.name) == 0)
+  else if (!renaming)
   {
-    /* saving renamed studio */
+    /* saving already renamed studio */
     old_filename = g_studio.filename;
     g_studio.filename = filename;
   }
@@ -406,12 +410,12 @@ static bool run(void * command_context)
 
   ret = true;
 
-  if (old_filename == g_studio.filename && strcmp(g_studio.name, cmd_ptr->studio_name) != 0)
+  if (renaming)
   {
     free(g_studio.name);
     g_studio.name = cmd_ptr->studio_name;
-    cmd_ptr->studio_name = NULL;
-    ladish_studio_emit_renamed();
+    cmd_ptr->studio_name = NULL; /* mark that descructor does not need to free the new name buffer */
+    ladish_studio_emit_renamed(); /* uses g_studio.name */
   }
 
 close:
