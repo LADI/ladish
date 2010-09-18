@@ -108,7 +108,13 @@ bool ladish_studio_show(void)
 void ladish_studio_announce(void)
 {
   ASSERT(!g_studio.announced);
-  ladish_notify_simple(LADISH_NOTIFY_URGENCY_NORMAL, "Studio loaded", NULL);
+
+  /* notify the user that studio started successfully, but dont lie when jack was started externally */
+  if (!g_studio.automatic)
+  {
+    ladish_notify_simple(LADISH_NOTIFY_URGENCY_NORMAL, "Studio loaded", NULL);
+  }
+
   g_studio.announced = true;
 }
 
@@ -349,7 +355,12 @@ void ladish_studio_on_event_jack_started(void)
   ladish_app_supervisor_autorun(g_studio.app_supervisor);
 
   ladish_studio_emit_started();
-  ladish_notify_simple(LADISH_NOTIFY_URGENCY_NORMAL, "Studio started", NULL);
+
+  /* notify the user that studio started successfully, but dont lie when jack was started externally */
+  if (!g_studio.automatic)
+  {
+    ladish_notify_simple(LADISH_NOTIFY_URGENCY_NORMAL, "Studio started", NULL);
+  }
 }
 
 static void ladish_studio_on_jack_stopped_internal(void)
@@ -428,6 +439,14 @@ void ladish_studio_run(void)
       }
 
       ladish_studio_on_event_jack_started();
+
+      if (g_studio.automatic)
+      {
+        ladish_notify_simple(
+          LADISH_NOTIFY_URGENCY_NORMAL,
+          "Automatic studio created",
+          "JACK server is started not by ladish daemon and there is no loaded studio, so a new studio is created and marked as started.");
+      }
     }
     else
     {
