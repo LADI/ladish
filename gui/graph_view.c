@@ -389,19 +389,41 @@ const char * get_view_opath(graph_view_handle view)
   return graph_proxy_get_object(view_ptr->graph);
 }
 
-bool set_view_name(graph_view_handle view, const char * cname)
+bool set_view_name(graph_view_handle view, const char * name)
 {
-  char * name;
+  char * view_name_buffer;
+  char * full_name_buffer;
 
-  name = strdup(cname);
-  if (name == NULL)
+  view_name_buffer = strdup(name);
+  if (view_name_buffer == NULL)
   {
     log_error("strdup() failed for \"%s\"", name);
     return false;
   }
 
+  if (view_ptr->project_name != NULL)
+  {
+    full_name_buffer = catdup4(view_name_buffer, " (", view_ptr->project_name, ")");
+    if (full_name_buffer == NULL)
+    {
+      free(view_name_buffer);
+      return false;
+    }
+  }
+  else
+  {
+    full_name_buffer = view_name_buffer;
+  }
+
+  if (view_ptr->full_name != NULL && view_ptr->full_name != view_ptr->view_name)
+  {
+    free(view_ptr->full_name);
+  }
+
   free(view_ptr->view_name);
-  view_ptr->view_name = name;
+
+  view_ptr->view_name = view_name_buffer;
+  view_ptr->full_name = full_name_buffer;
 
   announce_view_name_change(view_ptr);
 
