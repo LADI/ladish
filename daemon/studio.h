@@ -74,5 +74,6 @@ void ladish_studio_room_appeared(ladish_room_handle room);
 void ladish_studio_room_disappeared(ladish_room_handle room);
 
 ladish_room_handle ladish_studio_find_room_by_uuid(const uuid_t room_uuid_ptr);
+bool ladish_studio_check_room_name(const char * room_name);
 
 #endif /* #ifndef STUDIO_H__0BEDE85E_4FB3_4D74_BC08_C373A22409C0__INCLUDED */

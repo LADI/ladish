@@ -1009,6 +1009,23 @@ ladish_room_handle ladish_studio_find_room_by_uuid(const uuid_t room_uuid_ptr)
   return NULL;
 }
 
+bool ladish_studio_check_room_name(const char * room_name)
+{
+  struct list_head * node_ptr;
+  ladish_room_handle room;
+
+  list_for_each(node_ptr, &g_studio.rooms)
+  {
+    room = ladish_room_from_list_node(node_ptr);
+    if (strcmp(ladish_room_get_name(room), room_name) == 0)
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 /**********************************************************************************/
 /*                                D-Bus methods                                   */
 /**********************************************************************************/

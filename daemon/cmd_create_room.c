@@ -28,6 +28,7 @@
 #include "studio_internal.h"
 #include "../dbus/error.h"
 #include "control.h"
+#include "../proxies/notify_proxy.h"
 
 struct ladish_command_create_room
 {
@@ -50,6 +51,12 @@ static bool run(void * cmd_context)
   if (room == NULL)
   {
     log_error("Unknown room template \"%s\"",  cmd_ptr->template_name);
+    goto fail;
+  }
+
+  if (ladish_studio_check_room_name(cmd_ptr->room_name))
+  {
+    ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Room with requested name already exists", cmd_ptr->room_name);
     goto fail;
   }
 
