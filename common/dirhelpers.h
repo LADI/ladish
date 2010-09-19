@@ -28,5 +28,6 @@
 #define DIRHELPERS_H__805193D2_2662_40FA_8814_AF8A4E08F4B0__INCLUDED
 
 bool ensure_dir_exist(const char * dirname, int mode);
+bool ensure_dir_exist_varg(int mode, ...);
 
 #endif /* #ifndef DIRHELPERS_H__805193D2_2662_40FA_8814_AF8A4E08F4B0__INCLUDED */
