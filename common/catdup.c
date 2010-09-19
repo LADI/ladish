@@ -25,6 +25,9 @@
  */
 
 #include "../common.h"
+
+#include <stdarg.h>
+
 #include "catdup.h"
 
 char * catdup(const char * s1, const char * s2)
@@ -101,6 +104,52 @@ char * catdup4(const char * s1, const char * s2, const char * s3, const char * s
   memcpy(buffer + s1_len + s2_len, s3, s3_len);
   memcpy(buffer + s1_len + s2_len + s3_len, s4, s4_len);
   buffer[s1_len + s2_len + s3_len + s4_len] = 0;
+
+  return buffer;
+}
+
+char * catdupv(const char * s1, const char * s2, ...)
+{
+  va_list ap;
+  const char * str;
+  size_t len;
+  char * buffer;
+  char * p;
+
+  len = strlen(s1) + strlen(s2);
+  va_start(ap, s2);
+  while ((str = va_arg(ap, const char *)) != NULL)
+  {
+    len += strlen(str);
+  }
+  va_end(ap);
+  len++;
+
+  buffer = malloc(len);
+  if (buffer == NULL)
+  {
+    log_error("malloc(%zu) failed.", len);
+    return NULL;
+  }
+
+  len = strlen(s1);
+  memcpy(buffer, s1, len);
+  p = buffer + len;
+
+  len = strlen(s2);
+  memcpy(p, s2, len);
+  p += len;
+
+  va_start(ap, s2);
+  while ((str = va_arg(ap, const char *)) != NULL)
+  {
+    len = strlen(str);
+    memcpy(p, str, len);
+    p += len;
+  }
+  va_end(ap);
+
+  *p = 0;
 
   return buffer;
 }
