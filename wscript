@@ -6,6 +6,7 @@ import Options
 import Utils
 import shutil
 import re
+import misc
 
 APPNAME='ladish'
 VERSION='0.3-rc'
@@ -62,6 +63,15 @@ def check_gcc_optimizations_enabled(flags):
         else:
             gcc_optimizations_enabled = flag[2] != '0';
     return gcc_optimizations_enabled
+
+def create_service_taskgen(bld, target, opath, binary):
+    obj = bld.new_task_gen('subst')
+    obj.source = os.path.join('daemon', 'dbus.service.in')
+    obj.target = target
+    obj.dict = {'dbus_object_path': opath,
+                'daemon_bin_path': os.path.join(bld.env['PREFIX'], 'bin', binary)}
+    obj.install_path = bld.env['DBUS_SERVICES_DIR'] + os.path.sep
+    obj.fun = misc.subst_func
 
 def configure(conf):
     conf.check_tool('compiler_cc')
@@ -314,14 +324,7 @@ def build(bld):
         daemon.source.append(os.path.join("common", source))
 
     # process dbus.service.in -> ladish.service
-    import misc
-    obj = bld.new_task_gen('subst')
-    obj.source = os.path.join('daemon', 'dbus.service.in')
-    obj.target = DBUS_NAME_BASE + '.service'
-    obj.dict = {'dbus_object_path': DBUS_NAME_BASE,
-                'daemon_bin_path': os.path.join(bld.env['PREFIX'], 'bin', daemon.target)}
-    obj.install_path = bld.env['DBUS_SERVICES_DIR'] + os.path.sep
-    obj.fun = misc.subst_func
+    create_service_taskgen(bld, DBUS_NAME_BASE + '.service', DBUS_NAME_BASE, daemon.target)
 
     #####################################################
     # jmcore
@@ -342,6 +345,37 @@ def build(bld):
         ]:
         jmcore.source.append(os.path.join("dbus", source))
 
+    create_service_taskgen(bld, DBUS_NAME_BASE + '.jmcore.service', DBUS_NAME_BASE + ".jmcore", jmcore.target)
+
+    #####################################################
+    # conf
+    ladiconfd = bld.new_task_gen('cc', 'program')
+    ladiconfd.target = 'ladiconfd'
+    ladiconfd.includes = "build/default" # XXX config.h version.h and other generated files
+    ladiconfd.uselib = 'DBUS-1'
+    ladiconfd.defines = ['LOG_OUTPUT_STDOUT']
+    ladiconfd.source = ['conf.c']
+
+    for source in [
+        'dirhelpers.c',
+        'catdup.c',
+        ]:
+        ladiconfd.source.append(os.path.join("common", source))
+
+    for source in [
+        'signal.c',
+        'method.c',
+        'error.c',
+        'object_path.c',
+        'interface.c',
+        'helpers.c',
+        ]:
+        ladiconfd.source.append(os.path.join("dbus", source))
+
+    create_service_taskgen(bld, DBUS_NAME_BASE + '.conf.service', DBUS_NAME_BASE + ".ladiconfd", ladiconfd.target)
+
+    #####################################################
+    # liblash
     if bld.env['BUILD_LIBLASH']:
         liblash = bld.new_task_gen('cc', 'shlib')
         liblash.includes = "build/default" # XXX config.h version.h and other generated files
@@ -364,14 +398,6 @@ def build(bld):
                     }
         obj.install_path = '${LIBDIR}/pkgconfig/'
         obj.fun = misc.subst_func
-
-    obj = bld.new_task_gen('subst')
-    obj.source = os.path.join('daemon', 'dbus.service.in')
-    obj.target = DBUS_NAME_BASE + '.jmcore.service'
-    obj.dict = {'dbus_object_path': DBUS_NAME_BASE + ".jmcore",
-                'daemon_bin_path': os.path.join(bld.env['PREFIX'], 'bin', jmcore.target)}
-    obj.install_path = bld.env['DBUS_SERVICES_DIR'] + os.path.sep
-    obj.fun = misc.subst_func
 
     #####################################################
     # pylash
