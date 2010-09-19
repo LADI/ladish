@@ -39,7 +39,7 @@
 #include "control.h"
 #include "studio.h"
 #include "../dbus_constants.h"
-#include "../catdup.h"
+#include "../common/catdup.h"
 #include "../common/dirhelpers.h"
 #include "../proxies/a2j_proxy.h"
 #include "../proxies/jmcore_proxy.h"

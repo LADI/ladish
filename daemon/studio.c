@@ -35,7 +35,7 @@
 #include "studio_internal.h"
 #include "../dbus_constants.h"
 #include "control.h"
-#include "../catdup.h"
+#include "../common/catdup.h"
 #include "../common/dirhelpers.h"
 #include "graph_dict.h"
 #include "escape.h"

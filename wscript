@@ -241,9 +241,7 @@ def build(bld):
     daemon.ver_header = 'version.h'
     daemon.env.append_value("LINKFLAGS", ["-lutil", "-ldl", "-Wl,-E"])
 
-    daemon.source = [
-        'catdup.c',
-        ]
+    daemon.source = []
 
     for source in [
         'main.c',
@@ -311,6 +309,7 @@ def build(bld):
     for source in [
         'time.c',
         'dirhelpers.c',
+        'catdup.c',
         ]:
         daemon.source.append(os.path.join("common", source))
 
@@ -397,9 +396,7 @@ def build(bld):
         gladish.includes = "build/default" # XXX config.h version.h and other generated files
         gladish.uselib = 'DBUS-1 DBUS-GLIB-1 FLOWCANVAS'
 
-        gladish.source = [
-            'catdup.c',
-            ]
+        gladish.source = []
 
         for source in [
             'main.c',
@@ -442,6 +439,11 @@ def build(bld):
             'helpers.c',
             ]:
             gladish.source.append(os.path.join("dbus", source))
+
+        for source in [
+            'catdup.c',
+            ]:
+            gladish.source.append(os.path.join("common", source))
 
         # GtkBuilder UI definitions (XML)
         bld.install_files(bld.env['DATA_DIR'], 'gui/gladish.ui')

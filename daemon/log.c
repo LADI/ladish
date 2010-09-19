@@ -32,7 +32,7 @@
 #include <stdarg.h>
 #include <sys/stat.h>
 
-#include "../catdup.h"
+#include "../common/catdup.h"
 #include "../common/dirhelpers.h"
 
 #define DEFAULT_XDG_LOG "/.log"

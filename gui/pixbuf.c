@@ -25,7 +25,7 @@
  */
 
 #include "common.h"
-#include "../catdup.h"
+#include "../common/catdup.h"
 
 static GdkPixbuf * load_pixbuf_internal(const char * directory, const char * filename)
 {

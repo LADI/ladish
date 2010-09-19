@@ -32,7 +32,7 @@
 #include <libgen.h>             /* POSIX basename() */
 
 #include "room_internal.h"
-#include "../catdup.h"
+#include "../common/catdup.h"
 #include "save.h"
 #include "../common/dirhelpers.h"
 

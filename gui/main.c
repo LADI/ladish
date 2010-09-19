@@ -31,7 +31,7 @@
 #include "../proxies/control_proxy.h"
 #include "world_tree.h"
 #include "graph_view.h"
-#include "../catdup.h"
+#include "../common/catdup.h"
 #include "../proxies/studio_proxy.h"
 #include "create_room_dialog.h"
 #include "menu.h"
