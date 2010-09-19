@@ -249,7 +249,6 @@ def build(bld):
         'main.c',
         'loader.c',
         'log.c',
-        'dirhelpers.c',
         'sigsegv.c',
         'proctitle.c',
         'appdb.c',
@@ -311,6 +310,7 @@ def build(bld):
 
     for source in [
         'time.c',
+        'dirhelpers.c',
         ]:
         daemon.source.append(os.path.join("common", source))
 

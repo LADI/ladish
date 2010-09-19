@@ -33,7 +33,7 @@
 #include <sys/stat.h>
 
 #include "../catdup.h"
-#include "dirhelpers.h"
+#include "../common/dirhelpers.h"
 
 #define DEFAULT_XDG_LOG "/.log"
 #define LADISH_XDG_SUBDIR "/" BASE_NAME
