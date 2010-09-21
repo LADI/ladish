@@ -437,6 +437,16 @@ static void conf_set(struct dbus_method_call * call_ptr)
       pair_ptr->value = buffer;
       pair_ptr->version++;
       pair_ptr->stored = false; /* mark that new value was not stored on disk yet */
+
+      dbus_signal_emit(
+        g_dbus_connection,
+        CONF_OBJECT_PATH,
+        CONF_IFACE,
+        "changed",
+        "sst",
+        &pair_ptr->key,
+        &pair_ptr->value,
+        &pair_ptr->version);
     }
     else if (!pair_ptr->stored) /* if store to disk failed last time, retry */
     {
