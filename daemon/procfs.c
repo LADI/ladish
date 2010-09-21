@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the code that interfaces procfs
@@ -69,6 +69,7 @@ procfs_get_process_file(
   if (buffer_ptr == NULL)
   {
     log_error("malloc failed to allocate buffer with size %zu", buffer_size);
+    close(fd);
     return false;
   }
 
@@ -108,22 +109,23 @@ loop:
   if (ret < 0)
   {
     ASSERT(ret == -1);
-    close(fd);
     return false;
   }
 
   if (used_size == buffer_size)
   {
-    buffer_ptr = realloc(buffer_ptr, buffer_size + 1);
-    if (buffer_ptr == NULL)
+    read_ptr = realloc(buffer_ptr, buffer_size + 1);
+    if (read_ptr == NULL)
     {
       log_error("realloc failed to allocate buffer with size %zu", buffer_size + 1);
       free(buffer_ptr);
       return false;
     }
+
+    buffer_ptr = read_ptr;
   }
 
-  buffer_ptr[buffer_size] = 0;
+  buffer_ptr[used_size] = 0;
 
   *buffer_ptr_ptr = buffer_ptr;
   *size_ptr = used_size;
