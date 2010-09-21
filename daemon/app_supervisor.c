@@ -1050,7 +1050,7 @@ METHOD_ARGS_END
 
 METHOD_ARGS_BEGIN(IsAppRunning, "Check whether application is running")
   METHOD_ARG_DESCRIBE_IN("id", DBUS_TYPE_UINT64_AS_STRING, "id of app")
-  METHOD_ARG_DESCRIBE_IN("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether app is running")
+  METHOD_ARG_DESCRIBE_OUT("running", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether app is running")
 METHOD_ARGS_END
 
 
