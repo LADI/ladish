@@ -110,7 +110,7 @@ static bool get_app_properties_from_supervisor(void * context, ladish_graph_hand
 
 #undef app_find_context_ptr
 
-static char * get_app_properties(struct virtualizer * virtualizer_ptr, uint64_t client_id, pid_t pid, ladish_graph_handle * graph_ptr, uuid_t app_uuid)
+static char * get_app_properties(struct virtualizer * virtualizer_ptr, pid_t pid, ladish_graph_handle * graph_ptr, uuid_t app_uuid)
 {
   struct app_find_context context;
 
@@ -305,7 +305,7 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
       }
       else
       {
-        app_name = get_app_properties(virtualizer_ptr, id, pid, &graph, app_uuid);
+        app_name = get_app_properties(virtualizer_ptr, pid, &graph, app_uuid);
         if (app_name != NULL)
         {
           log_info("app name is '%s'", app_name);
