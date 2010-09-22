@@ -385,6 +385,19 @@ static struct pair * find_pair(const char * key)
   return NULL;
 }
 
+static void emit_changed(struct pair * pair_ptr)
+{
+  dbus_signal_emit(
+    g_dbus_connection,
+    CONF_OBJECT_PATH,
+    CONF_IFACE,
+    "changed",
+    "sst",
+    &pair_ptr->key,
+    &pair_ptr->value,
+    &pair_ptr->version);
+}
+
 /***************************************************************************/
 /* D-Bus interface implementation */
 
@@ -420,6 +433,8 @@ static void conf_set(struct dbus_method_call * call_ptr)
       return;
     }
 
+    emit_changed(pair_ptr);
+
     store = true;
   }
   else
@@ -438,15 +453,7 @@ static void conf_set(struct dbus_method_call * call_ptr)
       pair_ptr->version++;
       pair_ptr->stored = false; /* mark that new value was not stored on disk yet */
 
-      dbus_signal_emit(
-        g_dbus_connection,
-        CONF_OBJECT_PATH,
-        CONF_IFACE,
-        "changed",
-        "sst",
-        &pair_ptr->key,
-        &pair_ptr->value,
-        &pair_ptr->version);
+      emit_changed(pair_ptr);
     }
     else if (!pair_ptr->stored) /* if store to disk failed last time, retry */
     {
