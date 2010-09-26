@@ -36,6 +36,8 @@
 #include <sys/wait.h>
 
 #include "loader.h"
+#include "../proxies/conf_proxy.h"
+#include "conf.h"
 
 #define XTERM_COMMAND_EXTENSION "&& sh || sh"
 
@@ -276,12 +278,20 @@ static void loader_exec_program(const char * commandline, const char * working_d
 
   if (run_in_terminal)
   {
-    argv[0] = "xterm";
+    if (!conf_get(LADISH_CONF_KEY_DAEMON_TERMINAL, argv))
+    {
+      argv[0] = "xterm";
+    }
+
     argv[1] = "-e";
   }
   else
   {
-    argv[0] = "sh";
+    if (!conf_get(LADISH_CONF_KEY_DAEMON_SHELL, argv))
+    {
+      argv[0] = "sh";
+    }
+
     argv[1] = "-c";
   }
 

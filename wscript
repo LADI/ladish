@@ -303,6 +303,7 @@ def build(bld):
         'a2j_proxy.c',
         "jmcore_proxy.c",
         "notify_proxy.c",
+        "conf_proxy.c",
         ]:
         daemon.source.append(os.path.join("proxies", source))
 
