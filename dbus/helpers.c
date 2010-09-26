@@ -417,7 +417,7 @@ dbus_call(
 
   if (reply_ptr == NULL)
   {
-    log_error("calling method '%s' failed, error is '%s'", method, g_dbus_error.message);
+    //log_error("calling method '%s' failed, error is '%s'", method, g_dbus_error.message);
     dbus_error_free(&g_dbus_error);
     goto fail;
   }
