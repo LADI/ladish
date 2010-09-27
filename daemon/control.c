@@ -33,6 +33,8 @@
 #include "cmd.h"
 #include "room.h"
 #include "../lib/wkports.h"
+#include "../proxies/conf_proxy.h"
+#include "conf.h"
 
 #define INTERFACE_NAME IFACE_CONTROL
 
@@ -625,6 +627,7 @@ fail:
 static void ladish_load_studio(struct dbus_method_call * call_ptr)
 {
   const char * name;
+  bool autostart;
 
   dbus_error_init(&g_dbus_error);
 
@@ -637,7 +640,17 @@ static void ladish_load_studio(struct dbus_method_call * call_ptr)
 
   log_info("Load studio request (%s)", name);
 
-  if (ladish_command_load_studio(call_ptr, ladish_studio_get_cmd_queue(), name))
+  if (!conf_get_bool(LADISH_CONF_KEY_DAEMON_STUDIO_AUTOSTART, &autostart))
+  {
+    autostart = LADISH_CONF_KEY_DAEMON_STUDIO_AUTOSTART_DEFAULT;
+  }
+
+  if (autostart)
+  {
+    log_info("Studio will be autostarted upon load");
+  }
+
+  if (ladish_command_load_studio(call_ptr, ladish_studio_get_cmd_queue(), name, autostart))
   {
     method_return_new_void(call_ptr);
   }

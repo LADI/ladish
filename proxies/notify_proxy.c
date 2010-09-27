@@ -58,6 +58,7 @@ bool ladish_notify_init(const char * app_name)
 void ladish_notify_uninit(void)
 {
   free(g_notify_app_name);
+  g_notify_app_name = NULL;
 }
 
 void ladish_notify_simple(uint8_t urgency, const char * summary, const char * body)
@@ -70,6 +71,12 @@ void ladish_notify_simple(uint8_t urgency, const char * summary, const char * bo
   const char * str_value;
   uint32_t uint32_value;
   int32_t int32_value;
+
+  if (g_notify_app_name == NULL)
+  {
+    /* notifications are disabled */
+    return;
+  }
 
   request_ptr = dbus_message_new_method_call(NOTIFY_SERVICE, NOTIFY_OBJECT, NOTIFY_IFACE, NOTIFY_METHOD_NOTIFY);
   if (request_ptr == NULL)

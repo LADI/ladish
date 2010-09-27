@@ -28,7 +28,7 @@
 
 #include "load_project_dialog.h"
 #include "gtk_builder.h"
-#include "../catdup.h"
+#include "../common/catdup.h"
 
 enum
 {

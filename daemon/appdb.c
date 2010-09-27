@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009,2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains code of the application database
@@ -32,7 +32,7 @@
 
 #include "appdb.h"
 #include "../log.h"
-#include "../catdup.h"
+#include "../common/catdup.h"
 #include "../assert.h"
 
 void

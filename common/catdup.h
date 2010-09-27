@@ -2,10 +2,10 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains the code that implements pixel buffer helper functionality
+ * This file contains prototype of the catdup() function
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -24,41 +24,12 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "common.h"
-#include "../common/catdup.h"
+#ifndef CATDUP_H__D42302F1_4D96_4EE4_AC09_E97ED5748277__INCLUDED
+#define CATDUP_H__D42302F1_4D96_4EE4_AC09_E97ED5748277__INCLUDED
 
-static GdkPixbuf * load_pixbuf_internal(const char * directory, const char * filename)
-{
-  char * fullpath;
-  GdkPixbuf * pixbuf;
+char * catdup(const char * s1, const char * s2);
+char * catdup3(const char * s1, const char * s2, const char * s3);
+char * catdup4(const char * s1, const char * s2, const char * s3, const char * s4);
+char * catdupv(const char * s1, const char * s2, ...);
 
-  fullpath = catdup(directory, filename);
-  if (fullpath == NULL)
-  {
-    return NULL;
-  }
-
-  pixbuf = gdk_pixbuf_new_from_file(fullpath, NULL);
-
-  free(fullpath);
-
-  return pixbuf;
-}
-
-GdkPixbuf * load_pixbuf(const char * filename)
-{
-  GdkPixbuf * pixbuf;
-  static const char * pixbuf_dirs[] = {"./art/", DATA_DIR "/", NULL};
-  const char ** dir;
-
-  for (dir = pixbuf_dirs; *dir != NULL; dir++)
-  {
-    pixbuf = load_pixbuf_internal(*dir, filename);
-    if (pixbuf != NULL)
-    {
-      return pixbuf;
-    }
-  }
-
-  return NULL;
-}
+#endif /* #ifndef CATDUP_H__D42302F1_4D96_4EE4_AC09_E97ED5748277__INCLUDED */

@@ -62,7 +62,7 @@ void ladish_cqueue_clear(struct ladish_cqueue * queue_ptr);
 void * ladish_command_new(size_t size);
 
 bool ladish_command_new_studio(void * call_ptr, struct ladish_cqueue * queue_ptr, const char * studio_name);
-bool ladish_command_load_studio(void * call_ptr, struct ladish_cqueue * queue_ptr, const char * studio_name);
+bool ladish_command_load_studio(void * call_ptr, struct ladish_cqueue * queue_ptr, const char * studio_name, bool autostart);
 bool ladish_command_rename_studio(void * call_ptr, struct ladish_cqueue * queue_ptr, const char * studio_name);
 bool ladish_command_save_studio(void * call_ptr, struct ladish_cqueue * queue_ptr, const char * new_studio_name);
 bool ladish_command_start_studio(void * call_ptr, struct ladish_cqueue * queue_ptr);

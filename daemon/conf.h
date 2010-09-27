@@ -2,10 +2,10 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains prototype of the catdup() function
+ * This file contains defines for conf keys
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -24,11 +24,17 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef CATDUP_H__D42302F1_4D96_4EE4_AC09_E97ED5748277__INCLUDED
-#define CATDUP_H__D42302F1_4D96_4EE4_AC09_E97ED5748277__INCLUDED
+#ifndef CONF_H__795797BE_4EB8_44F8_BD9C_B8A9CB975228__INCLUDED
+#define CONF_H__795797BE_4EB8_44F8_BD9C_B8A9CB975228__INCLUDED
 
-char * catdup(const char * s1, const char * s2);
-char * catdup3(const char * s1, const char * s2, const char * s3);
-char * catdup4(const char * s1, const char * s2, const char * s3, const char * s4);
+#define LADISH_CONF_KEY_DAEMON_NOTIFY             "/org/ladish/daemon/notify"
+#define LADISH_CONF_KEY_DAEMON_SHELL              "/org/ladish/daemon/shell"
+#define LADISH_CONF_KEY_DAEMON_TERMINAL           "/org/ladish/daemon/terminal"
+#define LADISH_CONF_KEY_DAEMON_STUDIO_AUTOSTART   "/org/ladish/daemon/studio_autostart"
 
-#endif /* #ifndef CATDUP_H__D42302F1_4D96_4EE4_AC09_E97ED5748277__INCLUDED */
+#define LADISH_CONF_KEY_DAEMON_NOTIFY_DEFAULT             true
+#define LADISH_CONF_KEY_DAEMON_SHELL_DEFAULT              "sh"
+#define LADISH_CONF_KEY_DAEMON_TERMINAL_DEFAULT           "xterm"
+#define LADISH_CONF_KEY_DAEMON_STUDIO_AUTOSTART_DEFAULT   true
+
+#endif /* #ifndef CONF_H__795797BE_4EB8_44F8_BD9C_B8A9CB975228__INCLUDED */

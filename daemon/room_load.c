@@ -32,7 +32,7 @@
 #include <expat.h>
 
 #include "room_internal.h"
-#include "../catdup.h"
+#include "../common/catdup.h"
 #include "load.h"
 #include "../proxies/notify_proxy.h"
 #include "escape.h"

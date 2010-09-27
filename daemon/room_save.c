@@ -32,9 +32,9 @@
 #include <libgen.h>             /* POSIX basename() */
 
 #include "room_internal.h"
-#include "../catdup.h"
+#include "../common/catdup.h"
 #include "save.h"
-#include "dirhelpers.h"
+#include "../common/dirhelpers.h"
 
 #define PROJECT_HEADER_TEXT BASE_NAME " Project.\n"
 

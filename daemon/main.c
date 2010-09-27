@@ -39,16 +39,19 @@
 #include "control.h"
 #include "studio.h"
 #include "../dbus_constants.h"
-#include "../catdup.h"
-#include "dirhelpers.h"
+#include "../common/catdup.h"
+#include "../common/dirhelpers.h"
 #include "../proxies/a2j_proxy.h"
 #include "../proxies/jmcore_proxy.h"
 #include "../proxies/notify_proxy.h"
+#include "../proxies/conf_proxy.h"
+#include "conf.h"
 
 bool g_quit;
 const char * g_dbus_unique_name;
 dbus_object_path g_control_object;
 char * g_base_dir;
+static bool g_use_notify = false;
 
 #if 0
 static DBusHandlerResult lashd_client_disconnect_handler(DBusConnection * connection, DBusMessage * message, void * data)
@@ -244,6 +247,37 @@ void uninit_paths(void)
   free(g_base_dir);
 }
 
+static void on_conf_notify_changed(void * context, const char * key, const char * value)
+{
+  bool notify_enable;
+
+  if (value == NULL)
+  {
+    notify_enable = LADISH_CONF_KEY_DAEMON_NOTIFY_DEFAULT;
+  }
+  else
+  {
+    notify_enable = conf_string2bool(value);
+  }
+
+  if (notify_enable)
+  {
+    if (!g_use_notify)
+    {
+      g_use_notify = ladish_notify_init("LADI Session Handler");
+    }
+  }
+  else
+  {
+    log_info("Sending notifications is disabled");
+    if (g_use_notify)
+    {
+      ladish_notify_uninit();
+      g_use_notify = false;
+    }
+  }
+}
+
 int main(int argc, char ** argv, char ** envp)
 {
   struct stat st;
@@ -294,14 +328,34 @@ int main(int argc, char ** argv, char ** envp)
   /* setup our SIGSEGV magic that prints nice stack in our logfile */ 
   setup_sigsegv();
 
-  if (!ladish_notify_init("LADI Session Handler"))
+  if (!conf_proxy_init())
   {
     goto uninit_dbus;
   }
 
+  if (!conf_register(LADISH_CONF_KEY_DAEMON_NOTIFY, on_conf_notify_changed, NULL))
+  {
+    goto uninit_conf;
+  }
+
+  if (!conf_register(LADISH_CONF_KEY_DAEMON_SHELL, NULL, NULL))
+  {
+    goto uninit_conf;
+  }
+
+  if (!conf_register(LADISH_CONF_KEY_DAEMON_TERMINAL, NULL, NULL))
+  {
+    goto uninit_conf;
+  }
+
+  if (!conf_register(LADISH_CONF_KEY_DAEMON_STUDIO_AUTOSTART, NULL, NULL))
+  {
+    goto uninit_conf;
+  }
+
   if (!a2j_proxy_init())
   {
-    goto uninit_notify;
+    goto uninit_conf;
   }
 
   if (!jmcore_proxy_init())
@@ -338,8 +392,13 @@ uninit_jmcore:
 uninit_a2j:
   a2j_proxy_uninit();
 
-uninit_notify:
-  ladish_notify_uninit();
+uninit_conf:
+  if (g_use_notify)
+  {
+    ladish_notify_uninit();
+  }
+
+  conf_proxy_uninit();
 
 uninit_dbus:
   disconnect_dbus();

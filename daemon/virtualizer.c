@@ -31,7 +31,7 @@
 #include "procfs.h"
 #include "app_supervisor.h"
 #include "studio_internal.h"
-#include "../catdup.h"
+#include "../common/catdup.h"
 #include "room.h"
 #include "studio.h"
 

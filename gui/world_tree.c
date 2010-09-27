@@ -27,7 +27,7 @@
 #include "common.h"
 #include "world_tree.h"
 #include "gtk_builder.h"
-#include "../catdup.h"
+#include "../common/catdup.h"
 #include "menu.h"
 
 enum entry_type

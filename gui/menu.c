@@ -44,6 +44,7 @@ static GtkWidget * g_menu_item_save_project;
 static GtkWidget * g_menu_item_save_as_project;
 static GtkWidget * g_menu_item_daemon_exit;
 static GtkWidget * g_menu_item_jack_configure;
+static GtkWidget * g_menu_item_settings;
 static GtkCheckMenuItem * g_menu_item_jack_latency_32;
 static GtkCheckMenuItem * g_menu_item_jack_latency_64;
 static GtkCheckMenuItem * g_menu_item_jack_latency_128;
@@ -99,6 +100,7 @@ void menu_init(void)
   g_menu_item_save_as_project = get_gtk_builder_widget("menu_item_save_as_project");
   g_menu_item_daemon_exit = get_gtk_builder_widget("menu_item_daemon_exit");
   g_menu_item_jack_configure = get_gtk_builder_widget("menu_item_jack_configure");
+  g_menu_item_settings = get_gtk_builder_widget("menu_item_settings");
   g_menu_item_view_toolbar = get_gtk_builder_widget("menu_item_view_toolbar");
   g_menu_item_view_raw_jack = get_gtk_builder_widget("menu_item_view_raw_jack");
 
@@ -124,6 +126,7 @@ void menu_init(void)
   g_signal_connect(G_OBJECT(g_menu_item_rename_studio), "activate", G_CALLBACK(menu_request_rename_studio), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_daemon_exit), "activate", G_CALLBACK(menu_request_daemon_exit), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_jack_configure), "activate", G_CALLBACK(menu_request_jack_configure), NULL);
+  g_signal_connect(G_OBJECT(g_menu_item_settings), "activate", G_CALLBACK(menu_request_settings), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_start_app), "activate", G_CALLBACK(menu_request_start_app), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_create_room), "activate", G_CALLBACK(menu_request_create_room), NULL);
   g_signal_connect(G_OBJECT(g_menu_item_destroy_room), "activate", G_CALLBACK(menu_request_destroy_room), NULL);
@@ -215,6 +218,11 @@ bool menu_set_jack_latency(uint32_t buffer_size, bool force)
   }
 
   return true;
+}
+
+void menu_set_toolbar_visibility(bool visible)
+{
+  gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(g_menu_item_view_toolbar), visible);
 }
 
 void menu_view_activated(bool room)

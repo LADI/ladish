@@ -31,8 +31,9 @@
 #include "../proxies/control_proxy.h"
 #include "world_tree.h"
 #include "graph_view.h"
-#include "../catdup.h"
+#include "../common/catdup.h"
 #include "../proxies/studio_proxy.h"
+#include "../proxies/conf_proxy.h"
 #include "create_room_dialog.h"
 #include "menu.h"
 #include "about.h"
@@ -40,9 +41,12 @@
 #include "action.h"
 #include "studio.h"
 #include "jack.h"
+#include "../daemon/conf.h"
 
 GtkWidget * g_main_win;
 GtkWidget * g_toolbar;
+
+#define LADISH_CONF_KEY_GLADISH_TOOLBAR_VISIBILITY "/org/ladish/gladish/toolbar_visibility"
 
 void
 set_main_window_title(
@@ -85,11 +89,45 @@ void menu_request_toggle_toolbar(bool visible)
   {
 		gtk_widget_hide(g_toolbar);
   }
+
+  conf_set_bool(LADISH_CONF_KEY_GLADISH_TOOLBAR_VISIBILITY, visible);
+}
+
+void on_dbus_toggle_toobar(void * context, const char * key, const char * value)
+{
+  bool toolbar_visible;
+
+  if (value == NULL)
+  {
+    toolbar_visible = false;
+  }
+  else
+  {
+    toolbar_visible = conf_string2bool(value);
+  }
+
+  if (toolbar_visible)
+  {
+    gtk_widget_show(g_toolbar);
+  }
+  else
+  {
+    gtk_widget_hide(g_toolbar);
+  }
+
+  menu_set_toolbar_visibility(toolbar_visible);
 }
 
 int main(int argc, char** argv)
 {
   gtk_init(&argc, &argv);
+
+  dbus_init();
+
+  if (!conf_proxy_init())
+  {
+    return 1;
+  }
 
   if (!canvas_init())
   {
@@ -122,7 +160,30 @@ int main(int argc, char** argv)
   menu_init();
   buffer_size_clear();
 
-  dbus_init();
+  if (!conf_register(LADISH_CONF_KEY_GLADISH_TOOLBAR_VISIBILITY, on_dbus_toggle_toobar, NULL))
+  {
+    return 1;
+  }
+
+  if (!conf_register(LADISH_CONF_KEY_DAEMON_NOTIFY, NULL, NULL))
+  {
+    return 1;
+  }
+
+  if (!conf_register(LADISH_CONF_KEY_DAEMON_SHELL, NULL, NULL))
+  {
+    return 1;
+  }
+
+  if (!conf_register(LADISH_CONF_KEY_DAEMON_TERMINAL, NULL, NULL))
+  {
+    return 1;
+  }
+
+  if (!conf_register(LADISH_CONF_KEY_DAEMON_STUDIO_AUTOSTART, NULL, NULL))
+  {
+    return 1;
+  }
 
   if (!init_jack())
   {
@@ -154,9 +215,11 @@ int main(int argc, char** argv)
   studio_proxy_uninit();
   control_proxy_uninit();
   uninit_jack();
-  dbus_uninit();
   create_room_dialog_uninit();
   uninit_gtk_builder();
+
+  conf_proxy_uninit();
+  dbus_uninit();
 
   return 0;
 }

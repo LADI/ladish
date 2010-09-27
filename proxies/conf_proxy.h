@@ -2,10 +2,10 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains implementation of the directory helper functions
+ * This file contains interface to code that interfaces ladiconfd through D-Bus
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -24,43 +24,27 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#ifndef CONF_PROXY_H__D45503B2_D49C_46BF_86F7_9A531B819B6B__INCLUDED
+#define CONF_PROXY_H__D45503B2_D49C_46BF_86F7_9A531B819B6B__INCLUDED
+
 #include "common.h"
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
+bool conf_proxy_init(void);
+void conf_proxy_uninit(void);
 
 bool
-ensure_dir_exist(
-  const char * dirname,
-  int mode)
-{
-  struct stat st;
-  if (stat(dirname, &st) != 0)
-  {
-    if (errno == ENOENT)
-    {
-      log_info("Directory \"%s\" does not exist. Creating...", dirname);
-      if (mkdir(dirname, mode) != 0)
-      {
-        log_error("Failed to create \"%s\" directory: %d (%s)", dirname, errno, strerror(errno));
-        return false;
-      }
-    }
-    else
-    {
-      log_error("Failed to stat \"%s\": %d (%s)", dirname, errno, strerror(errno));
-      return false;
-    }
-  }
-  else
-  {
-    if (!S_ISDIR(st.st_mode))
-    {
-      log_error("\"%s\" exists but is not directory.", dirname);
-      return false;
-    }
-  }
+conf_register(
+  const char * key,
+  void (* callback)(void * context, const char * key, const char * value),
+  void * callback_context);
 
-  return true;
-}
+bool conf_set(const char * key, const char * value);
+bool conf_get(const char * key, const char ** value_ptr);
+
+bool conf_string2bool(const char * value);
+const char * conf_bool2string(bool value);
+
+bool conf_set_bool(const char * key, bool value);
+bool conf_get_bool(const char * key, bool * value_ptr);
+
+#endif /* #ifndef CONF_PROXY_H__D45503B2_D49C_46BF_86F7_9A531B819B6B__INCLUDED */

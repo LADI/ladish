@@ -30,7 +30,7 @@
 #include "world_tree.h"
 #include "menu.h"
 #include "../proxies/room_proxy.h"
-#include "../catdup.h"
+#include "../common/catdup.h"
 
 struct graph_view
 {

@@ -957,7 +957,7 @@ static void destructor(void * command_context)
 
 #undef cmd_ptr
 
-bool ladish_command_load_studio(void * call_ptr, struct ladish_cqueue * queue_ptr, const char * studio_name)
+bool ladish_command_load_studio(void * call_ptr, struct ladish_cqueue * queue_ptr, const char * studio_name, bool autostart)
 {
   struct ladish_command_load_studio * cmd_ptr;
   char * studio_name_dup;
@@ -991,9 +991,12 @@ bool ladish_command_load_studio(void * call_ptr, struct ladish_cqueue * queue_pt
     goto fail_destroy_command;
   }
 
-  if (!ladish_command_start_studio(call_ptr, queue_ptr))
+  if (autostart)
   {
-    goto fail_drop_load_command;
+    if (!ladish_command_start_studio(call_ptr, queue_ptr))
+    {
+      goto fail_drop_load_command;
+    }
   }
 
   return true;
