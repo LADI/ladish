@@ -66,7 +66,7 @@ static struct pair * find_pair(const char * key)
   return NULL;
 }
 
-static void on_value_changed(struct pair * pair_ptr, const char * value, uint64_t version)
+static void on_value_changed(struct pair * pair_ptr, const char * value, uint64_t version, bool announce)
 {
   size_t len;
 
@@ -89,7 +89,7 @@ static void on_value_changed(struct pair * pair_ptr, const char * value, uint64_
     }
   }
 
-  if (pair_ptr->callback != NULL)
+  if (announce && pair_ptr->callback != NULL)
   {
     pair_ptr->callback(pair_ptr->callback_context, pair_ptr->key, value);
   }
@@ -156,7 +156,7 @@ static void on_conf_changed(void * context, DBusMessage * message_ptr)
     return;
   }
 
-  on_value_changed(pair_ptr, value, version);
+  on_value_changed(pair_ptr, value, version, true);
 }
 
 /* this must be static because it is referenced by the
@@ -278,18 +278,22 @@ bool conf_set(const char * key, const char * value)
   uint64_t version;
   struct pair * pair_ptr;
 
+  pair_ptr = find_pair(key);
+  if (pair_ptr != NULL && pair_ptr->value != NULL && strcmp(value, pair_ptr->value) == 0)
+  {
+    return true;                /* not changed */
+  }
+
   if (!dbus_call(CONF_SERVICE_NAME, CONF_OBJECT_PATH, CONF_IFACE, "set", "ss", &key, &value, "t", &version))
   {
     log_error("conf::set() failed.");
     return false;
   }
 
-  /* this is not strictly required because if there is a registered pair,
-     we should catch the "changed" signal for it */
-  pair_ptr = find_pair(key);
-  if (pair_ptr != NULL && strcmp(value, pair_ptr->value) == 0)
+  if (pair_ptr != NULL && pair_ptr->value != NULL && strcmp(value, pair_ptr->value) != 0)
   {
-    on_value_changed(pair_ptr, value, version);
+    /* record the new version and dont call the callback */
+    on_value_changed(pair_ptr, value, version, false);
   }
 
   return true;
