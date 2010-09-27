@@ -373,7 +373,7 @@ def build(bld):
         ]:
         ladiconfd.source.append(os.path.join("dbus", source))
 
-    create_service_taskgen(bld, DBUS_NAME_BASE + '.conf.service', DBUS_NAME_BASE + ".ladiconfd", ladiconfd.target)
+    create_service_taskgen(bld, DBUS_NAME_BASE + '.conf.service', DBUS_NAME_BASE + ".conf", ladiconfd.target)
 
     #####################################################
     # liblash
