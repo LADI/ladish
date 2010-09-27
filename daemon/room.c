@@ -553,6 +553,8 @@ bool ladish_room_start(ladish_room_handle room_handle, ladish_virtualizer_handle
   ladish_virtualizer_set_graph_connection_handlers(virtualizer, room_ptr->graph);
   room_ptr->started = true;
 
+  ladish_app_supervisor_autorun(room_ptr->app_supervisor);
+
   return true;
 }
 
