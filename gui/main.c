@@ -42,11 +42,9 @@
 #include "studio.h"
 #include "jack.h"
 #include "../daemon/conf.h"
+#include "toolbar.h"
 
 GtkWidget * g_main_win;
-GtkWidget * g_toolbar;
-
-#define LADISH_CONF_KEY_GLADISH_TOOLBAR_VISIBILITY "/org/ladish/gladish/toolbar_visibility"
 
 void
 set_main_window_title(
@@ -79,45 +77,6 @@ void arrange(void)
   }
 }
 
-void menu_request_toggle_toolbar(bool visible)
-{
-	if (visible)
-  {
-		gtk_widget_show(g_toolbar);
-  }
-	else
-  {
-		gtk_widget_hide(g_toolbar);
-  }
-
-  conf_set_bool(LADISH_CONF_KEY_GLADISH_TOOLBAR_VISIBILITY, visible);
-}
-
-void on_dbus_toggle_toobar(void * context, const char * key, const char * value)
-{
-  bool toolbar_visible;
-
-  if (value == NULL)
-  {
-    toolbar_visible = false;
-  }
-  else
-  {
-    toolbar_visible = conf_string2bool(value);
-  }
-
-  if (toolbar_visible)
-  {
-    gtk_widget_show(g_toolbar);
-  }
-  else
-  {
-    gtk_widget_hide(g_toolbar);
-  }
-
-  menu_set_toolbar_visibility(toolbar_visible);
-}
-
 int main(int argc, char** argv)
 {
   gtk_init(&argc, &argv);
@@ -141,7 +100,6 @@ int main(int argc, char** argv)
   }
 
   g_main_win = get_gtk_builder_widget("main_win");
-  g_toolbar = get_gtk_builder_widget("toolbar");
 
   init_dialogs();
 
@@ -160,7 +118,7 @@ int main(int argc, char** argv)
   menu_init();
   buffer_size_clear();
 
-  if (!conf_register(LADISH_CONF_KEY_GLADISH_TOOLBAR_VISIBILITY, on_dbus_toggle_toobar, NULL))
+  if (!toolbar_init())
   {
     return 1;
   }
