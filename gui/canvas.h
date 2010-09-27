@@ -78,10 +78,18 @@ void
 canvas_scroll_to_center(
   canvas_handle canvas);
 
+double
+canvas_get_zoom(
+  canvas_handle canvas);
+
 void
 canvas_set_zoom(
   canvas_handle canvas,
   double pix_per_unit);
+
+void
+canvas_set_zoom_fit(
+  canvas_handle canvas);
 
 void
 canvas_arrange(

@@ -450,6 +450,7 @@ def build(bld):
             'statusbar.c',
             'action.c',
             'settings.c',
+            'zoom.c',
             ]:
             gladish.source.append(os.path.join("gui", source))
 

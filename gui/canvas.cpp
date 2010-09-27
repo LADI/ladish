@@ -249,12 +249,26 @@ canvas_scroll_to_center(
   }
 }
 
+double
+canvas_get_zoom(
+  canvas_handle canvas)
+{
+  return canvas_ptr->get()->get_zoom();
+}
+
 void
 canvas_set_zoom(
   canvas_handle canvas,
   double pix_per_unit)
 {
   canvas_ptr->get()->set_zoom(pix_per_unit);
+}
+
+void
+canvas_set_zoom_fit(
+  canvas_handle canvas)
+{
+  canvas_ptr->get()->zoom_full();
 }
 
 void

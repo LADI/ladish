@@ -28,8 +28,13 @@
 #include "action.h"
 #include "gtk_builder.h"
 #include "jack.h"
+#include "zoom.h"
 
 GtkAction * g_clear_xruns_and_max_dsp_action;
+GtkAction * g_zoom_100_action;
+GtkAction * g_zoom_fit_action;
+GtkAction * g_zoom_in_action;
+GtkAction * g_zoom_out_action;
 
 void init_actions_and_accelerators(void)
 {
@@ -39,6 +44,18 @@ void init_actions_and_accelerators(void)
   g_clear_xruns_and_max_dsp_action = GTK_ACTION(get_gtk_builder_object("clear_xruns_and_max_dsp_load_action"));
   g_signal_connect(G_OBJECT(g_clear_xruns_and_max_dsp_action), "activate", G_CALLBACK(clear_xruns_and_max_dsp), NULL);
 
+  g_zoom_100_action = GTK_ACTION(get_gtk_builder_object("zoom_100_action"));
+  g_signal_connect(G_OBJECT(g_zoom_100_action), "activate", G_CALLBACK(zoom_100), NULL);
+
+  g_zoom_fit_action = GTK_ACTION(get_gtk_builder_object("zoom_fit_action"));
+  g_signal_connect(G_OBJECT(g_zoom_fit_action), "activate", G_CALLBACK(zoom_fit), NULL);
+
+  g_zoom_in_action = GTK_ACTION(get_gtk_builder_object("zoom_in_action"));
+  g_signal_connect(G_OBJECT(g_zoom_in_action), "activate", G_CALLBACK(zoom_in), NULL);
+
+  g_zoom_out_action = GTK_ACTION(get_gtk_builder_object("zoom_out_action"));
+  g_signal_connect(G_OBJECT(g_zoom_out_action), "activate", G_CALLBACK(zoom_out), NULL);
+
   struct
   {
     GtkAction * action_ptr;
@@ -46,6 +63,10 @@ void init_actions_and_accelerators(void)
   } * descriptor_ptr, descriptors [] =
       {
         {g_clear_xruns_and_max_dsp_action, "c"},
+        {g_zoom_in_action, "<Control>plus"},
+        {g_zoom_out_action, "<Control>minus"},
+        {g_zoom_100_action, "<Control>0"},
+        {g_zoom_fit_action, "<Control>equal"},
         {NULL, NULL}
       };
 
