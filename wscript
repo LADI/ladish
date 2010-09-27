@@ -458,6 +458,7 @@ def build(bld):
             'control_proxy.c',
             'app_supervisor_proxy.c',
             "room_proxy.c",
+            "conf_proxy.c",
             ]:
             gladish.source.append(os.path.join("proxies", source))
 

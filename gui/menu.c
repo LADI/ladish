@@ -217,6 +217,11 @@ bool menu_set_jack_latency(uint32_t buffer_size, bool force)
   return true;
 }
 
+void menu_set_toolbar_visibility(bool visible)
+{
+  gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(g_menu_item_view_toolbar), visible);
+}
+
 void menu_view_activated(bool room)
 {
   gtk_widget_set_sensitive(g_menu_item_destroy_room, room);
