@@ -448,6 +448,7 @@ def build(bld):
             'room.c',
             'statusbar.c',
             'action.c',
+            'settings.c',
             ]:
             gladish.source.append(os.path.join("gui", source))
 

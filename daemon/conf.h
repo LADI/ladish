@@ -32,4 +32,9 @@
 #define LADISH_CONF_KEY_DAEMON_TERMINAL           "/org/ladish/daemon/terminal"
 #define LADISH_CONF_KEY_DAEMON_STUDIO_AUTOSTART   "/org/ladish/daemon/studio_autostart"
 
+#define LADISH_CONF_KEY_DAEMON_NOTIFY_DEFAULT             true
+#define LADISH_CONF_KEY_DAEMON_SHELL_DEFAULT              "sh"
+#define LADISH_CONF_KEY_DAEMON_TERMINAL_DEFAULT           "xterm"
+#define LADISH_CONF_KEY_DAEMON_STUDIO_AUTOSTART_DEFAULT   true
+
 #endif /* #ifndef CONF_H__795797BE_4EB8_44F8_BD9C_B8A9CB975228__INCLUDED */

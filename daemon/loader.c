@@ -280,7 +280,7 @@ static void loader_exec_program(const char * commandline, const char * working_d
   {
     if (!conf_get(LADISH_CONF_KEY_DAEMON_TERMINAL, argv))
     {
-      argv[0] = "xterm";
+      argv[0] = LADISH_CONF_KEY_DAEMON_TERMINAL_DEFAULT;
     }
 
     argv[1] = "-e";
@@ -289,7 +289,7 @@ static void loader_exec_program(const char * commandline, const char * working_d
   {
     if (!conf_get(LADISH_CONF_KEY_DAEMON_SHELL, argv))
     {
-      argv[0] = "sh";
+      argv[0] = LADISH_CONF_KEY_DAEMON_SHELL_DEFAULT;
     }
 
     argv[1] = "-c";

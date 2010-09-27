@@ -41,6 +41,7 @@
 #include "action.h"
 #include "studio.h"
 #include "jack.h"
+#include "../daemon/conf.h"
 
 GtkWidget * g_main_win;
 GtkWidget * g_toolbar;
@@ -160,6 +161,26 @@ int main(int argc, char** argv)
   buffer_size_clear();
 
   if (!conf_register(LADISH_CONF_KEY_GLADISH_TOOLBAR_VISIBILITY, on_dbus_toggle_toobar, NULL))
+  {
+    return 1;
+  }
+
+  if (!conf_register(LADISH_CONF_KEY_DAEMON_NOTIFY, NULL, NULL))
+  {
+    return 1;
+  }
+
+  if (!conf_register(LADISH_CONF_KEY_DAEMON_SHELL, NULL, NULL))
+  {
+    return 1;
+  }
+
+  if (!conf_register(LADISH_CONF_KEY_DAEMON_TERMINAL, NULL, NULL))
+  {
+    return 1;
+  }
+
+  if (!conf_register(LADISH_CONF_KEY_DAEMON_STUDIO_AUTOSTART, NULL, NULL))
   {
     return 1;
   }

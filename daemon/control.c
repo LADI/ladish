@@ -642,7 +642,7 @@ static void ladish_load_studio(struct dbus_method_call * call_ptr)
 
   if (!conf_get_bool(LADISH_CONF_KEY_DAEMON_STUDIO_AUTOSTART, &autostart))
   {
-    autostart = true;
+    autostart = LADISH_CONF_KEY_DAEMON_STUDIO_AUTOSTART_DEFAULT;
   }
 
   if (autostart)

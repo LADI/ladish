@@ -39,6 +39,7 @@ void fill_view_popup_menu(GtkMenu * menu, graph_view_handle view);
 
 void menu_request_daemon_exit(void);
 void menu_request_jack_configure(void);
+void menu_request_settings(void);
 void menu_request_save_studio(void);
 void menu_request_save_as_studio(void);
 void menu_request_new_studio(void);

@@ -249,7 +249,18 @@ void uninit_paths(void)
 
 static void on_conf_notify_changed(void * context, const char * key, const char * value)
 {
-  if (value == NULL || conf_string2bool(value))
+  bool notify_enable;
+
+  if (value == NULL)
+  {
+    notify_enable = LADISH_CONF_KEY_DAEMON_NOTIFY_DEFAULT;
+  }
+  else
+  {
+    notify_enable = conf_string2bool(value);
+  }
+
+  if (notify_enable)
   {
     if (!g_use_notify)
     {
