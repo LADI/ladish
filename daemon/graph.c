@@ -1611,7 +1611,9 @@ ladish_client_handle ladish_graph_find_client_by_app(ladish_graph_handle graph_h
   list_for_each(node_ptr, &graph_ptr->clients)
   {
     client_ptr = list_entry(node_ptr, struct ladish_graph_client, siblings);
-    ladish_client_get_app(client_ptr->client, current_uuid);
+    if(! ladish_client_get_app(client_ptr->client, current_uuid))
+      continue;
+
     if (uuid_compare(current_uuid, app_uuid) == 0)
     {
       return client_ptr->client;
