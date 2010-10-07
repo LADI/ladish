@@ -9,7 +9,6 @@
     <child>
       <object class="GtkVBox" id="main_vbox">
         <property name="visible">True</property>
-        <property name="orientation">vertical</property>
         <child>
           <object class="GtkMenuBar" id="menubar">
             <property name="visible">True</property>
@@ -288,6 +287,7 @@
                         <property name="visible">True</property>
                         <property name="related_action">zoom_in_action</property>
                         <property name="use_action_appearance">True</property>
+                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
                     </child>
@@ -296,6 +296,7 @@
                         <property name="visible">True</property>
                         <property name="related_action">zoom_out_action</property>
                         <property name="use_action_appearance">True</property>
+                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
                     </child>
@@ -304,6 +305,7 @@
                         <property name="visible">True</property>
                         <property name="related_action">zoom_100_action</property>
                         <property name="use_action_appearance">True</property>
+                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
                     </child>
@@ -312,6 +314,7 @@
                         <property name="visible">True</property>
                         <property name="related_action">zoom_fit_action</property>
                         <property name="use_action_appearance">True</property>
+                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                       </object>
                     </child>
@@ -508,8 +511,8 @@
             <child>
               <object class="GtkToolButton" id="clear_load_button">
                 <property name="visible">True</property>
-                <property name="related_action">clear_xruns_and_max_dsp_load_action</property>
                 <property name="use_action_appearance">True</property>
+                <property name="related_action">clear_xruns_and_max_dsp_load_action</property>
                 <property name="label" translatable="yes">Clear XRuns</property>
               </object>
               <packing>
@@ -519,8 +522,8 @@
             </child>
             <child>
               <object class="GtkToolButton" id="zoom_in_button">
-                <property name="related_action">zoom_in_action</property>
                 <property name="use_action_appearance">True</property>
+                <property name="related_action">zoom_in_action</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -529,8 +532,8 @@
             </child>
             <child>
               <object class="GtkToolButton" id="zoom_out_button">
-                <property name="related_action">zoom_out_action</property>
                 <property name="use_action_appearance">True</property>
+                <property name="related_action">zoom_out_action</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -539,8 +542,8 @@
             </child>
             <child>
               <object class="GtkToolButton" id="zoom_100_button">
-                <property name="related_action">zoom_100_action</property>
                 <property name="use_action_appearance">True</property>
+                <property name="related_action">zoom_100_action</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -550,8 +553,8 @@
             <child>
               <object class="GtkToolButton" id="zoom_fit_button">
                 <property name="visible">True</property>
-                <property name="related_action">zoom_fit_action</property>
                 <property name="use_action_appearance">True</property>
+                <property name="related_action">zoom_fit_action</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -573,7 +576,6 @@
             <child>
               <object class="GtkVBox" id="left_pane_vbox">
                 <property name="visible">True</property>
-                <property name="orientation">vertical</property>
                 <child>
                   <object class="GtkViewport" id="world_tree_viewport">
                     <property name="visible">True</property>
@@ -667,7 +669,6 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
 </property>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox1">
-        <property name="orientation">vertical</property>
         <child internal-child="action_area">
           <object class="GtkHButtonBox" id="dialog-action_area1"/>
           <packing>
@@ -692,7 +693,6 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
       <object class="GtkVBox" id="load_project_dialog_top_vbox">
         <property name="visible">True</property>
         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-        <property name="orientation">vertical</property>
         <property name="spacing">2</property>
         <child>
           <object class="GtkScrolledWindow" id="load_project_scrolledwindow">
@@ -824,13 +824,11 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
       <object class="GtkVBox" id="dialog-vbox5">
         <property name="visible">True</property>
         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-        <property name="orientation">vertical</property>
         <property name="spacing">2</property>
         <child>
           <object class="GtkVBox" id="vbox1">
             <property name="visible">True</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-            <property name="orientation">vertical</property>
             <property name="spacing">10</property>
             <child>
               <object class="GtkFrame" id="frame1">
@@ -990,13 +988,11 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
       <object class="GtkVBox" id="dialog-vbox7">
         <property name="visible">True</property>
         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-        <property name="orientation">vertical</property>
         <property name="spacing">2</property>
         <child>
           <object class="GtkVBox" id="vbox3">
             <property name="visible">True</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-            <property name="orientation">vertical</property>
             <property name="spacing">10</property>
             <child>
               <object class="GtkFrame" id="frame7">
@@ -1103,7 +1099,6 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
     <property name="buttons">yes-no</property>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox6">
-        <property name="orientation">vertical</property>
         <child internal-child="action_area">
           <object class="GtkHButtonBox" id="dialog-action_area6">
             <property name="layout_style">end</property>
@@ -1129,7 +1124,6 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
     <property name="buttons">close</property>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox8">
-        <property name="orientation">vertical</property>
         <child internal-child="action_area">
           <object class="GtkHButtonBox" id="dialog-action_area8">
             <property name="layout_style">end</property>
@@ -1152,7 +1146,6 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox10">
         <property name="visible">True</property>
-        <property name="orientation">vertical</property>
         <property name="spacing">2</property>
         <child>
           <object class="GtkTable" id="table1">
@@ -1459,12 +1452,10 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
     <child internal-child="vbox">
       <object class="GtkVBox" id="create_room_dialog_vbox_top">
         <property name="visible">True</property>
-        <property name="orientation">vertical</property>
         <property name="spacing">2</property>
         <child>
           <object class="GtkVBox" id="create_room_dialog_vbox_main">
             <property name="visible">True</property>
-            <property name="orientation">vertical</property>
             <property name="spacing">5</property>
             <child>
               <object class="GtkFrame" id="create_room_dialog_name_frame">
@@ -1598,7 +1589,6 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
     <child internal-child="vbox">
       <object class="GtkVBox" id="project_save_as_dialog_vbox_top">
         <property name="visible">True</property>
-        <property name="orientation">vertical</property>
         <property name="spacing">2</property>
         <child>
           <object class="GtkTable" id="project_save_as_table">
@@ -1715,7 +1705,6 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
     <child internal-child="vbox">
       <object class="GtkVBox" id="settings_dialog-vbox">
         <property name="visible">True</property>
-        <property name="orientation">vertical</property>
         <property name="spacing">2</property>
         <child>
           <object class="GtkTable" id="settings_top_table">
@@ -1726,7 +1715,6 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
             <child>
               <object class="GtkVBox" id="settings_bool_vbox">
                 <property name="visible">True</property>
-                <property name="orientation">vertical</property>
                 <property name="spacing">5</property>
                 <property name="homogeneous">True</property>
                 <child>
