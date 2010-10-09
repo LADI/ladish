@@ -32,6 +32,7 @@
 #include "../proxies/jmcore_proxy.h"
 #include "cmd.h"
 #include "../dbus/error.h"
+#include "recent_projects.h"
 
 extern const struct dbus_interface_descriptor g_interface_room;
 
@@ -312,6 +313,7 @@ ladish_room_create(
     &g_interface_patchbay, ladish_graph_get_dbus_context(room_ptr->graph),
     &g_iface_graph_dict, room_ptr->graph,
     &g_iface_app_supervisor, room_ptr->app_supervisor,
+    &g_iface_recent_items, NULL,
     NULL);
   if (room_ptr->dbus_object == NULL)
   {

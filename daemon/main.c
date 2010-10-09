@@ -46,6 +46,7 @@
 #include "../proxies/notify_proxy.h"
 #include "../proxies/conf_proxy.h"
 #include "conf.h"
+#include "recent_projects.h"
 
 bool g_quit;
 const char * g_dbus_unique_name;
@@ -353,9 +354,14 @@ int main(int argc, char ** argv, char ** envp)
     goto uninit_conf;
   }
 
-  if (!a2j_proxy_init())
+  if (!ladish_recent_projects_init())
   {
     goto uninit_conf;
+  }
+
+  if (!a2j_proxy_init())
+  {
+    goto uninit_recent_projects;
   }
 
   if (!jmcore_proxy_init())
@@ -391,6 +397,9 @@ uninit_jmcore:
 
 uninit_a2j:
   a2j_proxy_uninit();
+
+uninit_recent_projects:
+  ladish_recent_projects_uninit();
 
 uninit_conf:
   if (g_use_notify)

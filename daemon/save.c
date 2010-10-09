@@ -40,12 +40,12 @@ bool ladish_write_string(int fd, const char * string)
   ret = write(fd, string, len);
   if (ret == -1)
   {
-    log_error("write(%d, \"%s\", %zu) failed to write config file: %d (%s)", fd, string, len, errno, strerror(errno));
+    log_error("write(%d, \"%s\", %zu) failed to write file: %d (%s)", fd, string, len, errno, strerror(errno));
     return false;
   }
   if ((size_t)ret != len)
   {
-    log_error("write() wrote wrong byte count to config file (%zd != %zu).", ret, len);
+    log_error("write() wrote wrong byte count to file (%zd != %zu).", ret, len);
     return false;
   }
 

@@ -37,6 +37,7 @@
 #include "../proxies/notify_proxy.h"
 #include "escape.h"
 #include "studio.h"
+#include "recent_projects.h"
 
 #define context_ptr ((struct ladish_parse_context *)data)
 #define room_ptr ((struct ladish_room *)context_ptr->room)
@@ -737,6 +738,7 @@ bool ladish_room_load_project(ladish_room_handle room_handle, const char * proje
   ladish_graph_trick_dicts(room_ptr->graph);
   ladish_app_supervisor_autorun(room_ptr->app_supervisor);
 
+  ladish_recent_project_use(room_ptr->project_dir);
   ladish_room_emit_project_properties_changed(room_ptr);
 
   ret = true;

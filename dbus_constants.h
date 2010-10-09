@@ -43,6 +43,7 @@
 #define APPLICATION_OBJECT_PATH  DBUS_BASE_PATH "/Application"
 #define IFACE_APPLICATION        DBUS_NAME_BASE ".App"
 #define IFACE_GRAPH_DICT         DBUS_NAME_BASE ".GraphDict"
+#define IFACE_RECENT_ITEMS       DBUS_NAME_BASE ".RecentItems"
 
 #define JMCORE_SERVICE_NAME      DBUS_NAME_BASE ".jmcore"
 #define JMCORE_IFACE             JMCORE_SERVICE_NAME
