@@ -760,3 +760,106 @@ exit:
 }
 
 #undef room_ptr
+
+#define context_ptr ((struct ladish_parse_context *)data)
+
+static void project_name_elstart_callback(void * data, const char * el, const char ** attr)
+{
+  const char * name;
+  const char * uuid_str;
+  uuid_t uuid;
+
+  if (strcmp(el, "project") == 0)
+  {
+    if (ladish_get_name_and_uuid_attributes("/project", attr, &name, &uuid_str, uuid))
+    {
+      context_ptr->str = strdup(name);
+      if (context_ptr->str == NULL)
+      {
+        log_error("strdup() failed for project name");
+      }
+    }
+
+    XML_StopParser(context_ptr->parser, XML_TRUE);
+    return;
+  }
+}
+
+#undef context_ptr
+
+char * ladish_get_project_name(const char * project_dir)
+{
+  char * path;
+  struct stat st;
+  XML_Parser parser;
+  int bytes_read;
+  void * buffer;
+  int fd;
+  enum XML_Status xmls;
+  struct ladish_parse_context parse_context;
+
+  parse_context.str = NULL;
+
+  path = catdup(project_dir, LADISH_PROJECT_FILENAME);
+  if (path == NULL)
+  {
+    log_error("catdup() failed to compose xml file path");
+    goto exit;
+  }
+
+  if (stat(path, &st) != 0)
+  {
+    log_error("failed to stat '%s': %d (%s)", path, errno, strerror(errno));
+    goto free_path;
+  }
+
+  fd = open(path, O_RDONLY);
+  if (fd == -1)
+  {
+    log_error("failed to open '%s': %d (%s)", path, errno, strerror(errno));
+    goto free_path;
+  }
+
+  parser = XML_ParserCreate(NULL);
+  if (parser == NULL)
+  {
+    log_error("XML_ParserCreate() failed to create parser object.");
+    goto close;
+  }
+
+  /* we are expecting that conf file has small enough size to fit in memory */
+
+  buffer = XML_GetBuffer(parser, st.st_size);
+  if (buffer == NULL)
+  {
+    log_error("XML_GetBuffer() failed.");
+    goto free_parser;
+  }
+
+  bytes_read = read(fd, buffer, st.st_size);
+  if (bytes_read != st.st_size)
+  {
+    log_error("read() returned unexpected result.");
+    goto free_parser;
+  }
+
+  XML_SetElementHandler(parser, project_name_elstart_callback, NULL);
+  XML_SetUserData(parser, &parse_context);
+
+  parse_context.parser = parser;
+
+  xmls = XML_ParseBuffer(parser, bytes_read, XML_TRUE);
+  if (xmls == XML_STATUS_ERROR)
+  {
+    log_error("XML_ParseBuffer() failed.");
+  }
+
+free_parser:
+  XML_ParserFree(parser);
+close:
+  close(fd);
+free_path:
+  free(path);
+exit:
+  return parse_context.str;
+}

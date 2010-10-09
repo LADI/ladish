@@ -90,4 +90,6 @@ bool ladish_room_save_project(ladish_room_handle room_handle, const char * proje
 bool ladish_room_unload_project(ladish_room_handle room_handle);
 bool ladish_room_load_project(ladish_room_handle room_handle, const char * project_dir);
 
+char * ladish_get_project_name(const char * project_dir);
+
 #endif /* #ifndef ROOM_H__9A1CF253_0A17_402A_BDF8_9BD72B467118__INCLUDED */

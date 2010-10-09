@@ -29,6 +29,7 @@
 #include "../common/catdup.h"
 #include "../dbus_constants.h"
 #include "../dbus/error.h"
+#include "room.h"
 
 #define RECENT_PROJECTS_STORE_FILE "recent_projects"
 #define RECENT_PROJECTS_STORE_MAX_ITEMS 50
@@ -85,9 +86,11 @@ bool recent_projects_callback(void * callback_context, const char * project_path
 {
   DBusMessageIter struct_iter;
   DBusMessageIter dict_iter;
-  bool ret;
+  char * name;
 
   ASSERT(ctx_ptr->max_items > 0);
+
+  name = ladish_get_project_name(project_path);
 
   if (!dbus_message_iter_open_container(&ctx_ptr->array_iter, DBUS_TYPE_STRUCT, NULL, &struct_iter))
   {
@@ -107,15 +110,13 @@ bool recent_projects_callback(void * callback_context, const char * project_path
     goto close_struct;
   }
 
-  /* if (!dbus_add_dict_entry_uint32(&dict_iter, "name", project_name)) */
-  /* { */
-  /*   ctx_ptr->error = true; */
-  /*   goto close_dict; */
-  /* } */
+  if (!dbus_maybe_add_dict_entry_string(&dict_iter, "name", name))
+  {
+    ctx_ptr->error = true;
+    goto close_dict;
+  }
 
-  ret = true;
-
-/* close_dict: */
+close_dict:
   if (!dbus_message_iter_close_container(&struct_iter, &dict_iter))
   {
     ctx_ptr->error = true;
@@ -128,6 +129,8 @@ close_struct:
   }
 
 exit:
+  free(name);                   /* safe if name is NULL */
+
   if (ctx_ptr->error)
   {
     return false;               /* stop the iteration if error occurs */

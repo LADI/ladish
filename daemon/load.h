@@ -71,6 +71,7 @@ struct ladish_parse_context
   bool terminal;
   bool autorun;
   uint8_t level;
+  void * parser;
 };
 
 void ladish_dump_element_stack(struct ladish_parse_context * context_ptr);
