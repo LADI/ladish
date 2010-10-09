@@ -511,8 +511,8 @@
             <child>
               <object class="GtkToolButton" id="clear_load_button">
                 <property name="visible">True</property>
-                <property name="use_action_appearance">True</property>
                 <property name="related_action">clear_xruns_and_max_dsp_load_action</property>
+                <property name="use_action_appearance">True</property>
                 <property name="label" translatable="yes">Clear XRuns</property>
               </object>
               <packing>
@@ -522,8 +522,8 @@
             </child>
             <child>
               <object class="GtkToolButton" id="zoom_in_button">
-                <property name="use_action_appearance">True</property>
                 <property name="related_action">zoom_in_action</property>
+                <property name="use_action_appearance">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -532,8 +532,8 @@
             </child>
             <child>
               <object class="GtkToolButton" id="zoom_out_button">
-                <property name="use_action_appearance">True</property>
                 <property name="related_action">zoom_out_action</property>
+                <property name="use_action_appearance">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -542,8 +542,8 @@
             </child>
             <child>
               <object class="GtkToolButton" id="zoom_100_button">
-                <property name="use_action_appearance">True</property>
                 <property name="related_action">zoom_100_action</property>
+                <property name="use_action_appearance">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -553,8 +553,8 @@
             <child>
               <object class="GtkToolButton" id="zoom_fit_button">
                 <property name="visible">True</property>
-                <property name="use_action_appearance">True</property>
                 <property name="related_action">zoom_fit_action</property>
+                <property name="use_action_appearance">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
