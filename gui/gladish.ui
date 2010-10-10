@@ -3,9 +3,9 @@
   <requires lib="gtk+" version="2.16"/>
   <!-- interface-naming-policy toplevel-contextual -->
   <object class="GtkWindow" id="main_win">
-    <property name="title" translatable="yes">LADI Session Handler</property>
-    <property name="default_width">800</property>
     <property name="default_height">600</property>
+    <property name="default_width">800</property>
+    <property name="title" translatable="yes">LADI Session Handler</property>
     <child>
       <object class="GtkVBox" id="main_vbox">
         <property name="visible">True</property>
@@ -14,117 +14,117 @@
             <property name="visible">True</property>
             <child>
               <object class="GtkMenuItem" id="studio_menu_item">
-                <property name="visible">True</property>
                 <property name="label" translatable="yes">_Studio</property>
                 <property name="use_underline">True</property>
+                <property name="visible">True</property>
                 <child type="submenu">
                   <object class="GtkMenu" id="studio_menu">
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_new_studio">
                         <property name="label">_New Studio...</property>
-                        <property name="visible">True</property>
-                        <property name="use_underline">True</property>
                         <property name="image">image_new_studio</property>
                         <property name="use_stock">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                         <accelerator key="N" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_load_studio">
                         <property name="label">_Load Studio</property>
-                        <property name="visible">True</property>
-                        <property name="use_underline">True</property>
                         <property name="image">image_load_studio</property>
                         <property name="use_stock">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                         <signal name="activate" handler="on_load_project_menuitem_activate"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkSeparatorMenuItem" id="studio_menu_separator1">
-                        <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                        <property name="visible">True</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_start_studio">
                         <property name="label">Start Studio</property>
-                        <property name="visible">True</property>
-                        <property name="sensitive">False</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                        <property name="use_underline">True</property>
                         <property name="image">image_start_studio</property>
+                        <property name="sensitive">False</property>
                         <property name="use_stock">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                         <accelerator key="F5" signal="activate"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_stop_studio">
                         <property name="label">Stop Studio</property>
-                        <property name="visible">True</property>
-                        <property name="sensitive">False</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="image">image_stop_studio</property>
+                        <property name="sensitive">False</property>
                         <property name="use_stock">False</property>
+                        <property name="visible">True</property>
                         <accelerator key="F6" signal="activate"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkSeparatorMenuItem" id="studio_menu_separator2">
-                        <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                        <property name="visible">True</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_rename_studio">
                         <property name="label">_Rename Studio...</property>
-                        <property name="visible">True</property>
-                        <property name="sensitive">False</property>
-                        <property name="use_underline">True</property>
                         <property name="image">image_rename_studio</property>
+                        <property name="sensitive">False</property>
                         <property name="use_stock">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                         <accelerator key="R" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_save_studio">
                         <property name="label">_Save Studio</property>
-                        <property name="visible">True</property>
-                        <property name="sensitive">False</property>
-                        <property name="use_underline">True</property>
                         <property name="image">image_save_studio</property>
+                        <property name="sensitive">False</property>
                         <property name="use_stock">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                         <accelerator key="S" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_save_as_studio">
                         <property name="label">Save Studio _As...</property>
-                        <property name="visible">True</property>
-                        <property name="sensitive">False</property>
-                        <property name="use_underline">True</property>
                         <property name="image">image_save_studio_as</property>
+                        <property name="sensitive">False</property>
                         <property name="use_stock">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                         <accelerator key="S" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_unload_studio">
                         <property name="label">_Unload Studio</property>
-                        <property name="visible">True</property>
-                        <property name="sensitive">False</property>
-                        <property name="use_underline">True</property>
                         <property name="image">image_unload_studio</property>
+                        <property name="sensitive">False</property>
                         <property name="use_stock">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                         <accelerator key="U" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_delete_studio">
                         <property name="label">_Delete Studio</property>
-                        <property name="visible">True</property>
-                        <property name="use_underline">True</property>
                         <property name="image">image_delete_studio</property>
                         <property name="use_stock">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                         <signal name="activate" handler="on_delete_project_menuitem_activate"/>
                       </object>
                     </child>
@@ -136,9 +136,9 @@
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_quit">
                         <property name="label">gtk-quit</property>
-                        <property name="visible">True</property>
-                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                         <signal name="activate" handler="on_quit1_activate"/>
                       </object>
                     </child>
@@ -148,30 +148,30 @@
             </child>
             <child>
               <object class="GtkMenuItem" id="room_menu_item">
-                <property name="visible">True</property>
                 <property name="label" translatable="yes">_Room</property>
                 <property name="use_underline">True</property>
+                <property name="visible">True</property>
                 <child type="submenu">
                   <object class="GtkMenu" id="room_menu">
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_create_room">
                         <property name="label">_Create Room...</property>
-                        <property name="visible">True</property>
-                        <property name="sensitive">False</property>
-                        <property name="use_underline">True</property>
                         <property name="image">image_create_room</property>
+                        <property name="sensitive">False</property>
                         <property name="use_stock">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                         <accelerator key="C" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_destroy_room">
                         <property name="label">_Destroy Room</property>
-                        <property name="visible">True</property>
-                        <property name="sensitive">False</property>
-                        <property name="use_underline">True</property>
                         <property name="image">image_destroy_room</property>
+                        <property name="sensitive">False</property>
                         <property name="use_stock">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                         <accelerator key="D" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                       </object>
                     </child>
@@ -181,62 +181,62 @@
             </child>
             <child>
               <object class="GtkMenuItem" id="project_menu_item">
-                <property name="visible">True</property>
                 <property name="label" translatable="yes">_Project</property>
                 <property name="use_underline">True</property>
+                <property name="visible">True</property>
                 <child type="submenu">
                   <object class="GtkMenu" id="project_menu">
                     <property name="visible">True</property>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_load_project">
                         <property name="label">_Load Project...</property>
-                        <property name="visible">True</property>
-                        <property name="sensitive">False</property>
-                        <property name="use_underline">True</property>
                         <property name="image">image_load_project</property>
+                        <property name="sensitive">False</property>
                         <property name="use_stock">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                         <accelerator key="O" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_unload_project">
                         <property name="label" translatable="yes">_Unload Project</property>
-                        <property name="visible">True</property>
-                        <property name="sensitive">False</property>
-                        <property name="use_underline">True</property>
                         <property name="image">image_unload_project</property>
+                        <property name="sensitive">False</property>
                         <property name="use_stock">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                         <accelerator key="U" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_rename_project">
                         <property name="label" translatable="yes">_Rename Project...</property>
-                        <property name="visible">True</property>
-                        <property name="sensitive">False</property>
-                        <property name="use_underline">True</property>
                         <property name="image">image_rename_project</property>
+                        <property name="sensitive">False</property>
                         <property name="use_stock">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_save_project">
                         <property name="label" translatable="yes">_Save Project</property>
-                        <property name="visible">True</property>
-                        <property name="sensitive">False</property>
-                        <property name="use_underline">True</property>
                         <property name="image">image_save_project</property>
+                        <property name="sensitive">False</property>
                         <property name="use_stock">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_save_as_project">
                         <property name="label" translatable="yes">Save Project _As...</property>
-                        <property name="visible">True</property>
-                        <property name="sensitive">False</property>
-                        <property name="use_underline">True</property>
                         <property name="image">image_save_as_project</property>
+                        <property name="sensitive">False</property>
                         <property name="use_stock">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                       </object>
                     </child>
                   </object>
@@ -245,20 +245,20 @@
             </child>
             <child>
               <object class="GtkMenuItem" id="application_menu_item">
-                <property name="visible">True</property>
                 <property name="label" translatable="yes">_Application</property>
                 <property name="use_underline">True</property>
+                <property name="visible">True</property>
                 <child type="submenu">
                   <object class="GtkMenu" id="application_menu">
                     <property name="visible">True</property>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_start_app">
                         <property name="label">Run...</property>
-                        <property name="visible">True</property>
-                        <property name="sensitive">False</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="image">image_start_app</property>
+                        <property name="sensitive">False</property>
                         <property name="use_stock">False</property>
+                        <property name="visible">True</property>
                         <accelerator key="F2" signal="activate"/>
                       </object>
                     </child>
@@ -268,71 +268,71 @@
             </child>
             <child>
               <object class="GtkMenuItem" id="view_menu_item">
-                <property name="visible">True</property>
                 <property name="label" translatable="yes">_View</property>
                 <property name="use_underline">True</property>
+                <property name="visible">True</property>
                 <child type="submenu">
                   <object class="GtkMenu" id="view_menu">
                     <child>
                       <object class="GtkCheckMenuItem" id="menu_item_view_toolbar">
-                        <property name="visible">True</property>
                         <property name="label" translatable="yes">_Toolbar</property>
                         <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                         <accelerator key="T" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                         <signal name="activate" handler="on_menu_view_toolbar_activate"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_zoom_in">
-                        <property name="visible">True</property>
                         <property name="related_action">zoom_in_action</property>
                         <property name="use_action_appearance">True</property>
-                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_zoom_out">
-                        <property name="visible">True</property>
                         <property name="related_action">zoom_out_action</property>
                         <property name="use_action_appearance">True</property>
-                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_zoom_100">
-                        <property name="visible">True</property>
                         <property name="related_action">zoom_100_action</property>
                         <property name="use_action_appearance">True</property>
-                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_zoom_fit">
-                        <property name="visible">True</property>
                         <property name="related_action">zoom_fit_action</property>
                         <property name="use_action_appearance">True</property>
-                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkCheckMenuItem" id="menu_item_view_raw_jack">
-                        <property name="visible">True</property>
                         <property name="label" translatable="yes">_JACK</property>
                         <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                         <accelerator key="J" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_view_arrange">
                         <property name="label">_Arrange</property>
-                        <property name="visible">True</property>
-                        <property name="use_underline">True</property>
                         <property name="image">image_arrange_canvas</property>
                         <property name="use_stock">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                         <accelerator key="G" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                         <signal name="activate" handler="on_menu_view_arrange"/>
                       </object>
@@ -343,128 +343,128 @@
             </child>
             <child>
               <object class="GtkMenuItem" id="tools_menu_item">
-                <property name="visible">True</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="label" translatable="yes">_Tools</property>
                 <property name="use_underline">True</property>
+                <property name="visible">True</property>
                 <child type="submenu">
                   <object class="GtkMenu" id="tools_menu">
-                    <property name="visible">True</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                    <property name="visible">True</property>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_jack_clear">
-                        <property name="visible">True</property>
                         <property name="related_action">clear_xruns_and_max_dsp_load_action</property>
                         <property name="use_action_appearance">True</property>
-                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_settings">
                         <property name="label" translatable="yes">_Settings</property>
-                        <property name="visible">True</property>
-                        <property name="use_underline">True</property>
                         <property name="image">image_settings</property>
                         <property name="use_stock">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_jack_configure">
                         <property name="label">_Configure JACK</property>
-                        <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                        <property name="use_underline">True</property>
                         <property name="image">image_configure_jack</property>
                         <property name="use_stock">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_daemon_exit">
                         <property name="label">Reactivate ladishd</property>
-                        <property name="visible">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="image">image_reactivate_ladishd</property>
                         <property name="use_stock">False</property>
+                        <property name="visible">True</property>
                       </object>
                     </child>
                     <child>
                       <object class="GtkMenuItem" id="menu_item_jack_latency">
-                        <property name="visible">True</property>
                         <property name="label" translatable="yes">JACK _Latency</property>
                         <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                         <child type="submenu">
                           <object class="GtkMenu" id="menu_jack_latencies">
                             <property name="visible">True</property>
                             <child>
                               <object class="GtkRadioMenuItem" id="menu_item_jack_latency_32">
-                                <property name="visible">True</property>
-                                <property name="label" translatable="yes">32</property>
                                 <property name="draw_as_radio">True</property>
+                                <property name="label" translatable="yes">32</property>
+                                <property name="visible">True</property>
                               </object>
                             </child>
                             <child>
                               <object class="GtkRadioMenuItem" id="menu_item_jack_latency_64">
-                                <property name="visible">True</property>
-                                <property name="label" translatable="yes">64</property>
                                 <property name="draw_as_radio">True</property>
                                 <property name="group">menu_item_jack_latency_32</property>
+                                <property name="label" translatable="yes">64</property>
+                                <property name="visible">True</property>
                               </object>
                             </child>
                             <child>
                               <object class="GtkRadioMenuItem" id="menu_item_jack_latency_128">
-                                <property name="visible">True</property>
-                                <property name="label" translatable="yes">128</property>
                                 <property name="draw_as_radio">True</property>
                                 <property name="group">menu_item_jack_latency_32</property>
+                                <property name="label" translatable="yes">128</property>
+                                <property name="visible">True</property>
                               </object>
                             </child>
                             <child>
                               <object class="GtkRadioMenuItem" id="menu_item_jack_latency_256">
-                                <property name="visible">True</property>
-                                <property name="label" translatable="yes">256</property>
                                 <property name="draw_as_radio">True</property>
                                 <property name="group">menu_item_jack_latency_32</property>
+                                <property name="label" translatable="yes">256</property>
+                                <property name="visible">True</property>
                               </object>
                             </child>
                             <child>
                               <object class="GtkRadioMenuItem" id="menu_item_jack_latency_512">
-                                <property name="visible">True</property>
-                                <property name="label" translatable="yes">512</property>
                                 <property name="draw_as_radio">True</property>
                                 <property name="group">menu_item_jack_latency_32</property>
+                                <property name="label" translatable="yes">512</property>
+                                <property name="visible">True</property>
                               </object>
                             </child>
                             <child>
                               <object class="GtkRadioMenuItem" id="menu_item_jack_latency_1024">
-                                <property name="visible">True</property>
-                                <property name="label" translatable="yes">1024</property>
                                 <property name="draw_as_radio">True</property>
                                 <property name="group">menu_item_jack_latency_32</property>
+                                <property name="label" translatable="yes">1024</property>
+                                <property name="visible">True</property>
                               </object>
                             </child>
                             <child>
                               <object class="GtkRadioMenuItem" id="menu_item_jack_latency_2048">
-                                <property name="visible">True</property>
-                                <property name="label" translatable="yes">2048</property>
                                 <property name="draw_as_radio">True</property>
                                 <property name="group">menu_item_jack_latency_32</property>
+                                <property name="label" translatable="yes">2048</property>
+                                <property name="visible">True</property>
                               </object>
                             </child>
                             <child>
                               <object class="GtkRadioMenuItem" id="menu_item_jack_latency_4096">
-                                <property name="visible">True</property>
-                                <property name="label" translatable="yes">4096</property>
                                 <property name="draw_as_radio">True</property>
                                 <property name="group">menu_item_jack_latency_32</property>
+                                <property name="label" translatable="yes">4096</property>
+                                <property name="visible">True</property>
                               </object>
                             </child>
                             <child>
                               <object class="GtkRadioMenuItem" id="menu_item_jack_latency_8192">
-                                <property name="visible">True</property>
-                                <property name="label" translatable="yes">8192</property>
                                 <property name="draw_as_radio">True</property>
                                 <property name="group">menu_item_jack_latency_32</property>
+                                <property name="label" translatable="yes">8192</property>
+                                <property name="visible">True</property>
                               </object>
                             </child>
                           </object>
@@ -477,17 +477,17 @@
             </child>
             <child>
               <object class="GtkMenuItem" id="help_menu_item">
-                <property name="visible">True</property>
                 <property name="label" translatable="yes">_Help</property>
                 <property name="use_underline">True</property>
+                <property name="visible">True</property>
                 <child type="submenu">
                   <object class="GtkMenu" id="help_menu">
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_help_about">
                         <property name="label">gtk-about</property>
-                        <property name="visible">True</property>
-                        <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
+                        <property name="use_underline">True</property>
+                        <property name="visible">True</property>
                         <signal name="activate" handler="on_about1_activate"/>
                       </object>
                     </child>
@@ -504,16 +504,16 @@
         </child>
         <child>
           <object class="GtkToolbar" id="toolbar">
-            <property name="toolbar_style">icons</property>
-            <property name="show_arrow">False</property>
             <property name="icon_size">4</property>
             <property name="icon_size_set">True</property>
+            <property name="show_arrow">False</property>
+            <property name="toolbar_style">icons</property>
             <child>
               <object class="GtkToolButton" id="clear_load_button">
-                <property name="visible">True</property>
+                <property name="label" translatable="yes">Clear XRuns</property>
                 <property name="related_action">clear_xruns_and_max_dsp_load_action</property>
                 <property name="use_action_appearance">True</property>
-                <property name="label" translatable="yes">Clear XRuns</property>
+                <property name="visible">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -552,9 +552,9 @@
             </child>
             <child>
               <object class="GtkToolButton" id="zoom_fit_button">
-                <property name="visible">True</property>
                 <property name="related_action">zoom_fit_action</property>
                 <property name="use_action_appearance">True</property>
+                <property name="visible">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -569,22 +569,22 @@
         </child>
         <child>
           <object class="GtkHPaned" id="main_hpaned">
-            <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
             <property name="position">204</property>
+            <property name="visible">True</property>
             <child>
               <object class="GtkVBox" id="left_pane_vbox">
                 <property name="visible">True</property>
                 <child>
                   <object class="GtkViewport" id="world_tree_viewport">
-                    <property name="visible">True</property>
                     <property name="resize_mode">queue</property>
+                    <property name="visible">True</property>
                     <child>
                       <object class="GtkTreeView" id="world_tree">
-                        <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                        <property name="visible">True</property>
                       </object>
                     </child>
                   </object>
@@ -609,16 +609,16 @@
             </child>
             <child>
               <object class="GtkScrolledWindow" id="main_scrolledwin">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="has_focus">True</property>
-                <property name="is_focus">True</property>
                 <property name="can_default">True</property>
+                <property name="can_focus">True</property>
                 <property name="has_default">True</property>
-                <property name="receives_default">True</property>
+                <property name="has_focus">True</property>
                 <property name="hscrollbar_policy">automatic</property>
-                <property name="vscrollbar_policy">automatic</property>
+                <property name="is_focus">True</property>
+                <property name="receives_default">True</property>
                 <property name="shadow_type">in</property>
+                <property name="visible">True</property>
+                <property name="vscrollbar_policy">automatic</property>
                 <child>
                   <placeholder/>
                 </child>
@@ -635,9 +635,9 @@
         </child>
         <child>
           <object class="GtkStatusbar" id="statusbar">
-            <property name="visible">True</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
             <property name="spacing">2</property>
+            <property name="visible">True</property>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -649,10 +649,6 @@
   </object>
   <object class="GtkAboutDialog" id="about_win">
     <property name="destroy_with_parent">True</property>
-    <property name="type_hint">normal</property>
-    <property name="transient_for">main_win</property>
-    <property name="program_name">LADI Session Handler</property>
-    <property name="website">http://ladish.org/</property>
     <property name="license" translatable="yes">LADI Session Handler is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2 of the License, or
@@ -667,6 +663,10 @@ You should have received a copy of the GNU General Public License
 along with LADI Session Handler; if not, write to the Free Software Foundation, Inc.,
 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 </property>
+    <property name="program_name">LADI Session Handler</property>
+    <property name="transient_for">main_win</property>
+    <property name="type_hint">normal</property>
+    <property name="website">http://ladish.org/</property>
     <child internal-child="vbox">
       <object class="GtkVBox" id="about_dialog-vbox">
         <child internal-child="action_area">
@@ -681,32 +681,32 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
     </child>
   </object>
   <object class="GtkDialog" id="load_project_dialog">
-    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <property name="border_width">5</property>
-    <property name="title" translatable="yes">Load project</property>
-    <property name="modal">True</property>
-    <property name="window_position">center-on-parent</property>
-    <property name="type_hint">dialog</property>
-    <property name="transient_for">main_win</property>
+    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <property name="has_separator">False</property>
+    <property name="modal">True</property>
+    <property name="title" translatable="yes">Load project</property>
+    <property name="transient_for">main_win</property>
+    <property name="type_hint">dialog</property>
+    <property name="window_position">center-on-parent</property>
     <child internal-child="vbox">
       <object class="GtkVBox" id="load_project_dialog_top_vbox">
-        <property name="visible">True</property>
         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
         <property name="spacing">2</property>
+        <property name="visible">True</property>
         <child>
           <object class="GtkScrolledWindow" id="load_project_scrolledwindow">
-            <property name="width_request">400</property>
-            <property name="height_request">400</property>
             <property name="can_focus">True</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+            <property name="height_request">400</property>
             <property name="hscrollbar_policy">automatic</property>
             <property name="vscrollbar_policy">automatic</property>
+            <property name="width_request">400</property>
             <child>
               <object class="GtkTreeView" id="loadable_project_list">
-                <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                <property name="visible">True</property>
               </object>
             </child>
           </object>
@@ -716,14 +716,14 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
         </child>
         <child>
           <object class="GtkHBox" id="load_project_path_hbox">
-            <property name="visible">True</property>
             <property name="spacing">2</property>
+            <property name="visible">True</property>
             <child>
               <object class="GtkLabel" id="load_project_path_label">
+                <property name="label" translatable="yes">Path</property>
                 <property name="visible">True</property>
                 <property name="yalign">0.52999997138977051</property>
                 <property name="ypad">2</property>
-                <property name="label" translatable="yes">Path</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -732,10 +732,10 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
             </child>
             <child>
               <object class="GtkEntry" id="load_project_path_entry">
-                <property name="visible">True</property>
+                <property name="activates_default">True</property>
                 <property name="can_focus">True</property>
                 <property name="invisible_char">&#x25CF;</property>
-                <property name="activates_default">True</property>
+                <property name="visible">True</property>
               </object>
               <packing>
                 <property name="position">1</property>
@@ -744,10 +744,10 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
             <child>
               <object class="GtkButton" id="load_project_path_browse_button">
                 <property name="label" translatable="yes">Browse...</property>
-                <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <property name="sensitive">False</property>
+                <property name="visible">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -762,17 +762,17 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
         </child>
         <child internal-child="action_area">
           <object class="GtkHButtonBox" id="load_project_action_area">
-            <property name="visible">True</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
             <property name="layout_style">end</property>
+            <property name="visible">True</property>
             <child>
               <object class="GtkButton" id="load_project_cancel_button">
                 <property name="label">gtk-cancel</property>
-                <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
+                <property name="visible">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -783,13 +783,13 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
             <child>
               <object class="GtkButton" id="load_project_ok_button">
                 <property name="label">gtk-ok</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="can_default">True</property>
+                <property name="can_focus">True</property>
+                <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="has_default">True</property>
                 <property name="receives_default">True</property>
-                <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="use_stock">True</property>
+                <property name="visible">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -812,43 +812,43 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
     </action-widgets>
   </object>
   <object class="GtkDialog" id="project_properties_dialog">
-    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <property name="border_width">5</property>
-    <property name="title" translatable="yes">Project properties</property>
-    <property name="modal">True</property>
-    <property name="window_position">center-on-parent</property>
-    <property name="type_hint">dialog</property>
-    <property name="transient_for">main_win</property>
+    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <property name="has_separator">False</property>
+    <property name="modal">True</property>
+    <property name="title" translatable="yes">Project properties</property>
+    <property name="transient_for">main_win</property>
+    <property name="type_hint">dialog</property>
+    <property name="window_position">center-on-parent</property>
     <child internal-child="vbox">
       <object class="GtkVBox" id="project_properties_dialog-vbox">
-        <property name="visible">True</property>
         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
         <property name="spacing">2</property>
+        <property name="visible">True</property>
         <child>
           <object class="GtkVBox" id="project_properties-vbox">
-            <property name="visible">True</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
             <property name="spacing">10</property>
+            <property name="visible">True</property>
             <child>
               <object class="GtkFrame" id="project_name_frame">
-                <property name="visible">True</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="label_xalign">0</property>
                 <property name="shadow_type">none</property>
+                <property name="visible">True</property>
                 <child>
                   <object class="GtkEntry" id="project_name">
-                    <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                    <property name="visible">True</property>
                   </object>
                 </child>
                 <child type="label">
                   <object class="GtkLabel" id="project_name_label">
-                    <property name="visible">True</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                     <property name="label" translatable="yes">&lt;b&gt;Project name&lt;/b&gt;</property>
                     <property name="use_markup">True</property>
+                    <property name="visible">True</property>
                   </object>
                 </child>
               </object>
@@ -859,23 +859,23 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
             </child>
             <child>
               <object class="GtkFrame" id="project_description_frame">
-                <property name="visible">True</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="label_xalign">0</property>
                 <property name="shadow_type">none</property>
+                <property name="visible">True</property>
                 <child>
                   <object class="GtkEntry" id="project_description">
-                    <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                    <property name="visible">True</property>
                   </object>
                 </child>
                 <child type="label">
                   <object class="GtkLabel" id="project_description_label">
-                    <property name="visible">True</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                     <property name="label" translatable="yes">&lt;b&gt;Description&lt;/b&gt;</property>
                     <property name="use_markup">True</property>
+                    <property name="visible">True</property>
                   </object>
                 </child>
               </object>
@@ -886,34 +886,34 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
             </child>
             <child>
               <object class="GtkFrame" id="project_notes_frame">
-                <property name="visible">True</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="label_xalign">0</property>
                 <property name="shadow_type">none</property>
+                <property name="visible">True</property>
                 <child>
                   <object class="GtkScrolledWindow" id="project_notes-scrolledwindow">
-                    <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                     <property name="hscrollbar_policy">automatic</property>
+                    <property name="visible">True</property>
                     <property name="vscrollbar_policy">automatic</property>
                     <child>
                       <object class="GtkTextView" id="project_notes">
-                        <property name="width_request">300</property>
-                        <property name="height_request">200</property>
-                        <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                        <property name="height_request">200</property>
+                        <property name="visible">True</property>
+                        <property name="width_request">300</property>
                       </object>
                     </child>
                   </object>
                 </child>
                 <child type="label">
                   <object class="GtkLabel" id="project_notes-label">
-                    <property name="visible">True</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                     <property name="label" translatable="yes">&lt;b&gt;Notes&lt;/b&gt;</property>
                     <property name="use_markup">True</property>
+                    <property name="visible">True</property>
                   </object>
                 </child>
               </object>
@@ -928,17 +928,17 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
         </child>
         <child internal-child="action_area">
           <object class="GtkHButtonBox" id="project_properties_dialog-action_area">
-            <property name="visible">True</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
             <property name="layout_style">end</property>
+            <property name="visible">True</property>
             <child>
               <object class="GtkButton" id="project_properties_cancel_button">
                 <property name="label">gtk-cancel</property>
-                <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
+                <property name="visible">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -949,11 +949,11 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
             <child>
               <object class="GtkButton" id="project_properties_ok_button">
                 <property name="label">gtk-ok</property>
-                <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
+                <property name="visible">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -976,44 +976,44 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
     </action-widgets>
   </object>
   <object class="GtkDialog" id="name_dialog">
-    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <property name="border_width">5</property>
-    <property name="title" translatable="yes">Set name</property>
-    <property name="modal">True</property>
-    <property name="window_position">center-on-parent</property>
-    <property name="type_hint">dialog</property>
-    <property name="transient_for">main_win</property>
+    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <property name="has_separator">False</property>
+    <property name="modal">True</property>
+    <property name="title" translatable="yes">Set name</property>
+    <property name="transient_for">main_win</property>
+    <property name="type_hint">dialog</property>
+    <property name="window_position">center-on-parent</property>
     <child internal-child="vbox">
       <object class="GtkVBox" id="name_dialog-vbox">
-        <property name="visible">True</property>
         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
         <property name="spacing">2</property>
+        <property name="visible">True</property>
         <child>
           <object class="GtkVBox" id="name_dialog_props-vbox">
-            <property name="visible">True</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
             <property name="spacing">10</property>
+            <property name="visible">True</property>
             <child>
               <object class="GtkFrame" id="name_frame">
-                <property name="visible">True</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="label_xalign">0</property>
                 <property name="shadow_type">none</property>
+                <property name="visible">True</property>
                 <child>
                   <object class="GtkEntry" id="name_entry">
-                    <property name="visible">True</property>
+                    <property name="activates_default">True</property>
                     <property name="can_focus">True</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-                    <property name="activates_default">True</property>
+                    <property name="visible">True</property>
                   </object>
                 </child>
                 <child type="label">
                   <object class="GtkLabel" id="name_label">
-                    <property name="visible">True</property>
                     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                     <property name="label" translatable="yes">&lt;b&gt;Name&lt;/b&gt;</property>
                     <property name="use_markup">True</property>
+                    <property name="visible">True</property>
                   </object>
                 </child>
               </object>
@@ -1029,18 +1029,18 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
         </child>
         <child internal-child="action_area">
           <object class="GtkHButtonBox" id="name_dialog-action_area">
-            <property name="visible">True</property>
             <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
             <property name="layout_style">end</property>
+            <property name="visible">True</property>
             <child>
               <object class="GtkButton" id="name_cancel_button">
                 <property name="label">gtk-cancel</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="can_default">True</property>
-                <property name="receives_default">True</property>
+                <property name="can_focus">True</property>
                 <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+                <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
+                <property name="visible">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1051,13 +1051,13 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
             <child>
               <object class="GtkButton" id="name_ok_button">
                 <property name="label">gtk-ok</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="can_default">True</property>
+                <property name="can_focus">True</property>
+                <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="has_default">True</property>
                 <property name="receives_default">True</property>
-                <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="use_stock">True</property>
+                <property name="visible">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1080,23 +1080,23 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
     </action-widgets>
   </object>
   <object class="GtkMenu" id="load_studio_menu">
-    <property name="visible">True</property>
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+    <property name="visible">True</property>
   </object>
   <object class="GtkMenu" id="delete_studio_menu">
-    <property name="visible">True</property>
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+    <property name="visible">True</property>
   </object>
   <object class="GtkMessageDialog" id="ask_dialog">
-    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <property name="border_width">5</property>
+    <property name="buttons">yes-no</property>
+    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+    <property name="message_type">question</property>
     <property name="resizable">False</property>
-    <property name="window_position">center-on-parent</property>
-    <property name="type_hint">dialog</property>
     <property name="skip_taskbar_hint">True</property>
     <property name="transient_for">main_win</property>
-    <property name="message_type">question</property>
-    <property name="buttons">yes-no</property>
+    <property name="type_hint">dialog</property>
+    <property name="window_position">center-on-parent</property>
     <child internal-child="vbox">
       <object class="GtkVBox" id="ask_dialog-vbox">
         <child internal-child="action_area">
@@ -1113,15 +1113,15 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
     </child>
   </object>
   <object class="GtkMessageDialog" id="error_dialog">
-    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <property name="border_width">5</property>
+    <property name="buttons">close</property>
+    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+    <property name="message_type">error</property>
     <property name="resizable">False</property>
-    <property name="window_position">center-on-parent</property>
-    <property name="type_hint">dialog</property>
     <property name="skip_taskbar_hint">True</property>
     <property name="transient_for">main_win</property>
-    <property name="message_type">error</property>
-    <property name="buttons">close</property>
+    <property name="type_hint">dialog</property>
+    <property name="window_position">center-on-parent</property>
     <child internal-child="vbox">
       <object class="GtkVBox" id="error_dialog-vbox">
         <child internal-child="action_area">
@@ -1139,27 +1139,27 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
   </object>
   <object class="GtkDialog" id="app_dialog">
     <property name="border_width">5</property>
-    <property name="window_position">center-on-parent</property>
     <property name="default_width">400</property>
-    <property name="type_hint">dialog</property>
     <property name="transient_for">main_win</property>
+    <property name="type_hint">dialog</property>
+    <property name="window_position">center-on-parent</property>
     <child internal-child="vbox">
       <object class="GtkVBox" id="app_dialog-vbo">
-        <property name="visible">True</property>
         <property name="spacing">2</property>
+        <property name="visible">True</property>
         <child>
           <object class="GtkTable" id="app_dialog-table">
-            <property name="visible">True</property>
-            <property name="n_rows">7</property>
-            <property name="n_columns">2</property>
             <property name="column_spacing">5</property>
+            <property name="n_columns">2</property>
+            <property name="n_rows">7</property>
             <property name="row_spacing">5</property>
+            <property name="visible">True</property>
             <child>
               <object class="GtkLabel" id="app_command_entry-label">
+                <property name="label" translatable="yes">Command:</property>
                 <property name="visible">True</property>
                 <property name="xalign">0</property>
                 <property name="yalign">0</property>
-                <property name="label" translatable="yes">Command:</property>
               </object>
               <packing>
                 <property name="x_options">GTK_FILL</property>
@@ -1168,29 +1168,29 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
             </child>
             <child>
               <object class="GtkLabel" id="app_name_entry-label">
+                <property name="label" translatable="yes">Name:</property>
                 <property name="visible">True</property>
                 <property name="xalign">0</property>
-                <property name="label" translatable="yes">Name:</property>
               </object>
               <packing>
-                <property name="top_attach">1</property>
                 <property name="bottom_attach">2</property>
+                <property name="top_attach">1</property>
                 <property name="x_options">GTK_FILL</property>
                 <property name="y_options">GTK_FILL</property>
               </packing>
             </child>
             <child>
               <object class="GtkEntry" id="app_name_entry">
-                <property name="visible">True</property>
+                <property name="activates_default">True</property>
                 <property name="can_focus">True</property>
                 <property name="invisible_char">&#x2022;</property>
-                <property name="activates_default">True</property>
+                <property name="visible">True</property>
               </object>
               <packing>
+                <property name="bottom_attach">2</property>
                 <property name="left_attach">1</property>
                 <property name="right_attach">2</property>
                 <property name="top_attach">1</property>
-                <property name="bottom_attach">2</property>
                 <property name="x_options">GTK_FILL</property>
                 <property name="y_options">GTK_FILL</property>
               </packing>
@@ -1198,15 +1198,15 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
             <child>
               <object class="GtkCheckButton" id="app_terminal_check_button">
                 <property name="label" translatable="yes">Run in Terminal</property>
-                <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="receives_default">False</property>
                 <property name="draw_indicator">True</property>
+                <property name="receives_default">False</property>
+                <property name="visible">True</property>
               </object>
               <packing>
+                <property name="bottom_attach">3</property>
                 <property name="right_attach">2</property>
                 <property name="top_attach">2</property>
-                <property name="bottom_attach">3</property>
                 <property name="x_options">GTK_FILL</property>
                 <property name="y_options">GTK_FILL</property>
               </packing>
@@ -1214,16 +1214,16 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
             <child>
               <object class="GtkRadioButton" id="app_level0">
                 <property name="label" translatable="yes">Level 0</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">False</property>
                 <property name="active">True</property>
+                <property name="can_focus">True</property>
                 <property name="draw_indicator">True</property>
+                <property name="receives_default">False</property>
+                <property name="visible">True</property>
               </object>
               <packing>
+                <property name="bottom_attach">4</property>
                 <property name="right_attach">2</property>
                 <property name="top_attach">3</property>
-                <property name="bottom_attach">4</property>
                 <property name="x_options">GTK_FILL</property>
                 <property name="y_options">GTK_FILL</property>
               </packing>
@@ -1231,28 +1231,28 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
             <child>
               <object class="GtkRadioButton" id="app_level1">
                 <property name="label" translatable="yes">Level 1</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">False</property>
                 <property name="active">True</property>
+                <property name="can_focus">True</property>
                 <property name="draw_indicator">True</property>
                 <property name="group">app_level0</property>
+                <property name="receives_default">False</property>
+                <property name="visible">True</property>
               </object>
               <packing>
+                <property name="bottom_attach">5</property>
                 <property name="right_attach">2</property>
                 <property name="top_attach">4</property>
-                <property name="bottom_attach">5</property>
                 <property name="x_options">GTK_FILL</property>
                 <property name="y_options">GTK_FILL</property>
               </packing>
             </child>
             <child>
               <object class="GtkEntry" id="app_command_entry">
-                <property name="visible">True</property>
+                <property name="activates_default">True</property>
                 <property name="can_focus">True</property>
                 <property name="has_focus">True</property>
                 <property name="invisible_char">&#x2022;</property>
-                <property name="activates_default">True</property>
+                <property name="visible">True</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -1263,18 +1263,18 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
             <child>
               <object class="GtkRadioButton" id="app_level2">
                 <property name="label" translatable="yes">Level 2</property>
-                <property name="visible">True</property>
-                <property name="sensitive">False</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">False</property>
                 <property name="active">True</property>
+                <property name="can_focus">True</property>
                 <property name="draw_indicator">True</property>
                 <property name="group">app_level0</property>
+                <property name="receives_default">False</property>
+                <property name="sensitive">False</property>
+                <property name="visible">True</property>
               </object>
               <packing>
+                <property name="bottom_attach">6</property>
                 <property name="right_attach">2</property>
                 <property name="top_attach">5</property>
-                <property name="bottom_attach">6</property>
                 <property name="x_options">GTK_FILL</property>
                 <property name="y_options">GTK_FILL</property>
               </packing>
@@ -1282,18 +1282,18 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
             <child>
               <object class="GtkRadioButton" id="app_level3">
                 <property name="label" translatable="yes">Level 3</property>
-                <property name="visible">True</property>
-                <property name="sensitive">False</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">False</property>
                 <property name="active">True</property>
+                <property name="can_focus">True</property>
                 <property name="draw_indicator">True</property>
                 <property name="group">app_level0</property>
+                <property name="receives_default">False</property>
+                <property name="sensitive">False</property>
+                <property name="visible">True</property>
               </object>
               <packing>
+                <property name="bottom_attach">7</property>
                 <property name="right_attach">2</property>
                 <property name="top_attach">6</property>
-                <property name="bottom_attach">7</property>
                 <property name="x_options">GTK_FILL</property>
                 <property name="y_options">GTK_FILL</property>
               </packing>
@@ -1305,16 +1305,16 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
         </child>
         <child internal-child="action_area">
           <object class="GtkHButtonBox" id="app_dialog-action_area">
-            <property name="visible">True</property>
             <property name="layout_style">end</property>
+            <property name="visible">True</property>
             <child>
               <object class="GtkButton" id="button1">
                 <property name="label">gtk-cancel</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="can_default">True</property>
+                <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
+                <property name="visible">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1325,13 +1325,13 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
             <child>
               <object class="GtkButton" id="button2">
                 <property name="label">gtk-ok</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="can_default">True</property>
+                <property name="can_focus">True</property>
+                <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="has_default">True</property>
                 <property name="receives_default">True</property>
-                <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                 <property name="use_stock">True</property>
+                <property name="visible">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1354,127 +1354,127 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
     </action-widgets>
   </object>
   <object class="GtkAction" id="clear_xruns_and_max_dsp_load_action">
+    <property name="is_important">True</property>
     <property name="label">Clear XRuns and Max DSP Load</property>
     <property name="short_label">Clear</property>
     <property name="stock_id">gtk-clear</property>
-    <property name="is_important">True</property>
   </object>
   <object class="GtkAction" id="zoom_100_action">
+    <property name="is_important">True</property>
     <property name="label">Zoom 100%</property>
     <property name="short_label">zoom_100</property>
     <property name="stock_id">gtk-zoom-100</property>
-    <property name="is_important">True</property>
   </object>
   <object class="GtkAction" id="zoom_fit_action">
+    <property name="is_important">True</property>
     <property name="label">Zoom to fit</property>
     <property name="short_label">zoom_fit</property>
     <property name="stock_id">gtk-zoom-fit</property>
-    <property name="is_important">True</property>
   </object>
   <object class="GtkAction" id="zoom_in_action">
+    <property name="is_important">True</property>
     <property name="label">Zoom in</property>
     <property name="short_label">zoom_in</property>
     <property name="stock_id">gtk-zoom-in</property>
-    <property name="is_important">True</property>
   </object>
   <object class="GtkAction" id="zoom_out_action">
+    <property name="is_important">True</property>
     <property name="label">Zoom out</property>
     <property name="short_label">zoom_out</property>
     <property name="stock_id">gtk-zoom-out</property>
-    <property name="is_important">True</property>
   </object>
   <object class="GtkImage" id="image_configure_jack">
-    <property name="visible">True</property>
     <property name="stock">gtk-preferences</property>
+    <property name="visible">True</property>
   </object>
   <object class="GtkImage" id="image_reactivate_ladishd">
-    <property name="visible">True</property>
     <property name="stock">gtk-refresh</property>
+    <property name="visible">True</property>
   </object>
   <object class="GtkImage" id="image_arrange_canvas">
-    <property name="visible">True</property>
     <property name="stock">gtk-sort-ascending</property>
+    <property name="visible">True</property>
   </object>
   <object class="GtkImage" id="image_start_app">
-    <property name="visible">True</property>
     <property name="stock">gtk-execute</property>
+    <property name="visible">True</property>
   </object>
   <object class="GtkImage" id="image_new_studio">
-    <property name="visible">True</property>
     <property name="stock">gtk-new</property>
+    <property name="visible">True</property>
   </object>
   <object class="GtkImage" id="image_load_studio">
-    <property name="visible">True</property>
     <property name="stock">gtk-open</property>
+    <property name="visible">True</property>
   </object>
   <object class="GtkImage" id="image_start_studio">
-    <property name="visible">True</property>
     <property name="stock">gtk-media-play</property>
+    <property name="visible">True</property>
   </object>
   <object class="GtkImage" id="image_stop_studio">
-    <property name="visible">True</property>
     <property name="stock">gtk-media-stop</property>
+    <property name="visible">True</property>
   </object>
   <object class="GtkImage" id="image_rename_studio">
-    <property name="visible">True</property>
     <property name="stock">gtk-edit</property>
+    <property name="visible">True</property>
   </object>
   <object class="GtkImage" id="image_save_studio">
-    <property name="visible">True</property>
     <property name="stock">gtk-save</property>
+    <property name="visible">True</property>
   </object>
   <object class="GtkImage" id="image_save_studio_as">
-    <property name="visible">True</property>
     <property name="stock">gtk-save-as</property>
+    <property name="visible">True</property>
   </object>
   <object class="GtkImage" id="image_unload_studio">
-    <property name="visible">True</property>
     <property name="stock">gtk-close</property>
+    <property name="visible">True</property>
   </object>
   <object class="GtkImage" id="image_delete_studio">
-    <property name="visible">True</property>
     <property name="stock">gtk-delete</property>
+    <property name="visible">True</property>
   </object>
   <object class="GtkImage" id="image_create_room">
-    <property name="visible">True</property>
     <property name="stock">gtk-add</property>
+    <property name="visible">True</property>
   </object>
   <object class="GtkImage" id="image_destroy_room">
-    <property name="visible">True</property>
     <property name="stock">gtk-delete</property>
+    <property name="visible">True</property>
   </object>
   <object class="GtkDialog" id="create_room_dialog">
     <property name="border_width">5</property>
-    <property name="title" translatable="yes">Create room</property>
-    <property name="type_hint">normal</property>
-    <property name="transient_for">main_win</property>
     <property name="has_separator">False</property>
+    <property name="title" translatable="yes">Create room</property>
+    <property name="transient_for">main_win</property>
+    <property name="type_hint">normal</property>
     <child internal-child="vbox">
       <object class="GtkVBox" id="create_room_dialog_vbox_top">
-        <property name="visible">True</property>
         <property name="spacing">2</property>
+        <property name="visible">True</property>
         <child>
           <object class="GtkVBox" id="create_room_dialog_vbox_main">
-            <property name="visible">True</property>
             <property name="spacing">5</property>
+            <property name="visible">True</property>
             <child>
               <object class="GtkFrame" id="create_room_dialog_name_frame">
-                <property name="visible">True</property>
                 <property name="label_xalign">0</property>
                 <property name="shadow_type">none</property>
+                <property name="visible">True</property>
                 <child>
                   <object class="GtkEntry" id="create_room_name_entry">
-                    <property name="visible">True</property>
+                    <property name="activates_default">True</property>
                     <property name="can_focus">True</property>
                     <property name="invisible_char">&#x2022;</property>
-                    <property name="activates_default">True</property>
+                    <property name="visible">True</property>
                   </object>
                 </child>
                 <child type="label">
                   <object class="GtkLabel" id="create_room_dialog_name_label">
-                    <property name="visible">True</property>
                     <property name="label" translatable="yes">&lt;b&gt;Name&lt;/b&gt;</property>
                     <property name="use_markup">True</property>
+                    <property name="visible">True</property>
                   </object>
                 </child>
               </object>
@@ -1485,22 +1485,22 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
             </child>
             <child>
               <object class="GtkFrame" id="create_room_dialog_templates_frame">
-                <property name="visible">True</property>
                 <property name="label_xalign">0</property>
                 <property name="shadow_type">none</property>
+                <property name="visible">True</property>
                 <child>
                   <object class="GtkTreeView" id="room_templates_treeview">
-                    <property name="width_request">200</property>
+                    <property name="can_focus">True</property>
                     <property name="height_request">100</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
+                    <property name="width_request">200</property>
                   </object>
                 </child>
                 <child type="label">
                   <object class="GtkLabel" id="create_room_dialog_template_label">
-                    <property name="visible">True</property>
                     <property name="label" translatable="yes">&lt;b&gt;Create from template&lt;/b&gt;</property>
                     <property name="use_markup">True</property>
+                    <property name="visible">True</property>
                   </object>
                 </child>
               </object>
@@ -1515,15 +1515,15 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
         </child>
         <child internal-child="action_area">
           <object class="GtkHButtonBox" id="create_room_dialog_action_area">
-            <property name="visible">True</property>
             <property name="layout_style">end</property>
+            <property name="visible">True</property>
             <child>
               <object class="GtkButton" id="create_room_cancel_button">
                 <property name="label">gtk-cancel</property>
-                <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
+                <property name="visible">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1534,12 +1534,12 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
             <child>
               <object class="GtkButton" id="create_room_ok_button">
                 <property name="label">gtk-ok</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="can_default">True</property>
+                <property name="can_focus">True</property>
                 <property name="has_default">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
+                <property name="visible">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1562,45 +1562,45 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
     </action-widgets>
   </object>
   <object class="GtkImage" id="image_load_project">
-    <property name="visible">True</property>
     <property name="stock">gtk-open</property>
+    <property name="visible">True</property>
   </object>
   <object class="GtkImage" id="image_unload_project">
-    <property name="visible">True</property>
     <property name="stock">gtk-close</property>
+    <property name="visible">True</property>
   </object>
   <object class="GtkImage" id="image_rename_project">
-    <property name="visible">True</property>
     <property name="stock">gtk-edit</property>
+    <property name="visible">True</property>
   </object>
   <object class="GtkImage" id="image_save_project">
-    <property name="visible">True</property>
     <property name="stock">gtk-save</property>
+    <property name="visible">True</property>
   </object>
   <object class="GtkImage" id="image_save_as_project">
-    <property name="visible">True</property>
     <property name="stock">gtk-save-as</property>
+    <property name="visible">True</property>
   </object>
   <object class="GtkDialog" id="project_save_as_dialog">
     <property name="border_width">5</property>
-    <property name="type_hint">normal</property>
-    <property name="transient_for">main_win</property>
     <property name="has_separator">False</property>
+    <property name="transient_for">main_win</property>
+    <property name="type_hint">normal</property>
     <child internal-child="vbox">
       <object class="GtkVBox" id="project_save_as_dialog_vbox_top">
-        <property name="visible">True</property>
         <property name="spacing">2</property>
+        <property name="visible">True</property>
         <child>
           <object class="GtkTable" id="project_save_as_table">
-            <property name="visible">True</property>
-            <property name="n_rows">2</property>
-            <property name="n_columns">2</property>
             <property name="column_spacing">2</property>
+            <property name="n_columns">2</property>
+            <property name="n_rows">2</property>
             <property name="row_spacing">2</property>
+            <property name="visible">True</property>
             <child>
               <object class="GtkLabel" id="project_save_as_path_label">
-                <property name="visible">True</property>
                 <property name="label" translatable="yes">Path</property>
+                <property name="visible">True</property>
               </object>
               <packing>
                 <property name="x_options">GTK_FILL</property>
@@ -1608,21 +1608,21 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
             </child>
             <child>
               <object class="GtkLabel" id="project_save_as_name_label">
-                <property name="visible">True</property>
                 <property name="label" translatable="yes">Name</property>
+                <property name="visible">True</property>
               </object>
               <packing>
-                <property name="top_attach">1</property>
                 <property name="bottom_attach">2</property>
+                <property name="top_attach">1</property>
                 <property name="x_options">GTK_FILL</property>
               </packing>
             </child>
             <child>
               <object class="GtkEntry" id="project_save_as_path_entry">
-                <property name="visible">True</property>
+                <property name="activates_default">True</property>
                 <property name="can_focus">True</property>
                 <property name="invisible_char">&#x25CF;</property>
-                <property name="activates_default">True</property>
+                <property name="visible">True</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -1631,16 +1631,16 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
             </child>
             <child>
               <object class="GtkEntry" id="project_save_as_name_entry">
-                <property name="visible">True</property>
+                <property name="activates_default">True</property>
                 <property name="can_focus">True</property>
                 <property name="invisible_char">&#x25CF;</property>
-                <property name="activates_default">True</property>
+                <property name="visible">True</property>
               </object>
               <packing>
+                <property name="bottom_attach">2</property>
                 <property name="left_attach">1</property>
                 <property name="right_attach">2</property>
                 <property name="top_attach">1</property>
-                <property name="bottom_attach">2</property>
               </packing>
             </child>
           </object>
@@ -1651,15 +1651,15 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
         </child>
         <child internal-child="action_area">
           <object class="GtkHButtonBox" id="project_save_as_dialog-action_area">
-            <property name="visible">True</property>
             <property name="layout_style">end</property>
+            <property name="visible">True</property>
             <child>
               <object class="GtkButton" id="project_save_as_cancel_button">
                 <property name="label">gtk-cancel</property>
-                <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
+                <property name="visible">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1670,12 +1670,12 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
             <child>
               <object class="GtkButton" id="project_save_as_ok_button">
                 <property name="label">gtk-ok</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
                 <property name="can_default">True</property>
+                <property name="can_focus">True</property>
                 <property name="has_default">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
+                <property name="visible">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1699,31 +1699,31 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
   </object>
   <object class="GtkDialog" id="settings_dialog">
     <property name="border_width">5</property>
-    <property name="type_hint">normal</property>
-    <property name="transient_for">main_win</property>
     <property name="has_separator">False</property>
+    <property name="transient_for">main_win</property>
+    <property name="type_hint">normal</property>
     <child internal-child="vbox">
       <object class="GtkVBox" id="settings_dialog-vbox">
-        <property name="visible">True</property>
         <property name="spacing">2</property>
+        <property name="visible">True</property>
         <child>
           <object class="GtkTable" id="settings_top_table">
-            <property name="visible">True</property>
-            <property name="n_columns">2</property>
             <property name="column_spacing">20</property>
+            <property name="n_columns">2</property>
             <property name="row_spacing">5</property>
+            <property name="visible">True</property>
             <child>
               <object class="GtkVBox" id="settings_bool_vbox">
-                <property name="visible">True</property>
-                <property name="spacing">5</property>
                 <property name="homogeneous">True</property>
+                <property name="spacing">5</property>
+                <property name="visible">True</property>
                 <child>
                   <object class="GtkCheckButton" id="settings_studio_autostart_checkbutton">
                     <property name="label" translatable="yes">Start studio on load</property>
-                    <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="receives_default">False</property>
                     <property name="draw_indicator">True</property>
+                    <property name="receives_default">False</property>
+                    <property name="visible">True</property>
                   </object>
                   <packing>
                     <property name="position">0</property>
@@ -1732,10 +1732,10 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
                 <child>
                   <object class="GtkCheckButton" id="settings_send_notifications_checkbutton">
                     <property name="label" translatable="yes">Send notifications</property>
-                    <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="receives_default">False</property>
                     <property name="draw_indicator">True</property>
+                    <property name="receives_default">False</property>
+                    <property name="visible">True</property>
                   </object>
                   <packing>
                     <property name="position">1</property>
@@ -1745,34 +1745,34 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
             </child>
             <child>
               <object class="GtkTable" id="settings_string_table">
-                <property name="visible">True</property>
-                <property name="n_rows">2</property>
-                <property name="n_columns">2</property>
                 <property name="column_spacing">5</property>
+                <property name="n_columns">2</property>
+                <property name="n_rows">2</property>
                 <property name="row_spacing">5</property>
+                <property name="visible">True</property>
                 <child>
                   <object class="GtkLabel" id="settings_shell_label">
+                    <property name="label" translatable="yes">Shell to use:</property>
                     <property name="visible">True</property>
                     <property name="xalign">0</property>
-                    <property name="label" translatable="yes">Shell to use:</property>
                   </object>
                 </child>
                 <child>
                   <object class="GtkLabel" id="settings_terminal_label">
+                    <property name="label" translatable="yes">Terminal to use:</property>
                     <property name="visible">True</property>
                     <property name="xalign">0</property>
-                    <property name="label" translatable="yes">Terminal to use:</property>
                   </object>
                   <packing>
-                    <property name="top_attach">1</property>
                     <property name="bottom_attach">2</property>
+                    <property name="top_attach">1</property>
                   </packing>
                 </child>
                 <child>
                   <object class="GtkEntry" id="settings_shell_entry">
-                    <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="invisible_char">&#x25CF;</property>
+                    <property name="visible">True</property>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
@@ -1781,15 +1781,15 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
                 </child>
                 <child>
                   <object class="GtkEntry" id="settings_terminal_entry">
-                    <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="invisible_char">&#x25CF;</property>
+                    <property name="visible">True</property>
                   </object>
                   <packing>
+                    <property name="bottom_attach">2</property>
                     <property name="left_attach">1</property>
                     <property name="right_attach">2</property>
                     <property name="top_attach">1</property>
-                    <property name="bottom_attach">2</property>
                   </packing>
                 </child>
               </object>
@@ -1807,15 +1807,15 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
         </child>
         <child internal-child="action_area">
           <object class="GtkHButtonBox" id="settings_dialog-action_area">
-            <property name="visible">True</property>
             <property name="layout_style">end</property>
+            <property name="visible">True</property>
             <child>
               <object class="GtkButton" id="settings_cancel_button">
                 <property name="label">gtk-cancel</property>
-                <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
+                <property name="visible">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1826,10 +1826,10 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
             <child>
               <object class="GtkButton" id="settings_ok_button">
                 <property name="label">gtk-ok</property>
-                <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_stock">True</property>
+                <property name="visible">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -1852,7 +1852,7 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
     </action-widgets>
   </object>
   <object class="GtkImage" id="image_settings">
-    <property name="visible">True</property>
     <property name="stock">gtk-preferences</property>
+    <property name="visible">True</property>
   </object>
 </interface>
