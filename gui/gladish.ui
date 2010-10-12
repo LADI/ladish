@@ -1326,7 +1326,7 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
             <property name="layout_style">end</property>
             <property name="visible">True</property>
             <child>
-              <object class="GtkButton" id="button1">
+              <object class="GtkButton" id="app_dialog-button_cancel">
                 <property name="label">gtk-cancel</property>
                 <property name="can_default">True</property>
                 <property name="can_focus">True</property>
@@ -1341,7 +1341,7 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="button2">
+              <object class="GtkButton" id="app_dialog-button_ok">
                 <property name="label">gtk-ok</property>
                 <property name="can_default">True</property>
                 <property name="can_focus">True</property>
@@ -1367,8 +1367,8 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
       </object>
     </child>
     <action-widgets>
-      <action-widget response="1">button1</action-widget>
-      <action-widget response="2">button2</action-widget>
+      <action-widget response="1">app_dialog-button_cancel</action-widget>
+      <action-widget response="2">app_dialog-button_ok</action-widget>
     </action-widgets>
   </object>
   <object class="GtkAction" id="clear_xruns_and_max_dsp_load_action">
