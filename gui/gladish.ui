@@ -1162,7 +1162,7 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
     <property name="type_hint">dialog</property>
     <property name="window_position">center-on-parent</property>
     <child internal-child="vbox">
-      <object class="GtkVBox" id="app_dialog-vbo">
+      <object class="GtkVBox" id="app_dialog-vbox">
         <property name="spacing">2</property>
         <property name="visible">True</property>
         <child>
