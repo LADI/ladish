@@ -439,6 +439,7 @@ def build(bld):
             'ask_dialog.c',
             'create_room_dialog.c',
             'menu.c',
+            'dynmenu.c',
             'toolbar.c',
             'about.c',
             'dbus.c',

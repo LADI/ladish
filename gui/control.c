@@ -154,11 +154,8 @@ void menu_request_new_studio(void)
   }
 }
 
-void on_load_studio(GtkWidget * item)
+void on_load_studio(const char * studio_name)
 {
-  const char * studio_name;
-
-  studio_name = gtk_label_get_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(item))));
   log_info("Load studio \"%s\"", studio_name);
 
   if (!control_proxy_load_studio(studio_name))
@@ -167,12 +164,9 @@ void on_load_studio(GtkWidget * item)
   }
 }
 
-void on_delete_studio(GtkWidget * item)
+void on_delete_studio(const char * studio_name)
 {
-  const char * studio_name;
   bool result;
-
-  studio_name = gtk_label_get_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(item))));
 
   if (!ask_dialog(&result, "<b><big>Confirm studio delete</big></b>", "Studio \"%s\" will be deleted. Are you sure?", studio_name) || !result)
   {

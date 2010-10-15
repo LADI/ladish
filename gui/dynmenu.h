@@ -5,7 +5,7 @@
  * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains declarations of internal stuff used to glue gui modules together
+ * This file contains interface to the dynamic menu related code
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -24,29 +24,32 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef INTERNAL_H__725DFCCC_50F8_437A_9CD7_8B59125C6A11__INCLUDED
-#define INTERNAL_H__725DFCCC_50F8_437A_9CD7_8B59125C6A11__INCLUDED
+#ifndef DYNMENU_H__38C9F38E_2BB9_4934_9E2B_A7FC2087DDA5__INCLUDED
+#define DYNMENU_H__38C9F38E_2BB9_4934_9E2B_A7FC2087DDA5__INCLUDED
 
 #include "common.h"
 
-/* dbus.c */
-void dbus_init(void);
-void dbus_uninit(void);
+typedef struct ladish_dynmenu_tag { int unused; } * ladish_dynmenu_handle;
 
-/* control.c */
-void on_load_studio(const char * studio_name);
-void on_delete_studio(const char * studio_name);
+bool
+ladish_dynmenu_create(
+  const char * menu_item,
+  const char * menu,
+  bool
+  (* fill_callback)(
+    void
+    (* callback)(
+      void * context,
+      const char * name,
+      void * data,
+      void (* data_free)()),
+    void * context),
+  const char * description,
+  void (* item_activate_callback)(const char * name, void * data),
+  ladish_dynmenu_handle * dynmenu_handle_ptr);
 
-/* studio_list.c */
-bool create_studio_lists(void);
-void destroy_studio_lists(void);
+void
+ladish_dynmenu_destroy(
+  ladish_dynmenu_handle dynmenu_handle);
 
-void set_room_callbacks(void);
-
-/* dialogs.c */
-void init_dialogs(void);
-bool name_dialog(const char * title, const char * object, const char * old_name, char ** new_name);
-
-extern GtkWidget * g_main_win;
-
-#endif /* #ifndef INTERNAL_H__725DFCCC_50F8_437A_9CD7_8B59125C6A11__INCLUDED */
+#endif /* #ifndef DYNMENU_H__38C9F38E_2BB9_4934_9E2B_A7FC2087DDA5__INCLUDED */

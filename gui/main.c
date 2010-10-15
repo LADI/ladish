@@ -103,7 +103,10 @@ int main(int argc, char** argv)
 
   init_dialogs();
 
-  init_studio_lists();
+  if (!create_studio_lists())
+  {
+    return 1;
+  }
 
   init_statusbar();
   init_jack_widgets();
@@ -174,6 +177,7 @@ int main(int argc, char** argv)
   control_proxy_uninit();
   uninit_jack();
   create_room_dialog_uninit();
+  destroy_studio_lists();
   uninit_gtk_builder();
 
   conf_proxy_uninit();
