@@ -28,6 +28,7 @@
 #include "menu.h"
 #include "gtk_builder.h"
 #include "studio.h"
+#include "dynmenu.h"
 
 static GtkWidget * g_menu_item_new_studio;
 static GtkWidget * g_menu_item_start_studio;
@@ -60,6 +61,8 @@ static GtkWidget * g_menu_item_start_app;
 
 static bool g_latency_changing;
 
+static ladish_dynmenu_handle g_recent_projects_list;
+
 typedef void (* menu_request_toggle_func)(bool visible);
 
 static void toggled(GtkCheckMenuItem * checkmenuitem, gpointer user_data)
@@ -82,7 +85,86 @@ static void buffer_size_change_request(GtkCheckMenuItem * item_ptr, gpointer use
   menu_request_jack_latency_change((uint32_t)(guintptr)user_data);
 }
 
-void menu_init(void)
+struct ladish_recent_projects_list_closure
+{
+  GtkMenu * menu;
+  void
+  (* callback)(
+    void * context,
+    const char * name,
+    void * data,
+    void (* data_free)());
+  void * context;
+};
+
+static void on_load_project_main_menu(const char * name, void * data)
+{
+  log_info("Request to load project \"%s\":\"%s\"", name, (const char *)data);
+  if (!ladish_room_proxy_load_project(graph_view_get_room(get_current_view()), data))
+  {
+    error_message_box("Project load failed, please inspect logs.");
+  }
+}
+
+static void on_load_project_popup_menu(const char * name, void * data)
+{
+  log_info("Request to load project \"%s\":\"%s\"", name, (const char *)data);
+  if (!ladish_room_proxy_load_project(graph_view_get_room(get_current_view()), data))
+  {
+    error_message_box("Project load failed, please inspect logs.");
+  }
+}
+
+#define closure_ptr ((struct ladish_recent_projects_list_closure * )context)
+
+static
+void
+add_recent_project(
+  void * context,
+  const char * project_name,
+  const char * project_dir)
+{
+  GtkWidget * menuitem;
+
+  if (closure_ptr->menu != NULL)
+  {
+    menuitem = gtk_menu_item_new_with_label(project_name);
+    g_signal_connect_data(
+      menuitem,
+      "activate",
+      (GCallback)on_load_project_popup_menu,
+      strdup(project_dir),
+      (GClosureNotify)free,
+      (GConnectFlags)0);
+    gtk_menu_shell_append(GTK_MENU_SHELL(closure_ptr->menu), menuitem);
+  }
+  else
+  {
+    closure_ptr->callback(closure_ptr->context, project_name, strdup(project_dir), NULL);
+  }
+}
+
+#undef closure_ptr
+
+bool
+get_recent_projects_list(
+  void (* callback)(
+    void * context,
+    const char * name,
+    void * data,
+    void (* data_free)()),
+  void * context)
+{
+  struct ladish_recent_projects_list_closure closure;
+
+  closure.menu = NULL;
+  closure.callback = callback;
+  closure.context = context;
+
+  return ladish_room_proxy_get_recent_projects(graph_view_get_room(get_current_view()), 10, add_recent_project, &closure);
+}
+
+bool menu_init(void)
 {
   g_menu_item_new_studio = get_gtk_builder_widget("menu_item_new_studio");
   g_menu_item_start_app = get_gtk_builder_widget("menu_item_start_app");
@@ -144,6 +226,24 @@ void menu_init(void)
   g_signal_connect(G_OBJECT(g_menu_item_jack_latency_2048), "toggled", G_CALLBACK(buffer_size_change_request), (gpointer)2048);
   g_signal_connect(G_OBJECT(g_menu_item_jack_latency_4096), "toggled", G_CALLBACK(buffer_size_change_request), (gpointer)4096);
   g_signal_connect(G_OBJECT(g_menu_item_jack_latency_8192), "toggled", G_CALLBACK(buffer_size_change_request), (gpointer)8192);
+
+  if (!ladish_dynmenu_create(
+        "menu_item_recently_loaded_projects",
+        "recently_loaded_projects_menu",
+        get_recent_projects_list,
+        "recent projects list",
+        on_load_project_main_menu,
+        &g_recent_projects_list))
+  {
+    return false;
+  }
+
+  return true;
+}
+
+void menu_uninit(void)
+{
+  ladish_dynmenu_destroy(g_recent_projects_list);
 }
 
 void menu_studio_state_changed(unsigned int studio_state)
@@ -232,6 +332,7 @@ void menu_view_activated(bool room)
   gtk_widget_set_sensitive(g_menu_item_unload_project, room);
   gtk_widget_set_sensitive(g_menu_item_save_project, room);
   gtk_widget_set_sensitive(g_menu_item_save_as_project, room);
+  gtk_widget_set_sensitive(get_gtk_builder_widget("menu_item_recently_loaded_projects"), room);
 }
 
 static void on_popup_menu_action_start_app(GtkWidget * menuitem, gpointer userdata)
@@ -272,6 +373,7 @@ static void on_popup_menu_action_save_project_as(GtkWidget * menuitem, gpointer 
 void fill_view_popup_menu(GtkMenu * menu, graph_view_handle view)
 {
   GtkWidget * menuitem;
+  struct ladish_recent_projects_list_closure closure;
 
   log_info("filling view menu...");
 
@@ -284,6 +386,19 @@ void fill_view_popup_menu(GtkMenu * menu, graph_view_handle view)
 
   if (is_room_view(view))
   {
+    closure.menu = menu;
+    closure.callback = NULL;
+    closure.context = NULL;
+
+    menuitem = gtk_separator_menu_item_new(); /* separator */
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+
+    if (ladish_room_proxy_get_recent_projects(graph_view_get_room(get_current_view()), 10, add_recent_project, &closure))
+    {
+      menuitem = gtk_separator_menu_item_new(); /* separator */
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+    }
+
     menuitem = gtk_menu_item_new_with_label("Load Project...");
     g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_load_project, NULL);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);

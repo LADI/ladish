@@ -118,7 +118,11 @@ int main(int argc, char** argv)
 
   init_actions_and_accelerators();
 
-  menu_init();
+  if (!menu_init())
+  {
+    return 1;
+  }
+
   buffer_size_clear();
 
   if (!toolbar_init())
@@ -176,6 +180,7 @@ int main(int argc, char** argv)
   studio_proxy_uninit();
   control_proxy_uninit();
   uninit_jack();
+  menu_uninit();
   create_room_dialog_uninit();
   destroy_studio_lists();
   uninit_gtk_builder();

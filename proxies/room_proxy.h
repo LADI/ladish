@@ -49,4 +49,14 @@ bool ladish_room_proxy_save_project(ladish_room_proxy_handle proxy, const char *
 bool ladish_room_proxy_unload_project(ladish_room_proxy_handle proxy);
 bool ladish_room_proxy_get_project_properties(ladish_room_proxy_handle proxy, char ** project_dir, char ** project_name);
 
+bool
+ladish_room_proxy_get_recent_projects(
+  ladish_room_proxy_handle proxy,
+  uint16_t max_items,
+  void (* callback)(
+    void * context,
+    const char * project_name,
+    const char * project_dir),
+  void * context);
+
 #endif /* #ifndef ROOM_PROXY_H__0FDD1790_EF07_4C6C_8C95_0F75E29A3E81__INCLUDED */

@@ -239,6 +239,20 @@
                         <property name="visible">True</property>
                       </object>
                     </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem" id="project_menu_separator1">
+                        <property name="visible">True</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkImageMenuItem" id="menu_item_recently_loaded_projects">
+                        <property name="label">R_ecently Loaded</property>
+                        <property name="sensitive">False</property>
+                        <property name="use_stock">False</property>
+                        <property name="use_underline">True</property>
+                        <property name="visible">True</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>
@@ -1084,6 +1098,10 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
     <property name="visible">True</property>
   </object>
   <object class="GtkMenu" id="delete_studio_menu">
+    <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+    <property name="visible">True</property>
+  </object>
+  <object class="GtkMenu" id="recently_loaded_projects_menu">
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
     <property name="visible">True</property>
   </object>

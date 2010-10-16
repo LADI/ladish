@@ -29,7 +29,9 @@
 
 #include "graph_view.h"
 
-void menu_init(void);
+bool menu_init(void);
+void menu_uninit(void);
+
 void menu_studio_state_changed(unsigned int studio_state);
 void menu_set_jack_latency_items_sensivity(bool sensitive);
 bool menu_set_jack_latency(uint32_t buffer_size, bool force);

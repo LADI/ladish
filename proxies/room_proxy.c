@@ -355,4 +355,59 @@ bool ladish_room_proxy_get_project_properties(ladish_room_proxy_handle proxy, ch
   return true;
 }
 
+bool
+ladish_room_proxy_get_recent_projects(
+  ladish_room_proxy_handle proxy,
+  uint16_t max_items,
+  void (* callback)(
+    void * context,
+    const char * project_name,
+    const char * project_dir),
+  void * context)
+{
+  DBusMessage * reply_ptr;
+  const char * reply_signature;
+  DBusMessageIter top_iter;
+  DBusMessageIter struct_iter;
+  DBusMessageIter array_iter;
+  const char * project_dir;
+  const char * project_name;
+
+  if (!dbus_call(proxy_ptr->service, proxy_ptr->object, IFACE_RECENT_ITEMS, "get", "q", &max_items, NULL, &reply_ptr))
+  {
+    log_error("GetStudioList() failed.");
+    return false;
+  }
+
+  reply_signature = dbus_message_get_signature(reply_ptr);
+  if (strcmp(reply_signature, "a(sa{sv})") != 0)
+  {
+    log_error("GetStudioList() reply signature mismatch. '%s'", reply_signature);
+    dbus_message_unref(reply_ptr);
+    return false;
+  }
+
+  dbus_message_iter_init(reply_ptr, &top_iter);
+  for (dbus_message_iter_recurse(&top_iter, &array_iter);
+       dbus_message_iter_get_arg_type(&array_iter) != DBUS_TYPE_INVALID;
+       dbus_message_iter_next(&array_iter))
+  {
+    dbus_message_iter_recurse(&array_iter, &struct_iter);
+    dbus_message_iter_get_basic(&struct_iter, &project_dir);
+    dbus_message_iter_next(&struct_iter);
+
+    if (!dbus_iter_get_dict_entry_string(&struct_iter, "name", &project_name))
+    {
+      project_name = NULL;
+    }
+
+    callback(context, project_name != NULL ? project_name : project_dir, project_dir);
+
+    dbus_message_iter_next(&struct_iter);
+  }
+
+  dbus_message_unref(reply_ptr);
+  return true;
+}
+
 #undef proxy_ptr
