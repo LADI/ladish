@@ -540,6 +540,7 @@ def build(bld):
 
         for source in [
             'catdup.c',
+            'file.c',
             ]:
             gladish.source.append(os.path.join("common", source))
 

@@ -34,46 +34,9 @@
 #include "gtk_builder.h"
 #include "version.h"
 
+#include "../common/file.h"
+
 #define ABOUT_DIALOG_LOGO     "ladish-logo-128x128.png"
-
-static char * read_file_contents(const char * filename)
-{
-  int fd;
-  struct stat st;
-  char * buffer;
-
-  if (stat(filename, &st) != 0)
-  {
-    return NULL;
-  }
-
-  fd = open(filename, O_RDONLY);
-  if (fd == -1)
-  {
-    return NULL;
-  }
-
-  buffer = malloc(st.st_size + 1);
-  if (buffer == NULL)
-  {
-    close(fd);
-    return NULL;
-  }
-
-  if (read(fd, buffer, (size_t)st.st_size) != (ssize_t)st.st_size)
-  {
-    free(buffer);
-    buffer = NULL;
-  }
-  else
-  {
-    buffer[st.st_size] = 0;
-  }
-
-  close(fd);
-
-  return buffer;
-}
 
 void show_about(void)
 {
