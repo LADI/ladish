@@ -38,6 +38,8 @@
 #define BASE_DIR "/." BASE_NAME
 extern char * g_base_dir;
 
+#define LADISH_CHECK_LOG_TEXT "Please inspect the ladishd log (~/.log/ladish/ladish.log) for more info"
+
 /* connection between two ports */
 /* virtual connection is connection where at least one the ports is virtual */
 /* superconnection is connection that implements virtual connection chain at JACK level */

@@ -753,7 +753,7 @@ exit:
   if (!ret)
   {
     ladish_room_unload_project(room_handle);
-    ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Project load failed", "Please inspect the ladishd log (~/.ladish/ladish.log) for more info");
+    ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Project load failed", LADISH_CHECK_LOG_TEXT);
   }
 
   return ret;

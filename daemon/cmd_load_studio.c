@@ -915,7 +915,7 @@ static bool run(void * command_context)
       log_error("XML_ParseBuffer() failed.");
     }
 
-    ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Studio load failed", "Please inspect the ladishd log (~/.ladish/ladish.log) for more info");
+    ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Studio load failed", LADISH_CHECK_LOG_TEXT);
     ladish_studio_clear();
     XML_ParserFree(parser);
     close(fd);
@@ -928,7 +928,7 @@ static bool run(void * command_context)
   if (parse_context.error)
   {
     ladish_studio_clear();
-    ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Studio load failed", "Please inspect the ladishd log (~/.ladish/ladish.log) for more info");
+    ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Studio load failed", LADISH_CHECK_LOG_TEXT);
     return false;
   }
 

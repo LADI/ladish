@@ -449,7 +449,7 @@ free_filenames:
 exit:
   if (!ret)
   {
-    ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Studio save failed", "Please inspect the ladishd log (~/.ladish/ladish.log) for more info");
+    ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Studio save failed", LADISH_CHECK_LOG_TEXT);
   }
 
   return ret;
