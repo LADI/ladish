@@ -24,6 +24,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"  /* Get _GNU_SOURCE defenition first to have some GNU extension available */
+
 #include <sys/types.h>
 #include <signal.h>
 
