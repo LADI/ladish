@@ -1636,22 +1636,11 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="project_save_as_path_entry">
-                <property name="activates_default">True</property>
-                <property name="can_focus">True</property>
-                <property name="invisible_char">&#x25CF;</property>
-                <property name="visible">True</property>
-              </object>
-              <packing>
-                <property name="left_attach">1</property>
-                <property name="right_attach">2</property>
-              </packing>
-            </child>
-            <child>
               <object class="GtkEntry" id="project_save_as_name_entry">
                 <property name="activates_default">True</property>
                 <property name="can_focus">True</property>
                 <property name="invisible_char">&#x25CF;</property>
+                <property name="tooltip_text" translatable="yes">Default is project directory name</property>
                 <property name="visible">True</property>
               </object>
               <packing>
@@ -1659,6 +1648,40 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
                 <property name="left_attach">1</property>
                 <property name="right_attach">2</property>
                 <property name="top_attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkHBox" id="project_save_as_path_hbox">
+                <property name="spacing">3</property>
+                <property name="visible">True</property>
+                <child>
+                  <object class="GtkEntry" id="project_save_as_path_entry">
+                    <property name="activates_default">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="invisible_char">&#x25CF;</property>
+                    <property name="tooltip_text" translatable="yes">Default is ~/ladish-projects</property>
+                    <property name="visible">True</property>
+                  </object>
+                  <packing>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="project_save_as_path_button">
+                    <property name="can_focus">True</property>
+                    <property name="image">image_save_project_open_dir</property>
+                    <property name="receives_default">True</property>
+                    <property name="visible">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="right_attach">2</property>
               </packing>
             </child>
           </object>
@@ -1871,6 +1894,70 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
   </object>
   <object class="GtkImage" id="image_settings">
     <property name="stock">gtk-preferences</property>
+    <property name="visible">True</property>
+  </object>
+  <object class="GtkFileChooserDialog" id="project_save_as_dir_sel_dialog">
+    <property name="action">select-folder</property>
+    <property name="border_width">5</property>
+    <property name="destroy_with_parent">True</property>
+    <property name="do_overwrite_confirmation">True</property>
+    <property name="has_separator">False</property>
+    <property name="type_hint">dialog</property>
+    <property name="window_position">center-on-parent</property>
+    <child internal-child="vbox">
+      <object class="GtkVBox" id="project_save_as_dir_sel_dialog_vbox">
+        <property name="spacing">2</property>
+        <property name="visible">True</property>
+        <child internal-child="action_area">
+          <object class="GtkHButtonBox" id="project_save_as_dir_sel_dialog-action_area">
+            <property name="layout_style">end</property>
+            <property name="visible">True</property>
+            <child>
+              <object class="GtkButton" id="project_save_as_dir_sel_cancel_button">
+                <property name="label">gtk-cancel</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+                <property name="visible">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="project_save_as_dir_sel_ok_button">
+                <property name="label">gtk-ok</property>
+                <property name="can_default">True</property>
+                <property name="can_focus">True</property>
+                <property name="has_default">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+                <property name="visible">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="pack_type">end</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <action-widgets>
+      <action-widget response="-6">project_save_as_dir_sel_cancel_button</action-widget>
+      <action-widget response="-5">project_save_as_dir_sel_ok_button</action-widget>
+    </action-widgets>
+  </object>
+  <object class="GtkImage" id="image_save_project_open_dir">
+    <property name="stock">gtk-open</property>
     <property name="visible">True</property>
   </object>
 </interface>
