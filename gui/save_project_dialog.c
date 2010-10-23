@@ -44,7 +44,7 @@ static void on_path_button_clicked(void)
   {
     gtk_entry_set_text(
       path,
-      gtk_file_chooser_get_filename( GTK_FILE_CHOOSER(dialog)) );
+      gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog)));
   }
 }
 
