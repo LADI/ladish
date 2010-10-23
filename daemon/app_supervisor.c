@@ -46,6 +46,7 @@ struct ladish_app
   bool terminal;
   uint8_t level;
   pid_t pid;
+  pid_t firstborn_pid;
   bool zombie;                  /* if true, remove when stopped */
   bool autorun;
   unsigned int state;
@@ -261,6 +262,7 @@ ladish_app_supervisor_add(
   app_ptr->terminal = terminal;
   app_ptr->level = level;
   app_ptr->pid = 0;
+  app_ptr->firstborn_pid = 0;
 
   app_ptr->id = supervisor_ptr->next_id++;
   uuid_generate(app_ptr->uuid);
@@ -288,15 +290,49 @@ ladish_app_supervisor_add(
   return (ladish_app_handle)app_ptr;
 }
 
-static void ladish_app_send_signal(struct ladish_app * app_ptr, int sig)
+static void ladish_app_send_signal(struct ladish_app * app_ptr, int sig, bool prefer_firstborn)
 {
+  pid_t pid;
+  const char * signal_name;
+
   ASSERT(app_ptr->state = LADISH_APP_STATE_STARTED);
   if (app_ptr->pid <= 0)
   {
     ASSERT_NO_PASS;
     return;
   }
-  kill(app_ptr->pid, sig);
+
+  if (prefer_firstborn && app_ptr->firstborn_pid != 0)
+  {
+    pid = app_ptr->firstborn_pid;
+  }
+  else
+  {
+    pid = app_ptr->pid;
+  }
+
+  switch (sig)
+  {
+  case SIGTERM:
+    signal_name = "SIGTERM";
+    break;
+  case SIGKILL:
+    signal_name = "SIGKILL";
+    break;
+  case SIGUSR1:
+    signal_name = "SIGUSR1";
+    break;
+  default:
+    signal_name = strsignal(sig);
+    if (signal_name == NULL)
+    {
+      signal_name = "unknown";
+    }
+  }
+
+  log_info("sending signal %d (%s) to '%s' with pid %u", sig, signal_name, app_ptr->name, (unsigned int)pid);
+
+  kill(pid, sig);
 }
 
 void ladish_app_supervisor_clear(ladish_app_supervisor_handle supervisor_handle)
@@ -317,7 +353,7 @@ void ladish_app_supervisor_clear(ladish_app_supervisor_handle supervisor_handle)
     if (app_ptr->pid != 0)
     {
       log_info("terminating '%s'...", app_ptr->name);
-      ladish_app_send_signal(app_ptr, SIGTERM);
+      ladish_app_send_signal(app_ptr, SIGTERM, false);
       app_ptr->zombie = true;
       app_ptr->state = LADISH_APP_STATE_STOPPING;
     }
@@ -374,6 +410,7 @@ bool ladish_app_supervisor_child_exit(ladish_app_supervisor_handle supervisor_ha
       log_info("exit of child '%s' detected.", app_ptr->name);
 
       app_ptr->pid = 0;
+      app_ptr->firstborn_pid = 0;
       if (app_ptr->zombie)
       {
         remove_app_internal(supervisor_ptr, app_ptr);
@@ -417,6 +454,14 @@ ladish_app_supervisor_enum(
   }
 
   return true;
+}
+
+static inline void ladish_app_save_L1_internal(struct ladish_app * app_ptr)
+{
+  if (app_ptr->level == 1)
+  {
+    ladish_app_send_signal(app_ptr, SIGUSR1, true);
+  }
 }
 
 #define app_ptr ((struct ladish_app *)app_handle)
@@ -472,23 +517,49 @@ void ladish_app_get_uuid(ladish_app_handle app_handle, uuid_t uuid)
 
 void ladish_app_stop(ladish_app_handle app_handle)
 {
-  ladish_app_send_signal(app_ptr, SIGTERM);
+  ladish_app_send_signal(app_ptr, SIGTERM, false);
   app_ptr->state = LADISH_APP_STATE_STOPPING;
 }
 
 void ladish_app_kill(ladish_app_handle app_handle)
 {
-  ladish_app_send_signal(app_ptr, SIGKILL);
+  ladish_app_send_signal(app_ptr, SIGKILL, false);
   app_ptr->state = LADISH_APP_STATE_KILL;
 }
 
 void ladish_app_save_L1(ladish_app_handle app_handle)
 {
-  if (app_ptr->level == 1)
+  ladish_app_save_L1_internal(app_ptr);
+}
+
+void ladish_app_add_pid(ladish_app_handle app_handle, pid_t pid)
+{
+  if (app_ptr->pid == 0)
   {
-    log_info("sending SIGUSR1 to '%s' with pid %u", app_ptr->name, (unsigned int)app_ptr->pid);
-    ladish_app_send_signal(app_ptr, SIGUSR1);
+    log_error("Associating pid with stopped app does not make sense");
+    ASSERT_NO_PASS;
+    return;
   }
+
+  if (pid <= 1)                 /* catch -1, 0 and 1 */
+  {
+    log_error("Refusing domination by ignoring pid %d", (int)pid);
+    ASSERT_NO_PASS;
+    return;
+  }
+
+  if (app_ptr->pid == pid)
+  { /* The top level process that is already known */
+    return;
+  }
+
+  if (app_ptr->firstborn_pid != 0)
+  { /* Ignore non-first children */
+    return;
+  }
+
+  log_info("First grandchild with pid %u", (unsigned int)pid);
+  app_ptr->firstborn_pid = pid;
 }
 
 #undef app_ptr
@@ -530,7 +601,7 @@ void ladish_app_supervisor_stop(ladish_app_supervisor_handle supervisor_handle)
     if (app_ptr->pid != 0)
     {
       log_info("terminating '%s'...", app_ptr->name);
-      ladish_app_send_signal(app_ptr, SIGTERM);
+      ladish_app_send_signal(app_ptr, SIGTERM, false);
       app_ptr->autorun = true;
       app_ptr->state = LADISH_APP_STATE_STOPPING;
     }
@@ -556,11 +627,7 @@ void ladish_app_supervisor_save_L1(ladish_app_supervisor_handle supervisor_handl
       continue;
     }
 
-    if (app_ptr->level == 1)
-    {
-      log_info("sending SIGUSR1 to '%s' with pid %u", app_ptr->name, (unsigned int)app_ptr->pid);
-      ladish_app_send_signal(app_ptr, SIGUSR1);
-    }
+    ladish_app_save_L1_internal(app_ptr);
   }
 }
 

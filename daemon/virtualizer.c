@@ -55,19 +55,19 @@ UUID_DEFINE(g_a2j_uuid,0xBE,0x23,0xA2,0x42,0xE2,0xB2,0x11,0xDE,0xB7,0x95,0x00,0x
 struct app_find_context
 {
   pid_t pid;
-  char * app_name;
-  uuid_t app_uuid;
   ladish_graph_handle graph;
+  ladish_app_handle app;
 };
 
 #define app_find_context_ptr ((struct app_find_context *)context)
 
-static bool get_app_properties_from_supervisor(void * context, ladish_graph_handle graph, ladish_app_supervisor_handle app_supervisor)
+static bool lookup_app_in_supervisor(void * context, ladish_graph_handle graph, ladish_app_supervisor_handle app_supervisor)
 {
   pid_t pid;
   ladish_app_handle app;
 
-  ASSERT(app_find_context_ptr->app_name == NULL); /* we stop iteration when app is found */
+  /* we stop iteration when app is found */
+  ASSERT(app_find_context_ptr->app == NULL && app_find_context_ptr->graph == NULL);
 
   //log_info("checking app supervisor \"%s\" for pid %llu", ladish_app_supervisor_get_name(app_supervisor), (unsigned long long)pid);
 
@@ -93,43 +93,34 @@ static bool get_app_properties_from_supervisor(void * context, ladish_graph_hand
     return true;               /* continue app supervisor iteration */
   }
 
-  app_find_context_ptr->app_name = strdup(ladish_app_get_name(app));
-  if (app_find_context_ptr->app_name == NULL)
-  {
-    log_error("strdup() failed for app name '%s'", ladish_app_get_name(app));
-  }
-  else
-  {
-    ladish_app_get_uuid(app, app_find_context_ptr->app_uuid);
-    app_find_context_ptr->pid = pid;
-    app_find_context_ptr->graph = graph;
-  }
+  app_find_context_ptr->app = app;
+  app_find_context_ptr->graph = graph;
 
   return false;               /* stop app supervisor iteration */
 }
 
 #undef app_find_context_ptr
 
-static char * get_app_properties(struct virtualizer * virtualizer_ptr, pid_t pid, ladish_graph_handle * graph_ptr, uuid_t app_uuid)
+static ladish_app_handle ladish_virtualizer_find_app_by_pid(struct virtualizer * virtualizer_ptr, pid_t pid, ladish_graph_handle * graph_ptr)
 {
   struct app_find_context context;
 
-  context.pid = (pid_t)pid;
-  context.app_name = NULL;
+  context.pid = pid;
+  context.app = NULL;
   context.graph = NULL;
-  uuid_clear(context.app_uuid);
 
-  ladish_studio_iterate_virtual_graphs(&context, get_app_properties_from_supervisor);
+  ladish_studio_iterate_virtual_graphs(&context, lookup_app_in_supervisor);
 
-  if (context.app_name != NULL)
-  {
-    ASSERT(context.graph != NULL);
-    ASSERT(!uuid_is_null(context.app_uuid));
-    *graph_ptr = context.graph;
-    uuid_copy(app_uuid, context.app_uuid);
+  if (context.app == NULL)
+  { /* app not found */
+    ASSERT(context.graph == NULL);
+    return NULL;
   }
 
-  return context.app_name;
+  ASSERT(context.graph != NULL);
+  *graph_ptr = context.graph;
+
+  return context.app;
 }
 
 struct find_link_port_context
@@ -271,7 +262,7 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
   ladish_client_handle client;
   const char * a2j_name;
   bool is_a2j;
-  char * app_name;
+  ladish_app_handle app;
   uuid_t app_uuid;
   const char * name;
   pid_t pid;
@@ -284,7 +275,7 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
   is_a2j = a2j_name != NULL && strcmp(a2j_name, jack_name) == 0;
 
   name = jack_name;
-  app_name = NULL;
+  app = NULL;
   graph = NULL;
   jmcore = false;
 
@@ -305,11 +296,13 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
       }
       else
       {
-        app_name = get_app_properties(virtualizer_ptr, pid, &graph, app_uuid);
-        if (app_name != NULL)
+        app = ladish_virtualizer_find_app_by_pid(virtualizer_ptr, pid, &graph);
+        if (app != NULL)
         {
-          log_info("app name is '%s'", app_name);
-          name = app_name;
+          ladish_app_get_uuid(app, app_uuid);
+          ASSERT(!uuid_is_null(app_uuid));
+          name = ladish_app_get_name(app);
+          log_info("app name is '%s'", name);
         }
       }
     }
@@ -337,7 +330,7 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
       if (ladish_client_get_jack_id(client) != 0)
       {
         log_error("Ignoring client with duplicate name '%s' ('%s')", name, jack_name);
-        goto free_app_name;
+        goto exit;
       }
 
       ladish_client_set_jack_id(client, id);
@@ -349,7 +342,7 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
   if (!ladish_client_create(is_a2j ? g_a2j_uuid : NULL, &client))
   {
     log_error("ladish_client_create() failed. Ignoring client %"PRIu64" (%s)", id, jack_name);
-    goto free_app_name;
+    goto exit;
   }
 
   ladish_client_set_jack_id(client, id);
@@ -358,7 +351,7 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
   {
     log_error("ladish_graph_add_client() failed to add client %"PRIu64" (%s) to JACK graph", id, name);
     ladish_client_destroy(client);
-    goto free_app_name;
+    goto exit;
   }
 
 done:
@@ -367,10 +360,13 @@ done:
     virtualizer_ptr->system_client_id = id;
   }
 
-  if (app_name != NULL)
+  if (app != NULL)
   {
+    /* interlink client and app */
+    ladish_app_add_pid(app, pid);
     ladish_client_set_pid(client, pid);
     ladish_client_set_app(client, app_uuid);
+
     ASSERT(graph);
     ladish_client_set_vgraph(client, graph);
     virtualizer_ptr->our_clients_count++;
@@ -386,11 +382,8 @@ done:
     ladish_client_set_vgraph(client, g_studio.studio_graph);
   }
 
-free_app_name:
-  if (app_name != NULL)
-  {
-    free(app_name);
-  }
+exit:
+  return;
 }
 
 static void client_disappeared(void * context, uint64_t id)

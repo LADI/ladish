@@ -369,6 +369,14 @@ void ladish_app_kill(ladish_app_handle app_handle);
 void ladish_app_save_L1(ladish_app_handle app_handle);
 
 /**
+ * Associate pid with app.
+ *
+ * @param[in] app_handle Handle of app
+ * @param[in] pid PID to associate with the app
+ */
+void ladish_app_add_pid(ladish_app_handle app_handle, pid_t pid);
+
+/**
  * D-Bus interface descriptor for the app supervisor interface. The call context must be a ::ladish_app_supervisor_handle
  */
 extern const struct dbus_interface_descriptor g_iface_app_supervisor;
