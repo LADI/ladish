@@ -34,10 +34,6 @@ static void on_path_button_clicked(void)
   GtkWidget * dialog;
   GtkResponseType response;
 
-  static bool runing;
-  if(runing) return;
-  runing = true;
-
   dialog = get_gtk_builder_widget("project_save_as_dir_sel_dialog");
 
   gtk_widget_show(dialog);
@@ -50,8 +46,6 @@ static void on_path_button_clicked(void)
       path,
       gtk_file_chooser_get_filename( GTK_FILE_CHOOSER(dialog)) );
   }
-
-  runing = false;
 }
 
 void ladish_run_save_project_dialog(ladish_room_proxy_handle room)
