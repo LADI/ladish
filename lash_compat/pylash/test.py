@@ -42,6 +42,9 @@ def lash_check_events(lash_client):
 
 # sys.argv is modified by this call
 lash_client = lash.init(sys.argv, "pylash test", lash.LASH_Config_Data_Set | lash.LASH_Terminal)
+if not lash_client:
+    print "Cannot connect to LASH server"
+    sys.exit(1)
 
 print "Successfully connected to LASH server at " +  lash.lash_get_server_name(lash_client)
 

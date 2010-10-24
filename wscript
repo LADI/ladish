@@ -40,8 +40,10 @@ def set_options(opt):
     opt.tool_options('compiler_cc')
     opt.tool_options('compiler_cxx')
     opt.tool_options('boost')
+    opt.tool_options('python')
     opt.add_option('--enable-pkg-config-dbus-service-dir', action='store_true', default=False, help='force D-Bus service install dir to be one returned by pkg-config')
     opt.add_option('--enable-liblash', action='store_true', default=False, help='Build LASH compatibility library')
+    opt.add_option('--enable-pylash', action='store_true', default=False, help='Build python bindings for LASH compatibility library')
     opt.add_option('--debug', action='store_true', default=False, dest='debug', help="Build debuggable binaries")
     opt.add_option('--doxygen', action='store_true', default=False, help='Enable build of doxygen documentation')
     opt.add_option('--distnodeps', action='store_true', default=False, help="When creating distribution tarball, don't package git submodules")
@@ -73,10 +75,41 @@ def create_service_taskgen(bld, target, opath, binary):
     obj.install_path = bld.env['DBUS_SERVICES_DIR'] + os.path.sep
     obj.fun = misc.subst_func
 
+def _get_python_variables(python_exe,variables,imports=['import sys']):
+	program=list(imports)
+	program.append('')
+	for v in variables:
+		program.append("print(repr(%s))"%v)
+	os_env=dict(os.environ)
+	try:
+		del os_env['MACOSX_DEPLOYMENT_TARGET']
+	except KeyError:
+		pass
+	proc=Utils.pproc.Popen([python_exe,"-c",'\n'.join(program)],stdout=Utils.pproc.PIPE,env=os_env)
+	output=proc.communicate()[0].split("\n")
+	if proc.returncode:
+		if Options.options.verbose:
+			warn("Python program to extract python configuration variables failed:\n%s"%'\n'.join(["line %03i: %s"%(lineno+1,line)for lineno,line in enumerate(program)]))
+		raise RuntimeError
+	return_values=[]
+	for s in output:
+		s=s.strip()
+		if not s:
+			continue
+		if s=='None':
+			return_values.append(None)
+		elif s[0]=="'"and s[-1]=="'":
+			return_values.append(s[1:-1])
+		elif s[0].isdigit():
+			return_values.append(int(s))
+		else:break
+	return return_values
+
 def configure(conf):
     conf.check_tool('compiler_cc')
     conf.check_tool('compiler_cxx')
     conf.check_tool('boost')
+    conf.check_tool('python')
     #conf.check_tool('ParallelDebug')
 
     conf.check_cfg(
@@ -106,7 +139,6 @@ def configure(conf):
 
     conf.env['LIBDIR'] = os.path.join(os.path.normpath(conf.env['PREFIX']), 'lib')
 
-    conf.env['BUILD_LIBLASH'] = Options.options.enable_liblash
     conf.env['BUILD_DOXYGEN_DOCS'] = Options.options.doxygen
 
     conf.check_cfg(
@@ -160,6 +192,57 @@ def configure(conf):
         build_gui = conf.check_boost(errmsg="not found, see http://boost.org/")
 
     conf.env['BUILD_GLADISH'] = build_gui
+
+    conf.env['BUILD_LIBLASH'] = Options.options.enable_liblash
+    conf.env['BUILD_PYLASH'] =  Options.options.enable_pylash
+    if conf.env['BUILD_PYLASH'] and not conf.env['BUILD_LIBLASH']:
+        conf.fatal("pylash build was requested but liblash was not")
+        conf.env['BUILD_PYLASH'] = False
+    if conf.env['BUILD_PYLASH']:
+        conf.check_python_version()
+        #print conf.env['PYTHONDIR']
+        python = conf.env['PYTHON']
+        #print python
+        pymajmin = '.'.join(conf.env['PYTHON_VERSION'].split('.')[:2])
+	try:
+		v='prefix SO SYSLIBS LDFLAGS SHLIBS LIBDIR LIBPL INCLUDEPY Py_ENABLE_SHARED MACOSX_DEPLOYMENT_TARGET'.split()
+		(python_prefix,python_SO,python_SYSLIBS,python_LDFLAGS,python_SHLIBS,python_LIBDIR,python_LIBPL,INCLUDEPY,Py_ENABLE_SHARED,python_MACOSX_DEPLOYMENT_TARGET)=_get_python_variables(python,["get_config_var('%s')"%x for x in v],['from distutils.sysconfig import get_config_var'])
+	except RuntimeError:
+		conf.fatal("Python development headers not found (-v for details).")
+	conf.log.write("""Configuration returned from %r:
+python_prefix = %r
+python_SO = %r
+python_SYSLIBS = %r
+python_LDFLAGS = %r
+python_SHLIBS = %r
+python_LIBDIR = %r
+python_LIBPL = %r
+INCLUDEPY = %r
+Py_ENABLE_SHARED = %r
+MACOSX_DEPLOYMENT_TARGET = %r
+"""%(python,python_prefix,python_SO,python_SYSLIBS,python_LDFLAGS,python_SHLIBS,python_LIBDIR,python_LIBPL,INCLUDEPY,Py_ENABLE_SHARED,python_MACOSX_DEPLOYMENT_TARGET))
+
+	conf.env['pyext_PATTERN'] = '%s' + python_SO
+
+        for pattern in 'python%s-config', 'python-config-%s':
+            python_config = conf.find_program(pattern % pymajmin, var = 'PYTHON_CONFIG')
+            if python_config:
+                includes=[]
+                #print conf.env['PYTHON_CONFIG']
+                for incstr in Utils.cmd_output("%s --includes" % (conf.env['PYTHON_CONFIG'])).strip().split():
+                    if (incstr.startswith('-I') or incstr.startswith('/I')):
+                        incstr = incstr[2:]
+                    if incstr not in includes:
+                        includes.append(incstr)
+                conf.log.write("Include path for Python extensions ""(found via python-config --includes): %r\n"%(includes,))
+		conf.env['CPPPATH_PYEXT'] = includes
+		conf.env['CPPPATH_PYEMBED'] = includes
+                break
+
+	if not python_config:
+            conf.log.write("Include path for Python extensions ""(found via distutils module): %r\n"%(INCLUDEPY,))
+            conf.env['CPPPATH_PYEXT'] = [INCLUDEPY]
+            conf.env['CPPPATH_PYEMBED'] = [INCLUDEPY]
 
     conf.env['BUILD_WERROR'] = not RELEASE
     if conf.env['BUILD_WERROR']:
@@ -218,6 +301,7 @@ def configure(conf):
 
     display_msg(conf, 'Build gladish', yesno(conf.env['BUILD_GLADISH']))
     display_msg(conf, 'Build liblash', yesno(Options.options.enable_liblash))
+    display_msg(conf, 'Build pylash', yesno(conf.env['BUILD_PYLASH']))
     display_msg(conf, 'Treat warnings as errors', yesno(conf.env['BUILD_WERROR']))
     display_msg(conf, 'Debuggable binaries', yesno(conf.env['BUILD_DEBUG']))
     display_msg(conf, 'Build doxygen documentation', yesno(conf.env['BUILD_DOXYGEN_DOCS']))
@@ -404,6 +488,20 @@ def build(bld):
 
     #####################################################
     # pylash
+    if bld.env['BUILD_PYLASH']:
+        pylash = bld.new_task_gen('cc', 'shlib', 'pyext')
+        pylash.target = '_lash'
+        pylash.uselib_local = 'lash'
+        pylash.source = []
+        pylash.install_path = bld.env['PYTHONDIR']
+
+        for source in [
+            'lash.c',
+            'lash_wrap.c',
+            ]:
+            pylash.source.append(os.path.join("lash_compat", "pylash", source))
+
+        bld.install_files(bld.env['PYTHONDIR'], os.path.join("lash_compat", "pylash", "lash.py"))
 
     # pkgpyexec_LTLIBRARIES = _lash.la
     # INCLUDES = $(PYTHON_INCLUDES)

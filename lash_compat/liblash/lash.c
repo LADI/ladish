@@ -26,6 +26,8 @@
 
 #include "lash/lash.h"
 #include "../../common/catdup.h"
+//#define LOG_OUTPUT_STDOUT
+#include "../../log.h"
 
 const char * lash_protocol_string(lash_protocol_t protocol)
 {
@@ -58,6 +60,7 @@ void lash_args_destroy(lash_args_t * args)
 
 lash_client_t * lash_init(const lash_args_t * args, const char * class, int client_flags, lash_protocol_t protocol)
 {
+  log_error("ladish cannot mimic LASH server yet");
   return NULL;
 }
 
