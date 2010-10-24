@@ -386,7 +386,7 @@ def build(bld):
         liblash.target = 'lash'
         liblash.vnum = "1.1.1"
         liblash.defines = ['LOG_OUTPUT_STDOUT']
-        liblash.source = [os.path.join("lash_compat", "liblash", 'lash.c')]
+        liblash.source = [os.path.join("lash_compat", "liblash", 'lash.c'), os.path.join("common", "catdup.c")]
 
         bld.install_files('${PREFIX}/include/lash', 'lash_compat/liblash/lash/*.h')
 

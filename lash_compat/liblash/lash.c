@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the liblash implementaiton
@@ -25,6 +25,7 @@
  */
 
 #include "lash/lash.h"
+#include "../../common/catdup.h"
 
 const char * lash_protocol_string(lash_protocol_t protocol)
 {
@@ -246,4 +247,18 @@ void lash_config_set_value_double(lash_config_t * config, double value)
 
 void lash_config_set_value_string(lash_config_t * config, const char * value)
 {
+}
+
+const char * lash_get_fqn(const char * dir, const char * file)
+{
+  static char * fqn = NULL;
+
+  if (fqn != NULL)
+  {
+    free(fqn);
+  }
+
+  fqn = catdup3(dir, "/", file);
+
+  return fqn;
 }

@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2002 Robert Ham <rah@bash.sh>
  *
  **************************************************************************
@@ -155,6 +155,9 @@ void lash_config_set_value_int(lash_config_t * config, uint32_t value);
 void lash_config_set_value_float(lash_config_t * config, float value);
 void lash_config_set_value_double(lash_config_t * config, double value);
 void lash_config_set_value_string(lash_config_t * config, const char * value);
+
+/* internal function in lash-0.5.x, depecated in lash-0.6.x, used by jack-rack */
+const char * lash_get_fqn(const char * dir, const char * file);
 
 #ifdef __cplusplus
 }
