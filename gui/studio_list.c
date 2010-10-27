@@ -84,7 +84,7 @@ static void on_load_studio_wrapper(const char * name, void * data)
 static void on_delete_studio_wrapper(const char * name, void * data)
 {
   ASSERT(data == NULL);
-  on_load_studio(name);
+  on_delete_studio(name);
 }
 
 bool create_studio_lists(void)
