@@ -650,7 +650,8 @@ def dist_hook():
         shutil.rmtree('a2jmidid')
     nodist_files = ['.gitmodules', 'GTAGS', 'GRTAGS', 'GPATH', 'GSYMS'] # waf does not ignore these file
     for nodist_file in nodist_files:
-        os.remove(nodist_file)
+        if os.access(nodist_file, os.F_OK):
+            os.remove(nodist_file)
     shutil.copy('../build/default/version.h', "./")
 
 import commands
