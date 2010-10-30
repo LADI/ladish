@@ -1,0 +1,16 @@
+ALSA_0.9 {
+  global:
+    snd_*;
+
+    _snd_*_open;
+    _snd_*_dlsym_*;
+    _snd_*_poll_descriptor;
+    _snd_pcm_hook_*;
+
+    __snd_pcm_hw_params_*;
+    __snd_pcm_sw_params_*;
+    __snd_*_dlsym_*;
+
+  local:
+    *;
+};
