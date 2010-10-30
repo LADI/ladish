@@ -60,7 +60,7 @@ static void destroy_symlink(int alsa_client_id)
   alsapid_compose_src_link(alsa_client_id, src);
 
   //printf("'%s'\n", src);
-  if (unlink(src) != 0)
+  if (unlink(src) != 0 && errno != ENOENT)
   {
     fprintf(stderr, "unlink(\"%s\") failed with %d (%s)", src, errno, strerror(errno));
   }
