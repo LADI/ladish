@@ -47,6 +47,10 @@ static void create_symlink(int alsa_client_id)
   alsapid_compose_dst_link(dst);
 
   //printf("'%s' -> '%s'\n", src, dst);
+  if (unlink(src) != 0 && errno != ENOENT)
+  {
+    fprintf(stderr, "unlink(\"%s\") failed with %d (%s)", src, errno, strerror(errno));
+  }
   if (symlink(dst, src) != 0)
   {
     fprintf(stderr, "symlink(\"%s\", \"%s\") failed with %d (%s)", dst, src, errno, strerror(errno));
