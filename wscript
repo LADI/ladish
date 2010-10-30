@@ -112,6 +112,8 @@ def configure(conf):
     conf.check_tool('python')
     #conf.check_tool('ParallelDebug')
 
+    conf.env['LIB_DL'] = ['dl']
+
     conf.check_cfg(
         package = 'jack',
         mandatory = True,
@@ -462,6 +464,18 @@ def build(bld):
     create_service_taskgen(bld, DBUS_NAME_BASE + '.conf.service', DBUS_NAME_BASE + ".conf", ladiconfd.target)
 
     #####################################################
+    # alsapid
+    alsapid = bld.new_task_gen('cc', 'shlib')
+    #alsapid.features.append('kill_soname')
+    alsapid.target = 'alsapid'
+    alsapid.uselib = 'DL'
+    #alsapid.vnum = "2.0.0"
+    alsapid.source = [os.path.join("alsapid", 'lib.c'), os.path.join("alsapid", "helper.c")]
+    #alsapid.env.append_value("LINKFLAGS", "-Wl,--version-script=../alsapid/asound.versions")
+    #alsapid.env.append_value("LINKFLAGS", "-ldl")
+    #alsapid.env.append_value("LINKFLAGS", "-fPIC")
+
+    #####################################################
     # liblash
     if bld.env['BUILD_LIBLASH']:
         liblash = bld.new_task_gen('cc', 'shlib')
@@ -721,3 +735,13 @@ def refill_task_list(self):
     old_refill(self)
     self.outstanding.sort(cmp=lambda a, b: cmp(b.__class__.__name__, a.__class__.__name__))
 Runner.Parallel.refill_task_list = refill_task_list
+
+#from TaskGen import feature, after
+#@feature('kill_soname')
+#@after('apply_vum')
+#def kill_soname(self):
+#    lst = []
+#    for x in self.env.LINKFLAGS:
+#        if x.startswith("-Wl,-h,"): continue
+#        lst.append(x)
+#    self.env.LINKFLAGS = lst
