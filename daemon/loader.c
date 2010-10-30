@@ -552,6 +552,8 @@ loader_execute(
       dup2(stderr_pipe[1], fileno(stderr));
     }
 
+    putenv("LD_PRELOAD=libalsapid.so");
+
     loader_exec_program(commandline, working_dir, run_in_terminal);
 
     return false;  /* We should never get here */
