@@ -412,6 +412,8 @@ def build(bld):
         ]:
         daemon.source.append(os.path.join("common", source))
 
+    daemon.source.append(os.path.join("alsapid", "helper.c"))
+
     # process dbus.service.in -> ladish.service
     create_service_taskgen(bld, DBUS_NAME_BASE + '.service', DBUS_NAME_BASE, daemon.target)
 

@@ -24,9 +24,14 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#define _GNU_SOURCE
+#include <string.h>             /* GNU basename() */
+
 #include <stdio.h>
+#include <stdlib.h>             /* atoll */
 #include <unistd.h>
 #include <sys/types.h>
+#include <linux/limits.h>
 
 #include "alsapid.h"
 
@@ -40,3 +45,29 @@ void alsapid_compose_dst_link(char * buffer)
   sprintf(buffer, "/proc/%lld", (long long)getpid());
 }
 
+bool alsapid_get_pid(int alsa_client_id, pid_t * pid_ptr)
+{
+  char src[PATH_MAX];
+  char dst[PATH_MAX + 1];
+  ssize_t ret;
+  pid_t pid;
+
+  alsapid_compose_src_link(alsa_client_id, src);
+
+  ret = readlink(src, dst, PATH_MAX);
+  if (ret == -1)
+  {
+    return false;
+  }
+
+  dst[ret] = 0;
+
+  pid = (pid_t)atoll(basename(dst));
+  if (pid <= 1)
+  {
+    return false;
+  }
+
+  *pid_ptr = pid;
+  return true;
+}
