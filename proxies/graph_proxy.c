@@ -565,7 +565,7 @@ graph_proxy_detach(
   ASSERT(false);
 }
 
-void
+bool
 graph_proxy_connect_ports(
   graph_proxy_handle graph,
   uint64_t port1_id,
@@ -574,10 +574,13 @@ graph_proxy_connect_ports(
   if (!dbus_call(graph_ptr->service, graph_ptr->object, JACKDBUS_IFACE_PATCHBAY, "ConnectPortsByID", "tt", &port1_id, &port2_id, ""))
   {
     log_error("ConnectPortsByID() failed.");
+    return false;
   }
+
+  return true;
 }
 
-void
+bool
 graph_proxy_disconnect_ports(
   graph_proxy_handle graph,
   uint64_t port1_id,
@@ -586,7 +589,10 @@ graph_proxy_disconnect_ports(
   if (!dbus_call(graph_ptr->service, graph_ptr->object, JACKDBUS_IFACE_PATCHBAY, "DisconnectPortsByID", "tt", &port1_id, &port2_id, ""))
   {
     log_error("DisconnectPortsByID() failed.");
+    return false;
   }
+
+  return true;
 }
 
 static void on_client_appeared(void * graph, DBusMessage * message_ptr)

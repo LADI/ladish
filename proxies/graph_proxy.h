@@ -75,13 +75,13 @@ graph_proxy_detach(
   graph_proxy_handle graph,
   void * context);
 
-void
+bool
 graph_proxy_connect_ports(
   graph_proxy_handle graph,
   uint64_t port1_id,
   uint64_t port2_id);
 
-void
+bool
 graph_proxy_disconnect_ports(
   graph_proxy_handle graph,
   uint64_t port1_id,

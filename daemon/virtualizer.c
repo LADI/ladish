@@ -887,9 +887,7 @@ static bool ports_connect_request(void * context, ladish_graph_handle graph_hand
     port2_id = ladish_port_get_jack_id_room(port2);
   }
 
-  graph_proxy_connect_ports(virtualizer_ptr->jack_graph_proxy, port1_id, port2_id);
-
-  return true;
+  return graph_proxy_connect_ports(virtualizer_ptr->jack_graph_proxy, port1_id, port2_id);
 }
 
 static bool ports_disconnect_request(void * context, ladish_graph_handle graph_handle, uint64_t connection_id)
@@ -920,9 +918,7 @@ static bool ports_disconnect_request(void * context, ladish_graph_handle graph_h
     port2_id = ladish_port_get_jack_id_room(port2);
   }
 
-  graph_proxy_disconnect_ports(virtualizer_ptr->jack_graph_proxy, port1_id, port2_id);
-
-  return true;
+  return graph_proxy_disconnect_ports(virtualizer_ptr->jack_graph_proxy, port1_id, port2_id);
 }
 
 static void ports_connected(void * context, uint64_t client1_id, uint64_t port1_id, uint64_t client2_id, uint64_t port2_id)
