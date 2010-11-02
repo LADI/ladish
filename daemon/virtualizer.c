@@ -642,6 +642,10 @@ port_appeared(
   /* set port jack id so invisible connections to/from it can be restored */
   ladish_port_set_jack_id(port, port_id);
 
+  /* for normal ports, one can find the vgraph through the jack client,
+     but for a2j ports the jack client is shared between graphs */
+  ladish_port_set_vgraph(port, vgraph);
+
   if (!ladish_graph_add_port(virtualizer_ptr->jack_graph, jack_client, port, jack_port_name, type, flags, false))
   {
     log_error("ladish_graph_add_port() failed.");
@@ -813,7 +817,7 @@ static void port_disappeared(void * context, uint64_t client_id, uint64_t port_i
 
   /* find the virtual graph that owns the app that owns the client that owns the disappeared port */
   jmcore = false;
-  vgraph = ladish_client_get_vgraph(jclient);
+  vgraph = ladish_port_get_vgraph(port);
   if (vgraph == NULL)
   {
     vgraph = find_link_port_vgraph_by_uuid(virtualizer_ptr, ladish_graph_get_port_name(virtualizer_ptr->jack_graph, port), NULL);
@@ -869,21 +873,10 @@ static void port_disappeared(void * context, uint64_t client_id, uint64_t port_i
 
 static void port_renamed(void * context, uint64_t client_id, uint64_t port_id, const char * old_port_name, const char * new_port_name)
 {
-  ladish_client_handle client;
   ladish_port_handle port;
   ladish_graph_handle vgraph;
 
   log_info("port_renamed(%"PRIu64", '%s', '%s')", port_id, old_port_name, new_port_name);
-
-  client = ladish_graph_find_client_by_jack_id(virtualizer_ptr->jack_graph, client_id);
-  if (client == NULL)
-  {
-    log_error("Port of unknown JACK client with id %"PRIu64" was renamed", client_id);
-    return;
-  }
-
-  /* find the virtual graph that owns the app that owns the client that owns the renamed port */
-  vgraph = ladish_client_get_vgraph(client);
 
   port = ladish_graph_find_port_by_jack_id(virtualizer_ptr->jack_graph, port_id, true, true);
   if (port == NULL)
@@ -891,6 +884,9 @@ static void port_renamed(void * context, uint64_t client_id, uint64_t port_id, c
     log_error("Unknown JACK port with id %"PRIu64" was renamed", port_id);
     return;
   }
+
+  /* find the virtual graph that owns the app that owns the client that owns the renamed port */
+  vgraph = ladish_port_get_vgraph(port);
 
   if (!ladish_graph_rename_port(virtualizer_ptr->jack_graph, port, new_port_name))
   {
