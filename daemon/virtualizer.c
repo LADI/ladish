@@ -34,6 +34,7 @@
 #include "../common/catdup.h"
 #include "room.h"
 #include "studio.h"
+#include "../alsapid/alsapid.h"
 
 struct virtualizer
 {
@@ -447,9 +448,12 @@ port_appeared(
   uint32_t type;
   uint32_t flags;
   const char * jack_client_name;
+  const char * vclient_name;
   bool is_a2j;
   uuid_t jclient_uuid;
   uuid_t vclient_uuid;
+  pid_t pid;
+  ladish_app_handle app;
   bool has_app;
   uuid_t app_uuid;
   char * alsa_client_name;
@@ -555,6 +559,25 @@ port_appeared(
     else
     {
       log_info("a2j: '%s':'%s' (%"PRIu32")", alsa_client_name, alsa_port_name, alsa_client_id);
+      vclient_name = alsa_client_name;
+      if (alsapid_get_pid(alsa_client_id, &pid))
+      {
+        log_info("ALSA client pid is %lld", (long long)pid);
+
+        app = ladish_virtualizer_find_app_by_pid(virtualizer_ptr, pid, &vgraph);
+        if (app != NULL)
+        {
+          ladish_app_get_uuid(app, app_uuid);
+          ASSERT(!uuid_is_null(app_uuid));
+          vclient_name = ladish_app_get_name(app);
+          has_app = true;
+          log_info("ALSA app name is '%s'", vclient_name);
+        }
+      }
+      else
+      {
+        log_error("UNKNOWN ALSA client pid");
+      }
     }
 
     a2j_fake_jack_port_name = catdup4(alsa_client_name, is_input ? " (playback)" : " (capture)", ": ", alsa_port_name);
@@ -568,6 +591,7 @@ port_appeared(
   }
   else
   {
+    vclient_name = jack_client_name;
     jack_port_name = real_jack_port_name;
   }
 
@@ -630,7 +654,7 @@ port_appeared(
 
   if (is_a2j)
   {
-    vclient = ladish_graph_find_client_by_name(vgraph, alsa_client_name, false);
+    vclient = ladish_graph_find_client_by_name(vgraph, vclient_name, false);
     if (vclient == NULL)
     {
         if (!ladish_client_create(NULL, &vclient))
@@ -639,7 +663,12 @@ port_appeared(
           goto free_alsa_names;
         }
 
-        if (!ladish_graph_add_client(vgraph, vclient, alsa_client_name, false))
+        if (has_app)
+        {
+          ladish_client_set_app(vclient, app_uuid);
+        }
+
+        if (!ladish_graph_add_client(vgraph, vclient, vclient_name, false))
         {
           log_error("ladish_graph_add_client() failed.");
           ladish_client_destroy(vclient);
@@ -715,7 +744,7 @@ port_appeared(
         ladish_client_set_app(vclient, app_uuid);
       }
 
-      if (!ladish_graph_add_client(vgraph, vclient, jack_client_name, false))
+      if (!ladish_graph_add_client(vgraph, vclient, vclient_name, false))
       {
         log_error("ladish_graph_add_client() failed to add client '%s' to virtual graph", jack_client_name);
         ladish_client_destroy(vclient);
