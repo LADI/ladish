@@ -35,6 +35,8 @@ struct ladish_port
   uint64_t jack_id;                        /* JACK port ID. */
   uint64_t jack_id_room;                   /* JACK port ID in room. valid only for link ports */
 
+  void * vgraph;                /* virtual graph */
+
   ladish_dict_handle dict;
 };
 
@@ -73,6 +75,8 @@ ladish_port_create(
   port_ptr->jack_id_room = 0;
   port_ptr->link = link;
   port_ptr->refcount = 0;
+
+  port_ptr->vgraph = NULL;
 
   log_info("port %p created", port_ptr);
   *port_handle_ptr = (ladish_port_handle)port_ptr;
@@ -153,6 +157,16 @@ void ladish_port_del_ref(ladish_port_handle port_handle)
 bool ladish_port_is_link(ladish_port_handle port_handle)
 {
   return port_ptr->link;
+}
+
+void ladish_port_set_vgraph(ladish_port_handle port_handle, void * vgraph)
+{
+  port_ptr->vgraph = vgraph;
+}
+
+void * ladish_port_get_vgraph(ladish_port_handle port_handle)
+{
+  return port_ptr->vgraph;
 }
 
 #undef port_ptr

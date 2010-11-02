@@ -47,4 +47,7 @@ void ladish_port_del_ref(ladish_port_handle port_handle);
 
 bool ladish_port_is_link(ladish_port_handle port_handle);
 
+void ladish_port_set_vgraph(ladish_port_handle port_handle, void * vgraph);
+void * ladish_port_get_vgraph(ladish_port_handle port_handle);
+
 #endif /* #ifndef PORT_H__62F81E7C_91FA_44AB_94A9_E0E2D226ED58__INCLUDED */

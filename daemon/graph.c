@@ -219,7 +219,8 @@ ladish_graph_find_port_by_uuid_internal(
   struct ladish_graph * graph_ptr,
   struct ladish_graph_client * client_ptr,
   const uuid_t uuid,
-  bool use_link_override_uuids)
+  bool use_link_override_uuids,
+  void * vgraph_filter)
 {
   struct list_head * node_ptr;
   struct ladish_graph_port * port_ptr;
@@ -237,6 +238,11 @@ ladish_graph_find_port_by_uuid_internal(
     port_ptr = list_entry(node_ptr, struct ladish_graph_port, siblings_graph);
 
     if (client_ptr != NULL && port_ptr->client_ptr != client_ptr)
+    {
+      continue;
+    }
+
+    if (vgraph_filter != NULL && ladish_port_get_vgraph(port_ptr->port) != vgraph_filter)
     {
       continue;
     }
@@ -1668,11 +1674,11 @@ ladish_client_handle ladish_graph_find_client_by_uuid(ladish_graph_handle graph_
   return NULL;
 }
 
-ladish_port_handle ladish_graph_find_port_by_uuid(ladish_graph_handle graph_handle, const uuid_t uuid, bool use_link_override_uuids)
+ladish_port_handle ladish_graph_find_port_by_uuid(ladish_graph_handle graph_handle, const uuid_t uuid, bool use_link_override_uuids, void * vgraph_filter)
 {
   struct ladish_graph_port * port_ptr;
 
-  port_ptr = ladish_graph_find_port_by_uuid_internal(graph_ptr, NULL, uuid, use_link_override_uuids);
+  port_ptr = ladish_graph_find_port_by_uuid_internal(graph_ptr, NULL, uuid, use_link_override_uuids, vgraph_filter);
   if (port_ptr != NULL)
   {
     return port_ptr->port;
@@ -2085,7 +2091,7 @@ ladish_graph_find_client_port_by_uuid(
   client_ptr = ladish_graph_find_client(graph_ptr, client);
   ASSERT(client_ptr != NULL);
 
-  port_ptr = ladish_graph_find_port_by_uuid_internal(graph_ptr, client_ptr, uuid, use_link_override_uuids);
+  port_ptr = ladish_graph_find_port_by_uuid_internal(graph_ptr, client_ptr, uuid, use_link_override_uuids, NULL);
   if (port_ptr != NULL)
   {
     return port_ptr->port;

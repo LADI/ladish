@@ -271,6 +271,8 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
           return;
         }
 
+        ladish_port_set_vgraph(context_ptr->port, room_ptr->graph);
+
         if (!ladish_graph_add_port(ladish_studio_get_jack_graph(), context_ptr->client, context_ptr->port, name, 0, 0, true))
         {
           log_error("ladish_graph_add_port() failed.");
@@ -288,7 +290,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
           return;
         }
 
-        context_ptr->port = ladish_graph_find_port_by_uuid(room_ptr->graph, uuid, false);
+        context_ptr->port = ladish_graph_find_port_by_uuid(room_ptr->graph, uuid, false, NULL);
         if (context_ptr->port != NULL)
         {
           if (!ladish_port_is_link(context_ptr->port))
@@ -299,7 +301,9 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
           return;
         }
 
-        context_ptr->port = ladish_graph_find_port_by_uuid(ladish_studio_get_jack_graph(), uuid, false);
+        /* there can be two ports with same uuid in the jack graph so we search for a port
+           with vgraph for the room where porject is being loaded to */
+        context_ptr->port = ladish_graph_find_port_by_uuid(ladish_studio_get_jack_graph(), uuid, false, room_ptr->graph);
         if (context_ptr->port == NULL)
         {
           log_info("app port \"%s\" with uuid %s not found in the jack graph", name, uuid_str);
@@ -342,10 +346,10 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
         return;
       }
 
-      context_ptr->port = ladish_graph_find_port_by_uuid(room_ptr->graph, uuid, false);
+      context_ptr->port = ladish_graph_find_port_by_uuid(room_ptr->graph, uuid, false, NULL);
       if (context_ptr->port == NULL)
       {
-        log_error("Cannot find room link port() failed.");
+        log_error("Cannot find room link port.");
         context_ptr->port = NULL;
       }
 
@@ -389,7 +393,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
 
     log_info("studio connection between port %s and port %s", uuid_str, uuid2_str);
 
-    port1 = ladish_graph_find_port_by_uuid(room_ptr->graph, uuid, true);
+    port1 = ladish_graph_find_port_by_uuid(room_ptr->graph, uuid, true, NULL);
     if (port1 == NULL)
     {
       log_error("studio client with unknown port %s", uuid_str);
@@ -397,7 +401,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
       return;
     }
 
-    port2 = ladish_graph_find_port_by_uuid(room_ptr->graph, uuid2, true);
+    port2 = ladish_graph_find_port_by_uuid(room_ptr->graph, uuid2, true, NULL);
     if (port2 == NULL)
     {
       log_error("studio client with unknown port %s", uuid2_str);

@@ -137,7 +137,7 @@ static bool find_link_port_vgraph_callback_by_uuid(void * context, ladish_graph_
 {
   ladish_port_handle port;
 
-  port = ladish_graph_find_port_by_uuid(graph, find_link_port_context_ptr->uuid, true);
+  port = ladish_graph_find_port_by_uuid(graph, find_link_port_context_ptr->uuid, true, NULL);
   if (port != NULL)
   {
     find_link_port_context_ptr->port = port;
@@ -522,6 +522,10 @@ port_appeared(
     ladish_graph_show_port(vgraph, port);
     goto exit;
   }
+  else
+  {
+    //log_info("Port of virtual graph '%s'", ladish_graph_get_description(vgraph));
+  }
 
   jack_client_name = ladish_graph_get_client_name(virtualizer_ptr->jack_graph, jack_client);
 
@@ -577,7 +581,7 @@ port_appeared(
   port = ladish_graph_find_port_by_name(virtualizer_ptr->jack_graph, jack_client, jack_port_name);
   if (port != NULL)
   {
-    log_info("found existing port");
+    log_info("found existing port %p", port);
 
     if (ladish_port_get_jack_id(port) != 0)
     {
@@ -592,7 +596,9 @@ port_appeared(
     vclient = ladish_graph_get_port_client(vgraph, port);
     if (vclient == NULL)
     {
-      log_error("JACK port not found in virtual graph");
+      log_error("JACK port not found in virtual graph '%s'", ladish_graph_get_description(vgraph));
+      ladish_graph_dump(g_studio.jack_graph);
+      ladish_graph_dump(vgraph);
       ASSERT_NO_PASS;
       goto free_alsa_names;
     }

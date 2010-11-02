@@ -313,6 +313,8 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
           return;
         }
 
+        ladish_port_set_vgraph(context_ptr->port, g_studio.studio_graph);
+
         if (!ladish_graph_add_port(g_studio.jack_graph, context_ptr->client, context_ptr->port, name, 0, 0, true))
         {
           log_error("ladish_graph_add_port() failed.");
@@ -336,7 +338,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
 
         if (uuid2_str == NULL)
         { /* normal studio port */
-          context_ptr->port = ladish_graph_find_port_by_uuid(g_studio.jack_graph, uuid, false);
+          context_ptr->port = ladish_graph_find_port_by_uuid(g_studio.jack_graph, uuid, false, g_studio.studio_graph);
           if (context_ptr->port == NULL)
           {
             log_error("studio client with non-jack port %s", uuid_str);
@@ -436,7 +438,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
 
     log_info("studio connection between port %s and port %s", uuid_str, uuid2_str);
 
-    port1 = ladish_graph_find_port_by_uuid(g_studio.studio_graph, uuid, true);
+    port1 = ladish_graph_find_port_by_uuid(g_studio.studio_graph, uuid, true, NULL);
     if (port1 == NULL)
     {
       log_error("studio client with unknown port %s", uuid_str);
@@ -444,7 +446,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
       return;
     }
 
-    port2 = ladish_graph_find_port_by_uuid(g_studio.studio_graph, uuid2, true);
+    port2 = ladish_graph_find_port_by_uuid(g_studio.studio_graph, uuid2, true, NULL);
     if (port2 == NULL)
     {
       log_error("studio client with unknown port %s", uuid2_str);
