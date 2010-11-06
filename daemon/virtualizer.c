@@ -406,7 +406,7 @@ static void client_disappeared(void * context, uint64_t id)
   vgraph = ladish_client_get_vgraph(client);
 
   pid = ladish_client_get_pid(client);
-  if (pid != 0 && pid != jmcore_proxy_get_pid_cached())
+  if (ladish_client_has_app(client))
   {
     virtualizer_ptr->our_clients_count--;
   }
