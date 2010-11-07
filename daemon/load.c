@@ -358,5 +358,5 @@ void ladish_interlink_clients(ladish_graph_handle vgraph, ladish_app_supervisor_
   ctx.vgraph = vgraph;
   ctx.app_supervisor = app_supervisor;
 
-  ladish_graph_iterate_nodes(ladish_studio_get_jack_graph(), false, NULL, &ctx, interlink_client, NULL, NULL);
+  ladish_graph_iterate_nodes(ladish_studio_get_jack_graph(), false, &ctx, interlink_client, NULL, NULL);
 }

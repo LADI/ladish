@@ -182,7 +182,6 @@ bool
 ladish_graph_iterate_nodes(
   ladish_graph_handle graph_handle,
   bool skip_hidden,
-  void * vgraph_filter,
   void * callback_context,
   bool
   (* client_begin_callback)(

@@ -609,127 +609,6 @@ ladish_write_room_port(
   return true;
 }
 
-static
-bool
-ladish_save_jack_client_begin(
-  void * context,
-  ladish_graph_handle graph_handle,
-  ladish_client_handle client_handle,
-  const char * client_name,
-  void ** client_iteration_context_ptr_ptr)
-{
-  uuid_t uuid;
-  char str[37];
-
-  ladish_client_get_uuid(client_handle, uuid);
-  uuid_unparse(uuid, str);
-
-  log_info("saving jack client '%s' (%s)", client_name, str);
-
-  if (!ladish_write_indented_string(fd, indent, "<client name=\""))
-  {
-    return false;
-  }
-
-  if (!ladish_write_string(fd, client_name))
-  {
-    return false;
-  }
-
-  if (!ladish_write_string(fd, "\" uuid=\""))
-  {
-    return false;
-  }
-
-  if (!ladish_write_string(fd, str))
-  {
-    return false;
-  }
-
-  if (!ladish_write_string(fd, "\">\n"))
-  {
-    return false;
-  }
-
-  if (!ladish_write_indented_string(fd, indent + 1, "<ports>\n"))
-  {
-    return false;
-  }
-
-  return true;
-}
-
-static
-bool
-ladish_save_jack_client_end(
-  void * context,
-  ladish_graph_handle graph_handle,
-  ladish_client_handle client_handle,
-  const char * client_name,
-  void * client_iteration_context_ptr)
-{
-  if (!ladish_write_indented_string(fd, indent + 1, "</ports>\n"))
-  {
-    return false;
-  }
-
-  if (!ladish_write_indented_string(fd, indent, "</client>\n"))
-  {
-    return false;
-  }
-
-  return true;
-}
-
-static
-bool
-ladish_save_jack_port(
-  void * context,
-  ladish_graph_handle graph_handle,
-  void * client_iteration_context_ptr,
-  ladish_client_handle client_handle,
-  const char * client_name,
-  ladish_port_handle port_handle,
-  const char * port_name,
-  uint32_t port_type,
-  uint32_t port_flags)
-{
-  uuid_t uuid;
-  char str[37];
-
-  ladish_port_get_uuid(port_handle, uuid);
-  uuid_unparse(uuid, str);
-
-  log_info("saving jack port '%s':'%s' (%s)", client_name, port_name, str);
-
-  if (!ladish_write_indented_string(fd, indent + 2, "<port name=\""))
-  {
-    return false;
-  }
-
-  if (!ladish_write_string(fd, port_name))
-  {
-    return false;
-  }
-
-  if (!ladish_write_string(fd, "\" uuid=\""))
-  {
-    return false;
-  }
-
-  if (!ladish_write_string(fd, str))
-  {
-    return false;
-  }
-
-  if (!ladish_write_string(fd, "\" />\n"))
-  {
-    return false;
-  }
-
-  return true;
-}
-
 #undef indent
 #undef fd
 
@@ -778,7 +657,6 @@ bool ladish_write_vgraph(int fd, int indent, ladish_graph_handle vgraph, ladish_
   if (!ladish_graph_iterate_nodes(
         vgraph,
         true,
-        NULL,
         &context,
         ladish_save_vgraph_client_begin,
         ladish_save_vgraph_port,
@@ -843,9 +721,197 @@ bool ladish_write_room_link_ports(int fd, int indent, ladish_room_handle room)
   return true;
 }
 
+/********************/
+/* write jack graph */
+/********************/
+
+struct ladish_write_jack_context
+{
+  int fd;
+  int indent;
+  ladish_graph_handle vgraph_filter;
+  bool client_vgraph_match;
+  bool a2j;
+  bool client_visible;
+};
+
+static bool ladish_save_jack_client_write_prolog(int fd, int indent, ladish_client_handle client_handle, const char * client_name)
+{
+  uuid_t uuid;
+  char str[37];
+
+  ladish_client_get_uuid(client_handle, uuid);
+  uuid_unparse(uuid, str);
+
+  log_info("saving jack client '%s' (%s)", client_name, str);
+
+  if (!ladish_write_indented_string(fd, indent, "<client name=\""))
+  {
+    return false;
+  }
+
+  if (!ladish_write_string(fd, client_name))
+  {
+    return false;
+  }
+
+  if (!ladish_write_string(fd, "\" uuid=\""))
+  {
+    return false;
+  }
+
+  if (!ladish_write_string(fd, str))
+  {
+    return false;
+  }
+
+  if (!ladish_write_string(fd, "\">\n"))
+  {
+    return false;
+  }
+
+  if (!ladish_write_indented_string(fd, indent + 1, "<ports>\n"))
+  {
+    return false;
+  }
+
+  return true;
+}
+
+#define fd (((struct ladish_write_jack_context *)context)->fd)
+#define indent (((struct ladish_write_jack_context *)context)->indent)
+#define ctx_ptr ((struct ladish_write_jack_context *)context)
+
+static
+bool
+ladish_save_jack_client_begin(
+  void * context,
+  ladish_graph_handle graph_handle,
+  ladish_client_handle client_handle,
+  const char * client_name,
+  void ** client_iteration_context_ptr_ptr)
+{
+  void * vgraph;
+
+  vgraph = ladish_client_get_vgraph(client_handle);
+  ctx_ptr->client_vgraph_match = vgraph == ctx_ptr->vgraph_filter;
+  ctx_ptr->a2j = ladish_virtualizer_is_a2j_client(client_handle);
+
+  /* for the a2j client vgraph is always the studio graph.
+     However if studio has no a2j ports, lets not write a2j client.
+     If there is a a2j port that matched the vgraph, the prolog will get written anyway */
+  ctx_ptr->client_visible = ctx_ptr->client_vgraph_match && !ctx_ptr->a2j;
+
+  if (!ctx_ptr->client_visible)
+  {
+    return true;
+  }
+
+  return ladish_save_jack_client_write_prolog(fd, indent, client_handle, client_name);
+}
+
+static
+bool
+ladish_save_jack_client_end(
+  void * context,
+  ladish_graph_handle graph_handle,
+  ladish_client_handle client_handle,
+  const char * client_name,
+  void * client_iteration_context_ptr)
+{
+  if (!ctx_ptr->client_visible)
+  {
+    return true;
+  }
+
+  if (!ladish_write_indented_string(fd, indent + 1, "</ports>\n"))
+  {
+    return false;
+  }
+
+  if (!ladish_write_indented_string(fd, indent, "</client>\n"))
+  {
+    return false;
+  }
+
+  return true;
+}
+
+static
+bool
+ladish_save_jack_port(
+  void * context,
+  ladish_graph_handle graph_handle,
+  void * client_iteration_context_ptr,
+  ladish_client_handle client_handle,
+  const char * client_name,
+  ladish_port_handle port_handle,
+  const char * port_name,
+  uint32_t port_type,
+  uint32_t port_flags)
+{
+  uuid_t uuid;
+  char str[37];
+
+  /* check vgraph for a2j ports */
+  if (ctx_ptr->a2j && ctx_ptr->vgraph_filter == ladish_port_get_vgraph(port_handle))
+  {
+    if (!ctx_ptr->client_visible)
+    {
+      if (!ladish_save_jack_client_write_prolog(fd, indent, client_handle, client_name))
+      {
+        return false;
+      }
+
+      ctx_ptr->client_visible = true;
+    }
+  }
+
+  if (!ctx_ptr->client_visible)
+  {
+    return true;
+  }
+
+  ladish_port_get_uuid(port_handle, uuid);
+  uuid_unparse(uuid, str);
+
+  log_info("saving jack port '%s':'%s' (%s)", client_name, port_name, str);
+
+  if (!ladish_write_indented_string(fd, indent + 2, "<port name=\""))
+  {
+    return false;
+  }
+
+  if (!ladish_write_string(fd, port_name))
+  {
+    return false;
+  }
+
+  if (!ladish_write_string(fd, "\" uuid=\""))
+  {
+    return false;
+  }
+
+  if (!ladish_write_string(fd, str))
+  {
+    return false;
+  }
+
+  if (!ladish_write_string(fd, "\" />\n"))
+  {
+    return false;
+  }
+
+  return true;
+}
+
+#undef ctx_ptr
+#undef indent
+#undef fd
+
 bool ladish_write_jgraph(int fd, int indent, ladish_graph_handle vgraph)
 {
-  struct ladish_write_context context;
+  struct ladish_write_jack_context context;
 
   if (!ladish_write_indented_string(fd, indent, "<clients>\n"))
   {
@@ -854,11 +920,11 @@ bool ladish_write_jgraph(int fd, int indent, ladish_graph_handle vgraph)
 
   context.fd = fd;
   context.indent = indent + 1;
+  context.vgraph_filter = vgraph;
 
   if (!ladish_graph_iterate_nodes(
         ladish_studio_get_jack_graph(),
         true,
-        vgraph,
         &context,
         ladish_save_jack_client_begin,
         ladish_save_jack_port,

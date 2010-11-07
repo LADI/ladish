@@ -442,7 +442,6 @@ port_appeared(
   const char * jack_client_name;
   const char * vclient_name;
   bool is_a2j;
-  uuid_t jclient_uuid;
   uuid_t vclient_uuid;
   pid_t pid;
   ladish_app_handle app;
@@ -525,8 +524,7 @@ port_appeared(
 
   jack_client_name = ladish_graph_get_client_name(virtualizer_ptr->jack_graph, jack_client);
 
-  ladish_client_get_uuid(jack_client, jclient_uuid);
-  is_a2j = uuid_compare(jclient_uuid, g_a2j_uuid) == 0;
+  is_a2j = ladish_virtualizer_is_a2j_client(jack_client);
   if (is_a2j)
   {
     log_info("a2j port appeared");
@@ -1125,7 +1123,6 @@ ladish_virtualizer_is_hidden_app(
   ladish_graph_handle vgraph;
   uuid_t vclient_uuid;
   ladish_client_handle vclient;
-  uuid_t jclient_uuid;
 
   //ladish_graph_dump(g_studio.jack_graph);
 
@@ -1142,8 +1139,7 @@ ladish_virtualizer_is_hidden_app(
     return true;
   }
 
-  ladish_client_get_uuid(jclient, jclient_uuid);
-  ASSERT(uuid_compare(jclient_uuid, g_a2j_uuid) != 0); /* a2j client has no app associated */
+  ASSERT(!ladish_virtualizer_is_a2j_client(jclient)); /* a2j client has no app associated */
 
   vgraph = ladish_client_get_vgraph(jclient);
   if (vgraph == NULL)
@@ -1263,7 +1259,6 @@ ladish_virtualizer_remove_app(
   uuid_t vclient_uuid;
   ladish_client_handle vclient;
   bool is_empty;
-  uuid_t jclient_uuid;
   struct app_remove_context ctx;
 
   //ladish_graph_dump(g_studio.jack_graph);
@@ -1271,7 +1266,7 @@ ladish_virtualizer_remove_app(
   uuid_copy(ctx.app_uuid, app_uuid);
   ctx.app_name = app_name;
 
-  ladish_graph_iterate_nodes(jack_graph, false, NULL, &ctx, NULL, remove_app_port, NULL);
+  ladish_graph_iterate_nodes(jack_graph, false, &ctx, NULL, remove_app_port, NULL);
 
   jclient = ladish_graph_find_client_by_app(jack_graph, app_uuid);
   if (jclient == NULL)
@@ -1280,8 +1275,7 @@ ladish_virtualizer_remove_app(
     return;
   }
 
-  ladish_client_get_uuid(jclient, jclient_uuid);
-  ASSERT(uuid_compare(jclient_uuid, g_a2j_uuid) != 0); /* a2j client has no app associated */
+  ASSERT(!ladish_virtualizer_is_a2j_client(jclient)); /* a2j client has no app associated */
 
   vgraph = ladish_client_get_vgraph(jclient);
   if (vgraph == NULL)
@@ -1377,4 +1371,12 @@ ladish_virtualizer_is_system_client(
   }
 
   return false;
+}
+
+bool ladish_virtualizer_is_a2j_client(ladish_client_handle jclient)
+{
+  uuid_t jclient_uuid;
+
+  ladish_client_get_uuid(jclient, jclient_uuid);
+  return uuid_compare(jclient_uuid, g_a2j_uuid) == 0;
 }

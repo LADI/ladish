@@ -71,6 +71,10 @@ bool
 ladish_virtualizer_is_system_client(
   uuid_t uuid);
 
+bool
+ladish_virtualizer_is_a2j_client(
+  ladish_client_handle jclient);
+
 void
 ladish_virtualizer_destroy(
   ladish_virtualizer_handle handle);

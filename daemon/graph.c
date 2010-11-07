@@ -2170,7 +2170,6 @@ bool
 ladish_graph_iterate_nodes(
   ladish_graph_handle graph_handle,
   bool skip_hidden,
-  void * vgraph_filter,
   void * callback_context,
   bool
   (* client_begin_callback)(
@@ -2203,7 +2202,6 @@ ladish_graph_iterate_nodes(
   void * client_context;
   struct list_head * port_node_ptr;
   struct ladish_graph_port * port_ptr;
-  void * vgraph;
 
   list_for_each(client_node_ptr, &graph_ptr->clients)
   {
@@ -2212,15 +2210,6 @@ ladish_graph_iterate_nodes(
     if (skip_hidden && client_ptr->hidden && !ladish_client_has_app(client_ptr->client))
     {
       continue;
-    }
-
-    if (vgraph_filter != NULL)
-    {
-      vgraph = ladish_client_get_vgraph(client_ptr->client);
-      if (vgraph != vgraph_filter)
-      {
-        continue;
-      }
     }
 
     if (client_begin_callback != NULL)
@@ -2589,7 +2578,6 @@ bool ladish_graph_copy(ladish_graph_handle src, ladish_graph_handle dest, bool s
   return ladish_graph_iterate_nodes(
     src,
     skip_hidden,
-    NULL,
     dest,
     ladish_graph_copy_client_begin_callback,
     ladish_graph_copy_port_callback,
