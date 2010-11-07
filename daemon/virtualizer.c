@@ -1125,9 +1125,7 @@ ladish_virtualizer_is_hidden_app(
   ladish_graph_handle vgraph;
   uuid_t vclient_uuid;
   ladish_client_handle vclient;
-  bool is_empty;
   uuid_t jclient_uuid;
-  bool is_a2j;
 
   //ladish_graph_dump(g_studio.jack_graph);
 
@@ -1145,8 +1143,7 @@ ladish_virtualizer_is_hidden_app(
   }
 
   ladish_client_get_uuid(jclient, jclient_uuid);
-  is_a2j = uuid_compare(jclient_uuid, g_a2j_uuid) == 0;
-  is_empty = ladish_graph_client_is_empty(jack_graph, jclient);
+  ASSERT(uuid_compare(jclient_uuid, g_a2j_uuid) != 0); /* a2j client has no app associated */
 
   vgraph = ladish_client_get_vgraph(jclient);
   if (vgraph == NULL)
@@ -1163,15 +1160,9 @@ ladish_virtualizer_is_hidden_app(
     return false;
   }
 
-  if (is_a2j)
-  {
-    /* The a2j jclient has no interlinked vclient */
-    return true;
-  }
-
   if (!ladish_client_get_interlink(jclient, vclient_uuid))
   {
-    if (is_empty)
+    if (ladish_graph_client_is_empty(jack_graph, jclient))
     {
       log_info("jack client of app '%s' has no interlinked vgraph client and no ports", app_name);
     }
@@ -1273,7 +1264,6 @@ ladish_virtualizer_remove_app(
   ladish_client_handle vclient;
   bool is_empty;
   uuid_t jclient_uuid;
-  bool is_a2j;
   struct app_remove_context ctx;
 
   //ladish_graph_dump(g_studio.jack_graph);
@@ -1291,8 +1281,7 @@ ladish_virtualizer_remove_app(
   }
 
   ladish_client_get_uuid(jclient, jclient_uuid);
-  is_a2j = uuid_compare(jclient_uuid, g_a2j_uuid) == 0;
-  is_empty = ladish_graph_client_is_empty(jack_graph, jclient);
+  ASSERT(uuid_compare(jclient_uuid, g_a2j_uuid) != 0); /* a2j client has no app associated */
 
   vgraph = ladish_client_get_vgraph(jclient);
   if (vgraph == NULL)
@@ -1303,13 +1292,12 @@ ladish_virtualizer_remove_app(
 
   //ladish_graph_dump(vgraph);
 
-  ladish_graph_remove_client(jack_graph, jclient);
+  /* check whether the client is empty because this cannot
+     be checked later because the client was removed
+     (see where is_empty is used) */
+  is_empty = ladish_graph_client_is_empty(jack_graph, jclient);
 
-  if (is_a2j)
-  {
-    /* The a2j jclient has no interlinked vclient */
-    return;
-  }
+  ladish_graph_remove_client(jack_graph, jclient);
 
   if (!ladish_client_get_interlink(jclient, vclient_uuid))
   {
