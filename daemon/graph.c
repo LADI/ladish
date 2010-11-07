@@ -872,6 +872,11 @@ ladish_graph_find_port(
   return NULL;
 }
 
+#if defined(LOG_PORT_LOOKUP)
+#undef LOG_PORT_LOOKUP
+#endif
+//#define LOG_PORT_LOOKUP
+
 static
 struct ladish_graph_port *
 ladish_graph_find_port_by_jack_id_internal(
@@ -885,10 +890,26 @@ ladish_graph_find_port_by_jack_id_internal(
 
   ASSERT(room || studio);
 
+#if defined(LOG_PORT_LOOKUP)
+  log_info(
+    "searching (in %s, %s) by jack id %"PRIu64" for port in graph %s",
+    studio ? "studio" : "",
+    room ? "room" : "",
+    port_id,
+    ladish_graph_get_description((ladish_graph_handle)graph_ptr));
+#endif
+
   list_for_each(node_ptr, &graph_ptr->ports)
   {
     port_ptr = list_entry(node_ptr, struct ladish_graph_port, siblings_graph);
-    //log_info("checking jack port id of port %s:%s, %p", port_ptr->client_ptr->name, port_ptr->name, port_ptr->port);
+#if defined(LOG_PORT_LOOKUP)
+    log_info(
+      "checking jack port id of port %s:%s, %p; studio id %"PRIu64", room id %"PRIu64,
+      port_ptr->client_ptr->name,
+      port_ptr->name, port_ptr->port,
+      ladish_port_get_jack_id(port_ptr->port),
+      ladish_port_get_jack_id_room(port_ptr->port));
+#endif
     if ((studio && ladish_port_get_jack_id(port_ptr->port) == port_id) ||
         (room && port_ptr->link && ladish_port_get_jack_id_room(port_ptr->port) == port_id))
     {
