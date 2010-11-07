@@ -146,6 +146,16 @@ ladish_save_vgraph_client_begin(
     return false;
   }
 
+  if (!ladish_write_string(fd, "\" naming=\""))
+  {
+    return false;
+  }
+
+  if (!ladish_write_string(fd, "app"))
+  {
+    return false;
+  }
+
   if (!ladish_write_string(fd, "\">\n"))
   {
     return false;
@@ -261,6 +271,26 @@ ladish_save_vgraph_port(
   }
 
   if (!ladish_write_string(fd, str))
+  {
+    return false;
+  }
+
+  if (!ladish_write_string(fd, "\" type=\""))
+  {
+    return false;
+  }
+
+  if (!ladish_write_string(fd, port_type == JACKDBUS_PORT_TYPE_AUDIO ? "audio" : "midi"))
+  {
+    return false;
+  }
+
+  if (!ladish_write_string(fd, "\" direction=\""))
+  {
+    return false;
+  }
+
+  if (!ladish_write_string(fd, JACKDBUS_PORT_IS_INPUT(port_flags) ? "input" : "output"))
   {
     return false;
   }
