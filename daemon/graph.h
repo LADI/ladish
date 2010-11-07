@@ -174,6 +174,7 @@ void ladish_graph_show_connection(ladish_graph_handle graph_handle, uint64_t con
 void ladish_try_connect_hidden_connections(ladish_graph_handle graph_handle);
 void ladish_graph_hide_non_virtual(ladish_graph_handle graph_handle);
 void ladish_graph_get_port_uuid(ladish_graph_handle graph, ladish_port_handle port, uuid_t uuid_ptr);
+bool ladish_graph_client_has_visible_app_port(ladish_graph_handle graph, ladish_client_handle client, const uuid_t app_uuid);
 
 void ladish_graph_dump(ladish_graph_handle graph_handle);
 

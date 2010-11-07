@@ -31,6 +31,7 @@ struct ladish_port
 {
   int refcount;
   uuid_t uuid;                             /* The UUID of the port */
+  uuid_t app_uuid;                         /* The UUID of the app that owns this client */
   bool link;                               /* Whether the port is studio-room link port */
   uint64_t jack_id;                        /* JACK port ID. */
   uint64_t jack_id_room;                   /* JACK port ID in room. valid only for link ports */
@@ -70,6 +71,8 @@ ladish_port_create(
   {
     uuid_copy(port_ptr->uuid, uuid_ptr);
   }
+
+  uuid_clear(port_ptr->app_uuid);
 
   port_ptr->jack_id = 0;
   port_ptr->jack_id_room = 0;
@@ -167,6 +170,37 @@ void ladish_port_set_vgraph(ladish_port_handle port_handle, void * vgraph)
 void * ladish_port_get_vgraph(ladish_port_handle port_handle)
 {
   return port_ptr->vgraph;
+}
+
+void ladish_port_set_app(ladish_port_handle port_handle, const uuid_t app_uuid)
+{
+  uuid_copy(port_ptr->app_uuid, app_uuid);
+}
+
+bool ladish_port_get_app(ladish_port_handle port_handle, uuid_t app_uuid)
+{
+  if (uuid_is_null(port_ptr->app_uuid))
+  {
+    return false;
+  }
+
+  uuid_copy(app_uuid, port_ptr->app_uuid);
+  return true;
+}
+
+bool ladish_port_has_app(ladish_port_handle port_handle)
+{
+  return !uuid_is_null(port_ptr->app_uuid);
+}
+
+bool ladish_port_belongs_to_app(ladish_port_handle port_handle, const uuid_t app_uuid)
+{
+  if (uuid_is_null(port_ptr->app_uuid))
+  {
+    return false;
+  }
+
+  return uuid_compare(port_ptr->app_uuid, app_uuid) == 0;
 }
 
 #undef port_ptr

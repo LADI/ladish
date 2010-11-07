@@ -216,7 +216,6 @@ lookup_port(
   ladish_graph_handle * vgraph_ptr)
 {
   ladish_port_handle port;
-  ladish_client_handle jclient;
   ladish_graph_handle vgraph;
 
   port = ladish_graph_find_port_by_jack_id(virtualizer_ptr->jack_graph, port_id, true, true);
@@ -226,14 +225,7 @@ lookup_port(
     return false;
   }
 
-  jclient = ladish_graph_get_port_client(virtualizer_ptr->jack_graph, port);
-  if (jclient == NULL)
-  {
-    log_error("Port %"PRIu64" without jack client was (dis)connected", port_id);
-    return false;
-  }
-
-  vgraph = ladish_client_get_vgraph(jclient);
+  vgraph = ladish_port_get_vgraph(port);
   if (vgraph == NULL)
   {
     vgraph = find_link_port_vgraph_by_jack_id(virtualizer_ptr, port_id, NULL);
@@ -627,6 +619,13 @@ port_appeared(
       goto free_alsa_names;
     }
 
+    /* for normal ports, one can find the app_uuid through the jack client,
+       but for a2j ports the jack client is shared between graphs */
+    if (has_app)
+    {
+      ladish_port_set_app(port, app_uuid);
+    }
+
     ladish_client_set_jack_id(vclient, client_id);
     ladish_graph_adjust_port(vgraph, port, type, flags);
     ladish_graph_show_port(vgraph, port);
@@ -642,9 +641,13 @@ port_appeared(
   /* set port jack id so invisible connections to/from it can be restored */
   ladish_port_set_jack_id(port, port_id);
 
-  /* for normal ports, one can find the vgraph through the jack client,
+  /* for normal ports, one can find the vgraph and app_uuid through the jack client,
      but for a2j ports the jack client is shared between graphs */
   ladish_port_set_vgraph(port, vgraph);
+  if (has_app)
+  {
+    ladish_port_set_app(port, app_uuid);
+  }
 
   if (!ladish_graph_add_port(virtualizer_ptr->jack_graph, jack_client, port, jack_port_name, type, flags, false))
   {
@@ -1099,6 +1102,19 @@ ladish_virtualizer_get_our_clients_count(
   return virtualizer_ptr->our_clients_count;
 }
 
+static bool app_has_a2j_ports(ladish_graph_handle jack_graph, const uuid_t app_uuid)
+{
+  ladish_client_handle a2jclient;
+
+  a2jclient = ladish_graph_find_client_by_uuid(jack_graph, g_a2j_uuid);
+  if (a2jclient == NULL)
+  {
+    return false;
+  }
+
+  return ladish_graph_client_has_visible_app_port(jack_graph, a2jclient, app_uuid);
+}
+
 bool
 ladish_virtualizer_is_hidden_app(
   ladish_graph_handle jack_graph,
@@ -1114,6 +1130,12 @@ ladish_virtualizer_is_hidden_app(
   bool is_a2j;
 
   //ladish_graph_dump(g_studio.jack_graph);
+
+  if (app_has_a2j_ports(jack_graph, app_uuid))
+  {
+    log_info("app '%s' still has a2j ports", app_name);
+    return false;
+  }
 
   jclient = ladish_graph_find_client_by_app(jack_graph, app_uuid);
   if (jclient == NULL)
@@ -1177,6 +1199,68 @@ ladish_virtualizer_is_hidden_app(
   return true;
 }
 
+struct app_remove_context
+{
+  uuid_t app_uuid;
+  const char * app_name;
+};
+
+#define app_info_ptr ((struct app_remove_context *)context)
+
+static
+bool
+remove_app_port(
+  void * context,
+  ladish_graph_handle graph_handle,
+  void * client_iteration_context_ptr,
+  ladish_client_handle client_handle,
+  const char * client_name,
+  ladish_port_handle port_handle,
+  const char * port_name,
+  uint32_t port_type,
+  uint32_t port_flags)
+{
+  ladish_graph_handle vgraph;
+  ladish_client_handle vclient;
+
+  if (!ladish_port_belongs_to_app(port_handle, app_info_ptr->app_uuid))
+  {
+    return true;
+  }
+
+  //log_info("removing port '%s':'%s' (JACK) of app '%s'", client_name, port_name, app_info_ptr->app_name);
+
+  vgraph = ladish_port_get_vgraph(port_handle);
+  if (vgraph == NULL)
+  {
+    log_error("port '%s':'%s' of app '5s' has no vgraph", client_name, port_name, app_info_ptr->app_name);
+    ASSERT_NO_PASS;
+    return true;
+  }
+
+  vclient = ladish_graph_get_port_client(vgraph, port_handle);
+  if (vgraph == NULL)
+  {
+    log_error("app port '%s':'%s' not found in vgraph '%s'", client_name, port_name, ladish_graph_get_description(vgraph));
+    ASSERT_NO_PASS;
+    return true;
+  }
+
+  log_info(
+    "removing %s %s port %p of app '%s' ('%s':'%s' in %s)",
+    port_type == JACKDBUS_PORT_TYPE_AUDIO ? "audio" : "midi",
+    JACKDBUS_PORT_IS_INPUT(port_flags) ? "input" : "output",
+    port_handle,
+    app_info_ptr->app_name,
+    ladish_graph_get_client_name(vgraph, vclient),
+    ladish_graph_get_port_name(vgraph, port_handle),
+    ladish_graph_get_description(vgraph));
+
+  return true;
+}
+
+#undef app_info_ptr
+
 void
 ladish_virtualizer_remove_app(
   ladish_graph_handle jack_graph,
@@ -1190,8 +1274,14 @@ ladish_virtualizer_remove_app(
   bool is_empty;
   uuid_t jclient_uuid;
   bool is_a2j;
+  struct app_remove_context ctx;
 
   //ladish_graph_dump(g_studio.jack_graph);
+
+  uuid_copy(ctx.app_uuid, app_uuid);
+  ctx.app_name = app_name;
+
+  ladish_graph_iterate_nodes(jack_graph, false, NULL, &ctx, NULL, remove_app_port, NULL);
 
   jclient = ladish_graph_find_client_by_app(jack_graph, app_uuid);
   if (jclient == NULL)

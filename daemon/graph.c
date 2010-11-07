@@ -1786,6 +1786,37 @@ ladish_port_handle ladish_graph_find_port_by_jack_id(ladish_graph_handle graph_h
   return port_ptr->port;
 }
 
+bool ladish_graph_client_has_visible_app_port(ladish_graph_handle graph_handle, ladish_client_handle client_handle, const uuid_t app_uuid)
+{
+  struct ladish_graph_client * client_ptr;
+  struct list_head * node_ptr;
+  struct ladish_graph_port * port_ptr;
+
+  client_ptr = ladish_graph_find_client(graph_ptr, client_handle);
+  if (client_ptr == NULL)
+  {
+    ASSERT_NO_PASS;
+    return false;
+  }
+
+  list_for_each(node_ptr, &client_ptr->ports)
+  {
+    port_ptr = list_entry(node_ptr, struct ladish_graph_port, siblings_client);
+    if (port_ptr->hidden)
+    {
+      continue;
+    }
+
+    if (ladish_port_belongs_to_app(port_ptr->port, app_uuid))
+    {
+      ASSERT(!client_ptr->hidden);
+      return true;
+    }
+  }
+
+  return false;
+}
+
 ladish_client_handle
 ladish_graph_remove_port(
   ladish_graph_handle graph_handle,

@@ -50,4 +50,9 @@ bool ladish_port_is_link(ladish_port_handle port_handle);
 void ladish_port_set_vgraph(ladish_port_handle port_handle, void * vgraph);
 void * ladish_port_get_vgraph(ladish_port_handle port_handle);
 
+void ladish_port_set_app(ladish_port_handle port, const uuid_t app_uuid);
+bool ladish_port_get_app(ladish_port_handle port, uuid_t app_uuid);
+bool ladish_port_has_app(ladish_port_handle port);
+bool ladish_port_belongs_to_app(ladish_port_handle port, const uuid_t app_uuid);
+
 #endif /* #ifndef PORT_H__62F81E7C_91FA_44AB_94A9_E0E2D226ED58__INCLUDED */
