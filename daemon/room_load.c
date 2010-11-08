@@ -160,6 +160,13 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
 
       log_info("jack client \"%s\" with uuid %s", name, uuid_str);
 
+      context_ptr->client = ladish_graph_find_client_by_uuid(ladish_studio_get_jack_graph(), uuid);
+      if (context_ptr->client != NULL)
+      {
+        log_info("Found existing client");
+        return;
+      }
+
       if (!ladish_client_create(uuid, &context_ptr->client))
       {
         log_error("ladish_client_create() failed.");
