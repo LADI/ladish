@@ -592,7 +592,7 @@ port_appeared(
    * if not found - create new port and add it to the jack graph.
    * Then process to adding it to virtual graph */
 
-  port = ladish_graph_find_port_by_name(virtualizer_ptr->jack_graph, jack_client, jack_port_name);
+  port = ladish_graph_find_port_by_name(virtualizer_ptr->jack_graph, jack_client, jack_port_name, vgraph);
   if (port != NULL)
   {
     log_info("found existing port %p", port);

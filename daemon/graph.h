@@ -141,7 +141,7 @@ ladish_client_handle ladish_graph_find_client_by_jack_id(ladish_graph_handle gra
 ladish_port_handle ladish_graph_find_port_by_jack_id(ladish_graph_handle graph_handle, uint64_t port_id, bool room, bool studio);
 ladish_client_handle ladish_graph_find_client_by_name(ladish_graph_handle graph_handle, const char * name, bool appless);
 ladish_client_handle ladish_graph_find_client_by_app(ladish_graph_handle graph_handle, const uuid_t app_uuid);
-ladish_port_handle ladish_graph_find_port_by_name(ladish_graph_handle graph_handle, ladish_client_handle client_handle, const char * name);
+ladish_port_handle ladish_graph_find_port_by_name(ladish_graph_handle graph_handle, ladish_client_handle client_handle, const char * name, void * vgraph_filter);
 ladish_client_handle ladish_graph_find_client_by_uuid(ladish_graph_handle graph_handle, const uuid_t uuid);
 ladish_port_handle ladish_graph_find_port_by_uuid(ladish_graph_handle graph_handle, const uuid_t uuid, bool use_link_override_uuids, void * vgraph_filter);
 

@@ -1650,7 +1650,12 @@ ladish_client_handle ladish_graph_find_client_by_app(ladish_graph_handle graph_h
   return NULL;
 }
 
-ladish_port_handle ladish_graph_find_port_by_name(ladish_graph_handle graph_handle, ladish_client_handle client_handle, const char * name)
+ladish_port_handle
+ladish_graph_find_port_by_name(
+  ladish_graph_handle graph_handle,
+  ladish_client_handle client_handle,
+  const char * name,
+  void * vgraph_filter)
 {
   struct ladish_graph_client * client_ptr;
   struct list_head * node_ptr;
@@ -1662,6 +1667,12 @@ ladish_port_handle ladish_graph_find_port_by_name(ladish_graph_handle graph_hand
     list_for_each(node_ptr, &client_ptr->ports)
     {
       port_ptr = list_entry(node_ptr, struct ladish_graph_port, siblings_client);
+
+      if (vgraph_filter != NULL && ladish_port_get_vgraph(port_ptr->port) != vgraph_filter)
+      {
+        continue;
+      }
+
       if (strcmp(port_ptr->name, name) == 0)
       {
         return port_ptr->port;
