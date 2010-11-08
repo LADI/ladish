@@ -2201,6 +2201,7 @@ ladish_graph_iterate_nodes(
   struct ladish_graph_client * client_ptr;
   void * client_context;
   struct list_head * port_node_ptr;
+  struct list_head * port_temp_node_ptr;
   struct ladish_graph_port * port_ptr;
 
   list_for_each(client_node_ptr, &graph_ptr->clients)
@@ -2229,7 +2230,7 @@ ladish_graph_iterate_nodes(
       continue;
     }
 
-    list_for_each(port_node_ptr, &client_ptr->ports)
+    list_for_each_safe(port_node_ptr, port_temp_node_ptr, &client_ptr->ports)
     {
       port_ptr = list_entry(port_node_ptr, struct ladish_graph_port, siblings_client);
 

@@ -1243,6 +1243,9 @@ remove_app_port(
     ladish_graph_get_port_name(vgraph, port_handle),
     ladish_graph_get_description(vgraph));
 
+  ladish_graph_remove_port(graph_handle, port_handle);
+  ladish_graph_remove_port(vgraph, port_handle);
+
   return true;
 }
 
