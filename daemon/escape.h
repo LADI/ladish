@@ -30,6 +30,7 @@
 #include "common.h"
 
 void escape(const char ** src_ptr, char ** dst_ptr);
+void escape_simple(const char * src_ptr, char * dst_ptr);
 size_t unescape(const char * src, size_t src_len, char * dst);
 
 /* encode each char in three bytes (percent encoding) */

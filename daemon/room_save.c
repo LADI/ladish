@@ -35,6 +35,7 @@
 #include "../common/catdup.h"
 #include "save.h"
 #include "../common/dirhelpers.h"
+#include "escape.h"
 
 #define PROJECT_HEADER_TEXT BASE_NAME " Project.\n"
 
@@ -46,6 +47,7 @@ static bool ladish_room_save_project_do(struct ladish_room * room_ptr)
   char uuid_str[37];
   char * filename;
   char * bak_filename;
+  char * escaped_project_name;
   int fd;
 
   log_info("Saving project '%s' in room '%s' to '%s'", room_ptr->project_name, room_ptr->name, room_ptr->project_dir);
@@ -64,12 +66,21 @@ static bool ladish_room_save_project_do(struct ladish_room * room_ptr)
   uuid_generate(room_ptr->project_uuid); /* TODO: the uuid should be changed on "save as" but not on "rename" */
   uuid_unparse(room_ptr->project_uuid, uuid_str);
 
+  escaped_project_name = malloc(max_escaped_length(strlen(room_ptr->project_name)) + 1);
+  if (escaped_project_name == NULL)
+  {
+    log_error("malloc() failed to allocate buffer for storing escaped project name");
+    goto exit;
+  }
+
   filename = catdup(room_ptr->project_dir, LADISH_PROJECT_FILENAME);
   if (filename == NULL)
   {
     log_error("catdup() failed to compose project xml filename");
-    goto exit;
+    goto free_escaped_project_name;
   }
+
+  escape_simple(room_ptr->project_name, escaped_project_name);
 
   bak_filename = catdup(filename, ".bak");
   if (bak_filename == NULL)
@@ -125,7 +136,7 @@ static bool ladish_room_save_project_do(struct ladish_room * room_ptr)
     goto close;
   }
 
-  if (!ladish_write_string(fd, room_ptr->project_name)) /* TODO: escaping */
+  if (!ladish_write_string(fd, escaped_project_name))
   {
     return false;
   }
@@ -205,6 +216,8 @@ free_bak_filename:
   free(bak_filename);
 free_filename:
   free(filename);
+free_escaped_project_name:
+  free(escaped_project_name);
 exit:
   return ret;
 }

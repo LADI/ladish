@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the escape helper functions
@@ -62,6 +62,11 @@ void escape(const char ** src_ptr, char ** dst_ptr)
 
   *src_ptr = src;
   *dst_ptr = dst;
+}
+
+void escape_simple(const char * src_ptr, char * dst_ptr)
+{
+  escape(&src_ptr, &dst_ptr);
 }
 
 size_t unescape(const char * src, size_t src_len, char * dst)
