@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the prototypes of the escape helper functions
@@ -31,5 +31,8 @@
 
 void escape(const char ** src_ptr, char ** dst_ptr);
 size_t unescape(const char * src, size_t src_len, char * dst);
+
+/* encode each char in three bytes (percent encoding) */
+#define max_escaped_length(unescaped_length) ((unescaped_length) * 3)
 
 #endif /* #ifndef ESCAPE_H__FABBE484_1093_41C1_9FC9_62ED0106E542__INCLUDED */

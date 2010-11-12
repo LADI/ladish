@@ -427,7 +427,7 @@ ladish_save_app(
 
   ret = false;
 
-  escaped_buffer = malloc(ladish_max(strlen(name), strlen(command)) * 3 + 1); /* encode each char in three bytes (percent encoding) */
+  escaped_buffer = malloc(max_escaped_length(ladish_max(strlen(name), strlen(command))) + 1);
   if (escaped_buffer == NULL)
   {
     log_error("malloc() failed.");

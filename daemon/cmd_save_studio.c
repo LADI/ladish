@@ -50,7 +50,7 @@ write_jack_parameter(
 {
   const char * src;
   char * dst;
-  char path[JACK_CONF_MAX_ADDRESS_SIZE * 3]; /* encode each char in three bytes (percent encoding) */
+  char path[max_escaped_length(JACK_CONF_MAX_ADDRESS_SIZE)];
   const char * content;
   char valbuf[100];
 
