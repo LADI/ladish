@@ -545,6 +545,8 @@ port_appeared(
         free(alsa_client_name);
         goto exit;
       }
+
+      vclient_name = alsa_client_name;
     }
     else
     {
