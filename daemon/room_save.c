@@ -38,6 +38,8 @@
 #include "escape.h"
 
 #define PROJECT_HEADER_TEXT BASE_NAME " Project.\n"
+#define DEFAULT_PROJECT_BASE_DIR "/ladish-projects/"
+#define DEFAULT_PROJECT_BASE_DIR_LEN ((size_t)(sizeof(DEFAULT_PROJECT_BASE_DIR) - 1))
 
 static bool ladish_room_save_project_do(struct ladish_room * room_ptr)
 {
@@ -222,6 +224,30 @@ exit:
   return ret;
 }
 
+/* TODO: base dir must be a runtime setting */
+char * compose_project_dir_from_name(const char * project_name)
+{
+  const char * home_dir;
+  char * project_dir;
+  size_t home_dir_len;
+
+  home_dir = getenv("HOME");
+  home_dir_len = strlen(home_dir);
+
+  project_dir = malloc(home_dir_len + DEFAULT_PROJECT_BASE_DIR_LEN + max_escaped_length(strlen(project_name)) + 1);
+  if (project_dir == NULL)
+  {
+    log_error("malloc() failed to allocate buffer for project dir");
+    return NULL;
+  }
+
+  memcpy(project_dir, home_dir, home_dir_len);
+  memcpy(project_dir + home_dir_len, DEFAULT_PROJECT_BASE_DIR, DEFAULT_PROJECT_BASE_DIR_LEN);
+  escape_simple(project_name, project_dir + home_dir_len + DEFAULT_PROJECT_BASE_DIR_LEN);
+
+  return project_dir;
+}
+
 #define room_ptr ((struct ladish_room *)room_handle)
 
 bool
@@ -285,10 +311,9 @@ ladish_room_save_project(
     {
       ASSERT(!dir_supplied);
 
-      project_dir = catdup3(getenv("HOME"), "/ladish-projects/", project_name_param); /* TODO: this must be a runtime setting */
-      if (project_dir == NULL)
+      project_dir = compose_project_dir_from_name(project_name_param);
+      if (!project_dir)
       {
-        log_error("catdup3() failed to compose project name");
         goto exit;
       }
 
