@@ -2078,6 +2078,57 @@ void ladish_try_connect_hidden_connections(ladish_graph_handle graph_handle)
   }
 }
 
+bool ladish_disconnect_visible_connections(ladish_graph_handle graph_handle)
+{
+  struct list_head * node_ptr;
+  struct ladish_graph_connection * connection_ptr;
+
+  if (graph_ptr->disconnect_handler == NULL)
+  {
+    ASSERT_NO_PASS;
+    return false;
+  }
+
+  ASSERT(graph_ptr->opath != NULL);
+
+  list_for_each(node_ptr, &graph_ptr->connections)
+  {
+    connection_ptr = list_entry(node_ptr, struct ladish_graph_connection, siblings);
+    log_debug(
+      "checking connection (%s, %s) '%s':'%s' (%s) to '%s':'%s' (%s)",
+      connection_ptr->hidden ? "hidden" : "visible",
+      connection_ptr->changing ? "changing" : "not changing",
+      connection_ptr->port1_ptr->client_ptr->name,
+      connection_ptr->port1_ptr->name,
+      connection_ptr->port1_ptr->hidden ? "hidden" : "visible",
+      connection_ptr->port2_ptr->client_ptr->name,
+      connection_ptr->port2_ptr->name,
+      connection_ptr->port2_ptr->hidden ? "hidden" : "visible");
+    if (!connection_ptr->hidden &&
+        !connection_ptr->changing &&
+        !connection_ptr->port1_ptr->hidden &&
+        !connection_ptr->port2_ptr->hidden)
+    {
+      log_info(
+        "disconnecting '%s':'%s' from '%s':'%s'",
+        connection_ptr->port1_ptr->client_ptr->name,
+        connection_ptr->port1_ptr->name,
+        connection_ptr->port2_ptr->client_ptr->name,
+        connection_ptr->port2_ptr->name);
+
+      connection_ptr->changing = true;
+      if (!graph_ptr->disconnect_handler(graph_ptr->context, graph_handle, connection_ptr->id))
+      {
+        connection_ptr->changing = false;
+        log_error("disconnect failed.");
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
 void ladish_graph_hide_non_virtual(ladish_graph_handle graph_handle)
 {
   struct list_head * node_ptr;
@@ -2431,11 +2482,10 @@ bool ladish_graph_is_persist(ladish_graph_handle graph_handle)
   return graph_ptr->persist;
 }
 
-bool ladish_graph_looks_empty(ladish_graph_handle graph_handle)
+bool ladish_graph_has_visible_connections(ladish_graph_handle graph_handle)
 {
   struct list_head * node_ptr;
   struct ladish_graph_connection * connection_ptr;
-  struct ladish_graph_client * client_ptr;
 
   list_for_each(node_ptr, &graph_ptr->connections)
   {
@@ -2443,8 +2493,21 @@ bool ladish_graph_looks_empty(ladish_graph_handle graph_handle)
 
     if (!connection_ptr->hidden)
     {
-      return false;
+      return true;
     }
+  }
+
+  return false;
+}
+
+bool ladish_graph_looks_empty(ladish_graph_handle graph_handle)
+{
+  struct list_head * node_ptr;
+  struct ladish_graph_client * client_ptr;
+
+  if (ladish_graph_has_visible_connections(graph_handle))
+  {
+    return false;
   }
 
   list_for_each(node_ptr, &graph_ptr->clients)
@@ -2457,6 +2520,34 @@ bool ladish_graph_looks_empty(ladish_graph_handle graph_handle)
   }
 
   return true;
+}
+
+void ladish_graph_remove_hidden_objects(ladish_graph_handle graph_handle)
+{
+  struct list_head * node_ptr;
+  struct list_head * temp_node_ptr;
+  struct ladish_graph_client * client_ptr;
+  struct ladish_graph_connection * connection_ptr;
+
+  log_info("ladish_graph_remove_hidden_objects() called for graph '%s'", graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
+
+  list_for_each_safe(node_ptr, temp_node_ptr, &graph_ptr->connections)
+  {
+    connection_ptr = list_entry(node_ptr, struct ladish_graph_connection, siblings);
+    if (connection_ptr->hidden)
+    {
+      ladish_graph_remove_connection_internal(graph_ptr, connection_ptr);
+    }
+  }
+
+  list_for_each_safe(node_ptr, temp_node_ptr, &graph_ptr->clients)
+  {
+    client_ptr = list_entry(node_ptr, struct ladish_graph_client, siblings);
+    if (client_ptr->hidden)
+    {
+      ladish_graph_remove_client_internal(graph_ptr, client_ptr, true, NULL);
+    }
+  }
 }
 
 /* Trick the world that graph objects disappear and the reapper so the new dict values are fetched */

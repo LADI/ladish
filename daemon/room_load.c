@@ -662,9 +662,11 @@ bool ladish_room_load_project(ladish_room_handle room_handle, const char * proje
 
   log_info("Loading project '%s' into room '%s'", project_dir, room_ptr->name);
 
+  ASSERT(room_ptr->project_state == ROOM_PROJECT_STATE_UNLOADED);
   ASSERT(room_ptr->project_dir == NULL);
   ASSERT(room_ptr->project_name == NULL);
   ASSERT(!ladish_app_supervisor_has_apps(room_ptr->app_supervisor));
+  ASSERT(!ladish_graph_has_visible_connections(room_ptr->graph));
 
   ret = false;
 
@@ -767,8 +769,12 @@ free_path:
 exit:
   if (!ret)
   {
-    ladish_room_unload_project(room_handle);
+    ladish_room_clear_project(room_ptr);
     ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Project load failed", LADISH_CHECK_LOG_TEXT);
+  }
+  else
+  {
+    room_ptr->project_state = ROOM_PROJECT_STATE_LOADED;
   }
 
   return ret;

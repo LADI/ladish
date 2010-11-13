@@ -335,17 +335,20 @@ static void ladish_app_send_signal(struct ladish_app * app_ptr, int sig, bool pr
   kill(pid, sig);
 }
 
-void ladish_app_supervisor_clear(ladish_app_supervisor_handle supervisor_handle)
+bool ladish_app_supervisor_clear(ladish_app_supervisor_handle supervisor_handle)
 {
   struct list_head * node_ptr;
   struct list_head * safe_node_ptr;
   struct ladish_app * app_ptr;
+  bool lifeless;
 
   if (supervisor_ptr->dir != NULL)
   {
     free(supervisor_ptr->dir);
     supervisor_ptr->dir = NULL;
   }
+
+  lifeless = true;
 
   list_for_each_safe(node_ptr, safe_node_ptr, &supervisor_ptr->applist)
   {
@@ -356,6 +359,7 @@ void ladish_app_supervisor_clear(ladish_app_supervisor_handle supervisor_handle)
       ladish_app_send_signal(app_ptr, SIGTERM, false);
       app_ptr->zombie = true;
       app_ptr->state = LADISH_APP_STATE_STOPPING;
+      lifeless = false;
     }
     else
     {
@@ -363,6 +367,8 @@ void ladish_app_supervisor_clear(ladish_app_supervisor_handle supervisor_handle)
       remove_app_internal(supervisor_ptr, app_ptr);
     }
   }
+
+  return lifeless;
 }
 
 void ladish_app_supervisor_destroy(ladish_app_supervisor_handle supervisor_handle)

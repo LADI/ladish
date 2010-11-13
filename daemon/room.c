@@ -286,7 +286,7 @@ ladish_room_create(
 
   room_ptr->project_name = NULL;
   room_ptr->project_dir = NULL;
-  room_ptr->project_unloading = false;
+  room_ptr->project_state = ROOM_PROJECT_STATE_UNLOADED;
 
   if (template != NULL)
   {
@@ -654,49 +654,69 @@ ladish_remove_room_app(
 
 bool ladish_room_unload_project(ladish_room_handle room_handle)
 {
-  if (!room_ptr->project_unloading)
+  switch (room_ptr->project_state)
   {
+  case ROOM_PROJECT_STATE_UNLOADED:
+    return true;
+
+  case ROOM_PROJECT_STATE_LOADED:
+    if (!ladish_app_supervisor_has_apps(room_ptr->app_supervisor) &&
+        !ladish_graph_has_visible_connections(room_ptr->graph))
+    {
+      break;
+    }
+
+    log_info("Disconnecting ports within room...");
+    ladish_disconnect_visible_connections(room_ptr->graph);
+
+    room_ptr->project_state = ROOM_PROJECT_STATE_UNLOADING_CONNECTIONS;
+    return false;
+
+  case ROOM_PROJECT_STATE_UNLOADING_CONNECTIONS:
+    if (ladish_graph_has_visible_connections(room_ptr->graph))
+    {
+      return false;
+    }
+
+    log_info("Ports within room disconnected");
+
     if (!ladish_app_supervisor_has_apps(room_ptr->app_supervisor))
     {
-      goto done;
+      break;
     }
 
     log_info("Stopping room apps...");
     ladish_graph_dump(room_ptr->graph);
-    room_ptr->project_unloading = true;
     //ladish_graph_clear_persist(room_ptr->graph);
     ladish_app_supervisor_stop(room_ptr->app_supervisor);
+
+    room_ptr->project_state = ROOM_PROJECT_STATE_UNLOADING_APPS;
+    return false;
+
+  case ROOM_PROJECT_STATE_UNLOADING_APPS:
+    if (!ladish_app_supervisor_enum(room_ptr->app_supervisor, room_ptr, ladish_room_app_is_stopped))
+    {
+      return false;
+    }
+
+    /* remove app clients, ports and connections */
+    ladish_app_supervisor_enum(room_ptr->app_supervisor, room_ptr, ladish_remove_room_app);
+
+    ladish_app_supervisor_clear(room_ptr->app_supervisor);
+    ASSERT(!ladish_app_supervisor_has_apps(room_ptr->app_supervisor));
+
+    //ladish_graph_set_persist(room_ptr->graph);
+
+    log_info("Room apps stopped.");
+    break;
+
+  default:
+    ASSERT_NO_PASS;
+    log_error("unknown project state");
     return false;
   }
 
-  if (!ladish_app_supervisor_enum(room_ptr->app_supervisor, room_ptr, ladish_room_app_is_stopped))
-  {
-    return false;
-  }
-
-  /* remove app clients, ports and connections */
-  ladish_app_supervisor_enum(room_ptr->app_supervisor, room_ptr, ladish_remove_room_app);
-
-  ladish_app_supervisor_clear(room_ptr->app_supervisor);
-  ASSERT(!ladish_app_supervisor_has_apps(room_ptr->app_supervisor));
-
-  //ladish_graph_set_persist(room_ptr->graph);
-
-  log_info("Room apps stopped.");
-  ladish_graph_dump(room_ptr->graph);
-  room_ptr->project_unloading = false;
-
-done:
-  if (room_ptr->project_name != NULL)
-  {
-    free(room_ptr->project_name);
-    room_ptr->project_name = NULL;
-  }
-  if (room_ptr->project_dir != NULL)
-  {
-    free(room_ptr->project_dir);
-    room_ptr->project_dir = NULL;
-  }
+  ladish_room_clear_project(room_ptr);
 
   ladish_room_emit_project_properties_changed(room_ptr);
 
@@ -845,6 +865,32 @@ void ladish_room_emit_project_properties_changed(struct ladish_room * room_ptr)
   }
 
   dbus_message_unref(message_ptr);
+}
+
+void ladish_room_clear_project(struct ladish_room * room_ptr)
+{
+  if (!ladish_app_supervisor_clear(room_ptr->app_supervisor))
+  {
+    ASSERT_NO_PASS;
+  }
+
+  ASSERT(!ladish_app_supervisor_has_apps(room_ptr->app_supervisor));
+
+  ladish_graph_remove_hidden_objects(room_ptr->graph);
+
+  if (room_ptr->project_name != NULL)
+  {
+    free(room_ptr->project_name);
+    room_ptr->project_name = NULL;
+  }
+  if (room_ptr->project_dir != NULL)
+  {
+    free(room_ptr->project_dir);
+    room_ptr->project_dir = NULL;
+  }
+
+  room_ptr->project_state = ROOM_PROJECT_STATE_UNLOADED;
+  ladish_graph_dump(room_ptr->graph);
 }
 
 /**********************************************************************************/

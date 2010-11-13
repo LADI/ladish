@@ -172,6 +172,7 @@ void ladish_graph_hide_client(ladish_graph_handle graph_handle, ladish_client_ha
 void ladish_graph_adjust_port(ladish_graph_handle graph_handle, ladish_port_handle port_handle, uint32_t type, uint32_t flags);
 void ladish_graph_show_connection(ladish_graph_handle graph_handle, uint64_t connection_id);
 void ladish_try_connect_hidden_connections(ladish_graph_handle graph_handle);
+bool ladish_disconnect_visible_connections(ladish_graph_handle graph_handle);
 void ladish_graph_hide_non_virtual(ladish_graph_handle graph_handle);
 void ladish_graph_get_port_uuid(ladish_graph_handle graph, ladish_port_handle port, uuid_t uuid_ptr);
 bool ladish_graph_client_has_visible_app_port(ladish_graph_handle graph, ladish_client_handle client, const uuid_t app_uuid);
@@ -225,6 +226,9 @@ void ladish_graph_clear_persist(ladish_graph_handle graph_handle);
 void ladish_graph_set_persist(ladish_graph_handle graph_handle);
 bool ladish_graph_is_persist(ladish_graph_handle graph_handle);
 bool ladish_graph_looks_empty(ladish_graph_handle graph_handle);
+bool ladish_graph_has_visible_connections(ladish_graph_handle graph_handle);
+
+void ladish_graph_remove_hidden_objects(ladish_graph_handle graph_handle);
 
 void ladish_graph_trick_dicts(ladish_graph_handle graph_handle);
 

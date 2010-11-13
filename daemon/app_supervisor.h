@@ -155,8 +155,10 @@ ladish_app_supervisor_enum(
  * once it quits.
  *
  * @param[in] supervisor_handle supervisor object handle
+ *
+ * @return Whether there were no running apps
  */
-void
+bool
 ladish_app_supervisor_clear(
   ladish_app_supervisor_handle supervisor_handle);
 

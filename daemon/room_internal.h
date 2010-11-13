@@ -31,6 +31,11 @@
 
 #define LADISH_PROJECT_FILENAME "/ladish-project.xml"
 
+#define ROOM_PROJECT_STATE_UNLOADED               0
+#define ROOM_PROJECT_STATE_LOADED                 1
+#define ROOM_PROJECT_STATE_UNLOADING_CONNECTIONS  2
+#define ROOM_PROJECT_STATE_UNLOADING_APPS         3
+
 struct ladish_room
 {
   struct list_head siblings;
@@ -50,12 +55,13 @@ struct ladish_room
   ladish_client_handle client;
   bool started;
 
-  bool project_unloading;
+  unsigned int project_state;
   uuid_t project_uuid;
   char * project_dir;
   char * project_name;
 };
 
 void ladish_room_emit_project_properties_changed(struct ladish_room * room_ptr);
+void ladish_room_clear_project(struct ladish_room * room_ptr);
 
 #endif /* #ifndef ROOM_INTERNAL_H__FAF5B68F_E419_442A_8F9B_C729BAC00422__INCLUDED */
