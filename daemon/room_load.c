@@ -76,6 +76,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
   ladish_port_handle port2;
   uint32_t port_type;
   uint32_t port_flags;
+  size_t len;
 
   if (context_ptr->error)
   {
@@ -100,15 +101,18 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
       return;
     }
 
-    log_info("Project '%s' with uuid %s", name, uuid_str);
-
-    room_ptr->project_name = strdup(name);
+    len = strlen(name) + 1;
+    room_ptr->project_name = malloc(len);
     if (room_ptr->project_name == NULL)
     {
-      log_error("strdup() failed for project name");
+      log_error("malloc() failed for project name with length %zu", len);
       context_ptr->error = XML_TRUE;
       return;
     }
+
+    room_ptr->project_name[unescape(name, len, room_ptr->project_name)] = 0;
+
+    log_info("Project '%s' with uuid %s", room_ptr->project_name, uuid_str);
 
     uuid_copy(room_ptr->project_uuid, uuid);
 
@@ -779,16 +783,20 @@ static void project_name_elstart_callback(void * data, const char * el, const ch
   const char * name;
   const char * uuid_str;
   uuid_t uuid;
+  size_t len;
 
   if (strcmp(el, "project") == 0)
   {
     if (ladish_get_name_and_uuid_attributes("/project", attr, &name, &uuid_str, uuid))
     {
-      context_ptr->str = strdup(name);
+      len = strlen(name) + 1;
+      context_ptr->str = malloc(len);
       if (context_ptr->str == NULL)
       {
-        log_error("strdup() failed for project name");
+        log_error("malloc() failed for project name with length %zu", len);
       }
+
+      context_ptr->str[unescape(name, len, context_ptr->str)] = 0;
     }
 
     XML_StopParser(context_ptr->parser, XML_TRUE);
