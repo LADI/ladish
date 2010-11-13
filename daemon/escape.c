@@ -67,6 +67,7 @@ void escape(const char ** src_ptr, char ** dst_ptr)
 void escape_simple(const char * src_ptr, char * dst_ptr)
 {
   escape(&src_ptr, &dst_ptr);
+  *dst_ptr = 0;
 }
 
 size_t unescape(const char * src, size_t src_len, char * dst)
