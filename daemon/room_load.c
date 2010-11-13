@@ -110,7 +110,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
       return;
     }
 
-    room_ptr->project_name[unescape(name, len, room_ptr->project_name)] = 0;
+    unescape(name, len, room_ptr->project_name);
 
     log_info("Project '%s' with uuid %s", room_ptr->project_name, uuid_str);
 
@@ -796,7 +796,7 @@ static void project_name_elstart_callback(void * data, const char * el, const ch
         log_error("malloc() failed for project name with length %zu", len);
       }
 
-      context_ptr->str[unescape(name, len, context_ptr->str)] = 0;
+      unescape(name, len, context_ptr->str);
     }
 
     XML_StopParser(context_ptr->parser, XML_TRUE);
