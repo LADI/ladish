@@ -300,7 +300,7 @@ def build(bld):
 
     bld(rule=git_ver, target='version.h', update_outputs=True, always=True, ext_out=['.h'])
 
-    daemon = bld.program(source = [], features = 'c cprogram', includes = ".")
+    daemon = bld.program(source = [], features = 'c cprogram', includes = [bld.path.get_bld()])
     daemon.target = 'ladishd'
     daemon.uselib = 'DBUS-1 UUID EXPAT'
     daemon.ver_header = 'version.h'
@@ -386,7 +386,7 @@ def build(bld):
 
     #####################################################
     # jmcore
-    jmcore = bld.program(source = [], features = 'c cprogram', includes = ".")
+    jmcore = bld.program(source = [], features = 'c cprogram', includes = [bld.path.get_bld()])
     jmcore.target = 'jmcore'
     jmcore.uselib = 'DBUS-1 JACK'
     jmcore.defines = ['LOG_OUTPUT_STDOUT']
@@ -406,7 +406,7 @@ def build(bld):
 
     #####################################################
     # conf
-    ladiconfd = bld.program(source = [], features = 'c cprogram', includes = ".")
+    ladiconfd = bld.program(source = [], features = 'c cprogram', includes = [bld.path.get_bld()])
     ladiconfd.target = 'ladiconfd'
     ladiconfd.uselib = 'DBUS-1'
     ladiconfd.defines = ['LOG_OUTPUT_STDOUT']
@@ -437,7 +437,7 @@ def build(bld):
     #####################################################
     # liblash
     if bld.env['BUILD_LIBLASH']:
-        liblash = bld.shlib(source = [], features = 'c cshlib', includes = ".")
+        liblash = bld.shlib(source = [], features = 'c cshlib', includes = [bld.path.get_bld()])
         liblash.uselib = 'DBUS-1'
         liblash.target = 'lash'
         liblash.vnum = "1.1.1"
@@ -477,7 +477,7 @@ def build(bld):
     #####################################################
     # gladish
     if bld.env['BUILD_GLADISH']:
-        gladish = bld.program(source = [], features = 'c cxx cxxprogram', includes = ".")
+        gladish = bld.program(source = [], features = 'c cxx cxxprogram', includes = [bld.path.get_bld()])
         gladish.target = 'gladish'
         gladish.defines = ['LOG_OUTPUT_STDOUT']
         gladish.uselib = 'DBUS-1 DBUS-GLIB-1 FLOWCANVAS'
