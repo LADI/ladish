@@ -654,11 +654,11 @@ ladish_remove_room_app(
 
 bool ladish_room_unload_project(ladish_room_handle room_handle)
 {
+  unsigned int old_project_state;
+
   switch (room_ptr->project_state)
   {
   case ROOM_PROJECT_STATE_UNLOADED:
-    return true;
-
   case ROOM_PROJECT_STATE_LOADED:
     if (!ladish_app_supervisor_has_apps(room_ptr->app_supervisor) &&
         !ladish_graph_has_visible_connections(room_ptr->graph))
@@ -716,9 +716,14 @@ bool ladish_room_unload_project(ladish_room_handle room_handle)
     return false;
   }
 
+  old_project_state = room_ptr->project_state;
+
   ladish_room_clear_project(room_ptr);
 
-  ladish_room_emit_project_properties_changed(room_ptr);
+  if (old_project_state != room_ptr->project_state)
+  {
+    ladish_room_emit_project_properties_changed(room_ptr);
+  }
 
   return true;
 }
