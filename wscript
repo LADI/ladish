@@ -40,10 +40,10 @@ def yesno(bool):
         return "no"
 
 def options(opt):
-    opt.tool_options('compiler_c')
-    opt.tool_options('compiler_cxx')
-    opt.tool_options('boost')
-    opt.tool_options('python')
+    opt.load('compiler_c')
+    opt.load('compiler_cxx')
+    opt.load('boost')
+    opt.load('python')
     opt.add_option('--enable-pkg-config-dbus-service-dir', action='store_true', default=False, help='force D-Bus service install dir to be one returned by pkg-config')
     opt.add_option('--enable-liblash', action='store_true', default=False, help='Build LASH compatibility library')
     opt.add_option('--enable-pylash', action='store_true', default=False, help='Build python bindings for LASH compatibility library')
@@ -82,14 +82,19 @@ def create_service_taskgen(bld, target, opath, binary):
         daemon_bin_path  = os.path.join(bld.env['PREFIX'], 'bin', binary))
 
 def configure(conf):
-    conf.check_tool('compiler_c')
-    conf.check_tool('compiler_cxx')
-    conf.check_tool('boost')
-    conf.check_tool('python')
+    conf.load('compiler_c')
+    conf.load('compiler_cxx')
+    conf.load('boost')
+    conf.load('python')
     if parallel_debug:
         conf.load('parallel_debug')
 
-    conf.env['LIB_DL'] = ['dl']
+    # dladdr() is used by daemon/sigsegv.c
+    # dlvsym() is used by the alsapid library
+    conf.check_cc(msg="Checking for libdl", lib=['dl'], uselib_store='DL')
+
+    # forkpty() is used by ladishd
+    conf.check_cc(msg="Checking for libutil", lib=['util'], uselib_store='UTIL')
 
     conf.check_cfg(
         package = 'jack',
@@ -302,9 +307,10 @@ def build(bld):
 
     daemon = bld.program(source = [], features = 'c cprogram', includes = [bld.path.get_bld()])
     daemon.target = 'ladishd'
-    daemon.uselib = 'DBUS-1 UUID EXPAT'
+    daemon.uselib = 'DBUS-1 UUID EXPAT DL UTIL'
     daemon.ver_header = 'version.h'
-    daemon.env.append_value("LINKFLAGS", ["-lutil", "-ldl", "-Wl,-E"])
+    # Make backtrace function lookup to work for functions in the executable itself
+    daemon.env.append_value("LINKFLAGS", ["-Wl,-E"])
 
     for source in [
         'main.c',
