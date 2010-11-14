@@ -179,7 +179,7 @@ def configure(conf):
         conf.env['BUILD_PYLASH'] = False
     if conf.env['BUILD_PYLASH']:
         conf.check_python_version()
-	conf.check_python_headers()
+        conf.check_python_headers()
 
     conf.env['BUILD_WERROR'] = not RELEASE
     if conf.env['BUILD_WERROR']:
@@ -449,14 +449,14 @@ def build(bld):
         # process lash-1.0.pc.in -> lash-1.0.pc
         bld(
             features     = 'subst', # the feature 'subst' overrides the source/target processing
-	    source       = os.path.join("lash_compat", 'lash-1.0.pc.in'), # list of string or nodes
-	    target       = 'lash-1.0.pc', # list of strings or nodes
-	    install_path = '${LIBDIR}/pkgconfig/',
-	    # variables to use in the substitution
-	    prefix       = bld.env['PREFIX'],
-	    exec_prefix  = bld.env['PREFIX'],
-	    libdir       = bld.env['LIBDIR'],
-	    includedir   = os.path.normpath(bld.env['PREFIX'] + '/include'))
+            source       = os.path.join("lash_compat", 'lash-1.0.pc.in'), # list of string or nodes
+            target       = 'lash-1.0.pc', # list of strings or nodes
+            install_path = '${LIBDIR}/pkgconfig/',
+            # variables to use in the substitution
+            prefix       = bld.env['PREFIX'],
+            exec_prefix  = bld.env['PREFIX'],
+            libdir       = bld.env['LIBDIR'],
+            includedir   = os.path.normpath(bld.env['PREFIX'] + '/include'))
 
     #####################################################
     # pylash
