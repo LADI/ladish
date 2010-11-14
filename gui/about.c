@@ -32,6 +32,7 @@
 #include "about.h"
 #include "pixbuf.h"
 #include "gtk_builder.h"
+#include "version.h"
 
 #define ABOUT_DIALOG_LOGO     "ladish-logo-128x128.png"
 
@@ -81,12 +82,24 @@ void show_about(void)
   const char * authors[] = {"Nedko Arnaudov", "Nikita Zlobin", NULL};
   const char * artists[] = {"Lapo Calamandrei", "Nadejda Pancheva-Arnaudova", NULL};
   char * license;
+  struct stat st;
+  char timestamp_str[26];
+  char built_str[200];
 
   pixbuf =  load_pixbuf(ABOUT_DIALOG_LOGO);
   license = read_file_contents(DATA_DIR "/COPYING");
 
   dialog = get_gtk_builder_widget("about_win");
+
+  st.st_mtime = 0;
+  stat("/proc/self/exe", &st);
+  ctime_r(&st.st_mtime, timestamp_str);
+  timestamp_str[24] = 0;
+
+  sprintf(built_str,"gladish is built on %s from %s", timestamp_str, GIT_VERSION);
+
   gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), PACKAGE_VERSION);
+  gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), built_str);
 
   if (pixbuf != NULL)
   {
