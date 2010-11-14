@@ -496,7 +496,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
     }
 
     if (context_ptr->depth == 1 &&
-        context_ptr->element[0] == PARSE_CONTEXT_STUDIO)
+        context_ptr->element[0] == PARSE_CONTEXT_PROJECT)
     {
       context_ptr->dict = ladish_graph_get_dict(room_ptr->graph);
       ASSERT(context_ptr->dict != NULL);
