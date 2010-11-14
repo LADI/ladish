@@ -40,7 +40,7 @@ def yesno(bool):
         return "no"
 
 def options(opt):
-    opt.tool_options('compiler_cc')
+    opt.tool_options('compiler_c')
     opt.tool_options('compiler_cxx')
     opt.tool_options('boost')
     opt.tool_options('python')
@@ -55,7 +55,7 @@ def options(opt):
 
 def add_cflag(conf, flag):
     conf.env.append_unique('CXXFLAGS', flag)
-    conf.env.append_unique('CCFLAGS', flag)
+    conf.env.append_unique('CFLAGS', flag)
 
 def add_linkflag(conf, flag):
     conf.env.append_unique('LINKFLAGS', flag)
@@ -82,7 +82,7 @@ def create_service_taskgen(bld, target, opath, binary):
         daemon_bin_path  = os.path.join(bld.env['PREFIX'], 'bin', binary))
 
 def configure(conf):
-    conf.check_tool('compiler_cc')
+    conf.check_tool('compiler_c')
     conf.check_tool('compiler_cxx')
     conf.check_tool('boost')
     conf.check_tool('python')
@@ -194,13 +194,13 @@ def configure(conf):
                     gcc_ver.append(int(n))
                 if gcc_ver[0] < 4 or gcc_ver[1] < 4:
                     #print "optimize force enable is required"
-                    if not check_gcc_optimizations_enabled(conf.env['CCFLAGS']):
+                    if not check_gcc_optimizations_enabled(conf.env['CFLAGS']):
                         if Options.options.debug:
                             print "C optimization must be forced in order to enable -Wuninitialized"
                             print "However this will not be made because debug compilation is enabled"
                         else:
                             print "C optimization forced in order to enable -Wuninitialized"
-                            conf.env.append_unique('CCFLAGS', "-O")
+                            conf.env.append_unique('CFLAGS', "-O")
         except:
             pass
 
@@ -258,7 +258,7 @@ def configure(conf):
         display_line(conf,     'WARNING: You can override dbus service install directory', 'RED')
         display_line(conf,     'WARNING: with --enable-pkg-config-dbus-service-dir option to this script', 'RED')
 
-    display_msg(conf, 'C compiler flags', repr(conf.env['CCFLAGS']))
+    display_msg(conf, 'C compiler flags', repr(conf.env['CFLAGS']))
     display_msg(conf, 'C++ compiler flags', repr(conf.env['CXXFLAGS']))
 
     if not conf.env['BUILD_GLADISH']:
