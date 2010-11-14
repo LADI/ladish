@@ -28,7 +28,7 @@
 #ifndef STUDIO_INTERNAL_H__B4CB73EC_8E89_401A_9E49_F0AEEF361D09__INCLUDED
 #define STUDIO_INTERNAL_H__B4CB73EC_8E89_401A_9E49_F0AEEF361D09__INCLUDED
 
-#include "../../proxies/jack_proxy.h"
+#include "../proxies/jack_proxy.h"
 #include "../dbus/error.h"
 #include "virtualizer.h"
 #include "app_supervisor.h"
