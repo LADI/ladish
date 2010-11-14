@@ -6,7 +6,9 @@ import Options
 import Utils
 import shutil
 import re
-import misc
+import waflib
+
+parallel_debug = False
 
 APPNAME='ladish'
 VERSION='0.3-rc'
@@ -14,21 +16,22 @@ DBUS_NAME_BASE = 'org.ladish'
 RELEASE = False
 
 # these variables are mandatory ('/' are converted automatically)
-srcdir = '.'
-blddir = 'build'
+top = '.'
+out = 'build'
+
+from Logs import pprint
 
 def display_msg(conf, msg="", status = None, color = None):
     if status:
-        conf.check_message_1(msg)
-        conf.check_message_2(status, color)
+        conf.msg(msg, status, color)
     else:
-        Utils.pprint('NORMAL', msg)
+        pprint('NORMAL', msg)
 
 def display_raw_text(conf, text, color = 'NORMAL'):
-    Utils.pprint(color, text, sep = '')
+    pprint(color, text, sep = '')
 
 def display_line(conf, text, color = 'NORMAL'):
-    Utils.pprint(color, text, sep = os.linesep)
+    pprint(color, text, sep = os.linesep)
 
 def yesno(bool):
     if bool:
@@ -36,7 +39,7 @@ def yesno(bool):
     else:
         return "no"
 
-def set_options(opt):
+def options(opt):
     opt.tool_options('compiler_cc')
     opt.tool_options('compiler_cxx')
     opt.tool_options('boost')
@@ -47,6 +50,8 @@ def set_options(opt):
     opt.add_option('--debug', action='store_true', default=False, dest='debug', help="Build debuggable binaries")
     opt.add_option('--doxygen', action='store_true', default=False, help='Enable build of doxygen documentation')
     opt.add_option('--distnodeps', action='store_true', default=False, help="When creating distribution tarball, don't package git submodules")
+    if parallel_debug:
+        opt.load('parallel_debug')
 
 def add_cflag(conf, flag):
     conf.env.append_unique('CXXFLAGS', flag)
@@ -67,50 +72,22 @@ def check_gcc_optimizations_enabled(flags):
     return gcc_optimizations_enabled
 
 def create_service_taskgen(bld, target, opath, binary):
-    obj = bld.new_task_gen('subst')
-    obj.source = os.path.join('daemon', 'dbus.service.in')
-    obj.target = target
-    obj.dict = {'dbus_object_path': opath,
-                'daemon_bin_path': os.path.join(bld.env['PREFIX'], 'bin', binary)}
-    obj.install_path = bld.env['DBUS_SERVICES_DIR'] + os.path.sep
-    obj.fun = misc.subst_func
-
-def _get_python_variables(python_exe,variables,imports=['import sys']):
-	program=list(imports)
-	program.append('')
-	for v in variables:
-		program.append("print(repr(%s))"%v)
-	os_env=dict(os.environ)
-	try:
-		del os_env['MACOSX_DEPLOYMENT_TARGET']
-	except KeyError:
-		pass
-	proc=Utils.pproc.Popen([python_exe,"-c",'\n'.join(program)],stdout=Utils.pproc.PIPE,env=os_env)
-	output=proc.communicate()[0].split("\n")
-	if proc.returncode:
-		if Options.options.verbose:
-			warn("Python program to extract python configuration variables failed:\n%s"%'\n'.join(["line %03i: %s"%(lineno+1,line)for lineno,line in enumerate(program)]))
-		raise RuntimeError
-	return_values=[]
-	for s in output:
-		s=s.strip()
-		if not s:
-			continue
-		if s=='None':
-			return_values.append(None)
-		elif s[0]=="'"and s[-1]=="'":
-			return_values.append(s[1:-1])
-		elif s[0].isdigit():
-			return_values.append(int(s))
-		else:break
-	return return_values
+    bld(
+        features     = 'subst', # the feature 'subst' overrides the source/target processing
+        source       = os.path.join('daemon', 'dbus.service.in'), # list of string or nodes
+        target       = target,  # list of strings or nodes
+        install_path = bld.env['DBUS_SERVICES_DIR'] + os.path.sep,
+        # variables to use in the substitution
+        dbus_object_path = opath,
+        daemon_bin_path  = os.path.join(bld.env['PREFIX'], 'bin', binary))
 
 def configure(conf):
     conf.check_tool('compiler_cc')
     conf.check_tool('compiler_cxx')
     conf.check_tool('boost')
     conf.check_tool('python')
-    #conf.check_tool('ParallelDebug')
+    if parallel_debug:
+        conf.load('parallel_debug')
 
     conf.env['LIB_DL'] = ['dl']
 
@@ -202,49 +179,7 @@ def configure(conf):
         conf.env['BUILD_PYLASH'] = False
     if conf.env['BUILD_PYLASH']:
         conf.check_python_version()
-        #print conf.env['PYTHONDIR']
-        python = conf.env['PYTHON']
-        #print python
-        pymajmin = '.'.join(conf.env['PYTHON_VERSION'].split('.')[:2])
-	try:
-		v='prefix SO SYSLIBS LDFLAGS SHLIBS LIBDIR LIBPL INCLUDEPY Py_ENABLE_SHARED MACOSX_DEPLOYMENT_TARGET'.split()
-		(python_prefix,python_SO,python_SYSLIBS,python_LDFLAGS,python_SHLIBS,python_LIBDIR,python_LIBPL,INCLUDEPY,Py_ENABLE_SHARED,python_MACOSX_DEPLOYMENT_TARGET)=_get_python_variables(python,["get_config_var('%s')"%x for x in v],['from distutils.sysconfig import get_config_var'])
-	except RuntimeError:
-		conf.fatal("Python development headers not found (-v for details).")
-	conf.log.write("""Configuration returned from %r:
-python_prefix = %r
-python_SO = %r
-python_SYSLIBS = %r
-python_LDFLAGS = %r
-python_SHLIBS = %r
-python_LIBDIR = %r
-python_LIBPL = %r
-INCLUDEPY = %r
-Py_ENABLE_SHARED = %r
-MACOSX_DEPLOYMENT_TARGET = %r
-"""%(python,python_prefix,python_SO,python_SYSLIBS,python_LDFLAGS,python_SHLIBS,python_LIBDIR,python_LIBPL,INCLUDEPY,Py_ENABLE_SHARED,python_MACOSX_DEPLOYMENT_TARGET))
-
-	conf.env['pyext_PATTERN'] = '%s' + python_SO
-
-        for pattern in 'python%s-config', 'python-config-%s':
-            python_config = conf.find_program(pattern % pymajmin, var = 'PYTHON_CONFIG')
-            if python_config:
-                includes=[]
-                #print conf.env['PYTHON_CONFIG']
-                for incstr in Utils.cmd_output("%s --includes" % (conf.env['PYTHON_CONFIG'])).strip().split():
-                    if (incstr.startswith('-I') or incstr.startswith('/I')):
-                        incstr = incstr[2:]
-                    if incstr not in includes:
-                        includes.append(incstr)
-                conf.log.write("Include path for Python extensions ""(found via python-config --includes): %r\n"%(includes,))
-		conf.env['CPPPATH_PYEXT'] = includes
-		conf.env['CPPPATH_PYEMBED'] = includes
-                break
-
-	if not python_config:
-            conf.log.write("Include path for Python extensions ""(found via distutils module): %r\n"%(INCLUDEPY,))
-            conf.env['CPPPATH_PYEXT'] = [INCLUDEPY]
-            conf.env['CPPPATH_PYEMBED'] = [INCLUDEPY]
+	conf.check_python_headers()
 
     conf.env['BUILD_WERROR'] = not RELEASE
     if conf.env['BUILD_WERROR']:
@@ -275,7 +210,10 @@ MACOSX_DEPLOYMENT_TARGET = %r
         add_cflag(conf, '-O0')
         add_linkflag(conf, '-g')
 
-    conf.define('DATA_DIR', os.path.normpath(os.path.join(conf.env['PREFIX'], 'share', APPNAME)))
+    conf.env['DATA_DIR'] = os.path.normpath(os.path.join(conf.env['PREFIX'], 'share', APPNAME))
+
+    # write some parts of the configure environment to the config.h file
+    conf.define('DATA_DIR', conf.env['DATA_DIR'])
     conf.define('PACKAGE_VERSION', VERSION)
     conf.define('DBUS_NAME_BASE', DBUS_NAME_BASE)
     conf.define('DBUS_BASE_PATH', '/' + DBUS_NAME_BASE.replace('.', '/'))
@@ -329,15 +267,44 @@ MACOSX_DEPLOYMENT_TARGET = %r
 
     display_msg(conf)
 
+def git_ver(self):
+    bld = self.generator.bld
+    header = self.outputs[0].abspath()
+    if os.access('../version.h', os.R_OK):
+        shutil.copy('../version.h', header)
+        data = file(header).read()
+        m = re.match(r'^#define GIT_VERSION "([^"]*)"$', data)
+        if m != None:
+            self.ver = m.group(1)
+            pprint('BLUE', "tarball from git revision " + self.ver)
+        else:
+            self.ver = "tarball"
+        return
+
+    if bld.srcnode.find_node('.git'):
+        self.ver = bld.cmd_and_log("LANG= git rev-parse HEAD", quiet=waflib.Context.BOTH).splitlines()[0]
+        if bld.cmd_and_log("LANG= git diff-index --name-only HEAD", quiet=waflib.Context.BOTH).splitlines():
+            self.ver += "-dirty"
+
+        pprint('BLUE', "git revision " + self.ver)
+    else:
+        self.ver = "unknown"
+
+    fi = open(header, 'w')
+    fi.write('#define GIT_VERSION "%s"\n' % self.ver)
+    fi.close()
+
 def build(bld):
-    daemon = bld.new_task_gen('cc', 'program')
+    if not bld.env['DATA_DIR']:
+        raise "DATA_DIR is emtpy"
+
+    bld(rule=git_ver, target='version.h', update_outputs=True, always=True, ext_out=['.h'])
+
+    daemon = bld.program(source = [], features = 'c cprogram', includes = ".")
     daemon.target = 'ladishd'
-    daemon.includes = "build/default" # XXX config.h version.h and other generated files
     daemon.uselib = 'DBUS-1 UUID EXPAT'
     daemon.ver_header = 'version.h'
     daemon.env.append_value("LINKFLAGS", ["-lutil", "-ldl", "-Wl,-E"])
-
-    daemon.source = []
 
     for source in [
         'main.c',
@@ -419,9 +386,8 @@ def build(bld):
 
     #####################################################
     # jmcore
-    jmcore = bld.new_task_gen('cc', 'program')
+    jmcore = bld.program(source = [], features = 'c cprogram', includes = ".")
     jmcore.target = 'jmcore'
-    jmcore.includes = "build/default" # XXX config.h version.h and other generated files
     jmcore.uselib = 'DBUS-1 JACK'
     jmcore.defines = ['LOG_OUTPUT_STDOUT']
     jmcore.source = ['jmcore.c']
@@ -440,9 +406,8 @@ def build(bld):
 
     #####################################################
     # conf
-    ladiconfd = bld.new_task_gen('cc', 'program')
+    ladiconfd = bld.program(source = [], features = 'c cprogram', includes = ".")
     ladiconfd.target = 'ladiconfd'
-    ladiconfd.includes = "build/default" # XXX config.h version.h and other generated files
     ladiconfd.uselib = 'DBUS-1'
     ladiconfd.defines = ['LOG_OUTPUT_STDOUT']
     ladiconfd.source = ['conf.c']
@@ -467,44 +432,39 @@ def build(bld):
 
     #####################################################
     # alsapid
-    alsapid = bld.new_task_gen('cc', 'shlib')
-    alsapid.target = 'alsapid'
-    alsapid.uselib = 'DL'
-    alsapid.source = [os.path.join("alsapid", 'lib.c'), os.path.join("alsapid", "helper.c")]
+    bld.shlib(source = [os.path.join("alsapid", 'lib.c'), os.path.join("alsapid", "helper.c")], target = 'alsapid', uselib = 'DL')
 
     #####################################################
     # liblash
     if bld.env['BUILD_LIBLASH']:
-        liblash = bld.new_task_gen('cc', 'shlib')
-        liblash.includes = "build/default" # XXX config.h version.h and other generated files
+        liblash = bld.shlib(source = [], features = 'c cshlib', includes = ".")
         liblash.uselib = 'DBUS-1'
         liblash.target = 'lash'
         liblash.vnum = "1.1.1"
         liblash.defines = ['LOG_OUTPUT_STDOUT']
         liblash.source = [os.path.join("lash_compat", "liblash", 'lash.c'), os.path.join("common", "catdup.c")]
 
-        bld.install_files('${PREFIX}/include/lash', 'lash_compat/liblash/lash/*.h')
+        bld.install_files('${PREFIX}/include/lash', bld.path.ant_glob('lash_compat/liblash/lash/*.h'))
 
         # process lash-1.0.pc.in -> lash-1.0.pc
-        obj = bld.new_task_gen('subst')
-        obj.source = [os.path.join("lash_compat", 'lash-1.0.pc.in')]
-        obj.target = 'lash-1.0.pc'
-        obj.dict = {'prefix': bld.env['PREFIX'],
-                    'exec_prefix': bld.env['PREFIX'],
-                    'libdir': bld.env['LIBDIR'],
-                    'includedir': os.path.normpath(bld.env['PREFIX'] + '/include'),
-                    }
-        obj.install_path = '${LIBDIR}/pkgconfig/'
-        obj.fun = misc.subst_func
+        bld(
+            features     = 'subst', # the feature 'subst' overrides the source/target processing
+	    source       = os.path.join("lash_compat", 'lash-1.0.pc.in'), # list of string or nodes
+	    target       = 'lash-1.0.pc', # list of strings or nodes
+	    install_path = '${LIBDIR}/pkgconfig/',
+	    # variables to use in the substitution
+	    prefix       = bld.env['PREFIX'],
+	    exec_prefix  = bld.env['PREFIX'],
+	    libdir       = bld.env['LIBDIR'],
+	    includedir   = os.path.normpath(bld.env['PREFIX'] + '/include'))
 
     #####################################################
     # pylash
     if bld.env['BUILD_PYLASH']:
-        pylash = bld.new_task_gen('cc', 'shlib', 'pyext')
+        pylash = bld.shlib(features = 'c cshlib pyext', source = [])
         pylash.target = '_lash'
-        pylash.uselib_local = 'lash'
-        pylash.source = []
-        pylash.install_path = bld.env['PYTHONDIR']
+        pylash.use = 'lash'
+        pylash.install_path = '${PYTHONDIR}'
 
         for source in [
             'lash.c',
@@ -512,26 +472,14 @@ def build(bld):
             ]:
             pylash.source.append(os.path.join("lash_compat", "pylash", source))
 
-        bld.install_files(bld.env['PYTHONDIR'], os.path.join("lash_compat", "pylash", "lash.py"))
-
-    # pkgpyexec_LTLIBRARIES = _lash.la
-    # INCLUDES = $(PYTHON_INCLUDES)
-    # _lash_la_LDFLAGS = -module -avoid-version ../liblash/liblash.la
-    # _lash_la_SOURCES = lash.c lash.h lash_wrap.c
-    # pkgpyexec_SCRIPTS = lash.py
-    # CLEANFILES = lash_wrap.c lash.py lash.pyc zynjacku.defs
-    # EXTRA_DIST = test.py lash.i lash.py
-    # lash_wrap.c lash.py: lash.i lash.h
-    #   swig -o lash_wrap.c -I$(top_srcdir) -python $(top_srcdir)/$(subdir)/lash.i
+        bld.install_files('${PYTHONDIR}', os.path.join("lash_compat", "pylash", "lash.py"))
 
     #####################################################
     # gladish
     if bld.env['BUILD_GLADISH']:
-        gladish = bld.new_task_gen('cxx', 'program')
-        gladish.features.append('cc')
+        gladish = bld.program(source = [], features = 'c cxx cxxprogram', includes = ".")
         gladish.target = 'gladish'
         gladish.defines = ['LOG_OUTPUT_STDOUT']
-        gladish.includes = "build/default" # XXX config.h version.h and other generated files
         gladish.uselib = 'DBUS-1 DBUS-GLIB-1 FLOWCANVAS'
 
         gladish.source = []
@@ -589,7 +537,7 @@ def build(bld):
             gladish.source.append(os.path.join("common", source))
 
         # GtkBuilder UI definitions (XML)
-        bld.install_files(bld.env['DATA_DIR'], 'gui/gladish.ui')
+        bld.install_files('${DATA_DIR}', 'gui/gladish.ui')
     
     bld.install_files('${PREFIX}/bin', 'ladish_control', chmod=0755)
 
@@ -606,22 +554,22 @@ def build(bld):
     for status in ["down", "unloaded", "started", "stopped", "warning", "error"]:
         status_images.append("art/status_" + status + ".png")
 
-    bld.install_files(bld.env['DATA_DIR'], status_images)
-    bld.install_files(bld.env['DATA_DIR'], "art/ladish-logo-128x128.png")
-    bld.install_files(bld.env['DATA_DIR'], ["COPYING", "AUTHORS", "README", "NEWS"])
+    bld.install_files('${DATA_DIR}', status_images)
+    bld.install_files('${DATA_DIR}', "art/ladish-logo-128x128.png")
+    bld.install_files('${DATA_DIR}', ["COPYING", "AUTHORS", "README", "NEWS"])
 
     if bld.env['BUILD_DOXYGEN_DOCS'] == True:
         html_docs_source_dir = "build/default/html"
-        if Options.commands['clean']:
+        if bld.cmd == 'clean':
             if os.access(html_docs_source_dir, os.R_OK):
-                Utils.pprint('CYAN', "Removing doxygen generated documentation...")
+                pprint('CYAN', "Removing doxygen generated documentation...")
                 shutil.rmtree(html_docs_source_dir)
-                Utils.pprint('CYAN', "Removing doxygen generated documentation done.")
-        elif Options.commands['build']:
+                pprint('CYAN', "Removing doxygen generated documentation done.")
+        elif bld.cmd == 'build':
             if not os.access(html_docs_source_dir, os.R_OK):
                 os.popen("doxygen").read()
             else:
-                Utils.pprint('CYAN', "doxygen documentation already built.")
+                pprint('CYAN', "doxygen documentation already built.")
 
 def get_tags_dirs():
     source_root = os.path.dirname(Utils.g_module.root_path)
@@ -664,71 +612,3 @@ def dist_hook():
         if os.access(nodist_file, os.F_OK):
             os.remove(nodist_file)
     shutil.copy('../build/default/version.h', "./")
-
-import commands
-from Constants import RUN_ME
-from TaskGen import feature, after
-import Task, Utils
-
-@feature('cc')
-@after('apply_core')
-def process_git(self):
-    if getattr(self, 'ver_header', None):
-        tsk = self.create_task('git_ver')
-        tsk.set_outputs(self.path.find_or_declare(self.ver_header))
-
-        # needs some help with implicit dependencies
-        # http://code.google.com/p/waf/issues/detail?id=732
-        tg = self.bld.name_to_obj('ladishd', self.env)
-        if id(tg) != id(self):
-            tg.post()
-        for x in tg.tasks:
-            if x.inputs and x.inputs[0].name == 'main.c' and x.inputs[0].parent.name == 'daemon':
-                x.set_run_after(tsk)
-
-def git_ver(self):
-    header = self.outputs[0].abspath(self.env)
-    if os.access('../version.h', os.R_OK):
-        shutil.copy('../version.h', header)
-        data = file(header).read()
-        m = re.match(r'^#define GIT_VERSION "([^"]*)"$', data)
-        if m != None:
-            self.ver = m.group(1)
-            Utils.pprint('BLUE', "tarball from git revision " + self.ver)
-        else:
-            self.ver = "tarball"
-        return
-
-    if os.access('../.git', os.R_OK):
-        self.ver = commands.getoutput("LANG= git rev-parse HEAD").splitlines()[0]
-        if commands.getoutput("LANG= git diff-index --name-only HEAD").splitlines():
-            self.ver += "-dirty"
-
-        Utils.pprint('BLUE', "git revision " + self.ver)
-    else:
-        self.ver = "unknown"
-
-    fi = open(header, 'w')
-    fi.write('#define GIT_VERSION "%s"\n' % self.ver)
-    fi.close()
-
-cls = Task.task_type_from_func('git_ver', vars=[], func=git_ver, color='BLUE')
-
-def always(self):
-    return RUN_ME
-cls.runnable_status = always
-
-def post_run(self):
-    sg = Utils.h_list(self.ver)
-    node = self.outputs[0]
-    variant = node.variant(self.env)
-    self.generator.bld.node_sigs[variant][node.id] = sg
-cls.post_run = post_run
-
-import Runner
-
-old_refill = Runner.Parallel.refill_task_list
-def refill_task_list(self):
-    old_refill(self)
-    self.outstanding.sort(cmp=lambda a, b: cmp(b.__class__.__name__, a.__class__.__name__))
-Runner.Parallel.refill_task_list = refill_task_list

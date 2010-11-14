@@ -29,7 +29,7 @@
 
 #include "log.h"
 
-#include <assert.h>
+#include </usr/include/assert.h>
 
 #define ASSERT(expr)                                                  \
   do                                                                  \

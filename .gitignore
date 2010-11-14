@@ -11,7 +11,7 @@
 /GSYMS
 /GTAGS
 /.waf-*
-/.lock-wscript
+/.lock-wafbuild
 /build
 *~
 *.pyc
