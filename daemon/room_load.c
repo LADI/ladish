@@ -194,13 +194,13 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
         context_ptr->element[0] == PARSE_CONTEXT_PROJECT &&
         context_ptr->element[1] == PARSE_CONTEXT_CLIENTS)
     {
-      if (!ladish_get_name_and_uuid_attributes("/studio/clients/client", attr, &name, &uuid_str, uuid))
+      if (!ladish_get_name_and_uuid_attributes("/room/clients/client", attr, &name, &uuid_str, uuid))
       {
         context_ptr->error = XML_TRUE;
         return;
       }
 
-      log_info("studio client \"%s\" with uuid %s", name, uuid_str);
+      log_info("room client \"%s\" with uuid %s", name, uuid_str);
 
       context_ptr->client = ladish_graph_find_client_by_uuid(room_ptr->graph, uuid);
       if (context_ptr->client != NULL)
@@ -389,7 +389,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
     uuid_str = ladish_get_uuid_attribute(attr, "port1", uuid, false);
     if (uuid_str == NULL)
     {
-      log_error("/studio/connections/connection \"port1\" attribute is not available.");
+      log_error("/room/connections/connection \"port1\" attribute is not available.");
       context_ptr->error = XML_TRUE;
       return;
     }
@@ -397,17 +397,17 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
     uuid2_str = ladish_get_uuid_attribute(attr, "port2", uuid2, false);
     if (uuid2_str == NULL)
     {
-      log_error("/studio/connections/connection \"port2\" attribute is not available.");
+      log_error("/room/connections/connection \"port2\" attribute is not available.");
       context_ptr->error = XML_TRUE;
       return;
     }
 
-    log_info("studio connection between port %s and port %s", uuid_str, uuid2_str);
+    log_info("room connection between port %s and port %s", uuid_str, uuid2_str);
 
     port1 = ladish_graph_find_port_by_uuid(room_ptr->graph, uuid, true, NULL);
     if (port1 == NULL)
     {
-      log_error("studio client with unknown port %s", uuid_str);
+      log_error("room client with unknown port %s", uuid_str);
       context_ptr->error = XML_TRUE;
       return;
     }
@@ -415,7 +415,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
     port2 = ladish_graph_find_port_by_uuid(room_ptr->graph, uuid2, true, NULL);
     if (port2 == NULL)
     {
-      log_error("studio client with unknown port %s", uuid2_str);
+      log_error("room client with unknown port %s", uuid2_str);
       context_ptr->error = XML_TRUE;
       return;
     }
