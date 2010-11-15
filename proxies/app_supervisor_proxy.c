@@ -446,6 +446,8 @@ ladish_app_supervisor_get_app_properties(
   *terminal_ptr = terminal;
   *level_ptr = level;
 
+  dbus_message_unref(reply_ptr);
+
   return true;
 }
 
