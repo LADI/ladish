@@ -30,7 +30,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <dirent.h>
 
 #include "studio_internal.h"
 #include "../dbus_constants.h"
@@ -43,7 +42,12 @@
 #include "../proxies/notify_proxy.h"
 
 #define STUDIOS_DIR "/studios/"
+
+#define RECENT_STUDIOS_STORE_FILE "recent_studios"
+#define RECENT_STUDIOS_STORE_MAX_ITEMS 50
+
 char * g_studios_dir;
+ladish_recent_store_handle g_studios_recent_store;
 
 struct studio g_studio;
 
@@ -530,6 +534,8 @@ static void ladish_studio_on_jack_server_disappeared(void)
 
 bool ladish_studio_init(void)
 {
+  char * studios_recent_store_path;
+
   log_info("studio object construct");
 
   g_studios_dir = catdup(g_base_dir, STUDIOS_DIR);
@@ -543,6 +549,21 @@ bool ladish_studio_init(void)
   {
     goto free_studios_dir;
   }
+
+  studios_recent_store_path = catdup(g_base_dir, "/" RECENT_STUDIOS_STORE_FILE);
+  if (studios_recent_store_path == NULL)
+  {
+    log_error("catdup failed for to compose recent studios store file path");
+    goto free_studios_dir;
+  }
+
+  if (!ladish_recent_store_create(studios_recent_store_path, 10, &g_studios_recent_store))
+  {
+    free(studios_recent_store_path);
+    goto free_studios_dir;
+  }
+
+  free(studios_recent_store_path);
 
   INIT_LIST_HEAD(&g_studio.all_connections);
   INIT_LIST_HEAD(&g_studio.all_ports);
@@ -567,7 +588,7 @@ bool ladish_studio_init(void)
   if (!ladish_graph_create(&g_studio.jack_graph, NULL))
   {
     log_error("ladish_graph_create() failed to create jack graph object.");
-    goto free_studios_dir;
+    goto destroy_recent_store;
   }
 
   if (!ladish_graph_create(&g_studio.studio_graph, STUDIO_OBJECT_PATH))
@@ -603,6 +624,8 @@ studio_graph_destroy:
   ladish_graph_destroy(g_studio.studio_graph);
 jack_graph_destroy:
   ladish_graph_destroy(g_studio.jack_graph);
+destroy_recent_store:
+  ladish_recent_store_destroy(g_studios_recent_store);
 free_studios_dir:
   free(g_studios_dir);
 fail:
@@ -619,6 +642,8 @@ void ladish_studio_uninit(void)
 
   ladish_graph_destroy(g_studio.studio_graph);
   ladish_graph_destroy(g_studio.jack_graph);
+
+  ladish_recent_store_destroy(g_studios_recent_store);
 
   free(g_studios_dir);
 
@@ -779,75 +804,6 @@ ladish_app_supervisor_handle ladish_studio_find_app_supervisor(const char * opat
   ctx.supervisor = NULL;
   ladish_studio_iterate_virtual_graphs(&ctx, ladish_studio_app_supervisor_match);
   return ctx.supervisor;
-}
-
-bool ladish_studios_iterate(void * call_ptr, void * context, bool (* callback)(void * call_ptr, void * context, const char * studio, uint32_t modtime))
-{
-  DIR * dir;
-  struct dirent * dentry;
-  size_t len;
-  struct stat st;
-  char * path;
-  char * name;
-
-  dir = opendir(g_studios_dir);
-  if (dir == NULL)
-  {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Cannot open directory '%s': %d (%s)", g_studios_dir, errno, strerror(errno));
-    return false;
-  }
-
-  while ((dentry = readdir(dir)) != NULL)
-  {
-    len = strlen(dentry->d_name);
-    if (len <= 4 || strcmp(dentry->d_name + (len - 4), ".xml") != 0)
-      continue;
-
-    path = catdup(g_studios_dir, dentry->d_name);
-    if (path == NULL)
-    {
-      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "catdup() failed");
-      return false;
-    }
-
-    if (stat(path, &st) != 0)
-    {
-      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "failed to stat '%s': %d (%s)", path, errno, strerror(errno));
-      free(path);
-      return false;
-    }
-
-    free(path);
-
-    if (!S_ISREG(st.st_mode))
-    {
-      //log_info("Ignoring direntry that is not regular file. Mode is %07o", st.st_mode);
-      continue;
-    }
-
-    name = malloc(len - 4 + 1);
-    if (name == NULL)
-    {
-      log_error("malloc() failed.");
-      closedir(dir);
-      return false;
-    }
-
-    name[unescape(dentry->d_name, len - 4, name)] = 0;
-    //log_info("name = '%s'", name);
-
-    if (!callback(call_ptr, context, name, st.st_mtime))
-    {
-      free(name);
-      closedir(dir);
-      return false;
-    }
-
-    free(name);
-  }
-
-  closedir(dir);
-  return true;
 }
 
 bool ladish_studio_delete(void * call_ptr, const char * studio_name)

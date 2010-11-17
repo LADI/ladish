@@ -46,6 +46,11 @@ ladish_recent_store_use_item(
   ladish_recent_store_handle store,
   const char * item);
 
+bool
+ladish_recent_store_check_known(
+  ladish_recent_store_handle store,
+  const char * item);
+
 void
 ladish_recent_store_iterate_items(
   ladish_recent_store_handle store,

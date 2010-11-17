@@ -330,6 +330,7 @@ def build(bld):
         'graph_dict.c',
         'escape.c',
         'studio_jack_conf.c',
+        'studio_list.c',
         'save.c',
         'load.c',
         'cmd_load_studio.c',

@@ -942,6 +942,8 @@ static bool run(void * command_context)
   ladish_graph_dump(g_studio.jack_graph);
   ladish_graph_dump(g_studio.studio_graph);
 
+  ladish_recent_store_use_item(g_studios_recent_store, g_studio.name);
+
   ladish_studio_announce();
 
   cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;

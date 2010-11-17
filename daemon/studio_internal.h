@@ -34,6 +34,7 @@
 #include "app_supervisor.h"
 #include "cmd.h"
 #include "studio.h"
+#include "recent_store.h"
 
 #define JACK_CONF_MAX_ADDRESS_SIZE 1024
 
@@ -184,6 +185,8 @@ struct conf_callback_context
 };
 
 extern struct studio g_studio;
+extern char * g_studios_dir;
+extern ladish_recent_store_handle g_studios_recent_store;
 
 extern const struct dbus_interface_descriptor g_interface_studio;
 

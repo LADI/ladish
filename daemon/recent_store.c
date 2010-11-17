@@ -269,6 +269,24 @@ reorder:
   ladish_recent_store_save(store_ptr);
 }
 
+bool
+ladish_recent_store_check_known(
+  ladish_recent_store_handle store_handle,
+  const char * item)
+{
+  unsigned int i;
+
+  for (i = 0; i < store_ptr->max_items && store_ptr->items[i] != NULL; i++)
+  {
+    if (strcmp(store_ptr->items[i], item) == 0)
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 void
 ladish_recent_store_iterate_items(
   ladish_recent_store_handle store_handle,
