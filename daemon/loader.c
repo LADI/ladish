@@ -47,7 +47,7 @@ struct loader_child
 {
   struct list_head  siblings;
 
-  char * project_name;
+  char * vgraph_name;
   char * app_name;
 
   bool dead;
@@ -93,7 +93,7 @@ loader_child_find_and_mark_dead(pid_t pid)
 static
 void
 loader_check_line_repeat_end(
-  char * project,
+  char * vgraph_name,
   char * app_name,
   bool error,
   unsigned int last_line_repeat_count)
@@ -102,11 +102,11 @@ loader_check_line_repeat_end(
   {
     if (error)
     {
-      log_error_plain("%s:%s: stderr line repeated %u times", project, app_name, last_line_repeat_count);
+      log_error_plain("%s:%s: stderr line repeated %u times", vgraph_name, app_name, last_line_repeat_count);
     }
     else
     {
-      log_info("%s:%s: stdout line repeated %u times", project, app_name, last_line_repeat_count);
+      log_info("%s:%s: stdout line repeated %u times", vgraph_name, app_name, last_line_repeat_count);
     }
   }
 }
@@ -124,13 +124,13 @@ loader_childs_bury(void)
     if (child_ptr->dead)
     {
       loader_check_line_repeat_end(
-        child_ptr->project_name,
+        child_ptr->vgraph_name,
         child_ptr->app_name,
         false,
         child_ptr->stdout_last_line_repeat_count);
 
       loader_check_line_repeat_end(
-        child_ptr->project_name,
+        child_ptr->vgraph_name,
         child_ptr->app_name,
         true,
         child_ptr->stderr_last_line_repeat_count);
@@ -139,7 +139,7 @@ loader_childs_bury(void)
 
       list_del(&child_ptr->siblings);
 
-      free(child_ptr->project_name);
+      free(child_ptr->vgraph_name);
       free(child_ptr->app_name);
 
       if (!child_ptr->terminal)
@@ -311,7 +311,7 @@ static void loader_exec_program(const char * commandline, const char * working_d
 static
 void
 loader_read_child_output(
-  char * project,
+  char * vgraph_name,
   char * app_name,
   int fd,
   bool error,
@@ -345,11 +345,11 @@ loader_read_child_output(
           {
             if (error)
             {
-              log_error_plain("%s:%s: last stderr line repeating..", project, app_name);
+              log_error_plain("%s:%s: last stderr line repeating..", vgraph_name, app_name);
             }
             else
             {
-              log_info("%s:%s: last stdout line repeating...", project, app_name);
+              log_info("%s:%s: last stdout line repeating...", vgraph_name, app_name);
             }
           }
 
@@ -357,18 +357,18 @@ loader_read_child_output(
         }
         else
         {
-          loader_check_line_repeat_end(project, app_name, error, *last_line_repeat_count);
+          loader_check_line_repeat_end(vgraph_name, app_name, error, *last_line_repeat_count);
 
           strcpy(last_line, char_ptr);
           *last_line_repeat_count = 1;
 
           if (error)
           {
-            log_error_plain("%s:%s: %s", project, app_name, char_ptr);
+            log_error_plain("%s:%s: %s", vgraph_name, app_name, char_ptr);
           }
           else
           {
-            log_info("%s:%s: %s", project, app_name, char_ptr);
+            log_info("%s:%s: %s", vgraph_name, app_name, char_ptr);
           }
         }
 
@@ -387,11 +387,11 @@ loader_read_child_output(
 
           if (error)
           {
-            log_error_plain("%s:%s: %s " ANSI_RESET ANSI_COLOR_RED "(truncated) " ANSI_RESET, project, app_name, char_ptr);
+            log_error_plain("%s:%s: %s " ANSI_RESET ANSI_COLOR_RED "(truncated) " ANSI_RESET, vgraph_name, app_name, char_ptr);
           }
           else
           {
-            log_info("%s:%s: %s " ANSI_RESET ANSI_COLOR_RED "(truncated) " ANSI_RESET, project, app_name, char_ptr);
+            log_info("%s:%s: %s " ANSI_RESET ANSI_COLOR_RED "(truncated) " ANSI_RESET, vgraph_name, app_name, char_ptr);
           }
 
           left = 0;
@@ -421,7 +421,7 @@ loader_read_childs_output(void)
     if (!child_ptr->dead && !child_ptr->terminal)
     {
       loader_read_child_output(
-        child_ptr->project_name,
+        child_ptr->vgraph_name,
         child_ptr->app_name,
         child_ptr->stdout,
         false,
@@ -431,7 +431,7 @@ loader_read_childs_output(void)
         &child_ptr->stdout_last_line_repeat_count);
 
       loader_read_child_output(
-        child_ptr->project_name,
+        child_ptr->vgraph_name,
         child_ptr->app_name,
         child_ptr->stderr,
         true,
@@ -452,7 +452,7 @@ loader_run(void)
 
 bool
 loader_execute(
-  const char * project_name,
+  const char * vgraph_name,
   const char * app_name,
   const char * working_dir,
   bool run_in_terminal,
@@ -470,10 +470,10 @@ loader_execute(
     goto fail;
   }
 
-  child_ptr->project_name = strdup(project_name);
-  if (child_ptr->project_name == NULL)
+  child_ptr->vgraph_name = strdup(vgraph_name);
+  if (child_ptr->vgraph_name == NULL)
   {
-    log_error("strdup() failed to duplicate project name '%s'", project_name);
+    log_error("strdup() failed to duplicate vgraph name '%s'", vgraph_name);
     goto free_struct;
   }
 
@@ -481,7 +481,7 @@ loader_execute(
   if (child_ptr->app_name == NULL)
   {
     log_error("strdup() failed to duplicate app name '%s'", app_name);
-    goto free_project_name;
+    goto free_vgraph_name;
   }
 
   child_ptr->dead = false;
@@ -526,7 +526,7 @@ loader_execute(
 
   if (pid == -1)
   {
-    log_error("Could not fork to exec program %s:%s: %s", project_name, app_name, strerror(errno));
+    log_error("Could not fork to exec program %s:%s: %s", vgraph_name, app_name, strerror(errno));
     list_del(&child_ptr->siblings); /* fork failed so it is not really a child process to watch for. */
     return false;
   }
@@ -573,14 +573,14 @@ loader_execute(
     }
   }
 
-  log_info("Forked to run program %s:%s pid = %llu", project_name, app_name, (unsigned long long)pid);
+  log_info("Forked to run program %s:%s pid = %llu", vgraph_name, app_name, (unsigned long long)pid);
 
   *pid_ptr = child_ptr->pid = pid;
 
   return true;
 
-free_project_name:
-  free(child_ptr->project_name);
+free_vgraph_name:
+  free(child_ptr->vgraph_name);
 
 free_struct:
   free(child_ptr);
