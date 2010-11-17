@@ -88,7 +88,11 @@ ladish_recent_store_load(
   fd = open(store_ptr->path, O_RDONLY);
   if (fd == -1)
   {
-    log_error("open(%s) failed: %d (%s)", store_ptr->path, errno, strerror(errno));
+    if (errno != ENOENT)
+    {
+      log_error("open(%s) failed: %d (%s)", store_ptr->path, errno, strerror(errno));
+    }
+
     goto exit;
   }
 
