@@ -255,9 +255,17 @@ static void loader_exec_program_in_xterm(const char * const * argv)
 }
 #endif
 
-static void loader_exec_program(const char * commandline, const char * working_dir, bool run_in_terminal)
+static
+void
+loader_exec_program(
+  const char * commandline,
+  const char * working_dir,
+  bool run_in_terminal,
+  const char * vgraph_name,
+  const char * app_name)
 {
-  const char * argv[4];
+  const char * argv[8];
+  unsigned int i;
 
   /* for non terminal processes we use forkpty() that calls login_tty() that calls setsid() */
   /* we can successful call setsid() only once */
@@ -276,27 +284,38 @@ static void loader_exec_program(const char * commandline, const char * working_d
     log_error("Could not change directory to working dir '%s' for program '%s': %s", working_dir, argv[0], strerror(errno));
   }
 
+  i = 0;
+
   if (run_in_terminal)
   {
-    if (!conf_get(LADISH_CONF_KEY_DAEMON_TERMINAL, argv))
+    if (!conf_get(LADISH_CONF_KEY_DAEMON_TERMINAL, argv + i))
     {
-      argv[0] = LADISH_CONF_KEY_DAEMON_TERMINAL_DEFAULT;
+      argv[i] = LADISH_CONF_KEY_DAEMON_TERMINAL_DEFAULT;
+    }
+    i++;
+
+    if (strcmp(argv[0], "xterm") == 0 &&
+        strchr(app_name, '"') == NULL &&
+        strchr(app_name, '\'') == NULL &&
+        strchr(app_name, '`') == NULL)
+    {
+      argv[i++] = "-T";
+      argv[i++] = app_name;
     }
 
-    argv[1] = "-e";
+    argv[i++] = "-e";
   }
-  else
+
+  if (!conf_get(LADISH_CONF_KEY_DAEMON_SHELL, argv + i))
   {
-    if (!conf_get(LADISH_CONF_KEY_DAEMON_SHELL, argv))
-    {
-      argv[0] = LADISH_CONF_KEY_DAEMON_SHELL_DEFAULT;
-    }
-
-    argv[1] = "-c";
+    argv[i] = LADISH_CONF_KEY_DAEMON_SHELL_DEFAULT;
   }
+  i++;
 
-  argv[2] = commandline;
-  argv[3] = NULL;
+  argv[i++] = "-c";
+
+  argv[i++] = commandline;
+  argv[i++] = NULL;
 
   log_info("Executing '%s' with PID %llu", commandline, (unsigned long long)getpid());
 
@@ -554,7 +573,7 @@ loader_execute(
 
     putenv("LD_PRELOAD=libalsapid.so");
 
-    loader_exec_program(commandline, working_dir, run_in_terminal);
+    loader_exec_program(commandline, working_dir, run_in_terminal, vgraph_name, app_name);
 
     return false;  /* We should never get here */
   }
