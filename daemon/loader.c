@@ -49,6 +49,7 @@ struct loader_child
 
   char * vgraph_name;
   char * app_name;
+  char * project_name;
 
   bool dead;
   pid_t pid;
@@ -139,6 +140,7 @@ loader_childs_bury(void)
 
       list_del(&child_ptr->siblings);
 
+      free(child_ptr->project_name);
       free(child_ptr->vgraph_name);
       free(child_ptr->app_name);
 
@@ -262,6 +264,7 @@ loader_exec_program(
   const char * working_dir,
   bool run_in_terminal,
   const char * vgraph_name,
+  const char * project_name,
   const char * app_name)
 {
   const char * argv[8];
@@ -282,6 +285,14 @@ loader_exec_program(
   if (chdir(working_dir) == -1)
   {
     log_error("Could not change directory to working dir '%s' for program '%s': %s", working_dir, argv[0], strerror(errno));
+  }
+
+  setenv("LADISH_APP_NAME", app_name, true);
+  setenv("LADISH_VGRAPH_NAME", vgraph_name, true);
+
+  if (project_name != NULL)
+  {
+    setenv("LADISH_PROJECT_NAME", project_name, true);
   }
 
   i = 0;
@@ -475,6 +486,7 @@ loader_run(void)
 bool
 loader_execute(
   const char * vgraph_name,
+  const char * project_name,
   const char * app_name,
   const char * working_dir,
   bool run_in_terminal,
@@ -499,11 +511,25 @@ loader_execute(
     goto free_struct;
   }
 
+  if (project_name != NULL)
+  {
+    child_ptr->project_name = strdup(app_name);
+    if (child_ptr->project_name == NULL)
+    {
+      log_error("strdup() failed to duplicate project name '%s'", project_name);
+      goto free_vgraph_name;
+    }
+  }
+  else
+  {
+    child_ptr->project_name = NULL;
+  }
+
   child_ptr->app_name = strdup(app_name);
   if (child_ptr->app_name == NULL)
   {
     log_error("strdup() failed to duplicate app name '%s'", app_name);
-    goto free_vgraph_name;
+    goto free_project_name;
   }
 
   child_ptr->dead = false;
@@ -576,7 +602,7 @@ loader_execute(
 
     putenv("LD_PRELOAD=libalsapid.so");
 
-    loader_exec_program(commandline, working_dir, run_in_terminal, vgraph_name, app_name);
+    loader_exec_program(commandline, working_dir, run_in_terminal, vgraph_name, project_name, app_name);
 
     return false;  /* We should never get here */
   }
@@ -600,6 +626,9 @@ loader_execute(
   *pid_ptr = child_ptr->pid = pid;
 
   return true;
+
+free_project_name:
+  free(child_ptr->project_name);
 
 free_vgraph_name:
   free(child_ptr->vgraph_name);

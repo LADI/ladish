@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to the code that starts programs
@@ -31,6 +31,7 @@ void loader_init(void (* on_child_exit)(pid_t pid));
 
 bool
 loader_execute(
+  const char * vgraph_name,
   const char * project_name,
   const char * app_name,
   const char * working_dir,

@@ -115,6 +115,7 @@ ladish_app_supervisor_destroy(
  * Set the directory where apps will be started. If never called, apps will be started in the root directory ("/")
  *
  * @param[in] supervisor_handle supervisor object handle
+ * @param[in] dir directory where apps will be started
  *
  * @return success status
  */
@@ -122,6 +123,19 @@ bool
 ladish_app_supervisor_set_directory(
   ladish_app_supervisor_handle supervisor_handle,
   const char * dir);
+
+/**
+ * Set/reset the project name
+ *
+ * @param[in] supervisor_handle supervisor object handle
+ * @param[in] poject_name project name. NULL means that there is no project name.
+ *
+ * @return success status
+ */
+bool
+ladish_app_supervisor_set_project_name(
+  ladish_app_supervisor_handle supervisor_handle,
+  const char * project_name);
 
 /**
  * Mark that app has quit

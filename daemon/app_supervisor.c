@@ -57,6 +57,7 @@ struct ladish_app_supervisor
   char * name;
   char * opath;
   char * dir;
+  char * project_name;
   uint64_t version;
   uint64_t next_id;
   struct list_head applist;
@@ -99,6 +100,7 @@ ladish_app_supervisor_create(
   }
 
   supervisor_ptr->dir = NULL;
+  supervisor_ptr->project_name = NULL;
 
   supervisor_ptr->version = 0;
   supervisor_ptr->next_id = 1;
@@ -342,11 +344,11 @@ bool ladish_app_supervisor_clear(ladish_app_supervisor_handle supervisor_handle)
   struct ladish_app * app_ptr;
   bool lifeless;
 
-  if (supervisor_ptr->dir != NULL)
-  {
-    free(supervisor_ptr->dir);
-    supervisor_ptr->dir = NULL;
-  }
+  free(supervisor_ptr->dir);
+  supervisor_ptr->dir = NULL;
+
+  free(supervisor_ptr->project_name);
+  supervisor_ptr->project_name = NULL;
 
   lifeless = true;
 
@@ -399,6 +401,33 @@ ladish_app_supervisor_set_directory(
   }
 
   supervisor_ptr->dir = dup;
+
+  return true;
+}
+
+bool
+ladish_app_supervisor_set_project_name(
+  ladish_app_supervisor_handle supervisor_handle,
+  const char * project_name)
+{
+  char * dup;
+
+  if (project_name != NULL)
+  {
+    dup = strdup(project_name);
+    if (dup == NULL)
+    {
+      log_error("strdup(\"%s\") failed", project_name);
+      return false;
+    }
+
+    if (supervisor_ptr->project_name != NULL)
+    {
+      free(supervisor_ptr->project_name);
+    }
+  }
+
+  supervisor_ptr->project_name = dup;
 
   return true;
 }
@@ -480,6 +509,7 @@ bool ladish_app_supervisor_start_app(ladish_app_supervisor_handle supervisor_han
 
   if (!loader_execute(
         supervisor_ptr->name,
+        supervisor_ptr->project_name,
         app_ptr->name,
         supervisor_ptr->dir != NULL ? supervisor_ptr->dir : "/",
         app_ptr->terminal,

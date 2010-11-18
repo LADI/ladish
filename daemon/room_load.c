@@ -752,6 +752,11 @@ bool ladish_room_load_project(ladish_room_handle room_handle, const char * proje
   /* ladish_graph_dump(room_ptr->graph); */
 
   ladish_app_supervisor_set_directory(room_ptr->app_supervisor, project_dir);
+  if (!ladish_app_supervisor_set_project_name(room_ptr->app_supervisor, room_ptr->project_name))
+  {
+    ladish_app_supervisor_set_project_name(room_ptr->app_supervisor, NULL);
+  }
+
   ladish_graph_trick_dicts(room_ptr->graph);
   ladish_try_connect_hidden_connections(room_ptr->graph);
   ladish_app_supervisor_autorun(room_ptr->app_supervisor);

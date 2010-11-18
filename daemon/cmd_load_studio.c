@@ -944,6 +944,11 @@ static bool run(void * command_context)
 
   ladish_recent_store_use_item(g_studios_recent_store, g_studio.name);
 
+  if (!ladish_app_supervisor_set_project_name(ladish_studio_get_studio_app_supervisor(), g_studio.name))
+  {
+    ladish_app_supervisor_set_project_name(ladish_studio_get_studio_app_supervisor(), NULL);
+  }
+
   ladish_studio_announce();
 
   cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;
