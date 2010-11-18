@@ -377,11 +377,11 @@ void ladish_room_destroy(ladish_room_handle room_handle)
 {
   /* project has either both name and dir no none of them */
   ASSERT((room_ptr->project_dir == NULL && room_ptr->project_name == NULL) || (room_ptr->project_dir != NULL && room_ptr->project_name != NULL));
-  if (room_ptr->project_dir == NULL)
+  if (room_ptr->project_dir != NULL)
   {
     free(room_ptr->project_dir);
   }
-  if (room_ptr->project_name == NULL)
+  if (room_ptr->project_name != NULL)
   {
     free(room_ptr->project_name);
   }
