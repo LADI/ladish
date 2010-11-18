@@ -59,6 +59,8 @@ struct ladish_room
   uuid_t project_uuid;
   char * project_dir;
   char * project_name;
+  char * project_description;
+  char * project_notes;
 };
 
 void ladish_room_emit_project_properties_changed(struct ladish_room * room_ptr);

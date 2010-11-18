@@ -286,6 +286,8 @@ ladish_room_create(
 
   room_ptr->project_name = NULL;
   room_ptr->project_dir = NULL;
+  room_ptr->project_description = NULL;
+  room_ptr->project_notes = NULL;
   room_ptr->project_state = ROOM_PROJECT_STATE_UNLOADED;
 
   if (template != NULL)
@@ -377,14 +379,10 @@ void ladish_room_destroy(ladish_room_handle room_handle)
 {
   /* project has either both name and dir no none of them */
   ASSERT((room_ptr->project_dir == NULL && room_ptr->project_name == NULL) || (room_ptr->project_dir != NULL && room_ptr->project_name != NULL));
-  if (room_ptr->project_dir != NULL)
-  {
-    free(room_ptr->project_dir);
-  }
-  if (room_ptr->project_name != NULL)
-  {
-    free(room_ptr->project_name);
-  }
+  free(room_ptr->project_dir);
+  free(room_ptr->project_name);
+  free(room_ptr->project_description);
+  free(room_ptr->project_notes);
 
   if (!room_ptr->template)
   {
@@ -839,6 +837,18 @@ static bool ladish_room_fill_project_properties(DBusMessageIter * iter_ptr, stru
     return false;
   }
 
+  if (!dbus_maybe_add_dict_entry_string(&dict_iter, "description", room_ptr->project_description))
+  {
+    log_error("dbus_maybe_add_dict_entry_string() failed.");
+    return false;
+  }
+
+  if (!dbus_maybe_add_dict_entry_string(&dict_iter, "notes", room_ptr->project_notes))
+  {
+    log_error("dbus_maybe_add_dict_entry_string() failed.");
+    return false;
+  }
+
   if (!dbus_message_iter_close_container(iter_ptr, &dict_iter))
   {
     log_error("dbus_message_iter_close_container() failed.");
@@ -883,16 +893,17 @@ void ladish_room_clear_project(struct ladish_room * room_ptr)
 
   ladish_graph_remove_hidden_objects(room_ptr->graph);
 
-  if (room_ptr->project_name != NULL)
-  {
-    free(room_ptr->project_name);
-    room_ptr->project_name = NULL;
-  }
-  if (room_ptr->project_dir != NULL)
-  {
-    free(room_ptr->project_dir);
-    room_ptr->project_dir = NULL;
-  }
+  free(room_ptr->project_name);
+  room_ptr->project_name = NULL;
+
+  free(room_ptr->project_dir);
+  room_ptr->project_dir = NULL;
+
+  free(room_ptr->project_description);
+  room_ptr->project_description = NULL;
+
+  free(room_ptr->project_notes);
+  room_ptr->project_notes = NULL;
 
   room_ptr->project_state = ROOM_PROJECT_STATE_UNLOADED;
   ladish_graph_dump(room_ptr->graph);
@@ -985,6 +996,72 @@ fail:
   log_error("Ran out of memory trying to construct method return");
 }
 
+static void ladish_room_dbus_set_project_description(struct dbus_method_call * call_ptr)
+{
+  const char * str;
+  char * dup;
+
+  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_STRING, &str, DBUS_TYPE_INVALID))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return;
+  }
+
+  if ((strlen(str) == 0 && (room_ptr->project_description == NULL || strlen(room_ptr->project_description) == 0)) ||
+      (room_ptr->project_description != NULL && strcmp(str, room_ptr->project_description) == 0))
+  {
+    method_return_new_single(call_ptr, DBUS_TYPE_UINT64, &room_ptr->name);
+    return;
+  }
+
+  dup = strdup(str);
+  if (dup == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup() failed");
+    return;
+  }
+
+  free(room_ptr->project_description);
+  room_ptr->project_description = dup;
+
+  ladish_room_emit_project_properties_changed(room_ptr); /* increments the version number */
+  method_return_new_single(call_ptr, DBUS_TYPE_UINT64, &room_ptr->version);
+}
+
+static void ladish_room_dbus_set_project_notes(struct dbus_method_call * call_ptr)
+{
+  const char * str;
+  char * dup;
+
+  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_STRING, &str, DBUS_TYPE_INVALID))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return;
+  }
+
+  if ((strlen(str) == 0 && (room_ptr->project_notes == NULL || strlen(room_ptr->project_notes) == 0)) ||
+      (room_ptr->project_notes != NULL && strcmp(str, room_ptr->project_notes) == 0))
+  {
+    method_return_new_single(call_ptr, DBUS_TYPE_UINT64, &room_ptr->name);
+    return;
+  }
+
+  dup = strdup(str);
+  if (dup == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup() failed");
+    return;
+  }
+
+  free(room_ptr->project_notes);
+  room_ptr->project_notes = dup;
+
+  ladish_room_emit_project_properties_changed(room_ptr); /* increments the version number */
+  method_return_new_single(call_ptr, DBUS_TYPE_UINT64, &room_ptr->version);
+}
+
 #undef room_ptr
 
 METHOD_ARGS_BEGIN(GetName, "Get room name")
@@ -1008,12 +1085,24 @@ METHOD_ARGS_BEGIN(GetProjectProperties, "Get project properties")
   METHOD_ARG_DESCRIBE_OUT("properties", "a{sv}", "project properties")
 METHOD_ARGS_END
 
+METHOD_ARGS_BEGIN(SetProjectDescription, "Set project description")
+  METHOD_ARG_DESCRIBE_IN("description", "s", "Project description")
+  METHOD_ARG_DESCRIBE_OUT("new_version", DBUS_TYPE_UINT64_AS_STRING, "New version of the project properties")
+METHOD_ARGS_END
+
+METHOD_ARGS_BEGIN(SetProjectNotes, "Set project notes")
+  METHOD_ARG_DESCRIBE_IN("notes", "s", "Project notes")
+  METHOD_ARG_DESCRIBE_OUT("new_version", DBUS_TYPE_UINT64_AS_STRING, "New version of the project properties")
+METHOD_ARGS_END
+
 METHODS_BEGIN
   METHOD_DESCRIBE(GetName, ladish_room_dbus_get_name) /* sync */
   METHOD_DESCRIBE(SaveProject, ladish_room_dbus_save_project) /* async */
   METHOD_DESCRIBE(UnloadProject, ladish_room_dbus_unload_project) /* async */
   METHOD_DESCRIBE(LoadProject, ladish_room_dbus_load_project) /* async */
   METHOD_DESCRIBE(GetProjectProperties, ladish_room_dbus_get_project_properties) /* sync */
+  METHOD_DESCRIBE(SetProjectDescription, ladish_room_dbus_set_project_description) /* sync */
+  METHOD_DESCRIBE(SetProjectNotes, ladish_room_dbus_set_project_notes) /* sync */
 METHODS_END
 
 SIGNAL_ARGS_BEGIN(ProjectPropertiesChanged, "Project properties changed")
