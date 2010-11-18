@@ -71,6 +71,27 @@ bool ladish_write_indented_string(int fd, int indent, const char * string)
   return true;
 }
 
+bool ladish_write_string_escape(int fd, const char * string)
+{
+  bool ret;
+  char * escaped_buffer;
+
+  escaped_buffer = malloc(max_escaped_length(strlen(string)));
+  if (escaped_buffer == NULL)
+  {
+    log_error("malloc() failed to allocate buffer for escaped string");
+    return false;
+  }
+
+  escape_simple(string, escaped_buffer);
+
+  ret = ladish_write_string(fd, escaped_buffer);
+
+  free(escaped_buffer);
+
+  return ret;
+}
+
 #define fd (((struct ladish_write_context *)context)->fd)
 #define indent (((struct ladish_write_context *)context)->indent)
 

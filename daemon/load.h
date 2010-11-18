@@ -51,6 +51,8 @@
 #define PARSE_CONTEXT_ROOMS              15
 #define PARSE_CONTEXT_ROOM               16
 #define PARSE_CONTEXT_PROJECT            17
+#define PARSE_CONTEXT_DESCRIPTION        18
+#define PARSE_CONTEXT_NOTES              19
 
 #define MAX_STACK_DEPTH       10
 #define MAX_DATA_SIZE         10240

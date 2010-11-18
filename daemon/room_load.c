@@ -51,7 +51,9 @@ static void callback_chrdata(void * data, const XML_Char * s, int len)
 
   if (context_ptr->element[context_ptr->depth] == PARSE_CONTEXT_PARAMETER ||
       context_ptr->element[context_ptr->depth] == PARSE_CONTEXT_KEY ||
-      context_ptr->element[context_ptr->depth] == PARSE_CONTEXT_APPLICATION)
+      context_ptr->element[context_ptr->depth] == PARSE_CONTEXT_APPLICATION ||
+      context_ptr->element[context_ptr->depth] == PARSE_CONTEXT_DESCRIPTION ||
+      context_ptr->element[context_ptr->depth] == PARSE_CONTEXT_NOTES)
   {
     if (context_ptr->data_used + len >= sizeof(context_ptr->data))
     {
@@ -116,6 +118,38 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
 
     uuid_copy(room_ptr->project_uuid, uuid);
 
+    return;
+  }
+
+  if (strcmp(el, "description") == 0)
+  {
+    //log_info("<description>");
+
+    if (room_ptr->project_description != NULL)
+    {
+      log_error("project description is already set");
+      context_ptr->error = XML_TRUE;
+      return;
+    }
+
+    context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_DESCRIPTION;
+    context_ptr->data_used = 0;
+    return;
+  }
+
+  if (strcmp(el, "notes") == 0)
+  {
+    //log_info("<notes>");
+
+    if (room_ptr->project_notes != NULL)
+    {
+      log_error("project notes are already set");
+      context_ptr->error = XML_TRUE;
+      return;
+    }
+
+    context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_NOTES;
+    context_ptr->data_used = 0;
     return;
   }
 
@@ -629,6 +663,32 @@ static void callback_elend(void * data, const char * el)
     {
       log_error("ladish_app_supervisor_add() failed.");
       context_ptr->error = XML_TRUE;
+    }
+  }
+  else if (context_ptr->element[context_ptr->depth] == PARSE_CONTEXT_DESCRIPTION)
+  {
+    context_ptr->data[unescape(context_ptr->data, context_ptr->data_used, context_ptr->data)] = 0;
+    //log_info("</description>");
+    //log_info("[%s]", context_ptr->data);
+
+    ASSERT(room_ptr->project_description == NULL);
+    room_ptr->project_description = strdup(context_ptr->data);
+    if (room_ptr->project_description == NULL)
+    {
+      ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Project description failed to load", LADISH_CHECK_LOG_TEXT);
+    }
+  }
+  else if (context_ptr->element[context_ptr->depth] == PARSE_CONTEXT_NOTES)
+  {
+    context_ptr->data[unescape(context_ptr->data, context_ptr->data_used, context_ptr->data)] = 0;
+    //log_info("</notes>");
+    //log_info("[%s]", context_ptr->data);
+
+    ASSERT(room_ptr->project_notes == NULL);
+    room_ptr->project_notes = strdup(context_ptr->data);
+    if (room_ptr->project_notes == NULL)
+    {
+      ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Project notes failed to load", LADISH_CHECK_LOG_TEXT);
     }
   }
 
