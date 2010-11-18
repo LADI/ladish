@@ -420,13 +420,13 @@ ladish_app_supervisor_set_project_name(
       log_error("strdup(\"%s\") failed", project_name);
       return false;
     }
-
-    if (supervisor_ptr->project_name != NULL)
-    {
-      free(supervisor_ptr->project_name);
-    }
+  }
+  else
+  {
+    dup = NULL;
   }
 
+  free(supervisor_ptr->project_name);
   supervisor_ptr->project_name = dup;
 
   return true;
