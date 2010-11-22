@@ -572,7 +572,7 @@ port_appeared(
       }
     }
 
-    a2j_fake_jack_port_name = catdup4(alsa_client_name, is_input ? " (playback)" : " (capture)", ": ", alsa_port_name);
+    a2j_fake_jack_port_name = catdup4(vclient_name, is_input ? " (playback)" : " (capture)", ": ", alsa_port_name);
     if (a2j_fake_jack_port_name == NULL)
     {
       log_error("catdup4() failed");
