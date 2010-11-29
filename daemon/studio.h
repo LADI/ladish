@@ -60,6 +60,7 @@ ladish_studio_iterate_rooms(
 
 void ladish_studio_stop_app_supervisors(void);
 ladish_app_supervisor_handle ladish_studio_find_app_supervisor(const char * opath);
+ladish_app_handle ladish_studio_find_app_by_uuid(const uuid_t app_uuid);
 struct ladish_cqueue * ladish_studio_get_cmd_queue(void);
 ladish_virtualizer_handle ladish_studio_get_virtualizer(void);
 ladish_graph_handle ladish_studio_get_jack_graph(void);

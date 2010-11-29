@@ -287,6 +287,19 @@ ladish_app_supervisor_find_app_by_pid(
   pid_t pid);
 
 /**
+ * Search app by uuid
+ *
+ * @param[in] supervisor_handle supervisor object handle
+ * @param[in] uuid uuid of the app to search for
+ *
+ * @return app handle on if found; NULL if app is not found; the app handle is owned by the app supervisor object
+ */
+ladish_app_handle
+ladish_app_supervisor_find_app_by_uuid(
+  ladish_app_supervisor_handle supervisor_handle,
+  const uuid_t uuid);
+
+/**
  * The the D-Bus object path for the supervisor.
  *
  * @param[in] supervisor_handle supervisor object handle
@@ -391,6 +404,14 @@ void ladish_app_save_L1(ladish_app_handle app_handle);
  * @param[in] pid PID to associate with the app
  */
 void ladish_app_add_pid(ladish_app_handle app_handle, pid_t pid);
+
+/**
+ * Deassociate pid with app.
+ *
+ * @param[in] app_handle Handle of app
+ * @param[in] pid PID to deassociate with the app
+ */
+void ladish_app_del_pid(ladish_app_handle app_handle, pid_t pid);
 
 /**
  * D-Bus interface descriptor for the app supervisor interface. The call context must be a ::ladish_app_supervisor_handle

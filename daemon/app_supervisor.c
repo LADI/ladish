@@ -225,6 +225,23 @@ ladish_app_handle ladish_app_supervisor_find_app_by_pid(ladish_app_supervisor_ha
   return NULL;
 }
 
+ladish_app_handle ladish_app_supervisor_find_app_by_uuid(ladish_app_supervisor_handle supervisor_handle, const uuid_t uuid)
+{
+  struct list_head * node_ptr;
+  struct ladish_app * app_ptr;
+
+  list_for_each(node_ptr, &supervisor_ptr->applist)
+  {
+    app_ptr = list_entry(node_ptr, struct ladish_app, siblings);
+    if (uuid_compare(app_ptr->uuid, uuid) == 0)
+    {
+      return (ladish_app_handle)app_ptr;
+    }
+  }
+
+  return NULL;
+}
+
 ladish_app_handle
 ladish_app_supervisor_add(
   ladish_app_supervisor_handle supervisor_handle,
@@ -596,6 +613,15 @@ void ladish_app_add_pid(ladish_app_handle app_handle, pid_t pid)
 
   log_info("First grandchild with pid %u", (unsigned int)pid);
   app_ptr->firstborn_pid = pid;
+}
+
+void ladish_app_del_pid(ladish_app_handle app_handle, pid_t pid)
+{
+  if (app_ptr->firstborn_pid != 0 && app_ptr->firstborn_pid == pid)
+  {
+    log_info("First grandchild with pid %u has gone", (unsigned int)pid);
+    app_ptr->firstborn_pid = 0;
+  }
 }
 
 #undef app_ptr

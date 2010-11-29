@@ -773,15 +773,15 @@ ladish_app_supervisor_handle ladish_studio_get_studio_app_supervisor(void)
   return g_studio.app_supervisor;
 }
 
-struct ladish_studio_app_supervisor_match_context
+struct ladish_studio_app_supervisor_match_opath_context
 {
   const char * opath;
   ladish_app_supervisor_handle supervisor;
 };
 
-#define iterate_context_ptr ((struct ladish_studio_app_supervisor_match_context *)context)
+#define iterate_context_ptr ((struct ladish_studio_app_supervisor_match_opath_context *)context)
 
-static bool ladish_studio_app_supervisor_match(void * context, ladish_graph_handle graph, ladish_app_supervisor_handle app_supervisor)
+static bool ladish_studio_app_supervisor_match_opath(void * context, ladish_graph_handle graph, ladish_app_supervisor_handle app_supervisor)
 {
   ASSERT(strcmp(ladish_app_supervisor_get_opath(app_supervisor), ladish_graph_get_opath(graph)) == 0);
   if (strcmp(ladish_app_supervisor_get_opath(app_supervisor), iterate_context_ptr->opath) == 0)
@@ -798,12 +798,46 @@ static bool ladish_studio_app_supervisor_match(void * context, ladish_graph_hand
 
 ladish_app_supervisor_handle ladish_studio_find_app_supervisor(const char * opath)
 {
-  struct ladish_studio_app_supervisor_match_context ctx;
+  struct ladish_studio_app_supervisor_match_opath_context ctx;
 
   ctx.opath = opath;
   ctx.supervisor = NULL;
-  ladish_studio_iterate_virtual_graphs(&ctx, ladish_studio_app_supervisor_match);
+  ladish_studio_iterate_virtual_graphs(&ctx, ladish_studio_app_supervisor_match_opath);
   return ctx.supervisor;
+}
+
+struct ladish_studio_app_supervisor_match_app_context
+{
+  uuid_t app_uuid;
+  ladish_app_handle app;
+};
+
+#define iterate_context_ptr ((struct ladish_studio_app_supervisor_match_app_context *)context)
+
+static bool ladish_studio_app_supervisor_match_app(void * context, ladish_graph_handle graph, ladish_app_supervisor_handle app_supervisor)
+{
+  ASSERT(strcmp(ladish_app_supervisor_get_opath(app_supervisor), ladish_graph_get_opath(graph)) == 0);
+  ASSERT(iterate_context_ptr->app == NULL);
+
+  iterate_context_ptr->app = ladish_app_supervisor_find_app_by_uuid(app_supervisor, iterate_context_ptr->app_uuid);
+  if (iterate_context_ptr->app != NULL)
+  {
+    return false;               /* stop iteration */
+  }
+
+  return true;                  /* continue iteration */
+}
+
+#undef iterate_context_ptr
+
+ladish_app_handle ladish_studio_find_app_by_uuid(const uuid_t app_uuid)
+{
+  struct ladish_studio_app_supervisor_match_app_context ctx;
+
+  uuid_copy(ctx.app_uuid, app_uuid);
+  ctx.app = NULL;
+  ladish_studio_iterate_virtual_graphs(&ctx, ladish_studio_app_supervisor_match_app);
+  return ctx.app;
 }
 
 bool ladish_studio_delete(void * call_ptr, const char * studio_name)

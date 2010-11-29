@@ -383,6 +383,8 @@ static void client_disappeared(void * context, uint64_t id)
 {
   ladish_client_handle client;
   pid_t pid;
+  uuid_t app_uuid;
+  ladish_app_handle app;
   ladish_graph_handle vgraph;
 
   log_info("client_disappeared(%"PRIu64")", id);
@@ -399,9 +401,19 @@ static void client_disappeared(void * context, uint64_t id)
   vgraph = ladish_client_get_vgraph(client);
 
   pid = ladish_client_get_pid(client);
-  if (ladish_client_has_app(client))
+  if (ladish_client_get_app(client, app_uuid))
   {
     virtualizer_ptr->our_clients_count--;
+    app = ladish_studio_find_app_by_uuid(app_uuid);
+    if (app != NULL)
+    {
+      ladish_app_del_pid(app, pid);
+    }
+    else
+    {
+      log_error("app of disappearing client %"PRIu64" not found. pid is %"PRIu64, id, (uint64_t)pid);
+      ASSERT_NO_PASS;
+    }
   }
 
   if (id == virtualizer_ptr->system_client_id)
