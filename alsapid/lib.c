@@ -76,7 +76,7 @@ static int (* real_snd_seq_close)(snd_seq_t * handle);
 //static int (* real_snd_seq_create_port)(snd_seq_t * handle, snd_seq_port_info_t * info);
 //static int (* real_snd_seq_create_simple_port)(snd_seq_t * seq, const char * name, unsigned int caps, unsigned int type);
 
-void __attribute__ ((constructor)) init(void);
+static void __attribute__ ((constructor)) init(void);
 
 /* Library constructor */
 void init(void)
