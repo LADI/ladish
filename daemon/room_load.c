@@ -395,7 +395,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
       if (context_ptr->port == NULL)
       {
         log_error("Cannot find room link port.");
-        context_ptr->port = NULL;
+        context_ptr->error = XML_TRUE;
       }
 
       return;
