@@ -62,7 +62,7 @@ int64_t jmcore_proxy_get_pid_cached(void)
 
 bool jmcore_proxy_get_pid_noncached(int64_t * pid_ptr)
 {
-  if (!dbus_call(JMCORE_SERVICE_NAME, JMCORE_OBJECT_PATH, JMCORE_IFACE, "get_pid", "", "x", pid_ptr))
+  if (!dbus_call(0, JMCORE_SERVICE_NAME, JMCORE_OBJECT_PATH, JMCORE_IFACE, "get_pid", "", "x", pid_ptr))
   {
     log_error("jmcore::get_pid() failed.");
     return false;
@@ -75,7 +75,7 @@ bool jmcore_proxy_create_link(bool midi, const char * input_port_name, const cha
 {
   dbus_bool_t dbus_midi = midi;
 
-  if (!dbus_call(JMCORE_SERVICE_NAME, JMCORE_OBJECT_PATH, JMCORE_IFACE, "create", "bss", &dbus_midi, &input_port_name, &output_port_name, ""))
+  if (!dbus_call(0, JMCORE_SERVICE_NAME, JMCORE_OBJECT_PATH, JMCORE_IFACE, "create", "bss", &dbus_midi, &input_port_name, &output_port_name, ""))
   {
     log_error("jmcore::create() failed.");
     return false;
@@ -86,7 +86,7 @@ bool jmcore_proxy_create_link(bool midi, const char * input_port_name, const cha
 
 bool jmcore_proxy_destroy_link(const char * port_name)
 {
-  if (!dbus_call(JMCORE_SERVICE_NAME, JMCORE_OBJECT_PATH, JMCORE_IFACE, "destroy", "s", &port_name, ""))
+  if (!dbus_call(0, JMCORE_SERVICE_NAME, JMCORE_OBJECT_PATH, JMCORE_IFACE, "destroy", "s", &port_name, ""))
   {
     log_error("jmcore::destroy() failed.");
     return false;

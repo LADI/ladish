@@ -206,7 +206,7 @@ void studio_proxy_uninit(void)
 bool studio_proxy_get_name(char ** name_ptr)
 {
   const char * name;
-  if (!dbus_call(SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "GetName", "", "s", &name))
+  if (!dbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "GetName", "", "s", &name))
   {
     return false;
   }
@@ -223,22 +223,22 @@ bool studio_proxy_get_name(char ** name_ptr)
 
 bool studio_proxy_rename(const char * name)
 {
-  return dbus_call(SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Rename", "s", &name, "");
+  return dbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Rename", "s", &name, "");
 }
 
 bool studio_proxy_save(void)
 {
-  return dbus_call(SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Save", "", "");
+  return dbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Save", "", "");
 }
 
 bool studio_proxy_save_as(const char * name)
 {
-  return dbus_call(SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "SaveAs", "s", &name, "");
+  return dbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "SaveAs", "s", &name, "");
 }
 
 bool studio_proxy_unload(void)
 {
-  return dbus_call(SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Unload", "", "");
+  return dbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Unload", "", "");
 }
 
 void studio_proxy_set_renamed_callback(void (* callback)(const char * new_studio_name))
@@ -255,19 +255,19 @@ void studio_proxy_set_startstop_callbacks(void (* started_callback)(void), void 
 
 bool studio_proxy_start(void)
 {
-  return dbus_call(SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Start", "", "");
+  return dbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Start", "", "");
 }
 
 bool studio_proxy_stop(void)
 {
-  return dbus_call(SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Stop", "", "");
+  return dbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Stop", "", "");
 }
 
 bool studio_proxy_is_started(bool * is_started_ptr)
 {
   dbus_bool_t is_started;
 
-  if (!dbus_call(SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "IsStarted", "", "b", &is_started))
+  if (!dbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "IsStarted", "", "b", &is_started))
   {
     return false;
   }
@@ -296,7 +296,7 @@ studio_proxy_set_room_callbacks(
   g_room_disappeared_calback = disappeared;
   g_room_changed_calback = changed;
 
-  if (!dbus_call(SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "GetRoomList", "", NULL, &reply_ptr))
+  if (!dbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "GetRoomList", "", NULL, &reply_ptr))
   {
     log_error("Cannot fetch studio room list");
     return;
@@ -332,10 +332,10 @@ unref:
 
 bool studio_proxy_create_room(const char * name, const char * template)
 {
-  return dbus_call(SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "CreateRoom", "ss", &name, &template, "");
+  return dbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "CreateRoom", "ss", &name, &template, "");
 }
 
 bool studio_proxy_delete_room(const char * name)
 {
-  return dbus_call(SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "DeleteRoom", "s", &name, "");
+  return dbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "DeleteRoom", "s", &name, "");
 }

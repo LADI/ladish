@@ -217,7 +217,7 @@ conf_register(
     return false;
   }
 
-  if (!dbus_call(CONF_SERVICE_NAME, CONF_OBJECT_PATH, CONF_IFACE, "get", "s", &key, "st", &value, &version))
+  if (!dbus_call(0, CONF_SERVICE_NAME, CONF_OBJECT_PATH, CONF_IFACE, "get", "s", &key, "st", &value, &version))
   {
     //log_error("conf::get() failed.");
     version = 0;
@@ -284,7 +284,7 @@ bool conf_set(const char * key, const char * value)
     return true;                /* not changed */
   }
 
-  if (!dbus_call(CONF_SERVICE_NAME, CONF_OBJECT_PATH, CONF_IFACE, "set", "ss", &key, &value, "t", &version))
+  if (!dbus_call(0, CONF_SERVICE_NAME, CONF_OBJECT_PATH, CONF_IFACE, "set", "ss", &key, &value, "t", &version))
   {
     log_error("conf::set() failed.");
     return false;

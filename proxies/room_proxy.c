@@ -132,7 +132,7 @@ bool ladish_room_proxy_get_project_properties_internal(struct ladish_room_proxy 
 {
   DBusMessage * reply_ptr;
 
-  if (!dbus_call(proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "GetProjectProperties", "", NULL, &reply_ptr))
+  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "GetProjectProperties", "", NULL, &reply_ptr))
   {
     log_error("GetProjectProperties() failed.");
     return false;
@@ -267,7 +267,7 @@ char * ladish_room_proxy_get_name(ladish_room_proxy_handle proxy)
   const char * name;
   char * name_buffer;
 
-  if (!dbus_call(proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "GetName", "", NULL, &reply_ptr))
+  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "GetName", "", NULL, &reply_ptr))
   {
     log_error("GetName() failed.");
     return NULL;
@@ -296,7 +296,7 @@ char * ladish_room_proxy_get_name(ladish_room_proxy_handle proxy)
 
 bool ladish_room_proxy_load_project(ladish_room_proxy_handle proxy, const char * project_dir)
 {
-  if (!dbus_call(proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "LoadProject", "s", &project_dir, ""))
+  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "LoadProject", "s", &project_dir, ""))
   {
     log_error("LoadProject() failed.");
     return false;
@@ -307,7 +307,7 @@ bool ladish_room_proxy_load_project(ladish_room_proxy_handle proxy, const char *
 
 bool ladish_room_proxy_save_project(ladish_room_proxy_handle proxy, const char * project_dir, const char * project_name)
 {
-  if (!dbus_call(proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "SaveProject", "ss", &project_dir, &project_name, ""))
+  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "SaveProject", "ss", &project_dir, &project_name, ""))
   {
     log_error("SaveProject() failed.");
     return false;
@@ -318,7 +318,7 @@ bool ladish_room_proxy_save_project(ladish_room_proxy_handle proxy, const char *
 
 bool ladish_room_proxy_unload_project(ladish_room_proxy_handle proxy)
 {
-  if (!dbus_call(proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "UnloadProject", "", ""))
+  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "UnloadProject", "", ""))
   {
     log_error("UnloadProject() failed.");
     return false;
@@ -373,7 +373,7 @@ ladish_room_proxy_get_recent_projects(
   const char * project_dir;
   const char * project_name;
 
-  if (!dbus_call(proxy_ptr->service, proxy_ptr->object, IFACE_RECENT_ITEMS, "get", "q", &max_items, NULL, &reply_ptr))
+  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_RECENT_ITEMS, "get", "q", &max_items, NULL, &reply_ptr))
   {
     log_error("GetStudioList() failed.");
     return false;

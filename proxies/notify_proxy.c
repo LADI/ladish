@@ -47,7 +47,7 @@ bool ladish_notify_init(const char * app_name)
     return false;
   }
 
-  if (dbus_call(NOTIFY_SERVICE, NOTIFY_OBJECT, NOTIFY_IFACE, "GetServerInformation", "", "ssss", &name, &vendor, &version, &spec_version))
+  if (dbus_call(0, NOTIFY_SERVICE, NOTIFY_OBJECT, NOTIFY_IFACE, "GetServerInformation", "", "ssss", &name, &vendor, &version, &spec_version))
   {
     log_info("Sending notifications to '%s' '%s' (%s, %s)", vendor, name, version, spec_version);
   }
@@ -167,7 +167,7 @@ void ladish_notify_simple(uint8_t urgency, const char * summary, const char * bo
     goto free_request;
   }
 
-  if (!dbus_call(NOTIFY_SERVICE, NOTIFY_OBJECT, NOTIFY_IFACE, NOTIFY_METHOD_NOTIFY, NULL, request_ptr, "u", &uint32_value))
+  if (!dbus_call(0, NOTIFY_SERVICE, NOTIFY_OBJECT, NOTIFY_IFACE, NOTIFY_METHOD_NOTIFY, NULL, request_ptr, "u", &uint32_value))
   {
     //log_error("Notify() dbus call failed.");
     goto free_request;

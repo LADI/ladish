@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008,2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009,2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains code that interface with a2jmidid through D-Bus
@@ -131,7 +131,7 @@ bool a2j_proxy_get_jack_client_name_noncached(char ** client_name_ptr_ptr)
   DBusMessage * reply_ptr;
   const char * name;
 
-  if (!dbus_call(A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL, "get_jack_client_name", "", NULL, &reply_ptr))
+  if (!dbus_call(0, A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL, "get_jack_client_name", "", NULL, &reply_ptr))
   {
     //log_error("a2j::get_jack_client_name() failed.");
     return false;
@@ -171,7 +171,7 @@ a2j_proxy_map_jack_port(
   const char * alsa_client_name;
   const char * alsa_port_name;
 
-  if (!dbus_call(A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL, "map_jack_port_to_alsa", "s", &jack_port_name, NULL, &reply_ptr))
+  if (!dbus_call(0, A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL, "map_jack_port_to_alsa", "s", &jack_port_name, NULL, &reply_ptr))
   {
     log_error("a2j::map_jack_port_to_alsa() failed.");
     return false;
@@ -224,7 +224,7 @@ bool a2j_proxy_is_started(void)
 {
   dbus_bool_t started;
 
-  if (!dbus_call(A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL, "is_started", "", "b", &started))
+  if (!dbus_call(0, A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL, "is_started", "", "b", &started))
   {
     log_error("a2j::is_started() failed.");
     return false;
@@ -235,7 +235,7 @@ bool a2j_proxy_is_started(void)
 
 bool a2j_proxy_start_bridge(void)
 {
-  if (!dbus_call(A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL, "start", "", ""))
+  if (!dbus_call(0, A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL, "start", "", ""))
   {
     log_error("a2j::start() failed.");
     return false;
@@ -246,7 +246,7 @@ bool a2j_proxy_start_bridge(void)
 
 bool a2j_proxy_stop_bridge(void)
 {
-  if (!dbus_call(A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL, "stop", "", ""))
+  if (!dbus_call(0, A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL, "stop", "", ""))
   {
     log_error("a2j::stop() failed.");
     return false;

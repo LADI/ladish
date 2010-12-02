@@ -252,7 +252,7 @@ static void refresh_internal(struct graph * graph_ptr, bool force)
     version = graph_ptr->version;
   }
 
-  if (!dbus_call(graph_ptr->service, graph_ptr->object, JACKDBUS_IFACE_PATCHBAY, "GetGraph", "t", &version, NULL, &reply_ptr))
+  if (!dbus_call(0, graph_ptr->service, graph_ptr->object, JACKDBUS_IFACE_PATCHBAY, "GetGraph", "t", &version, NULL, &reply_ptr))
   {
     log_error("GetGraph() failed.");
     return;
@@ -571,7 +571,7 @@ graph_proxy_connect_ports(
   uint64_t port1_id,
   uint64_t port2_id)
 {
-  if (!dbus_call(graph_ptr->service, graph_ptr->object, JACKDBUS_IFACE_PATCHBAY, "ConnectPortsByID", "tt", &port1_id, &port2_id, ""))
+  if (!dbus_call(0, graph_ptr->service, graph_ptr->object, JACKDBUS_IFACE_PATCHBAY, "ConnectPortsByID", "tt", &port1_id, &port2_id, ""))
   {
     log_error("ConnectPortsByID() failed.");
     return false;
@@ -586,7 +586,7 @@ graph_proxy_disconnect_ports(
   uint64_t port1_id,
   uint64_t port2_id)
 {
-  if (!dbus_call(graph_ptr->service, graph_ptr->object, JACKDBUS_IFACE_PATCHBAY, "DisconnectPortsByID", "tt", &port1_id, &port2_id, ""))
+  if (!dbus_call(0, graph_ptr->service, graph_ptr->object, JACKDBUS_IFACE_PATCHBAY, "DisconnectPortsByID", "tt", &port1_id, &port2_id, ""))
   {
     log_error("DisconnectPortsByID() failed.");
     return false;
@@ -880,7 +880,7 @@ graph_proxy_dict_entry_set(
     return false;
   }
 
-  if (!dbus_call(graph_ptr->service, graph_ptr->object, IFACE_GRAPH_DICT, "Set", "utss", &object_type, &object_id, &key, &value, ""))
+  if (!dbus_call(0, graph_ptr->service, graph_ptr->object, IFACE_GRAPH_DICT, "Set", "utss", &object_type, &object_id, &key, &value, ""))
   {
     log_error(IFACE_GRAPH_DICT ".Set() failed.");
     return false;
@@ -908,7 +908,7 @@ graph_proxy_dict_entry_get(
     return false;
   }
 
-  if (!dbus_call(graph_ptr->service, graph_ptr->object, IFACE_GRAPH_DICT, "Get", "uts", &object_type, &object_id, &key, NULL, &reply_ptr))
+  if (!dbus_call(0, graph_ptr->service, graph_ptr->object, IFACE_GRAPH_DICT, "Get", "uts", &object_type, &object_id, &key, NULL, &reply_ptr))
   {
     log_error(IFACE_GRAPH_DICT ".Get() failed.");
     return false;
@@ -948,7 +948,7 @@ graph_proxy_dict_entry_drop(
     return false;
   }
 
-  if (!dbus_call(graph_ptr->service, graph_ptr->object, IFACE_GRAPH_DICT, "Drop", "uts", &object_type, &object_id, &key, ""))
+  if (!dbus_call(0, graph_ptr->service, graph_ptr->object, IFACE_GRAPH_DICT, "Drop", "uts", &object_type, &object_id, &key, ""))
   {
     log_error(IFACE_GRAPH_DICT ".Drop() failed.");
     return false;
@@ -961,7 +961,7 @@ bool graph_proxy_get_client_pid(graph_proxy_handle graph, uint64_t client_id, pi
 {
   int64_t pid;
 
-  if (!dbus_call(graph_ptr->service, graph_ptr->object, JACKDBUS_IFACE_PATCHBAY, "GetClientPID", "t", &client_id, "x", &pid))
+  if (!dbus_call(0, graph_ptr->service, graph_ptr->object, JACKDBUS_IFACE_PATCHBAY, "GetClientPID", "t", &client_id, "x", &pid))
   {
     log_error("GetClientPID() failed.");
     return false;

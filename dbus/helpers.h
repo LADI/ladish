@@ -43,7 +43,15 @@ bool dbus_maybe_add_dict_entry_string(DBusMessageIter *dict_iter_ptr, const char
 bool dbus_add_dict_entry_uint32(DBusMessageIter * dict_iter_ptr, const char * key, dbus_uint32_t value);
 bool dbus_add_dict_entry_bool(DBusMessageIter * dict_iter_ptr, const char * key, dbus_bool_t value);
 
-bool dbus_call(const char * service, const char * object, const char * iface, const char * method, const char * input_signature, ...);
+bool
+dbus_call(
+  unsigned int timeout,         /* in milliseconds */
+  const char * service,
+  const char * object,
+  const char * iface,
+  const char * method,
+  const char * input_signature,
+  ...);
 
 bool
 dbus_register_object_signal_handler(

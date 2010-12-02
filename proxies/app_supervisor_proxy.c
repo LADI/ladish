@@ -179,7 +179,7 @@ static void refresh_internal(struct ladish_app_supervisor_proxy * proxy_ptr, boo
 
   version = proxy_ptr->version;
 
-  if (!dbus_call(proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "GetAll", "t", &version, NULL, &reply_ptr))
+  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "GetAll", "t", &version, NULL, &reply_ptr))
   {
     log_error("GetAll() failed.");
     return;
@@ -329,7 +329,7 @@ ladish_app_supervisor_proxy_run_custom(
 
   terminal = run_in_terminal;
 
-  if (!dbus_call(proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "RunCustom", "bssy", &terminal, &command, &name, &level, ""))
+  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "RunCustom", "bssy", &terminal, &command, &name, &level, ""))
   {
     log_error("RunCustom() failed.");
     return false;
@@ -340,7 +340,7 @@ ladish_app_supervisor_proxy_run_custom(
 
 bool ladish_app_supervisor_proxy_start_app(ladish_app_supervisor_proxy_handle proxy, uint64_t id)
 {
-  if (!dbus_call(proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "StartApp", "t", &id, ""))
+  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "StartApp", "t", &id, ""))
   {
     log_error("StartApp() failed.");
     return false;
@@ -351,7 +351,7 @@ bool ladish_app_supervisor_proxy_start_app(ladish_app_supervisor_proxy_handle pr
 
 bool ladish_app_supervisor_proxy_stop_app(ladish_app_supervisor_proxy_handle proxy, uint64_t id)
 {
-  if (!dbus_call(proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "StopApp", "t", &id, ""))
+  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "StopApp", "t", &id, ""))
   {
     log_error("StopApp() failed.");
     return false;
@@ -362,7 +362,7 @@ bool ladish_app_supervisor_proxy_stop_app(ladish_app_supervisor_proxy_handle pro
 
 bool ladish_app_supervisor_proxy_kill_app(ladish_app_supervisor_proxy_handle proxy, uint64_t id)
 {
-  if (!dbus_call(proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "KillApp", "t", &id, ""))
+  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "KillApp", "t", &id, ""))
   {
     log_error("KillApp() failed.");
     return false;
@@ -373,7 +373,7 @@ bool ladish_app_supervisor_proxy_kill_app(ladish_app_supervisor_proxy_handle pro
 
 bool ladish_app_supervisor_proxy_remove_app(ladish_app_supervisor_proxy_handle proxy, uint64_t id)
 {
-  if (!dbus_call(proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "RemoveApp", "t", &id, ""))
+  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "RemoveApp", "t", &id, ""))
   {
     log_error("RemoveApp() failed.");
     return false;
@@ -401,7 +401,7 @@ ladish_app_supervisor_get_app_properties(
   char * name_buffer;
   char * commandline_buffer;
 
-  if (!dbus_call(proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "GetAppProperties", "t", &id, NULL, &reply_ptr))
+  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "GetAppProperties", "t", &id, NULL, &reply_ptr))
   {
     log_error("GetAppProperties() failed.");
     return false;
@@ -465,6 +465,7 @@ ladish_app_supervisor_set_app_properties(
   terminal = run_in_terminal;
 
   if (!dbus_call(
+        0,
         proxy_ptr->service,
         proxy_ptr->object,
         IFACE_APP_SUPERVISOR,

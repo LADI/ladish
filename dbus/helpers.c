@@ -334,6 +334,7 @@ bool dbus_add_dict_entry_bool(DBusMessageIter * dict_iter_ptr, const char * key,
 
 bool
 dbus_call(
+  unsigned int timeout,
   const char * service,
   const char * object,
   const char * iface,
@@ -353,6 +354,11 @@ dbus_call(
   DBusSignatureIter sig_iter;
 
   //log_info("dbus_call('%s', '%s', '%s', '%s')", service, object, iface, method);
+
+  if (timeout == 0)
+  {
+    timeout = DBUS_CALL_DEFAULT_TIMEOUT;
+  }
 
   ret = false;
   va_start(ap, input_signature);
@@ -407,7 +413,7 @@ dbus_call(
   reply_ptr = dbus_connection_send_with_reply_and_block(
     g_dbus_connection,
     request_ptr,
-    DBUS_CALL_DEFAULT_TIMEOUT,
+    timeout,
     &g_dbus_error);
 
   if (input_signature != NULL)
