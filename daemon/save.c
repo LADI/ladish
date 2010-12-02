@@ -157,7 +157,7 @@ ladish_save_vgraph_client_begin(
     return false;
   }
 
-  if (!ladish_write_string(fd, client_name))
+  if (!ladish_write_string_escape_ex(fd, client_name, LADISH_ESCAPE_FLAG_XML_ATTR))
   {
     return false;
   }
@@ -286,7 +286,7 @@ ladish_save_vgraph_port(
     return false;
   }
 
-  if (!ladish_write_string(fd, port_name))
+  if (!ladish_write_string_escape_ex(fd, port_name, LADISH_ESCAPE_FLAG_XML_ATTR))
   {
     return false;
   }
@@ -571,7 +571,7 @@ ladish_write_room_port(
     return false;
   }
 
-  if (!ladish_write_string(fd, name))
+  if (!ladish_write_string_escape_ex(fd, name, LADISH_ESCAPE_FLAG_XML_ATTR))
   {
     return false;
   }
@@ -776,7 +776,7 @@ static bool ladish_save_jack_client_write_prolog(int fd, int indent, ladish_clie
     return false;
   }
 
-  if (!ladish_write_string(fd, client_name))
+  if (!ladish_write_string_escape_ex(fd, client_name, LADISH_ESCAPE_FLAG_XML_ATTR))
   {
     return false;
   }
@@ -908,7 +908,7 @@ ladish_save_jack_port(
     return false;
   }
 
-  if (!ladish_write_string(fd, port_name))
+  if (!ladish_write_string_escape_ex(fd, port_name, LADISH_ESCAPE_FLAG_XML_ATTR))
   {
     return false;
   }

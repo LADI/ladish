@@ -70,6 +70,7 @@ static void callback_chrdata(void * data, const XML_Char * s, int len)
 static void callback_elstart(void * data, const char * el, const char ** attr)
 {
   const char * name;
+  char * name_dup;
   const char * uuid_str;
   uuid_t uuid;
   const char * uuid2_str;
@@ -80,16 +81,18 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
   uint32_t port_flags;
   size_t len;
 
+  name_dup = NULL;
+
   if (context_ptr->error)
   {
-    return;
+    goto free;
   }
 
   if (context_ptr->depth + 1 >= MAX_STACK_DEPTH)
   {
     log_error("xml parse max stack depth reached");
     context_ptr->error = XML_TRUE;
-    return;
+    goto free;
   }
 
   if (strcmp(el, "project") == 0)
@@ -100,7 +103,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
     if (!ladish_get_name_and_uuid_attributes("/project", attr, &name, &uuid_str, uuid))
     {
       context_ptr->error = XML_TRUE;
-      return;
+      goto free;
     }
 
     len = strlen(name) + 1;
@@ -109,7 +112,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
     {
       log_error("malloc() failed for project name with length %zu", len);
       context_ptr->error = XML_TRUE;
-      return;
+      goto free;
     }
 
     unescape(name, len, room_ptr->project_name);
@@ -118,7 +121,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
 
     uuid_copy(room_ptr->project_uuid, uuid);
 
-    return;
+    goto free;
   }
 
   if (strcmp(el, "description") == 0)
@@ -129,12 +132,12 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
     {
       log_error("project description is already set");
       context_ptr->error = XML_TRUE;
-      return;
+      goto free;
     }
 
     context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_DESCRIPTION;
     context_ptr->data_used = 0;
-    return;
+    goto free;
   }
 
   if (strcmp(el, "notes") == 0)
@@ -145,33 +148,33 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
     {
       log_error("project notes are already set");
       context_ptr->error = XML_TRUE;
-      return;
+      goto free;
     }
 
     context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_NOTES;
     context_ptr->data_used = 0;
-    return;
+    goto free;
   }
 
   if (strcmp(el, "jack") == 0)
   {
     //log_info("<jack>");
     context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_JACK;
-    return;
+    goto free;
   }
 
   if (strcmp(el, "clients") == 0)
   {
     //log_info("<clients>");
     context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_CLIENTS;
-    return;
+    goto free;
   }
 
   if (strcmp(el, "room") == 0)
   {
     //log_info("<room>");
     context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_ROOM;
-    return;
+    goto free;
   }
 
   if (strcmp(el, "client") == 0)
@@ -182,7 +185,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
     {
         log_error("nested clients");
         context_ptr->error = XML_TRUE;
-        return;
+        goto free;
     }
 
     if (context_ptr->depth == 3 &&
@@ -193,16 +196,24 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
       if (!ladish_get_name_and_uuid_attributes("/project/jack/clients/client", attr, &name, &uuid_str, uuid))
       {
         context_ptr->error = XML_TRUE;
-        return;
+        goto free;
       }
 
-      log_info("jack client \"%s\" with uuid %s", name, uuid_str);
+      name_dup = unescape_dup(name);
+      if (name_dup == NULL)
+      {
+        log_error("allocation of memory for unescaped name buffer failed. name = '%s'", name);
+        context_ptr->error = XML_TRUE;
+        goto free;
+      }
+
+      log_info("jack client \"%s\" with uuid %s", name_dup, uuid_str);
 
       context_ptr->client = ladish_graph_find_client_by_uuid(ladish_studio_get_jack_graph(), uuid);
       if (context_ptr->client != NULL)
       {
         log_info("Found existing client");
-        return;
+        goto free;
       }
 
       if (!ladish_client_create(uuid, &context_ptr->client))
@@ -210,18 +221,18 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
         log_error("ladish_client_create() failed.");
         context_ptr->error = XML_TRUE;
         ASSERT(context_ptr->client == NULL);
-        return;
+        goto free;
       }
 
-      if (!ladish_graph_add_client(ladish_studio_get_jack_graph(), context_ptr->client, name, true))
+      if (!ladish_graph_add_client(ladish_studio_get_jack_graph(), context_ptr->client, name_dup, true))
       {
-        log_error("ladish_graph_add_client() failed to add client '%s' to JACK graph", name);
+        log_error("ladish_graph_add_client() failed to add client '%s' to JACK graph", name_dup);
         context_ptr->error = XML_TRUE;
         ladish_client_destroy(context_ptr->client);
         context_ptr->client = NULL;
       }
 
-      return;
+      goto free;
     }
 
     if (context_ptr->depth == 2 &&
@@ -231,16 +242,24 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
       if (!ladish_get_name_and_uuid_attributes("/room/clients/client", attr, &name, &uuid_str, uuid))
       {
         context_ptr->error = XML_TRUE;
-        return;
+        goto free;
       }
 
-      log_info("room client \"%s\" with uuid %s", name, uuid_str);
+      name_dup = unescape_dup(name);
+      if (name_dup == NULL)
+      {
+        log_error("allocation of memory for unescaped name buffer failed. name = '%s'", name);
+        context_ptr->error = XML_TRUE;
+        goto free;
+      }
+
+      log_info("room client \"%s\" with uuid %s", name_dup, uuid_str);
 
       context_ptr->client = ladish_graph_find_client_by_uuid(room_ptr->graph, uuid);
       if (context_ptr->client != NULL)
       {
         log_info("Found existing client");
-        return;
+        goto free;
       }
 
       if (!ladish_client_create(uuid, &context_ptr->client))
@@ -248,31 +267,31 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
         log_error("ladish_client_create() failed.");
         context_ptr->error = XML_TRUE;
         ASSERT(context_ptr->client == NULL);
-        return;
+        goto free;
       }
 
-      if (!ladish_graph_add_client(room_ptr->graph, context_ptr->client, name, true))
+      if (!ladish_graph_add_client(room_ptr->graph, context_ptr->client, name_dup, true))
       {
-        log_error("ladish_graph_add_client() failed to add client '%s' to room graph", name);
+        log_error("ladish_graph_add_client() failed to add client '%s' to room graph", name_dup);
         context_ptr->error = XML_TRUE;
         ladish_client_destroy(context_ptr->client);
         context_ptr->client = NULL;
       }
 
-      return;
+      goto free;
     }
 
     log_error("client element in wrong place");
     ladish_dump_element_stack(context_ptr);
     context_ptr->error = XML_TRUE;
-    return;
+    goto free;
   }
 
   if (strcmp(el, "ports") == 0)
   {
     //log_info("<ports>");
     context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_PORTS;
-    return;
+    goto free;
   }
 
   if (strcmp(el, "port") == 0)
@@ -284,7 +303,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
     {
         log_error("nested ports");
         context_ptr->error = XML_TRUE;
-        return;
+        goto free;
     }
 
     if (context_ptr->depth >= 3 &&
@@ -297,7 +316,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
       {
         log_error("client-less port");
         context_ptr->error = XML_TRUE;
-        return;
+        goto free;
       }
 
       if (context_ptr->depth == 5 && context_ptr->element[0] == PARSE_CONTEXT_PROJECT && context_ptr->element[1] == PARSE_CONTEXT_JACK)
@@ -305,34 +324,50 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
         if (!ladish_get_name_and_uuid_attributes("/project/jack/clients/client/ports/port", attr, &name, &uuid_str, uuid))
         {
           context_ptr->error = XML_TRUE;
-          return;
+          goto free;
         }
 
-        log_info("jack port \"%s\" with uuid %s", name, uuid_str);
+        name_dup = unescape_dup(name);
+        if (name_dup == NULL)
+        {
+          log_error("allocation of memory for unescaped name buffer failed. name = '%s'", name);
+          context_ptr->error = XML_TRUE;
+          goto free;
+        }
+
+        log_info("jack port \"%s\" with uuid %s", name_dup, uuid_str);
 
         if (!ladish_port_create(uuid, false, &context_ptr->port))
         {
           log_error("ladish_port_create() failed.");
-          return;
+          goto free;
         }
 
         ladish_port_set_vgraph(context_ptr->port, room_ptr->graph);
 
-        if (!ladish_graph_add_port(ladish_studio_get_jack_graph(), context_ptr->client, context_ptr->port, name, 0, 0, true))
+        if (!ladish_graph_add_port(ladish_studio_get_jack_graph(), context_ptr->client, context_ptr->port, name_dup, 0, 0, true))
         {
           log_error("ladish_graph_add_port() failed.");
           ladish_port_destroy(context_ptr->port);
           context_ptr->port = NULL;
         }
 
-        return;
+        goto free;
       }
       else if (context_ptr->depth == 4 && context_ptr->element[0] == PARSE_CONTEXT_PROJECT)
       {
         if (!ladish_get_name_and_uuid_attributes("/project/clients/client/ports/port", attr, &name, &uuid_str, uuid))
         {
           context_ptr->error = XML_TRUE;
-          return;
+          goto free;
+        }
+
+        name_dup = unescape_dup(name);
+        if (name_dup == NULL)
+        {
+          log_error("allocation of memory for unescaped name buffer failed. name = '%s'", name);
+          context_ptr->error = XML_TRUE;
+          goto free;
         }
 
         context_ptr->port = ladish_graph_find_port_by_uuid(room_ptr->graph, uuid, false, NULL);
@@ -340,10 +375,10 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
         {
           if (!ladish_port_is_link(context_ptr->port))
           {
-            log_info("port \"%s\" with uuid %s already exists in room graph and is not a room-studio link", name, uuid_str);
+            log_info("port \"%s\" with uuid %s already exists in room graph and is not a room-studio link", name_dup, uuid_str);
             context_ptr->error = XML_TRUE;
           }
-          return;
+          goto free;
         }
 
         /* there can be two ports with same uuid in the jack graph so we search for a port
@@ -351,23 +386,23 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
         context_ptr->port = ladish_graph_find_port_by_uuid(ladish_studio_get_jack_graph(), uuid, false, room_ptr->graph);
         if (context_ptr->port == NULL)
         {
-          log_info("app port \"%s\" with uuid %s not found in the jack graph", name, uuid_str);
+          log_info("app port \"%s\" with uuid %s not found in the jack graph", name_dup, uuid_str);
           context_ptr->error = XML_TRUE;
           ladish_graph_dump(ladish_studio_get_jack_graph());
-          return;
+          goto free;
         }
 
-        log_info("app port \"%s\" with uuid %s", name, uuid_str);
+        log_info("app port \"%s\" with uuid %s", name_dup, uuid_str);
 
-        if (!ladish_graph_add_port(room_ptr->graph, context_ptr->client, context_ptr->port, name, 0, 0, true))
+        if (!ladish_graph_add_port(room_ptr->graph, context_ptr->client, context_ptr->port, name_dup, 0, 0, true))
         {
           log_error("ladish_graph_add_port() failed.");
           ladish_port_destroy(context_ptr->port);
           context_ptr->port = NULL;
-          return;
+          goto free;
         }
 
-        return;
+        goto free;
       }
     }
     else if (context_ptr->depth == 2 &&
@@ -380,15 +415,23 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
       if (!ladish_get_name_and_uuid_attributes("/project/room/port", attr, &name, &uuid_str, uuid))
       {
         context_ptr->error = XML_TRUE;
-        return;
+        goto free;
       }
 
-      log_info("room port \"%s\" with uuid %s", name, uuid_str);
+      name_dup = unescape_dup(name);
+      if (name_dup == NULL)
+      {
+        log_error("allocation of memory for unescaped name buffer failed. name = '%s'", name);
+        context_ptr->error = XML_TRUE;
+        goto free;
+      }
+
+      log_info("room port \"%s\" with uuid %s", name_dup, uuid_str);
 
       if (!ladish_parse_port_type_and_direction_attributes("/project/room/port", attr, &port_type, &port_flags))
       {
         context_ptr->error = XML_TRUE;
-        return;
+        goto free;
       }
 
       context_ptr->port = ladish_graph_find_port_by_uuid(room_ptr->graph, uuid, false, NULL);
@@ -398,21 +441,21 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
         context_ptr->error = XML_TRUE;
       }
 
-      return;
+      goto free;
     }
 
     log_error("port element in wrong place");
     ladish_dump_element_stack(context_ptr);
     context_ptr->error = XML_TRUE;
 
-    return;
+    goto free;
   }
 
   if (strcmp(el, "connections") == 0)
   {
     //log_info("<connections>");
     context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_CONNECTIONS;
-    return;
+    goto free;
   }
 
   if (strcmp(el, "connection") == 0)
@@ -425,7 +468,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
     {
       log_error("/room/connections/connection \"port1\" attribute is not available.");
       context_ptr->error = XML_TRUE;
-      return;
+      goto free;
     }
 
     uuid2_str = ladish_get_uuid_attribute(attr, "port2", uuid2, false);
@@ -433,7 +476,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
     {
       log_error("/room/connections/connection \"port2\" attribute is not available.");
       context_ptr->error = XML_TRUE;
-      return;
+      goto free;
     }
 
     log_info("room connection between port %s and port %s", uuid_str, uuid2_str);
@@ -443,7 +486,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
     {
       log_error("room client with unknown port %s", uuid_str);
       context_ptr->error = XML_TRUE;
-      return;
+      goto free;
     }
 
     port2 = ladish_graph_find_port_by_uuid(room_ptr->graph, uuid2, true, NULL);
@@ -451,24 +494,24 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
     {
       log_error("room client with unknown port %s", uuid2_str);
       context_ptr->error = XML_TRUE;
-      return;
+      goto free;
     }
 
     context_ptr->connection_id = ladish_graph_add_connection(room_ptr->graph, port1, port2, true);
     if (context_ptr->connection_id == 0)
     {
       log_error("ladish_graph_add_connection() failed.");
-      return;
+      goto free;
     }
 
-    return;
+    goto free;
   }
 
   if (strcmp(el, "applications") == 0)
   {
     //log_info("<applications>");
     context_ptr->element[++context_ptr->depth] = PARSE_CONTEXT_APPLICATIONS;
-    return;
+    goto free;
   }
 
   if (strcmp(el, "application") == 0)
@@ -481,28 +524,28 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
     {
       log_error("application \"name\" attribute is not available.");
       context_ptr->error = XML_TRUE;
-      return;
+      goto free;
     }
 
     if (ladish_get_bool_attribute(attr, "terminal", &context_ptr->terminal) == NULL)
     {
       log_error("application \"terminal\" attribute is not available. name=\"%s\"", name);
       context_ptr->error = XML_TRUE;
-      return;
+      goto free;
     }
 
     if (ladish_get_bool_attribute(attr, "autorun", &context_ptr->autorun) == NULL)
     {
       log_error("application \"autorun\" attribute is not available. name=\"%s\"", name);
       context_ptr->error = XML_TRUE;
-      return;
+      goto free;
     }
 
     if (ladish_get_byte_attribute(attr, "level", &context_ptr->level) == NULL)
     {
       log_error("application \"level\" attribute is not available. name=\"%s\"", name);
       context_ptr->error = XML_TRUE;
-      return;
+      goto free;
     }
 
     context_ptr->str = strdup(name);
@@ -510,11 +553,11 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
     {
       log_error("strdup() failed");
       context_ptr->error = XML_TRUE;
-      return;
+      goto free;
     }
 
     context_ptr->data_used = 0;
-    return;
+    goto free;
   }
 
   if (strcmp(el, "dict") == 0)
@@ -526,7 +569,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
     {
         log_error("nested dicts");
         context_ptr->error = XML_TRUE;
-        return;
+        goto free;
     }
 
     if (context_ptr->depth == 1 &&
@@ -560,10 +603,10 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
     {
       log_error("unexpected dict XML element");
       context_ptr->error = XML_TRUE;
-      return;
+      goto free;
     }
 
-    return;
+    goto free;
   }
 
   if (strcmp(el, "key") == 0)
@@ -575,7 +618,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
     {
         log_error("dict-less key");
         context_ptr->error = XML_TRUE;
-        return;
+        goto free;
     }
 
     name = ladish_get_string_attribute(attr, "name");
@@ -583,7 +626,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
     {
       log_error("dict/key \"name\" attribute is not available.");
       context_ptr->error = XML_TRUE;
-      return;
+      goto free;
     }
 
     context_ptr->str = strdup(name);
@@ -591,16 +634,19 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
     {
       log_error("strdup() failed");
       context_ptr->error = XML_TRUE;
-      return;
+      goto free;
     }
 
     context_ptr->data_used = 0;
 
-    return;
+    goto free;
   }
 
   log_error("unknown element \"%s\"", el);
   context_ptr->error = XML_TRUE;
+
+free:
+  free(name_dup);
 }
 
 static void callback_elend(void * data, const char * el)
