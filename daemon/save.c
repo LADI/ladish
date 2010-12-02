@@ -71,7 +71,7 @@ bool ladish_write_indented_string(int fd, int indent, const char * string)
   return true;
 }
 
-bool ladish_write_string_escape(int fd, const char * string)
+bool ladish_write_string_escape_ex(int fd, const char * string, unsigned int flags)
 {
   bool ret;
   char * escaped_buffer;
@@ -83,13 +83,18 @@ bool ladish_write_string_escape(int fd, const char * string)
     return false;
   }
 
-  escape_simple(string, escaped_buffer);
+  escape_simple(string, escaped_buffer, flags);
 
   ret = ladish_write_string(fd, escaped_buffer);
 
   free(escaped_buffer);
 
   return ret;
+}
+
+bool ladish_write_string_escape(int fd, const char * string)
+{
+  return ladish_write_string_escape_ex(fd, string, LADISH_ESCAPE_FLAG_ALL);
 }
 
 #define fd (((struct ladish_write_context *)context)->fd)
@@ -462,7 +467,7 @@ ladish_save_app(
 
   unescaped_string = name;
   escaped_string = escaped_buffer;
-  escape(&unescaped_string, &escaped_string);
+  escape(&unescaped_string, &escaped_string, LADISH_ESCAPE_FLAG_ALL);
   *escaped_string = 0;
   if (!ladish_write_string(fd, escaped_buffer))
   {
@@ -508,7 +513,7 @@ ladish_save_app(
 
   unescaped_string = command;
   escaped_string = escaped_buffer;
-  escape(&unescaped_string, &escaped_string);
+  escape(&unescaped_string, &escaped_string, LADISH_ESCAPE_FLAG_ALL);
   *escaped_string = 0;
   if (!ladish_write_string(fd, escaped_buffer))
   {

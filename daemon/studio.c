@@ -733,7 +733,7 @@ bool ladish_studio_compose_filename(const char * name, char ** filename_ptr_ptr,
   *p++ = '/';
 
   src = name;
-  escape(&src, &p);
+  escape(&src, &p, LADISH_ESCAPE_FLAG_ALL);
   strcpy(p, ".xml");
 
   *filename_ptr_ptr = filename_ptr;

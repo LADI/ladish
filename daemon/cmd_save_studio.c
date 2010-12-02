@@ -60,7 +60,7 @@ write_jack_parameter(
   do
   {
     *dst++ = '/';
-    escape(&src, &dst);
+    escape(&src, &dst, LADISH_ESCAPE_FLAG_ALL);
     src++;
   }
   while (*src != 0);

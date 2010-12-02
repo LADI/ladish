@@ -30,7 +30,7 @@ static char hex_digits[] = "0123456789ABCDEF";
 
 #define HEX_TO_INT(hexchar) ((hexchar) <= '9' ? hexchar - '0' : 10 + (hexchar - 'A'))
 
-void escape(const char ** src_ptr, char ** dst_ptr)
+void escape(const char ** src_ptr, char ** dst_ptr, unsigned int flags)
 {
   const char * src;
   char * dst;
@@ -43,30 +43,38 @@ void escape(const char ** src_ptr, char ** dst_ptr)
     switch (*src)
     {
     case '/':               /* used as separator for address components */
-    case '<':               /* invalid attribute value char (XML spec) */
-    case '&':               /* invalid attribute value char (XML spec) */
-    case '"':               /* we store attribute values in double quotes - invalid attribute value char (XML spec) */
     case '\'':
     case '>':
     case '%':
+      if ((flags & LADISH_ESCAPE_FLAG_OTHER) == 0)
+      {
+        break;
+      }
+    case '<':               /* invalid attribute value char (XML spec) */
+    case '&':               /* invalid attribute value char (XML spec) */
+    case '"':               /* we store attribute values in double quotes - invalid attribute value char (XML spec) */
+      if ((flags & LADISH_ESCAPE_FLAG_XML_ATTR) == 0)
+      {
+        break;
+      }
       dst[0] = '%';
       dst[1] = hex_digits[*src >> 4];
       dst[2] = hex_digits[*src & 0x0F];
       dst += 3;
       src++;
-      break;
-    default:
-      *dst++ = *src++;
+      continue;
     }
+
+    *dst++ = *src++;
   }
 
   *src_ptr = src;
   *dst_ptr = dst;
 }
 
-void escape_simple(const char * src_ptr, char * dst_ptr)
+void escape_simple(const char * src_ptr, char * dst_ptr, unsigned int flags)
 {
-  escape(&src_ptr, &dst_ptr);
+  escape(&src_ptr, &dst_ptr, flags);
   *dst_ptr = 0;
 }
 
@@ -101,4 +109,25 @@ size_t unescape(const char * src, size_t src_len, char * dst)
   }
 
   return dst_len;
+}
+
+void unescape_simple(char * buffer)
+{
+  unescape(buffer, strlen(buffer) + 1, buffer);
+}
+
+char * unescape_dup(const char * src)
+{
+  size_t len;
+  char * dst;
+
+  len = strlen(src) + 1;
+
+  dst = malloc(len);
+  if (dst != NULL)
+  {
+    unescape(src, len, dst);
+  }
+
+  return dst;
 }

@@ -28,10 +28,17 @@
 #define ESCAPE_H__FABBE484_1093_41C1_9FC9_62ED0106E542__INCLUDED
 
 #include "common.h"
+#include <limits.h>             /* UINT_MAX */
 
-void escape(const char ** src_ptr, char ** dst_ptr);
-void escape_simple(const char * src_ptr, char * dst_ptr);
+#define LADISH_ESCAPE_FLAG_XML_ATTR ((unsigned int)1 << 0)
+#define LADISH_ESCAPE_FLAG_OTHER    ((unsigned int)1 << 1)
+#define LADISH_ESCAPE_FLAG_ALL      UINT_MAX
+
+void escape(const char ** src_ptr, char ** dst_ptr, unsigned int flags);
+void escape_simple(const char * src_ptr, char * dst_ptr, unsigned int flags);
 size_t unescape(const char * src, size_t src_len, char * dst);
+void unescape_simple(char * buffer);
+char * unescape_dup(const char * src);
 
 /* encode each char in three bytes (percent encoding) */
 #define max_escaped_length(unescaped_length) ((unescaped_length) * 3)

@@ -776,7 +776,7 @@ static void callback_elend(void * data, const char * el)
   else if (context_ptr->element[context_ptr->depth] == PARSE_CONTEXT_APPLICATION)
   {
     context_ptr->data[unescape(context_ptr->data, context_ptr->data_used, context_ptr->data)] = 0;
-    unescape(context_ptr->str, strlen(context_ptr->str) + 1, context_ptr->str);
+    unescape_simple(context_ptr->str);
 
     log_info("application '%s' (%s, %s, level %u) with commandline '%s'", context_ptr->str, context_ptr->terminal ? "terminal" : "shell", context_ptr->autorun ? "autorun" : "stopped", (unsigned int)context_ptr->level, context_ptr->data);
 

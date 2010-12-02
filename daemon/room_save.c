@@ -267,7 +267,7 @@ char * compose_project_dir_from_name(const char * project_name)
 
   memcpy(project_dir, home_dir, home_dir_len);
   memcpy(project_dir + home_dir_len, DEFAULT_PROJECT_BASE_DIR, DEFAULT_PROJECT_BASE_DIR_LEN);
-  escape_simple(project_name, project_dir + home_dir_len + DEFAULT_PROJECT_BASE_DIR_LEN);
+  escape_simple(project_name, project_dir + home_dir_len + DEFAULT_PROJECT_BASE_DIR_LEN, LADISH_ESCAPE_FLAG_ALL);
 
   return project_dir;
 }
