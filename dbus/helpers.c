@@ -38,6 +38,8 @@
 #include "../assert.h"
 #include "../common/klist.h"
 
+#define DBUS_CALL_DEFAULT_TIMEOUT 3000 // in milliseconds
+
 DBusConnection * g_dbus_connection;
 DBusError g_dbus_error;
 
@@ -332,6 +334,32 @@ bool dbus_add_dict_entry_bool(DBusMessageIter * dict_iter_ptr, const char * key,
   return true;
 }
 
+DBusMessage *
+dbus_call_raw(
+  unsigned int timeout,
+  DBusMessage * request_ptr)
+{
+  DBusMessage * reply_ptr;
+
+  if (timeout == 0)
+  {
+    timeout = DBUS_CALL_DEFAULT_TIMEOUT;
+  }
+
+  reply_ptr = dbus_connection_send_with_reply_and_block(
+    g_dbus_connection,
+    request_ptr,
+    timeout,
+    &g_dbus_error);
+  if (reply_ptr == NULL)
+  {
+    //log_error("calling method '%s' failed, error is '%s'", method, g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+  }
+
+  return reply_ptr;
+}
+
 bool
 dbus_call(
   unsigned int timeout,
@@ -354,11 +382,6 @@ dbus_call(
   DBusSignatureIter sig_iter;
 
   //log_info("dbus_call('%s', '%s', '%s', '%s')", service, object, iface, method);
-
-  if (timeout == 0)
-  {
-    timeout = DBUS_CALL_DEFAULT_TIMEOUT;
-  }
 
   ret = false;
   va_start(ap, input_signature);
@@ -410,11 +433,7 @@ dbus_call(
 
   output_signature = va_arg(ap, const char *);
 
-  reply_ptr = dbus_connection_send_with_reply_and_block(
-    g_dbus_connection,
-    request_ptr,
-    timeout,
-    &g_dbus_error);
+  reply_ptr = dbus_call_raw(timeout, request_ptr);
 
   if (input_signature != NULL)
   {
@@ -423,8 +442,6 @@ dbus_call(
 
   if (reply_ptr == NULL)
   {
-    //log_error("calling method '%s' failed, error is '%s'", method, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
     goto fail;
   }
 

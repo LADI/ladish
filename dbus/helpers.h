@@ -43,6 +43,11 @@ bool dbus_maybe_add_dict_entry_string(DBusMessageIter *dict_iter_ptr, const char
 bool dbus_add_dict_entry_uint32(DBusMessageIter * dict_iter_ptr, const char * key, dbus_uint32_t value);
 bool dbus_add_dict_entry_bool(DBusMessageIter * dict_iter_ptr, const char * key, dbus_bool_t value);
 
+DBusMessage *
+dbus_call_raw(
+  unsigned int timeout,         /* in milliseconds */
+  DBusMessage * request_ptr);
+
 bool
 dbus_call(
   unsigned int timeout,         /* in milliseconds */
@@ -105,8 +110,6 @@ void
 dbus_unregister_service_lifetime_hook(
   DBusConnection * connection,
   const char * service);
-
-#define DBUS_CALL_DEFAULT_TIMEOUT 3000 // in milliseconds
 
 #include "method.h"
 #include "signal.h"

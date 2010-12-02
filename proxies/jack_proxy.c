@@ -226,19 +226,10 @@ jack_proxy_read_conf_container(
     return false;
   }
 
-  // send message and get a handle for a reply
-  reply_ptr = dbus_connection_send_with_reply_and_block(
-    g_dbus_connection,
-    request_ptr,
-    DBUS_CALL_DEFAULT_TIMEOUT,
-    &g_dbus_error);
-
+  reply_ptr = dbus_call_raw(0, request_ptr);
   dbus_message_unref(request_ptr);
-
   if (reply_ptr == NULL)
   {
-    log_error("no reply from JACK server, error is '%s'", g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
     return false;
   }
 
@@ -358,19 +349,10 @@ jack_proxy_get_parameter_value(
     return false;
   }
 
-  // send message and get a handle for a reply
-  reply_ptr = dbus_connection_send_with_reply_and_block(
-    g_dbus_connection,
-    request_ptr,
-    DBUS_CALL_DEFAULT_TIMEOUT,
-    &g_dbus_error);
-
+  reply_ptr = dbus_call_raw(0, request_ptr);
   dbus_message_unref(request_ptr);
-
   if (reply_ptr == NULL)
   {
-    log_error("no reply from JACK server, error is '%s'", g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
     return false;
   }
 
@@ -476,19 +458,10 @@ jack_proxy_set_parameter_value(
     return false;
   }
 
-  // send message and get a handle for a reply
-  reply_ptr = dbus_connection_send_with_reply_and_block(
-    g_dbus_connection,
-    request_ptr,
-    DBUS_CALL_DEFAULT_TIMEOUT,
-    &g_dbus_error);
-
+  reply_ptr = dbus_call_raw(0, request_ptr);
   dbus_message_unref(request_ptr);
-
   if (reply_ptr == NULL)
   {
-    log_error("no reply from JACK server, error is '%s'", g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
     return false;
   }
 
@@ -529,19 +502,10 @@ jack_proxy_reset_parameter_value(
     return false;
   }
 
-  // send message and get a handle for a reply
-  reply_ptr = dbus_connection_send_with_reply_and_block(
-    g_dbus_connection,
-    request_ptr,
-    DBUS_CALL_DEFAULT_TIMEOUT,
-    &g_dbus_error);
-
+  reply_ptr = dbus_call_raw(0, request_ptr);
   dbus_message_unref(request_ptr);
-
   if (reply_ptr == NULL)
   {
-    log_error("no reply from JACK server, error is '%s'", g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
     return false;
   }
 
