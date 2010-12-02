@@ -676,23 +676,23 @@ port_appeared(
     vclient = ladish_graph_find_client_by_name(vgraph, vclient_name, false);
     if (vclient == NULL)
     {
-        if (!ladish_client_create(NULL, &vclient))
-        {
-          log_error("ladish_client_create() failed.");
-          goto free_alsa_names;
-        }
+      if (!ladish_client_create(NULL, &vclient))
+      {
+        log_error("ladish_client_create() failed.");
+        goto free_alsa_names;
+      }
 
-        if (has_app)
-        {
-          ladish_client_set_app(vclient, app_uuid);
-        }
+      if (has_app)
+      {
+        ladish_client_set_app(vclient, app_uuid);
+      }
 
-        if (!ladish_graph_add_client(vgraph, vclient, vclient_name, false))
-        {
-          log_error("ladish_graph_add_client() failed.");
-          ladish_client_destroy(vclient);
-          goto free_alsa_names;
-        }
+      if (!ladish_graph_add_client(vgraph, vclient, vclient_name, false))
+      {
+        log_error("ladish_graph_add_client() failed.");
+        ladish_client_destroy(vclient);
+        goto free_alsa_names;
+      }
     }
   }
   else if (client_id == virtualizer_ptr->system_client_id)
@@ -749,25 +749,29 @@ port_appeared(
     }
     else
     {
-      log_info("creating new vclient");
-      if (!ladish_client_create(NULL, &vclient))
+      vclient = ladish_graph_find_client_by_app(vgraph, app_uuid);
+      if (vclient == NULL)
       {
-        log_error("ladish_client_create() failed.");
-        goto free_alsa_names;
-      }
+        log_info("creating new vclient");
+        if (!ladish_client_create(NULL, &vclient))
+        {
+          log_error("ladish_client_create() failed.");
+          goto free_alsa_names;
+        }
 
-      ladish_client_interlink(vclient, jack_client);
+        ladish_client_interlink(vclient, jack_client);
 
-      if (has_app)
-      {
-        ladish_client_set_app(vclient, app_uuid);
-      }
+        if (has_app)
+        {
+          ladish_client_set_app(vclient, app_uuid);
+        }
 
-      if (!ladish_graph_add_client(vgraph, vclient, vclient_name, false))
-      {
-        log_error("ladish_graph_add_client() failed to add client '%s' to virtual graph", jack_client_name);
-        ladish_client_destroy(vclient);
-        goto free_alsa_names;
+        if (!ladish_graph_add_client(vgraph, vclient, vclient_name, false))
+        {
+          log_error("ladish_graph_add_client() failed to add client '%s' to virtual graph", jack_client_name);
+          ladish_client_destroy(vclient);
+          goto free_alsa_names;
+        }
       }
     }
   }
