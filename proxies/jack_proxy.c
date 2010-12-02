@@ -560,7 +560,7 @@ jack_proxy_reset_parameter_value(
 
 bool jack_proxy_start_server(void)
 {
-  return dbus_call(0, JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONTROL, "StartServer", "", "");
+  return dbus_call(7000, JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONTROL, "StartServer", "", "");
 }
 
 bool jack_proxy_stop_server(void)
