@@ -7,6 +7,7 @@ import Utils
 import shutil
 import re
 import waflib
+from waflib.Scripting import Dist
 
 parallel_debug = False
 
@@ -50,6 +51,9 @@ def options(opt):
     opt.add_option('--debug', action='store_true', default=False, dest='debug', help="Build debuggable binaries")
     opt.add_option('--doxygen', action='store_true', default=False, help='Enable build of doxygen documentation')
     opt.add_option('--distnodeps', action='store_true', default=False, help="When creating distribution tarball, don't package git submodules")
+    opt.add_option('--distname', type='string', default=None, help="Name for the distribution tarball")
+    opt.add_option('--distsuffix', type='string', default="", help="String to append to the distribution tarball name")
+    opt.add_option('--tagdist', action='store_true', default=False, help='Create of git tag for distname')
     if parallel_debug:
         opt.load('parallel_debug')
 
@@ -275,8 +279,9 @@ def configure(conf):
 def git_ver(self):
     bld = self.generator.bld
     header = self.outputs[0].abspath()
-    if os.access('../version.h', os.R_OK):
-        shutil.copy('../version.h', header)
+    if os.access('./version.h', os.R_OK):
+        header = os.path.join(os.getcwd(), out, "version.h")
+        shutil.copy('./version.h', header)
         data = file(header).read()
         m = re.match(r'^#define GIT_VERSION "([^"]*)"$', data)
         if m != None:
@@ -611,15 +616,52 @@ def etags(ctx):
     os.system(cmd)
     os.system("stat -c '%y' TAGS")
 
-def dist_hook():
-    #print repr(Options.options)
-    if Options.options.distnodeps:
-        shutil.rmtree('laditools')
-        shutil.rmtree('flowcanvas')
-        shutil.rmtree('jack2')
-        shutil.rmtree('a2jmidid')
-    nodist_files = ['.gitmodules', 'GTAGS', 'GRTAGS', 'GPATH', 'GSYMS'] # waf does not ignore these file
-    for nodist_file in nodist_files:
-        if os.access(nodist_file, os.F_OK):
-            os.remove(nodist_file)
-    shutil.copy('../build/default/version.h', "./")
+class ladish_dist(waflib.Scripting.Dist):
+    cmd = 'dist'
+    fun = 'dist'
+
+    def __init__(self):
+        Dist.__init__(self)
+        if Options.options.distname:
+            self.base_name = Options.options.distname
+        else:
+            try:
+                self.base_name = self.cmd_and_log("LANG= git describe --tags", quiet=waflib.Context.BOTH).splitlines()[0]
+            except:
+                self.base_name = APPNAME + '-' + VERSION
+        self.base_name += Options.options.distsuffix
+
+        #print self.base_name
+
+        if Options.options.distname and Options.options.tagdist:
+            ret = self.exec_command("LANG= git tag " + self.base_name)
+            if ret != 0:
+                raise waflib.Errors.WafError('git tag creation failed')
+
+    def get_base_name(self):
+        return self.base_name
+
+    def get_excl(self):
+        excl = Dist.get_excl(self)
+
+        excl += ' .gitmodules'
+        excl += ' GTAGS'
+        excl += ' GRTAGS'
+        excl += ' GPATH'
+        excl += ' GSYMS'
+
+        if Options.options.distnodeps:
+            excl += ' laditools'
+            excl += ' flowcanvas'
+            excl += ' jack2'
+            excl += ' a2jmidid'
+
+        #print repr(excl)
+        return excl
+
+    def execute(self):
+        shutil.copy('./build/version.h', "./")
+        try:
+            super(ladish_dist, self).execute()
+        finally:
+            os.remove("version.h")
