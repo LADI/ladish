@@ -1011,7 +1011,7 @@ static void ladish_room_dbus_set_project_description(struct dbus_method_call * c
   if ((strlen(str) == 0 && (room_ptr->project_description == NULL || strlen(room_ptr->project_description) == 0)) ||
       (room_ptr->project_description != NULL && strcmp(str, room_ptr->project_description) == 0))
   {
-    method_return_new_single(call_ptr, DBUS_TYPE_UINT64, &room_ptr->name);
+    method_return_new_single(call_ptr, DBUS_TYPE_UINT64, &room_ptr->version);
     return;
   }
 
@@ -1044,7 +1044,7 @@ static void ladish_room_dbus_set_project_notes(struct dbus_method_call * call_pt
   if ((strlen(str) == 0 && (room_ptr->project_notes == NULL || strlen(room_ptr->project_notes) == 0)) ||
       (room_ptr->project_notes != NULL && strcmp(str, room_ptr->project_notes) == 0))
   {
-    method_return_new_single(call_ptr, DBUS_TYPE_UINT64, &room_ptr->name);
+    method_return_new_single(call_ptr, DBUS_TYPE_UINT64, &room_ptr->version);
     return;
   }
 
