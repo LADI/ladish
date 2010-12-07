@@ -113,7 +113,14 @@ static void app_removed(void * context, uint64_t id)
   world_tree_remove_app(context, id);
 }
 
-static void project_properties_changed(void * context, const char * project_dir, const char * project_name)
+static
+void
+project_properties_changed(
+  void * context,
+  const char * project_dir,
+  const char * project_name,
+  const char * project_description,
+  const char * project_notes)
 {
   bool empty;
   char * project_name_buffer;

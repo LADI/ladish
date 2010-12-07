@@ -39,7 +39,9 @@ ladish_room_proxy_create(
   void (* project_properties_changed)(
     void * project_properties_changed_context,
     const char * project_dir,
-    const char * project_name),
+    const char * project_name,
+    const char * project_description,
+    const char * project_notes),
   ladish_room_proxy_handle * proxy_ptr);
 
 void ladish_room_proxy_destroy(ladish_room_proxy_handle proxy);
@@ -47,7 +49,24 @@ char * ladish_room_proxy_get_name(ladish_room_proxy_handle proxy);
 bool ladish_room_proxy_load_project(ladish_room_proxy_handle proxy, const char * project_dir);
 bool ladish_room_proxy_save_project(ladish_room_proxy_handle proxy, const char * project_dir, const char * project_name);
 bool ladish_room_proxy_unload_project(ladish_room_proxy_handle proxy);
-bool ladish_room_proxy_get_project_properties(ladish_room_proxy_handle proxy, char ** project_dir, char ** project_name);
+
+void
+ladish_room_proxy_get_project_properties(
+  ladish_room_proxy_handle proxy,
+  const char ** project_dir,
+  const char ** project_name,
+  const char ** project_description,
+  const char ** project_notes);
+
+bool
+ladish_room_proxy_set_project_description(
+  ladish_room_proxy_handle proxy,
+  const char * description);
+
+bool
+ladish_room_proxy_set_project_notes(
+  ladish_room_proxy_handle proxy,
+  const char * notes);
 
 bool
 ladish_room_proxy_get_recent_projects(

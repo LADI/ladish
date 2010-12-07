@@ -2,10 +2,10 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains interface of the project_properties_dialog class
+ * This file contains interface for the project properties dialog helpers
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -24,21 +24,9 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef PROJECT_PROPERTIES_HPP__B854A265_3660_4DAA_87E7_104020C5962D__INCLUDED
-#define PROJECT_PROPERTIES_HPP__B854A265_3660_4DAA_87E7_104020C5962D__INCLUDED
+#ifndef PROJECT_PROPERTIES_H__B854A265_3660_4DAA_87E7_104020C5962D__INCLUDED
+#define PROJECT_PROPERTIES_H__B854A265_3660_4DAA_87E7_104020C5962D__INCLUDED
 
-struct project_properties_dialog_impl;
+void ladish_project_properties_dialog_run(void);
 
-class project_properties_dialog
-{
-public:
-  project_properties_dialog();
-  ~project_properties_dialog();
-
-  void run(boost::shared_ptr<project> project_ptr);
-
-private:
-  project_properties_dialog_impl * _impl_ptr;
-};
-
-#endif // #ifndef PROJECT_PROPERTIES_HPP__B854A265_3660_4DAA_87E7_104020C5962D__INCLUDED
+#endif // #ifndef PROJECT_PROPERTIES_H__B854A265_3660_4DAA_87E7_104020C5962D__INCLUDED

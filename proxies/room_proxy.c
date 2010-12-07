@@ -36,11 +36,15 @@ struct ladish_room_proxy
   void (* project_properties_changed)(
     void * project_properties_changed_context,
     const char * project_dir,
-    const char * project_name);
+    const char * project_name,
+    const char * project_description,
+    const char * project_notes);
 
   uint64_t project_properties_version;
   char * project_name;
   char * project_dir;
+  char * project_description;
+  char * project_notes;
 };
 
 static bool update_project_properties(struct ladish_room_proxy * proxy_ptr, DBusMessage * message_ptr, const char * context)
@@ -50,14 +54,18 @@ static bool update_project_properties(struct ladish_room_proxy * proxy_ptr, DBus
   dbus_uint64_t version;
   const char * name;
   const char * dir;
+  const char * description;
+  const char * notes;
   char * name_buffer;
   char * dir_buffer;
+  char * description_buffer;
+  char * notes_buffer;
 
   signature = dbus_message_get_signature(message_ptr);
   if (strcmp(signature, "ta{sv}") != 0)
   {
     log_error("%s signature mismatch. '%s'", context, signature);
-    return false;
+    goto fail;
   }
 
   dbus_message_iter_init(message_ptr, &iter);
@@ -68,12 +76,12 @@ static bool update_project_properties(struct ladish_room_proxy * proxy_ptr, DBus
   if (version == 0)
   {
     log_error("%s contains project properties version 0", context);
-    return false;
+    goto fail;
   }
 
   if (proxy_ptr->project_properties_version >= version)
   {
-    return true;
+    goto fail;
   }
 
   if (!dbus_iter_get_dict_entry_string(&iter, "name", &name))
@@ -86,19 +94,42 @@ static bool update_project_properties(struct ladish_room_proxy * proxy_ptr, DBus
     dir = "";
   }
 
+  if (!dbus_iter_get_dict_entry_string(&iter, "description", &description))
+  {
+    description = "";
+  }
+
+  if (!dbus_iter_get_dict_entry_string(&iter, "notes", &notes))
+  {
+    notes = "";
+  }
+
   name_buffer = strdup(name);
   if (name_buffer == NULL)
   {
     log_error("strdup() failed for project name");
-    return false;
+    goto fail;
   }
 
   dir_buffer = strdup(dir);
   if (dir_buffer == NULL)
   {
     log_error("strdup() failed for project dir");
-    free(name_buffer);
-    return false;
+    goto fail_free_name_buffer;
+  }
+
+  description_buffer = strdup(description);
+  if (description_buffer == NULL)
+  {
+    log_error("strdup() failed for project description");
+    goto fail_free_dir_buffer;
+  }
+
+  notes_buffer = strdup(notes);
+  if (notes_buffer == NULL)
+  {
+    log_error("strdup() failed for project notes");
+    goto fail_free_description_buffer;
   }
 
   proxy_ptr->project_properties_version = version;
@@ -115,17 +146,42 @@ static bool update_project_properties(struct ladish_room_proxy * proxy_ptr, DBus
   }
   proxy_ptr->project_dir = dir_buffer;
 
+  if (proxy_ptr->project_description != NULL)
+  {
+    free(proxy_ptr->project_description);
+  }
+  proxy_ptr->project_description = description_buffer;
+
+  if (proxy_ptr->project_notes != NULL)
+  {
+    free(proxy_ptr->project_notes);
+  }
+  proxy_ptr->project_notes = notes_buffer;
+
   /* log_info("Room '%s' project properties changed:", proxy_ptr->object); /\* TODO: cache project name *\/ */
   /* log_info("  Properties version: %"PRIu64, proxy_ptr->project_properties_version); */
   /* log_info("  Project name: '%s'", proxy_ptr->project_name); */
   /* log_info("  Project dir: '%s'", proxy_ptr->project_dir); */
+  /* log_info("  Project description: '%s'", proxy_ptr->project_description); */
+  /* log_info("  Project notes: '%s'", proxy_ptr->project_notes); */
 
   proxy_ptr->project_properties_changed(
     proxy_ptr->project_properties_changed_context,
     proxy_ptr->project_dir,
-    proxy_ptr->project_name);
+    proxy_ptr->project_name,
+    proxy_ptr->project_description,
+    proxy_ptr->project_notes);
 
   return true;
+
+fail_free_description_buffer:
+  free(description_buffer);
+fail_free_dir_buffer:
+  free(dir_buffer);
+fail_free_name_buffer:
+  free(name_buffer);
+fail:
+  return false;
 }
 
 bool ladish_room_proxy_get_project_properties_internal(struct ladish_room_proxy * proxy_ptr)
@@ -175,7 +231,9 @@ ladish_room_proxy_create(
   void (* project_properties_changed)(
     void * project_properties_changed_context,
     const char * project_dir,
-    const char * project_name),
+    const char * project_name,
+    const char * project_description,
+    const char * project_notes),
   ladish_room_proxy_handle * handle_ptr)
 {
   struct ladish_room_proxy * proxy_ptr;
@@ -204,6 +262,8 @@ ladish_room_proxy_create(
   proxy_ptr->project_properties_version = 0;
   proxy_ptr->project_name = NULL;
   proxy_ptr->project_dir = NULL;
+  proxy_ptr->project_description = NULL;
+  proxy_ptr->project_notes = NULL;
 
   proxy_ptr->project_properties_changed_context = project_properties_changed_context;
   proxy_ptr->project_properties_changed = project_properties_changed;
@@ -254,6 +314,16 @@ void ladish_room_proxy_destroy(ladish_room_proxy_handle proxy)
   if (proxy_ptr->project_dir != NULL)
   {
     free(proxy_ptr->project_dir);
+  }
+
+  if (proxy_ptr->project_description != NULL)
+  {
+    free(proxy_ptr->project_description);
+  }
+
+  if (proxy_ptr->project_notes != NULL)
+  {
+    free(proxy_ptr->project_notes);
   }
 
   free(proxy_ptr->object);
@@ -327,30 +397,65 @@ bool ladish_room_proxy_unload_project(ladish_room_proxy_handle proxy)
   return true;
 }
 
-bool ladish_room_proxy_get_project_properties(ladish_room_proxy_handle proxy, char ** project_dir, char ** project_name)
+void
+ladish_room_proxy_get_project_properties(
+  ladish_room_proxy_handle proxy,
+  const char ** project_dir,
+  const char ** project_name,
+  const char ** project_description,
+  const char ** project_notes)
 {
-  char * name;
-  char * dir;
-
   ASSERT(proxy_ptr->project_properties_version > 0);
 
-  name = strdup(proxy_ptr->project_name);
-  if (name == NULL)
+  if (project_dir != NULL)
   {
-    log_error("strdup() failed for project name");
+    *project_dir = proxy_ptr->project_dir;
+  }
+
+  if (project_name != NULL)
+  {
+    *project_name = proxy_ptr->project_name;
+  }
+
+  if (project_description != NULL)
+  {
+    *project_description = proxy_ptr->project_description;
+  }
+
+  if (project_notes != NULL)
+  {
+    *project_notes = proxy_ptr->project_notes;
+  }
+}
+
+bool
+ladish_room_proxy_set_project_description(
+  ladish_room_proxy_handle proxy,
+  const char * description)
+{
+  uint64_t new_version;
+
+  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "SetProjectDescription", "s", &description, "t", &new_version))
+  {
+    log_error("SetProjectDescription() failed.");
     return false;
   }
 
-  dir = strdup(proxy_ptr->project_dir);
-  if (dir == NULL)
+  return true;
+}
+
+bool
+ladish_room_proxy_set_project_notes(
+  ladish_room_proxy_handle proxy,
+  const char * notes)
+{
+  uint64_t new_version;
+
+  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "SetProjectNotes", "s", &notes, "t", &new_version))
   {
-    log_error("strdup() failed for project dir");
-    free(name);
+    log_error("SetProjectNotes(%s) failed.", notes);
     return false;
   }
-
-  *project_name = name;
-  *project_dir = dir;
 
   return true;
 }

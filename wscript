@@ -500,6 +500,7 @@ def build(bld):
             'main.c',
             'load_project_dialog.c',
             'save_project_dialog.c',
+            'project_properties.c',
             'world_tree.c',
             'graph_view.c',
             'canvas.cpp',

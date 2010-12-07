@@ -29,6 +29,7 @@
 #include "gtk_builder.h"
 #include "studio.h"
 #include "dynmenu.h"
+#include "project_properties.h"
 
 static GtkWidget * g_menu_item_new_studio;
 static GtkWidget * g_menu_item_start_studio;
@@ -413,6 +414,10 @@ void fill_view_popup_menu(GtkMenu * menu, graph_view_handle view)
 
     menuitem = gtk_menu_item_new_with_label("Save Project As...");
     g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_save_project_as, NULL);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+
+    menuitem = gtk_menu_item_new_with_label("Project Properties...");
+    g_signal_connect(menuitem, "activate", (GCallback)ladish_project_properties_dialog_run, NULL);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
     menuitem = gtk_separator_menu_item_new(); /* separator */
