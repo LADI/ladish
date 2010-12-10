@@ -2,7 +2,9 @@
 Encoding=UTF-8
 Name=gladish
 Comment=LADI Session Handler
+Comment[ru]=Управление сеансами LADI
 GenericName=LADI Session Handler
+GenericName[ru]=Управление сеансами LADI
 Type=Application
 Terminal=false
 Exec=gladish
