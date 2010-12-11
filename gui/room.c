@@ -46,7 +46,7 @@ void menu_request_create_room(void)
 
     if (!studio_proxy_create_room(name, template))
     {
-      error_message_box("Room creation failed, please inspect logs.");
+      error_message_box(_("Room creation failed, please inspect logs."));
     }
 
     free(name);
@@ -69,7 +69,7 @@ void menu_request_destroy_room(void)
 
   if (!studio_proxy_delete_room(room))
   {
-    error_message_box("Room deletion failed, please inspect logs.");
+    error_message_box(_("Room deletion failed, please inspect logs."));
   }
 }
 

@@ -1,0 +1,10 @@
+#!/bin/bash
+# Run this script from current directory to update translation template, which will be written to "po/gladish.pot"
+# Note: you don't need to use it if you are not a developer
+
+POTFILE="po/gladish.pot"
+
+xgettext --keyword=_ -o "$POTFILE" gui/*.c gui/*.cpp
+xgettext -j -L Glade -o "$POTFILE" gui/gladish.ui
+
+msgmerge -U po/ru.po "$POTFILE"

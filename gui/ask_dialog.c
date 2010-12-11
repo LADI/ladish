@@ -50,7 +50,7 @@ ask_dialog(
     log_error("g_markup_vprintf_escaped() failed.");
     return false;
   }
-  gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(dialog), "%s", msg);
+  gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(dialog), _("%s"), msg);
   g_free(msg);
 
   gtk_message_dialog_set_markup(GTK_MESSAGE_DIALOG(dialog), text);

@@ -43,18 +43,28 @@ void init_actions_and_accelerators(void)
 
   g_clear_xruns_and_max_dsp_action = GTK_ACTION(get_gtk_builder_object("clear_xruns_and_max_dsp_load_action"));
   g_signal_connect(G_OBJECT(g_clear_xruns_and_max_dsp_action), "activate", G_CALLBACK(clear_xruns_and_max_dsp), NULL);
+  gtk_action_set_label(g_clear_xruns_and_max_dsp_action, _("Clear XRuns and Max DSP Load"));
+  gtk_action_set_short_label(g_clear_xruns_and_max_dsp_action, _("Clear"));
 
   g_zoom_100_action = GTK_ACTION(get_gtk_builder_object("zoom_100_action"));
   g_signal_connect(G_OBJECT(g_zoom_100_action), "activate", G_CALLBACK(zoom_100), NULL);
+  gtk_action_set_label(g_zoom_100_action, _("Zoom 100%"));
+  gtk_action_set_short_label(g_zoom_100_action, _("Zoom 100%"));
 
   g_zoom_fit_action = GTK_ACTION(get_gtk_builder_object("zoom_fit_action"));
   g_signal_connect(G_OBJECT(g_zoom_fit_action), "activate", G_CALLBACK(zoom_fit), NULL);
+  gtk_action_set_label(g_zoom_fit_action, _("Zoom to fit"));
+  gtk_action_set_short_label(g_zoom_fit_action, _("Zoom to fit"));
 
   g_zoom_in_action = GTK_ACTION(get_gtk_builder_object("zoom_in_action"));
   g_signal_connect(G_OBJECT(g_zoom_in_action), "activate", G_CALLBACK(zoom_in), NULL);
+  gtk_action_set_label(g_zoom_in_action, _("Zoom in"));
+  gtk_action_set_short_label(g_zoom_in_action, _("Zoom in"));
 
   g_zoom_out_action = GTK_ACTION(get_gtk_builder_object("zoom_out_action"));
   g_signal_connect(G_OBJECT(g_zoom_out_action), "activate", G_CALLBACK(zoom_out), NULL);
+  gtk_action_set_label(g_zoom_out_action, _("Zoom out"));
+  gtk_action_set_short_label(g_zoom_out_action, _("Zoom out"));
 
   struct
   {

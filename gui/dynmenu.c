@@ -149,11 +149,11 @@ static void populate_dynmenu_menu(GtkMenuItem * menu_item, struct ladish_dynmenu
   if (!dynmenu_ptr->fill_callback(ladish_dynmenu_add_entry, dynmenu_ptr))
   {
     menu_dynmenu_clear(dynmenu_ptr);
-    prefix = "Error obtaining ";
+    prefix = _("Error obtaining ");
   }
   else if (dynmenu_ptr->count == 0)
   {
-    prefix = "Empty ";
+    prefix = _("Empty ");
   }
   else
   {

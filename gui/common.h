@@ -30,6 +30,9 @@
 #include "../common.h"
 
 #include <gtk/gtk.h>
+#include <libintl.h>
+
+#define _(s) gettext(s)
 
 void error_message_box(const char * failed_operation);
 extern GtkWidget * g_app_dialog;

@@ -54,7 +54,7 @@ static void update_raw_jack_visibility(void)
   /* if there is no jack view and its display is enabled and jack is avaialable, create the raw jack view */
   if (g_jack_view == NULL && g_jack_view_enabled && g_jack_state != JACK_STATE_NA)
   {
-    if (!create_view("Raw JACK", JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, false, false, true, &g_jack_view))
+    if (!create_view(_("Raw JACK"), JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, false, false, true, &g_jack_view))
     {
       log_error("create_view() failed for jack");
       return;
@@ -90,7 +90,7 @@ static void buffer_size_set(uint32_t size, bool force)
   {
     log_info("JACK latency changed: %"PRIu32" samples", size);
 
-    snprintf(buf, sizeof(buf), "%4.1f ms (%"PRIu32")", (float)size / (float)g_sample_rate * 1000.0f, size);
+    snprintf(buf, sizeof(buf), _("%4.1f ms (%"PRIu32")"), (float)size / (float)g_sample_rate * 1000.0f, size);
     set_latency_text(buf);
   }
   last_buffer_size = size;
@@ -118,13 +118,13 @@ static void update_load(void)
 
   if (jack_proxy_get_xruns(&xruns))
   {
-    snprintf(tmp_buf, sizeof(tmp_buf), "%" PRIu32 " dropouts", xruns);
+    snprintf(tmp_buf, sizeof(tmp_buf), _("%" PRIu32 " dropouts"), xruns);
     set_xruns_text(tmp_buf);
     gtk_progress_bar_set_text(GTK_PROGRESS_BAR(g_xrun_progress_bar), tmp_buf);
   }
   else
   {
-    gtk_progress_bar_set_text(GTK_PROGRESS_BAR(g_xrun_progress_bar), "error");
+    gtk_progress_bar_set_text(GTK_PROGRESS_BAR(g_xrun_progress_bar), _("error"));
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_xrun_progress_bar), 0.0);
     set_xruns_text("?");
   }
@@ -137,7 +137,7 @@ static void update_load(void)
       gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(g_xrun_progress_bar), load / 100.0);
     }
 
-    snprintf(tmp_buf, sizeof(tmp_buf), "DSP: %5.1f%% (%5.1f%%)", (float)load, (float)g_jack_max_dsp_load);
+    snprintf(tmp_buf, sizeof(tmp_buf), _("DSP: %5.1f%% (%5.1f%%)"), (float)load, (float)g_jack_max_dsp_load);
     set_dsp_load_text(tmp_buf);
   }
   else
@@ -253,8 +253,8 @@ void menu_request_jack_configure(void)
         &error_ptr))
   {
     dialog = get_gtk_builder_widget("error_dialog");
-    gtk_message_dialog_set_markup(GTK_MESSAGE_DIALOG(dialog), "<b><big>Error executing ladiconf.\nAre LADI Tools installed?</big></b>");
-    gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(dialog), "%s", error_ptr->message);
+    gtk_message_dialog_set_markup(GTK_MESSAGE_DIALOG(dialog), _("<b><big>Error executing ladiconf.\nAre LADI Tools installed?</big></b>"));
+    gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(dialog), _("%s"), error_ptr->message);
     gtk_widget_show(dialog);
     gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_hide(dialog);
@@ -308,11 +308,11 @@ void update_jack_sample_rate(void)
 
     if (fmod(g_sample_rate, 1000.0) != 0.0)
     {
-      snprintf(buf, sizeof(buf), "%.1f kHz", (float)g_sample_rate / 1000.0f);
+      snprintf(buf, sizeof(buf), _("%.1f kHz"), (float)g_sample_rate / 1000.0f);
     }
     else
     {
-      snprintf(buf, sizeof(buf), "%u kHz", g_sample_rate / 1000);
+      snprintf(buf, sizeof(buf), _("%u kHz"), g_sample_rate / 1000);
     }
 
     set_sample_rate_text(buf);

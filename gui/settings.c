@@ -93,6 +93,6 @@ void menu_request_settings(void)
       !conf_set(LADISH_CONF_KEY_DAEMON_SHELL, shell) ||
       !conf_set(LADISH_CONF_KEY_DAEMON_TERMINAL, terminal))
   {
-    error_message_box("Storing settings");
+    error_message_box(_("Storing settings"));
   }
 }

@@ -184,7 +184,7 @@ void ladish_run_load_project_dialog(ladish_room_proxy_handle room)
   char * filename;
 
   dialog = gtk_file_chooser_dialog_new(
-    "Load project",
+    _("Load project"),
     NULL,
     GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER,
     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -208,7 +208,7 @@ loop:
     {
       GtkWidget * dialog;
       dialog = get_gtk_builder_widget("error_dialog");
-      gtk_message_dialog_set_markup(GTK_MESSAGE_DIALOG(dialog), "<b><big>Not a project dir</big></b>");
+      gtk_message_dialog_set_markup(GTK_MESSAGE_DIALOG(dialog), _("<b><big>Not a project dir</big></b>"));
       gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(dialog), "%s", filename);
       gtk_widget_show(dialog);
       gtk_dialog_run(GTK_DIALOG(dialog));

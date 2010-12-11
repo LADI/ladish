@@ -55,7 +55,7 @@ void run_custom_command_dialog(void)
   gtk_widget_set_sensitive(GTK_WIDGET(level1_button), TRUE);
 
   gtk_window_set_focus(GTK_WINDOW(g_app_dialog), GTK_WIDGET(command_entry));
-  gtk_window_set_title(GTK_WINDOW(g_app_dialog), "New application");
+  gtk_window_set_title(GTK_WINDOW(g_app_dialog), _("New application"));
 
   gtk_widget_show(g_app_dialog);
 
@@ -93,7 +93,7 @@ void run_custom_command_dialog(void)
           gtk_toggle_button_get_active(terminal_button),
           level))
     {
-      error_message_box("Execution failed. I know you want to know more for the reson but currently you can only check the log file.");
+      error_message_box(_("Execution failed. I know you want to know more for the reson but currently you can only check the log file."));
     }
   }
 
@@ -135,8 +135,8 @@ void error_message_box(const char * failed_operation)
 {
   GtkWidget * dialog;
   dialog = get_gtk_builder_widget("error_dialog");
-  gtk_message_dialog_set_markup(GTK_MESSAGE_DIALOG(dialog), "<b><big>Error</big></b>");
-  gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(dialog), "%s", failed_operation);
+  gtk_message_dialog_set_markup(GTK_MESSAGE_DIALOG(dialog), _("<b><big>Error</big></b>"));
+  gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(dialog), _("%s"), failed_operation);
   gtk_widget_show(dialog);
   gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_hide(dialog);

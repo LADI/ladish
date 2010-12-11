@@ -24,6 +24,7 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "common.h"
 #include "internal.h"
 #include "menu.h"
 #include "gtk_builder.h"
@@ -103,7 +104,7 @@ static void on_load_project_main_menu(const char * name, void * data)
   log_info("Request to load project \"%s\":\"%s\"", name, (const char *)data);
   if (!ladish_room_proxy_load_project(graph_view_get_room(get_current_view()), data))
   {
-    error_message_box("Project load failed, please inspect logs.");
+    error_message_box(_("Project load failed, please inspect logs."));
   }
 }
 
@@ -112,7 +113,7 @@ static void on_load_project_popup_menu(const char * name, void * data)
   log_info("Request to load project \"%s\":\"%s\"", name, (const char *)data);
   if (!ladish_room_proxy_load_project(graph_view_get_room(get_current_view()), data))
   {
-    error_message_box("Project load failed, please inspect logs.");
+    error_message_box(_("Project load failed, please inspect logs."));
   }
 }
 
@@ -380,7 +381,7 @@ void fill_view_popup_menu(GtkMenu * menu, graph_view_handle view)
 
   if (graph_view_get_app_supervisor(view) != NULL)
   {
-    menuitem = gtk_menu_item_new_with_label("Run...");
+    menuitem = gtk_menu_item_new_with_label(_("Run..."));
     g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_start_app, NULL);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
   }
@@ -400,36 +401,36 @@ void fill_view_popup_menu(GtkMenu * menu, graph_view_handle view)
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
     }
 
-    menuitem = gtk_menu_item_new_with_label("Load Project...");
+    menuitem = gtk_menu_item_new_with_label(_("Load Project..."));
     g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_load_project, NULL);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
-    menuitem = gtk_menu_item_new_with_label("Unload Project");
+    menuitem = gtk_menu_item_new_with_label(_("Unload Project"));
     g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_unload_project, NULL);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
-    menuitem = gtk_menu_item_new_with_label("Save Project...");
+    menuitem = gtk_menu_item_new_with_label(_("Save Project..."));
     g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_save_project, NULL);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
-    menuitem = gtk_menu_item_new_with_label("Save Project As...");
+    menuitem = gtk_menu_item_new_with_label(_("Save Project As..."));
     g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_save_project_as, NULL);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
-    menuitem = gtk_menu_item_new_with_label("Project Properties...");
+    menuitem = gtk_menu_item_new_with_label(_("Project Properties..."));
     g_signal_connect(menuitem, "activate", (GCallback)ladish_project_properties_dialog_run, NULL);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
     menuitem = gtk_separator_menu_item_new(); /* separator */
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
-    menuitem = gtk_menu_item_new_with_label("Destroy Room");
+    menuitem = gtk_menu_item_new_with_label(_("Destroy Room"));
     g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_destroy_room, NULL);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
   }
   else
   {
-    menuitem = gtk_menu_item_new_with_label("Create Room...");
+    menuitem = gtk_menu_item_new_with_label(_("Create Room..."));
     g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_create_room, NULL);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
   }

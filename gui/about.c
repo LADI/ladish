@@ -42,8 +42,8 @@ void show_about(void)
 {
   GtkWidget * dialog;
   GdkPixbuf * pixbuf;
-  const char * authors[] = {"Nedko Arnaudov", "Nikita Zlobin", NULL};
-  const char * artists[] = {"Lapo Calamandrei", "Nadejda Pancheva-Arnaudova", NULL};
+  const char * authors[] = {_("Nedko Arnaudov"), _("Nikita Zlobin"), NULL};
+  const char * artists[] = {_("Lapo Calamandrei"), _("Nadejda Pancheva-Arnaudova"), NULL};
   char * license;
   struct stat st;
   char timestamp_str[26];
@@ -59,7 +59,7 @@ void show_about(void)
   ctime_r(&st.st_mtime, timestamp_str);
   timestamp_str[24] = 0;
 
-  sprintf(built_str,"gladish is built on %s from %s", timestamp_str, GIT_VERSION);
+  sprintf(built_str, _("gladish is built on %s from %s"), timestamp_str, GIT_VERSION);
 
   gtk_about_dialog_set_version(GTK_ABOUT_DIALOG(dialog), PACKAGE_VERSION);
   gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog), built_str);

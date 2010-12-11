@@ -70,7 +70,7 @@ void ladish_project_properties_dialog_run(void)
   {
     if (!ladish_room_proxy_set_project_description(proxy, gtk_entry_get_text(description_entry_ptr)))
     {
-      error_message_box("Setting of project description failed, please inspect logs.");
+      error_message_box(_("Setting of project description failed, please inspect logs."));
     }
     else
     {
@@ -79,7 +79,7 @@ void ladish_project_properties_dialog_run(void)
 
       if (!ladish_room_proxy_set_project_notes(proxy, gtk_text_buffer_get_text(notes_buffer, &start, &end, FALSE)))
       {
-        error_message_box("Setting of project description failed, please inspect logs.");
+        error_message_box(_("Setting of project description failed, please inspect logs."));
       }
     }
   }

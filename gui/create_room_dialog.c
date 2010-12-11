@@ -69,7 +69,7 @@ void create_room_dialog_init(void)
   gtk_tree_view_set_headers_visible(g_treeview, FALSE);
 
   col = gtk_tree_view_column_new();
-  gtk_tree_view_column_set_title(col, "Name");
+  gtk_tree_view_column_set_title(col, _("Name"));
   gtk_tree_view_append_column(g_treeview, col);
 
   renderer = gtk_cell_renderer_text_new();

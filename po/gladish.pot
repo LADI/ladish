@@ -1,0 +1,626 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-12-12 16:20+0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: gui/about.c:45
+msgid "Nedko Arnaudov"
+msgstr ""
+
+#: gui/about.c:45
+msgid "Nikita Zlobin"
+msgstr ""
+
+#: gui/about.c:46
+msgid "Lapo Calamandrei"
+msgstr ""
+
+#: gui/about.c:46
+msgid "Nadejda Pancheva-Arnaudova"
+msgstr ""
+
+#: gui/about.c:62
+#, c-format
+msgid "gladish is built on %s from %s"
+msgstr ""
+
+#: gui/action.c:46
+msgid "Clear XRuns and Max DSP Load"
+msgstr ""
+
+#: gui/action.c:47
+msgid "Clear"
+msgstr ""
+
+#: gui/action.c:51 gui/action.c:52
+msgid "Zoom 100%"
+msgstr ""
+
+#: gui/action.c:56 gui/action.c:57
+msgid "Zoom to fit"
+msgstr ""
+
+#: gui/action.c:61 gui/action.c:62
+msgid "Zoom in"
+msgstr ""
+
+#: gui/action.c:66 gui/action.c:67
+msgid "Zoom out"
+msgstr ""
+
+#: gui/ask_dialog.c:53 gui/dialogs.c:139 gui/jack.c:257
+#, c-format
+msgid "%s"
+msgstr ""
+
+#: gui/control.c:138
+msgid "Daemon exit command failed, please inspect logs."
+msgstr ""
+
+#: gui/control.c:152
+msgid "Creation of new studio failed, please inspect logs."
+msgstr ""
+
+#: gui/control.c:165
+msgid "Studio load failed, please inspect logs."
+msgstr ""
+
+#: gui/control.c:173
+msgid "<b><big>Confirm studio delete</big></b>"
+msgstr ""
+
+#: gui/control.c:173
+#, c-format
+msgid "Studio \"%s\" will be deleted. Are you sure?"
+msgstr ""
+
+#: gui/control.c:182
+msgid "Studio delete failed, please inspect logs."
+msgstr ""
+
+#: gui/create_room_dialog.c:72 gui/world_tree.c:494 gui/gladish.ui:1629
+msgid "Name"
+msgstr ""
+
+#: gui/dialogs.c:58
+msgid "New application"
+msgstr ""
+
+#: gui/dialogs.c:96
+msgid ""
+"Execution failed. I know you want to know more for the reson but currently "
+"you can only check the log file."
+msgstr ""
+
+#: gui/dialogs.c:138
+msgid "<b><big>Error</big></b>"
+msgstr ""
+
+#: gui/dynmenu.c:152
+msgid "Error obtaining "
+msgstr ""
+
+#: gui/dynmenu.c:156
+msgid "Empty "
+msgstr ""
+
+#: gui/jack.c:57
+msgid "Raw JACK"
+msgstr ""
+
+#: gui/jack.c:93
+#, c-format
+msgid "%4.1f ms (%<PRIu32>)"
+msgstr ""
+
+#: gui/jack.c:121
+#, c-format
+msgid "%<PRIu32> dropouts"
+msgstr ""
+
+#: gui/jack.c:127
+msgid "error"
+msgstr ""
+
+#: gui/jack.c:140
+#, c-format
+msgid "DSP: %5.1f%% (%5.1f%%)"
+msgstr ""
+
+#: gui/jack.c:256
+msgid ""
+"<b><big>Error executing ladiconf.\n"
+"Are LADI Tools installed?</big></b>"
+msgstr ""
+
+#: gui/jack.c:311
+#, c-format
+msgid "%.1f kHz"
+msgstr ""
+
+#: gui/jack.c:315
+#, c-format
+msgid "%u kHz"
+msgstr ""
+
+#: gui/load_project_dialog.c:187 gui/gladish.ui:702
+msgid "Load project"
+msgstr ""
+
+#: gui/load_project_dialog.c:211
+msgid "<b><big>Not a project dir</big></b>"
+msgstr ""
+
+#: gui/main.c:62 gui/main.c:68 gui/gladish.ui:8
+msgid "LADI Session Handler"
+msgstr ""
+
+#: gui/menu.c:107 gui/menu.c:116
+msgid "Project load failed, please inspect logs."
+msgstr ""
+
+#: gui/menu.c:384 gui/gladish.ui:270
+msgid "Run..."
+msgstr ""
+
+#: gui/menu.c:404
+msgid "Load Project..."
+msgstr ""
+
+#: gui/menu.c:408
+msgid "Unload Project"
+msgstr ""
+
+#: gui/menu.c:412
+msgid "Save Project..."
+msgstr ""
+
+#: gui/menu.c:416
+msgid "Save Project As..."
+msgstr ""
+
+#: gui/menu.c:420
+msgid "Project Properties..."
+msgstr ""
+
+#: gui/menu.c:427
+msgid "Destroy Room"
+msgstr ""
+
+#: gui/menu.c:433
+msgid "Create Room..."
+msgstr ""
+
+#: gui/project_properties.c:73 gui/project_properties.c:82
+msgid "Setting of project description failed, please inspect logs."
+msgstr ""
+
+#: gui/room.c:49
+msgid "Room creation failed, please inspect logs."
+msgstr ""
+
+#: gui/room.c:72
+msgid "Room deletion failed, please inspect logs."
+msgstr ""
+
+#: gui/settings.c:96
+msgid "Storing settings"
+msgstr ""
+
+#: gui/studio.c:97
+msgid "JACK is sick"
+msgstr ""
+
+#: gui/studio.c:101
+msgid "Stopped"
+msgstr ""
+
+#: gui/studio.c:104
+msgid "xruns"
+msgstr ""
+
+#: gui/studio.c:108
+msgid "Internal error - unknown jack state"
+msgstr ""
+
+#: gui/studio.c:117
+msgid "ladishd is down"
+msgstr ""
+
+#: gui/studio.c:122
+msgid "ladishd is sick"
+msgstr ""
+
+#: gui/studio.c:126
+msgid "No studio loaded"
+msgstr ""
+
+#: gui/studio.c:130
+msgid "Crashed"
+msgstr ""
+
+#: gui/studio.c:131
+msgid "Crashed studio, save your work if you can and unload the studio"
+msgstr ""
+
+#: gui/studio.c:150
+msgid "Studio is started"
+msgstr ""
+
+#: gui/studio.c:154
+msgid "Studio is stopped"
+msgstr ""
+
+#: gui/studio.c:161
+msgid "Internal error - unknown studio state"
+msgstr ""
+
+#: gui/studio.c:226
+msgid ""
+"JACK crashed or stopped unexpectedly. Save your work, then unload and reload "
+"the studio."
+msgstr ""
+
+#: gui/studio.c:243
+msgid "Studio save failed, please inspect logs."
+msgstr ""
+
+#: gui/studio.c:253
+msgid "Save studio as"
+msgstr ""
+
+#: gui/studio.c:253 gui/studio.c:295
+msgid "Studio name"
+msgstr ""
+
+#: gui/studio.c:257
+msgid "Saving of studio failed, please inspect logs."
+msgstr ""
+
+#: gui/studio.c:269
+msgid "Studio start failed, please inspect logs."
+msgstr ""
+
+#: gui/studio.c:278
+msgid "Studio stop failed, please inspect logs."
+msgstr ""
+
+#: gui/studio.c:287
+msgid "Studio unload failed, please inspect logs."
+msgstr ""
+
+#: gui/studio.c:295
+msgid "Rename studio"
+msgstr ""
+
+#: gui/studio.c:299
+msgid "Studio rename failed, please inspect logs."
+msgstr ""
+
+#: gui/world_tree.c:255
+msgid "Cannot get app properties"
+msgstr ""
+
+#: gui/world_tree.c:294
+msgid "App properties"
+msgstr ""
+
+#: gui/world_tree.c:327
+msgid "Cannot set app properties."
+msgstr ""
+
+#: gui/world_tree.c:370
+msgid "Stop"
+msgstr ""
+
+#: gui/world_tree.c:374
+msgid "Kill"
+msgstr ""
+
+#: gui/world_tree.c:380
+msgid "Start"
+msgstr ""
+
+#: gui/world_tree.c:385
+msgid "Properties"
+msgstr ""
+
+#: gui/world_tree.c:392
+msgid "Remove"
+msgstr ""
+
+#: gui/world_tree.c:654
+msgid " (inactive) "
+msgstr ""
+
+#: gui/canvas.cpp:113
+msgid "Disconnect All"
+msgstr ""
+
+#: gui/gladish.ui:17
+msgid "_Studio"
+msgstr ""
+
+#: gui/gladish.ui:24
+msgid "_New Studio..."
+msgstr ""
+
+#: gui/gladish.ui:34
+msgid "_Load Studio"
+msgstr ""
+
+#: gui/gladish.ui:50
+msgid "Start Studio"
+msgstr ""
+
+#: gui/gladish.ui:62
+msgid "Stop Studio"
+msgstr ""
+
+#: gui/gladish.ui:79
+msgid "_Rename Studio..."
+msgstr ""
+
+#: gui/gladish.ui:90
+msgid "_Save Studio"
+msgstr ""
+
+#: gui/gladish.ui:101
+msgid "Save Studio _As..."
+msgstr ""
+
+#: gui/gladish.ui:112
+msgid "_Unload Studio"
+msgstr ""
+
+#: gui/gladish.ui:123
+msgid "_Delete Studio"
+msgstr ""
+
+#: gui/gladish.ui:151
+msgid "_Room"
+msgstr ""
+
+#: gui/gladish.ui:158
+msgid "_Create Room..."
+msgstr ""
+
+#: gui/gladish.ui:169
+msgid "_Destroy Room"
+msgstr ""
+
+#: gui/gladish.ui:184
+msgid "_Project"
+msgstr ""
+
+#: gui/gladish.ui:192
+msgid "_Load Project..."
+msgstr ""
+
+#: gui/gladish.ui:203
+msgid "_Unload Project"
+msgstr ""
+
+#: gui/gladish.ui:214
+msgid "_Rename Project..."
+msgstr ""
+
+#: gui/gladish.ui:224
+msgid "_Save Project"
+msgstr ""
+
+#: gui/gladish.ui:234
+msgid "Save Project _As..."
+msgstr ""
+
+#: gui/gladish.ui:249
+msgid "R_ecently Loaded"
+msgstr ""
+
+#: gui/gladish.ui:262
+msgid "_Application"
+msgstr ""
+
+#: gui/gladish.ui:285
+msgid "_View"
+msgstr ""
+
+#: gui/gladish.ui:292
+msgid "_Toolbar"
+msgstr ""
+
+#: gui/gladish.ui:337
+msgid "_JACK"
+msgstr ""
+
+#: gui/gladish.ui:345
+msgid "_Arrange"
+msgstr ""
+
+#: gui/gladish.ui:361
+msgid "_Tools"
+msgstr ""
+
+#: gui/gladish.ui:379
+msgid "_Settings"
+msgstr ""
+
+#: gui/gladish.ui:388
+msgid "_Configure JACK"
+msgstr ""
+
+#: gui/gladish.ui:398
+msgid "Reactivate ladishd"
+msgstr ""
+
+#: gui/gladish.ui:407
+msgid "JACK _Latency"
+msgstr ""
+
+#: gui/gladish.ui:416
+msgid "32"
+msgstr ""
+
+#: gui/gladish.ui:424
+msgid "64"
+msgstr ""
+
+#: gui/gladish.ui:432
+msgid "128"
+msgstr ""
+
+#: gui/gladish.ui:440
+msgid "256"
+msgstr ""
+
+#: gui/gladish.ui:448
+msgid "512"
+msgstr ""
+
+#: gui/gladish.ui:456
+msgid "1024"
+msgstr ""
+
+#: gui/gladish.ui:464
+msgid "2048"
+msgstr ""
+
+#: gui/gladish.ui:472
+msgid "4096"
+msgstr ""
+
+#: gui/gladish.ui:480
+msgid "8192"
+msgstr ""
+
+#: gui/gladish.ui:494
+msgid "_Help"
+msgstr ""
+
+#: gui/gladish.ui:527
+msgid "Clear XRuns"
+msgstr ""
+
+#: gui/gladish.ui:666
+msgid ""
+"LADI Session Handler is free software; you can redistribute it and/or "
+"modify\n"
+"it under the terms of the GNU General Public License as published by\n"
+"the Free Software Foundation; either version 2 of the License, or\n"
+"(at your option) any later version.\n"
+"\n"
+"LADI Session Handler is distributed in the hope that it will be useful,\n"
+"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"GNU General Public License for more details.\n"
+"\n"
+"You should have received a copy of the GNU General Public License\n"
+"along with LADI Session Handler; if not, write to the Free Software "
+"Foundation, Inc.,\n"
+"51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA\n"
+msgstr ""
+
+#: gui/gladish.ui:737 gui/gladish.ui:1620
+msgid "Path"
+msgstr ""
+
+#: gui/gladish.ui:760
+msgid "Browse..."
+msgstr ""
+
+#: gui/gladish.ui:833
+msgid "Project properties"
+msgstr ""
+
+#: gui/gladish.ui:863
+msgid "<b>Project name</b>"
+msgstr ""
+
+#: gui/gladish.ui:890
+msgid "<b>Description</b>"
+msgstr ""
+
+#: gui/gladish.ui:928
+msgid "<b>Notes</b>"
+msgstr ""
+
+#: gui/gladish.ui:997
+msgid "Set name"
+msgstr ""
+
+#: gui/gladish.ui:1028 gui/gladish.ui:1493
+msgid "<b>Name</b>"
+msgstr ""
+
+#: gui/gladish.ui:1177
+msgid "Command:"
+msgstr ""
+
+#: gui/gladish.ui:1189
+msgid "Name:"
+msgstr ""
+
+#: gui/gladish.ui:1218
+msgid "Run in Terminal"
+msgstr ""
+
+#: gui/gladish.ui:1234
+msgid "Level 0"
+msgstr ""
+
+#: gui/gladish.ui:1251
+msgid "Level 1"
+msgstr ""
+
+#: gui/gladish.ui:1283
+msgid "Level 2"
+msgstr ""
+
+#: gui/gladish.ui:1302
+msgid "Level 3"
+msgstr ""
+
+#: gui/gladish.ui:1467
+msgid "Create room"
+msgstr ""
+
+#: gui/gladish.ui:1519
+msgid "<b>Create from template</b>"
+msgstr ""
+
+#: gui/gladish.ui:1643
+msgid "Default is project directory name"
+msgstr ""
+
+#: gui/gladish.ui:1662
+msgid "Default is ~/ladish-projects"
+msgstr ""
+
+#: gui/gladish.ui:1763
+msgid "Start studio on load"
+msgstr ""
+
+#: gui/gladish.ui:1775
+msgid "Send notifications"
+msgstr ""
+
+#: gui/gladish.ui:1796
+msgid "Shell to use:"
+msgstr ""
+
+#: gui/gladish.ui:1803
+msgid "Terminal to use:"
+msgstr ""
