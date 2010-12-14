@@ -473,7 +473,7 @@ def build(bld):
     #####################################################
     # pylash
     if bld.env['BUILD_PYLASH']:
-        pylash = bld.shlib(features = 'c cshlib pyext', source = [])
+        pylash = bld.shlib(source = [], features = 'c cshlib pyext', includes = ["lash_compat/liblash"])
         pylash.target = '_lash'
         pylash.use = 'lash'
         pylash.install_path = '${PYTHONDIR}'
