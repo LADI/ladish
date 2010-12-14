@@ -2,11 +2,15 @@
 Encoding=UTF-8
 Name=gladish
 Comment=LADI Session Handler
+Comment[pt]=Gerenciador de Sessões LADI
+Comment[pt_BR]=Gerenciador de Sessões LADI
 Comment[ru]=Управление сеансами LADI
 GenericName=LADI Session Handler
+GenericName[pt]=Gerenciador de Sessões LADI
+GenericName[pt_BR]=Gerenciador de Sessões LADI
 GenericName[ru]=Управление сеансами LADI
 Type=Application
 Terminal=false
 Exec=gladish
 Icon=gladish
-Categories=Application;AudioVideo;Audio;GNOME
+Categories=Application;AudioVideo;Audio;GNOME;
