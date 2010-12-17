@@ -118,7 +118,11 @@ static void update_load(void)
 
   if (jack_proxy_get_xruns(&xruns))
   {
-    snprintf(tmp_buf, sizeof(tmp_buf), _("%" PRIu32 " dropouts"), xruns);
+    snprintf(tmp_buf, sizeof(tmp_buf),
+             ngettext("%"PRIu32" dropout",
+                      "%"PRIu32" dropouts",
+                      xruns), xruns);
+
     set_xruns_text(tmp_buf);
     gtk_progress_bar_set_text(GTK_PROGRESS_BAR(g_xrun_progress_bar), tmp_buf);
   }
