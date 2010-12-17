@@ -1,16 +1,16 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
+# FR-translation for Gladish.
+# Copyright (C) 2010 Arnaudov Nedko
+# This file is distributed under the same license as the gladish package.
 # Olivier HUMBERT <humbert.olivier.1@free.fr>, 2010.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: 0.3rc on 12-12-2010\n"
-"Report-Msgid-Bugs-To: humbert.olivier.1@free.fr\n"
+"Project-Id-Version: LADISH 0.3-rc\n"
+"Report-Msgid-Bugs-To: Olivier HUMBERT\n"
 "POT-Creation-Date: 2010-12-12 16:20+0500\n"
-"PO-Revision-Date: 2010-12-12 19:28+0100\n"
+"PO-Revision-Date: 2010-12-13 17:52+0100\n"
 "Last-Translator: Olivier HUMBERT <humbert.olivier.1@free.fr>\n"
-"Language-Team: LANGUAGE <humbert.olivier.1@free.fr>\n"
+"Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -36,7 +36,7 @@ msgstr "Nadejda Pancheva-Arnaudova"
 #: gui/about.c:62
 #, c-format
 msgid "gladish is built on %s from %s"
-msgstr "gladish est construit sur %s depuis %s"
+msgstr "gladish est construit le %s à partir de %s"
 
 #: gui/action.c:46
 msgid "Clear XRuns and Max DSP Load"
@@ -188,7 +188,7 @@ msgstr "Échec du chargement du projet, merci d'inspecter les logs."
 #: gui/menu.c:384
 #: gui/gladish.ui:270
 msgid "Run..."
-msgstr "Démarrer..."
+msgstr "Lancer..."
 
 #: gui/menu.c:404
 msgid "Load Project..."
@@ -221,7 +221,7 @@ msgstr "Créer une Room"
 #: gui/project_properties.c:73
 #: gui/project_properties.c:82
 msgid "Setting of project description failed, please inspect logs."
-msgstr "Échec du paramétrage de la description du projet, merci d'inspecter les logs."
+msgstr "Échec du paramètrage de la description du projet, merci d'inspecter les logs."
 
 #: gui/room.c:49
 msgid "Room creation failed, please inspect logs."
@@ -233,7 +233,7 @@ msgstr "Échec de l'effacement de la Room, merci d'inspecter les logs."
 
 #: gui/settings.c:96
 msgid "Storing settings"
-msgstr "Enregistrement du paramétrage"
+msgstr "Enregistrement du paramètrage"
 
 #: gui/studio.c:97
 msgid "JACK is sick"
@@ -253,7 +253,7 @@ msgstr "Erreur interne - état de jack inconnu"
 
 #: gui/studio.c:117
 msgid "ladishd is down"
-msgstr "Ladishd est arrếté"
+msgstr "ladishd est arrếté"
 
 #: gui/studio.c:122
 msgid "ladishd is sick"
@@ -285,7 +285,7 @@ msgstr "Erreur interne - état du studio inconnu"
 
 #: gui/studio.c:226
 msgid "JACK crashed or stopped unexpectedly. Save your work, then unload and reload the studio."
-msgstr "Jack a crashé ou est arrêté sans le vouloir. Sauver votre travail, puis décharger et recharger le studio."
+msgstr "JACK a crashé ou s'est arrêté sans le vouloir. Sauver votre travail, puis décharger et recharger le studio."
 
 #: gui/studio.c:243
 msgid "Studio save failed, please inspect logs."
@@ -326,7 +326,7 @@ msgstr "Échec du renommage du studio, merci d'inspecter les logs."
 
 #: gui/world_tree.c:255
 msgid "Cannot get app properties"
-msgstr "Ne parvient pas à prendre les propriétés de l'application"
+msgstr "Ne parvient pas à trouver les propriétés de l'application"
 
 #: gui/world_tree.c:294
 msgid "App properties"
@@ -334,7 +334,7 @@ msgstr "Propriétés de l'application"
 
 #: gui/world_tree.c:327
 msgid "Cannot set app properties."
-msgstr "Ne parviens pas à paramétrer les propriétés de l'application"
+msgstr "Ne parvient pas à paramètrer les propriétés de l'application"
 
 #: gui/world_tree.c:370
 msgid "Stop"
@@ -354,7 +354,7 @@ msgstr "Propriétés"
 
 #: gui/world_tree.c:392
 msgid "Remove"
-msgstr "Effacement"
+msgstr "Supprimer"
 
 #: gui/world_tree.c:654
 msgid " (inactive) "
@@ -362,7 +362,7 @@ msgstr "(inactif)"
 
 #: gui/canvas.cpp:113
 msgid "Disconnect All"
-msgstr "Déconnecter tout"
+msgstr "Déconnecter Tout"
 
 #: gui/gladish.ui:17
 msgid "_Studio"
@@ -438,7 +438,7 @@ msgstr "_Sauver le Projet"
 
 #: gui/gladish.ui:234
 msgid "Save Project _As..."
-msgstr "Sauvegarder le Projet _Sous..."
+msgstr "Sauveg_arder le Projet Sous..."
 
 #: gui/gladish.ui:249
 msgid "R_ecently Loaded"
@@ -454,7 +454,7 @@ msgstr "_Voir"
 
 #: gui/gladish.ui:292
 msgid "_Toolbar"
-msgstr "Barre d'Ou-tils"
+msgstr "Barre d'Ou_tils"
 
 #: gui/gladish.ui:337
 msgid "_JACK"
@@ -470,7 +470,7 @@ msgstr "Ou_tils"
 
 #: gui/gladish.ui:379
 msgid "_Settings"
-msgstr "Paramétre_s"
+msgstr "Paramètre_s"
 
 #: gui/gladish.ui:388
 msgid "_Configure JACK"
@@ -544,18 +544,18 @@ msgid ""
 "along with LADI Session Handler; if not, write to the Free Software Foundation, Inc.,\n"
 "51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA\n"
 msgstr ""
-"LADI Session Handler is free software; you can redistribute it and/or modify\n"
-"it under the terms of the GNU General Public License as published by\n"
-"the Free Software Foundation; either version 2 of the License, or\n"
-"(at your option) any later version.\n"
+"LADI Session Handler est un logiciel libre; vous pouvez le redistribuer et/ou\n"
+"le modifier sous les termes de la licence GNU General Public Licence publiée\n"
+"par la Free Software Foundation; soit sous la version 2 de cette Licence, ou\n"
+"(à votre choix) n'importe quelle version suivante.\n"
 "\n"
-"LADI Session Handler is distributed in the hope that it will be useful,\n"
-"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
-"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
-"GNU General Public License for more details.\n"
+"LADI Session Handler est distribué dans l'espoir qu'il sera utile,\n"
+"mais SANS AUCUNE GARANTIE; sans même la garantie implicite d'une\n"
+"VALEUR MARCHANDE ou d'une SANTÉ PHYSIQUE POUR UN BUT PARTICULIER.\n"
+"Veuillez voir la Licence GNU General Public License pour plus de détails.\n"
 "\n"
-"You should have received a copy of the GNU General Public License\n"
-"along with LADI Session Handler; if not, write to the Free Software Foundation, Inc.,\n"
+"Vous devriez avoir reçu une copie de la Licence GNU General Public License\n"
+"avec LADI Session Handler; sinon, écrivez à la Free Software Foundation, Inc.,\n"
 "51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA\n"
 
 #: gui/gladish.ui:737
