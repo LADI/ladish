@@ -145,7 +145,7 @@ void menu_request_new_studio(void)
 
   log_info("new studio request");
 
-  if (name_dialog("New studio", "Studio name", "", &new_name))
+  if (name_dialog(_("New studio"), _("Studio name"), "", &new_name))
   {
     if (!control_proxy_new_studio(new_name))
     {
