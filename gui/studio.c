@@ -135,9 +135,8 @@ bool studio_state_changed(char ** name_ptr_ptr)
   case STUDIO_STATE_STARTED:
     if (!studio_proxy_get_name(&buffer))
     {
-      tooltip = "failed to get studio name";
-      log_error("%s", tooltip);
-      tooltip = _(tooltip);
+      tooltip = _("failed to get studio name");
+      log_error("failed to get studio name");
       status_image_path = STATUS_ICON_ERROR;
     }
     else
