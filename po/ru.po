@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-12 16:20+0500\n"
-"PO-Revision-Date: 2010-12-12 17:44+0300\n"
+"POT-Creation-Date: 2010-12-18 02:55+0500\n"
+"PO-Revision-Date: 2010-12-18 01:54+0500\n"
 "Last-Translator: Александр Прокудин <alexandre.prokoudine@gmail.com>\n"
 "Language-Team: Russian <gnome-cyr@lists.gnome.org>\n"
 "MIME-Version: 1.0\n"
@@ -64,7 +64,7 @@ msgstr "Увеличить"
 msgid "Zoom out"
 msgstr "Уменьшить"
 
-#: gui/ask_dialog.c:53 gui/dialogs.c:139 gui/jack.c:257
+#: gui/ask_dialog.c:53 gui/dialogs.c:139 gui/jack.c:261
 #, c-format
 msgid "%s"
 msgstr "%s"
@@ -72,6 +72,14 @@ msgstr "%s"
 #: gui/control.c:138
 msgid "Daemon exit command failed, please inspect logs."
 msgstr "Команда завершения сервиса не выполнена, проверьте журнал."
+
+#: gui/control.c:148
+msgid "New studio"
+msgstr "Новая студия"
+
+#: gui/control.c:148 gui/studio.c:252 gui/studio.c:294
+msgid "Studio name"
+msgstr "Название студии"
 
 #: gui/control.c:152
 msgid "Creation of new studio failed, please inspect logs."
@@ -131,21 +139,24 @@ msgstr "Чистый JACK"
 msgid "%4.1f ms (%<PRIu32>)"
 msgstr "%4.1f мс (%<PRIu32>)"
 
-#: gui/jack.c:121
+#: gui/jack.c:122
 #, c-format
-msgid "%<PRIu32> dropouts"
-msgstr "%<PRIu32> пропусков"
+msgid "%<PRIu32> dropout"
+msgid_plural "%<PRIu32> dropouts"
+msgstr[0] "%<PRIu32> пропуск"
+msgstr[1] "%<PRIu32> пропуска"
+msgstr[2] "%<PRIu32> пропусков"
 
-#: gui/jack.c:127
+#: gui/jack.c:131
 msgid "error"
 msgstr "ошибка"
 
-#: gui/jack.c:140
+#: gui/jack.c:144
 #, c-format
 msgid "DSP: %5.1f%% (%5.1f%%)"
 msgstr "DSP: %5.1f%% (%5.1f%%)"
 
-#: gui/jack.c:256
+#: gui/jack.c:260
 msgid ""
 "<b><big>Error executing ladiconf.\n"
 "Are LADI Tools installed?</big></b>"
@@ -153,12 +164,12 @@ msgstr ""
 "<b><big>Ошибка при выполнении ladiconf.\n"
 "LADI Tools установлены?</big></b>"
 
-#: gui/jack.c:311
+#: gui/jack.c:315
 #, c-format
 msgid "%.1f kHz"
 msgstr "%.1f кГц"
 
-#: gui/jack.c:315
+#: gui/jack.c:319
 #, c-format
 msgid "%u kHz"
 msgstr "%u кГц"
@@ -263,19 +274,23 @@ msgstr "Сломан"
 msgid "Crashed studio, save your work if you can and unload the studio"
 msgstr "Студия развалилась, сохраните работу и выгрузите студию"
 
-#: gui/studio.c:150
+#: gui/studio.c:138
+msgid "failed to get studio name"
+msgstr "Не удалось получить имя студии"
+
+#: gui/studio.c:149
 msgid "Studio is started"
 msgstr "Студия запущена"
 
-#: gui/studio.c:154
+#: gui/studio.c:153
 msgid "Studio is stopped"
 msgstr "Студия остановлена"
 
-#: gui/studio.c:161
+#: gui/studio.c:160
 msgid "Internal error - unknown studio state"
 msgstr "Внутренняя ошибка — неизвестный статус студии"
 
-#: gui/studio.c:226
+#: gui/studio.c:225
 msgid ""
 "JACK crashed or stopped unexpectedly. Save your work, then unload and reload "
 "the studio."
@@ -283,39 +298,35 @@ msgstr ""
 "JACK неожиданно остановлен или грохнулся. Сохраните работу, затем выгрузите "
 "и заново загрузите студию."
 
-#: gui/studio.c:243
+#: gui/studio.c:242
 msgid "Studio save failed, please inspect logs."
 msgstr "Не удалось сохранить студию, проверьте журнал."
 
-#: gui/studio.c:253
+#: gui/studio.c:252
 msgid "Save studio as"
 msgstr "Сохранить студию как"
 
-#: gui/studio.c:253 gui/studio.c:295
-msgid "Studio name"
-msgstr "Название студии"
-
-#: gui/studio.c:257
+#: gui/studio.c:256
 msgid "Saving of studio failed, please inspect logs."
 msgstr "Не удалось сохранить студию, проверьте журнал."
 
-#: gui/studio.c:269
+#: gui/studio.c:268
 msgid "Studio start failed, please inspect logs."
 msgstr "Не удалось запустить студию, проверьте журнал."
 
-#: gui/studio.c:278
+#: gui/studio.c:277
 msgid "Studio stop failed, please inspect logs."
 msgstr "Не удалось остановить студию, проверьте журнал."
 
-#: gui/studio.c:287
+#: gui/studio.c:286
 msgid "Studio unload failed, please inspect logs."
 msgstr "Не удалось выгрузить студию, проверьте журнал."
 
-#: gui/studio.c:295
+#: gui/studio.c:294
 msgid "Rename studio"
 msgstr "Переименовать студию"
 
-#: gui/studio.c:299
+#: gui/studio.c:298
 msgid "Studio rename failed, please inspect logs."
 msgstr "Не удалось переименовать студию, проверьте журнал."
 
@@ -647,6 +658,3 @@ msgstr "Оболочка:"
 #: gui/gladish.ui:1803
 msgid "Terminal to use:"
 msgstr "Терминал:"
-
-#~ msgid "failed to get studio name"
-#~ msgstr "Не удалось получить имя студии"
