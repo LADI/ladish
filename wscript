@@ -588,6 +588,17 @@ def build(bld):
             else:
                 pprint('CYAN', "doxygen documentation already built.")
 
+    # Translations
+    # TODO: Rewrite using waf functionality
+    po_list = os.listdir('./po')
+    if po_list.__len__() > 0:
+      for po_list_item in po_list:
+        item = po_list_item.rsplit('.', 1)
+        if item[1] == "po":
+          pprint('CYAN', "Preparing translation '"+item[0]+"'")
+          os.system("msgfmt ./po/"+po_list_item+" -o ./po/"+item[0]+".mo")
+          bld.install_as(('${PREFIX}/share/locale/'+item[0]+'/LC_MESSAGES/gladish.mo'), ('./po/'+item[0]+".mo"))
+
 def get_tags_dirs():
     source_root = os.path.dirname(Utils.g_module.root_path)
     if 'relpath' in os.path.__all__:
