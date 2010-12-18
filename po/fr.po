@@ -6,8 +6,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: LADISH 0.3-rc\n"
-"Report-Msgid-Bugs-To: Olivier HUMBERT\n"
-"POT-Creation-Date: 2010-12-12 16:20+0500\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-12-18 23:56+0500\n"
 "PO-Revision-Date: 2010-12-13 17:52+0100\n"
 "Last-Translator: Olivier HUMBERT <humbert.olivier.1@free.fr>\n"
 "Language-Team: \n"
@@ -46,36 +46,34 @@ msgstr "Effacer les Xruns et la charge maxi du DSP"
 msgid "Clear"
 msgstr "Effacer"
 
-#: gui/action.c:51
-#: gui/action.c:52
+#: gui/action.c:51 gui/action.c:52
 msgid "Zoom 100%"
 msgstr "Zoom 100%"
 
-#: gui/action.c:56
-#: gui/action.c:57
+#: gui/action.c:56 gui/action.c:57
 msgid "Zoom to fit"
 msgstr "Zoom approprié"
 
-#: gui/action.c:61
-#: gui/action.c:62
+#: gui/action.c:61 gui/action.c:62
 msgid "Zoom in"
 msgstr "Zoom interne"
 
-#: gui/action.c:66
-#: gui/action.c:67
+#: gui/action.c:66 gui/action.c:67
 msgid "Zoom out"
 msgstr "Zoom externe"
-
-#: gui/ask_dialog.c:53
-#: gui/dialogs.c:139
-#: gui/jack.c:257
-#, c-format
-msgid "%s"
-msgstr "%s"
 
 #: gui/control.c:138
 msgid "Daemon exit command failed, please inspect logs."
 msgstr "Échec de la commande de sortie du démon, merci d'inspecter les logs."
+
+#: gui/control.c:148
+#, fuzzy
+msgid "New studio"
+msgstr "_Nouveau Studio"
+
+#: gui/control.c:148 gui/studio.c:252 gui/studio.c:294
+msgid "Studio name"
+msgstr "Nom du studio"
 
 #: gui/control.c:152
 msgid "Creation of new studio failed, please inspect logs."
@@ -98,9 +96,7 @@ msgstr "Le studio \"%s\" sera effacé. Êtes-vous sûr ?"
 msgid "Studio delete failed, please inspect logs."
 msgstr "Échec de l'effacement du studio, merci d'inspecter les logs."
 
-#: gui/create_room_dialog.c:72
-#: gui/world_tree.c:494
-#: gui/gladish.ui:1629
+#: gui/create_room_dialog.c:72 gui/world_tree.c:494 gui/gladish.ui:1629
 msgid "Name"
 msgstr "Nom"
 
@@ -109,8 +105,12 @@ msgid "New application"
 msgstr "Nouvelle application"
 
 #: gui/dialogs.c:96
-msgid "Execution failed. I know you want to know more for the reson but currently you can only check the log file."
-msgstr "Échec de l'éxecution. Je sais que vous voudriez en savoir plus sur la raison mais, actuellement, vous pouvez seulement regarder le fichier de log."
+msgid ""
+"Execution failed. I know you want to know more for the reson but currently "
+"you can only check the log file."
+msgstr ""
+"Échec de l'éxecution. Je sais que vous voudriez en savoir plus sur la raison "
+"mais, actuellement, vous pouvez seulement regarder le fichier de log."
 
 #: gui/dialogs.c:138
 msgid "<b><big>Error</big></b>"
@@ -133,21 +133,23 @@ msgstr "Raw JACK"
 msgid "%4.1f ms (%<PRIu32>)"
 msgstr "%4.1f ms (%<PRIu32>)"
 
-#: gui/jack.c:121
-#, c-format
-msgid "%<PRIu32> dropouts"
-msgstr "%<PRIu32> dropouts"
+#: gui/jack.c:122
+#, fuzzy, c-format
+msgid "%<PRIu32> dropout"
+msgid_plural "%<PRIu32> dropouts"
+msgstr[0] "%<PRIu32> dropouts"
+msgstr[1] "%<PRIu32> dropouts"
 
-#: gui/jack.c:127
+#: gui/jack.c:131
 msgid "error"
 msgstr "erreur"
 
-#: gui/jack.c:140
+#: gui/jack.c:144
 #, c-format
 msgid "DSP: %5.1f%% (%5.1f%%)"
 msgstr "DSP: %5.1f%% (%5.1f%%)"
 
-#: gui/jack.c:256
+#: gui/jack.c:260
 msgid ""
 "<b><big>Error executing ladiconf.\n"
 "Are LADI Tools installed?</big></b>"
@@ -155,18 +157,17 @@ msgstr ""
 "<b><big>Erreur lors de l'exécution de ladiconf.\n"
 "Les LADI Tools sont-ils installés ?</big></b>"
 
-#: gui/jack.c:311
+#: gui/jack.c:315
 #, c-format
 msgid "%.1f kHz"
 msgstr "%.1f kHz"
 
-#: gui/jack.c:315
+#: gui/jack.c:319
 #, c-format
 msgid "%u kHz"
 msgstr "%u kHz"
 
-#: gui/load_project_dialog.c:187
-#: gui/gladish.ui:702
+#: gui/load_project_dialog.c:187 gui/gladish.ui:702
 msgid "Load project"
 msgstr "Charger un projet"
 
@@ -174,19 +175,15 @@ msgstr "Charger un projet"
 msgid "<b><big>Not a project dir</big></b>"
 msgstr "<b><big>Ce n'est pas un répertoire de projet</big></b>"
 
-#: gui/main.c:62
-#: gui/main.c:68
-#: gui/gladish.ui:8
+#: gui/main.c:62 gui/main.c:68 gui/gladish.ui:8
 msgid "LADI Session Handler"
 msgstr "LADI Session Handler"
 
-#: gui/menu.c:107
-#: gui/menu.c:116
+#: gui/menu.c:107 gui/menu.c:116
 msgid "Project load failed, please inspect logs."
 msgstr "Échec du chargement du projet, merci d'inspecter les logs."
 
-#: gui/menu.c:384
-#: gui/gladish.ui:270
+#: gui/menu.c:384 gui/gladish.ui:270
 msgid "Run..."
 msgstr "Lancer..."
 
@@ -218,10 +215,10 @@ msgstr "Détruire la Room"
 msgid "Create Room..."
 msgstr "Créer une Room"
 
-#: gui/project_properties.c:73
-#: gui/project_properties.c:82
+#: gui/project_properties.c:73 gui/project_properties.c:82
 msgid "Setting of project description failed, please inspect logs."
-msgstr "Échec du paramètrage de la description du projet, merci d'inspecter les logs."
+msgstr ""
+"Échec du paramètrage de la description du projet, merci d'inspecter les logs."
 
 #: gui/room.c:49
 msgid "Room creation failed, please inspect logs."
@@ -269,58 +266,62 @@ msgstr "Crashé"
 
 #: gui/studio.c:131
 msgid "Crashed studio, save your work if you can and unload the studio"
-msgstr "Studio crashé, sauver votre travail si vous le pouvez et décharger le studio"
+msgstr ""
+"Studio crashé, sauver votre travail si vous le pouvez et décharger le studio"
 
-#: gui/studio.c:150
+#: gui/studio.c:138
+msgid "failed to get studio name"
+msgstr ""
+
+#: gui/studio.c:149
 msgid "Studio is started"
 msgstr "Le studio est démarré"
 
-#: gui/studio.c:154
+#: gui/studio.c:153
 msgid "Studio is stopped"
 msgstr "Le studio est stoppé"
 
-#: gui/studio.c:161
+#: gui/studio.c:160
 msgid "Internal error - unknown studio state"
 msgstr "Erreur interne - état du studio inconnu"
 
-#: gui/studio.c:226
-msgid "JACK crashed or stopped unexpectedly. Save your work, then unload and reload the studio."
-msgstr "JACK a crashé ou s'est arrêté sans le vouloir. Sauver votre travail, puis décharger et recharger le studio."
+#: gui/studio.c:225
+msgid ""
+"JACK crashed or stopped unexpectedly. Save your work, then unload and reload "
+"the studio."
+msgstr ""
+"JACK a crashé ou s'est arrêté sans le vouloir. Sauver votre travail, puis "
+"décharger et recharger le studio."
 
-#: gui/studio.c:243
+#: gui/studio.c:242
 msgid "Studio save failed, please inspect logs."
 msgstr "Échec de la sauvegarde du studio, merci d'inspecter les logs."
 
-#: gui/studio.c:253
+#: gui/studio.c:252
 msgid "Save studio as"
 msgstr "Sauvegarder le studio comme"
 
-#: gui/studio.c:253
-#: gui/studio.c:295
-msgid "Studio name"
-msgstr "Nom du studio"
-
-#: gui/studio.c:257
+#: gui/studio.c:256
 msgid "Saving of studio failed, please inspect logs."
 msgstr "Échec de la sauvegarde du studio, merci d'inspecter les logs."
 
-#: gui/studio.c:269
+#: gui/studio.c:268
 msgid "Studio start failed, please inspect logs."
 msgstr "Échec du démarrage du studio, merci d'inspecter les logs."
 
-#: gui/studio.c:278
+#: gui/studio.c:277
 msgid "Studio stop failed, please inspect logs."
 msgstr "Échec de l'arrêt du studio, merci d'inspecter les logs."
 
-#: gui/studio.c:287
+#: gui/studio.c:286
 msgid "Studio unload failed, please inspect logs."
 msgstr "Échec du déchargement du studio, merci d'inspecter les logs."
 
-#: gui/studio.c:295
+#: gui/studio.c:294
 msgid "Rename studio"
 msgstr "Renommer le studio"
 
-#: gui/studio.c:299
+#: gui/studio.c:298
 msgid "Studio rename failed, please inspect logs."
 msgstr "Échec du renommage du studio, merci d'inspecter les logs."
 
@@ -530,7 +531,8 @@ msgstr "Effacer les X-Runs"
 
 #: gui/gladish.ui:666
 msgid ""
-"LADI Session Handler is free software; you can redistribute it and/or modify\n"
+"LADI Session Handler is free software; you can redistribute it and/or "
+"modify\n"
 "it under the terms of the GNU General Public License as published by\n"
 "the Free Software Foundation; either version 2 of the License, or\n"
 "(at your option) any later version.\n"
@@ -541,12 +543,16 @@ msgid ""
 "GNU General Public License for more details.\n"
 "\n"
 "You should have received a copy of the GNU General Public License\n"
-"along with LADI Session Handler; if not, write to the Free Software Foundation, Inc.,\n"
+"along with LADI Session Handler; if not, write to the Free Software "
+"Foundation, Inc.,\n"
 "51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA\n"
 msgstr ""
-"LADI Session Handler est un logiciel libre; vous pouvez le redistribuer et/ou\n"
-"le modifier sous les termes de la licence GNU General Public Licence publiée\n"
-"par la Free Software Foundation; soit sous la version 2 de cette Licence, ou\n"
+"LADI Session Handler est un logiciel libre; vous pouvez le redistribuer et/"
+"ou\n"
+"le modifier sous les termes de la licence GNU General Public Licence "
+"publiée\n"
+"par la Free Software Foundation; soit sous la version 2 de cette Licence, "
+"ou\n"
 "(à votre choix) n'importe quelle version suivante.\n"
 "\n"
 "LADI Session Handler est distribué dans l'espoir qu'il sera utile,\n"
@@ -555,11 +561,11 @@ msgstr ""
 "Veuillez voir la Licence GNU General Public License pour plus de détails.\n"
 "\n"
 "Vous devriez avoir reçu une copie de la Licence GNU General Public License\n"
-"avec LADI Session Handler; sinon, écrivez à la Free Software Foundation, Inc.,\n"
+"avec LADI Session Handler; sinon, écrivez à la Free Software Foundation, "
+"Inc.,\n"
 "51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA\n"
 
-#: gui/gladish.ui:737
-#: gui/gladish.ui:1620
+#: gui/gladish.ui:737 gui/gladish.ui:1620
 msgid "Path"
 msgstr "Chemin"
 
@@ -587,8 +593,7 @@ msgstr "<b>Notes</b>"
 msgid "Set name"
 msgstr "Choisir un nom"
 
-#: gui/gladish.ui:1028
-#: gui/gladish.ui:1493
+#: gui/gladish.ui:1028 gui/gladish.ui:1493
 msgid "<b>Name</b>"
 msgstr "<b>Nom</b>"
 
@@ -652,4 +657,5 @@ msgstr "Shell à utiliser :"
 msgid "Terminal to use:"
 msgstr "Terminal à utiliser :"
 
-
+#~ msgid "%s"
+#~ msgstr "%s"
