@@ -258,7 +258,7 @@ void menu_request_jack_configure(void)
   {
     dialog = get_gtk_builder_widget("error_dialog");
     gtk_message_dialog_set_markup(GTK_MESSAGE_DIALOG(dialog), _("<b><big>Error executing ladiconf.\nAre LADI Tools installed?</big></b>"));
-    gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(dialog), _("%s"), error_ptr->message);
+    gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(dialog), "%s", error_ptr->message);
     gtk_widget_show(dialog);
     gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_hide(dialog);

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-18 02:55+0500\n"
+"POT-Creation-Date: 2010-12-18 23:55+0500\n"
 "PO-Revision-Date: 2010-12-18 01:54+0500\n"
 "Last-Translator: Александр Прокудин <alexandre.prokoudine@gmail.com>\n"
 "Language-Team: Russian <gnome-cyr@lists.gnome.org>\n"
@@ -63,11 +63,6 @@ msgstr "Увеличить"
 #: gui/action.c:66 gui/action.c:67
 msgid "Zoom out"
 msgstr "Уменьшить"
-
-#: gui/ask_dialog.c:53 gui/dialogs.c:139 gui/jack.c:261
-#, c-format
-msgid "%s"
-msgstr "%s"
 
 #: gui/control.c:138
 msgid "Daemon exit command failed, please inspect logs."
@@ -658,3 +653,6 @@ msgstr "Оболочка:"
 #: gui/gladish.ui:1803
 msgid "Terminal to use:"
 msgstr "Терминал:"
+
+#~ msgid "%s"
+#~ msgstr "%s"

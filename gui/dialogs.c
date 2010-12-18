@@ -136,7 +136,7 @@ void error_message_box(const char * failed_operation)
   GtkWidget * dialog;
   dialog = get_gtk_builder_widget("error_dialog");
   gtk_message_dialog_set_markup(GTK_MESSAGE_DIALOG(dialog), _("<b><big>Error</big></b>"));
-  gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(dialog), _("%s"), failed_operation);
+  gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(dialog), "%s", failed_operation);
   gtk_widget_show(dialog);
   gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_hide(dialog);
