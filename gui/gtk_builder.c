@@ -32,6 +32,15 @@
 
 GtkBuilder * g_builder;
 
+void set_main_window_icon(void)
+{
+  GError * error;
+
+  gtk_window_set_icon_from_file(GTK_WINDOW(get_gtk_builder_widget("main_win")),
+                                DATA_DIR "/ladish-logo-128x128.png",
+                                &error);
+}
+
 bool init_gtk_builder(void)
 {
   const char * path;
@@ -71,6 +80,8 @@ found:
     g_object_unref(g_builder);
     return false;
   }
+
+  set_main_window_icon();
 
   return true;
 }
