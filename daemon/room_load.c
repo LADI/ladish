@@ -386,7 +386,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
         context_ptr->port = ladish_graph_find_port_by_uuid(ladish_studio_get_jack_graph(), uuid, false, room_ptr->graph);
         if (context_ptr->port == NULL)
         {
-          log_info("app port \"%s\" with uuid %s not found in the jack graph", name_dup, uuid_str);
+          log_error("app port \"%s\" with uuid %s not found in the jack graph", name_dup, uuid_str);
           context_ptr->error = XML_TRUE;
           ladish_graph_dump(ladish_studio_get_jack_graph());
           goto free;
