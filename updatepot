@@ -7,5 +7,6 @@ POTFILE="po/gladish.pot"
 xgettext --keyword=_ -o "$POTFILE" gui/*.c gui/*.cpp
 xgettext -j -L Glade -o "$POTFILE" gui/gladish.ui
 
-msgmerge -U po/ru.po "$POTFILE"
-msgmerge -U po/fr.po "$POTFILE"
+for PO_FILE in "`ls -1 po/*.po`"; do
+  msgmerge -U "$PO_FILE" "$POTFILE"
+done
