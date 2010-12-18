@@ -1,6 +1,10 @@
 #!/bin/bash
-# Run this script from current directory to update translation template, which will be written to "po/gladish.pot"
-# Note: you don't need to use it if you are not a developer
+
+# Run this script from current directory to update translations
+# and translation template, which will be written to "po/gladish.pot"
+#
+# Note: you don't need to use it if you are not a developer, excepting case
+# when you have an old translation and want to update it (put it to 'po' directory first)
 
 POTFILE="po/gladish.pot"
 
