@@ -68,7 +68,7 @@ msgstr "Échec de la commande de sortie du démon, merci d'inspecter les logs."
 
 #: gui/control.c:148
 msgid "New studio"
-msgstr "Nouveau Studio"
+msgstr "Nouveau studio"
 
 #: gui/control.c:148 gui/studio.c:252 gui/studio.c:294
 msgid "Studio name"
@@ -184,7 +184,7 @@ msgstr "Échec du chargement du projet, merci d'inspecter les logs."
 
 #: gui/menu.c:384 gui/gladish.ui:270
 msgid "Run..."
-msgstr "Lancer..."
+msgstr "Nouvelle Application..."
 
 #: gui/menu.c:404
 msgid "Load Project..."
@@ -208,11 +208,11 @@ msgstr "Propriétés du projet..."
 
 #: gui/menu.c:427
 msgid "Destroy Room"
-msgstr "Détruire la Room"
+msgstr "Détruire la room"
 
 #: gui/menu.c:433
 msgid "Create Room..."
-msgstr "Créer une Room"
+msgstr "Créer une room"
 
 #: gui/project_properties.c:73 gui/project_properties.c:82
 msgid "Setting of project description failed, please inspect logs."
@@ -220,11 +220,11 @@ msgstr "Échec du paramètrage de la description du projet, merci d'inspecter le
 
 #: gui/room.c:49
 msgid "Room creation failed, please inspect logs."
-msgstr "Échec de la création d'une Room, merci d'inspecter les logs."
+msgstr "Échec de la création d'une room, merci d'inspecter les logs."
 
 #: gui/room.c:72
 msgid "Room deletion failed, please inspect logs."
-msgstr "Échec de l'effacement de la Room, merci d'inspecter les logs."
+msgstr "Échec de l'effacement de la room, merci d'inspecter les logs."
 
 #: gui/settings.c:96
 msgid "Storing settings"
@@ -260,15 +260,15 @@ msgstr "Pas de studio chargé"
 
 #: gui/studio.c:130
 msgid "Crashed"
-msgstr "Crashé"
+msgstr "Planté"
 
 #: gui/studio.c:131
 msgid "Crashed studio, save your work if you can and unload the studio"
-msgstr "Studio crashé, sauver votre travail si vous le pouvez et décharger le studio"
+msgstr "Studio planté, sauver votre travail si vous le pouvez et décharger le studio"
 
 #: gui/studio.c:138
 msgid "failed to get studio name"
-msgstr "n'arrive pas à prendre un nom de studio"
+msgstr "n'arrive pas à obtenir le nom du studio"
 
 #: gui/studio.c:149
 msgid "Studio is started"
@@ -276,7 +276,7 @@ msgstr "Le studio est démarré"
 
 #: gui/studio.c:153
 msgid "Studio is stopped"
-msgstr "Le studio est stoppé"
+msgstr "Le studio est arrêté"
 
 #: gui/studio.c:160
 msgid "Internal error - unknown studio state"
@@ -287,7 +287,7 @@ msgid ""
 "JACK crashed or stopped unexpectedly. Save your work, then unload and reload "
 "the studio."
 msgstr ""
-"JACK a crashé ou s'est arrêté sans le vouloir. Sauver votre travail, puis "
+"JACK a s'est planté ou s'est arrêté sans le vouloir. Sauver votre travail, puis "
 "décharger et recharger le studio."
 
 #: gui/studio.c:242
@@ -360,7 +360,7 @@ msgstr " (inactif) "
 
 #: gui/canvas.cpp:113
 msgid "Disconnect All"
-msgstr "Déconnecter Tout"
+msgstr "Déconnecter tout"
 
 #: gui/gladish.ui:17
 msgid "_Studio"
@@ -368,11 +368,11 @@ msgstr "_Studio"
 
 #: gui/gladish.ui:24
 msgid "_New Studio..."
-msgstr "_Nouveau Studio"
+msgstr "_Nouveau studio"
 
 #: gui/gladish.ui:34
 msgid "_Load Studio"
-msgstr "Charger _le Studio"
+msgstr "Charger _le studio"
 
 #: gui/gladish.ui:50
 msgid "Start Studio"
@@ -380,27 +380,27 @@ msgstr "Démarrer le studio"
 
 #: gui/gladish.ui:62
 msgid "Stop Studio"
-msgstr "Arrêter le Studio"
+msgstr "Arrêter le studio"
 
 #: gui/gladish.ui:79
 msgid "_Rename Studio..."
-msgstr "_Renommer le Studio"
+msgstr "_Renommer le studio"
 
 #: gui/gladish.ui:90
 msgid "_Save Studio"
-msgstr "_Sauver le Studio"
+msgstr "_Sauver le studio"
 
 #: gui/gladish.ui:101
 msgid "Save Studio _As..."
-msgstr "S_auver le Studio Sous..."
+msgstr "S_auver le studio sous..."
 
 #: gui/gladish.ui:112
 msgid "_Unload Studio"
-msgstr "Décharger le St_udio"
+msgstr "Décharger le st_udio"
 
 #: gui/gladish.ui:123
 msgid "_Delete Studio"
-msgstr "Effacer le Stu_dio"
+msgstr "Effacer le stu_dio"
 
 #: gui/gladish.ui:151
 msgid "_Room"
@@ -408,11 +408,11 @@ msgstr "_Room"
 
 #: gui/gladish.ui:158
 msgid "_Create Room..."
-msgstr "_Créer une Room..."
+msgstr "_Créer une room..."
 
 #: gui/gladish.ui:169
 msgid "_Destroy Room"
-msgstr "_Détruire la Room"
+msgstr "_Détruire la room"
 
 #: gui/gladish.ui:184
 msgid "_Project"
@@ -422,9 +422,17 @@ msgstr "_Projet"
 msgid "_Load Project..."
 msgstr "_Charger un projet..."
 
+#: gui/menu.c:???
+msgid "Clear Room"
+msgstr "Vider la room"
+
+#: gui/menu.c:???
+msgid "Create Project..."
+msgstr "Nouveau projet..."
+
 #: gui/gladish.ui:203
 msgid "_Unload Project"
-msgstr "_Décharger le Projet"
+msgstr "_Décharger le projet"
 
 #: gui/gladish.ui:214
 msgid "_Rename Project..."
@@ -432,11 +440,11 @@ msgstr "_Renommer le projet..."
 
 #: gui/gladish.ui:224
 msgid "_Save Project"
-msgstr "_Sauver le Projet"
+msgstr "_Sauvergarder le projet"
 
 #: gui/gladish.ui:234
 msgid "Save Project _As..."
-msgstr "Sauveg_arder le Projet Sous..."
+msgstr "Sauveg_arder le projet sous..."
 
 #: gui/gladish.ui:249
 msgid "R_ecently Loaded"
@@ -448,11 +456,11 @@ msgstr "_Application"
 
 #: gui/gladish.ui:285
 msgid "_View"
-msgstr "_Voir"
+msgstr "_Vue"
 
 #: gui/gladish.ui:292
 msgid "_Toolbar"
-msgstr "Barre d'Ou_tils"
+msgstr "Barre d'ou_tils"
 
 #: gui/gladish.ui:337
 msgid "_JACK"
@@ -576,7 +584,7 @@ msgstr "Propriétés du projet"
 
 #: gui/gladish.ui:863
 msgid "<b>Project name</b>"
-msgstr "<b>Nom du Projet</b>"
+msgstr "<b>Nom du projet</b>"
 
 #: gui/gladish.ui:890
 msgid "<b>Description</b>"
@@ -604,7 +612,7 @@ msgstr "Nom :"
 
 #: gui/gladish.ui:1218
 msgid "Run in Terminal"
-msgstr "Lancer dans un Terminal"
+msgstr "Lancer dans un terminal"
 
 #: gui/gladish.ui:1234
 msgid "Level 0"
@@ -624,7 +632,7 @@ msgstr "Level 3"
 
 #: gui/gladish.ui:1467
 msgid "Create room"
-msgstr "Créer une Room"
+msgstr "Créer une room"
 
 #: gui/gladish.ui:1519
 msgid "<b>Create from template</b>"
