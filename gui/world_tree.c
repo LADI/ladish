@@ -30,6 +30,8 @@
 #include "../common/catdup.h"
 #include "menu.h"
 
+#include <libintl.h>
+
 enum entry_type
 {
   entry_type_view,
@@ -250,7 +252,7 @@ void on_popup_menu_action_app_properties(GtkWidget * menuitem, gpointer userdata
 
   if (!ladish_app_supervisor_get_app_properties(proxy, id, &name, &command, &running, &terminal, &level))
   {
-    error_message_box("Cannot get app properties");
+    error_message_box(_("Cannot get app properties"));
     return;
   }
 
@@ -289,7 +291,7 @@ void on_popup_menu_action_app_properties(GtkWidget * menuitem, gpointer userdata
   free(command);
 
   gtk_window_set_focus(GTK_WINDOW(g_app_dialog), running ? GTK_WIDGET(name_entry) : GTK_WIDGET(command_entry));
-  gtk_window_set_title(GTK_WINDOW(g_app_dialog), "App properties");
+  gtk_window_set_title(GTK_WINDOW(g_app_dialog), _("App properties"));
 
   gtk_widget_show(g_app_dialog);
 
@@ -322,7 +324,7 @@ void on_popup_menu_action_app_properties(GtkWidget * menuitem, gpointer userdata
     log_info("'%s':'%s' %s level %"PRIu8, gtk_entry_get_text(name_entry), gtk_entry_get_text(command_entry), gtk_toggle_button_get_active(terminal_button) ? "terminal" : "shell", level);
     if (!ladish_app_supervisor_set_app_properties(proxy, id, gtk_entry_get_text(name_entry), gtk_entry_get_text(command_entry), gtk_toggle_button_get_active(terminal_button), level))
     {
-      error_message_box("Cannot set app properties.");
+      error_message_box(_("Cannot set app properties."));
     }
   }
 
@@ -365,29 +367,29 @@ void popup_menu(GtkWidget * treeview, GdkEventButton * event)
   {
     if (running)
     {
-      menuitem = gtk_menu_item_new_with_label("Stop");
+      menuitem = gtk_menu_item_new_with_label(_("Stop"));
       g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_stop, NULL);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
-      menuitem = gtk_menu_item_new_with_label("Kill");
+      menuitem = gtk_menu_item_new_with_label(_("Kill"));
       g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_kill, NULL);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
     }
     else
     {
-      menuitem = gtk_menu_item_new_with_label("Start");
+      menuitem = gtk_menu_item_new_with_label(_("Start"));
       g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_start, NULL);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
     }
 
-    menuitem = gtk_menu_item_new_with_label("Properties");
+    menuitem = gtk_menu_item_new_with_label(_("Properties"));
     g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_properties, NULL);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
     menuitem = gtk_separator_menu_item_new(); /* separator */
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
-    menuitem = gtk_menu_item_new_with_label("Remove");
+    menuitem = gtk_menu_item_new_with_label(_("Remove"));
     g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_app_remove, NULL);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
   }
@@ -489,7 +491,7 @@ void world_tree_init(void)
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(g_world_tree_widget), FALSE);
 
   col = gtk_tree_view_column_new();
-  gtk_tree_view_column_set_title(col, "Name");
+  gtk_tree_view_column_set_title(col, _("Name"));
   gtk_tree_view_append_column(GTK_TREE_VIEW(g_world_tree_widget), col);
   renderer = gtk_cell_renderer_text_new();
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
@@ -649,7 +651,7 @@ static char * get_app_name_string(const char * app_name, bool running, bool term
     level_string = "[L?]";
   }
 
-  app_name_with_status = catdup3(level_string, running ? " " : " (inactive) ", app_name);
+  app_name_with_status = catdup3(level_string, running ? " " : _(" (inactive) "), app_name);
   if (app_name_with_status == NULL)
   {
     log_error("catdup failed for app name");

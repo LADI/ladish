@@ -94,18 +94,18 @@ bool studio_state_changed(char ** name_ptr_ptr)
   switch (get_jack_state())
   {
   case JACK_STATE_NA:
-    tooltip = status = "JACK is sick";
+    tooltip = status = _("JACK is sick");
     status_image_path = STATUS_ICON_ERROR;
     break;
   case JACK_STATE_STOPPED:
-    status = "Stopped";
+    status = _("Stopped");
     break;
   case JACK_STATE_STARTED:
-    status = "xruns";
+    status = _("xruns");
     break;
   default:
     status = "???";
-    tooltip = "Internal error - unknown jack state";
+    tooltip = _("Internal error - unknown jack state");
     status_image_path = STATUS_ICON_ERROR;
   }
 
@@ -114,29 +114,29 @@ bool studio_state_changed(char ** name_ptr_ptr)
   switch (g_studio_state)
   {
   case STUDIO_STATE_NA:
-    name = "ladishd is down";
+    name = _("ladishd is down");
     status_image_path = STATUS_ICON_DOWN;
     break;
   case STUDIO_STATE_SICK:
   case STUDIO_STATE_UNKNOWN:
-    tooltip = name = "ladishd is sick";
+    tooltip = name = _("ladishd is sick");
     status_image_path = STATUS_ICON_ERROR;
     break;
   case STUDIO_STATE_UNLOADED:
-    name = "No studio loaded";
+    name = _("No studio loaded");
     status_image_path = STATUS_ICON_UNLOADED;
     break;
   case STUDIO_STATE_CRASHED:
-    status = "Crashed";
-    tooltip = "Crashed studio, save your work if you can and unload the studio";
+    status = _("Crashed");
+    tooltip = _("Crashed studio, save your work if you can and unload the studio");
     status_image_path = STATUS_ICON_ERROR;
     /* fall through */
   case STUDIO_STATE_STOPPED:
   case STUDIO_STATE_STARTED:
     if (!studio_proxy_get_name(&buffer))
     {
-      tooltip = "failed to get studio name";
-      log_error("%s", tooltip);
+      tooltip = _("failed to get studio name");
+      log_error("failed to get studio name");
       status_image_path = STATUS_ICON_ERROR;
     }
     else
@@ -146,18 +146,18 @@ bool studio_state_changed(char ** name_ptr_ptr)
       {
       case STUDIO_STATE_STARTED:
         status_image_path = jack_xruns() ? STATUS_ICON_WARNING : STATUS_ICON_STARTED;
-        tooltip = "Studio is started";
+        tooltip = _("Studio is started");
         break;
       case STUDIO_STATE_STOPPED:
         status_image_path = STATUS_ICON_STOPPED;
-        tooltip = "Studio is stopped";
+        tooltip = _("Studio is stopped");
         break;
       }
       break;
     }
   default:
     name = "???";
-    tooltip = "Internal error - unknown studio state";
+    tooltip = _("Internal error - unknown studio state");
     status_image_path = STATUS_ICON_ERROR;
   }
 
@@ -222,7 +222,7 @@ void on_studio_crashed(void)
 {
   g_studio_state = STUDIO_STATE_CRASHED;
   studio_state_changed(NULL);
-  error_message_box("JACK crashed or stopped unexpectedly. Save your work, then unload and reload the studio.");
+  error_message_box(_("JACK crashed or stopped unexpectedly. Save your work, then unload and reload the studio."));
 }
 
 static void on_studio_renamed(const char * new_studio_name)
@@ -239,7 +239,7 @@ void menu_request_save_studio(void)
   log_info("save studio request");
   if (!studio_proxy_save())
   {
-    error_message_box("Studio save failed, please inspect logs.");
+    error_message_box(_("Studio save failed, please inspect logs."));
   }
 }
 
@@ -249,11 +249,11 @@ void menu_request_save_as_studio(void)
 
   log_info("save as studio request");
 
-  if (name_dialog("Save studio as", "Studio name", "", &new_name))
+  if (name_dialog(_("Save studio as"), _("Studio name"), "", &new_name))
   {
     if (!studio_proxy_save_as(new_name))
     {
-      error_message_box("Saving of studio failed, please inspect logs.");
+      error_message_box(_("Saving of studio failed, please inspect logs."));
     }
 
     free(new_name);
@@ -265,7 +265,7 @@ void menu_request_start_studio(void)
   log_info("start studio request");
   if (!studio_proxy_start())
   {
-    error_message_box("Studio start failed, please inspect logs.");
+    error_message_box(_("Studio start failed, please inspect logs."));
   }
 }
 
@@ -274,7 +274,7 @@ void menu_request_stop_studio(void)
   log_info("stop studio request");
   if (!studio_proxy_stop())
   {
-    error_message_box("Studio stop failed, please inspect logs.");
+    error_message_box(_("Studio stop failed, please inspect logs."));
   }
 }
 
@@ -283,7 +283,7 @@ void menu_request_unload_studio(void)
   log_info("unload studio request");
   if (!studio_proxy_unload())
   {
-    error_message_box("Studio unload failed, please inspect logs.");
+    error_message_box(_("Studio unload failed, please inspect logs."));
   }
 }
 
@@ -291,11 +291,11 @@ void menu_request_rename_studio(void)
 {
   char * new_name;
 
-  if (name_dialog("Rename studio", "Studio name", get_view_name(g_studio_view), &new_name))
+  if (name_dialog(_("Rename studio"), _("Studio name"), get_view_name(g_studio_view), &new_name))
   {
     if (!studio_proxy_rename(new_name))
     {
-      error_message_box("Studio rename failed, please inspect logs.");
+      error_message_box(_("Studio rename failed, please inspect logs."));
     }
 
     free(new_name);

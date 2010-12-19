@@ -110,7 +110,7 @@ public:
   void create_menu()
   {
     _menu = new Gtk::Menu();
-    _menu->items().push_back(Gtk::Menu_Helpers::MenuElem("Disconnect All", sigc::mem_fun(this, &module_cls::menu_disconnect_all)));
+    _menu->items().push_back(Gtk::Menu_Helpers::MenuElem(_("Disconnect All"), sigc::mem_fun(this, &module_cls::menu_disconnect_all)));
     void (* fill_module_menu)(GtkMenu * menu, void * module_context) = boost::dynamic_pointer_cast<canvas_cls>(canvas().lock())->m_fill_module_menu;
     if (fill_module_menu != NULL)
     {

@@ -31,6 +31,8 @@
 #include "world_tree.h"
 #include "ask_dialog.h"
 
+#include "common.h"
+
 static guint g_ladishd_poll_source_tag;
 
 static gboolean poll_ladishd(gpointer data)
@@ -133,7 +135,7 @@ void menu_request_daemon_exit(void)
 
   if (!control_proxy_exit())
   {
-    error_message_box("Daemon exit command failed, please inspect logs.");
+    error_message_box(_("Daemon exit command failed, please inspect logs."));
   }
 }
 
@@ -143,11 +145,11 @@ void menu_request_new_studio(void)
 
   log_info("new studio request");
 
-  if (name_dialog("New studio", "Studio name", "", &new_name))
+  if (name_dialog(_("New studio"), _("Studio name"), "", &new_name))
   {
     if (!control_proxy_new_studio(new_name))
     {
-      error_message_box("Creation of new studio failed, please inspect logs.");
+      error_message_box(_("Creation of new studio failed, please inspect logs."));
     }
 
     free(new_name);
@@ -160,7 +162,7 @@ void on_load_studio(const char * studio_name)
 
   if (!control_proxy_load_studio(studio_name))
   {
-    error_message_box("Studio load failed, please inspect logs.");
+    error_message_box(_("Studio load failed, please inspect logs."));
   }
 }
 
@@ -168,7 +170,7 @@ void on_delete_studio(const char * studio_name)
 {
   bool result;
 
-  if (!ask_dialog(&result, "<b><big>Confirm studio delete</big></b>", "Studio \"%s\" will be deleted. Are you sure?", studio_name) || !result)
+  if (!ask_dialog(&result, _("<b><big>Confirm studio delete</big></b>"), _("Studio \"%s\" will be deleted. Are you sure?"), studio_name) || !result)
   {
     return;
   }
@@ -177,6 +179,6 @@ void on_delete_studio(const char * studio_name)
 
   if (!control_proxy_delete_studio(studio_name))
   {
-    error_message_box("Studio delete failed, please inspect logs.");
+    error_message_box(_("Studio delete failed, please inspect logs."));
   }
 }

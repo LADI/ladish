@@ -44,6 +44,10 @@
 #include "../daemon/conf.h"
 #include "toolbar.h"
 
+#define GETTEXT_PACKAGE "gladish"
+
+#define ENABLE_NLS 1
+
 GtkWidget * g_main_win;
 
 void
@@ -54,13 +58,13 @@ set_main_window_title(
 
   if (view != NULL)
   {
-    title = catdup(get_view_name(view), " - LADI Session Handler");
+    title = catdup3(get_view_name(view), " - ", _("LADI Session Handler"));
     gtk_window_set_title(GTK_WINDOW(g_main_win), title);
     free(title);
   }
   else
   {
-    gtk_window_set_title(GTK_WINDOW(g_main_win), "LADI Session Handler");
+    gtk_window_set_title(GTK_WINDOW(g_main_win), _("LADI Session Handler"));
   }
 }
 
@@ -79,6 +83,12 @@ void arrange(void)
 
 int main(int argc, char** argv)
 {
+  #if ENABLE_NLS
+    bindtextdomain (GETTEXT_PACKAGE, LOCALE_DIR);
+    bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
+    textdomain (GETTEXT_PACKAGE);
+  #endif
+
   gtk_init(&argc, &argv);
 
   dbus_init();

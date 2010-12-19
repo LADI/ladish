@@ -21,7 +21,7 @@
                   <object class="GtkMenu" id="studio_menu">
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_new_studio">
-                        <property name="label">_New Studio...</property>
+                        <property name="label" translatable="yes">_New Studio...</property>
                         <property name="image">image_new_studio</property>
                         <property name="use_stock">False</property>
                         <property name="use_underline">True</property>
@@ -31,7 +31,7 @@
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_load_studio">
-                        <property name="label">_Load Studio</property>
+                        <property name="label" translatable="yes">_Load Studio</property>
                         <property name="image">image_load_studio</property>
                         <property name="use_stock">False</property>
                         <property name="use_underline">True</property>
@@ -47,7 +47,7 @@
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_start_studio">
-                        <property name="label">Start Studio</property>
+                        <property name="label" translatable="yes">Start Studio</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="image">image_start_studio</property>
                         <property name="sensitive">False</property>
@@ -59,7 +59,7 @@
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_stop_studio">
-                        <property name="label">Stop Studio</property>
+                        <property name="label" translatable="yes">Stop Studio</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="image">image_stop_studio</property>
                         <property name="sensitive">False</property>
@@ -76,7 +76,7 @@
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_rename_studio">
-                        <property name="label">_Rename Studio...</property>
+                        <property name="label" translatable="yes">_Rename Studio...</property>
                         <property name="image">image_rename_studio</property>
                         <property name="sensitive">False</property>
                         <property name="use_stock">False</property>
@@ -87,7 +87,7 @@
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_save_studio">
-                        <property name="label">_Save Studio</property>
+                        <property name="label" translatable="yes">_Save Studio</property>
                         <property name="image">image_save_studio</property>
                         <property name="sensitive">False</property>
                         <property name="use_stock">False</property>
@@ -98,7 +98,7 @@
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_save_as_studio">
-                        <property name="label">Save Studio _As...</property>
+                        <property name="label" translatable="yes">Save Studio _As...</property>
                         <property name="image">image_save_studio_as</property>
                         <property name="sensitive">False</property>
                         <property name="use_stock">False</property>
@@ -109,7 +109,7 @@
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_unload_studio">
-                        <property name="label">_Unload Studio</property>
+                        <property name="label" translatable="yes">_Unload Studio</property>
                         <property name="image">image_unload_studio</property>
                         <property name="sensitive">False</property>
                         <property name="use_stock">False</property>
@@ -120,7 +120,7 @@
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_delete_studio">
-                        <property name="label">_Delete Studio</property>
+                        <property name="label" translatable="yes">_Delete Studio</property>
                         <property name="image">image_delete_studio</property>
                         <property name="use_stock">False</property>
                         <property name="use_underline">True</property>
@@ -155,7 +155,7 @@
                   <object class="GtkMenu" id="room_menu">
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_create_room">
-                        <property name="label">_Create Room...</property>
+                        <property name="label" translatable="yes">_Create Room...</property>
                         <property name="image">image_create_room</property>
                         <property name="sensitive">False</property>
                         <property name="use_stock">False</property>
@@ -166,7 +166,7 @@
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_destroy_room">
-                        <property name="label">_Destroy Room</property>
+                        <property name="label" translatable="yes">_Destroy Room</property>
                         <property name="image">image_destroy_room</property>
                         <property name="sensitive">False</property>
                         <property name="use_stock">False</property>
@@ -189,7 +189,7 @@
                     <property name="visible">True</property>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_load_project">
-                        <property name="label">_Load Project...</property>
+                        <property name="label" translatable="yes">_Load Project...</property>
                         <property name="image">image_load_project</property>
                         <property name="sensitive">False</property>
                         <property name="use_stock">False</property>
@@ -246,7 +246,7 @@
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_recently_loaded_projects">
-                        <property name="label">R_ecently Loaded</property>
+                        <property name="label" translatable="yes">R_ecently Loaded</property>
                         <property name="sensitive">False</property>
                         <property name="use_stock">False</property>
                         <property name="use_underline">True</property>
@@ -267,7 +267,7 @@
                     <property name="visible">True</property>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_start_app">
-                        <property name="label">Run...</property>
+                        <property name="label" translatable="yes">Run...</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="image">image_start_app</property>
                         <property name="sensitive">False</property>
@@ -342,7 +342,7 @@
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_view_arrange">
-                        <property name="label">_Arrange</property>
+                        <property name="label" translatable="yes">_Arrange</property>
                         <property name="image">image_arrange_canvas</property>
                         <property name="use_stock">False</property>
                         <property name="use_underline">True</property>
@@ -385,7 +385,7 @@
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_jack_configure">
-                        <property name="label">_Configure JACK</property>
+                        <property name="label" translatable="yes">_Configure JACK</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="image">image_configure_jack</property>
                         <property name="use_stock">False</property>
@@ -395,7 +395,7 @@
                     </child>
                     <child>
                       <object class="GtkImageMenuItem" id="menu_item_daemon_exit">
-                        <property name="label">Reactivate ladishd</property>
+                        <property name="label" translatable="yes">Reactivate ladishd</property>
                         <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
                         <property name="image">image_reactivate_ladishd</property>
                         <property name="use_stock">False</property>

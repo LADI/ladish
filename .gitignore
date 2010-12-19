@@ -15,3 +15,5 @@
 /build
 *~
 *.pyc
+po/*.mo
+po/*.gmo
