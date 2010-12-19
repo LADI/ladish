@@ -90,6 +90,7 @@ def configure(conf):
     conf.load('compiler_cxx')
     conf.load('boost')
     conf.load('python')
+    conf.load('intltool')
     if parallel_debug:
         conf.load('parallel_debug')
 
@@ -590,16 +591,7 @@ def build(bld):
             else:
                 pprint('CYAN', "doxygen documentation already built.")
 
-    # Translations
-    # TODO: Rewrite using waf functionality
-    po_list = os.listdir('./po')
-    if po_list.__len__() > 0:
-      for po_list_item in po_list:
-        item = po_list_item.rsplit('.', 1)
-        if item[1] == "po":
-          pprint('CYAN', "Preparing translation '"+item[0]+"'")
-          os.system("msgfmt ./po/"+po_list_item+" -o ./po/"+item[0]+".mo")
-          bld.install_as(('${LOCALE_DIR}/'+item[0]+'/LC_MESSAGES/gladish.mo'), ('./po/'+item[0]+".mo"))
+    bld(features='intltool_po', appname=APPNAME, podir='po', install_path="${LOCALE_DIR}")
 
 def get_tags_dirs():
     source_root = os.path.dirname(Utils.g_module.root_path)

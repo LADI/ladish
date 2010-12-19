@@ -44,7 +44,7 @@
 #include "../daemon/conf.h"
 #include "toolbar.h"
 
-#define GETTEXT_PACKAGE "gladish"
+#define GETTEXT_PACKAGE "ladish"
 
 #define ENABLE_NLS 1
 
