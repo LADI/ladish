@@ -555,10 +555,7 @@ def build(bld):
 
         # GtkBuilder UI definitions (XML)
         bld.install_files('${DATA_DIR}', 'gui/gladish.ui')
-
-        # Help text
-        bld.install_files('${DATA_DIR}/help', 'gui/help/default.txt')
-
+    
     bld.install_files('${PREFIX}/bin', 'ladish_control', chmod=0755)
 
     # 'Desktop' file (menu entry, icon, etc)

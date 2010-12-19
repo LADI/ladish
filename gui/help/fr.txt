@@ -1,9 +1,0 @@
-Si vous démarrez ladish pour la première fois, vous devriez :
-
- 1. Créer un nouveau studio (dans le menu, Studio -> Nouveau Studio)
- 2. Configurer JACK (dans le menu, Outils -> Configurer JACK)
- 3. Démarrer le studio (dans le menu, Studio -> Démarrer le Studio)
- 4. Lancer des applications (dans le menu, Application -> Démarrer)
- 5. Connecter leurs ports en cliquant et traînant sur le canvas
- 6. Sauver le studio (dans le menu, Studio -> Sauver le Studio)
-

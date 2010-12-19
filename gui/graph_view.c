@@ -31,7 +31,6 @@
 #include "menu.h"
 #include "../proxies/room_proxy.h"
 #include "../common/catdup.h"
-#include "../common/file.h"
 
 struct graph_view
 {
@@ -52,11 +51,18 @@ GtkScrolledWindow * g_main_scrolledwin;
 static struct graph_view * g_current_view;
 GtkWidget * g_view_label;
 
-const char * g_view_label_text = NULL;
+const char * g_view_label_text = "";
 
 void view_init(void)
 {
-  g_view_label_text = read_file_contents(DATA_DIR "/help/default.txt");
+  g_view_label_text = _(
+  "If you've started ladish for the first time, you should:\n\n"
+  " 1. Create a new studio (in the menu, Studio -> New Studio)\n"
+  " 2. Configure JACK (in the menu, Tools -> Configure JACK)\n"
+  " 3. Start the studio (in the menu, Studio -> Start Studio)\n"
+  " 4. Start apps (in the menu, Application -> Run)\n"
+  " 5. Connect their ports by click & drag on canvas\n"
+  " 6. Save the studio (in the menu, Studio -> Save Studio)\n");
 
   g_main_scrolledwin = GTK_SCROLLED_WINDOW(get_gtk_builder_widget("main_scrolledwin"));
   INIT_LIST_HEAD(&g_views);

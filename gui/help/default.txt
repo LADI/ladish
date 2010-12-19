@@ -1,8 +1,0 @@
-If you've started ladish for the first time, you should:
-
- 1. Create a new studio (in the menu, Studio -> New Studio)
- 2. Configure JACK (in the menu, Tools -> Configure JACK)
- 3. Start the studio (in the menu, Studio -> Start Studio)
- 4. Start apps (in the menu, Application -> Run)
- 5. Connect their ports by click & drag on canvas
- 6. Save the studio (in the menu, Studio -> Save Studio)
