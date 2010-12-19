@@ -31,8 +31,6 @@
 #include "world_tree.h"
 #include "ask_dialog.h"
 
-#include "common.h"
-
 static guint g_ladishd_poll_source_tag;
 
 static gboolean poll_ladishd(gpointer data)

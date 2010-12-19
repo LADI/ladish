@@ -24,7 +24,6 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#include "common.h"
 #include "internal.h"
 #include "menu.h"
 #include "gtk_builder.h"
