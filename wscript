@@ -220,9 +220,11 @@ def configure(conf):
         add_linkflag(conf, '-g')
 
     conf.env['DATA_DIR'] = os.path.normpath(os.path.join(conf.env['PREFIX'], 'share', APPNAME))
+    conf.env['LOCALE_DIR'] = os.path.normpath(os.path.join(conf.env['PREFIX'], 'share', 'locale'))
 
     # write some parts of the configure environment to the config.h file
     conf.define('DATA_DIR', conf.env['DATA_DIR'])
+    conf.define('LOCALE_DIR', conf.env['LOCALE_DIR'])
     conf.define('PACKAGE_VERSION', VERSION)
     conf.define('DBUS_NAME_BASE', DBUS_NAME_BASE)
     conf.define('DBUS_BASE_PATH', '/' + DBUS_NAME_BASE.replace('.', '/'))
@@ -597,7 +599,7 @@ def build(bld):
         if item[1] == "po":
           pprint('CYAN', "Preparing translation '"+item[0]+"'")
           os.system("msgfmt ./po/"+po_list_item+" -o ./po/"+item[0]+".mo")
-          bld.install_as(('${PREFIX}/share/locale/'+item[0]+'/LC_MESSAGES/gladish.mo'), ('./po/'+item[0]+".mo"))
+          bld.install_as(('${LOCALE_DIR}/'+item[0]+'/LC_MESSAGES/gladish.mo'), ('./po/'+item[0]+".mo"))
 
 def get_tags_dirs():
     source_root = os.path.dirname(Utils.g_module.root_path)
