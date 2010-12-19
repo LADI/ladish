@@ -67,9 +67,8 @@ msgid "Daemon exit command failed, please inspect logs."
 msgstr "Échec de la commande de sortie du démon, merci d'inspecter les logs."
 
 #: gui/control.c:148
-#, fuzzy
 msgid "New studio"
-msgstr "_Nouveau Studio"
+msgstr "Nouveau Studio"
 
 #: gui/control.c:148 gui/studio.c:252 gui/studio.c:294
 msgid "Studio name"
@@ -106,7 +105,7 @@ msgstr "Nouvelle application"
 
 #: gui/dialogs.c:96
 msgid ""
-"Execution failed. I know you want to know more for the reson but currently "
+"Execution failed. I know you want to know more for the reason but currently "
 "you can only check the log file."
 msgstr ""
 "Échec de l'éxecution. Je sais que vous voudriez en savoir plus sur la raison "
@@ -134,7 +133,7 @@ msgid "%4.1f ms (%<PRIu32>)"
 msgstr "%4.1f ms (%<PRIu32>)"
 
 #: gui/jack.c:122
-#, fuzzy, c-format
+#, c-format
 msgid "%<PRIu32> dropout"
 msgid_plural "%<PRIu32> dropouts"
 msgstr[0] "%<PRIu32> dropouts"
@@ -217,8 +216,7 @@ msgstr "Créer une Room"
 
 #: gui/project_properties.c:73 gui/project_properties.c:82
 msgid "Setting of project description failed, please inspect logs."
-msgstr ""
-"Échec du paramètrage de la description du projet, merci d'inspecter les logs."
+msgstr "Échec du paramètrage de la description du projet, merci d'inspecter les logs."
 
 #: gui/room.c:49
 msgid "Room creation failed, please inspect logs."
@@ -234,7 +232,7 @@ msgstr "Enregistrement du paramètrage"
 
 #: gui/studio.c:97
 msgid "JACK is sick"
-msgstr "Jack est malade"
+msgstr "JACK est malade"
 
 #: gui/studio.c:101
 msgid "Stopped"
@@ -266,12 +264,11 @@ msgstr "Crashé"
 
 #: gui/studio.c:131
 msgid "Crashed studio, save your work if you can and unload the studio"
-msgstr ""
-"Studio crashé, sauver votre travail si vous le pouvez et décharger le studio"
+msgstr "Studio crashé, sauver votre travail si vous le pouvez et décharger le studio"
 
 #: gui/studio.c:138
 msgid "failed to get studio name"
-msgstr ""
+msgstr "n'arrive pas à prendre un nom de studio"
 
 #: gui/studio.c:149
 msgid "Studio is started"
@@ -359,7 +356,7 @@ msgstr "Supprimer"
 
 #: gui/world_tree.c:654
 msgid " (inactive) "
-msgstr "(inactif)"
+msgstr " (inactif) "
 
 #: gui/canvas.cpp:113
 msgid "Disconnect All"
@@ -411,7 +408,7 @@ msgstr "_Room"
 
 #: gui/gladish.ui:158
 msgid "_Create Room..."
-msgstr "_Créer une Room"
+msgstr "_Créer une Room..."
 
 #: gui/gladish.ui:169
 msgid "_Destroy Room"
@@ -423,7 +420,7 @@ msgstr "_Projet"
 
 #: gui/gladish.ui:192
 msgid "_Load Project..."
-msgstr "_Charger un projet"
+msgstr "_Charger un projet..."
 
 #: gui/gladish.ui:203
 msgid "_Unload Project"
@@ -431,7 +428,7 @@ msgstr "_Décharger le Projet"
 
 #: gui/gladish.ui:214
 msgid "_Rename Project..."
-msgstr "_Renommer le projet"
+msgstr "_Renommer le projet..."
 
 #: gui/gladish.ui:224
 msgid "_Save Project"
@@ -523,7 +520,7 @@ msgstr "8192"
 
 #: gui/gladish.ui:494
 msgid "_Help"
-msgstr "Aide"
+msgstr "Aide (_h)"
 
 #: gui/gladish.ui:527
 msgid "Clear XRuns"
@@ -659,3 +656,4 @@ msgstr "Terminal à utiliser :"
 
 #~ msgid "%s"
 #~ msgstr "%s"
+
