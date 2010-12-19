@@ -184,18 +184,26 @@ msgstr "Projekt konnte nicht geöffnet werden. Bitte die Logs durchsehen."
 
 #: gui/menu.c:384 gui/gladish.ui:270
 msgid "Run..."
-msgstr "Starten..."
+msgstr "Neue Anwendung..."
 
 #: gui/menu.c:404
 msgid "Load Project..."
 msgstr "Projekt öffnen..."
+
+#: gui/menu.c:???
+msgid "Clear Room"
+msgstr "Raum leeren"
+
+#: gui/menu.c:???
+msgid "Create Project..."
+msgstr "Neues Projekt..."
 
 #: gui/menu.c:408
 msgid "Unload Project"
 msgstr "Projekt schließen"
 
 #: gui/menu.c:412
-msgid "Save Project..."
+msgid "Save Project"
 msgstr "Projekt speichern"
 
 #: gui/menu.c:416
@@ -336,15 +344,15 @@ msgstr "Die Anwendungs-Eigenschaften konnten nicht gesetzt werden"
 
 #: gui/world_tree.c:370
 msgid "Stop"
-msgstr "Stop"
+msgstr "Stoppen"
 
 #: gui/world_tree.c:374
 msgid "Kill"
-msgstr "Kill"
+msgstr "Killen"
 
 #: gui/world_tree.c:380
 msgid "Start"
-msgstr "Start"
+msgstr "Starten"
 
 #: gui/world_tree.c:385
 msgid "Properties"
@@ -403,7 +411,7 @@ msgid "_Delete Studio"
 msgstr "Studio _löschen"
 
 #: gui/gladish.ui:151
-msgid "_Raum"
+msgid "_Room"
 msgstr "_Raum"
 
 #: gui/gladish.ui:158
@@ -476,11 +484,11 @@ msgstr "JACK _konfigurieren"
 
 #: gui/gladish.ui:398
 msgid "Reactivate ladishd"
-msgstr "ladishd _neustarten"
+msgstr "Ladishd neustarten"
 
 #: gui/gladish.ui:407
 msgid "JACK _Latency"
-msgstr "JACK _Latenz"
+msgstr "JACK-_Latenz"
 
 #: gui/gladish.ui:416
 msgid "32"
@@ -520,7 +528,7 @@ msgstr "8192"
 
 #: gui/gladish.ui:494
 msgid "_Help"
-msgstr "Hilfe (_h)"
+msgstr "_Hilfe"
 
 #: gui/gladish.ui:527
 msgid "Clear XRuns"
