@@ -31,6 +31,8 @@
 
 typedef struct ladish_dynmenu_tag { int unused; } * ladish_dynmenu_handle;
 
+typedef void (* ladish_dynmenu_item_activate_callback)(const char * name, void * data);
+
 bool
 ladish_dynmenu_create(
   const char * menu_item,
@@ -42,11 +44,17 @@ ladish_dynmenu_create(
       void * context,
       const char * name,
       void * data,
+      ladish_dynmenu_item_activate_callback item_activate_callback,
       void (* data_free)()),
     void * context),
   const char * description,
-  void (* item_activate_callback)(const char * name, void * data),
+  ladish_dynmenu_item_activate_callback item_activate_callback,
   ladish_dynmenu_handle * dynmenu_handle_ptr);
+
+void
+ladish_dynmenu_fill_external(
+  ladish_dynmenu_handle dynmenu_handle,
+  GtkMenu * menu);
 
 void
 ladish_dynmenu_destroy(

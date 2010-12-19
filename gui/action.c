@@ -29,12 +29,52 @@
 #include "gtk_builder.h"
 #include "jack.h"
 #include "zoom.h"
+#include "menu.h"
+#include "studio.h"
 
 GtkAction * g_clear_xruns_and_max_dsp_action;
 GtkAction * g_zoom_100_action;
 GtkAction * g_zoom_fit_action;
 GtkAction * g_zoom_in_action;
 GtkAction * g_zoom_out_action;
+
+static
+gboolean
+load_project_accelerator_activated(
+  GtkAccelGroup * accel_group,
+  GObject * acceleratable,
+  guint keyval,
+  GdkModifierType modifier)
+{
+  graph_view_handle view;
+
+  view = get_current_view();
+  if (get_studio_state() == STUDIO_STATE_STARTED && view != NULL && is_room_view(view))
+  {
+    menu_request_load_project();
+  }
+
+  return TRUE;
+}
+
+static
+gboolean
+unload_project_accelerator_activated(
+  GtkAccelGroup * accel_group,
+  GObject * acceleratable,
+  guint keyval,
+  GdkModifierType modifier)
+{
+  graph_view_handle view;
+
+  view = get_current_view();
+  if (get_studio_state() == STUDIO_STATE_STARTED && view != NULL && is_room_view(view))
+  {
+    menu_request_unload_project();
+  }
+
+  return TRUE;
+}
 
 void init_actions_and_accelerators(void)
 {
@@ -90,6 +130,20 @@ void init_actions_and_accelerators(void)
     gtk_action_set_accel_group(descriptor_ptr->action_ptr, accel_group_ptr);
     gtk_action_connect_accelerator(descriptor_ptr->action_ptr);
   }
+
+  gtk_accel_group_connect(
+    accel_group_ptr,
+    gdk_keyval_from_name("o"),
+    GDK_CONTROL_MASK,
+    GTK_ACCEL_VISIBLE,
+    g_cclosure_new((GCallback)load_project_accelerator_activated, NULL, NULL));
+
+  gtk_accel_group_connect(
+    accel_group_ptr,
+    gdk_keyval_from_name("u"),
+    GDK_CONTROL_MASK,
+    GTK_ACCEL_VISIBLE,
+    g_cclosure_new((GCallback)unload_project_accelerator_activated, NULL, NULL));
 
   gtk_window_add_accel_group(GTK_WINDOW(g_main_win), accel_group_ptr);
 }

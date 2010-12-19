@@ -477,3 +477,8 @@ ladish_room_proxy_handle graph_view_get_room(graph_view_handle view)
 {
   return view_ptr->room;
 }
+
+bool room_has_project(graph_view_handle view)
+{
+  return view_ptr->project_name != NULL;
+}

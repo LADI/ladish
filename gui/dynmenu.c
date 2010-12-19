@@ -40,9 +40,10 @@ struct ladish_dynmenu
       void * context,
       const char * name,
       void * data,
+      ladish_dynmenu_item_activate_callback item_activate_callback,
       void (* data_free)()),
     void * context);
-  void (* item_activate_callback)(const char * name, void * data);
+  ladish_dynmenu_item_activate_callback item_activate_callback;
   bool add_sensitive;
   gulong activate_signal_id;
   char * description;
@@ -53,7 +54,7 @@ struct ladish_dynmenu_item_data
   GtkWidget * item;
   void * data;
   void (* data_free)();
-  void (* item_activate_callback)(const char * name, void * data);
+  ladish_dynmenu_item_activate_callback item_activate_callback;
 };
 
 void on_activate_item(GtkMenuItem * item, struct ladish_dynmenu_item_data * data_ptr)
@@ -89,7 +90,14 @@ void free_item_data(gpointer data, GClosure * closure)
 #undef data_ptr
 #define dynmenu_ptr ((struct ladish_dynmenu *)context)
 
-static void ladish_dynmenu_add_entry(void * context, const char * name, void * data, void (* data_free)())
+static
+void
+ladish_dynmenu_add_entry(
+  void * context,
+  const char * name,
+  void * data,
+  ladish_dynmenu_item_activate_callback item_activate_callback,
+  void (* data_free)())
 {
   struct ladish_dynmenu_item_data * data_ptr;
 
@@ -97,20 +105,30 @@ static void ladish_dynmenu_add_entry(void * context, const char * name, void * d
   //log_info("data_ptr %p allocated", data_ptr);
   data_ptr->data = data;
   data_ptr->data_free = data_free;
-  data_ptr->item_activate_callback = dynmenu_ptr->item_activate_callback;
+  data_ptr->item_activate_callback = item_activate_callback != NULL ? item_activate_callback : dynmenu_ptr->item_activate_callback;
 
-  data_ptr->item = gtk_menu_item_new_with_label(name);
-  //log_info("refcount == %d", (unsigned int)G_OBJECT(item)->ref_count); // refcount == 2 because of the label
-  gtk_widget_set_sensitive(data_ptr->item, dynmenu_ptr->add_sensitive);
-  gtk_widget_show(data_ptr->item);
-  gtk_menu_shell_append(GTK_MENU_SHELL(dynmenu_ptr->menu), data_ptr->item);
-  g_signal_connect_data(
-    G_OBJECT(data_ptr->item),
-    "activate",
-    G_CALLBACK(on_activate_item),
-    data_ptr,
-    free_item_data,
-    (GConnectFlags)0);
+  if (name == NULL)
+  {
+    data_ptr->item = gtk_separator_menu_item_new(); /* separator */
+    gtk_widget_show(data_ptr->item);
+    gtk_menu_shell_append(GTK_MENU_SHELL(dynmenu_ptr->menu), data_ptr->item);
+  }
+  else
+  {
+    data_ptr->item = gtk_menu_item_new_with_label(name);
+    //log_info("refcount == %d", (unsigned int)G_OBJECT(item)->ref_count); // refcount == 2 because of the label
+    gtk_widget_set_sensitive(data_ptr->item, dynmenu_ptr->add_sensitive);
+    gtk_widget_show(data_ptr->item);
+    gtk_menu_shell_append(GTK_MENU_SHELL(dynmenu_ptr->menu), data_ptr->item);
+    g_signal_connect_data(
+      G_OBJECT(data_ptr->item),
+      "activate",
+      G_CALLBACK(on_activate_item),
+      data_ptr,
+      free_item_data,
+      (GConnectFlags)0);
+  }
+
   dynmenu_ptr->count++;
 }
 
@@ -149,7 +167,7 @@ static void populate_dynmenu_menu(GtkMenuItem * menu_item, struct ladish_dynmenu
   if (!dynmenu_ptr->fill_callback(ladish_dynmenu_add_entry, dynmenu_ptr))
   {
     menu_dynmenu_clear(dynmenu_ptr);
-    prefix = _("Error obtaining ");
+    prefix = _("Error filling ");
   }
   else if (dynmenu_ptr->count == 0)
   {
@@ -163,7 +181,7 @@ static void populate_dynmenu_menu(GtkMenuItem * menu_item, struct ladish_dynmenu
   text = catdup(prefix, dynmenu_ptr->description);
 
   dynmenu_ptr->add_sensitive = false;
-  ladish_dynmenu_add_entry(dynmenu_ptr, text != NULL ? text : prefix, NULL, NULL);
+  ladish_dynmenu_add_entry(dynmenu_ptr, text != NULL ? text : prefix, NULL, NULL, NULL);
 
   free(text);                   /* free(NULL) is safe */
 }
@@ -179,10 +197,11 @@ ladish_dynmenu_create(
       void * context,
       const char * name,
       void * data,
+      ladish_dynmenu_item_activate_callback item_activate_callback,
       void (* data_free)()),
     void * context),
   const char * description,
-  void (* item_activate_callback)(const char * name, void * data),
+  ladish_dynmenu_item_activate_callback item_activate_callback,
   ladish_dynmenu_handle * dynmenu_handle_ptr)
 {
   struct ladish_dynmenu * dynmenu_ptr;
@@ -215,6 +234,26 @@ ladish_dynmenu_create(
 }
 
 #define dynmenu_ptr ((struct ladish_dynmenu *)dynmenu_handle)
+
+void
+ladish_dynmenu_fill_external(
+  ladish_dynmenu_handle dynmenu_handle,
+  GtkMenu * menu)
+{
+  GtkWidget * menu_backup;
+  int count_backup;
+
+  menu_backup = dynmenu_ptr->menu;
+  count_backup = dynmenu_ptr->count;
+
+  dynmenu_ptr->menu = GTK_WIDGET(menu);
+  dynmenu_ptr->add_sensitive = true;
+
+  dynmenu_ptr->fill_callback(ladish_dynmenu_add_entry, dynmenu_ptr);
+
+  dynmenu_ptr->menu = menu_backup;
+  dynmenu_ptr->count = count_backup;
+}
 
 void
 ladish_dynmenu_destroy(

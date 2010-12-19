@@ -39,6 +39,7 @@ struct ladish_studio_list_closure
     void * context,
     const char * name,
     void * data,
+    ladish_dynmenu_item_activate_callback item_activate_callback,
     void (* data_free)());
   void * context;
 };
@@ -51,7 +52,7 @@ add_item(
   void * context,
   const char * studio_name)
 {
-  closure_ptr->callback(closure_ptr->context, studio_name, NULL, NULL);
+  closure_ptr->callback(closure_ptr->context, studio_name, NULL, NULL, NULL);
 }
 
 #undef closure_ptr
@@ -64,6 +65,7 @@ fill_callback(
     void * context,
     const char * name,
     void * data,
+    ladish_dynmenu_item_activate_callback item_activate_callback,
     void (* data_free)()),
   void * context)
 {
