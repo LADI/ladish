@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-18 23:55+0500\n"
+"POT-Creation-Date: 2010-12-21 04:36+0500\n"
 "PO-Revision-Date: 2010-12-20 19:50+0300\n"
 "Last-Translator: Maxim Kachur <mcdebugger@duganet.ru>\n"
 "MIME-Version: 1.0\n"
@@ -27,6 +27,10 @@ msgstr "Недко Арнаудов"
 msgid "Nikita Zlobin"
 msgstr "Никита Злобин"
 
+#: gui/about.c:45
+msgid "Filipe Alexandre Lopes Coelho"
+msgstr ""
+
 #: gui/about.c:46
 msgid "Lapo Calamandrei"
 msgstr "Лапо Каламандреи"
@@ -40,72 +44,64 @@ msgstr "Надежда Панчева-Арнаудова"
 msgid "gladish is built on %s from %s"
 msgstr "gladish собран %s из %s"
 
-#: gui/action.c:46
+#: gui/action.c:86
 msgid "Clear XRuns and Max DSP Load"
 msgstr "Сбросить пропуски и максимальную нагрузку DSP"
 
-#: gui/action.c:47
+#: gui/action.c:87
 msgid "Clear"
 msgstr "Сбросить"
 
-#: gui/action.c:51
-#: gui/action.c:52
+#: gui/action.c:91 gui/action.c:92
 msgid "Zoom 100%"
 msgstr "Масштаб 100%"
 
-#: gui/action.c:56
-#: gui/action.c:57
+#: gui/action.c:96 gui/action.c:97
 msgid "Zoom to fit"
 msgstr "Уместить содержимое"
 
-#: gui/action.c:61
-#: gui/action.c:62
+#: gui/action.c:101 gui/action.c:102
 msgid "Zoom in"
 msgstr "Увеличить"
 
-#: gui/action.c:66
-#: gui/action.c:67
+#: gui/action.c:106 gui/action.c:107
 msgid "Zoom out"
 msgstr "Уменьшить"
 
-#: gui/control.c:138
+#: gui/control.c:136
 msgid "Daemon exit command failed, please inspect logs."
 msgstr "Команда завершения сервиса не выполнена, проверьте журнал."
 
-#: gui/control.c:148
+#: gui/control.c:146
 msgid "New studio"
 msgstr "Новая студия"
 
-#: gui/control.c:148
-#: gui/studio.c:252
-#: gui/studio.c:294
+#: gui/control.c:146 gui/studio.c:252 gui/studio.c:294
 msgid "Studio name"
 msgstr "Название студии"
 
-#: gui/control.c:152
+#: gui/control.c:150
 msgid "Creation of new studio failed, please inspect logs."
 msgstr "Не удалось создать новую студию, пожалуйста, проверьте журнал."
 
-#: gui/control.c:165
+#: gui/control.c:163
 msgid "Studio load failed, please inspect logs."
 msgstr "Не удалось загрузить студию, пожалуйста, проверьте журнал."
 
-#: gui/control.c:173
+#: gui/control.c:171
 msgid "<b><big>Confirm studio delete</big></b>"
 msgstr "<b><big>Подтвердите удаление студии</big></b>"
 
-#: gui/control.c:173
+#: gui/control.c:171
 #, c-format
 msgid "Studio \"%s\" will be deleted. Are you sure?"
 msgstr "Студия \"%s\" будет удалена. Вы уверены?"
 
-#: gui/control.c:182
+#: gui/control.c:180
 msgid "Studio delete failed, please inspect logs."
 msgstr "Не удалось удалить студию, пожалуйста, проверьте журнал."
 
-#: gui/create_room_dialog.c:72
-#: gui/world_tree.c:494
-#: gui/gladish.ui:1629
+#: gui/create_room_dialog.c:72 gui/world_tree.c:494 gui/gladish.ui:1563
 msgid "Name"
 msgstr "Название"
 
@@ -125,13 +121,26 @@ msgstr ""
 msgid "<b><big>Error</big></b>"
 msgstr "<b><big>Ошибка</big></b>"
 
-#: gui/dynmenu.c:152
-msgid "Error obtaining "
+#: gui/dynmenu.c:170
+#, fuzzy
+msgid "Error filling "
 msgstr "Ошибка при получении"
 
-#: gui/dynmenu.c:156
+#: gui/dynmenu.c:174
 msgid "Empty "
 msgstr "Пустой"
+
+#: gui/graph_view.c:59
+msgid ""
+"If you've started ladish for the first time, you should:\n"
+"\n"
+" 1. Create a new studio (in the menu, Studio -> New Studio)\n"
+" 2. Configure JACK (in the menu, Tools -> Configure JACK)\n"
+" 3. Start the studio (in the menu, Studio -> Start Studio)\n"
+" 4. Start apps (in the menu, Application -> Run)\n"
+" 5. Connect their ports by click & drag on canvas\n"
+" 6. Save the studio (in the menu, Studio -> Save Studio)\n"
+msgstr ""
 
 #: gui/jack.c:57
 msgid "Raw JACK"
@@ -177,8 +186,7 @@ msgstr "%.1f кГц"
 msgid "%u kHz"
 msgstr "%u кГц"
 
-#: gui/load_project_dialog.c:187
-#: gui/gladish.ui:702
+#: gui/load_project_dialog.c:187 gui/gladish.ui:636
 msgid "Load project"
 msgstr "Загрузить проект"
 
@@ -186,52 +194,58 @@ msgstr "Загрузить проект"
 msgid "<b><big>Not a project dir</big></b>"
 msgstr "<b><big>Это не каталог проекта</big></b>"
 
-#: gui/main.c:62
-#: gui/main.c:68
-#: gui/gladish.ui:8
+#: gui/main.c:61 gui/main.c:67 gui/gladish.ui:8
 msgid "LADI Session Handler"
 msgstr "Управление сеансами LADI"
 
-#: gui/menu.c:107
-#: gui/menu.c:116
+#: gui/menu.c:103
 msgid "Project load failed, please inspect logs."
 msgstr "Не удалось загрузить проект, пожалуйста, проверьте журнал."
 
-#: gui/menu.c:384
-#: gui/gladish.ui:270
-msgid "Run..."
-msgstr "Запустить..."
-
-#: gui/menu.c:404
+#: gui/menu.c:144
 msgid "Load Project..."
 msgstr "Загрузить проект..."
 
-#: gui/menu.c:408
+#: gui/menu.c:150
+#, fuzzy
+msgid "Create Project..."
+msgstr "Сохранить проект..."
+
+#: gui/menu.c:153
 msgid "Unload Project"
 msgstr "Выгрузить проект"
 
-#: gui/menu.c:412
-msgid "Save Project..."
-msgstr "Сохранить проект..."
+#: gui/menu.c:153
+#, fuzzy
+msgid "Clear Room"
+msgstr "Сбросить"
 
-#: gui/menu.c:416
+#: gui/menu.c:157
+#, fuzzy
+msgid "Save Project"
+msgstr "_Сохранить проект"
+
+#: gui/menu.c:158
 msgid "Save Project As..."
 msgstr "Сохранить проект как..."
 
-#: gui/menu.c:420
+#: gui/menu.c:159
 msgid "Project Properties..."
 msgstr "Свойства проекта..."
 
-#: gui/menu.c:427
+#: gui/menu.c:355 gui/gladish.ui:204
+msgid "Run..."
+msgstr "Запустить..."
+
+#: gui/menu.c:370
 msgid "Destroy Room"
 msgstr "Уничтожить комнату"
 
-#: gui/menu.c:433
+#: gui/menu.c:376
 msgid "Create Room..."
 msgstr "Создать комнату..."
 
-#: gui/project_properties.c:73
-#: gui/project_properties.c:82
+#: gui/project_properties.c:73 gui/project_properties.c:82
 msgid "Setting of project description failed, please inspect logs."
 msgstr "Не удалось установить описание проекта, пожалуйста, проверьте журнал."
 
@@ -281,7 +295,9 @@ msgstr "Сломан"
 
 #: gui/studio.c:131
 msgid "Crashed studio, save your work if you can and unload the studio"
-msgstr "Студия аварийно остановлена, сохраните работу, если можете, и выгрузите студию"
+msgstr ""
+"Студия аварийно остановлена, сохраните работу, если можете, и выгрузите "
+"студию"
 
 #: gui/studio.c:138
 msgid "failed to get studio name"
@@ -435,115 +451,91 @@ msgstr "_Уничтожить комнату"
 msgid "_Project"
 msgstr "_Проект"
 
-#: gui/gladish.ui:192
-msgid "_Load Project..."
-msgstr "За_грузить проект..."
-
-#: gui/gladish.ui:203
-msgid "_Unload Project"
-msgstr "_Выгрузить проект"
-
-#: gui/gladish.ui:214
-msgid "_Rename Project..."
-msgstr "Пере_именовать проект"
-
-#: gui/gladish.ui:224
-msgid "_Save Project"
-msgstr "_Сохранить проект"
-
-#: gui/gladish.ui:234
-msgid "Save Project _As..."
-msgstr "Сохранить проект как..."
-
-#: gui/gladish.ui:249
-msgid "R_ecently Loaded"
-msgstr "_Недавние"
-
-#: gui/gladish.ui:262
+#: gui/gladish.ui:196
 msgid "_Application"
 msgstr "_Приложение"
 
-#: gui/gladish.ui:285
+#: gui/gladish.ui:219
 msgid "_View"
 msgstr "_Вид"
 
-#: gui/gladish.ui:292
+#: gui/gladish.ui:226
 msgid "_Toolbar"
 msgstr "_Панель инструментов"
 
-#: gui/gladish.ui:337
+#: gui/gladish.ui:271
 msgid "_JACK"
 msgstr "_JACK"
 
-#: gui/gladish.ui:345
+#: gui/gladish.ui:279
 msgid "_Arrange"
 msgstr "_Привести в порядок"
 
-#: gui/gladish.ui:361
+#: gui/gladish.ui:295
 msgid "_Tools"
 msgstr "_Инструменты"
 
-#: gui/gladish.ui:379
+#: gui/gladish.ui:313
 msgid "_Settings"
 msgstr "_Параметры"
 
-#: gui/gladish.ui:388
+#: gui/gladish.ui:322
 msgid "_Configure JACK"
 msgstr "Настроить _JACK"
 
-#: gui/gladish.ui:398
+#: gui/gladish.ui:332
 msgid "Reactivate ladishd"
 msgstr "Перезапустить ladishd"
 
-#: gui/gladish.ui:407
+#: gui/gladish.ui:341
 msgid "JACK _Latency"
 msgstr "_Задержка JACK"
 
-#: gui/gladish.ui:416
+#: gui/gladish.ui:350
 msgid "32"
 msgstr "32"
 
-#: gui/gladish.ui:424
+#: gui/gladish.ui:358
 msgid "64"
 msgstr "64"
 
-#: gui/gladish.ui:432
+#: gui/gladish.ui:366
 msgid "128"
 msgstr "128"
 
-#: gui/gladish.ui:440
+#: gui/gladish.ui:374
 msgid "256"
 msgstr "256"
 
-#: gui/gladish.ui:448
+#: gui/gladish.ui:382
 msgid "512"
 msgstr "512"
 
-#: gui/gladish.ui:456
+#: gui/gladish.ui:390
 msgid "1024"
 msgstr "1024"
 
-#: gui/gladish.ui:464
+#: gui/gladish.ui:398
 msgid "2048"
 msgstr "2048"
 
-#: gui/gladish.ui:472
+#: gui/gladish.ui:406
 msgid "4096"
 msgstr "4096"
 
-#: gui/gladish.ui:480
+#: gui/gladish.ui:414
 msgid "8192"
 msgstr "8192"
 
-#: gui/gladish.ui:494
+#: gui/gladish.ui:428
 msgid "_Help"
 msgstr "_Справка"
 
-#: gui/gladish.ui:527
+#: gui/gladish.ui:461
 msgid "Clear XRuns"
 msgstr "Очистить XRuns"
 
-#: gui/gladish.ui:666
+#: gui/gladish.ui:600
 msgid ""
 "LADI Session Handler is free software; you can redistribute it and/or "
 "modify\n"
@@ -576,99 +568,129 @@ msgstr ""
 "Foundaction, Inc.,\n"
 "51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA\n"
 
-#: gui/gladish.ui:737
-#: gui/gladish.ui:1620
+#: gui/gladish.ui:671 gui/gladish.ui:1554
 msgid "Path"
 msgstr "Путь"
 
-#: gui/gladish.ui:760
+#: gui/gladish.ui:694
 msgid "Browse..."
 msgstr "Указать..."
 
-#: gui/gladish.ui:833
+#: gui/gladish.ui:767
 msgid "Project properties"
 msgstr "Свойства проекта"
 
-#: gui/gladish.ui:863
+#: gui/gladish.ui:797
 msgid "<b>Project name</b>"
 msgstr "<b>Имя проекта</b>"
 
-#: gui/gladish.ui:890
+#: gui/gladish.ui:824
 msgid "<b>Description</b>"
 msgstr "<b>Описание</b>"
 
-#: gui/gladish.ui:928
+#: gui/gladish.ui:862
 msgid "<b>Notes</b>"
 msgstr "<b>Заметки</b>"
 
-#: gui/gladish.ui:997
+#: gui/gladish.ui:931
 msgid "Set name"
 msgstr "Установить имя"
 
-#: gui/gladish.ui:1028
-#: gui/gladish.ui:1493
+#: gui/gladish.ui:962 gui/gladish.ui:1427
 msgid "<b>Name</b>"
 msgstr "<b>Имя</b>"
 
-#: gui/gladish.ui:1177
+#: gui/gladish.ui:1111
 msgid "Command:"
 msgstr "Команда:"
 
-#: gui/gladish.ui:1189
+#: gui/gladish.ui:1123
 msgid "Name:"
 msgstr "Имя:"
 
-#: gui/gladish.ui:1218
+#: gui/gladish.ui:1152
 msgid "Run in Terminal"
 msgstr "Запустить в терминале"
 
-#: gui/gladish.ui:1234
+#: gui/gladish.ui:1168
+#, fuzzy
 msgid "Level 0"
-msgstr "Уровень 0"
+msgstr "Уровень 1"
 
-#: gui/gladish.ui:1251
+#: gui/gladish.ui:1185
 msgid "Level 1"
 msgstr "Уровень 1"
 
-#: gui/gladish.ui:1283
+#: gui/gladish.ui:1217
 msgid "Level 2"
 msgstr "Уровень 2"
 
-#: gui/gladish.ui:1302
+#: gui/gladish.ui:1236
 msgid "Level 3"
 msgstr "Уровень 3"
 
-#: gui/gladish.ui:1467
+#: gui/gladish.ui:1401
 msgid "Create room"
 msgstr "Создать комнату"
 
-#: gui/gladish.ui:1519
+#: gui/gladish.ui:1453
 msgid "<b>Create from template</b>"
 msgstr "<b>Создать по шаблону</b>"
 
-#: gui/gladish.ui:1643
+#: gui/gladish.ui:1577
 msgid "Default is project directory name"
 msgstr "По умолчанию - имя директории проекта"
 
-#: gui/gladish.ui:1662
+#: gui/gladish.ui:1596
 msgid "Default is ~/ladish-projects"
 msgstr "По умолчанию - ~/ladish-projects"
 
-#: gui/gladish.ui:1763
+#: gui/gladish.ui:1697
 msgid "Start studio on load"
 msgstr "Запускать студию после загрузки"
 
-#: gui/gladish.ui:1775
+#: gui/gladish.ui:1709
 msgid "Send notifications"
 msgstr "Отправлять уведомления"
 
-#: gui/gladish.ui:1796
+#: gui/gladish.ui:1730
 msgid "Shell to use:"
 msgstr "Оболочка:"
 
-#: gui/gladish.ui:1803
+#: gui/gladish.ui:1737
 msgid "Terminal to use:"
 msgstr "Терминал:"
+
+#, fuzzy
+#~ msgid "Start automatically on studio load"
+#~ msgstr "Запускать студию после загрузки"
+
+#, fuzzy
+#~ msgid "Level:"
+#~ msgstr "Уровень 0"
+
+#, fuzzy
+#~ msgid "2"
+#~ msgstr "32"
+
+#, fuzzy
+#~ msgid "3"
+#~ msgstr "32"
+
+#~ msgid "_Load Project..."
+#~ msgstr "За_грузить проект..."
+
+#~ msgid "_Unload Project"
+#~ msgstr "_Выгрузить проект"
+
+#~ msgid "_Rename Project..."
+#~ msgstr "Пере_именовать проект"
+
+#~ msgid "Save Project _As..."
+#~ msgstr "Сохранить проект как..."
+
+#~ msgid "R_ecently Loaded"
+#~ msgstr "_Недавние"
 
 #~ msgid "%s"
 #~ msgstr "%s"
