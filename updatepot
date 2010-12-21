@@ -11,6 +11,8 @@ POTFILE="po/gladish.pot"
 xgettext --keyword=_ -o "$POTFILE" gui/*.c gui/*.cpp
 xgettext -j -L Glade -o "$POTFILE" gui/gladish.ui
 
-for PO_FILE in "`ls -1 po/*.po`"; do
+PO_FILES=("`ls po/*.po`")
+
+for PO_FILE in $PO_FILES; do
   msgmerge -U "$PO_FILE" "$POTFILE"
 done

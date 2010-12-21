@@ -109,6 +109,7 @@ msgid "New application"
 msgstr "Neue Anwendung"
 
 #: gui/dialogs.c:96
+#, fuzzy
 msgid ""
 "Execution failed. I know you want to know more for the reson but currently "
 "you can only check the log file."
@@ -121,6 +122,7 @@ msgid "<b><big>Error</big></b>"
 msgstr "<b><big>Fehler</big></b>"
 
 #: gui/dynmenu.c:170
+#, fuzzy
 msgid "Error filling "
 msgstr "Fehler eintragen"
 
@@ -616,6 +618,7 @@ msgid "Run in Terminal"
 msgstr "Im Terminal starten"
 
 #: gui/gladish.ui:1168
+#, fuzzy
 msgid "Level 0"
 msgstr "Level 0"
 
@@ -663,7 +666,23 @@ msgstr "Shell:"
 msgid "Terminal to use:"
 msgstr "Terminal:"
 
-#~ msgid "_Load Project..."
+#, fuzzy
+#~ msgid "Start automatically on studio load"
+#~ msgstr "Studio nach dem Öffnen starten"
+
+#, fuzzy
+#~ msgid "Level:"
+#~ msgstr "Level 0"
+
+#, fuzzy
+#~ msgid "2"
+#~ msgstr "32"
+
+#, fuzzy
+#~ msgid "3"
+#~ msgstr "32"
+
+~ msgid "_Load Project..."
 #~ msgstr "Pr_ojekt öffnen..."
 
 #~ msgid "_Unload Project"
