@@ -682,7 +682,7 @@ msgstr "Terminal:"
 #~ msgid "3"
 #~ msgstr "32"
 
-~ msgid "_Load Project..."
+#~ msgid "_Load Project..."
 #~ msgstr "Pr_ojekt öffnen..."
 
 #~ msgid "_Unload Project"
