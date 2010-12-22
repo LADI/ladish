@@ -534,7 +534,7 @@ msgstr "8192"
 
 #: gui/gladish.ui:428
 msgid "_Help"
-msgstr "Aide (_h)"
+msgstr "Aid_e"
 
 #: gui/gladish.ui:461
 msgid "Clear XRuns"
