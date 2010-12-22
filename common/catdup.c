@@ -153,3 +153,42 @@ char * catdupv(const char * s1, const char * s2, ...)
 
   return buffer;
 }
+
+char * catdup_array(const char ** array, const char * delimiter)
+{
+  size_t len;
+  size_t i;
+  size_t delimiter_length;
+  char * buffer;
+  char * p;
+
+  delimiter_length = delimiter != NULL ? strlen(delimiter) : 0;
+
+  len = 0;
+  for (i = 0; array[i] != NULL; i++)
+  {
+    len += strlen(array[i]);
+    len += delimiter_length;
+  }
+
+  buffer = malloc(len);
+  if (buffer == NULL)
+  {
+    log_error("malloc(%zu) failed.", len);
+    return NULL;
+  }
+
+  p = buffer;
+  for (i = 0; array[i] != NULL; i++)
+  {
+    len = strlen(array[i]);
+    memcpy(p, array[i], len);
+    p += len;
+    memcpy(p, delimiter, delimiter_length);
+    p += delimiter_length;
+  }
+
+  *p = 0;
+
+  return buffer;
+}

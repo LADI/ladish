@@ -35,6 +35,7 @@
 #include "version.h"
 
 #include "../common/file.h"
+#include "../common/catdup.h"
 
 #define ABOUT_DIALOG_LOGO     "ladish-logo-128x128.png"
 
@@ -42,8 +43,30 @@ void show_about(void)
 {
   GtkWidget * dialog;
   GdkPixbuf * pixbuf;
-  const char * authors[] = {_("Nedko Arnaudov"), _("Nikita Zlobin"), _("Filipe Alexandre Lopes Coelho"), NULL};
-  const char * artists[] = {_("Lapo Calamandrei"), _("Nadejda Pancheva-Arnaudova"), NULL};
+  const char * authors[] =
+    {
+      _("Nedko Arnaudov"),
+      _("Nikita Zlobin"),
+      _("Filipe Alexandre Lopes Coelho"),
+      NULL
+    };
+  const char * artists[] =
+    {
+      _("Lapo Calamandrei"),
+      _("Nadejda Pancheva-Arnaudova"),
+      NULL
+    };
+  const char * translators_array[] =
+    {
+      _("Nikita Zlobin"),
+      _("Alexandre Prokoudine"),
+      _("Olivier Humbert"),
+      _("Frank Kober"),
+      _("Maxim Kachur"),
+      _("Jof Thibaut"),
+      NULL,
+    };
+  char * translators;
   char * license;
   struct stat st;
   char timestamp_str[26];
@@ -78,6 +101,12 @@ void show_about(void)
 
   gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(dialog), authors);
   gtk_about_dialog_set_artists(GTK_ABOUT_DIALOG(dialog), artists);
+
+  translators = catdup_array(translators_array, "\n");
+  if (translators != NULL)
+  {
+    gtk_about_dialog_set_translator_credits(GTK_ABOUT_DIALOG(dialog), translators);
+  }
 
   gtk_widget_show(dialog);
   gtk_dialog_run(GTK_DIALOG(dialog));
