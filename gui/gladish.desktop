@@ -2,10 +2,12 @@
 Encoding=UTF-8
 Name=gladish
 Comment=LADI Session Handler
+Comment[fr_FR]=Gestionnaire de session LADI
 Comment[pt]=Gerenciador de Sessões LADI
 Comment[pt_BR]=Gerenciador de Sessões LADI
 Comment[ru]=Управление сеансами LADI
 GenericName=LADI Session Handler
+GenericName[fr_FR]=Gestionnaire de session LADI
 GenericName[pt]=Gerenciador de Sessões LADI
 GenericName[pt_BR]=Gerenciador de Sessões LADI
 GenericName[ru]=Управление сеансами LADI
