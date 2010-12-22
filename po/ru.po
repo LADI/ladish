@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-21 04:36+0500\n"
-"PO-Revision-Date: 2010-12-20 19:50+0300\n"
+"PO-Revision-Date: 2010-12-22 13:24+0500\n"
 "Language-Team: Russian <gnome-cyr@lists.gnome.org>\n"
 "Last-Translator: Maxim Kachur <mcdebugger@duganet.ru>\n"
 "MIME-Version: 1.0\n"
@@ -123,9 +123,8 @@ msgid "<b><big>Error</big></b>"
 msgstr "<b><big>Ошибка</big></b>"
 
 #: gui/dynmenu.c:170
-#, fuzzy
 msgid "Error filling "
-msgstr "Ошибка при получении"
+msgstr "Ошибка при заполнении"
 
 #: gui/dynmenu.c:174
 msgid "Empty "
@@ -208,23 +207,20 @@ msgid "Load Project..."
 msgstr "Загрузить проект..."
 
 #: gui/menu.c:150
-#, fuzzy
 msgid "Create Project..."
-msgstr "Сохранить проект..."
+msgstr "Создать проект...\t"
 
 #: gui/menu.c:153
 msgid "Unload Project"
 msgstr "Выгрузить проект"
 
 #: gui/menu.c:153
-#, fuzzy
 msgid "Clear Room"
-msgstr "Сбросить"
+msgstr "Очистить комнату"
 
 #: gui/menu.c:157
-#, fuzzy
 msgid "Save Project"
-msgstr "_Сохранить проект"
+msgstr "Сохранить проект"
 
 #: gui/menu.c:158
 msgid "Save Project As..."
@@ -614,9 +610,8 @@ msgid "Run in Terminal"
 msgstr "Запустить в терминале"
 
 #: gui/gladish.ui:1168
-#, fuzzy
 msgid "Level 0"
-msgstr "Уровень 1"
+msgstr "Уровень 0"
 
 #: gui/gladish.ui:1185
 msgid "Level 1"
