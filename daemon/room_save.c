@@ -53,6 +53,8 @@ static bool ladish_room_save_project_do(struct ladish_room * room_ptr)
 
   log_info("Saving project '%s' in room '%s' to '%s'", room_ptr->project_name, room_ptr->name, room_ptr->project_dir);
 
+  ladish_check_integrity();
+
   time(&timestamp);
   ctime_r(&timestamp, timestamp_str);
   timestamp_str[24] = 0;

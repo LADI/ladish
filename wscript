@@ -364,6 +364,7 @@ def build(bld):
         'room_load.c',
         'recent_store.c',
         'recent_projects.c',
+        'check_integrity.c',
         ]:
         daemon.source.append(os.path.join("daemon", source))
 

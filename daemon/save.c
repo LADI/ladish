@@ -672,6 +672,8 @@ bool ladish_write_vgraph(int fd, int indent, ladish_graph_handle vgraph, ladish_
 {
   struct ladish_write_context context;
 
+  ladish_check_integrity();
+
   context.fd = fd;
   context.indent = indent + 1;
 
@@ -734,6 +736,8 @@ bool ladish_write_vgraph(int fd, int indent, ladish_graph_handle vgraph, ladish_
 bool ladish_write_room_link_ports(int fd, int indent, ladish_room_handle room)
 {
   struct ladish_write_context context;
+
+  ladish_check_integrity();
 
   context.fd = fd;
   context.indent = indent;
@@ -938,6 +942,8 @@ ladish_save_jack_port(
 bool ladish_write_jgraph(int fd, int indent, ladish_graph_handle vgraph)
 {
   struct ladish_write_jack_context context;
+
+  ladish_check_integrity();
 
   if (!ladish_write_indented_string(fd, indent, "<clients>\n"))
   {

@@ -382,6 +382,7 @@ int main(int argc, char ** argv, char ** envp)
     dbus_connection_read_write_dispatch(g_dbus_connection, 50);
     loader_run();
     ladish_studio_run();
+    ladish_check_integrity();
   }
 
   emit_clean_exit();

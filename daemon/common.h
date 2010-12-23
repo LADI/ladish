@@ -59,4 +59,6 @@ struct connection
 
 extern bool g_quit;
 
+void ladish_check_integrity(void);
+
 #endif /* #ifndef COMMON_H__CFDC869A_31AE_4FA3_B2D3_DACA8488CA55__INCLUDED */

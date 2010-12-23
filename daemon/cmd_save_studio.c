@@ -220,6 +220,8 @@ static bool run(void * command_context)
     goto exit;
   }
 
+  ladish_check_integrity();
+
   if (!ladish_studio_compose_filename(cmd_ptr->studio_name, &filename, &bak_filename))
   {
     log_error("failed to compose studio filename");
