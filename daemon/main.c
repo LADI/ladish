@@ -189,6 +189,7 @@ static void disconnect_dbus(void)
 {
   dbus_object_path_destroy(g_dbus_connection, g_control_object);
   dbus_connection_unref(g_dbus_connection);
+  dbus_call_last_error_cleanup();
 }
 
 void term_signal_handler(int signum)

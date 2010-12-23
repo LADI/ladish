@@ -55,4 +55,6 @@ void dbus_uninit(void)
   {
     dbus_error_free(&g_dbus_error);
   }
+
+  dbus_call_last_error_cleanup();
 }

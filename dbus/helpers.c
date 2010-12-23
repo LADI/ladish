@@ -42,6 +42,8 @@
 
 DBusConnection * g_dbus_connection;
 DBusError g_dbus_error;
+static char * g_dbus_call_last_error_name;
+static char * g_dbus_call_last_error_message;
 
 struct dbus_signal_hook_descriptor
 {
@@ -61,6 +63,41 @@ struct dbus_service_descriptor
 };
 
 LIST_HEAD(g_dbus_services);
+
+
+void dbus_call_last_error_cleanup(void)
+{
+  free(g_dbus_call_last_error_name);
+  g_dbus_call_last_error_name = NULL;
+
+  free(g_dbus_call_last_error_message);
+  g_dbus_call_last_error_message = NULL;
+}
+
+bool dbus_call_last_error_is_name(const char * name)
+{
+  return g_dbus_call_last_error_name != NULL && strcmp(name, g_dbus_call_last_error_name) == 0;
+}
+
+const char * dbus_call_last_error_get_message(void)
+{
+  return g_dbus_call_last_error_message != NULL ? g_dbus_call_last_error_message : "";
+}
+
+static void dbus_call_last_error_set(void)
+{
+  dbus_call_last_error_cleanup();
+
+  if (g_dbus_error.name != NULL)
+  {
+    g_dbus_call_last_error_name = strdup(g_dbus_error.name);
+  }
+
+  if (g_dbus_error.message != NULL)
+  {
+    g_dbus_call_last_error_message = strdup(g_dbus_error.message);
+  }
+}
 
 bool dbus_iter_get_dict_entry(DBusMessageIter * iter_ptr, const char * key, void * value, int * type, int * size)
 {
@@ -353,7 +390,7 @@ dbus_call_raw(
     &g_dbus_error);
   if (reply_ptr == NULL)
   {
-    //log_error("calling method '%s' failed, error is '%s'", method, g_dbus_error.message);
+    dbus_call_last_error_set();
     dbus_error_free(&g_dbus_error);
   }
 

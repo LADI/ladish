@@ -298,7 +298,12 @@ studio_proxy_set_room_callbacks(
 
   if (!dbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "GetRoomList", "", NULL, &reply_ptr))
   {
-    log_error("Cannot fetch studio room list");
+    /* Don't log error if there is no studio loaded */
+    if (!dbus_call_last_error_is_name(DBUS_ERROR_UNKNOWN_METHOD))
+    {
+      log_error("Cannot fetch studio room list: %s", dbus_call_last_error_get_message());
+    }
+
     return;
   }
 

@@ -111,6 +111,10 @@ dbus_unregister_service_lifetime_hook(
   DBusConnection * connection,
   const char * service);
 
+void dbus_call_last_error_cleanup(void);
+bool dbus_call_last_error_is_name(const char * name);
+const char * dbus_call_last_error_get_message(void);
+
 #include "method.h"
 #include "signal.h"
 #include "interface.h"
