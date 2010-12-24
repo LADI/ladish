@@ -293,7 +293,7 @@ ladish_room_create(
   if (template != NULL)
   {
     ladish_room_get_uuid(template, room_ptr->template_uuid);
-    if (!ladish_graph_copy(ladish_room_get_graph(template), room_ptr->graph, false))
+    if (!ladish_graph_copy(ladish_room_get_graph(template), room_ptr->graph))
     {
       goto destroy;
     }

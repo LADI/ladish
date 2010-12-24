@@ -2679,11 +2679,11 @@ ladish_graph_copy_port_callback(
 
 #undef graph_ptr
 
-bool ladish_graph_copy(ladish_graph_handle src, ladish_graph_handle dest, bool skip_hidden)
+bool ladish_graph_copy(ladish_graph_handle src, ladish_graph_handle dest)
 {
   return ladish_graph_iterate_nodes(
     src,
-    skip_hidden,
+    false,
     dest,
     ladish_graph_copy_client_begin_callback,
     ladish_graph_copy_port_callback,
