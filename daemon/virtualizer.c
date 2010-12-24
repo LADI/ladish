@@ -773,6 +773,12 @@ port_appeared(
           goto free_alsa_names;
         }
       }
+      else
+      {
+        /* vclient exists but is not interlinked with vclient */
+        /* this can happen when client is created because of a2j port appear */
+        ladish_client_interlink(vclient, jack_client);
+      }
     }
   }
 
