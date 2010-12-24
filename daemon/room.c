@@ -208,6 +208,7 @@ bool
 destroy_port_link(
   void * context,
   ladish_graph_handle graph_handle,
+  bool hidden,
   void * client_iteration_context_ptr,
   ladish_client_handle client_handle,
   const char * client_name,
@@ -470,6 +471,7 @@ bool
 ladish_room_iterate_link_ports_client_callback(
   void * context,
   ladish_graph_handle graph_handle,
+  bool hidden,
   ladish_client_handle client_handle,
   const char * client_name,
   void ** client_iteration_context_ptr_ptr)
@@ -496,6 +498,7 @@ bool
 ladish_room_iterate_link_ports_port_callback(
   void * context,
   ladish_graph_handle graph_handle,
+  bool hidden,
   void * client_iteration_context_ptr,
   ladish_client_handle client_handle,
   const char * client_name,
@@ -534,7 +537,6 @@ ladish_room_iterate_link_ports(
 
   return ladish_graph_iterate_nodes(
     room_ptr->graph,
-    false,
     &context,
     ladish_room_iterate_link_ports_client_callback,
     ladish_room_iterate_link_ports_port_callback,
@@ -571,7 +573,7 @@ void ladish_room_initiate_stop(ladish_room_handle room_handle, bool clear_persis
     ladish_graph_clear_persist(room_ptr->graph);
   }
 
-  ladish_graph_iterate_nodes(room_ptr->graph, false, room_ptr, NULL, destroy_port_link, NULL);
+  ladish_graph_iterate_nodes(room_ptr->graph, room_ptr, NULL, destroy_port_link, NULL);
   ladish_app_supervisor_stop(room_ptr->app_supervisor);
 }
 

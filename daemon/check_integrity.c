@@ -47,6 +47,7 @@ bool
 ladish_check_vgraph_integrity_client_begin_callback(
   void * context,
   ladish_graph_handle graph_handle,
+  bool hidden,
   ladish_client_handle client_handle,
   const char * client_name,
   void ** client_iteration_context_ptr_ptr)
@@ -58,6 +59,7 @@ bool
 ladish_check_vgraph_integrity_port_callback(
   void * context,
   ladish_graph_handle vgraph,
+  bool hidden,
   void * client_iteration_context_ptr,
   ladish_client_handle client_handle,
   const char * client_name,
@@ -100,6 +102,7 @@ bool
 ladish_check_vgraph_integrity_client_end_callback(
     void * context,
     ladish_graph_handle graph_handle,
+    bool hidden,
     ladish_client_handle client_handle,
     const char * client_name,
     void * client_iteration_context_ptr)
@@ -113,7 +116,6 @@ bool ladish_check_vgraph_integrity(void * context, ladish_graph_handle graph, la
 {
   ladish_graph_iterate_nodes(
     graph,
-    true,
     context,
     ladish_check_vgraph_integrity_client_begin_callback,
     ladish_check_vgraph_integrity_port_callback,

@@ -1223,6 +1223,7 @@ bool
 remove_app_port(
   void * context,
   ladish_graph_handle graph_handle,
+  bool hidden,
   void * client_iteration_context_ptr,
   ladish_client_handle client_handle,
   const char * client_name,
@@ -1293,7 +1294,7 @@ ladish_virtualizer_remove_app(
   uuid_copy(ctx.app_uuid, app_uuid);
   ctx.app_name = app_name;
 
-  ladish_graph_iterate_nodes(jack_graph, false, &ctx, NULL, remove_app_port, NULL);
+  ladish_graph_iterate_nodes(jack_graph, &ctx, NULL, remove_app_port, NULL);
 
   jclient = ladish_graph_find_client_by_app(jack_graph, app_uuid);
   if (jclient == NULL)

@@ -182,12 +182,12 @@ void ladish_graph_dump(ladish_graph_handle graph_handle);
 bool
 ladish_graph_iterate_nodes(
   ladish_graph_handle graph_handle,
-  bool skip_hidden,
   void * callback_context,
   bool
   (* client_begin_callback)(
     void * context,
     ladish_graph_handle graph_handle,
+    bool hidden,
     ladish_client_handle client_handle,
     const char * client_name,
     void ** client_iteration_context_ptr_ptr),
@@ -195,6 +195,7 @@ ladish_graph_iterate_nodes(
   (* port_callback)(
     void * context,
     ladish_graph_handle graph_handle,
+    bool hidden,
     void * client_iteration_context_ptr,
     ladish_client_handle client_handle,
     const char * client_name,
@@ -206,6 +207,7 @@ ladish_graph_iterate_nodes(
   (* client_end_callback)(
     void * context,
     ladish_graph_handle graph_handle,
+    bool hidden,
     ladish_client_handle client_handle,
     const char * client_name,
     void * client_iteration_context_ptr));
@@ -213,12 +215,14 @@ ladish_graph_iterate_nodes(
 bool
 ladish_graph_iterate_connections(
   ladish_graph_handle graph_handle,
-  bool skip_hidden,
   void * callback_context,
   bool (* callback)(
     void * context,
     ladish_graph_handle graph_handle,
+    bool hidden,
+    ladish_client_handle client1_handle,
     ladish_port_handle port1_handle,
+    ladish_client_handle client2_handle,
     ladish_port_handle port2_handle,
     ladish_dict_handle dict));
 

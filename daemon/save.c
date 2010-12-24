@@ -30,6 +30,26 @@
 #include "escape.h"
 #include "studio.h"
 
+struct ladish_write_vgraph_context
+{
+  int fd;
+  int indent;
+  bool client_visible;
+};
+
+static bool is_system_client(ladish_client_handle client)
+{
+  uuid_t uuid;
+  ladish_client_get_uuid(client, uuid);
+  return ladish_virtualizer_is_system_client(uuid);
+}
+
+#define is_port_interesting(client, port) (     \
+    ladish_port_has_app(port) ||                \
+    ladish_port_is_link(port) ||                \
+    is_system_client(client)                    \
+    )
+
 bool ladish_write_string(int fd, const char * string)
 {
   size_t len;
@@ -137,15 +157,182 @@ write_dict_entry(
 
 static
 bool
+ladish_write_room_port(
+  void * context,
+  ladish_port_handle port,
+  const char * name,
+  uint32_t type,
+  uint32_t flags)
+{
+  uuid_t uuid;
+  char str[37];
+  bool midi;
+  const char * type_str;
+  bool playback;
+  const char * direction_str;
+  ladish_dict_handle dict;
+
+  ladish_port_get_uuid(port, uuid);
+  uuid_unparse(uuid, str);
+
+  playback = (flags & JACKDBUS_PORT_FLAG_INPUT) != 0;
+  ASSERT(playback || (flags & JACKDBUS_PORT_FLAG_OUTPUT) != 0); /* playback or capture */
+  ASSERT(!(playback && (flags & JACKDBUS_PORT_FLAG_OUTPUT) != 0)); /* but not both */
+  direction_str = playback ? "playback" : "capture";
+
+  midi = type == JACKDBUS_PORT_TYPE_MIDI;
+  ASSERT(midi || type == JACKDBUS_PORT_TYPE_AUDIO); /* midi or audio */
+  ASSERT(!(midi && type == JACKDBUS_PORT_TYPE_AUDIO)); /* but not both */
+  type_str = midi ? "midi" : "audio";
+
+  log_info("saving room %s %s port '%s' (%s)", direction_str, type_str, name, str);
+
+  if (!ladish_write_indented_string(fd, indent, "<port name=\""))
+  {
+    return false;
+  }
+
+  if (!ladish_write_string_escape_ex(fd, name, LADISH_ESCAPE_FLAG_XML_ATTR))
+  {
+    return false;
+  }
+
+  if (!ladish_write_string(fd, "\" uuid=\""))
+  {
+    return false;
+  }
+
+  if (!ladish_write_string(fd, str))
+  {
+    return false;
+  }
+
+  if (!ladish_write_string(fd, "\" type=\""))
+  {
+    return false;
+  }
+
+  if (!ladish_write_string(fd, type_str))
+  {
+    return false;
+  }
+
+  if (!ladish_write_string(fd, "\" direction=\""))
+  {
+    return false;
+  }
+
+  if (!ladish_write_string(fd, direction_str))
+  {
+    return false;
+  }
+
+  dict = ladish_port_get_dict(port);
+  if (ladish_dict_is_empty(dict))
+  {
+    if (!ladish_write_string(fd, "\" />\n"))
+    {
+      return false;
+    }
+  }
+  else
+  {
+    if (!ladish_write_string(fd, "\">\n"))
+    {
+      return false;
+    }
+
+    if (!ladish_write_dict(fd, indent + 1, dict))
+    {
+      return false;
+    }
+
+    if (!ladish_write_indented_string(fd, indent, "</port>\n"))
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+#undef indent
+#undef fd
+
+bool ladish_write_dict(int fd, int indent, ladish_dict_handle dict)
+{
+  struct ladish_write_context context;
+
+  if (ladish_dict_is_empty(dict))
+  {
+    return true;
+  }
+
+  context.fd = fd;
+  context.indent = indent + 1;
+
+  if (!ladish_write_indented_string(fd, indent, "<dict>\n"))
+  {
+    return false;
+  }
+
+  if (!ladish_dict_iterate(dict, &context, write_dict_entry))
+  {
+    return false;
+  }
+
+  if (!ladish_write_indented_string(fd, indent, "</dict>\n"))
+  {
+    return false;
+  }
+
+  return true;
+}
+
+bool ladish_write_room_link_ports(int fd, int indent, ladish_room_handle room)
+{
+  struct ladish_write_context context;
+
+  ladish_check_integrity();
+
+  context.fd = fd;
+  context.indent = indent;
+
+  if (!ladish_room_iterate_link_ports(room, &context, ladish_write_room_port))
+  {
+    log_error("ladish_room_iterate_link_ports() failed");
+    return false;
+  }
+
+  return true;
+}
+
+/****************/
+/* write vgraph */
+/****************/
+
+#define fd (((struct ladish_write_vgraph_context *)context)->fd)
+#define indent (((struct ladish_write_vgraph_context *)context)->indent)
+#define ctx_ptr ((struct ladish_write_vgraph_context *)context)
+
+static
+bool
 ladish_save_vgraph_client_begin(
   void * context,
   ladish_graph_handle graph,
+  bool hidden,
   ladish_client_handle client_handle,
   const char * client_name,
   void ** client_iteration_context_ptr_ptr)
 {
   uuid_t uuid;
   char str[37];
+
+  ctx_ptr->client_visible = !hidden || ladish_client_has_app(client_handle);
+  if (!ctx_ptr->client_visible)
+  {
+    return true;
+  }
 
   ladish_client_get_uuid(client_handle, uuid);
   uuid_unparse(uuid, str);
@@ -200,10 +387,16 @@ bool
 ladish_save_vgraph_client_end(
   void * context,
   ladish_graph_handle graph,
+  bool hidden,
   ladish_client_handle client_handle,
   const char * client_name,
   void * client_iteration_context_ptr)
 {
+  if (!ctx_ptr->client_visible)
+  {
+    return true;
+  }
+
   if (!ladish_write_indented_string(fd, indent + 1, "</ports>\n"))
   {
     return false;
@@ -254,6 +447,7 @@ bool
 ladish_save_vgraph_port(
   void * context,
   ladish_graph_handle graph,
+  bool hidden,
   void * client_iteration_context_ptr,
   ladish_client_handle client_handle,
   const char * client_name,
@@ -268,6 +462,11 @@ ladish_save_vgraph_port(
   char str[37];
   char link_str[37];
   ladish_dict_handle dict;
+
+  if (!ctx_ptr->client_visible)
+  {
+    return true;
+  }
 
   link = ladish_get_vgraph_port_uuids(graph, port_handle, uuid, link_uuid);
   uuid_unparse(uuid, str);
@@ -368,12 +567,22 @@ bool
 ladish_save_vgraph_connection(
   void * context,
   ladish_graph_handle graph,
-  ladish_port_handle port1_handle,
-  ladish_port_handle port2_handle,
+  bool hidden,
+  ladish_client_handle client1,
+  ladish_port_handle port1,
+  ladish_client_handle client2,
+  ladish_port_handle port2,
   ladish_dict_handle dict)
 {
   uuid_t uuid;
   char str[37];
+
+  if (hidden &&
+      (!is_port_interesting(client1, port1) ||
+       !is_port_interesting(client2, port2)))
+  {
+    return true;
+  }
 
   log_info("saving vgraph connection");
 
@@ -382,7 +591,7 @@ ladish_save_vgraph_connection(
     return false;
   }
 
-  ladish_get_vgraph_port_uuids(graph, port1_handle, uuid, NULL);
+  ladish_get_vgraph_port_uuids(graph, port1, uuid, NULL);
   uuid_unparse(uuid, str);
 
   if (!ladish_write_string(fd, str))
@@ -395,7 +604,7 @@ ladish_save_vgraph_connection(
     return false;
   }
 
-  ladish_get_vgraph_port_uuids(graph, port2_handle, uuid, NULL);
+  ladish_get_vgraph_port_uuids(graph, port2, uuid, NULL);
   uuid_unparse(uuid, str);
 
   if (!ladish_write_string(fd, str))
@@ -534,143 +743,13 @@ exit:
   return ret;
 }
 
-static
-bool
-ladish_write_room_port(
-  void * context,
-  ladish_port_handle port,
-  const char * name,
-  uint32_t type,
-  uint32_t flags)
-{
-  uuid_t uuid;
-  char str[37];
-  bool midi;
-  const char * type_str;
-  bool playback;
-  const char * direction_str;
-  ladish_dict_handle dict;
-
-  ladish_port_get_uuid(port, uuid);
-  uuid_unparse(uuid, str);
-
-  playback = (flags & JACKDBUS_PORT_FLAG_INPUT) != 0;
-  ASSERT(playback || (flags & JACKDBUS_PORT_FLAG_OUTPUT) != 0); /* playback or capture */
-  ASSERT(!(playback && (flags & JACKDBUS_PORT_FLAG_OUTPUT) != 0)); /* but not both */
-  direction_str = playback ? "playback" : "capture";
-
-  midi = type == JACKDBUS_PORT_TYPE_MIDI;
-  ASSERT(midi || type == JACKDBUS_PORT_TYPE_AUDIO); /* midi or audio */
-  ASSERT(!(midi && type == JACKDBUS_PORT_TYPE_AUDIO)); /* but not both */
-  type_str = midi ? "midi" : "audio";
-
-  log_info("saving room %s %s port '%s' (%s)", direction_str, type_str, name, str);
-
-  if (!ladish_write_indented_string(fd, indent, "<port name=\""))
-  {
-    return false;
-  }
-
-  if (!ladish_write_string_escape_ex(fd, name, LADISH_ESCAPE_FLAG_XML_ATTR))
-  {
-    return false;
-  }
-
-  if (!ladish_write_string(fd, "\" uuid=\""))
-  {
-    return false;
-  }
-
-  if (!ladish_write_string(fd, str))
-  {
-    return false;
-  }
-
-  if (!ladish_write_string(fd, "\" type=\""))
-  {
-    return false;
-  }
-
-  if (!ladish_write_string(fd, type_str))
-  {
-    return false;
-  }
-
-  if (!ladish_write_string(fd, "\" direction=\""))
-  {
-    return false;
-  }
-
-  if (!ladish_write_string(fd, direction_str))
-  {
-    return false;
-  }
-
-  dict = ladish_port_get_dict(port);
-  if (ladish_dict_is_empty(dict))
-  {
-    if (!ladish_write_string(fd, "\" />\n"))
-    {
-      return false;
-    }
-  }
-  else
-  {
-    if (!ladish_write_string(fd, "\">\n"))
-    {
-      return false;
-    }
-
-    if (!ladish_write_dict(fd, indent + 1, dict))
-    {
-      return false;
-    }
-
-    if (!ladish_write_indented_string(fd, indent, "</port>\n"))
-    {
-      return false;
-    }
-  }
-
-  return true;
-}
-
+#undef ctx_ptr
 #undef indent
 #undef fd
 
-bool ladish_write_dict(int fd, int indent, ladish_dict_handle dict)
-{
-  struct ladish_write_context context;
-
-  if (ladish_dict_is_empty(dict))
-  {
-    return true;
-  }
-
-  context.fd = fd;
-  context.indent = indent + 1;
-
-  if (!ladish_write_indented_string(fd, indent, "<dict>\n"))
-  {
-    return false;
-  }
-
-  if (!ladish_dict_iterate(dict, &context, write_dict_entry))
-  {
-    return false;
-  }
-
-  if (!ladish_write_indented_string(fd, indent, "</dict>\n"))
-  {
-    return false;
-  }
-
-  return true;
-}
-
 bool ladish_write_vgraph(int fd, int indent, ladish_graph_handle vgraph, ladish_app_supervisor_handle app_supervisor)
 {
-  struct ladish_write_context context;
+  struct ladish_write_vgraph_context context;
 
   ladish_check_integrity();
 
@@ -684,7 +763,6 @@ bool ladish_write_vgraph(int fd, int indent, ladish_graph_handle vgraph, ladish_
 
   if (!ladish_graph_iterate_nodes(
         vgraph,
-        true,
         &context,
         ladish_save_vgraph_client_begin,
         ladish_save_vgraph_port,
@@ -704,7 +782,7 @@ bool ladish_write_vgraph(int fd, int indent, ladish_graph_handle vgraph, ladish_
     return false;
   }
 
-  if (!ladish_graph_iterate_connections(vgraph, true, &context, ladish_save_vgraph_connection))
+  if (!ladish_graph_iterate_connections(vgraph, &context, ladish_save_vgraph_connection))
   {
     log_error("ladish_graph_iterate_connections() failed");
     return false;
@@ -727,24 +805,6 @@ bool ladish_write_vgraph(int fd, int indent, ladish_graph_handle vgraph, ladish_
 
   if (!ladish_write_indented_string(fd, indent, "</applications>\n"))
   {
-    return false;
-  }
-
-  return true;
-}
-
-bool ladish_write_room_link_ports(int fd, int indent, ladish_room_handle room)
-{
-  struct ladish_write_context context;
-
-  ladish_check_integrity();
-
-  context.fd = fd;
-  context.indent = indent;
-
-  if (!ladish_room_iterate_link_ports(room, &context, ladish_write_room_port))
-  {
-    log_error("ladish_room_iterate_link_ports() failed");
     return false;
   }
 
@@ -817,6 +877,7 @@ bool
 ladish_save_jack_client_begin(
   void * context,
   ladish_graph_handle graph_handle,
+  bool hidden,
   ladish_client_handle client_handle,
   const char * client_name,
   void ** client_iteration_context_ptr_ptr)
@@ -830,8 +891,7 @@ ladish_save_jack_client_begin(
   /* for the a2j client vgraph is always the studio graph.
      However if studio has no a2j ports, lets not write a2j client.
      If there is a a2j port that matched the vgraph, the prolog will get written anyway */
-  ctx_ptr->client_visible = ctx_ptr->client_vgraph_match && !ctx_ptr->a2j;
-
+  ctx_ptr->client_visible = ctx_ptr->client_vgraph_match && !ctx_ptr->a2j && ladish_client_has_app(client_handle);
   if (!ctx_ptr->client_visible)
   {
     return true;
@@ -845,6 +905,7 @@ bool
 ladish_save_jack_client_end(
   void * context,
   ladish_graph_handle graph_handle,
+  bool hidden,
   ladish_client_handle client_handle,
   const char * client_name,
   void * client_iteration_context_ptr)
@@ -872,6 +933,7 @@ bool
 ladish_save_jack_port(
   void * context,
   ladish_graph_handle graph_handle,
+  bool hidden,
   void * client_iteration_context_ptr,
   ladish_client_handle client_handle,
   const char * client_name,
@@ -884,7 +946,7 @@ ladish_save_jack_port(
   char str[37];
 
   /* check vgraph for a2j ports */
-  if (ctx_ptr->a2j && ctx_ptr->vgraph_filter == ladish_port_get_vgraph(port_handle))
+  if (ctx_ptr->a2j && ctx_ptr->vgraph_filter == ladish_port_get_vgraph(port_handle) && ladish_port_has_app(port_handle))
   {
     if (!ctx_ptr->client_visible)
     {
@@ -956,7 +1018,6 @@ bool ladish_write_jgraph(int fd, int indent, ladish_graph_handle vgraph)
 
   if (!ladish_graph_iterate_nodes(
         ladish_studio_get_jack_graph(),
-        true,
         &context,
         ladish_save_jack_client_begin,
         ladish_save_jack_port,
