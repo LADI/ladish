@@ -2413,6 +2413,7 @@ void ladish_graph_dump(ladish_graph_handle graph_handle)
   struct ladish_graph_connection * connection_ptr;
   uuid_t uuid;
   char uuid_str[37];
+  ladish_graph_handle vgraph;
 
   log_info("graph %s", graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
   log_info("  version %"PRIu64, graph_ptr->graph_version);
@@ -2444,7 +2445,9 @@ void ladish_graph_dump(ladish_graph_handle graph_handle)
       ladish_port_get_uuid(port_ptr->port, uuid);
       uuid_unparse(uuid, uuid_str);
 
-      log_info("        %s port '%s', uuid=%s, id=%"PRIu64", type=0x%"PRIX32", flags=0x%"PRIX32", ptr=%p", port_ptr->hidden ? "invisible" : "visible", port_ptr->name, uuid_str, port_ptr->id, port_ptr->type, port_ptr->flags, port_ptr->port);
+      vgraph = ladish_port_get_vgraph(port_ptr->port);
+
+      log_info("        %s port '%s', uuid=%s, id=%"PRIu64", type=0x%"PRIX32", flags=0x%"PRIX32", ptr=%p, vgraph=%s", port_ptr->hidden ? "invisible" : "visible", port_ptr->name, uuid_str, port_ptr->id, port_ptr->type, port_ptr->flags, port_ptr->port, vgraph != NULL ? ladish_graph_get_description(vgraph) : "NULL");
       dump_dict("        ", ladish_port_get_dict(port_ptr->port));
     }
   }
