@@ -2296,7 +2296,7 @@ ladish_graph_iterate_nodes(
     {
       port_ptr = list_entry(port_node_ptr, struct ladish_graph_port, siblings_client);
 
-      if (skip_hidden && port_ptr->hidden && !ladish_client_has_app(port_ptr->client_ptr->client))
+      if (skip_hidden && port_ptr->hidden && !ladish_port_has_app(port_ptr->port))
       {
         continue;
       }
