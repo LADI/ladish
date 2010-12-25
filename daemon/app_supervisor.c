@@ -28,6 +28,7 @@
 
 #include <sys/types.h>
 #include <signal.h>
+#include <unistd.h>
 
 #include "app_supervisor.h"
 #include "../dbus/error.h"
@@ -46,7 +47,9 @@ struct ladish_app
   bool terminal;
   uint8_t level;
   pid_t pid;
+  pid_t pgrp;
   pid_t firstborn_pid;
+  pid_t firstborn_pgrp;
   bool zombie;                  /* if true, remove when stopped */
   bool autorun;
   unsigned int state;
@@ -281,7 +284,9 @@ ladish_app_supervisor_add(
   app_ptr->terminal = terminal;
   app_ptr->level = level;
   app_ptr->pid = 0;
+  app_ptr->pgrp = 0;
   app_ptr->firstborn_pid = 0;
+  app_ptr->firstborn_pgrp = 0;
 
   app_ptr->id = supervisor_ptr->next_id++;
   uuid_generate(app_ptr->uuid);
@@ -315,20 +320,6 @@ static void ladish_app_send_signal(struct ladish_app * app_ptr, int sig, bool pr
   const char * signal_name;
 
   ASSERT(app_ptr->state = LADISH_APP_STATE_STARTED);
-  if (app_ptr->pid <= 0)
-  {
-    ASSERT_NO_PASS;
-    return;
-  }
-
-  if (prefer_firstborn && app_ptr->firstborn_pid != 0)
-  {
-    pid = app_ptr->firstborn_pid;
-  }
-  else
-  {
-    pid = app_ptr->pid;
-  }
 
   switch (sig)
   {
@@ -349,9 +340,99 @@ static void ladish_app_send_signal(struct ladish_app * app_ptr, int sig, bool pr
     }
   }
 
-  log_info("sending signal %d (%s) to '%s' with pid %u", sig, signal_name, app_ptr->name, (unsigned int)pid);
+  switch (sig)
+  {
+  case SIGKILL:
+  case SIGTERM:
+    if (app_ptr->pgrp == 0)
+    {
+      app_ptr->pgrp = getpgid(app_ptr->pid);
+      if (app_ptr->pgrp == -1)
+      {
+        app_ptr->pgrp = 0;
+        if (errno != ESRCH)
+        {
+          log_error("getpgid(%u) failed. %s (%d)", (unsigned int)app_ptr->pid, strerror(errno), errno);
+        }
+      }
+    }
 
-  kill(pid, sig);
+    if (app_ptr->firstborn_pid != 0)
+    {
+      app_ptr->firstborn_pgrp = getpgid(app_ptr->firstborn_pid);
+      if (app_ptr->firstborn_pgrp == -1)
+      {
+        app_ptr->firstborn_pgrp = 0;
+        if (errno != ESRCH)
+        {
+          log_error("getpgid(%u) failed (firstborn). %s (%d)", (unsigned int)app_ptr->firstborn_pid, strerror(errno), errno);
+        }
+      }
+    }
+
+    if (app_ptr->pgrp != 0)
+    {
+      log_info("sending signal %d (%s) to pgrp %u ('%s')", sig, signal_name, (unsigned int)app_ptr->pgrp, app_ptr->name);
+
+      if (app_ptr->pgrp <= 1)
+      {
+        ASSERT_NO_PASS;
+        return;
+      }
+
+      killpg(app_ptr->pgrp, sig);
+
+      if (app_ptr->firstborn_pid != 0)
+      {
+        if (app_ptr->firstborn_pgrp != 0)
+        {
+          if (app_ptr->firstborn_pgrp <= 1)
+          {
+            ASSERT_NO_PASS;
+            return;
+          }
+
+          if (app_ptr->firstborn_pgrp != app_ptr->pgrp)
+          {
+            log_info("sending signal %d (%s) to firstborn pgrp %u ('%s')", sig, signal_name, (unsigned int)app_ptr->firstborn_pgrp, app_ptr->name);
+
+            killpg(app_ptr->firstborn_pgrp, sig);
+          }
+          return;
+        }
+        /* fall through to sending signal to pid */
+      }
+      else
+      {
+        return;
+      }
+    }
+    /* fall through to sending signal to pid */
+  default:
+    if (app_ptr->pid <= 1)
+    {
+      ASSERT_NO_PASS;
+      return;
+    }
+
+    if (prefer_firstborn && app_ptr->firstborn_pid != 0)
+    {
+      pid = app_ptr->firstborn_pid;
+    }
+    else
+    {
+      pid = app_ptr->pid;
+    }
+
+    if (pid <= 1)
+    {
+      ASSERT_NO_PASS;
+      return;
+    }
+
+    log_info("sending signal %d (%s) to '%s' with pid %u", sig, signal_name, app_ptr->name, (unsigned int)pid);
+    kill(pid, sig);
+  }
 }
 
 bool ladish_app_supervisor_clear(ladish_app_supervisor_handle supervisor_handle)
@@ -462,7 +543,9 @@ bool ladish_app_supervisor_child_exit(ladish_app_supervisor_handle supervisor_ha
       log_info("exit of child '%s' detected.", app_ptr->name);
 
       app_ptr->pid = 0;
+      app_ptr->pgrp = 0;
       app_ptr->firstborn_pid = 0;
+      app_ptr->firstborn_pgrp = 0;
       if (app_ptr->zombie)
       {
         remove_app_internal(supervisor_ptr, app_ptr);
@@ -621,6 +704,7 @@ void ladish_app_del_pid(ladish_app_handle app_handle, pid_t pid)
   {
     log_info("First grandchild with pid %u has gone", (unsigned int)pid);
     app_ptr->firstborn_pid = 0;
+    app_ptr->firstborn_pgrp = 0;
   }
 }
 
