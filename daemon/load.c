@@ -298,9 +298,11 @@ interlink_client(
   ladish_app_handle app;
   bool interlinked;
   bool jmcore;
+  ladish_graph_handle vgraph;
 
   ASSERT(ctx_ptr->vgraph != NULL);
-  if (ctx_ptr->vgraph != ladish_client_get_vgraph(jclient))
+  vgraph = ladish_client_get_vgraph(jclient);
+  if (vgraph != NULL && ctx_ptr->vgraph != vgraph)
   {
     /* skip clients of different vgraphs */
     return true;
