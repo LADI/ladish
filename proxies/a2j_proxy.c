@@ -254,3 +254,14 @@ bool a2j_proxy_stop_bridge(void)
 
   return true;
 }
+
+bool a2j_proxy_exit(void)
+{
+  if (!dbus_call(0, A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL, "exit", "", ""))
+  {
+    log_error("exit() failed.");
+    return false;
+  }
+
+  return true;
+}

@@ -29,6 +29,7 @@
 #include "gtk_builder.h"
 #include "canvas.h"
 #include "../proxies/control_proxy.h"
+#include "../proxies/a2j_proxy.h"
 #include "world_tree.h"
 #include "graph_view.h"
 #include "../common/catdup.h"
@@ -165,6 +166,11 @@ int main(int argc, char** argv)
     return 1;
   }
 
+  if (!a2j_proxy_init())
+  {
+    return 1;
+  }
+
   if (!control_proxy_init())
   {
     return 1;
@@ -189,6 +195,7 @@ int main(int argc, char** argv)
 
   studio_proxy_uninit();
   control_proxy_uninit();
+  a2j_proxy_uninit();
   uninit_jack();
   menu_uninit();
   create_room_dialog_uninit();

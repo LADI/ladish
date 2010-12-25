@@ -39,7 +39,9 @@ void menu_set_toolbar_visibility(bool visible);
 void menu_view_activated(bool room);
 void fill_view_popup_menu(GtkMenu * menu, graph_view_handle view);
 
-void menu_request_daemon_exit(void);
+void menu_request_ladishd_exit(void);
+void menu_request_jackdbus_exit(void);
+void menu_request_a2jmidid_exit(void);
 void menu_request_jack_configure(void);
 void menu_request_settings(void);
 void menu_request_save_studio(void);

@@ -127,13 +127,13 @@ void control_proxy_on_studio_disappeared(void)
   destroy_studio_view();
 }
 
-void menu_request_daemon_exit(void)
+void menu_request_ladishd_exit(void)
 {
-  log_info("Daemon exit request");
+  log_info("ladishd exit request");
 
   if (!control_proxy_exit())
   {
-    error_message_box(_("Daemon exit command failed, please inspect logs."));
+    error_message_box(_("ladishd exit command failed, please inspect logs."));
   }
 }
 

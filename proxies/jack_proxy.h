@@ -135,4 +135,6 @@ jack_proxy_reset_parameter_value(
 
 bool jack_reset_all_params(void);
 
+bool jack_proxy_exit(void);
+
 #endif /* #ifndef JACK_PROXY_H__88702EEC_4B82_407F_A664_AD70C1E14D02__INCLUDED */

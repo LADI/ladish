@@ -628,3 +628,14 @@ bool jack_reset_all_params(void)
 
   return jack_proxy_read_conf_container(address, NULL, reset_callback);
 }
+
+bool jack_proxy_exit(void)
+{
+  if (!dbus_call(0, JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONTROL, "Exit", "", ""))
+  {
+    log_error("Exit() failed.");
+    return false;
+  }
+
+  return true;
+}

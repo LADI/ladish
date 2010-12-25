@@ -45,4 +45,6 @@ bool a2j_proxy_is_started(void);
 bool a2j_proxy_start_bridge(void);
 bool a2j_proxy_stop_bridge(void);
 
+bool a2j_proxy_exit(void);
+
 #endif // #ifndef A2J_PROXY_HPP__24525CB1_8AED_4697_8C56_5C57473839CC__INCLUDED

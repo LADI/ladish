@@ -533,6 +533,7 @@ def build(bld):
 
         for source in [
             'jack_proxy.c',
+            'a2j_proxy.c',
             'graph_proxy.c',
             'studio_proxy.c',
             'control_proxy.c',

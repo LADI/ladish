@@ -33,7 +33,9 @@
 #include "statusbar.h"
 #include "action.h"
 #include "../proxies/jack_proxy.h"
+#include "../proxies/a2j_proxy.h"
 #include "gtk_builder.h"
+#include "ask_dialog.h"
 
 /* JACK states */
 #define JACK_STATE_NA         0
@@ -234,6 +236,46 @@ void menu_request_jack_latency_change(uint32_t buffer_size)
   if (!jack_proxy_set_buffer_size(buffer_size))
   {
     log_error("cannot set JACK buffer size");
+  }
+}
+
+void menu_request_jackdbus_exit(void)
+{
+  bool result;
+
+  log_info("jackdbus exit request");
+
+  if (g_jack_state == JACK_STATE_STARTED)
+  {
+    if (!ask_dialog(&result, _("<b><big>Are you sure</big></b>"), _("jackdbus will be reactivated. Are you sure?")) || !result)
+    {
+      return;
+    }
+  }
+
+  if (!jack_proxy_exit())
+  {
+    error_message_box(_("jackdbus exit command failed, please inspect logs."));
+  }
+}
+
+void menu_request_a2jmidid_exit(void)
+{
+  bool result;
+
+  log_info("a2jmidid exit request");
+
+  if (g_jack_state == JACK_STATE_STARTED)
+  {
+    if (!ask_dialog(&result, _("<b><big>Are you sure</big></b>"), _("a2jmidid will be reactivated. Are you sure?")) || !result)
+    {
+      return;
+    }
+  }
+
+  if (!a2j_proxy_exit())
+  {
+    error_message_box(_("a2jmidid exit command failed, please inspect logs."));
   }
 }
 
