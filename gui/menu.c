@@ -358,7 +358,7 @@ void fill_view_popup_menu(GtkMenu * menu, graph_view_handle view)
 
   if (graph_view_get_app_supervisor(view) != NULL)
   {
-    menuitem = gtk_menu_item_new_with_label(_("Run..."));
+    menuitem = gtk_menu_item_new_with_label(_("New Application..."));
     g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_start_app, NULL);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
   }
