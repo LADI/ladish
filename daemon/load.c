@@ -299,6 +299,13 @@ interlink_client(
   bool interlinked;
   bool jmcore;
 
+  ASSERT(ctx_ptr->vgraph != NULL);
+  if (ctx_ptr->vgraph != ladish_client_get_vgraph(jclient))
+  {
+    /* skip clients of different vgraphs */
+    return true;
+  }
+
   if (strcmp(name, "system") == 0)
   {
     return true;
@@ -313,7 +320,9 @@ interlink_client(
   }
   else if (interlinked)
   {
-    ASSERT_NO_PASS; /* jclient has no app associated but is interlinked */
+    /* jclient has no app associated but is interlinked */
+    /* this can happen if there is an external app (presumably in a different vgraph) */
+    ASSERT_NO_PASS;             /* if vgraph is different, then we should have skipped the client earlier */
     return true;
   }
   ASSERT(!interlinked);
