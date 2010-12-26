@@ -891,7 +891,11 @@ ladish_save_jack_client_begin(
   /* for the a2j client vgraph is always the studio graph.
      However if studio has no a2j ports, lets not write a2j client.
      If there is a a2j port that matched the vgraph, the prolog will get written anyway */
-  ctx_ptr->client_visible = ctx_ptr->client_vgraph_match && !ctx_ptr->a2j && ladish_client_has_app(client_handle);
+  ctx_ptr->client_visible =
+    (!hidden ||
+     ladish_client_has_app(client_handle)) &&
+     ctx_ptr->client_vgraph_match &&
+     !ctx_ptr->a2j;
   if (!ctx_ptr->client_visible)
   {
     return true;
@@ -945,8 +949,13 @@ ladish_save_jack_port(
   uuid_t uuid;
   char str[37];
 
+  if (hidden && !ladish_port_has_app(port_handle))
+  {
+    return true;
+  }
+
   /* check vgraph for a2j ports */
-  if (ctx_ptr->a2j && ctx_ptr->vgraph_filter == ladish_port_get_vgraph(port_handle) && ladish_port_has_app(port_handle))
+  if (ctx_ptr->a2j && ctx_ptr->vgraph_filter == ladish_port_get_vgraph(port_handle))
   {
     if (!ctx_ptr->client_visible)
     {
