@@ -2336,7 +2336,7 @@ static bool is_system_client(ladish_client_handle client)
 }
 
 #define is_port_interesting(port_ptr) (                     \
-    ladish_client_has_app(port_ptr->client_ptr->client) ||  \
+    ladish_port_has_app(port_ptr->port) ||                  \
     ladish_port_is_link(port_ptr->port) ||                  \
     is_system_client(port_ptr->client_ptr->client)          \
     )
