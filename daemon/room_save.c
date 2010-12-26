@@ -207,7 +207,7 @@ static bool ladish_room_save_project_do(struct ladish_room * room_ptr)
     goto close;
   }
 
-  if (!ladish_write_jgraph(fd, 2, room_ptr->graph))
+  if (!ladish_write_jgraph(fd, 2, room_ptr->graph, room_ptr->app_supervisor))
   {
     log_error("ladish_write_jgraph() failed for room graph");
     goto close;

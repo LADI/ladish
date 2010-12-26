@@ -34,6 +34,7 @@ struct ladish_write_vgraph_context
 {
   int fd;
   int indent;
+  ladish_app_supervisor_handle app_supervisor;
   bool client_visible;
 };
 
@@ -44,11 +45,29 @@ static bool is_system_client(ladish_client_handle client)
   return ladish_virtualizer_is_system_client(uuid);
 }
 
-#define is_port_interesting(client, port) (     \
-    ladish_port_has_app(port) ||                \
-    ladish_port_is_link(port) ||                \
-    is_system_client(client)                    \
-    )
+static bool is_app_running(ladish_app_supervisor_handle app_supervisor, ladish_port_handle port)
+{
+  uuid_t app_uuid;
+  ladish_app_handle app;
+
+  if (!ladish_port_get_app(port, app_uuid))
+  {
+    return false;
+  }
+
+  app = ladish_app_supervisor_find_app_by_uuid(app_supervisor, app_uuid);
+  if (app == NULL)
+  {
+    return false;
+  }
+
+  return ladish_app_is_running(app);
+}
+
+#define is_port_interesting(app_supervisor, client, port) ( \
+    is_app_running(app_supervisor, port) ||                 \
+    ladish_port_is_link(port) ||                            \
+    is_system_client(client))
 
 bool ladish_write_string(int fd, const char * string)
 {
@@ -468,6 +487,12 @@ ladish_save_vgraph_port(
     return true;
   }
 
+  /* skip hidden ports of running apps */
+  if (hidden && !is_port_interesting(ctx_ptr->app_supervisor, client_handle, port_handle))
+  {
+    return true;
+  }
+
   link = ladish_get_vgraph_port_uuids(graph, port_handle, uuid, link_uuid);
   uuid_unparse(uuid, str);
   if (link)
@@ -578,8 +603,8 @@ ladish_save_vgraph_connection(
   char str[37];
 
   if (hidden &&
-      (!is_port_interesting(client1, port1) ||
-       !is_port_interesting(client2, port2)))
+      (!is_port_interesting(ctx_ptr->app_supervisor, client1, port1) ||
+       !is_port_interesting(ctx_ptr->app_supervisor, client2, port2)))
   {
     return true;
   }
@@ -755,6 +780,7 @@ bool ladish_write_vgraph(int fd, int indent, ladish_graph_handle vgraph, ladish_
 
   context.fd = fd;
   context.indent = indent + 1;
+  context.app_supervisor = app_supervisor;
 
   if (!ladish_write_indented_string(fd, indent, "<clients>\n"))
   {
@@ -820,6 +846,7 @@ struct ladish_write_jack_context
   int fd;
   int indent;
   ladish_graph_handle vgraph_filter;
+  ladish_app_supervisor_handle app_supervisor;
   bool client_vgraph_match;
   bool a2j;
   bool client_visible;
@@ -973,6 +1000,12 @@ ladish_save_jack_port(
     return true;
   }
 
+  /* skip hidden ports of running apps */
+  if (hidden && !is_port_interesting(ctx_ptr->app_supervisor, client_handle, port_handle))
+  {
+    return true;
+  }
+
   ladish_port_get_uuid(port_handle, uuid);
   uuid_unparse(uuid, str);
 
@@ -1010,7 +1043,7 @@ ladish_save_jack_port(
 #undef indent
 #undef fd
 
-bool ladish_write_jgraph(int fd, int indent, ladish_graph_handle vgraph)
+bool ladish_write_jgraph(int fd, int indent, ladish_graph_handle vgraph, ladish_app_supervisor_handle app_supervisor)
 {
   struct ladish_write_jack_context context;
 
@@ -1024,6 +1057,7 @@ bool ladish_write_jgraph(int fd, int indent, ladish_graph_handle vgraph)
   context.fd = fd;
   context.indent = indent + 1;
   context.vgraph_filter = vgraph;
+  context.app_supervisor = app_supervisor;
 
   if (!ladish_graph_iterate_nodes(
         ladish_studio_get_jack_graph(),

@@ -355,7 +355,7 @@ static bool run(void * command_context)
     goto close;
   }
 
-  if (!ladish_write_jgraph(fd, 2, ladish_studio_get_studio_graph()))
+  if (!ladish_write_jgraph(fd, 2, ladish_studio_get_studio_graph(), ladish_studio_get_studio_app_supervisor()))
   {
     log_error("ladish_write_jgraph() failed for studio graph");
     goto close;
