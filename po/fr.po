@@ -61,11 +61,11 @@ msgstr "Zoom approprié"
 
 #: gui/action.c:101 gui/action.c:102
 msgid "Zoom in"
-msgstr "Zoom aggrandir"
+msgstr "Zoom avant"
 
 #: gui/action.c:106 gui/action.c:107
 msgid "Zoom out"
-msgstr "Zoom diminuer"
+msgstr "Zoom arrière"
 
 #: gui/control.c:136
 msgid "Daemon exit command failed, please inspect logs."
