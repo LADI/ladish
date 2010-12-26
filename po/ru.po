@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-21 04:36+0500\n"
-"PO-Revision-Date: 2010-12-22 13:24+0500\n"
+"PO-Revision-Date: 2010-12-27 02:12+0300\n"
 "Language-Team: Russian <gnome-cyr@lists.gnome.org>\n"
 "Last-Translator: Maxim Kachur <mcdebugger@duganet.ru>\n"
 "MIME-Version: 1.0\n"
@@ -232,7 +232,7 @@ msgstr "Свойства проекта..."
 
 #: gui/menu.c:355 gui/gladish.ui:204
 msgid "New Application..."
-msgstr "Запустить..."
+msgstr "Новое приложение..."
 
 #: gui/menu.c:370
 msgid "Destroy Room"
