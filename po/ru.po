@@ -231,7 +231,7 @@ msgid "Project Properties..."
 msgstr "Свойства проекта..."
 
 #: gui/menu.c:355 gui/gladish.ui:204
-msgid "Run..."
+msgid "New Application..."
 msgstr "Запустить..."
 
 #: gui/menu.c:370
