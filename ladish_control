@@ -32,6 +32,7 @@ control_interface_name = 'org.ladish.Control'
 studio_interface_name = 'org.ladish.Studio'
 app_supervisor_interface_name = 'org.ladish.AppSupervisor'
 room_interface_name = 'org.ladish.Room'
+patchbay_interface_name = 'org.jackaudio.JackPatchbay'
 
 import sys
 import os
@@ -140,6 +141,24 @@ def get_room_obj_by_name(bus, studio_iface, room_name):
         if name == room_name:
             return bus.get_object(service_name, opath)
 
+def dump_graph(obj):
+    patchbay_iface = dbus.Interface(obj, patchbay_interface_name)
+    graph = patchbay_iface.GetGraph(0)
+    for client in graph[1]:
+        print '"%s"' % client[1]
+        for port in client[2]:
+            print '  "%s"' % port[1]
+    print
+    if len(graph[2]):
+        if len(graph[2]) == 1:
+            print "1 connection:"
+        else:
+            print "%u connections:" % len(graph[2])
+        for connection in graph[2]:
+            print '"%s":"%s" -> "%s":"%s"' % (connection[1], connection[3], connection[5], connection[7])
+    else:
+        print "0 connections."
+
 def main():
     if len(sys.argv) == 1:
         argv0 = os.path.basename(sys.argv[0])
@@ -170,6 +189,12 @@ def main():
         print("    psaveas <rname> <proj_dir> <proj_name>  - save as project")
         print("    snewapp <appargs>         - add new app to studio (see below for more info)")
         print("    rnewapp <rname> <appargs> - add new app to room (see below for more info)")
+        print("    sgdump                    - studio graph dump")
+        print("    rgdump <rname>            - room graph dump")
+        print("    sconnect <client1> <port1> <client2> <port2>            - connect ports in studio");
+        print("    sdisconnect <client1> <port1> <client2> <port2>         - disconnect ports in studio");
+        print("    rconnect <rname> <client1> <port1> <client2> <port2>    - connect ports in studio");
+        print("    rdisconnect <rname> <client1> <port1> <client2> <port2> - disconnect ports in room");
         print("");
         print("Add new app arguments:");
         print("    <commandline> [<name> [<level>] [term]] [-]");
@@ -415,6 +440,70 @@ def main():
                     index += count
 
                     add_app(get_room_obj_by_name(bus, studio_iface, arg), cmdline, name, level, term)
+                elif arg == "sgdump":
+                    print('--- dump studio graph')
+                    dump_graph(studio_obj)
+                elif arg == "rgdump":
+                    if index >= len(sys.argv):
+                        print("rconnect command requires rname, client1, port1, client2 and port2 arguments")
+                        sys.exit()
+                    rname = sys.argv[index]
+                    index += 1
+                    print('--- dump room "' + rname + '" graph')
+                    room_obj = get_room_obj_by_name(bus, studio_obj, rname)
+                    dump_graph(room_obj)
+                elif arg == "sconnect":
+                    if index + 4 > len(sys.argv):
+                        print("sconnect command requires client1, port1, client2 and port2 arguments")
+                        sys.exit()
+                    c1 = sys.argv[index]
+                    p1 = sys.argv[index + 1]
+                    c2 = sys.argv[index + 2]
+                    p2 = sys.argv[index + 3]
+                    index += 4
+                    print('--- connect studio port "' + c1 + '":"' + p1 + '" to "' + c2 + '":"' + p2 + '"')
+                    patchbay_iface = dbus.Interface(studio_obj, patchbay_interface_name)
+                    patchbay_iface.ConnectPortsByName(c1, p1, c2, p2)
+                elif arg == "sdisconnect":
+                    if index + 4 > len(sys.argv):
+                        print("sdisconnect command requires client1, port1, client2 and port2 arguments")
+                        sys.exit()
+                    c1 = sys.argv[index]
+                    p1 = sys.argv[index + 1]
+                    c2 = sys.argv[index + 2]
+                    p2 = sys.argv[index + 3]
+                    index += 4
+                    print('--- disconnect studio port "' + c2 + '":"' + p2 + '" from "' + c1 + '":"' + p1 + '"')
+                    patchbay_iface = dbus.Interface(studio_obj, patchbay_interface_name)
+                    patchbay_iface.DisconnectPortsByName(c1, p1, c2, p2)
+                elif arg == "rconnect":
+                    if index + 5 > len(sys.argv):
+                        print("rconnect command requires rname, client1, port1, client2 and port2 arguments")
+                        sys.exit()
+                    rname = sys.argv[index]
+                    c1 = sys.argv[index + 1]
+                    p1 = sys.argv[index + 2]
+                    c2 = sys.argv[index + 3]
+                    p2 = sys.argv[index + 4]
+                    index += 5
+                    print('--- connect room "' + rname + '" port "' + c1 + '":"' + p1 + '" to "' + c2 + '":"' + p2 + '"')
+                    room_obj = get_room_obj_by_name(bus, studio_iface, rname)
+                    patchbay_iface = dbus.Interface(room_obj, patchbay_interface_name)
+                    patchbay_iface.ConnectPortsByName(c1, p1, c2, p2)
+                elif arg == "rdisconnect":
+                    if index + 5 > len(sys.argv):
+                        print("rdisconnect command requires rname, client1, port1, client2 and port2 arguments")
+                        sys.exit()
+                    rname = sys.argv[index]
+                    c1 = sys.argv[index + 1]
+                    p1 = sys.argv[index + 2]
+                    c2 = sys.argv[index + 3]
+                    p2 = sys.argv[index + 4]
+                    index += 5
+                    print('--- disconnect room "' + rname + '" port "' + c2 + '":"' + p2 + '" from "' + c1 + '":"' + p1 + '"')
+                    room_obj = get_room_obj_by_name(bus, studio_iface, rname)
+                    patchbay_iface = dbus.Interface(room_obj, patchbay_interface_name)
+                    patchbay_iface.DisconnectPortsByName(c1, p1, c2, p2)
                 else:
                     print("Unknown command '%s'" % arg)
         except dbus.DBusException, e:

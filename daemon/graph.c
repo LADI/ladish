@@ -195,6 +195,112 @@ static void ladish_graph_emit_port_disappeared(struct ladish_graph * graph_ptr, 
     &port_ptr->name);
 }
 
+static
+bool
+ladish_graph_find_connection_ports_by_name_internal(
+  struct ladish_graph * graph_ptr,
+  const char * client1_name,
+  const char * port1_name,
+  const char * client2_name,
+  const char * port2_name,
+  struct ladish_graph_port ** port1_ptr_ptr,
+  struct ladish_graph_port ** port2_ptr_ptr)
+{
+  struct list_head * client1_node_ptr;
+  struct ladish_graph_client * client1_ptr;
+  struct list_head * port1_node_ptr;
+  struct ladish_graph_port * port1_ptr;
+  struct list_head * client2_node_ptr;
+  struct ladish_graph_client * client2_ptr;
+  struct list_head * port2_node_ptr;
+  struct ladish_graph_port * port2_ptr;
+
+  /*
+   * Port names are not unique, so in order to find best match,
+   * ports are searched with these assumptions:
+   *
+   *  1. port1 and port2 are of same type (midi or audio)
+   *  2. port1 is a source (capture, output) port
+   *  3. port2 is a destination (playback, input) port
+   *
+   * all these conditions have to be met for a port pair to match
+   */
+  list_for_each(client1_node_ptr, &graph_ptr->clients)
+  {
+    client1_ptr = list_entry(client1_node_ptr, struct ladish_graph_client, siblings);
+    if (strcmp(client1_ptr->name, client1_name) == 0)
+    {
+      list_for_each(port1_node_ptr, &client1_ptr->ports)
+      {
+        port1_ptr = list_entry(port1_node_ptr, struct ladish_graph_port, siblings_client);
+        if (JACKDBUS_PORT_IS_OUTPUT(port1_ptr->flags) &&
+            strcmp(port1_ptr->name, port1_name) == 0)
+        {
+          list_for_each(client2_node_ptr, &graph_ptr->clients)
+          {
+            client2_ptr = list_entry(client2_node_ptr, struct ladish_graph_client, siblings);
+            if (strcmp(client2_ptr->name, client2_name) == 0)
+            {
+              list_for_each(port2_node_ptr, &client2_ptr->ports)
+              {
+                port2_ptr = list_entry(port2_node_ptr, struct ladish_graph_port, siblings_client);
+                if (port2_ptr->type == port1_ptr->type &&
+                    JACKDBUS_PORT_IS_INPUT(port2_ptr->flags) &&
+                    strcmp(port2_ptr->name, port2_name) == 0)
+                {
+                  *port1_ptr_ptr = port1_ptr;
+                  *port2_ptr_ptr = port2_ptr;
+                  return true;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+static
+bool
+ladish_graph_find_connection_ports_by_name(
+  struct ladish_graph * graph_ptr,
+  const char * client1_name,
+  const char * port1_name,
+  const char * client2_name,
+  const char * port2_name,
+  struct ladish_graph_port ** port1_ptr_ptr,
+  struct ladish_graph_port ** port2_ptr_ptr)
+{
+  if (ladish_graph_find_connection_ports_by_name_internal(
+        graph_ptr,
+        client1_name,
+        port1_name,
+        client2_name,
+        port2_name,
+        port1_ptr_ptr,
+        port2_ptr_ptr))
+  {
+    return true;
+  }
+
+  if (ladish_graph_find_connection_ports_by_name_internal(
+        graph_ptr,
+        client2_name,
+        port2_name,
+        client1_name,
+        port1_name,
+        port1_ptr_ptr,
+        port2_ptr_ptr))
+  {
+    return true;
+  }
+
+  return false;
+}
+
 static struct ladish_graph_port * ladish_graph_find_port_by_id_internal(struct ladish_graph * graph_ptr, uint64_t port_id)
 {
   struct list_head * node_ptr;
@@ -613,8 +719,43 @@ exit:
 
 static void connect_ports_by_name(struct dbus_method_call * call_ptr)
 {
-  log_info("connect_ports_by_name() called.");
-  lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "connect by name is not implemented yet");
+  const char * client1_name;
+  const char * port1_name;
+  const char * client2_name;
+  const char * port2_name;
+  struct ladish_graph_port * port1;
+  struct ladish_graph_port * port2;
+
+  if (!dbus_message_get_args(
+        call_ptr->message,
+        &g_dbus_error,
+        DBUS_TYPE_STRING, &client1_name,
+        DBUS_TYPE_STRING, &port1_name,
+        DBUS_TYPE_STRING, &client2_name,
+        DBUS_TYPE_STRING, &port2_name,
+        DBUS_TYPE_INVALID))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s", call_ptr->method_name, g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return;
+  }
+
+  log_info("connect_ports_by_name(\"%s\", \"%s\", \"%s\", \"%s\") called.", client1_name, port1_name, client2_name, port2_name);
+
+  if (!ladish_graph_find_connection_ports_by_name(graph_ptr, client1_name, port1_name, client2_name, port2_name, &port1, &port2))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot connect unknown ports");
+    return;
+  }
+
+  if (graph_ptr->connect_handler(graph_ptr->context, (ladish_graph_handle)graph_ptr, port1->port, port2->port))
+  {
+    method_return_new_void(call_ptr);
+  }
+  else
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "connect failed");
+  }
 }
 
 static void connect_ports_by_id(struct dbus_method_call * call_ptr)
@@ -688,8 +829,44 @@ static void disconnect_ports(struct dbus_method_call * call_ptr, struct ladish_g
 
 static void disconnect_ports_by_name(struct dbus_method_call * call_ptr)
 {
-  log_info("disconnect_ports_by_name() called.");
-  lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "disconnect by name is not implemented yet");
+  const char * client1_name;
+  const char * port1_name;
+  const char * client2_name;
+  const char * port2_name;
+  struct ladish_graph_port * port1;
+  struct ladish_graph_port * port2;
+  struct ladish_graph_connection * connection_ptr;
+
+  if (!dbus_message_get_args(
+        call_ptr->message,
+        &g_dbus_error,
+        DBUS_TYPE_STRING, &client1_name,
+        DBUS_TYPE_STRING, &port1_name,
+        DBUS_TYPE_STRING, &client2_name,
+        DBUS_TYPE_STRING, &port2_name,
+        DBUS_TYPE_INVALID))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s", call_ptr->method_name, g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return;
+  }
+
+  log_info("disconnect_ports_by_name(\"%s\", \"%s\", \"%s\", \"%s\") called.", client1_name, port1_name, client2_name, port2_name);
+
+  if (!ladish_graph_find_connection_ports_by_name(graph_ptr, client1_name, port1_name, client2_name, port2_name, &port1, &port2))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot disconnect unknown ports");
+    return;
+  }
+
+  connection_ptr = ladish_graph_find_connection_by_ports(graph_ptr, port1, port2);
+  if (connection_ptr == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot disconnect not connected ports");
+    return;
+  }
+
+  disconnect_ports(call_ptr, connection_ptr);
 }
 
 static void disconnect_ports_by_id(struct dbus_method_call * call_ptr)
