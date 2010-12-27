@@ -147,7 +147,23 @@ def dump_graph(obj):
     for client in graph[1]:
         print '"%s"' % client[1]
         for port in client[2]:
-            print '  "%s"' % port[1]
+            port_flags = port[2]
+            if (port_flags & 1) != 0:
+                port_flags = "input"
+            elif (port_flags & 2) != 0:
+                port_flags = "output"
+            else:
+                port_flags = "unknown"
+
+            port_type = port[3]
+            if port_type == 0:
+                port_type = "audio"
+            elif port_type == 1:
+                port_type = "midi"
+            else:
+                port_type = "unknown"
+
+            print '  "%s" [%s %s]' % (port[1], port_flags, port_type)
     print
     if len(graph[2]):
         if len(graph[2]) == 1:
