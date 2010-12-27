@@ -380,6 +380,10 @@ ladish_room_save_project(
     room_ptr->project_name = old_project_name;
     room_ptr->project_dir = old_project_dir;
   }
+  else
+  {
+    room_ptr->project_state = ROOM_PROJECT_STATE_LOADED;
+  }
 
 exit:
   if (project_name != NULL && project_name != room_ptr->project_name)
