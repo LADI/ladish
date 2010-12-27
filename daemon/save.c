@@ -45,29 +45,35 @@ static bool is_system_client(ladish_client_handle client)
   return ladish_virtualizer_is_system_client(uuid);
 }
 
-static bool is_app_running(ladish_app_supervisor_handle app_supervisor, ladish_port_handle port)
+static bool is_hidden_port_interesting(ladish_app_supervisor_handle app_supervisor, ladish_client_handle client, ladish_port_handle port)
 {
   uuid_t app_uuid;
   ladish_app_handle app;
 
+  if (is_system_client(client) || ladish_port_is_link(port))
+  {
+    return true;
+  }
+
+  /* hidden ports of external apps should not be saved */
+  /* hidden ports of stopped managed apps should be saved */
+  /* hidden ports of started managed apps should not be saved */
+
   if (!ladish_port_get_app(port, app_uuid))
   {
+    /* port of external app, don't save */
     return false;
   }
 
   app = ladish_app_supervisor_find_app_by_uuid(app_supervisor, app_uuid);
   if (app == NULL)
   {
+    ASSERT_NO_PASS;             /* this should not happen because app ports are removed before app is removed */
     return false;
   }
 
-  return ladish_app_is_running(app);
+  return !ladish_app_is_running(app);
 }
-
-#define is_port_interesting(app_supervisor, client, port) ( \
-    is_app_running(app_supervisor, port) ||                 \
-    ladish_port_is_link(port) ||                            \
-    is_system_client(client))
 
 bool ladish_write_string(int fd, const char * string)
 {
@@ -488,7 +494,7 @@ ladish_save_vgraph_port(
   }
 
   /* skip hidden ports of running apps */
-  if (hidden && !is_port_interesting(ctx_ptr->app_supervisor, client_handle, port_handle))
+  if (hidden && !is_hidden_port_interesting(ctx_ptr->app_supervisor, client_handle, port_handle))
   {
     return true;
   }
@@ -603,8 +609,8 @@ ladish_save_vgraph_connection(
   char str[37];
 
   if (hidden &&
-      (!is_port_interesting(ctx_ptr->app_supervisor, client1, port1) ||
-       !is_port_interesting(ctx_ptr->app_supervisor, client2, port2)))
+      (!is_hidden_port_interesting(ctx_ptr->app_supervisor, client1, port1) ||
+       !is_hidden_port_interesting(ctx_ptr->app_supervisor, client2, port2)))
   {
     return true;
   }
@@ -1001,7 +1007,7 @@ ladish_save_jack_port(
   }
 
   /* skip hidden ports of running apps */
-  if (hidden && !is_port_interesting(ctx_ptr->app_supervisor, client_handle, port_handle))
+  if (hidden && !is_hidden_port_interesting(ctx_ptr->app_supervisor, client_handle, port_handle))
   {
     return true;
   }
