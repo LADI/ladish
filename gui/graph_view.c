@@ -267,6 +267,8 @@ create_view(
     goto free_room_proxy;
   }
 
+  menu_view_changed();
+
   *handle_ptr = (graph_view_handle)view_ptr;
 
   return true;
