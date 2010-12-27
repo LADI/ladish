@@ -245,6 +245,36 @@ void menu_uninit(void)
   ladish_dynmenu_destroy(g_project_dynmenu);
 }
 
+static bool is_new_app_allowed(graph_view_handle view)
+{
+  unsigned int studio_state;
+
+  studio_state = get_studio_state();
+
+  if (studio_state != STUDIO_STATE_STOPPED && studio_state != STUDIO_STATE_STARTED)
+  {
+    return false;
+  }
+
+  if (view == NULL)
+  {
+    return false;
+  }
+
+  if (graph_view_get_app_supervisor(view) == NULL)
+  {
+    return false;
+  }
+
+  if (!is_room_view(view))
+  {
+    /* studio view is currently selected */
+    return true;
+  }
+
+  return room_has_project(view);
+}
+
 void menu_studio_state_changed(unsigned int studio_state)
 {
   graph_view_handle view;
@@ -255,11 +285,22 @@ void menu_studio_state_changed(unsigned int studio_state)
   gtk_widget_set_sensitive(g_menu_item_save_as_studio, studio_state == STUDIO_STATE_STARTED);
   gtk_widget_set_sensitive(g_menu_item_unload_studio, studio_state != STUDIO_STATE_UNLOADED);
   gtk_widget_set_sensitive(g_menu_item_rename_studio, studio_state == STUDIO_STATE_STOPPED || studio_state == STUDIO_STATE_STARTED);
-  gtk_widget_set_sensitive(g_menu_item_start_app, studio_state == STUDIO_STATE_STOPPED || studio_state == STUDIO_STATE_STARTED);
   gtk_widget_set_sensitive(g_menu_item_create_room, studio_state == STUDIO_STATE_STOPPED || studio_state == STUDIO_STATE_STARTED);
 
   view = get_current_view();
   gtk_widget_set_sensitive(g_menu_item_project, studio_state == STUDIO_STATE_STARTED && view != NULL && is_room_view(view));
+  gtk_widget_set_sensitive(g_menu_item_start_app, is_new_app_allowed(view));
+}
+
+void menu_view_changed(void)
+{
+  graph_view_handle view;
+
+  view = get_current_view();
+
+  gtk_widget_set_sensitive(g_menu_item_start_app, is_new_app_allowed(view));
+  gtk_widget_set_sensitive(g_menu_item_destroy_room, is_room_view(view));
+  gtk_widget_set_sensitive(g_menu_item_project, is_room_view(view) && get_studio_state() == STUDIO_STATE_STARTED);
 }
 
 void menu_set_jack_latency_items_sensivity(bool sensitive)
@@ -329,12 +370,6 @@ void menu_set_toolbar_visibility(bool visible)
   gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(g_menu_item_view_toolbar), visible);
 }
 
-void menu_view_activated(bool room)
-{
-  gtk_widget_set_sensitive(g_menu_item_destroy_room, room);
-  gtk_widget_set_sensitive(g_menu_item_project, room && get_studio_state() == STUDIO_STATE_STARTED);
-}
-
 static void on_popup_menu_action_start_app(GtkWidget * menuitem, gpointer userdata)
 {
   menu_request_start_app();
@@ -356,18 +391,18 @@ void fill_view_popup_menu(GtkMenu * menu, graph_view_handle view)
 
   log_info("filling view menu...");
 
-  if (graph_view_get_app_supervisor(view) != NULL)
+  if (graph_view_get_app_supervisor(view) != NULL && (!is_room_view(view) || room_has_project(view)))
   {
     menuitem = gtk_menu_item_new_with_label(_("New Application..."));
     g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_start_app, NULL);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+
+    menuitem = gtk_separator_menu_item_new(); /* separator */
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
   }
 
   if (is_room_view(view))
   {
-    menuitem = gtk_separator_menu_item_new(); /* separator */
-    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
-
     ladish_dynmenu_fill_external(g_project_dynmenu, menu);
 
     menuitem = gtk_separator_menu_item_new(); /* separator */

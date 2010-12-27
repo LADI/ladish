@@ -33,10 +33,10 @@ bool menu_init(void);
 void menu_uninit(void);
 
 void menu_studio_state_changed(unsigned int studio_state);
+void menu_view_changed(void);
 void menu_set_jack_latency_items_sensivity(bool sensitive);
 bool menu_set_jack_latency(uint32_t buffer_size, bool force);
 void menu_set_toolbar_visibility(bool visible);
-void menu_view_activated(bool room);
 void fill_view_popup_menu(GtkMenu * menu, graph_view_handle view);
 
 void menu_request_ladishd_exit(void);
