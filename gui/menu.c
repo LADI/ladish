@@ -403,7 +403,10 @@ void fill_view_popup_menu(GtkMenu * menu, graph_view_handle view)
 
   if (is_room_view(view))
   {
-    ladish_dynmenu_fill_external(g_project_dynmenu, menu);
+    if (get_studio_state() == STUDIO_STATE_STARTED)
+    {
+      ladish_dynmenu_fill_external(g_project_dynmenu, menu);
+    }
 
     menuitem = gtk_separator_menu_item_new(); /* separator */
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
