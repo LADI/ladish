@@ -170,6 +170,7 @@ char * catdup_array(const char ** array, const char * delimiter)
     len += strlen(array[i]);
     len += delimiter_length;
   }
+  len++;
 
   buffer = malloc(len);
   if (buffer == NULL)
