@@ -418,7 +418,7 @@ ladish_save_vgraph_client_begin(
       return false;
     }
 
-    if (!ladish_write_string(fd, str))
+    if (!ladish_write_string(fd, app_str))
     {
       return false;
     }
