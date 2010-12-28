@@ -256,6 +256,13 @@ unsigned int ladish_app_supervisor_get_running_app_count(ladish_app_supervisor_h
 bool ladish_app_supervisor_has_apps(ladish_app_supervisor_handle supervisor_handle);
 
 /**
+ * Dump to log the contents of the app supervisor
+ *
+ * @param[in] supervisor_handle supervisor object handle
+ */
+void ladish_app_supervisor_dump(ladish_app_supervisor_handle supervisor_handle);
+
+/**
  * Find app by name
  *
  * @param[in] supervisor_handle supervisor object handle

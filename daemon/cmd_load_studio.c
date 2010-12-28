@@ -1005,6 +1005,7 @@ static bool run(void * command_context)
 
   ladish_graph_dump(g_studio.jack_graph);
   ladish_graph_dump(g_studio.studio_graph);
+  ladish_app_supervisor_dump(g_studio.app_supervisor);
 
   ladish_recent_store_use_item(g_studios_recent_store, g_studio.name);
 

@@ -871,8 +871,9 @@ bool ladish_room_load_project(ladish_room_handle room_handle, const char * proje
   }
 
   ladish_interlink(room_ptr->graph, room_ptr->app_supervisor);
-  /* ladish_graph_dump(ladish_studio_get_jack_graph()); */
-  /* ladish_graph_dump(room_ptr->graph); */
+  ladish_graph_dump(ladish_studio_get_jack_graph());
+  ladish_graph_dump(room_ptr->graph);
+  ladish_app_supervisor_dump(room_ptr->app_supervisor);
 
   ladish_app_supervisor_set_directory(room_ptr->app_supervisor, project_dir);
   if (!ladish_app_supervisor_set_project_name(room_ptr->app_supervisor, room_ptr->project_name))
