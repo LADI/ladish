@@ -2583,9 +2583,11 @@ void ladish_graph_dump(ladish_graph_handle graph_handle)
   {
     client_ptr = list_entry(client_node_ptr, struct ladish_graph_client, siblings);
     log_info("    %s client '%s', id=%"PRIu64", ptr=%p%", client_ptr->hidden ? "invisible" : "visible", client_ptr->name, client_ptr->id, client_ptr->client);
+
     ladish_client_get_uuid(client_ptr->client, uuid);
     uuid_unparse(uuid, uuid_str);
     log_info("    uuid=%s", uuid_str);
+
     if (ladish_client_get_interlink(client_ptr->client, uuid))
     {
       uuid_unparse(uuid, uuid_str);
@@ -2595,6 +2597,17 @@ void ladish_graph_dump(ladish_graph_handle graph_handle)
     {
       log_info("    no interlink");
     }
+
+    if (ladish_client_get_app(client_ptr->client, uuid))
+    {
+      uuid_unparse(uuid, uuid_str);
+      log_info("    app=%s", uuid_str);
+    }
+    else
+    {
+      log_info("    appless client");
+    }
+
     dump_dict("      ", ladish_client_get_dict(client_ptr->client));
     log_info("      ports:");
     list_for_each(port_node_ptr, &client_ptr->ports)
@@ -2606,7 +2619,19 @@ void ladish_graph_dump(ladish_graph_handle graph_handle)
 
       vgraph = ladish_port_get_vgraph(port_ptr->port);
 
-      log_info("        %s port '%s', uuid=%s, id=%"PRIu64", type=0x%"PRIX32", flags=0x%"PRIX32", ptr=%p, vgraph=%s", port_ptr->hidden ? "invisible" : "visible", port_ptr->name, uuid_str, port_ptr->id, port_ptr->type, port_ptr->flags, port_ptr->port, vgraph != NULL ? ladish_graph_get_description(vgraph) : "NULL");
+      log_info("        %s port '%s', uuid=%s, id=%"PRIu64"", port_ptr->hidden ? "invisible" : "visible", port_ptr->name, uuid_str, port_ptr->id);
+      log_info("          type=0x%"PRIX32", flags=0x%"PRIX32", ptr=%p, vgraph=%s", port_ptr->type, port_ptr->flags, port_ptr->port, vgraph != NULL ? ladish_graph_get_description(vgraph) : "NULL");
+
+      if (ladish_port_get_app(port_ptr->port, uuid))
+      {
+        uuid_unparse(uuid, uuid_str);
+        log_info("          app=%s", uuid_str);
+      }
+      else
+      {
+        log_info("          appless port");
+      }
+
       dump_dict("        ", ladish_port_get_dict(port_ptr->port));
     }
   }

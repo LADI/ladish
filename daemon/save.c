@@ -353,7 +353,20 @@ ladish_save_vgraph_client_begin(
   uuid_t uuid;
   char str[37];
 
-  ctx_ptr->client_visible = !hidden || ladish_client_has_app(client_handle);
+  ctx_ptr->client_visible = !hidden;
+  if (!ctx_ptr->client_visible)
+  {
+    if (ladish_client_has_app(client_handle))
+    {
+      ctx_ptr->client_visible = true;
+      log_info("saving hidden vgraph client '%s' of managed app", client_name);
+    }
+    else
+    {
+      log_info("not saving hidden vgraph client '%s' because it has no app associated", client_name);
+    }
+  }
+
   if (!ctx_ptr->client_visible)
   {
     return true;
@@ -496,6 +509,7 @@ ladish_save_vgraph_port(
   /* skip hidden ports of running apps */
   if (hidden && !is_hidden_port_interesting(ctx_ptr->app_supervisor, client_handle, port_handle))
   {
+    log_info("skippping hidden vgraph port '%s':'%s'", client_name, port_name);
     return true;
   }
 
@@ -1009,6 +1023,7 @@ ladish_save_jack_port(
   /* skip hidden ports of running apps */
   if (hidden && !is_hidden_port_interesting(ctx_ptr->app_supervisor, client_handle, port_handle))
   {
+    log_info("skippping hidden vgraph port '%s':'%s'", client_name, port_name);
     return true;
   }
 
