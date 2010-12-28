@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: LADISH 0.3-rc\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-28 11:43+0500\n"
-"PO-Revision-Date: 2010-12-28 21:41+0100\n"
+"PO-Revision-Date: 2010-12-28 21:52+0100\n"
 "Last-Translator: Olivier HUMBERT <humbert.olivier.1@free.fr>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -196,7 +196,7 @@ msgstr "DSP: %5.1f%% (%5.1f%%)"
 
 #: gui/jack.c:250 gui/jack.c:270
 msgid "<b><big>Are you sure</big></b>"
-msgstr ""
+msgstr "<b><big>Êtes-vous sûr</big></b>"
 
 #: gui/jack.c:250
 msgid "jackdbus will be reactivated. Are you sure?"
@@ -283,7 +283,7 @@ msgstr "Nouvelle application..."
 
 #: gui/menu.c:414
 msgid "Destroy Room"
-msgstr "Détruire ce local"
+msgstr "Fermer ce local"
 
 #: gui/menu.c:420
 msgid "Create Room..."
@@ -486,11 +486,11 @@ msgstr "_Local"
 
 #: gui/gladish.ui:158
 msgid "_Create Room..."
-msgstr "_Créer un local..."
+msgstr "_Nouveau local..."
 
 #: gui/gladish.ui:169
 msgid "_Destroy Room"
-msgstr "_Fermer le local"
+msgstr "_Fermer ce local"
 
 #: gui/gladish.ui:184
 msgid "_Project"
