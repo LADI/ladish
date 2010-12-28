@@ -12,5 +12,5 @@ xgettext --keyword=_ -o "$POTFILE" gui/*.c gui/*.cpp
 xgettext -j -L Glade -o "$POTFILE" gui/gladish.ui
 
 for PO_FILE in po/*.po; do
-  msgmerge -U "$PO_FILE" "$POTFILE"
+  msgmerge -N -U "$PO_FILE" "$POTFILE"
 done
