@@ -124,7 +124,7 @@ static bool run(void * context)
     index++;
   }
 
-  app = ladish_app_supervisor_add(supervisor, name, true, cmd_ptr->commandline, cmd_ptr->terminal, cmd_ptr->level);
+  app = ladish_app_supervisor_add(supervisor, name, NULL, true, cmd_ptr->commandline, cmd_ptr->terminal, cmd_ptr->level);
 
   free(name_buffer);
 

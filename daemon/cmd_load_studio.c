@@ -271,6 +271,11 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
         goto free;
       }
 
+      if (ladish_get_uuid_attribute(attr, "app", context_ptr->uuid, true))
+      {
+        ladish_client_set_app(context_ptr->client, context_ptr->uuid);
+      }
+
       if (!ladish_graph_add_client(g_studio.studio_graph, context_ptr->client, name_dup, true))
       {
         log_error("ladish_graph_add_client() failed to add client '%s' to studio graph", name_dup);
@@ -525,6 +530,11 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
       log_error("application \"name\" attribute is not available.");
       context_ptr->error = XML_TRUE;
       goto free;
+    }
+
+    if (!ladish_get_uuid_attribute(attr, "uuid", context_ptr->uuid, true))
+    {
+      uuid_clear(context_ptr->uuid);
     }
 
     if (ladish_get_bool_attribute(attr, "terminal", &context_ptr->terminal) == NULL)
@@ -827,7 +837,14 @@ static void callback_elend(void * data, const char * el)
 
     log_info("application '%s' (%s, %s, level %u) with commandline '%s'", context_ptr->str, context_ptr->terminal ? "terminal" : "shell", context_ptr->autorun ? "autorun" : "stopped", (unsigned int)context_ptr->level, context_ptr->data);
 
-    if (ladish_app_supervisor_add(g_studio.app_supervisor, context_ptr->str, context_ptr->autorun, context_ptr->data, context_ptr->terminal, context_ptr->level) == NULL)
+    if (ladish_app_supervisor_add(
+          g_studio.app_supervisor,
+          context_ptr->str,
+          context_ptr->uuid,
+          context_ptr->autorun,
+          context_ptr->data,
+          context_ptr->terminal,
+          context_ptr->level) == NULL)
     {
       log_error("ladish_app_supervisor_add() failed.");
       context_ptr->error = XML_TRUE;
@@ -981,7 +998,7 @@ static bool run(void * command_context)
     return false;
   }
 
-  ladish_interlink_clients(ladish_studio_get_studio_graph(), ladish_studio_get_studio_app_supervisor());
+  ladish_interlink(ladish_studio_get_studio_graph(), ladish_studio_get_studio_app_supervisor());
 
   g_studio.persisted = true;
   log_info("Studio loaded. ('%s')", path);

@@ -352,6 +352,8 @@ ladish_save_vgraph_client_begin(
 {
   uuid_t uuid;
   char str[37];
+  uuid_t app_uuid;
+  char app_str[37];
 
   ctx_ptr->client_visible = !hidden;
   if (!ctx_ptr->client_visible)
@@ -405,6 +407,21 @@ ladish_save_vgraph_client_begin(
   if (!ladish_write_string(fd, "app"))
   {
     return false;
+  }
+
+  if (ladish_client_get_app(client_handle, app_uuid))
+  {
+    uuid_unparse(app_uuid, app_str);
+
+    if (!ladish_write_string(fd, "\" app=\""))
+    {
+      return false;
+    }
+
+    if (!ladish_write_string(fd, str))
+    {
+      return false;
+    }
   }
 
   if (!ladish_write_string(fd, "\">\n"))
@@ -702,6 +719,9 @@ ladish_save_app(
   char * escaped_string;
   char * escaped_buffer;
   bool ret;
+  char str[37];
+
+  uuid_unparse(uuid, str);
 
   log_info("saving app: name='%s', %srunning, %s, level %u, commandline='%s'", name, running ? "" : "not ", terminal ? "terminal" : "shell", (unsigned int)level, command);
 
@@ -726,6 +746,16 @@ ladish_save_app(
   if (!ladish_write_string(fd, escaped_buffer))
   {
     goto free_buffer;
+  }
+
+  if (!ladish_write_string(fd, "\" uuid=\""))
+  {
+    return false;
+  }
+
+  if (!ladish_write_string(fd, str))
+  {
+    return false;
   }
 
   if (!ladish_write_string(fd, "\" terminal=\""))

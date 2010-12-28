@@ -65,6 +65,7 @@ struct ladish_parse_context
   char data[MAX_DATA_SIZE];
   int data_used;
   char * str;
+  uuid_t uuid;
   ladish_client_handle client;
   ladish_port_handle port;
   ladish_dict_handle dict;
@@ -97,6 +98,6 @@ ladish_parse_port_type_and_direction_attributes(
   uint32_t * type_ptr,
   uint32_t * flags_ptr);
 
-void ladish_interlink_clients(ladish_graph_handle vgraph, ladish_app_supervisor_handle app_supervisor);
+void ladish_interlink(ladish_graph_handle vgraph, ladish_app_supervisor_handle app_supervisor);
 
 #endif /* #ifndef LOAD_H__43B1ECB8_247F_4868_AE95_563DD968D7B0__INCLUDED */

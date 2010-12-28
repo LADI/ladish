@@ -190,6 +190,7 @@ ladish_app_supervisor_save_L1(
  *
  * @param[in] supervisor_handle supervisor object handle
  * @param[in] name Name of the app
+ * @param[in] uuid Optional uuid of the app. If NULL, new uuid will be generated.
  * @param[in] autorun whether to start the app when ladish_app_supervisor_autorun() is called
  * @param[in] command Commandline that is used to start the app
  * @param[in] terminal Whether the app is started in terminal
@@ -201,6 +202,7 @@ ladish_app_handle
 ladish_app_supervisor_add(
   ladish_app_supervisor_handle supervisor_handle,
   const char * name,
+  uuid_t uuid,
   bool autorun,
   const char * command,
   bool terminal,

@@ -249,6 +249,7 @@ ladish_app_handle
 ladish_app_supervisor_add(
   ladish_app_supervisor_handle supervisor_handle,
   const char * name,
+  uuid_t uuid,
   bool autorun,
   const char * command,
   bool terminal,
@@ -289,7 +290,15 @@ ladish_app_supervisor_add(
   app_ptr->firstborn_pgrp = 0;
 
   app_ptr->id = supervisor_ptr->next_id++;
-  uuid_generate(app_ptr->uuid);
+  if (uuid == NULL || uuid_is_null(uuid))
+  {
+    uuid_generate(app_ptr->uuid);
+  }
+  else
+  {
+    uuid_copy(app_ptr->uuid, uuid);
+  }
+
   app_ptr->zombie = false;
   app_ptr->state = LADISH_APP_STATE_STOPPED;
   app_ptr->autorun = autorun;

@@ -224,6 +224,11 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
         goto free;
       }
 
+      if (ladish_get_uuid_attribute(attr, "app", context_ptr->uuid, true))
+      {
+        ladish_client_set_app(context_ptr->client, context_ptr->uuid);
+      }
+
       if (!ladish_graph_add_client(ladish_studio_get_jack_graph(), context_ptr->client, name_dup, true))
       {
         log_error("ladish_graph_add_client() failed to add client '%s' to JACK graph", name_dup);
@@ -527,6 +532,11 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
       goto free;
     }
 
+    if (!ladish_get_uuid_attribute(attr, "uuid", context_ptr->uuid, true))
+    {
+      uuid_clear(context_ptr->uuid);
+    }
+
     if (ladish_get_bool_attribute(attr, "terminal", &context_ptr->terminal) == NULL)
     {
       log_error("application \"terminal\" attribute is not available. name=\"%s\"", name);
@@ -705,7 +715,14 @@ static void callback_elend(void * data, const char * el)
 
     log_info("application '%s' (%s, %s, level %u) with commandline '%s'", context_ptr->str, context_ptr->terminal ? "terminal" : "shell", context_ptr->autorun ? "autorun" : "stopped", (unsigned int)context_ptr->level, context_ptr->data);
 
-    if (ladish_app_supervisor_add(room_ptr->app_supervisor, context_ptr->str, context_ptr->autorun, context_ptr->data, context_ptr->terminal, context_ptr->level) == NULL)
+    if (ladish_app_supervisor_add(
+          room_ptr->app_supervisor,
+          context_ptr->str,
+          context_ptr->uuid,
+          context_ptr->autorun,
+          context_ptr->data,
+          context_ptr->terminal,
+          context_ptr->level) == NULL)
     {
       log_error("ladish_app_supervisor_add() failed.");
       context_ptr->error = XML_TRUE;
@@ -853,7 +870,7 @@ bool ladish_room_load_project(ladish_room_handle room_handle, const char * proje
     goto free_parser;
   }
 
-  ladish_interlink_clients(room_ptr->graph, room_ptr->app_supervisor);
+  ladish_interlink(room_ptr->graph, room_ptr->app_supervisor);
   /* ladish_graph_dump(ladish_studio_get_jack_graph()); */
   /* ladish_graph_dump(room_ptr->graph); */
 

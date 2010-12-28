@@ -293,6 +293,7 @@ interlink_client(
   void ** client_iteration_context_ptr_ptr)
 {
   uuid_t app_uuid;
+  uuid_t vclient_app_uuid;
   uuid_t vclient_uuid;
   ladish_client_handle vclient;
   pid_t pid;
@@ -330,9 +331,15 @@ interlink_client(
   }
   ASSERT(!interlinked);
 
+  /* XXX: why this is is here is a mystery. interlink is supposed to be called just after load so pid will always be 0 */
   pid = ladish_client_get_pid(jclient);
-  jmcore = pid != 0 && pid != jmcore_proxy_get_pid_cached();
+  jmcore = pid != 0 && pid == jmcore_proxy_get_pid_cached();
   if (jmcore)
+  {
+    return true;
+  }
+
+  if (ladish_virtualizer_is_a2j_client(jclient))
   {
     return true;
   }
@@ -355,15 +362,49 @@ interlink_client(
   ladish_client_interlink(jclient, vclient);
 
   ladish_app_get_uuid(app, app_uuid);
-  ladish_client_set_app(jclient, app_uuid);
-  ladish_client_set_app(vclient, app_uuid);
+  if (ladish_client_get_app(vclient, vclient_app_uuid))
+  {
+    if (uuid_compare(app_uuid, vclient_app_uuid) != 0)
+    {
+      log_error("vclient of app '%s' already has a different app uuid", name);
+    }
+  }
+  else
+  {
+    log_info("associating vclient with app '%s'", name);
+    ladish_client_set_app(vclient, app_uuid);
+  }
 
+  ladish_client_set_app(jclient, app_uuid);
   ladish_client_set_vgraph(jclient, ctx_ptr->vgraph);
 
   return true;
 }
 
-void ladish_interlink_clients(ladish_graph_handle vgraph, ladish_app_supervisor_handle app_supervisor)
+bool
+interlink_port(
+  void * context,
+  ladish_graph_handle graph_handle,
+  bool hidden,
+  void * client_iteration_context_ptr,
+  ladish_client_handle client_handle,
+  const char * client_name,
+  ladish_port_handle port_handle,
+  const char * port_name,
+  uint32_t port_type,
+  uint32_t port_flags)
+{
+  uuid_t app_uuid;
+
+  if (ladish_client_get_app(client_handle, app_uuid))
+  {
+    ladish_port_set_app(port_handle, app_uuid);
+  }
+
+  return true;
+}
+
+void ladish_interlink(ladish_graph_handle vgraph, ladish_app_supervisor_handle app_supervisor)
 {
   struct interlink_context ctx;
 
@@ -371,4 +412,5 @@ void ladish_interlink_clients(ladish_graph_handle vgraph, ladish_app_supervisor_
   ctx.app_supervisor = app_supervisor;
 
   ladish_graph_iterate_nodes(ladish_studio_get_jack_graph(), &ctx, interlink_client, NULL, NULL);
+  ladish_graph_iterate_nodes(vgraph, &ctx, NULL, interlink_port, NULL);
 }
