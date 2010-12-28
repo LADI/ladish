@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: LADISH 0.3-rc\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2010-12-28 11:43+0500\n"
-"PO-Revision-Date: 2010-12-21 00:37+0100\n"
+"PO-Revision-Date: 2010-12-28 21:41+0100\n"
 "Last-Translator: Olivier HUMBERT <humbert.olivier.1@free.fr>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -40,23 +40,23 @@ msgstr "Nadejda Pancheva-Arnaudova"
 
 #: gui/about.c:62
 msgid "Alexandre Prokoudine"
-msgstr ""
+msgstr "Alexandre Prokoudine"
 
 #: gui/about.c:63
 msgid "Olivier Humbert"
-msgstr ""
+msgstr "Olivier Humbert"
 
 #: gui/about.c:64
 msgid "Frank Kober"
-msgstr ""
+msgstr "Frank Kober"
 
 #: gui/about.c:65
 msgid "Maxim Kachur"
-msgstr ""
+msgstr "Maxim Kachur"
 
 #: gui/about.c:66
 msgid "Jof Thibaut"
-msgstr ""
+msgstr "Jof Thibaut"
 
 #: gui/about.c:85
 #, c-format
@@ -65,7 +65,7 @@ msgstr "gladish est construit le %s à partir de %s"
 
 #: gui/action.c:86
 msgid "Clear XRuns and Max DSP Load"
-msgstr "Effacer les Xruns et la charge maxi du DSP"
+msgstr "Effacer les Xruns et la charge maximale du DSP"
 
 #: gui/action.c:87
 msgid "Clear"
@@ -89,7 +89,7 @@ msgstr "Zoom arrière"
 
 #: gui/control.c:136
 msgid "ladishd exit command failed, please inspect logs."
-msgstr ""
+msgstr "ladishd n'a pas pu être arrêté, veuillez inspecter les logs."
 
 #: gui/control.c:146
 msgid "New studio"
@@ -129,13 +129,12 @@ msgid "New application"
 msgstr "Nouvelle application"
 
 #: gui/dialogs.c:96
-#, fuzzy
 msgid ""
 "Execution failed. I know you want to know more for the reson but currently "
 "you can only check the log file."
 msgstr ""
 "Échec de l'éxecution. Je sais que vous voudriez en savoir plus sur la raison "
-"mais, actuellement, vous pouvez seulement regarder le fichier de log."
+"mais, actuellement, vous pouvez seulement regarder le fichier log."
 
 #: gui/dialogs.c:138
 msgid "<b><big>Error</big></b>"
@@ -201,19 +200,19 @@ msgstr ""
 
 #: gui/jack.c:250
 msgid "jackdbus will be reactivated. Are you sure?"
-msgstr ""
+msgstr "jackdbus sera réactivé. Êtes-vous sûr?"
 
 #: gui/jack.c:258
 msgid "jackdbus exit command failed, please inspect logs."
-msgstr ""
+msgstr "jackdbus n'a pas pu être arrêté, veuillez inspecter les logs."
 
 #: gui/jack.c:270
 msgid "a2jmidid will be reactivated. Are you sure?"
-msgstr ""
+msgstr "jackdbus sera réactivé. Êtes-vous sûr?"
 
 #: gui/jack.c:278
 msgid "a2jmidid exit command failed, please inspect logs."
-msgstr ""
+msgstr "a2jmidid n'a pas pu être arrêté, veuillez inspecter les logs."
 
 #: gui/jack.c:302
 msgid ""
@@ -288,7 +287,7 @@ msgstr "Détruire ce local"
 
 #: gui/menu.c:420
 msgid "Create Room..."
-msgstr "Créer un local"
+msgstr "Nouveau local..."
 
 #: gui/project_properties.c:73 gui/project_properties.c:82
 msgid "Setting of project description failed, please inspect logs."
@@ -351,11 +350,11 @@ msgstr "n'arrive pas à obtenir le nom du studio"
 
 #: gui/studio.c:149
 msgid "Studio is started"
-msgstr "Le studio est démarré"
+msgstr "Studio démarré"
 
 #: gui/studio.c:153
 msgid "Studio is stopped"
-msgstr "Le studio est arrêté"
+msgstr "Studio arrêté"
 
 #: gui/studio.c:160
 msgid "Internal error - unknown studio state"
@@ -447,43 +446,43 @@ msgstr "_Studio"
 
 #: gui/gladish.ui:24
 msgid "_New Studio..."
-msgstr "_Nouveau studio"
+msgstr "_Nouveau..."
 
 #: gui/gladish.ui:34
 msgid "_Load Studio"
-msgstr "Ouvrir _le studio"
+msgstr "_Ouvrir..."
 
 #: gui/gladish.ui:50
 msgid "Start Studio"
-msgstr "Démarrer le studio"
+msgstr "Démarrer"
 
 #: gui/gladish.ui:62
 msgid "Stop Studio"
-msgstr "Arrêter le studio"
+msgstr "Arrêter"
 
 #: gui/gladish.ui:79
 msgid "_Rename Studio..."
-msgstr "_Renommer le studio"
+msgstr "_Renommer..."
 
 #: gui/gladish.ui:90
 msgid "_Save Studio"
-msgstr "_Enregistrer le studio"
+msgstr "_Enregistrer"
 
 #: gui/gladish.ui:101
 msgid "Save Studio _As..."
-msgstr "Enregistrer le studio _sous..."
+msgstr "Enregistrer _sous..."
 
 #: gui/gladish.ui:112
 msgid "_Unload Studio"
-msgstr "Fermer le st_udio"
+msgstr "_Fermer"
 
 #: gui/gladish.ui:123
 msgid "_Delete Studio"
-msgstr "Effacer le stu_dio"
+msgstr "_Effacer"
 
 #: gui/gladish.ui:151
 msgid "_Room"
-msgstr "_Room"
+msgstr "_Local"
 
 #: gui/gladish.ui:158
 msgid "_Create Room..."
@@ -535,15 +534,15 @@ msgstr "Ré-activer ladishd"
 
 #: gui/gladish.ui:341
 msgid "Reactivate jackdbus"
-msgstr ""
+msgstr "Ré-activer jackdbus"
 
 #: gui/gladish.ui:350
 msgid "Reactivate a2jmidid"
-msgstr ""
+msgstr "Ré-activer a2jmidid"
 
 #: gui/gladish.ui:359
 msgid "JACK _Latency"
-msgstr "_Latence JACK"
+msgstr "_Taille du paquet JACK"
 
 #: gui/gladish.ui:368
 msgid "32"
@@ -587,7 +586,7 @@ msgstr "Aid_e"
 
 #: gui/gladish.ui:479
 msgid "Clear XRuns"
-msgstr "Effacer les X-Runs"
+msgstr "Effacer les XRuns"
 
 #: gui/gladish.ui:618
 msgid ""
