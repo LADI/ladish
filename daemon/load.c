@@ -351,7 +351,7 @@ interlink_client(
     return true;
   }
 
-  vclient = ladish_graph_find_client_by_name(ctx_ptr->vgraph, name, true);
+  vclient = ladish_graph_find_client_by_name(ctx_ptr->vgraph, name, false);
   if (vclient == NULL)
   {
     log_error("JACK client '%s' has no vclient associated", name);
