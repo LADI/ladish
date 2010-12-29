@@ -101,11 +101,11 @@ msgstr "Nom du studio"
 
 #: gui/control.c:150
 msgid "Creation of new studio failed, please inspect logs."
-msgstr "Échec de la création d'un nouveau studio, merci d'inspecter les logs."
+msgstr "Échec de la création d'un nouveau studio, veuillez inspecter les logs."
 
 #: gui/control.c:163
 msgid "Studio load failed, please inspect logs."
-msgstr "Échec à l'ouverture du studio, merci d'inspecter les logs."
+msgstr "Échec de l'ouverture du studio, veuillez inspecter les logs."
 
 #: gui/control.c:171
 msgid "<b><big>Confirm studio delete</big></b>"
@@ -118,7 +118,7 @@ msgstr "Le studio \"%s\" sera effacé. Êtes-vous sûr ?"
 
 #: gui/control.c:180
 msgid "Studio delete failed, please inspect logs."
-msgstr "Échec de l'effacement du studio, merci d'inspecter les logs."
+msgstr "Échec de l'effacement du studio, veuillez inspecter les logs."
 
 #: gui/create_room_dialog.c:72 gui/world_tree.c:494 gui/gladish.ui:1589
 msgid "Name"
@@ -141,7 +141,6 @@ msgid "<b><big>Error</big></b>"
 msgstr "<b><big>Erreur</big></b>"
 
 #: gui/dynmenu.c:170
-#, fuzzy
 msgid "Error filling "
 msgstr "Remplissage des erreurs"
 
@@ -162,12 +161,12 @@ msgid ""
 msgstr ""
 "Si vous démarrez ladish pour la première fois, vous devriez :\n"
 "\n"
-" 1. Créer un nouveau studio (dans le menu, Studio -> Nouveau Studio)\n"
+" 1. Créer un nouveau studio (dans le menu, Studio -> Nouveau...)\n"
 " 2. Configurer JACK (dans le menu, Outils -> Configurer JACK)\n"
-" 3. Démarrer le studio (dans le menu, Studio -> Démarrer le Studio)\n"
-" 4. Lancer des applications (dans le menu, Application -> Démarrer)\n"
+" 3. Démarrer le studio (dans le menu, Studio -> Démarrer)\n"
+" 4. Lancer des applications (dans le menu, Application -> Nouvelle application...)\n"
 " 5. Connecter leurs ports en cliquant et traînant sur le canvas\n"
-" 6. Enregistrer le studio (dans le menu, Studio -> Enregistrer le Studio)\n"
+" 6. Enregistrer le studio (dans le menu, Studio -> Enregistrer)\n"
 
 #: gui/jack.c:59
 msgid "Raw JACK"
@@ -208,7 +207,7 @@ msgstr "jackdbus n'a pas pu être arrêté, veuillez inspecter les logs."
 
 #: gui/jack.c:270
 msgid "a2jmidid will be reactivated. Are you sure?"
-msgstr "jackdbus sera réactivé. Êtes-vous sûr?"
+msgstr "a2jmidid sera ré-activé. Êtes-vous sûr?"
 
 #: gui/jack.c:278
 msgid "a2jmidid exit command failed, please inspect logs."
@@ -246,7 +245,7 @@ msgstr "LADI Session Handler"
 
 #: gui/menu.c:105
 msgid "Project load failed, please inspect logs."
-msgstr "Échec du chargement du projet, merci d'inspecter les logs."
+msgstr "Échec du chargement du projet, veuillez inspecter les logs."
 
 #: gui/menu.c:146
 msgid "Load Project..."
@@ -262,10 +261,9 @@ msgstr "Fermer le projet"
 
 #: gui/menu.c:155
 msgid "Clear Room"
-msgstr "Vider ce local"
+msgstr "Vider ce Local"
 
 #: gui/menu.c:159
-#, fuzzy
 msgid "Save Project"
 msgstr "Enregistrer le projet"
 
@@ -283,24 +281,23 @@ msgstr "Nouvelle application..."
 
 #: gui/menu.c:414
 msgid "Destroy Room"
-msgstr "Fermer ce local"
+msgstr "Fermer ce Local"
 
 #: gui/menu.c:420
 msgid "Create Room..."
-msgstr "Nouveau local..."
+msgstr "Nouveau Local..."
 
 #: gui/project_properties.c:73 gui/project_properties.c:82
 msgid "Setting of project description failed, please inspect logs."
-msgstr ""
-"Échec d'attribution de la description du projet, merci d'inspecter les logs."
+msgstr "Échec d'attribution de la description du projet, veuillez inspecter les logs."
 
 #: gui/room.c:49
 msgid "Room creation failed, please inspect logs."
-msgstr "Échec de la création du local, merci d'inspecter les logs."
+msgstr "Échec de la création du local, veuillez inspecter les logs."
 
 #: gui/room.c:72
 msgid "Room deletion failed, please inspect logs."
-msgstr "Échec de l'effacement du local, merci d'inspecter les logs."
+msgstr "Échec de l'effacement du local, veuillez inspecter les logs."
 
 #: gui/settings.c:96
 msgid "Storing settings"
@@ -320,7 +317,7 @@ msgstr "xruns"
 
 #: gui/studio.c:108
 msgid "Internal error - unknown jack state"
-msgstr "Erreur interne - état de jack inconnu"
+msgstr "Erreur interne - état de JACK inconnu"
 
 #: gui/studio.c:117
 msgid "ladishd is down"
@@ -340,9 +337,7 @@ msgstr "Planté"
 
 #: gui/studio.c:131
 msgid "Crashed studio, save your work if you can and unload the studio"
-msgstr ""
-"Studio planté, enregistrer votre travail si vous le pouvez et décharger le "
-"studio"
+msgstr "Studio planté, enregistrer votre travail si vous le pouvez et décharger le studio"
 
 #: gui/studio.c:138
 msgid "failed to get studio name"
@@ -365,12 +360,12 @@ msgid ""
 "JACK crashed or stopped unexpectedly. Save your work, then unload and reload "
 "the studio."
 msgstr ""
-"JACK a s'est planté ou s'est arrêté sans le vouloir. Enregistrer votre "
+"JACK s'est planté ou s'est arrêté sans le vouloir. Enregistrer votre "
 "travail, puis décharger et recharger le studio."
 
 #: gui/studio.c:242
 msgid "Studio save failed, please inspect logs."
-msgstr "Échec de l'enregistrement du studio, merci d'inspecter les logs."
+msgstr "Échec de l'enregistrement du studio, veuillez inspecter les logs."
 
 #: gui/studio.c:252
 msgid "Save studio as"
@@ -378,19 +373,19 @@ msgstr "Enregistrer le studio sous"
 
 #: gui/studio.c:256
 msgid "Saving of studio failed, please inspect logs."
-msgstr "Échec de l'enregistrement du studio, merci d'inspecter les logs."
+msgstr "Échec de l'enregistrement du studio, veuillez inspecter les logs."
 
 #: gui/studio.c:268
 msgid "Studio start failed, please inspect logs."
-msgstr "Échec du démarrage du studio, merci d'inspecter les logs."
+msgstr "Échec du démarrage du studio, veuillez inspecter les logs."
 
 #: gui/studio.c:277
 msgid "Studio stop failed, please inspect logs."
-msgstr "Échec de l'arrêt du studio, merci d'inspecter les logs."
+msgstr "Échec de l'arrêt du studio, veuillez inspecter les logs."
 
 #: gui/studio.c:286
 msgid "Studio unload failed, please inspect logs."
-msgstr "Échec du déchargement du studio, merci d'inspecter les logs."
+msgstr "Échec du déchargement du studio, veuillez inspecter les logs."
 
 #: gui/studio.c:294
 msgid "Rename studio"
@@ -398,7 +393,7 @@ msgstr "Renommer le studio"
 
 #: gui/studio.c:298
 msgid "Studio rename failed, please inspect logs."
-msgstr "Échec du renommage du studio, merci d'inspecter les logs."
+msgstr "Échec du renommage du studio, veuillez inspecter les logs."
 
 #: gui/world_tree.c:255
 msgid "Cannot get app properties"
@@ -506,7 +501,7 @@ msgstr "_Affichage"
 
 #: gui/gladish.ui:226
 msgid "_Toolbar"
-msgstr "Barre d'ou_tils"
+msgstr "Barre d'_outils"
 
 #: gui/gladish.ui:271
 msgid "_JACK"
@@ -518,11 +513,11 @@ msgstr "_Arranger"
 
 #: gui/gladish.ui:295
 msgid "_Tools"
-msgstr "Ou_tils"
+msgstr "_Outils"
 
 #: gui/gladish.ui:313
 msgid "_Settings"
-msgstr "Préférence_s"
+msgstr "_Préférences"
 
 #: gui/gladish.ui:322
 msgid "_Configure JACK"
@@ -542,7 +537,7 @@ msgstr "Ré-activer a2jmidid"
 
 #: gui/gladish.ui:359
 msgid "JACK _Latency"
-msgstr "_Taille du paquet JACK"
+msgstr "_Latence JACK"
 
 #: gui/gladish.ui:368
 msgid "32"
@@ -582,11 +577,11 @@ msgstr "8192"
 
 #: gui/gladish.ui:446
 msgid "_Help"
-msgstr "Aid_e"
+msgstr "_Aide"
 
 #: gui/gladish.ui:479
 msgid "Clear XRuns"
-msgstr "Effacer les XRuns"
+msgstr "Effacer les _XRuns"
 
 #: gui/gladish.ui:618
 msgid ""
@@ -669,7 +664,6 @@ msgid "Run in Terminal"
 msgstr "Lancer dans un terminal"
 
 #: gui/gladish.ui:1186
-#, fuzzy
 msgid "Level 0"
 msgstr "Level 0"
 
@@ -718,27 +712,22 @@ msgid "Terminal to use:"
 msgstr "Terminal à utiliser :"
 
 #~ msgid "Daemon exit command failed, please inspect logs."
-#~ msgstr ""
-#~ "Échec de la commande de sortie du démon, merci d'inspecter les logs."
+#~ msgstr "Échec de la commande de sortie du démon, veuillez inspecter les logs."
 
-#, fuzzy
 #~ msgid "Start automatically on studio load"
-#~ msgstr "Démarrer le studio au chargement"
+#~ msgstr "Démarrer automaiquement le studio au chargement"
 
-#, fuzzy
 #~ msgid "Level:"
-#~ msgstr "Level 0"
+#~ msgstr "Level :"
 
-#, fuzzy
 #~ msgid "2"
-#~ msgstr "32"
+#~ msgstr "2"
 
-#, fuzzy
 #~ msgid "3"
-#~ msgstr "32"
+#~ msgstr "3"
 
 #~ msgid "Save Project..."
-#~ msgstr "Sauver le projet"
+#~ msgstr "Sauver le projet..."
 
 #~ msgid "_Load Project..."
 #~ msgstr "_Charger un projet..."
@@ -750,7 +739,7 @@ msgstr "Terminal à utiliser :"
 #~ msgstr "_Renommer le projet..."
 
 #~ msgid "Save Project _As..."
-#~ msgstr "Sauveg_arder le projet sous..."
+#~ msgstr "Sauvegarder le projet _sous..."
 
 #~ msgid "R_ecently Loaded"
 #~ msgstr "Ouvert récemm_ent"
