@@ -71,7 +71,7 @@
 #define URI_CANVAS_HEIGHT   "http://ladish.org/ns/canvas/height"
 #define URI_CANVAS_X        "http://ladish.org/ns/canvas/x"
 #define URI_CANVAS_Y        "http://ladish.org/ns/canvas/y"
-#define URI_CANVAS_A2J      "http://ladish.org/ns/a2j"
+#define URI_A2J_PORT        "http://ladish.org/ns/a2j"
 
 #define JACKDBUS_PORT_IS_INPUT(flags) (((flags) & JACKDBUS_PORT_FLAG_INPUT) != 0)
 #define JACKDBUS_PORT_IS_OUTPUT(flags) (((flags) & JACKDBUS_PORT_FLAG_OUTPUT) != 0)
