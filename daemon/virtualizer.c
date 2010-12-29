@@ -633,9 +633,14 @@ port_appeared(
 
     /* for normal ports, one can find the app_uuid through the jack client,
        but for a2j ports the jack client is shared between graphs */
+    /* clients and ports can be reused if they were started externally then through ladish */
     if (has_app)
     {
       ladish_port_set_app(port, app_uuid);
+      if (!ladish_client_has_app(vclient))
+      {
+        ladish_client_set_app(vclient, app_uuid);
+      }
     }
 
     ladish_dict_set(ladish_port_get_dict(port), URI_A2J_PORT, is_a2j ? "yes" : "no");
