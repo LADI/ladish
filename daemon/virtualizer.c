@@ -638,6 +638,8 @@ port_appeared(
       ladish_port_set_app(port, app_uuid);
     }
 
+    ladish_dict_set(ladish_port_get_dict(port), URI_CANVAS_A2J, is_a2j ? "yes" : "no");
+
     ladish_client_set_jack_id(vclient, client_id);
     ladish_graph_adjust_port(vgraph, port, type, flags);
     ladish_graph_show_port(vgraph, port);
@@ -660,6 +662,8 @@ port_appeared(
   {
     ladish_port_set_app(port, app_uuid);
   }
+
+  ladish_dict_set(ladish_port_get_dict(port), URI_CANVAS_A2J, is_a2j ? "yes" : "no");
 
   if (!ladish_graph_add_port(virtualizer_ptr->jack_graph, jack_client, port, jack_port_name, type, flags, false))
   {
