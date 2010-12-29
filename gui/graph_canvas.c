@@ -28,6 +28,7 @@
 
 #include "graph_canvas.h"
 #include "../dbus_constants.h"
+#include "../common/catdup.h"
 
 struct graph_canvas
 {
@@ -378,6 +379,8 @@ port_appeared(
   int color;
   struct client * client_ptr;
   struct port * port_ptr;
+  char * value;
+  char * name_override;
 
   log_info("canvas::port_appeared(%"PRIu64", %"PRIu64", \"%s\")", client_id, port_id, port_name);
 
@@ -408,14 +411,44 @@ port_appeared(
     color = 0x244678C0;
   }
 
+  if (!graph_proxy_dict_entry_get(
+        client_ptr->owner_ptr->graph,
+        GRAPH_DICT_OBJECT_TYPE_PORT,
+        port_id,
+        URI_A2J_PORT,
+        &value))
+  {
+    name_override = NULL;
+  }
+  else
+  {
+    if (strcmp(value, "yes") == 0)
+    {
+      name_override = catdup(port_name, " (a2j)");
+      if (name_override != NULL)
+      {
+        port_name = name_override;
+      }
+    }
+    else
+    {
+      name_override = NULL;
+    }
+
+    free(value);
+  }
+
   if (!canvas_create_port(graph_canvas_ptr->canvas, client_ptr->canvas_module, port_name, is_input, color, port_ptr, &port_ptr->canvas_port))
   {
     log_error("canvas_create_port(\"%s\") failed", port_name);
-    free(client_ptr);
+    free(port_ptr);
+    free(name_override);
     return;
   }
 
   list_add_tail(&port_ptr->siblings, &client_ptr->ports);
+
+  free(name_override);
 }
 
 static
