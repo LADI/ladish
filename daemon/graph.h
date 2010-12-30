@@ -219,11 +219,13 @@ ladish_graph_iterate_connections(
   bool (* callback)(
     void * context,
     ladish_graph_handle graph_handle,
-    bool hidden,
+    bool connection_hidden,
     ladish_client_handle client1_handle,
     ladish_port_handle port1_handle,
+    bool port1_hidden,
     ladish_client_handle client2_handle,
     ladish_port_handle port2_handle,
+    bool port2_hidden,
     ladish_dict_handle dict));
 
 void ladish_graph_clear_persist(ladish_graph_handle graph_handle);

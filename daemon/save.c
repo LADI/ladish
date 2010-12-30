@@ -38,22 +38,10 @@ struct ladish_write_vgraph_context
   bool client_visible;
 };
 
-static bool is_system_client(ladish_client_handle client)
-{
-  uuid_t uuid;
-  ladish_client_get_uuid(client, uuid);
-  return ladish_virtualizer_is_system_client(uuid);
-}
-
 static bool is_hidden_port_interesting(ladish_app_supervisor_handle app_supervisor, ladish_client_handle client, ladish_port_handle port)
 {
   uuid_t app_uuid;
   ladish_app_handle app;
-
-  if (is_system_client(client) || ladish_port_is_link(port))
-  {
-    return true;
-  }
 
   /* hidden ports of external apps should not be saved */
   /* hidden ports of stopped managed apps should be saved */
@@ -661,19 +649,24 @@ bool
 ladish_save_vgraph_connection(
   void * context,
   ladish_graph_handle graph,
-  bool hidden,
+  bool connection_hidden,
   ladish_client_handle client1,
   ladish_port_handle port1,
+  bool port1_hidden,
   ladish_client_handle client2,
   ladish_port_handle port2,
+  bool port2_hidden,
   ladish_dict_handle dict)
 {
   uuid_t uuid;
   char str[37];
 
-  if (hidden &&
-      (!is_hidden_port_interesting(ctx_ptr->app_supervisor, client1, port1) ||
-       !is_hidden_port_interesting(ctx_ptr->app_supervisor, client2, port2)))
+  /* if at least one of ports is hidden, connection must be hidden too */
+  ASSERT(!(port1_hidden || port2_hidden) || connection_hidden);
+
+  if (connection_hidden &&
+      ((port1_hidden && !is_hidden_port_interesting(ctx_ptr->app_supervisor, client1, port1)) ||
+       (port2_hidden && !is_hidden_port_interesting(ctx_ptr->app_supervisor, client2, port2))))
   {
     return true;
   }

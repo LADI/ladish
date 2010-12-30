@@ -2505,11 +2505,13 @@ ladish_graph_iterate_connections(
   bool (* callback)(
     void * context,
     ladish_graph_handle graph_handle,
-    bool hidden,
+    bool connection_hidden,
     ladish_client_handle client1_handle,
     ladish_port_handle port1_handle,
+    bool port1_hidden,
     ladish_client_handle client2_handle,
     ladish_port_handle port2_handle,
+    bool port2_hidden,
     ladish_dict_handle dict))
 {
   struct list_head * node_ptr;
@@ -2525,8 +2527,10 @@ ladish_graph_iterate_connections(
           connection_ptr->hidden,
           connection_ptr->port1_ptr->client_ptr->client,
           connection_ptr->port1_ptr->port,
+          connection_ptr->port1_ptr->hidden,
           connection_ptr->port2_ptr->client_ptr->client,
           connection_ptr->port2_ptr->port,
+          connection_ptr->port2_ptr->hidden,
           connection_ptr->dict))
     {
       return false;
