@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the implementation of the dictionary objects
@@ -197,3 +197,27 @@ bool ladish_dict_is_empty(ladish_dict_handle dict_handle)
 }
 
 #undef dict_ptr
+
+static bool dup_key(void * context, const char * key, const char * value)
+{
+  return ladish_dict_set(context, key, value);
+}
+
+bool ladish_dict_dup(ladish_dict_handle src, ladish_dict_handle * dst_ptr)
+{
+  ladish_dict_handle dst;
+
+  if (!ladish_dict_create(&dst))
+  {
+    return false;
+  }
+
+  if (!ladish_dict_iterate(src, dst, dup_key))
+  {
+    ladish_dict_destroy(dst);
+    return false;
+  }
+
+  *dst_ptr = dst;
+  return true;
+}

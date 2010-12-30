@@ -287,10 +287,31 @@ ladish_write_room_port(
 bool ladish_write_dict(int fd, int indent, ladish_dict_handle dict)
 {
   struct ladish_write_context context;
+  ladish_dict_handle dict_dup;
+  bool ret;
+
+  if (ladish_dict_get(dict, URI_A2J_PORT) != NULL)
+  {
+    if (!ladish_dict_dup(dict, &dict_dup))
+    {
+      log_error("ladish_dict_dup() failed");
+      dict_dup = NULL;
+    }
+    else
+    {
+      ladish_dict_drop(dict_dup, URI_A2J_PORT);
+      dict = dict_dup;
+    }
+  }
+  else
+  {
+    dict_dup = NULL;
+  }
 
   if (ladish_dict_is_empty(dict))
   {
-    return true;
+    ret = true;
+    goto dup_destroy;
   }
 
   context.fd = fd;
@@ -298,20 +319,31 @@ bool ladish_write_dict(int fd, int indent, ladish_dict_handle dict)
 
   if (!ladish_write_indented_string(fd, indent, "<dict>\n"))
   {
-    return false;
+    ret = false;
+    goto dup_destroy;
   }
 
   if (!ladish_dict_iterate(dict, &context, write_dict_entry))
   {
-    return false;
+    ret = false;
+    goto dup_destroy;
   }
 
   if (!ladish_write_indented_string(fd, indent, "</dict>\n"))
   {
-    return false;
+    ret = false;
+    goto dup_destroy;
   }
 
-  return true;
+  ret = true;
+
+dup_destroy:
+  if (dict_dup != NULL)
+  {
+    ladish_dict_destroy(dict_dup);
+  }
+
+  return ret;
 }
 
 bool ladish_write_room_link_ports(int fd, int indent, ladish_room_handle room)

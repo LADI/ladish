@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the interface of the dictionary objects
@@ -32,6 +32,7 @@
 typedef struct ladish_dict_tag { int unused; } * ladish_dict_handle;
 
 bool ladish_dict_create(ladish_dict_handle * dict_handle_ptr);
+bool ladish_dict_dup(ladish_dict_handle src_dict_handle, ladish_dict_handle * dst_dict_handle_ptr);
 void ladish_dict_destroy(ladish_dict_handle dict_handle);
 bool ladish_dict_set(ladish_dict_handle dict_handle, const char * key, const char * value);
 const char * ladish_dict_get(ladish_dict_handle dict_handle, const char * key);
