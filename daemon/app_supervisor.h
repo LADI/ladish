@@ -128,7 +128,7 @@ ladish_app_supervisor_set_directory(
  * Set/reset the project name
  *
  * @param[in] supervisor_handle supervisor object handle
- * @param[in] poject_name project name. NULL means that there is no project name.
+ * @param[in] project_name project name. NULL means that there is no project name.
  *
  * @return success status
  */
