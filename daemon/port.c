@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the implementation of the port objects
@@ -35,6 +35,8 @@ struct ladish_port
   bool link;                               /* Whether the port is studio-room link port */
   uint64_t jack_id;                        /* JACK port ID. */
   uint64_t jack_id_room;                   /* JACK port ID in room. valid only for link ports */
+
+  pid_t pid;                               /* process id. */
 
   void * vgraph;                /* virtual graph */
 
@@ -201,6 +203,16 @@ bool ladish_port_belongs_to_app(ladish_port_handle port_handle, const uuid_t app
   }
 
   return uuid_compare(port_ptr->app_uuid, app_uuid) == 0;
+}
+
+void ladish_port_set_pid(ladish_port_handle port_handle, pid_t pid)
+{
+  port_ptr->pid = pid;
+}
+
+pid_t ladish_port_get_pid(ladish_port_handle port_handle)
+{
+  return port_ptr->pid;
 }
 
 #undef port_ptr

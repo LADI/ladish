@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the interface of the port objects
@@ -54,5 +54,8 @@ void ladish_port_set_app(ladish_port_handle port, const uuid_t app_uuid);
 bool ladish_port_get_app(ladish_port_handle port, uuid_t app_uuid);
 bool ladish_port_has_app(ladish_port_handle port);
 bool ladish_port_belongs_to_app(ladish_port_handle port, const uuid_t app_uuid);
+
+void ladish_port_set_pid(ladish_port_handle port_handle, pid_t pid);
+pid_t ladish_port_get_pid(ladish_port_handle port_handle);
 
 #endif /* #ifndef PORT_H__62F81E7C_91FA_44AB_94A9_E0E2D226ED58__INCLUDED */

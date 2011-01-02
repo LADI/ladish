@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of app supervisor object
@@ -50,6 +50,7 @@ struct ladish_app
   pid_t pgrp;
   pid_t firstborn_pid;
   pid_t firstborn_pgrp;
+  int firstborn_refcount;
   bool zombie;                  /* if true, remove when stopped */
   bool autorun;
   unsigned int state;
@@ -288,6 +289,7 @@ ladish_app_supervisor_add(
   app_ptr->pgrp = 0;
   app_ptr->firstborn_pid = 0;
   app_ptr->firstborn_pgrp = 0;
+  app_ptr->firstborn_refcount = 0;
 
   app_ptr->id = supervisor_ptr->next_id++;
   if (uuid == NULL || uuid_is_null(uuid))
@@ -347,6 +349,13 @@ static void ladish_app_send_signal(struct ladish_app * app_ptr, int sig, bool pr
     {
       signal_name = "unknown";
     }
+  }
+
+  if (app_ptr->pid == 0)
+  {
+    log_error("not sending signal %d (%s) to app '%s' because its pid is %d", sig, signal_name, app_ptr->name, (int)app_ptr->pid);
+    ASSERT_NO_PASS;
+    return;
   }
 
   switch (sig)
@@ -553,8 +562,9 @@ bool ladish_app_supervisor_child_exit(ladish_app_supervisor_handle supervisor_ha
 
       app_ptr->pid = 0;
       app_ptr->pgrp = 0;
-      app_ptr->firstborn_pid = 0;
-      app_ptr->firstborn_pgrp = 0;
+      /* firstborn pid and pgrp is not reset here because it is refcounted
+         and managed independently through the add/del_pid() methods */
+
       if (app_ptr->zombie)
       {
         remove_app_internal(supervisor_ptr, app_ptr);
@@ -700,20 +710,33 @@ void ladish_app_add_pid(ladish_app_handle app_handle, pid_t pid)
 
   if (app_ptr->firstborn_pid != 0)
   { /* Ignore non-first children */
+    if (app_ptr->firstborn_pid == pid)
+    {
+      app_ptr->firstborn_refcount++;
+    }
     return;
   }
 
   log_info("First grandchild with pid %u", (unsigned int)pid);
   app_ptr->firstborn_pid = pid;
+  ASSERT(app_ptr->firstborn_refcount == 0);
+  app_ptr->firstborn_refcount = 1;
 }
 
 void ladish_app_del_pid(ladish_app_handle app_handle, pid_t pid)
 {
   if (app_ptr->firstborn_pid != 0 && app_ptr->firstborn_pid == pid)
   {
+    ASSERT(app_ptr->firstborn_refcount > 0);
+    app_ptr->firstborn_refcount--;
+    if (app_ptr->firstborn_refcount > 0)
+    {
+      return;
+    }
     log_info("First grandchild with pid %u has gone", (unsigned int)pid);
     app_ptr->firstborn_pid = 0;
     app_ptr->firstborn_pgrp = 0;
+    app_ptr->firstborn_refcount = 0;
   }
 }
 

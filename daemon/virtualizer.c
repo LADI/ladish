@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the graph virtualizer object
@@ -576,6 +576,7 @@ port_appeared(
           vclient_name = ladish_app_get_name(app);
           has_app = true;
           log_info("ALSA app name is '%s'", vclient_name);
+          ladish_app_add_pid(app, pid);
         }
       }
       else
@@ -637,6 +638,7 @@ port_appeared(
     if (has_app)
     {
       ladish_port_set_app(port, app_uuid);
+      ladish_port_set_pid(port, pid);
       if (!ladish_client_has_app(vclient))
       {
         ladish_client_set_app(vclient, app_uuid);
@@ -666,6 +668,7 @@ port_appeared(
   if (has_app)
   {
     ladish_port_set_app(port, app_uuid);
+    ladish_port_set_pid(port, pid);
   }
 
   ladish_dict_set(ladish_port_get_dict(port), URI_A2J_PORT, is_a2j ? "yes" : "no");
@@ -825,6 +828,28 @@ exit:
   return;
 }
 
+static void maybe_clear_a2j_port_pid(ladish_graph_handle vgraph, ladish_client_handle jclient, ladish_port_handle port)
+{
+  const char * opath;
+  uuid_t app_uuid;
+  ladish_app_handle app;
+  ladish_app_supervisor_handle app_supervisor;
+  pid_t pid;
+
+  if (ladish_virtualizer_is_a2j_client(jclient) && ladish_port_get_app(port, app_uuid))
+  {
+    pid = ladish_port_get_pid(port);
+    opath = ladish_graph_get_opath(vgraph);
+    log_info("releasing reference for pid %d of a2j port in %s", (int)pid, ladish_graph_get_description(vgraph));
+    app_supervisor = ladish_studio_find_app_supervisor(opath);
+    app = ladish_app_supervisor_find_app_by_uuid(app_supervisor, app_uuid);
+    if (app != NULL && pid != 0)
+    {
+      ladish_app_del_pid(app, pid);
+    }
+  }
+}
+
 static void port_disappeared(void * context, uint64_t client_id, uint64_t port_id)
 {
   ladish_client_handle jclient;
@@ -865,6 +890,12 @@ static void port_disappeared(void * context, uint64_t client_id, uint64_t port_i
     jmcore = true;
     ladish_graph_remove_port_by_jack_id(virtualizer_ptr->jack_graph, port_id, true, true);
   }
+  else
+  {
+    maybe_clear_a2j_port_pid(vgraph, jclient, port);
+  }
+
+  ladish_port_set_pid(port, 0);
 
   if (ladish_graph_is_persist(vgraph)) /* if port is supposed to be persisted */
   {
