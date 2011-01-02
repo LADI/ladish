@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari
  *
  **************************************************************************
@@ -2532,6 +2532,57 @@ ladish_graph_iterate_connections(
           connection_ptr->port2_ptr->port,
           connection_ptr->port2_ptr->hidden,
           connection_ptr->dict))
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool
+ladish_graph_interate_client_ports(
+  ladish_graph_handle graph_handle,
+  ladish_client_handle client,
+  void * callback_context,
+  bool
+  (* port_callback)(
+    void * context,
+    ladish_graph_handle graph_handle,
+    bool hidden,
+    ladish_client_handle client_handle,
+    const char * client_name,
+    ladish_port_handle port_handle,
+    const char * port_name,
+    uint32_t port_type,
+    uint32_t port_flags))
+{
+  struct ladish_graph_client * client_ptr;
+  struct list_head * port_node_ptr;
+  struct list_head * port_temp_node_ptr;
+  struct ladish_graph_port * port_ptr;
+
+  client_ptr = ladish_graph_find_client(graph_ptr, client);
+  if (client_ptr == NULL)
+  {
+    ASSERT_NO_PASS;
+    return false;
+  }
+
+  list_for_each_safe(port_node_ptr, port_temp_node_ptr, &client_ptr->ports)
+  {
+    port_ptr = list_entry(port_node_ptr, struct ladish_graph_port, siblings_client);
+
+    if (!port_callback(
+          callback_context,
+          graph_handle,
+          port_ptr->hidden,
+          client_ptr->client,
+          client_ptr->name,
+          port_ptr->port,
+          port_ptr->name,
+          port_ptr->type,
+          port_ptr->flags))
     {
       return false;
     }

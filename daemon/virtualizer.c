@@ -379,6 +379,37 @@ exit:
   return;
 }
 
+static void port_disappeared(void * context, uint64_t client_id, uint64_t port_id);
+
+bool
+force_port_disappear(
+  void * context,
+  ladish_graph_handle graph_handle,
+  bool hidden,
+  ladish_client_handle client_handle,
+  const char * client_name,
+  ladish_port_handle port_handle,
+  const char * port_name,
+  uint32_t port_type,
+  uint32_t port_flags)
+{
+  uint64_t client_id;
+  uint64_t port_id;
+
+  if (hidden)
+  {
+    return true;
+  }
+
+  log_error("forcing disappear of port '%s':'%s'", client_name, port_name);
+
+  client_id = ladish_client_get_jack_id(client_handle);
+  port_id = ladish_port_get_jack_id(port_handle);
+  port_disappeared(context, client_id, port_id);
+
+  return true;
+}
+
 static void client_disappeared(void * context, uint64_t id)
 {
   ladish_client_handle client;
@@ -397,6 +428,9 @@ static void client_disappeared(void * context, uint64_t id)
   }
 
   log_info("client disappeared: '%s'", ladish_graph_get_client_name(virtualizer_ptr->jack_graph, client));
+
+  /* This is a workaround for jack2/jackdbus bug. */
+  ladish_graph_interate_client_ports(virtualizer_ptr->jack_graph, client, context, force_port_disappear);
 
   vgraph = ladish_client_get_vgraph(client);
 
