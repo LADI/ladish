@@ -192,8 +192,8 @@ def configure(conf):
         conf.check_python_headers()
 
     conf.env['BUILD_WERROR'] = not RELEASE
+    add_cflag(conf, '-Wall')
     if conf.env['BUILD_WERROR']:
-        add_cflag(conf, '-Wall')
         add_cflag(conf, '-Werror')
         # for pre gcc-4.4, enable optimizations so use of uninitialized variables gets detected
         try:
