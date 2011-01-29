@@ -575,7 +575,8 @@ def build(bld):
 
     bld.install_files('${DATA_DIR}', status_images)
     bld.install_files('${DATA_DIR}', "art/ladish-logo-128x128.png")
-    bld.install_files('${DATA_DIR}', ["COPYING", "AUTHORS", "README", "NEWS"])
+    bld.install_files('${DATA_DIR}', ["AUTHORS", "README", "NEWS"])
+    bld.install_as('${DATA_DIR}/COPYING', "gpl2.txt")
 
     if bld.env['BUILD_DOXYGEN_DOCS'] == True:
         html_docs_source_dir = "build/default/html"
