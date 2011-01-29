@@ -1,5 +1,4 @@
 [Desktop Entry]
-Encoding=UTF-8
 Name=gladish
 Comment=LADI Session Handler
 Comment[fr]=Gestionnaire de session LADI
@@ -15,4 +14,4 @@ Type=Application
 Terminal=false
 Exec=gladish
 Icon=gladish
-Categories=Application;AudioVideo;Audio;GNOME;
+Categories=AudioVideo;Audio;GNOME;
