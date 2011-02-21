@@ -29,6 +29,7 @@
 
 #include "../proxies/room_proxy.h"
 
+void ladish_init_save_project_dialog(void);
 void ladish_run_save_project_dialog(ladish_room_proxy_handle room);
 
 #endif /* #ifndef SAVE_PROJECT_DIALOG_H__7C9FB1FB_8582_451E_8959_1CD688E50A20__INCLUDED */

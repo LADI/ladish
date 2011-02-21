@@ -48,6 +48,13 @@ static void on_path_button_clicked(void)
   }
 }
 
+void ladish_init_save_project_dialog(void)
+{
+  GtkWidget * path_button = NULL;
+  path_button = get_gtk_builder_widget("project_save_as_path_button");
+  g_signal_connect( G_OBJECT(path_button), "clicked", G_CALLBACK(on_path_button_clicked), NULL);
+}
+
 void ladish_run_save_project_dialog(ladish_room_proxy_handle room)
 {
   GtkWidget * dialog = NULL;
@@ -62,8 +69,6 @@ void ladish_run_save_project_dialog(ladish_room_proxy_handle room)
   path_button = get_gtk_builder_widget("project_save_as_path_button");
   path = GTK_ENTRY(get_gtk_builder_widget("project_save_as_path_entry"));
   name = GTK_ENTRY(get_gtk_builder_widget("project_save_as_name_entry"));
-
-  g_signal_connect( G_OBJECT(path_button), "clicked", G_CALLBACK(on_path_button_clicked), NULL);
 
   ladish_room_proxy_get_project_properties(room, &project_dir, &project_name, NULL, NULL);
 

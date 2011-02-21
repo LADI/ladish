@@ -26,6 +26,7 @@
 
 #include "graph_view.h"
 #include "gtk_builder.h"
+#include "save_project_dialog.h"
 
 static GtkWidget * g_name_dialog;
 GtkWidget * g_app_dialog = NULL;
@@ -151,4 +152,5 @@ void init_dialogs(void)
 {
   g_name_dialog = get_gtk_builder_widget("name_dialog");
   g_app_dialog = get_gtk_builder_widget("app_dialog");
+  ladish_init_save_project_dialog();
 }
