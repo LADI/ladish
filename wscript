@@ -496,7 +496,7 @@ def build(bld):
         gladish = bld.program(source = [], features = 'c cxx cxxprogram', includes = [bld.path.get_bld()])
         gladish.target = 'gladish'
         gladish.defines = ['LOG_OUTPUT_STDOUT']
-        gladish.uselib = 'DBUS-1 DBUS-GLIB-1 FLOWCANVAS'
+        gladish.uselib = 'DBUS-1 DBUS-GLIB-1 FLOWCANVAS GTK+-2.0'
 
         gladish.source = []
 
