@@ -406,9 +406,9 @@ canvas_remove_connection(
 
 bool canvas_cls::canvas_event(GdkEvent * event)
 {
-	assert(event);
+  assert(event);
 
-	if (m_fill_canvas_menu != NULL && event->type == GDK_BUTTON_PRESS && event->button.button == 3)
+  if (m_fill_canvas_menu != NULL && event->type == GDK_BUTTON_PRESS && event->button.button == 3)
   {
     Gtk::Menu * menu_ptr;
     menu_ptr = new Gtk::Menu();
@@ -418,7 +418,7 @@ bool canvas_cls::canvas_event(GdkEvent * event)
     return true;
   }
 
-	return Canvas::canvas_event(event);
+  return Canvas::canvas_event(event);
 }
 
 void
