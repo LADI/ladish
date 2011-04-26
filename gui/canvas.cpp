@@ -160,8 +160,12 @@ public:
 
   virtual void create_menu()
   {
-    FlowCanvas::Port::create_menu();
     void (* fill_port_menu)(GtkMenu * menu, void * port_context);
+
+    /* Cannot call FlowCanvas::Port::create_menu() because on_menu_hide() is not virtual */
+    _menu = new Gtk::Menu();
+    _menu->items().push_back(Gtk::Menu_Helpers::MenuElem("Disconnect All", sigc::mem_fun(this, &Port::disconnect_all)));
+    _menu->signal_selection_done().connect(sigc::mem_fun(this, &port_cls::on_menu_hide));
 
     fill_port_menu = boost::dynamic_pointer_cast<canvas_cls>(module().lock()->canvas().lock())->m_fill_port_menu;
     if (fill_port_menu != NULL)
