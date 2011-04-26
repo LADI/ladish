@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
  *
  **************************************************************************
@@ -110,6 +110,7 @@ public:
   void create_menu()
   {
     _menu = new Gtk::Menu();
+    _menu->signal_selection_done().connect(sigc::mem_fun(this, &module_cls::on_menu_hide));
     _menu->items().push_back(Gtk::Menu_Helpers::MenuElem(_("Disconnect All"), sigc::mem_fun(this, &module_cls::menu_disconnect_all)));
     void (* fill_module_menu)(GtkMenu * menu, void * module_context) = boost::dynamic_pointer_cast<canvas_cls>(canvas().lock())->m_fill_module_menu;
     if (fill_module_menu != NULL)
@@ -126,6 +127,12 @@ public:
     }
   }
 
+  void on_menu_hide()
+  {
+    delete _menu;
+    _menu = NULL;
+  }
+
   void * m_context;
 };
 
@@ -139,12 +146,37 @@ public:
     uint32_t color,
     void * port_context)
     : FlowCanvas::Port(module, name, is_input, color)
-    , context(port_context)
+    , m_context(port_context)
   {}
 
   virtual ~port_cls() {}
 
-  void * context;
+  void popup_menu(guint button, guint32 activate_time)
+  {
+    create_menu();
+    if (_menu)
+      _menu->popup(button, activate_time);
+  }
+
+  virtual void create_menu()
+  {
+    FlowCanvas::Port::create_menu();
+    void (* fill_port_menu)(GtkMenu * menu, void * port_context);
+
+    fill_port_menu = boost::dynamic_pointer_cast<canvas_cls>(module().lock()->canvas().lock())->m_fill_port_menu;
+    if (fill_port_menu != NULL)
+    {
+      fill_port_menu(_menu->gobj(), m_context);
+    }
+  }
+
+  void on_menu_hide()
+  {
+    delete _menu;
+    _menu = NULL;
+  }
+
+  void * m_context;
 };
 
 bool
@@ -430,7 +462,7 @@ canvas_cls::connect(
   {
     boost::shared_ptr<port_cls> port1 = boost::dynamic_pointer_cast<port_cls>(c1);
     boost::shared_ptr<port_cls> port2 = boost::dynamic_pointer_cast<port_cls>(c2);
-    m_connect_request(port1->context, port2->context);
+    m_connect_request(port1->m_context, port2->m_context);
   }
 }
 
@@ -443,7 +475,7 @@ canvas_cls::disconnect(
   {
     boost::shared_ptr<port_cls> port1 = boost::dynamic_pointer_cast<port_cls>(c1);
     boost::shared_ptr<port_cls> port2 = boost::dynamic_pointer_cast<port_cls>(c2);
-    m_disconnect_request(port1->context, port2->context);
+    m_disconnect_request(port1->m_context, port2->m_context);
   }
 }
 
