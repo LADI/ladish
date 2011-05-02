@@ -1,7 +1,7 @@
 # Russian translation for gladish
 # Copyright (C) 2010 Nikita Zlobin
 # This file is distributed under the same license as the ladish package.
-# Nikita Zlobin, <cook60020tmp@mail.ru>, 2010.
+# Nikita Zlobin, <nick87720z@gmail.com>, 2010.
 # Александр Прокудин <alexandre.prokoudine@gmail.com>, 2010.
 # Maxim Kachur <mcdebugger@duganet.ru>, 2010.
 #

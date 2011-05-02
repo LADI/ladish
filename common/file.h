@@ -3,7 +3,7 @@
  * LADI Session Handler (ladish)
  *
  * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
- * Copyright (C) 2010 Nikita Zlobin <cook60020tmp@mail.ru>
+ * Copyright (C) 2010 Nikita Zlobin <nick87720z@gmail.com>
  *
  **************************************************************************
  * This file contains the code that implements the about dialog
