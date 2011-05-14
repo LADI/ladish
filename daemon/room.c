@@ -58,6 +58,12 @@ struct ladish_room * ladish_room_create_internal(const uuid_t uuid_ptr, const ch
     goto fail;
   }
 
+  room_ptr->project_name = NULL;
+  room_ptr->project_dir = NULL;
+  room_ptr->project_description = NULL;
+  room_ptr->project_notes = NULL;
+  room_ptr->project_state = ROOM_PROJECT_STATE_UNLOADED;
+
   if (uuid_ptr != NULL)
   {
     uuid_copy(room_ptr->uuid, uuid_ptr);
@@ -82,6 +88,8 @@ struct ladish_room * ladish_room_create_internal(const uuid_t uuid_ptr, const ch
       log_error("strdup() failed for room name");
       goto free_name;
     }
+  } else {
+    room_ptr->object_path = NULL;
   }
 
   if (!ladish_graph_create(&room_ptr->graph, object_path))
@@ -284,12 +292,6 @@ ladish_room_create(
   room_ptr->owner = owner;
   room_ptr->started = false;
   room_ptr->version = 1;
-
-  room_ptr->project_name = NULL;
-  room_ptr->project_dir = NULL;
-  room_ptr->project_description = NULL;
-  room_ptr->project_notes = NULL;
-  room_ptr->project_state = ROOM_PROJECT_STATE_UNLOADED;
 
   if (template != NULL)
   {
