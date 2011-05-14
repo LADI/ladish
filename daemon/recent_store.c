@@ -210,6 +210,9 @@ void
 ladish_recent_store_destroy(
   ladish_recent_store_handle store_handle)
 {
+  unsigned int i;
+  for (i = 0; i < store_ptr->max_items && store_ptr->items[i] != NULL; i++)
+    free (store_ptr->items [i]);
   free(store_ptr->items);
   free(store_ptr->path);
   free(store_ptr);
