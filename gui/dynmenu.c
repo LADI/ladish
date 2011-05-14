@@ -264,6 +264,7 @@ ladish_dynmenu_destroy(
     g_signal_handler_disconnect(G_OBJECT(dynmenu_ptr->menu_item), dynmenu_ptr->activate_signal_id);
   }
 
+  free(dynmenu_ptr->description);
   free(dynmenu_ptr);
 }
 
