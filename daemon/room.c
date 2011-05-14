@@ -410,6 +410,7 @@ void ladish_room_destroy(ladish_room_handle room_handle)
 
   ladish_graph_destroy(room_ptr->graph);
   free(room_ptr->name);
+  free(room_ptr->object_path);
   free(room_ptr);
 }
 
