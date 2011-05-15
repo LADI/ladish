@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the recent items store
@@ -137,6 +137,15 @@ ladish_recent_store_load(
     if (store_ptr->items[i] == NULL)
     {
       log_error("strdup(\"%s\") failed.", temp_ptr);
+
+      /* free the already duplicated items */
+      while (i > 0)
+      {
+        i--;
+        free(store_ptr->items[i]);
+        store_ptr->items[i] = NULL;
+      }
+
       goto free;
     }
 
