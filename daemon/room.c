@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the core parts of room object implementation
@@ -404,11 +404,12 @@ void ladish_room_destroy(ladish_room_handle room_handle)
 
     ladish_studio_room_disappeared((ladish_room_handle)room_ptr);
     ladish_studio_release_room_index(room_ptr->index);
+
+    free(room_ptr->object_path);
   }
 
   ladish_graph_destroy(room_ptr->graph);
   free(room_ptr->name);
-  free(room_ptr->object_path);
   free(room_ptr);
 }
 
