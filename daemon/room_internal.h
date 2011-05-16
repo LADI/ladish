@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains internal declarations used by the room object implementation
@@ -42,6 +42,7 @@ struct ladish_room
   uuid_t uuid;
   char * name;
   bool template;
+  ladish_graph_handle graph;
 
   /* these are not valid for templates */
   uuid_t template_uuid;
@@ -50,7 +51,6 @@ struct ladish_room
   char * object_path;
   dbus_object_path dbus_object;
   uint64_t version;
-  ladish_graph_handle graph;
   ladish_app_supervisor_handle app_supervisor;
   ladish_client_handle client;
   bool started;
