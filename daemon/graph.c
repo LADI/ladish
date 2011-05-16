@@ -2637,7 +2637,7 @@ void ladish_graph_dump(ladish_graph_handle graph_handle)
   list_for_each(client_node_ptr, &graph_ptr->clients)
   {
     client_ptr = list_entry(client_node_ptr, struct ladish_graph_client, siblings);
-    log_info("    %s client '%s', id=%"PRIu64", ptr=%p%", client_ptr->hidden ? "invisible" : "visible", client_ptr->name, client_ptr->id, client_ptr->client);
+    log_info("    %s client '%s', id=%"PRIu64", ptr=%p", client_ptr->hidden ? "invisible" : "visible", client_ptr->name, client_ptr->id, client_ptr->client);
 
     ladish_client_get_uuid(client_ptr->client, uuid);
     uuid_unparse(uuid, uuid_str);
