@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains studio list implementation
@@ -53,7 +53,7 @@ bool recent_studio_callback(void * callback_context, const char * item)
   if (!ladish_studio_compose_filename(item, &path, NULL))
   {
     log_error("failed to compose path of (recent) studio \%s\" file", item);
-    return true;
+    goto exit;
   }
 
   if (stat(path, &st) != 0)
@@ -63,18 +63,21 @@ bool recent_studio_callback(void * callback_context, const char * item)
       log_error("failed to stat '%s': %d (%s)", path, errno, strerror(errno));
     }
 
-    return true;
+    goto free;
   }
 
   if (!S_ISREG(st.st_mode))
   {
     log_info("Ignoring recent studio that is not regular file. Mode is %07o", st.st_mode);
-    return true;
+    goto free;
   }
 
   ctx_ptr->callback(ctx_ptr->call_ptr, ctx_ptr->context, item, st.st_mtime);
   ctx_ptr->counter++;
 
+free:
+  free(path);
+exit:
   return true;
 }
 
