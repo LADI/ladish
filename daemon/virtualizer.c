@@ -309,10 +309,18 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
     }
     else
     {
-      client = ladish_graph_find_client_by_app(virtualizer_ptr->jack_graph, app_uuid);
-      if (client == NULL)
+      if (app != NULL)
       {
-        log_info("Lookup by app uuid failed, attempting lookup by name '%s'", name);
+        client = ladish_graph_find_client_by_app(virtualizer_ptr->jack_graph, app_uuid);
+        if (client == NULL)
+        {
+          log_info("Lookup by app uuid failed, attempting lookup by name '%s'", name);
+          goto find_by_name;
+        }
+      }
+      else
+      {
+      find_by_name:
         client = ladish_graph_find_client_by_name(virtualizer_ptr->jack_graph, name, true);
       }
     }
@@ -322,7 +330,7 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
       log_info("found existing client");
       if (ladish_client_get_jack_id(client) != 0)
       {
-        log_error("Ignoring client with duplicate name '%s' ('%s')", name, jack_name);
+        ladish_graph_dump(virtualizer_ptr->jack_graph);
         goto exit;
       }
 
