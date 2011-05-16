@@ -378,15 +378,15 @@ release_index:
 
 void ladish_room_destroy(ladish_room_handle room_handle)
 {
-  /* project has either both name and dir no none of them */
-  ASSERT((room_ptr->project_dir == NULL && room_ptr->project_name == NULL) || (room_ptr->project_dir != NULL && room_ptr->project_name != NULL));
-  free(room_ptr->project_dir);
-  free(room_ptr->project_name);
-  free(room_ptr->project_description);
-  free(room_ptr->project_notes);
-
   if (!room_ptr->template)
   {
+    /* project has either both name and dir no none of them */
+    ASSERT((room_ptr->project_dir == NULL && room_ptr->project_name == NULL) || (room_ptr->project_dir != NULL && room_ptr->project_name != NULL));
+    free(room_ptr->project_dir);
+    free(room_ptr->project_name);
+    free(room_ptr->project_description);
+    free(room_ptr->project_notes);
+
     ASSERT(!room_ptr->started); /* attempt to destroy not stopped room */
 
     /* ladish_graph_dump(graph); */
