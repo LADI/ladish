@@ -258,6 +258,7 @@ ladish_app_supervisor_add(
 {
   struct ladish_app * app_ptr;
   dbus_bool_t running;
+  dbus_bool_t dbus_terminal;
 
   app_ptr = malloc(sizeof(struct ladish_app));
   if (app_ptr == NULL)
@@ -309,6 +310,7 @@ ladish_app_supervisor_add(
   supervisor_ptr->version++;
 
   running = false;
+  dbus_terminal = terminal;
   dbus_signal_emit(
     g_dbus_connection,
     supervisor_ptr->opath,
@@ -319,7 +321,7 @@ ladish_app_supervisor_add(
     &app_ptr->id,
     &app_ptr->name,
     &running,
-    &terminal,
+    &dbus_terminal,
     &app_ptr->level);
 
   return (ladish_app_handle)app_ptr;
