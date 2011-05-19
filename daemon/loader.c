@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  * Copyright (C) 2002 Robert Ham <rah@bash.sh>
  *
@@ -38,6 +38,7 @@
 #include "loader.h"
 #include "../proxies/conf_proxy.h"
 #include "conf.h"
+#include "../common/catdup.h"
 
 #define XTERM_COMMAND_EXTENSION "&& sh || sh"
 
@@ -483,6 +484,35 @@ loader_run(void)
   loader_childs_bury();
 }
 
+static void set_ldpreload(void)
+{
+  const char * old;
+  char * new;
+
+  old = getenv("LD_PRELOAD");
+  if (old != NULL)
+  {
+    new = catdup3("libalsapid.so", " ", old);
+    if (new == NULL)
+    {
+      fprintf(stderr, "Memory allocation failure. Cannot hook libalsapid.so through LD_PRELOAD.\n");
+      return;
+    }
+  }
+  else
+  {
+    new = "libalsapid.so";
+  }
+
+  printf("LD_PRELOAD set to \"%s\"\n", new);
+  setenv("LD_PRELOAD", new, 1);
+
+  if (old)
+  {
+    free(new);
+  }
+}
+
 bool
 loader_execute(
   const char * vgraph_name,
@@ -600,7 +630,7 @@ loader_execute(
       dup2(stderr_pipe[1], fileno(stderr));
     }
 
-    putenv("LD_PRELOAD=libalsapid.so");
+    set_ldpreload();
 
     loader_exec_program(commandline, working_dir, run_in_terminal, vgraph_name, project_name, app_name);
 
