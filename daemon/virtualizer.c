@@ -330,7 +330,7 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
       log_info("found existing client");
       if (ladish_client_get_jack_id(client) != 0)
       {
-        ladish_graph_dump(virtualizer_ptr->jack_graph);
+        log_error("Ignoring client with duplicate name '%s' ('%s')", name, jack_name);
         goto exit;
       }
 
