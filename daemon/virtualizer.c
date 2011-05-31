@@ -803,7 +803,21 @@ port_appeared(
     }
     else
     {
-      vclient = ladish_graph_find_client_by_app(vgraph, app_uuid);
+      if (has_app)
+      {
+        vclient = ladish_graph_find_client_by_app(vgraph, app_uuid);
+        if (vclient == NULL)
+        {
+          log_info("Lookup by app uuid failed, attempting lookup by name '%s'", vclient_name);
+          goto find_by_name;
+        }
+      }
+      else
+      {
+      find_by_name:
+        vclient = ladish_graph_find_client_by_name(vgraph, vclient_name, true);
+      }
+
       if (vclient == NULL)
       {
         log_info("creating new vclient");
