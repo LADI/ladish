@@ -29,6 +29,7 @@
 #include "graph_canvas.h"
 #include "../dbus_constants.h"
 #include "../common/catdup.h"
+#include "internal.h"
 
 struct graph_canvas
 {
@@ -195,11 +196,34 @@ static void fill_module_menu(GtkMenu * menu, void * module_context)
 
 #undef client_ptr
 
-#define port_ptr ((struct client *)port_context)
+#define port_ptr ((struct port *)port_context)
+
+static void on_popup_menu_action_port_rename(GtkWidget * menuitem, gpointer port_context)
+{
+  log_info("on_popup_menu_action_port_rename %"PRIu64, port_ptr->id);
+
+  char * new_name;
+
+  if (name_dialog(_("Rename port"), _("Port name"), canvas_get_port_name(port_ptr->canvas_port), &new_name))
+  {
+    if (!graph_proxy_rename_port(port_ptr->graph_canvas->graph, port_ptr->id, new_name))
+    {
+      error_message_box("Rename failed");
+    }
+
+    free(new_name);
+  }
+}
 
 static void fill_port_menu(GtkMenu * menu, void * port_context)
 {
+  GtkWidget * menuitem;
+
   log_info("fill_port_menu %"PRIu64, port_ptr->id);
+
+  menuitem = gtk_menu_item_new_with_label(_("Rename"));
+  g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_port_rename, port_ptr);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 }
 
 #undef port_ptr

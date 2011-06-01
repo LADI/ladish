@@ -414,6 +414,13 @@ canvas_set_port_name(
   port_ptr->get()->set_name(name);
 }
 
+const char *
+canvas_get_port_name(
+  canvas_port_handle port)
+{
+  return port_ptr->get()->name().c_str();
+}
+
 #undef port_ptr
 #define port1_ptr ((boost::shared_ptr<port_cls> *)port1)
 #define port2_ptr ((boost::shared_ptr<port_cls> *)port2)

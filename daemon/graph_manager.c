@@ -118,6 +118,7 @@ static void ladish_graph_manager_dbus_rename_port(struct dbus_method_call * call
 {
   uint64_t port_id;
   const char * newname;
+  ladish_port_handle port;
 
   if (!dbus_message_get_args(
         call_ptr->message,
@@ -133,7 +134,21 @@ static void ladish_graph_manager_dbus_rename_port(struct dbus_method_call * call
 
   log_info("rename port request, graph '%s', port %"PRIu64", newname '%s'", ladish_graph_get_description(graph), port_id, newname);
 
-  method_return_new_void(call_ptr);
+  port = ladish_graph_find_port_by_id(graph, port_id);
+  if (port == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot rename unknown port");
+    return;
+  }
+
+  if (!ladish_graph_rename_port(graph, port, newname))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "port rename failed");
+  }
+  else
+  {
+    method_return_new_void(call_ptr);
+  }
 }
 
 static void ladish_graph_manager_dbus_move_port(struct dbus_method_call * call_ptr)

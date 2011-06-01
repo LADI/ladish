@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the interface to the canvas functionality
@@ -139,6 +139,10 @@ void
 canvas_set_port_name(
   canvas_port_handle port,
   const char * name);
+
+const char *
+canvas_get_port_name(
+  canvas_port_handle port);
 
 bool
 canvas_add_connection(
