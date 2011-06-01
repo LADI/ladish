@@ -37,13 +37,15 @@ public:
   canvas_cls(
     double width,
     double height,
+    void * context,
     void (* connect_request)(void * port1_context, void * port2_context),
     void (* disconnect_request)(void * port1_context, void * port2_context),
     void (* module_location_changed)(void * module_context, double x, double y),
-    void (* fill_canvas_menu)(GtkMenu * menu),
+    void (* fill_canvas_menu)(GtkMenu * menu, void * canvas_context),
     void (* fill_module_menu)(GtkMenu * menu, void * module_context),
     void (* fill_port_menu)(GtkMenu * menu, void * port_context))
     : FlowCanvas::Canvas(width, height)
+    , m_context(context)
     , m_connect_request(connect_request)
     , m_disconnect_request(disconnect_request)
     , m_module_location_changed(module_location_changed)
@@ -77,10 +79,11 @@ public:
   virtual void connect(boost::shared_ptr<FlowCanvas::Connectable> port1, boost::shared_ptr<FlowCanvas::Connectable> port2);
   virtual void disconnect(boost::shared_ptr<FlowCanvas::Connectable> port1, boost::shared_ptr<FlowCanvas::Connectable> port2);
 
+  void * m_context;
   void (* m_connect_request)(void * port1_context, void * port2_context);
   void (* m_disconnect_request)(void * port1_context, void * port2_context);
   void (* m_module_location_changed)(void * module_context, double x, double y);
-  void (* m_fill_canvas_menu)(GtkMenu * menu);
+  void (* m_fill_canvas_menu)(GtkMenu * menu, void * canvas_context);
   void (* m_fill_module_menu)(GtkMenu * menu, void * module_context);
   void (* m_fill_port_menu)(GtkMenu * menu, void * port_context);
 };
@@ -197,10 +200,11 @@ bool
 canvas_create(
   double width,
   double height,
+  void * canvas_context,
   void (* connect_request)(void * port1_context, void * port2_context),
   void (* disconnect_request)(void * port1_context, void * port2_context),
   void (* module_location_changed)(void * module_context, double x, double y),
-  void (* fill_canvas_menu)(GtkMenu * menu),
+  void (* fill_canvas_menu)(GtkMenu * menu, void * canvas_context),
   void (* fill_module_menu)(GtkMenu * menu, void * module_context),
   void (* fill_port_menu)(GtkMenu * menu, void * port_context),
   canvas_handle * canvas_handle_ptr)
@@ -209,6 +213,7 @@ canvas_create(
 
   canvas = new boost::shared_ptr<canvas_cls>(new canvas_cls(width,
                                                             height,
+                                                            canvas_context,
                                                             connect_request,
                                                             disconnect_request,
                                                             module_location_changed,
@@ -318,6 +323,56 @@ canvas_arrange(
   {
     canvas_ptr->get()->arrange();
   }
+}
+
+size_t
+canvas_get_selected_modules_count(
+  canvas_handle canvas)
+{
+  return canvas_ptr->get()->selected_items().size();
+}
+
+bool
+canvas_get_two_selected_modules(
+  canvas_handle canvas,
+  void ** module1_context_ptr,
+  void ** module2_context_ptr)
+{
+  int i;
+
+  std::list<boost::shared_ptr<FlowCanvas::Item> > modules = canvas_ptr->get()->selected_items();
+  if (modules.size() != 2)
+  {
+    return false;
+  }
+
+  i = 0;
+	for (std::list<boost::shared_ptr<FlowCanvas::Item> >::iterator m = modules.begin(); m != modules.end(); ++m)
+  {
+    boost::shared_ptr<module_cls> module = boost::dynamic_pointer_cast<module_cls>(*m);
+    if (module == NULL)
+    {
+      ASSERT_NO_PASS;
+      return false;
+    }
+
+    switch (i)
+    {
+    case 0:
+      *module1_context_ptr = module->m_context;
+      i++;
+      break;
+    case 1:
+      *module2_context_ptr = module->m_context;
+      i++;
+      break;
+    default:
+      ASSERT_NO_PASS;
+      return false;
+    }
+  }
+
+  return true;
 }
 
 bool
@@ -466,7 +521,7 @@ bool canvas_cls::canvas_event(GdkEvent * event)
   {
     Gtk::Menu * menu_ptr;
     menu_ptr = new Gtk::Menu();
-    m_fill_canvas_menu(menu_ptr->gobj());
+    m_fill_canvas_menu(menu_ptr->gobj(), m_context);
     menu_ptr->show_all();
     menu_ptr->popup(event->button.button, event->button.time);
     return true;

@@ -48,10 +48,11 @@ bool
 canvas_create(
   double width,
   double height,
+  void * canvas_context,
   void (* connect_request)(void * port1_context, void * port2_context),
   void (* disconnect_request)(void * port1_context, void * port2_context),
   void (* module_location_changed)(void * module_context, double x, double y),
-  void (* fill_canvas_menu)(GtkMenu * menu),
+  void (* fill_canvas_menu)(GtkMenu * menu, void * canvas_context),
   void (* fill_module_menu)(GtkMenu * menu, void * module_context),
   void (* fill_port_menu)(GtkMenu * menu, void * port_context),
   canvas_handle * canvas_handle_ptr);
@@ -94,6 +95,16 @@ canvas_set_zoom_fit(
 void
 canvas_arrange(
   canvas_handle canvas);
+
+size_t
+canvas_get_selected_modules_count(
+  canvas_handle canvas);
+
+bool
+canvas_get_two_selected_modules(
+  canvas_handle canvas,
+  void ** module1_context_ptr,
+  void ** module2_context_ptr);
 
 bool
 canvas_create_module(

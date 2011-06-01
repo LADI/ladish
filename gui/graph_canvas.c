@@ -35,6 +35,7 @@ struct graph_canvas
 {
   graph_proxy_handle graph;
   canvas_handle canvas;
+  void (* fill_menu)(GtkMenu * menu);
   struct list_head clients;
 };
 
@@ -249,11 +250,47 @@ static void fill_port_menu(GtkMenu * menu, void * port_context)
 
 #undef port_ptr
 
+#define canvas_ptr ((struct graph_canvas *)canvas_context)
+
+static void on_popup_menu_action_join_clients(GtkWidget * menuitem, gpointer canvas_context)
+{
+  struct client * client1_ptr;
+  struct client * client2_ptr;
+
+  if (!canvas_get_two_selected_modules(canvas_ptr->canvas, (void **)&client1_ptr, (void **)&client2_ptr))
+  {
+    return;
+  }
+
+  if (!graph_proxy_join(canvas_ptr->graph, client1_ptr->id, client2_ptr->id))
+  {
+    error_message_box("Join failed");
+  }
+}
+
+static void fill_canvas_menu(GtkMenu * menu, void * canvas_context)
+{
+  GtkWidget * menuitem;
+
+  log_info("fill_canvas_menu");
+
+  if (canvas_get_selected_modules_count(canvas_ptr->canvas) == 2)
+  {
+    menuitem = gtk_menu_item_new_with_label(_("Join clients"));
+    g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_join_clients, canvas_ptr);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+  }
+
+  canvas_ptr->fill_menu(menu);
+}
+
+#undef canvas_ptr
+
 bool
 graph_canvas_create(
   int width,
   int height,
-  void (* fill_canvas_menu)(GtkMenu * menu),
+  void (* fill_canvas_menu_callback)(GtkMenu * menu),
   graph_canvas_handle * graph_canvas_handle_ptr)
 {
   struct graph_canvas * graph_canvas_ptr;
@@ -264,9 +301,12 @@ graph_canvas_create(
     return false;
   }
 
+  graph_canvas_ptr->fill_menu = fill_canvas_menu_callback;
+
   if (!canvas_create(
         width,
         height,
+        graph_canvas_ptr,
         connect_request,
         disconnect_request,
         module_location_changed,

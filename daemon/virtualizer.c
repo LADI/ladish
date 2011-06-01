@@ -1562,6 +1562,24 @@ bool ladish_virtualizer_split_client(ladish_graph_handle vgraph, uint64_t client
   return ladish_graph_interate_client_ports(vgraph, vclient1, vclient2, move_capture_port_callback);
 }
 
+static
+bool
+move_port_callback(
+  void * context,
+  ladish_graph_handle graph_handle,
+  bool hidden,
+  ladish_client_handle client_handle,
+  const char * client_name,
+  ladish_port_handle port_handle,
+  const char * port_name,
+  uint32_t port_type,
+  uint32_t port_flags)
+{
+  ASSERT(client_handle != context); /* source and destination clients must be differ */
+  ladish_graph_move_port(graph_handle, port_handle, context);
+  return true;
+}
+
 bool
 ladish_virtualizer_join_clients(
   ladish_graph_handle vgraph,
@@ -1570,6 +1588,12 @@ ladish_virtualizer_join_clients(
 {
   ladish_client_handle vclient1;
   ladish_client_handle vclient2;
+
+  if (client1_id == client2_id)
+  {
+    log_error("Cannot join same client");
+    return false;
+  }
 
   vclient1 = ladish_graph_find_client_by_id(vgraph, client1_id);
   if (vclient1 == NULL)
@@ -1584,6 +1608,10 @@ ladish_virtualizer_join_clients(
     log_error("Cannot find client %"PRIu64" in %s", client2_id, ladish_graph_get_description(vgraph));
     return false;
   }
+
+  ladish_graph_interate_client_ports(vgraph, vclient2, vclient1, move_port_callback);
+
+  ladish_graph_remove_client(vgraph, vclient2);
 
   return true;
 }
