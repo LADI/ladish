@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009,2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation graph object that is backed through D-Bus
@@ -49,6 +49,7 @@ struct graph
   uint64_t version;
   bool active;
   bool graph_dict_supported;
+  bool graph_manager_supported;
 };
 
 static struct dbus_signal_hook g_signal_hooks[];
@@ -387,6 +388,7 @@ graph_proxy_create(
   const char * service,
   const char * object,
   bool graph_dict_supported,
+  bool graph_manager_supported,
   graph_proxy_handle * graph_proxy_handle_ptr)
 {
   struct graph * graph_ptr;
@@ -418,6 +420,7 @@ graph_proxy_create(
   graph_ptr->active = false;
 
   graph_ptr->graph_dict_supported = graph_dict_supported;
+  graph_ptr->graph_manager_supported = graph_manager_supported;
 
   *graph_proxy_handle_ptr = (graph_proxy_handle)graph_ptr;
 
@@ -968,6 +971,125 @@ bool graph_proxy_get_client_pid(graph_proxy_handle graph, uint64_t client_id, pi
   }
 
   *pid_ptr = pid;
+
+  return true;
+}
+
+bool
+graph_proxy_split(
+  graph_proxy_handle graph,
+  uint64_t client_id)
+{
+  if (!graph_ptr->graph_manager_supported)
+  {
+    return false;
+  }
+
+  if (!dbus_call(0, graph_ptr->service, graph_ptr->object, IFACE_GRAPH_MANAGER, "Split", "t", &client_id, ""))
+  {
+    log_error(IFACE_GRAPH_MANAGER ".Split() failed.");
+    return false;
+  }
+
+  return true;
+}
+
+bool
+graph_proxy_join(
+  graph_proxy_handle graph,
+  uint64_t client1_id,
+  uint64_t client2_id)
+{
+  if (!graph_ptr->graph_manager_supported)
+  {
+    return false;
+  }
+
+  if (!dbus_call(0, graph_ptr->service, graph_ptr->object, IFACE_GRAPH_MANAGER, "Join", "tt", &client1_id, &client2_id, ""))
+  {
+    log_error(IFACE_GRAPH_MANAGER ".Join() failed.");
+    return false;
+  }
+
+  return true;
+}
+
+bool
+graph_proxy_rename_client(
+  graph_proxy_handle graph,
+  uint64_t client_id,
+  const char * newname)
+{
+  if (!graph_ptr->graph_manager_supported)
+  {
+    return false;
+  }
+
+  if (!dbus_call(0, graph_ptr->service, graph_ptr->object, IFACE_GRAPH_MANAGER, "RenameClient", "ts", &client_id, &newname, ""))
+  {
+    log_error(IFACE_GRAPH_MANAGER ".RenameClient() failed.");
+    return false;
+  }
+
+  return true;
+}
+
+bool
+graph_proxy_rename_port(
+  graph_proxy_handle graph,
+  uint64_t port_id,
+  const char * newname)
+{
+  if (!graph_ptr->graph_manager_supported)
+  {
+    return false;
+  }
+
+  if (!dbus_call(0, graph_ptr->service, graph_ptr->object, IFACE_GRAPH_MANAGER, "RenamePort", "ts", &port_id, &newname, ""))
+  {
+    log_error(IFACE_GRAPH_MANAGER ".RenamePort() failed.");
+    return false;
+  }
+
+  return true;
+}
+
+bool
+graph_proxy_move_port(
+  graph_proxy_handle graph,
+  uint64_t port_id,
+  uint64_t client_id)
+{
+  if (!graph_ptr->graph_manager_supported)
+  {
+    return false;
+  }
+
+  if (!dbus_call(0, graph_ptr->service, graph_ptr->object, IFACE_GRAPH_MANAGER, "MovePort", "tt", &port_id, &client_id, ""))
+  {
+    log_error(IFACE_GRAPH_MANAGER ".MovePort() failed.");
+    return false;
+  }
+
+  return true;
+}
+
+bool
+graph_proxy_new_client(
+  graph_proxy_handle graph,
+  const char * name,
+  uint64_t * client_id_ptr)
+{
+  if (!graph_ptr->graph_manager_supported)
+  {
+    return false;
+  }
+
+  if (!dbus_call(0, graph_ptr->service, graph_ptr->object, IFACE_GRAPH_MANAGER, "NewClient", "s", &name, "t", client_id_ptr))
+  {
+    log_error(IFACE_GRAPH_MANAGER ".NewClient() failed.");
+    return false;
+  }
 
   return true;
 }

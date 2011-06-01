@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the studio handling code
@@ -63,7 +63,7 @@ void create_studio_view(const char * name)
 {
   ASSERT(!studio_loaded());
 
-  if (!create_view(name, SERVICE_NAME, STUDIO_OBJECT_PATH, true, true, false, &g_studio_view))
+  if (!create_view(name, SERVICE_NAME, STUDIO_OBJECT_PATH, true, true, true, false, &g_studio_view))
   {
     log_error("create_view() failed for studio");
   }

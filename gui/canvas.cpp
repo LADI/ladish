@@ -117,6 +117,7 @@ public:
     {
       fill_module_menu(_menu->gobj(), m_context);
     }
+    _menu->show_all();
   }
 
   void menu_disconnect_all()
@@ -172,6 +173,7 @@ public:
     {
       fill_port_menu(_menu->gobj(), m_context);
     }
+    _menu->show_all();
   }
 
   void on_menu_hide()

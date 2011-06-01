@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
  *
  **************************************************************************
@@ -56,7 +56,7 @@ static void update_raw_jack_visibility(void)
   /* if there is no jack view and its display is enabled and jack is avaialable, create the raw jack view */
   if (g_jack_view == NULL && g_jack_view_enabled && g_jack_state != JACK_STATE_NA)
   {
-    if (!create_view(_("Raw JACK"), JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, false, false, true, &g_jack_view))
+    if (!create_view(_("Raw JACK"), JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, false, false, false, true, &g_jack_view))
     {
       log_error("create_view() failed for jack");
       return;

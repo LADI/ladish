@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains constants for D-Bus service and interface names and for D-Bus object paths
@@ -43,6 +43,7 @@
 #define APPLICATION_OBJECT_PATH  DBUS_BASE_PATH "/Application"
 #define IFACE_APPLICATION        DBUS_NAME_BASE ".App"
 #define IFACE_GRAPH_DICT         DBUS_NAME_BASE ".GraphDict"
+#define IFACE_GRAPH_MANAGER      DBUS_NAME_BASE ".GraphManager"
 #define IFACE_RECENT_ITEMS       DBUS_NAME_BASE ".RecentItems"
 
 #define JMCORE_SERVICE_NAME      DBUS_NAME_BASE ".jmcore"

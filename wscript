@@ -331,6 +331,7 @@ def build(bld):
         'control.c',
         'studio.c',
         'graph.c',
+        'graph_manager.c',
         'client.c',
         'port.c',
         'virtualizer.c',

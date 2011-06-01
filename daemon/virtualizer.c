@@ -1504,3 +1504,86 @@ bool ladish_virtualizer_is_a2j_client(ladish_client_handle jclient)
   ladish_client_get_uuid(jclient, jclient_uuid);
   return uuid_compare(jclient_uuid, g_a2j_uuid) == 0;
 }
+
+static
+bool
+move_capture_port_callback(
+  void * context,
+  ladish_graph_handle graph_handle,
+  bool hidden,
+  ladish_client_handle client_handle,
+  const char * client_name,
+  ladish_port_handle port_handle,
+  const char * port_name,
+  uint32_t port_type,
+  uint32_t port_flags)
+{
+  ASSERT(client_handle != context); /* source and destination clients must be differ */
+
+  if (JACKDBUS_PORT_IS_INPUT(port_flags))
+  {
+    ladish_graph_move_port(graph_handle, port_handle, context);
+  }
+
+  return true;
+}
+
+bool ladish_virtualizer_split_client(ladish_graph_handle vgraph, uint64_t client_id)
+{
+  ladish_client_handle vclient1;
+  ladish_client_handle vclient2;
+  const char * name;
+
+  vclient1 = ladish_graph_find_client_by_id(vgraph, client_id);
+  if (vclient1 == NULL)
+  {
+    log_error("Cannot find client %"PRIu64" in %s", client_id, ladish_graph_get_description(vgraph));
+    return false;
+  }
+
+  name = ladish_graph_get_client_name(vgraph, vclient1);
+
+  if (!ladish_client_create(NULL, &vclient2))
+  {
+    log_error("ladish_client_create() failed.");
+    return false;
+  }
+
+  ladish_client_interlink_copy(vclient2, vclient1);
+  ladish_client_copy_app(vclient2, vclient1);
+
+  if (!ladish_graph_add_client(vgraph, vclient2, name, false))
+  {
+    log_error("ladish_graph_add_client() failed to add client '%s' to virtual graph", name);
+    ladish_client_destroy(vclient2);
+    return false;
+  }
+
+  return ladish_graph_interate_client_ports(vgraph, vclient1, vclient2, move_capture_port_callback);
+}
+
+bool
+ladish_virtualizer_join_clients(
+  ladish_graph_handle vgraph,
+  uint64_t client1_id,
+  uint64_t client2_id)
+{
+  ladish_client_handle vclient1;
+  ladish_client_handle vclient2;
+
+  vclient1 = ladish_graph_find_client_by_id(vgraph, client1_id);
+  if (vclient1 == NULL)
+  {
+    log_error("Cannot find client %"PRIu64" in %s", client1_id, ladish_graph_get_description(vgraph));
+    return false;
+  }
+
+  vclient2 = ladish_graph_find_client_by_id(vgraph, client2_id);
+  if (vclient2 == NULL)
+  {
+    log_error("Cannot find client %"PRIu64" in %s", client2_id, ladish_graph_get_description(vgraph));
+    return false;
+  }
+
+  return true;
+}

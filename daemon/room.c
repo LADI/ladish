@@ -27,6 +27,7 @@
 #include "room_internal.h"
 #include "../dbus_constants.h"
 #include "graph_dict.h"
+#include "graph_manager.h"
 #include "../lib/wkports.h"
 #include "studio.h"
 #include "../proxies/jmcore_proxy.h"
@@ -315,6 +316,7 @@ ladish_room_create(
     &g_interface_room, room_ptr,
     &g_interface_patchbay, ladish_graph_get_dbus_context(room_ptr->graph),
     &g_iface_graph_dict, room_ptr->graph,
+    &g_iface_graph_manager, room_ptr->graph,
     &g_iface_app_supervisor, room_ptr->app_supervisor,
     &g_iface_recent_items, NULL,
     NULL);

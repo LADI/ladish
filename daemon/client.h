@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the interface of the client objects
@@ -59,11 +59,13 @@ void ladish_client_set_vgraph(ladish_client_handle client_handle, void * vgraph)
 void * ladish_client_get_vgraph(ladish_client_handle client_handle);
 
 void ladish_client_interlink(ladish_client_handle client1_handle, ladish_client_handle client2_handle);
+void ladish_client_interlink_copy(ladish_client_handle dst_client_handle, ladish_client_handle src_client_handle);
 bool ladish_client_get_interlink(ladish_client_handle client_handle, uuid_t uuid);
 void ladish_client_clear_interlink(ladish_client_handle client_handle);
 
 void ladish_client_set_app(ladish_client_handle client_handle, const uuid_t uuid);
 bool ladish_client_get_app(ladish_client_handle client_handle, uuid_t uuid);
 bool ladish_client_has_app(ladish_client_handle client_handle);
+void ladish_client_copy_app(ladish_client_handle dst_client_handle, ladish_client_handle src_client_handle);
 
 #endif /* #ifndef CLIENT_H__2160B4BA_D6D1_464D_9DC5_ECA50B0958AD__INCLUDED */

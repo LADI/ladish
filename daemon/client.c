@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the implementation of the client objects
@@ -158,9 +158,30 @@ void ladish_client_interlink(ladish_client_handle client_handle, ladish_client_h
   uuid_copy(client2_ptr->uuid_interlink, client_ptr->uuid);
 }
 
+void ladish_client_interlink_copy(ladish_client_handle client_handle, ladish_client_handle client2_handle)
+{
+  uuid_copy(client_ptr->uuid_interlink, client2_ptr->uuid_interlink);
+}
+
+void ladish_client_copy_app(ladish_client_handle client_handle, ladish_client_handle client2_handle)
+{
+  uuid_copy(client_ptr->uuid_app, client2_ptr->uuid_app);
+}
+
 #undef client2_ptr
 
 bool ladish_client_get_interlink(ladish_client_handle client_handle, uuid_t uuid)
+{
+  if (uuid_is_null(client_ptr->uuid_interlink))
+  {
+    return false;
+  }
+
+  uuid_copy(uuid, client_ptr->uuid_interlink);
+  return true;
+}
+
+bool ladish_client_set_interlink(ladish_client_handle client_handle, uuid_t uuid)
 {
   if (uuid_is_null(client_ptr->uuid_interlink))
   {

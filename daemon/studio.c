@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains part of the studio singleton object implementation
@@ -37,6 +37,7 @@
 #include "../common/catdup.h"
 #include "../common/dirhelpers.h"
 #include "graph_dict.h"
+#include "graph_manager.h"
 #include "escape.h"
 #include "studio.h"
 #include "../proxies/notify_proxy.h"
@@ -85,6 +86,7 @@ bool ladish_studio_show(void)
     &g_interface_studio, &g_studio,
     &g_interface_patchbay, ladish_graph_get_dbus_context(g_studio.studio_graph),
     &g_iface_graph_dict, g_studio.studio_graph,
+    &g_iface_graph_manager, g_studio.studio_graph,
     &g_iface_app_supervisor, g_studio.app_supervisor,
     NULL);
   if (object == NULL)
@@ -335,7 +337,7 @@ void ladish_studio_on_event_jack_started(void)
   log_info("jack conf successfully retrieved");
   g_studio.jack_conf_valid = true;
 
-  if (!graph_proxy_create(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, false, &g_studio.jack_graph_proxy))
+  if (!graph_proxy_create(JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, false, false, &g_studio.jack_graph_proxy))
   {
     log_error("graph_proxy_create() failed for jackdbus");
   }

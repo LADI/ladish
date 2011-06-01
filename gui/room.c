@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains room related code
@@ -119,7 +119,7 @@ static void room_appeared(const char * opath, const char * name, const char * te
 
   log_info("room \"%s\" appeared (%s). template is \"%s\"", name, opath, template);
 
-  if (!create_view(name, SERVICE_NAME, opath, true, true, false, &graph_view))
+  if (!create_view(name, SERVICE_NAME, opath, true, true, true, false, &graph_view))
   {
     log_error("create_view() failed for room \"%s\"", name);
   }

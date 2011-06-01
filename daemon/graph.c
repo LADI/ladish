@@ -2045,6 +2045,73 @@ ladish_graph_remove_port_by_jack_id(
   return client;
 }
 
+void
+ladish_graph_move_port(
+  ladish_graph_handle graph_handle,
+  ladish_port_handle port_handle,
+  ladish_client_handle client_handle)
+{
+  struct ladish_graph_port * port_ptr;
+  struct ladish_graph_client * client_ptr;
+  struct list_head * node_ptr;
+  struct ladish_graph_connection * connection_ptr;
+
+  port_ptr = ladish_graph_find_port(graph_ptr, port_handle);
+  if (port_ptr == NULL)
+  {
+    ASSERT_NO_PASS;
+    return;
+  }
+
+  client_ptr = ladish_graph_find_client(graph_ptr, client_handle);
+  if (client_ptr == NULL)
+  {
+    ASSERT_NO_PASS;
+    return;
+  }
+
+  list_del(&port_ptr->siblings_client);
+  list_del(&port_ptr->siblings_graph);
+  graph_ptr->graph_version++;
+
+  if (graph_ptr->opath != NULL && !port_ptr->hidden)
+  {
+    list_for_each(node_ptr, &graph_ptr->connections)
+    {
+      connection_ptr = list_entry(node_ptr, struct ladish_graph_connection, siblings);
+      if (!connection_ptr->hidden && (connection_ptr->port1_ptr == port_ptr || connection_ptr->port2_ptr == port_ptr))
+      {
+        ladish_graph_emit_ports_disconnected(graph_ptr, connection_ptr);
+        graph_ptr->graph_version++;
+      }
+    }
+
+    ladish_graph_emit_port_disappeared(graph_ptr, port_ptr);
+  }
+
+  port_ptr->id = graph_ptr->next_port_id++;
+  port_ptr->client_ptr = client_ptr;
+  list_add_tail(&port_ptr->siblings_client, &client_ptr->ports);
+  list_add_tail(&port_ptr->siblings_graph, &graph_ptr->ports);
+  graph_ptr->graph_version++;
+
+  if (graph_ptr->opath != NULL && !port_ptr->hidden)
+  {
+    ladish_graph_emit_port_appeared(graph_ptr, port_ptr);
+
+    list_for_each(node_ptr, &graph_ptr->connections)
+    {
+      connection_ptr = list_entry(node_ptr, struct ladish_graph_connection, siblings);
+      if (!connection_ptr->hidden && (connection_ptr->port1_ptr == port_ptr || connection_ptr->port2_ptr == port_ptr))
+      {
+        graph_ptr->next_connection_id++;
+        graph_ptr->graph_version++;
+        ladish_graph_emit_ports_connected(graph_ptr, connection_ptr);
+      }
+    }
+  }
+}
+
 bool
 ladish_graph_rename_client(
   ladish_graph_handle graph_handle,

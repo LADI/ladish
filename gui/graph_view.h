@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface of the graph view object
@@ -42,6 +42,7 @@ create_view(
   const char * object,
   bool graph_dict_supported,
   bool app_supervisor_supported,
+  bool graph_manager_supported,
   bool force_activate,
   graph_view_handle * handle_ptr);
 

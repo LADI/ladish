@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009,2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to graph object that is backed through D-Bus
@@ -43,6 +43,7 @@ graph_proxy_create(
   const char * service,
   const char * object,
   bool graph_dict_supported,
+  bool graph_manager_supported,
   graph_proxy_handle * graph_proxy_ptr);
 
 void
@@ -111,6 +112,41 @@ graph_proxy_dict_entry_drop(
   const char * key);
 
 bool graph_proxy_get_client_pid(graph_proxy_handle graph, uint64_t client_id, pid_t * pid_ptr);
+
+bool
+graph_proxy_split(
+  graph_proxy_handle graph,
+  uint64_t client_id);
+
+bool
+graph_proxy_join(
+  graph_proxy_handle graph,
+  uint64_t client1_id,
+  uint64_t client2_id);
+
+bool
+graph_proxy_rename_client(
+  graph_proxy_handle graph,
+  uint64_t client_id,
+  const char * newname);
+
+bool
+graph_proxy_rename_port(
+  graph_proxy_handle graph,
+  uint64_t port_id,
+  const char * newname);
+
+bool
+graph_proxy_move_port(
+  graph_proxy_handle graph,
+  uint64_t port_id,
+  uint64_t client_id);
+
+bool
+graph_proxy_new_client(
+  graph_proxy_handle graph,
+  const char * name,
+  uint64_t * client_id_ptr);
 
 #if 0
 { /* Adjust editor indent */

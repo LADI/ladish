@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to graph dispatcher object
@@ -78,5 +78,18 @@ ladish_virtualizer_is_a2j_client(
 void
 ladish_virtualizer_destroy(
   ladish_virtualizer_handle handle);
+
+/* create new client and move capture ports of the supplied client the the new client */
+bool
+ladish_virtualizer_split_client(
+  ladish_graph_handle vgraph,
+  uint64_t client_id);
+
+/* move ports of client2 to client1 and remove client2 */
+bool
+ladish_virtualizer_join_clients(
+  ladish_graph_handle vgraph,
+  uint64_t client1_id,
+  uint64_t client2_id);
 
 #endif /* #ifndef JACK_DISPATCH_H__C7566B66_081D_4D00_A702_7C18F7CC0735__INCLUDED */

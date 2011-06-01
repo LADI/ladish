@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of graph canvas object
@@ -44,12 +44,15 @@ struct client
   canvas_module_handle canvas_module;
   struct list_head ports;
   struct graph_canvas * owner_ptr;
+  unsigned int inport_count;
+  unsigned int outport_count;
 };
 
 struct port
 {
   struct list_head siblings;
   uint64_t id;
+  bool is_input;
   canvas_port_handle canvas_port;
   struct graph_canvas * graph_canvas;
 };
@@ -169,7 +172,37 @@ module_location_changed(
     y_str);
 }
 
+static void on_popup_menu_action_split(GtkWidget * menuitem, gpointer module_context)
+{
+  //log_info("on_popup_menu_action_split");
+  graph_proxy_split(client_ptr->owner_ptr->graph, client_ptr->id);
+}
+
+static void fill_module_menu(GtkMenu * menu, void * module_context)
+{
+  GtkWidget * menuitem;
+
+  log_info("fill_module_menu %"PRIu64, client_ptr->id);
+
+  if (client_ptr->inport_count != 0 &&
+      client_ptr->outport_count != 0)
+  {
+    menuitem = gtk_menu_item_new_with_label(_("Split"));
+    g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_split, client_ptr);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+  }
+}
+
 #undef client_ptr
+
+#define port_ptr ((struct client *)port_context)
+
+static void fill_port_menu(GtkMenu * menu, void * port_context)
+{
+  log_info("fill_port_menu %"PRIu64, port_ptr->id);
+}
+
+#undef port_ptr
 
 bool
 graph_canvas_create(
@@ -193,8 +226,8 @@ graph_canvas_create(
         disconnect_request,
         module_location_changed,
         fill_canvas_menu,
-        NULL,
-        NULL,
+        fill_module_menu,
+        fill_port_menu,
         &graph_canvas_ptr->canvas))
   {
     free(graph_canvas_ptr);
@@ -249,6 +282,8 @@ client_appeared(
   }
 
   client_ptr->id = id;
+  client_ptr->inport_count = 0;
+  client_ptr->outport_count = 0;
   INIT_LIST_HEAD(&client_ptr->ports);
   client_ptr->owner_ptr = graph_canvas_ptr;
 
@@ -399,6 +434,7 @@ port_appeared(
   }
 
   port_ptr->id = port_id;
+  port_ptr->is_input = is_input;
   port_ptr->graph_canvas = graph_canvas_ptr;
 
   // Darkest tango palette colour, with S -= 6, V -= 6, w/ transparency
@@ -449,6 +485,15 @@ port_appeared(
   list_add_tail(&port_ptr->siblings, &client_ptr->ports);
 
   free(name_override);
+
+  if (is_input)
+  {
+    client_ptr->inport_count++;
+  }
+  else
+  {
+    client_ptr->outport_count++;
+  }
 }
 
 static
@@ -479,6 +524,16 @@ port_disappeared(
 
   list_del(&port_ptr->siblings);
   canvas_destroy_port(graph_canvas_ptr->canvas, port_ptr->canvas_port);
+
+  if (port_ptr->is_input)
+  {
+    client_ptr->inport_count--;
+  }
+  else
+  {
+    client_ptr->outport_count--;
+  }
+
   free(port_ptr);
 }
 
