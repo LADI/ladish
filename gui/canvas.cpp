@@ -333,6 +333,46 @@ canvas_get_selected_modules_count(
 }
 
 bool
+canvas_get_one_selected_module(
+  canvas_handle canvas,
+  void ** module_context_ptr)
+{
+  int i;
+
+  std::list<boost::shared_ptr<FlowCanvas::Item> > modules = canvas_ptr->get()->selected_items();
+  if (modules.size() != 1)
+  {
+    return false;
+  }
+
+  i = 0;
+	for (std::list<boost::shared_ptr<FlowCanvas::Item> >::iterator m = modules.begin(); m != modules.end(); ++m)
+  {
+    boost::shared_ptr<module_cls> module = boost::dynamic_pointer_cast<module_cls>(*m);
+    if (module == NULL)
+    {
+      ASSERT_NO_PASS;
+      return false;
+    }
+
+    if (i == 0)
+    {
+      *module_context_ptr = module->m_context;
+      i++;
+      continue;
+    }
+  }
+
+  if (i != 1)
+  {
+    ASSERT_NO_PASS;
+    return false;
+  }
+
+  return true;
+}
+
+bool
 canvas_get_two_selected_modules(
   canvas_handle canvas,
   void ** module1_context_ptr,
@@ -361,15 +401,18 @@ canvas_get_two_selected_modules(
     case 0:
       *module1_context_ptr = module->m_context;
       i++;
-      break;
+      continue;
     case 1:
       *module2_context_ptr = module->m_context;
       i++;
-      break;
-    default:
-      ASSERT_NO_PASS;
-      return false;
+      continue;
     }
+  }
+
+  if (i != 2)
+  {
+    ASSERT_NO_PASS;
+    return false;
   }
 
   return true;

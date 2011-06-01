@@ -1562,6 +1562,27 @@ ladish_graph_remove_client(
   }
 }
 
+uint64_t
+ladish_graph_get_client_id(
+  ladish_graph_handle graph_handle,
+  ladish_client_handle client_handle)
+{
+  struct ladish_graph_client * client_ptr;
+
+  log_info("ladish_graph_get_client_id() called.");
+
+  client_ptr = ladish_graph_find_client(graph_ptr, client_handle);
+  if (client_ptr != NULL)
+  {
+    return client_ptr->id;
+  }
+  else
+  {
+    ASSERT_NO_PASS;
+    return 0;
+  }
+}
+
 bool
 ladish_graph_add_port(
   ladish_graph_handle graph_handle,

@@ -237,6 +237,23 @@ static void on_popup_menu_action_port_rename(GtkWidget * menuitem, gpointer port
   }
 }
 
+static void on_popup_menu_action_port_move(GtkWidget * menuitem, gpointer port_context)
+{
+  struct client * client_ptr;
+
+  log_info("on_popup_menu_action_port_move %"PRIu64, port_ptr->id);
+
+  if (!canvas_get_one_selected_module(port_ptr->graph_canvas->canvas, (void **)&client_ptr))
+  {
+    return;
+  }
+
+  if (!graph_proxy_move_port(port_ptr->graph_canvas->graph, port_ptr->id, client_ptr->id))
+  {
+    error_message_box("Port move failed");
+  }
+}
+
 static void fill_port_menu(GtkMenu * menu, void * port_context)
 {
   GtkWidget * menuitem;
@@ -246,6 +263,13 @@ static void fill_port_menu(GtkMenu * menu, void * port_context)
   menuitem = gtk_menu_item_new_with_label(_("Rename"));
   g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_port_rename, port_ptr);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+
+  if (canvas_get_selected_modules_count(port_ptr->graph_canvas->canvas) == 1)
+  {
+    menuitem = gtk_menu_item_new_with_label(_("Move port"));
+    g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_port_move, port_ptr);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+  }
 }
 
 #undef port_ptr
@@ -268,11 +292,31 @@ static void on_popup_menu_action_join_clients(GtkWidget * menuitem, gpointer can
   }
 }
 
+static void on_popup_menu_action_new_client(GtkWidget * menuitem, gpointer canvas_context)
+{
+  char * new_name;
+  uint64_t client_id;
+
+  if (name_dialog(_("New client"), _("Client name"), "", &new_name))
+  {
+    if (!graph_proxy_new_client(canvas_ptr->graph, new_name, &client_id))
+    {
+      error_message_box("New client creation failed");
+    }
+
+    free(new_name);
+  }
+}
+
 static void fill_canvas_menu(GtkMenu * menu, void * canvas_context)
 {
   GtkWidget * menuitem;
 
   log_info("fill_canvas_menu");
+
+  menuitem = gtk_menu_item_new_with_label(_("New client"));
+  g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_new_client, canvas_ptr);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
   if (canvas_get_selected_modules_count(canvas_ptr->canvas) == 2)
   {

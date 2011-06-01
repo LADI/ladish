@@ -165,6 +165,7 @@ ladish_graph_set_link_port_override_uuid(
   const uuid_t override_uuid);
 
 ladish_client_handle ladish_graph_get_port_client(ladish_graph_handle graph_handle, ladish_port_handle port_handle);
+uint64_t ladish_graph_get_client_id(ladish_graph_handle graph_handle, ladish_client_handle client_handle);
 const char * ladish_graph_get_client_name(ladish_graph_handle graph_handle, ladish_client_handle client_handle);
 const char * ladish_graph_get_port_name(ladish_graph_handle graph, ladish_port_handle port);
 bool ladish_graph_client_is_empty(ladish_graph_handle graph_handle, ladish_client_handle client_handle);

@@ -170,6 +170,8 @@ static void ladish_graph_manager_dbus_move_port(struct dbus_method_call * call_p
 {
   uint64_t port_id;
   uint64_t client_id;
+  ladish_port_handle port;
+  ladish_client_handle client;
 
   if (!dbus_message_get_args(
         call_ptr->message,
@@ -185,12 +187,30 @@ static void ladish_graph_manager_dbus_move_port(struct dbus_method_call * call_p
 
   log_info("move port request, graph '%s', port %"PRIu64", client %"PRIu64, ladish_graph_get_description(graph), port_id, client_id);
 
+  port = ladish_graph_find_port_by_id(graph, port_id);
+  if (port == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot move unknown port");
+    return;
+  }
+
+  client = ladish_graph_find_client_by_id(graph, client_id);
+  if (client == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot move port to unknown client");
+    return;
+  }
+
+  ladish_graph_move_port(graph, port, client);
+
   method_return_new_void(call_ptr);
 }
 
 static void ladish_graph_manager_dbus_new_client(struct dbus_method_call * call_ptr)
 {
   const char * name;
+  ladish_client_handle client;
+  uint64_t client_id;
 
   if (!dbus_message_get_args(
         call_ptr->message,
@@ -205,7 +225,22 @@ static void ladish_graph_manager_dbus_new_client(struct dbus_method_call * call_
 
   log_info("new client request, graph '%s', name '%s'", ladish_graph_get_description(graph), name);
 
-  lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "method \"%s\" not implemented yet",  call_ptr->method_name);
+  if (!ladish_client_create(NULL, &client))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_client_create() failed.");
+    return;
+  }
+
+  if (!ladish_graph_add_client(graph, client, name, false))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_graph_add_client() failed to add client '%s' to virtual graph", name);
+    ladish_client_destroy(client);
+    return;
+  }
+
+  client_id = ladish_graph_get_client_id(graph, client);
+
+  method_return_new_single(call_ptr, DBUS_TYPE_UINT64, &client_id);
 }
 
 #undef graph_ptr

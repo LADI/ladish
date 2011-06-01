@@ -101,6 +101,11 @@ canvas_get_selected_modules_count(
   canvas_handle canvas);
 
 bool
+canvas_get_one_selected_module(
+  canvas_handle canvas,
+  void ** module_context_ptr);
+
+bool
 canvas_get_two_selected_modules(
   canvas_handle canvas,
   void ** module1_context_ptr,
