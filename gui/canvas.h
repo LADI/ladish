@@ -116,6 +116,10 @@ canvas_set_module_name(
   canvas_module_handle module,
   const char * name);
 
+const char *
+canvas_get_module_name(
+  canvas_module_handle module);
+
 bool
 canvas_create_port(
   canvas_handle canvas,

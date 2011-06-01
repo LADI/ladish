@@ -173,6 +173,23 @@ module_location_changed(
     y_str);
 }
 
+static void on_popup_menu_action_client_rename(GtkWidget * menuitem, gpointer module_context)
+{
+  log_info("on_popup_menu_action_client_rename %"PRIu64, client_ptr->id);
+
+  char * new_name;
+
+  if (name_dialog(_("Rename client"), _("Client name"), canvas_get_module_name(client_ptr->canvas_module), &new_name))
+  {
+    if (!graph_proxy_rename_client(client_ptr->owner_ptr->graph, client_ptr->id, new_name))
+    {
+      error_message_box("Rename failed");
+    }
+
+    free(new_name);
+  }
+}
+
 static void on_popup_menu_action_split(GtkWidget * menuitem, gpointer module_context)
 {
   //log_info("on_popup_menu_action_split");
@@ -184,6 +201,10 @@ static void fill_module_menu(GtkMenu * menu, void * module_context)
   GtkWidget * menuitem;
 
   log_info("fill_module_menu %"PRIu64, client_ptr->id);
+
+  menuitem = gtk_menu_item_new_with_label(_("Client rename"));
+  g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_client_rename, client_ptr);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
   if (client_ptr->inport_count != 0 &&
       client_ptr->outport_count != 0)

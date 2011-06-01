@@ -350,6 +350,14 @@ canvas_set_module_name(
   const char * name)
 {
   module_ptr->get()->set_name(name);
+  module_ptr->get()->resize();
+}
+
+const char *
+canvas_get_module_name(
+  canvas_module_handle module)
+{
+  return module_ptr->get()->name().c_str();
 }
 
 bool
@@ -412,6 +420,7 @@ canvas_set_port_name(
   const char * name)
 {
   port_ptr->get()->set_name(name);
+  port_ptr->get()->module().lock()->resize();
 }
 
 const char *

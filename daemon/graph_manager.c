@@ -96,6 +96,7 @@ static void ladish_graph_manager_dbus_rename_client(struct dbus_method_call * ca
 {
   uint64_t client_id;
   const char * newname;
+  ladish_client_handle client;
 
   if (!dbus_message_get_args(
         call_ptr->message,
@@ -111,7 +112,21 @@ static void ladish_graph_manager_dbus_rename_client(struct dbus_method_call * ca
 
   log_info("rename client request, graph '%s', client %"PRIu64", newname '%s'", ladish_graph_get_description(graph), client_id, newname);
 
-  method_return_new_void(call_ptr);
+  client = ladish_graph_find_client_by_id(graph, client_id);
+  if (client == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot rename unknown client");
+    return;
+  }
+
+  if (!ladish_graph_rename_client(graph, client, newname))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "client rename failed");
+  }
+  else
+  {
+    method_return_new_void(call_ptr);
+  }
 }
 
 static void ladish_graph_manager_dbus_rename_port(struct dbus_method_call * call_ptr)
