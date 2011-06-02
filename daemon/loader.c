@@ -484,6 +484,8 @@ loader_run(void)
   loader_childs_bury();
 }
 
+#define LD_PRELOAD_ADD "libalsapid.so libasound.so"
+
 static void set_ldpreload(void)
 {
   const char * old;
@@ -492,7 +494,7 @@ static void set_ldpreload(void)
   old = getenv("LD_PRELOAD");
   if (old != NULL)
   {
-    new = catdup3("libalsapid.so", " ", old);
+    new = catdup3(LD_PRELOAD_ADD, " ", old);
     if (new == NULL)
     {
       fprintf(stderr, "Memory allocation failure. Cannot hook libalsapid.so through LD_PRELOAD.\n");
@@ -501,7 +503,7 @@ static void set_ldpreload(void)
   }
   else
   {
-    new = "libalsapid.so";
+    new = LD_PRELOAD_ADD;
   }
 
   printf("LD_PRELOAD set to \"%s\"\n", new);

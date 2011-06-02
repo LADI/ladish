@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the libasound LD_PRELOAD-ed alsapid library
@@ -76,23 +76,15 @@ static int (* real_snd_seq_close)(snd_seq_t * handle);
 //static int (* real_snd_seq_create_port)(snd_seq_t * handle, snd_seq_port_info_t * info);
 //static int (* real_snd_seq_create_simple_port)(snd_seq_t * seq, const char * name, unsigned int caps, unsigned int type);
 
-static void __attribute__ ((constructor)) init(void);
-
-/* Library constructor */
-void init(void)
-{
-//  real_snd_seq_open               = dlvsym(RTLD_NEXT, "snd_seq_open",               API_VERSION);
-  real_snd_seq_set_client_name    = dlvsym(RTLD_NEXT, "snd_seq_set_client_name",    API_VERSION);
-  real_snd_seq_close              = dlvsym(RTLD_NEXT, "snd_seq_close",              API_VERSION);
-//  real_snd_seq_create_port        = dlvsym(RTLD_NEXT, "snd_seq_create_port",        API_VERSION);
-//  real_snd_seq_create_simple_port = dlvsym(RTLD_NEXT, "snd_seq_create_simple_port", API_VERSION);
-}
-
 #define CHECK_FUNC(func)                                                \
   if (real_ ## func == NULL)                                            \
   {                                                                     \
-    fprintf(stderr, "dlvsym(\"" #func "\", \""API_VERSION"\") failed.\n"); \
-    return -1;                                                          \
+    real_ ## func = dlvsym(RTLD_NEXT, #func, API_VERSION);              \
+    if (real_ ## func == NULL)                                          \
+    {                                                                   \
+      fprintf(stderr, "dlvsym(\""#func"\", \""API_VERSION"\") failed. %s\n", dlerror()); \
+      return -1;                                                        \
+    }                                                                   \
   }
 
 #if 0
