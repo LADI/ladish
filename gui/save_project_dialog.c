@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the save project dialog
@@ -58,7 +58,6 @@ void ladish_init_save_project_dialog(void)
 void ladish_run_save_project_dialog(ladish_room_proxy_handle room)
 {
   GtkWidget * dialog = NULL;
-  GtkWidget * path_button = NULL;
   GtkEntry * name = NULL;
   GtkResponseType response;
 
@@ -66,7 +65,6 @@ void ladish_run_save_project_dialog(ladish_room_proxy_handle room)
   const char * project_name;
 
   dialog = get_gtk_builder_widget("project_save_as_dialog");
-  path_button = get_gtk_builder_widget("project_save_as_path_button");
   path = GTK_ENTRY(get_gtk_builder_widget("project_save_as_path_entry"));
   name = GTK_ENTRY(get_gtk_builder_widget("project_save_as_name_entry"));
 
