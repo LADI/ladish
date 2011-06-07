@@ -1094,6 +1094,25 @@ graph_proxy_new_client(
   return true;
 }
 
+bool
+graph_proxy_remove_client(
+  graph_proxy_handle graph,
+  uint64_t client_id)
+{
+  if (!graph_ptr->graph_manager_supported)
+  {
+    return false;
+  }
+
+  if (!dbus_call(0, graph_ptr->service, graph_ptr->object, IFACE_GRAPH_MANAGER, "RemoveClient", "t", &client_id, ""))
+  {
+    log_error(IFACE_GRAPH_MANAGER ".RemoveClient() failed.");
+    return false;
+  }
+
+  return true;
+}
+
 /* this must be static because it is referenced by the
  * dbus helper layer when hooks are active */
 static struct dbus_signal_hook g_signal_hooks[] =

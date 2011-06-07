@@ -243,6 +243,42 @@ static void ladish_graph_manager_dbus_new_client(struct dbus_method_call * call_
   method_return_new_single(call_ptr, DBUS_TYPE_UINT64, &client_id);
 }
 
+static void ladish_graph_manager_dbus_remove_client(struct dbus_method_call * call_ptr)
+{
+  uint64_t client_id;
+  ladish_client_handle client;
+
+  if (!dbus_message_get_args(
+        call_ptr->message,
+        &g_dbus_error,
+        DBUS_TYPE_UINT64, &client_id,
+        DBUS_TYPE_INVALID))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
+    dbus_error_free(&g_dbus_error);
+    return;
+  }
+
+  log_info("remove client request, graph '%s', client %"PRIu64, ladish_graph_get_description(graph), client_id);
+
+  client = ladish_graph_find_client_by_id(graph, client_id);
+  if (client == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot remove unknown client");
+    return;
+  }
+
+  if (ladish_graph_client_has_visible_ports(graph, client))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot remove non-empty client");
+    return;
+  }
+
+  ladish_graph_remove_client(graph, client);
+
+  method_return_new_void(call_ptr);
+}
+
 #undef graph_ptr
 
 METHOD_ARGS_BEGIN(Split, "Split client")
@@ -274,6 +310,10 @@ METHOD_ARGS_BEGIN(NewClient, "New client")
   METHOD_ARG_DESCRIBE_OUT("client_id", "t", "ID of the new client")
 METHOD_ARGS_END
 
+METHOD_ARGS_BEGIN(RemoveClient, "Remove empty client")
+  METHOD_ARG_DESCRIBE_IN("client_id", "t", "ID of the client to remove")
+METHOD_ARGS_END
+
 METHODS_BEGIN
   METHOD_DESCRIBE(Split, ladish_graph_manager_dbus_split)
   METHOD_DESCRIBE(Join, ladish_graph_manager_dbus_join)
@@ -281,6 +321,7 @@ METHODS_BEGIN
   METHOD_DESCRIBE(RenamePort, ladish_graph_manager_dbus_rename_port)
   METHOD_DESCRIBE(MovePort, ladish_graph_manager_dbus_move_port)
   METHOD_DESCRIBE(NewClient, ladish_graph_manager_dbus_new_client)
+  METHOD_DESCRIBE(RemoveClient, ladish_graph_manager_dbus_remove_client)
 METHODS_END
 
 INTERFACE_BEGIN(g_iface_graph_manager, IFACE_GRAPH_MANAGER)

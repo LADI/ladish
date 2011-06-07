@@ -148,6 +148,11 @@ graph_proxy_new_client(
   const char * name,
   uint64_t * client_id_ptr);
 
+bool
+graph_proxy_remove_client(
+  graph_proxy_handle graph,
+  uint64_t client_id);
+
 #if 0
 { /* Adjust editor indent */
 #endif

@@ -197,6 +197,15 @@ static void on_popup_menu_action_split(GtkWidget * menuitem, gpointer module_con
   graph_proxy_split(client_ptr->owner_ptr->graph, client_ptr->id);
 }
 
+static void on_popup_menu_action_remove(GtkWidget * menuitem, gpointer module_context)
+{
+  //log_info("on_popup_menu_action_split");
+  if (!graph_proxy_remove_client(client_ptr->owner_ptr->graph, client_ptr->id))
+  {
+    error_message_box("Client remove failed");
+  }
+}
+
 static void fill_module_menu(GtkMenu * menu, void * module_context)
 {
   GtkWidget * menuitem;
@@ -206,6 +215,14 @@ static void fill_module_menu(GtkMenu * menu, void * module_context)
   menuitem = gtk_menu_item_new_with_label(_("Client rename"));
   g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_client_rename, client_ptr);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+
+  if (client_ptr->inport_count == 0 &&
+      client_ptr->outport_count == 0)
+  {
+    menuitem = gtk_menu_item_new_with_label(_("Remove"));
+    g_signal_connect(menuitem, "activate", (GCallback)on_popup_menu_action_remove, client_ptr);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
+  }
 
   if (client_ptr->inport_count != 0 &&
       client_ptr->outport_count != 0)
