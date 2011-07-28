@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the parts of room object implementation
@@ -70,6 +70,7 @@ static void callback_chrdata(void * data, const XML_Char * s, int len)
 static void callback_elstart(void * data, const char * el, const char ** attr)
 {
   const char * name;
+  const char * level;
   char * name_dup;
   const char * uuid_str;
   uuid_t uuid;
@@ -551,12 +552,22 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
       goto free;
     }
 
-    if (ladish_get_byte_attribute(attr, "level", &context_ptr->level) == NULL)
+    level = ladish_get_string_attribute(attr, "level");
+    if (level == NULL)
     {
       log_error("application \"level\" attribute is not available. name=\"%s\"", name);
       context_ptr->error = XML_TRUE;
       goto free;
     }
+
+    if (!ladish_check_app_level_validity(level, &len))
+    {
+      log_error("application \"level\" attribute has invalid value \"%s\", name=\"%s\"", level, name);
+      context_ptr->error = XML_TRUE;
+      goto free;
+    }
+
+    memcpy(context_ptr->level, level, len + 1);
 
     context_ptr->str = strdup(name);
     if (context_ptr->str == NULL)

@@ -320,6 +320,8 @@ def build(bld):
     # Make backtrace function lookup to work for functions in the executable itself
     daemon.env.append_value("LINKFLAGS", ["-Wl,-E"])
 
+    daemon.source = ["string_constants.c"]
+
     for source in [
         'main.c',
         'loader.c',
@@ -499,7 +501,7 @@ def build(bld):
         gladish.defines = ['LOG_OUTPUT_STDOUT']
         gladish.uselib = 'DBUS-1 DBUS-GLIB-1 FLOWCANVAS GTK+-2.0'
 
-        gladish.source = []
+        gladish.source = ["string_constants.c"]
 
         for source in [
             'main.c',

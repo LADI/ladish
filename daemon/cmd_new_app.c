@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the "new app" command
@@ -36,7 +36,7 @@ struct ladish_command_new_app
   bool terminal;
   char * commandline;
   char * name;
-  uint8_t level;
+  char * level;
 };
 
 #define cmd_ptr ((struct ladish_command_new_app *)context)
@@ -53,7 +53,7 @@ static bool run(void * context)
 
   ASSERT(cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING);
 
-  log_info("new_app command. opath='%s', name='%s', %s, commandline='%s', level=%"PRIu8") called", cmd_ptr->opath, cmd_ptr->name, cmd_ptr->terminal ? "terminal" : "shell", cmd_ptr->commandline, cmd_ptr->level);
+  log_info("new_app command. opath='%s', name='%s', %s, commandline='%s', level='%s') called", cmd_ptr->opath, cmd_ptr->name, cmd_ptr->terminal ? "terminal" : "shell", cmd_ptr->commandline, cmd_ptr->level);
 
   supervisor = ladish_studio_find_app_supervisor(cmd_ptr->opath);
   if (supervisor == NULL)
@@ -154,6 +154,7 @@ static void destructor(void * context)
   free(cmd_ptr->opath);
   free(cmd_ptr->commandline);
   free(cmd_ptr->name);
+  free(cmd_ptr->level);
 }
 
 #undef cmd_ptr
@@ -166,12 +167,13 @@ ladish_command_new_app(
   bool terminal,
   const char * commandline,
   const char * name,
-  uint8_t level)
+  const char * level)
 {
   struct ladish_command_new_app * cmd_ptr;
   char * opath_dup;
   char * commandline_dup;
   char * name_dup;
+  char * level_dup;
 
   opath_dup = strdup(opath);
   if (opath_dup == NULL)
@@ -194,11 +196,18 @@ ladish_command_new_app(
     goto fail_free_commandline;
   }
 
+  level_dup = strdup(level);
+  if (level_dup == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup('%s') failed.", level);
+    goto fail_free_name;
+  }
+
   cmd_ptr = ladish_command_new(sizeof(struct ladish_command_new_app));
   if (cmd_ptr == NULL)
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_command_new() failed.");
-    goto fail_free_name;
+    goto fail_free_level;
   }
 
   cmd_ptr->command.run = run;
@@ -207,7 +216,7 @@ ladish_command_new_app(
   cmd_ptr->commandline = commandline_dup;
   cmd_ptr->name = name_dup;
   cmd_ptr->terminal = terminal;
-  cmd_ptr->level = level;
+  cmd_ptr->level = level_dup;
 
   if (!ladish_cqueue_add_command(queue_ptr, &cmd_ptr->command))
   {
@@ -219,6 +228,8 @@ ladish_command_new_app(
 
 fail_destroy_command:
   free(cmd_ptr);
+fail_free_level:
+  free(level_dup);
 fail_free_name:
   free(name_dup);
 fail_free_commandline:

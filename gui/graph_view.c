@@ -103,15 +103,15 @@ static void detach_canvas(struct graph_view * view_ptr)
 
 #define view_ptr ((struct graph_view *)context)
 
-static void app_added(void * context, uint64_t id, const char * name, bool running, bool terminal, uint8_t level)
+static void app_added(void * context, uint64_t id, const char * name, bool running, bool terminal, const char * level)
 {
-  //log_info("app added. id=%"PRIu64", name='%s', %srunning, %s, level %u", id, name, running ? "" : "not ", terminal ? "terminal" : "shell", (unsigned int)level);
+  //log_info("app added. id=%"PRIu64", name='%s', %srunning, %s, level '%s'", id, name, running ? "" : "not ", terminal ? "terminal" : "shell", level);
   world_tree_add_app(context, id, name, running, terminal, level);
 }
 
-static void app_state_changed(void * context, uint64_t id, const char * name, bool running, bool terminal, uint8_t level)
+static void app_state_changed(void * context, uint64_t id, const char * name, bool running, bool terminal, const char * level)
 {
-  //log_info("app state changed. id=%"PRIu64", name='%s', %srunning, %s, level %u", id, name, running ? "" : "not ", terminal ? "terminal" : "shell", (unsigned int)level);
+  //log_info("app state changed. id=%"PRIu64", name='%s', %srunning, %s, level '%s'", id, name, running ? "" : "not ", terminal ? "terminal" : "shell", level);
   world_tree_app_state_changed(context, id, name, running, terminal, level);
 }
 
@@ -474,7 +474,7 @@ bool is_room_view(graph_view_handle view)
   return view_ptr->room != NULL;
 }
 
-bool app_run_custom(graph_view_handle view, const char * command, const char * name, bool run_in_terminal, uint8_t level)
+bool app_run_custom(graph_view_handle view, const char * command, const char * name, bool run_in_terminal, const char * level)
 {
   return ladish_app_supervisor_proxy_run_custom(view_ptr->app_supervisor, command, name, run_in_terminal, level);
 }

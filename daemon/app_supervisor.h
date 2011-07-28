@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to app supervisor object
@@ -34,6 +34,8 @@
 #define LADISH_APP_STATE_STARTED    1 /**< @brief app is running and not stopping */
 #define LADISH_APP_STATE_STOPPING   2 /**< @brief app is stopping */
 #define LADISH_APP_STATE_KILL       3 /**< @brief app is being force killed */
+
+#define MAX_LEVEL_CHARCOUNT 10  /* includes terminating nul char */
 
 /**
  * App supervisor object handle (pointer to opaque data)
@@ -79,10 +81,22 @@ typedef bool (* ladish_app_supervisor_enum_callback)(
   bool running,
   const char * command,
   bool terminal,
-  uint8_t level,
+  const char * level,
   pid_t pid,
   const uuid_t uuid);
 
+/**
+ * Check whether app level string is valid.
+ *
+ * @param [in] app level string
+ * @param [out] len_ptr When not NULL, the pointed variable will receive length of the level string, excluding terminating nul char.
+ *
+ * @return whether level string is valid
+ */
+bool
+ladish_check_app_level_validity(
+  const char * level,
+  size_t * len_ptr);
 /**
  * Create app supervisor object
  *
@@ -206,7 +220,7 @@ ladish_app_supervisor_add(
   bool autorun,
   const char * command,
   bool terminal,
-  uint8_t level);
+  const char * level);
 
 /**
  * Initiate stop of all apps owned by this supervisor

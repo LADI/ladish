@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to app supervisor object that is backed through D-Bus
@@ -36,8 +36,8 @@ ladish_app_supervisor_proxy_create(
   const char * service,
   const char * object,
   void * context,
-  void (* app_added)(void * context, uint64_t id, const char * name, bool running, bool terminal, uint8_t level),
-  void (* app_state_changed)(void * context, uint64_t id, const char * name, bool running, bool terminal, uint8_t level),
+  void (* app_added)(void * context, uint64_t id, const char * name, bool running, bool terminal, const char * level),
+  void (* app_state_changed)(void * context, uint64_t id, const char * name, bool running, bool terminal, const char * level),
   void (* app_removed)(void * context, uint64_t id),
   ladish_app_supervisor_proxy_handle * proxy_ptr);
 
@@ -49,7 +49,7 @@ ladish_app_supervisor_proxy_run_custom(
   const char * command,
   const char * name,
   bool run_in_terminal,
-  uint8_t level);
+  const char * level);
 
 bool ladish_app_supervisor_proxy_start_app(ladish_app_supervisor_proxy_handle proxy, uint64_t id);
 bool ladish_app_supervisor_proxy_stop_app(ladish_app_supervisor_proxy_handle proxy, uint64_t id);
@@ -64,7 +64,7 @@ ladish_app_supervisor_get_app_properties(
   char ** command_ptr_ptr,
   bool * running_ptr,
   bool * terminal_ptr,
-  uint8_t * level_ptr);
+  const char ** level_ptr);
 
 bool
 ladish_app_supervisor_set_app_properties(
@@ -73,6 +73,6 @@ ladish_app_supervisor_set_app_properties(
   const char * name,
   const char * command,
   bool terminal,
-  uint8_t level);
+  const char * level);
 
 #endif /* #ifndef APP_SUPERVISOR_PROXY_H__A48C609D_0AB6_4C91_A9B0_BC7F1B7E4CB4__INCLUDED */

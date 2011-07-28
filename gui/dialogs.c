@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file implements dialogs that are not implemented in dedicated files
@@ -40,9 +40,9 @@ void run_custom_command_dialog(void)
   GtkToggleButton * terminal_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("app_terminal_check_button"));
   GtkToggleButton * level0_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("app_level0"));
   GtkToggleButton * level1_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("app_level1"));
-  GtkToggleButton * level2_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("app_level2"));
-  GtkToggleButton * level3_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("app_level3"));
-  uint8_t level;
+  GtkToggleButton * level2lash_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("app_level2lash"));
+  GtkToggleButton * level2js_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("app_level2js"));
+  const char * level;
 
   view = get_current_view();
 
@@ -65,28 +65,28 @@ void run_custom_command_dialog(void)
   {
     if (gtk_toggle_button_get_active(level0_button))
     {
-      level = 0;
+      level = LADISH_APP_LEVEL_0;
     }
     else if (gtk_toggle_button_get_active(level1_button))
     {
-      level = 1;
+      level = LADISH_APP_LEVEL_1;
     }
-    else if (gtk_toggle_button_get_active(level2_button))
+    else if (gtk_toggle_button_get_active(level2lash_button))
     {
-      level = 2;
+      level = LADISH_APP_LEVEL_LASH;
     }
-    else if (gtk_toggle_button_get_active(level3_button))
+    else if (gtk_toggle_button_get_active(level2js_button))
     {
-      level = 3;
+      level = LADISH_APP_LEVEL_JACKSESSION;
     }
     else
     {
       log_error("unknown level");
       ASSERT_NO_PASS;
-      level = 0;
+      level = LADISH_APP_LEVEL_0;
     }
 
-    log_info("'%s':'%s' %s level %"PRIu8, gtk_entry_get_text(name_entry), gtk_entry_get_text(command_entry), gtk_toggle_button_get_active(terminal_button) ? "terminal" : "shell", level);
+    log_info("'%s':'%s' %s level '%s'", gtk_entry_get_text(name_entry), gtk_entry_get_text(command_entry), gtk_toggle_button_get_active(terminal_button) ? "terminal" : "shell", level);
     if (!app_run_custom(
           view,
           gtk_entry_get_text(command_entry),

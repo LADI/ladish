@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the project_list class
@@ -231,15 +231,15 @@ void on_popup_menu_action_app_properties(GtkWidget * menuitem, gpointer userdata
   char * command;
   bool running;
   bool terminal;
-  uint8_t level;
+  const char * level;
   guint result;
   GtkEntry * command_entry = GTK_ENTRY(get_gtk_builder_widget("app_command_entry"));
   GtkEntry * name_entry = GTK_ENTRY(get_gtk_builder_widget("app_name_entry"));
   GtkToggleButton * terminal_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("app_terminal_check_button"));
   GtkToggleButton * level0_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("app_level0"));
   GtkToggleButton * level1_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("app_level1"));
-  GtkToggleButton * level2_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("app_level2"));
-  GtkToggleButton * level3_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("app_level3"));
+  GtkToggleButton * level2lash_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("app_level2lash"));
+  GtkToggleButton * level2js_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("app_level2js"));
 
   if (!get_selected_app_id(&view, &id))
   {
@@ -256,7 +256,7 @@ void on_popup_menu_action_app_properties(GtkWidget * menuitem, gpointer userdata
     return;
   }
 
-  log_info("'%s':'%s' %s level %"PRIu8, name, command, terminal ? "terminal" : "shell", level);
+  log_info("'%s':'%s' %s level '%s'", name, command, terminal ? "terminal" : "shell", level);
 
   gtk_entry_set_text(name_entry, name);
   gtk_entry_set_text(command_entry, command);
@@ -267,21 +267,25 @@ void on_popup_menu_action_app_properties(GtkWidget * menuitem, gpointer userdata
   gtk_widget_set_sensitive(GTK_WIDGET(level0_button), !running);
   gtk_widget_set_sensitive(GTK_WIDGET(level1_button), !running);
 
-  switch (level)
+  /* comparing pointers here is ok, because ladish_map_app_level_constant() was called by ladish_app_supervisor_get_app_properties() */
+  if (level == LADISH_APP_LEVEL_0)
   {
-  case 0:
     gtk_toggle_button_set_active(level0_button, TRUE);
-    break;
-  case 1:
+  }
+  else if (level == LADISH_APP_LEVEL_1)
+  {
     gtk_toggle_button_set_active(level1_button, TRUE);
-    break;
-  case 2:
-    gtk_toggle_button_set_active(level2_button, TRUE);
-    break;
-  case 3:
-    gtk_toggle_button_set_active(level3_button, TRUE);
-    break;
-  default:
+  }
+  else if (level == LADISH_APP_LEVEL_LASH)
+  {
+    gtk_toggle_button_set_active(level2lash_button, TRUE);
+  }
+  else if (level == LADISH_APP_LEVEL_JACKSESSION)
+  {
+    gtk_toggle_button_set_active(level2js_button, TRUE);
+  }
+  else
+  {
     log_error("unknown level");
     ASSERT_NO_PASS;
     gtk_toggle_button_set_active(level0_button, TRUE);
@@ -300,28 +304,28 @@ void on_popup_menu_action_app_properties(GtkWidget * menuitem, gpointer userdata
   {
     if (gtk_toggle_button_get_active(level0_button))
     {
-      level = 0;
+      level = LADISH_APP_LEVEL_0;
     }
     else if (gtk_toggle_button_get_active(level1_button))
     {
-      level = 1;
+      level = LADISH_APP_LEVEL_1;
     }
-    else if (gtk_toggle_button_get_active(level2_button))
+    else if (gtk_toggle_button_get_active(level2lash_button))
     {
-      level = 2;
+      level = LADISH_APP_LEVEL_LASH;
     }
-    else if (gtk_toggle_button_get_active(level3_button))
+    else if (gtk_toggle_button_get_active(level2js_button))
     {
-      level = 3;
+      level = LADISH_APP_LEVEL_JACKSESSION;
     }
     else
     {
       log_error("unknown level");
       ASSERT_NO_PASS;
-      level = 0;
+      level = LADISH_APP_LEVEL_0;
     }
 
-    log_info("'%s':'%s' %s level %"PRIu8, gtk_entry_get_text(name_entry), gtk_entry_get_text(command_entry), gtk_toggle_button_get_active(terminal_button) ? "terminal" : "shell", level);
+    log_info("'%s':'%s' %s level '%s'", gtk_entry_get_text(name_entry), gtk_entry_get_text(command_entry), gtk_toggle_button_get_active(terminal_button) ? "terminal" : "shell", level);
     if (!ladish_app_supervisor_set_app_properties(proxy, id, gtk_entry_get_text(name_entry), gtk_entry_get_text(command_entry), gtk_toggle_button_get_active(terminal_button), level))
     {
       error_message_box(_("Cannot set app properties."));
@@ -342,7 +346,7 @@ void popup_menu(GtkWidget * treeview, GdkEventButton * event)
   uint64_t id;
   gboolean running;
   gboolean terminal;
-  uint8_t level;
+  const char * level;
 
   selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(g_world_tree_widget));
   if (!gtk_tree_selection_get_selected(selection, NULL, &iter))
@@ -505,7 +509,7 @@ void world_tree_init(void)
     G_TYPE_UINT64,
     G_TYPE_BOOLEAN,
     G_TYPE_BOOLEAN,
-    G_TYPE_CHAR);
+    G_TYPE_STRING);
   gtk_tree_view_set_model(GTK_TREE_VIEW(g_world_tree_widget), GTK_TREE_MODEL(g_treestore));
 
   selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(g_world_tree_widget));
@@ -634,20 +638,31 @@ void world_tree_name_changed(graph_view_handle view)
   }
 }
 
-static char * get_app_name_string(const char * app_name, bool running, bool terminal, uint8_t level)
+static char * get_app_name_string(const char * app_name, bool running, bool terminal, const char * level)
 {
   char * app_name_with_status;
   const char * level_string;
 
-  switch (level)
+  level = ladish_map_app_level_constant(level);
+  /* comparing pointers here is ok, because ladish_map_app_level_constant() was called */
+  if (level == LADISH_APP_LEVEL_0)
   {
-  case 0:
     level_string = "[L0]";
-    break;
-  case 1:
+  }
+  else if (level == LADISH_APP_LEVEL_1)
+  {
     level_string = "[L1]";
-    break;
-  default:
+  }
+  else if (level == LADISH_APP_LEVEL_LASH)
+  {
+    level_string = "[LASH]";
+  }
+  else if (level == LADISH_APP_LEVEL_JACKSESSION)
+  {
+    level_string = "[JS]";
+  }
+  else
+  {
     level_string = "[L?]";
   }
 
@@ -661,7 +676,7 @@ static char * get_app_name_string(const char * app_name, bool running, bool term
   return app_name_with_status;
 }
 
-void world_tree_add_app(graph_view_handle view, uint64_t id, const char * app_name, bool running, bool terminal, uint8_t level)
+void world_tree_add_app(graph_view_handle view, uint64_t id, const char * app_name, bool running, bool terminal, const char * level)
 {
   GtkTreeIter iter;
   const char * view_name;
@@ -705,7 +720,7 @@ free_path:
   gtk_tree_path_free(path);
 }
 
-void world_tree_app_state_changed(graph_view_handle view, uint64_t id, const char * app_name, bool running, bool terminal, uint8_t level)
+void world_tree_app_state_changed(graph_view_handle view, uint64_t id, const char * app_name, bool running, bool terminal, const char * level)
 {
   GtkTreeIter view_iter;
   GtkTreeIter app_iter;

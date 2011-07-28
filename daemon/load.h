@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains inteface for the load helper functions
@@ -73,7 +73,7 @@ struct ladish_parse_context
   uint64_t connection_id;
   bool terminal;
   bool autorun;
-  uint8_t level;
+  char level[MAX_LEVEL_CHARCOUNT];
   void * parser;
 };
 

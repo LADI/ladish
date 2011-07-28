@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the interface of the world tree widget
@@ -36,8 +36,8 @@ void world_tree_remove(graph_view_handle view);
 graph_view_handle world_tree_find_by_opath(const char * opath);
 void world_tree_activate(graph_view_handle view);
 void world_tree_name_changed(graph_view_handle view);
-void world_tree_add_app(graph_view_handle view, uint64_t id, const char * name, bool running, bool terminal, uint8_t level);
-void world_tree_app_state_changed(graph_view_handle view, uint64_t id, const char * name, bool running, bool terminal, uint8_t level);
+void world_tree_add_app(graph_view_handle view, uint64_t id, const char * name, bool running, bool terminal, const char * level);
+void world_tree_app_state_changed(graph_view_handle view, uint64_t id, const char * name, bool running, bool terminal, const char * level);
 void world_tree_remove_app(graph_view_handle view, uint64_t id);
 void world_tree_destroy_room_views(void);
 

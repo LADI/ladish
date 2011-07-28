@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation save releated helper functions
@@ -735,11 +735,10 @@ ladish_save_app(
   bool running,
   const char * command,
   bool terminal,
-  uint8_t level,
+  const char * level,
   pid_t pid,
   const uuid_t uuid)
 {
-  char buf[100];
   const char * unescaped_string;
   char * escaped_string;
   char * escaped_buffer;
@@ -748,7 +747,7 @@ ladish_save_app(
 
   uuid_unparse(uuid, str);
 
-  log_info("saving app: name='%s', %srunning, %s, level %u, commandline='%s'", name, running ? "" : "not ", terminal ? "terminal" : "shell", (unsigned int)level, command);
+  log_info("saving app: name='%s', %srunning, %s, level '%s', commandline='%s'", name, running ? "" : "not ", terminal ? "terminal" : "shell", level, command);
 
   ret = false;
 
@@ -798,9 +797,7 @@ ladish_save_app(
     goto free_buffer;
   }
 
-  sprintf(buf, "%u", (unsigned int)level);
-
-  if (!ladish_write_string(fd, buf))
+  if (!ladish_write_string(fd, level))
   {
     goto free_buffer;
   }

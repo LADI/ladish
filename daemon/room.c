@@ -621,7 +621,7 @@ ladish_room_app_is_stopped(
   bool running,
   const char * command,
   bool terminal,
-  uint8_t level,
+  const char * level,
   pid_t pid,
   const uuid_t uuid)
 {
@@ -648,7 +648,7 @@ ladish_remove_room_app(
   bool running,
   const char * command,
   bool terminal,
-  uint8_t level,
+  const char * level,
   pid_t pid,
   const uuid_t uuid)
 {

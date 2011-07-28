@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the "load studio" command
@@ -65,6 +65,7 @@ static void callback_chrdata(void * data, const XML_Char * s, int len)
 static void callback_elstart(void * data, const char * el, const char ** attr)
 {
   const char * name;
+  const char * level;
   char * name_dup;
   const char * path;
   const char * uuid_str;
@@ -75,6 +76,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
   ladish_port_handle port2;
   uint32_t port_type;
   uint32_t port_flags;
+  size_t len;
 
   name_dup = NULL;
 
@@ -551,12 +553,22 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
       goto free;
     }
 
-    if (ladish_get_byte_attribute(attr, "level", &context_ptr->level) == NULL)
+    level = ladish_get_string_attribute(attr, "level");
+    if (level == NULL)
     {
       log_error("application \"level\" attribute is not available. name=\"%s\"", name);
       context_ptr->error = XML_TRUE;
       goto free;
     }
+
+    if (!ladish_check_app_level_validity(level, &len))
+    {
+      log_error("application \"level\" attribute has invalid value \"%s\", name=\"%s\"", level, name);
+      context_ptr->error = XML_TRUE;
+      goto free;
+    }
+
+    memcpy(context_ptr->level, level, len + 1);
 
     context_ptr->str = strdup(name);
     if (context_ptr->str == NULL)
@@ -835,7 +847,7 @@ static void callback_elend(void * data, const char * el)
     context_ptr->data[unescape(context_ptr->data, context_ptr->data_used, context_ptr->data)] = 0;
     unescape_simple(context_ptr->str);
 
-    log_info("application '%s' (%s, %s, level %u) with commandline '%s'", context_ptr->str, context_ptr->terminal ? "terminal" : "shell", context_ptr->autorun ? "autorun" : "stopped", (unsigned int)context_ptr->level, context_ptr->data);
+    log_info("application '%s' (%s, %s, level '%s') with commandline '%s'", context_ptr->str, context_ptr->terminal ? "terminal" : "shell", context_ptr->autorun ? "autorun" : "stopped", context_ptr->level, context_ptr->data);
 
     if (ladish_app_supervisor_add(
           g_studio.app_supervisor,

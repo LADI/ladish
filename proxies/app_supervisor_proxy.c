@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of code that interfaces
@@ -34,8 +34,8 @@ struct ladish_app_supervisor_proxy
   uint64_t version;
 
   void * context;
-  void (* app_added)(void * context, uint64_t id, const char * name, bool running, bool terminal, uint8_t level);
-  void (* app_state_changed)(void * context, uint64_t id, const char * name, bool running, bool terminal, uint8_t level);
+  void (* app_added)(void * context, uint64_t id, const char * name, bool running, bool terminal, const char * level);
+  void (* app_state_changed)(void * context, uint64_t id, const char * name, bool running, bool terminal, const char * level);
   void (* app_removed)(void * context, uint64_t id);
 };
 
@@ -48,7 +48,7 @@ static void on_app_added(void * context, DBusMessage * message_ptr)
   const char * name;
   dbus_bool_t running;
   dbus_bool_t terminal;
-  uint8_t level;
+  const char * level;
 
   if (!dbus_message_get_args(
         message_ptr,
@@ -58,7 +58,7 @@ static void on_app_added(void * context, DBusMessage * message_ptr)
         DBUS_TYPE_STRING, &name,
         DBUS_TYPE_BOOLEAN, &running,
         DBUS_TYPE_BOOLEAN, &terminal,
-        DBUS_TYPE_BYTE, &level,
+        DBUS_TYPE_STRING, &level,
         DBUS_TYPE_INVALID))
   {
     log_error("dbus_message_get_args() failed to extract AppAdded signal arguments (%s)", g_dbus_error.message);
@@ -66,7 +66,7 @@ static void on_app_added(void * context, DBusMessage * message_ptr)
     return;
   }
 
-  //log_info("AppAdded signal received. id=%"PRIu64", name='%s', %srunning, %s, level %u", id, name, running ? "" : "not ", terminal ? "terminal" : "shell", (unsigned int)level);
+  //log_info("AppAdded signal received. id=%"PRIu64", name='%s', %srunning, %s, level '%s'", id, name, running ? "" : "not ", terminal ? "terminal" : "shell", level);
 
   if (new_list_version <= proxy_ptr->version)
   {
@@ -76,7 +76,16 @@ static void on_app_added(void * context, DBusMessage * message_ptr)
   {
     //log_info("got new list version %llu", (unsigned long long)version);
     proxy_ptr->version = new_list_version;
-    proxy_ptr->app_added(proxy_ptr->context, id, name, running, terminal, level);
+
+    level = ladish_map_app_level_constant(level);
+    if (level != NULL)
+    {
+      proxy_ptr->app_added(proxy_ptr->context, id, name, running, terminal, level);
+    }
+    else
+    {
+      log_error("Ignoring app added signal for '%s' because of invalid app level value", name);
+    }
   }
 }
 
@@ -117,7 +126,7 @@ static void on_app_state_changed(void * context, DBusMessage * message_ptr)
   const char * name;
   dbus_bool_t running;
   dbus_bool_t terminal;
-  uint8_t level;
+  const char * level;
 
   if (!dbus_message_get_args(
         message_ptr,
@@ -127,7 +136,7 @@ static void on_app_state_changed(void * context, DBusMessage * message_ptr)
         DBUS_TYPE_STRING, &name,
         DBUS_TYPE_BOOLEAN, &running,
         DBUS_TYPE_BOOLEAN, &terminal,
-        DBUS_TYPE_BYTE, &level,
+        DBUS_TYPE_STRING, &level,
         DBUS_TYPE_INVALID))
   {
     log_error("dbus_message_get_args() failed to extract AppStateChanged signal arguments (%s)", g_dbus_error.message);
@@ -145,7 +154,16 @@ static void on_app_state_changed(void * context, DBusMessage * message_ptr)
   {
     //log_info("got new list version %llu", (unsigned long long)version);
     proxy_ptr->version = new_list_version;
-    proxy_ptr->app_state_changed(proxy_ptr->context, id, name, running, terminal, level);
+
+    level = ladish_map_app_level_constant(level);
+    if (level != NULL)
+    {
+      proxy_ptr->app_state_changed(proxy_ptr->context, id, name, running, terminal, level);
+    }
+    else
+    {
+      log_error("Ignoring app state changed signal for '%s' because of invalid app level value", name);
+    }
   }
 }
 
@@ -173,7 +191,7 @@ static void refresh_internal(struct ladish_app_supervisor_proxy * proxy_ptr, boo
   const char * name;
   dbus_bool_t running;
   dbus_bool_t terminal;
-  uint8_t level;
+  const char * level;
 
   log_info("refresh_internal() called");
 
@@ -187,7 +205,7 @@ static void refresh_internal(struct ladish_app_supervisor_proxy * proxy_ptr, boo
 
   reply_signature = dbus_message_get_signature(reply_ptr);
 
-  if (strcmp(reply_signature, "ta(tsbby)") != 0)
+  if (strcmp(reply_signature, "ta(tsbbs)") != 0)
   {
     log_error("GetAll() reply signature mismatch. '%s'", reply_signature);
     goto unref;
@@ -228,8 +246,16 @@ static void refresh_internal(struct ladish_app_supervisor_proxy * proxy_ptr, boo
     dbus_message_iter_get_basic(&struct_iter, &level);
     dbus_message_iter_next(&struct_iter);
 
-    //log_info("App id=%"PRIu64", name='%s', %srunning, %s, level %u", id, name, running ? "" : "not ", terminal ? "terminal" : "shell", (unsigned int)level);
-    proxy_ptr->app_added(proxy_ptr->context, id, name, running, terminal, level);
+    level = ladish_map_app_level_constant(level);
+    if (level != NULL)
+    {
+      //log_info("App id=%"PRIu64", name='%s', %srunning, %s, level '%s'", id, name, running ? "" : "not ", terminal ? "terminal" : "shell", level);
+      proxy_ptr->app_added(proxy_ptr->context, id, name, running, terminal, level);
+    }
+    else
+    {
+      log_error("Ignoring app '%s' because of invalid app level value", name);
+    }
 
     dbus_message_iter_next(&struct_iter);
   }
@@ -243,8 +269,8 @@ ladish_app_supervisor_proxy_create(
   const char * service,
   const char * object,
   void * context,
-  void (* app_added)(void * context, uint64_t id, const char * name, bool running, bool terminal, uint8_t level),
-  void (* app_state_changed)(void * context, uint64_t id, const char * name, bool running, bool terminal, uint8_t level),
+  void (* app_added)(void * context, uint64_t id, const char * name, bool running, bool terminal, const char * level),
+  void (* app_state_changed)(void * context, uint64_t id, const char * name, bool running, bool terminal, const char * level),
   void (* app_removed)(void * context, uint64_t id),
   ladish_app_supervisor_proxy_handle * handle_ptr)
 {
@@ -323,13 +349,13 @@ ladish_app_supervisor_proxy_run_custom(
   const char * command,
   const char * name,
   bool run_in_terminal,
-  uint8_t level)
+  const char * level)
 {
   dbus_bool_t terminal;
 
   terminal = run_in_terminal;
 
-  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "RunCustom", "bssy", &terminal, &command, &name, &level, ""))
+  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "RunCustom", "bsss", &terminal, &command, &name, &level, ""))
   {
     log_error("RunCustom() failed.");
     return false;
@@ -390,14 +416,14 @@ ladish_app_supervisor_get_app_properties(
   char ** command_ptr_ptr,
   bool * running_ptr,
   bool * terminal_ptr,
-  uint8_t * level_ptr)
+  const char ** level_ptr)
 {
   DBusMessage * reply_ptr;
   const char * name;
   const char * commandline;
   dbus_bool_t running;
   dbus_bool_t terminal;
-  uint8_t level;
+  const char * level;
   char * name_buffer;
   char * commandline_buffer;
 
@@ -414,11 +440,19 @@ ladish_app_supervisor_get_app_properties(
         DBUS_TYPE_STRING, &commandline,
         DBUS_TYPE_BOOLEAN, &running,
         DBUS_TYPE_BOOLEAN, &terminal,
-        DBUS_TYPE_BYTE, &level,
+        DBUS_TYPE_STRING, &level,
         DBUS_TYPE_INVALID))
   {
     dbus_message_unref(reply_ptr);
     dbus_error_free(&g_dbus_error);
+    log_error("decoding reply of GetAppProperties failed.");
+    return false;
+  }
+
+  level = ladish_map_app_level_constant(level);
+  if (level == NULL)
+  {
+    dbus_message_unref(reply_ptr);
     log_error("decoding reply of GetAppProperties failed.");
     return false;
   }
@@ -458,7 +492,7 @@ ladish_app_supervisor_set_app_properties(
   const char * name,
   const char * command,
   bool run_in_terminal,
-  uint8_t level)
+  const char * level)
 {
   dbus_bool_t terminal;
 
@@ -470,7 +504,7 @@ ladish_app_supervisor_set_app_properties(
         proxy_ptr->object,
         IFACE_APP_SUPERVISOR,
         "SetAppProperties",
-        "tssby",
+        "tssbs",
         &id,
         &name,
         &command,
