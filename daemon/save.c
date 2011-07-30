@@ -130,6 +130,16 @@ bool ladish_write_string_escape(int fd, const char * string)
   return ladish_write_string_escape_ex(fd, string, LADISH_ESCAPE_FLAG_ALL);
 }
 
+static bool ladish_port_dict_ignored_keys_check(void * context, const char * key, const char * value)
+{
+  return strcmp(key, URI_A2J_PORT) == 0;
+}
+
+static bool ladish_port_dict_is_empty(ladish_dict_handle dict)
+{
+  return ladish_dict_iterate(dict, NULL, ladish_port_dict_ignored_keys_check);
+}
+
 #define fd (((struct ladish_write_context *)context)->fd)
 #define indent (((struct ladish_write_context *)context)->indent)
 
@@ -241,7 +251,7 @@ ladish_write_room_port(
   }
 
   dict = ladish_port_get_dict(port);
-  if (ladish_dict_is_empty(dict))
+  if (ladish_port_dict_is_empty(dict))
   {
     if (!ladish_write_string(fd, "\" />\n"))
     {
@@ -616,7 +626,7 @@ ladish_save_vgraph_port(
   }
 
   dict = ladish_port_get_dict(port_handle);
-  if (ladish_dict_is_empty(dict))
+  if (ladish_port_dict_is_empty(dict))
   {
     if (!ladish_write_string(fd, "\" />\n"))
     {
