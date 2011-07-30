@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009,2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the "save studio" command
@@ -211,7 +211,7 @@ static bool run(void * command_context)
 
   ret = false;
 
-  ladish_app_supervisor_save_L1(g_studio.app_supervisor);
+  ladish_app_supervisor_initiate_save(g_studio.app_supervisor);
 
   if (!ladish_studio_is_started())
   {

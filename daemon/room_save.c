@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the parts of room object implementation
@@ -234,7 +234,7 @@ static bool ladish_room_save_project_do(struct ladish_room * room_ptr)
     goto close;
   }
 
-  ladish_app_supervisor_save_L1(room_ptr->app_supervisor);
+  ladish_app_supervisor_initiate_save(room_ptr->app_supervisor);
 
   ladish_room_emit_project_properties_changed(room_ptr);
 

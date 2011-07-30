@@ -191,12 +191,12 @@ ladish_app_supervisor_clear(
   ladish_app_supervisor_handle supervisor_handle);
 
 /**
- * Send SIGUSR1 to all currently running L1 apps.
+ * Initiate save for apps running at level higher than 0
  *
  * @param[in] supervisor_handle supervisor object handle
  */
 void
-ladish_app_supervisor_save_L1(
+ladish_app_supervisor_initiate_save(
   ladish_app_supervisor_handle supervisor_handle);
 
 /**

@@ -821,7 +821,7 @@ void ladish_app_supervisor_stop(ladish_app_supervisor_handle supervisor_handle)
   }
 }
 
-void ladish_app_supervisor_save_L1(ladish_app_supervisor_handle supervisor_handle)
+void ladish_app_supervisor_initiate_save(ladish_app_supervisor_handle supervisor_handle)
 {
   struct list_head * node_ptr;
   struct ladish_app * app_ptr;
