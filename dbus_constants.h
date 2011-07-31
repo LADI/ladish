@@ -45,6 +45,9 @@
 #define IFACE_GRAPH_DICT         DBUS_NAME_BASE ".GraphDict"
 #define IFACE_GRAPH_MANAGER      DBUS_NAME_BASE ".GraphManager"
 #define IFACE_RECENT_ITEMS       DBUS_NAME_BASE ".RecentItems"
+#define LASH_SERVER_OBJECT_PATH  DBUS_BASE_PATH "/LashServer"
+#define IFACE_LASH_SERVER        DBUS_NAME_BASE ".LashServer"
+#define IFACE_LASH_CLIENT        DBUS_NAME_BASE ".LashClient"
 
 #define JMCORE_SERVICE_NAME      DBUS_NAME_BASE ".jmcore"
 #define JMCORE_IFACE             JMCORE_SERVICE_NAME

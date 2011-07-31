@@ -33,6 +33,8 @@
 #include "../../common/catdup.h"
 //#define LOG_OUTPUT_STDOUT
 #include "../../log.h"
+#include "../../dbus/helpers.h"
+#include "../../dbus_constants.h"
 
 struct _lash_client
 {
@@ -72,16 +74,63 @@ void lash_args_destroy(lash_args_t * args)
 
 lash_client_t * lash_init(const lash_args_t * args, const char * class, int client_flags, lash_protocol_t protocol)
 {
+  DBusError error;
+  DBusMessage * msg_ptr;
+  const char * dbus_unique_name;
+  bool ret;
+  dbus_uint32_t flags32;
+
   if ((client_flags & LASH_Server_Interface) != 0)
   {
     log_error("ladish does not implement LASH server interface.");
-    return NULL;
+    goto fail;
+  }
+
+  dbus_error_init(&error);
+  cdbus_g_dbus_connection = dbus_bus_get_private(DBUS_BUS_SESSION, &error);
+  if (cdbus_g_dbus_connection == NULL)
+  {
+    log_error("Cannot connect to D-Bus session bus: %s", error.message);
+    dbus_error_free(&error);
+    goto fail;
+  }
+
+  dbus_connection_set_exit_on_disconnect(cdbus_g_dbus_connection, FALSE);
+
+  dbus_unique_name = dbus_bus_get_unique_name(cdbus_g_dbus_connection);
+  if (dbus_unique_name == NULL)
+  {
+    log_error("Failed to read unique bus name");
+    goto close_connection;
+  }
+
+  log_info("Connected to session bus, unique name is \"%s\"", dbus_unique_name);
+
+  flags32 = client_flags;
+  msg_ptr = cdbus_new_method_call_message(SERVICE_NAME, LASH_SERVER_OBJECT_PATH, IFACE_LASH_SERVER, "Init", "su", &class, &flags32);
+  if (msg_ptr == NULL)
+  {
+    goto close_connection;
+  }
+
+  ret = dbus_connection_send(cdbus_g_dbus_connection, msg_ptr, NULL);
+  dbus_message_unref(msg_ptr);
+  if (!ret)
+  {
+    log_error("Cannot send message over D-Bus due to lack of memory");
+    goto close_connection;
   }
 
   log_debug("ladish LASH support initialized (%s %s)", (client_flags & LASH_Config_File) != 0 ? "file" : "", (client_flags & LASH_Config_Data_Set) != 0 ? "dict" : "");
   g_client.flags = client_flags;
 
   return &g_client;
+
+close_connection:
+  dbus_connection_close(cdbus_g_dbus_connection);
+  dbus_connection_unref(cdbus_g_dbus_connection);
+fail:
+  return NULL;
 }
 
 unsigned int lash_get_pending_event_count(lash_client_t * client_ptr)
