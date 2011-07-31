@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains  code that interfaces the jmcore through D-Bus
@@ -36,7 +36,7 @@ static void on_jmcore_life_status_changed(bool appeared)
 
 bool jmcore_proxy_init(void)
 {
-  if (!dbus_register_service_lifetime_hook(g_dbus_connection, JMCORE_SERVICE_NAME, on_jmcore_life_status_changed))
+  if (!dbus_register_service_lifetime_hook(cdbus_g_dbus_connection, JMCORE_SERVICE_NAME, on_jmcore_life_status_changed))
   {
     log_error("dbus_register_service_lifetime_hook() failed for a2j service");
     return false;
@@ -47,7 +47,7 @@ bool jmcore_proxy_init(void)
 
 void jmcore_proxy_uninit(void)
 {
-  dbus_unregister_service_lifetime_hook(g_dbus_connection, JMCORE_SERVICE_NAME);
+  dbus_unregister_service_lifetime_hook(cdbus_g_dbus_connection, JMCORE_SERVICE_NAME);
 }
 
 int64_t jmcore_proxy_get_pid_cached(void)

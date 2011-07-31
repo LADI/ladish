@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -165,12 +165,12 @@ method_return_verify(DBusMessage  *msg,
 
   const char *ptr;
 
-  if (!dbus_message_get_args(msg, &g_dbus_error,
+  if (!dbus_message_get_args(msg, &cdbus_g_dbus_error,
                              DBUS_TYPE_STRING, &ptr,
                              DBUS_TYPE_INVALID)) {
     log_error("Cannot read description from D-Bus error message: %s ",
-               g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+               cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     ptr = NULL;
   }
 

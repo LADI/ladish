@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of code that interfaces
@@ -269,7 +269,7 @@ ladish_room_proxy_create(
   proxy_ptr->project_properties_changed = project_properties_changed;
 
   if (!dbus_register_object_signal_hooks(
-        g_dbus_connection,
+        cdbus_g_dbus_connection,
         proxy_ptr->service,
         proxy_ptr->object,
         IFACE_ROOM,
@@ -289,7 +289,7 @@ ladish_room_proxy_create(
   return true;
 
 unregister_signal_hooks:
-  dbus_unregister_object_signal_hooks(g_dbus_connection, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM);
+  dbus_unregister_object_signal_hooks(cdbus_g_dbus_connection, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM);
 free_object:
   free(proxy_ptr->object);
 free_service:
@@ -304,7 +304,7 @@ fail:
 
 void ladish_room_proxy_destroy(ladish_room_proxy_handle proxy)
 {
-  dbus_unregister_object_signal_hooks(g_dbus_connection, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM);
+  dbus_unregister_object_signal_hooks(cdbus_g_dbus_connection, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM);
 
   if (proxy_ptr->project_name != NULL)
   {
@@ -345,12 +345,12 @@ char * ladish_room_proxy_get_name(ladish_room_proxy_handle proxy)
 
   if (!dbus_message_get_args(
         reply_ptr,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_STRING, &name,
         DBUS_TYPE_INVALID))
   {
     dbus_message_unref(reply_ptr);
-    dbus_error_free(&g_dbus_error);
+    dbus_error_free(&cdbus_g_dbus_error);
     log_error("decoding reply of GetName failed.");
     return NULL;
   }

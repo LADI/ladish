@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file implements the recent project functionality
@@ -149,10 +149,10 @@ static void get(struct dbus_method_call * call_ptr)
   DBusMessageIter iter;
   struct recent_projects_callback_context ctx;
 
-  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_UINT16, &ctx.max_items, DBUS_TYPE_INVALID))
+  if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_UINT16, &ctx.max_items, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 

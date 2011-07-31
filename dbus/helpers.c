@@ -40,8 +40,8 @@
 
 #define DBUS_CALL_DEFAULT_TIMEOUT 3000 // in milliseconds
 
-DBusConnection * g_dbus_connection;
-DBusError g_dbus_error;
+DBusConnection * cdbus_g_dbus_connection;
+DBusError cdbus_g_dbus_error;
 static char * g_dbus_call_last_error_name;
 static char * g_dbus_call_last_error_message;
 
@@ -62,7 +62,7 @@ struct dbus_service_descriptor
   struct list_head hooks;
 };
 
-LIST_HEAD(g_dbus_services);
+static LIST_HEAD(g_dbus_services);
 
 
 void dbus_call_last_error_cleanup(void)
@@ -88,14 +88,14 @@ static void dbus_call_last_error_set(void)
 {
   dbus_call_last_error_cleanup();
 
-  if (g_dbus_error.name != NULL)
+  if (cdbus_g_dbus_error.name != NULL)
   {
-    g_dbus_call_last_error_name = strdup(g_dbus_error.name);
+    g_dbus_call_last_error_name = strdup(cdbus_g_dbus_error.name);
   }
 
-  if (g_dbus_error.message != NULL)
+  if (cdbus_g_dbus_error.message != NULL)
   {
-    g_dbus_call_last_error_message = strdup(g_dbus_error.message);
+    g_dbus_call_last_error_message = strdup(cdbus_g_dbus_error.message);
   }
 }
 
@@ -384,14 +384,14 @@ dbus_call_raw(
   }
 
   reply_ptr = dbus_connection_send_with_reply_and_block(
-    g_dbus_connection,
+    cdbus_g_dbus_connection,
     request_ptr,
     timeout,
-    &g_dbus_error);
+    &cdbus_g_dbus_error);
   if (reply_ptr == NULL)
   {
     dbus_call_last_error_set();
-    dbus_error_free(&g_dbus_error);
+    dbus_error_free(&cdbus_g_dbus_error);
   }
 
   return reply_ptr;
@@ -596,16 +596,16 @@ dbus_register_object_signal_handler(
 
   for (signal = signals; *signal != NULL; signal++)
   {
-    dbus_bus_add_match(connection, compose_signal_match(service, object, iface, *signal), &g_dbus_error);
-    if (dbus_error_is_set(&g_dbus_error))
+    dbus_bus_add_match(connection, compose_signal_match(service, object, iface, *signal), &cdbus_g_dbus_error);
+    if (dbus_error_is_set(&cdbus_g_dbus_error))
     {
-      log_error("Failed to add D-Bus match rule: %s", g_dbus_error.message);
-      dbus_error_free(&g_dbus_error);
+      log_error("Failed to add D-Bus match rule: %s", cdbus_g_dbus_error.message);
+      dbus_error_free(&cdbus_g_dbus_error);
       return false;
     }
   }
 
-  dbus_connection_add_filter(g_dbus_connection, handler, handler_data, NULL);
+  dbus_connection_add_filter(cdbus_g_dbus_connection, handler, handler_data, NULL);
 
   return true;
 }
@@ -624,16 +624,16 @@ dbus_unregister_object_signal_handler(
 
   for (signal = signals; *signal != NULL; signal++)
   {
-    dbus_bus_remove_match(connection, compose_signal_match(service, object, iface, *signal), &g_dbus_error);
-    if (dbus_error_is_set(&g_dbus_error))
+    dbus_bus_remove_match(connection, compose_signal_match(service, object, iface, *signal), &cdbus_g_dbus_error);
+    if (dbus_error_is_set(&cdbus_g_dbus_error))
     {
-      log_error("Failed to remove D-Bus match rule: %s", g_dbus_error.message);
-      dbus_error_free(&g_dbus_error);
+      log_error("Failed to remove D-Bus match rule: %s", cdbus_g_dbus_error.message);
+      dbus_error_free(&cdbus_g_dbus_error);
       return false;
     }
   }
 
-  dbus_connection_remove_filter(g_dbus_connection, handler, handler_data);
+  dbus_connection_remove_filter(cdbus_g_dbus_connection, handler, handler_data);
 
   return true;
 }
@@ -718,17 +718,17 @@ dbus_signal_handler(
 
     //log_info("NameOwnerChanged signal received");
 
-    dbus_error_init(&g_dbus_error);
+    dbus_error_init(&cdbus_g_dbus_error);
     if (!dbus_message_get_args(
           message_ptr,
-          &g_dbus_error,
+          &cdbus_g_dbus_error,
           DBUS_TYPE_STRING, &object_name,
           DBUS_TYPE_STRING, &old_owner,
           DBUS_TYPE_STRING, &new_owner,
           DBUS_TYPE_INVALID))
     {
-      log_error("Cannot get message arguments: %s", g_dbus_error.message);
-      dbus_error_free(&g_dbus_error);
+      log_error("Cannot get message arguments: %s", cdbus_g_dbus_error.message);
+      dbus_error_free(&cdbus_g_dbus_error);
       return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
     }
 
@@ -819,7 +819,7 @@ static struct dbus_service_descriptor * find_or_create_service_descriptor(const 
 
   list_add_tail(&descr_ptr->siblings, &g_dbus_services);
 
-  dbus_connection_add_filter(g_dbus_connection, dbus_signal_handler, descr_ptr, NULL);
+  dbus_connection_add_filter(cdbus_g_dbus_connection, dbus_signal_handler, descr_ptr, NULL);
 
   return descr_ptr;
 }
@@ -836,7 +836,7 @@ static void free_service_descriptor_if_empty(struct dbus_service_descriptor * se
     return;
   }
 
-  dbus_connection_remove_filter(g_dbus_connection, dbus_signal_handler, service_ptr);
+  dbus_connection_remove_filter(cdbus_g_dbus_connection, dbus_signal_handler, service_ptr);
 
   list_del(&service_ptr->siblings);
   free(service_ptr->service_name);
@@ -856,7 +856,7 @@ dbus_register_object_signal_hooks(
   struct dbus_signal_hook_descriptor * hook_ptr;
   const struct dbus_signal_hook * signal_ptr;
 
-  if (connection != g_dbus_connection)
+  if (connection != cdbus_g_dbus_connection)
   {
     log_error("multiple connections are not implemented yet");
     ASSERT_NO_PASS;
@@ -906,22 +906,22 @@ dbus_register_object_signal_hooks(
 
   for (signal_ptr = signal_hooks; signal_ptr->signal_name != NULL; signal_ptr++)
   {
-    dbus_bus_add_match(connection, compose_signal_match(service_name, object, iface, signal_ptr->signal_name), &g_dbus_error);
-    if (dbus_error_is_set(&g_dbus_error))
+    dbus_bus_add_match(connection, compose_signal_match(service_name, object, iface, signal_ptr->signal_name), &cdbus_g_dbus_error);
+    if (dbus_error_is_set(&cdbus_g_dbus_error))
     {
-      log_error("Failed to add D-Bus match rule: %s", g_dbus_error.message);
-      dbus_error_free(&g_dbus_error);
+      log_error("Failed to add D-Bus match rule: %s", cdbus_g_dbus_error.message);
+      dbus_error_free(&cdbus_g_dbus_error);
 
       while (signal_ptr != signal_hooks)
       {
         ASSERT(signal_ptr > signal_hooks);
         signal_ptr--;
 
-        dbus_bus_remove_match(connection, compose_signal_match(service_name, object, iface, signal_ptr->signal_name), &g_dbus_error);
-        if (dbus_error_is_set(&g_dbus_error))
+        dbus_bus_remove_match(connection, compose_signal_match(service_name, object, iface, signal_ptr->signal_name), &cdbus_g_dbus_error);
+        if (dbus_error_is_set(&cdbus_g_dbus_error))
         {
-          log_error("Failed to remove D-Bus match rule: %s", g_dbus_error.message);
-          dbus_error_free(&g_dbus_error);
+          log_error("Failed to remove D-Bus match rule: %s", cdbus_g_dbus_error.message);
+          dbus_error_free(&cdbus_g_dbus_error);
         }
       }
 
@@ -955,7 +955,7 @@ dbus_unregister_object_signal_hooks(
   struct dbus_signal_hook_descriptor * hook_ptr;
   const struct dbus_signal_hook * signal_ptr;
 
-  if (connection != g_dbus_connection)
+  if (connection != cdbus_g_dbus_connection)
   {
     log_error("multiple connections are not implemented yet");
     ASSERT_NO_PASS;
@@ -980,13 +980,13 @@ dbus_unregister_object_signal_hooks(
 
   for (signal_ptr = hook_ptr->signal_hooks; signal_ptr->signal_name != NULL; signal_ptr++)
   {
-    dbus_bus_remove_match(connection, compose_signal_match(service_name, object, iface, signal_ptr->signal_name), &g_dbus_error);
-    if (dbus_error_is_set(&g_dbus_error))
+    dbus_bus_remove_match(connection, compose_signal_match(service_name, object, iface, signal_ptr->signal_name), &cdbus_g_dbus_error);
+    if (dbus_error_is_set(&cdbus_g_dbus_error))
     {
-      if (dbus_error_is_set(&g_dbus_error))
+      if (dbus_error_is_set(&cdbus_g_dbus_error))
       {
-        log_error("Failed to remove D-Bus match rule: %s", g_dbus_error.message);
-        dbus_error_free(&g_dbus_error);
+        log_error("Failed to remove D-Bus match rule: %s", cdbus_g_dbus_error.message);
+        dbus_error_free(&cdbus_g_dbus_error);
       }
     }
   }
@@ -1008,7 +1008,7 @@ dbus_register_service_lifetime_hook(
 {
   struct dbus_service_descriptor * service_ptr;
 
-  if (connection != g_dbus_connection)
+  if (connection != cdbus_g_dbus_connection)
   {
     log_error("multiple connections are not implemented yet");
     ASSERT_NO_PASS;
@@ -1031,11 +1031,11 @@ dbus_register_service_lifetime_hook(
 
   service_ptr->lifetime_hook_function = hook_function;
 
-  dbus_bus_add_match(connection, compose_name_owner_match(service_name), &g_dbus_error);
-  if (dbus_error_is_set(&g_dbus_error))
+  dbus_bus_add_match(connection, compose_name_owner_match(service_name), &cdbus_g_dbus_error);
+  if (dbus_error_is_set(&cdbus_g_dbus_error))
   {
-    log_error("Failed to add D-Bus match rule: %s", g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    log_error("Failed to add D-Bus match rule: %s", cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     goto clear_hook;
   }
 
@@ -1056,7 +1056,7 @@ dbus_unregister_service_lifetime_hook(
 {
   struct dbus_service_descriptor * service_ptr;
 
-  if (connection != g_dbus_connection)
+  if (connection != cdbus_g_dbus_connection)
   {
     log_error("multiple connections are not implemented yet");
     ASSERT_NO_PASS;
@@ -1079,11 +1079,11 @@ dbus_unregister_service_lifetime_hook(
 
   service_ptr->lifetime_hook_function = NULL;
 
-  dbus_bus_remove_match(connection, compose_name_owner_match(service_name), &g_dbus_error);
-  if (dbus_error_is_set(&g_dbus_error))
+  dbus_bus_remove_match(connection, compose_name_owner_match(service_name), &cdbus_g_dbus_error);
+  if (dbus_error_is_set(&cdbus_g_dbus_error))
   {
-    log_error("Failed to remove D-Bus match rule: %s", g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    log_error("Failed to remove D-Bus match rule: %s", cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
   }
 
   free_service_descriptor_if_empty(service_ptr);

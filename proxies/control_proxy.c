@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of code that interfaces
@@ -97,7 +97,7 @@ bool control_proxy_init(void)
 
   control_proxy_on_daemon_appeared();
 
-  if (!dbus_register_service_lifetime_hook(g_dbus_connection, SERVICE_NAME, on_lifestatus_changed))
+  if (!dbus_register_service_lifetime_hook(cdbus_g_dbus_connection, SERVICE_NAME, on_lifestatus_changed))
   {
     control_proxy_on_daemon_disappeared(true);
     return false;
@@ -109,7 +109,7 @@ bool control_proxy_init(void)
     control_proxy_on_studio_appeared(true);
   }
 
-  if (!dbus_register_object_signal_hooks(g_dbus_connection, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, NULL, g_signal_hooks))
+  if (!dbus_register_object_signal_hooks(cdbus_g_dbus_connection, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, NULL, g_signal_hooks))
   {
     if (studio_present)
     {
@@ -126,8 +126,8 @@ bool control_proxy_init(void)
 
 void control_proxy_uninit(void)
 {
-  dbus_unregister_object_signal_hooks(g_dbus_connection, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL);
-  dbus_unregister_service_lifetime_hook(g_dbus_connection, SERVICE_NAME);
+  dbus_unregister_object_signal_hooks(cdbus_g_dbus_connection, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL);
+  dbus_unregister_service_lifetime_hook(cdbus_g_dbus_connection, SERVICE_NAME);
 }
 
 void control_proxy_ping(void)

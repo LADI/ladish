@@ -326,7 +326,7 @@ ladish_room_create(
     goto destroy_app_supervisor;
   }
 
-  if (!dbus_object_path_register(g_dbus_connection, room_ptr->dbus_object))
+  if (!dbus_object_path_register(cdbus_g_dbus_connection, room_ptr->dbus_object))
   {
     log_error("object_path_register() failed");
     goto destroy_dbus_object;
@@ -362,9 +362,9 @@ remove_client:
 destroy_client:
   ladish_client_destroy(room_ptr->client);
 unregister_dbus_object:
-  dbus_object_path_unregister(g_dbus_connection, room_ptr->dbus_object);
+  dbus_object_path_unregister(cdbus_g_dbus_connection, room_ptr->dbus_object);
 destroy_dbus_object:
-  dbus_object_path_destroy(g_dbus_connection, room_ptr->dbus_object);
+  dbus_object_path_destroy(cdbus_g_dbus_connection, room_ptr->dbus_object);
 destroy_app_supervisor:
   ladish_app_supervisor_destroy(room_ptr->app_supervisor);
 destroy:
@@ -398,7 +398,7 @@ void ladish_room_destroy(ladish_room_handle room_handle)
       ladish_graph_clear(room_ptr->graph, remove_port_callback);
     }
 
-    dbus_object_path_destroy(g_dbus_connection, room_ptr->dbus_object);
+    dbus_object_path_destroy(cdbus_g_dbus_connection, room_ptr->dbus_object);
     ladish_app_supervisor_destroy(room_ptr->app_supervisor);
 
     ladish_graph_remove_client(room_ptr->owner, room_ptr->client);
@@ -882,7 +882,7 @@ void ladish_room_emit_project_properties_changed(struct ladish_room * room_ptr)
 
   if (ladish_room_fill_project_properties(&iter, room_ptr))
   {
-    dbus_signal_send(g_dbus_connection, message_ptr);
+    dbus_signal_send(cdbus_g_dbus_connection, message_ptr);
   }
 
   dbus_message_unref(message_ptr);
@@ -933,10 +933,10 @@ static void ladish_room_dbus_save_project(struct dbus_method_call * call_ptr)
 
   log_info("Save project request");
 
-  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_STRING, &dir, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
+  if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &dir, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -962,10 +962,10 @@ static void ladish_room_dbus_load_project(struct dbus_method_call * call_ptr)
 
   log_info("Load project request");
 
-  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_STRING, &dir, DBUS_TYPE_INVALID))
+  if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &dir, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -1007,10 +1007,10 @@ static void ladish_room_dbus_set_project_description(struct dbus_method_call * c
   const char * str;
   char * dup;
 
-  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_STRING, &str, DBUS_TYPE_INVALID))
+  if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &str, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -1040,10 +1040,10 @@ static void ladish_room_dbus_set_project_notes(struct dbus_method_call * call_pt
   const char * str;
   char * dup;
 
-  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_STRING, &str, DBUS_TYPE_INVALID))
+  if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &str, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 

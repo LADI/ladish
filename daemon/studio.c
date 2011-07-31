@@ -95,10 +95,10 @@ bool ladish_studio_show(void)
     return false;
   }
 
-  if (!dbus_object_path_register(g_dbus_connection, object))
+  if (!dbus_object_path_register(cdbus_g_dbus_connection, object))
   {
     log_error("object_path_register() failed");
-    dbus_object_path_destroy(g_dbus_connection, object);
+    dbus_object_path_destroy(cdbus_g_dbus_connection, object);
     return false;
   }
 
@@ -155,7 +155,7 @@ void ladish_studio_clear(void)
 
   if (g_studio.dbus_object != NULL)
   {
-    dbus_object_path_destroy(g_dbus_connection, g_studio.dbus_object);
+    dbus_object_path_destroy(cdbus_g_dbus_connection, g_studio.dbus_object);
     g_studio.dbus_object = NULL;
     emit_studio_disappeared();
   }
@@ -181,17 +181,17 @@ void ladish_studio_clear(void)
 
 void ladish_studio_emit_started(void)
 {
-  dbus_signal_emit(g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioStarted", "");
+  dbus_signal_emit(cdbus_g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioStarted", "");
 }
 
 void ladish_studio_emit_crashed(void)
 {
-  dbus_signal_emit(g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioCrashed", "");
+  dbus_signal_emit(cdbus_g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioCrashed", "");
 }
 
 void ladish_studio_emit_stopped(void)
 {
-  dbus_signal_emit(g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioStopped", "");
+  dbus_signal_emit(cdbus_g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioStopped", "");
 }
 
 static bool ladish_studio_fill_room_info(DBusMessageIter * iter_ptr, ladish_room_handle room)
@@ -273,7 +273,7 @@ static void ladish_studio_emit_room_appeared(ladish_room_handle room)
 
   if (ladish_studio_fill_room_info(&iter, room))
   {
-    dbus_signal_send(g_dbus_connection, message_ptr);
+    dbus_signal_send(cdbus_g_dbus_connection, message_ptr);
   }
 
   dbus_message_unref(message_ptr);
@@ -295,7 +295,7 @@ void ladish_studio_emit_room_disappeared(ladish_room_handle room)
 
   if (ladish_studio_fill_room_info(&iter, room))
   {
-    dbus_signal_send(g_dbus_connection, message_ptr);
+    dbus_signal_send(cdbus_g_dbus_connection, message_ptr);
   }
 
   dbus_message_unref(message_ptr);
@@ -958,7 +958,7 @@ void ladish_studio_stop_app_supervisors(void)
 
 void ladish_studio_emit_renamed(void)
 {
-  dbus_signal_emit(g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioRenamed", "s", &g_studio.name);
+  dbus_signal_emit(cdbus_g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioRenamed", "s", &g_studio.name);
 }
 
 unsigned int ladish_studio_get_room_index(void)
@@ -1032,10 +1032,10 @@ static void ladish_studio_dbus_rename(struct dbus_method_call * call_ptr)
   const char * new_name;
   char * new_name_dup;
   
-  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_STRING, &new_name, DBUS_TYPE_INVALID))
+  if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &new_name, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -1071,10 +1071,10 @@ static void ladish_studio_dbus_save_as(struct dbus_method_call * call_ptr)
 
   log_info("SaveAs studio request");
 
-  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_STRING, &new_name, DBUS_TYPE_INVALID))
+  if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &new_name, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -1132,12 +1132,12 @@ static void ladish_studio_dbus_create_room(struct dbus_method_call * call_ptr)
   const char * room_name;
   const char * template_name;
 
-  dbus_error_init(&g_dbus_error);
+  dbus_error_init(&cdbus_g_dbus_error);
 
-  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_STRING, &room_name, DBUS_TYPE_STRING, &template_name, DBUS_TYPE_INVALID))
+  if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &room_name, DBUS_TYPE_STRING, &template_name, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -1200,12 +1200,12 @@ static void ladish_studio_dbus_delete_room(struct dbus_method_call * call_ptr)
 {
   const char * name;
 
-  dbus_error_init(&g_dbus_error);
+  dbus_error_init(&cdbus_g_dbus_error);
 
-  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
+  if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 

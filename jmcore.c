@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the JACK multicore (snake)
@@ -123,17 +123,17 @@ static bool connect_dbus(void)
 {
   int ret;
 
-  dbus_error_init(&g_dbus_error);
+  dbus_error_init(&cdbus_g_dbus_error);
 
-  g_dbus_connection = dbus_bus_get(DBUS_BUS_SESSION, &g_dbus_error);
-  if (dbus_error_is_set(&g_dbus_error))
+  cdbus_g_dbus_connection = dbus_bus_get(DBUS_BUS_SESSION, &cdbus_g_dbus_error);
+  if (dbus_error_is_set(&cdbus_g_dbus_error))
   {
-    log_error("Failed to get bus: %s", g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    log_error("Failed to get bus: %s", cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     goto fail;
   }
 
-  g_dbus_unique_name = dbus_bus_get_unique_name(g_dbus_connection);
+  g_dbus_unique_name = dbus_bus_get_unique_name(cdbus_g_dbus_connection);
   if (g_dbus_unique_name == NULL)
   {
     log_error("Failed to read unique bus name");
@@ -142,11 +142,11 @@ static bool connect_dbus(void)
 
   log_info("Connected to local session bus, unique name is \"%s\"", g_dbus_unique_name);
 
-  ret = dbus_bus_request_name(g_dbus_connection, JMCORE_SERVICE_NAME, DBUS_NAME_FLAG_DO_NOT_QUEUE, &g_dbus_error);
+  ret = dbus_bus_request_name(cdbus_g_dbus_connection, JMCORE_SERVICE_NAME, DBUS_NAME_FLAG_DO_NOT_QUEUE, &cdbus_g_dbus_error);
   if (ret == -1)
   {
-    log_error("Failed to acquire bus name: %s", g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    log_error("Failed to acquire bus name: %s", cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     goto unref_connection;
   }
 
@@ -162,7 +162,7 @@ static bool connect_dbus(void)
     goto unref_connection;
   }
 
-  if (!dbus_object_path_register(g_dbus_connection, g_object))
+  if (!dbus_object_path_register(cdbus_g_dbus_connection, g_object))
   {
     goto destroy_control_object;
   }
@@ -170,9 +170,9 @@ static bool connect_dbus(void)
   return true;
 
 destroy_control_object:
-  dbus_object_path_destroy(g_dbus_connection, g_object);
+  dbus_object_path_destroy(cdbus_g_dbus_connection, g_object);
 unref_connection:
-  dbus_connection_unref(g_dbus_connection);
+  dbus_connection_unref(cdbus_g_dbus_connection);
 
 fail:
   return false;
@@ -180,8 +180,8 @@ fail:
 
 static void disconnect_dbus(void)
 {
-  dbus_object_path_destroy(g_dbus_connection, g_object);
-  dbus_connection_unref(g_dbus_connection);
+  dbus_object_path_destroy(cdbus_g_dbus_connection, g_object);
+  dbus_connection_unref(cdbus_g_dbus_connection);
 }
 
 void term_signal_handler(int signum)
@@ -226,7 +226,7 @@ int main(int argc, char ** argv)
 
   while (!g_quit)
   {
-    dbus_connection_read_write_dispatch(g_dbus_connection, 50);
+    dbus_connection_read_write_dispatch(cdbus_g_dbus_connection, 50);
     bury_zombie_pairs();
   }
 
@@ -265,17 +265,17 @@ static void jmcore_create(struct dbus_method_call * call_ptr)
   g_unique_index++;
   sprintf(client_name, "jmcore-%u", g_unique_index);
 
-  dbus_error_init(&g_dbus_error);
+  dbus_error_init(&cdbus_g_dbus_error);
   if (!dbus_message_get_args(
         call_ptr->message,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_BOOLEAN, &midi,
         DBUS_TYPE_STRING, &input,
         DBUS_TYPE_STRING, &output,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     goto exit;
   }
 
@@ -369,11 +369,11 @@ static void jmcore_destroy(struct dbus_method_call * call_ptr)
   struct list_head * node_ptr;
   struct port_pair * pair_ptr;
 
-  dbus_error_init(&g_dbus_error);
-  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_STRING, &port, DBUS_TYPE_INVALID))
+  dbus_error_init(&cdbus_g_dbus_error);
+  if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &port, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 

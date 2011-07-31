@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the helper functionality
@@ -40,10 +40,10 @@ static void on_studio_renamed(void * context, DBusMessage * message_ptr)
 {
   char * name;
 
-  if (!dbus_message_get_args(message_ptr, &g_dbus_error, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
+  if (!dbus_message_get_args(message_ptr, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
   {
-    log_error("Invalid parameters of StudioRenamed signal: %s",  g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    log_error("Invalid parameters of StudioRenamed signal: %s",  cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
   }
   else
   {
@@ -184,7 +184,7 @@ static struct dbus_signal_hook g_signal_hooks[] =
 bool studio_proxy_init(void)
 {
   if (!dbus_register_object_signal_hooks(
-        g_dbus_connection,
+        cdbus_g_dbus_connection,
         SERVICE_NAME,
         STUDIO_OBJECT_PATH,
         IFACE_STUDIO,
@@ -200,7 +200,7 @@ bool studio_proxy_init(void)
 
 void studio_proxy_uninit(void)
 {
-  dbus_unregister_object_signal_hooks(g_dbus_connection, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO);
+  dbus_unregister_object_signal_hooks(cdbus_g_dbus_connection, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO);
 }
 
 bool studio_proxy_get_name(char ** name_ptr)

@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains helper functionality for accessing JACK through D-Bus
@@ -92,21 +92,21 @@ jack_proxy_init(
   g_on_server_appeared = server_appeared;
   g_on_server_disappeared = server_disappeared;
 
-  if (!dbus_register_service_lifetime_hook(g_dbus_connection, JACKDBUS_SERVICE_NAME, on_jack_life_status_changed))
+  if (!dbus_register_service_lifetime_hook(cdbus_g_dbus_connection, JACKDBUS_SERVICE_NAME, on_jack_life_status_changed))
   {
     log_error("dbus_register_service_lifetime_hook() failed for jackdbus service");
     return false;
   }
 
   if (!dbus_register_object_signal_hooks(
-        g_dbus_connection,
+        cdbus_g_dbus_connection,
         JACKDBUS_SERVICE_NAME,
         JACKDBUS_OBJECT_PATH,
         JACKDBUS_IFACE_CONTROL,
         NULL,
         g_control_signal_hooks))
   {
-    dbus_unregister_service_lifetime_hook(g_dbus_connection, JACKDBUS_SERVICE_NAME);
+    dbus_unregister_service_lifetime_hook(cdbus_g_dbus_connection, JACKDBUS_SERVICE_NAME);
     log_error("dbus_register_object_signal_hooks() failed for jackdbus control interface");
     return false;
   }
@@ -135,8 +135,8 @@ void
 jack_proxy_uninit(
   void)
 {
-  dbus_unregister_object_signal_hooks(g_dbus_connection, JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONTROL);
-  dbus_unregister_service_lifetime_hook(g_dbus_connection, JACKDBUS_SERVICE_NAME);
+  dbus_unregister_object_signal_hooks(cdbus_g_dbus_connection, JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONTROL);
+  dbus_unregister_service_lifetime_hook(cdbus_g_dbus_connection, JACKDBUS_SERVICE_NAME);
 }
 
 bool

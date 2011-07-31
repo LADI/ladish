@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of code that interfaces
@@ -52,7 +52,7 @@ static void on_app_added(void * context, DBusMessage * message_ptr)
 
   if (!dbus_message_get_args(
         message_ptr,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT64, &new_list_version,
         DBUS_TYPE_UINT64, &id,
         DBUS_TYPE_STRING, &name,
@@ -61,8 +61,8 @@ static void on_app_added(void * context, DBusMessage * message_ptr)
         DBUS_TYPE_STRING, &level,
         DBUS_TYPE_INVALID))
   {
-    log_error("dbus_message_get_args() failed to extract AppAdded signal arguments (%s)", g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    log_error("dbus_message_get_args() failed to extract AppAdded signal arguments (%s)", cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -96,13 +96,13 @@ static void on_app_removed(void * context, DBusMessage * message_ptr)
 
   if (!dbus_message_get_args(
         message_ptr,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT64, &new_list_version,
         DBUS_TYPE_UINT64, &id,
         DBUS_TYPE_INVALID))
   {
-    log_error("dbus_message_get_args() failed to extract AppRemoved signal arguments (%s)", g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    log_error("dbus_message_get_args() failed to extract AppRemoved signal arguments (%s)", cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -130,7 +130,7 @@ static void on_app_state_changed(void * context, DBusMessage * message_ptr)
 
   if (!dbus_message_get_args(
         message_ptr,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT64, &new_list_version,
         DBUS_TYPE_UINT64, &id,
         DBUS_TYPE_STRING, &name,
@@ -139,8 +139,8 @@ static void on_app_state_changed(void * context, DBusMessage * message_ptr)
         DBUS_TYPE_STRING, &level,
         DBUS_TYPE_INVALID))
   {
-    log_error("dbus_message_get_args() failed to extract AppStateChanged signal arguments (%s)", g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    log_error("dbus_message_get_args() failed to extract AppStateChanged signal arguments (%s)", cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -305,7 +305,7 @@ ladish_app_supervisor_proxy_create(
   proxy_ptr->app_removed = app_removed;
 
   if (!dbus_register_object_signal_hooks(
-        g_dbus_connection,
+        cdbus_g_dbus_connection,
         proxy_ptr->service,
         proxy_ptr->object,
         IFACE_APP_SUPERVISOR,
@@ -336,7 +336,7 @@ fail:
 
 void ladish_app_supervisor_proxy_destroy(ladish_app_supervisor_proxy_handle proxy)
 {
-  dbus_unregister_object_signal_hooks(g_dbus_connection, proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR);
+  dbus_unregister_object_signal_hooks(cdbus_g_dbus_connection, proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR);
 
   free(proxy_ptr->object);
   free(proxy_ptr->service);
@@ -435,7 +435,7 @@ ladish_app_supervisor_get_app_properties(
 
   if (!dbus_message_get_args(
         reply_ptr,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_STRING, &name,
         DBUS_TYPE_STRING, &commandline,
         DBUS_TYPE_BOOLEAN, &running,
@@ -444,7 +444,7 @@ ladish_app_supervisor_get_app_properties(
         DBUS_TYPE_INVALID))
   {
     dbus_message_unref(reply_ptr);
-    dbus_error_free(&g_dbus_error);
+    dbus_error_free(&cdbus_g_dbus_error);
     log_error("decoding reply of GetAppProperties failed.");
     return false;
   }

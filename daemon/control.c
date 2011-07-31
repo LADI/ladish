@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -629,12 +629,12 @@ static void ladish_load_studio(struct dbus_method_call * call_ptr)
   const char * name;
   bool autostart;
 
-  dbus_error_init(&g_dbus_error);
+  dbus_error_init(&cdbus_g_dbus_error);
 
-  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
+  if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -660,12 +660,12 @@ static void ladish_delete_studio(struct dbus_method_call * call_ptr)
 {
   const char * name;
 
-  dbus_error_init(&g_dbus_error);
+  dbus_error_init(&cdbus_g_dbus_error);
 
-  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
+  if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -679,12 +679,12 @@ static void ladish_new_studio(struct dbus_method_call * call_ptr)
 {
   const char * name;
 
-  dbus_error_init(&g_dbus_error);
+  dbus_error_init(&cdbus_g_dbus_error);
 
-  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
+  if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -841,12 +841,12 @@ static void ladish_delete_room_template(struct dbus_method_call * call_ptr)
 {
   const char * name;
 
-  dbus_error_init(&g_dbus_error);
+  dbus_error_init(&cdbus_g_dbus_error);
 
-  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
+  if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -861,12 +861,12 @@ static void ladish_create_room_template(struct dbus_method_call * call_ptr)
 {
   const char * name;
 
-  dbus_error_init(&g_dbus_error);
+  dbus_error_init(&cdbus_g_dbus_error);
 
-  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
+  if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -893,22 +893,22 @@ static void ladish_exit(struct dbus_method_call * call_ptr)
 
 void emit_studio_appeared(void)
 {
-  dbus_signal_emit(g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "StudioAppeared", "");
+  dbus_signal_emit(cdbus_g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "StudioAppeared", "");
 }
 
 void emit_studio_disappeared(void)
 {
-  dbus_signal_emit(g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "StudioDisappeared", "");
+  dbus_signal_emit(cdbus_g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "StudioDisappeared", "");
 }
 
 void emit_queue_execution_halted(void)
 {
-  dbus_signal_emit(g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "QueueExecutionHalted", "");
+  dbus_signal_emit(cdbus_g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "QueueExecutionHalted", "");
 }
 
 void emit_clean_exit(void)
 {
-  dbus_signal_emit(g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "CleanExit", "");
+  dbus_signal_emit(cdbus_g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "CleanExit", "");
 }
 
 METHOD_ARGS_BEGIN(IsStudioLoaded, "Check whether studio D-Bus object is present")

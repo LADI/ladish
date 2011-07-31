@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to the D-Bus graph dict interface helpers
@@ -88,15 +88,15 @@ void ladish_dict_set_dbus(struct dbus_method_call * call_ptr)
 
   if (!dbus_message_get_args(
         call_ptr->message,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT32, &object_type,
         DBUS_TYPE_UINT64, &object_id,
         DBUS_TYPE_STRING, &key,
         DBUS_TYPE_STRING, &value,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -126,14 +126,14 @@ void ladish_dict_get_dbus(struct dbus_method_call * call_ptr)
 
   if (!dbus_message_get_args(
         call_ptr->message,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT32, &object_type,
         DBUS_TYPE_UINT64, &object_id,
         DBUS_TYPE_STRING, &key,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -161,14 +161,14 @@ void ladish_dict_drop_dbus(struct dbus_method_call * call_ptr)
 
   if (!dbus_message_get_args(
         call_ptr->message,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT32, &object_type,
         DBUS_TYPE_UINT64, &object_id,
         DBUS_TYPE_STRING, &key,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 

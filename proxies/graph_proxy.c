@@ -457,7 +457,7 @@ graph_proxy_destroy(
   if (graph_ptr->active)
   {
     dbus_unregister_object_signal_hooks(
-      g_dbus_connection,
+      cdbus_g_dbus_connection,
       graph_ptr->service,
       graph_ptr->object,
       JACKDBUS_IFACE_PATCHBAY);
@@ -485,7 +485,7 @@ graph_proxy_activate(
   }
 
   if (!dbus_register_object_signal_hooks(
-        g_dbus_connection,
+        cdbus_g_dbus_connection,
         graph_ptr->service,
         graph_ptr->object,
         JACKDBUS_IFACE_PATCHBAY,
@@ -606,14 +606,14 @@ static void on_client_appeared(void * graph, DBusMessage * message_ptr)
 
   if (!dbus_message_get_args(
         message_ptr,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT64, &new_graph_version,
         DBUS_TYPE_UINT64, &client_id,
         DBUS_TYPE_STRING, &client_name,
         DBUS_TYPE_INVALID))
   {
-    log_error("dbus_message_get_args() failed to extract ClientAppeared signal arguments (%s)", g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    log_error("dbus_message_get_args() failed to extract ClientAppeared signal arguments (%s)", cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -636,15 +636,15 @@ static void on_client_renamed(void * graph, DBusMessage * message_ptr)
 
   if (!dbus_message_get_args(
         message_ptr,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT64, &new_graph_version,
         DBUS_TYPE_UINT64, &client_id,
         DBUS_TYPE_STRING, &old_client_name,
         DBUS_TYPE_STRING, &new_client_name,
         DBUS_TYPE_INVALID))
   {
-    log_error("dbus_message_get_args() failed to extract ClientRenamed signal arguments (%s)", g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    log_error("dbus_message_get_args() failed to extract ClientRenamed signal arguments (%s)", cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -664,14 +664,14 @@ static void on_client_disappeared(void * graph, DBusMessage * message_ptr)
 
   if (!dbus_message_get_args(
         message_ptr,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT64, &new_graph_version,
         DBUS_TYPE_UINT64, &client_id,
         DBUS_TYPE_STRING, &client_name,
         DBUS_TYPE_INVALID))
   {
-    log_error("dbus_message_get_args() failed to extract ClientDisappeared signal arguments (%s)", g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    log_error("dbus_message_get_args() failed to extract ClientDisappeared signal arguments (%s)", cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -697,7 +697,7 @@ static void on_port_appeared(void * graph, DBusMessage * message_ptr)
 
   if (!dbus_message_get_args(
         message_ptr,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT64, &new_graph_version,
         DBUS_TYPE_UINT64, &client_id,
         DBUS_TYPE_STRING, &client_name,
@@ -707,8 +707,8 @@ static void on_port_appeared(void * graph, DBusMessage * message_ptr)
         DBUS_TYPE_UINT32, &port_type,
         DBUS_TYPE_INVALID))
   {
-    log_error("dbus_message_get_args() failed to extract PortAppeared signal arguments (%s)", g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    log_error("dbus_message_get_args() failed to extract PortAppeared signal arguments (%s)", cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -733,7 +733,7 @@ static void on_port_renamed(void * graph, DBusMessage * message_ptr)
 
   if (!dbus_message_get_args(
         message_ptr,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT64, &new_graph_version,
         DBUS_TYPE_UINT64, &client_id,
         DBUS_TYPE_STRING, &client_name,
@@ -742,8 +742,8 @@ static void on_port_renamed(void * graph, DBusMessage * message_ptr)
         DBUS_TYPE_STRING, &new_port_name,
         DBUS_TYPE_INVALID))
   {
-    log_error("dbus_message_get_args() failed to extract PortRenamed signal arguments (%s)", g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    log_error("dbus_message_get_args() failed to extract PortRenamed signal arguments (%s)", cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -765,7 +765,7 @@ static void on_port_disappeared(void * graph, DBusMessage * message_ptr)
 
   if (!dbus_message_get_args(
         message_ptr,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT64, &new_graph_version,
         DBUS_TYPE_UINT64, &client_id,
         DBUS_TYPE_STRING, &client_name,
@@ -773,8 +773,8 @@ static void on_port_disappeared(void * graph, DBusMessage * message_ptr)
         DBUS_TYPE_STRING, &port_name,
         DBUS_TYPE_INVALID))
   {
-    log_error("dbus_message_get_args() failed to extract PortDisappeared signal arguments (%s)", g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    log_error("dbus_message_get_args() failed to extract PortDisappeared signal arguments (%s)", cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -803,7 +803,7 @@ static void on_ports_connected(void * graph, DBusMessage * message_ptr)
 
   if (!dbus_message_get_args(
         message_ptr,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT64, &new_graph_version,
         DBUS_TYPE_UINT64, &client_id,
         DBUS_TYPE_STRING, &client_name,
@@ -816,8 +816,8 @@ static void on_ports_connected(void * graph, DBusMessage * message_ptr)
         DBUS_TYPE_UINT64, &connection_id,
         DBUS_TYPE_INVALID))
   {
-    log_error("dbus_message_get_args() failed to extract PortsConnected signal arguments (%s)", g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    log_error("dbus_message_get_args() failed to extract PortsConnected signal arguments (%s)", cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -844,7 +844,7 @@ static void on_ports_disconnected(void * graph, DBusMessage * message_ptr)
 
   if (!dbus_message_get_args(
         message_ptr,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT64, &new_graph_version,
         DBUS_TYPE_UINT64, &client_id,
         DBUS_TYPE_STRING, &client_name,
@@ -857,8 +857,8 @@ static void on_ports_disconnected(void * graph, DBusMessage * message_ptr)
         DBUS_TYPE_UINT64, &connection_id,
         DBUS_TYPE_INVALID))
   {
-    log_error("dbus_message_get_args() failed to extract PortsConnected signal arguments (%s)", g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    log_error("dbus_message_get_args() failed to extract PortsConnected signal arguments (%s)", cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 

@@ -90,7 +90,7 @@ static void ladish_graph_emit_ports_disconnected(struct ladish_graph * graph_ptr
   ASSERT(graph_ptr->opath != NULL);
 
   dbus_signal_emit(
-    g_dbus_connection,
+    cdbus_g_dbus_connection,
     graph_ptr->opath,
     JACKDBUS_IFACE_PATCHBAY,
     "PortsDisconnected",
@@ -112,7 +112,7 @@ static void ladish_graph_emit_ports_connected(struct ladish_graph * graph_ptr, s
   ASSERT(graph_ptr->opath != NULL);
 
   dbus_signal_emit(
-    g_dbus_connection,
+    cdbus_g_dbus_connection,
     graph_ptr->opath,
     JACKDBUS_IFACE_PATCHBAY,
     "PortsConnected",
@@ -134,7 +134,7 @@ static void ladish_graph_emit_client_appeared(struct ladish_graph * graph_ptr, s
   ASSERT(graph_ptr->opath != NULL);
 
   dbus_signal_emit(
-    g_dbus_connection,
+    cdbus_g_dbus_connection,
     graph_ptr->opath,
     JACKDBUS_IFACE_PATCHBAY,
     "ClientAppeared",
@@ -149,7 +149,7 @@ static void ladish_graph_emit_client_disappeared(struct ladish_graph * graph_ptr
   ASSERT(graph_ptr->opath != NULL);
 
   dbus_signal_emit(
-    g_dbus_connection,
+    cdbus_g_dbus_connection,
     graph_ptr->opath,
     JACKDBUS_IFACE_PATCHBAY,
     "ClientDisappeared",
@@ -164,7 +164,7 @@ static void ladish_graph_emit_port_appeared(struct ladish_graph * graph_ptr, str
   ASSERT(graph_ptr->opath != NULL);
 
   dbus_signal_emit(
-    g_dbus_connection,
+    cdbus_g_dbus_connection,
     graph_ptr->opath,
     JACKDBUS_IFACE_PATCHBAY,
     "PortAppeared",
@@ -183,7 +183,7 @@ static void ladish_graph_emit_port_disappeared(struct ladish_graph * graph_ptr, 
   ASSERT(graph_ptr->opath != NULL);
 
   dbus_signal_emit(
-    g_dbus_connection,
+    cdbus_g_dbus_connection,
     graph_ptr->opath,
     JACKDBUS_IFACE_PATCHBAY,
     "PortDisappeared",
@@ -480,10 +480,10 @@ static void get_graph(struct dbus_method_call * call_ptr)
 
   //log_info("get_graph() called");
 
-  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_UINT64, &known_version, DBUS_TYPE_INVALID))
+  if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_UINT64, &known_version, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -728,15 +728,15 @@ static void connect_ports_by_name(struct dbus_method_call * call_ptr)
 
   if (!dbus_message_get_args(
         call_ptr->message,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_STRING, &client1_name,
         DBUS_TYPE_STRING, &port1_name,
         DBUS_TYPE_STRING, &client2_name,
         DBUS_TYPE_STRING, &port2_name,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s", call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s", call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -765,10 +765,10 @@ static void connect_ports_by_id(struct dbus_method_call * call_ptr)
   struct ladish_graph_port * port1_ptr;
   struct ladish_graph_port * port2_ptr;
 
-  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_UINT64, &port1_id, DBUS_TYPE_UINT64, &port2_id, DBUS_TYPE_INVALID))
+  if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_UINT64, &port1_id, DBUS_TYPE_UINT64, &port2_id, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s", call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s", call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -839,15 +839,15 @@ static void disconnect_ports_by_name(struct dbus_method_call * call_ptr)
 
   if (!dbus_message_get_args(
         call_ptr->message,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_STRING, &client1_name,
         DBUS_TYPE_STRING, &port1_name,
         DBUS_TYPE_STRING, &client2_name,
         DBUS_TYPE_STRING, &port2_name,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s", call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s", call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -877,10 +877,10 @@ static void disconnect_ports_by_id(struct dbus_method_call * call_ptr)
   struct ladish_graph_port * port2_ptr;
   struct ladish_graph_connection * connection_ptr;
 
-  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_UINT64, &port1_id, DBUS_TYPE_UINT64, &port2_id, DBUS_TYPE_INVALID))
+  if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_UINT64, &port1_id, DBUS_TYPE_UINT64, &port2_id, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s", call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s", call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -921,10 +921,10 @@ static void disconnect_ports_by_connection_id(struct dbus_method_call * call_ptr
   dbus_uint64_t connection_id;
   struct ladish_graph_connection * connection_ptr;
 
-  if (!dbus_message_get_args(call_ptr->message, &g_dbus_error, DBUS_TYPE_UINT64, &connection_id, DBUS_TYPE_INVALID))
+  if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_UINT64, &connection_id, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s", call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s", call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -2191,7 +2191,7 @@ ladish_graph_rename_client(
   if (!client_ptr->hidden && graph_ptr->opath != NULL)
   {
     dbus_signal_emit(
-      g_dbus_connection,
+      cdbus_g_dbus_connection,
       graph_ptr->opath,
       JACKDBUS_IFACE_PATCHBAY,
       "ClientRenamed",
@@ -2240,7 +2240,7 @@ ladish_graph_rename_port(
   if (!port_ptr->hidden && graph_ptr->opath != NULL)
   {
     dbus_signal_emit(
-      g_dbus_connection,
+      cdbus_g_dbus_connection,
       graph_ptr->opath,
       JACKDBUS_IFACE_PATCHBAY,
       "PortRenamed",

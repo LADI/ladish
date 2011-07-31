@@ -168,7 +168,7 @@ void remove_app_internal(struct ladish_app_supervisor * supervisor_ptr, struct l
   supervisor_ptr->version++;
 
   dbus_signal_emit(
-    g_dbus_connection,
+    cdbus_g_dbus_connection,
     supervisor_ptr->opath,
     IFACE_APP_SUPERVISOR,
     "AppRemoved",
@@ -194,7 +194,7 @@ void emit_app_state_changed(struct ladish_app_supervisor * supervisor_ptr, struc
   supervisor_ptr->version++;
 
   dbus_signal_emit(
-    g_dbus_connection,
+    cdbus_g_dbus_connection,
     supervisor_ptr->opath,
     IFACE_APP_SUPERVISOR,
     "AppStateChanged",
@@ -345,7 +345,7 @@ ladish_app_supervisor_add(
   dbus_terminal = terminal;
   level = app_ptr->level;
   dbus_signal_emit(
-    g_dbus_connection,
+    cdbus_g_dbus_connection,
     supervisor_ptr->opath,
     IFACE_APP_SUPERVISOR,
     "AppAdded",
@@ -995,15 +995,15 @@ static void run_custom(struct dbus_method_call * call_ptr)
 
   if (!dbus_message_get_args(
         call_ptr->message,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_BOOLEAN, &terminal,
         DBUS_TYPE_STRING, &commandline,
         DBUS_TYPE_STRING, &name,
         DBUS_TYPE_STRING, &level,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -1034,12 +1034,12 @@ static void start_app(struct dbus_method_call * call_ptr)
 
   if (!dbus_message_get_args(
         call_ptr->message,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT64, &id,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -1055,12 +1055,12 @@ static void stop_app(struct dbus_method_call * call_ptr)
 
   if (!dbus_message_get_args(
         call_ptr->message,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT64, &id,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -1076,12 +1076,12 @@ static void kill_app(struct dbus_method_call * call_ptr)
 
   if (!dbus_message_get_args(
         call_ptr->message,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT64, &id,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -1101,12 +1101,12 @@ static void get_app_properties(struct dbus_method_call * call_ptr)
 
   if (!dbus_message_get_args(
         call_ptr->message,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT64, &id,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -1163,7 +1163,7 @@ static void set_app_properties(struct dbus_method_call * call_ptr)
 
   if (!dbus_message_get_args(
         call_ptr->message,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT64, &id,
         DBUS_TYPE_STRING, &name,
         DBUS_TYPE_STRING, &commandline,
@@ -1171,8 +1171,8 @@ static void set_app_properties(struct dbus_method_call * call_ptr)
         DBUS_TYPE_STRING, &level,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -1266,12 +1266,12 @@ static void remove_app(struct dbus_method_call * call_ptr)
 
   if (!dbus_message_get_args(
         call_ptr->message,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT64, &id,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -1289,12 +1289,12 @@ static void is_app_running(struct dbus_method_call * call_ptr)
 
   if (!dbus_message_get_args(
         call_ptr->message,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT64, &id,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 

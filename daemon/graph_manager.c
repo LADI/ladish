@@ -42,12 +42,12 @@ static void ladish_graph_manager_dbus_split(struct dbus_method_call * call_ptr)
 
   if (!dbus_message_get_args(
         call_ptr->message,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT64, &client_id,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -70,13 +70,13 @@ static void ladish_graph_manager_dbus_join(struct dbus_method_call * call_ptr)
 
   if (!dbus_message_get_args(
         call_ptr->message,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT64, &client1_id,
         DBUS_TYPE_UINT64, &client2_id,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -100,13 +100,13 @@ static void ladish_graph_manager_dbus_rename_client(struct dbus_method_call * ca
 
   if (!dbus_message_get_args(
         call_ptr->message,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT64, &client_id,
         DBUS_TYPE_STRING, &newname,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -137,13 +137,13 @@ static void ladish_graph_manager_dbus_rename_port(struct dbus_method_call * call
 
   if (!dbus_message_get_args(
         call_ptr->message,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT64, &port_id,
         DBUS_TYPE_STRING, &newname,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -175,13 +175,13 @@ static void ladish_graph_manager_dbus_move_port(struct dbus_method_call * call_p
 
   if (!dbus_message_get_args(
         call_ptr->message,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT64, &port_id,
         DBUS_TYPE_UINT64, &client_id,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -214,12 +214,12 @@ static void ladish_graph_manager_dbus_new_client(struct dbus_method_call * call_
 
   if (!dbus_message_get_args(
         call_ptr->message,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_STRING, &name,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -250,12 +250,12 @@ static void ladish_graph_manager_dbus_remove_client(struct dbus_method_call * ca
 
   if (!dbus_message_get_args(
         call_ptr->message,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT64, &client_id,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 

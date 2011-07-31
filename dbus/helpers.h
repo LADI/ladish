@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -32,8 +32,8 @@
 
 #include <dbus/dbus.h>
 
-extern DBusConnection * g_dbus_connection;
-extern DBusError g_dbus_error;
+extern DBusConnection * cdbus_g_dbus_connection;
+extern DBusError cdbus_g_dbus_error;
 
 bool dbus_iter_get_dict_entry(DBusMessageIter * iter_ptr, const char * key, void * value, int * type, int * size);
 bool dbus_iter_get_dict_entry_string(DBusMessageIter * iter_ptr, const char * key, const char ** value);

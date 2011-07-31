@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008,2009,2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains code that interface with a2jmidid through D-Bus
@@ -88,21 +88,21 @@ bool a2j_proxy_init(void)
     a2j_proxy_get_jack_client_name_noncached(&g_a2j_jack_client_name);
   }
 
-  if (!dbus_register_service_lifetime_hook(g_dbus_connection, A2J_SERVICE, on_a2j_life_status_changed))
+  if (!dbus_register_service_lifetime_hook(cdbus_g_dbus_connection, A2J_SERVICE, on_a2j_life_status_changed))
   {
     log_error("dbus_register_service_lifetime_hook() failed for a2j service");
     return false;
   }
 
   if (!dbus_register_object_signal_hooks(
-        g_dbus_connection,
+        cdbus_g_dbus_connection,
         A2J_SERVICE,
         A2J_OBJECT,
         A2J_IFACE_CONTROL,
         NULL,
         g_signal_hooks))
   {
-    dbus_unregister_service_lifetime_hook(g_dbus_connection, A2J_SERVICE);
+    dbus_unregister_service_lifetime_hook(cdbus_g_dbus_connection, A2J_SERVICE);
     log_error("dbus_register_object_signal_hooks() failed for a2j control interface");
     return false;
   }
@@ -112,8 +112,8 @@ bool a2j_proxy_init(void)
 
 void a2j_proxy_uninit(void)
 {
-  dbus_unregister_object_signal_hooks(g_dbus_connection, A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL);
-  dbus_unregister_service_lifetime_hook(g_dbus_connection, A2J_SERVICE);
+  dbus_unregister_object_signal_hooks(cdbus_g_dbus_connection, A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL);
+  dbus_unregister_service_lifetime_hook(cdbus_g_dbus_connection, A2J_SERVICE);
 }
 
 const char * a2j_proxy_get_jack_client_name_cached(void)
@@ -137,10 +137,10 @@ bool a2j_proxy_get_jack_client_name_noncached(char ** client_name_ptr_ptr)
     return false;
   }
 
-  if (!dbus_message_get_args(reply_ptr, &g_dbus_error, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
+  if (!dbus_message_get_args(reply_ptr, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
   {
     dbus_message_unref(reply_ptr);
-    dbus_error_free(&g_dbus_error);
+    dbus_error_free(&cdbus_g_dbus_error);
     log_error("decoding reply of get_jack_client_name failed.");
     return false;
   }
@@ -179,7 +179,7 @@ a2j_proxy_map_jack_port(
 
   if (!dbus_message_get_args(
         reply_ptr,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_UINT32,
         &alsa_client_id,
         DBUS_TYPE_UINT32,
@@ -191,7 +191,7 @@ a2j_proxy_map_jack_port(
         DBUS_TYPE_INVALID))
   {
     dbus_message_unref(reply_ptr);
-    dbus_error_free(&g_dbus_error);
+    dbus_error_free(&cdbus_g_dbus_error);
     log_error("decoding reply of map_jack_port_to_alsa failed.");
     return false;
   }

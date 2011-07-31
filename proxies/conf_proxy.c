@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of code that interfaces ladiconfd through D-Bus
@@ -125,14 +125,14 @@ static void on_conf_changed(void * context, DBusMessage * message_ptr)
 
   if (!dbus_message_get_args(
         message_ptr,
-        &g_dbus_error,
+        &cdbus_g_dbus_error,
         DBUS_TYPE_STRING, &key,
         DBUS_TYPE_STRING, &value,
         DBUS_TYPE_UINT64, &version,
         DBUS_TYPE_INVALID))
   {
-    log_error("Invalid parameters of \"changed\" signal: %s",  g_dbus_error.message);
-    dbus_error_free(&g_dbus_error);
+    log_error("Invalid parameters of \"changed\" signal: %s",  cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
@@ -171,21 +171,21 @@ bool conf_proxy_init(void)
 {
   INIT_LIST_HEAD(&g_pairs);
 
-  if (!dbus_register_service_lifetime_hook(g_dbus_connection, CONF_SERVICE_NAME, on_life_status_changed))
+  if (!dbus_register_service_lifetime_hook(cdbus_g_dbus_connection, CONF_SERVICE_NAME, on_life_status_changed))
   {
     log_error("dbus_register_service_lifetime_hook() failed for confd service");
     return false;
   }
 
   if (!dbus_register_object_signal_hooks(
-        g_dbus_connection,
+        cdbus_g_dbus_connection,
         CONF_SERVICE_NAME,
         CONF_OBJECT_PATH,
         CONF_IFACE,
         NULL,
         g_signal_hooks))
   {
-    dbus_unregister_service_lifetime_hook(g_dbus_connection, CONF_SERVICE_NAME);
+    dbus_unregister_service_lifetime_hook(cdbus_g_dbus_connection, CONF_SERVICE_NAME);
     log_error("dbus_register_object_signal_hooks() failed for conf interface");
     return false;
   }
@@ -195,8 +195,8 @@ bool conf_proxy_init(void)
 
 void conf_proxy_uninit(void)
 {
-  dbus_unregister_object_signal_hooks(g_dbus_connection, CONF_SERVICE_NAME, CONF_OBJECT_PATH, CONF_IFACE);
-  dbus_unregister_service_lifetime_hook(g_dbus_connection, CONF_SERVICE_NAME);
+  dbus_unregister_object_signal_hooks(cdbus_g_dbus_connection, CONF_SERVICE_NAME, CONF_OBJECT_PATH, CONF_IFACE);
+  dbus_unregister_service_lifetime_hook(cdbus_g_dbus_connection, CONF_SERVICE_NAME);
 }
 
 bool
