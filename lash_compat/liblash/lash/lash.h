@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009,2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2002 Robert Ham <rah@bash.sh>
  *
  **************************************************************************
@@ -93,51 +93,49 @@ extern "C" {
 #endif
 
 const char * lash_protocol_string(lash_protocol_t protocol);
-lash_event_t * lash_event_new(void);
-lash_event_t * lash_event_new_with_type(enum LASH_Event_Type type);
-lash_event_t * lash_event_new_with_all(enum LASH_Event_Type type, const char * string);
-void lash_event_destroy(lash_event_t * event);
-enum LASH_Event_Type lash_event_get_type(const lash_event_t * event);
-const char * lash_event_get_string(const lash_event_t * event);
-const char * lash_event_get_project(const lash_event_t * event);
-void lash_event_get_client_id(const lash_event_t * event, uuid_t id);
-void lash_event_set_type(lash_event_t * event, enum LASH_Event_Type type);
-void lash_event_set_string(lash_event_t * event, const char * string);
-void lash_event_set_project(lash_event_t * event, const char * project);
-void lash_event_set_client_id(lash_event_t * event, uuid_t id);
-void lash_event_set_alsa_client_id(lash_event_t * event, unsigned char alsa_id);
-unsigned char lash_event_get_alsa_client_id(const lash_event_t * event);
-void lash_str_set_alsa_client_id(char * str, unsigned char alsa_id);
-unsigned char lash_str_get_alsa_client_id(const char * str);
+
 lash_args_t * lash_extract_args(int * argc, char *** argv);
 void lash_args_destroy(lash_args_t * args);
+
 lash_client_t * lash_init(const lash_args_t * args, const char * client_class, int client_flags, lash_protocol_t protocol);
+
+int lash_server_connected(lash_client_t * client);
 const char * lash_get_server_name(lash_client_t * client);
+
 unsigned int lash_get_pending_event_count(lash_client_t * client);
 lash_event_t * lash_get_event(lash_client_t * client);
 unsigned int lash_get_pending_config_count(lash_client_t * client);
 lash_config_t * lash_get_config(lash_client_t * client);
+
+/* send methods */
 void lash_send_event(lash_client_t * client, lash_event_t * event);
 void lash_send_config(lash_client_t * client, lash_config_t * config);
-int lash_server_connected(lash_client_t * client);
-void lash_jack_client_name(lash_client_t * client, const char * name);
-void lash_alsa_client_id(lash_client_t * client, unsigned char id);
+
+/* event methods */
 lash_event_t * lash_event_new(void);
 lash_event_t * lash_event_new_with_type(enum LASH_Event_Type type);
 lash_event_t * lash_event_new_with_all(enum LASH_Event_Type type, const char * string);
 void lash_event_destroy(lash_event_t * event);
+
 enum LASH_Event_Type lash_event_get_type(const lash_event_t * event);
 const char * lash_event_get_string(const lash_event_t * event);
 const char * lash_event_get_project(const lash_event_t * event);
 void lash_event_get_client_id(const lash_event_t * event, uuid_t id);
+
 void lash_event_set_type(lash_event_t * event, enum LASH_Event_Type type);
 void lash_event_set_string(lash_event_t * event, const char * string);
 void lash_event_set_project(lash_event_t * event, const char * project);
 void lash_event_set_client_id(lash_event_t * event, uuid_t id);
-void lash_event_set_alsa_client_id(lash_event_t * event, unsigned char alsa_id);
-unsigned char lash_event_get_alsa_client_id(const lash_event_t * event);
 void lash_str_set_alsa_client_id(char * str, unsigned char alsa_id);
+void lash_event_set_alsa_client_id(lash_event_t * event, unsigned char alsa_id);
+
+unsigned char lash_event_get_alsa_client_id(const lash_event_t * event);
 unsigned char lash_str_get_alsa_client_id(const char * str);
+
+void lash_jack_client_name(lash_client_t * client, const char * name);
+void lash_alsa_client_id(lash_client_t * client, unsigned char id);
+
+/* config methods */
 lash_config_t * lash_config_new(void);
 lash_config_t * lash_config_dup(const lash_config_t * config);
 lash_config_t * lash_config_new_with_key(const char * key);
