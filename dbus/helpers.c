@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -397,6 +397,85 @@ dbus_call_raw(
   return reply_ptr;
 }
 
+DBusMessage *
+cdbus_new_method_call_message_valist(
+  const char * service,
+  const char * object,
+  const char * iface,
+  const char * method,
+  const char * input_signature,
+  va_list * vargs_ptr)
+{
+  DBusMessage * msg_ptr;
+  DBusSignatureIter sig_iter;
+  int type;
+  void * parameter_ptr;
+  DBusMessageIter iter;
+
+  if (!dbus_signature_validate(input_signature, NULL))
+  {
+    log_error("input signature '%s' is invalid", input_signature);
+    goto fail;
+  }
+
+  dbus_signature_iter_init(&sig_iter, input_signature);
+
+  msg_ptr = dbus_message_new_method_call(service, object, iface, method);
+  if (msg_ptr == NULL)
+  {
+    log_error("dbus_message_new_method_call() failed.");
+    goto fail;
+  }
+
+  dbus_message_iter_init_append(msg_ptr, &iter);
+
+  while (*input_signature != '\0')
+  {
+    type = dbus_signature_iter_get_current_type(&sig_iter);
+    if (!dbus_type_is_basic(type))
+    {
+      log_error("non-basic input parameter '%c' (%d)", *input_signature, type);
+      goto unref;
+    }
+
+    parameter_ptr = va_arg(*vargs_ptr, void *);
+
+    if (!dbus_message_iter_append_basic(&iter, type, parameter_ptr))
+    {
+      log_error("dbus_message_iter_append_basic() failed.");
+      goto unref;
+    }
+
+    dbus_signature_iter_next(&sig_iter);
+    input_signature++;
+  }
+
+  return msg_ptr;
+unref:
+  dbus_message_unref(msg_ptr);
+fail:
+  return NULL;
+}
+
+DBusMessage *
+cdbus_new_method_call_message(
+  const char * service,
+  const char * object,
+  const char * iface,
+  const char * method,
+  const char * input_signature,
+  ...)
+{
+  va_list vargs;
+  DBusMessage * msg_ptr;
+
+  va_start(vargs, input_signature);
+  msg_ptr = cdbus_new_method_call_message_valist(service, object, iface, method, input_signature, &vargs);
+  va_end(vargs);
+
+  return msg_ptr;
+}
+
 bool
 dbus_call(
   unsigned int timeout,
@@ -415,8 +494,6 @@ dbus_call(
   va_list ap;
   bool ret;
   void * parameter_ptr;
-  int type;
-  DBusSignatureIter sig_iter;
 
   //log_info("dbus_call('%s', '%s', '%s', '%s')", service, object, iface, method);
 
@@ -425,42 +502,10 @@ dbus_call(
 
   if (input_signature != NULL)
   {
-    if (!dbus_signature_validate(input_signature, NULL))
-    {
-      log_error("input signature '%s' is invalid", input_signature);
-      goto fail;
-    }
-
-    dbus_signature_iter_init(&sig_iter, input_signature);
-
-    request_ptr = dbus_message_new_method_call(service, object, iface, method);
+    request_ptr = cdbus_new_method_call_message_valist(service, object, iface, method, input_signature, &ap);
     if (request_ptr == NULL)
     {
-      log_error("dbus_message_new_method_call() failed.");
       goto fail;
-    }
-
-    dbus_message_iter_init_append(request_ptr, &iter);
-
-    while (*input_signature != '\0')
-    {
-      type = dbus_signature_iter_get_current_type(&sig_iter);
-      if (!dbus_type_is_basic(type))
-      {
-        log_error("non-basic input parameter '%c' (%d)", *input_signature, type);
-        goto fail;
-      }
-
-      parameter_ptr = va_arg(ap, void *);
-
-      if (!dbus_message_iter_append_basic(&iter, type, parameter_ptr))
-      {
-        log_error("dbus_message_iter_append_basic() failed.");
-        goto fail;
-      }
-
-      dbus_signature_iter_next(&sig_iter);
-      input_signature++;
     }
   }
   else
