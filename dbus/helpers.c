@@ -397,6 +397,7 @@ dbus_call_raw(
   return reply_ptr;
 }
 
+static
 DBusMessage *
 cdbus_new_method_call_message_valist(
   const char * service,

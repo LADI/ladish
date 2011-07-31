@@ -58,6 +58,15 @@ dbus_call(
   const char * input_signature,
   ...);
 
+DBusMessage *
+cdbus_new_method_call_message(
+  const char * service,
+  const char * object,
+  const char * iface,
+  const char * method,
+  const char * input_signature,
+  ...);
+
 bool
 dbus_register_object_signal_handler(
   DBusConnection * connection,
