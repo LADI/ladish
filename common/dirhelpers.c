@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009,2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the directory helper functions
@@ -213,7 +213,7 @@ bool ensure_dir_exist_varg(int mode, ...)
   while ((str = va_arg(ap, const char *)) != NULL)
   {
     len = strlen(str);
-    memcpy(buffer, str, len);
+    memcpy(p, str, len);
     p += len;
   }
   va_end(ap);
