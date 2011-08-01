@@ -24,17 +24,31 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#define LADISH_DEBUG
-
 #include <arpa/inet.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <errno.h>
+#include <dirent.h>
 
 #include "lash/lash.h"
+
+#define LADISH_DEBUG
+
 #include "../../common.h"
 #include "../../common/catdup.h"
-//#define LOG_OUTPUT_STDOUT
+#include "../../common/dirhelpers.h"
+#include "../../common/file.h"
 #include "../../log.h"
 #include "../../dbus/helpers.h"
+#include "../../dbus/error.h"
 #include "../../dbus_constants.h"
+
+#define LASH_CONFIG_SUBDIR "/.ladish_lash_dict/"
+
+static dbus_object_path g_object;
+extern const struct dbus_interface_descriptor g_interface __attribute__((visibility("hidden")));
 
 struct _lash_client
 {
@@ -49,12 +63,181 @@ struct _lash_event
   char * string;
 };
 
+static struct _lash_event g_event = {0, NULL};
+static bool g_quit = false;
+static bool g_busy = false;     /* whether the app is processing the event */
+
 struct _lash_config
 {
+  struct list_head siblings;
   char * key;
   size_t size;
   void * value;
 };
+
+static LIST_HEAD(g_pending_configs);
+
+static void clean_pending_configs(void)
+{
+  struct _lash_config * config_ptr;
+
+  while (!list_empty(&g_pending_configs))
+  {
+    config_ptr = list_entry(g_pending_configs.next, struct _lash_config, siblings);
+    list_del(g_pending_configs.next);
+    lash_config_destroy(config_ptr);
+  }
+}
+
+static void save_config(const char * dir,  struct _lash_config * config_ptr)
+{
+  char * path;
+  int fd;
+	ssize_t written;
+
+  log_debug("saving dict key '%s'", config_ptr->key);
+
+  path = catdup3(dir, LASH_CONFIG_SUBDIR, config_ptr->key);
+  if (path == NULL)
+  {
+    goto exit;
+  }
+
+  fd = creat(path, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+
+	if (fd == -1)
+  {
+    log_error("error creating config file '%s' (%s)", path, strerror(errno));
+    goto free;
+	}
+
+	written = write(fd, config_ptr->value, config_ptr->size);
+	if (written == -1)
+  {
+    log_error("error writting config file '%s' (%s)", path, strerror(errno));
+    goto close;
+	}
+
+  if ((size_t)written < config_ptr->size)
+  {
+    log_error("error writting config file '%s' (%zd instead of %zu)", path, written, config_ptr->size);
+    goto close;
+  }
+
+  log_debug("saved dict key '%s'", config_ptr->key);
+
+close:
+  close(fd);
+free:
+  free(path);
+exit:
+  return;
+}
+
+static void save_pending_configs(const char * dir)
+{
+  struct _lash_config * config_ptr;
+
+  if (!ensure_dir_exist_varg(S_IRWXU | S_IRWXG | S_IRWXO, dir, LASH_CONFIG_SUBDIR, NULL))
+  {
+    log_error("ensure_dir_exist_varg() failed for %s%s", dir, LASH_CONFIG_SUBDIR);
+    clean_pending_configs();
+    return;
+  }
+
+  while (!list_empty(&g_pending_configs))
+  {
+    config_ptr = list_entry(g_pending_configs.next, struct _lash_config, siblings);
+    list_del(g_pending_configs.next);
+    save_config(dir, config_ptr);
+    lash_config_destroy(config_ptr);
+  }
+}
+
+static void load_configs(const char * appdir)
+{
+  char * dirpath;
+  char * filepath;
+  DIR * dir;
+  struct dirent * dentry;
+  struct stat st;
+  lash_config_t * config_ptr;
+
+  clean_pending_configs();
+  ASSERT(list_empty(&g_pending_configs));
+
+  log_debug("Loading configs from '%s'", appdir);
+
+  dirpath = catdup(appdir, LASH_CONFIG_SUBDIR);
+  if (dirpath == NULL)
+  {
+    goto exit;
+  }
+
+  dir = opendir(dirpath);
+  if (dir == NULL)
+  {
+    log_error("Cannot open directory '%s': %d (%s)", dirpath, errno, strerror(errno));
+    goto free;
+  }
+
+  while ((dentry = readdir(dir)) != NULL)
+  {
+    if (strcmp(dentry->d_name, ".") == 0 ||
+        strcmp(dentry->d_name, "..") == 0)
+    {
+      continue;
+    }
+
+    filepath = catdup3(dirpath, "/", dentry->d_name);
+    if (filepath == NULL)
+    {
+      log_error("catdup() failed");
+      goto close;
+    }
+
+    if (stat(filepath, &st) != 0)
+    {
+      log_error("failed to stat '%s': %d (%s)", filepath, errno, strerror(errno));
+      goto next;
+    }
+
+    if (!S_ISREG(st.st_mode))
+    {
+      log_error("not regular file '%s' with mode is %07o", filepath, st.st_mode);
+      goto next;
+    }
+
+    config_ptr = lash_config_new_with_key(dentry->d_name);
+    if (config_ptr == NULL)
+    {
+      goto next;
+    }
+
+    config_ptr->value = read_file_contents(filepath);
+    if (config_ptr->value == NULL)
+    {
+      log_error("read from '%s' failed", filepath);
+      lash_config_destroy(config_ptr);
+      goto next;
+    }
+
+    config_ptr->size = (size_t)st.st_size;
+    list_add_tail(&config_ptr->siblings, &g_pending_configs);
+
+    log_debug("loaded dict key '%s'", dentry->d_name);
+
+  next:
+    free(filepath);
+  }
+
+close:
+  closedir(dir);
+free:
+  free(dirpath);
+exit:
+  return;
+}
 
 const char * lash_protocol_string(lash_protocol_t protocol)
 {
@@ -106,6 +289,18 @@ lash_client_t * lash_init(const lash_args_t * args, const char * class, int clie
 
   log_info("Connected to session bus, unique name is \"%s\"", dbus_unique_name);
 
+
+  g_object = dbus_object_path_new("/", &g_interface, NULL, NULL);
+  if (g_object == NULL)
+  {
+    goto close_connection;
+  }
+
+  if (!dbus_object_path_register(cdbus_g_dbus_connection, g_object))
+  {
+    goto destroy_object;
+  }
+
   flags32 = client_flags;
   msg_ptr = cdbus_new_method_call_message(SERVICE_NAME, LASH_SERVER_OBJECT_PATH, IFACE_LASH_SERVER, "Init", "su", &class, &flags32);
   if (msg_ptr == NULL)
@@ -126,6 +321,8 @@ lash_client_t * lash_init(const lash_args_t * args, const char * class, int clie
 
   return &g_client;
 
+destroy_object:
+  dbus_object_path_destroy(cdbus_g_dbus_connection, g_object);
 close_connection:
   dbus_connection_close(cdbus_g_dbus_connection);
   dbus_connection_unref(cdbus_g_dbus_connection);
@@ -136,29 +333,109 @@ fail:
 unsigned int lash_get_pending_event_count(lash_client_t * client_ptr)
 {
   ASSERT(client_ptr == &g_client);
-  /* TODO */
-  return 0;
+  return !g_busy && g_event.type != 0 ? 1 : 0;
+}
+
+static void dispatch(void)
+{
+	do
+	{
+		dbus_connection_read_write_dispatch(cdbus_g_dbus_connection, 0);
+	}
+	while (dbus_connection_get_dispatch_status(cdbus_g_dbus_connection) == DBUS_DISPATCH_DATA_REMAINS);
 }
 
 unsigned int lash_get_pending_config_count(lash_client_t * client_ptr)
 {
+  struct list_head * node_ptr;
+  unsigned int count;
+
   ASSERT(client_ptr == &g_client);
-  /* TODO */
-  return 0;
+  dispatch();
+
+  count = 0;
+  list_for_each(node_ptr, &g_pending_configs)
+  {
+    count++;
+  }
+
+  return count;
 }
 
 lash_event_t * lash_get_event(lash_client_t * client_ptr)
 {
   ASSERT(client_ptr == &g_client);
-  /* TODO */
-  return NULL;
+  dispatch();
+
+  if (g_busy)
+  {
+    if (g_event.type == LASH_Restore_Data_Set && list_empty(&g_pending_configs))
+    {
+      /* the example lash_simple_client client does not send LASH_Restore_Data_Set event back */
+      lash_send_event(&g_client, &g_event);
+      ASSERT(!g_busy);
+    }
+    else
+    {
+      return NULL;
+    }
+  }
+
+  if (g_event.type == 0)
+  {
+    if (g_quit)
+    {
+      g_event.type = LASH_Quit;
+    }
+    else
+    {
+      return NULL;
+    }
+  }
+
+  if (g_event.type == LASH_Save_Data_Set)
+  {
+    clean_pending_configs();
+    /* TODO: change status to "saving" */
+  }
+  else if (g_event.type == LASH_Restore_Data_Set)
+  {
+    load_configs(g_event.string);
+    /* TODO: change status to "restoring (data)" */
+  }
+  else if (g_event.type == LASH_Restore_File)
+  {
+    /* TODO: change status to "restoring (file)" */
+  }
+  else if (g_event.type == LASH_Save_File)
+  {
+    /* TODO: change status to "saving" */
+  }
+  else if (g_event.type == LASH_Quit)
+  {
+    /* TODO: change status to "quitting" */
+  }
+
+  g_busy = true;
+  log_debug("App begins to process event %d (%s)", g_event.type, g_event.string);
+  return &g_event;
 }
 
 lash_config_t * lash_get_config(lash_client_t * client_ptr)
 {
+  struct _lash_config * config_ptr;
+
   ASSERT(client_ptr == &g_client);
-  /* TODO */
-  return NULL;
+
+  if (list_empty(&g_pending_configs))
+  {
+    return NULL;
+  }
+
+  config_ptr = list_entry(g_pending_configs.next, struct _lash_config, siblings);
+  list_del(g_pending_configs.next);
+
+  return config_ptr;
 }
 
 void lash_send_event(lash_client_t * client_ptr, lash_event_t * event_ptr)
@@ -167,7 +444,81 @@ void lash_send_event(lash_client_t * client_ptr, lash_event_t * event_ptr)
 
   log_debug("lash_send_event() called. type=%d string=%s", event_ptr->type, event_ptr->string != NULL ? event_ptr->string : "(NULL)");
 
-  /* TODO */
+  dispatch();
+
+  if (!g_busy)
+  {
+    return;
+  }
+
+  if (event_ptr->type == LASH_Save_File)
+  {
+    log_debug("Save to file complete (%s)", g_event.string);
+    g_busy = false;
+
+    if ((g_client.flags & LASH_Config_Data_Set) != 0)
+    {
+      log_debug("Client wants to save a dict too");
+      g_event.type = LASH_Save_Data_Set;
+      if (event_ptr == &g_event)
+      {
+        return;
+      }
+    }
+    else
+    {
+      g_event.type = 0;
+      free(g_event.string);
+      g_event.string = NULL; 
+      /* TODO: change status to "saved" */
+   }
+  }
+  else if (event_ptr->type == LASH_Save_Data_Set)
+  {
+    log_debug("Save to dict complete (%s)", g_event.string);
+
+    save_pending_configs(g_event.string);
+
+    g_busy = false;
+
+    g_event.type = 0;
+    free(g_event.string);
+    g_event.string = NULL;
+      /* TODO: change status to "saved" */
+  }
+  else if (event_ptr->type == LASH_Restore_Data_Set)
+  {
+    log_debug("Restore from dict complete (%s)", g_event.string);
+    g_busy = false;
+
+    if ((g_client.flags & LASH_Config_File) != 0)
+    {
+      log_debug("Client wants to restore from file too");
+      g_event.type = LASH_Restore_File;
+      if (event_ptr == &g_event)
+      {
+        return;
+      }
+    }
+    else
+    {
+      g_event.type = 0;
+      free(g_event.string);
+      g_event.string = NULL;
+      /* TODO: change status to "restored" */
+    }
+  }
+  else if (event_ptr->type == LASH_Restore_File)
+  {
+    log_debug("Restore from file complete (%s)", g_event.string);
+
+    g_busy = false;
+
+    g_event.type = 0;
+    free(g_event.string);
+    g_event.string = NULL;
+    /* TODO: change status to "restored" */
+  }
 
   lash_event_destroy(event_ptr);
 }
@@ -178,9 +529,17 @@ void lash_send_config(lash_client_t * client_ptr, lash_config_t * config_ptr)
 
   log_debug("lash_send_config() called. key=%s value_size=%zu", config_ptr->key, config_ptr->size);
 
-  /* TODO */
+  dispatch();
 
-  lash_config_destroy(config_ptr);
+  if (g_event.type == LASH_Save_Data_Set)
+  {
+    list_add_tail(&config_ptr->siblings, &g_pending_configs);
+  }
+  else
+  {
+    log_error("Ignoring config with key '%s' because app is not saving data set", config_ptr->key);
+    lash_config_destroy(config_ptr);
+  }
 }
 
 int lash_server_connected(lash_client_t * client_ptr)
@@ -253,7 +612,15 @@ lash_event_t * lash_event_new_with_all(enum LASH_Event_Type type, const char * s
 void lash_event_destroy(lash_event_t * event_ptr)
 {
   free(event_ptr->string);
-  free(event_ptr);
+  if (event_ptr == &g_event)
+  {
+    event_ptr->type = 0;
+    event_ptr->string = NULL;
+  }
+  else
+  {
+    free(event_ptr);
+  }
 }
 
 enum LASH_Event_Type lash_event_get_type(const lash_event_t * event_ptr)
@@ -564,3 +931,144 @@ const char * lash_get_fqn(const char * dir, const char * file)
 
   return fqn;
 }
+
+/***************************************************************************/
+/* D-Bus interface implementation */
+
+static void lash_quit(struct dbus_method_call * call_ptr)
+{
+  log_debug("Quit command received through D-Bus");
+  g_quit = true;
+}
+
+static void lash_save(struct dbus_method_call * call_ptr)
+{
+  const char * dir;
+  char * dup;
+  int type;
+
+  dbus_error_init(&cdbus_g_dbus_error);
+  if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &dir, DBUS_TYPE_INVALID))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
+    return;
+  }
+
+  log_debug("Save command received through D-Bus (%s)", dir);
+
+  if (g_event.type != 0)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_UNFINISHED_TASK, "App is busy processing event if type %d", g_event.type);
+    return;
+  }
+
+  if (g_quit != 0)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_UNFINISHED_TASK, "App is quitting", g_event.type);
+    return;
+  }
+
+  if ((g_client.flags & LASH_Config_File) != 0)
+  {
+    type = LASH_Save_File;
+  }
+  else if ((g_client.flags & LASH_Config_Data_Set) != 0)
+  {
+    type = LASH_Save_Data_Set;
+  }
+  else
+  {
+    log_debug("App does not have internal state");
+    /* TODO: change status to "saved" */
+    return;
+  }
+
+  dup = strdup(dir);
+  if (dup == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup() failed for event string (dir) '%s'", dup);
+    return;
+  }
+
+  ASSERT(g_event.string == NULL);
+  g_event.string = dup;
+  g_event.type = type;
+}
+
+static void lash_restore(struct dbus_method_call * call_ptr)
+{
+  const char * dir;
+  char * dup;
+  int type;
+
+  dbus_error_init(&cdbus_g_dbus_error);
+  if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &dir, DBUS_TYPE_INVALID))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
+    return;
+  }
+
+  log_debug("Restore command received through D-Bus (%s)", dir);
+
+  if (g_event.type != 0)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_UNFINISHED_TASK, "App is busy processing event if type %d", g_event.type);
+    return;
+  }
+
+  if (g_quit != 0)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_UNFINISHED_TASK, "App is quitting", g_event.type);
+    return;
+  }
+
+  if ((g_client.flags & LASH_Config_File) != 0)
+  {
+    type = LASH_Restore_File;
+  }
+  else if ((g_client.flags & LASH_Config_Data_Set) != 0)
+  {
+    type = LASH_Restore_Data_Set;
+  }
+  else
+  {
+    log_debug("App does not have internal state");
+    /* TODO: change status to "restored" */
+    return;
+  }
+
+  dup = strdup(dir);
+  if (dup == NULL)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup() failed for event string (dir) '%s'", dup);
+    return;
+  }
+
+  ASSERT(g_event.string == NULL);
+  g_event.string = dup;
+  g_event.type = type;
+}
+
+METHOD_ARGS_BEGIN(Save, "Tell lash client to save")
+  METHOD_ARG_DESCRIBE_IN("app_dir", "s", "Directory where app must save its internal state")
+METHOD_ARGS_END
+
+METHOD_ARGS_BEGIN(Restore, "Tell lash client to restore")
+  METHOD_ARG_DESCRIBE_IN("app_dir", "s", "Directory from where app must load its internal state")
+METHOD_ARGS_END
+
+METHOD_ARGS_BEGIN(Quit, "Tell lash client to quit")
+METHOD_ARGS_END
+
+METHODS_BEGIN
+  METHOD_DESCRIBE(Save, lash_save)
+  METHOD_DESCRIBE(Restore, lash_restore)
+  METHOD_DESCRIBE(Quit, lash_quit)
+METHODS_END
+
+INTERFACE_BEGIN(g_interface, IFACE_LASH_CLIENT)
+  INTERFACE_DEFAULT_HANDLER
+  INTERFACE_EXPOSE_METHODS
+INTERFACE_END
