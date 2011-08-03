@@ -2,10 +2,10 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains prototypes of the directory helper functions
+ * This file contains helper functionality for accessing LASH clients through D-Bus
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -24,11 +24,37 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef DIRHELPERS_H__805193D2_2662_40FA_8814_AF8A4E08F4B0__INCLUDED
-#define DIRHELPERS_H__805193D2_2662_40FA_8814_AF8A4E08F4B0__INCLUDED
+#include "lash_client_proxy.h"
 
-bool check_dir_exists(const char * dirname);
-bool ensure_dir_exist(const char * dirname, int mode);
-bool ensure_dir_exist_varg(int mode, ...);
+bool lash_client_proxy_quit(const char * dest)
+{
+  if (!dbus_call(0, dest, "/", IFACE_LASH_CLIENT, "Quit", "", ""))
+  {
+    log_error(IFACE_LASH_CLIENT "::Quit() failed.");
+    return false;
+  }
 
-#endif /* #ifndef DIRHELPERS_H__805193D2_2662_40FA_8814_AF8A4E08F4B0__INCLUDED */
+  return true;
+}
+
+bool lash_client_proxy_save(const char * dest, const char * app_dir)
+{
+  if (!dbus_call(0, dest, "/", IFACE_LASH_CLIENT, "Save", "s", &app_dir, ""))
+  {
+    log_error(IFACE_LASH_CLIENT "::Save() failed.");
+    return false;
+  }
+
+  return true;
+}
+
+bool lash_client_proxy_restore(const char * dest, const char * app_dir)
+{
+  if (!dbus_call(0, dest, "/", IFACE_LASH_CLIENT, "Restore", "s", &app_dir, ""))
+  {
+    log_error(IFACE_LASH_CLIENT "::Restore() failed.");
+    return false;
+  }
+
+  return true;
+}

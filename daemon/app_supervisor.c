@@ -27,6 +27,7 @@
 #include "config.h"  /* Get _GNU_SOURCE defenition first to have some GNU extension available */
 
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <signal.h>
 #include <unistd.h>
 
@@ -36,6 +37,9 @@
 #include "loader.h"
 #include "studio_internal.h"
 #include "../proxies/notify_proxy.h"
+#include "../proxies/lash_client_proxy.h"
+#include "../common/catdup.h"
+#include "../common/dirhelpers.h"
 
 struct ladish_app
 {
@@ -54,6 +58,8 @@ struct ladish_app
   bool zombie;                  /* if true, remove when stopped */
   bool autorun;
   unsigned int state;
+  char * dbus_name;
+  struct ladish_app_supervisor * supervisor;
 };
 
 struct ladish_app_supervisor
@@ -79,7 +85,8 @@ bool ladish_check_app_level_validity(const char * level, size_t * len_ptr)
   }
 
   if (strcmp(level, LADISH_APP_LEVEL_0) != 0 &&
-      strcmp(level, LADISH_APP_LEVEL_1) != 0)
+      strcmp(level, LADISH_APP_LEVEL_1) != 0&&
+      strcmp(level, LADISH_APP_LEVEL_LASH) != 0)
   {
     return false;
   }
@@ -176,6 +183,7 @@ void remove_app_internal(struct ladish_app_supervisor * supervisor_ptr, struct l
     &supervisor_ptr->version,
     &app_ptr->id);
 
+  free(app_ptr->dbus_name);
   free(app_ptr->name);
   free(app_ptr->commandline);
   free(app_ptr);
@@ -316,6 +324,8 @@ ladish_app_supervisor_add(
     return NULL;
   }
 
+  app_ptr->dbus_name = NULL;
+
   app_ptr->terminal = terminal;
   memcpy(app_ptr->level, level, len + 1);
   app_ptr->pid = 0;
@@ -337,6 +347,7 @@ ladish_app_supervisor_add(
   app_ptr->zombie = false;
   app_ptr->state = LADISH_APP_STATE_STOPPED;
   app_ptr->autorun = autorun;
+  app_ptr->supervisor = supervisor_ptr;
   list_add_tail(&app_ptr->siblings, &supervisor_ptr->applist);
 
   supervisor_ptr->version++;
@@ -488,6 +499,109 @@ static void ladish_app_send_signal(struct ladish_app * app_ptr, int sig, bool pr
   }
 }
 
+static inline void ladish_app_initiate_lash_save(struct ladish_app * app_ptr, const char * base_dir)
+{
+  char * app_dir;
+  char uuid_str[37];
+
+  if (base_dir == NULL)
+  {
+    log_error("Cannot initiate LASH save because base dir is unknown");
+    ASSERT_NO_PASS;
+    goto exit;
+  }
+
+  uuid_unparse(app_ptr->uuid, uuid_str);
+  app_dir = catdup3(base_dir, "/lash_apps/", uuid_str);
+  if (app_dir == NULL)
+  {
+    log_error("Cannot initiate LASH save because of memory allocation failure.");
+    goto exit;
+  }
+
+  if (!ensure_dir_exist(app_dir, S_IRWXU | S_IRWXG | S_IRWXO))
+  {
+    goto free;
+  }
+
+  if (lash_client_proxy_save(app_ptr->dbus_name, app_dir))
+  {
+    log_info("LASH Save into '%s' initiated for '%s' with D-Bus name '%s'", app_dir, app_ptr->name, app_ptr->dbus_name);
+  }
+
+free:
+  free(app_dir);
+exit:
+  return;
+}
+
+static inline void ladish_app_initiate_lash_restore(struct ladish_app * app_ptr, const char * base_dir)
+{
+  char * app_dir;
+  char uuid_str[37];
+  struct st;
+
+  if (base_dir == NULL)
+  {
+    log_error("Cannot initiate LASH restore because base dir is unknown");
+    ASSERT_NO_PASS;
+    goto exit;
+  }
+
+  uuid_unparse(app_ptr->uuid, uuid_str);
+  app_dir = catdup3(base_dir, "/lash_apps/", uuid_str);
+  if (app_dir == NULL)
+  {
+    log_error("Cannot initiate LASH restore because of memory allocation failure.");
+    goto exit;
+  }
+
+  if (!check_dir_exists(app_dir))
+  {
+    log_info("Not initiating LASH restore because of app directory '%s' does not exist.", app_dir);
+    goto free;
+  }
+
+  if (lash_client_proxy_restore(app_ptr->dbus_name, app_dir))
+  {
+    log_info("LASH Save from '%s' initiated for '%s' with D-Bus name '%s'", app_dir, app_ptr->name, app_ptr->dbus_name);
+  }
+
+free:
+  free(app_dir);
+exit:
+  return;
+}
+
+static inline void ladish_app_initiate_save(struct ladish_app * app_ptr)
+{
+  if (strcmp(app_ptr->level, LADISH_APP_LEVEL_LASH) == 0 &&
+      app_ptr->dbus_name != NULL)
+  {
+    ladish_app_initiate_lash_save(app_ptr, app_ptr->supervisor->dir != NULL ? app_ptr->supervisor->dir : g_base_dir);
+  }
+  else if (strcmp(app_ptr->level, LADISH_APP_LEVEL_1) == 0)
+  {
+    ladish_app_send_signal(app_ptr, SIGUSR1, true);
+  }
+}
+
+static inline void ladish_app_initiate_stop(struct ladish_app * app_ptr)
+{
+  app_ptr->state = LADISH_APP_STATE_STOPPING;
+
+  if (strcmp(app_ptr->level, LADISH_APP_LEVEL_LASH) == 0 &&
+      app_ptr->dbus_name != NULL &&
+      lash_client_proxy_quit(app_ptr->dbus_name))
+  {
+    log_info("LASH Quit initiated for '%s' with D-Bus name '%s'", app_ptr->name, app_ptr->dbus_name);
+  }
+  else
+  {
+    ladish_app_send_signal(app_ptr, SIGTERM, false);
+  }
+}
+
 bool ladish_app_supervisor_clear(ladish_app_supervisor_handle supervisor_handle)
 {
   struct list_head * node_ptr;
@@ -509,9 +623,8 @@ bool ladish_app_supervisor_clear(ladish_app_supervisor_handle supervisor_handle)
     if (app_ptr->pid != 0)
     {
       log_info("terminating '%s'...", app_ptr->name);
-      ladish_app_send_signal(app_ptr, SIGTERM, false);
+      ladish_app_initiate_stop(app_ptr);
       app_ptr->zombie = true;
-      app_ptr->state = LADISH_APP_STATE_STOPPING;
       lifeless = false;
     }
     else
@@ -645,14 +758,6 @@ ladish_app_supervisor_enum(
   return true;
 }
 
-static inline void ladish_app_save_L1_internal(struct ladish_app * app_ptr)
-{
-  if (strcmp(app_ptr->level, LADISH_APP_LEVEL_1) == 0)
-  {
-    ladish_app_send_signal(app_ptr, SIGUSR1, true);
-  }
-}
-
 #define app_ptr ((struct ladish_app *)app_handle)
 
 bool ladish_app_supervisor_start_app(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle)
@@ -707,8 +812,7 @@ void ladish_app_get_uuid(ladish_app_handle app_handle, uuid_t uuid)
 
 void ladish_app_stop(ladish_app_handle app_handle)
 {
-  ladish_app_send_signal(app_ptr, SIGTERM, false);
-  app_ptr->state = LADISH_APP_STATE_STOPPING;
+  ladish_app_initiate_stop(app_ptr);
 }
 
 void ladish_app_kill(ladish_app_handle app_handle)
@@ -717,9 +821,18 @@ void ladish_app_kill(ladish_app_handle app_handle)
   app_ptr->state = LADISH_APP_STATE_KILL;
 }
 
-void ladish_app_save_L1(ladish_app_handle app_handle)
+void ladish_app_save(ladish_app_handle app_handle)
 {
-  ladish_app_save_L1_internal(app_ptr);
+  ladish_app_initiate_save(app_ptr);
+}
+
+void ladish_app_restore(ladish_app_handle app_handle)
+{
+  if (strcmp(app_ptr->level, LADISH_APP_LEVEL_LASH) == 0 &&
+      app_ptr->dbus_name != NULL)
+  {
+    ladish_app_initiate_lash_restore(app_ptr, app_ptr->supervisor->dir != NULL ? app_ptr->supervisor->dir : g_base_dir);
+  }
 }
 
 void ladish_app_add_pid(ladish_app_handle app_handle, pid_t pid)
@@ -775,6 +888,22 @@ void ladish_app_del_pid(ladish_app_handle app_handle, pid_t pid)
   }
 }
 
+bool ladish_app_set_dbus_name(ladish_app_handle app_handle, const char * name)
+{
+  char * dup;
+
+  dup = strdup(name);
+  if (dup == NULL)
+  {
+    log_error("strdup() failed for app dbus name");
+    return false;
+  }
+
+  free(app_ptr->dbus_name);
+  app_ptr->dbus_name = dup;
+  return true;
+}
+
 #undef app_ptr
 
 void ladish_app_supervisor_autorun(ladish_app_supervisor_handle supervisor_handle)
@@ -814,14 +943,13 @@ void ladish_app_supervisor_stop(ladish_app_supervisor_handle supervisor_handle)
     if (app_ptr->pid != 0)
     {
       log_info("terminating '%s'...", app_ptr->name);
-      ladish_app_send_signal(app_ptr, SIGTERM, false);
       app_ptr->autorun = true;
-      app_ptr->state = LADISH_APP_STATE_STOPPING;
+      ladish_app_initiate_stop(app_ptr);
     }
   }
 }
 
-void ladish_app_supervisor_initiate_save(ladish_app_supervisor_handle supervisor_handle)
+void ladish_app_supervisor_save(ladish_app_supervisor_handle supervisor_handle)
 {
   struct list_head * node_ptr;
   struct ladish_app * app_ptr;
@@ -840,7 +968,7 @@ void ladish_app_supervisor_initiate_save(ladish_app_supervisor_handle supervisor
       continue;
     }
 
-    ladish_app_save_L1_internal(app_ptr);
+    ladish_app_initiate_save(app_ptr);
   }
 }
 

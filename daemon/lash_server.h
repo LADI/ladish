@@ -2,10 +2,10 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
- * This file contains prototypes of the directory helper functions
+ * This file contains interface to lash_server singleton object
  **************************************************************************
  *
  * LADI Session Handler is free software; you can redistribute it and/or modify
@@ -24,11 +24,12 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef DIRHELPERS_H__805193D2_2662_40FA_8814_AF8A4E08F4B0__INCLUDED
-#define DIRHELPERS_H__805193D2_2662_40FA_8814_AF8A4E08F4B0__INCLUDED
+#ifndef LASH_SERVER_H__6AD709D8_150B_4AF4_9919_316B89466EF0__INCLUDED
+#define LASH_SERVER_H__6AD709D8_150B_4AF4_9919_316B89466EF0__INCLUDED
 
-bool check_dir_exists(const char * dirname);
-bool ensure_dir_exist(const char * dirname, int mode);
-bool ensure_dir_exist_varg(int mode, ...);
+#include "common.h"
 
-#endif /* #ifndef DIRHELPERS_H__805193D2_2662_40FA_8814_AF8A4E08F4B0__INCLUDED */
+bool lash_server_init(void);
+void lash_server_uninit(void);
+
+#endif /* #ifndef LASH_SERVER_H__6AD709D8_150B_4AF4_9919_316B89466EF0__INCLUDED */

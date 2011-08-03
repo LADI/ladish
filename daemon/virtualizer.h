@@ -30,6 +30,7 @@
 #include "common.h"
 #include "../proxies/graph_proxy.h"
 #include "graph.h"
+#include "app_supervisor.h"
 
 typedef struct ladish_virtualizer { int unused; } * ladish_virtualizer_handle;
 
@@ -91,5 +92,10 @@ ladish_virtualizer_join_clients(
   ladish_graph_handle vgraph,
   uint64_t client1_id,
   uint64_t client2_id);
+
+ladish_app_handle
+ladish_find_app_by_pid(
+  pid_t pid,
+  ladish_graph_handle * graph_ptr);
 
 #endif /* #ifndef JACK_DISPATCH_H__C7566B66_081D_4D00_A702_7C18F7CC0735__INCLUDED */

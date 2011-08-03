@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -427,6 +427,7 @@ bool dbus_object_path_register(DBusConnection * connection_ptr, dbus_object_path
 
   if (!dbus_connection_register_object_path(connection_ptr, opath_ptr->name, &vtable, opath_ptr))
   {
+    log_error("dbus_connection_register_object_path() failed.");
     return false;
   }
 

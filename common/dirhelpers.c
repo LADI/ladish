@@ -32,6 +32,20 @@
 #include <errno.h>
 #include <stdarg.h>
 
+bool check_dir_exists(const char * dirname)
+{
+  struct stat st;
+
+  ASSERT(*dirname);             /* empty string? */
+
+  if (stat(dirname, &st) != 0)
+  {
+    return false;
+  }
+
+  return S_ISDIR(st.st_mode);
+}
+
 /* ret=true, err=0 - directory was created successfully */
 /* ret=true, err=EEXIST - directory already exists */
 /* ret=true, err=ENOENT -  A directory component in dirname does not exist or is a dangling symbolic link */

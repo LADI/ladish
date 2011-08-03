@@ -102,7 +102,7 @@ static bool lookup_app_in_supervisor(void * context, ladish_graph_handle graph, 
 
 #undef app_find_context_ptr
 
-static ladish_app_handle ladish_virtualizer_find_app_by_pid(struct virtualizer * virtualizer_ptr, pid_t pid, ladish_graph_handle * graph_ptr)
+ladish_app_handle ladish_find_app_by_pid(pid_t pid, ladish_graph_handle * graph_ptr)
 {
   struct app_find_context context;
 
@@ -119,7 +119,10 @@ static ladish_app_handle ladish_virtualizer_find_app_by_pid(struct virtualizer *
   }
 
   ASSERT(context.graph != NULL);
-  *graph_ptr = context.graph;
+  if (graph_ptr != NULL)
+  {
+    *graph_ptr = context.graph;
+  }
 
   return context.app;
 }
@@ -289,7 +292,7 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
       }
       else
       {
-        app = ladish_virtualizer_find_app_by_pid(virtualizer_ptr, pid, &graph);
+        app = ladish_find_app_by_pid(pid, &graph);
         if (app != NULL)
         {
           ladish_app_get_uuid(app, app_uuid);
@@ -610,7 +613,7 @@ port_appeared(
       {
         log_info("ALSA client pid is %lld", (long long)pid);
 
-        app = ladish_virtualizer_find_app_by_pid(virtualizer_ptr, pid, &vgraph);
+        app = ladish_find_app_by_pid(pid, &vgraph);
         if (app != NULL)
         {
           ladish_app_get_uuid(app, app_uuid);

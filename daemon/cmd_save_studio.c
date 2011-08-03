@@ -211,7 +211,7 @@ static bool run(void * command_context)
 
   ret = false;
 
-  ladish_app_supervisor_initiate_save(g_studio.app_supervisor);
+  ladish_app_supervisor_save(g_studio.app_supervisor);
 
   if (!ladish_studio_is_started())
   {

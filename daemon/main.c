@@ -47,6 +47,7 @@
 #include "../proxies/conf_proxy.h"
 #include "conf.h"
 #include "recent_projects.h"
+#include "lash_server.h"
 
 bool g_quit;
 const char * g_dbus_unique_name;
@@ -375,6 +376,11 @@ int main(int argc, char ** argv, char ** envp)
     goto uninit_jmcore;
   }
 
+  if (!lash_server_init())
+  {
+    goto uninit_studio;
+  }
+
   ladish_notify_simple(LADISH_NOTIFY_URGENCY_LOW, "LADI Session Handler daemon activated", NULL);
 
   while (!g_quit)
@@ -392,6 +398,9 @@ int main(int argc, char ** argv, char ** envp)
 
   log_debug("Finished, cleaning up");
 
+  lash_server_uninit();
+
+uninit_studio:
   ladish_studio_uninit();
 
 uninit_jmcore:

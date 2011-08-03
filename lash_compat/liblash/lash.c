@@ -262,6 +262,7 @@ lash_client_t * lash_init(const lash_args_t * args, const char * class, int clie
   const char * dbus_unique_name;
   bool ret;
   dbus_uint32_t flags32;
+  dbus_uint64_t pid;
 
   if ((client_flags & LASH_Server_Interface) != 0)
   {
@@ -302,7 +303,8 @@ lash_client_t * lash_init(const lash_args_t * args, const char * class, int clie
   }
 
   flags32 = client_flags;
-  msg_ptr = cdbus_new_method_call_message(SERVICE_NAME, LASH_SERVER_OBJECT_PATH, IFACE_LASH_SERVER, "Init", "su", &class, &flags32);
+  pid = getpid();
+  msg_ptr = cdbus_new_method_call_message(SERVICE_NAME, LASH_SERVER_OBJECT_PATH, IFACE_LASH_SERVER, "RegisterClient", "tsu", &pid, &class, &flags32);
   if (msg_ptr == NULL)
   {
     goto close_connection;

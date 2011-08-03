@@ -368,6 +368,7 @@ def build(bld):
         'recent_store.c',
         'recent_projects.c',
         'check_integrity.c',
+        'lash_server.c',
         ]:
         daemon.source.append(os.path.join("daemon", source))
 
@@ -378,6 +379,7 @@ def build(bld):
         "jmcore_proxy.c",
         "notify_proxy.c",
         "conf_proxy.c",
+        "lash_client_proxy.c",
         ]:
         daemon.source.append(os.path.join("proxies", source))
 

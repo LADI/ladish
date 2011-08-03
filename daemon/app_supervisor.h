@@ -196,7 +196,7 @@ ladish_app_supervisor_clear(
  * @param[in] supervisor_handle supervisor object handle
  */
 void
-ladish_app_supervisor_initiate_save(
+ladish_app_supervisor_save(
   ladish_app_supervisor_handle supervisor_handle);
 
 /**
@@ -400,7 +400,7 @@ const char * ladish_app_get_name(ladish_app_handle app_handle);
 void ladish_app_get_uuid(ladish_app_handle app_handle, uuid_t uuid);
 
 /**
- * Stop an app. The app must be in started state.
+ * Tell app to stop. The app must be in started state.
  *
  * @param[in] app_handle Handle of app to stop
  */
@@ -414,11 +414,18 @@ void ladish_app_stop(ladish_app_handle app_handle);
 void ladish_app_kill(ladish_app_handle app_handle);
 
 /**
- * Send SIGUSR1 signal to app. The app must be in started state.
+ * Initiate save of app internal state. The app must be in started state.
  *
- * @param[in] app_handle Handle of app to send signal to
+ * @param[in] app_handle Handle of app
  */
-void ladish_app_save_L1(ladish_app_handle app_handle);
+void ladish_app_save(ladish_app_handle app_handle);
+
+/**
+ * Initiate restore of app internal state. The app must be in started state.
+ *
+ * @param[in] app_handle Handle of app
+ */
+void ladish_app_restore(ladish_app_handle app_handle);
 
 /**
  * Associate pid with app.
@@ -435,6 +442,16 @@ void ladish_app_add_pid(ladish_app_handle app_handle, pid_t pid);
  * @param[in] pid PID to deassociate with the app
  */
 void ladish_app_del_pid(ladish_app_handle app_handle, pid_t pid);
+
+/**
+ * Set the D-Bus unique name for the app.
+ *
+ * @param[in] app_handle Handle of app
+ * @param[in] name D-Bus unique name
+ *
+ * @return success status
+ */
+bool ladish_app_set_dbus_name(ladish_app_handle app_handle, const char * name);
 
 /**
  * D-Bus interface descriptor for the app supervisor interface. The call context must be a ::ladish_app_supervisor_handle
