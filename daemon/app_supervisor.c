@@ -588,8 +588,6 @@ static inline void ladish_app_initiate_save(struct ladish_app * app_ptr)
 
 static inline void ladish_app_initiate_stop(struct ladish_app * app_ptr)
 {
-  app_ptr->state = LADISH_APP_STATE_STOPPING;
-
   if (strcmp(app_ptr->level, LADISH_APP_LEVEL_LASH) == 0 &&
       app_ptr->dbus_name != NULL &&
       lash_client_proxy_quit(app_ptr->dbus_name))
@@ -600,6 +598,8 @@ static inline void ladish_app_initiate_stop(struct ladish_app * app_ptr)
   {
     ladish_app_send_signal(app_ptr, SIGTERM, false);
   }
+
+  app_ptr->state = LADISH_APP_STATE_STOPPING;
 }
 
 bool ladish_app_supervisor_clear(ladish_app_supervisor_handle supervisor_handle)
