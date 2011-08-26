@@ -461,7 +461,7 @@ def main():
                     dump_graph(studio_obj)
                 elif arg == "rgdump":
                     if index >= len(sys.argv):
-                        print("rconnect command requires rname, client1, port1, client2 and port2 arguments")
+                        print("rgdump command requires room name argument")
                         sys.exit()
                     rname = sys.argv[index]
                     index += 1
