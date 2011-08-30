@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains dynamic menu related code
@@ -161,6 +161,11 @@ static void populate_dynmenu_menu(GtkMenuItem * menu_item, struct ladish_dynmenu
 {
   const char * prefix;
   char * text;
+
+  if (!gtk_widget_get_sensitive(GTK_WIDGET(menu_item)))
+  {
+    return;
+  }
 
   menu_dynmenu_clear(dynmenu_ptr);
   dynmenu_ptr->add_sensitive = true;

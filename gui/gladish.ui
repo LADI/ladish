@@ -184,6 +184,7 @@
                 <property name="label" translatable="yes">_Project</property>
                 <property name="use_underline">True</property>
                 <property name="visible">True</property>
+                <property name="sensitive">False</property>
                 <child type="submenu">
                   <object class="GtkMenu" id="project_menu">
                     <property name="visible">True</property>
