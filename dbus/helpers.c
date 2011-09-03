@@ -563,6 +563,99 @@ fail:
   return ret;
 }
 
+struct cdbus_async_call_context
+{
+  void * context;
+  void (* callback)(void * context, void * cookie, DBusMessage * reply_ptr);
+  dbus_uint64_t cookie[0];
+};
+
+#define ctx_ptr ((struct cdbus_async_call_context *)user_data)
+
+static void cdbus_async_call_reply_handler(DBusPendingCall * pending_call_ptr, void * user_data)
+{
+	DBusMessage * reply_ptr;
+
+  reply_ptr = dbus_pending_call_steal_reply(pending_call_ptr);
+  if (reply_ptr == NULL)
+  {
+    log_error("pending call notify called but reply is NULL");
+  }
+  else
+  {
+    ctx_ptr->callback(ctx_ptr->context, ctx_ptr->cookie, reply_ptr);
+    ctx_ptr->callback = NULL;   /* mark that callback is already called */
+
+    dbus_message_unref(reply_ptr);
+  }
+}
+
+static void cdbus_async_call_reply_context_free(void * user_data)
+{
+  if (ctx_ptr->callback != NULL)
+  {
+    ctx_ptr->callback(ctx_ptr->context, ctx_ptr->cookie, NULL);
+  }
+
+  free(ctx_ptr);
+}
+
+#undef ctx_ptr
+
+bool
+cdbus_call_async(
+  DBusMessage * request_ptr,
+  void * context,
+  void * cookie,
+  size_t cookie_size,
+  void (* callback)(void * context, void * cookie, DBusMessage * reply_ptr))
+{
+  bool ret;
+  DBusPendingCall * pending_call_ptr;
+  struct cdbus_async_call_context * ctx_ptr;
+
+  ret = false;
+
+  if (!dbus_connection_send_with_reply(cdbus_g_dbus_connection, request_ptr, &pending_call_ptr, DBUS_TIMEOUT_INFINITE))
+  {
+    log_error("dbus_connection_send_with_reply() failed.");
+    goto exit;
+  }
+
+  if (pending_call_ptr == NULL)
+  {
+    log_error("dbus_connection_send_with_reply() returned NULL pending call object pointer.");
+    goto exit;
+  }
+
+  ctx_ptr = malloc(sizeof(struct cdbus_async_call_context) + cookie_size);
+  if (ctx_ptr == NULL)
+  {
+    log_error("malloc() failed to allocate cdbus_async_call_context struct with cookie size of %zu", cookie_size);
+    goto unref;
+  }
+
+  ctx_ptr->context = context;
+  ctx_ptr->callback = callback;
+  memcpy(ctx_ptr->cookie, cookie, cookie_size);
+
+  ret = dbus_pending_call_set_notify(pending_call_ptr, cdbus_async_call_reply_handler, ctx_ptr, cdbus_async_call_reply_context_free);
+  if (!ret)
+  {
+    log_error("dbus_pending_call_set_notify() failed.");
+    goto free;
+  }
+
+  goto unref;
+
+free:
+  free(ctx_ptr);
+unref:
+  dbus_pending_call_unref(pending_call_ptr);
+exit:
+  return ret;
+}
+
 static
 const char *
 compose_signal_match(

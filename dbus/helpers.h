@@ -58,6 +58,14 @@ dbus_call(
   const char * input_signature,
   ...);
 
+bool
+cdbus_call_async(
+  DBusMessage * request_ptr,
+  void * context,
+  void * cookie,
+  size_t cookie_size,
+  void (* callback)(void * context, void * cookie, DBusMessage * reply_ptr));
+
 DBusMessage *
 cdbus_new_method_call_message(
   const char * service,
