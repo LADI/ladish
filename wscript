@@ -369,6 +369,7 @@ def build(bld):
         'recent_projects.c',
         'check_integrity.c',
         'lash_server.c',
+        'jack_session.c',
         ]:
         daemon.source.append(os.path.join("daemon", source))
 

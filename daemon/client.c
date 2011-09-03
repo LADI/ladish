@@ -33,7 +33,9 @@ struct ladish_client
   uuid_t uuid_interlink;                   /* The UUID of the linked client (vgraph <-> jack graph) */
   uuid_t uuid_app;                         /* The UUID of the app that owns this client */
   uint64_t jack_id;                        /* JACK client ID */
+  char * jack_name;                        /* JACK client name */
   pid_t pid;                               /* process id. */
+  bool has_js_callback;                    /* Whether the client has set jack session callback */
   ladish_dict_handle dict;
   void * vgraph;                /* virtual graph */
 };
@@ -72,7 +74,9 @@ ladish_client_create(
   uuid_clear(client_ptr->uuid_app);
 
   client_ptr->jack_id = 0;
+  client_ptr->jack_name = NULL;
   client_ptr->pid = 0;
+  client_ptr->has_js_callback = false;
   client_ptr->vgraph = NULL;
 
 #if 0
@@ -105,7 +109,7 @@ ladish_client_destroy(
   log_info("client %p destroy", client_ptr);
 
   ladish_dict_destroy(client_ptr->dict);
-
+  free(client_ptr->jack_name);
   free(client_ptr);
 }
 
@@ -128,6 +132,26 @@ void ladish_client_set_jack_id(ladish_client_handle client_handle, uint64_t jack
 uint64_t ladish_client_get_jack_id(ladish_client_handle client_handle)
 {
   return client_ptr->jack_id;
+}
+
+void ladish_client_set_jack_name(ladish_client_handle client_handle, const char * jack_name)
+{
+  char * name_dup;
+
+  name_dup = strdup(jack_name);
+  if (name_dup == NULL)
+  {
+    log_error("stdup(\"%s\") failed", jack_name);
+    return;
+  }
+
+  free(client_ptr->jack_name);
+  client_ptr->jack_name = name_dup;
+}
+
+const char * ladish_client_get_jack_name(ladish_client_handle client_handle)
+{
+  return client_ptr->jack_name;
 }
 
 void ladish_client_set_pid(ladish_client_handle client_handle, pid_t pid)
@@ -213,9 +237,24 @@ bool ladish_client_get_app(ladish_client_handle client_handle, uuid_t uuid)
   return true;
 }
 
+bool ladish_client_is_app(ladish_client_handle client_handle, uuid_t uuid)
+{
+  return uuid_compare(uuid, client_ptr->uuid_app) == 0;
+}
+
 bool ladish_client_has_app(ladish_client_handle client_handle)
 {
   return !uuid_is_null(client_ptr->uuid_app);
+}
+
+void ladish_client_set_js(ladish_client_handle client_handle, bool has_js_callback)
+{
+  client_ptr->has_js_callback = has_js_callback;
+}
+
+bool ladish_client_is_js(ladish_client_handle client_handle)
+{
+  return client_ptr->has_js_callback;
 }
 
 #undef client_ptr

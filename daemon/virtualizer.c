@@ -337,6 +337,8 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
         goto exit;
       }
 
+      ladish_client_set_jack_name(client, jack_name);
+
       ladish_client_set_jack_id(client, id);
       ladish_graph_show_client(virtualizer_ptr->jack_graph, client);
       goto done;
@@ -350,6 +352,7 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
   }
 
   ladish_client_set_jack_id(client, id);
+  ladish_client_set_jack_name(client, jack_name);
 
   if (!ladish_graph_add_client(virtualizer_ptr->jack_graph, client, name, false))
   {
