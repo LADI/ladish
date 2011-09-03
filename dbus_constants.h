@@ -32,6 +32,7 @@
 #define JACKDBUS_IFACE_CONTROL   "org.jackaudio.JackControl"
 #define JACKDBUS_IFACE_CONFIGURE "org.jackaudio.Configure"
 #define JACKDBUS_IFACE_PATCHBAY  "org.jackaudio.JackPatchbay"
+#define JACKDBUS_IFACE_SESSMGR   "org.jackaudio.SessionManager"
 
 #define SERVICE_NAME             DBUS_NAME_BASE
 #define CONTROL_OBJECT_PATH      DBUS_BASE_PATH "/Control"
@@ -65,6 +66,8 @@
 
 #define JACKDBUS_PORT_TYPE_AUDIO    0
 #define JACKDBUS_PORT_TYPE_MIDI     1
+
+#define JACKDBUS_SESSION_NOTIFY_TYPE_SAVE     1 /* JackSessionSave */
 
 #define GRAPH_DICT_OBJECT_TYPE_GRAPH          0
 #define GRAPH_DICT_OBJECT_TYPE_CLIENT         1

@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009,2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to the helper functionality for accessing
@@ -134,6 +134,21 @@ jack_proxy_reset_parameter_value(
   const char * address);
 
 bool jack_reset_all_params(void);
+
+bool
+jack_proxy_session_save_one(
+  bool queue,
+  const char * target,
+  const char * path,
+  void * callback_context,
+  void (* completion_callback)(
+    void * context,
+    const char * commandline));
+
+bool
+jack_proxy_session_has_callback(
+  const char * client,
+  bool * has_callback_ptr);
 
 bool jack_proxy_exit(void);
 

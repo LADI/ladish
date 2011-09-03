@@ -629,6 +629,146 @@ bool jack_reset_all_params(void)
   return jack_proxy_read_conf_container(address, NULL, reset_callback);
 }
 
+struct jack_proxy_session_save_one_reply_cookie
+{
+  void * context;
+  void (* callback)(void * context, const char * commandline);
+};
+
+#define cookie_ptr ((struct jack_proxy_session_save_one_reply_cookie *)void_cookie)
+
+static void jack_proxy_session_save_one_handle_reply(void * context, void * void_cookie, DBusMessage * reply_ptr)
+{
+  const char * reply_signature;
+  DBusMessageIter top_iter;
+  DBusMessageIter array_iter;
+  DBusMessageIter struct_iter;
+  const char * uuid;
+  const char * client_name;
+  const char * commandline;
+  uint32_t flags;
+
+  if (reply_ptr == NULL)
+  {
+    cookie_ptr->callback(cookie_ptr->context, NULL);
+    return;
+  }
+
+  reply_signature = dbus_message_get_signature(reply_ptr);
+
+  if (strcmp(reply_signature, "a(sssu)") != 0)
+  {
+    log_error(JACKDBUS_IFACE_SESSMGR ".Notify() reply signature mismatch. '%s'", reply_signature);
+    return;
+  }
+
+  dbus_message_iter_init(reply_ptr, &top_iter);
+
+  commandline = NULL;
+
+  for (dbus_message_iter_recurse(&top_iter, &array_iter);
+       dbus_message_iter_get_arg_type(&array_iter) != DBUS_TYPE_INVALID;
+       dbus_message_iter_next(&array_iter))
+  {
+    if (commandline != NULL)
+    {
+      log_error(JACKDBUS_IFACE_SESSMGR ".Notify() save returned more than one command");
+      return;
+    }
+
+    dbus_message_iter_recurse(&array_iter, &struct_iter);
+
+    dbus_message_iter_get_basic(&struct_iter, &uuid);
+    dbus_message_iter_next(&struct_iter);
+
+    dbus_message_iter_get_basic(&struct_iter, &client_name);
+    dbus_message_iter_next(&struct_iter);
+
+    dbus_message_iter_get_basic(&struct_iter, &commandline);
+    dbus_message_iter_next(&struct_iter);
+
+    ASSERT(commandline != NULL);
+
+    dbus_message_iter_get_basic(&struct_iter, &flags);
+    dbus_message_iter_next(&struct_iter);
+
+    dbus_message_iter_next(&struct_iter);
+  }
+
+  if (commandline == NULL)
+  {
+    log_error(JACKDBUS_IFACE_SESSMGR ".Notify() save returned no commands");
+    return;
+  }
+
+  cookie_ptr->callback(cookie_ptr->context, commandline);
+}
+
+#undef cookie_ptr
+
+bool
+jack_proxy_session_save_one(
+  bool queue,
+  const char * target,
+  const char * path,
+  void * callback_context,
+  void (* completion_callback)(
+    void * context,
+    const char * commandline))
+{
+  bool ret;
+  dbus_bool_t dbus_bool;
+  dbus_uint32_t type;
+  DBusMessage * request_ptr;
+  struct jack_proxy_session_save_one_reply_cookie cookie;
+
+  ret = false;
+
+  dbus_bool = queue;
+  type = JACKDBUS_SESSION_NOTIFY_TYPE_SAVE;
+
+  request_ptr = cdbus_new_method_call_message(
+    JACKDBUS_SERVICE_NAME,
+    JACKDBUS_OBJECT_PATH,
+    JACKDBUS_IFACE_SESSMGR,
+    "Notify",
+    "bsus",
+    &dbus_bool,
+    &target,
+    &type,
+    &path,
+    NULL);
+  if (request_ptr == NULL)
+  {
+    return false;
+  }
+
+  cookie.context = callback_context;
+  cookie.callback = completion_callback;
+
+  ret = cdbus_call_async(request_ptr, callback_context, &cookie, sizeof(cookie), jack_proxy_session_save_one_handle_reply);
+
+  dbus_message_unref(request_ptr);
+
+  return ret;
+}
+
+bool
+jack_proxy_session_has_callback(
+  const char * client,
+  bool * has_callback_ptr)
+{
+  dbus_bool_t has_callback;
+
+  if (!dbus_call(0, JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_SESSMGR, "HasSessionCallback", "s", &client, "b", &has_callback))
+  {
+    return false;
+  }
+
+  *has_callback_ptr = has_callback;
+  return true;
+}
+
 bool jack_proxy_exit(void)
 {
   if (!dbus_call(0, JACKDBUS_SERVICE_NAME, JACKDBUS_OBJECT_PATH, JACKDBUS_IFACE_CONTROL, "Exit", "", ""))
