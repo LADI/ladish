@@ -108,6 +108,12 @@ def configure(conf):
         args = '--cflags --libs')
 
     conf.check_cfg(
+        package = 'alsa',
+        mandatory = True,
+        errmsg = "not installed, see http://www.alsa-project.org/",
+        args = '--cflags')
+
+    conf.check_cfg(
         package = 'dbus-1',
         atleast_version = '1.0.0',
         mandatory = True,
