@@ -61,12 +61,12 @@ static void on_app_added(void * context, DBusMessage * message_ptr)
         DBUS_TYPE_STRING, &level,
         DBUS_TYPE_INVALID))
   {
-    log_error("dbus_message_get_args() failed to extract AppAdded signal arguments (%s)", cdbus_g_dbus_error.message);
+    log_error("dbus_message_get_args() failed to extract AppAdded2 signal arguments (%s)", cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
-  //log_info("AppAdded signal received. id=%"PRIu64", name='%s', %srunning, %s, level '%s'", id, name, running ? "" : "not ", terminal ? "terminal" : "shell", level);
+  //log_info("AppAdded2 signal received. id=%"PRIu64", name='%s', %srunning, %s, level '%s'", id, name, running ? "" : "not ", terminal ? "terminal" : "shell", level);
 
   if (new_list_version <= proxy_ptr->version)
   {
@@ -139,12 +139,12 @@ static void on_app_state_changed(void * context, DBusMessage * message_ptr)
         DBUS_TYPE_STRING, &level,
         DBUS_TYPE_INVALID))
   {
-    log_error("dbus_message_get_args() failed to extract AppStateChanged signal arguments (%s)", cdbus_g_dbus_error.message);
+    log_error("dbus_message_get_args() failed to extract AppStateChanged2 signal arguments (%s)", cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
-  //log_info("AppStateChanged signal received");
+  //log_info("AppStateChanged2 signal received");
   //log_info("AppRemoved signal received, id=%"PRIu64, id);
   if (new_list_version <= proxy_ptr->version)
   {
@@ -173,9 +173,9 @@ static void on_app_state_changed(void * context, DBusMessage * message_ptr)
  * dbus helper layer when hooks are active */
 static struct dbus_signal_hook g_signal_hooks[] =
 {
-  {"AppAdded", on_app_added},
+  {"AppAdded2", on_app_added},
   {"AppRemoved", on_app_removed},
-  {"AppStateChanged", on_app_state_changed},
+  {"AppStateChanged2", on_app_state_changed},
   {NULL, NULL}
 };
 
@@ -197,9 +197,9 @@ static void refresh_internal(struct ladish_app_supervisor_proxy * proxy_ptr, boo
 
   version = proxy_ptr->version;
 
-  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "GetAll", "t", &version, NULL, &reply_ptr))
+  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "GetAll2", "t", &version, NULL, &reply_ptr))
   {
-    log_error("GetAll() failed.");
+    log_error("GetAll2() failed.");
     return;
   }
 
@@ -207,7 +207,7 @@ static void refresh_internal(struct ladish_app_supervisor_proxy * proxy_ptr, boo
 
   if (strcmp(reply_signature, "ta(tsbbs)") != 0)
   {
-    log_error("GetAll() reply signature mismatch. '%s'", reply_signature);
+    log_error("GetAll2() reply signature mismatch. '%s'", reply_signature);
     goto unref;
   }
 
@@ -355,9 +355,9 @@ ladish_app_supervisor_proxy_run_custom(
 
   terminal = run_in_terminal;
 
-  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "RunCustom", "bsss", &terminal, &command, &name, &level, ""))
+  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "RunCustom2", "bsss", &terminal, &command, &name, &level, ""))
   {
-    log_error("RunCustom() failed.");
+    log_error("RunCustom2() failed.");
     return false;
   }
 
@@ -427,9 +427,9 @@ ladish_app_supervisor_get_app_properties(
   char * name_buffer;
   char * commandline_buffer;
 
-  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "GetAppProperties", "t", &id, NULL, &reply_ptr))
+  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_APP_SUPERVISOR, "GetAppProperties2", "t", &id, NULL, &reply_ptr))
   {
-    log_error("GetAppProperties() failed.");
+    log_error("GetAppProperties2() failed.");
     return false;
   }
 
@@ -503,7 +503,7 @@ ladish_app_supervisor_set_app_properties(
         proxy_ptr->service,
         proxy_ptr->object,
         IFACE_APP_SUPERVISOR,
-        "SetAppProperties",
+        "SetAppProperties2",
         "tssbs",
         &id,
         &name,
@@ -512,7 +512,7 @@ ladish_app_supervisor_set_app_properties(
         &level,
         ""))
   {
-    log_error("SetAppProperties() failed.");
+    log_error("SetAppProperties2() failed.");
     return false;
   }
 

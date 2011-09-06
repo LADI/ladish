@@ -99,6 +99,26 @@ bool ladish_check_app_level_validity(const char * level, size_t * len_ptr)
   return true;
 }
 
+static int ladish_level_string_to_integer(const char * level)
+{
+  if (strcmp(level, LADISH_APP_LEVEL_0) == 0)
+  {
+    return 0;
+  }
+  else if (strcmp(level, LADISH_APP_LEVEL_1) == 0)
+  {
+    return 1;
+  }
+  else if (strcmp(level, LADISH_APP_LEVEL_LASH) == 0 ||
+           strcmp(level, LADISH_APP_LEVEL_JACKSESSION) == 0)
+  {
+    return 2;
+  }
+
+  ASSERT_NO_PASS;
+  return 255;
+}
+
 bool
 ladish_app_supervisor_create(
   ladish_app_supervisor_handle * supervisor_handle_ptr,
@@ -193,11 +213,13 @@ void emit_app_state_changed(struct ladish_app_supervisor * supervisor_ptr, struc
 {
   dbus_bool_t running;
   dbus_bool_t terminal;
-  const char * level;
+  const char * level_str;
+  uint8_t level_byte;
 
   running = app_ptr->pid != 0;
   terminal = app_ptr->terminal;
-  level = app_ptr->level;
+  level_str = app_ptr->level;
+  level_byte = ladish_level_string_to_integer(app_ptr->level);
 
   supervisor_ptr->version++;
 
@@ -206,13 +228,26 @@ void emit_app_state_changed(struct ladish_app_supervisor * supervisor_ptr, struc
     supervisor_ptr->opath,
     IFACE_APP_SUPERVISOR,
     "AppStateChanged",
+    "ttsbby",
+    &supervisor_ptr->version,
+    &app_ptr->id,
+    &app_ptr->name,
+    &running,
+    &terminal,
+    &level_byte);
+
+  dbus_signal_emit(
+    cdbus_g_dbus_connection,
+    supervisor_ptr->opath,
+    IFACE_APP_SUPERVISOR,
+    "AppStateChanged2",
     "ttsbbs",
     &supervisor_ptr->version,
     &app_ptr->id,
     &app_ptr->name,
     &running,
     &terminal,
-    &level);
+    &level_str);
 }
 
 #define supervisor_ptr ((struct ladish_app_supervisor *)supervisor_handle)
@@ -293,6 +328,7 @@ ladish_app_supervisor_add(
   dbus_bool_t running;
   dbus_bool_t dbus_terminal;
   size_t len;
+  uint8_t level_byte;
 
   if (!ladish_check_app_level_validity(level, &len))
   {
@@ -355,11 +391,24 @@ ladish_app_supervisor_add(
   running = false;
   dbus_terminal = terminal;
   level = app_ptr->level;
+  level_byte = ladish_level_string_to_integer(app_ptr->level);
   dbus_signal_emit(
     cdbus_g_dbus_connection,
     supervisor_ptr->opath,
     IFACE_APP_SUPERVISOR,
     "AppAdded",
+    "ttsbby",
+    &supervisor_ptr->version,
+    &app_ptr->id,
+    &app_ptr->name,
+    &running,
+    &dbus_terminal,
+    &level_byte);
+  dbus_signal_emit(
+    cdbus_g_dbus_connection,
+    supervisor_ptr->opath,
+    IFACE_APP_SUPERVISOR,
+    "AppAdded2",
     "ttsbbs",
     &supervisor_ptr->version,
     &app_ptr->id,
@@ -1025,14 +1074,15 @@ void ladish_app_supervisor_dump(ladish_app_supervisor_handle supervisor_handle)
 
 #define supervisor_ptr ((struct ladish_app_supervisor *)call_ptr->iface_context)
 
-static void get_all(struct dbus_method_call * call_ptr)
+static void get_all_multiversion(struct dbus_method_call * call_ptr, int version)
 {
   DBusMessageIter iter, array_iter, struct_iter;
   struct list_head * node_ptr;
   struct ladish_app * app_ptr;
   dbus_bool_t running;
   dbus_bool_t terminal;
-  const char * level;
+  const char * level_str;
+  uint8_t level_byte;
 
   //log_info("get_all called");
 
@@ -1049,7 +1099,7 @@ static void get_all(struct dbus_method_call * call_ptr)
     goto fail_unref;
   }
 
-  if (!dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "(tsbbs)", &array_iter))
+  if (!dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, version == 1 ? "(tsbby)" : "(tsbbs)", &array_iter))
   {
     goto fail_unref;
   }
@@ -1087,10 +1137,23 @@ static void get_all(struct dbus_method_call * call_ptr)
       goto fail_unref;
     }
 
-    level = app_ptr->level;
-    if (!dbus_message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &level))
+    if (version == 1)
     {
-      goto fail_unref;
+      level_byte = ladish_level_string_to_integer(app_ptr->level);
+      if (!dbus_message_iter_append_basic(&struct_iter, DBUS_TYPE_BYTE, &level_byte))
+      {
+        goto fail_unref;
+      }
+    }
+    else
+    {
+      ASSERT(version == 2);
+
+      level_str = app_ptr->level;
+      if (!dbus_message_iter_append_basic(&struct_iter, DBUS_TYPE_STRING, &level_str))
+      {
+        goto fail_unref;
+      }
     }
 
     if (!dbus_message_iter_close_container(&array_iter, &struct_iter))
@@ -1114,7 +1177,59 @@ fail:
   log_error("Ran out of memory trying to construct method return");
 }
 
-static void run_custom(struct dbus_method_call * call_ptr)
+static void get_all1(struct dbus_method_call * call_ptr)
+{
+  get_all_multiversion(call_ptr, 1);
+}
+
+static void get_all2(struct dbus_method_call * call_ptr)
+{
+  get_all_multiversion(call_ptr, 2);
+}
+
+static void run_custom1(struct dbus_method_call * call_ptr)
+{
+  dbus_bool_t terminal;
+  const char * commandline;
+  const char * name;
+  uint8_t level;
+
+  if (!dbus_message_get_args(
+        call_ptr->message,
+        &cdbus_g_dbus_error,
+        DBUS_TYPE_BOOLEAN, &terminal,
+        DBUS_TYPE_STRING, &commandline,
+        DBUS_TYPE_STRING, &name,
+        DBUS_TYPE_BYTE, &level,
+        DBUS_TYPE_INVALID))
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    dbus_error_free(&cdbus_g_dbus_error);
+    return;
+  }
+
+  log_info("%s('%s', %s, '%s', %"PRIu8") called", call_ptr->method_name, name, terminal ? "terminal" : "shell", commandline, level);
+
+  if (level > 1)
+  {
+    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "invalid integer level %"PRIu8, level);
+    return;
+  }
+
+  if (ladish_command_new_app(
+        call_ptr,
+        ladish_studio_get_cmd_queue(),
+        supervisor_ptr->opath,
+        terminal,
+        commandline,
+        name,
+        level == 0 ? LADISH_APP_LEVEL_0 : LADISH_APP_LEVEL_1))
+  {
+    method_return_new_void(call_ptr);
+  }
+}
+
+static void run_custom2(struct dbus_method_call * call_ptr)
 {
   dbus_bool_t terminal;
   const char * commandline;
@@ -1135,7 +1250,7 @@ static void run_custom(struct dbus_method_call * call_ptr)
     return;
   }
 
-  log_info("run_custom('%s', %s, '%s', '%s') called", name, terminal ? "terminal" : "shell", commandline, level);
+  log_info("%s('%s', %s, '%s', '%s') called", call_ptr->method_name, name, terminal ? "terminal" : "shell", commandline, level);
 
   if (!ladish_check_app_level_validity(level, NULL))
   {
@@ -1219,13 +1334,16 @@ static void kill_app(struct dbus_method_call * call_ptr)
   }
 }
 
-static void get_app_properties(struct dbus_method_call * call_ptr)
+static void get_app_properties_multiversion(struct dbus_method_call * call_ptr, int version)
 {
   uint64_t id;
   struct ladish_app * app_ptr;
   dbus_bool_t running;
   dbus_bool_t terminal;
-  const char * level;
+  const char * level_str;
+  uint8_t level_byte;
+  int level_type;
+  void * level_ptr;
 
   if (!dbus_message_get_args(
         call_ptr->message,
@@ -1247,7 +1365,19 @@ static void get_app_properties(struct dbus_method_call * call_ptr)
 
   running = app_ptr->pid != 0;
   terminal = app_ptr->terminal;
-  level = app_ptr->level;
+  if (version == 1)
+  {
+    level_byte = ladish_level_string_to_integer(app_ptr->level);
+    level_type = DBUS_TYPE_BYTE;
+    level_ptr = &level_byte;
+  }
+  else
+  {
+    ASSERT(version == 2);
+    level_str = app_ptr->level;
+    level_type = DBUS_TYPE_STRING;
+    level_ptr = &level_str;
+  }
 
   call_ptr->reply = dbus_message_new_method_return(call_ptr->message);
   if (call_ptr->reply == NULL)
@@ -1261,7 +1391,7 @@ static void get_app_properties(struct dbus_method_call * call_ptr)
         DBUS_TYPE_STRING, &app_ptr->commandline,
         DBUS_TYPE_BOOLEAN, &running,
         DBUS_TYPE_BOOLEAN, &terminal,
-        DBUS_TYPE_STRING, &level,
+        level_type, level_ptr,
         DBUS_TYPE_INVALID))
   {
     goto fail_unref;
@@ -1277,17 +1407,42 @@ fail:
   log_error("Ran out of memory trying to construct method return");
 }
 
-static void set_app_properties(struct dbus_method_call * call_ptr)
+static void get_app_properties1(struct dbus_method_call * call_ptr)
+{
+  get_app_properties_multiversion(call_ptr, 1);
+}
+
+static void get_app_properties2(struct dbus_method_call * call_ptr)
+{
+  get_app_properties_multiversion(call_ptr, 2);
+}
+
+static void set_app_properties_multiversion(struct dbus_method_call * call_ptr, int version)
 {
   uint64_t id;
   dbus_bool_t terminal;
   const char * name;
   const char * commandline;
-  const char * level;
+  const char * level_str;
+  uint8_t level_byte;
+  int level_type;
+  void * level_ptr;
   struct ladish_app * app_ptr;
   char * name_buffer;
   char * commandline_buffer;
   size_t len;
+
+  if (version == 1)
+  {
+    level_type = DBUS_TYPE_BYTE;
+    level_ptr = &level_byte;
+  }
+  else
+  {
+    ASSERT(version == 2);
+    level_type = DBUS_TYPE_STRING;
+    level_ptr = &level_str;
+  }
 
   if (!dbus_message_get_args(
         call_ptr->message,
@@ -1296,7 +1451,7 @@ static void set_app_properties(struct dbus_method_call * call_ptr)
         DBUS_TYPE_STRING, &name,
         DBUS_TYPE_STRING, &commandline,
         DBUS_TYPE_BOOLEAN, &terminal,
-        DBUS_TYPE_STRING, &level,
+        level_type, level_ptr,
         DBUS_TYPE_INVALID))
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
@@ -1304,16 +1459,31 @@ static void set_app_properties(struct dbus_method_call * call_ptr)
     return;
   }
 
+  if (version == 1)
+  {
+    if (level_byte > 1)
+    {
+      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "invalid integer level %"PRIu8, level_byte);
+      return;
+    }
+
+    level_str = level_byte == 0 ? LADISH_APP_LEVEL_0 : LADISH_APP_LEVEL_1;
+    len = strlen(level_str);
+  }
+  else
+  {
+    ASSERT(version == 2);
+    if (!ladish_check_app_level_validity(level_str, &len))
+    {
+      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "invalid level '%s'", level_str);
+      return;
+    }
+  }
+
   app_ptr = ladish_app_supervisor_find_app_by_id_internal(supervisor_ptr, id);
   if (app_ptr == NULL)
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "App with ID %"PRIu64" not found", id);
-    return;
-  }
-
-  if (!ladish_check_app_level_validity(level, &len))
-  {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "invalid level '%s'", level);
     return;
   }
 
@@ -1329,7 +1499,7 @@ static void set_app_properties(struct dbus_method_call * call_ptr)
     return;
   }
 
-  if (app_ptr->pid != 0 && strcmp(app_ptr->level, level) != 0)
+  if (app_ptr->pid != 0 && strcmp(app_ptr->level, level_str) != 0)
   {
     lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Cannot change app level when app is running");
     return;
@@ -1380,13 +1550,24 @@ static void set_app_properties(struct dbus_method_call * call_ptr)
     app_ptr->commandline = commandline_buffer;
   }
 
-  memcpy(app_ptr->level, level, len + 1);
+  memcpy(app_ptr->level, level_str, len + 1);
   app_ptr->terminal = terminal;
 
   emit_app_state_changed(supervisor_ptr, app_ptr);
 
   method_return_new_void(call_ptr);
 }
+
+static void set_app_properties1(struct dbus_method_call * call_ptr)
+{
+  set_app_properties_multiversion(call_ptr, 1);
+}
+
+static void set_app_properties2(struct dbus_method_call * call_ptr)
+{
+  set_app_properties_multiversion(call_ptr, 2);
+}
+
 
 static void remove_app(struct dbus_method_call * call_ptr)
 {
@@ -1442,10 +1623,22 @@ static void is_app_running(struct dbus_method_call * call_ptr)
 
 METHOD_ARGS_BEGIN(GetAll, "Get list of apps")
   METHOD_ARG_DESCRIBE_OUT("list_version", DBUS_TYPE_UINT64_AS_STRING, "Version of the list")
+  METHOD_ARG_DESCRIBE_OUT("apps_list", "a(tsbby)", "List of apps")
+METHOD_ARGS_END
+
+METHOD_ARGS_BEGIN(GetAll2, "Get list of apps")
+  METHOD_ARG_DESCRIBE_OUT("list_version", DBUS_TYPE_UINT64_AS_STRING, "Version of the list")
   METHOD_ARG_DESCRIBE_OUT("apps_list", "a(tsbbs)", "List of apps")
 METHOD_ARGS_END
 
 METHOD_ARGS_BEGIN(RunCustom, "Start application by supplying commandline")
+  METHOD_ARG_DESCRIBE_IN("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
+  METHOD_ARG_DESCRIBE_IN("commandline", DBUS_TYPE_STRING_AS_STRING, "Commandline")
+  METHOD_ARG_DESCRIBE_IN("name", DBUS_TYPE_STRING_AS_STRING, "Name")
+  METHOD_ARG_DESCRIBE_IN("level", DBUS_TYPE_BYTE_AS_STRING, "Level")
+METHOD_ARGS_END
+
+METHOD_ARGS_BEGIN(RunCustom2, "Start application by supplying commandline")
   METHOD_ARG_DESCRIBE_IN("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
   METHOD_ARG_DESCRIBE_IN("commandline", DBUS_TYPE_STRING_AS_STRING, "Commandline")
   METHOD_ARG_DESCRIBE_IN("name", DBUS_TYPE_STRING_AS_STRING, "Name")
@@ -1474,10 +1667,27 @@ METHOD_ARGS_BEGIN(GetAppProperties, "Get properties of an application")
   METHOD_ARG_DESCRIBE_OUT("commandline", DBUS_TYPE_STRING_AS_STRING, "Commandline")
   METHOD_ARG_DESCRIBE_OUT("running", DBUS_TYPE_BOOLEAN_AS_STRING, "")
   METHOD_ARG_DESCRIBE_OUT("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
+  METHOD_ARG_DESCRIBE_OUT("level", DBUS_TYPE_BYTE_AS_STRING, "Level")
+METHOD_ARGS_END
+
+METHOD_ARGS_BEGIN(GetAppProperties2, "Get properties of an application")
+  METHOD_ARG_DESCRIBE_IN("id", DBUS_TYPE_UINT64_AS_STRING, "id of app")
+  METHOD_ARG_DESCRIBE_OUT("name", DBUS_TYPE_STRING_AS_STRING, "")
+  METHOD_ARG_DESCRIBE_OUT("commandline", DBUS_TYPE_STRING_AS_STRING, "Commandline")
+  METHOD_ARG_DESCRIBE_OUT("running", DBUS_TYPE_BOOLEAN_AS_STRING, "")
+  METHOD_ARG_DESCRIBE_OUT("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
   METHOD_ARG_DESCRIBE_OUT("level", DBUS_TYPE_STRING_AS_STRING, "Level")
 METHOD_ARGS_END
 
 METHOD_ARGS_BEGIN(SetAppProperties, "Set properties of an application")
+  METHOD_ARG_DESCRIBE_IN("id", DBUS_TYPE_UINT64_AS_STRING, "id of app")
+  METHOD_ARG_DESCRIBE_IN("name", DBUS_TYPE_STRING_AS_STRING, "")
+  METHOD_ARG_DESCRIBE_IN("commandline", DBUS_TYPE_STRING_AS_STRING, "Commandline")
+  METHOD_ARG_DESCRIBE_IN("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
+  METHOD_ARG_DESCRIBE_IN("level", DBUS_TYPE_BYTE_AS_STRING, "Level")
+METHOD_ARGS_END
+
+METHOD_ARGS_BEGIN(SetAppProperties2, "Set properties of an application")
   METHOD_ARG_DESCRIBE_IN("id", DBUS_TYPE_UINT64_AS_STRING, "id of app")
   METHOD_ARG_DESCRIBE_IN("name", DBUS_TYPE_STRING_AS_STRING, "")
   METHOD_ARG_DESCRIBE_IN("commandline", DBUS_TYPE_STRING_AS_STRING, "Commandline")
@@ -1492,18 +1702,31 @@ METHOD_ARGS_END
 
 
 METHODS_BEGIN
-  METHOD_DESCRIBE(GetAll, get_all)                      /* sync */
-  METHOD_DESCRIBE(RunCustom, run_custom)                /* async */
+  METHOD_DESCRIBE(GetAll, get_all1)                     /* sync */
+  METHOD_DESCRIBE(GetAll2, get_all2)                    /* sync */
+  METHOD_DESCRIBE(RunCustom, run_custom1)               /* async */
+  METHOD_DESCRIBE(RunCustom2, run_custom2)              /* async */
   METHOD_DESCRIBE(StartApp, start_app)                  /* async */
   METHOD_DESCRIBE(StopApp, stop_app)                    /* async */
   METHOD_DESCRIBE(KillApp, kill_app)                    /* async */
-  METHOD_DESCRIBE(GetAppProperties, get_app_properties) /* sync */
-  METHOD_DESCRIBE(SetAppProperties, set_app_properties) /* sync */
+  METHOD_DESCRIBE(GetAppProperties, get_app_properties1)  /* sync */
+  METHOD_DESCRIBE(GetAppProperties2, get_app_properties2) /* sync */
+  METHOD_DESCRIBE(SetAppProperties, set_app_properties1)  /* sync */
+  METHOD_DESCRIBE(SetAppProperties2, set_app_properties2) /* sync */
   METHOD_DESCRIBE(RemoveApp, remove_app)                /* sync */
   METHOD_DESCRIBE(IsAppRunning, is_app_running)         /* sync */
 METHODS_END
 
 SIGNAL_ARGS_BEGIN(AppAdded, "")
+  SIGNAL_ARG_DESCRIBE("new_list_version", DBUS_TYPE_UINT64_AS_STRING, "")
+  SIGNAL_ARG_DESCRIBE("id", DBUS_TYPE_UINT64_AS_STRING, "")
+  SIGNAL_ARG_DESCRIBE("name", DBUS_TYPE_STRING_AS_STRING, "")
+  SIGNAL_ARG_DESCRIBE("running", DBUS_TYPE_BOOLEAN_AS_STRING, "")
+  SIGNAL_ARG_DESCRIBE("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
+  SIGNAL_ARG_DESCRIBE("level", DBUS_TYPE_BYTE_AS_STRING, "Level")
+SIGNAL_ARGS_END
+
+SIGNAL_ARGS_BEGIN(AppAdded2, "")
   SIGNAL_ARG_DESCRIBE("new_list_version", DBUS_TYPE_UINT64_AS_STRING, "")
   SIGNAL_ARG_DESCRIBE("id", DBUS_TYPE_UINT64_AS_STRING, "")
   SIGNAL_ARG_DESCRIBE("name", DBUS_TYPE_STRING_AS_STRING, "")
@@ -1523,13 +1746,24 @@ SIGNAL_ARGS_BEGIN(AppStateChanged, "")
   SIGNAL_ARG_DESCRIBE("name", DBUS_TYPE_STRING_AS_STRING, "")
   SIGNAL_ARG_DESCRIBE("running", DBUS_TYPE_BOOLEAN_AS_STRING, "")
   SIGNAL_ARG_DESCRIBE("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
+  SIGNAL_ARG_DESCRIBE("level", DBUS_TYPE_BYTE_AS_STRING, "Level")
+SIGNAL_ARGS_END
+
+SIGNAL_ARGS_BEGIN(AppStateChanged2, "")
+  SIGNAL_ARG_DESCRIBE("new_list_version", DBUS_TYPE_UINT64_AS_STRING, "")
+  SIGNAL_ARG_DESCRIBE("id", DBUS_TYPE_UINT64_AS_STRING, "")
+  SIGNAL_ARG_DESCRIBE("name", DBUS_TYPE_STRING_AS_STRING, "")
+  SIGNAL_ARG_DESCRIBE("running", DBUS_TYPE_BOOLEAN_AS_STRING, "")
+  SIGNAL_ARG_DESCRIBE("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
   SIGNAL_ARG_DESCRIBE("level", DBUS_TYPE_STRING_AS_STRING, "Level")
 SIGNAL_ARGS_END
 
 SIGNALS_BEGIN
   SIGNAL_DESCRIBE(AppAdded)
+  SIGNAL_DESCRIBE(AppAdded2)
   SIGNAL_DESCRIBE(AppRemoved)
   SIGNAL_DESCRIBE(AppStateChanged)
+  SIGNAL_DESCRIBE(AppStateChanged2)
 SIGNALS_END
 
 INTERFACE_BEGIN(g_iface_app_supervisor, IFACE_APP_SUPERVISOR)
