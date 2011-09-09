@@ -1074,6 +1074,15 @@ void ladish_app_supervisor_dump(ladish_app_supervisor_handle supervisor_handle)
 
 #define supervisor_ptr ((struct ladish_app_supervisor *)call_ptr->iface_context)
 
+static void get_version(struct dbus_method_call * call_ptr)
+{
+  uint32_t version;
+
+  version = 1;
+
+  method_return_new_single(call_ptr, DBUS_TYPE_UINT32, &version);
+}
+
 static void get_all_multiversion(struct dbus_method_call * call_ptr, int version)
 {
   DBusMessageIter iter, array_iter, struct_iter;
@@ -1621,6 +1630,10 @@ static void is_app_running(struct dbus_method_call * call_ptr)
 
 #undef supervisor_ptr
 
+METHOD_ARGS_BEGIN(GetInterfaceVersion, "Get version of this D-Bus interface")
+  METHOD_ARG_DESCRIBE_OUT("running", DBUS_TYPE_UINT32_AS_STRING, "Interface version")
+METHOD_ARGS_END
+
 METHOD_ARGS_BEGIN(GetAll, "Get list of apps")
   METHOD_ARG_DESCRIBE_OUT("list_version", DBUS_TYPE_UINT64_AS_STRING, "Version of the list")
   METHOD_ARG_DESCRIBE_OUT("apps_list", "a(tsbby)", "List of apps")
@@ -1702,6 +1715,7 @@ METHOD_ARGS_END
 
 
 METHODS_BEGIN
+  METHOD_DESCRIBE(GetInterfaceVersion, get_version)     /* sync */
   METHOD_DESCRIBE(GetAll, get_all1)                     /* sync */
   METHOD_DESCRIBE(GetAll2, get_all2)                    /* sync */
   METHOD_DESCRIBE(RunCustom, run_custom1)               /* async */
