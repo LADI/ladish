@@ -437,5 +437,5 @@ exit:
   log_info("LADI session handler deactivated");
   log_info("------------------");
 
-  exit(EXIT_SUCCESS);
+  exit(ret);
 }

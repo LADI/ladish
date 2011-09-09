@@ -211,8 +211,6 @@ bool install_term_signal_handler(int signum, bool ignore_if_already_ignored)
 
 int main(int argc, char ** argv)
 {
-  int ret;
-
   INIT_LIST_HEAD(&g_pairs);
 
   install_term_signal_handler(SIGTERM, false);
@@ -229,8 +227,6 @@ int main(int argc, char ** argv)
     dbus_connection_read_write_dispatch(cdbus_g_dbus_connection, 50);
     bury_zombie_pairs();
   }
-
-  ret = 0;
 
   while (!list_empty(&g_pairs))
   {

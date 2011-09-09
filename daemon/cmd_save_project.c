@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the "save project" command
@@ -42,7 +42,6 @@ struct ladish_command_save_project
 
 static bool run(void * command_context)
 {
-  bool ret;
   ladish_room_handle room;
 
   ASSERT(cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING);
@@ -55,7 +54,7 @@ static bool run(void * command_context)
     return false;
   }
 
-  ret = ladish_room_save_project(room, cmd_ptr->project_dir, cmd_ptr->project_name);
+  ladish_room_save_project(room, cmd_ptr->project_dir, cmd_ptr->project_name);
 
   cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;
 
