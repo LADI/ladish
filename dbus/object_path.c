@@ -224,7 +224,6 @@ dbus_object_path dbus_object_path_new(const char *name, const struct dbus_interf
   va_list ap;
   const struct dbus_interface_descriptor * iface_src_ptr;
   struct dbus_object_path_interface * iface_dst_ptr;
-  void * iface_context;
   size_t len;
 
   log_debug("Creating object path");
@@ -248,7 +247,7 @@ dbus_object_path dbus_object_path_new(const char *name, const struct dbus_interf
   len = 0;
   while (iface_src_ptr != NULL)
   {
-    iface_context = va_arg(ap, void *);
+    va_arg(ap, void *);         /* skip interface context */
     iface_src_ptr = va_arg(ap, const struct dbus_interface_descriptor *);
     len++;
   }
