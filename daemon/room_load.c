@@ -724,7 +724,7 @@ static void callback_elend(void * data, const char * el)
     context_ptr->data[unescape(context_ptr->data, context_ptr->data_used, context_ptr->data)] = 0;
     unescape_simple(context_ptr->str);
 
-    log_info("application '%s' (%s, %s, level %u) with commandline '%s'", context_ptr->str, context_ptr->terminal ? "terminal" : "shell", context_ptr->autorun ? "autorun" : "stopped", (unsigned int)context_ptr->level, context_ptr->data);
+    log_info("application '%s' (%s, %s, level '%s') with commandline '%s'", context_ptr->str, context_ptr->terminal ? "terminal" : "shell", context_ptr->autorun ? "autorun" : "stopped", context_ptr->level, context_ptr->data);
 
     if (ladish_app_supervisor_add(
           room_ptr->app_supervisor,
