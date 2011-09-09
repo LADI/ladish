@@ -83,18 +83,18 @@ bool studio_state_changed(char ** name_ptr_ptr)
   const char * name;
   char * buffer;
   const char * status_image_path;
-  const char * tooltip;
+  //const char * tooltip;
   GdkPixbuf * pixbuf;
 
   menu_studio_state_changed(g_studio_state);
 
-  tooltip = NULL;
+  //tooltip = NULL;
   status_image_path = NULL;
 
   switch (get_jack_state())
   {
   case JACK_STATE_NA:
-    tooltip = status = _("JACK is sick");
+    //tooltip = status = _("JACK is sick");
     status_image_path = STATUS_ICON_ERROR;
     break;
   case JACK_STATE_STOPPED:
@@ -105,7 +105,7 @@ bool studio_state_changed(char ** name_ptr_ptr)
     break;
   default:
     status = "???";
-    tooltip = _("Internal error - unknown jack state");
+    //tooltip = _("Internal error - unknown jack state");
     status_image_path = STATUS_ICON_ERROR;
   }
 
@@ -119,7 +119,7 @@ bool studio_state_changed(char ** name_ptr_ptr)
     break;
   case STUDIO_STATE_SICK:
   case STUDIO_STATE_UNKNOWN:
-    tooltip = name = _("ladishd is sick");
+    //tooltip = name = _("ladishd is sick");
     status_image_path = STATUS_ICON_ERROR;
     break;
   case STUDIO_STATE_UNLOADED:
@@ -128,14 +128,14 @@ bool studio_state_changed(char ** name_ptr_ptr)
     break;
   case STUDIO_STATE_CRASHED:
     status = _("Crashed");
-    tooltip = _("Crashed studio, save your work if you can and unload the studio");
+    //tooltip = _("Crashed studio, save your work if you can and unload the studio");
     status_image_path = STATUS_ICON_ERROR;
     /* fall through */
   case STUDIO_STATE_STOPPED:
   case STUDIO_STATE_STARTED:
     if (!studio_proxy_get_name(&buffer))
     {
-      tooltip = _("failed to get studio name");
+      //tooltip = _("failed to get studio name");
       log_error("failed to get studio name");
       status_image_path = STATUS_ICON_ERROR;
     }
@@ -146,18 +146,18 @@ bool studio_state_changed(char ** name_ptr_ptr)
       {
       case STUDIO_STATE_STARTED:
         status_image_path = jack_xruns() ? STATUS_ICON_WARNING : STATUS_ICON_STARTED;
-        tooltip = _("Studio is started");
+        //tooltip = _("Studio is started");
         break;
       case STUDIO_STATE_STOPPED:
         status_image_path = STATUS_ICON_STOPPED;
-        tooltip = _("Studio is stopped");
+        //tooltip = _("Studio is stopped");
         break;
       }
       break;
     }
   default:
     name = "???";
-    tooltip = _("Internal error - unknown studio state");
+    //tooltip = _("Internal error - unknown studio state");
     status_image_path = STATUS_ICON_ERROR;
   }
 
