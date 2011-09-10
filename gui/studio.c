@@ -94,7 +94,8 @@ bool studio_state_changed(char ** name_ptr_ptr)
   switch (get_jack_state())
   {
   case JACK_STATE_NA:
-    //tooltip = status = _("JACK is sick");
+    //tooltip =
+    status = _("JACK is sick");
     status_image_path = STATUS_ICON_ERROR;
     break;
   case JACK_STATE_STOPPED:
@@ -119,7 +120,8 @@ bool studio_state_changed(char ** name_ptr_ptr)
     break;
   case STUDIO_STATE_SICK:
   case STUDIO_STATE_UNKNOWN:
-    //tooltip = name = _("ladishd is sick");
+    //tooltip =
+    name = _("ladishd is sick");
     status_image_path = STATUS_ICON_ERROR;
     break;
   case STUDIO_STATE_UNLOADED:
