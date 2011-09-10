@@ -197,6 +197,8 @@ def configure(conf):
         conf.check_python_version()
         conf.check_python_headers()
 
+    add_cflag(conf, '-fvisibility=hidden')
+
     conf.env['BUILD_WERROR'] = not RELEASE
     add_cflag(conf, '-Wall')
     if conf.env['BUILD_WERROR']:

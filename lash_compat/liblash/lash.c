@@ -239,22 +239,26 @@ exit:
   return;
 }
 
+LADISH_PUBLIC
 const char * lash_protocol_string(lash_protocol_t protocol)
 {
   return "ladish";
 }
 
+LADISH_PUBLIC
 lash_args_t * lash_extract_args(int * argc, char *** argv)
 {
   /* nothing to do, ladish does not pass any specific arguments */
 	return NULL;
 }
 
+LADISH_PUBLIC
 void lash_args_destroy(lash_args_t * args)
 {
   /* nothing to do, ladish does not pass any specific arguments */
 }
 
+LADISH_PUBLIC
 lash_client_t * lash_init(const lash_args_t * args, const char * class, int client_flags, lash_protocol_t protocol)
 {
   DBusError error;
@@ -332,6 +336,7 @@ fail:
   return NULL;
 }
 
+LADISH_PUBLIC
 unsigned int lash_get_pending_event_count(lash_client_t * client_ptr)
 {
   ASSERT(client_ptr == &g_client);
@@ -347,6 +352,7 @@ static void dispatch(void)
 	while (dbus_connection_get_dispatch_status(cdbus_g_dbus_connection) == DBUS_DISPATCH_DATA_REMAINS);
 }
 
+LADISH_PUBLIC
 unsigned int lash_get_pending_config_count(lash_client_t * client_ptr)
 {
   struct list_head * node_ptr;
@@ -364,6 +370,7 @@ unsigned int lash_get_pending_config_count(lash_client_t * client_ptr)
   return count;
 }
 
+LADISH_PUBLIC
 lash_event_t * lash_get_event(lash_client_t * client_ptr)
 {
   ASSERT(client_ptr == &g_client);
@@ -423,6 +430,7 @@ lash_event_t * lash_get_event(lash_client_t * client_ptr)
   return &g_event;
 }
 
+LADISH_PUBLIC
 lash_config_t * lash_get_config(lash_client_t * client_ptr)
 {
   struct _lash_config * config_ptr;
@@ -440,6 +448,7 @@ lash_config_t * lash_get_config(lash_client_t * client_ptr)
   return config_ptr;
 }
 
+LADISH_PUBLIC
 void lash_send_event(lash_client_t * client_ptr, lash_event_t * event_ptr)
 {
   ASSERT(client_ptr == &g_client);
@@ -525,6 +534,7 @@ void lash_send_event(lash_client_t * client_ptr, lash_event_t * event_ptr)
   lash_event_destroy(event_ptr);
 }
 
+LADISH_PUBLIC
 void lash_send_config(lash_client_t * client_ptr, lash_config_t * config_ptr)
 {
   ASSERT(client_ptr == &g_client);
@@ -544,18 +554,21 @@ void lash_send_config(lash_client_t * client_ptr, lash_config_t * config_ptr)
   }
 }
 
+LADISH_PUBLIC
 int lash_server_connected(lash_client_t * client_ptr)
 {
   ASSERT(client_ptr == &g_client);
   return 1;                     /* yes */
 }
 
+LADISH_PUBLIC
 const char * lash_get_server_name(lash_client_t * client_ptr)
 {
   ASSERT(client_ptr == &g_client);
 	return "localhost";
 }
 
+LADISH_PUBLIC
 lash_event_t * lash_event_new(void)
 {
   struct _lash_event * event_ptr;
@@ -573,6 +586,7 @@ lash_event_t * lash_event_new(void)
   return event_ptr;
 }
 
+LADISH_PUBLIC
 lash_event_t * lash_event_new_with_type(enum LASH_Event_Type type)
 {
 	lash_event_t * event_ptr;
@@ -587,6 +601,7 @@ lash_event_t * lash_event_new_with_type(enum LASH_Event_Type type)
 	return event_ptr;
 }
 
+LADISH_PUBLIC
 lash_event_t * lash_event_new_with_all(enum LASH_Event_Type type, const char * string)
 {
 	lash_event_t * event_ptr;
@@ -611,6 +626,7 @@ lash_event_t * lash_event_new_with_all(enum LASH_Event_Type type, const char * s
 	return event_ptr;
 }
 
+LADISH_PUBLIC
 void lash_event_destroy(lash_event_t * event_ptr)
 {
   free(event_ptr->string);
@@ -625,21 +641,25 @@ void lash_event_destroy(lash_event_t * event_ptr)
   }
 }
 
+LADISH_PUBLIC
 enum LASH_Event_Type lash_event_get_type(const lash_event_t * event_ptr)
 {
   return event_ptr->type;
 }
 
+LADISH_PUBLIC
 const char * lash_event_get_string(const lash_event_t * event_ptr)
 {
   return event_ptr->string;
 }
 
+LADISH_PUBLIC
 void lash_event_set_type(lash_event_t * event_ptr, enum LASH_Event_Type type)
 {
   event_ptr->type = type;
 }
 
+LADISH_PUBLIC
 void lash_event_set_string(lash_event_t * event_ptr, const char * string)
 {
   char * dup;
@@ -663,6 +683,7 @@ void lash_event_set_string(lash_event_t * event_ptr, const char * string)
   event_ptr->string = dup;
 }
 
+LADISH_PUBLIC
 const char * lash_event_get_project(const lash_event_t * event_ptr)
 {
   /* Server interface - not implemented */
@@ -670,24 +691,28 @@ const char * lash_event_get_project(const lash_event_t * event_ptr)
   return NULL;
 }
 
+LADISH_PUBLIC
 void lash_event_set_project(lash_event_t * event_ptr, const char * project)
 {
   /* Server interface - not implemented */
   ASSERT_NO_PASS;               /* lash_init() fails if LASH_Server_Interface is set */
 }
 
+LADISH_PUBLIC
 void lash_event_get_client_id(const lash_event_t * event_ptr, uuid_t id)
 {
   /* Server interface - not implemented */
   ASSERT_NO_PASS;               /* lash_init() fails if LASH_Server_Interface is set */
 }
  
+LADISH_PUBLIC
 void lash_event_set_client_id(lash_event_t * event_ptr, uuid_t id)
 {
   /* Server interface - not implemented */
   ASSERT_NO_PASS;               /* lash_init() fails if LASH_Server_Interface is set */
 }
 
+LADISH_PUBLIC
 unsigned char lash_event_get_alsa_client_id(const lash_event_t * event_ptr)
 {
   /* Server interface - not implemented */
@@ -695,6 +720,7 @@ unsigned char lash_event_get_alsa_client_id(const lash_event_t * event_ptr)
   return 0;
 }
 
+LADISH_PUBLIC
 unsigned char lash_str_get_alsa_client_id(const char * str)
 {
   /* Server interface - not implemented */
@@ -703,28 +729,33 @@ unsigned char lash_str_get_alsa_client_id(const char * str)
   return 0;
 }
 
+LADISH_PUBLIC
 void lash_jack_client_name(lash_client_t * client_ptr, const char * name)
 {
   /* nothing to do, ladish detects jack client name through jack server */
 }
 
+LADISH_PUBLIC
 void lash_str_set_alsa_client_id(char * str, unsigned char alsa_id)
 {
   /* nothing to do, ladish detects alsa id through alsapid.so, jack and a2jmidid */
   /* this is an undocumented function and probably internal one that sneaked to the public API */
 }
 
+LADISH_PUBLIC
 void lash_event_set_alsa_client_id(lash_event_t * event_ptr, unsigned char alsa_id)
 {
   /* set event type, so we can silently ignore the event, when sent */
 	lash_event_set_type(event_ptr, LASH_Alsa_Client_ID);
 }
 
+LADISH_PUBLIC
 void lash_alsa_client_id(lash_client_t * client, unsigned char id)
 {
   /* nothing to do, ladish detects alsa id through alsapid.so, jack and a2jmidid */
 }
 
+LADISH_PUBLIC
 lash_config_t * lash_config_new(void)
 {
   struct _lash_config * config_ptr;
@@ -743,6 +774,7 @@ lash_config_t * lash_config_new(void)
   return config_ptr;
 }
 
+LADISH_PUBLIC
 lash_config_t * lash_config_dup(const lash_config_t * src_ptr)
 {
 	lash_config_t * dst_ptr;
@@ -780,6 +812,7 @@ lash_config_t * lash_config_dup(const lash_config_t * src_ptr)
 	return dst_ptr;
 }
 
+LADISH_PUBLIC
 lash_config_t * lash_config_new_with_key(const char * key)
 {
 	lash_config_t * config_ptr;
@@ -801,6 +834,7 @@ lash_config_t * lash_config_new_with_key(const char * key)
 	return config_ptr;
 }
 
+LADISH_PUBLIC
 void lash_config_destroy(lash_config_t * config_ptr)
 {
   free(config_ptr->key);
@@ -808,21 +842,25 @@ void lash_config_destroy(lash_config_t * config_ptr)
   free(config_ptr);
 }
 
+LADISH_PUBLIC
 const char * lash_config_get_key(const lash_config_t * config_ptr)
 {
   return config_ptr->key;
 }
 
+LADISH_PUBLIC
 const void * lash_config_get_value(const lash_config_t * config_ptr)
 {
   return config_ptr->value;
 }
 
+LADISH_PUBLIC
 size_t lash_config_get_value_size(const lash_config_t * config_ptr)
 {
   return config_ptr->size;
 }
 
+LADISH_PUBLIC
 void lash_config_set_key(lash_config_t * config_ptr, const char * key)
 {
   char * dup;
@@ -841,6 +879,7 @@ void lash_config_set_key(lash_config_t * config_ptr, const char * key)
   config_ptr->key = dup;
 }
 
+LADISH_PUBLIC
 void lash_config_set_value(lash_config_t * config_ptr, const void * value, size_t value_size)
 {
   void * buf;
@@ -868,24 +907,28 @@ void lash_config_set_value(lash_config_t * config_ptr, const void * value, size_
   config_ptr->size = value_size;
 }
 
+LADISH_PUBLIC
 uint32_t lash_config_get_value_int(const lash_config_t * config_ptr)
 {
   ASSERT(lash_config_get_value_size(config_ptr) >= sizeof(uint32_t));
 	return ntohl(*(const uint32_t *)lash_config_get_value(config_ptr));
 }
 
+LADISH_PUBLIC
 float lash_config_get_value_float(const lash_config_t * config_ptr)
 {
   ASSERT(lash_config_get_value_size(config_ptr) >= sizeof(float));
 	return *(const float *)lash_config_get_value(config_ptr);
 }
 
+LADISH_PUBLIC
 double lash_config_get_value_double(const lash_config_t * config_ptr)
 {
   ASSERT(lash_config_get_value_size(config_ptr) >= sizeof(double));
 	return *(const double *)lash_config_get_value(config_ptr);
 }
 
+LADISH_PUBLIC
 const char * lash_config_get_value_string(const lash_config_t * config_ptr)
 {
   const char * string;
@@ -899,27 +942,32 @@ const char * lash_config_get_value_string(const lash_config_t * config_ptr)
   return string;
 }
 
+LADISH_PUBLIC
 void lash_config_set_value_int(lash_config_t * config_ptr, uint32_t value)
 {
 	value = htonl(value);
 	lash_config_set_value(config_ptr, &value, sizeof(uint32_t));
 }
 
+LADISH_PUBLIC
 void lash_config_set_value_float(lash_config_t * config_ptr, float value)
 {
 	lash_config_set_value(config_ptr, &value, sizeof(float));
 }
 
+LADISH_PUBLIC
 void lash_config_set_value_double(lash_config_t * config_ptr, double value)
 {
 	lash_config_set_value(config_ptr, &value, sizeof(double));
 }
 
+LADISH_PUBLIC
 void lash_config_set_value_string(lash_config_t * config_ptr, const char * value)
 {
 	lash_config_set_value(config_ptr, value, strlen(value) + 1);
 }
 
+LADISH_PUBLIC
 const char * lash_get_fqn(const char * dir, const char * file)
 {
   static char * fqn = NULL;
