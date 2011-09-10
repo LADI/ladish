@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to the command queue
@@ -85,7 +85,7 @@ loop:
 
   free(cmd_ptr);
 
-  if (queue_ptr->cancel && list_empty(&queue_ptr->queue));
+  if (queue_ptr->cancel && list_empty(&queue_ptr->queue))
   {
     queue_ptr->cancel = false;
   }
