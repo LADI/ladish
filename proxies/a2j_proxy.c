@@ -73,7 +73,7 @@ static void on_a2j_life_status_changed(bool appeared)
 
 /* this must be static because it is referenced by the
  * dbus helper layer when hooks are active */
-static struct dbus_signal_hook g_signal_hooks[] =
+static struct cdbus_signal_hook g_signal_hooks[] =
 {
   {"bridge_started", on_a2j_bridge_started},
   {"bridge_stopped", on_a2j_bridge_stopped},
@@ -88,13 +88,13 @@ bool a2j_proxy_init(void)
     a2j_proxy_get_jack_client_name_noncached(&g_a2j_jack_client_name);
   }
 
-  if (!dbus_register_service_lifetime_hook(cdbus_g_dbus_connection, A2J_SERVICE, on_a2j_life_status_changed))
+  if (!cdbus_register_service_lifetime_hook(cdbus_g_dbus_connection, A2J_SERVICE, on_a2j_life_status_changed))
   {
     log_error("dbus_register_service_lifetime_hook() failed for a2j service");
     return false;
   }
 
-  if (!dbus_register_object_signal_hooks(
+  if (!cdbus_register_object_signal_hooks(
         cdbus_g_dbus_connection,
         A2J_SERVICE,
         A2J_OBJECT,
@@ -102,7 +102,7 @@ bool a2j_proxy_init(void)
         NULL,
         g_signal_hooks))
   {
-    dbus_unregister_service_lifetime_hook(cdbus_g_dbus_connection, A2J_SERVICE);
+    cdbus_unregister_service_lifetime_hook(cdbus_g_dbus_connection, A2J_SERVICE);
     log_error("dbus_register_object_signal_hooks() failed for a2j control interface");
     return false;
   }
@@ -112,8 +112,8 @@ bool a2j_proxy_init(void)
 
 void a2j_proxy_uninit(void)
 {
-  dbus_unregister_object_signal_hooks(cdbus_g_dbus_connection, A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL);
-  dbus_unregister_service_lifetime_hook(cdbus_g_dbus_connection, A2J_SERVICE);
+  cdbus_unregister_object_signal_hooks(cdbus_g_dbus_connection, A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL);
+  cdbus_unregister_service_lifetime_hook(cdbus_g_dbus_connection, A2J_SERVICE);
 }
 
 const char * a2j_proxy_get_jack_client_name_cached(void)
@@ -131,7 +131,7 @@ bool a2j_proxy_get_jack_client_name_noncached(char ** client_name_ptr_ptr)
   DBusMessage * reply_ptr;
   const char * name;
 
-  if (!dbus_call(0, A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL, "get_jack_client_name", "", NULL, &reply_ptr))
+  if (!cdbus_call(0, A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL, "get_jack_client_name", "", NULL, &reply_ptr))
   {
     //log_error("a2j::get_jack_client_name() failed.");
     return false;
@@ -171,7 +171,7 @@ a2j_proxy_map_jack_port(
   const char * alsa_client_name;
   const char * alsa_port_name;
 
-  if (!dbus_call(0, A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL, "map_jack_port_to_alsa", "s", &jack_port_name, NULL, &reply_ptr))
+  if (!cdbus_call(0, A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL, "map_jack_port_to_alsa", "s", &jack_port_name, NULL, &reply_ptr))
   {
     log_error("a2j::map_jack_port_to_alsa() failed.");
     return false;
@@ -224,7 +224,7 @@ bool a2j_proxy_is_started(void)
 {
   dbus_bool_t started;
 
-  if (!dbus_call(0, A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL, "is_started", "", "b", &started))
+  if (!cdbus_call(0, A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL, "is_started", "", "b", &started))
   {
     log_error("a2j::is_started() failed.");
     return false;
@@ -235,7 +235,7 @@ bool a2j_proxy_is_started(void)
 
 bool a2j_proxy_start_bridge(void)
 {
-  if (!dbus_call(0, A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL, "start", "", ""))
+  if (!cdbus_call(0, A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL, "start", "", ""))
   {
     log_error("a2j::start() failed.");
     return false;
@@ -246,7 +246,7 @@ bool a2j_proxy_start_bridge(void)
 
 bool a2j_proxy_stop_bridge(void)
 {
-  if (!dbus_call(0, A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL, "stop", "", ""))
+  if (!cdbus_call(0, A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL, "stop", "", ""))
   {
     log_error("a2j::stop() failed.");
     return false;
@@ -257,7 +257,7 @@ bool a2j_proxy_stop_bridge(void)
 
 bool a2j_proxy_exit(void)
 {
-  if (!dbus_call(0, A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL, "exit", "", ""))
+  if (!cdbus_call(0, A2J_SERVICE, A2J_OBJECT, A2J_IFACE_CONTROL, "exit", "", ""))
   {
     log_error("exit() failed.");
     return false;

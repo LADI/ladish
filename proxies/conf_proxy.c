@@ -161,7 +161,7 @@ static void on_conf_changed(void * context, DBusMessage * message_ptr)
 
 /* this must be static because it is referenced by the
  * dbus helper layer when hooks are active */
-static struct dbus_signal_hook g_signal_hooks[] =
+static struct cdbus_signal_hook g_signal_hooks[] =
 {
   {"changed", on_conf_changed},
   {NULL, NULL}
@@ -171,13 +171,13 @@ bool conf_proxy_init(void)
 {
   INIT_LIST_HEAD(&g_pairs);
 
-  if (!dbus_register_service_lifetime_hook(cdbus_g_dbus_connection, CONF_SERVICE_NAME, on_life_status_changed))
+  if (!cdbus_register_service_lifetime_hook(cdbus_g_dbus_connection, CONF_SERVICE_NAME, on_life_status_changed))
   {
     log_error("dbus_register_service_lifetime_hook() failed for confd service");
     return false;
   }
 
-  if (!dbus_register_object_signal_hooks(
+  if (!cdbus_register_object_signal_hooks(
         cdbus_g_dbus_connection,
         CONF_SERVICE_NAME,
         CONF_OBJECT_PATH,
@@ -185,7 +185,7 @@ bool conf_proxy_init(void)
         NULL,
         g_signal_hooks))
   {
-    dbus_unregister_service_lifetime_hook(cdbus_g_dbus_connection, CONF_SERVICE_NAME);
+    cdbus_unregister_service_lifetime_hook(cdbus_g_dbus_connection, CONF_SERVICE_NAME);
     log_error("dbus_register_object_signal_hooks() failed for conf interface");
     return false;
   }
@@ -195,8 +195,8 @@ bool conf_proxy_init(void)
 
 void conf_proxy_uninit(void)
 {
-  dbus_unregister_object_signal_hooks(cdbus_g_dbus_connection, CONF_SERVICE_NAME, CONF_OBJECT_PATH, CONF_IFACE);
-  dbus_unregister_service_lifetime_hook(cdbus_g_dbus_connection, CONF_SERVICE_NAME);
+  cdbus_unregister_object_signal_hooks(cdbus_g_dbus_connection, CONF_SERVICE_NAME, CONF_OBJECT_PATH, CONF_IFACE);
+  cdbus_unregister_service_lifetime_hook(cdbus_g_dbus_connection, CONF_SERVICE_NAME);
 }
 
 bool
@@ -217,7 +217,7 @@ conf_register(
     return false;
   }
 
-  if (!dbus_call(0, CONF_SERVICE_NAME, CONF_OBJECT_PATH, CONF_IFACE, "get", "s", &key, "st", &value, &version))
+  if (!cdbus_call(0, CONF_SERVICE_NAME, CONF_OBJECT_PATH, CONF_IFACE, "get", "s", &key, "st", &value, &version))
   {
     //log_error("conf::get() failed.");
     version = 0;
@@ -284,7 +284,7 @@ bool conf_set(const char * key, const char * value)
     return true;                /* not changed */
   }
 
-  if (!dbus_call(0, CONF_SERVICE_NAME, CONF_OBJECT_PATH, CONF_IFACE, "set", "ss", &key, &value, "t", &version))
+  if (!cdbus_call(0, CONF_SERVICE_NAME, CONF_OBJECT_PATH, CONF_IFACE, "set", "ss", &key, &value, "t", &version))
   {
     log_error("conf::set() failed.");
     return false;

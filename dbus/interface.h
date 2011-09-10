@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009,2011 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -30,25 +30,25 @@
 #ifndef __LASH_DBUS_INTERFACE_H__
 #define __LASH_DBUS_INTERFACE_H__
 
-typedef bool (* dbus_interface_handler)(const struct dbus_interface_descriptor *, struct dbus_method_call *);
+typedef bool (* cdbus_interface_handler)(const struct cdbus_interface_descriptor *, struct cdbus_method_call *);
 
-struct dbus_interface_descriptor
+struct cdbus_interface_descriptor
 {
   const char * name;
-  dbus_interface_handler handler;
-  const struct dbus_method_descriptor * methods;
-  const struct dbus_signal_descriptor * signals;
+  cdbus_interface_handler handler;
+  const struct cdbus_method_descriptor * methods;
+  const struct cdbus_signal_descriptor * signals;
 };
 
-bool dbus_interface_default_handler(const struct dbus_interface_descriptor * interface, struct dbus_method_call * call_ptr);
+bool cdbus_interface_default_handler(const struct cdbus_interface_descriptor * interface, struct cdbus_method_call * call_ptr);
 
-#define INTERFACE_BEGIN(iface_var, iface_name)     \
-const struct dbus_interface_descriptor iface_var = \
-{                                                  \
+#define INTERFACE_BEGIN(iface_var, iface_name)      \
+const struct cdbus_interface_descriptor iface_var = \
+{                                                   \
   .name = iface_name,
 
 #define INTERFACE_DEFAULT_HANDLER               \
-  .handler = dbus_interface_default_handler,
+  .handler = cdbus_interface_default_handler,
 
 #define INTERFACE_HANDLER(handler_func)         \
   .handler = handler_func,

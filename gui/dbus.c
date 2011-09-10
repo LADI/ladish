@@ -56,5 +56,5 @@ void dbus_uninit(void)
     dbus_error_free(&cdbus_g_dbus_error);
   }
 
-  dbus_call_last_error_cleanup();
+  cdbus_call_last_error_cleanup();
 }

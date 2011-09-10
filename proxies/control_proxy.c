@@ -48,7 +48,7 @@ static void on_clean_exit(void * context, DBusMessage * message_ptr)
 
 /* this must be static because it is referenced by the
  * dbus helper layer when hooks are active */
-static struct dbus_signal_hook g_signal_hooks[] =
+static struct cdbus_signal_hook g_signal_hooks[] =
 {
   {"StudioAppeared", on_studio_appeared},
   {"StudioDisappeared", on_studio_disappeared},
@@ -60,7 +60,7 @@ static bool control_proxy_is_studio_loaded(bool * present_ptr)
 {
   dbus_bool_t present;
 
-  if (!dbus_call(0, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "IsStudioLoaded", "", "b", &present))
+  if (!cdbus_call(0, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "IsStudioLoaded", "", "b", &present))
   {
     return false;
   }
@@ -97,7 +97,7 @@ bool control_proxy_init(void)
 
   control_proxy_on_daemon_appeared();
 
-  if (!dbus_register_service_lifetime_hook(cdbus_g_dbus_connection, SERVICE_NAME, on_lifestatus_changed))
+  if (!cdbus_register_service_lifetime_hook(cdbus_g_dbus_connection, SERVICE_NAME, on_lifestatus_changed))
   {
     control_proxy_on_daemon_disappeared(true);
     return false;
@@ -109,7 +109,7 @@ bool control_proxy_init(void)
     control_proxy_on_studio_appeared(true);
   }
 
-  if (!dbus_register_object_signal_hooks(cdbus_g_dbus_connection, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, NULL, g_signal_hooks))
+  if (!cdbus_register_object_signal_hooks(cdbus_g_dbus_connection, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, NULL, g_signal_hooks))
   {
     if (studio_present)
     {
@@ -126,8 +126,8 @@ bool control_proxy_init(void)
 
 void control_proxy_uninit(void)
 {
-  dbus_unregister_object_signal_hooks(cdbus_g_dbus_connection, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL);
-  dbus_unregister_service_lifetime_hook(cdbus_g_dbus_connection, SERVICE_NAME);
+  cdbus_unregister_object_signal_hooks(cdbus_g_dbus_connection, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL);
+  cdbus_unregister_service_lifetime_hook(cdbus_g_dbus_connection, SERVICE_NAME);
 }
 
 void control_proxy_ping(void)
@@ -146,7 +146,7 @@ bool control_proxy_get_studio_list(void (* callback)(void * context, const char 
   DBusMessageIter array_iter;
   const char * studio_name;
 
-  if (!dbus_call(0, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "GetStudioList", "", NULL, &reply_ptr))
+  if (!cdbus_call(0, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "GetStudioList", "", NULL, &reply_ptr))
   {
     log_error("GetStudioList() failed.");
     return false;
@@ -183,7 +183,7 @@ bool control_proxy_new_studio(const char * studio_name)
     studio_name = "";
   }
 
-  if (!dbus_call(0, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "NewStudio", "s", &studio_name, ""))
+  if (!cdbus_call(0, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "NewStudio", "s", &studio_name, ""))
   {
     log_error("NewStudio() failed.");
     return false;
@@ -194,7 +194,7 @@ bool control_proxy_new_studio(const char * studio_name)
 
 bool control_proxy_load_studio(const char * studio_name)
 {
-  if (!dbus_call(0, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "LoadStudio", "s", &studio_name, ""))
+  if (!cdbus_call(0, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "LoadStudio", "s", &studio_name, ""))
   {
     log_error("LoadStudio() failed.");
     return false;
@@ -205,7 +205,7 @@ bool control_proxy_load_studio(const char * studio_name)
 
 bool control_proxy_delete_studio(const char * studio_name)
 {
-  if (!dbus_call(0, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "DeleteStudio", "s", &studio_name, ""))
+  if (!cdbus_call(0, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "DeleteStudio", "s", &studio_name, ""))
   {
     log_error("DeleteStudio() failed.");
     return false;
@@ -216,7 +216,7 @@ bool control_proxy_delete_studio(const char * studio_name)
 
 bool control_proxy_exit(void)
 {
-  if (!dbus_call(0, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "Exit", "", ""))
+  if (!cdbus_call(0, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "Exit", "", ""))
   {
     log_error("Exit() failed.");
     return false;
@@ -234,7 +234,7 @@ bool control_proxy_get_room_template_list(void (* callback)(void * context, cons
   DBusMessageIter array_iter;
   const char * name;
 
-  if (!dbus_call(0, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "GetRoomTemplateList", "", NULL, &reply_ptr))
+  if (!cdbus_call(0, SERVICE_NAME, CONTROL_OBJECT_PATH, IFACE_CONTROL, "GetRoomTemplateList", "", NULL, &reply_ptr))
   {
     log_error("GetRoomTemplateList() failed.");
     return false;

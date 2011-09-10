@@ -29,6 +29,6 @@
 
 #include "common.h"
 
-extern const struct dbus_interface_descriptor g_iface_graph_manager;
+extern const struct cdbus_interface_descriptor g_iface_graph_manager;
 
 #endif /* #ifndef GRAPH_MANAGER_H__6A2FA5B3_74A0_4296_9D57_7FBE62D4BFC0__INCLUDED */

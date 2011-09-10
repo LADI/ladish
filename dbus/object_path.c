@@ -31,31 +31,30 @@
 #include "helpers.h"
 #include "error.h"  /* lash_dbus_error() */
 
-struct dbus_object_path_interface
+struct cdbus_object_path_interface
 {
-  const struct dbus_interface_descriptor * iface;
+  const struct cdbus_interface_descriptor * iface;
   void * iface_context;
 };
 
-struct dbus_object_path
+struct cdbus_object_path
 {
   char * name;
   DBusMessage * introspection;
-  struct dbus_object_path_interface * ifaces;
+  struct cdbus_object_path_interface * ifaces;
   bool registered;
 };
 
 #define write_buf(args...) buf_ptr += sprintf(buf_ptr, ## args)
 
-DBusMessage *
-introspection_new(struct dbus_object_path * opath_ptr)
+DBusMessage * cdbus_introspection_new(struct cdbus_object_path * opath_ptr)
 {
   char *xml_data, *buf_ptr;
-  const struct dbus_object_path_interface * iface_ptr;
-  const struct dbus_method_descriptor * method_ptr;
-  const struct dbus_method_arg_descriptor * method_arg_ptr;
-  const struct dbus_signal_descriptor * signal_ptr;
-  const struct dbus_signal_arg_descriptor * signal_arg_ptr;
+  const struct cdbus_object_path_interface * iface_ptr;
+  const struct cdbus_method_descriptor * method_ptr;
+  const struct cdbus_method_arg_descriptor * method_arg_ptr;
+  const struct cdbus_signal_descriptor * signal_ptr;
+  const struct cdbus_signal_arg_descriptor * signal_arg_ptr;
   DBusMessage * msg;
   DBusMessageIter iter;
 
@@ -149,8 +148,7 @@ introspection_new(struct dbus_object_path * opath_ptr)
 
 #undef write_buf
 
-void
-introspection_destroy(struct dbus_object_path *path)
+void cdbus_introspection_destroy(struct cdbus_object_path *path)
 {
   log_debug("Destroying introspection message");
 
@@ -164,7 +162,7 @@ introspection_destroy(struct dbus_object_path *path)
 #endif
 }
 
-static bool introspection_handler(const struct dbus_interface_descriptor * interface, struct dbus_method_call * call_ptr)
+static bool cdbus_introspection_handler(const struct cdbus_interface_descriptor * interface, struct cdbus_method_call * call_ptr)
 {
   if (strcmp(call_ptr->method_name, "Introspect") != 0)
   {
@@ -214,31 +212,31 @@ METHODS_BEGIN
 METHODS_END
 
 INTERFACE_BEGIN(g_dbus_interface_dtor_introspectable, "org.freedesktop.DBus.Introspectable")
-  INTERFACE_HANDLER(introspection_handler)
+  INTERFACE_HANDLER(cdbus_introspection_handler)
   INTERFACE_EXPOSE_METHODS
 INTERFACE_END
 
-dbus_object_path dbus_object_path_new(const char *name, const struct dbus_interface_descriptor * iface1_ptr, ...)
+cdbus_object_path cdbus_object_path_new(const char *name, const struct cdbus_interface_descriptor * iface1_ptr, ...)
 {
-  struct dbus_object_path * opath_ptr;
+  struct cdbus_object_path * opath_ptr;
   va_list ap;
-  const struct dbus_interface_descriptor * iface_src_ptr;
-  struct dbus_object_path_interface * iface_dst_ptr;
+  const struct cdbus_interface_descriptor * iface_src_ptr;
+  struct cdbus_object_path_interface * iface_dst_ptr;
   size_t len;
 
   log_debug("Creating object path");
 
-  opath_ptr = malloc(sizeof(struct dbus_object_path));
+  opath_ptr = malloc(sizeof(struct cdbus_object_path));
   if (opath_ptr == NULL)
   {
-    log_error("malloc() failed to allocate struct dbus_object_path.");
+    log_error("malloc() failed to allocate struct cdbus_object_path.");
     goto fail;
   }
   
   opath_ptr->name = strdup(name);
   if (opath_ptr->name == NULL)
   {
-    log_error("malloc() failed to allocate struct dbus_object_path.");
+    log_error("malloc() failed to allocate struct cdbus_object_path.");
     goto free;
   }
 
@@ -248,12 +246,12 @@ dbus_object_path dbus_object_path_new(const char *name, const struct dbus_interf
   while (iface_src_ptr != NULL)
   {
     va_arg(ap, void *);         /* skip interface context */
-    iface_src_ptr = va_arg(ap, const struct dbus_interface_descriptor *);
+    iface_src_ptr = va_arg(ap, const struct cdbus_interface_descriptor *);
     len++;
   }
   va_end(ap);
 
-  opath_ptr->ifaces = malloc((len + 2) * sizeof(struct dbus_object_path_interface));
+  opath_ptr->ifaces = malloc((len + 2) * sizeof(struct cdbus_object_path_interface));
   if (opath_ptr->ifaces == NULL)
   {
     log_error("malloc failed to allocate interfaces array");
@@ -267,7 +265,7 @@ dbus_object_path dbus_object_path_new(const char *name, const struct dbus_interf
   {
     iface_dst_ptr->iface = iface_src_ptr;
     iface_dst_ptr->iface_context = va_arg(ap, void *);
-    iface_src_ptr = va_arg(ap, const struct dbus_interface_descriptor *);
+    iface_src_ptr = va_arg(ap, const struct cdbus_interface_descriptor *);
     iface_dst_ptr++;
     len--;
   }
@@ -276,7 +274,7 @@ dbus_object_path dbus_object_path_new(const char *name, const struct dbus_interf
   ASSERT(len == 0);
 
   iface_dst_ptr->iface = NULL;
-  opath_ptr->introspection = introspection_new(opath_ptr);
+  opath_ptr->introspection = cdbus_introspection_new(opath_ptr);
   if (opath_ptr->introspection == NULL)
   {
     log_error("introspection_new() failed.");
@@ -290,7 +288,7 @@ dbus_object_path dbus_object_path_new(const char *name, const struct dbus_interf
 
   opath_ptr->registered = false;
 
-  return (dbus_object_path)opath_ptr;
+  return (cdbus_object_path)opath_ptr;
 
 free_ifaces:
   free(opath_ptr->ifaces);
@@ -302,9 +300,9 @@ fail:
   return NULL;
 }
 
-#define opath_ptr ((struct dbus_object_path *)data)
+#define opath_ptr ((struct cdbus_object_path *)data)
 
-void dbus_object_path_unregister(DBusConnection * connection_ptr, dbus_object_path data)
+void cdbus_object_path_unregister(DBusConnection * connection_ptr, cdbus_object_path data)
 {
   ASSERT(opath_ptr->registered);
 
@@ -314,7 +312,7 @@ void dbus_object_path_unregister(DBusConnection * connection_ptr, dbus_object_pa
   }
 }
 
-void dbus_object_path_destroy(DBusConnection * connection_ptr, dbus_object_path data)
+void cdbus_object_path_destroy(DBusConnection * connection_ptr, cdbus_object_path data)
 {
   log_debug("Destroying object path");
 
@@ -323,17 +321,17 @@ void dbus_object_path_destroy(DBusConnection * connection_ptr, dbus_object_path 
     log_error("dbus_connection_unregister_object_path() failed.");
   }
 
-  introspection_destroy(opath_ptr);
+  cdbus_introspection_destroy(opath_ptr);
   free(opath_ptr->ifaces);
   free(opath_ptr->name);
   free(opath_ptr);
 }
 
-static DBusHandlerResult dbus_object_path_handler(DBusConnection * connection, DBusMessage * message, void * data)
+static DBusHandlerResult cdbus_object_path_handler(DBusConnection * connection, DBusMessage * message, void * data)
 {
   const char * iface_name;
-  const struct dbus_object_path_interface * iface_ptr;
-  struct dbus_method_call call;
+  const struct cdbus_object_path_interface * iface_ptr;
+  struct cdbus_method_call call;
 
   /* Check if the message is a method call. If not, ignore it. */
   if (dbus_message_get_type(message) != DBUS_MESSAGE_TYPE_METHOD_CALL)
@@ -398,20 +396,20 @@ static DBusHandlerResult dbus_object_path_handler(DBusConnection * connection, D
   lash_dbus_error(&call, LASH_DBUS_ERROR_UNKNOWN_METHOD, "Method \"%s\" with signature \"%s\" on interface \"%s\" doesn't exist", call.method_name, dbus_message_get_signature(message), iface_name);
 
 send_return:
-  method_return_send(&call);
+  cdbus_method_return_send(&call);
 
 handled:
   return DBUS_HANDLER_RESULT_HANDLED;
 }
 
-static void dbus_object_path_handler_unregister(DBusConnection * connection_ptr, void * data)
+static void cdbus_object_path_handler_unregister(DBusConnection * connection_ptr, void * data)
 {
 #ifdef LADISH_DEBUG
   log_debug("Message handler of object path %s was unregistered", (opath_ptr && path->name) ? opath_ptr->name : "<unknown>");
 #endif /* LADISH_DEBUG */
 }
 
-bool dbus_object_path_register(DBusConnection * connection_ptr, dbus_object_path data)
+bool cdbus_object_path_register(DBusConnection * connection_ptr, cdbus_object_path data)
 {
   log_debug("Registering object path \"%s\"", opath_ptr->name);
 
@@ -419,8 +417,8 @@ bool dbus_object_path_register(DBusConnection * connection_ptr, dbus_object_path
 
   DBusObjectPathVTable vtable =
   {
-    dbus_object_path_handler_unregister,
-    dbus_object_path_handler,
+    cdbus_object_path_handler_unregister,
+    cdbus_object_path_handler,
     NULL, NULL, NULL, NULL
   };
 

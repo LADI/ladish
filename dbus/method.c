@@ -38,8 +38,7 @@
  * there's no sense in trying to construct an error return. Instead,
  * call_ptr->reply will be set to NULL and handled in send_method_return().
  */
-void
-method_return_new_void(struct dbus_method_call * call_ptr)
+void cdbus_method_return_new_void(struct cdbus_method_call * call_ptr)
 {
   if (!(call_ptr->reply = dbus_message_new_method_return(call_ptr->message))) {
     log_error("Ran out of memory trying to construct method return");
@@ -55,10 +54,7 @@ method_return_new_void(struct dbus_method_call * call_ptr)
  * there's no sense in trying to construct an error return. Instead,
  * call_ptr->reply will be set to NULL and handled in send_method_return().
  */
-void
-method_return_new_single(struct dbus_method_call * call_ptr,
-                         int            type,
-                         const void    *arg)
+void cdbus_method_return_new_single(struct cdbus_method_call * call_ptr, int type, const void * arg)
 {
   if (!call_ptr || !arg) {
     log_error("Invalid arguments");
@@ -88,10 +84,7 @@ fail_no_mem:
   log_error("Ran out of memory trying to construct method return");
 }
 
-void
-method_return_new_valist(struct dbus_method_call * call_ptr,
-                         int            type,
-                                        ...)
+void cdbus_method_return_new_valist(struct cdbus_method_call * call_ptr, int type, ...)
 {
   if (!call_ptr) {
     log_error("Call pointer is NULL");
@@ -131,8 +124,7 @@ fail_no_mem:
  * If call_ptr->reply is NULL, i.e. a previous attempt to construct
  * a return has failed, attempt to send a void return.
  */
-void
-method_return_send(struct dbus_method_call * call_ptr)
+void cdbus_method_return_send(struct cdbus_method_call * call_ptr)
 {
   if (call_ptr->reply) {
   retry_send:
@@ -156,9 +148,7 @@ method_return_send(struct dbus_method_call * call_ptr)
   }
 }
 
-bool
-method_return_verify(DBusMessage  *msg,
-                     const char  **str)
+bool cdbus_method_return_verify(DBusMessage * msg, const char ** str)
 {
   if (!msg || dbus_message_get_type(msg) != DBUS_MESSAGE_TYPE_ERROR)
     return true;

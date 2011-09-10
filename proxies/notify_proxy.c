@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the code for sending notifications to user
@@ -47,7 +47,7 @@ bool ladish_notify_init(const char * app_name)
     return false;
   }
 
-  if (dbus_call(0, NOTIFY_SERVICE, NOTIFY_OBJECT, NOTIFY_IFACE, "GetServerInformation", "", "ssss", &name, &vendor, &version, &spec_version))
+  if (cdbus_call(0, NOTIFY_SERVICE, NOTIFY_OBJECT, NOTIFY_IFACE, "GetServerInformation", "", "ssss", &name, &vendor, &version, &spec_version))
   {
     log_info("Sending notifications to '%s' '%s' (%s, %s)", vendor, name, version, spec_version);
   }
@@ -147,7 +147,7 @@ void ladish_notify_simple(uint8_t urgency, const char * summary, const char * bo
     goto free_request;
   }
 
-  if (!dbus_iter_append_dict_entry(&dict_iter, DBUS_TYPE_BYTE, "urgency", &urgency, 0))
+  if (!cdbus_iter_append_dict_entry(&dict_iter, DBUS_TYPE_BYTE, "urgency", &urgency, 0))
   {
     log_error("dbus_iter_append_dict_entry() failed.");
     goto free_request;
@@ -167,7 +167,7 @@ void ladish_notify_simple(uint8_t urgency, const char * summary, const char * bo
     goto free_request;
   }
 
-  if (!dbus_call(0, NOTIFY_SERVICE, NOTIFY_OBJECT, NOTIFY_IFACE, NOTIFY_METHOD_NOTIFY, NULL, request_ptr, "u", &uint32_value))
+  if (!cdbus_call(0, NOTIFY_SERVICE, NOTIFY_OBJECT, NOTIFY_IFACE, NOTIFY_METHOD_NOTIFY, NULL, request_ptr, "u", &uint32_value))
   {
     //log_error("Notify() dbus call failed.");
     goto free_request;

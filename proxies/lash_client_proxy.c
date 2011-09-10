@@ -28,7 +28,7 @@
 
 bool lash_client_proxy_quit(const char * dest)
 {
-  if (!dbus_call(0, dest, "/", IFACE_LASH_CLIENT, "Quit", "", ""))
+  if (!cdbus_call(0, dest, "/", IFACE_LASH_CLIENT, "Quit", "", ""))
   {
     log_error(IFACE_LASH_CLIENT "::Quit() failed.");
     return false;
@@ -39,7 +39,7 @@ bool lash_client_proxy_quit(const char * dest)
 
 bool lash_client_proxy_save(const char * dest, const char * app_dir)
 {
-  if (!dbus_call(0, dest, "/", IFACE_LASH_CLIENT, "Save", "s", &app_dir, ""))
+  if (!cdbus_call(0, dest, "/", IFACE_LASH_CLIENT, "Save", "s", &app_dir, ""))
   {
     log_error(IFACE_LASH_CLIENT "::Save() failed.");
     return false;
@@ -50,7 +50,7 @@ bool lash_client_proxy_save(const char * dest, const char * app_dir)
 
 bool lash_client_proxy_restore(const char * dest, const char * app_dir)
 {
-  if (!dbus_call(0, dest, "/", IFACE_LASH_CLIENT, "Restore", "s", &app_dir, ""))
+  if (!cdbus_call(0, dest, "/", IFACE_LASH_CLIENT, "Restore", "s", &app_dir, ""))
   {
     log_error(IFACE_LASH_CLIENT "::Restore() failed.");
     return false;

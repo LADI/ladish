@@ -29,12 +29,12 @@
 #include "../dbus/error.h"
 #include "virtualizer.h"
 
-static dbus_object_path ladishd_g_lash_server_dbus_object;
-extern const struct dbus_interface_descriptor g_iface_lash_server;
+static cdbus_object_path ladishd_g_lash_server_dbus_object;
+extern const struct cdbus_interface_descriptor g_iface_lash_server;
 
 bool lash_server_init(void)
 {
-  ladishd_g_lash_server_dbus_object = dbus_object_path_new(
+  ladishd_g_lash_server_dbus_object = cdbus_object_path_new(
     LASH_SERVER_OBJECT_PATH,
     &g_iface_lash_server, NULL,
     NULL);
@@ -43,9 +43,9 @@ bool lash_server_init(void)
     return false;
   }
 
-  if (!dbus_object_path_register(cdbus_g_dbus_connection, ladishd_g_lash_server_dbus_object))
+  if (!cdbus_object_path_register(cdbus_g_dbus_connection, ladishd_g_lash_server_dbus_object))
   {
-    dbus_object_path_destroy(cdbus_g_dbus_connection, ladishd_g_lash_server_dbus_object);
+    cdbus_object_path_destroy(cdbus_g_dbus_connection, ladishd_g_lash_server_dbus_object);
     return false;
   }
 
@@ -54,14 +54,14 @@ bool lash_server_init(void)
 
 void lash_server_uninit(void)
 {
-  dbus_object_path_destroy(cdbus_g_dbus_connection, ladishd_g_lash_server_dbus_object);
+  cdbus_object_path_destroy(cdbus_g_dbus_connection, ladishd_g_lash_server_dbus_object);
 }
 
 /**********************************************************************************/
 /*                                D-Bus methods                                   */
 /**********************************************************************************/
 
-static void lash_server_register_client(struct dbus_method_call * call_ptr)
+static void lash_server_register_client(struct cdbus_method_call * call_ptr)
 {
   const char * sender;
   const char * class;

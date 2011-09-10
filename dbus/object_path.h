@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -30,11 +30,11 @@
 #ifndef __LASH_DBUS_OBJECT_PATH_H__
 #define __LASH_DBUS_OBJECT_PATH_H__
 
-typedef struct dbus_object_path_tag { int unused; } * dbus_object_path;
+typedef struct cdbus_object_path_tag { int unused; } * cdbus_object_path;
 
-dbus_object_path dbus_object_path_new(const char * name, const struct dbus_interface_descriptor * iface, ...);
-bool dbus_object_path_register(DBusConnection * connection_ptr, dbus_object_path opath);
-void dbus_object_path_unregister(DBusConnection * connection_ptr, dbus_object_path opath);
-void dbus_object_path_destroy(DBusConnection * connection_ptr, dbus_object_path opath);
+cdbus_object_path cdbus_object_path_new(const char * name, const struct cdbus_interface_descriptor * iface, ...);
+bool cdbus_object_path_register(DBusConnection * connection_ptr, cdbus_object_path opath);
+void cdbus_object_path_unregister(DBusConnection * connection_ptr, cdbus_object_path opath);
+void cdbus_object_path_destroy(DBusConnection * connection_ptr, cdbus_object_path opath);
 
 #endif /* __LASH_DBUS_OBJECT_PATH_H__ */

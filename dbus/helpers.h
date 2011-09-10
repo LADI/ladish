@@ -35,21 +35,21 @@
 extern DBusConnection * cdbus_g_dbus_connection;
 extern DBusError cdbus_g_dbus_error;
 
-bool dbus_iter_get_dict_entry(DBusMessageIter * iter_ptr, const char * key, void * value, int * type, int * size);
-bool dbus_iter_get_dict_entry_string(DBusMessageIter * iter_ptr, const char * key, const char ** value);
-bool dbus_iter_append_variant(DBusMessageIter * iter, int type, const void * arg);
-bool dbus_iter_append_dict_entry(DBusMessageIter *iter, int type, const char * key, const void * value, int length);
-bool dbus_maybe_add_dict_entry_string(DBusMessageIter *dict_iter_ptr, const char * key, const char * value);
-bool dbus_add_dict_entry_uint32(DBusMessageIter * dict_iter_ptr, const char * key, dbus_uint32_t value);
-bool dbus_add_dict_entry_bool(DBusMessageIter * dict_iter_ptr, const char * key, dbus_bool_t value);
+bool cdbus_iter_get_dict_entry(DBusMessageIter * iter_ptr, const char * key, void * value, int * type, int * size);
+bool cdbus_iter_get_dict_entry_string(DBusMessageIter * iter_ptr, const char * key, const char ** value);
+bool cdbus_iter_append_variant(DBusMessageIter * iter, int type, const void * arg);
+bool cdbus_iter_append_dict_entry(DBusMessageIter *iter, int type, const char * key, const void * value, int length);
+bool cdbus_maybe_add_dict_entry_string(DBusMessageIter *dict_iter_ptr, const char * key, const char * value);
+bool cdbus_add_dict_entry_uint32(DBusMessageIter * dict_iter_ptr, const char * key, dbus_uint32_t value);
+bool cdbus_add_dict_entry_bool(DBusMessageIter * dict_iter_ptr, const char * key, dbus_bool_t value);
 
 DBusMessage *
-dbus_call_raw(
+cdbus_call_raw(
   unsigned int timeout,         /* in milliseconds */
   DBusMessage * request_ptr);
 
 bool
-dbus_call(
+cdbus_call(
   unsigned int timeout,         /* in milliseconds */
   const char * service,
   const char * object,
@@ -76,7 +76,7 @@ cdbus_new_method_call_message(
   ...);
 
 bool
-dbus_register_object_signal_handler(
+cdbus_register_object_signal_handler(
   DBusConnection * connection,
   const char * service,
   const char * object,
@@ -86,7 +86,7 @@ dbus_register_object_signal_handler(
   void * handler_data);
 
 bool
-dbus_unregister_object_signal_handler(
+cdbus_unregister_object_signal_handler(
   DBusConnection * connection,
   const char * service,
   const char * object,
@@ -95,42 +95,42 @@ dbus_unregister_object_signal_handler(
   DBusHandleMessageFunction handler,
   void * handler_data);
 
-struct dbus_signal_hook
+struct cdbus_signal_hook
 {
   const char * signal_name;
   void (* hook_function)(void * context, DBusMessage * message_ptr);
 };
 
 bool
-dbus_register_object_signal_hooks(
+cdbus_register_object_signal_hooks(
   DBusConnection * connection,
   const char * service,
   const char * object,
   const char * iface,
   void * hook_context,
-  const struct dbus_signal_hook * signal_hooks);
+  const struct cdbus_signal_hook * signal_hooks);
 
 void
-dbus_unregister_object_signal_hooks(
+cdbus_unregister_object_signal_hooks(
   DBusConnection * connection,
   const char * service,
   const char * object,
   const char * iface);
 
 bool
-dbus_register_service_lifetime_hook(
+cdbus_register_service_lifetime_hook(
   DBusConnection * connection,
   const char * service,
   void (* hook_function)(bool appeared));
 
 void
-dbus_unregister_service_lifetime_hook(
+cdbus_unregister_service_lifetime_hook(
   DBusConnection * connection,
   const char * service);
 
-void dbus_call_last_error_cleanup(void);
-bool dbus_call_last_error_is_name(const char * name);
-const char * dbus_call_last_error_get_message(void);
+void cdbus_call_last_error_cleanup(void);
+bool cdbus_call_last_error_is_name(const char * name);
+const char * cdbus_call_last_error_get_message(void);
 
 #include "method.h"
 #include "signal.h"

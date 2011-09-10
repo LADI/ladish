@@ -35,7 +35,7 @@
 #include "../dbus/error.h"
 #include "recent_projects.h"
 
-extern const struct dbus_interface_descriptor g_interface_room;
+extern const struct cdbus_interface_descriptor g_interface_room;
 
 static bool port_is_input(uint32_t flags)
 {
@@ -311,7 +311,7 @@ ladish_room_create(
     goto destroy;
   }
 
-  room_ptr->dbus_object = dbus_object_path_new(
+  room_ptr->dbus_object = cdbus_object_path_new(
     object_path,
     &g_interface_room, room_ptr,
     &g_interface_patchbay, ladish_graph_get_dbus_context(room_ptr->graph),
@@ -322,11 +322,11 @@ ladish_room_create(
     NULL);
   if (room_ptr->dbus_object == NULL)
   {
-    log_error("dbus_object_path_new() failed");
+    log_error("cdbus_object_path_new() failed");
     goto destroy_app_supervisor;
   }
 
-  if (!dbus_object_path_register(cdbus_g_dbus_connection, room_ptr->dbus_object))
+  if (!cdbus_object_path_register(cdbus_g_dbus_connection, room_ptr->dbus_object))
   {
     log_error("object_path_register() failed");
     goto destroy_dbus_object;
@@ -362,9 +362,9 @@ remove_client:
 destroy_client:
   ladish_client_destroy(room_ptr->client);
 unregister_dbus_object:
-  dbus_object_path_unregister(cdbus_g_dbus_connection, room_ptr->dbus_object);
+  cdbus_object_path_unregister(cdbus_g_dbus_connection, room_ptr->dbus_object);
 destroy_dbus_object:
-  dbus_object_path_destroy(cdbus_g_dbus_connection, room_ptr->dbus_object);
+  cdbus_object_path_destroy(cdbus_g_dbus_connection, room_ptr->dbus_object);
 destroy_app_supervisor:
   ladish_app_supervisor_destroy(room_ptr->app_supervisor);
 destroy:
@@ -398,7 +398,7 @@ void ladish_room_destroy(ladish_room_handle room_handle)
       ladish_graph_clear(room_ptr->graph, remove_port_callback);
     }
 
-    dbus_object_path_destroy(cdbus_g_dbus_connection, room_ptr->dbus_object);
+    cdbus_object_path_destroy(cdbus_g_dbus_connection, room_ptr->dbus_object);
     ladish_app_supervisor_destroy(room_ptr->app_supervisor);
 
     ladish_graph_remove_client(room_ptr->owner, room_ptr->client);
@@ -831,25 +831,25 @@ static bool ladish_room_fill_project_properties(DBusMessageIter * iter_ptr, stru
     return false;
   }
 
-  if (!dbus_maybe_add_dict_entry_string(&dict_iter, "name", room_ptr->project_name))
+  if (!cdbus_maybe_add_dict_entry_string(&dict_iter, "name", room_ptr->project_name))
   {
     log_error("dbus_maybe_add_dict_entry_string() failed.");
     return false;
   }
 
-  if (!dbus_maybe_add_dict_entry_string(&dict_iter, "dir", room_ptr->project_dir))
+  if (!cdbus_maybe_add_dict_entry_string(&dict_iter, "dir", room_ptr->project_dir))
   {
     log_error("dbus_maybe_add_dict_entry_string() failed.");
     return false;
   }
 
-  if (!dbus_maybe_add_dict_entry_string(&dict_iter, "description", room_ptr->project_description))
+  if (!cdbus_maybe_add_dict_entry_string(&dict_iter, "description", room_ptr->project_description))
   {
     log_error("dbus_maybe_add_dict_entry_string() failed.");
     return false;
   }
 
-  if (!dbus_maybe_add_dict_entry_string(&dict_iter, "notes", room_ptr->project_notes))
+  if (!cdbus_maybe_add_dict_entry_string(&dict_iter, "notes", room_ptr->project_notes))
   {
     log_error("dbus_maybe_add_dict_entry_string() failed.");
     return false;
@@ -882,7 +882,7 @@ void ladish_room_emit_project_properties_changed(struct ladish_room * room_ptr)
 
   if (ladish_room_fill_project_properties(&iter, room_ptr))
   {
-    dbus_signal_send(cdbus_g_dbus_connection, message_ptr);
+    cdbus_signal_send(cdbus_g_dbus_connection, message_ptr);
   }
 
   dbus_message_unref(message_ptr);
@@ -921,12 +921,12 @@ void ladish_room_clear_project(struct ladish_room * room_ptr)
 
 #define room_ptr ((struct ladish_room *)call_ptr->iface_context)
 
-static void ladish_room_dbus_get_name(struct dbus_method_call * call_ptr)
+static void ladish_room_dbus_get_name(struct cdbus_method_call * call_ptr)
 {
-  method_return_new_single(call_ptr, DBUS_TYPE_STRING, &room_ptr->name);
+  cdbus_method_return_new_single(call_ptr, DBUS_TYPE_STRING, &room_ptr->name);
 }
 
-static void ladish_room_dbus_save_project(struct dbus_method_call * call_ptr)
+static void ladish_room_dbus_save_project(struct cdbus_method_call * call_ptr)
 {
   const char * dir;
   const char * name;
@@ -942,21 +942,21 @@ static void ladish_room_dbus_save_project(struct dbus_method_call * call_ptr)
 
   if (ladish_command_save_project(call_ptr, ladish_studio_get_cmd_queue(), room_ptr->uuid, dir, name))
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
 }
 
-static void ladish_room_dbus_unload_project(struct dbus_method_call * call_ptr)
+static void ladish_room_dbus_unload_project(struct cdbus_method_call * call_ptr)
 {
   log_info("Unload project request");
 
   if (ladish_command_unload_project(call_ptr, ladish_studio_get_cmd_queue(), room_ptr->uuid))
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
 }
 
-static void ladish_room_dbus_load_project(struct dbus_method_call * call_ptr)
+static void ladish_room_dbus_load_project(struct cdbus_method_call * call_ptr)
 {
   const char * dir;
 
@@ -971,11 +971,11 @@ static void ladish_room_dbus_load_project(struct dbus_method_call * call_ptr)
 
   if (ladish_command_load_project(call_ptr, ladish_studio_get_cmd_queue(), room_ptr->uuid, dir))
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
 }
 
-static void ladish_room_dbus_get_project_properties(struct dbus_method_call * call_ptr)
+static void ladish_room_dbus_get_project_properties(struct cdbus_method_call * call_ptr)
 {
   DBusMessageIter iter;
 
@@ -1002,7 +1002,7 @@ fail:
   log_error("Ran out of memory trying to construct method return");
 }
 
-static void ladish_room_dbus_set_project_description(struct dbus_method_call * call_ptr)
+static void ladish_room_dbus_set_project_description(struct cdbus_method_call * call_ptr)
 {
   const char * str;
   char * dup;
@@ -1017,7 +1017,7 @@ static void ladish_room_dbus_set_project_description(struct dbus_method_call * c
   if ((strlen(str) == 0 && (room_ptr->project_description == NULL || strlen(room_ptr->project_description) == 0)) ||
       (room_ptr->project_description != NULL && strcmp(str, room_ptr->project_description) == 0))
   {
-    method_return_new_single(call_ptr, DBUS_TYPE_UINT64, &room_ptr->version);
+    cdbus_method_return_new_single(call_ptr, DBUS_TYPE_UINT64, &room_ptr->version);
     return;
   }
 
@@ -1032,10 +1032,10 @@ static void ladish_room_dbus_set_project_description(struct dbus_method_call * c
   room_ptr->project_description = dup;
 
   ladish_room_emit_project_properties_changed(room_ptr); /* increments the version number */
-  method_return_new_single(call_ptr, DBUS_TYPE_UINT64, &room_ptr->version);
+  cdbus_method_return_new_single(call_ptr, DBUS_TYPE_UINT64, &room_ptr->version);
 }
 
-static void ladish_room_dbus_set_project_notes(struct dbus_method_call * call_ptr)
+static void ladish_room_dbus_set_project_notes(struct cdbus_method_call * call_ptr)
 {
   const char * str;
   char * dup;
@@ -1050,7 +1050,7 @@ static void ladish_room_dbus_set_project_notes(struct dbus_method_call * call_pt
   if ((strlen(str) == 0 && (room_ptr->project_notes == NULL || strlen(room_ptr->project_notes) == 0)) ||
       (room_ptr->project_notes != NULL && strcmp(str, room_ptr->project_notes) == 0))
   {
-    method_return_new_single(call_ptr, DBUS_TYPE_UINT64, &room_ptr->version);
+    cdbus_method_return_new_single(call_ptr, DBUS_TYPE_UINT64, &room_ptr->version);
     return;
   }
 
@@ -1065,7 +1065,7 @@ static void ladish_room_dbus_set_project_notes(struct dbus_method_call * call_pt
   room_ptr->project_notes = dup;
 
   ladish_room_emit_project_properties_changed(room_ptr); /* increments the version number */
-  method_return_new_single(call_ptr, DBUS_TYPE_UINT64, &room_ptr->version);
+  cdbus_method_return_new_single(call_ptr, DBUS_TYPE_UINT64, &room_ptr->version);
 }
 
 #undef room_ptr

@@ -47,8 +47,8 @@
 
 #define LASH_CONFIG_SUBDIR "/.ladish_lash_dict/"
 
-static dbus_object_path g_object;
-extern const struct dbus_interface_descriptor g_interface __attribute__((visibility("hidden")));
+static cdbus_object_path g_object;
+extern const struct cdbus_interface_descriptor g_interface __attribute__((visibility("hidden")));
 
 struct _lash_client
 {
@@ -291,13 +291,13 @@ lash_client_t * lash_init(const lash_args_t * args, const char * class, int clie
   log_info("Connected to session bus, unique name is \"%s\"", dbus_unique_name);
 
 
-  g_object = dbus_object_path_new("/", &g_interface, NULL, NULL);
+  g_object = cdbus_object_path_new("/", &g_interface, NULL, NULL);
   if (g_object == NULL)
   {
     goto close_connection;
   }
 
-  if (!dbus_object_path_register(cdbus_g_dbus_connection, g_object))
+  if (!cdbus_object_path_register(cdbus_g_dbus_connection, g_object))
   {
     goto destroy_object;
   }
@@ -324,7 +324,7 @@ lash_client_t * lash_init(const lash_args_t * args, const char * class, int clie
   return &g_client;
 
 destroy_object:
-  dbus_object_path_destroy(cdbus_g_dbus_connection, g_object);
+  cdbus_object_path_destroy(cdbus_g_dbus_connection, g_object);
 close_connection:
   dbus_connection_close(cdbus_g_dbus_connection);
   dbus_connection_unref(cdbus_g_dbus_connection);
@@ -937,13 +937,13 @@ const char * lash_get_fqn(const char * dir, const char * file)
 /***************************************************************************/
 /* D-Bus interface implementation */
 
-static void lash_quit(struct dbus_method_call * call_ptr)
+static void lash_quit(struct cdbus_method_call * call_ptr)
 {
   log_debug("Quit command received through D-Bus");
   g_quit = true;
 }
 
-static void lash_save(struct dbus_method_call * call_ptr)
+static void lash_save(struct cdbus_method_call * call_ptr)
 {
   const char * dir;
   char * dup;
@@ -998,7 +998,7 @@ static void lash_save(struct dbus_method_call * call_ptr)
   g_event.type = type;
 }
 
-static void lash_restore(struct dbus_method_call * call_ptr)
+static void lash_restore(struct cdbus_method_call * call_ptr)
 {
   const char * dir;
   char * dup;

@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009,2011 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -30,41 +30,41 @@
 #ifndef __LASH_DBUS_METHOD_H__
 #define __LASH_DBUS_METHOD_H__
 
-struct dbus_method_call
+struct cdbus_method_call
 {
   DBusConnection * connection;
   const char * method_name;
   DBusMessage * message;
   DBusMessage * reply;
-  const struct dbus_interface_descriptor * iface;
+  const struct cdbus_interface_descriptor * iface;
   void * iface_context;
 };
 
-struct dbus_method_arg_descriptor
+struct cdbus_method_arg_descriptor
 {
   const char * name;
   const char * type;
   const bool direction_in;      /* false == out, true == in */
 };
 
-typedef void (* dbus_method_handler)(struct dbus_method_call * call_ptr);
+typedef void (* cdbus_method_handler)(struct cdbus_method_call * call_ptr);
 
-struct dbus_method_descriptor
+struct cdbus_method_descriptor
 {
   const char * name;
-  const dbus_method_handler handler;
-  const struct dbus_method_arg_descriptor * args;
+  const cdbus_method_handler handler;
+  const struct cdbus_method_arg_descriptor * args;
 };
 
-void method_return_new_void(struct dbus_method_call * call_ptr);
-void method_return_new_single(struct dbus_method_call * call_ptr, int type, const void * arg);
-void method_return_new_valist(struct dbus_method_call * call_ptr, int type, ...);
-bool method_return_verify(DBusMessage * msg, const char ** str);
-void method_return_send(struct dbus_method_call * call_ptr);
-void method_default_handler(DBusPendingCall * pending, void * data);
+void cdbus_method_return_new_void(struct cdbus_method_call * call_ptr);
+void cdbus_method_return_new_single(struct cdbus_method_call * call_ptr, int type, const void * arg);
+void cdbus_method_return_new_valist(struct cdbus_method_call * call_ptr, int type, ...);
+bool cdbus_method_return_verify(DBusMessage * msg, const char ** str);
+void cdbus_method_return_send(struct cdbus_method_call * call_ptr);
+void cdbus_method_default_handler(DBusPendingCall * pending, void * data);
 
 #define METHOD_ARGS_BEGIN(method_name, descr) \
-static const struct dbus_method_arg_descriptor method_name ## _args_dtor[] = \
+static const struct cdbus_method_arg_descriptor method_name ## _args_dtor[] = \
 {
 
 #define METHOD_ARG_DESCRIBE_IN(arg_name, arg_type, descr)       \
@@ -88,7 +88,7 @@ static const struct dbus_method_arg_descriptor method_name ## _args_dtor[] = \
 };
 
 #define METHODS_BEGIN                                           \
-static const struct dbus_method_descriptor methods_dtor[] =     \
+static const struct cdbus_method_descriptor methods_dtor[] =    \
 {
 
 #define METHOD_DESCRIBE(method_name, handler_name)              \

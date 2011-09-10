@@ -32,7 +32,7 @@
 
 #define graph_handle ((ladish_graph_handle)call_ptr->iface_context)
 
-bool find_dict(struct dbus_method_call * call_ptr, uint32_t object_type, uint64_t object_id, ladish_dict_handle * dict_handle_ptr)
+bool find_dict(struct cdbus_method_call * call_ptr, uint32_t object_type, uint64_t object_id, ladish_dict_handle * dict_handle_ptr)
 {
   ladish_client_handle client;
   ladish_port_handle port;
@@ -78,7 +78,7 @@ bool find_dict(struct dbus_method_call * call_ptr, uint32_t object_type, uint64_
 
 #undef graph_handle
 
-void ladish_dict_set_dbus(struct dbus_method_call * call_ptr)
+void ladish_dict_set_dbus(struct cdbus_method_call * call_ptr)
 {
   uint32_t object_type;
   uint64_t object_id;
@@ -113,10 +113,10 @@ void ladish_dict_set_dbus(struct dbus_method_call * call_ptr)
     return;
   }
 
-  method_return_new_void(call_ptr);
+  cdbus_method_return_new_void(call_ptr);
 }
 
-void ladish_dict_get_dbus(struct dbus_method_call * call_ptr)
+void ladish_dict_get_dbus(struct cdbus_method_call * call_ptr)
 {
   uint32_t object_type;
   uint64_t object_id;
@@ -149,10 +149,10 @@ void ladish_dict_get_dbus(struct dbus_method_call * call_ptr)
     return;
   }
 
-  method_return_new_single(call_ptr, DBUS_TYPE_STRING, &value);
+  cdbus_method_return_new_single(call_ptr, DBUS_TYPE_STRING, &value);
 }
 
-void ladish_dict_drop_dbus(struct dbus_method_call * call_ptr)
+void ladish_dict_drop_dbus(struct cdbus_method_call * call_ptr)
 {
   uint32_t object_type;
   uint64_t object_id;
@@ -179,7 +179,7 @@ void ladish_dict_drop_dbus(struct dbus_method_call * call_ptr)
 
   ladish_dict_drop(dict, key);
 
-  method_return_new_void(call_ptr);
+  cdbus_method_return_new_void(call_ptr);
 }
 
 METHOD_ARGS_BEGIN(Set, "Set value for specified key")

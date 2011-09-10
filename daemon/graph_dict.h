@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to the D-Bus graph dict interface helpers
@@ -29,6 +29,6 @@
 
 #include "common.h"
 
-extern const struct dbus_interface_descriptor g_iface_graph_dict;
+extern const struct cdbus_interface_descriptor g_iface_graph_dict;
 
 #endif /* #ifndef GRAPH_DICT_H__D0A046E3_4EAC_4D5E_B06A_C66781AE4F67__INCLUDED */

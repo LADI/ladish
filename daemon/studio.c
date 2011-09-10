@@ -76,12 +76,12 @@ bool ladish_studio_name_generate(char ** name_ptr)
 
 bool ladish_studio_show(void)
 {
-  dbus_object_path object;
+  cdbus_object_path object;
 
   ASSERT(g_studio.name != NULL);
   ASSERT(!g_studio.announced);
 
-  object = dbus_object_path_new(
+  object = cdbus_object_path_new(
     STUDIO_OBJECT_PATH,
     &g_interface_studio, &g_studio,
     &g_interface_patchbay, ladish_graph_get_dbus_context(g_studio.studio_graph),
@@ -91,14 +91,14 @@ bool ladish_studio_show(void)
     NULL);
   if (object == NULL)
   {
-    log_error("dbus_object_path_new() failed");
+    log_error("cdbus_object_path_new() failed");
     return false;
   }
 
-  if (!dbus_object_path_register(cdbus_g_dbus_connection, object))
+  if (!cdbus_object_path_register(cdbus_g_dbus_connection, object))
   {
     log_error("object_path_register() failed");
-    dbus_object_path_destroy(cdbus_g_dbus_connection, object);
+    cdbus_object_path_destroy(cdbus_g_dbus_connection, object);
     return false;
   }
 
@@ -155,7 +155,7 @@ void ladish_studio_clear(void)
 
   if (g_studio.dbus_object != NULL)
   {
-    dbus_object_path_destroy(cdbus_g_dbus_connection, g_studio.dbus_object);
+    cdbus_object_path_destroy(cdbus_g_dbus_connection, g_studio.dbus_object);
     g_studio.dbus_object = NULL;
     emit_studio_disappeared();
   }
@@ -181,17 +181,17 @@ void ladish_studio_clear(void)
 
 void ladish_studio_emit_started(void)
 {
-  dbus_signal_emit(cdbus_g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioStarted", "");
+  cdbus_signal_emit(cdbus_g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioStarted", "");
 }
 
 void ladish_studio_emit_crashed(void)
 {
-  dbus_signal_emit(cdbus_g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioCrashed", "");
+  cdbus_signal_emit(cdbus_g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioCrashed", "");
 }
 
 void ladish_studio_emit_stopped(void)
 {
-  dbus_signal_emit(cdbus_g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioStopped", "");
+  cdbus_signal_emit(cdbus_g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioStopped", "");
 }
 
 static bool ladish_studio_fill_room_info(DBusMessageIter * iter_ptr, ladish_room_handle room)
@@ -236,13 +236,13 @@ static bool ladish_studio_fill_room_info(DBusMessageIter * iter_ptr, ladish_room
     return false;
   }
 
-  if (!dbus_maybe_add_dict_entry_string(&dict_iter, "template", template_name))
+  if (!cdbus_maybe_add_dict_entry_string(&dict_iter, "template", template_name))
   {
     log_error("dbus_maybe_add_dict_entry_string() failed.");
     return false;
   }
 
-  if (!dbus_maybe_add_dict_entry_string(&dict_iter, "name", name))
+  if (!cdbus_maybe_add_dict_entry_string(&dict_iter, "name", name))
   {
     log_error("dbus_maybe_add_dict_entry_string() failed.");
     return false;
@@ -273,7 +273,7 @@ static void ladish_studio_emit_room_appeared(ladish_room_handle room)
 
   if (ladish_studio_fill_room_info(&iter, room))
   {
-    dbus_signal_send(cdbus_g_dbus_connection, message_ptr);
+    cdbus_signal_send(cdbus_g_dbus_connection, message_ptr);
   }
 
   dbus_message_unref(message_ptr);
@@ -295,7 +295,7 @@ void ladish_studio_emit_room_disappeared(ladish_room_handle room)
 
   if (ladish_studio_fill_room_info(&iter, room))
   {
-    dbus_signal_send(cdbus_g_dbus_connection, message_ptr);
+    cdbus_signal_send(cdbus_g_dbus_connection, message_ptr);
   }
 
   dbus_message_unref(message_ptr);
@@ -958,7 +958,7 @@ void ladish_studio_stop_app_supervisors(void)
 
 void ladish_studio_emit_renamed(void)
 {
-  dbus_signal_emit(cdbus_g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioRenamed", "s", &g_studio.name);
+  cdbus_signal_emit(cdbus_g_dbus_connection, STUDIO_OBJECT_PATH, IFACE_STUDIO, "StudioRenamed", "s", &g_studio.name);
 }
 
 unsigned int ladish_studio_get_room_index(void)
@@ -1022,12 +1022,12 @@ bool ladish_studio_check_room_name(const char * room_name)
 /*                                D-Bus methods                                   */
 /**********************************************************************************/
 
-static void ladish_studio_dbus_get_name(struct dbus_method_call * call_ptr)
+static void ladish_studio_dbus_get_name(struct cdbus_method_call * call_ptr)
 {
-  method_return_new_single(call_ptr, DBUS_TYPE_STRING, &g_studio.name);
+  cdbus_method_return_new_single(call_ptr, DBUS_TYPE_STRING, &g_studio.name);
 }
 
-static void ladish_studio_dbus_rename(struct dbus_method_call * call_ptr)
+static void ladish_studio_dbus_rename(struct cdbus_method_call * call_ptr)
 {
   const char * new_name;
   char * new_name_dup;
@@ -1051,21 +1051,21 @@ static void ladish_studio_dbus_rename(struct dbus_method_call * call_ptr)
   free(g_studio.name);
   g_studio.name = new_name_dup;
 
-  method_return_new_void(call_ptr);
+  cdbus_method_return_new_void(call_ptr);
   ladish_studio_emit_renamed();
 }
 
-static void ladish_studio_dbus_save(struct dbus_method_call * call_ptr)
+static void ladish_studio_dbus_save(struct cdbus_method_call * call_ptr)
 {
   log_info("Save studio request");
 
   if (ladish_command_save_studio(call_ptr, &g_studio.cmd_queue, g_studio.name))
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
 }
 
-static void ladish_studio_dbus_save_as(struct dbus_method_call * call_ptr)
+static void ladish_studio_dbus_save_as(struct cdbus_method_call * call_ptr)
 {
   const char * new_name;
 
@@ -1080,21 +1080,21 @@ static void ladish_studio_dbus_save_as(struct dbus_method_call * call_ptr)
 
   if (ladish_command_save_studio(call_ptr, &g_studio.cmd_queue, new_name))
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
 }
 
-static void ladish_studio_dbus_unload(struct dbus_method_call * call_ptr)
+static void ladish_studio_dbus_unload(struct cdbus_method_call * call_ptr)
 {
   log_info("Unload studio request");
 
   if (ladish_command_unload_studio(call_ptr, &g_studio.cmd_queue))
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
 }
 
-static void ladish_studio_dbus_stop(struct dbus_method_call * call_ptr)
+static void ladish_studio_dbus_stop(struct cdbus_method_call * call_ptr)
 {
   log_info("Stop studio request");
 
@@ -1102,11 +1102,11 @@ static void ladish_studio_dbus_stop(struct dbus_method_call * call_ptr)
 
   if (ladish_command_stop_studio(call_ptr, &g_studio.cmd_queue))
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
 }
 
-static void ladish_studio_dbus_start(struct dbus_method_call * call_ptr)
+static void ladish_studio_dbus_start(struct cdbus_method_call * call_ptr)
 {
   log_info("Start studio request");
 
@@ -1114,20 +1114,20 @@ static void ladish_studio_dbus_start(struct dbus_method_call * call_ptr)
 
   if (ladish_command_start_studio(call_ptr, &g_studio.cmd_queue))
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
 }
 
-static void ladish_studio_dbus_is_started(struct dbus_method_call * call_ptr)
+static void ladish_studio_dbus_is_started(struct cdbus_method_call * call_ptr)
 {
   dbus_bool_t started;
 
   started = g_studio.jack_graph_proxy != NULL;
 
-  method_return_new_single(call_ptr, DBUS_TYPE_BOOLEAN, &started);
+  cdbus_method_return_new_single(call_ptr, DBUS_TYPE_BOOLEAN, &started);
 }
 
-static void ladish_studio_dbus_create_room(struct dbus_method_call * call_ptr)
+static void ladish_studio_dbus_create_room(struct cdbus_method_call * call_ptr)
 {
   const char * room_name;
   const char * template_name;
@@ -1143,11 +1143,11 @@ static void ladish_studio_dbus_create_room(struct dbus_method_call * call_ptr)
 
   if (ladish_command_create_room(call_ptr, ladish_studio_get_cmd_queue(), room_name, template_name))
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
 }
 
-static void ladish_studio_dbus_get_room_list(struct dbus_method_call * call_ptr)
+static void ladish_studio_dbus_get_room_list(struct cdbus_method_call * call_ptr)
 {
   DBusMessageIter iter, array_iter;
   DBusMessageIter struct_iter;
@@ -1196,7 +1196,7 @@ fail:
   log_error("Ran out of memory trying to construct method return");
 }
 
-static void ladish_studio_dbus_delete_room(struct dbus_method_call * call_ptr)
+static void ladish_studio_dbus_delete_room(struct cdbus_method_call * call_ptr)
 {
   const char * name;
 
@@ -1211,7 +1211,7 @@ static void ladish_studio_dbus_delete_room(struct dbus_method_call * call_ptr)
 
   if (ladish_command_delete_room(call_ptr, ladish_studio_get_cmd_queue(), name))
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
 }
 

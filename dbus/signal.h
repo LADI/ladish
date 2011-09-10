@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -30,22 +30,22 @@
 #ifndef __LASH_DBUS_SIGNAL_H__
 #define __LASH_DBUS_SIGNAL_H__
 
-struct dbus_signal_arg_descriptor
+struct cdbus_signal_arg_descriptor
 {
   const char * name;
   const char * type;
 };
 
-struct dbus_signal_descriptor
+struct cdbus_signal_descriptor
 {
   const char * name;
-  const struct dbus_signal_arg_descriptor * args;
+  const struct cdbus_signal_arg_descriptor * args;
 };
 
-void dbus_signal_send(DBusConnection * connection_ptr, DBusMessage * message_ptr);
+void cdbus_signal_send(DBusConnection * connection_ptr, DBusMessage * message_ptr);
 
 void
-dbus_signal_emit(
+cdbus_signal_emit(
   DBusConnection * connection_ptr,
   const char * path,
   const char * interface,
@@ -54,7 +54,7 @@ dbus_signal_emit(
   ...);
 
 #define SIGNAL_ARGS_BEGIN(signal_name, descr) \
-static const struct dbus_signal_arg_descriptor signal_name ## _args_dtor[] = \
+static const struct cdbus_signal_arg_descriptor signal_name ## _args_dtor[] = \
 {
 
 #define SIGNAL_ARG_DESCRIBE(arg_name, arg_type, descr)         \
@@ -71,7 +71,7 @@ static const struct dbus_signal_arg_descriptor signal_name ## _args_dtor[] = \
 };
 
 #define SIGNALS_BEGIN                                          \
-static const struct dbus_signal_descriptor signals_dtor[] =    \
+static const struct cdbus_signal_descriptor signals_dtor[] =   \
 {
 
 #define SIGNAL_DESCRIBE(signal_name)                           \

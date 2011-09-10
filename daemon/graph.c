@@ -89,7 +89,7 @@ static void ladish_graph_emit_ports_disconnected(struct ladish_graph * graph_ptr
 {
   ASSERT(graph_ptr->opath != NULL);
 
-  dbus_signal_emit(
+  cdbus_signal_emit(
     cdbus_g_dbus_connection,
     graph_ptr->opath,
     JACKDBUS_IFACE_PATCHBAY,
@@ -111,7 +111,7 @@ static void ladish_graph_emit_ports_connected(struct ladish_graph * graph_ptr, s
 {
   ASSERT(graph_ptr->opath != NULL);
 
-  dbus_signal_emit(
+  cdbus_signal_emit(
     cdbus_g_dbus_connection,
     graph_ptr->opath,
     JACKDBUS_IFACE_PATCHBAY,
@@ -133,7 +133,7 @@ static void ladish_graph_emit_client_appeared(struct ladish_graph * graph_ptr, s
 {
   ASSERT(graph_ptr->opath != NULL);
 
-  dbus_signal_emit(
+  cdbus_signal_emit(
     cdbus_g_dbus_connection,
     graph_ptr->opath,
     JACKDBUS_IFACE_PATCHBAY,
@@ -148,7 +148,7 @@ static void ladish_graph_emit_client_disappeared(struct ladish_graph * graph_ptr
 {
   ASSERT(graph_ptr->opath != NULL);
 
-  dbus_signal_emit(
+  cdbus_signal_emit(
     cdbus_g_dbus_connection,
     graph_ptr->opath,
     JACKDBUS_IFACE_PATCHBAY,
@@ -163,7 +163,7 @@ static void ladish_graph_emit_port_appeared(struct ladish_graph * graph_ptr, str
 {
   ASSERT(graph_ptr->opath != NULL);
 
-  dbus_signal_emit(
+  cdbus_signal_emit(
     cdbus_g_dbus_connection,
     graph_ptr->opath,
     JACKDBUS_IFACE_PATCHBAY,
@@ -182,7 +182,7 @@ static void ladish_graph_emit_port_disappeared(struct ladish_graph * graph_ptr, 
 {
   ASSERT(graph_ptr->opath != NULL);
 
-  dbus_signal_emit(
+  cdbus_signal_emit(
     cdbus_g_dbus_connection,
     graph_ptr->opath,
     JACKDBUS_IFACE_PATCHBAY,
@@ -428,7 +428,7 @@ ladish_graph_find_connection_by_ports(
 
 #define graph_ptr ((struct ladish_graph *)call_ptr->iface_context)
 
-static void get_all_ports(struct dbus_method_call * call_ptr)
+static void get_all_ports(struct cdbus_method_call * call_ptr)
 {
   DBusMessageIter iter, sub_iter;
 
@@ -460,7 +460,7 @@ fail:
   log_error("Ran out of memory trying to construct method return");
 }
 
-static void get_graph(struct dbus_method_call * call_ptr)
+static void get_graph(struct cdbus_method_call * call_ptr)
 {
   dbus_uint64_t known_version;
   dbus_uint64_t current_version;
@@ -717,7 +717,7 @@ exit:
   return;
 }
 
-static void connect_ports_by_name(struct dbus_method_call * call_ptr)
+static void connect_ports_by_name(struct cdbus_method_call * call_ptr)
 {
   const char * client1_name;
   const char * port1_name;
@@ -750,7 +750,7 @@ static void connect_ports_by_name(struct dbus_method_call * call_ptr)
 
   if (graph_ptr->connect_handler(graph_ptr->context, (ladish_graph_handle)graph_ptr, port1->port, port2->port))
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
   else
   {
@@ -758,7 +758,7 @@ static void connect_ports_by_name(struct dbus_method_call * call_ptr)
   }
 }
 
-static void connect_ports_by_id(struct dbus_method_call * call_ptr)
+static void connect_ports_by_id(struct cdbus_method_call * call_ptr)
 {
   dbus_uint64_t port1_id;
   dbus_uint64_t port2_id;
@@ -798,7 +798,7 @@ static void connect_ports_by_id(struct dbus_method_call * call_ptr)
 
   if (graph_ptr->connect_handler(graph_ptr->context, (ladish_graph_handle)graph_ptr, port1_ptr->port, port2_ptr->port))
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
   else
   {
@@ -806,7 +806,7 @@ static void connect_ports_by_id(struct dbus_method_call * call_ptr)
   }
 }
 
-static void disconnect_ports(struct dbus_method_call * call_ptr, struct ladish_graph_connection * connection_ptr)
+static void disconnect_ports(struct cdbus_method_call * call_ptr, struct ladish_graph_connection * connection_ptr)
 {
   log_info(
     "disconnecting '%s':'%s' from '%s':'%s'",
@@ -818,7 +818,7 @@ static void disconnect_ports(struct dbus_method_call * call_ptr, struct ladish_g
   connection_ptr->changing = true;
   if (graph_ptr->disconnect_handler(graph_ptr->context, (ladish_graph_handle)graph_ptr, connection_ptr->id))
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
   else
   {
@@ -827,7 +827,7 @@ static void disconnect_ports(struct dbus_method_call * call_ptr, struct ladish_g
   }
 }
 
-static void disconnect_ports_by_name(struct dbus_method_call * call_ptr)
+static void disconnect_ports_by_name(struct cdbus_method_call * call_ptr)
 {
   const char * client1_name;
   const char * port1_name;
@@ -869,7 +869,7 @@ static void disconnect_ports_by_name(struct dbus_method_call * call_ptr)
   disconnect_ports(call_ptr, connection_ptr);
 }
 
-static void disconnect_ports_by_id(struct dbus_method_call * call_ptr)
+static void disconnect_ports_by_id(struct cdbus_method_call * call_ptr)
 {
   dbus_uint64_t port1_id;
   dbus_uint64_t port2_id;
@@ -916,7 +916,7 @@ static void disconnect_ports_by_id(struct dbus_method_call * call_ptr)
   disconnect_ports(call_ptr, connection_ptr);
 }
 
-static void disconnect_ports_by_connection_id(struct dbus_method_call * call_ptr)
+static void disconnect_ports_by_connection_id(struct cdbus_method_call * call_ptr)
 {
   dbus_uint64_t connection_id;
   struct ladish_graph_connection * connection_ptr;
@@ -940,10 +940,10 @@ static void disconnect_ports_by_connection_id(struct dbus_method_call * call_ptr
   disconnect_ports(call_ptr, connection_ptr);
 }
 
-static void get_client_pid(struct dbus_method_call * call_ptr)
+static void get_client_pid(struct cdbus_method_call * call_ptr)
 {
   int64_t pid = 0;
-  method_return_new_single(call_ptr, DBUS_TYPE_INT64, &pid);
+  cdbus_method_return_new_single(call_ptr, DBUS_TYPE_INT64, &pid);
 }
 
 #undef graph_ptr
@@ -2190,7 +2190,7 @@ ladish_graph_rename_client(
 
   if (!client_ptr->hidden && graph_ptr->opath != NULL)
   {
-    dbus_signal_emit(
+    cdbus_signal_emit(
       cdbus_g_dbus_connection,
       graph_ptr->opath,
       JACKDBUS_IFACE_PATCHBAY,
@@ -2239,7 +2239,7 @@ ladish_graph_rename_port(
 
   if (!port_ptr->hidden && graph_ptr->opath != NULL)
   {
-    dbus_signal_emit(
+    cdbus_signal_emit(
       cdbus_g_dbus_connection,
       graph_ptr->opath,
       JACKDBUS_IFACE_PATCHBAY,

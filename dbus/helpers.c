@@ -45,16 +45,16 @@ DBusError cdbus_g_dbus_error;
 static char * g_dbus_call_last_error_name;
 static char * g_dbus_call_last_error_message;
 
-struct dbus_signal_hook_descriptor
+struct cdbus_signal_hook_descriptor
 {
   struct list_head siblings;
   char * object;
   char * interface;
   void * hook_context;
-  const struct dbus_signal_hook * signal_hooks;
+  const struct cdbus_signal_hook * signal_hooks;
 };
 
-struct dbus_service_descriptor
+struct cdbus_service_descriptor
 {
   struct list_head siblings;
   char * service_name;
@@ -65,7 +65,7 @@ struct dbus_service_descriptor
 static LIST_HEAD(g_dbus_services);
 
 
-void dbus_call_last_error_cleanup(void)
+void cdbus_call_last_error_cleanup(void)
 {
   free(g_dbus_call_last_error_name);
   g_dbus_call_last_error_name = NULL;
@@ -74,19 +74,19 @@ void dbus_call_last_error_cleanup(void)
   g_dbus_call_last_error_message = NULL;
 }
 
-bool dbus_call_last_error_is_name(const char * name)
+bool cdbus_call_last_error_is_name(const char * name)
 {
   return g_dbus_call_last_error_name != NULL && strcmp(name, g_dbus_call_last_error_name) == 0;
 }
 
-const char * dbus_call_last_error_get_message(void)
+const char * cdbus_call_last_error_get_message(void)
 {
   return g_dbus_call_last_error_message != NULL ? g_dbus_call_last_error_message : "";
 }
 
-static void dbus_call_last_error_set(void)
+static void cdbus_call_last_error_set(void)
 {
-  dbus_call_last_error_cleanup();
+  cdbus_call_last_error_cleanup();
 
   if (cdbus_g_dbus_error.name != NULL)
   {
@@ -99,7 +99,7 @@ static void dbus_call_last_error_set(void)
   }
 }
 
-bool dbus_iter_get_dict_entry(DBusMessageIter * iter_ptr, const char * key, void * value, int * type, int * size)
+bool cdbus_iter_get_dict_entry(DBusMessageIter * iter_ptr, const char * key, void * value, int * type, int * size)
 {
   DBusMessageIter dict_iter;
   DBusMessageIter entry_iter;
@@ -180,11 +180,11 @@ loop:
   return true;
 }
 
-bool dbus_iter_get_dict_entry_string(DBusMessageIter * iter_ptr, const char * key, const char ** value)
+bool cdbus_iter_get_dict_entry_string(DBusMessageIter * iter_ptr, const char * key, const char ** value)
 {
   int type;
 
-  if (!dbus_iter_get_dict_entry(iter_ptr, key, value, &type, NULL))
+  if (!cdbus_iter_get_dict_entry(iter_ptr, key, value, &type, NULL))
   {
     return false;
   }
@@ -202,7 +202,7 @@ bool dbus_iter_get_dict_entry_string(DBusMessageIter * iter_ptr, const char * ke
  * Append a variant type to a D-Bus message.
  * Return false if something fails, true otherwise.
  */
-bool dbus_iter_append_variant(DBusMessageIter * iter, int type, const void * arg)
+bool cdbus_iter_append_variant(DBusMessageIter * iter, int type, const void * arg)
 {
   DBusMessageIter sub_iter;
   char s[2];
@@ -228,7 +228,7 @@ bool dbus_iter_append_variant(DBusMessageIter * iter, int type, const void * arg
   return true;
 }
 
-static __inline__ bool dbus_iter_append_variant_raw(DBusMessageIter * iter, const void * buf, int len)
+static __inline__ bool cdbus_iter_append_variant_raw(DBusMessageIter * iter, const void * buf, int len)
 {
   DBusMessageIter variant_iter, array_iter;
 
@@ -261,7 +261,7 @@ fail:
   return false;
 }
 
-bool dbus_iter_append_dict_entry(DBusMessageIter * iter, int type, const char * key, const void * value, int length)
+bool cdbus_iter_append_dict_entry(DBusMessageIter * iter, int type, const char * key, const void * value, int length)
 {
   DBusMessageIter dict_iter;
 
@@ -273,10 +273,10 @@ bool dbus_iter_append_dict_entry(DBusMessageIter * iter, int type, const char * 
 
   if (type == '-')
   {
-    if (!dbus_iter_append_variant_raw(&dict_iter, value, length))
+    if (!cdbus_iter_append_variant_raw(&dict_iter, value, length))
       goto fail;
   }
-  else if (!dbus_iter_append_variant(&dict_iter, type, value))
+  else if (!cdbus_iter_append_variant(&dict_iter, type, value))
   {
     goto fail;
   }
@@ -291,7 +291,7 @@ fail:
   return false;
 }
 
-bool dbus_maybe_add_dict_entry_string(DBusMessageIter *dict_iter_ptr, const char * key, const char * value)
+bool cdbus_maybe_add_dict_entry_string(DBusMessageIter *dict_iter_ptr, const char * key, const char * value)
 {
   DBusMessageIter dict_entry_iter;
 
@@ -311,7 +311,7 @@ bool dbus_maybe_add_dict_entry_string(DBusMessageIter *dict_iter_ptr, const char
     return false;
   }
 
-  dbus_iter_append_variant(&dict_entry_iter, DBUS_TYPE_STRING, &value);
+  cdbus_iter_append_variant(&dict_entry_iter, DBUS_TYPE_STRING, &value);
 
   if (!dbus_message_iter_close_container(dict_iter_ptr, &dict_entry_iter))
   {
@@ -321,7 +321,7 @@ bool dbus_maybe_add_dict_entry_string(DBusMessageIter *dict_iter_ptr, const char
   return true;
 }
 
-bool dbus_add_dict_entry_uint32(DBusMessageIter * dict_iter_ptr, const char * key, dbus_uint32_t value)
+bool cdbus_add_dict_entry_uint32(DBusMessageIter * dict_iter_ptr, const char * key, dbus_uint32_t value)
 {
   DBusMessageIter dict_entry_iter;
 
@@ -336,7 +336,7 @@ bool dbus_add_dict_entry_uint32(DBusMessageIter * dict_iter_ptr, const char * ke
     return false;
   }
 
-  dbus_iter_append_variant(&dict_entry_iter, DBUS_TYPE_UINT32, &value);
+  cdbus_iter_append_variant(&dict_entry_iter, DBUS_TYPE_UINT32, &value);
 
   if (!dbus_message_iter_close_container(dict_iter_ptr, &dict_entry_iter))
   {
@@ -346,7 +346,7 @@ bool dbus_add_dict_entry_uint32(DBusMessageIter * dict_iter_ptr, const char * ke
   return true;
 }
 
-bool dbus_add_dict_entry_bool(DBusMessageIter * dict_iter_ptr, const char * key, dbus_bool_t value)
+bool cdbus_add_dict_entry_bool(DBusMessageIter * dict_iter_ptr, const char * key, dbus_bool_t value)
 {
   DBusMessageIter dict_entry_iter;
 
@@ -361,7 +361,7 @@ bool dbus_add_dict_entry_bool(DBusMessageIter * dict_iter_ptr, const char * key,
     return false;
   }
 
-  dbus_iter_append_variant(&dict_entry_iter, DBUS_TYPE_BOOLEAN, &value);
+  cdbus_iter_append_variant(&dict_entry_iter, DBUS_TYPE_BOOLEAN, &value);
 
   if (!dbus_message_iter_close_container(dict_iter_ptr, &dict_entry_iter))
   {
@@ -372,7 +372,7 @@ bool dbus_add_dict_entry_bool(DBusMessageIter * dict_iter_ptr, const char * key,
 }
 
 DBusMessage *
-dbus_call_raw(
+cdbus_call_raw(
   unsigned int timeout,
   DBusMessage * request_ptr)
 {
@@ -390,7 +390,7 @@ dbus_call_raw(
     &cdbus_g_dbus_error);
   if (reply_ptr == NULL)
   {
-    dbus_call_last_error_set();
+    cdbus_call_last_error_set();
     dbus_error_free(&cdbus_g_dbus_error);
   }
 
@@ -478,7 +478,7 @@ cdbus_new_method_call_message(
 }
 
 bool
-dbus_call(
+cdbus_call(
   unsigned int timeout,
   const char * service,
   const char * object,
@@ -516,7 +516,7 @@ dbus_call(
 
   output_signature = va_arg(ap, const char *);
 
-  reply_ptr = dbus_call_raw(timeout, request_ptr);
+  reply_ptr = cdbus_call_raw(timeout, request_ptr);
 
   if (input_signature != NULL)
   {
@@ -658,7 +658,7 @@ exit:
 
 static
 const char *
-compose_signal_match(
+cdbus_compose_signal_match(
   const char * service,
   const char * object,
   const char * iface,
@@ -669,7 +669,7 @@ compose_signal_match(
   return rule;
 }
 
-static const char * compose_name_owner_match(const char * service)
+static const char * cdbus_compose_name_owner_match(const char * service)
 {
   static char rule[1024];
   snprintf(rule, sizeof(rule), "type='signal',interface='"DBUS_INTERFACE_DBUS"',member=NameOwnerChanged,arg0='%s'", service);
@@ -677,7 +677,7 @@ static const char * compose_name_owner_match(const char * service)
 }
 
 bool
-dbus_register_object_signal_handler(
+cdbus_register_object_signal_handler(
   DBusConnection * connection,
   const char * service,
   const char * object,
@@ -690,7 +690,7 @@ dbus_register_object_signal_handler(
 
   for (signal = signals; *signal != NULL; signal++)
   {
-    dbus_bus_add_match(connection, compose_signal_match(service, object, iface, *signal), &cdbus_g_dbus_error);
+    dbus_bus_add_match(connection, cdbus_compose_signal_match(service, object, iface, *signal), &cdbus_g_dbus_error);
     if (dbus_error_is_set(&cdbus_g_dbus_error))
     {
       log_error("Failed to add D-Bus match rule: %s", cdbus_g_dbus_error.message);
@@ -705,7 +705,7 @@ dbus_register_object_signal_handler(
 }
 
 bool
-dbus_unregister_object_signal_handler(
+cdbus_unregister_object_signal_handler(
   DBusConnection * connection,
   const char * service,
   const char * object,
@@ -718,7 +718,7 @@ dbus_unregister_object_signal_handler(
 
   for (signal = signals; *signal != NULL; signal++)
   {
-    dbus_bus_remove_match(connection, compose_signal_match(service, object, iface, *signal), &cdbus_g_dbus_error);
+    dbus_bus_remove_match(connection, cdbus_compose_signal_match(service, object, iface, *signal), &cdbus_g_dbus_error);
     if (dbus_error_is_set(&cdbus_g_dbus_error))
     {
       log_error("Failed to remove D-Bus match rule: %s", cdbus_g_dbus_error.message);
@@ -733,18 +733,18 @@ dbus_unregister_object_signal_handler(
 }
 
 static
-struct dbus_signal_hook_descriptor *
+struct cdbus_signal_hook_descriptor *
 find_signal_hook_descriptor(
-  struct dbus_service_descriptor * service_ptr,
+  struct cdbus_service_descriptor * service_ptr,
   const char * object,
   const char * interface)
 {
   struct list_head * node_ptr;
-  struct dbus_signal_hook_descriptor * hook_ptr;
+  struct cdbus_signal_hook_descriptor * hook_ptr;
 
   list_for_each(node_ptr, &service_ptr->hooks)
   {
-    hook_ptr = list_entry(node_ptr, struct dbus_signal_hook_descriptor, siblings);
+    hook_ptr = list_entry(node_ptr, struct cdbus_signal_hook_descriptor, siblings);
     if (strcmp(hook_ptr->object, object) == 0 &&
         strcmp(hook_ptr->interface, interface) == 0)
     {
@@ -755,11 +755,11 @@ find_signal_hook_descriptor(
   return NULL;
 }
 
-#define service_ptr ((struct dbus_service_descriptor *)data)
+#define service_ptr ((struct cdbus_service_descriptor *)data)
 
 static
 DBusHandlerResult
-dbus_signal_handler(
+cdbus_signal_handler(
   DBusConnection * connection_ptr,
   DBusMessage * message_ptr,
   void * data)
@@ -770,8 +770,8 @@ dbus_signal_handler(
   const char * object_name;
   const char * old_owner;
   const char * new_owner;
-  struct dbus_signal_hook_descriptor * hook_ptr;
-  const struct dbus_signal_hook * signal_ptr;
+  struct cdbus_signal_hook_descriptor * hook_ptr;
+  const struct cdbus_signal_hook * signal_ptr;
 
   /* Non-signal messages are ignored */
   if (dbus_message_get_type(message_ptr) != DBUS_MESSAGE_TYPE_SIGNAL)
@@ -866,14 +866,14 @@ dbus_signal_handler(
 
 #undef service_ptr
 
-static struct dbus_service_descriptor * find_service_descriptor(const char * service_name)
+static struct cdbus_service_descriptor * find_service_descriptor(const char * service_name)
 {
   struct list_head * node_ptr;
-  struct dbus_service_descriptor * descr_ptr;
+  struct cdbus_service_descriptor * descr_ptr;
 
   list_for_each(node_ptr, &g_dbus_services)
   {
-    descr_ptr = list_entry(node_ptr, struct dbus_service_descriptor, siblings);
+    descr_ptr = list_entry(node_ptr, struct cdbus_service_descriptor, siblings);
     if (strcmp(descr_ptr->service_name, service_name) == 0)
     {
       return descr_ptr;
@@ -883,9 +883,9 @@ static struct dbus_service_descriptor * find_service_descriptor(const char * ser
   return NULL;
 }
 
-static struct dbus_service_descriptor * find_or_create_service_descriptor(const char * service_name)
+static struct cdbus_service_descriptor * find_or_create_service_descriptor(const char * service_name)
 {
-  struct dbus_service_descriptor * descr_ptr;
+  struct cdbus_service_descriptor * descr_ptr;
 
   descr_ptr = find_service_descriptor(service_name);
   if (descr_ptr != NULL)
@@ -893,10 +893,10 @@ static struct dbus_service_descriptor * find_or_create_service_descriptor(const 
     return descr_ptr;
   }
 
-  descr_ptr = malloc(sizeof(struct dbus_service_descriptor));
+  descr_ptr = malloc(sizeof(struct cdbus_service_descriptor));
   if (descr_ptr == NULL)
   {
-    log_error("malloc() failed to allocate struct dbus_service_descriptor");
+    log_error("malloc() failed to allocate struct cdbus_service_descriptor");
     return NULL;
   }
 
@@ -913,12 +913,12 @@ static struct dbus_service_descriptor * find_or_create_service_descriptor(const 
 
   list_add_tail(&descr_ptr->siblings, &g_dbus_services);
 
-  dbus_connection_add_filter(cdbus_g_dbus_connection, dbus_signal_handler, descr_ptr, NULL);
+  dbus_connection_add_filter(cdbus_g_dbus_connection, cdbus_signal_handler, descr_ptr, NULL);
 
   return descr_ptr;
 }
 
-static void free_service_descriptor_if_empty(struct dbus_service_descriptor * service_ptr)
+static void free_service_descriptor_if_empty(struct cdbus_service_descriptor * service_ptr)
 {
   if (service_ptr->lifetime_hook_function != NULL)
   {
@@ -930,7 +930,7 @@ static void free_service_descriptor_if_empty(struct dbus_service_descriptor * se
     return;
   }
 
-  dbus_connection_remove_filter(cdbus_g_dbus_connection, dbus_signal_handler, service_ptr);
+  dbus_connection_remove_filter(cdbus_g_dbus_connection, cdbus_signal_handler, service_ptr);
 
   list_del(&service_ptr->siblings);
   free(service_ptr->service_name);
@@ -938,17 +938,17 @@ static void free_service_descriptor_if_empty(struct dbus_service_descriptor * se
 }
 
 bool
-dbus_register_object_signal_hooks(
+cdbus_register_object_signal_hooks(
   DBusConnection * connection,
   const char * service_name,
   const char * object,
   const char * iface,
   void * hook_context,
-  const struct dbus_signal_hook * signal_hooks)
+  const struct cdbus_signal_hook * signal_hooks)
 {
-  struct dbus_service_descriptor * service_ptr;
-  struct dbus_signal_hook_descriptor * hook_ptr;
-  const struct dbus_signal_hook * signal_ptr;
+  struct cdbus_service_descriptor * service_ptr;
+  struct cdbus_signal_hook_descriptor * hook_ptr;
+  const struct cdbus_signal_hook * signal_ptr;
 
   if (connection != cdbus_g_dbus_connection)
   {
@@ -972,10 +972,10 @@ dbus_register_object_signal_hooks(
     goto maybe_free_service;
   }
 
-  hook_ptr = malloc(sizeof(struct dbus_signal_hook_descriptor));
+  hook_ptr = malloc(sizeof(struct cdbus_signal_hook_descriptor));
   if (hook_ptr == NULL)
   {
-    log_error("malloc() failed to allocate struct dbus_signal_hook_descriptor");
+    log_error("malloc() failed to allocate struct cdbus_signal_hook_descriptor");
     goto maybe_free_service;
   }
 
@@ -1000,7 +1000,7 @@ dbus_register_object_signal_hooks(
 
   for (signal_ptr = signal_hooks; signal_ptr->signal_name != NULL; signal_ptr++)
   {
-    dbus_bus_add_match(connection, compose_signal_match(service_name, object, iface, signal_ptr->signal_name), &cdbus_g_dbus_error);
+    dbus_bus_add_match(connection, cdbus_compose_signal_match(service_name, object, iface, signal_ptr->signal_name), &cdbus_g_dbus_error);
     if (dbus_error_is_set(&cdbus_g_dbus_error))
     {
       log_error("Failed to add D-Bus match rule: %s", cdbus_g_dbus_error.message);
@@ -1011,7 +1011,7 @@ dbus_register_object_signal_hooks(
         ASSERT(signal_ptr > signal_hooks);
         signal_ptr--;
 
-        dbus_bus_remove_match(connection, compose_signal_match(service_name, object, iface, signal_ptr->signal_name), &cdbus_g_dbus_error);
+        dbus_bus_remove_match(connection, cdbus_compose_signal_match(service_name, object, iface, signal_ptr->signal_name), &cdbus_g_dbus_error);
         if (dbus_error_is_set(&cdbus_g_dbus_error))
         {
           log_error("Failed to remove D-Bus match rule: %s", cdbus_g_dbus_error.message);
@@ -1039,15 +1039,15 @@ fail:
 }
 
 void
-dbus_unregister_object_signal_hooks(
+cdbus_unregister_object_signal_hooks(
   DBusConnection * connection,
   const char * service_name,
   const char * object,
   const char * iface)
 {
-  struct dbus_service_descriptor * service_ptr;
-  struct dbus_signal_hook_descriptor * hook_ptr;
-  const struct dbus_signal_hook * signal_ptr;
+  struct cdbus_service_descriptor * service_ptr;
+  struct cdbus_signal_hook_descriptor * hook_ptr;
+  const struct cdbus_signal_hook * signal_ptr;
 
   if (connection != cdbus_g_dbus_connection)
   {
@@ -1074,7 +1074,7 @@ dbus_unregister_object_signal_hooks(
 
   for (signal_ptr = hook_ptr->signal_hooks; signal_ptr->signal_name != NULL; signal_ptr++)
   {
-    dbus_bus_remove_match(connection, compose_signal_match(service_name, object, iface, signal_ptr->signal_name), &cdbus_g_dbus_error);
+    dbus_bus_remove_match(connection, cdbus_compose_signal_match(service_name, object, iface, signal_ptr->signal_name), &cdbus_g_dbus_error);
     if (dbus_error_is_set(&cdbus_g_dbus_error))
     {
       if (dbus_error_is_set(&cdbus_g_dbus_error))
@@ -1095,12 +1095,12 @@ dbus_unregister_object_signal_hooks(
 }
 
 bool
-dbus_register_service_lifetime_hook(
+cdbus_register_service_lifetime_hook(
   DBusConnection * connection,
   const char * service_name,
   void (* hook_function)(bool appeared))
 {
-  struct dbus_service_descriptor * service_ptr;
+  struct cdbus_service_descriptor * service_ptr;
 
   if (connection != cdbus_g_dbus_connection)
   {
@@ -1125,7 +1125,7 @@ dbus_register_service_lifetime_hook(
 
   service_ptr->lifetime_hook_function = hook_function;
 
-  dbus_bus_add_match(connection, compose_name_owner_match(service_name), &cdbus_g_dbus_error);
+  dbus_bus_add_match(connection, cdbus_compose_name_owner_match(service_name), &cdbus_g_dbus_error);
   if (dbus_error_is_set(&cdbus_g_dbus_error))
   {
     log_error("Failed to add D-Bus match rule: %s", cdbus_g_dbus_error.message);
@@ -1144,11 +1144,11 @@ fail:
 }
 
 void
-dbus_unregister_service_lifetime_hook(
+cdbus_unregister_service_lifetime_hook(
   DBusConnection * connection,
   const char * service_name)
 {
-  struct dbus_service_descriptor * service_ptr;
+  struct cdbus_service_descriptor * service_ptr;
 
   if (connection != cdbus_g_dbus_connection)
   {
@@ -1173,7 +1173,7 @@ dbus_unregister_service_lifetime_hook(
 
   service_ptr->lifetime_hook_function = NULL;
 
-  dbus_bus_remove_match(connection, compose_name_owner_match(service_name), &cdbus_g_dbus_error);
+  dbus_bus_remove_match(connection, cdbus_compose_name_owner_match(service_name), &cdbus_g_dbus_error);
   if (dbus_error_is_set(&cdbus_g_dbus_error))
   {
     log_error("Failed to remove D-Bus match rule: %s", cdbus_g_dbus_error.message);

@@ -263,6 +263,6 @@ void ladish_graph_remove_hidden_objects(ladish_graph_handle graph_handle);
 
 void ladish_graph_trick_dicts(ladish_graph_handle graph_handle);
 
-extern const struct dbus_interface_descriptor g_interface_patchbay;
+extern const struct cdbus_interface_descriptor g_interface_patchbay;
 
 #endif /* #ifndef PATCHBAY_H__30334B9A_8847_4E8C_AFF9_73DB13406C8E__INCLUDED */

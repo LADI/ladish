@@ -513,7 +513,7 @@ ladish_room_handle find_room_template_by_uuid(const uuid_t uuid_ptr)
   return NULL;
 }
 
-static void ladish_is_studio_loaded(struct dbus_method_call * call_ptr)
+static void ladish_is_studio_loaded(struct cdbus_method_call * call_ptr)
 {
   DBusMessageIter iter;
   dbus_bool_t is_loaded;
@@ -565,7 +565,7 @@ static bool get_studio_list_callback(void * call_ptr, void * context, const char
 /*   if (!maybe_add_dict_entry_string(&dict_iter, "Description", xxx)) */
 /*     goto close_dict; */
 
-  if (!dbus_add_dict_entry_uint32(&dict_iter, "Modification Time", modtime))
+  if (!cdbus_add_dict_entry_uint32(&dict_iter, "Modification Time", modtime))
     goto close_dict;
 
   ret = true;
@@ -582,7 +582,7 @@ exit:
   return ret;
 }
 
-static void ladish_get_studio_list(struct dbus_method_call * call_ptr)
+static void ladish_get_studio_list(struct cdbus_method_call * call_ptr)
 {
   DBusMessageIter iter, array_iter;
 
@@ -624,7 +624,7 @@ fail:
   log_error("Ran out of memory trying to construct method return");
 }
 
-static void ladish_load_studio(struct dbus_method_call * call_ptr)
+static void ladish_load_studio(struct cdbus_method_call * call_ptr)
 {
   const char * name;
   bool autostart;
@@ -652,11 +652,11 @@ static void ladish_load_studio(struct dbus_method_call * call_ptr)
 
   if (ladish_command_load_studio(call_ptr, ladish_studio_get_cmd_queue(), name, autostart))
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
 }
 
-static void ladish_delete_studio(struct dbus_method_call * call_ptr)
+static void ladish_delete_studio(struct cdbus_method_call * call_ptr)
 {
   const char * name;
 
@@ -671,11 +671,11 @@ static void ladish_delete_studio(struct dbus_method_call * call_ptr)
 
   if (ladish_studio_delete(call_ptr, name))
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
 }
 
-static void ladish_new_studio(struct dbus_method_call * call_ptr)
+static void ladish_new_studio(struct cdbus_method_call * call_ptr)
 {
   const char * name;
 
@@ -692,11 +692,11 @@ static void ladish_new_studio(struct dbus_method_call * call_ptr)
 
   if (ladish_command_new_studio(call_ptr, ladish_studio_get_cmd_queue(), name))
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
 }
 
-static void ladish_get_application_list(struct dbus_method_call * call_ptr)
+static void ladish_get_application_list(struct cdbus_method_call * call_ptr)
 {
   DBusMessageIter iter;
   DBusMessageIter array_iter;
@@ -800,7 +800,7 @@ bool room_template_list_filler(void * context, ladish_room_handle room)
 
 #undef array_iter_ptr
 
-static void ladish_get_room_template_list(struct dbus_method_call * call_ptr)
+static void ladish_get_room_template_list(struct cdbus_method_call * call_ptr)
 {
   DBusMessageIter iter, array_iter;
 
@@ -837,7 +837,7 @@ fail:
   log_error("Ran out of memory trying to construct method return");
 }
 
-static void ladish_delete_room_template(struct dbus_method_call * call_ptr)
+static void ladish_delete_room_template(struct cdbus_method_call * call_ptr)
 {
   const char * name;
 
@@ -853,11 +853,11 @@ static void ladish_delete_room_template(struct dbus_method_call * call_ptr)
   log_info("Delete room request (%s)", name);
 
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
 }
 
-static void ladish_create_room_template(struct dbus_method_call * call_ptr)
+static void ladish_create_room_template(struct cdbus_method_call * call_ptr)
 {
   const char * name;
 
@@ -873,11 +873,11 @@ static void ladish_create_room_template(struct dbus_method_call * call_ptr)
   log_info("New room request (%s)", name);
 
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
 }
 
-static void ladish_exit(struct dbus_method_call * call_ptr)
+static void ladish_exit(struct cdbus_method_call * call_ptr)
 {
   log_info("Exit command received through D-Bus");
 
@@ -888,27 +888,27 @@ static void ladish_exit(struct dbus_method_call * call_ptr)
     g_quit = true;
   }
 
-  method_return_new_void(call_ptr);
+  cdbus_method_return_new_void(call_ptr);
 }
 
 void emit_studio_appeared(void)
 {
-  dbus_signal_emit(cdbus_g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "StudioAppeared", "");
+  cdbus_signal_emit(cdbus_g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "StudioAppeared", "");
 }
 
 void emit_studio_disappeared(void)
 {
-  dbus_signal_emit(cdbus_g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "StudioDisappeared", "");
+  cdbus_signal_emit(cdbus_g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "StudioDisappeared", "");
 }
 
 void emit_queue_execution_halted(void)
 {
-  dbus_signal_emit(cdbus_g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "QueueExecutionHalted", "");
+  cdbus_signal_emit(cdbus_g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "QueueExecutionHalted", "");
 }
 
 void emit_clean_exit(void)
 {
-  dbus_signal_emit(cdbus_g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "CleanExit", "");
+  cdbus_signal_emit(cdbus_g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "CleanExit", "");
 }
 
 METHOD_ARGS_BEGIN(IsStudioLoaded, "Check whether studio D-Bus object is present")

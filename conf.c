@@ -41,10 +41,10 @@
 
 #define STORAGE_BASE_DIR "/.ladish/conf/"
 
-extern const struct dbus_interface_descriptor g_interface;
+extern const struct cdbus_interface_descriptor g_interface;
 
 static const char * g_dbus_unique_name;
-static dbus_object_path g_object;
+static cdbus_object_path g_object;
 static bool g_quit;
 
 struct pair
@@ -95,13 +95,13 @@ static bool connect_dbus(void)
     goto unref_connection;
   }
 
-  g_object = dbus_object_path_new(CONF_OBJECT_PATH, &g_interface, NULL, NULL);
+  g_object = cdbus_object_path_new(CONF_OBJECT_PATH, &g_interface, NULL, NULL);
   if (g_object == NULL)
   {
     goto unref_connection;
   }
 
-  if (!dbus_object_path_register(cdbus_g_dbus_connection, g_object))
+  if (!cdbus_object_path_register(cdbus_g_dbus_connection, g_object))
   {
     goto destroy_control_object;
   }
@@ -109,7 +109,7 @@ static bool connect_dbus(void)
   return true;
 
 destroy_control_object:
-  dbus_object_path_destroy(cdbus_g_dbus_connection, g_object);
+  cdbus_object_path_destroy(cdbus_g_dbus_connection, g_object);
 unref_connection:
   dbus_connection_unref(cdbus_g_dbus_connection);
 
@@ -119,7 +119,7 @@ fail:
 
 static void disconnect_dbus(void)
 {
-  dbus_object_path_destroy(cdbus_g_dbus_connection, g_object);
+  cdbus_object_path_destroy(cdbus_g_dbus_connection, g_object);
   dbus_connection_unref(cdbus_g_dbus_connection);
 }
 
@@ -383,7 +383,7 @@ static struct pair * find_pair(const char * key)
 
 static void emit_changed(struct pair * pair_ptr)
 {
-  dbus_signal_emit(
+  cdbus_signal_emit(
     cdbus_g_dbus_connection,
     CONF_OBJECT_PATH,
     CONF_IFACE,
@@ -397,7 +397,7 @@ static void emit_changed(struct pair * pair_ptr)
 /***************************************************************************/
 /* D-Bus interface implementation */
 
-static void conf_set(struct dbus_method_call * call_ptr)
+static void conf_set(struct cdbus_method_call * call_ptr)
 {
   const char * key;
   const char * value;
@@ -466,10 +466,10 @@ static void conf_set(struct dbus_method_call * call_ptr)
     }
   }
 
-  method_return_new_single(call_ptr, DBUS_TYPE_UINT64, &pair_ptr->version);
+  cdbus_method_return_new_single(call_ptr, DBUS_TYPE_UINT64, &pair_ptr->version);
 }
 
-static void conf_get(struct dbus_method_call * call_ptr)
+static void conf_get(struct cdbus_method_call * call_ptr)
 {
   const char * key;
   struct pair * pair_ptr;
@@ -498,18 +498,18 @@ static void conf_get(struct dbus_method_call * call_ptr)
 
   log_info("get '%s' -> '%s'", key, pair_ptr->value);
 
-  method_return_new_valist(
+  cdbus_method_return_new_valist(
     call_ptr,
     DBUS_TYPE_STRING, &pair_ptr->value,
     DBUS_TYPE_UINT64, &pair_ptr->version,
     DBUS_TYPE_INVALID);
 }
 
-static void conf_exit(struct dbus_method_call * call_ptr)
+static void conf_exit(struct cdbus_method_call * call_ptr)
 {
   log_info("Exit command received through D-Bus");
   g_quit = true;
-  method_return_new_void(call_ptr);
+  cdbus_method_return_new_void(call_ptr);
 }
 
 METHOD_ARGS_BEGIN(set, "Set conf value")

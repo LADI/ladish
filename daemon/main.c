@@ -51,7 +51,7 @@
 
 bool g_quit;
 const char * g_dbus_unique_name;
-dbus_object_path g_control_object;
+cdbus_object_path g_control_object;
 char * g_base_dir;
 static bool g_use_notify = false;
 
@@ -164,13 +164,13 @@ static bool connect_dbus(void)
     goto unref_connection;
   }
 
-  g_control_object = dbus_object_path_new(CONTROL_OBJECT_PATH, &g_lashd_interface_control, NULL, NULL);
+  g_control_object = cdbus_object_path_new(CONTROL_OBJECT_PATH, &g_lashd_interface_control, NULL, NULL);
   if (g_control_object == NULL)
   {
     goto unref_connection;
   }
 
-  if (!dbus_object_path_register(cdbus_g_dbus_connection, g_control_object))
+  if (!cdbus_object_path_register(cdbus_g_dbus_connection, g_control_object))
   {
     goto destroy_control_object;
   }
@@ -178,7 +178,7 @@ static bool connect_dbus(void)
   return true;
 
 destroy_control_object:
-  dbus_object_path_destroy(cdbus_g_dbus_connection, g_control_object);
+  cdbus_object_path_destroy(cdbus_g_dbus_connection, g_control_object);
 unref_connection:
   dbus_connection_unref(cdbus_g_dbus_connection);
 
@@ -188,9 +188,9 @@ fail:
 
 static void disconnect_dbus(void)
 {
-  dbus_object_path_destroy(cdbus_g_dbus_connection, g_control_object);
+  cdbus_object_path_destroy(cdbus_g_dbus_connection, g_control_object);
   dbus_connection_unref(cdbus_g_dbus_connection);
-  dbus_call_last_error_cleanup();
+  cdbus_call_last_error_cleanup();
 }
 
 void term_signal_handler(int signum)

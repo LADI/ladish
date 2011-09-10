@@ -49,7 +49,7 @@ struct ladish_room
   ladish_graph_handle owner;
   unsigned int index;
   char * object_path;
-  dbus_object_path dbus_object;
+  cdbus_object_path dbus_object;
   uint64_t version;
   ladish_app_supervisor_handle app_supervisor;
   ladish_client_handle client;

@@ -35,10 +35,10 @@
 #include "dbus/error.h"
 #include "dbus_constants.h"
 
-extern const struct dbus_interface_descriptor g_interface;
+extern const struct cdbus_interface_descriptor g_interface;
 
 static const char * g_dbus_unique_name;
-static dbus_object_path g_object;
+static cdbus_object_path g_object;
 static bool g_quit;
 static unsigned int g_unique_index;
 
@@ -156,13 +156,13 @@ static bool connect_dbus(void)
     goto unref_connection;
   }
 
-  g_object = dbus_object_path_new(JMCORE_OBJECT_PATH, &g_interface, NULL, NULL);
+  g_object = cdbus_object_path_new(JMCORE_OBJECT_PATH, &g_interface, NULL, NULL);
   if (g_object == NULL)
   {
     goto unref_connection;
   }
 
-  if (!dbus_object_path_register(cdbus_g_dbus_connection, g_object))
+  if (!cdbus_object_path_register(cdbus_g_dbus_connection, g_object))
   {
     goto destroy_control_object;
   }
@@ -170,7 +170,7 @@ static bool connect_dbus(void)
   return true;
 
 destroy_control_object:
-  dbus_object_path_destroy(cdbus_g_dbus_connection, g_object);
+  cdbus_object_path_destroy(cdbus_g_dbus_connection, g_object);
 unref_connection:
   dbus_connection_unref(cdbus_g_dbus_connection);
 
@@ -180,7 +180,7 @@ fail:
 
 static void disconnect_dbus(void)
 {
-  dbus_object_path_destroy(cdbus_g_dbus_connection, g_object);
+  cdbus_object_path_destroy(cdbus_g_dbus_connection, g_object);
   dbus_connection_unref(cdbus_g_dbus_connection);
 }
 
@@ -240,16 +240,16 @@ int main(int argc, char ** argv)
 /***************************************************************************/
 /* D-Bus interface implementation */
 
-static void jmcore_get_pid(struct dbus_method_call * call_ptr)
+static void jmcore_get_pid(struct cdbus_method_call * call_ptr)
 {
   dbus_int64_t pid;
 
   pid = getpid();
 
-  method_return_new_single(call_ptr, DBUS_TYPE_INT64, &pid);
+  cdbus_method_return_new_single(call_ptr, DBUS_TYPE_INT64, &pid);
 }
 
-static void jmcore_create(struct dbus_method_call * call_ptr)
+static void jmcore_create(struct cdbus_method_call * call_ptr)
 {
   dbus_bool_t midi;
   const char * input;
@@ -338,7 +338,7 @@ static void jmcore_create(struct dbus_method_call * call_ptr)
     goto remove_from_list;
   }
 
-  method_return_new_void(call_ptr);
+  cdbus_method_return_new_void(call_ptr);
   goto exit;
 
 remove_from_list:
@@ -359,7 +359,7 @@ exit:
   return;
 }
 
-static void jmcore_destroy(struct dbus_method_call * call_ptr)
+static void jmcore_destroy(struct cdbus_method_call * call_ptr)
 {
   const char * port;
   struct list_head * node_ptr;
@@ -380,7 +380,7 @@ static void jmcore_destroy(struct dbus_method_call * call_ptr)
         strcmp(pair_ptr->output_port_name, port) == 0)
     {
       destroy_pair(pair_ptr);
-      method_return_new_void(call_ptr);
+      cdbus_method_return_new_void(call_ptr);
       return;
     }
   }
@@ -389,11 +389,11 @@ static void jmcore_destroy(struct dbus_method_call * call_ptr)
   return;
 }
 
-static void jmcore_exit(struct dbus_method_call * call_ptr)
+static void jmcore_exit(struct cdbus_method_call * call_ptr)
 {
   log_info("Exit command received through D-Bus");
   g_quit = true;
-  method_return_new_void(call_ptr);
+  cdbus_method_return_new_void(call_ptr);
 }
 
 METHOD_ARGS_BEGIN(get_pid, "Get process ID")

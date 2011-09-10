@@ -36,7 +36,7 @@
 
 #define graph ((ladish_graph_handle)call_ptr->iface_context)
 
-static void ladish_graph_manager_dbus_split(struct dbus_method_call * call_ptr)
+static void ladish_graph_manager_dbus_split(struct cdbus_method_call * call_ptr)
 {
   uint64_t client_id;
 
@@ -59,11 +59,11 @@ static void ladish_graph_manager_dbus_split(struct dbus_method_call * call_ptr)
   }
   else
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
 }
 
-static void ladish_graph_manager_dbus_join(struct dbus_method_call * call_ptr)
+static void ladish_graph_manager_dbus_join(struct cdbus_method_call * call_ptr)
 {
   uint64_t client1_id;
   uint64_t client2_id;
@@ -88,11 +88,11 @@ static void ladish_graph_manager_dbus_join(struct dbus_method_call * call_ptr)
   }
   else
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
 }
 
-static void ladish_graph_manager_dbus_rename_client(struct dbus_method_call * call_ptr)
+static void ladish_graph_manager_dbus_rename_client(struct cdbus_method_call * call_ptr)
 {
   uint64_t client_id;
   const char * newname;
@@ -125,11 +125,11 @@ static void ladish_graph_manager_dbus_rename_client(struct dbus_method_call * ca
   }
   else
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
 }
 
-static void ladish_graph_manager_dbus_rename_port(struct dbus_method_call * call_ptr)
+static void ladish_graph_manager_dbus_rename_port(struct cdbus_method_call * call_ptr)
 {
   uint64_t port_id;
   const char * newname;
@@ -162,11 +162,11 @@ static void ladish_graph_manager_dbus_rename_port(struct dbus_method_call * call
   }
   else
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
 }
 
-static void ladish_graph_manager_dbus_move_port(struct dbus_method_call * call_ptr)
+static void ladish_graph_manager_dbus_move_port(struct cdbus_method_call * call_ptr)
 {
   uint64_t port_id;
   uint64_t client_id;
@@ -203,10 +203,10 @@ static void ladish_graph_manager_dbus_move_port(struct dbus_method_call * call_p
 
   ladish_graph_move_port(graph, port, client);
 
-  method_return_new_void(call_ptr);
+  cdbus_method_return_new_void(call_ptr);
 }
 
-static void ladish_graph_manager_dbus_new_client(struct dbus_method_call * call_ptr)
+static void ladish_graph_manager_dbus_new_client(struct cdbus_method_call * call_ptr)
 {
   const char * name;
   ladish_client_handle client;
@@ -240,10 +240,10 @@ static void ladish_graph_manager_dbus_new_client(struct dbus_method_call * call_
 
   client_id = ladish_graph_get_client_id(graph, client);
 
-  method_return_new_single(call_ptr, DBUS_TYPE_UINT64, &client_id);
+  cdbus_method_return_new_single(call_ptr, DBUS_TYPE_UINT64, &client_id);
 }
 
-static void ladish_graph_manager_dbus_remove_client(struct dbus_method_call * call_ptr)
+static void ladish_graph_manager_dbus_remove_client(struct cdbus_method_call * call_ptr)
 {
   uint64_t client_id;
   ladish_client_handle client;
@@ -276,7 +276,7 @@ static void ladish_graph_manager_dbus_remove_client(struct dbus_method_call * ca
 
   ladish_graph_remove_client(graph, client);
 
-  method_return_new_void(call_ptr);
+  cdbus_method_return_new_void(call_ptr);
 }
 
 #undef graph_ptr

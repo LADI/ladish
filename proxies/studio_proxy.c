@@ -62,14 +62,14 @@ static bool extract_room_info(DBusMessageIter * iter_ptr, const char ** opath, c
   //log_info("opath is \"%s\"", *opath);
   dbus_message_iter_next(iter_ptr);
 
-  if (!dbus_iter_get_dict_entry_string(iter_ptr, "name", name))
+  if (!cdbus_iter_get_dict_entry_string(iter_ptr, "name", name))
   {
     log_error("dbus_iter_get_dict_entry() failed");
     return false;
   }
   //log_info("name is \"%s\"", *name);
 
-  if (!dbus_iter_get_dict_entry_string(iter_ptr, "template", template))
+  if (!cdbus_iter_get_dict_entry_string(iter_ptr, "template", template))
   {
     *template = NULL;
   }
@@ -169,7 +169,7 @@ static void on_room_changed(void * context, DBusMessage * message_ptr)
 
 /* this must be static because it is referenced by the
  * dbus helper layer when hooks are active */
-static struct dbus_signal_hook g_signal_hooks[] =
+static struct cdbus_signal_hook g_signal_hooks[] =
 {
   {"StudioRenamed", on_studio_renamed},
   {"StudioStarted", on_studio_started},
@@ -183,7 +183,7 @@ static struct dbus_signal_hook g_signal_hooks[] =
 
 bool studio_proxy_init(void)
 {
-  if (!dbus_register_object_signal_hooks(
+  if (!cdbus_register_object_signal_hooks(
         cdbus_g_dbus_connection,
         SERVICE_NAME,
         STUDIO_OBJECT_PATH,
@@ -200,13 +200,13 @@ bool studio_proxy_init(void)
 
 void studio_proxy_uninit(void)
 {
-  dbus_unregister_object_signal_hooks(cdbus_g_dbus_connection, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO);
+  cdbus_unregister_object_signal_hooks(cdbus_g_dbus_connection, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO);
 }
 
 bool studio_proxy_get_name(char ** name_ptr)
 {
   const char * name;
-  if (!dbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "GetName", "", "s", &name))
+  if (!cdbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "GetName", "", "s", &name))
   {
     return false;
   }
@@ -223,22 +223,22 @@ bool studio_proxy_get_name(char ** name_ptr)
 
 bool studio_proxy_rename(const char * name)
 {
-  return dbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Rename", "s", &name, "");
+  return cdbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Rename", "s", &name, "");
 }
 
 bool studio_proxy_save(void)
 {
-  return dbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Save", "", "");
+  return cdbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Save", "", "");
 }
 
 bool studio_proxy_save_as(const char * name)
 {
-  return dbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "SaveAs", "s", &name, "");
+  return cdbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "SaveAs", "s", &name, "");
 }
 
 bool studio_proxy_unload(void)
 {
-  return dbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Unload", "", "");
+  return cdbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Unload", "", "");
 }
 
 void studio_proxy_set_renamed_callback(void (* callback)(const char * new_studio_name))
@@ -255,19 +255,19 @@ void studio_proxy_set_startstop_callbacks(void (* started_callback)(void), void 
 
 bool studio_proxy_start(void)
 {
-  return dbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Start", "", "");
+  return cdbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Start", "", "");
 }
 
 bool studio_proxy_stop(void)
 {
-  return dbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Stop", "", "");
+  return cdbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "Stop", "", "");
 }
 
 bool studio_proxy_is_started(bool * is_started_ptr)
 {
   dbus_bool_t is_started;
 
-  if (!dbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "IsStarted", "", "b", &is_started))
+  if (!cdbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "IsStarted", "", "b", &is_started))
   {
     return false;
   }
@@ -296,12 +296,12 @@ studio_proxy_set_room_callbacks(
   g_room_disappeared_calback = disappeared;
   g_room_changed_calback = changed;
 
-  if (!dbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "GetRoomList", "", NULL, &reply_ptr))
+  if (!cdbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "GetRoomList", "", NULL, &reply_ptr))
   {
     /* Don't log error if there is no studio loaded */
-    if (!dbus_call_last_error_is_name(DBUS_ERROR_UNKNOWN_METHOD))
+    if (!cdbus_call_last_error_is_name(DBUS_ERROR_UNKNOWN_METHOD))
     {
-      log_error("Cannot fetch studio room list: %s", dbus_call_last_error_get_message());
+      log_error("Cannot fetch studio room list: %s", cdbus_call_last_error_get_message());
     }
 
     return;
@@ -337,10 +337,10 @@ unref:
 
 bool studio_proxy_create_room(const char * name, const char * template)
 {
-  return dbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "CreateRoom", "ss", &name, &template, "");
+  return cdbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "CreateRoom", "ss", &name, &template, "");
 }
 
 bool studio_proxy_delete_room(const char * name)
 {
-  return dbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "DeleteRoom", "s", &name, "");
+  return cdbus_call(0, SERVICE_NAME, STUDIO_OBJECT_PATH, IFACE_STUDIO, "DeleteRoom", "s", &name, "");
 }

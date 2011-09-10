@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009,2011 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -37,9 +37,9 @@
  * object exists in the method array. Return true if the method was found,
  * false otherwise.
  */
-bool dbus_interface_default_handler(const struct dbus_interface_descriptor * iface_ptr, struct dbus_method_call * call_ptr)
+bool cdbus_interface_default_handler(const struct cdbus_interface_descriptor * iface_ptr, struct cdbus_method_call * call_ptr)
 {
-  const struct dbus_method_descriptor * method_ptr;
+  const struct cdbus_method_descriptor * method_ptr;
 
   for (method_ptr = iface_ptr->methods; method_ptr->name != NULL; method_ptr++)
   {

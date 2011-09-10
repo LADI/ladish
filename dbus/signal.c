@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -31,7 +31,7 @@
 #include <stdarg.h>
 #include "helpers.h"
 
-void dbus_signal_send(DBusConnection * connection_ptr, DBusMessage * message_ptr)
+void cdbus_signal_send(DBusConnection * connection_ptr, DBusMessage * message_ptr)
 {
   if (!dbus_connection_send(connection_ptr, message_ptr, NULL))
   {
@@ -42,7 +42,7 @@ void dbus_signal_send(DBusConnection * connection_ptr, DBusMessage * message_ptr
 }
 
 void
-dbus_signal_emit(
+cdbus_signal_emit(
   DBusConnection * connection_ptr,
   const char * path,
   const char * interface,
@@ -101,7 +101,7 @@ dbus_signal_emit(
     signature++;
   }
 
-  dbus_signal_send(connection_ptr, message_ptr);
+  cdbus_signal_send(connection_ptr, message_ptr);
 
 unref:
   dbus_message_unref(message_ptr);

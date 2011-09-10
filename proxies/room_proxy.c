@@ -84,22 +84,22 @@ static bool update_project_properties(struct ladish_room_proxy * proxy_ptr, DBus
     goto fail;
   }
 
-  if (!dbus_iter_get_dict_entry_string(&iter, "name", &name))
+  if (!cdbus_iter_get_dict_entry_string(&iter, "name", &name))
   {
     name = "";
   }
 
-  if (!dbus_iter_get_dict_entry_string(&iter, "dir", &dir))
+  if (!cdbus_iter_get_dict_entry_string(&iter, "dir", &dir))
   {
     dir = "";
   }
 
-  if (!dbus_iter_get_dict_entry_string(&iter, "description", &description))
+  if (!cdbus_iter_get_dict_entry_string(&iter, "description", &description))
   {
     description = "";
   }
 
-  if (!dbus_iter_get_dict_entry_string(&iter, "notes", &notes))
+  if (!cdbus_iter_get_dict_entry_string(&iter, "notes", &notes))
   {
     notes = "";
   }
@@ -188,7 +188,7 @@ bool ladish_room_proxy_get_project_properties_internal(struct ladish_room_proxy 
 {
   DBusMessage * reply_ptr;
 
-  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "GetProjectProperties", "", NULL, &reply_ptr))
+  if (!cdbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "GetProjectProperties", "", NULL, &reply_ptr))
   {
     log_error("GetProjectProperties() failed.");
     return false;
@@ -217,7 +217,7 @@ static void on_project_properties_changed(void * context, DBusMessage * message_
 
 /* this must be static because it is referenced by the
  * dbus helper layer when hooks are active */
-static struct dbus_signal_hook g_signal_hooks[] =
+static struct cdbus_signal_hook g_signal_hooks[] =
 {
   {"ProjectPropertiesChanged", on_project_properties_changed},
   {NULL, NULL}
@@ -268,7 +268,7 @@ ladish_room_proxy_create(
   proxy_ptr->project_properties_changed_context = project_properties_changed_context;
   proxy_ptr->project_properties_changed = project_properties_changed;
 
-  if (!dbus_register_object_signal_hooks(
+  if (!cdbus_register_object_signal_hooks(
         cdbus_g_dbus_connection,
         proxy_ptr->service,
         proxy_ptr->object,
@@ -289,7 +289,7 @@ ladish_room_proxy_create(
   return true;
 
 unregister_signal_hooks:
-  dbus_unregister_object_signal_hooks(cdbus_g_dbus_connection, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM);
+  cdbus_unregister_object_signal_hooks(cdbus_g_dbus_connection, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM);
 free_object:
   free(proxy_ptr->object);
 free_service:
@@ -304,7 +304,7 @@ fail:
 
 void ladish_room_proxy_destroy(ladish_room_proxy_handle proxy)
 {
-  dbus_unregister_object_signal_hooks(cdbus_g_dbus_connection, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM);
+  cdbus_unregister_object_signal_hooks(cdbus_g_dbus_connection, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM);
 
   if (proxy_ptr->project_name != NULL)
   {
@@ -337,7 +337,7 @@ char * ladish_room_proxy_get_name(ladish_room_proxy_handle proxy)
   const char * name;
   char * name_buffer;
 
-  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "GetName", "", NULL, &reply_ptr))
+  if (!cdbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "GetName", "", NULL, &reply_ptr))
   {
     log_error("GetName() failed.");
     return NULL;
@@ -366,7 +366,7 @@ char * ladish_room_proxy_get_name(ladish_room_proxy_handle proxy)
 
 bool ladish_room_proxy_load_project(ladish_room_proxy_handle proxy, const char * project_dir)
 {
-  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "LoadProject", "s", &project_dir, ""))
+  if (!cdbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "LoadProject", "s", &project_dir, ""))
   {
     log_error("LoadProject() failed.");
     return false;
@@ -377,7 +377,7 @@ bool ladish_room_proxy_load_project(ladish_room_proxy_handle proxy, const char *
 
 bool ladish_room_proxy_save_project(ladish_room_proxy_handle proxy, const char * project_dir, const char * project_name)
 {
-  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "SaveProject", "ss", &project_dir, &project_name, ""))
+  if (!cdbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "SaveProject", "ss", &project_dir, &project_name, ""))
   {
     log_error("SaveProject() failed.");
     return false;
@@ -388,7 +388,7 @@ bool ladish_room_proxy_save_project(ladish_room_proxy_handle proxy, const char *
 
 bool ladish_room_proxy_unload_project(ladish_room_proxy_handle proxy)
 {
-  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "UnloadProject", "", ""))
+  if (!cdbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "UnloadProject", "", ""))
   {
     log_error("UnloadProject() failed.");
     return false;
@@ -435,7 +435,7 @@ ladish_room_proxy_set_project_description(
 {
   uint64_t new_version;
 
-  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "SetProjectDescription", "s", &description, "t", &new_version))
+  if (!cdbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "SetProjectDescription", "s", &description, "t", &new_version))
   {
     log_error("SetProjectDescription() failed.");
     return false;
@@ -451,7 +451,7 @@ ladish_room_proxy_set_project_notes(
 {
   uint64_t new_version;
 
-  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "SetProjectNotes", "s", &notes, "t", &new_version))
+  if (!cdbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_ROOM, "SetProjectNotes", "s", &notes, "t", &new_version))
   {
     log_error("SetProjectNotes(%s) failed.", notes);
     return false;
@@ -478,7 +478,7 @@ ladish_room_proxy_get_recent_projects(
   const char * project_dir;
   const char * project_name;
 
-  if (!dbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_RECENT_ITEMS, "get", "q", &max_items, NULL, &reply_ptr))
+  if (!cdbus_call(0, proxy_ptr->service, proxy_ptr->object, IFACE_RECENT_ITEMS, "get", "q", &max_items, NULL, &reply_ptr))
   {
     log_error("GetStudioList() failed.");
     return false;
@@ -501,7 +501,7 @@ ladish_room_proxy_get_recent_projects(
     dbus_message_iter_get_basic(&struct_iter, &project_dir);
     dbus_message_iter_next(&struct_iter);
 
-    if (!dbus_iter_get_dict_entry_string(&struct_iter, "name", &project_name))
+    if (!cdbus_iter_get_dict_entry_string(&struct_iter, "name", &project_name))
     {
       project_name = NULL;
     }

@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to recent projects functionality
@@ -34,6 +34,6 @@ void ladish_recent_projects_uninit(void);
 
 void ladish_recent_project_use(const char * project_path);
 
-extern const struct dbus_interface_descriptor g_iface_recent_items;
+extern const struct cdbus_interface_descriptor g_iface_recent_items;
 
 #endif /* #ifndef RECENT_PROJECTS_H__51B24E64_1629_43A4_B312_14E84080E68E__INCLUDED */

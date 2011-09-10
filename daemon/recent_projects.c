@@ -110,7 +110,7 @@ bool recent_projects_callback(void * callback_context, const char * project_path
     goto close_struct;
   }
 
-  if (!dbus_maybe_add_dict_entry_string(&dict_iter, "name", name))
+  if (!cdbus_maybe_add_dict_entry_string(&dict_iter, "name", name))
   {
     ctx_ptr->error = true;
     goto close_dict;
@@ -144,7 +144,7 @@ exit:
 
 #undef ctx_ptr
 
-static void get(struct dbus_method_call * call_ptr)
+static void get(struct cdbus_method_call * call_ptr)
 {
   DBusMessageIter iter;
   struct recent_projects_callback_context ctx;

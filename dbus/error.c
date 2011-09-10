@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009,2011 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -31,7 +31,7 @@
 #include "helpers.h"
 #include "error.h"
 
-void lash_dbus_error(struct dbus_method_call * call_ptr, const char * err_name, const char * format, ...)
+void lash_dbus_error(struct cdbus_method_call * call_ptr, const char * err_name, const char * format, ...)
 {
   va_list ap;
   char message[1024];

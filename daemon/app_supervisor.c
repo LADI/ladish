@@ -194,7 +194,7 @@ void remove_app_internal(struct ladish_app_supervisor * supervisor_ptr, struct l
 
   supervisor_ptr->version++;
 
-  dbus_signal_emit(
+  cdbus_signal_emit(
     cdbus_g_dbus_connection,
     supervisor_ptr->opath,
     IFACE_APP_SUPERVISOR,
@@ -223,7 +223,7 @@ void emit_app_state_changed(struct ladish_app_supervisor * supervisor_ptr, struc
 
   supervisor_ptr->version++;
 
-  dbus_signal_emit(
+  cdbus_signal_emit(
     cdbus_g_dbus_connection,
     supervisor_ptr->opath,
     IFACE_APP_SUPERVISOR,
@@ -236,7 +236,7 @@ void emit_app_state_changed(struct ladish_app_supervisor * supervisor_ptr, struc
     &terminal,
     &level_byte);
 
-  dbus_signal_emit(
+  cdbus_signal_emit(
     cdbus_g_dbus_connection,
     supervisor_ptr->opath,
     IFACE_APP_SUPERVISOR,
@@ -392,7 +392,7 @@ ladish_app_supervisor_add(
   dbus_terminal = terminal;
   level = app_ptr->level;
   level_byte = ladish_level_string_to_integer(app_ptr->level);
-  dbus_signal_emit(
+  cdbus_signal_emit(
     cdbus_g_dbus_connection,
     supervisor_ptr->opath,
     IFACE_APP_SUPERVISOR,
@@ -404,7 +404,7 @@ ladish_app_supervisor_add(
     &running,
     &dbus_terminal,
     &level_byte);
-  dbus_signal_emit(
+  cdbus_signal_emit(
     cdbus_g_dbus_connection,
     supervisor_ptr->opath,
     IFACE_APP_SUPERVISOR,
@@ -1074,16 +1074,16 @@ void ladish_app_supervisor_dump(ladish_app_supervisor_handle supervisor_handle)
 
 #define supervisor_ptr ((struct ladish_app_supervisor *)call_ptr->iface_context)
 
-static void get_version(struct dbus_method_call * call_ptr)
+static void get_version(struct cdbus_method_call * call_ptr)
 {
   uint32_t version;
 
   version = 1;
 
-  method_return_new_single(call_ptr, DBUS_TYPE_UINT32, &version);
+  cdbus_method_return_new_single(call_ptr, DBUS_TYPE_UINT32, &version);
 }
 
-static void get_all_multiversion(struct dbus_method_call * call_ptr, int version)
+static void get_all_multiversion(struct cdbus_method_call * call_ptr, int version)
 {
   DBusMessageIter iter, array_iter, struct_iter;
   struct list_head * node_ptr;
@@ -1186,17 +1186,17 @@ fail:
   log_error("Ran out of memory trying to construct method return");
 }
 
-static void get_all1(struct dbus_method_call * call_ptr)
+static void get_all1(struct cdbus_method_call * call_ptr)
 {
   get_all_multiversion(call_ptr, 1);
 }
 
-static void get_all2(struct dbus_method_call * call_ptr)
+static void get_all2(struct cdbus_method_call * call_ptr)
 {
   get_all_multiversion(call_ptr, 2);
 }
 
-static void run_custom1(struct dbus_method_call * call_ptr)
+static void run_custom1(struct cdbus_method_call * call_ptr)
 {
   dbus_bool_t terminal;
   const char * commandline;
@@ -1234,11 +1234,11 @@ static void run_custom1(struct dbus_method_call * call_ptr)
         name,
         level == 0 ? LADISH_APP_LEVEL_0 : LADISH_APP_LEVEL_1))
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
 }
 
-static void run_custom2(struct dbus_method_call * call_ptr)
+static void run_custom2(struct cdbus_method_call * call_ptr)
 {
   dbus_bool_t terminal;
   const char * commandline;
@@ -1276,11 +1276,11 @@ static void run_custom2(struct dbus_method_call * call_ptr)
         name,
         level))
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
 }
 
-static void start_app(struct dbus_method_call * call_ptr)
+static void start_app(struct cdbus_method_call * call_ptr)
 {
   uint64_t id;
 
@@ -1297,11 +1297,11 @@ static void start_app(struct dbus_method_call * call_ptr)
 
   if (ladish_command_change_app_state(call_ptr, ladish_studio_get_cmd_queue(), supervisor_ptr->opath, id, LADISH_APP_STATE_STARTED))
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
 }
 
-static void stop_app(struct dbus_method_call * call_ptr)
+static void stop_app(struct cdbus_method_call * call_ptr)
 {
   uint64_t id;
 
@@ -1318,11 +1318,11 @@ static void stop_app(struct dbus_method_call * call_ptr)
 
   if (ladish_command_change_app_state(call_ptr, ladish_studio_get_cmd_queue(), supervisor_ptr->opath, id, LADISH_APP_STATE_STOPPED))
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
 }
 
-static void kill_app(struct dbus_method_call * call_ptr)
+static void kill_app(struct cdbus_method_call * call_ptr)
 {
   uint64_t id;
 
@@ -1339,11 +1339,11 @@ static void kill_app(struct dbus_method_call * call_ptr)
 
   if (ladish_command_change_app_state(call_ptr, ladish_studio_get_cmd_queue(), supervisor_ptr->opath, id, LADISH_APP_STATE_KILL))
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
 }
 
-static void get_app_properties_multiversion(struct dbus_method_call * call_ptr, int version)
+static void get_app_properties_multiversion(struct cdbus_method_call * call_ptr, int version)
 {
   uint64_t id;
   struct ladish_app * app_ptr;
@@ -1416,17 +1416,17 @@ fail:
   log_error("Ran out of memory trying to construct method return");
 }
 
-static void get_app_properties1(struct dbus_method_call * call_ptr)
+static void get_app_properties1(struct cdbus_method_call * call_ptr)
 {
   get_app_properties_multiversion(call_ptr, 1);
 }
 
-static void get_app_properties2(struct dbus_method_call * call_ptr)
+static void get_app_properties2(struct cdbus_method_call * call_ptr)
 {
   get_app_properties_multiversion(call_ptr, 2);
 }
 
-static void set_app_properties_multiversion(struct dbus_method_call * call_ptr, int version)
+static void set_app_properties_multiversion(struct cdbus_method_call * call_ptr, int version)
 {
   uint64_t id;
   dbus_bool_t terminal;
@@ -1564,21 +1564,21 @@ static void set_app_properties_multiversion(struct dbus_method_call * call_ptr, 
 
   emit_app_state_changed(supervisor_ptr, app_ptr);
 
-  method_return_new_void(call_ptr);
+  cdbus_method_return_new_void(call_ptr);
 }
 
-static void set_app_properties1(struct dbus_method_call * call_ptr)
+static void set_app_properties1(struct cdbus_method_call * call_ptr)
 {
   set_app_properties_multiversion(call_ptr, 1);
 }
 
-static void set_app_properties2(struct dbus_method_call * call_ptr)
+static void set_app_properties2(struct cdbus_method_call * call_ptr)
 {
   set_app_properties_multiversion(call_ptr, 2);
 }
 
 
-static void remove_app(struct dbus_method_call * call_ptr)
+static void remove_app(struct cdbus_method_call * call_ptr)
 {
   uint64_t id;
 
@@ -1595,11 +1595,11 @@ static void remove_app(struct dbus_method_call * call_ptr)
 
   if (ladish_command_remove_app(call_ptr, ladish_studio_get_cmd_queue(), supervisor_ptr->opath, id))
   {
-    method_return_new_void(call_ptr);
+    cdbus_method_return_new_void(call_ptr);
   }
 }
 
-static void is_app_running(struct dbus_method_call * call_ptr)
+static void is_app_running(struct cdbus_method_call * call_ptr)
 {
   uint64_t id;
   struct ladish_app * app_ptr;
@@ -1625,7 +1625,7 @@ static void is_app_running(struct dbus_method_call * call_ptr)
 
   running = app_ptr->pid != 0;
 
-  method_return_new_single(call_ptr, DBUS_TYPE_BOOLEAN, &running);
+  cdbus_method_return_new_single(call_ptr, DBUS_TYPE_BOOLEAN, &running);
 }
 
 #undef supervisor_ptr

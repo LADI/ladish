@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -30,7 +30,7 @@
 
 #include "room.h"
 
-extern const struct dbus_interface_descriptor g_lashd_interface_control;
+extern const struct cdbus_interface_descriptor g_lashd_interface_control;
 
 void emit_studio_appeared(void);
 void emit_studio_disappeared(void);

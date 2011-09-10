@@ -456,6 +456,6 @@ bool ladish_app_set_dbus_name(ladish_app_handle app_handle, const char * name);
 /**
  * D-Bus interface descriptor for the app supervisor interface. The call context must be a ::ladish_app_supervisor_handle
  */
-extern const struct dbus_interface_descriptor g_iface_app_supervisor;
+extern const struct cdbus_interface_descriptor g_iface_app_supervisor;
 
 #endif /* #ifndef APP_SUPERVISOR_H__712E6589_DCB1_4CE9_9812_4F250D55E8A2__INCLUDED */

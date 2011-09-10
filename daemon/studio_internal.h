@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains declaration of internal stuff used by
@@ -140,7 +140,7 @@ struct studio
   struct list_head jack_conf;   /* root of the conf tree */
   struct list_head jack_params; /* list of conf tree leaves */
 
-  dbus_object_path dbus_object;
+  cdbus_object_path dbus_object;
   bool announced;
 
   struct ladish_cqueue cmd_queue;
@@ -188,7 +188,7 @@ extern struct studio g_studio;
 extern char * g_studios_dir;
 extern ladish_recent_store_handle g_studios_recent_store;
 
-extern const struct dbus_interface_descriptor g_interface_studio;
+extern const struct cdbus_interface_descriptor g_interface_studio;
 
 void ladish_studio_jack_conf_clear(void);
 bool ladish_studio_fetch_jack_settings(void);
