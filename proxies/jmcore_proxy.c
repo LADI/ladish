@@ -77,7 +77,7 @@ bool jmcore_proxy_create_link(bool midi, const char * input_port_name, const cha
 
   if (!cdbus_call(0, JMCORE_SERVICE_NAME, JMCORE_OBJECT_PATH, JMCORE_IFACE, "create", "bss", &dbus_midi, &input_port_name, &output_port_name, ""))
   {
-    log_error("jmcore::create() failed.");
+    log_error("jmcore::create() failed: %s", cdbus_call_last_error_get_message());
     return false;
   }
 
