@@ -86,6 +86,14 @@ typedef bool (* ladish_app_supervisor_enum_callback)(
   const uuid_t uuid);
 
 /**
+ * Type of function that is called when save is complete
+ *
+ * @param[in] context User defined context that was supplied to ladish_app_supervisor_save()
+ * @param[in] success Whether save was successfull or not
+ */
+typedef void (* ladish_save_complete_callback)(void * context, bool success);
+
+/**
  * Check whether app level string is valid.
  *
  * @param [in] app level string
@@ -194,10 +202,14 @@ ladish_app_supervisor_clear(
  * Initiate save for apps running at level higher than 0
  *
  * @param[in] supervisor_handle supervisor object handle
+ * @param[in] context User defined context to be supplied when callback supplied throuth @c callback parameter is called
+ * @param[in] callback Callback to call when save is complete
  */
 void
 ladish_app_supervisor_save(
-  ladish_app_supervisor_handle supervisor_handle);
+  ladish_app_supervisor_handle supervisor_handle,
+  void * context,
+  ladish_save_complete_callback callback);
 
 /**
  * Add app. Apps are added in stopped state

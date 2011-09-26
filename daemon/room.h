@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface of the room object
@@ -86,7 +86,16 @@ ladish_room_add_port(
   uint32_t type,
   uint32_t flags);
 
-bool ladish_room_save_project(ladish_room_handle room_handle, const char * project_dir, const char * project_name);
+typedef void (* ladish_room_save_complete_callback)(void * context, bool success);
+
+bool
+ladish_room_save_project(
+  ladish_room_handle room_handle,
+  const char * project_dir,
+  const char * project_name,
+  void * context,
+  ladish_room_save_complete_callback callback);
+
 bool ladish_room_unload_project(ladish_room_handle room_handle);
 bool ladish_room_load_project(ladish_room_handle room_handle, const char * project_dir);
 

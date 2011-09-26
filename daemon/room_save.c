@@ -41,7 +41,58 @@
 #define DEFAULT_PROJECT_BASE_DIR "/ladish-projects/"
 #define DEFAULT_PROJECT_BASE_DIR_LEN ((size_t)(sizeof(DEFAULT_PROJECT_BASE_DIR) - 1))
 
-static bool ladish_room_save_project_do(struct ladish_room * room_ptr)
+struct ladish_room_save_context
+{
+  struct ladish_room * room;
+  char * project_dir;
+  char * project_name;
+  char * old_project_dir;
+  char * old_project_name;
+
+  void * context;
+  ladish_room_save_complete_callback callback;
+};
+
+static void ladish_room_save_context_destroy(struct ladish_room_save_context * ctx_ptr)
+{
+  if (ctx_ptr->project_name != NULL && ctx_ptr->project_name != ctx_ptr->room->project_name)
+  {
+    free(ctx_ptr->room->project_name);
+  }
+
+  if (ctx_ptr->project_dir != NULL && ctx_ptr->project_dir != ctx_ptr->room->project_dir)
+  {
+    free(ctx_ptr->room->project_dir);
+  }
+
+  /* free strings that are allocated and stored only in the stack */
+  if (ctx_ptr->project_name != NULL && ctx_ptr->project_name != ctx_ptr->room->project_name)
+  {
+    free(ctx_ptr->project_name);
+  }
+
+  if (ctx_ptr->project_dir != NULL && ctx_ptr->project_dir != ctx_ptr->room->project_dir)
+  {
+    free(ctx_ptr->project_dir);
+  }
+
+  free(ctx_ptr);
+}
+
+static void ladish_room_save_complete(struct ladish_room_save_context * ctx_ptr, bool success)
+{
+  if (!success)
+  {
+    ctx_ptr->room->project_name = ctx_ptr->old_project_name;
+    ctx_ptr->room->project_dir = ctx_ptr->old_project_dir;
+  }
+
+  ctx_ptr->callback(ctx_ptr->context, success);
+
+  ladish_room_save_context_destroy(ctx_ptr);
+}
+
+static bool ladish_room_save_project_xml(struct ladish_room * room_ptr)
 {
   bool ret;
   time_t timestamp;
@@ -51,20 +102,11 @@ static bool ladish_room_save_project_do(struct ladish_room * room_ptr)
   char * bak_filename;
   int fd;
 
-  log_info("Saving project '%s' in room '%s' to '%s'", room_ptr->project_name, room_ptr->name, room_ptr->project_dir);
-
-  ladish_check_integrity();
-
   time(&timestamp);
   ctime_r(&timestamp, timestamp_str);
   timestamp_str[24] = 0;
 
   ret = false;
-
-  if (!ensure_dir_exist(room_ptr->project_dir, 0777))
-  {
-    goto exit;
-  }
 
   uuid_generate(room_ptr->project_uuid); /* TODO: the uuid should be changed on "save as" but not on "rename" */
   uuid_unparse(room_ptr->project_uuid, uuid_str);
@@ -234,10 +276,6 @@ static bool ladish_room_save_project_do(struct ladish_room * room_ptr)
     goto close;
   }
 
-  ladish_app_supervisor_save(room_ptr->app_supervisor);
-
-  ladish_room_emit_project_properties_changed(room_ptr);
-
   ret = true;
 
 close:
@@ -248,6 +286,54 @@ free_filename:
   free(filename);
 exit:
   return ret;
+}
+
+#define ctx_ptr ((struct ladish_room_save_context *)context)
+
+static void ladish_room_apps_save_complete(void * context, bool success)
+{
+  log_info("Project '%s' apps in room '%s' %s to '%s'", ctx_ptr->room->project_name, ctx_ptr->room->name, success ? "saved successfully" : "failed to save", ctx_ptr->room->project_dir);
+
+  if (!success)
+  {
+    ladish_room_save_complete(ctx_ptr, false);
+    return;
+  }
+
+  if (!ladish_room_save_project_xml(ctx_ptr->room))
+  {
+    ladish_room_save_complete(ctx_ptr, false);
+    /* TODO: try to rollback apps save stage */
+    return;
+  }
+
+  ladish_room_emit_project_properties_changed(ctx_ptr->room);
+
+  ctx_ptr->room->project_state = ROOM_PROJECT_STATE_LOADED;
+
+  ladish_room_save_complete(ctx_ptr, true);
+}
+
+#undef ctx_ptr
+
+static bool ladish_room_save_project_do(struct ladish_room_save_context * ctx_ptr)
+{
+  log_info("Saving project '%s' in room '%s' to '%s'", ctx_ptr->room->project_name, ctx_ptr->room->name, ctx_ptr->room->project_dir);
+
+  ladish_check_integrity();
+
+  if (!ensure_dir_exist(ctx_ptr->room->project_dir, 0777))
+  {
+    goto fail;
+  }
+
+  ladish_app_supervisor_save(ctx_ptr->room->app_supervisor, ctx_ptr, ladish_room_apps_save_complete);
+
+  return true;
+
+fail:
+  ladish_room_save_complete(ctx_ptr, false);
+  return false;
 }
 
 /* TODO: base dir must be a runtime setting */
@@ -280,21 +366,31 @@ bool
 ladish_room_save_project(
   ladish_room_handle room_handle,
   const char * project_dir_param,
-  const char * project_name_param)
+  const char * project_name_param,
+  void * context,
+  ladish_room_save_complete_callback callback)
 {
+  struct ladish_room_save_context * ctx_ptr;
   bool first_time;
   bool dir_supplied;
   bool name_supplied;
-  char * project_dir;
-  char * project_name;
-  char * old_project_dir;
-  char * old_project_name;
   char * buffer;
   bool ret;
 
   ret = false;
-  project_name = NULL;
-  project_dir = NULL;
+
+  ctx_ptr = malloc(sizeof(struct ladish_room_save_context));
+  if (ctx_ptr == NULL)
+  {
+    log_error("malloc() failed to allocate memory for room save context struct");
+    goto fail;
+  }
+
+  ctx_ptr->room = room_ptr;
+  ctx_ptr->project_name = NULL;
+  ctx_ptr->project_dir = NULL;
+  ctx_ptr->context = context;
+  ctx_ptr->callback = callback;
 
   /* project has either both name and dir no none of them */
   ASSERT((room_ptr->project_dir == NULL && room_ptr->project_name == NULL) || (room_ptr->project_dir != NULL && room_ptr->project_name != NULL));
@@ -308,13 +404,13 @@ ladish_room_save_project(
     if (!dir_supplied && !name_supplied)
     {
       log_error("Cannot save unnamed project in room '%s'", room_ptr->name);
-      goto exit;
+      goto destroy_ctx;
     }
 
     if (dir_supplied && name_supplied)
     {
-      project_dir = strdup(project_dir_param);
-      project_name = strdup(project_name_param);
+      ctx_ptr->project_dir = strdup(project_dir_param);
+      ctx_ptr->project_name = strdup(project_name_param);
     }
     else if (dir_supplied)
     {
@@ -324,89 +420,63 @@ ladish_room_save_project(
       if (buffer == NULL)
       {
         log_error("strdup() failed for project dir");
-        goto exit;
+        goto destroy_ctx;
       }
 
-      project_name = basename(buffer);
-      log_info("Project name for dir '%s' will be '%s'", project_dir_param, project_name);
-      project_name = strdup(project_name);
+      ctx_ptr->project_name = basename(buffer);
+      log_info("Project name for dir '%s' will be '%s'", project_dir_param, ctx_ptr->project_name);
+      ctx_ptr->project_name = strdup(ctx_ptr->project_name);
       free(buffer);
-      project_dir = strdup(project_dir_param); /* buffer cannot be used because it may be modified by basename() */
+      ctx_ptr->project_dir = strdup(project_dir_param); /* buffer cannot be used because it may be modified by basename() */
     }
     else if (name_supplied)
     {
       ASSERT(!dir_supplied);
 
-      project_dir = compose_project_dir_from_name(project_name_param);
-      if (!project_dir)
+      ctx_ptr->project_dir = compose_project_dir_from_name(project_name_param);
+      if (ctx_ptr->project_dir == NULL)
       {
-        goto exit;
+        goto destroy_ctx;
       }
 
-      log_info("Project dir for name '%s' will be '%s'", project_name_param, project_dir);
+      log_info("Project dir for name '%s' will be '%s'", project_name_param, ctx_ptr->project_dir);
 
-      project_name = strdup(project_name_param);
+      ctx_ptr->project_name = strdup(project_name_param);
     }
     else
     {
       ASSERT_NO_PASS;
-      goto exit;
+      goto destroy_ctx;
     }
 
-    ladish_app_supervisor_set_directory(room_ptr->app_supervisor, project_dir);
+    ladish_app_supervisor_set_directory(room_ptr->app_supervisor, ctx_ptr->project_dir);
   }
   else
   {
     ASSERT(room_ptr->project_name != NULL);
     ASSERT(room_ptr->project_dir != NULL);
 
-    project_name = name_supplied ? strdup(project_name_param) : room_ptr->project_name;
-    project_dir = dir_supplied ? strdup(project_dir_param) : room_ptr->project_dir;
+    ctx_ptr->project_name = name_supplied ? strdup(project_name_param) : room_ptr->project_name;
+    ctx_ptr->project_dir = dir_supplied ? strdup(project_dir_param) : room_ptr->project_dir;
   }
 
-  if (project_name == NULL || project_dir == NULL)
+  if (ctx_ptr->project_name == NULL || ctx_ptr->project_dir == NULL)
   {
     log_error("strdup() failed for project name or dir");
-    goto exit;
+    goto destroy_ctx;
   }
 
-  old_project_dir = room_ptr->project_dir;
-  old_project_name = room_ptr->project_name;
-  room_ptr->project_name = project_name;
-  room_ptr->project_dir = project_dir;
-  ret = ladish_room_save_project_do(room_ptr);
-  if (!ret)
-  {
-    room_ptr->project_name = old_project_name;
-    room_ptr->project_dir = old_project_dir;
-  }
-  else
-  {
-    room_ptr->project_state = ROOM_PROJECT_STATE_LOADED;
-  }
+  ctx_ptr->old_project_dir = room_ptr->project_dir;
+  ctx_ptr->old_project_name = room_ptr->project_name;
+  room_ptr->project_name = ctx_ptr->project_name;
+  room_ptr->project_dir = ctx_ptr->project_dir;
 
-exit:
-  if (project_name != NULL && project_name != room_ptr->project_name)
-  {
-    free(room_ptr->project_name);
-  }
+  return ladish_room_save_project_do(ctx_ptr);
 
-  if (project_dir != NULL && project_dir != room_ptr->project_dir)
-  {
-    free(room_ptr->project_dir);
-  }
-
-  /* free strings that are allocated and stored only in the stack */
-  if (project_name != NULL && project_name != room_ptr->project_name)
-  {
-    free(project_name);
-  }
-  if (project_dir != NULL && project_dir != room_ptr->project_dir)
-  {
-    free(project_dir);
-  }
-
-  return ret;
+destroy_ctx:
+  ladish_room_save_context_destroy(ctx_ptr);
+fail:
+  return false;
 }
 
 #undef room_ptr

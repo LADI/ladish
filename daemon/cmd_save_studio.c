@@ -184,11 +184,11 @@ struct ladish_command_save_studio
 {
   struct ladish_command command;
   char * studio_name;
+  bool done;
+  bool success;
 };
 
-#define cmd_ptr ((struct ladish_command_save_studio *)command_context)
-
-static bool run(void * command_context)
+static bool ladish_save_studio_xml(struct ladish_command_save_studio * cmd_ptr)
 {
   struct list_head * node_ptr;
   struct jack_conf_parameter * parameter_ptr;
@@ -203,24 +203,9 @@ static bool run(void * command_context)
   struct ladish_write_context save_context;
   bool renaming;
 
-  ASSERT(cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING);
-
   time(&timestamp);
   ctime_r(&timestamp, timestamp_str);
   timestamp_str[24] = 0;
-
-  ret = false;
-
-  ladish_app_supervisor_save(g_studio.app_supervisor);
-
-  if (!ladish_studio_is_started())
-  {
-    log_error("Cannot save not-started studio");
-    ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Cannot save not-started studio", NULL);
-    goto exit;
-  }
-
-  ladish_check_integrity();
 
   if (!ladish_studio_compose_filename(cmd_ptr->studio_name, &filename, &bak_filename))
   {
@@ -408,8 +393,6 @@ static bool run(void * command_context)
   g_studio.persisted = true;
   g_studio.automatic = false;   /* even if it was automatic, it is not anymore because it is saved */
 
-  cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;
-
   ret = true;
 
   if (renaming)
@@ -449,12 +432,73 @@ free_filenames:
   ASSERT(g_studio.filename != NULL);
 
 exit:
-  if (!ret)
+  return ret;
+}
+
+#define cmd_ptr ((struct ladish_command_save_studio *)context)
+
+static void ladish_studio_apps_save_complete(void * context, bool success)
+{
+  ASSERT(cmd_ptr->command.state == LADISH_COMMAND_STATE_WAITING);
+
+  if (!success)
   {
-    ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Studio save failed", LADISH_CHECK_LOG_TEXT);
+    log_info("Studio apps save failed");
+    goto fail;
   }
 
-  return ret;
+  log_info("Studio apps saved successfully");
+  if (ladish_save_studio_xml(cmd_ptr))
+  {
+    goto done;
+  }
+
+fail:
+  ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Studio save failed", LADISH_CHECK_LOG_TEXT);
+  cmd_ptr->success = false;
+
+done:
+  cmd_ptr->done = true;
+  return;
+}
+
+#undef cmd_ptr
+
+#define cmd_ptr ((struct ladish_command_save_studio *)command_context)
+
+static bool run(void * command_context)
+{
+  if (cmd_ptr->command.state == LADISH_COMMAND_STATE_WAITING)
+  {
+    if (!cmd_ptr->done)
+    {
+      return true;
+    }
+
+    cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;
+    return cmd_ptr->success;
+  }
+
+  if (cmd_ptr->command.state != LADISH_COMMAND_STATE_PENDING)
+  {
+    ASSERT_NO_PASS;
+    return false;
+  }
+
+  if (!ladish_studio_is_started())
+  {
+    log_error("Cannot save not-started studio");
+    ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Cannot save not-started studio", NULL);
+    return false;
+  }
+
+  ladish_check_integrity();
+
+  cmd_ptr->command.state = LADISH_COMMAND_STATE_WAITING;
+
+  ladish_app_supervisor_save(g_studio.app_supervisor, cmd_ptr, ladish_studio_apps_save_complete);
+
+  return true;
 }
 
 static void destructor(void * command_context)
@@ -490,6 +534,8 @@ bool ladish_command_save_studio(void * call_ptr, struct ladish_cqueue * queue_pt
   cmd_ptr->command.run = run;
   cmd_ptr->command.destructor = destructor;
   cmd_ptr->studio_name = studio_name_dup;
+  cmd_ptr->done = false;
+  cmd_ptr->success = true;
 
   if (!ladish_cqueue_add_command(queue_ptr, &cmd_ptr->command))
   {

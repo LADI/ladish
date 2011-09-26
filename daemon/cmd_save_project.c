@@ -36,15 +36,43 @@ struct ladish_command_save_project
   uuid_t room_uuid;
   char * project_dir;
   char * project_name;
+  bool done;
+  bool success;
 };
 
 #define cmd_ptr ((struct ladish_command_save_project *)command_context)
+
+void ladish_room_project_complete(void * command_context, bool success)
+{
+  cmd_ptr->done = true;
+  cmd_ptr->success = success;
+
+  if (!success)
+  {
+    ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Project save failed", LADISH_CHECK_LOG_TEXT);
+  }
+}
 
 static bool run(void * command_context)
 {
   ladish_room_handle room;
 
-  ASSERT(cmd_ptr->command.state == LADISH_COMMAND_STATE_PENDING);
+  if (cmd_ptr->command.state == LADISH_COMMAND_STATE_WAITING)
+  {
+    if (!cmd_ptr->done)
+    {
+      return true;
+    }
+
+    cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;
+    return cmd_ptr->success;
+  }
+
+  if (cmd_ptr->command.state != LADISH_COMMAND_STATE_PENDING)
+  {
+    ASSERT_NO_PASS;
+    return false;
+  }
 
   room = ladish_studio_find_room_by_uuid(cmd_ptr->room_uuid);
   if (room == NULL)
@@ -54,9 +82,9 @@ static bool run(void * command_context)
     return false;
   }
 
-  ladish_room_save_project(room, cmd_ptr->project_dir, cmd_ptr->project_name);
+  cmd_ptr->command.state = LADISH_COMMAND_STATE_WAITING;
 
-  cmd_ptr->command.state = LADISH_COMMAND_STATE_DONE;
+  ladish_room_save_project(room, cmd_ptr->project_dir, cmd_ptr->project_name, cmd_ptr, ladish_room_project_complete);
 
   return true;
 }
@@ -109,6 +137,8 @@ ladish_command_save_project(
   cmd_ptr->command.destructor = destructor;
   cmd_ptr->project_dir = project_dir_dup;
   cmd_ptr->project_name = project_name_dup;
+  cmd_ptr->done = false;
+  cmd_ptr->success = true;
 
   if (!ladish_cqueue_add_command(queue_ptr, &cmd_ptr->command))
   {

@@ -998,7 +998,11 @@ void ladish_app_supervisor_stop(ladish_app_supervisor_handle supervisor_handle)
   }
 }
 
-void ladish_app_supervisor_save(ladish_app_supervisor_handle supervisor_handle)
+void
+ladish_app_supervisor_save(
+  ladish_app_supervisor_handle supervisor_handle,
+  void * context,
+  ladish_save_complete_callback callback)
 {
   struct list_head * node_ptr;
   struct ladish_app * app_ptr;
@@ -1019,6 +1023,8 @@ void ladish_app_supervisor_save(ladish_app_supervisor_handle supervisor_handle)
 
     ladish_app_initiate_save(app_ptr);
   }
+
+  callback(context, true);
 }
 
 const char * ladish_app_supervisor_get_name(ladish_app_supervisor_handle supervisor_handle)
