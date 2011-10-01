@@ -1258,7 +1258,7 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
                 <property name="draw_indicator">True</property>
                 <property name="group">app_level0</property>
                 <property name="receives_default">False</property>
-                <property name="sensitive">False</property>
+                <property name="sensitive">True</property>
                 <property name="visible">True</property>
               </object>
               <packing>

@@ -871,6 +871,12 @@ bool ladish_room_load_project(ladish_room_handle room_handle, const char * proje
   XML_SetCharacterDataHandler(parser, callback_chrdata);
   XML_SetUserData(parser, &parse_context);
 
+  ladish_app_supervisor_set_directory(room_ptr->app_supervisor, project_dir);
+  if (!ladish_app_supervisor_set_project_name(room_ptr->app_supervisor, room_ptr->project_name))
+  {
+    ladish_app_supervisor_set_project_name(room_ptr->app_supervisor, NULL);
+  }
+
   xmls = XML_ParseBuffer(parser, bytes_read, XML_TRUE);
   if (xmls == XML_STATUS_ERROR && !parse_context.error)
   {
@@ -885,12 +891,6 @@ bool ladish_room_load_project(ladish_room_handle room_handle, const char * proje
   ladish_graph_dump(ladish_studio_get_jack_graph());
   ladish_graph_dump(room_ptr->graph);
   ladish_app_supervisor_dump(room_ptr->app_supervisor);
-
-  ladish_app_supervisor_set_directory(room_ptr->app_supervisor, project_dir);
-  if (!ladish_app_supervisor_set_project_name(room_ptr->app_supervisor, room_ptr->project_name))
-  {
-    ladish_app_supervisor_set_project_name(room_ptr->app_supervisor, NULL);
-  }
 
   ladish_graph_trick_dicts(room_ptr->graph);
   ladish_try_connect_hidden_connections(room_ptr->graph);

@@ -25,12 +25,14 @@
  */
 
 #include "../common.h"
+#include "catdup.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <errno.h>
 #include <stdarg.h>
+#include <dirent.h>
 
 bool check_dir_exists(const char * dirname)
 {
@@ -239,4 +241,161 @@ bool ensure_dir_exist_varg(int mode, ...)
   free(buffer);
 
   return ret;
+}
+
+bool ladish_rmdir_recursive(const char * dirpath)
+{
+  DIR * dir;
+  struct dirent * dentry_ptr;
+  char * entry_fullpath;
+  struct stat st;
+  bool success;
+
+  success = false;
+
+  dir = opendir(dirpath);
+  if (dir == NULL)
+  {
+    log_error("Cannot open directory '%s': %d (%s)", dirpath, errno, strerror(errno));
+    goto exit;
+  }
+
+  while ((dentry_ptr = readdir(dir)) != NULL)
+  {
+    if (strcmp(dentry_ptr->d_name, ".") == 0 ||
+        strcmp(dentry_ptr->d_name, "..") == 0)
+    {
+      continue;
+    }
+
+    entry_fullpath = catdup3(dirpath, "/", dentry_ptr->d_name);
+    if (entry_fullpath == NULL)
+    {
+      log_error("catdup() failed");
+      goto close;
+    }
+
+    if (stat(entry_fullpath, &st) != 0)
+    {
+      log_error("failed to stat '%s': %d (%s)", entry_fullpath, errno, strerror(errno));
+    }
+    else
+    {
+      if (S_ISDIR(st.st_mode))
+      {
+        if (!ladish_rmdir_recursive(entry_fullpath))
+        {
+          goto free;
+        }
+      }
+      else
+      {
+        if (unlink(entry_fullpath) < 0)
+        {
+          log_error("unlink('%s') failed. errno = %d (%s)", dirpath, errno, strerror(errno));
+          goto free;
+        }
+      }
+    }
+
+    free(entry_fullpath);
+  }
+
+  if (rmdir(dirpath) < 0)
+  {
+    log_error("rmdir('%s') failed. errno = %d (%s)", dirpath, errno, strerror(errno));
+  }
+  else
+  {
+    success = true;
+  }
+
+  goto close;
+
+free:
+  free(entry_fullpath);
+close:
+  closedir(dir);
+exit:
+  return success;
+}
+
+bool ladish_rotate(const char * src, const char * dst, unsigned int max_backups)
+{
+  size_t len = strlen(dst) + 100;
+  char paths[2][len];
+  struct stat st;
+  char * path;
+  const char * older_path;
+  bool oldest_found;
+  unsigned int backup;
+
+  oldest_found = false;
+  older_path = NULL;
+  backup = max_backups;
+  while (backup > 0)
+  {
+    path = paths[backup % 2];
+    snprintf(path, len, "%s.%u", dst, backup);
+
+    if (stat(path, &st) != 0)
+    {
+      if (!oldest_found && errno == ENOENT)
+      {
+        log_info("\"%s\" does not exist", path);
+        goto next;
+      }
+
+      log_error("Failed to stat \"%s\": %d (%s)", path, errno, strerror(errno));
+      return false;
+    }
+
+    if (!S_ISDIR(st.st_mode))
+    {
+      log_error("\"%s\" exists but is not directory.", path);
+      return false;
+    }
+
+    oldest_found = true;
+
+    if (backup < max_backups)
+    {
+      ASSERT(older_path != NULL);
+      log_info("rename '%s' -> '%s'", path, older_path);
+      if (rename(path, older_path) != 0)
+      {
+        log_error("rename('%s' -> '%s') failed. errno = %d (%s)", path, older_path, errno, strerror(errno));
+        return false;
+      }
+    }
+    else
+    {
+      /* try to remove dst.max_backups */
+      log_info("rmdir '%s'", path);
+      if (!ladish_rmdir_recursive(path))
+      {
+        return false;
+      }
+    }
+
+  next:
+    older_path = path;
+    backup--;
+  }
+
+  log_info("rename '%s' -> '%s'", dst, path);
+  if (rename(dst, path) != 0 && errno != ENOENT)
+  {
+    log_error("rename('%s' -> '%s') failed. errno = %d (%s)", dst, path, errno, strerror(errno));
+    return false;
+  }
+
+  log_info("rename '%s' -> '%s'", src, dst);
+  if (rename(src, dst) != 0)
+  {
+    log_error("rename('%s' -> '%s') failed. errno = %d (%s)", src, dst, errno, strerror(errno));
+    return false;
+  }
+
+  return true;
 }

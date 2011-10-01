@@ -35,7 +35,7 @@
 #define LADISH_APP_STATE_STOPPING   2 /**< @brief app is stopping */
 #define LADISH_APP_STATE_KILL       3 /**< @brief app is being force killed */
 
-#define MAX_LEVEL_CHARCOUNT 10  /* includes terminating nul char */
+#define MAX_LEVEL_CHARCOUNT 12  /* includes terminating nul char */
 
 /**
  * App supervisor object handle (pointer to opaque data)
@@ -424,13 +424,6 @@ void ladish_app_stop(ladish_app_handle app_handle);
  * @param[in] app_handle Handle of app to kill
  */
 void ladish_app_kill(ladish_app_handle app_handle);
-
-/**
- * Initiate save of app internal state. The app must be in started state.
- *
- * @param[in] app_handle Handle of app
- */
-void ladish_app_save(ladish_app_handle app_handle);
 
 /**
  * Initiate restore of app internal state. The app must be in started state.

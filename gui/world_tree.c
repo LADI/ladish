@@ -267,6 +267,7 @@ void on_popup_menu_action_app_properties(GtkWidget * menuitem, gpointer userdata
   gtk_widget_set_sensitive(GTK_WIDGET(level0_button), !running);
   gtk_widget_set_sensitive(GTK_WIDGET(level1_button), !running);
   gtk_widget_set_sensitive(GTK_WIDGET(level2lash_button), !running);
+  gtk_widget_set_sensitive(GTK_WIDGET(level2js_button), !running && is_room_view(view));
 
   /* comparing pointers here is ok, because ladish_map_app_level_constant() was called by ladish_app_supervisor_get_app_properties() */
   if (level == LADISH_APP_LEVEL_0)

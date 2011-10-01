@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to the code that starts programs
@@ -35,6 +35,7 @@ loader_execute(
   const char * project_name,
   const char * app_name,
   const char * working_dir,
+  const char * session_dir,
   bool run_in_terminal,
   const char * commandline,
   pid_t * pid_ptr);

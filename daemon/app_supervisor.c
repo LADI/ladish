@@ -40,6 +40,7 @@
 #include "../proxies/lash_client_proxy.h"
 #include "../common/catdup.h"
 #include "../common/dirhelpers.h"
+#include "jack_session.h"
 
 struct ladish_app
 {
@@ -48,6 +49,7 @@ struct ladish_app
   uuid_t uuid;
   char * name;
   char * commandline;
+  char * js_commandline;
   bool terminal;
   char level[MAX_LEVEL_CHARCOUNT];
   pid_t pid;
@@ -67,6 +69,13 @@ struct ladish_app_supervisor
   char * name;
   char * opath;
   char * dir;
+
+  char * js_dir;
+  char * js_temp_dir;
+  unsigned int pending_js_saves;
+  void * save_callback_context;
+  ladish_save_complete_callback save_callback;
+
   char * project_name;
   uint64_t version;
   uint64_t next_id;
@@ -85,8 +94,9 @@ bool ladish_check_app_level_validity(const char * level, size_t * len_ptr)
   }
 
   if (strcmp(level, LADISH_APP_LEVEL_0) != 0 &&
-      strcmp(level, LADISH_APP_LEVEL_1) != 0&&
-      strcmp(level, LADISH_APP_LEVEL_LASH) != 0)
+      strcmp(level, LADISH_APP_LEVEL_1) != 0 &&
+      strcmp(level, LADISH_APP_LEVEL_LASH) != 0 &&
+      strcmp(level, LADISH_APP_LEVEL_JACKSESSION) != 0)
   {
     return false;
   }
@@ -154,6 +164,13 @@ ladish_app_supervisor_create(
   }
 
   supervisor_ptr->dir = NULL;
+
+  supervisor_ptr->js_temp_dir = NULL;
+  supervisor_ptr->js_dir = NULL;
+  supervisor_ptr->pending_js_saves = 0;
+  supervisor_ptr->save_callback_context = NULL;
+  supervisor_ptr->save_callback = NULL;
+
   supervisor_ptr->project_name = NULL;
 
   supervisor_ptr->version = 0;
@@ -206,6 +223,7 @@ void remove_app_internal(struct ladish_app_supervisor * supervisor_ptr, struct l
   free(app_ptr->dbus_name);
   free(app_ptr->name);
   free(app_ptr->commandline);
+  free(app_ptr->js_commandline);
   free(app_ptr);
 }
 
@@ -248,6 +266,72 @@ void emit_app_state_changed(struct ladish_app_supervisor * supervisor_ptr, struc
     &running,
     &terminal,
     &level_str);
+}
+
+static void ladish_js_save_complete(struct ladish_app_supervisor * supervisor_ptr)
+{
+  struct list_head * node_ptr;
+  struct ladish_app * app_ptr;
+  bool success;
+
+  ASSERT(supervisor_ptr->js_temp_dir != NULL);
+  ASSERT(supervisor_ptr->js_dir != NULL);
+  ASSERT(supervisor_ptr->pending_js_saves == 0);
+
+  /* find whether all strdup() calls for new commandlines succeeded */
+  list_for_each(node_ptr, &supervisor_ptr->applist)
+  {
+    app_ptr = list_entry(node_ptr, struct ladish_app, siblings);
+    if (app_ptr->state == LADISH_APP_STATE_STARTED &&
+        strcmp(app_ptr->level, LADISH_APP_LEVEL_JACKSESSION) == 0 &&
+        app_ptr->js_commandline == NULL)
+    { /* a strdup() call has failed, free js commandline buffers allocated by succeeded strdup() calls */
+      list_for_each(node_ptr, &supervisor_ptr->applist)
+      {
+        app_ptr = list_entry(node_ptr, struct ladish_app, siblings);
+        free(app_ptr->js_commandline);
+        app_ptr->js_commandline = NULL;
+      }
+      goto fail_rm_temp_dir;
+    }
+  }
+
+  /* move js_dir to js_dir.1; move js_temp_dir to js_dir  */
+  success = ladish_rotate(supervisor_ptr->js_temp_dir, supervisor_ptr->js_dir, 10);
+  if (!success)
+  {
+    goto fail_rm_temp_dir;
+  }
+
+  list_for_each(node_ptr, &supervisor_ptr->applist)
+  {
+    app_ptr = list_entry(node_ptr, struct ladish_app, siblings);
+    if (app_ptr->state == LADISH_APP_STATE_STARTED &&
+        strcmp(app_ptr->level, LADISH_APP_LEVEL_JACKSESSION) == 0)
+    {
+      ASSERT(app_ptr->commandline != NULL);
+      ASSERT(app_ptr->js_commandline != NULL);
+      free(app_ptr->commandline);
+      app_ptr->commandline = app_ptr->js_commandline;
+      app_ptr->js_commandline = NULL;
+    }
+  }
+
+  goto done;
+
+fail_rm_temp_dir:
+  if (!ladish_rmdir_recursive(supervisor_ptr->js_temp_dir))
+  {
+    log_error("Cannot remove JS temp dir '%s'", supervisor_ptr->js_temp_dir);
+  }
+
+done:
+  free(supervisor_ptr->js_temp_dir);
+  supervisor_ptr->js_temp_dir = NULL;
+
+  supervisor_ptr->save_callback(supervisor_ptr->save_callback_context, success);
+  supervisor_ptr->save_callback = NULL;
+  supervisor_ptr->save_callback_context = NULL;
 }
 
 #define supervisor_ptr ((struct ladish_app_supervisor *)supervisor_handle)
@@ -333,32 +417,38 @@ ladish_app_supervisor_add(
   if (!ladish_check_app_level_validity(level, &len))
   {
     log_error("invalid level '%s'", level);
-    return NULL;
+    goto fail;
+  }
+
+  if (strcmp(level, LADISH_APP_LEVEL_JACKSESSION) == 0 &&
+      supervisor_ptr->dir == NULL)
+  {
+    log_error("jack session apps need directory");
+    goto fail;
   }
 
   app_ptr = malloc(sizeof(struct ladish_app));
   if (app_ptr == NULL)
   {
     log_error("malloc of struct ladish_app failed");
-    return NULL;
+    goto fail;
   }
 
   app_ptr->name = strdup(name);
   if (app_ptr->name == NULL)
   {
     log_error("strdup() failed for app name");
-    free(app_ptr);
-    return NULL;
+    goto free_app;
   }
 
   app_ptr->commandline = strdup(command);
   if (app_ptr->commandline == NULL)
   {
     log_error("strdup() failed for app commandline");
-    free(app_ptr->name);
-    free(app_ptr);
-    return NULL;
+    goto free_name;
   }
+
+  app_ptr->js_commandline = NULL;
 
   app_ptr->dbus_name = NULL;
 
@@ -418,6 +508,13 @@ ladish_app_supervisor_add(
     &level);
 
   return (ladish_app_handle)app_ptr;
+
+free_name:
+  free(app_ptr->name);
+free_app:
+  free(app_ptr);
+fail:
+  return NULL;
 }
 
 static void ladish_app_send_signal(struct ladish_app * app_ptr, int sig, bool prefer_firstborn)
@@ -622,12 +719,47 @@ exit:
   return;
 }
 
+#define app_ptr ((struct ladish_app *)context)
+
+static void ladish_js_app_save_complete(void * context, const char * commandline)
+{
+  log_info("JS app saved, commandline '%s'", commandline);
+  ASSERT(app_ptr->supervisor->js_temp_dir != NULL);
+
+  ASSERT(app_ptr->js_commandline == NULL);
+  app_ptr->js_commandline = strdup(commandline);
+  if (app_ptr->js_commandline == NULL)
+  {
+    log_error("strdup() failed for JS app '%s' commandline '%s'", app_ptr->name, commandline);
+  }
+
+  if (app_ptr->supervisor->pending_js_saves != 1)
+  {
+    ASSERT(app_ptr->supervisor->pending_js_saves > 1);
+    app_ptr->supervisor->pending_js_saves--;
+    log_info("%u more JS apps are still saving", app_ptr->supervisor->pending_js_saves);
+    return;
+  }
+
+  log_info("Last JS app saved");
+  app_ptr->supervisor->pending_js_saves = 0;
+
+  ladish_js_save_complete(app_ptr->supervisor);
+}
+
+#undef app_ptr
+
 static inline void ladish_app_initiate_save(struct ladish_app * app_ptr)
 {
   if (strcmp(app_ptr->level, LADISH_APP_LEVEL_LASH) == 0 &&
       app_ptr->dbus_name != NULL)
   {
     ladish_app_initiate_lash_save(app_ptr, app_ptr->supervisor->dir != NULL ? app_ptr->supervisor->dir : g_base_dir);
+  }
+  else if (strcmp(app_ptr->level, LADISH_APP_LEVEL_JACKSESSION) == 0)
+  {
+    log_info("Initiating JACK session save for '%s'", app_ptr->name);
+    ladish_js_save_app(app_ptr->uuid, app_ptr->supervisor->js_temp_dir, app_ptr, ladish_js_app_save_complete);
   }
   else if (strcmp(app_ptr->level, LADISH_APP_LEVEL_1) == 0)
   {
@@ -658,6 +790,10 @@ bool ladish_app_supervisor_clear(ladish_app_supervisor_handle supervisor_handle)
   struct ladish_app * app_ptr;
   bool lifeless;
 
+  free(supervisor_ptr->js_temp_dir);
+  supervisor_ptr->js_temp_dir = NULL;
+  free(supervisor_ptr->js_dir);
+  supervisor_ptr->js_dir = NULL;
   free(supervisor_ptr->dir);
   supervisor_ptr->dir = NULL;
 
@@ -700,6 +836,9 @@ ladish_app_supervisor_set_directory(
   const char * dir)
 {
   char * dup;
+  char * js_dir;
+
+  ASSERT(supervisor_ptr->pending_js_saves == 0);
 
   dup = strdup(dir);
   if (dup == NULL)
@@ -708,12 +847,19 @@ ladish_app_supervisor_set_directory(
     return false;
   }
 
-  if (supervisor_ptr->dir != NULL)
+  js_dir = catdup(dir, "/js_apps");
+  if (js_dir == NULL)
   {
-    free(supervisor_ptr->dir);
+    log_error("catdup() failed to compose supervisor js dir path");
+    free(dup);
+    return false;
   }
 
+  free(supervisor_ptr->dir);
   supervisor_ptr->dir = dup;
+
+  free(supervisor_ptr->js_dir);
+  supervisor_ptr->js_dir = js_dir;
 
   return true;
 }
@@ -811,18 +957,42 @@ ladish_app_supervisor_enum(
 
 bool ladish_app_supervisor_start_app(ladish_app_supervisor_handle supervisor_handle, ladish_app_handle app_handle)
 {
+  char uuid_str[37];
+  char * js_dir;
+  bool ret;
+
   app_ptr->zombie = false;
 
   ASSERT(app_ptr->pid == 0);
 
-  if (!loader_execute(
-        supervisor_ptr->name,
-        supervisor_ptr->project_name,
-        app_ptr->name,
-        supervisor_ptr->dir != NULL ? supervisor_ptr->dir : "/",
-        app_ptr->terminal,
-        app_ptr->commandline,
-        &app_ptr->pid))
+  if (strcmp(app_ptr->level, LADISH_APP_LEVEL_JACKSESSION) == 0)
+  {
+    uuid_unparse(app_ptr->uuid, uuid_str);
+    js_dir = catdup4(supervisor_ptr->js_dir, "/", uuid_str, "/");
+    if (js_dir == NULL)
+    {
+      log_error("catdup4() failed to compose app jack session dir");
+      return false;
+    }
+  }
+  else
+  {
+    js_dir = NULL;
+  }
+
+  ret = loader_execute(
+    supervisor_ptr->name,
+    supervisor_ptr->project_name,
+    app_ptr->name,
+    supervisor_ptr->dir != NULL ? supervisor_ptr->dir : "/",
+    js_dir,
+    app_ptr->terminal,
+    app_ptr->commandline,
+    &app_ptr->pid);
+
+  free(js_dir);
+
+  if (!ret)
   {
     return false;
   }
@@ -868,11 +1038,6 @@ void ladish_app_kill(ladish_app_handle app_handle)
 {
   ladish_app_send_signal(app_ptr, SIGKILL, false);
   app_ptr->state = LADISH_APP_STATE_KILL;
-}
-
-void ladish_app_save(ladish_app_handle app_handle)
-{
-  ladish_app_initiate_save(app_ptr);
 }
 
 void ladish_app_restore(ladish_app_handle app_handle)
@@ -1006,6 +1171,47 @@ ladish_app_supervisor_save(
 {
   struct list_head * node_ptr;
   struct ladish_app * app_ptr;
+  bool success;
+
+  ASSERT(supervisor_ptr->js_temp_dir == NULL);
+  ASSERT(supervisor_ptr->pending_js_saves == 0);
+  list_for_each(node_ptr, &supervisor_ptr->applist)
+  {
+    app_ptr = list_entry(node_ptr, struct ladish_app, siblings);
+    if (app_ptr->state == LADISH_APP_STATE_STARTED &&
+        strcmp(app_ptr->level, LADISH_APP_LEVEL_JACKSESSION) == 0)
+    {
+      ASSERT(app_ptr->js_commandline == NULL);
+      supervisor_ptr->pending_js_saves++;
+    }
+  }
+
+  if (supervisor_ptr->pending_js_saves > 0)
+  {
+    ASSERT(supervisor_ptr->dir != NULL);
+    supervisor_ptr->js_temp_dir = catdup(supervisor_ptr->dir, "/js_apps.tmpXXXXXX");
+    if (supervisor_ptr->js_temp_dir == NULL)
+    {
+      log_error("catdup() failed to compose supervisor js temp dir path template");
+      goto reset_js_pending_saves;
+    }
+
+    if (mkdtemp(supervisor_ptr->js_temp_dir) == NULL)
+    {
+      log_error("mkdtemp('%s') failed. errno = %d (%s)", supervisor_ptr->js_temp_dir, errno, strerror(errno));
+      goto free_js_temp_dir;
+    }
+
+    log_info("saving %u JACK session apps to '%s'", supervisor_ptr->pending_js_saves, supervisor_ptr->js_temp_dir);
+
+    supervisor_ptr->save_callback_context = context;
+    supervisor_ptr->save_callback = callback;
+  }
+  else
+  {
+    ASSERT(supervisor_ptr->save_callback_context == NULL);
+    ASSERT(supervisor_ptr->save_callback == NULL);
+  }
 
   list_for_each(node_ptr, &supervisor_ptr->applist)
   {
@@ -1024,7 +1230,22 @@ ladish_app_supervisor_save(
     ladish_app_initiate_save(app_ptr);
   }
 
-  callback(context, true);
+  success = true;
+  goto exit;
+
+free_js_temp_dir:
+  free(supervisor_ptr->js_temp_dir);
+  supervisor_ptr->js_temp_dir = NULL;
+reset_js_pending_saves:
+  supervisor_ptr->pending_js_saves = 0;
+  success = false;
+exit:
+  if (supervisor_ptr->pending_js_saves == 0)
+  {
+    ASSERT(supervisor_ptr->save_callback == NULL);
+    ASSERT(callback != NULL);
+    callback(context, success);
+  }
 }
 
 const char * ladish_app_supervisor_get_name(ladish_app_supervisor_handle supervisor_handle)

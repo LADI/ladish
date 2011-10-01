@@ -263,6 +263,7 @@ void
 loader_exec_program(
   const char * commandline,
   const char * working_dir,
+  const char * session_dir,
   bool run_in_terminal,
   const char * vgraph_name,
   const char * project_name,
@@ -294,6 +295,11 @@ loader_exec_program(
   if (project_name != NULL)
   {
     setenv("LADISH_PROJECT_NAME", project_name, true);
+  }
+
+  if (session_dir != NULL)
+  {
+    setenv("SESSION_DIR", session_dir, true);
   }
 
   i = 0;
@@ -521,6 +527,7 @@ loader_execute(
   const char * project_name,
   const char * app_name,
   const char * working_dir,
+  const char * session_dir,
   bool run_in_terminal,
   const char * commandline,
   pid_t * pid_ptr)
@@ -634,7 +641,7 @@ loader_execute(
 
     set_ldpreload();
 
-    loader_exec_program(commandline, working_dir, run_in_terminal, vgraph_name, project_name, app_name);
+    loader_exec_program(commandline, working_dir, session_dir, run_in_terminal, vgraph_name, project_name, app_name);
 
     return false;  /* We should never get here */
   }

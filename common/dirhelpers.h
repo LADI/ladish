@@ -30,5 +30,7 @@
 bool check_dir_exists(const char * dirname);
 bool ensure_dir_exist(const char * dirname, int mode);
 bool ensure_dir_exist_varg(int mode, ...);
+bool ladish_rmdir_recursive(const char * dirname);
+bool ladish_rotate(const char * src, const char * dst, unsigned int max_backups);
 
 #endif /* #ifndef DIRHELPERS_H__805193D2_2662_40FA_8814_AF8A4E08F4B0__INCLUDED */

@@ -55,6 +55,7 @@ void run_custom_command_dialog(void)
   gtk_widget_set_sensitive(GTK_WIDGET(level0_button), TRUE);
   gtk_widget_set_sensitive(GTK_WIDGET(level1_button), TRUE);
   gtk_widget_set_sensitive(GTK_WIDGET(level2lash_button), TRUE);
+  gtk_widget_set_sensitive(GTK_WIDGET(level2js_button), is_room_view(view));
 
   gtk_window_set_focus(GTK_WINDOW(g_app_dialog), GTK_WIDGET(command_entry));
   gtk_window_set_title(GTK_WINDOW(g_app_dialog), _("New application"));
