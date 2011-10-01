@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains alsapid helper functionality
@@ -24,7 +24,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#define _GNU_SOURCE
+#include "alsapid.h"
+
 #include <string.h>             /* GNU basename() */
 
 #include <stdio.h>
@@ -32,8 +33,6 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <linux/limits.h>
-
-#include "alsapid.h"
 
 void alsapid_compose_src_link(int alsa_client_id, char * buffer)
 {

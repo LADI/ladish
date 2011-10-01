@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to alsapid functionality
@@ -27,7 +27,7 @@
 #ifndef ALSAPID_H__0A27F284_7538_4791_8023_0FBED929EAF3__INCLUDED
 #define ALSAPID_H__0A27F284_7538_4791_8023_0FBED929EAF3__INCLUDED
 
-#include <stdbool.h>
+#include "../common.h"
 
 void alsapid_compose_src_link(int alsa_client_id, char * buffer);
 void alsapid_compose_dst_link(char * buffer);

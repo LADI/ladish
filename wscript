@@ -462,7 +462,14 @@ def build(bld):
 
     #####################################################
     # alsapid
-    bld.shlib(source = [os.path.join("alsapid", 'lib.c'), os.path.join("alsapid", "helper.c")], target = 'alsapid', uselib = 'DL')
+    alsapid = bld.shlib(source = [], features = 'c cshlib', includes = [bld.path.get_bld()])
+    alsapid.uselib = 'DL'
+    alsapid.target = 'alsapid'
+    for source in [
+        'lib.c',
+        'helper.c',
+        ]:
+        alsapid.source.append(os.path.join("alsapid", source))
 
     #####################################################
     # liblash

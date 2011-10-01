@@ -24,14 +24,12 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#define _GNU_SOURCE
+#include "alsapid.h"
 
 #include <alsa/asoundlib.h>
 #include <dlfcn.h>
 #include <linux/limits.h>
 #include <stdio.h>
-
-#include "alsapid.h"
 
 #define API_VERSION "ALSA_0.9"
 
@@ -88,6 +86,7 @@ static int (* real_snd_seq_close)(snd_seq_t * handle);
   }
 
 #if 0
+LADISH_PUBLIC
 int snd_seq_open(snd_seq_t ** handle, const char * name, int streams, int mode)
 {
   int ret;
@@ -106,6 +105,7 @@ int snd_seq_open(snd_seq_t ** handle, const char * name, int streams, int mode)
 }
 #endif
 
+LADISH_PUBLIC
 int snd_seq_set_client_name(snd_seq_t * seq, const char * name)
 {
   int ret;
@@ -127,6 +127,7 @@ int snd_seq_set_client_name(snd_seq_t * seq, const char * name)
   return ret;
 }
 
+LADISH_PUBLIC
 int snd_seq_close(snd_seq_t * handle)
 {
   CHECK_FUNC(snd_seq_close);
@@ -138,6 +139,7 @@ int snd_seq_close(snd_seq_t * handle)
 }
 
 #if 0
+LADISH_PUBLIC
 int snd_seq_create_port(snd_seq_t * handle, snd_seq_port_info_t * info)
 {
   int ret;
@@ -151,6 +153,7 @@ int snd_seq_create_port(snd_seq_t * handle, snd_seq_port_info_t * info)
   return ret;
 }
 
+LADISH_PUBLIC
 int snd_seq_create_simple_port(snd_seq_t * seq, const char * name, unsigned int caps, unsigned int type)
 {
   int ret;
