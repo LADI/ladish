@@ -131,7 +131,7 @@ def parse_new_app_args(params_array):
     return index, cmdline, name, level, term
 
 def add_app(obj, cmdline, name, level, term):
-    dbus.Interface(obj, app_supervisor_interface_name).RunCustom(term, cmdline, name, level)
+    dbus.Interface(obj, app_supervisor_interface_name).RunCustom2(term, cmdline, name, level)
 
 def get_room_obj_by_name(bus, studio_iface, room_name):
     for room in studio_iface.GetRoomList():
