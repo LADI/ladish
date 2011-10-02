@@ -324,16 +324,13 @@ loader_exec_program(
     argv[i++] = "-e";
   }
 
-  if (!run_in_terminal || strchr(commandline, '$') != NULL)
+  if (!conf_get(LADISH_CONF_KEY_DAEMON_SHELL, argv + i))
   {
-    if (!conf_get(LADISH_CONF_KEY_DAEMON_SHELL, argv + i))
-    {
-      argv[i] = LADISH_CONF_KEY_DAEMON_SHELL_DEFAULT;
-    }
-    i++;
-
-    argv[i++] = "-c";
+    argv[i] = LADISH_CONF_KEY_DAEMON_SHELL_DEFAULT;
   }
+  i++;
+
+  argv[i++] = "-c";
 
   argv[i++] = commandline;
   argv[i++] = NULL;
