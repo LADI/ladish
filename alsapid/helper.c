@@ -32,7 +32,6 @@
 #include <stdlib.h>             /* atoll */
 #include <unistd.h>
 #include <sys/types.h>
-#include <linux/limits.h>
 
 void alsapid_compose_src_link(int alsa_client_id, char * buffer)
 {
@@ -46,14 +45,14 @@ void alsapid_compose_dst_link(char * buffer)
 
 bool alsapid_get_pid(int alsa_client_id, pid_t * pid_ptr)
 {
-  char src[PATH_MAX];
-  char dst[PATH_MAX + 1];
+  char src[MAX_ALSAPID_PATH];
+  char dst[MAX_ALSAPID_PATH + 1];
   ssize_t ret;
   pid_t pid;
 
   alsapid_compose_src_link(alsa_client_id, src);
 
-  ret = readlink(src, dst, PATH_MAX);
+  ret = readlink(src, dst, MAX_ALSAPID_PATH);
   if (ret == -1)
   {
     return false;

@@ -28,7 +28,6 @@
 
 #include <alsa/asoundlib.h>
 #include <dlfcn.h>
-#include <linux/limits.h>
 #include <stdio.h>
 
 #define API_VERSION "ALSA_0.9"
@@ -38,8 +37,8 @@
 
 static void create_symlink(int alsa_client_id)
 {
-  char src[PATH_MAX];
-  char dst[PATH_MAX];
+  char src[MAX_ALSAPID_PATH];
+  char dst[MAX_ALSAPID_PATH];
 
   alsapid_compose_src_link(alsa_client_id, src);
   alsapid_compose_dst_link(dst);
@@ -57,7 +56,7 @@ static void create_symlink(int alsa_client_id)
 
 static void destroy_symlink(int alsa_client_id)
 {
-  char src[PATH_MAX];
+  char src[MAX_ALSAPID_PATH];
 
   alsapid_compose_src_link(alsa_client_id, src);
 
