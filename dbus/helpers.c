@@ -38,6 +38,11 @@
 #include "../assert.h"
 #include "../common/klist.h"
 
+/* D-Bus versions earlier than 1.4.12 dont define DBUS_TIMEOUT_INFINITE */
+#if !defined(DBUS_TIMEOUT_INFINITE)
+#define DBUS_TIMEOUT_INFINITE  ((int)0x7fffffff)
+#endif
+
 #define DBUS_CALL_DEFAULT_TIMEOUT 3000 // in milliseconds
 
 DBusConnection * cdbus_g_dbus_connection;
