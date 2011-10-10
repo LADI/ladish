@@ -59,9 +59,14 @@ char * __cxa_demangle(const char * __mangled_name, char * __output_buffer, size_
 # define REGFORMAT "%x"
 #endif
 
+#if defined(__arm__) || defined(__powerpc__) || defined (__ia64__) || defined (__alpha__) || defined (__FreeBSD_kernel__) || defined (__sh__)
+# define DISABLE_STACKTRACE
+#endif
+
 static void signal_segv(int signum, siginfo_t* info, void*ptr) {
     static const char *si_codes[3] = {"", "SEGV_MAPERR", "SEGV_ACCERR"};
 
+#if !defined(DISABLE_STACKTRACE)
     size_t i;
     ucontext_t *ucontext = (ucontext_t*)ptr;
 
@@ -74,6 +79,7 @@ static void signal_segv(int signum, siginfo_t* info, void*ptr) {
     void *bt[20];
     char **strings;
     size_t sz;
+#endif
 #endif
 
     if (signum == SIGSEGV)
@@ -101,7 +107,7 @@ static void signal_segv(int signum, siginfo_t* info, void*ptr) {
     log_error("info.si_errno = %d", info->si_errno);
     log_error("info.si_code  = %d (%s)", info->si_code, si_codes[info->si_code]);
     log_error("info.si_addr  = %p", info->si_addr);
-#if defined(__arm__) || defined(__powerpc__) || defined (__ia64__) || defined (__alpha__) || defined (__FreeBSD_kernel__) || defined (__sh__)
+#if defined(DISABLE_STACKTRACE)
     log_error("No stack trace");
 #else
     for(i = 0; i < NGREG; i++)
