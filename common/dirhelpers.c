@@ -330,7 +330,10 @@ bool ladish_rotate(const char * src, const char * dst, unsigned int max_backups)
   bool oldest_found;
   unsigned int backup;
 
+  ASSERT(max_backups > 0);
+
   oldest_found = false;
+  path = NULL;
   older_path = NULL;
   backup = max_backups;
   while (backup > 0)
@@ -382,6 +385,8 @@ bool ladish_rotate(const char * src, const char * dst, unsigned int max_backups)
     older_path = path;
     backup--;
   }
+
+  ASSERT(path != NULL);
 
   log_info("rename '%s' -> '%s'", dst, path);
   if (rename(dst, path) != 0 && errno != ENOENT)
