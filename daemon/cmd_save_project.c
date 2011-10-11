@@ -42,7 +42,7 @@ struct ladish_command_save_project
 
 #define cmd_ptr ((struct ladish_command_save_project *)command_context)
 
-void ladish_room_project_complete(void * command_context, bool success)
+void ladish_room_project_save_complete(void * command_context, bool success)
 {
   cmd_ptr->done = true;
   cmd_ptr->success = success;
@@ -84,7 +84,7 @@ static bool run(void * command_context)
 
   cmd_ptr->command.state = LADISH_COMMAND_STATE_WAITING;
 
-  ladish_room_save_project(room, cmd_ptr->project_dir, cmd_ptr->project_name, cmd_ptr, ladish_room_project_complete);
+  ladish_room_save_project(room, cmd_ptr->project_dir, cmd_ptr->project_name, cmd_ptr, ladish_room_project_save_complete);
 
   return true;
 }
