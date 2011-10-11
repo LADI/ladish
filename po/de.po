@@ -7,14 +7,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LADISH 0.3-rc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2010-12-28 11:43+0500\n"
+"POT-Creation-Date: 2011-10-11 20:43+0400\n"
 "PO-Revision-Date: 2010-12-27 19:03+0100\n"
 "Last-Translator: Frank Kober <emuse@users.sourceforge.net>>\n"
 "Language-Team: \n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: \n"
 "X-Poedit-Language: German\n"
 "X-Poedit-Country: GERMANY\n"
 
@@ -95,7 +95,7 @@ msgstr "Stoppen von Ladishd fehlgeschlagen, bitte die Logs durchsehen."
 msgid "New studio"
 msgstr "Neues Studio"
 
-#: gui/control.c:146 gui/studio.c:252 gui/studio.c:294
+#: gui/control.c:146 gui/studio.c:254 gui/studio.c:296
 msgid "Studio name"
 msgstr "Studio-Name"
 
@@ -120,15 +120,15 @@ msgstr "Das Studio \"%s\" wird nun gelöscht. Sind Sie sicher?"
 msgid "Studio delete failed, please inspect logs."
 msgstr "Das Studio konnte nicht gelöscht werden. Bitte die Logs durchsehen."
 
-#: gui/create_room_dialog.c:72 gui/world_tree.c:494 gui/gladish.ui:1589
+#: gui/create_room_dialog.c:72 gui/world_tree.c:500 gui/gladish.ui:1590
 msgid "Name"
 msgstr "Name"
 
-#: gui/dialogs.c:58
+#: gui/dialogs.c:61
 msgid "New application"
 msgstr "Neue Anwendung"
 
-#: gui/dialogs.c:96
+#: gui/dialogs.c:99
 #, fuzzy
 msgid ""
 "Execution failed. I know you want to know more for the reson but currently "
@@ -137,18 +137,62 @@ msgstr ""
 "Ausführung fehlgeschlagen. Sicher wollen Sie mehr über den Grund wissen, "
 "aber die einzige Informationsquelle sind momentan die Logs"
 
-#: gui/dialogs.c:138
+#: gui/dialogs.c:141
 msgid "<b><big>Error</big></b>"
 msgstr "<b><big>Fehler</big></b>"
 
-#: gui/dynmenu.c:170
+#: gui/dynmenu.c:175
 #, fuzzy
 msgid "Error filling "
 msgstr "Fehler eintragen"
 
-#: gui/dynmenu.c:174
+#: gui/dynmenu.c:179
 msgid "Empty "
 msgstr "Leer "
+
+#: gui/graph_canvas.c:183
+msgid "Rename client"
+msgstr ""
+
+#: gui/graph_canvas.c:183 gui/graph_canvas.c:317
+msgid "Client name"
+msgstr ""
+
+#: gui/graph_canvas.c:215
+msgid "Client rename"
+msgstr ""
+
+#: gui/graph_canvas.c:222 gui/world_tree.c:398
+msgid "Remove"
+msgstr "Entfernen"
+
+#: gui/graph_canvas.c:230
+msgid "Split"
+msgstr ""
+
+#: gui/graph_canvas.c:246
+msgid "Rename port"
+msgstr ""
+
+#: gui/graph_canvas.c:246
+msgid "Port name"
+msgstr ""
+
+#: gui/graph_canvas.c:280
+msgid "Rename"
+msgstr ""
+
+#: gui/graph_canvas.c:286
+msgid "Move port"
+msgstr ""
+
+#: gui/graph_canvas.c:317 gui/graph_canvas.c:334
+msgid "New client"
+msgstr ""
+
+#: gui/graph_canvas.c:340
+msgid "Join clients"
+msgstr ""
 
 #: gui/graph_view.c:59
 msgid ""
@@ -235,7 +279,7 @@ msgstr "%.1f kHz"
 msgid "%u kHz"
 msgstr "%u kHz"
 
-#: gui/load_project_dialog.c:187 gui/gladish.ui:654
+#: gui/load_project_dialog.c:187 gui/gladish.ui:655
 msgid "Load project"
 msgstr "Projekt öffnen"
 
@@ -279,7 +323,7 @@ msgstr "Projekt speichern unter..."
 msgid "Project Properties..."
 msgstr "Projekt-Eigenschaften..."
 
-#: gui/menu.c:396 gui/gladish.ui:204
+#: gui/menu.c:396 gui/gladish.ui:205
 msgid "New Application..."
 msgstr "Neue Anwendung..."
 
@@ -309,61 +353,35 @@ msgstr "Der Raum konnte nicht gelöscht werden, bitte die Logs durchsehen."
 msgid "Storing settings"
 msgstr "Speichern der Einstellungen"
 
-#: gui/studio.c:97
+#: gui/studio.c:98
 msgid "JACK is sick"
 msgstr "JACK ist krank"
 
-#: gui/studio.c:101
+#: gui/studio.c:102
 msgid "Stopped"
 msgstr "Gestoppt"
 
-#: gui/studio.c:104
+#: gui/studio.c:105
 msgid "xruns"
 msgstr "xruns"
 
-#: gui/studio.c:108
-msgid "Internal error - unknown jack state"
-msgstr "Interner Fehler - JACKs Zustand ist unbekannt"
-
-#: gui/studio.c:117
+#: gui/studio.c:118
 msgid "ladishd is down"
 msgstr "ladishd läuft nicht"
 
-#: gui/studio.c:122
+#: gui/studio.c:124
 msgid "ladishd is sick"
 msgstr "ladishd ist krank"
 
-#: gui/studio.c:126
+#: gui/studio.c:128
 msgid "No studio loaded"
 msgstr "Kein Studio geladen"
 
-#: gui/studio.c:130
+#: gui/studio.c:132
 msgid "Crashed"
 msgstr "Abgestürzt"
 
-#: gui/studio.c:131
-msgid "Crashed studio, save your work if you can and unload the studio"
-msgstr ""
-"Das Studio ist abgestürzt, wenn möglich, die Arbeit speichern und das Studio "
-"schließen."
-
-#: gui/studio.c:138
-msgid "failed to get studio name"
-msgstr "Der Studio-Name konnte nicht ermittelt werden"
-
-#: gui/studio.c:149
-msgid "Studio is started"
-msgstr "Studio gestartet"
-
-#: gui/studio.c:153
-msgid "Studio is stopped"
-msgstr "Studio gestoppt"
-
-#: gui/studio.c:160
-msgid "Internal error - unknown studio state"
-msgstr "Interner Fehler - Studio-Zustand ist unbekannt"
-
-#: gui/studio.c:225
+#: gui/studio.c:227
 msgid ""
 "JACK crashed or stopped unexpectedly. Save your work, then unload and reload "
 "the studio."
@@ -371,35 +389,35 @@ msgstr ""
 "JACK ist abgestürzt oder wurde unerwartet gestoppt. Wenn möglich, die Arbeit "
 "speichern,  das Studio schließen und neu öffnen."
 
-#: gui/studio.c:242
+#: gui/studio.c:244
 msgid "Studio save failed, please inspect logs."
 msgstr "Das Studio konnte nicht gespeichert werden, bitte die Logs durchsehen."
 
-#: gui/studio.c:252
+#: gui/studio.c:254
 msgid "Save studio as"
 msgstr "Speichern des Studios unter"
 
-#: gui/studio.c:256
+#: gui/studio.c:258
 msgid "Saving of studio failed, please inspect logs."
 msgstr "Das Studio konnte nicht gespeichert werden, bitte die Logs durchsehen."
 
-#: gui/studio.c:268
+#: gui/studio.c:270
 msgid "Studio start failed, please inspect logs."
 msgstr "Das Studio konnte nicht gestartet werden, bitte die Logs durchsehen."
 
-#: gui/studio.c:277
+#: gui/studio.c:279
 msgid "Studio stop failed, please inspect logs."
 msgstr "Das Studio konnte nicht gestoppt werden, bitte die Logs durchsehen."
 
-#: gui/studio.c:286
+#: gui/studio.c:288
 msgid "Studio unload failed, please inspect logs."
 msgstr "Das Studio konnte nicht geschlossen werden, bitte die Logs durchsehen."
 
-#: gui/studio.c:294
+#: gui/studio.c:296
 msgid "Rename studio"
 msgstr "Studio umbenennen"
 
-#: gui/studio.c:298
+#: gui/studio.c:300
 msgid "Studio rename failed, please inspect logs."
 msgstr "Das Studio konnte nicht umbenannt werden, bitte die Logs durchsehen."
 
@@ -407,39 +425,35 @@ msgstr "Das Studio konnte nicht umbenannt werden, bitte die Logs durchsehen."
 msgid "Cannot get app properties"
 msgstr "Die Anwendungs-Eigenschaften konnten nicht gefunden werden"
 
-#: gui/world_tree.c:294
+#: gui/world_tree.c:300
 msgid "App properties"
 msgstr "Anwendungs-Eigenschaften"
 
-#: gui/world_tree.c:327
+#: gui/world_tree.c:333
 msgid "Cannot set app properties."
 msgstr "Die Anwendungs-Eigenschaften konnten nicht gesetzt werden"
 
-#: gui/world_tree.c:370
+#: gui/world_tree.c:376
 msgid "Stop"
 msgstr "Stoppen"
 
-#: gui/world_tree.c:374
+#: gui/world_tree.c:380
 msgid "Kill"
 msgstr "Killen"
 
-#: gui/world_tree.c:380
+#: gui/world_tree.c:386
 msgid "Start"
 msgstr "Starten"
 
-#: gui/world_tree.c:385
+#: gui/world_tree.c:391
 msgid "Properties"
 msgstr "Eigenschaften"
 
-#: gui/world_tree.c:392
-msgid "Remove"
-msgstr "Entfernen"
-
-#: gui/world_tree.c:654
+#: gui/world_tree.c:671
 msgid " (inactive) "
 msgstr " (inaktiv) "
 
-#: gui/canvas.cpp:113
+#: gui/canvas.cpp:117
 msgid "Disconnect All"
 msgstr "Alle trennen"
 
@@ -499,99 +513,99 @@ msgstr "Raum _schließen"
 msgid "_Project"
 msgstr "_Projekt"
 
-#: gui/gladish.ui:196
+#: gui/gladish.ui:197
 msgid "_Application"
 msgstr "_Anwendung"
 
-#: gui/gladish.ui:219
+#: gui/gladish.ui:220
 msgid "_View"
 msgstr "_Ansicht"
 
-#: gui/gladish.ui:226
+#: gui/gladish.ui:227
 msgid "_Toolbar"
 msgstr "_Werkzeugleiste"
 
-#: gui/gladish.ui:271
+#: gui/gladish.ui:272
 msgid "_JACK"
 msgstr "_JACK Klienten- und Portnamen"
 
-#: gui/gladish.ui:279
+#: gui/gladish.ui:280
 msgid "_Arrange"
 msgstr "_Anordnen"
 
-#: gui/gladish.ui:295
+#: gui/gladish.ui:296
 msgid "_Tools"
 msgstr "_Werkzeuge"
 
-#: gui/gladish.ui:313
+#: gui/gladish.ui:314
 msgid "_Settings"
 msgstr "_Einstellungen"
 
-#: gui/gladish.ui:322
+#: gui/gladish.ui:323
 msgid "_Configure JACK"
 msgstr "JACK _konfigurieren"
 
-#: gui/gladish.ui:332
+#: gui/gladish.ui:333
 msgid "Reactivate ladishd"
 msgstr "Ladishd neustarten"
 
-#: gui/gladish.ui:341
+#: gui/gladish.ui:342
 msgid "Reactivate jackdbus"
 msgstr "Jackdbus neustarten"
 
-#: gui/gladish.ui:350
+#: gui/gladish.ui:351
 msgid "Reactivate a2jmidid"
 msgstr "A2jmidid neustarten"
 
-#: gui/gladish.ui:359
+#: gui/gladish.ui:360
 msgid "JACK _Latency"
 msgstr "JACK-_Paketgröße"
 
-#: gui/gladish.ui:368
+#: gui/gladish.ui:369
 msgid "32"
 msgstr "32"
 
-#: gui/gladish.ui:376
+#: gui/gladish.ui:377
 msgid "64"
 msgstr "64"
 
-#: gui/gladish.ui:384
+#: gui/gladish.ui:385
 msgid "128"
 msgstr "128"
 
-#: gui/gladish.ui:392
+#: gui/gladish.ui:393
 msgid "256"
 msgstr "256"
 
-#: gui/gladish.ui:400
+#: gui/gladish.ui:401
 msgid "512"
 msgstr "512"
 
-#: gui/gladish.ui:408
+#: gui/gladish.ui:409
 msgid "1024"
 msgstr "1024"
 
-#: gui/gladish.ui:416
+#: gui/gladish.ui:417
 msgid "2048"
 msgstr "2048"
 
-#: gui/gladish.ui:424
+#: gui/gladish.ui:425
 msgid "4096"
 msgstr "4096"
 
-#: gui/gladish.ui:432
+#: gui/gladish.ui:433
 msgid "8192"
 msgstr "8192"
 
-#: gui/gladish.ui:446
+#: gui/gladish.ui:447
 msgid "_Help"
 msgstr "_Hilfe"
 
-#: gui/gladish.ui:479
+#: gui/gladish.ui:480
 msgid "Clear XRuns"
 msgstr "XRuns zurücksetzen"
 
-#: gui/gladish.ui:618
+#: gui/gladish.ui:619
 msgid ""
 "LADI Session Handler is free software; you can redistribute it and/or "
 "modify\n"
@@ -622,98 +636,124 @@ msgstr ""
 "http://www.gnu.org/licenses/ , oder schreiben Sie an die Free Software\n"
 "Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA\n"
 
-#: gui/gladish.ui:689 gui/gladish.ui:1580
+#: gui/gladish.ui:690 gui/gladish.ui:1581
 msgid "Path"
 msgstr "Verzeichnis"
 
-#: gui/gladish.ui:712
+#: gui/gladish.ui:713
 msgid "Browse..."
 msgstr "Suchen..."
 
-#: gui/gladish.ui:785
+#: gui/gladish.ui:786
 msgid "Project properties"
 msgstr "Projekt-Eigenschaften"
 
-#: gui/gladish.ui:815
+#: gui/gladish.ui:816
 msgid "<b>Project name</b>"
 msgstr "<b>Projekt-Name</b>"
 
-#: gui/gladish.ui:842
+#: gui/gladish.ui:843
 msgid "<b>Description</b>"
 msgstr "<b>Beschreibung</b>"
 
-#: gui/gladish.ui:880
+#: gui/gladish.ui:881
 msgid "<b>Notes</b>"
 msgstr "<b>Notizen</b>"
 
-#: gui/gladish.ui:949
+#: gui/gladish.ui:950
 msgid "Set name"
 msgstr "Benennen"
 
-#: gui/gladish.ui:980 gui/gladish.ui:1453
+#: gui/gladish.ui:981 gui/gladish.ui:1454
 msgid "<b>Name</b>"
 msgstr "<b>Name</b>"
 
-#: gui/gladish.ui:1129
+#: gui/gladish.ui:1130
 msgid "Command:"
 msgstr "Befehl:"
 
-#: gui/gladish.ui:1141
+#: gui/gladish.ui:1142
 msgid "Name:"
 msgstr "Name:"
 
-#: gui/gladish.ui:1170
+#: gui/gladish.ui:1171
 msgid "Run in Terminal"
 msgstr "Im Terminal starten"
 
-#: gui/gladish.ui:1186
+#: gui/gladish.ui:1187
 #, fuzzy
 msgid "Level 0"
 msgstr "Level 0"
 
-#: gui/gladish.ui:1203
+#: gui/gladish.ui:1204
 msgid "Level 1"
 msgstr "Level 1"
 
-#: gui/gladish.ui:1235
-msgid "Level 2"
-msgstr "Level 2"
+#: gui/gladish.ui:1236
+msgid "Level 2 (LASH)"
+msgstr ""
 
-#: gui/gladish.ui:1254
-msgid "Level 3"
-msgstr "Level 3"
+#: gui/gladish.ui:1255
+msgid "Level 2 (jack session)"
+msgstr ""
 
-#: gui/gladish.ui:1427
+#: gui/gladish.ui:1428
 msgid "Create room"
 msgstr "Raum erzeugen"
 
-#: gui/gladish.ui:1479
+#: gui/gladish.ui:1480
 msgid "<b>Create from template</b>"
 msgstr "<b>Benutze ein Modell</b>"
 
-#: gui/gladish.ui:1603
+#: gui/gladish.ui:1604
 msgid "Default is project directory name"
 msgstr "Bei keinem Eintrag wird der Name des Verzeichnisses verwendet"
 
-#: gui/gladish.ui:1622
+#: gui/gladish.ui:1623
 msgid "Default is ~/ladish-projects"
 msgstr "Bei keinem Eintrag wird ~/ladish-projects verwendet"
 
-#: gui/gladish.ui:1723
+#: gui/gladish.ui:1724
 msgid "Start studio on load"
 msgstr "Studio nach dem Öffnen starten"
 
-#: gui/gladish.ui:1735
+#: gui/gladish.ui:1736
 msgid "Send notifications"
 msgstr "Meldungen senden"
 
-#: gui/gladish.ui:1756
+#: gui/gladish.ui:1757
 msgid "Shell to use:"
 msgstr "Shell:"
 
-#: gui/gladish.ui:1763
+#: gui/gladish.ui:1764
 msgid "Terminal to use:"
 msgstr "Terminal:"
+
+#~ msgid "Internal error - unknown jack state"
+#~ msgstr "Interner Fehler - JACKs Zustand ist unbekannt"
+
+#~ msgid "Crashed studio, save your work if you can and unload the studio"
+#~ msgstr ""
+#~ "Das Studio ist abgestürzt, wenn möglich, die Arbeit speichern und das "
+#~ "Studio schließen."
+
+#~ msgid "failed to get studio name"
+#~ msgstr "Der Studio-Name konnte nicht ermittelt werden"
+
+#~ msgid "Studio is started"
+#~ msgstr "Studio gestartet"
+
+#~ msgid "Studio is stopped"
+#~ msgstr "Studio gestoppt"
+
+#~ msgid "Internal error - unknown studio state"
+#~ msgstr "Interner Fehler - Studio-Zustand ist unbekannt"
+
+#~ msgid "Level 2"
+#~ msgstr "Level 2"
+
+#~ msgid "Level 3"
+#~ msgstr "Level 3"
 
 #, fuzzy
 #~ msgid "Start automatically on studio load"
