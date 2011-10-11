@@ -88,7 +88,7 @@ ladish_room_add_port(
 
 typedef void (* ladish_room_save_complete_callback)(void * context, bool success);
 
-bool
+void
 ladish_room_save_project(
   ladish_room_handle room_handle,
   const char * project_dir,

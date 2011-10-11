@@ -316,7 +316,7 @@ static void ladish_room_apps_save_complete(void * context, bool success)
 
 #undef ctx_ptr
 
-static bool ladish_room_save_project_do(struct ladish_room_save_context * ctx_ptr)
+static void ladish_room_save_project_do(struct ladish_room_save_context * ctx_ptr)
 {
   log_info("Saving project '%s' in room '%s' to '%s'", ctx_ptr->room->project_name, ctx_ptr->room->name, ctx_ptr->room->project_dir);
 
@@ -324,16 +324,10 @@ static bool ladish_room_save_project_do(struct ladish_room_save_context * ctx_pt
 
   if (!ensure_dir_exist(ctx_ptr->room->project_dir, 0777))
   {
-    goto fail;
+    ladish_room_save_complete(ctx_ptr, false);
   }
 
   ladish_app_supervisor_save(ctx_ptr->room->app_supervisor, ctx_ptr, ladish_room_apps_save_complete);
-
-  return true;
-
-fail:
-  ladish_room_save_complete(ctx_ptr, false);
-  return false;
 }
 
 /* TODO: base dir must be a runtime setting */
@@ -362,7 +356,7 @@ char * compose_project_dir_from_name(const char * project_name)
 
 #define room_ptr ((struct ladish_room *)room_handle)
 
-bool
+void
 ladish_room_save_project(
   ladish_room_handle room_handle,
   const char * project_dir_param,
@@ -383,7 +377,8 @@ ladish_room_save_project(
   if (ctx_ptr == NULL)
   {
     log_error("malloc() failed to allocate memory for room save context struct");
-    goto fail;
+    ctx_ptr->callback(ctx_ptr->context, false);
+    return;
   }
 
   ctx_ptr->room = room_ptr;
@@ -471,12 +466,11 @@ ladish_room_save_project(
   room_ptr->project_name = ctx_ptr->project_name;
   room_ptr->project_dir = ctx_ptr->project_dir;
 
-  return ladish_room_save_project_do(ctx_ptr);
+  ladish_room_save_project_do(ctx_ptr);
+  return;
 
 destroy_ctx:
-  ladish_room_save_context_destroy(ctx_ptr);
-fail:
-  return false;
+  ladish_room_save_complete(ctx_ptr, false);
 }
 
 #undef room_ptr
