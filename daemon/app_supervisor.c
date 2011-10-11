@@ -285,13 +285,15 @@ static void ladish_js_save_complete(struct ladish_app_supervisor * supervisor_pt
     if (app_ptr->state == LADISH_APP_STATE_STARTED &&
         strcmp(app_ptr->level, LADISH_APP_LEVEL_JACKSESSION) == 0 &&
         app_ptr->js_commandline == NULL)
-    { /* a strdup() call has failed, free js commandline buffers allocated by succeeded strdup() calls */
+    { /* a strdup() call has failed, or js save failed for some other reason,
+         free js commandline buffers allocated by succeeded strdup() calls */
       list_for_each(node_ptr, &supervisor_ptr->applist)
       {
         app_ptr = list_entry(node_ptr, struct ladish_app, siblings);
         free(app_ptr->js_commandline);
         app_ptr->js_commandline = NULL;
       }
+      success = false;
       goto fail_rm_temp_dir;
     }
   }
@@ -723,14 +725,22 @@ exit:
 
 static void ladish_js_app_save_complete(void * context, const char * commandline)
 {
-  log_info("JS app saved, commandline '%s'", commandline);
-  ASSERT(app_ptr->supervisor->js_temp_dir != NULL);
-
-  ASSERT(app_ptr->js_commandline == NULL);
-  app_ptr->js_commandline = strdup(commandline);
-  if (app_ptr->js_commandline == NULL)
+  if (commandline != NULL)
   {
-    log_error("strdup() failed for JS app '%s' commandline '%s'", app_ptr->name, commandline);
+    log_info("JS app saved, commandline '%s'", commandline);
+    ASSERT(app_ptr->supervisor->js_temp_dir != NULL);
+
+    ASSERT(app_ptr->js_commandline == NULL);
+    app_ptr->js_commandline = strdup(commandline);
+    if (app_ptr->js_commandline == NULL)
+    {
+      log_error("strdup() failed for JS app '%s' commandline '%s'", app_ptr->name, commandline);
+    }
+  }
+  else
+  {
+    ASSERT(app_ptr->js_commandline == NULL);
+    log_error("JACK session save failed for JS app '%s'", app_ptr->name);
   }
 
   if (app_ptr->supervisor->pending_js_saves != 1)
@@ -741,7 +751,7 @@ static void ladish_js_app_save_complete(void * context, const char * commandline
     return;
   }
 
-  log_info("Last JS app saved");
+  log_info("No more pending JS app saves");
   app_ptr->supervisor->pending_js_saves = 0;
 
   ladish_js_save_complete(app_ptr->supervisor);
@@ -759,7 +769,10 @@ static inline void ladish_app_initiate_save(struct ladish_app * app_ptr)
   else if (strcmp(app_ptr->level, LADISH_APP_LEVEL_JACKSESSION) == 0)
   {
     log_info("Initiating JACK session save for '%s'", app_ptr->name);
-    ladish_js_save_app(app_ptr->uuid, app_ptr->supervisor->js_temp_dir, app_ptr, ladish_js_app_save_complete);
+    if (!ladish_js_save_app(app_ptr->uuid, app_ptr->supervisor->js_temp_dir, app_ptr, ladish_js_app_save_complete))
+    {
+      ladish_js_app_save_complete(app_ptr, NULL);
+    }
   }
   else if (strcmp(app_ptr->level, LADISH_APP_LEVEL_1) == 0)
   {
@@ -1173,6 +1186,8 @@ ladish_app_supervisor_save(
   struct ladish_app * app_ptr;
   bool success;
 
+  ASSERT(callback != NULL);
+
   ASSERT(supervisor_ptr->js_temp_dir == NULL);
   ASSERT(supervisor_ptr->pending_js_saves == 0);
   list_for_each(node_ptr, &supervisor_ptr->applist)
@@ -1185,6 +1200,9 @@ ladish_app_supervisor_save(
       supervisor_ptr->pending_js_saves++;
     }
   }
+
+  supervisor_ptr->save_callback_context = context;
+  supervisor_ptr->save_callback = callback;
 
   if (supervisor_ptr->pending_js_saves > 0)
   {
@@ -1203,14 +1221,6 @@ ladish_app_supervisor_save(
     }
 
     log_info("saving %u JACK session apps to '%s'", supervisor_ptr->pending_js_saves, supervisor_ptr->js_temp_dir);
-
-    supervisor_ptr->save_callback_context = context;
-    supervisor_ptr->save_callback = callback;
-  }
-  else
-  {
-    ASSERT(supervisor_ptr->save_callback_context == NULL);
-    ASSERT(supervisor_ptr->save_callback == NULL);
   }
 
   list_for_each(node_ptr, &supervisor_ptr->applist)
@@ -1240,11 +1250,18 @@ reset_js_pending_saves:
   supervisor_ptr->pending_js_saves = 0;
   success = false;
 exit:
-  if (supervisor_ptr->pending_js_saves == 0)
-  {
-    ASSERT(supervisor_ptr->save_callback == NULL);
-    ASSERT(callback != NULL);
+  if (supervisor_ptr->pending_js_saves == 0 && supervisor_ptr->save_callback != NULL)
+  { /* Room/studio without js apps.
+       In case of ladish_js_save_app() failure,
+       the callback will either be called already or
+       will be called later when all pending js app saves are done.
+       In former case callback will be NULL.
+       In latter case pending_js_saves will be greater than zero. */
+    ASSERT(supervisor_ptr->save_callback == callback);
+    ASSERT(supervisor_ptr->save_callback_context = context);
     callback(context, success);
+    supervisor_ptr->save_callback = NULL;
+    supervisor_ptr->save_callback_context = NULL;
   }
 }
 
