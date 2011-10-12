@@ -150,15 +150,15 @@ msgstr "Vide"
 
 #: gui/graph_canvas.c:183
 msgid "Rename client"
-msgstr ""
+msgstr "Renommer le client"
 
 #: gui/graph_canvas.c:183 gui/graph_canvas.c:317
 msgid "Client name"
-msgstr ""
+msgstr "Nom du client"
 
 #: gui/graph_canvas.c:215
 msgid "Client rename"
-msgstr ""
+msgstr "Renommer le client"
 
 #: gui/graph_canvas.c:222 gui/world_tree.c:398
 msgid "Remove"
@@ -166,31 +166,31 @@ msgstr "Supprimer"
 
 #: gui/graph_canvas.c:230
 msgid "Split"
-msgstr ""
+msgstr "Diviser"
 
 #: gui/graph_canvas.c:246
 msgid "Rename port"
-msgstr ""
+msgstr "Renommer le port"
 
 #: gui/graph_canvas.c:246
 msgid "Port name"
-msgstr ""
+msgstr "Nom du port"
 
 #: gui/graph_canvas.c:280
 msgid "Rename"
-msgstr ""
+msgstr "Renommer"
 
 #: gui/graph_canvas.c:286
 msgid "Move port"
-msgstr ""
+msgstr "DГ©placer le port"
 
 #: gui/graph_canvas.c:317 gui/graph_canvas.c:334
 msgid "New client"
-msgstr ""
+msgstr "Nouveau client"
 
 #: gui/graph_canvas.c:340
 msgid "Join clients"
-msgstr ""
+msgstr "Joindre les clients"
 
 #: gui/graph_view.c:59
 msgid ""
@@ -690,11 +690,11 @@ msgstr "Level 1"
 
 #: gui/gladish.ui:1236
 msgid "Level 2 (LASH)"
-msgstr ""
+msgstr "Level 2 (LASH)"
 
 #: gui/gladish.ui:1255
 msgid "Level 2 (jack session)"
-msgstr ""
+msgstr "Level 2 (jack session)"
 
 #: gui/gladish.ui:1428
 msgid "Create room"
