@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-11 20:43+0400\n"
-"PO-Revision-Date: 2011-10-13 00:59+0300\n"
+"POT-Creation-Date: 2011-10-13 01:08+0400\n"
+"PO-Revision-Date: 2011-10-13 01:12+0300\n"
 "Last-Translator: Maxim Kachur <mcdebugger@duganet.ru>\n"
 "Language-Team: Russian <gnome-cyr@lists.gnome.org>\n"
 "Language: ru\n"
@@ -460,6 +460,7 @@ msgid " (inactive) "
 msgstr "(неактивный)"
 
 #: gui/canvas.cpp:117
+#: gui/canvas.cpp:171
 msgid "Disconnect All"
 msgstr "Отсоединить всё"
 
