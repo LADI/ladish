@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-10-11 20:43+0400\n"
-"PO-Revision-Date: 2011-10-11 21:10+0300\n"
+"PO-Revision-Date: 2011-10-13 00:59+0300\n"
 "Last-Translator: Maxim Kachur <mcdebugger@duganet.ru>\n"
 "Language-Team: Russian <gnome-cyr@lists.gnome.org>\n"
 "Language: ru\n"
@@ -156,16 +156,16 @@ msgstr "Пустой"
 
 #: gui/graph_canvas.c:183
 msgid "Rename client"
-msgstr ""
+msgstr "Переименовать клиент"
 
 #: gui/graph_canvas.c:183
 #: gui/graph_canvas.c:317
 msgid "Client name"
-msgstr ""
+msgstr "Имя клиента"
 
 #: gui/graph_canvas.c:215
 msgid "Client rename"
-msgstr ""
+msgstr "Переименование клиента"
 
 #: gui/graph_canvas.c:222
 #: gui/world_tree.c:398
@@ -174,32 +174,32 @@ msgstr "Удалить"
 
 #: gui/graph_canvas.c:230
 msgid "Split"
-msgstr ""
+msgstr "Разделить"
 
 #: gui/graph_canvas.c:246
 msgid "Rename port"
-msgstr ""
+msgstr "Переименовать порт"
 
 #: gui/graph_canvas.c:246
 msgid "Port name"
-msgstr ""
+msgstr "Имя порта"
 
 #: gui/graph_canvas.c:280
 msgid "Rename"
-msgstr ""
+msgstr "Переименовать"
 
 #: gui/graph_canvas.c:286
 msgid "Move port"
-msgstr ""
+msgstr "Переместить порт"
 
 #: gui/graph_canvas.c:317
 #: gui/graph_canvas.c:334
 msgid "New client"
-msgstr ""
+msgstr "Новый клиент"
 
 #: gui/graph_canvas.c:340
 msgid "Join clients"
-msgstr ""
+msgstr "Объединить клиенты"
 
 #: gui/graph_view.c:59
 msgid ""
