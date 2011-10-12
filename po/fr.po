@@ -8,8 +8,8 @@ msgstr ""
 "Project-Id-Version: LADISH 0.3-rc\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-10-11 20:43+0400\n"
-"PO-Revision-Date: 2010-12-28 21:52+0100\n"
-"Last-Translator: Olivier HUMBERT <humbert.olivier.1@free.fr>\n"
+"PO-Revision-Date: 2011-10-12 18:25+0400\n"
+"Last-Translator: Maxim Kachur <mcdebugger@duganet.ru>\n"
 "Language-Team: \n"
 "Language: \n"
 "MIME-Version: 1.0\n"
@@ -182,7 +182,7 @@ msgstr "Renommer"
 
 #: gui/graph_canvas.c:286
 msgid "Move port"
-msgstr "DГ©placer le port"
+msgstr "Déplacer le port"
 
 #: gui/graph_canvas.c:317 gui/graph_canvas.c:334
 msgid "New client"
