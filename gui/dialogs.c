@@ -109,7 +109,7 @@ bool name_dialog(const char * title, const char * object, const char * old_name,
   bool ok;
   GtkEntry * entry = GTK_ENTRY(get_gtk_builder_widget("name_entry"));
 
-  gtk_window_set_title(GTK_WINDOW(g_app_dialog), title);
+  gtk_window_set_title(GTK_WINDOW(g_name_dialog), title);
 
   gtk_widget_show(g_name_dialog);
 
