@@ -369,9 +369,6 @@ ladish_room_save_project(
   bool dir_supplied;
   bool name_supplied;
   char * buffer;
-  bool ret;
-
-  ret = false;
 
   ctx_ptr = malloc(sizeof(struct ladish_room_save_context));
   if (ctx_ptr == NULL)
