@@ -184,7 +184,9 @@ def configure(conf):
     if build_gui:
         # We need the boost headers package (e.g. libboost-dev)
         # shared_ptr.hpp and weak_ptr.hpp
-        build_gui = conf.check_boost(errmsg="not found, see http://boost.org/")
+        build_gui = conf.check_boost(
+            mandatory = False,
+            errmsg="not found, see http://boost.org/")
 
     conf.env['BUILD_GLADISH'] = build_gui
 
