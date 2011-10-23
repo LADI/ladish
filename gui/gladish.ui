@@ -182,9 +182,9 @@
             <child>
               <object class="GtkMenuItem" id="project_menu_item">
                 <property name="label" translatable="yes">_Project</property>
+                <property name="sensitive">False</property>
                 <property name="use_underline">True</property>
                 <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <child type="submenu">
                   <object class="GtkMenu" id="project_menu">
                     <property name="visible">True</property>
@@ -650,7 +650,6 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
   <object class="GtkDialog" id="load_project_dialog">
     <property name="border_width">5</property>
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-    <property name="has_separator">False</property>
     <property name="modal">True</property>
     <property name="title" translatable="yes">Load project</property>
     <property name="transient_for">main_win</property>
@@ -781,7 +780,6 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
   <object class="GtkDialog" id="project_properties_dialog">
     <property name="border_width">5</property>
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-    <property name="has_separator">False</property>
     <property name="modal">True</property>
     <property name="title" translatable="yes">Project properties</property>
     <property name="transient_for">main_win</property>
@@ -945,7 +943,6 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
   <object class="GtkDialog" id="name_dialog">
     <property name="border_width">5</property>
     <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
-    <property name="has_separator">False</property>
     <property name="modal">True</property>
     <property name="title" translatable="yes">Set name</property>
     <property name="transient_for">main_win</property>
@@ -1239,7 +1236,6 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
                 <property name="draw_indicator">True</property>
                 <property name="group">app_level0</property>
                 <property name="receives_default">False</property>
-                <property name="sensitive">True</property>
                 <property name="visible">True</property>
               </object>
               <packing>
@@ -1258,7 +1254,6 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
                 <property name="draw_indicator">True</property>
                 <property name="group">app_level0</property>
                 <property name="receives_default">False</property>
-                <property name="sensitive">True</property>
                 <property name="visible">True</property>
               </object>
               <packing>
@@ -1424,7 +1419,6 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
   </object>
   <object class="GtkDialog" id="create_room_dialog">
     <property name="border_width">5</property>
-    <property name="has_separator">False</property>
     <property name="title" translatable="yes">Create room</property>
     <property name="transient_for">main_win</property>
     <property name="type_hint">normal</property>
@@ -1562,7 +1556,6 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
   </object>
   <object class="GtkDialog" id="project_save_as_dialog">
     <property name="border_width">5</property>
-    <property name="has_separator">False</property>
     <property name="transient_for">main_win</property>
     <property name="type_hint">normal</property>
     <child internal-child="vbox">
@@ -1701,7 +1694,6 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
   </object>
   <object class="GtkDialog" id="settings_dialog">
     <property name="border_width">5</property>
-    <property name="has_separator">False</property>
     <property name="transient_for">main_win</property>
     <property name="type_hint">normal</property>
     <child internal-child="vbox">
@@ -1862,7 +1854,6 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
     <property name="border_width">5</property>
     <property name="destroy_with_parent">True</property>
     <property name="do_overwrite_confirmation">True</property>
-    <property name="has_separator">False</property>
     <property name="type_hint">dialog</property>
     <property name="window_position">center-on-parent</property>
     <child internal-child="vbox">
