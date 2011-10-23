@@ -1741,7 +1741,7 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
               <object class="GtkTable" id="settings_string_table">
                 <property name="column_spacing">5</property>
                 <property name="n_columns">2</property>
-                <property name="n_rows">2</property>
+                <property name="n_rows">3</property>
                 <property name="row_spacing">5</property>
                 <property name="visible">True</property>
                 <child>
@@ -1784,6 +1784,33 @@ along with LADI Session Handler; if not, write to the Free Software Foundation, 
                     <property name="left_attach">1</property>
                     <property name="right_attach">2</property>
                     <property name="top_attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="settings_js_delay_label">
+                    <property name="label" translatable="yes">JS delay (seconds):</property>
+                    <property name="visible">True</property>
+                    <property name="xalign">0</property>
+                  </object>
+                  <packing>
+                    <property name="bottom_attach">3</property>
+                    <property name="top_attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkSpinButton" id="settings_js_delay_spin">
+                    <property name="can_focus">True</property>
+                    <property name="invisible_char">&#x25CF;</property>
+                    <property name="numeric">True</property>
+                    <property name="digits">0</property>
+                    <property name="snap_to_ticks">True</property>
+                    <property name="visible">True</property>
+                  </object>
+                  <packing>
+                    <property name="bottom_attach">3</property>
+                    <property name="left_attach">1</property>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">2</property>
                   </packing>
                 </child>
               </object>

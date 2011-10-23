@@ -356,6 +356,11 @@ int main(int argc, char ** argv, char ** envp)
     goto uninit_conf;
   }
 
+  if (!conf_register(LADISH_CONF_KEY_DAEMON_JS_SAVE_DELAY, NULL, NULL))
+  {
+    goto uninit_conf;
+  }
+
   if (!ladish_recent_projects_init())
   {
     goto uninit_conf;

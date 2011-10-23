@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to code that interfaces ladiconfd through D-Bus
@@ -46,5 +46,8 @@ const char * conf_bool2string(bool value);
 
 bool conf_set_bool(const char * key, bool value);
 bool conf_get_bool(const char * key, bool * value_ptr);
+
+bool conf_set_uint(const char * key, unsigned int value);
+bool conf_get_uint(const char * key, unsigned int * value_ptr);
 
 #endif /* #ifndef CONF_PROXY_H__D45503B2_D49C_46BF_86F7_9A531B819B6B__INCLUDED */

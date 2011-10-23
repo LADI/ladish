@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the code that implements main() and other top-level functionality
@@ -157,6 +157,11 @@ int main(int argc, char** argv)
   }
 
   if (!conf_register(LADISH_CONF_KEY_DAEMON_STUDIO_AUTOSTART, NULL, NULL))
+  {
+    return 1;
+  }
+
+  if (!conf_register(LADISH_CONF_KEY_DAEMON_JS_SAVE_DELAY, NULL, NULL))
   {
     return 1;
   }

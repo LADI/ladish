@@ -30,6 +30,8 @@
 #include "../common/catdup.h"
 #include "studio.h"
 #include "../proxies/jack_proxy.h"
+#include "../proxies/conf_proxy.h"
+#include "conf.h"
 
 struct ladish_js_find_app_client_context
 {
@@ -143,10 +145,24 @@ struct ladish_js_save_app_context
 void ladish_js_save_app_complete(void * context, const char * commandline)
 {
   int iret;
+  unsigned int delay;
 
   if (commandline == NULL)
   {
     goto call;
+  }
+
+  log_info("JS app save complete. commandline='%s'", commandline);
+
+  if (!conf_get_uint(LADISH_CONF_KEY_DAEMON_JS_SAVE_DELAY, &delay))
+  {
+    delay = LADISH_CONF_KEY_DAEMON_JS_SAVE_DELAY_DEFAULT;
+  }
+
+  if (delay > 0)
+  {
+    log_info("sleeping for %u seconds...", delay);
+    sleep(delay);
   }
 
   iret = rename(ctx_ptr->client_dir, ctx_ptr->target_dir);

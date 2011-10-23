@@ -354,3 +354,69 @@ bool conf_get_bool(const char * key, bool * value_ptr)
 
   return true;
 }
+
+/* UINT_MAX is 10 chars + terminating nul */
+#define UINT_STRING_MAX_SIZE 11
+
+static const char * conf_uint2string(unsigned int value, char * string)
+{
+  char * ptr;
+
+  ptr = string + (UINT_STRING_MAX_SIZE - 1);
+  *ptr = 0;
+
+  do
+  {
+    ASSERT(ptr > string);       /* UINT_STRING_MAX_SIZE is too small? */
+    ptr--;
+    *ptr = '0' + value % 10;
+    value /= 10;
+  }
+  while (value > 0);
+
+  return ptr;
+}
+
+static bool conf_string2uint(const char * string, unsigned int * value_ptr)
+{
+  unsigned int value;
+
+  value = 0;
+
+  do
+  {
+    if (*string < '0' || *string > '9')
+    {
+      return false;
+    }
+
+    value *= 10;
+    value += *string - '0';
+
+    string++;
+  }
+  while (*string != 0);
+
+  *value_ptr = value;
+
+  return true;
+}
+
+bool conf_set_uint(const char * key, unsigned int value)
+{
+  char buffer[UINT_STRING_MAX_SIZE];
+
+  return conf_set(key, conf_uint2string(value, buffer));
+}
+
+bool conf_get_uint(const char * key, unsigned int * value_ptr)
+{
+  const char * str;
+
+  if (!conf_get(key, &str))
+  {
+    return false;
+  }
+
+  return conf_string2uint(str, value_ptr);
+}
