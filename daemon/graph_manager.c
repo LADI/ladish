@@ -25,7 +25,6 @@
  */
 
 #include "graph_manager.h"
-#include "../dbus/error.h"
 #include "../dbus_constants.h"
 #include "graph.h"
 #include "virtualizer.h"
@@ -46,7 +45,7 @@ static void ladish_graph_manager_dbus_split(struct cdbus_method_call * call_ptr)
         DBUS_TYPE_UINT64, &client_id,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -55,7 +54,7 @@ static void ladish_graph_manager_dbus_split(struct cdbus_method_call * call_ptr)
 
   if (!ladish_virtualizer_split_client(graph, client_id))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "split failed");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "split failed");
   }
   else
   {
@@ -75,7 +74,7 @@ static void ladish_graph_manager_dbus_join(struct cdbus_method_call * call_ptr)
         DBUS_TYPE_UINT64, &client2_id,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -84,7 +83,7 @@ static void ladish_graph_manager_dbus_join(struct cdbus_method_call * call_ptr)
 
   if (!ladish_virtualizer_join_clients(graph, client1_id, client2_id))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "join failed");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "join failed");
   }
   else
   {
@@ -105,7 +104,7 @@ static void ladish_graph_manager_dbus_rename_client(struct cdbus_method_call * c
         DBUS_TYPE_STRING, &newname,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -115,13 +114,13 @@ static void ladish_graph_manager_dbus_rename_client(struct cdbus_method_call * c
   client = ladish_graph_find_client_by_id(graph, client_id);
   if (client == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot rename unknown client");
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Cannot rename unknown client");
     return;
   }
 
   if (!ladish_graph_rename_client(graph, client, newname))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "client rename failed");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "client rename failed");
   }
   else
   {
@@ -142,7 +141,7 @@ static void ladish_graph_manager_dbus_rename_port(struct cdbus_method_call * cal
         DBUS_TYPE_STRING, &newname,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -152,13 +151,13 @@ static void ladish_graph_manager_dbus_rename_port(struct cdbus_method_call * cal
   port = ladish_graph_find_port_by_id(graph, port_id);
   if (port == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot rename unknown port");
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Cannot rename unknown port");
     return;
   }
 
   if (!ladish_graph_rename_port(graph, port, newname))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "port rename failed");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "port rename failed");
   }
   else
   {
@@ -180,7 +179,7 @@ static void ladish_graph_manager_dbus_move_port(struct cdbus_method_call * call_
         DBUS_TYPE_UINT64, &client_id,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -190,14 +189,14 @@ static void ladish_graph_manager_dbus_move_port(struct cdbus_method_call * call_
   port = ladish_graph_find_port_by_id(graph, port_id);
   if (port == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot move unknown port");
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Cannot move unknown port");
     return;
   }
 
   client = ladish_graph_find_client_by_id(graph, client_id);
   if (client == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot move port to unknown client");
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Cannot move port to unknown client");
     return;
   }
 
@@ -218,7 +217,7 @@ static void ladish_graph_manager_dbus_new_client(struct cdbus_method_call * call
         DBUS_TYPE_STRING, &name,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -227,13 +226,13 @@ static void ladish_graph_manager_dbus_new_client(struct cdbus_method_call * call
 
   if (!ladish_client_create(NULL, &client))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_client_create() failed.");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "ladish_client_create() failed.");
     return;
   }
 
   if (!ladish_graph_add_client(graph, client, name, false))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_graph_add_client() failed to add client '%s' to virtual graph", name);
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "ladish_graph_add_client() failed to add client '%s' to virtual graph", name);
     ladish_client_destroy(client);
     return;
   }
@@ -254,7 +253,7 @@ static void ladish_graph_manager_dbus_remove_client(struct cdbus_method_call * c
         DBUS_TYPE_UINT64, &client_id,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -264,13 +263,13 @@ static void ladish_graph_manager_dbus_remove_client(struct cdbus_method_call * c
   client = ladish_graph_find_client_by_id(graph, client_id);
   if (client == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot remove unknown client");
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Cannot remove unknown client");
     return;
   }
 
   if (ladish_graph_client_has_visible_ports(graph, client))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot remove non-empty client");
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Cannot remove non-empty client");
     return;
   }
 

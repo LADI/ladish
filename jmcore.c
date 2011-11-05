@@ -32,7 +32,6 @@
 #include <jack/midiport.h>
 
 #include "dbus/helpers.h"
-#include "dbus/error.h"
 #include "dbus_constants.h"
 
 extern const struct cdbus_interface_descriptor g_interface;
@@ -270,7 +269,7 @@ static void jmcore_create(struct cdbus_method_call * call_ptr)
         DBUS_TYPE_STRING, &output,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     goto exit;
   }
@@ -278,28 +277,28 @@ static void jmcore_create(struct cdbus_method_call * call_ptr)
   pair_ptr = malloc(sizeof(struct port_pair));
   if (pair_ptr == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Allocation of port pair structure failed");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "Allocation of port pair structure failed");
     goto exit;
   }
 
   pair_ptr->input_port_name = strdup(input);
   if (pair_ptr->input_port_name == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Allocation of port name buffer failed");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "Allocation of port name buffer failed");
     goto free_pair;
   }
 
   pair_ptr->output_port_name = strdup(output);
   if (pair_ptr->input_port_name == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Allocation of port name buffer failed");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "Allocation of port name buffer failed");
     goto free_input_name;
   }
 
   pair_ptr->client = jack_client_open(client_name, JackNoStartServer, NULL);
   if (pair_ptr->client == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Cannot connect to JACK server");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "Cannot connect to JACK server");
     goto free_output_name;
   }
 
@@ -309,7 +308,7 @@ static void jmcore_create(struct cdbus_method_call * call_ptr)
   ret = jack_set_process_callback(pair_ptr->client, process_callback, pair_ptr);
   if (ret != 0)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "JACK process callback setup failed");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "JACK process callback setup failed");
     goto close_client;
   }
 
@@ -318,14 +317,14 @@ static void jmcore_create(struct cdbus_method_call * call_ptr)
   pair_ptr->input_port = jack_port_register(pair_ptr->client, input, midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
   if (pair_ptr->input_port == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Port '%s' registration failed.", input);
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "Port '%s' registration failed.", input);
     goto free_output_name;
   }
 
   pair_ptr->output_port = jack_port_register(pair_ptr->client, output, midi ? JACK_DEFAULT_MIDI_TYPE : JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
   if (pair_ptr->input_port == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Port '%s' registration failed.", output);
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "Port '%s' registration failed.", output);
     goto unregister_input_port;
   }
 
@@ -334,7 +333,7 @@ static void jmcore_create(struct cdbus_method_call * call_ptr)
   ret = jack_activate(pair_ptr->client);
   if (ret != 0)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "JACK client activation failed");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "JACK client activation failed");
     goto remove_from_list;
   }
 
@@ -368,7 +367,7 @@ static void jmcore_destroy(struct cdbus_method_call * call_ptr)
   dbus_error_init(&cdbus_g_dbus_error);
   if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &port, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -385,7 +384,7 @@ static void jmcore_destroy(struct cdbus_method_call * call_ptr)
     }
   }
 
-  lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "port '%s' not found.", port);
+  cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "port '%s' not found.", port);
   return;
 }
 

@@ -29,7 +29,6 @@
 
 #include "../common.h"
 #include "helpers.h"
-#include "error.h"  /* lash_dbus_error() */
 
 struct cdbus_object_path_interface
 {
@@ -343,7 +342,7 @@ static DBusHandlerResult cdbus_object_path_handler(DBusConnection * connection, 
   call.method_name = dbus_message_get_member(message);
   if (call.method_name == NULL)
   {
-    lash_dbus_error(&call, LASH_DBUS_ERROR_UNKNOWN_METHOD, "Received method call with empty method name");
+    cdbus_error(&call, DBUS_ERROR_UNKNOWN_METHOD, "Received method call with empty method name");
     goto send_return;
   }
 
@@ -393,7 +392,7 @@ static DBusHandlerResult cdbus_object_path_handler(DBusConnection * connection, 
     }
   }
 
-  lash_dbus_error(&call, LASH_DBUS_ERROR_UNKNOWN_METHOD, "Method \"%s\" with signature \"%s\" on interface \"%s\" doesn't exist", call.method_name, dbus_message_get_signature(message), iface_name);
+  cdbus_error(&call, DBUS_ERROR_UNKNOWN_METHOD, "Method \"%s\" with signature \"%s\" on interface \"%s\" doesn't exist", call.method_name, dbus_message_get_signature(message), iface_name);
 
 send_return:
   cdbus_method_return_send(&call);

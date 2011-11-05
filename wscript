@@ -397,7 +397,6 @@ def build(bld):
     for source in [
         'signal.c',
         'method.c',
-        'error.c',
         'object_path.c',
         'interface.c',
         'helpers.c',
@@ -427,7 +426,6 @@ def build(bld):
     for source in [
         #'signal.c',
         'method.c',
-        'error.c',
         'object_path.c',
         'interface.c',
         'helpers.c',
@@ -453,7 +451,6 @@ def build(bld):
     for source in [
         'signal.c',
         'method.c',
-        'error.c',
         'object_path.c',
         'interface.c',
         'helpers.c',
@@ -492,7 +489,6 @@ def build(bld):
 
         for source in [
             'method.c',
-            'error.c',
             'object_path.c',
             'interface.c',
             'helpers.c',

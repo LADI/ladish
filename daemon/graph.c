@@ -27,7 +27,6 @@
 
 #include "common.h"
 #include "graph.h"
-#include "../dbus/error.h"
 #include "../dbus_constants.h"
 #include "virtualizer.h"
 
@@ -482,7 +481,7 @@ static void get_graph(struct cdbus_method_call * call_ptr)
 
   if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_UINT64, &known_version, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -501,9 +500,9 @@ static void get_graph(struct cdbus_method_call * call_ptr)
   current_version = graph_ptr->graph_version;
   if (known_version > current_version)
   {
-    lash_dbus_error(
+    cdbus_error(
       call_ptr,
-      LASH_DBUS_ERROR_INVALID_ARGS,
+      DBUS_ERROR_INVALID_ARGS,
       "known graph version %" PRIu64 " is newer than actual version %" PRIu64,
       known_version,
       current_version);
@@ -735,7 +734,7 @@ static void connect_ports_by_name(struct cdbus_method_call * call_ptr)
         DBUS_TYPE_STRING, &port2_name,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s", call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s", call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -744,7 +743,7 @@ static void connect_ports_by_name(struct cdbus_method_call * call_ptr)
 
   if (!ladish_graph_find_connection_ports_by_name(graph_ptr, client1_name, port1_name, client2_name, port2_name, &port1, &port2))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot connect unknown ports");
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Cannot connect unknown ports");
     return;
   }
 
@@ -754,7 +753,7 @@ static void connect_ports_by_name(struct cdbus_method_call * call_ptr)
   }
   else
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "connect failed");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "connect failed");
   }
 }
 
@@ -767,7 +766,7 @@ static void connect_ports_by_id(struct cdbus_method_call * call_ptr)
 
   if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_UINT64, &port1_id, DBUS_TYPE_UINT64, &port2_id, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s", call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s", call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -776,21 +775,21 @@ static void connect_ports_by_id(struct cdbus_method_call * call_ptr)
 
   if (graph_ptr->connect_handler == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "connect requests on graph %s cannot be handlined", graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "connect requests on graph %s cannot be handlined", graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
     return;
   }
 
   port1_ptr = ladish_graph_find_port_by_id_internal(graph_ptr, port1_id);
   if (port1_ptr == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot connect unknown port with id %"PRIu64, port1_id);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Cannot connect unknown port with id %"PRIu64, port1_id);
     return;
   }
 
   port2_ptr = ladish_graph_find_port_by_id_internal(graph_ptr, port2_id);
   if (port2_ptr == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot connect unknown port with id %"PRIu64, port2_id);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Cannot connect unknown port with id %"PRIu64, port2_id);
     return;
   }
 
@@ -802,7 +801,7 @@ static void connect_ports_by_id(struct cdbus_method_call * call_ptr)
   }
   else
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "connect failed");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "connect failed");
   }
 }
 
@@ -823,7 +822,7 @@ static void disconnect_ports(struct cdbus_method_call * call_ptr, struct ladish_
   else
   {
     connection_ptr->changing = false;
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "disconnect failed");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "disconnect failed");
   }
 }
 
@@ -846,7 +845,7 @@ static void disconnect_ports_by_name(struct cdbus_method_call * call_ptr)
         DBUS_TYPE_STRING, &port2_name,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s", call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s", call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -855,14 +854,14 @@ static void disconnect_ports_by_name(struct cdbus_method_call * call_ptr)
 
   if (!ladish_graph_find_connection_ports_by_name(graph_ptr, client1_name, port1_name, client2_name, port2_name, &port1, &port2))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot disconnect unknown ports");
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Cannot disconnect unknown ports");
     return;
   }
 
   connection_ptr = ladish_graph_find_connection_by_ports(graph_ptr, port1, port2);
   if (connection_ptr == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot disconnect not connected ports");
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Cannot disconnect not connected ports");
     return;
   }
 
@@ -879,7 +878,7 @@ static void disconnect_ports_by_id(struct cdbus_method_call * call_ptr)
 
   if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_UINT64, &port1_id, DBUS_TYPE_UINT64, &port2_id, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s", call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s", call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -888,28 +887,28 @@ static void disconnect_ports_by_id(struct cdbus_method_call * call_ptr)
 
   if (graph_ptr->disconnect_handler == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "disconnect requests on graph %s cannot be handlined", graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "disconnect requests on graph %s cannot be handlined", graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
     return;
   }
 
   port1_ptr = ladish_graph_find_port_by_id_internal(graph_ptr, port1_id);
   if (port1_ptr == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot disconnect unknown port with id %"PRIu64, port1_id);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Cannot disconnect unknown port with id %"PRIu64, port1_id);
     return;
   }
 
   port2_ptr = ladish_graph_find_port_by_id_internal(graph_ptr, port2_id);
   if (port2_ptr == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot disconnect unknown port with id %"PRIu64, port2_id);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Cannot disconnect unknown port with id %"PRIu64, port2_id);
     return;
   }
 
   connection_ptr = ladish_graph_find_connection_by_ports(graph_ptr, port1_ptr, port2_ptr);
   if (connection_ptr == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot disconnect not connected ports %"PRIu64" and %"PRIu64, port1_id, port2_id);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Cannot disconnect not connected ports %"PRIu64" and %"PRIu64, port1_id, port2_id);
     return;
   }
 
@@ -923,7 +922,7 @@ static void disconnect_ports_by_connection_id(struct cdbus_method_call * call_pt
 
   if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_UINT64, &connection_id, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s", call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s", call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -933,7 +932,7 @@ static void disconnect_ports_by_connection_id(struct cdbus_method_call * call_pt
   connection_ptr = ladish_graph_find_connection_by_id(graph_ptr, connection_id);
   if (connection_ptr == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Cannot find connection with id %"PRIu64, connection_id);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Cannot find connection with id %"PRIu64, connection_id);
     return;
   }
 

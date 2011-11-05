@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the "unload project" command
@@ -25,7 +25,6 @@
  */
 
 #include "cmd.h"
-#include "../dbus/error.h"
 #include "room.h"
 #include "studio.h"
 #include "../proxies/notify_proxy.h"
@@ -97,7 +96,7 @@ ladish_command_unload_project(
 
   if (!ladish_cqueue_add_command(queue_ptr, &cmd_ptr->command))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_cqueue_add_command() failed.");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "ladish_cqueue_add_command() failed.");
     goto fail_destroy_command;
   }
 

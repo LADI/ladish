@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the "delete room" command
@@ -26,7 +26,6 @@
 
 #include "cmd.h"
 #include "studio_internal.h"
-#include "../dbus/error.h"
 
 struct ladish_command_delete_room
 {
@@ -101,14 +100,14 @@ bool ladish_command_delete_room(void * call_ptr, struct ladish_cqueue * queue_pt
   room_name_dup = strdup(room_name);
   if (room_name_dup == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup('%s') failed.", room_name);
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "strdup('%s') failed.", room_name);
     goto fail;
   }
 
   cmd_ptr = ladish_command_new(sizeof(struct ladish_command_delete_room));
   if (cmd_ptr == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_command_new() failed.");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "ladish_command_new() failed.");
     goto fail_free_name;
   }
 
@@ -118,7 +117,7 @@ bool ladish_command_delete_room(void * call_ptr, struct ladish_cqueue * queue_pt
 
   if (!ladish_cqueue_add_command(queue_ptr, &cmd_ptr->command))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_cqueue_add_command() failed.");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "ladish_cqueue_add_command() failed.");
     goto fail_destroy_command;
   }
 

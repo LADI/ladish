@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the "load project" command
@@ -27,7 +27,6 @@
 #include "cmd.h"
 
 #include "cmd.h"
-#include "../dbus/error.h"
 #include "room.h"
 #include "studio.h"
 #include "../proxies/notify_proxy.h"
@@ -91,7 +90,7 @@ ladish_command_load_project(
   project_dir_dup = strdup(project_dir);
   if (project_dir_dup == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup('%s') failed.", project_dir);
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "strdup('%s') failed.", project_dir);
     goto fail_drop_unload_command;
   }
 
@@ -109,7 +108,7 @@ ladish_command_load_project(
 
   if (!ladish_cqueue_add_command(queue_ptr, &cmd_ptr->command))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_cqueue_add_command() failed.");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "ladish_cqueue_add_command() failed.");
     goto fail_destroy_command;
   }
 

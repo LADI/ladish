@@ -34,7 +34,6 @@
 #include <errno.h>
 
 #include "dbus/helpers.h"
-#include "dbus/error.h"
 #include "dbus_constants.h"
 #include "common/catdup.h"
 #include "common/dirhelpers.h"
@@ -412,7 +411,7 @@ static void conf_set(struct cdbus_method_call * call_ptr)
         DBUS_TYPE_STRING, &value,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -425,7 +424,7 @@ static void conf_set(struct cdbus_method_call * call_ptr)
     pair_ptr = create_pair(key, value);
     if (pair_ptr == NULL)
     {
-      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Memory allocation failed");
+      cdbus_error(call_ptr, DBUS_ERROR_FAILED, "Memory allocation failed");
       return;
     }
 
@@ -441,7 +440,7 @@ static void conf_set(struct cdbus_method_call * call_ptr)
       buffer = strdup(value);
       if (buffer == NULL)
       {
-        lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Memory allocation failed. strdup(\"%s\") failed for value", value);
+        cdbus_error(call_ptr, DBUS_ERROR_FAILED, "Memory allocation failed. strdup(\"%s\") failed for value", value);
         return;
       }
       free(pair_ptr->value);
@@ -461,7 +460,7 @@ static void conf_set(struct cdbus_method_call * call_ptr)
   {
     if (!store_pair(pair_ptr))
     {
-      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Storing the value of key '%s' to disk failed", pair_ptr->key);
+      cdbus_error(call_ptr, DBUS_ERROR_FAILED, "Storing the value of key '%s' to disk failed", pair_ptr->key);
       return;
     }
   }
@@ -480,7 +479,7 @@ static void conf_get(struct cdbus_method_call * call_ptr)
         DBUS_TYPE_STRING, &key,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -491,7 +490,7 @@ static void conf_get(struct cdbus_method_call * call_ptr)
     pair_ptr = load_pair(key);
     if (pair_ptr == NULL)
     {
-      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_KEY_NOT_FOUND, "Key '%s' not found", key);
+      cdbus_error(call_ptr, LADISH_DBUS_ERROR_KEY_NOT_FOUND, "Key '%s' not found", key);
       return;
     }
   }

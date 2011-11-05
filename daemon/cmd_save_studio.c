@@ -520,7 +520,7 @@ bool ladish_command_save_studio(void * call_ptr, struct ladish_cqueue * queue_pt
   studio_name_dup = strdup(new_studio_name);
   if (studio_name_dup == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup('%s') failed.", new_studio_name);
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "strdup('%s') failed.", new_studio_name);
     goto fail;
   }
 
@@ -539,7 +539,7 @@ bool ladish_command_save_studio(void * call_ptr, struct ladish_cqueue * queue_pt
 
   if (!ladish_cqueue_add_command(queue_ptr, &cmd_ptr->command))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_cqueue_add_command() failed.");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "ladish_cqueue_add_command() failed.");
     goto fail_destroy_command;
   }
 

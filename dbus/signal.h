@@ -27,8 +27,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __LASH_DBUS_SIGNAL_H__
-#define __LASH_DBUS_SIGNAL_H__
+#ifndef __CDBUS_SIGNAL_H__
+#define __CDBUS_SIGNAL_H__
 
 struct cdbus_signal_arg_descriptor
 {
@@ -87,4 +87,4 @@ static const struct cdbus_signal_descriptor signals_dtor[] =   \
         }                                                      \
 };
 
-#endif /* __LASH_DBUS_SIGNAL_H__ */
+#endif /* __CDBUS_SIGNAL_H__ */

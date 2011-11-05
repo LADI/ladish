@@ -30,7 +30,6 @@
 #include "../common.h"
 #include "helpers.h"
 #include <string.h>
-#include "error.h"
 
 /*
  * Execute a method's function if the method specified in the method call

@@ -25,7 +25,6 @@
  */
 
 #include "graph_dict.h"
-#include "../dbus/error.h"
 #include "../dbus_constants.h"
 #include "graph.h"
 #include "dict.h"
@@ -47,7 +46,7 @@ bool find_dict(struct cdbus_method_call * call_ptr, uint32_t object_type, uint64
     client = ladish_graph_find_client_by_id(graph_handle, object_id);
     if (client == NULL)
     {
-      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "cannot find client %"PRIu64".", object_id);
+      cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "cannot find client %"PRIu64".", object_id);
       return false;
     }
     *dict_handle_ptr = ladish_client_get_dict(client);
@@ -56,7 +55,7 @@ bool find_dict(struct cdbus_method_call * call_ptr, uint32_t object_type, uint64
     port = ladish_graph_find_port_by_id(graph_handle, object_id);
     if (port == NULL)
     {
-      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "cannot find port %"PRIu64".", object_id);
+      cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "cannot find port %"PRIu64".", object_id);
       return false;
     }
     *dict_handle_ptr = ladish_port_get_dict(port);
@@ -65,14 +64,14 @@ bool find_dict(struct cdbus_method_call * call_ptr, uint32_t object_type, uint64
     dict = ladish_graph_get_connection_dict(graph_handle, object_id);
     if (dict == NULL)
     {
-      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "cannot find connection %"PRIu64".", object_id);
+      cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "cannot find connection %"PRIu64".", object_id);
     }
 
     *dict_handle_ptr = dict;
     return false;
   }
 
-  lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "find_dict() not implemented for object type %"PRIu32".", object_type);
+  cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "find_dict() not implemented for object type %"PRIu32".", object_type);
   return false;
 }
 
@@ -95,7 +94,7 @@ void ladish_dict_set_dbus(struct cdbus_method_call * call_ptr)
         DBUS_TYPE_STRING, &value,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -109,7 +108,7 @@ void ladish_dict_set_dbus(struct cdbus_method_call * call_ptr)
 
   if (!ladish_dict_set(dict, key, value))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_dict_set(\"%s\", \"%s\") failed.");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "ladish_dict_set(\"%s\", \"%s\") failed.");
     return;
   }
 
@@ -132,7 +131,7 @@ void ladish_dict_get_dbus(struct cdbus_method_call * call_ptr)
         DBUS_TYPE_STRING, &key,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -145,7 +144,7 @@ void ladish_dict_get_dbus(struct cdbus_method_call * call_ptr)
   value = ladish_dict_get(dict, key);
   if (value == NULL)
   {
-    //lash_dbus_error(call_ptr, LASH_DBUS_ERROR_KEY_NOT_FOUND, "Key '%s' not found",  key);
+    //cdbus_error(call_ptr, CDBUS_ERROR_KEY_NOT_FOUND, "Key '%s' not found",  key);
     return;
   }
 
@@ -167,7 +166,7 @@ void ladish_dict_drop_dbus(struct cdbus_method_call * call_ptr)
         DBUS_TYPE_STRING, &key,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }

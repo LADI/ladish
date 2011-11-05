@@ -42,7 +42,6 @@
 #include "../../common/file.h"
 #include "../../log.h"
 #include "../../dbus/helpers.h"
-#include "../../dbus/error.h"
 #include "../../dbus_constants.h"
 
 #define LASH_CONFIG_SUBDIR "/.ladish_lash_dict/"
@@ -1000,7 +999,7 @@ static void lash_save(struct cdbus_method_call * call_ptr)
   dbus_error_init(&cdbus_g_dbus_error);
   if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &dir, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -1009,13 +1008,13 @@ static void lash_save(struct cdbus_method_call * call_ptr)
 
   if (g_event.type != 0)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_UNFINISHED_TASK, "App is busy processing event if type %d", g_event.type);
+    cdbus_error(call_ptr, LADISH_DBUS_ERROR_UNFINISHED_TASK, "App is busy processing event if type %d", g_event.type);
     return;
   }
 
   if (g_quit != 0)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_UNFINISHED_TASK, "App is quitting", g_event.type);
+    cdbus_error(call_ptr, LADISH_DBUS_ERROR_UNFINISHED_TASK, "App is quitting", g_event.type);
     return;
   }
 
@@ -1037,7 +1036,7 @@ static void lash_save(struct cdbus_method_call * call_ptr)
   dup = strdup(dir);
   if (dup == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup() failed for event string (dir) '%s'", dup);
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "strdup() failed for event string (dir) '%s'", dup);
     return;
   }
 
@@ -1055,7 +1054,7 @@ static void lash_restore(struct cdbus_method_call * call_ptr)
   dbus_error_init(&cdbus_g_dbus_error);
   if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &dir, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -1064,13 +1063,13 @@ static void lash_restore(struct cdbus_method_call * call_ptr)
 
   if (g_event.type != 0)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_UNFINISHED_TASK, "App is busy processing event if type %d", g_event.type);
+    cdbus_error(call_ptr, LADISH_DBUS_ERROR_UNFINISHED_TASK, "App is busy processing event if type %d", g_event.type);
     return;
   }
 
   if (g_quit != 0)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_UNFINISHED_TASK, "App is quitting", g_event.type);
+    cdbus_error(call_ptr, LADISH_DBUS_ERROR_UNFINISHED_TASK, "App is quitting", g_event.type);
     return;
   }
 
@@ -1092,7 +1091,7 @@ static void lash_restore(struct cdbus_method_call * call_ptr)
   dup = strdup(dir);
   if (dup == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup() failed for event string (dir) '%s'", dup);
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "strdup() failed for event string (dir) '%s'", dup);
     return;
   }
 

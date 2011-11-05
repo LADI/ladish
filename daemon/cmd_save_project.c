@@ -25,7 +25,6 @@
  */
 
 #include "cmd.h"
-#include "../dbus/error.h"
 #include "room.h"
 #include "studio.h"
 #include "../proxies/notify_proxy.h"
@@ -113,14 +112,14 @@ ladish_command_save_project(
   project_dir_dup = strdup(project_dir);
   if (project_dir_dup == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup('%s') failed.", project_dir);
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "strdup('%s') failed.", project_dir);
     goto fail;
   }
 
   project_name_dup = strdup(project_name);
   if (project_name_dup == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup('%s') failed.", project_name);
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "strdup('%s') failed.", project_name);
     goto fail_free_dir;
   }
 
@@ -142,7 +141,7 @@ ladish_command_save_project(
 
   if (!ladish_cqueue_add_command(queue_ptr, &cmd_ptr->command))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_cqueue_add_command() failed.");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "ladish_cqueue_add_command() failed.");
     goto fail_destroy_command;
   }
 

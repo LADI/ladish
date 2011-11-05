@@ -31,6 +31,33 @@
 #include "helpers.h"
 #include "method.h"
 
+void cdbus_error(struct cdbus_method_call * call_ptr, const char * err_name, const char * format, ...)
+{
+  va_list ap;
+  char message[1024];
+  const char *interface_name;
+
+  va_start(ap, format);
+
+  vsnprintf(message, sizeof(message), format, ap);
+  message[sizeof(message) - 1] = '\0';
+
+  va_end(ap);
+
+  if (call_ptr != NULL)
+  {
+    interface_name = (call_ptr->iface && call_ptr->iface->name && call_ptr->iface->name[0]) ? call_ptr->iface->name : "<unknown>";
+
+    log_error("In method %s.%s: %s", interface_name, call_ptr->method_name, message);
+
+    call_ptr->reply = dbus_message_new_error(call_ptr->message, err_name, message);
+  }
+  else
+  {
+    log_error("%s", message);
+  }
+}
+
 /*
  * Construct a void method return.
  *

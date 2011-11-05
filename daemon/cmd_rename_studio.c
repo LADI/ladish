@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the "rename studio" command
@@ -72,7 +72,7 @@ bool ladish_command_rename_studio(void * call_ptr, struct ladish_cqueue * queue_
   studio_name_dup = strdup(studio_name);
   if (studio_name_dup == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup('%s') failed.", studio_name);
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "strdup('%s') failed.", studio_name);
     goto fail;
   }
 
@@ -89,7 +89,7 @@ bool ladish_command_rename_studio(void * call_ptr, struct ladish_cqueue * queue_
 
   if (!ladish_cqueue_add_command(queue_ptr, &cmd_ptr->command))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_cqueue_add_command() failed.");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "ladish_cqueue_add_command() failed.");
     goto fail_destroy_command;
   }
 

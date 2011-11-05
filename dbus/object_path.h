@@ -27,8 +27,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __LASH_DBUS_OBJECT_PATH_H__
-#define __LASH_DBUS_OBJECT_PATH_H__
+#ifndef __CDBUS_OBJECT_PATH_H__
+#define __CDBUS_OBJECT_PATH_H__
 
 typedef struct cdbus_object_path_tag { int unused; } * cdbus_object_path;
 
@@ -37,4 +37,4 @@ bool cdbus_object_path_register(DBusConnection * connection_ptr, cdbus_object_pa
 void cdbus_object_path_unregister(DBusConnection * connection_ptr, cdbus_object_path opath);
 void cdbus_object_path_destroy(DBusConnection * connection_ptr, cdbus_object_path opath);
 
-#endif /* __LASH_DBUS_OBJECT_PATH_H__ */
+#endif /* __CDBUS_OBJECT_PATH_H__ */

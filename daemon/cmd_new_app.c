@@ -27,7 +27,6 @@
 #include <ctype.h>
 #include "cmd.h"
 #include "studio.h"
-#include "../dbus/error.h"
 
 struct ladish_command_new_app
 {
@@ -178,35 +177,35 @@ ladish_command_new_app(
   opath_dup = strdup(opath);
   if (opath_dup == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup('%s') failed.", opath);
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "strdup('%s') failed.", opath);
     goto fail;
   }
 
   commandline_dup = strdup(commandline);
   if (commandline_dup == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup('%s') failed.", commandline);
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "strdup('%s') failed.", commandline);
     goto fail_free_opath;
   }
 
   name_dup = strdup(name);
   if (name_dup == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup('%s') failed.", name);
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "strdup('%s') failed.", name);
     goto fail_free_commandline;
   }
 
   level_dup = strdup(level);
   if (level_dup == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup('%s') failed.", level);
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "strdup('%s') failed.", level);
     goto fail_free_name;
   }
 
   cmd_ptr = ladish_command_new(sizeof(struct ladish_command_new_app));
   if (cmd_ptr == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_command_new() failed.");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "ladish_command_new() failed.");
     goto fail_free_level;
   }
 
@@ -220,7 +219,7 @@ ladish_command_new_app(
 
   if (!ladish_cqueue_add_command(queue_ptr, &cmd_ptr->command))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_cqueue_add_command() failed.");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "ladish_cqueue_add_command() failed.");
     goto fail_destroy_command;
   }
 

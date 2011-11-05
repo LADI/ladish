@@ -32,7 +32,6 @@
 #include "studio.h"
 #include "../proxies/jmcore_proxy.h"
 #include "cmd.h"
-#include "../dbus/error.h"
 #include "recent_projects.h"
 
 extern const struct cdbus_interface_descriptor g_interface_room;
@@ -935,7 +934,7 @@ static void ladish_room_dbus_save_project(struct cdbus_method_call * call_ptr)
 
   if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &dir, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -964,7 +963,7 @@ static void ladish_room_dbus_load_project(struct cdbus_method_call * call_ptr)
 
   if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &dir, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -1009,7 +1008,7 @@ static void ladish_room_dbus_set_project_description(struct cdbus_method_call * 
 
   if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &str, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -1024,7 +1023,7 @@ static void ladish_room_dbus_set_project_description(struct cdbus_method_call * 
   dup = strdup(str);
   if (dup == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup() failed");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "strdup() failed");
     return;
   }
 
@@ -1042,7 +1041,7 @@ static void ladish_room_dbus_set_project_notes(struct cdbus_method_call * call_p
 
   if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &str, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -1057,7 +1056,7 @@ static void ladish_room_dbus_set_project_notes(struct cdbus_method_call * call_p
   dup = strdup(str);
   if (dup == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup() failed");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "strdup() failed");
     return;
   }
 

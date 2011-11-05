@@ -853,7 +853,7 @@ bool ladish_studio_delete(void * call_ptr, const char * studio_name)
 
   if (!ladish_studio_compose_filename(studio_name, &filename, &bak_filename))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "failed to compose studio filename");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "failed to compose studio filename");
     goto exit;
   }
 
@@ -861,7 +861,7 @@ bool ladish_studio_delete(void * call_ptr, const char * studio_name)
 
   if (unlink(filename) != 0)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "unlink(%s) failed: %d (%s)", filename, errno, strerror(errno));
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "unlink(%s) failed: %d (%s)", filename, errno, strerror(errno));
     goto free;
   }
 
@@ -1034,7 +1034,7 @@ static void ladish_studio_dbus_rename(struct cdbus_method_call * call_ptr)
   
   if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &new_name, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -1044,7 +1044,7 @@ static void ladish_studio_dbus_rename(struct cdbus_method_call * call_ptr)
   new_name_dup = strdup(new_name);
   if (new_name_dup == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup() failed to allocate new name.");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "strdup() failed to allocate new name.");
     return;
   }
 
@@ -1073,7 +1073,7 @@ static void ladish_studio_dbus_save_as(struct cdbus_method_call * call_ptr)
 
   if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &new_name, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -1136,7 +1136,7 @@ static void ladish_studio_dbus_create_room(struct cdbus_method_call * call_ptr)
 
   if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &room_name, DBUS_TYPE_STRING, &template_name, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -1204,7 +1204,7 @@ static void ladish_studio_dbus_delete_room(struct cdbus_method_call * call_ptr)
 
   if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_STRING, &name, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }

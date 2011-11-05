@@ -105,7 +105,7 @@ bool ladish_studios_iterate(void * call_ptr, void * context, bool (* callback)(v
   dir = opendir(g_studios_dir);
   if (dir == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Cannot open directory '%s': %d (%s)", g_studios_dir, errno, strerror(errno));
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "Cannot open directory '%s': %d (%s)", g_studios_dir, errno, strerror(errno));
     return false;
   }
 
@@ -118,13 +118,13 @@ bool ladish_studios_iterate(void * call_ptr, void * context, bool (* callback)(v
     path = catdup(g_studios_dir, dentry->d_name);
     if (path == NULL)
     {
-      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "catdup() failed");
+      cdbus_error(call_ptr, DBUS_ERROR_FAILED, "catdup() failed");
       return false;
     }
 
     if (stat(path, &st) != 0)
     {
-      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "failed to stat '%s': %d (%s)", path, errno, strerror(errno));
+      cdbus_error(call_ptr, DBUS_ERROR_FAILED, "failed to stat '%s': %d (%s)", path, errno, strerror(errno));
       free(path);
       return false;
     }

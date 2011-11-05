@@ -28,7 +28,6 @@
 #include "recent_store.h"
 #include "../common/catdup.h"
 #include "../dbus_constants.h"
-#include "../dbus/error.h"
 #include "room.h"
 
 #define RECENT_PROJECTS_STORE_FILE "recent_projects"
@@ -151,16 +150,16 @@ static void get(struct cdbus_method_call * call_ptr)
 
   if (!dbus_message_get_args(call_ptr->message, &cdbus_g_dbus_error, DBUS_TYPE_UINT16, &ctx.max_items, DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
 
   if (ctx.max_items == 0)
   {
-    lash_dbus_error(
+    cdbus_error(
       call_ptr,
-      LASH_DBUS_ERROR_INVALID_ARGS,
+      DBUS_ERROR_INVALID_ARGS,
       "Invalid arguments to method \"%s\": max cannot be 0",
       call_ptr->method_name);
   }

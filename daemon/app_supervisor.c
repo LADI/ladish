@@ -32,7 +32,6 @@
 #include <unistd.h>
 
 #include "app_supervisor.h"
-#include "../dbus/error.h"
 #include "../dbus_constants.h"
 #include "loader.h"
 #include "studio_internal.h"
@@ -1456,7 +1455,7 @@ static void run_custom1(struct cdbus_method_call * call_ptr)
         DBUS_TYPE_BYTE, &level,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -1465,7 +1464,7 @@ static void run_custom1(struct cdbus_method_call * call_ptr)
 
   if (level > 1)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "invalid integer level %"PRIu8, level);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "invalid integer level %"PRIu8, level);
     return;
   }
 
@@ -1498,7 +1497,7 @@ static void run_custom2(struct cdbus_method_call * call_ptr)
         DBUS_TYPE_STRING, &level,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -1507,7 +1506,7 @@ static void run_custom2(struct cdbus_method_call * call_ptr)
 
   if (!ladish_check_app_level_validity(level, NULL))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "invalid level '%s'", level);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "invalid level '%s'", level);
     return;
   }
 
@@ -1534,7 +1533,7 @@ static void start_app(struct cdbus_method_call * call_ptr)
         DBUS_TYPE_UINT64, &id,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -1555,7 +1554,7 @@ static void stop_app(struct cdbus_method_call * call_ptr)
         DBUS_TYPE_UINT64, &id,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -1576,7 +1575,7 @@ static void kill_app(struct cdbus_method_call * call_ptr)
         DBUS_TYPE_UINT64, &id,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -1604,7 +1603,7 @@ static void get_app_properties_multiversion(struct cdbus_method_call * call_ptr,
         DBUS_TYPE_UINT64, &id,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -1612,7 +1611,7 @@ static void get_app_properties_multiversion(struct cdbus_method_call * call_ptr,
   app_ptr = ladish_app_supervisor_find_app_by_id_internal(supervisor_ptr, id);
   if (app_ptr == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "App with ID %"PRIu64" not found", id);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "App with ID %"PRIu64" not found", id);
     return;
   }
 
@@ -1707,7 +1706,7 @@ static void set_app_properties_multiversion(struct cdbus_method_call * call_ptr,
         level_type, level_ptr,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -1716,7 +1715,7 @@ static void set_app_properties_multiversion(struct cdbus_method_call * call_ptr,
   {
     if (level_byte > 1)
     {
-      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "invalid integer level %"PRIu8, level_byte);
+      cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "invalid integer level %"PRIu8, level_byte);
       return;
     }
 
@@ -1728,7 +1727,7 @@ static void set_app_properties_multiversion(struct cdbus_method_call * call_ptr,
     ASSERT(version == 2);
     if (!ladish_check_app_level_validity(level_str, &len))
     {
-      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "invalid level '%s'", level_str);
+      cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "invalid level '%s'", level_str);
       return;
     }
   }
@@ -1736,25 +1735,25 @@ static void set_app_properties_multiversion(struct cdbus_method_call * call_ptr,
   app_ptr = ladish_app_supervisor_find_app_by_id_internal(supervisor_ptr, id);
   if (app_ptr == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "App with ID %"PRIu64" not found", id);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "App with ID %"PRIu64" not found", id);
     return;
   }
 
   if (app_ptr->pid != 0 && strcmp(commandline, app_ptr->commandline) != 0)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Cannot change commandline when app is running. '%s' -> '%s'", app_ptr->commandline, commandline);
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "Cannot change commandline when app is running. '%s' -> '%s'", app_ptr->commandline, commandline);
     return;
   }
 
   if (app_ptr->pid != 0 && ((app_ptr->terminal && !terminal) || (!app_ptr->terminal && terminal)))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Cannot change whether to run in terminal when app is running");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "Cannot change whether to run in terminal when app is running");
     return;
   }
 
   if (app_ptr->pid != 0 && strcmp(app_ptr->level, level_str) != 0)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "Cannot change app level when app is running");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "Cannot change app level when app is running");
     return;
   }
 
@@ -1763,7 +1762,7 @@ static void set_app_properties_multiversion(struct cdbus_method_call * call_ptr,
     commandline_buffer = strdup(commandline);
     if (commandline_buffer == NULL)
     {
-      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup() failed for app commandline");
+      cdbus_error(call_ptr, DBUS_ERROR_FAILED, "strdup() failed for app commandline");
       return;
     }
   }
@@ -1777,7 +1776,7 @@ static void set_app_properties_multiversion(struct cdbus_method_call * call_ptr,
     name_buffer = strdup(name);
     if (name_buffer == NULL)
     {
-      lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup() failed for app nam");
+      cdbus_error(call_ptr, DBUS_ERROR_FAILED, "strdup() failed for app nam");
       if (commandline_buffer != NULL)
       {
         free(commandline_buffer);
@@ -1832,7 +1831,7 @@ static void remove_app(struct cdbus_method_call * call_ptr)
         DBUS_TYPE_UINT64, &id,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -1855,7 +1854,7 @@ static void is_app_running(struct cdbus_method_call * call_ptr)
         DBUS_TYPE_UINT64, &id,
         DBUS_TYPE_INVALID))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Invalid arguments to method \"%s\": %s",  call_ptr->method_name, cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
     return;
   }
@@ -1863,7 +1862,7 @@ static void is_app_running(struct cdbus_method_call * call_ptr)
   app_ptr = ladish_app_supervisor_find_app_by_id_internal(supervisor_ptr, id);
   if (app_ptr == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_INVALID_ARGS, "App with ID %"PRIu64" not found", id);
+    cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "App with ID %"PRIu64" not found", id);
     return;
   }
 

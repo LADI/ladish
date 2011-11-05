@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the "create room" command
@@ -26,7 +26,6 @@
 
 #include "cmd.h"
 #include "studio_internal.h"
-#include "../dbus/error.h"
 #include "control.h"
 #include "../proxies/notify_proxy.h"
 
@@ -102,21 +101,21 @@ bool ladish_command_create_room(void * call_ptr, struct ladish_cqueue * queue_pt
   room_name_dup = strdup(room_name);
   if (room_name_dup == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup('%s') failed.", room_name);
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "strdup('%s') failed.", room_name);
     goto fail;
   }
 
   template_name_dup = strdup(template_name);
   if (template_name_dup == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "strdup('%s') failed.", template_name);
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "strdup('%s') failed.", template_name);
     goto fail_free_room_name;
   }
 
   cmd_ptr = ladish_command_new(sizeof(struct ladish_command_create_room));
   if (cmd_ptr == NULL)
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_command_new() failed.");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "ladish_command_new() failed.");
     goto fail_free_template_name;
   }
 
@@ -127,7 +126,7 @@ bool ladish_command_create_room(void * call_ptr, struct ladish_cqueue * queue_pt
 
   if (!ladish_cqueue_add_command(queue_ptr, &cmd_ptr->command))
   {
-    lash_dbus_error(call_ptr, LASH_DBUS_ERROR_GENERIC, "ladish_cqueue_add_command() failed.");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "ladish_cqueue_add_command() failed.");
     goto fail_destroy_command;
   }
 

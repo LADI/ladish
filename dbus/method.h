@@ -27,8 +27,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __LASH_DBUS_METHOD_H__
-#define __LASH_DBUS_METHOD_H__
+#ifndef __CDBUS_METHOD_H__
+#define __CDBUS_METHOD_H__
 
 struct cdbus_method_call
 {
@@ -55,6 +55,8 @@ struct cdbus_method_descriptor
   const cdbus_method_handler handler;
   const struct cdbus_method_arg_descriptor * args;
 };
+
+void cdbus_error(struct cdbus_method_call * call_ptr, const char * err_name, const char * format, ...);
 
 void cdbus_method_return_new_void(struct cdbus_method_call * call_ptr);
 void cdbus_method_return_new_single(struct cdbus_method_call * call_ptr, int type, const void * arg);
@@ -106,4 +108,4 @@ static const struct cdbus_method_descriptor methods_dtor[] =    \
         }                                                       \
 };
 
-#endif /* __LASH_DBUS_METHOD_H__ */
+#endif /* __CDBUS_METHOD_H__ */

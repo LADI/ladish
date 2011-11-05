@@ -27,8 +27,8 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __LASH_DBUS_INTERFACE_H__
-#define __LASH_DBUS_INTERFACE_H__
+#ifndef __CDBUS_INTERFACE_H__
+#define __CDBUS_INTERFACE_H__
 
 typedef bool (* cdbus_interface_handler)(const struct cdbus_interface_descriptor *, struct cdbus_method_call *);
 
@@ -62,4 +62,4 @@ const struct cdbus_interface_descriptor iface_var = \
 #define INTERFACE_END                           \
 };
 
-#endif /* __LASH_DBUS_INTERFACE_H__ */
+#endif /* __CDBUS_INTERFACE_H__ */
