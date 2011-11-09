@@ -62,4 +62,23 @@ const struct cdbus_interface_descriptor iface_var =  \
 #define CDBUS_INTERFACE_END                     \
 };
 
+#define CDBUS_INTERFACE_DEFAULT_HANDLER_METHODS_ONLY(iface_var, iface_name) \
+CDBUS_INTERFACE_BEGIN(iface_var, iface_name)                            \
+  CDBUS_INTERFACE_DEFAULT_HANDLER                                       \
+  CDBUS_INTERFACE_EXPOSE_METHODS                                        \
+CDBUS_INTERFACE_END
+
+#define CDBUS_INTERFACE_DEFAULT_HANDLER_SIGNALS_ONLY(iface_var, iface_name) \
+CDBUS_INTERFACE_BEGIN(iface_var, iface_name)                            \
+  CDBUS_INTERFACE_DEFAULT_HANDLER                                       \
+  CDBUS_INTERFACE_EXPOSE_SIGNALS                                        \
+CDBUS_INTERFACE_END
+
+#define CDBUS_INTERFACE_DEFAULT_HANDLER_METHODS_AND_SIGNALS(iface_var, iface_name) \
+CDBUS_INTERFACE_BEGIN(iface_var, iface_name)                            \
+  CDBUS_INTERFACE_DEFAULT_HANDLER                                       \
+  CDBUS_INTERFACE_EXPOSE_METHODS                                        \
+  CDBUS_INTERFACE_EXPOSE_SIGNALS                                        \
+CDBUS_INTERFACE_END
+
 #endif /* __CDBUS_INTERFACE_H__ */
