@@ -1069,58 +1069,58 @@ static void ladish_room_dbus_set_project_notes(struct cdbus_method_call * call_p
 
 #undef room_ptr
 
-METHOD_ARGS_BEGIN(GetName, "Get room name")
-  METHOD_ARG_DESCRIBE_OUT("room_name", "s", "Name of room")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(GetName, "Get room name")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("room_name", "s", "Name of room")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(SaveProject, "Save the current project")
-  METHOD_ARG_DESCRIBE_IN("project_dir", "s", "Project directory. Can be an empty string if project has a path associated already")
-  METHOD_ARG_DESCRIBE_IN("project_name", "s", "Name of the project. Can be an empty string if project has a name associated already")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(SaveProject, "Save the current project")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("project_dir", "s", "Project directory. Can be an empty string if project has a path associated already")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("project_name", "s", "Name of the project. Can be an empty string if project has a name associated already")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(UnloadProject, "Unload project, if any")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(UnloadProject, "Unload project, if any")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(LoadProject, "Load project")
-  METHOD_ARG_DESCRIBE_IN("project_dir", "s", "Project directory")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(LoadProject, "Load project")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("project_dir", "s", "Project directory")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(GetProjectProperties, "Get project properties")
-  METHOD_ARG_DESCRIBE_OUT("new_version", DBUS_TYPE_UINT64_AS_STRING, "New version of the project properties")
-  METHOD_ARG_DESCRIBE_OUT("properties", "a{sv}", "project properties")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(GetProjectProperties, "Get project properties")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("new_version", DBUS_TYPE_UINT64_AS_STRING, "New version of the project properties")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("properties", "a{sv}", "project properties")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(SetProjectDescription, "Set project description")
-  METHOD_ARG_DESCRIBE_IN("description", "s", "Project description")
-  METHOD_ARG_DESCRIBE_OUT("new_version", DBUS_TYPE_UINT64_AS_STRING, "New version of the project properties")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(SetProjectDescription, "Set project description")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("description", "s", "Project description")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("new_version", DBUS_TYPE_UINT64_AS_STRING, "New version of the project properties")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(SetProjectNotes, "Set project notes")
-  METHOD_ARG_DESCRIBE_IN("notes", "s", "Project notes")
-  METHOD_ARG_DESCRIBE_OUT("new_version", DBUS_TYPE_UINT64_AS_STRING, "New version of the project properties")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(SetProjectNotes, "Set project notes")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("notes", "s", "Project notes")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("new_version", DBUS_TYPE_UINT64_AS_STRING, "New version of the project properties")
+CDBUS_METHOD_ARGS_END
 
-METHODS_BEGIN
-  METHOD_DESCRIBE(GetName, ladish_room_dbus_get_name) /* sync */
-  METHOD_DESCRIBE(SaveProject, ladish_room_dbus_save_project) /* async */
-  METHOD_DESCRIBE(UnloadProject, ladish_room_dbus_unload_project) /* async */
-  METHOD_DESCRIBE(LoadProject, ladish_room_dbus_load_project) /* async */
-  METHOD_DESCRIBE(GetProjectProperties, ladish_room_dbus_get_project_properties) /* sync */
-  METHOD_DESCRIBE(SetProjectDescription, ladish_room_dbus_set_project_description) /* sync */
-  METHOD_DESCRIBE(SetProjectNotes, ladish_room_dbus_set_project_notes) /* sync */
-METHODS_END
+CDBUS_METHODS_BEGIN
+  CDBUS_METHOD_DESCRIBE(GetName, ladish_room_dbus_get_name) /* sync */
+  CDBUS_METHOD_DESCRIBE(SaveProject, ladish_room_dbus_save_project) /* async */
+  CDBUS_METHOD_DESCRIBE(UnloadProject, ladish_room_dbus_unload_project) /* async */
+  CDBUS_METHOD_DESCRIBE(LoadProject, ladish_room_dbus_load_project) /* async */
+  CDBUS_METHOD_DESCRIBE(GetProjectProperties, ladish_room_dbus_get_project_properties) /* sync */
+  CDBUS_METHOD_DESCRIBE(SetProjectDescription, ladish_room_dbus_set_project_description) /* sync */
+  CDBUS_METHOD_DESCRIBE(SetProjectNotes, ladish_room_dbus_set_project_notes) /* sync */
+CDBUS_METHODS_END
 
-SIGNAL_ARGS_BEGIN(ProjectPropertiesChanged, "Project properties changed")
-  SIGNAL_ARG_DESCRIBE("new_version", DBUS_TYPE_UINT64_AS_STRING, "New version of the project properties")
-  SIGNAL_ARG_DESCRIBE("properties", "a{sv}", "project properties")
-SIGNAL_ARGS_END
+CDBUS_SIGNAL_ARGS_BEGIN(ProjectPropertiesChanged, "Project properties changed")
+  CDBUS_SIGNAL_ARG_DESCRIBE("new_version", DBUS_TYPE_UINT64_AS_STRING, "New version of the project properties")
+  CDBUS_SIGNAL_ARG_DESCRIBE("properties", "a{sv}", "project properties")
+CDBUS_SIGNAL_ARGS_END
 
-SIGNALS_BEGIN
-  SIGNAL_DESCRIBE(ProjectPropertiesChanged)
-SIGNALS_END
+CDBUS_SIGNALS_BEGIN
+  CDBUS_SIGNAL_DESCRIBE(ProjectPropertiesChanged)
+CDBUS_SIGNALS_END
 
-INTERFACE_BEGIN(g_interface_room, IFACE_ROOM)
-  INTERFACE_DEFAULT_HANDLER
-  INTERFACE_EXPOSE_METHODS
-  INTERFACE_EXPOSE_SIGNALS
-INTERFACE_END
+CDBUS_INTERFACE_BEGIN(g_interface_room, IFACE_ROOM)
+  CDBUS_INTERFACE_DEFAULT_HANDLER
+  CDBUS_INTERFACE_EXPOSE_METHODS
+  CDBUS_INTERFACE_EXPOSE_SIGNALS
+CDBUS_INTERFACE_END

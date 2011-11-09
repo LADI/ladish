@@ -202,18 +202,18 @@ fail:
   return true;
 }
 
-METHOD_ARGS_BEGIN(Introspect, "Get introspection XML")
-  METHOD_ARG_DESCRIBE_OUT("xml_data", "s", "XML description of the object")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(Introspect, "Get introspection XML")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("xml_data", "s", "XML description of the object")
+CDBUS_METHOD_ARGS_END
 
-METHODS_BEGIN
-  METHOD_DESCRIBE(Introspect, NULL)
-METHODS_END
+CDBUS_METHODS_BEGIN
+  CDBUS_METHOD_DESCRIBE(Introspect, NULL)
+CDBUS_METHODS_END
 
-INTERFACE_BEGIN(g_dbus_interface_dtor_introspectable, "org.freedesktop.DBus.Introspectable")
-  INTERFACE_HANDLER(cdbus_introspection_handler)
-  INTERFACE_EXPOSE_METHODS
-INTERFACE_END
+CDBUS_INTERFACE_BEGIN(g_dbus_interface_dtor_introspectable, "org.freedesktop.DBus.Introspectable")
+  CDBUS_INTERFACE_HANDLER(cdbus_introspection_handler)
+  CDBUS_INTERFACE_EXPOSE_METHODS
+CDBUS_INTERFACE_END
 
 cdbus_object_path cdbus_object_path_new(const char *name, const struct cdbus_interface_descriptor * iface1_ptr, ...)
 {

@@ -910,84 +910,84 @@ void emit_clean_exit(void)
   cdbus_signal_emit(cdbus_g_dbus_connection, CONTROL_OBJECT_PATH, INTERFACE_NAME, "CleanExit", "");
 }
 
-METHOD_ARGS_BEGIN(IsStudioLoaded, "Check whether studio D-Bus object is present")
-  METHOD_ARG_DESCRIBE_OUT("present", "b", "Whether studio D-Bus object is present")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(IsStudioLoaded, "Check whether studio D-Bus object is present")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("present", "b", "Whether studio D-Bus object is present")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(GetStudioList, "Get list of studios")
-  METHOD_ARG_DESCRIBE_OUT("studio_list", "a(sa{sv})", "List of studios, name and properties")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(GetStudioList, "Get list of studios")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("studio_list", "a(sa{sv})", "List of studios, name and properties")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(NewStudio, "New studio")
-  METHOD_ARG_DESCRIBE_IN("studio_name", "s", "Name of studio, if empty name will be generated")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(NewStudio, "New studio")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("studio_name", "s", "Name of studio, if empty name will be generated")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(LoadStudio, "Load studio")
-  METHOD_ARG_DESCRIBE_IN("studio_name", "s", "Name of studio to load")
-  METHOD_ARG_DESCRIBE_IN("options", "a{sv}", "Load options")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(LoadStudio, "Load studio")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("studio_name", "s", "Name of studio to load")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("options", "a{sv}", "Load options")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(DeleteStudio, "Delete studio")
-  METHOD_ARG_DESCRIBE_IN("studio_name", "s", "Name of studio to delete")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(DeleteStudio, "Delete studio")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("studio_name", "s", "Name of studio to delete")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(GetApplicationList, "Get list of applications that can be launched")
-  METHOD_ARG_DESCRIBE_OUT("applications", "a(sa{sv})", "List of applications, name and properties")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(GetApplicationList, "Get list of applications that can be launched")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("applications", "a(sa{sv})", "List of applications, name and properties")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(GetRoomTemplateList, "Get list of room templates")
-  METHOD_ARG_DESCRIBE_OUT("room_template_list", "a(sa{sv})", "List of room templates (name and properties)")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(GetRoomTemplateList, "Get list of room templates")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("room_template_list", "a(sa{sv})", "List of room templates (name and properties)")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(CreateRoomTemplate, "New room template")
-  METHOD_ARG_DESCRIBE_IN("room_template name", "s", "Name of the room template")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(CreateRoomTemplate, "New room template")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("room_template name", "s", "Name of the room template")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(DeleteRoomTemplate, "Delete room template")
-  METHOD_ARG_DESCRIBE_IN("room_template_name", "s", "Name of room template to delete")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(DeleteRoomTemplate, "Delete room template")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("room_template_name", "s", "Name of room template to delete")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(Exit, "Tell ladish D-Bus service to exit")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(Exit, "Tell ladish D-Bus service to exit")
+CDBUS_METHOD_ARGS_END
 
-METHODS_BEGIN
-  METHOD_DESCRIBE(IsStudioLoaded, ladish_is_studio_loaded)
-  METHOD_DESCRIBE(GetStudioList, ladish_get_studio_list)
-  METHOD_DESCRIBE(NewStudio, ladish_new_studio)
-  METHOD_DESCRIBE(LoadStudio, ladish_load_studio)
-  METHOD_DESCRIBE(DeleteStudio, ladish_delete_studio)
-  METHOD_DESCRIBE(GetApplicationList, ladish_get_application_list)
-  METHOD_DESCRIBE(GetRoomTemplateList, ladish_get_room_template_list)
-  METHOD_DESCRIBE(CreateRoomTemplate, ladish_create_room_template)
-  METHOD_DESCRIBE(DeleteRoomTemplate, ladish_delete_room_template)
-  METHOD_DESCRIBE(Exit, ladish_exit)
-METHODS_END
+CDBUS_METHODS_BEGIN
+  CDBUS_METHOD_DESCRIBE(IsStudioLoaded, ladish_is_studio_loaded)
+  CDBUS_METHOD_DESCRIBE(GetStudioList, ladish_get_studio_list)
+  CDBUS_METHOD_DESCRIBE(NewStudio, ladish_new_studio)
+  CDBUS_METHOD_DESCRIBE(LoadStudio, ladish_load_studio)
+  CDBUS_METHOD_DESCRIBE(DeleteStudio, ladish_delete_studio)
+  CDBUS_METHOD_DESCRIBE(GetApplicationList, ladish_get_application_list)
+  CDBUS_METHOD_DESCRIBE(GetRoomTemplateList, ladish_get_room_template_list)
+  CDBUS_METHOD_DESCRIBE(CreateRoomTemplate, ladish_create_room_template)
+  CDBUS_METHOD_DESCRIBE(DeleteRoomTemplate, ladish_delete_room_template)
+  CDBUS_METHOD_DESCRIBE(Exit, ladish_exit)
+CDBUS_METHODS_END
 
-SIGNAL_ARGS_BEGIN(StudioAppeared, "Studio D-Bus object appeared")
-SIGNAL_ARGS_END
+CDBUS_SIGNAL_ARGS_BEGIN(StudioAppeared, "Studio D-Bus object appeared")
+CDBUS_SIGNAL_ARGS_END
 
-SIGNAL_ARGS_BEGIN(StudioDisappeared, "Studio D-Bus object disappeared")
-SIGNAL_ARGS_END
+CDBUS_SIGNAL_ARGS_BEGIN(StudioDisappeared, "Studio D-Bus object disappeared")
+CDBUS_SIGNAL_ARGS_END
 
-SIGNAL_ARGS_BEGIN(QueueExecutionHalted, "Queue execution is halted because of error")
-SIGNAL_ARGS_END
+CDBUS_SIGNAL_ARGS_BEGIN(QueueExecutionHalted, "Queue execution is halted because of error")
+CDBUS_SIGNAL_ARGS_END
 
-SIGNAL_ARGS_BEGIN(CleanExit, "Exit was requested")
-SIGNAL_ARGS_END
+CDBUS_SIGNAL_ARGS_BEGIN(CleanExit, "Exit was requested")
+CDBUS_SIGNAL_ARGS_END
 
-SIGNALS_BEGIN
-  SIGNAL_DESCRIBE(StudioAppeared)
-  SIGNAL_DESCRIBE(StudioDisappeared)
-  SIGNAL_DESCRIBE(QueueExecutionHalted)
-  SIGNAL_DESCRIBE(CleanExit)
-SIGNALS_END
+CDBUS_SIGNALS_BEGIN
+  CDBUS_SIGNAL_DESCRIBE(StudioAppeared)
+  CDBUS_SIGNAL_DESCRIBE(StudioDisappeared)
+  CDBUS_SIGNAL_DESCRIBE(QueueExecutionHalted)
+  CDBUS_SIGNAL_DESCRIBE(CleanExit)
+CDBUS_SIGNALS_END
 
 /*
  * Interface description.
  */
 
-INTERFACE_BEGIN(g_lashd_interface_control, INTERFACE_NAME)
-  INTERFACE_DEFAULT_HANDLER
-  INTERFACE_EXPOSE_METHODS
-  INTERFACE_EXPOSE_SIGNALS
-INTERFACE_END
+CDBUS_INTERFACE_BEGIN(g_lashd_interface_control, INTERFACE_NAME)
+  CDBUS_INTERFACE_DEFAULT_HANDLER
+  CDBUS_INTERFACE_EXPOSE_METHODS
+  CDBUS_INTERFACE_EXPOSE_SIGNALS
+CDBUS_INTERFACE_END

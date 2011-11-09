@@ -42,24 +42,24 @@ struct cdbus_interface_descriptor
 
 bool cdbus_interface_default_handler(const struct cdbus_interface_descriptor * interface, struct cdbus_method_call * call_ptr);
 
-#define INTERFACE_BEGIN(iface_var, iface_name)      \
-const struct cdbus_interface_descriptor iface_var = \
-{                                                   \
+#define CDBUS_INTERFACE_BEGIN(iface_var, iface_name) \
+const struct cdbus_interface_descriptor iface_var =  \
+{                                                    \
   .name = iface_name,
 
-#define INTERFACE_DEFAULT_HANDLER               \
+#define CDBUS_INTERFACE_DEFAULT_HANDLER         \
   .handler = cdbus_interface_default_handler,
 
-#define INTERFACE_HANDLER(handler_func)         \
+#define CDBUS_INTERFACE_HANDLER(handler_func)   \
   .handler = handler_func,
 
-#define INTERFACE_EXPOSE_METHODS                \
+#define CDBUS_INTERFACE_EXPOSE_METHODS          \
   .methods = methods_dtor,
 
-#define INTERFACE_EXPOSE_SIGNALS                \
+#define CDBUS_INTERFACE_EXPOSE_SIGNALS          \
   .signals = signals_dtor,
 
-#define INTERFACE_END                           \
+#define CDBUS_INTERFACE_END                     \
 };
 
 #endif /* __CDBUS_INTERFACE_H__ */

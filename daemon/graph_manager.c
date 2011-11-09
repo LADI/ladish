@@ -280,51 +280,51 @@ static void ladish_graph_manager_dbus_remove_client(struct cdbus_method_call * c
 
 #undef graph_ptr
 
-METHOD_ARGS_BEGIN(Split, "Split client")
-  METHOD_ARG_DESCRIBE_IN("client_id", "t", "ID of the client")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(Split, "Split client")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("client_id", "t", "ID of the client")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(Join, "Join two clients")
-  METHOD_ARG_DESCRIBE_IN("client1_id", "t", "ID of the first client")
-  METHOD_ARG_DESCRIBE_IN("client2_id", "t", "ID of the second client")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(Join, "Join two clients")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("client1_id", "t", "ID of the first client")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("client2_id", "t", "ID of the second client")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(RenameClient, "Rename client")
-  METHOD_ARG_DESCRIBE_IN("client_id", "t", "ID of the client")
-  METHOD_ARG_DESCRIBE_IN("newname", "s", "New name for the client")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(RenameClient, "Rename client")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("client_id", "t", "ID of the client")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("newname", "s", "New name for the client")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(RenamePort, "Rename port")
-  METHOD_ARG_DESCRIBE_IN("port_id", "t", "ID of the port")
-  METHOD_ARG_DESCRIBE_IN("newname", "s", "New name for the port")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(RenamePort, "Rename port")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("port_id", "t", "ID of the port")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("newname", "s", "New name for the port")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(MovePort, "Move port")
-  METHOD_ARG_DESCRIBE_IN("port_id", "t", "ID of the port")
-  METHOD_ARG_DESCRIBE_IN("client_id", "t", "ID of the client where port will be moved to")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(MovePort, "Move port")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("port_id", "t", "ID of the port")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("client_id", "t", "ID of the client where port will be moved to")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(NewClient, "New client")
-  METHOD_ARG_DESCRIBE_IN("name", "s", "Name for the new client")
-  METHOD_ARG_DESCRIBE_OUT("client_id", "t", "ID of the new client")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(NewClient, "New client")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("name", "s", "Name for the new client")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("client_id", "t", "ID of the new client")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(RemoveClient, "Remove empty client")
-  METHOD_ARG_DESCRIBE_IN("client_id", "t", "ID of the client to remove")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(RemoveClient, "Remove empty client")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("client_id", "t", "ID of the client to remove")
+CDBUS_METHOD_ARGS_END
 
-METHODS_BEGIN
-  METHOD_DESCRIBE(Split, ladish_graph_manager_dbus_split)
-  METHOD_DESCRIBE(Join, ladish_graph_manager_dbus_join)
-  METHOD_DESCRIBE(RenameClient, ladish_graph_manager_dbus_rename_client)
-  METHOD_DESCRIBE(RenamePort, ladish_graph_manager_dbus_rename_port)
-  METHOD_DESCRIBE(MovePort, ladish_graph_manager_dbus_move_port)
-  METHOD_DESCRIBE(NewClient, ladish_graph_manager_dbus_new_client)
-  METHOD_DESCRIBE(RemoveClient, ladish_graph_manager_dbus_remove_client)
-METHODS_END
+CDBUS_METHODS_BEGIN
+  CDBUS_METHOD_DESCRIBE(Split, ladish_graph_manager_dbus_split)
+  CDBUS_METHOD_DESCRIBE(Join, ladish_graph_manager_dbus_join)
+  CDBUS_METHOD_DESCRIBE(RenameClient, ladish_graph_manager_dbus_rename_client)
+  CDBUS_METHOD_DESCRIBE(RenamePort, ladish_graph_manager_dbus_rename_port)
+  CDBUS_METHOD_DESCRIBE(MovePort, ladish_graph_manager_dbus_move_port)
+  CDBUS_METHOD_DESCRIBE(NewClient, ladish_graph_manager_dbus_new_client)
+  CDBUS_METHOD_DESCRIBE(RemoveClient, ladish_graph_manager_dbus_remove_client)
+CDBUS_METHODS_END
 
-INTERFACE_BEGIN(g_iface_graph_manager, IFACE_GRAPH_MANAGER)
-  INTERFACE_DEFAULT_HANDLER
-  INTERFACE_EXPOSE_METHODS
-INTERFACE_END
+CDBUS_INTERFACE_BEGIN(g_iface_graph_manager, IFACE_GRAPH_MANAGER)
+  CDBUS_INTERFACE_DEFAULT_HANDLER
+  CDBUS_INTERFACE_EXPOSE_METHODS
+CDBUS_INTERFACE_END
 

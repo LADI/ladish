@@ -395,31 +395,31 @@ static void jmcore_exit(struct cdbus_method_call * call_ptr)
   cdbus_method_return_new_void(call_ptr);
 }
 
-METHOD_ARGS_BEGIN(get_pid, "Get process ID")
-  METHOD_ARG_DESCRIBE_OUT("process_id", DBUS_TYPE_INT64_AS_STRING, "Process ID")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(get_pid, "Get process ID")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("process_id", DBUS_TYPE_INT64_AS_STRING, "Process ID")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(create, "Create port pair")
-  METHOD_ARG_DESCRIBE_IN("midi", "b", "Whether to create midi or audio ports")
-  METHOD_ARG_DESCRIBE_IN("input_port", "s", "Input port name")
-  METHOD_ARG_DESCRIBE_IN("output_port", "s", "Output port name")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(create, "Create port pair")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("midi", "b", "Whether to create midi or audio ports")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("input_port", "s", "Input port name")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("output_port", "s", "Output port name")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(destroy, "Destroy port pair")
-  METHOD_ARG_DESCRIBE_IN("port", "s", "Port name")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(destroy, "Destroy port pair")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("port", "s", "Port name")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(exit, "Tell jmcore D-Bus service to exit")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(exit, "Tell jmcore D-Bus service to exit")
+CDBUS_METHOD_ARGS_END
 
-METHODS_BEGIN
-  METHOD_DESCRIBE(get_pid, jmcore_get_pid)
-  METHOD_DESCRIBE(create, jmcore_create)
-  METHOD_DESCRIBE(destroy, jmcore_destroy)
-  METHOD_DESCRIBE(exit, jmcore_exit)
-METHODS_END
+CDBUS_METHODS_BEGIN
+  CDBUS_METHOD_DESCRIBE(get_pid, jmcore_get_pid)
+  CDBUS_METHOD_DESCRIBE(create, jmcore_create)
+  CDBUS_METHOD_DESCRIBE(destroy, jmcore_destroy)
+  CDBUS_METHOD_DESCRIBE(exit, jmcore_exit)
+CDBUS_METHODS_END
 
-INTERFACE_BEGIN(g_interface, JMCORE_IFACE)
-  INTERFACE_DEFAULT_HANDLER
-  INTERFACE_EXPOSE_METHODS
-INTERFACE_END
+CDBUS_INTERFACE_BEGIN(g_interface, JMCORE_IFACE)
+  CDBUS_INTERFACE_DEFAULT_HANDLER
+  CDBUS_INTERFACE_EXPOSE_METHODS
+CDBUS_INTERFACE_END

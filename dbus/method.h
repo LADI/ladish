@@ -65,42 +65,42 @@ bool cdbus_method_return_verify(DBusMessage * msg, const char ** str);
 void cdbus_method_return_send(struct cdbus_method_call * call_ptr);
 void cdbus_method_default_handler(DBusPendingCall * pending, void * data);
 
-#define METHOD_ARGS_BEGIN(method_name, descr) \
+#define CDBUS_METHOD_ARGS_BEGIN(method_name, descr) \
 static const struct cdbus_method_arg_descriptor method_name ## _args_dtor[] = \
 {
 
-#define METHOD_ARG_DESCRIBE_IN(arg_name, arg_type, descr)       \
+#define CDBUS_METHOD_ARG_DESCRIBE_IN(arg_name, arg_type, descr) \
         {                                                       \
                 .name = arg_name,                               \
                 .type = arg_type,                               \
                 .direction_in = true                            \
         },
 
-#define METHOD_ARG_DESCRIBE_OUT(arg_name, arg_type, descr)      \
+#define CDBUS_METHOD_ARG_DESCRIBE_OUT(arg_name, arg_type, descr)\
         {                                                       \
                 .name = arg_name,                               \
                 .type = arg_type,                               \
                 .direction_in = false                           \
         },
 
-#define METHOD_ARGS_END                                         \
+#define CDBUS_METHOD_ARGS_END                                   \
         {                                                       \
                 .name = NULL,                                   \
         }                                                       \
 };
 
-#define METHODS_BEGIN                                           \
+#define CDBUS_METHODS_BEGIN                                     \
 static const struct cdbus_method_descriptor methods_dtor[] =    \
 {
 
-#define METHOD_DESCRIBE(method_name, handler_name)              \
+#define CDBUS_METHOD_DESCRIBE(method_name, handler_name)        \
         {                                                       \
                 .name = # method_name,                          \
                 .handler = handler_name,                        \
                 .args = method_name ## _args_dtor               \
         },
 
-#define METHODS_END                                             \
+#define CDBUS_METHODS_END                                       \
         {                                                       \
                 .name = NULL,                                   \
                 .handler = NULL,                                \

@@ -181,33 +181,33 @@ void ladish_dict_drop_dbus(struct cdbus_method_call * call_ptr)
   cdbus_method_return_new_void(call_ptr);
 }
 
-METHOD_ARGS_BEGIN(Set, "Set value for specified key")
-  METHOD_ARG_DESCRIBE_IN("object_type", "u", "Type of object, 0 - graph, 1 - client, 2 - port, 3 - connection")
-  METHOD_ARG_DESCRIBE_IN("object_id", "t", "ID of the object")
-  METHOD_ARG_DESCRIBE_IN("key", "s", "Key to set")
-  METHOD_ARG_DESCRIBE_IN("value", "s", "Value to set")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(Set, "Set value for specified key")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("object_type", "u", "Type of object, 0 - graph, 1 - client, 2 - port, 3 - connection")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("object_id", "t", "ID of the object")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("key", "s", "Key to set")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("value", "s", "Value to set")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(Get, "Get value for specified key")
-  METHOD_ARG_DESCRIBE_IN("object_type", "u", "Type of object, 0 - graph, 1 - client, 2 - port, 3 - connection")
-  METHOD_ARG_DESCRIBE_IN("object_id", "t", "ID of the object")
-  METHOD_ARG_DESCRIBE_IN("key", "s", "Key to query")
-  METHOD_ARG_DESCRIBE_OUT("value", "s", "Value associated with the key")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(Get, "Get value for specified key")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("object_type", "u", "Type of object, 0 - graph, 1 - client, 2 - port, 3 - connection")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("object_id", "t", "ID of the object")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("key", "s", "Key to query")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("value", "s", "Value associated with the key")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(Drop, "Drop entry, if key exists")
-  METHOD_ARG_DESCRIBE_IN("object_type", "u", "Type of object, 0 - graph, 1 - client, 2 - port, 3 - connection")
-  METHOD_ARG_DESCRIBE_IN("object_id", "t", "ID of the object")
-  METHOD_ARG_DESCRIBE_IN("key", "s", "Key of the entry to drop")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(Drop, "Drop entry, if key exists")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("object_type", "u", "Type of object, 0 - graph, 1 - client, 2 - port, 3 - connection")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("object_id", "t", "ID of the object")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("key", "s", "Key of the entry to drop")
+CDBUS_METHOD_ARGS_END
 
-METHODS_BEGIN
-  METHOD_DESCRIBE(Set, ladish_dict_set_dbus)
-  METHOD_DESCRIBE(Get, ladish_dict_get_dbus)
-  METHOD_DESCRIBE(Drop, ladish_dict_drop_dbus)
-METHODS_END
+CDBUS_METHODS_BEGIN
+  CDBUS_METHOD_DESCRIBE(Set, ladish_dict_set_dbus)
+  CDBUS_METHOD_DESCRIBE(Get, ladish_dict_get_dbus)
+  CDBUS_METHOD_DESCRIBE(Drop, ladish_dict_drop_dbus)
+CDBUS_METHODS_END
 
-INTERFACE_BEGIN(g_iface_graph_dict, IFACE_GRAPH_DICT)
-  INTERFACE_DEFAULT_HANDLER
-  INTERFACE_EXPOSE_METHODS
-INTERFACE_END
+CDBUS_INTERFACE_BEGIN(g_iface_graph_dict, IFACE_GRAPH_DICT)
+  CDBUS_INTERFACE_DEFAULT_HANDLER
+  CDBUS_INTERFACE_EXPOSE_METHODS
+CDBUS_INTERFACE_END

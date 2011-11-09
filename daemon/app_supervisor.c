@@ -1873,158 +1873,158 @@ static void is_app_running(struct cdbus_method_call * call_ptr)
 
 #undef supervisor_ptr
 
-METHOD_ARGS_BEGIN(GetInterfaceVersion, "Get version of this D-Bus interface")
-  METHOD_ARG_DESCRIBE_OUT("running", DBUS_TYPE_UINT32_AS_STRING, "Interface version")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(GetInterfaceVersion, "Get version of this D-Bus interface")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("running", DBUS_TYPE_UINT32_AS_STRING, "Interface version")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(GetAll, "Get list of apps")
-  METHOD_ARG_DESCRIBE_OUT("list_version", DBUS_TYPE_UINT64_AS_STRING, "Version of the list")
-  METHOD_ARG_DESCRIBE_OUT("apps_list", "a(tsbby)", "List of apps")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(GetAll, "Get list of apps")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("list_version", DBUS_TYPE_UINT64_AS_STRING, "Version of the list")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("apps_list", "a(tsbby)", "List of apps")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(GetAll2, "Get list of apps")
-  METHOD_ARG_DESCRIBE_OUT("list_version", DBUS_TYPE_UINT64_AS_STRING, "Version of the list")
-  METHOD_ARG_DESCRIBE_OUT("apps_list", "a(tsbbs)", "List of apps")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(GetAll2, "Get list of apps")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("list_version", DBUS_TYPE_UINT64_AS_STRING, "Version of the list")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("apps_list", "a(tsbbs)", "List of apps")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(RunCustom, "Start application by supplying commandline")
-  METHOD_ARG_DESCRIBE_IN("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
-  METHOD_ARG_DESCRIBE_IN("commandline", DBUS_TYPE_STRING_AS_STRING, "Commandline")
-  METHOD_ARG_DESCRIBE_IN("name", DBUS_TYPE_STRING_AS_STRING, "Name")
-  METHOD_ARG_DESCRIBE_IN("level", DBUS_TYPE_BYTE_AS_STRING, "Level")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(RunCustom, "Start application by supplying commandline")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("commandline", DBUS_TYPE_STRING_AS_STRING, "Commandline")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("name", DBUS_TYPE_STRING_AS_STRING, "Name")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("level", DBUS_TYPE_BYTE_AS_STRING, "Level")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(RunCustom2, "Start application by supplying commandline")
-  METHOD_ARG_DESCRIBE_IN("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
-  METHOD_ARG_DESCRIBE_IN("commandline", DBUS_TYPE_STRING_AS_STRING, "Commandline")
-  METHOD_ARG_DESCRIBE_IN("name", DBUS_TYPE_STRING_AS_STRING, "Name")
-  METHOD_ARG_DESCRIBE_IN("level", DBUS_TYPE_STRING_AS_STRING, "Level")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(RunCustom2, "Start application by supplying commandline")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("commandline", DBUS_TYPE_STRING_AS_STRING, "Commandline")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("name", DBUS_TYPE_STRING_AS_STRING, "Name")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("level", DBUS_TYPE_STRING_AS_STRING, "Level")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(StartApp, "Start application")
-  METHOD_ARG_DESCRIBE_IN("id", DBUS_TYPE_UINT64_AS_STRING, "id of app")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(StartApp, "Start application")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("id", DBUS_TYPE_UINT64_AS_STRING, "id of app")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(StopApp, "Stop application")
-  METHOD_ARG_DESCRIBE_IN("id", DBUS_TYPE_UINT64_AS_STRING, "id of app")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(StopApp, "Stop application")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("id", DBUS_TYPE_UINT64_AS_STRING, "id of app")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(KillApp, "Kill application")
-  METHOD_ARG_DESCRIBE_IN("id", DBUS_TYPE_UINT64_AS_STRING, "id of app")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(KillApp, "Kill application")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("id", DBUS_TYPE_UINT64_AS_STRING, "id of app")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(RemoveApp, "Remove application")
-  METHOD_ARG_DESCRIBE_IN("id", DBUS_TYPE_UINT64_AS_STRING, "id of app")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(RemoveApp, "Remove application")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("id", DBUS_TYPE_UINT64_AS_STRING, "id of app")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(GetAppProperties, "Get properties of an application")
-  METHOD_ARG_DESCRIBE_IN("id", DBUS_TYPE_UINT64_AS_STRING, "id of app")
-  METHOD_ARG_DESCRIBE_OUT("name", DBUS_TYPE_STRING_AS_STRING, "")
-  METHOD_ARG_DESCRIBE_OUT("commandline", DBUS_TYPE_STRING_AS_STRING, "Commandline")
-  METHOD_ARG_DESCRIBE_OUT("running", DBUS_TYPE_BOOLEAN_AS_STRING, "")
-  METHOD_ARG_DESCRIBE_OUT("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
-  METHOD_ARG_DESCRIBE_OUT("level", DBUS_TYPE_BYTE_AS_STRING, "Level")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(GetAppProperties, "Get properties of an application")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("id", DBUS_TYPE_UINT64_AS_STRING, "id of app")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("name", DBUS_TYPE_STRING_AS_STRING, "")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("commandline", DBUS_TYPE_STRING_AS_STRING, "Commandline")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("running", DBUS_TYPE_BOOLEAN_AS_STRING, "")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("level", DBUS_TYPE_BYTE_AS_STRING, "Level")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(GetAppProperties2, "Get properties of an application")
-  METHOD_ARG_DESCRIBE_IN("id", DBUS_TYPE_UINT64_AS_STRING, "id of app")
-  METHOD_ARG_DESCRIBE_OUT("name", DBUS_TYPE_STRING_AS_STRING, "")
-  METHOD_ARG_DESCRIBE_OUT("commandline", DBUS_TYPE_STRING_AS_STRING, "Commandline")
-  METHOD_ARG_DESCRIBE_OUT("running", DBUS_TYPE_BOOLEAN_AS_STRING, "")
-  METHOD_ARG_DESCRIBE_OUT("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
-  METHOD_ARG_DESCRIBE_OUT("level", DBUS_TYPE_STRING_AS_STRING, "Level")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(GetAppProperties2, "Get properties of an application")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("id", DBUS_TYPE_UINT64_AS_STRING, "id of app")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("name", DBUS_TYPE_STRING_AS_STRING, "")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("commandline", DBUS_TYPE_STRING_AS_STRING, "Commandline")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("running", DBUS_TYPE_BOOLEAN_AS_STRING, "")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("level", DBUS_TYPE_STRING_AS_STRING, "Level")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(SetAppProperties, "Set properties of an application")
-  METHOD_ARG_DESCRIBE_IN("id", DBUS_TYPE_UINT64_AS_STRING, "id of app")
-  METHOD_ARG_DESCRIBE_IN("name", DBUS_TYPE_STRING_AS_STRING, "")
-  METHOD_ARG_DESCRIBE_IN("commandline", DBUS_TYPE_STRING_AS_STRING, "Commandline")
-  METHOD_ARG_DESCRIBE_IN("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
-  METHOD_ARG_DESCRIBE_IN("level", DBUS_TYPE_BYTE_AS_STRING, "Level")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(SetAppProperties, "Set properties of an application")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("id", DBUS_TYPE_UINT64_AS_STRING, "id of app")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("name", DBUS_TYPE_STRING_AS_STRING, "")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("commandline", DBUS_TYPE_STRING_AS_STRING, "Commandline")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("level", DBUS_TYPE_BYTE_AS_STRING, "Level")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(SetAppProperties2, "Set properties of an application")
-  METHOD_ARG_DESCRIBE_IN("id", DBUS_TYPE_UINT64_AS_STRING, "id of app")
-  METHOD_ARG_DESCRIBE_IN("name", DBUS_TYPE_STRING_AS_STRING, "")
-  METHOD_ARG_DESCRIBE_IN("commandline", DBUS_TYPE_STRING_AS_STRING, "Commandline")
-  METHOD_ARG_DESCRIBE_IN("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
-  METHOD_ARG_DESCRIBE_IN("level", DBUS_TYPE_STRING_AS_STRING, "Level")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(SetAppProperties2, "Set properties of an application")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("id", DBUS_TYPE_UINT64_AS_STRING, "id of app")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("name", DBUS_TYPE_STRING_AS_STRING, "")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("commandline", DBUS_TYPE_STRING_AS_STRING, "Commandline")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("level", DBUS_TYPE_STRING_AS_STRING, "Level")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(IsAppRunning, "Check whether application is running")
-  METHOD_ARG_DESCRIBE_IN("id", DBUS_TYPE_UINT64_AS_STRING, "id of app")
-  METHOD_ARG_DESCRIBE_OUT("running", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether app is running")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(IsAppRunning, "Check whether application is running")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("id", DBUS_TYPE_UINT64_AS_STRING, "id of app")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("running", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether app is running")
+CDBUS_METHOD_ARGS_END
 
 
-METHODS_BEGIN
-  METHOD_DESCRIBE(GetInterfaceVersion, get_version)     /* sync */
-  METHOD_DESCRIBE(GetAll, get_all1)                     /* sync */
-  METHOD_DESCRIBE(GetAll2, get_all2)                    /* sync */
-  METHOD_DESCRIBE(RunCustom, run_custom1)               /* async */
-  METHOD_DESCRIBE(RunCustom2, run_custom2)              /* async */
-  METHOD_DESCRIBE(StartApp, start_app)                  /* async */
-  METHOD_DESCRIBE(StopApp, stop_app)                    /* async */
-  METHOD_DESCRIBE(KillApp, kill_app)                    /* async */
-  METHOD_DESCRIBE(GetAppProperties, get_app_properties1)  /* sync */
-  METHOD_DESCRIBE(GetAppProperties2, get_app_properties2) /* sync */
-  METHOD_DESCRIBE(SetAppProperties, set_app_properties1)  /* sync */
-  METHOD_DESCRIBE(SetAppProperties2, set_app_properties2) /* sync */
-  METHOD_DESCRIBE(RemoveApp, remove_app)                /* sync */
-  METHOD_DESCRIBE(IsAppRunning, is_app_running)         /* sync */
-METHODS_END
+CDBUS_METHODS_BEGIN
+  CDBUS_METHOD_DESCRIBE(GetInterfaceVersion, get_version)     /* sync */
+  CDBUS_METHOD_DESCRIBE(GetAll, get_all1)                     /* sync */
+  CDBUS_METHOD_DESCRIBE(GetAll2, get_all2)                    /* sync */
+  CDBUS_METHOD_DESCRIBE(RunCustom, run_custom1)               /* async */
+  CDBUS_METHOD_DESCRIBE(RunCustom2, run_custom2)              /* async */
+  CDBUS_METHOD_DESCRIBE(StartApp, start_app)                  /* async */
+  CDBUS_METHOD_DESCRIBE(StopApp, stop_app)                    /* async */
+  CDBUS_METHOD_DESCRIBE(KillApp, kill_app)                    /* async */
+  CDBUS_METHOD_DESCRIBE(GetAppProperties, get_app_properties1)  /* sync */
+  CDBUS_METHOD_DESCRIBE(GetAppProperties2, get_app_properties2) /* sync */
+  CDBUS_METHOD_DESCRIBE(SetAppProperties, set_app_properties1)  /* sync */
+  CDBUS_METHOD_DESCRIBE(SetAppProperties2, set_app_properties2) /* sync */
+  CDBUS_METHOD_DESCRIBE(RemoveApp, remove_app)                /* sync */
+  CDBUS_METHOD_DESCRIBE(IsAppRunning, is_app_running)         /* sync */
+CDBUS_METHODS_END
 
-SIGNAL_ARGS_BEGIN(AppAdded, "")
-  SIGNAL_ARG_DESCRIBE("new_list_version", DBUS_TYPE_UINT64_AS_STRING, "")
-  SIGNAL_ARG_DESCRIBE("id", DBUS_TYPE_UINT64_AS_STRING, "")
-  SIGNAL_ARG_DESCRIBE("name", DBUS_TYPE_STRING_AS_STRING, "")
-  SIGNAL_ARG_DESCRIBE("running", DBUS_TYPE_BOOLEAN_AS_STRING, "")
-  SIGNAL_ARG_DESCRIBE("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
-  SIGNAL_ARG_DESCRIBE("level", DBUS_TYPE_BYTE_AS_STRING, "Level")
-SIGNAL_ARGS_END
+CDBUS_SIGNAL_ARGS_BEGIN(AppAdded, "")
+  CDBUS_SIGNAL_ARG_DESCRIBE("new_list_version", DBUS_TYPE_UINT64_AS_STRING, "")
+  CDBUS_SIGNAL_ARG_DESCRIBE("id", DBUS_TYPE_UINT64_AS_STRING, "")
+  CDBUS_SIGNAL_ARG_DESCRIBE("name", DBUS_TYPE_STRING_AS_STRING, "")
+  CDBUS_SIGNAL_ARG_DESCRIBE("running", DBUS_TYPE_BOOLEAN_AS_STRING, "")
+  CDBUS_SIGNAL_ARG_DESCRIBE("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
+  CDBUS_SIGNAL_ARG_DESCRIBE("level", DBUS_TYPE_BYTE_AS_STRING, "Level")
+CDBUS_SIGNAL_ARGS_END
 
-SIGNAL_ARGS_BEGIN(AppAdded2, "")
-  SIGNAL_ARG_DESCRIBE("new_list_version", DBUS_TYPE_UINT64_AS_STRING, "")
-  SIGNAL_ARG_DESCRIBE("id", DBUS_TYPE_UINT64_AS_STRING, "")
-  SIGNAL_ARG_DESCRIBE("name", DBUS_TYPE_STRING_AS_STRING, "")
-  SIGNAL_ARG_DESCRIBE("running", DBUS_TYPE_BOOLEAN_AS_STRING, "")
-  SIGNAL_ARG_DESCRIBE("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
-  SIGNAL_ARG_DESCRIBE("level", DBUS_TYPE_STRING_AS_STRING, "Level")
-SIGNAL_ARGS_END
+CDBUS_SIGNAL_ARGS_BEGIN(AppAdded2, "")
+  CDBUS_SIGNAL_ARG_DESCRIBE("new_list_version", DBUS_TYPE_UINT64_AS_STRING, "")
+  CDBUS_SIGNAL_ARG_DESCRIBE("id", DBUS_TYPE_UINT64_AS_STRING, "")
+  CDBUS_SIGNAL_ARG_DESCRIBE("name", DBUS_TYPE_STRING_AS_STRING, "")
+  CDBUS_SIGNAL_ARG_DESCRIBE("running", DBUS_TYPE_BOOLEAN_AS_STRING, "")
+  CDBUS_SIGNAL_ARG_DESCRIBE("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
+  CDBUS_SIGNAL_ARG_DESCRIBE("level", DBUS_TYPE_STRING_AS_STRING, "Level")
+CDBUS_SIGNAL_ARGS_END
 
-SIGNAL_ARGS_BEGIN(AppRemoved, "")
-  SIGNAL_ARG_DESCRIBE("new_list_version", DBUS_TYPE_UINT64_AS_STRING, "")
-  SIGNAL_ARG_DESCRIBE("id", DBUS_TYPE_UINT64_AS_STRING, "")
-SIGNAL_ARGS_END
+CDBUS_SIGNAL_ARGS_BEGIN(AppRemoved, "")
+  CDBUS_SIGNAL_ARG_DESCRIBE("new_list_version", DBUS_TYPE_UINT64_AS_STRING, "")
+  CDBUS_SIGNAL_ARG_DESCRIBE("id", DBUS_TYPE_UINT64_AS_STRING, "")
+CDBUS_SIGNAL_ARGS_END
 
-SIGNAL_ARGS_BEGIN(AppStateChanged, "")
-  SIGNAL_ARG_DESCRIBE("new_list_version", DBUS_TYPE_UINT64_AS_STRING, "")
-  SIGNAL_ARG_DESCRIBE("id", DBUS_TYPE_UINT64_AS_STRING, "")
-  SIGNAL_ARG_DESCRIBE("name", DBUS_TYPE_STRING_AS_STRING, "")
-  SIGNAL_ARG_DESCRIBE("running", DBUS_TYPE_BOOLEAN_AS_STRING, "")
-  SIGNAL_ARG_DESCRIBE("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
-  SIGNAL_ARG_DESCRIBE("level", DBUS_TYPE_BYTE_AS_STRING, "Level")
-SIGNAL_ARGS_END
+CDBUS_SIGNAL_ARGS_BEGIN(AppStateChanged, "")
+  CDBUS_SIGNAL_ARG_DESCRIBE("new_list_version", DBUS_TYPE_UINT64_AS_STRING, "")
+  CDBUS_SIGNAL_ARG_DESCRIBE("id", DBUS_TYPE_UINT64_AS_STRING, "")
+  CDBUS_SIGNAL_ARG_DESCRIBE("name", DBUS_TYPE_STRING_AS_STRING, "")
+  CDBUS_SIGNAL_ARG_DESCRIBE("running", DBUS_TYPE_BOOLEAN_AS_STRING, "")
+  CDBUS_SIGNAL_ARG_DESCRIBE("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
+  CDBUS_SIGNAL_ARG_DESCRIBE("level", DBUS_TYPE_BYTE_AS_STRING, "Level")
+CDBUS_SIGNAL_ARGS_END
 
-SIGNAL_ARGS_BEGIN(AppStateChanged2, "")
-  SIGNAL_ARG_DESCRIBE("new_list_version", DBUS_TYPE_UINT64_AS_STRING, "")
-  SIGNAL_ARG_DESCRIBE("id", DBUS_TYPE_UINT64_AS_STRING, "")
-  SIGNAL_ARG_DESCRIBE("name", DBUS_TYPE_STRING_AS_STRING, "")
-  SIGNAL_ARG_DESCRIBE("running", DBUS_TYPE_BOOLEAN_AS_STRING, "")
-  SIGNAL_ARG_DESCRIBE("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
-  SIGNAL_ARG_DESCRIBE("level", DBUS_TYPE_STRING_AS_STRING, "Level")
-SIGNAL_ARGS_END
+CDBUS_SIGNAL_ARGS_BEGIN(AppStateChanged2, "")
+  CDBUS_SIGNAL_ARG_DESCRIBE("new_list_version", DBUS_TYPE_UINT64_AS_STRING, "")
+  CDBUS_SIGNAL_ARG_DESCRIBE("id", DBUS_TYPE_UINT64_AS_STRING, "")
+  CDBUS_SIGNAL_ARG_DESCRIBE("name", DBUS_TYPE_STRING_AS_STRING, "")
+  CDBUS_SIGNAL_ARG_DESCRIBE("running", DBUS_TYPE_BOOLEAN_AS_STRING, "")
+  CDBUS_SIGNAL_ARG_DESCRIBE("terminal", DBUS_TYPE_BOOLEAN_AS_STRING, "Whether to run in terminal")
+  CDBUS_SIGNAL_ARG_DESCRIBE("level", DBUS_TYPE_STRING_AS_STRING, "Level")
+CDBUS_SIGNAL_ARGS_END
 
-SIGNALS_BEGIN
-  SIGNAL_DESCRIBE(AppAdded)
-  SIGNAL_DESCRIBE(AppAdded2)
-  SIGNAL_DESCRIBE(AppRemoved)
-  SIGNAL_DESCRIBE(AppStateChanged)
-  SIGNAL_DESCRIBE(AppStateChanged2)
-SIGNALS_END
+CDBUS_SIGNALS_BEGIN
+  CDBUS_SIGNAL_DESCRIBE(AppAdded)
+  CDBUS_SIGNAL_DESCRIBE(AppAdded2)
+  CDBUS_SIGNAL_DESCRIBE(AppRemoved)
+  CDBUS_SIGNAL_DESCRIBE(AppStateChanged)
+  CDBUS_SIGNAL_DESCRIBE(AppStateChanged2)
+CDBUS_SIGNALS_END
 
-INTERFACE_BEGIN(g_iface_app_supervisor, IFACE_APP_SUPERVISOR)
-  INTERFACE_DEFAULT_HANDLER
-  INTERFACE_EXPOSE_METHODS
-  INTERFACE_EXPOSE_SIGNALS
-INTERFACE_END
+CDBUS_INTERFACE_BEGIN(g_iface_app_supervisor, IFACE_APP_SUPERVISOR)
+  CDBUS_INTERFACE_DEFAULT_HANDLER
+  CDBUS_INTERFACE_EXPOSE_METHODS
+  CDBUS_INTERFACE_EXPOSE_SIGNALS
+CDBUS_INTERFACE_END

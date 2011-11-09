@@ -53,34 +53,34 @@ cdbus_signal_emit(
   const char * signature,
   ...);
 
-#define SIGNAL_ARGS_BEGIN(signal_name, descr) \
+#define CDBUS_SIGNAL_ARGS_BEGIN(signal_name, descr) \
 static const struct cdbus_signal_arg_descriptor signal_name ## _args_dtor[] = \
 {
 
-#define SIGNAL_ARG_DESCRIBE(arg_name, arg_type, descr)         \
+#define CDBUS_SIGNAL_ARG_DESCRIBE(arg_name, arg_type, descr)   \
         {                                                      \
                 .name = arg_name,                              \
                 .type = arg_type                               \
         },
 
-#define SIGNAL_ARGS_END                                        \
+#define CDBUS_SIGNAL_ARGS_END                                  \
         {                                                      \
                 .name = NULL,                                  \
                 .type = NULL                                   \
         }                                                      \
 };
 
-#define SIGNALS_BEGIN                                          \
+#define CDBUS_SIGNALS_BEGIN                                    \
 static const struct cdbus_signal_descriptor signals_dtor[] =   \
 {
 
-#define SIGNAL_DESCRIBE(signal_name)                           \
+#define CDBUS_SIGNAL_DESCRIBE(signal_name)                     \
         {                                                      \
                 .name = # signal_name,                         \
                 .args = signal_name ## _args_dtor              \
         },
 
-#define SIGNALS_END                                            \
+#define CDBUS_SIGNALS_END                                      \
         {                                                      \
                 .name = NULL,                                  \
                 .args = NULL                                   \

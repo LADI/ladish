@@ -199,16 +199,16 @@ fail:
   log_error("Ran out of memory trying to construct method return");
 }
 
-METHOD_ARGS_BEGIN(get, "Get list of recent items")
-  METHOD_ARG_DESCRIBE_IN("max", "q", "Max number of items caller is interested in")
-  METHOD_ARG_DESCRIBE_OUT("items", "a(sa{sv})", "Item list")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(get, "Get list of recent items")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("max", "q", "Max number of items caller is interested in")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("items", "a(sa{sv})", "Item list")
+CDBUS_METHOD_ARGS_END
 
-METHODS_BEGIN
-  METHOD_DESCRIBE(get, get)
-METHODS_END
+CDBUS_METHODS_BEGIN
+  CDBUS_METHOD_DESCRIBE(get, get)
+CDBUS_METHODS_END
 
-INTERFACE_BEGIN(g_iface_recent_items, IFACE_RECENT_ITEMS)
-  INTERFACE_DEFAULT_HANDLER
-  INTERFACE_EXPOSE_METHODS
-INTERFACE_END
+CDBUS_INTERFACE_BEGIN(g_iface_recent_items, IFACE_RECENT_ITEMS)
+  CDBUS_INTERFACE_DEFAULT_HANDLER
+  CDBUS_INTERFACE_EXPOSE_METHODS
+CDBUS_INTERFACE_END

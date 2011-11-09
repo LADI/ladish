@@ -1215,101 +1215,101 @@ static void ladish_studio_dbus_delete_room(struct cdbus_method_call * call_ptr)
   }
 }
 
-METHOD_ARGS_BEGIN(GetName, "Get studio name")
-  METHOD_ARG_DESCRIBE_OUT("studio_name", "s", "Name of studio")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(GetName, "Get studio name")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("studio_name", "s", "Name of studio")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(Rename, "Rename studio")
-  METHOD_ARG_DESCRIBE_IN("studio_name", "s", "New name")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(Rename, "Rename studio")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("studio_name", "s", "New name")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(Save, "Save studio")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(Save, "Save studio")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(SaveAs, "SaveAs studio")
-  METHOD_ARG_DESCRIBE_IN("studio_name", "s", "New name")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(SaveAs, "SaveAs studio")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("studio_name", "s", "New name")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(Unload, "Unload studio")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(Unload, "Unload studio")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(Start, "Start studio")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(Start, "Start studio")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(Stop, "Stop studio")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(Stop, "Stop studio")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(IsStarted, "Check whether studio is started")
-  METHOD_ARG_DESCRIBE_OUT("started", "b", "Whether studio is started")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(IsStarted, "Check whether studio is started")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("started", "b", "Whether studio is started")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(CreateRoom, "Create new studio room")
-  METHOD_ARG_DESCRIBE_IN("room_name", "s", "Studio room name")
-  METHOD_ARG_DESCRIBE_IN("room_template_name", "s", "Room template name")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(CreateRoom, "Create new studio room")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("room_name", "s", "Studio room name")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("room_template_name", "s", "Room template name")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(GetRoomList, "Get list of rooms in this studio")
-  METHOD_ARG_DESCRIBE_OUT("room_list", "a(sa{sv})", "List of studio rooms: opaths and properties")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(GetRoomList, "Get list of rooms in this studio")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("room_list", "a(sa{sv})", "List of studio rooms: opaths and properties")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(DeleteRoom, "Delete studio room")
-  METHOD_ARG_DESCRIBE_IN("room_name", "s", "Name of studio room to delete")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(DeleteRoom, "Delete studio room")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("room_name", "s", "Name of studio room to delete")
+CDBUS_METHOD_ARGS_END
 
-METHODS_BEGIN
-  METHOD_DESCRIBE(GetName, ladish_studio_dbus_get_name)          /* sync */
-  METHOD_DESCRIBE(Rename, ladish_studio_dbus_rename)             /* sync */
-  METHOD_DESCRIBE(Save, ladish_studio_dbus_save)                 /* async */
-  METHOD_DESCRIBE(SaveAs, ladish_studio_dbus_save_as)            /* async */
-  METHOD_DESCRIBE(Unload, ladish_studio_dbus_unload)             /* async */
-  METHOD_DESCRIBE(Start, ladish_studio_dbus_start)               /* async */
-  METHOD_DESCRIBE(Stop, ladish_studio_dbus_stop)                 /* async */
-  METHOD_DESCRIBE(IsStarted, ladish_studio_dbus_is_started)      /* sync */
-  METHOD_DESCRIBE(CreateRoom, ladish_studio_dbus_create_room)    /* async */
-  METHOD_DESCRIBE(GetRoomList, ladish_studio_dbus_get_room_list) /* sync */
-  METHOD_DESCRIBE(DeleteRoom, ladish_studio_dbus_delete_room)    /* async */
-METHODS_END
+CDBUS_METHODS_BEGIN
+  CDBUS_METHOD_DESCRIBE(GetName, ladish_studio_dbus_get_name)          /* sync */
+  CDBUS_METHOD_DESCRIBE(Rename, ladish_studio_dbus_rename)             /* sync */
+  CDBUS_METHOD_DESCRIBE(Save, ladish_studio_dbus_save)                 /* async */
+  CDBUS_METHOD_DESCRIBE(SaveAs, ladish_studio_dbus_save_as)            /* async */
+  CDBUS_METHOD_DESCRIBE(Unload, ladish_studio_dbus_unload)             /* async */
+  CDBUS_METHOD_DESCRIBE(Start, ladish_studio_dbus_start)               /* async */
+  CDBUS_METHOD_DESCRIBE(Stop, ladish_studio_dbus_stop)                 /* async */
+  CDBUS_METHOD_DESCRIBE(IsStarted, ladish_studio_dbus_is_started)      /* sync */
+  CDBUS_METHOD_DESCRIBE(CreateRoom, ladish_studio_dbus_create_room)    /* async */
+  CDBUS_METHOD_DESCRIBE(GetRoomList, ladish_studio_dbus_get_room_list) /* sync */
+  CDBUS_METHOD_DESCRIBE(DeleteRoom, ladish_studio_dbus_delete_room)    /* async */
+CDBUS_METHODS_END
 
-SIGNAL_ARGS_BEGIN(StudioRenamed, "Studio name changed")
-  SIGNAL_ARG_DESCRIBE("studio_name", "s", "New studio name")
-SIGNAL_ARGS_END
+CDBUS_SIGNAL_ARGS_BEGIN(StudioRenamed, "Studio name changed")
+  CDBUS_SIGNAL_ARG_DESCRIBE("studio_name", "s", "New studio name")
+CDBUS_SIGNAL_ARGS_END
 
-SIGNAL_ARGS_BEGIN(StudioStarted, "Studio started")
-SIGNAL_ARGS_END
+CDBUS_SIGNAL_ARGS_BEGIN(StudioStarted, "Studio started")
+CDBUS_SIGNAL_ARGS_END
 
-SIGNAL_ARGS_BEGIN(StudioCrashed, "Studio crashed")
-SIGNAL_ARGS_END
+CDBUS_SIGNAL_ARGS_BEGIN(StudioCrashed, "Studio crashed")
+CDBUS_SIGNAL_ARGS_END
 
-SIGNAL_ARGS_BEGIN(StudioStopped, "Studio stopped")
-SIGNAL_ARGS_END
+CDBUS_SIGNAL_ARGS_BEGIN(StudioStopped, "Studio stopped")
+CDBUS_SIGNAL_ARGS_END
 
-SIGNAL_ARGS_BEGIN(RoomAppeared, "Room D-Bus object appeared")
-  SIGNAL_ARG_DESCRIBE("opath", "s", "room object path")
-  SIGNAL_ARG_DESCRIBE("properties", "a{sv}", "room properties")
-SIGNAL_ARGS_END
+CDBUS_SIGNAL_ARGS_BEGIN(RoomAppeared, "Room D-Bus object appeared")
+  CDBUS_SIGNAL_ARG_DESCRIBE("opath", "s", "room object path")
+  CDBUS_SIGNAL_ARG_DESCRIBE("properties", "a{sv}", "room properties")
+CDBUS_SIGNAL_ARGS_END
 
-SIGNAL_ARGS_BEGIN(RoomChanged, "Room D-Bus object changed")
-  SIGNAL_ARG_DESCRIBE("opath", "s", "room object path")
-  SIGNAL_ARG_DESCRIBE("properties", "a{sv}", "room properties")
-SIGNAL_ARGS_END
+CDBUS_SIGNAL_ARGS_BEGIN(RoomChanged, "Room D-Bus object changed")
+  CDBUS_SIGNAL_ARG_DESCRIBE("opath", "s", "room object path")
+  CDBUS_SIGNAL_ARG_DESCRIBE("properties", "a{sv}", "room properties")
+CDBUS_SIGNAL_ARGS_END
 
-SIGNAL_ARGS_BEGIN(RoomDisappeared, "Room D-Bus object disappeared")
-  SIGNAL_ARG_DESCRIBE("opath", "s", "room object path")
-  SIGNAL_ARG_DESCRIBE("properties", "a{sv}", "room properties")
-SIGNAL_ARGS_END
+CDBUS_SIGNAL_ARGS_BEGIN(RoomDisappeared, "Room D-Bus object disappeared")
+  CDBUS_SIGNAL_ARG_DESCRIBE("opath", "s", "room object path")
+  CDBUS_SIGNAL_ARG_DESCRIBE("properties", "a{sv}", "room properties")
+CDBUS_SIGNAL_ARGS_END
 
-SIGNALS_BEGIN
-  SIGNAL_DESCRIBE(StudioRenamed)
-  SIGNAL_DESCRIBE(StudioStarted)
-  SIGNAL_DESCRIBE(StudioCrashed)
-  SIGNAL_DESCRIBE(StudioStopped)
-  SIGNAL_DESCRIBE(RoomAppeared)
-  SIGNAL_DESCRIBE(RoomDisappeared)
-  SIGNAL_DESCRIBE(RoomChanged)
-SIGNALS_END
+CDBUS_SIGNALS_BEGIN
+  CDBUS_SIGNAL_DESCRIBE(StudioRenamed)
+  CDBUS_SIGNAL_DESCRIBE(StudioStarted)
+  CDBUS_SIGNAL_DESCRIBE(StudioCrashed)
+  CDBUS_SIGNAL_DESCRIBE(StudioStopped)
+  CDBUS_SIGNAL_DESCRIBE(RoomAppeared)
+  CDBUS_SIGNAL_DESCRIBE(RoomDisappeared)
+  CDBUS_SIGNAL_DESCRIBE(RoomChanged)
+CDBUS_SIGNALS_END
 
-INTERFACE_BEGIN(g_interface_studio, IFACE_STUDIO)
-  INTERFACE_DEFAULT_HANDLER
-  INTERFACE_EXPOSE_METHODS
-  INTERFACE_EXPOSE_SIGNALS
-INTERFACE_END
+CDBUS_INTERFACE_BEGIN(g_interface_studio, IFACE_STUDIO)
+  CDBUS_INTERFACE_DEFAULT_HANDLER
+  CDBUS_INTERFACE_EXPOSE_METHODS
+  CDBUS_INTERFACE_EXPOSE_SIGNALS
+CDBUS_INTERFACE_END

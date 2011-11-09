@@ -1100,24 +1100,24 @@ static void lash_restore(struct cdbus_method_call * call_ptr)
   g_event.type = type;
 }
 
-METHOD_ARGS_BEGIN(Save, "Tell lash client to save")
-  METHOD_ARG_DESCRIBE_IN("app_dir", "s", "Directory where app must save its internal state")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(Save, "Tell lash client to save")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("app_dir", "s", "Directory where app must save its internal state")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(Restore, "Tell lash client to restore")
-  METHOD_ARG_DESCRIBE_IN("app_dir", "s", "Directory from where app must load its internal state")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(Restore, "Tell lash client to restore")
+  CDBUS_METHOD_ARG_DESCRIBE_IN("app_dir", "s", "Directory from where app must load its internal state")
+CDBUS_METHOD_ARGS_END
 
-METHOD_ARGS_BEGIN(Quit, "Tell lash client to quit")
-METHOD_ARGS_END
+CDBUS_METHOD_ARGS_BEGIN(Quit, "Tell lash client to quit")
+CDBUS_METHOD_ARGS_END
 
-METHODS_BEGIN
-  METHOD_DESCRIBE(Save, lash_save)
-  METHOD_DESCRIBE(Restore, lash_restore)
-  METHOD_DESCRIBE(Quit, lash_quit)
-METHODS_END
+CDBUS_METHODS_BEGIN
+  CDBUS_METHOD_DESCRIBE(Save, lash_save)
+  CDBUS_METHOD_DESCRIBE(Restore, lash_restore)
+  CDBUS_METHOD_DESCRIBE(Quit, lash_quit)
+CDBUS_METHODS_END
 
-INTERFACE_BEGIN(g_interface, IFACE_LASH_CLIENT)
-  INTERFACE_DEFAULT_HANDLER
-  INTERFACE_EXPOSE_METHODS
-INTERFACE_END
+CDBUS_INTERFACE_BEGIN(g_interface, IFACE_LASH_CLIENT)
+  CDBUS_INTERFACE_DEFAULT_HANDLER
+  CDBUS_INTERFACE_EXPOSE_METHODS
+CDBUS_INTERFACE_END
