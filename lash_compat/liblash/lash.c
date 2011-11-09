@@ -41,7 +41,7 @@
 #include "../../common/dirhelpers.h"
 #include "../../common/file.h"
 #include "../../log.h"
-#include "../../dbus/helpers.h"
+#include "../../cdbus/helpers.h"
 #include "../../dbus_constants.h"
 
 #define LASH_CONFIG_SUBDIR "/.ladish_lash_dict/"

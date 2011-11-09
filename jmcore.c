@@ -31,7 +31,7 @@
 #include <jack/jack.h>
 #include <jack/midiport.h>
 
-#include "dbus/helpers.h"
+#include "cdbus/helpers.h"
 #include "dbus_constants.h"
 
 extern const struct cdbus_interface_descriptor g_interface;

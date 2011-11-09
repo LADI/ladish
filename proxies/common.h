@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2011 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains stuff that is needed my almost every proxy
@@ -28,7 +28,7 @@
 #define COMMON_H__0710E3D5_9B69_4C10_BDDB_80E0D92F44AF__INCLUDED
 
 #include "../common.h"
-#include "../dbus/helpers.h"
+#include "../cdbus/helpers.h"
 #include "../dbus_constants.h"
 
 #endif /* #ifndef COMMON_H__0710E3D5_9B69_4C10_BDDB_80E0D92F44AF__INCLUDED */

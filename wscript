@@ -401,7 +401,7 @@ def build(bld):
         'interface.c',
         'helpers.c',
         ]:
-        daemon.source.append(os.path.join("dbus", source))
+        daemon.source.append(os.path.join("cdbus", source))
 
     for source in [
         'time.c',
@@ -430,7 +430,7 @@ def build(bld):
         'interface.c',
         'helpers.c',
         ]:
-        jmcore.source.append(os.path.join("dbus", source))
+        jmcore.source.append(os.path.join("cdbus", source))
 
     create_service_taskgen(bld, DBUS_NAME_BASE + '.jmcore.service', DBUS_NAME_BASE + ".jmcore", jmcore.target)
 
@@ -455,7 +455,7 @@ def build(bld):
         'interface.c',
         'helpers.c',
         ]:
-        ladiconfd.source.append(os.path.join("dbus", source))
+        ladiconfd.source.append(os.path.join("cdbus", source))
 
     create_service_taskgen(bld, DBUS_NAME_BASE + '.conf.service', DBUS_NAME_BASE + ".conf", ladiconfd.target)
 
@@ -493,7 +493,7 @@ def build(bld):
             'interface.c',
             'helpers.c',
             ]:
-            liblash.source.append(os.path.join("dbus", source))
+            liblash.source.append(os.path.join("cdbus", source))
 
         bld.install_files('${PREFIX}/include/lash', bld.path.ant_glob('lash_compat/liblash/lash/*.h'))
 
@@ -582,7 +582,7 @@ def build(bld):
             'method.c',
             'helpers.c',
             ]:
-            gladish.source.append(os.path.join("dbus", source))
+            gladish.source.append(os.path.join("cdbus", source))
 
         for source in [
             'catdup.c',
@@ -634,7 +634,7 @@ def get_tags_dirs():
         source_root = os.path.relpath(source_root)
     paths = source_root
     paths += " " + os.path.join(source_root, "common")
-    paths += " " + os.path.join(source_root, "dbus")
+    paths += " " + os.path.join(source_root, "cdbus")
     paths += " " + os.path.join(source_root, "proxies")
     paths += " " + os.path.join(source_root, "daemon")
     paths += " " + os.path.join(source_root, "gui")
