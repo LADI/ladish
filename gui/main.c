@@ -166,6 +166,11 @@ int main(int argc, char** argv)
     return 1;
   }
 
+  if (!conf_register(LADISH_CONF_KEY_JACK_CONF_TOOL, NULL, NULL))
+  {
+    return 1;
+  }
+
   if (!init_jack())
   {
     return 1;

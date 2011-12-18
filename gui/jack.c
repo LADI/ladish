@@ -34,6 +34,7 @@
 #include "action.h"
 #include "../proxies/jack_proxy.h"
 #include "../proxies/a2j_proxy.h"
+#include "../proxies/conf_proxy.h"
 #include "gtk_builder.h"
 #include "ask_dialog.h"
 
@@ -282,10 +283,18 @@ void menu_request_a2jmidid_exit(void)
 void menu_request_jack_configure(void)
 {
   GError * error_ptr;
-  gchar * argv[] = {"ladiconf", NULL};
+  gchar * argv[] = {NULL, NULL};
   GtkWidget * dialog;
+  const char * jack_conf_tool;
 
   log_info("JACK configure request");
+
+  if (!conf_get(LADISH_CONF_KEY_JACK_CONF_TOOL, &jack_conf_tool))
+  {
+    jack_conf_tool = LADISH_CONF_KEY_JACK_CONF_TOOL_DEFAULT;
+  }
+
+  argv[0] = (gchar *)jack_conf_tool;
 
   error_ptr = NULL;
   if (!g_spawn_async(
@@ -299,7 +308,7 @@ void menu_request_jack_configure(void)
         &error_ptr))
   {
     dialog = get_gtk_builder_widget("error_dialog");
-    gtk_message_dialog_set_markup(GTK_MESSAGE_DIALOG(dialog), _("<b><big>Error executing ladiconf.\nAre LADI Tools installed?</big></b>"));
+    gtk_message_dialog_set_markup(GTK_MESSAGE_DIALOG(dialog), _("<b><big>Error executing JACK configuration tool.\n</big></b>"));
     gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(dialog), "%s", error_ptr->message);
     gtk_widget_show(dialog);
     gtk_dialog_run(GTK_DIALOG(dialog));

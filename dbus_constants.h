@@ -94,4 +94,7 @@
 #define LADISH_DBUS_ERROR_UNFINISHED_TASK     DBUS_NAME_BASE ".Error.UnfinishedTask"
 #define LADISH_DBUS_ERROR_KEY_NOT_FOUND       DBUS_NAME_BASE ".Error.KeyNotFound"
 
+#define LADISH_CONF_KEY_JACK_CONF_TOOL            "/org/ladish/jack_conf_tool"
+#define LADISH_CONF_KEY_JACK_CONF_TOOL_DEFAULT    "ladiconf"
+
 #endif /* #ifndef DBUS_CONSTANTS_H__C21DE0EE_C19C_42F0_8D63_D613E4806C0E__INCLUDED */

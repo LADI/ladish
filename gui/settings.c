@@ -38,17 +38,20 @@ void menu_request_settings(void)
   GtkEntry * shell_entry;
   GtkEntry * terminal_entry;
   GtkSpinButton * js_delay_spin;
+  GtkEntry * jack_conf_tool_entry;
   bool autostart;
   bool notify;
   const char * shell;
   const char * terminal;
   unsigned int js_delay;
+  const char * jack_conf_tool;
 
   autostart_studio_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("settings_studio_autostart_checkbutton"));
   send_notifications_button = GTK_TOGGLE_BUTTON(get_gtk_builder_widget("settings_send_notifications_checkbutton"));
   shell_entry = GTK_ENTRY(get_gtk_builder_widget("settings_shell_entry"));
   terminal_entry = GTK_ENTRY(get_gtk_builder_widget("settings_terminal_entry"));
   js_delay_spin = GTK_SPIN_BUTTON(get_gtk_builder_widget("settings_js_delay_spin"));
+  jack_conf_tool_entry = GTK_ENTRY(get_gtk_builder_widget("settings_jack_conf_tool_entry"));
 
   dialog = GTK_DIALOG(get_gtk_builder_widget("settings_dialog"));
 
@@ -77,11 +80,17 @@ void menu_request_settings(void)
     js_delay = LADISH_CONF_KEY_DAEMON_JS_SAVE_DELAY_DEFAULT;
   }
 
+  if (!conf_get(LADISH_CONF_KEY_JACK_CONF_TOOL, &jack_conf_tool))
+  {
+    jack_conf_tool = LADISH_CONF_KEY_JACK_CONF_TOOL_DEFAULT;
+  }
+
   gtk_toggle_button_set_active(autostart_studio_button, autostart);
   gtk_toggle_button_set_active(send_notifications_button, notify);
 
   gtk_entry_set_text(shell_entry, shell);
   gtk_entry_set_text(terminal_entry, terminal);
+  gtk_entry_set_text(jack_conf_tool_entry, jack_conf_tool);
 
   gtk_spin_button_set_range(js_delay_spin, 0, 1000);
   gtk_spin_button_set_increments(js_delay_spin, 1, 2);
@@ -100,12 +109,14 @@ void menu_request_settings(void)
   shell = gtk_entry_get_text(shell_entry);
   terminal = gtk_entry_get_text(terminal_entry);
   js_delay = gtk_spin_button_get_value(js_delay_spin);
+  jack_conf_tool = gtk_entry_get_text(jack_conf_tool_entry);
 
   if (!conf_set_bool(LADISH_CONF_KEY_DAEMON_STUDIO_AUTOSTART, autostart) ||
       !conf_set_bool(LADISH_CONF_KEY_DAEMON_NOTIFY, notify) ||
       !conf_set(LADISH_CONF_KEY_DAEMON_SHELL, shell) ||
       !conf_set(LADISH_CONF_KEY_DAEMON_TERMINAL, terminal) ||
-      !conf_set_uint(LADISH_CONF_KEY_DAEMON_JS_SAVE_DELAY, js_delay))
+      !conf_set_uint(LADISH_CONF_KEY_DAEMON_JS_SAVE_DELAY, js_delay) ||
+      !conf_set(LADISH_CONF_KEY_JACK_CONF_TOOL, jack_conf_tool))
   {
     error_message_box(_("Storing settings"));
   }
