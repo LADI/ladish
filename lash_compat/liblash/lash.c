@@ -34,7 +34,7 @@
 
 #include "lash/lash.h"
 
-#define LADISH_DEBUG
+//#define LADISH_DEBUG
 
 #include "../../common.h"
 #include "../../common/catdup.h"
