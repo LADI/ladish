@@ -1,3 +1,8 @@
+= Version 1 =
+ * vgraph manipulation
+ * lash support
+ * jack-session support
+
 = Version 0.3 "preview 3" on 2011-01-10 =
  * Hardware port virtualization / rooms
  * Visual notifications about errors and studio/project state changes
