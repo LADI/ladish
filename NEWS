@@ -1,3 +1,14 @@
+= Version 0.3 "preview 3" on 2011-01-10 =
+ * Hardware port virtualization / rooms
+ * Visual notifications about errors and studio/project state changes
+ * ladish specific settings
+ * lists of recently used studios and projects
+ * connections of stopped apps are persisted
+ * a2j ports are now clearly marked on gladish canvas
+ * app start/stop by double clicking in the app list
+ * you can save a text comment and description as part of the project
+ * Russian, French and German l10n of gladish
+
 = Version 0.2 "preview 2" on 2009-12-29 =
  * Persist canvas box positions
  * Save/restore connections
