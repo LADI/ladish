@@ -113,13 +113,13 @@ static void save_config(const char * dir,  struct _lash_config * config_ptr)
 	written = write(fd, config_ptr->value, config_ptr->size);
 	if (written == -1)
   {
-    log_error("error writting config file '%s' (%s)", path, strerror(errno));
+    log_error("error writing config file '%s' (%s)", path, strerror(errno));
     goto close;
 	}
 
   if ((size_t)written < config_ptr->size)
   {
-    log_error("error writting config file '%s' (%zd instead of %zu)", path, written, config_ptr->size);
+    log_error("error writing config file '%s' (%zd instead of %zu)", path, written, config_ptr->size);
     goto close;
   }
 
