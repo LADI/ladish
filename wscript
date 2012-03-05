@@ -12,9 +12,9 @@ from waflib.Scripting import Dist
 parallel_debug = False
 
 APPNAME='ladish'
-VERSION='1'
+VERSION='2-dev'
 DBUS_NAME_BASE = 'org.ladish'
-RELEASE = True
+RELEASE = False
 
 # these variables are mandatory ('/' are converted automatically)
 top = '.'
