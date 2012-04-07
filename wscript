@@ -174,12 +174,25 @@ def configure(conf):
         build_gui = False
 
     if build_gui and not conf.check_cfg(
-        package = 'flowcanvas',
+        package = 'gtkmm-2.4',
         mandatory = False,
-        atleast_version = '0.6.4',
-        errmsg = "not installed, see http://drobilla.net/software/flowcanvas/",
+        atleast_version = '2.10.0',
+        errmsg = "not installed, see http://www.gtkmm.org",
         args = '--cflags --libs'):
         build_gui = False
+
+    if build_gui and not conf.check_cfg(
+        package = 'libgnomecanvasmm-2.6',
+        mandatory = False,
+        atleast_version = '2.6.0',
+        errmsg = "not installed, see http://www.gtkmm.org",
+        args = '--cflags --libs'):
+        build_gui = False
+
+    #autowaf.check_pkg(conf, 'gtkmm-2.4', uselib_store='GLIBMM', atleast_version='2.10.0', mandatory=True)
+    #autowaf.check_pkg(conf, 'libgnomecanvasmm-2.6', uselib_store='GNOMECANVASMM', atleast_version='2.6.0', mandatory=True)
+
+    #autowaf.check_pkg(conf, 'libgvc', uselib_store='AGRAPH', atleast_version='2.8', mandatory=False)
 
     if build_gui:
         # We need the boost headers package (e.g. libboost-dev)
@@ -531,7 +544,7 @@ def build(bld):
         gladish = bld.program(source = [], features = 'c cxx cxxprogram', includes = [bld.path.get_bld()])
         gladish.target = 'gladish'
         gladish.defines = ['LOG_OUTPUT_STDOUT']
-        gladish.uselib = 'DBUS-1 DBUS-GLIB-1 FLOWCANVAS GTK+-2.0'
+        gladish.uselib = 'DBUS-1 DBUS-GLIB-1 GTKMM-2.4 LIBGNOMECANVASMM-2.6 GTK+-2.0'
 
         gladish.source = ["string_constants.c"]
 
@@ -565,6 +578,17 @@ def build(bld):
             'zoom.c',
             ]:
             gladish.source.append(os.path.join("gui", source))
+
+        for source in [
+            'Module.cpp',
+            'Item.cpp',
+            'Port.cpp',
+            'Connection.cpp',
+            'Ellipse.cpp',
+            'Canvas.cpp',
+            'Connectable.cpp',
+            ]:
+            gladish.source.append(os.path.join("gui", "flowcanvas", source))
 
         for source in [
             'jack_proxy.c',
@@ -693,7 +717,6 @@ class ladish_dist(waflib.Scripting.Dist):
 
         if Options.options.distnodeps:
             excl += ' laditools'
-            excl += ' flowcanvas'
             excl += ' jack2'
             excl += ' a2jmidid'
 
