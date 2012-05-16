@@ -890,8 +890,6 @@ Canvas::scroll_drag_handler(GdkEvent* event)
 	static double last_x = 0;
 	static double last_y = 0;
 
-	bool first_motion = true;
-
 	if (event->type == GDK_BUTTON_PRESS && event->button.button == 2) {
 		_base_rect.grab(GDK_POINTER_MOTION_MASK|GDK_BUTTON_RELEASE_MASK,
 			Gdk::Cursor(Gdk::FLEUR), event->button.time);
@@ -903,7 +901,6 @@ Canvas::scroll_drag_handler(GdkEvent* event)
 		//cerr << "Origin: (" << origin_x << "," << origin_y << ")\n";
 		last_x = origin_x;
 		last_y = origin_y;
-		first_motion = true;
 		_drag_state = SCROLL;
 
 	} else if (event->type == GDK_MOTION_NOTIFY && _drag_state == SCROLL) {
