@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009, 2010, 2011, 2012 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  * Copyright (C) 2002 Robert Ham <rah@bash.sh>
  *
@@ -455,7 +455,7 @@ loader_read_childs_output(void)
   {
     child_ptr = list_entry(node_ptr, struct loader_child, siblings);
 
-    if (!child_ptr->dead && !child_ptr->terminal)
+    if (!child_ptr->terminal)
     {
       loader_read_child_output(
         child_ptr->vgraph_name,
