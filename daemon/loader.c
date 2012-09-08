@@ -279,14 +279,14 @@ loader_exec_program(
     /* no longer anything to do with lashd */
     if (setsid() == -1)
     {
-      log_error("Could not create new process group: %s", strerror(errno));
+      fprintf(stderr, "Could not create new process group: %s\n", strerror(errno));
     }
   }
 
   /* change the working dir */
   if (chdir(working_dir) == -1)
   {
-    log_error("Could not change directory to working dir '%s' for program '%s': %s", working_dir, argv[0], strerror(errno));
+    fprintf(stderr, "Could not change directory to working dir '%s' for program '%s': %s\n", working_dir, argv[0], strerror(errno));
   }
 
   setenv("LADISH_APP_NAME", app_name, true);
@@ -335,12 +335,12 @@ loader_exec_program(
   argv[i++] = commandline;
   argv[i++] = NULL;
 
-  log_info("Executing '%s' with PID %llu", commandline, (unsigned long long)getpid());
+  printf("Executing '%s' with PID %llu\n", commandline, (unsigned long long)getpid());
 
   /* Execute it */
   execvp(argv[0], (char **)argv);
 
-  log_error("Executing program '%s' failed: %s", argv[0], strerror(errno));
+  fprintf(stderr, "Executing program '%s' failed: %s\n", argv[0], strerror(errno));
 
   exit(1);
 }
