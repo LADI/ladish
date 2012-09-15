@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation graph object that is backed through D-Bus
@@ -971,6 +971,44 @@ bool graph_proxy_get_client_pid(graph_proxy_handle graph, uint64_t client_id, pi
   }
 
   *pid_ptr = pid;
+
+  return true;
+}
+
+bool graph_proxy_get_client_original_name(graph_proxy_handle graph, uint64_t client_id, char ** name)
+{
+  DBusMessage * reply_ptr;
+  const char * reply_signature;
+  DBusMessageIter iter;
+  const char * cvalue_ptr;
+  char * value_ptr;
+
+  if (!cdbus_call(0, graph_ptr->service, graph_ptr->object, JACKDBUS_IFACE_PATCHBAY, "GetClientOriginalName", "t", &client_id, NULL, &reply_ptr))
+  {
+    log_error("GetClientPID() failed.");
+    return false;
+  }
+
+  reply_signature = dbus_message_get_signature(reply_ptr);
+
+  if (strcmp(reply_signature, "s") != 0)
+  {
+    log_error("reply signature is '%s' but expected signature is 's'", reply_signature);
+    dbus_message_unref(reply_ptr);
+    return false;
+  }
+
+  dbus_message_iter_init(reply_ptr, &iter);
+  dbus_message_iter_get_basic(&iter, &cvalue_ptr);
+  value_ptr = strdup(cvalue_ptr);
+  dbus_message_unref(reply_ptr);
+  if (value_ptr == NULL)
+  {
+    log_error("strdup() failed for dict value");
+    return false;
+  }
+
+  *name = value_ptr;
 
   return true;
 }
