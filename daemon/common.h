@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains stuff that is needed almost everywhere in the ladishd
@@ -33,6 +33,7 @@
 #include <uuid/uuid.h>
 
 #include "../cdbus/helpers.h"
+#include "object.h"
 
 /* ~/BASE_DIR is where studio, room and project xml files are stored */
 #define BASE_DIR "/." BASE_NAME
