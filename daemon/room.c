@@ -245,8 +245,7 @@ static void remove_port_callback(ladish_port_handle port)
 
   jack_graph = ladish_studio_get_jack_graph();
 
-  jack_client = ladish_graph_remove_port(jack_graph, port);
-  if (jack_client == NULL)
+  if (!ladish_graph_remove_port(jack_graph, port, &jack_client))
   { /* room app port not found in jack graph */
     /* this can happen if the port is hidden in the vgraph  */
     return;
@@ -256,6 +255,8 @@ static void remove_port_callback(ladish_port_handle port)
   {
     ladish_graph_remove_client(jack_graph, jack_client);
   }
+
+  ladish_del_ref(jack_client);
 }
 
 bool
@@ -342,7 +343,7 @@ ladish_room_create(
   if (!ladish_graph_add_client(owner, room_ptr->client, room_ptr->name, true))
   {
     log_error("ladish_graph_add_client() failed to add room client to owner graph.");
-    goto destroy_client;
+    goto unref_client;
   }
 
   if (!ladish_room_iterate_link_ports((ladish_room_handle)room_ptr, room_ptr, create_shadow_port))
@@ -351,6 +352,8 @@ ladish_room_create(
     goto remove_client;
   }
 
+  ladish_del_ref(room_ptr->client);
+
   ladish_studio_room_appeared((ladish_room_handle)room_ptr);
 
   *room_handle_ptr = (ladish_room_handle)room_ptr;
@@ -358,8 +361,8 @@ ladish_room_create(
 
 remove_client:
   ladish_graph_remove_client(owner, room_ptr->client);
-destroy_client:
-  ladish_client_destroy(room_ptr->client);
+unref_client:
+  ladish_del_ref(room_ptr->client);
 unregister_dbus_object:
   cdbus_object_path_unregister(cdbus_g_dbus_connection, room_ptr->dbus_object);
 destroy_dbus_object:
@@ -401,7 +404,7 @@ void ladish_room_destroy(ladish_room_handle room_handle)
     ladish_app_supervisor_destroy(room_ptr->app_supervisor);
 
     ladish_graph_remove_client(room_ptr->owner, room_ptr->client);
-    ladish_client_destroy(room_ptr->client);
+    ladish_del_ref(room_ptr->client);
 
     ladish_studio_room_disappeared((ladish_room_handle)room_ptr);
     ladish_studio_release_room_index(room_ptr->index);
@@ -742,9 +745,9 @@ ladish_room_add_port(
   ladish_port_handle port;
   bool playback;
   ladish_client_handle client;
+  ladish_client_handle client2;
   const char * client_name;
   uuid_t client_uuid;
-  bool new_client;
 
   playback = port_is_input(flags);
 
@@ -760,8 +763,7 @@ ladish_room_add_port(
 
   /* if client is not found, create it and add it to graph */
   client = ladish_graph_find_client_by_uuid(room_ptr->graph, client_uuid);
-  new_client = client == NULL;
-  if (new_client)
+  if (client == NULL)
   {
     if (!ladish_client_create(client_uuid, &client))
     {
@@ -772,14 +774,14 @@ ladish_room_add_port(
     if (!ladish_graph_add_client(room_ptr->graph, client, client_name, true))
     {
       log_error("ladish_graph_add_client() failed to add %s room client to room graph.", playback ? "playback" : "capture");
-      goto fail_destroy_client;
+      goto fail_unref_client;
     }
   }
 
   if (!ladish_graph_add_port(room_ptr->graph, client, port, name, type, flags, true))
   {
     log_error("ladish_graph_add_port() failed to add %s room port \"%s\" to room graph.", playback ? "playback" : "capture", name);
-    goto fail_destroy_client;
+    goto fail_unref_client;
   }
 
   if (!create_shadow_port(room_ptr, port, name, type, flags))
@@ -788,19 +790,21 @@ ladish_room_add_port(
     goto fail_remove_port;
   }
 
+  ladish_del_ref(client);
   return port;
 
 fail_remove_port:
   ASSERT(client != NULL);
-  if (ladish_graph_remove_port(room_ptr->graph, port) != client)
+  if (!ladish_graph_remove_port(room_ptr->graph, port, &client2))
   {
     ASSERT_NO_PASS;
   }
-fail_destroy_client:
-  if (new_client)
+  if (client2 != client)
   {
-    ladish_client_destroy(client);
+    ASSERT_NO_PASS;
   }
+fail_unref_client:
+  ladish_del_ref(client);
 fail_destroy_port:
   ladish_port_destroy(port);
 fail:

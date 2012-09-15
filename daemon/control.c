@@ -234,19 +234,19 @@ create_room_template(
   if (!ladish_graph_add_client(graph, capture, "Capture", false))
   {
     log_error("ladish_graph_add_client() failed to add capture client to room template \"%s\".", name);
-    goto fail_destroy;
+    goto fail_unref_capture;
   }
 
   if (!ladish_client_create(ladish_wkclient_playback, &playback))
   {
     log_error("ladish_client_create() failed to create playback client to room template \"%s\".", name);
-    goto fail_destroy;
+    goto fail_unref_capture;
   }
 
   if (!ladish_graph_add_client(graph, playback, "Playback", false))
   {
     log_error("ladish_graph_add_client() failed to add playback client to room template \"%s\".", name);
-    goto fail_destroy;
+    goto fail_unref_capture;
   }
 
   room_descriptor_ptr->name = ladish_room_get_name(room);
@@ -257,6 +257,8 @@ create_room_template(
 
   return true;
 
+fail_unref_capture:
+  ladish_del_ref(capture);
 fail_destroy:
   ladish_room_destroy(room);    /* this will destroy the graph clients as well */
 fail:

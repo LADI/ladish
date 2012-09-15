@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the implementation of the port objects
@@ -29,7 +29,7 @@
 /* JACK port */
 struct ladish_port
 {
-  int refcount;
+  ladish_object obj;
   uuid_t uuid;                             /* The UUID of the port */
   uuid_t app_uuid;                         /* The UUID of the app that owns this client */
   bool link;                               /* Whether the port is studio-room link port */
@@ -76,10 +76,11 @@ ladish_port_create(
 
   uuid_clear(port_ptr->app_uuid);
 
+  ladish_object_init(&port_ptr->obj, 0, (ladish_object_destructor)ladish_port_destroy);
+
   port_ptr->jack_id = 0;
   port_ptr->jack_id_room = 0;
   port_ptr->link = link;
-  port_ptr->refcount = 0;
 
   port_ptr->vgraph = NULL;
 
@@ -98,7 +99,7 @@ bool ladish_port_create_copy(ladish_port_handle port_handle, ladish_port_handle 
 void ladish_port_destroy(ladish_port_handle port_handle)
 {
   log_info("port %p destroy", port_ptr);
-  ASSERT(port_ptr->refcount == 0);
+  ASSERT(port_ptr->obj.refcount == 0);
   ladish_dict_destroy(port_ptr->dict);
   free(port_ptr);
 }
@@ -140,22 +141,6 @@ uint64_t ladish_port_get_jack_id_room(ladish_port_handle port_handle)
   else
   {
     return port_ptr->jack_id;
-  }
-}
-
-void ladish_port_add_ref(ladish_port_handle port_handle)
-{
-  port_ptr->refcount++;
-}
-
-void ladish_port_del_ref(ladish_port_handle port_handle)
-{
-  ASSERT(port_ptr->refcount > 0);
-  port_ptr->refcount--;
-
-  if (port_ptr->refcount == 0)
-  {
-    ladish_port_destroy(port_handle);
   }
 }
 

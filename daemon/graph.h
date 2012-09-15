@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to the D-Bus patchbay interface helpers
@@ -90,12 +90,13 @@ ladish_graph_add_port(
   uint32_t flags,
   bool hidden);
 
-ladish_client_handle
+bool
 ladish_graph_remove_port(
   ladish_graph_handle graph_handle,
-  ladish_port_handle port_handle);
+  ladish_port_handle port_handle,
+  ladish_client_handle * client_ptr);
 
-ladish_client_handle
+void
 ladish_graph_remove_port_by_jack_id(
   ladish_graph_handle graph_handle,
   uint64_t jack_port_id,

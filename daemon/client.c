@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the implementation of the client objects
@@ -29,6 +29,7 @@
 
 struct ladish_client
 {
+  ladish_object obj;
   uuid_t uuid;                             /* The UUID of the client */
   uuid_t uuid_interlink;                   /* The UUID of the linked client (vgraph <-> jack graph) */
   uuid_t uuid_app;                         /* The UUID of the app that owns this client */
@@ -39,6 +40,8 @@ struct ladish_client
   ladish_dict_handle dict;
   void * vgraph;                /* virtual graph */
 };
+
+static void ladish_client_destroy(ladish_client_handle client_handle);
 
 bool
 ladish_client_create(
@@ -73,6 +76,8 @@ ladish_client_create(
   uuid_clear(client_ptr->uuid_interlink);
   uuid_clear(client_ptr->uuid_app);
 
+  ladish_object_init(&client_ptr->obj, 1, (ladish_object_destructor)ladish_client_destroy);
+
   client_ptr->jack_id = 0;
   client_ptr->jack_name = NULL;
   client_ptr->pid = 0;
@@ -102,9 +107,7 @@ ladish_client_create_copy(
   return ladish_client_create(client_ptr->uuid, client_handle_ptr);
 }
 
-void
-ladish_client_destroy(
-  ladish_client_handle client_handle)
+static void ladish_client_destroy(ladish_client_handle client_handle)
 {
   log_info("client %p destroy", client_ptr);
 

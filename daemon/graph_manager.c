@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * The D-Bus patchbay manager
@@ -126,6 +126,8 @@ static void ladish_graph_manager_dbus_rename_client(struct cdbus_method_call * c
   {
     cdbus_method_return_new_void(call_ptr);
   }
+
+  ladish_del_ref(client);
 }
 
 static void ladish_graph_manager_dbus_rename_port(struct cdbus_method_call * call_ptr)
@@ -201,6 +203,7 @@ static void ladish_graph_manager_dbus_move_port(struct cdbus_method_call * call_
   }
 
   ladish_graph_move_port(graph, port, client);
+  ladish_del_ref(client);
 
   cdbus_method_return_new_void(call_ptr);
 }
@@ -233,11 +236,12 @@ static void ladish_graph_manager_dbus_new_client(struct cdbus_method_call * call
   if (!ladish_graph_add_client(graph, client, name, false))
   {
     cdbus_error(call_ptr, DBUS_ERROR_FAILED, "ladish_graph_add_client() failed to add client '%s' to virtual graph", name);
-    ladish_client_destroy(client);
+    ladish_del_ref(client);
     return;
   }
 
   client_id = ladish_graph_get_client_id(graph, client);
+  ladish_del_ref(client);
 
   cdbus_method_return_new_single(call_ptr, DBUS_TYPE_UINT64, &client_id);
 }
@@ -270,10 +274,12 @@ static void ladish_graph_manager_dbus_remove_client(struct cdbus_method_call * c
   if (ladish_graph_client_has_visible_ports(graph, client))
   {
     cdbus_error(call_ptr, DBUS_ERROR_INVALID_ARGS, "Cannot remove non-empty client");
+    ladish_del_ref(client);
     return;
   }
 
   ladish_graph_remove_client(graph, client);
+  ladish_del_ref(client);
 
   cdbus_method_return_new_void(call_ptr);
 }

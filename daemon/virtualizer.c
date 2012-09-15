@@ -354,7 +354,7 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
       if (ladish_client_get_jack_id(client) != 0)
       {
         log_error("Ignoring client with duplicate name '%s' ('%s')", name, jack_name);
-        goto exit;
+        goto unref_client;
       }
 
       ladish_client_set_jack_name(client, jack_name);
@@ -377,8 +377,7 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
   if (!ladish_graph_add_client(virtualizer_ptr->jack_graph, client, name, false))
   {
     log_error("ladish_graph_add_client() failed to add client %"PRIu64" (%s) to JACK graph", id, name);
-    ladish_client_destroy(client);
-    goto exit;
+    goto unref_client;
   }
 
 done:
@@ -409,6 +408,8 @@ done:
     ladish_client_set_vgraph(client, g_studio.studio_graph);
   }
 
+unref_client:
+  ladish_del_ref(client);
 exit:
   return;
 }
@@ -497,10 +498,11 @@ static void client_disappeared(void * context, uint64_t id)
   else
   {
     ladish_graph_remove_client(virtualizer_ptr->jack_graph, client);
-    ladish_client_destroy(client);
     /* no need to clear vclient interlink because it either does not exist (vgraph is NULL) or
      * it will be destroyed before it is accessed (persist flag is cleared on room deletion) */
   }
+
+  ladish_del_ref(client);
 }
 
 static
@@ -569,7 +571,7 @@ port_appeared(
     if (vgraph == NULL)
     {
       log_error("Cannot find vgraph for appeared jmcore port '%s'", real_jack_port_name);
-      goto exit;
+      goto unref_jack_client;
     }
 
     /* jmcore port appeared */
@@ -579,7 +581,7 @@ port_appeared(
     if (!ladish_graph_add_port(virtualizer_ptr->jack_graph, jack_client, port, real_jack_port_name, type, flags, false))
     {
       log_error("ladish_graph_add_port() failed.");
-      goto exit;
+      goto unref_jack_client;
     }
 
     if (vgraph == g_studio.studio_graph)
@@ -596,11 +598,12 @@ port_appeared(
     {
       log_error("link port client not found in vgraph %s", ladish_graph_get_description(vgraph));
       ASSERT_NO_PASS;
-      goto exit;
+      goto unref_jack_client;
     }
 
     ladish_graph_show_port(vgraph, port);
-    goto exit;
+    ladish_del_ref(vclient);
+    goto unref_jack_client;
   }
   else
   {
@@ -620,7 +623,7 @@ port_appeared(
       if (alsa_client_name == NULL)
       {
         log_error("catdup failed to duplicate a2j jack client name after map failure");
-        goto exit;
+        goto unref_jack_client;
       }
 
       alsa_port_name = strdup(real_jack_port_name);
@@ -628,7 +631,7 @@ port_appeared(
       {
         log_error("catdup failed to duplicate a2j jack port name after map failure");
         free(alsa_client_name);
-        goto exit;
+        goto unref_jack_client;
       }
 
       vclient_name = alsa_client_name;
@@ -723,6 +726,7 @@ port_appeared(
     ladish_client_set_jack_id(vclient, client_id);
     ladish_graph_adjust_port(vgraph, port, type, flags);
     ladish_graph_show_port(vgraph, port);
+    ladish_del_ref(vclient);
     goto free_alsa_names;
   }
 
@@ -775,8 +779,7 @@ port_appeared(
       if (!ladish_graph_add_client(vgraph, vclient, vclient_name, false))
       {
         log_error("ladish_graph_add_client() failed.");
-        ladish_client_destroy(vclient);
-        goto free_alsa_names;
+        goto unref_vclient;
       }
     }
   }
@@ -799,8 +802,7 @@ port_appeared(
         if (!ladish_graph_add_client(vgraph, vclient, "Hardware Capture", false))
         {
           log_error("ladish_graph_add_client() failed.");
-          ladish_client_destroy(vclient);
-          goto free_alsa_names;
+          goto unref_vclient;
         }
       }
     }
@@ -817,8 +819,8 @@ port_appeared(
 
         if (!ladish_graph_add_client(vgraph, vclient, "Hardware Playback", false))
         {
-          ladish_client_destroy(vclient);
-          goto free_alsa_names;
+          log_error("ladish_graph_add_client() failed.");
+          goto unref_vclient;
         }
       }
     }
@@ -868,8 +870,7 @@ port_appeared(
         if (!ladish_graph_add_client(vgraph, vclient, vclient_name, false))
         {
           log_error("ladish_graph_add_client() failed to add client '%s' to virtual graph", jack_client_name);
-          ladish_client_destroy(vclient);
-          goto free_alsa_names;
+          goto unref_vclient;
         }
       }
       else
@@ -896,14 +897,17 @@ port_appeared(
   if (!ladish_graph_add_port(vgraph, vclient, port, vport_name, type, flags, false))
   {
     log_error("ladish_graph_add_port() failed.");
-    goto free_alsa_names;
   }
 
+unref_vclient:
+  ladish_del_ref(vclient);
 free_alsa_names:
   free(a2j_fake_jack_port_name);
   free(alsa_client_name);
   free(alsa_port_name);
 
+unref_jack_client:
+  ladish_del_ref(jack_client);
 exit:
   return;
 }
@@ -951,6 +955,7 @@ static void port_disappeared(void * context, uint64_t client_id, uint64_t port_i
   if (port == NULL)
   {
     log_error("Unknown JACK port with id %"PRIu64" disappeared", port_id);
+    ladish_del_ref(jclient);
     return;
   }
 
@@ -964,6 +969,7 @@ static void port_disappeared(void * context, uint64_t client_id, uint64_t port_i
     {
       log_error("Cannot find vgraph for disappeared jmcore port");
       ASSERT_NO_PASS;
+      ladish_del_ref(jclient);
       return;
     }
 
@@ -992,28 +998,31 @@ static void port_disappeared(void * context, uint64_t client_id, uint64_t port_i
       {
         ladish_graph_hide_client(vgraph, vclient);
       }
+      ladish_del_ref(vclient);
     }
   }
   else
   {
     if (!jmcore)
     {
-      ladish_graph_remove_port(virtualizer_ptr->jack_graph, port);
+      ladish_graph_remove_port(virtualizer_ptr->jack_graph, port, NULL);
     }
 
     if (vgraph != NULL)
     {
-      vclient = ladish_graph_remove_port(vgraph, port);
-      if (vclient != NULL)
+      if (ladish_graph_remove_port(vgraph, port, &vclient))
       {
         if (ladish_graph_client_is_empty(vgraph, vclient))
         {
           ladish_graph_remove_client(vgraph, vclient);
           ladish_client_clear_interlink(jclient);
         }
+        ladish_del_ref(vclient);
       }
     }
   }
+
+  ladish_del_ref(jclient);
 }
 
 static
@@ -1254,6 +1263,7 @@ ladish_virtualizer_get_our_clients_count(
 static bool app_has_a2j_ports(ladish_graph_handle jack_graph, const uuid_t app_uuid)
 {
   ladish_client_handle a2jclient;
+  bool ret;
 
   a2jclient = ladish_graph_find_client_by_uuid(jack_graph, g_a2j_uuid);
   if (a2jclient == NULL)
@@ -1261,7 +1271,9 @@ static bool app_has_a2j_ports(ladish_graph_handle jack_graph, const uuid_t app_u
     return false;
   }
 
-  return ladish_graph_client_has_visible_app_port(jack_graph, a2jclient, app_uuid);
+  ret = ladish_graph_client_has_visible_app_port(jack_graph, a2jclient, app_uuid);
+  ladish_del_ref(a2jclient);
+  return ret;
 }
 
 bool
@@ -1270,10 +1282,9 @@ ladish_virtualizer_is_hidden_app(
   const uuid_t app_uuid,
   const char * app_name)
 {
-  ladish_client_handle jclient;
+  ladish_client_handle client;
   ladish_graph_handle vgraph;
   uuid_t vclient_uuid;
-  ladish_client_handle vclient;
 
   //ladish_graph_dump(g_studio.jack_graph);
 
@@ -1283,33 +1294,35 @@ ladish_virtualizer_is_hidden_app(
     return false;
   }
 
-  jclient = ladish_graph_find_client_by_app(jack_graph, app_uuid);
-  if (jclient == NULL)
+  client = ladish_graph_find_client_by_app(jack_graph, app_uuid);
+  if (client == NULL)
   {
     log_info("App without JACK client is treated as hidden one");
     return true;
   }
 
-  ASSERT(!ladish_virtualizer_is_a2j_client(jclient)); /* a2j client has no app associated */
+  ASSERT(!ladish_virtualizer_is_a2j_client(client)); /* a2j client has no app associated */
 
-  vgraph = ladish_client_get_vgraph(jclient);
+  vgraph = ladish_client_get_vgraph(client);
   if (vgraph == NULL)
   {
     ASSERT_NO_PASS;
+    ladish_del_ref(client);
     return true;
   }
 
   //ladish_graph_dump(vgraph);
 
-  if (!ladish_graph_client_looks_empty(jack_graph, jclient) ||
-      !ladish_graph_client_is_hidden(jack_graph, jclient))
+  if (!ladish_graph_client_looks_empty(jack_graph, client) ||
+      !ladish_graph_client_is_hidden(jack_graph, client))
   {
+    ladish_del_ref(client);
     return false;
   }
 
-  if (!ladish_client_get_interlink(jclient, vclient_uuid))
+  if (!ladish_client_get_interlink(client, vclient_uuid))
   {
-    if (ladish_graph_client_is_empty(jack_graph, jclient))
+    if (ladish_graph_client_is_empty(jack_graph, client))
     {
       log_info("jack client of app '%s' has no interlinked vgraph client and no ports", app_name);
     }
@@ -1318,22 +1331,26 @@ ladish_virtualizer_is_hidden_app(
       log_error("jack client of app '%s' has no interlinked vgraph client", app_name);
       ASSERT_NO_PASS;
     }
+    ladish_del_ref(client);
     return true;
   }
 
-  vclient = ladish_graph_find_client_by_uuid(vgraph, vclient_uuid);
-  if (vclient == NULL)
+  ladish_del_ref(client);
+  client = ladish_graph_find_client_by_uuid(vgraph, vclient_uuid);
+  if (client == NULL)
   {
     ASSERT_NO_PASS;
     return true;
   }
 
-  if (!ladish_graph_client_looks_empty(vgraph, vclient))
+  if (!ladish_graph_client_looks_empty(vgraph, client))
   {
+    ladish_del_ref(client);
     return false;
   }
 
-  ASSERT(ladish_graph_client_is_hidden(vgraph, vclient)); /* vclients are automatically hidden when they start looking empty (on port disappear) */
+  ASSERT(ladish_graph_client_is_hidden(vgraph, client)); /* vclients are automatically hidden when they start looking empty (on port disappear) */
+  ladish_del_ref(client);
   return true;
 }
 
@@ -1395,8 +1412,9 @@ remove_app_port(
     ladish_graph_get_port_name(vgraph, port_handle),
     ladish_graph_get_description(vgraph));
 
-  ladish_graph_remove_port(graph_handle, port_handle);
-  ladish_graph_remove_port(vgraph, port_handle);
+  ladish_graph_remove_port(graph_handle, port_handle, NULL);
+  ladish_graph_remove_port(vgraph, port_handle, NULL);
+  ladish_del_ref(vclient);
 
   return true;
 }
@@ -1409,10 +1427,9 @@ ladish_virtualizer_remove_app(
   const uuid_t app_uuid,
   const char * app_name)
 {
-  ladish_client_handle jclient;
+  ladish_client_handle client;
   ladish_graph_handle vgraph;
   uuid_t vclient_uuid;
-  ladish_client_handle vclient;
   bool is_empty;
   struct app_remove_context ctx;
 
@@ -1423,19 +1440,20 @@ ladish_virtualizer_remove_app(
 
   ladish_graph_iterate_nodes(jack_graph, &ctx, NULL, remove_app_port, NULL);
 
-  jclient = ladish_graph_find_client_by_app(jack_graph, app_uuid);
-  if (jclient == NULL)
+  client = ladish_graph_find_client_by_app(jack_graph, app_uuid);
+  if (client == NULL)
   {
     log_info("removing app without JACK client");
     return;
   }
 
-  ASSERT(!ladish_virtualizer_is_a2j_client(jclient)); /* a2j client has no app associated */
+  ASSERT(!ladish_virtualizer_is_a2j_client(client)); /* a2j client has no app associated */
 
-  vgraph = ladish_client_get_vgraph(jclient);
+  vgraph = ladish_client_get_vgraph(client);
   if (vgraph == NULL)
   {
     ASSERT_NO_PASS;
+    ladish_del_ref(client);
     return;
   }
 
@@ -1444,12 +1462,13 @@ ladish_virtualizer_remove_app(
   /* check whether the client is empty because this cannot
      be checked later because the client was removed
      (see where is_empty is used) */
-  is_empty = ladish_graph_client_is_empty(jack_graph, jclient);
+  is_empty = ladish_graph_client_is_empty(jack_graph, client);
 
-  ladish_graph_remove_client(jack_graph, jclient);
+  ladish_graph_remove_client(jack_graph, client);
 
-  if (!ladish_client_get_interlink(jclient, vclient_uuid))
+  if (!ladish_client_get_interlink(client, vclient_uuid))
   {
+    ladish_del_ref(client);
     if (is_empty)
     {
       /* jack client without ports and thus without vgraph client */
@@ -1463,16 +1482,18 @@ ladish_virtualizer_remove_app(
     return;
   }
 
-  vclient = ladish_graph_find_client_by_uuid(vgraph, vclient_uuid);
-  if (vclient == NULL)
+  ladish_del_ref(client);
+  client = ladish_graph_find_client_by_uuid(vgraph, vclient_uuid);
+  if (client == NULL)
   {
     ASSERT_NO_PASS;
     return;
   }
 
-  ladish_graph_remove_client(vgraph, vclient);
+  ladish_graph_remove_client(vgraph, client);
   ladish_graph_dump(g_studio.jack_graph);
   ladish_graph_dump(vgraph);
+  ladish_del_ref(client);
 }
 
 void
@@ -1501,12 +1522,14 @@ ladish_virtualizer_rename_app(
   if (client != NULL)
   {
     ladish_graph_rename_client(vgraph, client, new_app_name);
+    ladish_del_ref(client);
   }
 
   client = ladish_graph_find_client_by_app(g_studio.jack_graph, uuid);
   if (client != NULL)
   {
     ladish_graph_rename_client(g_studio.jack_graph, client, new_app_name);
+    ladish_del_ref(client);
   }
 }
 #undef vgraph
@@ -1564,12 +1587,13 @@ bool ladish_virtualizer_split_client(ladish_graph_handle vgraph, uint64_t client
   ladish_client_handle vclient1;
   ladish_client_handle vclient2;
   const char * name;
+  bool ret = false;
 
   vclient1 = ladish_graph_find_client_by_id(vgraph, client_id);
   if (vclient1 == NULL)
   {
     log_error("Cannot find client %"PRIu64" in %s", client_id, ladish_graph_get_description(vgraph));
-    return false;
+    goto exit;
   }
 
   name = ladish_graph_get_client_name(vgraph, vclient1);
@@ -1577,7 +1601,7 @@ bool ladish_virtualizer_split_client(ladish_graph_handle vgraph, uint64_t client
   if (!ladish_client_create(NULL, &vclient2))
   {
     log_error("ladish_client_create() failed.");
-    return false;
+    goto unref_vclient1;
   }
 
   ladish_client_interlink_copy(vclient2, vclient1);
@@ -1586,11 +1610,17 @@ bool ladish_virtualizer_split_client(ladish_graph_handle vgraph, uint64_t client
   if (!ladish_graph_add_client(vgraph, vclient2, name, false))
   {
     log_error("ladish_graph_add_client() failed to add client '%s' to virtual graph", name);
-    ladish_client_destroy(vclient2);
-    return false;
+    goto unref_vclient2;
   }
 
-  return ladish_graph_interate_client_ports(vgraph, vclient1, vclient2, move_capture_port_callback);
+  ret = ladish_graph_interate_client_ports(vgraph, vclient1, vclient2, move_capture_port_callback);
+
+unref_vclient2:
+  ladish_del_ref(vclient2);
+unref_vclient1:
+  ladish_del_ref(vclient1);
+exit:
+  return ret;
 }
 
 static
@@ -1637,6 +1667,7 @@ ladish_virtualizer_join_clients(
   if (vclient2 == NULL)
   {
     log_error("Cannot find client %"PRIu64" in %s", client2_id, ladish_graph_get_description(vgraph));
+    ladish_del_ref(vclient1);
     return false;
   }
 
@@ -1644,5 +1675,7 @@ ladish_virtualizer_join_clients(
 
   ladish_graph_remove_client(vgraph, vclient2);
 
+  ladish_del_ref(vclient2);
+  ladish_del_ref(vclient1);
   return true;
 }

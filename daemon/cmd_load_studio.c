@@ -233,7 +233,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
       {
         log_error("ladish_graph_add_client() failed to add client '%s' to JACK graph", name_dup);
         context_ptr->error = XML_TRUE;
-        ladish_client_destroy(context_ptr->client);
+        ladish_del_ref(context_ptr->client);
         context_ptr->client = NULL;
         goto free;
       }
@@ -282,7 +282,7 @@ static void callback_elstart(void * data, const char * el, const char ** attr)
       {
         log_error("ladish_graph_add_client() failed to add client '%s' to studio graph", name_dup);
         context_ptr->error = XML_TRUE;
-        ladish_client_destroy(context_ptr->client);
+        ladish_del_ref(context_ptr->client);
         context_ptr->client = NULL;
         goto free;
       }
@@ -834,6 +834,7 @@ static void callback_elend(void * data, const char * UNUSED(el))
   {
     //log_info("</client>");
     ASSERT(context_ptr->client != NULL);
+    ladish_del_ref(context_ptr->client);
     context_ptr->client = NULL;
   }
   else if (context_ptr->element[context_ptr->depth] == PARSE_CONTEXT_PORT)

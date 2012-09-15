@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the interface of the port objects
@@ -41,9 +41,6 @@ void ladish_port_set_jack_id(ladish_port_handle port_handle, uint64_t jack_id);
 uint64_t ladish_port_get_jack_id(ladish_port_handle port_handle);
 void ladish_port_set_jack_id_room(ladish_port_handle port_handle, uint64_t jack_id);
 uint64_t ladish_port_get_jack_id_room(ladish_port_handle port_handle);
-
-void ladish_port_add_ref(ladish_port_handle port_handle);
-void ladish_port_del_ref(ladish_port_handle port_handle);
 
 bool ladish_port_is_link(ladish_port_handle port_handle);
 

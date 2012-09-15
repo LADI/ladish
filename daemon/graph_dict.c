@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to the D-Bus graph dict interface helpers
@@ -50,6 +50,7 @@ bool find_dict(struct cdbus_method_call * call_ptr, uint32_t object_type, uint64
       return false;
     }
     *dict_handle_ptr = ladish_client_get_dict(client);
+    ladish_del_ref(client);
     return true;
   case GRAPH_DICT_OBJECT_TYPE_PORT:
     port = ladish_graph_find_port_by_id(graph_handle, object_id);
