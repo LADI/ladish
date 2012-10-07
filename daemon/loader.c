@@ -34,6 +34,8 @@
 #include <fcntl.h>
 #include <pty.h>                /* forkpty() */
 #include <sys/wait.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
 #include "loader.h"
 #include "../proxies/conf_proxy.h"
