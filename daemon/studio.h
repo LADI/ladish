@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010, 2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface of the studio singleton object
@@ -41,7 +41,7 @@ bool ladish_studio_is_started(void);
 bool ladish_studios_iterate(void * call_ptr, void * context, bool (* callback)(void * call_ptr, void * context, const char * studio, uint32_t modtime));
 bool ladish_studio_delete(void * call_ptr, const char * studio_name);
 
-void ladish_studio_on_child_exit(pid_t pid);
+void ladish_studio_on_child_exit(pid_t pid, int exit_status);
 
 bool
 ladish_studio_iterate_virtual_graphs(

@@ -55,6 +55,7 @@ struct loader_child
   char * project_name;
 
   bool dead;
+  int exit_status;
   pid_t pid;
 
   bool terminal;
@@ -72,11 +73,11 @@ struct loader_child
   char * stderr_buffer_ptr;
 };
 
-static void (* g_on_child_exit)(pid_t pid);
+static void (* g_on_child_exit)(pid_t pid, int exit_status);
 static struct list_head g_childs_list;
 
 static struct loader_child *
-loader_child_find_and_mark_dead(pid_t pid)
+loader_child_find(pid_t pid)
 {
   struct list_head *node_ptr;
   struct loader_child *child_ptr;
@@ -86,7 +87,6 @@ loader_child_find_and_mark_dead(pid_t pid)
     child_ptr = list_entry(node_ptr, struct loader_child, siblings);
     if (child_ptr->pid == pid)
     {
-      child_ptr->dead = true;
       return child_ptr;
     }
   }
@@ -153,7 +153,7 @@ loader_childs_bury(void)
         close(child_ptr->stderr);
       }
 
-      g_on_child_exit(child_ptr->pid);
+      g_on_child_exit(child_ptr->pid, child_ptr->exit_status);
       free(child_ptr);
     }
   }
@@ -168,7 +168,7 @@ static void loader_sigchld_handler(int signum)
 
   while ((pid = waitpid(-1, &status, WNOHANG)) > 0)
   {
-    child_ptr = loader_child_find_and_mark_dead(pid);
+    child_ptr = loader_child_find(pid);
 
     if (!child_ptr)
     {
@@ -177,11 +177,13 @@ static void loader_sigchld_handler(int signum)
     else
     {
       log_info("Termination of child process '%s' with PID %llu detected", child_ptr->app_name, (unsigned long long)pid);
+      child_ptr->dead = true;
+      child_ptr->exit_status = status;
     }
 
     if (WIFEXITED(status))
     {
-      log_info("Child exited, status=%d", WEXITSTATUS(status));
+      log_info("Child exited, code=%d", WEXITSTATUS(status));
     }
     else if (WIFSIGNALED(status))
     {
@@ -205,7 +207,7 @@ static void loader_sigchld_handler(int signum)
   }
 }
 
-void loader_init(void (* on_child_exit)(pid_t pid))
+void loader_init(void (* on_child_exit)(pid_t pid, int exit_status))
 {
   g_on_child_exit = on_child_exit;
   signal(SIGCHLD, loader_sigchld_handler);

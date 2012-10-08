@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010, 2011, 2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of app supervisor object
@@ -903,17 +903,20 @@ ladish_app_supervisor_set_project_name(
   return true;
 }
 
-bool ladish_app_supervisor_child_exit(ladish_app_supervisor_handle supervisor_handle, pid_t pid)
+bool ladish_app_supervisor_child_exit(ladish_app_supervisor_handle supervisor_handle, pid_t pid, int exit_status)
 {
   struct list_head * node_ptr;
   struct ladish_app * app_ptr;
+  bool clean;
 
   list_for_each(node_ptr, &supervisor_ptr->applist)
   {
     app_ptr = list_entry(node_ptr, struct ladish_app, siblings);
     if (app_ptr->pid == pid)
     {
-      log_info("exit of child '%s' detected.", app_ptr->name);
+      clean = WIFEXITED(exit_status) && WEXITSTATUS(exit_status) == 0;
+
+      log_info("%s exit of child '%s' detected.", clean ? "clean" : "dirty", app_ptr->name);
 
       app_ptr->pid = 0;
       app_ptr->pgrp = 0;
@@ -926,7 +929,7 @@ bool ladish_app_supervisor_child_exit(ladish_app_supervisor_handle supervisor_ha
       }
       else
       {
-        if (app_ptr->state == LADISH_APP_STATE_STARTED)
+        if (app_ptr->state == LADISH_APP_STATE_STARTED && !clean)
         {
           ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "App terminated unexpectedly", app_ptr->name);
         }

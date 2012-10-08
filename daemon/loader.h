@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010, 2011, 2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to the code that starts programs
@@ -27,7 +27,7 @@
 #ifndef __LASHD_LOADER_H__
 #define __LASHD_LOADER_H__
 
-void loader_init(void (* on_child_exit)(pid_t pid));
+void loader_init(void (* on_child_exit)(pid_t pid, int exit_status));
 
 bool
 loader_execute(

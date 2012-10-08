@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010, 2011, 2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to app supervisor object
@@ -165,12 +165,14 @@ ladish_app_supervisor_set_project_name(
  * This function is called to mark that app has quit. Must not be called from signal handler because app supervisor object is not thread safe.
  *
  * @param[in] supervisor_handle supervisor object handle
- * @param[in] pid of the app whose termination was detected
+ * @param[in] pid pid of the app whose termination was detected
+ * @param[in] exit_statis process exit status as returned by waitpid()
  */
 bool
 ladish_app_supervisor_child_exit(
   ladish_app_supervisor_handle supervisor_handle,
-  pid_t pid);
+  pid_t pid,
+  int exit_status);
 
 /**
  * Iterate apps that are owned by supervisor

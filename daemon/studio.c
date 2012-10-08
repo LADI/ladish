@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010, 2011, 2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains part of the studio singleton object implementation
@@ -655,6 +655,7 @@ void ladish_studio_uninit(void)
 struct on_child_exit_context
 {
   pid_t pid;
+  int exit_status;
   bool found;
 };
 
@@ -667,7 +668,7 @@ ladish_studio_on_child_exit_callback(
   ladish_graph_handle graph,
   ladish_app_supervisor_handle app_supervisor)
 {
-  child_exit_context_ptr->found = ladish_app_supervisor_child_exit(app_supervisor, child_exit_context_ptr->pid);
+  child_exit_context_ptr->found = ladish_app_supervisor_child_exit(app_supervisor, child_exit_context_ptr->pid, child_exit_context_ptr->exit_status);
   /* if child is found, return false - it will cause iteration to stop */
   /* if child is not found, return true - it will cause next supervisor to be checked */
   return !child_exit_context_ptr->found;
@@ -675,11 +676,12 @@ ladish_studio_on_child_exit_callback(
 
 #undef child_exit_context_ptr
 
-void ladish_studio_on_child_exit(pid_t pid)
+void ladish_studio_on_child_exit(pid_t pid, int exit_status)
 {
   struct on_child_exit_context context;
 
   context.pid = pid;
+  context.exit_status = exit_status;
   context.found = false;
 
   ladish_studio_iterate_virtual_graphs(&context, ladish_studio_on_child_exit_callback);
