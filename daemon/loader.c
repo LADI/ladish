@@ -491,7 +491,7 @@ loader_run(void)
   loader_childs_bury();
 }
 
-#define LD_PRELOAD_ADD "libalsapid.so libasound.so"
+#define LD_PRELOAD_ADD "libalsapid.so libasound.so.2"
 
 static void set_ldpreload(void)
 {
