@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the "create room" command
@@ -135,7 +135,7 @@ bool ladish_command_create_room(void * call_ptr, struct ladish_cqueue * queue_pt
 fail_destroy_command:
   free(cmd_ptr);
 fail_free_template_name:
-  free(room_name_dup);
+  free(template_name_dup);
 fail_free_room_name:
   free(room_name_dup);
 fail:
