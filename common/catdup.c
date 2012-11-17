@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009,2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the catdup() function
@@ -185,8 +185,11 @@ char * catdup_array(const char ** array, const char * delimiter)
     len = strlen(array[i]);
     memcpy(p, array[i], len);
     p += len;
-    memcpy(p, delimiter, delimiter_length);
-    p += delimiter_length;
+    if (delimiter_length > 0)
+    {
+      memcpy(p, delimiter, delimiter_length);
+      p += delimiter_length;
+    }
   }
 
   *p = 0;
