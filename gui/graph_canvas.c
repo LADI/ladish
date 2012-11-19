@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of graph canvas object
@@ -705,7 +705,7 @@ port_renamed(
   }
 
   port_ptr = find_port(client_ptr, port_id);
-  if (client_ptr == NULL)
+  if (port_ptr == NULL)
   {
     log_error("cannot find renamed port %"PRIu64" of client %"PRIu64"", port_id, client_id);
     return;
@@ -738,7 +738,7 @@ ports_connected(
   }
 
   port1_ptr = find_port(client1_ptr, port1_id);
-  if (client1_ptr == NULL)
+  if (port1_ptr == NULL)
   {
     log_error("cannot find connected port %"PRIu64" of client %"PRIu64"", port1_id, client1_id);
     return;
@@ -752,7 +752,7 @@ ports_connected(
   }
 
   port2_ptr = find_port(client2_ptr, port2_id);
-  if (client2_ptr == NULL)
+  if (port2_ptr == NULL)
   {
     log_error("cannot find connected port %"PRIu64" of client %"PRIu64"", port2_id, client2_id);
     return;
@@ -789,7 +789,7 @@ ports_disconnected(
   }
 
   port1_ptr = find_port(client1_ptr, port1_id);
-  if (client1_ptr == NULL)
+  if (port1_ptr == NULL)
   {
     log_error("cannot find disconnected port %"PRIu64" of client %"PRIu64"", port1_id, client1_id);
     return;
@@ -803,7 +803,7 @@ ports_disconnected(
   }
 
   port2_ptr = find_port(client2_ptr, port2_id);
-  if (client2_ptr == NULL)
+  if (port2_ptr == NULL)
   {
     log_error("cannot find disconnected port %"PRIu64" of client %"PRIu64"", port2_id, client2_id);
     return;
