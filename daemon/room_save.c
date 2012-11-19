@@ -374,7 +374,7 @@ ladish_room_save_project(
   if (ctx_ptr == NULL)
   {
     log_error("malloc() failed to allocate memory for room save context struct");
-    ctx_ptr->callback(ctx_ptr->context, false);
+    callback(context, false);
     return;
   }
 
