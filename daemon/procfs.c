@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009,2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the code that interfaces procfs
@@ -109,6 +109,7 @@ loop:
   if (ret < 0)
   {
     ASSERT(ret == -1);
+    free(buffer_ptr);
     return false;
   }
 
