@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains dynamic menu related code
@@ -100,21 +100,32 @@ ladish_dynmenu_add_entry(
   void (* data_free)())
 {
   struct ladish_dynmenu_item_data * data_ptr;
-
-  data_ptr = malloc(sizeof(struct ladish_dynmenu_item_data));
-  //log_info("data_ptr %p allocated", data_ptr);
-  data_ptr->data = data;
-  data_ptr->data_free = data_free;
-  data_ptr->item_activate_callback = item_activate_callback != NULL ? item_activate_callback : dynmenu_ptr->item_activate_callback;
+  GtkWidget * item;
 
   if (name == NULL)
   {
-    data_ptr->item = gtk_separator_menu_item_new(); /* separator */
-    gtk_widget_show(data_ptr->item);
-    gtk_menu_shell_append(GTK_MENU_SHELL(dynmenu_ptr->menu), data_ptr->item);
+    /* add separator */
+    ASSERT(data == NULL);
+    ASSERT(item_activate_callback == NULL);
+    ASSERT(data_free == NULL);
+    item = gtk_separator_menu_item_new();
+    gtk_widget_show(item);
+    gtk_menu_shell_append(GTK_MENU_SHELL(dynmenu_ptr->menu), item);
   }
   else
   {
+    data_ptr = malloc(sizeof(struct ladish_dynmenu_item_data));
+    if (data_ptr == NULL)
+    {
+      log_error("Allocation of memory for dynmenu item data struct failed.");
+      return;
+    }
+
+    //log_info("data_ptr %p allocated", data_ptr);
+    data_ptr->data = data;
+    data_ptr->data_free = data_free;
+    data_ptr->item_activate_callback = item_activate_callback != NULL ? item_activate_callback : dynmenu_ptr->item_activate_callback;
+
     data_ptr->item = gtk_menu_item_new_with_label(name);
     //log_info("refcount == %d", (unsigned int)G_OBJECT(item)->ref_count); // refcount == 2 because of the label
     gtk_widget_set_sensitive(data_ptr->item, dynmenu_ptr->add_sensitive);
