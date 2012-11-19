@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of code that interfaces ladiconfd through D-Bus
@@ -77,6 +77,7 @@ static void on_value_changed(struct pair * pair_ptr, const char * value, uint64_
   len = strlen(value);
   if (len < pair_ptr->value_buffer_size)
   {
+    ASSERT(pair_ptr->value != NULL);
     memcpy(pair_ptr->value, value, len + 1);
   }
   else
