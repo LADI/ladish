@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the studio handling code
@@ -139,6 +139,7 @@ bool studio_state_changed(char ** name_ptr_ptr)
     {
       //tooltip = _("failed to get studio name");
       log_error("failed to get studio name");
+      name = "???";
       status_image_path = STATUS_ICON_ERROR;
     }
     else
@@ -155,8 +156,8 @@ bool studio_state_changed(char ** name_ptr_ptr)
         //tooltip = _("Studio is stopped");
         break;
       }
-      break;
     }
+    break;
   default:
     name = "???";
     //tooltip = _("Internal error - unknown studio state");
