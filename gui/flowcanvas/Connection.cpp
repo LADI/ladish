@@ -182,10 +182,10 @@ Connection::update_location()
 
 		if (_show_arrowhead) {
 
-			const double h  = sqrt(dx*dx + dy*dy);
+			//const double h  = sqrt(dx*dx + dy*dy);
 
-			dx = dx / h * 10;
-			dy = dy / h * 10;
+			//dx = dx / h * 10;
+			//dy = dy / h * 10;
 
 			gnome_canvas_path_def_lineto(_path,
 					dst_x - 12,

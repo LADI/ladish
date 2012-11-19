@@ -593,14 +593,14 @@ Module::resize_horiz()
 			header_height += _icon_size - _title_height;
 	}
 
-	double height = header_height;
+	double height;// = header_height;
 
-	double above_h = 0.0f;
-	if (_ports.size() > 0)
-		above_h += _ports.size() * ((*_ports.begin())->height()+2.0);
+	//double above_h = 0.0f;
+	//if (_ports.size() > 0)
+	//	above_h += _ports.size() * ((*_ports.begin())->height()+2.0);
 
 	//double between_h = std::max(above_h, _embed_height);
-	above_h += _embed_height;
+	//above_h += _embed_height;
 
 	/*cerr << above_w << "x" << above_h << "(" << above_w * above_h << ") ? "
 			<< between_w << "x" << between_h << "(" << between_w * between_h << ")" << endl;*/
@@ -620,8 +620,8 @@ Module::resize_horiz()
 	}
 
 	if (!_title_visible) {
-		if (_ports.size() > 0)
-			height += 0.5;
+		//if (_ports.size() > 0)
+		//	height += 0.5;
 		if (_widest_input == 0.0 || _widest_output == 0.0f)
 			width += 10.0;
 	}
