@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the "save studio" command
@@ -202,6 +202,8 @@ static bool ladish_save_studio_xml(struct ladish_command_save_studio * cmd_ptr)
   struct stat st;
   struct ladish_write_context save_context;
   bool renaming;
+
+  ret = false;
 
   time(&timestamp);
   ctime_r(&timestamp, timestamp_str);
