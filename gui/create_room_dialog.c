@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the "create room" dialog
@@ -143,6 +143,12 @@ again:
       goto again;
     }
 
+    name = (char *)gtk_entry_get_text(entry);
+    if (strlen(name) == 0)
+    {
+      goto again;
+    }
+
     gtk_tree_model_get(GTK_TREE_MODEL(g_liststore), &iter, COL_NAME, &template, -1);
     template = strdup(template);
     if (template == NULL)
@@ -150,12 +156,6 @@ again:
       log_error("strdup failed for template name (create room dialog)");
       ok = false;
       goto exit;
-    }
-
-    name = (char *)gtk_entry_get_text(entry);
-    if (strlen(name) == 0)
-    {
-      goto again;
     }
 
     name = strdup(name);
