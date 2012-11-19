@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009,2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari
  *
  **************************************************************************
@@ -2512,7 +2512,7 @@ ladish_graph_set_link_port_override_uuid(
   struct ladish_graph_port * port_ptr;
 
   port_ptr = ladish_graph_find_port(graph_ptr, port);
-  ASSERT(ladish_port_is_link(port_ptr->port));
+  ASSERT(port_ptr != NULL && ladish_port_is_link(port_ptr->port));
 
   uuid_copy(port_ptr->link_uuid_override, override_uuid);
 }
