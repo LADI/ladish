@@ -290,7 +290,7 @@ loader_exec_program(
   /* change the working dir */
   if (chdir(working_dir) == -1)
   {
-    fprintf(stderr, "Could not change directory to working dir '%s' for program '%s': %s\n", working_dir, argv[0], strerror(errno));
+    fprintf(stderr, "Could not change directory to working dir '%s' for app '%s': %s\n", working_dir, app_name, strerror(errno));
   }
 
   setenv("LADISH_APP_NAME", app_name, true);
