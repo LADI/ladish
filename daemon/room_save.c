@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the parts of room object implementation
@@ -384,6 +384,9 @@ ladish_room_save_project(
   ctx_ptr->context = context;
   ctx_ptr->callback = callback;
 
+  ctx_ptr->old_project_dir = room_ptr->project_dir;
+  ctx_ptr->old_project_name = room_ptr->project_name;
+
   /* project has either both name and dir no none of them */
   ASSERT((room_ptr->project_dir == NULL && room_ptr->project_name == NULL) || (room_ptr->project_dir != NULL && room_ptr->project_name != NULL));
   first_time = room_ptr->project_dir == NULL;
@@ -458,8 +461,6 @@ ladish_room_save_project(
     goto destroy_ctx;
   }
 
-  ctx_ptr->old_project_dir = room_ptr->project_dir;
-  ctx_ptr->old_project_name = room_ptr->project_name;
   room_ptr->project_name = ctx_ptr->project_name;
   room_ptr->project_dir = ctx_ptr->project_dir;
 
