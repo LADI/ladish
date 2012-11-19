@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains helper functionality for accessing JACK through D-Bus
@@ -721,8 +721,6 @@ jack_proxy_session_save_one(
   dbus_uint32_t type;
   DBusMessage * request_ptr;
   struct jack_proxy_session_save_one_reply_cookie cookie;
-
-  ret = false;
 
   dbus_bool = queue;
   type = JACKDBUS_SESSION_NOTIFY_TYPE_SAVE;
