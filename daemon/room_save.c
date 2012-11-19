@@ -325,6 +325,7 @@ static void ladish_room_save_project_do(struct ladish_room_save_context * ctx_pt
   if (!ensure_dir_exist(ctx_ptr->room->project_dir, 0777))
   {
     ladish_room_save_complete(ctx_ptr, false);
+    return;
   }
 
   ladish_app_supervisor_save(ctx_ptr->room->app_supervisor, ctx_ptr, ladish_room_apps_save_complete);
