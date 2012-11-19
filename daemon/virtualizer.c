@@ -509,13 +509,17 @@ port_appeared(
   uuid_t app_uuid;
   char * alsa_client_name;
   char * alsa_port_name;
-  char * a2j_fake_jack_port_name = NULL;
+  char * a2j_fake_jack_port_name;
   uint32_t alsa_client_id;
   const char * jack_port_name;
   const char * vport_name;
   ladish_graph_handle vgraph;
 
   log_info("port_appeared(%"PRIu64", %"PRIu64", %s (%s, %s))", client_id, port_id, real_jack_port_name, is_input ? "in" : "out", is_midi ? "midi" : "audio");
+
+  alsa_client_name = NULL;
+  alsa_port_name = NULL;
+  a2j_fake_jack_port_name = NULL;
 
   type = is_midi ? JACKDBUS_PORT_TYPE_MIDI : JACKDBUS_PORT_TYPE_AUDIO;
   flags = is_input ? JACKDBUS_PORT_FLAG_INPUT : JACKDBUS_PORT_FLAG_OUTPUT;
@@ -876,16 +880,9 @@ port_appeared(
   }
 
 free_alsa_names:
-  if (a2j_fake_jack_port_name != NULL)
-  {
-    free(a2j_fake_jack_port_name);
-  }
-
-  if (is_a2j)
-  {
-    free(alsa_client_name);
-    free(alsa_port_name);
-  }
+  free(a2j_fake_jack_port_name);
+  free(alsa_client_name);
+  free(alsa_port_name);
 
 exit:
   return;
