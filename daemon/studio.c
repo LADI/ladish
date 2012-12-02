@@ -319,7 +319,7 @@ bool
 ladish_studio_set_graph_connection_handlers(
   void * context,
   ladish_graph_handle graph,
-  ladish_app_supervisor_handle app_supervisor)
+  ladish_app_supervisor_handle UNUSED(app_supervisor))
 {
   ladish_virtualizer_set_graph_connection_handlers(context, graph);
   return true;                  /* iterate all graphs */
@@ -399,7 +399,12 @@ void ladish_studio_handle_unexpected_jack_server_stop(void)
   /* TODO: if user wants, restart jack server and reconnect all jack apps to it */
 }
 
-static bool ladish_studio_hide_vgraph_non_virtual(void * context, ladish_graph_handle graph, ladish_app_supervisor_handle app_supervisor)
+static
+bool
+ladish_studio_hide_vgraph_non_virtual(
+  void * UNUSED(context),
+  ladish_graph_handle graph,
+  ladish_app_supervisor_handle UNUSED(app_supervisor))
 {
   ladish_graph_hide_non_virtual(graph);
   return true;                  /* iterate all vgraphs */
@@ -665,7 +670,7 @@ static
 bool
 ladish_studio_on_child_exit_callback(
   void * context,
-  ladish_graph_handle graph,
+  ladish_graph_handle UNUSED(graph),
   ladish_app_supervisor_handle app_supervisor)
 {
   child_exit_context_ptr->found = ladish_app_supervisor_child_exit(app_supervisor, child_exit_context_ptr->pid, child_exit_context_ptr->exit_status);
@@ -947,7 +952,12 @@ bool ladish_studio_has_rooms(void)
   return !list_empty(&g_studio.rooms);
 }
 
-static bool ladish_studio_stop_app_supervisor(void * context, ladish_graph_handle graph, ladish_app_supervisor_handle app_supervisor)
+static
+bool
+ladish_studio_stop_app_supervisor(
+  void * UNUSED(context),
+  ladish_graph_handle UNUSED(graph),
+  ladish_app_supervisor_handle app_supervisor)
 {
   ladish_app_supervisor_stop(app_supervisor);
   return true;                  /* iterate all supervisors */

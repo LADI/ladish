@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the "stop studio" command
@@ -44,13 +44,13 @@ struct ladish_command_stop_studio
   unsigned int stop_state;
 };
 
-static bool stop_room(void * context, ladish_room_handle room)
+static bool stop_room(void * UNUSED(context), ladish_room_handle room)
 {
   ladish_room_initiate_stop(room, false);
   return true;
 }
 
-static bool room_stopped(void * context, ladish_room_handle room)
+static bool room_stopped(void * UNUSED(context), ladish_room_handle room)
 {
   return ladish_room_stopped(room);
 }
@@ -81,7 +81,7 @@ static bool run(void * context)
     cmd_ptr->command.state = LADISH_COMMAND_STATE_WAITING;
     cmd_ptr->stop_state = STOP_STATE_WAITING_FOR_ROOM_STOP;
 
-    if (!ladish_studio_iterate_rooms(ladish_studio_get_virtualizer(), stop_room))
+    if (!ladish_studio_iterate_rooms(NULL, stop_room))
     {
       log_error("room stop initiation failed");
       return false;
@@ -91,7 +91,7 @@ static bool run(void * context)
   case LADISH_COMMAND_STATE_WAITING:
     if (cmd_ptr->stop_state == STOP_STATE_WAITING_FOR_ROOM_STOP)
     {
-      if (!ladish_studio_iterate_rooms(ladish_studio_get_virtualizer(), room_stopped))
+      if (!ladish_studio_iterate_rooms(NULL, room_stopped))
       {
         return true;
       }

@@ -168,9 +168,9 @@ static
 bool
 ladish_log_enabled(
   unsigned int level,
-  const char * file,
-  unsigned int line,
-  const char * func)
+  const char * UNUSED(file),
+  unsigned int UNUSED(line),
+  const char * UNUSED(func))
 {
   return level != LADISH_LOG_LEVEL_DEBUG;
 }

@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009,2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains stuff that is needed almost everywhere in ladish
@@ -57,5 +57,6 @@ extern const char * g_app_L2_js_constant;
 const char * ladish_map_app_level_constant(const char * level);
 
 #define LADISH_PUBLIC __attribute__ ((visibility ("default")))
+#define UNUSED(x) UNUSED_ ## x __attribute__((unused))
 
 #endif /* #ifndef COMMON_H__82C9504A_ACD2_435D_9743_781943473E6A__INCLUDED */

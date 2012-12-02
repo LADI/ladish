@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains GtkAction related code
@@ -41,10 +41,10 @@ GtkAction * g_zoom_out_action;
 static
 gboolean
 load_project_accelerator_activated(
-  GtkAccelGroup * accel_group,
-  GObject * acceleratable,
-  guint keyval,
-  GdkModifierType modifier)
+  GtkAccelGroup * UNUSED(accel_group),
+  GObject * UNUSED(acceleratable),
+  guint UNUSED(keyval),
+  GdkModifierType UNUSED(modifier))
 {
   graph_view_handle view;
 
@@ -60,10 +60,10 @@ load_project_accelerator_activated(
 static
 gboolean
 unload_project_accelerator_activated(
-  GtkAccelGroup * accel_group,
-  GObject * acceleratable,
-  guint keyval,
-  GdkModifierType modifier)
+  GtkAccelGroup * UNUSED(accel_group),
+  GObject * UNUSED(acceleratable),
+  guint UNUSED(keyval),
+  GdkModifierType UNUSED(modifier))
 {
   graph_view_handle view;
 

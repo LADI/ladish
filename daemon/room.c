@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the core parts of room object implementation
@@ -162,7 +162,7 @@ bool
 create_port_link(
   void * context,
   ladish_port_handle port_handle,
-  const char * port_name,
+  const char * UNUSED(port_name),
   uint32_t port_type,
   uint32_t port_flags)
 {
@@ -207,15 +207,15 @@ static
 bool
 destroy_port_link(
   void * context,
-  ladish_graph_handle graph_handle,
-  bool hidden,
-  void * client_iteration_context_ptr,
-  ladish_client_handle client_handle,
-  const char * client_name,
+  ladish_graph_handle UNUSED(graph_handle),
+  bool UNUSED(hidden),
+  void * UNUSED(client_iteration_context_ptr),
+  ladish_client_handle UNUSED(client_handle),
+  const char * UNUSED(client_name),
   ladish_port_handle port_handle,
   const char * port_name,
-  uint32_t port_type,
-  uint32_t port_flags)
+  uint32_t UNUSED(port_type),
+  uint32_t UNUSED(port_flags))
 {
   uuid_t uuid_in_room;
   char uuid_in_room_str[37];
@@ -472,11 +472,11 @@ struct ladish_room_iterate_link_ports_context
 static
 bool
 ladish_room_iterate_link_ports_client_callback(
-  void * context,
-  ladish_graph_handle graph_handle,
-  bool hidden,
+  void * UNUSED(context),
+  ladish_graph_handle UNUSED(graph_handle),
+  bool UNUSED(hidden),
   ladish_client_handle client_handle,
-  const char * client_name,
+  const char * UNUSED(client_name),
   void ** client_iteration_context_ptr_ptr)
 {
   uuid_t uuid;
@@ -500,11 +500,11 @@ static
 bool
 ladish_room_iterate_link_ports_port_callback(
   void * context,
-  ladish_graph_handle graph_handle,
-  bool hidden,
+  ladish_graph_handle UNUSED(graph_handle),
+  bool UNUSED(hidden),
   void * client_iteration_context_ptr,
-  ladish_client_handle client_handle,
-  const char * client_name,
+  ladish_client_handle UNUSED(client_handle),
+  const char * UNUSED(client_name),
   ladish_port_handle port_handle,
   const char * port_name,
   uint32_t port_type,
@@ -615,12 +615,12 @@ bool ladish_room_stopped(ladish_room_handle room_handle)
 static
 bool
 ladish_room_app_is_stopped(
-  void * context,
+  void * UNUSED(context),
   const char * name,
-  bool running,
-  const char * command,
-  bool terminal,
-  const char * level,
+  bool UNUSED(running),
+  const char * UNUSED(command),
+  bool UNUSED(terminal),
+  const char * UNUSED(level),
   pid_t pid,
   const uuid_t uuid)
 {
@@ -642,13 +642,13 @@ ladish_room_app_is_stopped(
 static
 bool
 ladish_remove_room_app(
-  void * context,
+  void * UNUSED(context),
   const char * name,
-  bool running,
-  const char * command,
-  bool terminal,
-  const char * level,
-  pid_t pid,
+  bool UNUSED(running),
+  const char * UNUSED(command),
+  bool UNUSED(terminal),
+  const char * UNUSED(level),
+  pid_t UNUSED(pid),
   const uuid_t uuid)
 {
   ladish_virtualizer_remove_app(ladish_studio_get_jack_graph(), uuid, name);

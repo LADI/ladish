@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the JACK multicore (snake)
@@ -208,7 +208,7 @@ bool install_term_signal_handler(int signum, bool ignore_if_already_ignored)
   return true;
 }
 
-int main(int argc, char ** argv)
+int main(int UNUSED(argc), char ** UNUSED(argv))
 {
   INIT_LIST_HEAD(&g_pairs);
 

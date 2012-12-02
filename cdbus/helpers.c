@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008,2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009,2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -34,8 +34,7 @@
 
 #include "helpers.h"
 #include "method.h"
-#include "../log.h"
-#include "../assert.h"
+#include "../common.h"
 #include "../common/klist.h"
 
 /* D-Bus versions earlier than 1.4.12 dont define DBUS_TIMEOUT_INFINITE */
@@ -765,7 +764,7 @@ find_signal_hook_descriptor(
 static
 DBusHandlerResult
 cdbus_signal_handler(
-  DBusConnection * connection_ptr,
+  DBusConnection * UNUSED(connection_ptr),
   DBusMessage * message_ptr,
   void * data)
 {

@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains code related to the ladishd control object
@@ -33,7 +33,7 @@
 
 static guint g_ladishd_poll_source_tag;
 
-static gboolean poll_ladishd(gpointer data)
+static gboolean poll_ladishd(gpointer UNUSED(data))
 {
   control_proxy_ping();
   return TRUE;

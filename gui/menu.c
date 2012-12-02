@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains menu related code
@@ -370,17 +370,17 @@ void menu_set_toolbar_visibility(bool visible)
   gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(g_menu_item_view_toolbar), visible);
 }
 
-static void on_popup_menu_action_start_app(GtkWidget * menuitem, gpointer userdata)
+static void on_popup_menu_action_start_app(GtkWidget * UNUSED(menuitem), gpointer UNUSED(userdata))
 {
   menu_request_start_app();
 }
 
-static void on_popup_menu_action_create_room(GtkWidget * menuitem, gpointer userdata)
+static void on_popup_menu_action_create_room(GtkWidget * UNUSED(menuitem), gpointer UNUSED(userdata))
 {
   menu_request_create_room();
 }
 
-static void on_popup_menu_action_destroy_room(GtkWidget * menuitem, gpointer userdata)
+static void on_popup_menu_action_destroy_room(GtkWidget * UNUSED(menuitem), gpointer UNUSED(userdata))
 {
   menu_request_destroy_room();
 }

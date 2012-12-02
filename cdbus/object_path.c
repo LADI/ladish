@@ -161,7 +161,11 @@ void cdbus_introspection_destroy(struct cdbus_object_path *path)
   }
 }
 
-static bool cdbus_introspection_handler(const struct cdbus_interface_descriptor * interface, struct cdbus_method_call * call_ptr)
+static
+bool
+cdbus_introspection_handler(
+  const struct cdbus_interface_descriptor * UNUSED(interface),
+  struct cdbus_method_call * call_ptr)
 {
   if (strcmp(call_ptr->method_name, "Introspect") != 0)
   {
@@ -401,7 +405,7 @@ handled:
   return DBUS_HANDLER_RESULT_HANDLED;
 }
 
-static void cdbus_object_path_handler_unregister(DBusConnection * connection_ptr, void * data)
+static void cdbus_object_path_handler_unregister(DBusConnection * UNUSED(connection_ptr), void * data)
 {
   log_debug("Message handler of object path %s was unregistered", (opath_ptr && opath_ptr->name) ? opath_ptr->name : "<unknown>");
 }

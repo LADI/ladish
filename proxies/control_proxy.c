@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of code that interfaces
@@ -29,19 +29,19 @@
 
 static bool g_clean_exit;
 
-static void on_studio_appeared(void * context, DBusMessage * message_ptr)
+static void on_studio_appeared(void * UNUSED(context), DBusMessage * UNUSED(message_ptr))
 {
   log_info("StudioAppeared");
   control_proxy_on_studio_appeared(false);
 }
 
-static void on_studio_disappeared(void * context, DBusMessage * message_ptr)
+static void on_studio_disappeared(void * UNUSED(context), DBusMessage * UNUSED(message_ptr))
 {
   log_info("StudioDisappeared");
   control_proxy_on_studio_disappeared();
 }
 
-static void on_clean_exit(void * context, DBusMessage * message_ptr)
+static void on_clean_exit(void * UNUSED(context), DBusMessage * UNUSED(message_ptr))
 {
   g_clean_exit = true;
 }

@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008,2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009,2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  * Copyright (C) 2002 Robert Ham <rah@bash.sh>
  *
@@ -250,7 +250,7 @@ void uninit_paths(void)
   free(g_base_dir);
 }
 
-static void on_conf_notify_changed(void * context, const char * key, const char * value)
+static void on_conf_notify_changed(void * UNUSED(context), const char * UNUSED(key), const char * value)
 {
   bool notify_enable;
 

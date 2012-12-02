@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation save releated helper functions
@@ -38,7 +38,12 @@ struct ladish_write_vgraph_context
   bool client_visible;
 };
 
-static bool is_hidden_port_interesting(ladish_app_supervisor_handle app_supervisor, ladish_client_handle client, ladish_port_handle port)
+static
+bool
+is_hidden_port_interesting(
+  ladish_app_supervisor_handle app_supervisor,
+  ladish_client_handle UNUSED(client),
+  ladish_port_handle port)
 {
   uuid_t app_uuid;
   ladish_app_handle app;
@@ -130,7 +135,12 @@ bool ladish_write_string_escape(int fd, const char * string)
   return ladish_write_string_escape_ex(fd, string, LADISH_ESCAPE_FLAG_ALL);
 }
 
-static bool ladish_port_dict_ignored_keys_check(void * context, const char * key, const char * value)
+static
+bool
+ladish_port_dict_ignored_keys_check(
+  void * UNUSED(context),
+  const char * key,
+  const char * UNUSED(value))
 {
   return strcmp(key, URI_A2J_PORT) == 0;
 }
@@ -374,11 +384,11 @@ static
 bool
 ladish_save_vgraph_client_begin(
   void * context,
-  ladish_graph_handle graph,
+  ladish_graph_handle UNUSED(graph),
   bool hidden,
   ladish_client_handle client_handle,
   const char * client_name,
-  void ** client_iteration_context_ptr_ptr)
+  void ** UNUSED(client_iteration_context_ptr_ptr))
 {
   uuid_t uuid;
   char str[37];
@@ -471,11 +481,11 @@ static
 bool
 ladish_save_vgraph_client_end(
   void * context,
-  ladish_graph_handle graph,
-  bool hidden,
+  ladish_graph_handle UNUSED(graph),
+  bool UNUSED(hidden),
   ladish_client_handle client_handle,
-  const char * client_name,
-  void * client_iteration_context_ptr)
+  const char * UNUSED(client_name),
+  void * UNUSED(client_iteration_context_ptr))
 {
   if (!ctx_ptr->client_visible)
   {
@@ -533,7 +543,7 @@ ladish_save_vgraph_port(
   void * context,
   ladish_graph_handle graph,
   bool hidden,
-  void * client_iteration_context_ptr,
+  void * UNUSED(client_iteration_context_ptr),
   ladish_client_handle client_handle,
   const char * client_name,
   ladish_port_handle port_handle,
@@ -746,7 +756,7 @@ ladish_save_app(
   const char * command,
   bool terminal,
   const char * level,
-  pid_t pid,
+  pid_t UNUSED(pid),
   const uuid_t uuid)
 {
   const char * unescaped_string;
@@ -985,11 +995,11 @@ static
 bool
 ladish_save_jack_client_begin(
   void * context,
-  ladish_graph_handle graph_handle,
+  ladish_graph_handle UNUSED(graph_handle),
   bool hidden,
   ladish_client_handle client_handle,
   const char * client_name,
-  void ** client_iteration_context_ptr_ptr)
+  void ** UNUSED(client_iteration_context_ptr_ptr))
 {
   void * vgraph;
 
@@ -1017,11 +1027,11 @@ static
 bool
 ladish_save_jack_client_end(
   void * context,
-  ladish_graph_handle graph_handle,
-  bool hidden,
-  ladish_client_handle client_handle,
-  const char * client_name,
-  void * client_iteration_context_ptr)
+  ladish_graph_handle UNUSED(graph_handle),
+  bool UNUSED(hidden),
+  ladish_client_handle UNUSED(client_handle),
+  const char * UNUSED(client_name),
+  void * UNUSED(client_iteration_context_ptr))
 {
   if (!ctx_ptr->client_visible)
   {
@@ -1045,15 +1055,15 @@ static
 bool
 ladish_save_jack_port(
   void * context,
-  ladish_graph_handle graph_handle,
+  ladish_graph_handle UNUSED(graph_handle),
   bool hidden,
-  void * client_iteration_context_ptr,
+  void * UNUSED(client_iteration_context_ptr),
   ladish_client_handle client_handle,
   const char * client_name,
   ladish_port_handle port_handle,
   const char * port_name,
-  uint32_t port_type,
-  uint32_t port_flags)
+  uint32_t UNUSED(port_type),
+  uint32_t UNUSED(port_flags))
 {
   uuid_t uuid;
   char str[37];

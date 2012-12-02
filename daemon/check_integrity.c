@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the code that checks data integrity
@@ -45,12 +45,12 @@ static void ladish_check_integrity_fail(const char * message)
 
 bool
 ladish_check_vgraph_integrity_client_begin_callback(
-  void * context,
-  ladish_graph_handle graph_handle,
-  bool hidden,
-  ladish_client_handle client_handle,
-  const char * client_name,
-  void ** client_iteration_context_ptr_ptr)
+  void * UNUSED(context),
+  ladish_graph_handle UNUSED(graph_handle),
+  bool UNUSED(hidden),
+  ladish_client_handle UNUSED(client_handle),
+  const char * UNUSED(client_name),
+  void ** UNUSED(client_iteration_context_ptr_ptr))
 {
   return true;
 }
@@ -59,9 +59,9 @@ bool
 ladish_check_vgraph_integrity_port_callback(
   void * context,
   ladish_graph_handle vgraph,
-  bool hidden,
-  void * client_iteration_context_ptr,
-  ladish_client_handle client_handle,
+  bool UNUSED(hidden),
+  void * UNUSED(client_iteration_context_ptr),
+  ladish_client_handle UNUSED(client_handle),
   const char * client_name,
   ladish_port_handle vport,
   const char * port_name,
@@ -100,19 +100,23 @@ ladish_check_vgraph_integrity_port_callback(
 
 bool
 ladish_check_vgraph_integrity_client_end_callback(
-    void * context,
-    ladish_graph_handle graph_handle,
-    bool hidden,
-    ladish_client_handle client_handle,
-    const char * client_name,
-    void * client_iteration_context_ptr)
+  void * UNUSED(context),
+  ladish_graph_handle UNUSED(graph_handle),
+  bool UNUSED(hidden),
+  ladish_client_handle UNUSED(client_handle),
+  const char * UNUSED(client_name),
+  void * UNUSED(client_iteration_context_ptr))
 {
   return true;
 }
 
 #undef ctx_ptr
 
-bool ladish_check_vgraph_integrity(void * context, ladish_graph_handle graph, ladish_app_supervisor_handle app_supervisor)
+bool
+ladish_check_vgraph_integrity(
+  void * context,
+  ladish_graph_handle graph,
+  ladish_app_supervisor_handle UNUSED(app_supervisor))
 {
   ladish_graph_iterate_nodes(
     graph,

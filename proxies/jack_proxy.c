@@ -31,7 +31,11 @@ jack_proxy_callback_server_stopped g_on_server_stopped;
 jack_proxy_callback_server_appeared g_on_server_appeared;
 jack_proxy_callback_server_disappeared g_on_server_disappeared;
 
-static void on_jack_server_started(void * context, DBusMessage * message_ptr)
+static
+void
+on_jack_server_started(
+  void * UNUSED(context),
+  DBusMessage * UNUSED(message_ptr))
 {
   log_debug("JACK server start signal received.");
   if (g_on_server_started != NULL)
@@ -40,7 +44,11 @@ static void on_jack_server_started(void * context, DBusMessage * message_ptr)
   }
 }
 
-static void on_jack_server_stopped(void * context, DBusMessage * message_ptr)
+static
+void
+on_jack_server_stopped(
+  void * UNUSED(context),
+  DBusMessage * UNUSED(message_ptr))
 {
   log_debug("JACK server stop signal received.");
   if (g_on_server_stopped != NULL)
@@ -154,9 +162,10 @@ jack_proxy_is_started(
 
 bool
 jack_proxy_connect_ports(
-  uint64_t port1_id,
-  uint64_t port2_id)
+  uint64_t UNUSED(port1_id),
+  uint64_t UNUSED(port2_id))
 {
+  /* not implemented */
   return false;
 }
 
@@ -635,7 +644,7 @@ struct jack_proxy_session_save_one_reply_cookie
 
 #define cookie_ptr ((struct jack_proxy_session_save_one_reply_cookie *)void_cookie)
 
-static void jack_proxy_session_save_one_handle_reply(void * context, void * void_cookie, DBusMessage * reply_ptr)
+static void jack_proxy_session_save_one_handle_reply(void * UNUSED(context), void * void_cookie, DBusMessage * reply_ptr)
 {
   const char * reply_signature;
   DBusMessageIter top_iter;

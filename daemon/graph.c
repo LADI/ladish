@@ -1303,16 +1303,16 @@ bool ladish_graph_client_looks_empty_internal(struct ladish_graph * graph_ptr, s
     port_ptr = list_entry(node_ptr, struct ladish_graph_port, siblings_client);
     if (!port_ptr->hidden)
     {
-      //log_info("port '%s' is visible, client '%s' does not look empty", port_ptr->name, client_ptr->name);
+      log_debug("port '%s' is visible, client '%s' does not look empty", port_ptr->name, client_ptr->name);
       return false;
     }
     else
     {
-      //log_info("port '%s' is invisible", port_ptr->name);
+      log_debug("port '%s' is invisible", port_ptr->name);
     }
   }
 
-  //log_info("client '%s' looks empty in graph %s", client_ptr->name, graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
+  log_debug("client '%s' looks empty in graph %s", client_ptr->name, graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
   return true;
 }
 
@@ -2975,9 +2975,9 @@ void ladish_graph_trick_dicts(ladish_graph_handle graph_handle)
 static
 bool
 ladish_graph_copy_client_begin_callback(
-  void * context,
+  void * UNUSED(context),
   ladish_graph_handle graph_handle,
-  bool hidden,
+  bool UNUSED(hidden),
   ladish_client_handle client_handle,
   const char * client_name,
   void ** client_iteration_context_ptr_ptr)
@@ -2989,7 +2989,7 @@ ladish_graph_copy_client_begin_callback(
     return false;
   }
 
-  if (!ladish_graph_add_client(context, copy, client_name, false))
+  if (!ladish_graph_add_client(graph_handle, copy, client_name, false))
   {
     ladish_client_destroy(copy);
     return false;
@@ -3003,12 +3003,12 @@ ladish_graph_copy_client_begin_callback(
 static
 bool
 ladish_graph_copy_port_callback(
-  void * context,
+  void * UNUSED(context),
   ladish_graph_handle graph_handle,
-  bool hidden,
+  bool UNUSED(hidden),
   void * client_iteration_context_ptr,
-  ladish_client_handle client_handle,
-  const char * client_name,
+  ladish_client_handle UNUSED(client_handle),
+  const char * UNUSED(client_name),
   ladish_port_handle port_handle,
   const char * port_name,
   uint32_t port_type,
@@ -3021,7 +3021,7 @@ ladish_graph_copy_port_callback(
     return false;
   }
 
-  if (!ladish_graph_add_port(context, client_iteration_context_ptr, copy, port_name, port_type, port_flags, true))
+  if (!ladish_graph_add_port(graph_handle, client_iteration_context_ptr, copy, port_name, port_type, port_flags, true))
   {
     ladish_port_destroy(copy);
     return false;

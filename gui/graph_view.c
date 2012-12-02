@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the graph view object
@@ -127,8 +127,8 @@ project_properties_changed(
   void * context,
   const char * project_dir,
   const char * project_name,
-  const char * project_description,
-  const char * project_notes)
+  const char * UNUSED(project_description),
+  const char * UNUSED(project_notes))
 {
   bool empty;
   char * project_name_buffer;

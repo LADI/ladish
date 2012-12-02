@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to jack session helper functionality
@@ -45,11 +45,11 @@ struct ladish_js_find_app_client_context
 bool
 ladish_js_find_app_client_callback(
   void * context,
-  ladish_graph_handle graph_handle,
+  ladish_graph_handle UNUSED(graph_handle),
   bool hidden,
   ladish_client_handle client_handle,
   const char * client_name,
-  void ** client_iteration_context_ptr_ptr)
+  void ** UNUSED(client_iteration_context_ptr_ptr))
 {
   bool has_callback;
   const char * jack_name;

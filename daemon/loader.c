@@ -164,6 +164,8 @@ static void loader_sigchld_handler(int signum)
   struct loader_child *child_ptr;
   int signal;
 
+  ASSERT(signum == SIGCHLD);
+
   while ((pid = waitpid(-1, &status, WNOHANG)) > 0)
   {
     child_ptr = loader_child_find(pid);

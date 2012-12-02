@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009,2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the project_list class
@@ -82,11 +82,11 @@ bool get_app_view(GtkTreeIter * app_iter_ptr, graph_view_handle * view_ptr)
 static
 gboolean
 on_select(
-  GtkTreeSelection * selection,
+  GtkTreeSelection * UNUSED(selection),
   GtkTreeModel * model,
   GtkTreePath * path,
   gboolean path_currently_selected,
-  gpointer data)
+  gpointer UNUSED(data))
 {
   GtkTreeIter iter;
   graph_view_handle view;
@@ -154,7 +154,7 @@ bool get_selected_app_id(graph_view_handle * view_ptr, uint64_t * id_ptr)
   return true;
 }
 
-void on_popup_menu_action_app_start(GtkWidget * menuitem, gpointer userdata)
+void on_popup_menu_action_app_start(GtkWidget * UNUSED(menuitem), gpointer UNUSED(userdata))
 {
   uint64_t id;
   ladish_app_supervisor_proxy_handle proxy;
@@ -171,7 +171,7 @@ void on_popup_menu_action_app_start(GtkWidget * menuitem, gpointer userdata)
   ladish_app_supervisor_proxy_start_app(proxy, id);
 }
 
-void on_popup_menu_action_app_stop(GtkWidget * menuitem, gpointer userdata)
+void on_popup_menu_action_app_stop(GtkWidget * UNUSED(menuitem), gpointer UNUSED(userdata))
 {
   uint64_t id;
   ladish_app_supervisor_proxy_handle proxy;
@@ -188,7 +188,7 @@ void on_popup_menu_action_app_stop(GtkWidget * menuitem, gpointer userdata)
   ladish_app_supervisor_proxy_stop_app(proxy, id);
 }
 
-void on_popup_menu_action_app_kill(GtkWidget * menuitem, gpointer userdata)
+void on_popup_menu_action_app_kill(GtkWidget * UNUSED(menuitem), gpointer UNUSED(userdata))
 {
   uint64_t id;
   ladish_app_supervisor_proxy_handle proxy;
@@ -205,7 +205,7 @@ void on_popup_menu_action_app_kill(GtkWidget * menuitem, gpointer userdata)
   ladish_app_supervisor_proxy_kill_app(proxy, id);
 }
 
-void on_popup_menu_action_app_remove(GtkWidget * menuitem, gpointer userdata)
+void on_popup_menu_action_app_remove(GtkWidget * UNUSED(menuitem), gpointer UNUSED(userdata))
 {
   uint64_t id;
   ladish_app_supervisor_proxy_handle proxy;
@@ -222,7 +222,7 @@ void on_popup_menu_action_app_remove(GtkWidget * menuitem, gpointer userdata)
   ladish_app_supervisor_proxy_remove_app(proxy, id);
 }
 
-void on_popup_menu_action_app_properties(GtkWidget * menuitem, gpointer userdata)
+void on_popup_menu_action_app_properties(GtkWidget * UNUSED(menuitem), gpointer UNUSED(userdata))
 {
   uint64_t id;
   ladish_app_supervisor_proxy_handle proxy;
@@ -337,7 +337,7 @@ void on_popup_menu_action_app_properties(GtkWidget * menuitem, gpointer userdata
   gtk_widget_hide(g_app_dialog);
 }
 
-void popup_menu(GtkWidget * treeview, GdkEventButton * event)
+void popup_menu(GtkWidget * UNUSED(treeview), GdkEventButton * event)
 {
   GtkTreeSelection * selection;
   GtkTreeIter iter;
@@ -417,7 +417,7 @@ void popup_menu(GtkWidget * treeview, GdkEventButton * event)
   gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, (event != NULL) ? event->button : 0, gdk_event_get_time((GdkEvent *)event));
 }
 
-gboolean on_button_pressed(GtkWidget * treeview, GdkEventButton * event, gpointer userdata)
+gboolean on_button_pressed(GtkWidget * treeview, GdkEventButton * event, gpointer UNUSED(userdata))
 {
   /* single click with the right mouse button? */
   if (event->type == GDK_BUTTON_PRESS && event->button == 3)
@@ -451,13 +451,19 @@ gboolean on_button_pressed(GtkWidget * treeview, GdkEventButton * event, gpointe
   return FALSE; /* we did not handle this */
 }
 
-gboolean on_popup_menu(GtkWidget * treeview, gpointer userdata)
+gboolean on_popup_menu(GtkWidget * treeview, gpointer UNUSED(userdata))
 {
   popup_menu(treeview, NULL);
   return TRUE; /* we handled this */
 }
 
-static void on_row_activated(GtkTreeView * treeview, GtkTreePath * path, GtkTreeViewColumn * col, gpointer userdata)
+static
+void
+on_row_activated(
+  GtkTreeView * UNUSED(treeview),
+  GtkTreePath * path,
+  GtkTreeViewColumn * UNUSED(col),
+  gpointer UNUSED(userdata))
 {
   GtkTreeIter iter;
   gint type;
@@ -640,7 +646,7 @@ void world_tree_name_changed(graph_view_handle view)
   }
 }
 
-static char * get_app_name_string(const char * app_name, bool running, bool terminal, const char * level)
+static char * get_app_name_string(const char * app_name, bool running, bool UNUSED(terminal), const char * level)
 {
   char * app_name_with_status;
   const char * level_string;

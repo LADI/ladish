@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the load project dialog
@@ -111,7 +111,7 @@ static int mtime_sorter(GtkTreeModel * model, GtkTreeIter * a, GtkTreeIter * b, 
 }
 #endif
 
-static gboolean reject_filter(const GtkFileFilterInfo * filter_info, gpointer data)
+static gboolean reject_filter(const GtkFileFilterInfo * UNUSED(filter_info), gpointer UNUSED(data))
 {
   //log_info("filter: '%s'", filter_info->filename);
   return FALSE;
@@ -156,7 +156,7 @@ static void on_dir_select(GtkWidget * widget, gpointer data)
 }
 #endif
 
-static void dir_changed(GtkWidget * widget, gpointer data)
+static void dir_changed(GtkWidget * UNUSED(widget), gpointer data)
 {
   char * dir;
 

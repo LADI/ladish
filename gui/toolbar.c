@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains toolbar related code
@@ -47,7 +47,7 @@ void menu_request_toggle_toolbar(bool visible)
   conf_set_bool(LADISH_CONF_KEY_GLADISH_TOOLBAR_VISIBILITY, visible);
 }
 
-void on_dbus_toggle_toobar(void * context, const char * key, const char * value)
+void on_dbus_toggle_toobar(void * UNUSED(context), const char * UNUSED(key), const char * value)
 {
   bool toolbar_visible;
 

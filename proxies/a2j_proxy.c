@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008,2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009,2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains code that interface with a2jmidid through D-Bus
@@ -33,7 +33,11 @@
 static bool g_a2j_started = false;
 static char * g_a2j_jack_client_name = NULL;
 
-static void on_a2j_bridge_started(void * context, DBusMessage * message_ptr)
+static
+void
+on_a2j_bridge_started(
+  void * UNUSED(context),
+  DBusMessage * UNUSED(message_ptr))
 {
   log_info("a2j bridge start detected.");
 
@@ -46,7 +50,11 @@ static void on_a2j_bridge_started(void * context, DBusMessage * message_ptr)
   g_a2j_started = true;
 }
 
-static void on_a2j_bridge_stopped(void * context, DBusMessage * message_ptr)
+static
+void
+on_a2j_bridge_stopped(
+  void * UNUSED(context),
+  DBusMessage * UNUSED(message_ptr))
 {
   if (g_a2j_jack_client_name != NULL)
   {

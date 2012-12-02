@@ -40,7 +40,7 @@ static GtkWidget * g_dialog;
 static GtkListStore * g_liststore;
 static GtkTreeView * g_treeview;
 
-bool on_key_press_event(GtkWidget * widget_ptr, GdkEventKey * event_ptr, gpointer user_data)
+bool on_key_press_event(GtkWidget * UNUSED(widget_ptr), GdkEventKey * event_ptr, gpointer UNUSED(user_data))
 {
   if (event_ptr->type == GDK_KEY_PRESS &&
       (event_ptr->keyval == GDK_Return ||
@@ -53,7 +53,13 @@ bool on_key_press_event(GtkWidget * widget_ptr, GdkEventKey * event_ptr, gpointe
   return false;
 }
 
-static void on_row_activated(GtkTreeView * treeview, GtkTreePath * path, GtkTreeViewColumn * col, gpointer userdata)
+static
+void
+on_row_activated(
+  GtkTreeView * UNUSED(treeview),
+  GtkTreePath * UNUSED(path),
+  GtkTreeViewColumn * UNUSED(col),
+  gpointer UNUSED(userdata))
 {
   gtk_dialog_response(GTK_DIALOG(g_dialog), 2);
 }
@@ -88,7 +94,7 @@ void create_room_dialog_uninit(void)
   g_object_unref(g_liststore);
 }
 
-static void fill_templates_callback(void * context, const char * template_name)
+static void fill_templates_callback(void * UNUSED(context), const char * template_name)
 {
   GtkTreeIter iter;
 

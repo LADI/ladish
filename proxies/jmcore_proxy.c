@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains  code that interfaces the jmcore through D-Bus
@@ -29,7 +29,7 @@
 
 int64_t g_jmcore_pid;
 
-static void on_jmcore_life_status_changed(bool appeared)
+static void on_jmcore_life_status_changed(bool UNUSED(appeared))
 {
   g_jmcore_pid = 0;
 }

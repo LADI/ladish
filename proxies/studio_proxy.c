@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the helper functionality
@@ -36,7 +36,7 @@ static void (* g_room_appeared_calback)(const char * opath, const char * name, c
 static void (* g_room_disappeared_calback)(const char * opath, const char * name, const char * template) = NULL;
 static void (* g_room_changed_calback)(const char * opath, const char * name, const char * template) = NULL;
 
-static void on_studio_renamed(void * context, DBusMessage * message_ptr)
+static void on_studio_renamed(void * UNUSED(context), DBusMessage * message_ptr)
 {
   char * name;
 
@@ -95,7 +95,7 @@ static bool extract_room_info_from_signal(DBusMessage * message_ptr, const char 
   return extract_room_info(&iter, opath, name, template);
 }
 
-static void on_studio_started(void * context, DBusMessage * message_ptr)
+static void on_studio_started(void * UNUSED(context), DBusMessage * UNUSED(message_ptr))
 {
   log_info("StudioStarted");
 
@@ -105,7 +105,7 @@ static void on_studio_started(void * context, DBusMessage * message_ptr)
   }
 }
 
-static void on_studio_stopped(void * context, DBusMessage * message_ptr)
+static void on_studio_stopped(void * UNUSED(context), DBusMessage * UNUSED(message_ptr))
 {
   log_info("StudioStopped");
 
@@ -115,7 +115,7 @@ static void on_studio_stopped(void * context, DBusMessage * message_ptr)
   }
 }
 
-static void on_studio_crashed(void * context, DBusMessage * message_ptr)
+static void on_studio_crashed(void * UNUSED(context), DBusMessage * UNUSED(message_ptr))
 {
   log_info("StudioCrashed");
 
@@ -125,7 +125,7 @@ static void on_studio_crashed(void * context, DBusMessage * message_ptr)
   }
 }
 
-static void on_room_appeared(void * context, DBusMessage * message_ptr)
+static void on_room_appeared(void * UNUSED(context), DBusMessage * message_ptr)
 {
   const char * opath;
   const char * name;
@@ -139,7 +139,7 @@ static void on_room_appeared(void * context, DBusMessage * message_ptr)
   }
 }
 
-static void on_room_disappeared(void * context, DBusMessage * message_ptr)
+static void on_room_disappeared(void * UNUSED(context), DBusMessage * message_ptr)
 {
   const char * opath;
   const char * name;
@@ -153,7 +153,7 @@ static void on_room_disappeared(void * context, DBusMessage * message_ptr)
   }
 }
 
-static void on_room_changed(void * context, DBusMessage * message_ptr)
+static void on_room_changed(void * UNUSED(context), DBusMessage * message_ptr)
 {
   const char * opath;
   const char * name;

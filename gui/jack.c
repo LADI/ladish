@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009,2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2007 Dave Robillard <http://drobilla.net>
  *
  **************************************************************************
@@ -163,7 +163,7 @@ static void update_load(void)
   }
 }
 
-static gboolean poll_jack(gpointer data)
+static gboolean poll_jack(gpointer UNUSED(data))
 {
   update_load();
   update_buffer_size(false);

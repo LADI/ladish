@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008,2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009,2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -544,7 +544,7 @@ fail:
 
 #define array_iter_ptr ((DBusMessageIter *)context)
 
-static bool get_studio_list_callback(void * call_ptr, void * context, const char * studio, uint32_t modtime)
+static bool get_studio_list_callback(void * UNUSED(call_ptr), void * context, const char * studio, uint32_t modtime)
 {
   DBusMessageIter struct_iter;
   DBusMessageIter dict_iter;

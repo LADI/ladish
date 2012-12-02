@@ -672,7 +672,7 @@ free:
   return;
 }
 
-static void callback_elend(void * data, const char * el)
+static void callback_elend(void * data, const char * UNUSED(el))
 {
   char * src;
   char * dst;

@@ -670,7 +670,7 @@ free:
   free(name_dup);
 }
 
-static void callback_elend(void * data, const char * el)
+static void callback_elend(void * data, const char * UNUSED(el))
 {
   if (context_ptr->error)
   {

@@ -137,7 +137,12 @@ struct find_link_port_context
 
 #define find_link_port_context_ptr ((struct find_link_port_context *)context)
 
-static bool find_link_port_vgraph_callback_by_uuid(void * context, ladish_graph_handle graph, ladish_app_supervisor_handle app_supervisor)
+static
+bool
+find_link_port_vgraph_callback_by_uuid(
+  void * context,
+  ladish_graph_handle graph,
+  ladish_app_supervisor_handle UNUSED(app_supervisor))
 {
   ladish_port_handle port;
 
@@ -152,7 +157,12 @@ static bool find_link_port_vgraph_callback_by_uuid(void * context, ladish_graph_
   return true;                  /* continue vgraph iteration */
 }
 
-static bool find_link_port_vgraph_callback_by_jack_id(void * context, ladish_graph_handle graph, ladish_app_supervisor_handle app_supervisor)
+static
+bool
+find_link_port_vgraph_callback_by_jack_id(
+  void * context,
+  ladish_graph_handle graph,
+  ladish_app_supervisor_handle UNUSED(app_supervisor))
 {
   ladish_port_handle port;
   bool room;
@@ -174,7 +184,12 @@ static bool find_link_port_vgraph_callback_by_jack_id(void * context, ladish_gra
 
 #undef find_link_port_context_ptr
 
-static ladish_graph_handle find_link_port_vgraph_by_uuid(struct virtualizer * virtualizer_ptr, const char * port_name, ladish_port_handle * port_ptr)
+static
+ladish_graph_handle
+find_link_port_vgraph_by_uuid(
+  struct virtualizer * UNUSED(virtualizer_ptr),
+  const char * port_name,
+  ladish_port_handle * port_ptr)
 {
   struct find_link_port_context context;
 
@@ -192,7 +207,12 @@ static ladish_graph_handle find_link_port_vgraph_by_uuid(struct virtualizer * vi
   return context.graph;
 }
 
-static ladish_graph_handle find_link_port_vgraph_by_jack_id(struct virtualizer * virtualizer_ptr, uint64_t jack_id, ladish_port_handle * port_ptr)
+static
+ladish_graph_handle
+find_link_port_vgraph_by_jack_id(
+  struct virtualizer * UNUSED(virtualizer_ptr),
+  uint64_t jack_id,
+  ladish_port_handle * port_ptr)
 {
   struct find_link_port_context context;
 
@@ -248,7 +268,7 @@ lookup_port(
 
 #define virtualizer_ptr ((struct virtualizer *)context)
 
-static void clear(void * context)
+static void clear(void * UNUSED(context))
 {
   log_info("clear");
 }
@@ -398,14 +418,14 @@ static void port_disappeared(void * context, uint64_t client_id, uint64_t port_i
 bool
 force_port_disappear(
   void * context,
-  ladish_graph_handle graph_handle,
+  ladish_graph_handle UNUSED(graph_handle),
   bool hidden,
   ladish_client_handle client_handle,
   const char * client_name,
   ladish_port_handle port_handle,
   const char * port_name,
-  uint32_t port_type,
-  uint32_t port_flags)
+  uint32_t UNUSED(port_type),
+  uint32_t UNUSED(port_flags))
 {
   uint64_t client_id;
   uint64_t port_id;
@@ -996,12 +1016,19 @@ static void port_disappeared(void * context, uint64_t client_id, uint64_t port_i
   }
 }
 
-static void port_renamed(void * context, uint64_t client_id, uint64_t port_id, const char * old_port_name, const char * new_port_name)
+static
+void
+port_renamed(
+  void * context,
+  uint64_t client_id,
+  uint64_t port_id,
+  const char * old_port_name,
+  const char * new_port_name)
 {
   ladish_port_handle port;
   ladish_graph_handle vgraph;
 
-  log_info("port_renamed(%"PRIu64", '%s', '%s')", port_id, old_port_name, new_port_name);
+  log_info("port_renamed(%"PRIu64":%"PRIu64", '%s', '%s')", client_id, port_id, old_port_name, new_port_name);
 
   port = ladish_graph_find_port_by_jack_id(virtualizer_ptr->jack_graph, port_id, true, true);
   if (port == NULL)
@@ -1323,9 +1350,9 @@ bool
 remove_app_port(
   void * context,
   ladish_graph_handle graph_handle,
-  bool hidden,
-  void * client_iteration_context_ptr,
-  ladish_client_handle client_handle,
+  bool UNUSED(hidden),
+  void * UNUSED(client_iteration_context_ptr),
+  ladish_client_handle UNUSED(client_handle),
   const char * client_name,
   ladish_port_handle port_handle,
   const char * port_name,
@@ -1465,7 +1492,7 @@ void
 ladish_virtualizer_rename_app(
   void * vgraph_context,
   const uuid_t uuid,
-  const char * old_name,
+  const char * UNUSED(old_name),
   const char * new_app_name)
 {
   ladish_client_handle client;
@@ -1514,12 +1541,12 @@ bool
 move_capture_port_callback(
   void * context,
   ladish_graph_handle graph_handle,
-  bool hidden,
+  bool UNUSED(hidden),
   ladish_client_handle client_handle,
-  const char * client_name,
+  const char * UNUSED(client_name),
   ladish_port_handle port_handle,
-  const char * port_name,
-  uint32_t port_type,
+  const char * UNUSED(port_name),
+  uint32_t UNUSED(port_type),
   uint32_t port_flags)
 {
   ASSERT(client_handle != context); /* source and destination clients must be differ */
@@ -1571,13 +1598,13 @@ bool
 move_port_callback(
   void * context,
   ladish_graph_handle graph_handle,
-  bool hidden,
+  bool UNUSED(hidden),
   ladish_client_handle client_handle,
-  const char * client_name,
+  const char * UNUSED(client_name),
   ladish_port_handle port_handle,
-  const char * port_name,
-  uint32_t port_type,
-  uint32_t port_flags)
+  const char * UNUSED(port_name),
+  uint32_t UNUSED(port_type),
+  uint32_t UNUSED(port_flags))
 {
   ASSERT(client_handle != context); /* source and destination clients must be differ */
   ladish_graph_move_port(graph_handle, port_handle, context);

@@ -117,7 +117,7 @@ static void on_life_status_changed(bool appeared)
   }
 }
 
-static void on_conf_changed(void * context, DBusMessage * message_ptr)
+static void on_conf_changed(void * UNUSED(context), DBusMessage * message_ptr)
 {
   const char * key;
   const char * value;

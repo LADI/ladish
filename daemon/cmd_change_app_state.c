@@ -70,7 +70,12 @@ static bool run_target_start(struct ladish_command_change_app_state * cmd_ptr, l
   return true;
 }
 
-static bool run_target_stop(struct ladish_command_change_app_state * cmd_ptr, ladish_app_supervisor_handle supervisor, ladish_app_handle app)
+static
+bool
+run_target_stop(
+  struct ladish_command_change_app_state * cmd_ptr,
+  ladish_app_supervisor_handle UNUSED(supervisor),
+  ladish_app_handle app)
 {
   const char * app_name;
   uuid_t app_uuid;

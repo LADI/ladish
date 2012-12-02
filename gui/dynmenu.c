@@ -57,7 +57,7 @@ struct ladish_dynmenu_item_data
   ladish_dynmenu_item_activate_callback item_activate_callback;
 };
 
-void on_activate_item(GtkMenuItem * item, struct ladish_dynmenu_item_data * data_ptr)
+void on_activate_item(GtkMenuItem * UNUSED(item), struct ladish_dynmenu_item_data * data_ptr)
 {
   //log_info("on_activate_item('%s')", gtk_label_get_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(data_ptr->item)))));
 
@@ -68,7 +68,7 @@ void on_activate_item(GtkMenuItem * item, struct ladish_dynmenu_item_data * data
 
 #define data_ptr ((struct ladish_dynmenu_item_data *)data)
 
-void free_item_data(gpointer data, GClosure * closure)
+void free_item_data(gpointer data, GClosure * UNUSED(closure))
 {
   //log_info("data_ptr %p deallocate", data_ptr);
 

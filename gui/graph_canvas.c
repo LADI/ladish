@@ -174,7 +174,7 @@ module_location_changed(
     y_str);
 }
 
-static void on_popup_menu_action_client_rename(GtkWidget * menuitem, gpointer module_context)
+static void on_popup_menu_action_client_rename(GtkWidget * UNUSED(menuitem), gpointer module_context)
 {
   log_info("on_popup_menu_action_client_rename %"PRIu64, client_ptr->id);
 
@@ -191,13 +191,13 @@ static void on_popup_menu_action_client_rename(GtkWidget * menuitem, gpointer mo
   }
 }
 
-static void on_popup_menu_action_split(GtkWidget * menuitem, gpointer module_context)
+static void on_popup_menu_action_split(GtkWidget * UNUSED(menuitem), gpointer module_context)
 {
   //log_info("on_popup_menu_action_split");
   graph_proxy_split(client_ptr->owner_ptr->graph, client_ptr->id);
 }
 
-static void on_popup_menu_action_remove(GtkWidget * menuitem, gpointer module_context)
+static void on_popup_menu_action_remove(GtkWidget * UNUSED(menuitem), gpointer module_context)
 {
   //log_info("on_popup_menu_action_split");
   if (!graph_proxy_remove_client(client_ptr->owner_ptr->graph, client_ptr->id))
@@ -237,7 +237,7 @@ static void fill_module_menu(GtkMenu * menu, void * module_context)
 
 #define port_ptr ((struct port *)port_context)
 
-static void on_popup_menu_action_port_rename(GtkWidget * menuitem, gpointer port_context)
+static void on_popup_menu_action_port_rename(GtkWidget * UNUSED(menuitem), gpointer port_context)
 {
   log_info("on_popup_menu_action_port_rename %"PRIu64, port_ptr->id);
 
@@ -254,7 +254,7 @@ static void on_popup_menu_action_port_rename(GtkWidget * menuitem, gpointer port
   }
 }
 
-static void on_popup_menu_action_port_move(GtkWidget * menuitem, gpointer port_context)
+static void on_popup_menu_action_port_move(GtkWidget * UNUSED(menuitem), gpointer port_context)
 {
   struct client * client_ptr;
 
@@ -293,7 +293,7 @@ static void fill_port_menu(GtkMenu * menu, void * port_context)
 
 #define canvas_ptr ((struct graph_canvas *)canvas_context)
 
-static void on_popup_menu_action_join_clients(GtkWidget * menuitem, gpointer canvas_context)
+static void on_popup_menu_action_join_clients(GtkWidget * UNUSED(menuitem), gpointer canvas_context)
 {
   struct client * client1_ptr;
   struct client * client2_ptr;
@@ -309,7 +309,7 @@ static void on_popup_menu_action_join_clients(GtkWidget * menuitem, gpointer can
   }
 }
 
-static void on_popup_menu_action_new_client(GtkWidget * menuitem, gpointer canvas_context)
+static void on_popup_menu_action_new_client(GtkWidget * UNUSED(menuitem), gpointer canvas_context)
 {
   char * new_name;
   uint64_t client_id;
@@ -554,7 +554,7 @@ port_appeared(
   uint64_t port_id,
   const char * port_name,
   bool is_input,
-  bool is_terminal,
+  bool UNUSED(is_terminal),
   bool is_midi)
 {
   int color;

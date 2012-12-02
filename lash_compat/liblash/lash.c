@@ -237,26 +237,26 @@ exit:
 }
 
 LADISH_PUBLIC
-const char * lash_protocol_string(lash_protocol_t protocol)
+const char * lash_protocol_string(lash_protocol_t UNUSED(protocol))
 {
   return "ladish";
 }
 
 LADISH_PUBLIC
-lash_args_t * lash_extract_args(int * argc, char *** argv)
+lash_args_t * lash_extract_args(int * UNUSED(argc), char *** UNUSED(argv))
 {
   /* nothing to do, ladish does not pass any specific arguments */
 	return NULL;
 }
 
 LADISH_PUBLIC
-void lash_args_destroy(lash_args_t * args)
+void lash_args_destroy(lash_args_t * UNUSED(args))
 {
   /* nothing to do, ladish does not pass any specific arguments */
 }
 
 LADISH_PUBLIC
-lash_client_t * lash_init(const lash_args_t * args, const char * class, int client_flags, lash_protocol_t protocol)
+lash_client_t * lash_init(const lash_args_t * UNUSED(args), const char * class, int client_flags, lash_protocol_t UNUSED(protocol))
 {
   DBusError error;
   DBusMessage * msg_ptr;
@@ -681,7 +681,7 @@ void lash_event_set_string(lash_event_t * event_ptr, const char * string)
 }
 
 LADISH_PUBLIC
-const char * lash_event_get_project(const lash_event_t * event_ptr)
+const char * lash_event_get_project(const lash_event_t * UNUSED(event_ptr))
 {
   /* Server interface - not implemented */
   ASSERT_NO_PASS;               /* lash_init() fails if LASH_Server_Interface is set */
@@ -689,28 +689,28 @@ const char * lash_event_get_project(const lash_event_t * event_ptr)
 }
 
 LADISH_PUBLIC
-void lash_event_set_project(lash_event_t * event_ptr, const char * project)
+void lash_event_set_project(lash_event_t * UNUSED(event_ptr), const char * UNUSED(project))
 {
   /* Server interface - not implemented */
   ASSERT_NO_PASS;               /* lash_init() fails if LASH_Server_Interface is set */
 }
 
 LADISH_PUBLIC
-void lash_event_get_client_id(const lash_event_t * event_ptr, uuid_t id)
+void lash_event_get_client_id(const lash_event_t * UNUSED(event_ptr), uuid_t UNUSED(id))
 {
   /* Server interface - not implemented */
   ASSERT_NO_PASS;               /* lash_init() fails if LASH_Server_Interface is set */
 }
  
 LADISH_PUBLIC
-void lash_event_set_client_id(lash_event_t * event_ptr, uuid_t id)
+void lash_event_set_client_id(lash_event_t * UNUSED(event_ptr), uuid_t UNUSED(id))
 {
   /* Server interface - not implemented */
   ASSERT_NO_PASS;               /* lash_init() fails if LASH_Server_Interface is set */
 }
 
 LADISH_PUBLIC
-unsigned char lash_event_get_alsa_client_id(const lash_event_t * event_ptr)
+unsigned char lash_event_get_alsa_client_id(const lash_event_t * UNUSED(event_ptr))
 {
   /* Server interface - not implemented */
   ASSERT_NO_PASS;               /* lash_init() fails if LASH_Server_Interface is set */
@@ -718,7 +718,7 @@ unsigned char lash_event_get_alsa_client_id(const lash_event_t * event_ptr)
 }
 
 LADISH_PUBLIC
-unsigned char lash_str_get_alsa_client_id(const char * str)
+unsigned char lash_str_get_alsa_client_id(const char * UNUSED(str))
 {
   /* Server interface - not implemented */
   ASSERT_NO_PASS;               /* lash_init() fails if LASH_Server_Interface is set */
@@ -727,27 +727,27 @@ unsigned char lash_str_get_alsa_client_id(const char * str)
 }
 
 LADISH_PUBLIC
-void lash_jack_client_name(lash_client_t * client_ptr, const char * name)
+void lash_jack_client_name(lash_client_t * UNUSED(client_ptr), const char * UNUSED(name))
 {
   /* nothing to do, ladish detects jack client name through jack server */
 }
 
 LADISH_PUBLIC
-void lash_str_set_alsa_client_id(char * str, unsigned char alsa_id)
+void lash_str_set_alsa_client_id(char * UNUSED(str), unsigned char UNUSED(alsa_id))
 {
   /* nothing to do, ladish detects alsa id through alsapid.so, jack and a2jmidid */
   /* this is an undocumented function and probably internal one that sneaked to the public API */
 }
 
 LADISH_PUBLIC
-void lash_event_set_alsa_client_id(lash_event_t * event_ptr, unsigned char alsa_id)
+void lash_event_set_alsa_client_id(lash_event_t * event_ptr, unsigned char UNUSED(alsa_id))
 {
   /* set event type, so we can silently ignore the event, when sent */
 	lash_event_set_type(event_ptr, LASH_Alsa_Client_ID);
 }
 
 LADISH_PUBLIC
-void lash_alsa_client_id(lash_client_t * client, unsigned char id)
+void lash_alsa_client_id(lash_client_t * UNUSED(client), unsigned char UNUSED(id))
 {
   /* nothing to do, ladish detects alsa id through alsapid.so, jack and a2jmidid */
 }
@@ -982,7 +982,7 @@ const char * lash_get_fqn(const char * dir, const char * file)
 /***************************************************************************/
 /* D-Bus interface implementation */
 
-static void lash_quit(struct cdbus_method_call * call_ptr)
+static void lash_quit(struct cdbus_method_call * UNUSED(call_ptr))
 {
   log_debug("Quit command received through D-Bus");
   g_quit = true;
