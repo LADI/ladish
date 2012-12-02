@@ -2975,8 +2975,8 @@ void ladish_graph_trick_dicts(ladish_graph_handle graph_handle)
 static
 bool
 ladish_graph_copy_client_begin_callback(
-  void * UNUSED(context),
-  ladish_graph_handle graph_handle,
+  void * context,
+  ladish_graph_handle UNUSED(graph_handle),
   bool UNUSED(hidden),
   ladish_client_handle client_handle,
   const char * client_name,
@@ -2989,7 +2989,7 @@ ladish_graph_copy_client_begin_callback(
     return false;
   }
 
-  if (!ladish_graph_add_client(graph_handle, copy, client_name, false))
+  if (!ladish_graph_add_client(context, copy, client_name, false))
   {
     ladish_client_destroy(copy);
     return false;
@@ -3003,8 +3003,8 @@ ladish_graph_copy_client_begin_callback(
 static
 bool
 ladish_graph_copy_port_callback(
-  void * UNUSED(context),
-  ladish_graph_handle graph_handle,
+  void * context,
+  ladish_graph_handle UNUSED(graph_handle),
   bool UNUSED(hidden),
   void * client_iteration_context_ptr,
   ladish_client_handle UNUSED(client_handle),
@@ -3021,7 +3021,7 @@ ladish_graph_copy_port_callback(
     return false;
   }
 
-  if (!ladish_graph_add_port(graph_handle, client_iteration_context_ptr, copy, port_name, port_type, port_flags, true))
+  if (!ladish_graph_add_port(context, client_iteration_context_ptr, copy, port_name, port_type, port_flags, true))
   {
     ladish_port_destroy(copy);
     return false;
