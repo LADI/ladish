@@ -1308,7 +1308,7 @@ void ladish_app_supervisor_dump(ladish_app_supervisor_handle supervisor_handle)
     uuid_unparse(app_ptr->uuid, uuid_str);
     log_info("app '%s' with commandline '%s'", app_ptr->name, app_ptr->commandline);
     log_info("  %s", uuid_str);
-    log_info("  %s, %s, level '%s'", app_ptr->terminal ? "terminal" : "shell", app_ptr->autorun ? "autorun" : "stopped", app_ptr->level, app_ptr->commandline);
+    log_info("  %s, %s, level '%s'", app_ptr->terminal ? "terminal" : "shell", app_ptr->autorun ? "autorun" : "stopped", app_ptr->level);
   }
 }
 

@@ -1345,7 +1345,7 @@ remove_app_port(
   vgraph = ladish_port_get_vgraph(port_handle);
   if (vgraph == NULL)
   {
-    log_error("port '%s':'%s' of app '5s' has no vgraph", client_name, port_name, app_info_ptr->app_name);
+    log_error("port '%s':'%s' of app '%s' has no vgraph", client_name, port_name, app_info_ptr->app_name);
     ASSERT_NO_PASS;
     return true;
   }

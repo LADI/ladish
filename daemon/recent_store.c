@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010, 2011, 2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the recent items store
@@ -106,7 +106,7 @@ ladish_recent_store_load(
   buffer = malloc(buffer_size + 1);
   if (buffer == NULL)
   {
-    log_error("malloc() failed to allocate %zy byte buffer for reading the contents of the recent items file '%s'", buffer_size + 1, store_ptr->path);
+    log_error("malloc() failed to allocate %zu byte buffer for reading the contents of the recent items file '%s'", buffer_size + 1, store_ptr->path);
     goto close;
   }
 

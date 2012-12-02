@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008,2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009,2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  *
  **************************************************************************
@@ -155,10 +155,10 @@ void cdbus_introspection_destroy(struct cdbus_object_path *path)
     dbus_message_unref(path->introspection);
     path->introspection = NULL;
   }
-#ifdef LADISH_DEBUG
   else
+  {
     log_debug("Nothing to destroy");
-#endif
+  }
 }
 
 static bool cdbus_introspection_handler(const struct cdbus_interface_descriptor * interface, struct cdbus_method_call * call_ptr)
@@ -403,9 +403,7 @@ handled:
 
 static void cdbus_object_path_handler_unregister(DBusConnection * connection_ptr, void * data)
 {
-#ifdef LADISH_DEBUG
-  log_debug("Message handler of object path %s was unregistered", (opath_ptr && path->name) ? opath_ptr->name : "<unknown>");
-#endif /* LADISH_DEBUG */
+  log_debug("Message handler of object path %s was unregistered", (opath_ptr && opath_ptr->name) ? opath_ptr->name : "<unknown>");
 }
 
 bool cdbus_object_path_register(DBusConnection * connection_ptr, cdbus_object_path data)

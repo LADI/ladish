@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the "change app state" command
@@ -48,7 +48,7 @@ static bool run_target_start(struct ladish_command_change_app_state * cmd_ptr, l
 
   if (!ladish_studio_is_started())
   {
-    log_error("cannot start app because studio is not started", cmd_ptr->opath);
+    log_error("cannot start app because studio is not started");
     ladish_notify_simple(LADISH_NOTIFY_URGENCY_HIGH, "Cannot start app because studio is not started", NULL);
     return false;
   }

@@ -2821,13 +2821,13 @@ void ladish_graph_dump(ladish_graph_handle graph_handle)
 
 void ladish_graph_clear_persist(ladish_graph_handle graph_handle)
 {
-  log_info("Clearing persist flag for graph", graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
+  log_info("Clearing persist flag for graph %s", graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
   graph_ptr->persist = false;
 }
 
 void ladish_graph_set_persist(ladish_graph_handle graph_handle)
 {
-  log_info("Setting persist flag for graph", graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
+  log_info("Setting persist flag for graph %s", graph_ptr->opath != NULL ? graph_ptr->opath : "JACK");
   graph_ptr->persist = true;
 }
 
