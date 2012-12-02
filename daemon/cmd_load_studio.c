@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010, 2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the "load studio" command
@@ -50,7 +50,7 @@ static void callback_chrdata(void * data, const XML_Char * s, int len)
       context_ptr->element[context_ptr->depth] == PARSE_CONTEXT_KEY ||
       context_ptr->element[context_ptr->depth] == PARSE_CONTEXT_APPLICATION)
   {
-    if (context_ptr->data_used + len >= sizeof(context_ptr->data))
+    if ((size_t)(context_ptr->data_used + len) >= sizeof(context_ptr->data))
     {
       log_error("xml parse max char data length reached");
       context_ptr->error = XML_TRUE;

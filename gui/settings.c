@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the settings dialog
@@ -31,7 +31,7 @@
 
 void menu_request_settings(void)
 {
-  guint result;
+  gint result;
   GtkDialog * dialog;
   GtkToggleButton * autostart_studio_button;
   GtkToggleButton * send_notifications_button;

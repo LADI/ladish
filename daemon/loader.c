@@ -444,7 +444,7 @@ loader_read_child_output(
       *buffer_ptr_ptr = buffer_ptr + left;
     }
   }
-  while (ret == max_read);      /* if we have read everything as much as we can, then maybe there is more to read */
+  while ((size_t)ret == max_read);      /* if we have read everything as much as we can, then maybe there is more to read */
 }
 
 static void

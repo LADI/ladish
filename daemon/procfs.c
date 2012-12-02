@@ -97,7 +97,7 @@ loop:
   ret = read(fd, read_ptr, max);
   if (ret > 0)
   {
-    ASSERT(ret <= max);
+    ASSERT((size_t)ret <= max);
     read_ptr += ret;
     used_size += ret;
     ASSERT(used_size <= buffer_size);
@@ -191,7 +191,7 @@ procfs_get_process_cmdline(
   argc = 0;
   temp_ptr = cmdline_ptr;
 
-  while (temp_ptr - cmdline_ptr < cmdline_size)
+  while ((size_t)(temp_ptr - cmdline_ptr) < cmdline_size)
   {
     if (*temp_ptr == 0)
     {
@@ -214,7 +214,7 @@ procfs_get_process_cmdline(
 
   for (i = 0; i < argc; i++)
   {
-    ASSERT(temp_ptr - cmdline_ptr < cmdline_size);
+    ASSERT((size_t)(temp_ptr - cmdline_ptr) < cmdline_size);
 
     argv[i] = strdup(temp_ptr);
     if (argv[i] == NULL)

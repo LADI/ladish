@@ -117,7 +117,7 @@ ladish_recent_store_load(
     goto free;
   }
 
-  if (ret < (size_t)buffer_size)
+  if ((size_t)ret < buffer_size)
   {
     /* this could be handled better but we dont care because it is expected for the file to be small enough */
     log_error("read(%s) returned less bytes than requested", store_ptr->path);
