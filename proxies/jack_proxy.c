@@ -24,8 +24,6 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-//#define LADISH_DEBUG
-
 #include "jack_proxy.h"
 
 jack_proxy_callback_server_started g_on_server_started;

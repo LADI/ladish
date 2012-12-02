@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009, 2012 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  * Copyright (C) 2002 Robert Ham <rah@bash.sh>
  *
@@ -49,45 +49,32 @@
 # endif
 #endif
 
-#ifndef LOG_OUTPUT_STDOUT
-
-# define LADISH_LOG_LEVEL_DEBUG        0
-# define LADISH_LOG_LEVEL_INFO         1
-# define LADISH_LOG_LEVEL_WARN         2
-# define LADISH_LOG_LEVEL_ERROR        3
-# define LADISH_LOG_LEVEL_ERROR_PLAIN  4
-
+#ifdef __cplusplus
+extern "C"
+#endif
 void
-ladish_log(unsigned int  level,
-         const char   *format,
-                       ...);
+ladish_log(
+  unsigned int level,
+  const char * file,
+  unsigned int line,
+  const char * func,
+  const char * format,
+  ...)
+#if defined (__GNUC__)
+  __attribute__((format(printf, 5, 6)))
+#endif
+  ;
 
-# ifdef LADISH_DEBUG
-#   define log_debug(fmt, args...) \
-      ladish_log(LADISH_LOG_LEVEL_DEBUG, "%s:%d:%s: " fmt "\n", __FILE__, __LINE__, __func__, ## args)
-# else
-#   define log_debug(fmt, args...)
-# endif /* LADISH_DEBUG */
+#define LADISH_LOG_LEVEL_DEBUG        0
+#define LADISH_LOG_LEVEL_INFO         1
+#define LADISH_LOG_LEVEL_WARN         2
+#define LADISH_LOG_LEVEL_ERROR        3
+#define LADISH_LOG_LEVEL_ERROR_PLAIN  4
 
-# define log_info(fmt, args...) ladish_log(LADISH_LOG_LEVEL_INFO, fmt "\n", ## args)
-# define log_warn(fmt, args...) ladish_log(LADISH_LOG_LEVEL_WARN, ANSI_COLOR_YELLOW "WARNING: " ANSI_RESET "%s: " fmt "\n", __func__, ## args)
-# define log_error(fmt, args...) ladish_log(LADISH_LOG_LEVEL_ERROR, ANSI_COLOR_RED "ERROR: " ANSI_RESET "%s: " fmt "\n", __func__, ## args)
-# define log_error_plain(fmt, args...) ladish_log(LADISH_LOG_LEVEL_ERROR_PLAIN, ANSI_COLOR_RED "ERROR: " ANSI_RESET fmt "\n", ## args)
-
-#else /* LOG_OUTPUT_STDOUT */
-
-# ifdef LADISH_DEBUG
-#   define log_debug(fmt, args...) \
-      printf("%s:%d:%s: " fmt "\n", __FILE__, __LINE__, __func__, ## args)
-# else
-#   define log_debug(fmt, args...)
-# endif /* LADISH_DEBUG */
-
-# define log_info(fmt, args...) printf(fmt "\n", ## args)
-# define log_warn(fmt, args...) printf(fmt "\n", ## args)
-# define log_error(fmt, args...) fprintf(stderr, "%s: " fmt "\n", __func__, ## args)
-# define log_error_plain(fmt, args...) fprintf(stderr, fmt "\n", ## args)
-
-#endif /* LOG_OUTPUT_STDOUT */
+#define log_debug(fmt, args...)       ladish_log(LADISH_LOG_LEVEL_DEBUG,       __FILE__, __LINE__, __func__, fmt, ## args)
+#define log_info(fmt, args...)        ladish_log(LADISH_LOG_LEVEL_INFO,        __FILE__, __LINE__, __func__, fmt, ## args)
+#define log_warn(fmt, args...)        ladish_log(LADISH_LOG_LEVEL_WARN,        __FILE__, __LINE__, __func__, fmt, ## args)
+#define log_error(fmt, args...)       ladish_log(LADISH_LOG_LEVEL_ERROR,       __FILE__, __LINE__, __func__, fmt, ## args)
+#define log_error_plain(fmt, args...) ladish_log(LADISH_LOG_LEVEL_ERROR_PLAIN, __FILE__, __LINE__, __func__, fmt, ## args)
 
 #endif /* __LADISH_LOG__ */

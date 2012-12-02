@@ -348,7 +348,6 @@ def build(bld):
     for source in [
         'main.c',
         'loader.c',
-        'log.c',
         'sigsegv.c',
         'proctitle.c',
         'appdb.c',
@@ -417,6 +416,7 @@ def build(bld):
         daemon.source.append(os.path.join("cdbus", source))
 
     for source in [
+        'log.c',
         'time.c',
         'dirhelpers.c',
         'catdup.c',
@@ -435,6 +435,11 @@ def build(bld):
     jmcore.uselib = 'DBUS-1 JACK'
     jmcore.defines = ['LOG_OUTPUT_STDOUT']
     jmcore.source = ['jmcore.c']
+
+    for source in [
+        'log.c',
+        ]:
+        jmcore.source.append(os.path.join("common", source))
 
     for source in [
         #'signal.c',
@@ -456,6 +461,7 @@ def build(bld):
     ladiconfd.source = ['conf.c']
 
     for source in [
+        'log.c',
         'dirhelpers.c',
         'catdup.c',
         ]:
@@ -609,6 +615,7 @@ def build(bld):
             gladish.source.append(os.path.join("cdbus", source))
 
         for source in [
+            'log.c',
             'catdup.c',
             'file.c',
             ]:

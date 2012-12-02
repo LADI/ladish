@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008, 2009, 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008, 2009, 2010, 2012 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Marc-Olivier Barre
  *
  **************************************************************************
@@ -39,6 +39,7 @@
 #define LADISH_XDG_SUBDIR "/" BASE_NAME
 #define LADISH_XDG_LOG "/" BASE_NAME ".log"
 
+#if !defined(LOG_OUTPUT_STDOUT)
 static ino_t g_log_file_ino;
 static FILE * g_logfile;
 static char * g_log_filename;
@@ -153,23 +154,56 @@ void ladish_log_uninit()
 
   free(g_log_filename);
 }
+#endif  /* #if !defined(LOG_OUTPUT_STDOUT) */
+
+#if 0
+# define log_debug(fmt, args...) ladish_log(LADISH_LOG_LEVEL_DEBUG, "%s:%d:%s: " fmt "\n", __FILE__, __LINE__, __func__, ## args)
+# define log_info(fmt, args...) ladish_log(LADISH_LOG_LEVEL_INFO, fmt "\n", ## args)
+# define log_warn(fmt, args...) ladish_log(LADISH_LOG_LEVEL_WARN, ANSI_COLOR_YELLOW "WARNING: " ANSI_RESET "%s: " fmt "\n", __func__, ## args)
+# define log_error(fmt, args...) ladish_log(LADISH_LOG_LEVEL_ERROR, ANSI_COLOR_RED "ERROR: " ANSI_RESET "%s: " fmt "\n", __func__, ## args)
+# define log_error_plain(fmt, args...) ladish_log(LADISH_LOG_LEVEL_ERROR_PLAIN, ANSI_COLOR_RED "ERROR: " ANSI_RESET fmt "\n", ## args)
+#endif
+
+static
+bool
+ladish_log_enabled(
+  unsigned int level,
+  const char * file,
+  unsigned int line,
+  const char * func)
+{
+  return level != LADISH_LOG_LEVEL_DEBUG;
+}
 
 void
 ladish_log(
   unsigned int level,
+  const char * file,
+  unsigned int line,
+  const char * func,
   const char * format,
   ...)
 {
   va_list ap;
   FILE * stream;
+#if !defined(LOG_OUTPUT_STDOUT)
   time_t timestamp;
   char timestamp_str[26];
+#endif
+  const char * color;
 
+  if (!ladish_log_enabled(level, file, line, func))
+  {
+    return;
+  }
+
+#if !defined(LOG_OUTPUT_STDOUT)
   if (g_logfile != NULL && ladish_log_open())
   {
     stream = g_logfile;
   }
   else
+#endif
   {
     switch (level)
     {
@@ -185,14 +219,44 @@ ladish_log(
     }
   }
 
+#if !defined(LOG_OUTPUT_STDOUT)
   time(&timestamp);
   ctime_r(&timestamp, timestamp_str);
   timestamp_str[24] = 0;
 
   fprintf(stream, "%s: ", timestamp_str);
+#endif
+
+  color = NULL;
+  switch (level)
+  {
+  case LADISH_LOG_LEVEL_DEBUG:
+    fprintf(stream, "%s:%d:%s ", file, line, func);
+    break;
+  case LADISH_LOG_LEVEL_WARN:
+    color = ANSI_COLOR_YELLOW;
+    break;
+  case LADISH_LOG_LEVEL_ERROR:
+  case LADISH_LOG_LEVEL_ERROR_PLAIN:
+    color = ANSI_COLOR_RED;
+    break;
+  }
+
+  if (color != NULL)
+  {
+    fputs(color, stream);
+  }
 
   va_start(ap, format);
   vfprintf(stream, format, ap);
-  fflush(stream);
   va_end(ap);
+
+  if (color != NULL)
+  {
+    fputs(ANSI_RESET, stream);
+  }
+
+  fputs("\n", stream);
+
+  fflush(stream);
 }

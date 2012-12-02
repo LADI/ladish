@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the liblash implementaiton
@@ -33,8 +33,6 @@
 #include <dirent.h>
 
 #include "lash/lash.h"
-
-//#define LADISH_DEBUG
 
 #include "../../common.h"
 #include "../../common/catdup.h"
