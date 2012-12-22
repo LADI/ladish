@@ -112,7 +112,7 @@ static void signal_segv(int signum, siginfo_t* info, void*ptr) {
 #else
     for(i = 0; i < NGREG; i++)
     {
-      log_error("reg[%02d]       = 0x" REGFORMAT, i, (int)ucontext->uc_mcontext.gregs[i]);
+      log_error("reg[%02d]       = 0x" REGFORMAT, (int)i, ucontext->uc_mcontext.gregs[i]);
     }
 
 #if defined(SIGSEGV_STACK_X86) || defined(SIGSEGV_STACK_IA64)
