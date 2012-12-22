@@ -507,6 +507,7 @@ def build(bld):
             'dirhelpers.c',
             'catdup.c',
             'file.c',
+            'log.c',
             ]:
             liblash.source.append(os.path.join("common", source))
 
