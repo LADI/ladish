@@ -10,17 +10,9 @@ Requirements (tools, headers and libraries):
  * Python (for ladish_control and LADI Tools)
 
 Optional requirements, without them GUI frontend will not be built:
- * You need glib (2.20.3 should work)
- * You need dbus-glib (0.74 should work)
- * You need gtk+ (2.12.1 should work)
- * You need libglade (2.6.2 should work)
- * You need flowcanvas (svn revision 2186 or later should work, included in tarball)
-
-===================================================
-
-The tarball contains sources for suitable flowcanvas library and
-sources of suitable LADI Tools. Check the docs in corresponding
-flowcanvas/ and laditools/ subdirectories.
+ * You need glib-2.20.3 or later
+ * You need dbus-glib-0.74 or later
+ * You need gtk+-2.20.0 or later
 
 ===================================================
 
