@@ -2600,7 +2600,7 @@ ladish_graph_iterate_nodes(
 
     if (client_end_callback != NULL)
     {
-      if (!client_end_callback(callback_context, graph_handle, client_ptr->hidden, client_ptr->client, client_ptr->name, &client_context))
+      if (!client_end_callback(callback_context, graph_handle, client_ptr->hidden, client_ptr->client, client_ptr->name, client_context))
       {
         return false;
       }
