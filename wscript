@@ -519,7 +519,7 @@ def build(bld):
             ]:
             liblash.source.append(os.path.join("cdbus", source))
 
-        bld.install_files('${PREFIX}/include/lash', bld.path.ant_glob('lash_compat/liblash/lash/*.h'))
+        bld.install_files('${PREFIX}/include/lash-1.0/lash', bld.path.ant_glob('lash_compat/liblash/lash/*.h'))
 
         # process lash-1.0.pc.in -> lash-1.0.pc
         bld(
