@@ -94,7 +94,7 @@ def configure(conf):
     if parallel_debug:
         conf.load('parallel_debug')
 
-    # dladdr() is used by daemon/sigsegv.c
+    # dladdr() is used by daemon/siginfo.c
     # dlvsym() is used by the alsapid library
     conf.check_cc(msg="Checking for libdl", lib=['dl'], uselib_store='DL')
 
@@ -346,13 +346,14 @@ def build(bld):
     daemon.ver_header = 'version.h'
     # Make backtrace function lookup to work for functions in the executable itself
     daemon.env.append_value("LINKFLAGS", ["-Wl,-E"])
+    daemon.defines = ["HAVE_CONFIG_H"]
 
     daemon.source = ["string_constants.c"]
 
     for source in [
         'main.c',
         'loader.c',
-        'sigsegv.c',
+        'siginfo.c',
         'proctitle.c',
         'appdb.c',
         'procfs.c',

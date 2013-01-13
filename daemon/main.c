@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008,2009,2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009,2010,2011,2012,2013 Nedko Arnaudov <nedko@arnaudov.name>
  * Copyright (C) 2008 Juuso Alasuutari <juuso.alasuutari@gmail.com>
  * Copyright (C) 2002 Robert Ham <rah@bash.sh>
  *
@@ -35,7 +35,7 @@
 #include "version.h"            /* git version define */
 #include "proctitle.h"
 #include "loader.h"
-#include "sigsegv.h"
+#include "siginfo.h"
 #include "control.h"
 #include "studio.h"
 #include "../dbus_constants.h"
@@ -329,7 +329,7 @@ int main(int argc, char ** argv, char ** envp)
   }
 
   /* setup our SIGSEGV magic that prints nice stack in our logfile */ 
-  setup_sigsegv();
+  setup_siginfo();
 
   if (!conf_proxy_init())
   {
