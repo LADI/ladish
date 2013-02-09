@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2011,2012,2013 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the "change app state" command
@@ -101,7 +101,7 @@ run_target_stop(
 
   if (!ladish_virtualizer_is_hidden_app(ladish_studio_get_jack_graph(), app_uuid, app_name))
   {
-    log_info("Waiting '%s' client disappear (%s)...", app_name, cmd_ptr->target_state_description);
+    log_info("Waiting '%s' JACK client(s) to disappear (%s)...", app_name, cmd_ptr->target_state_description);
     return true;
   }
 
