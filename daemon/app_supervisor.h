@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010, 2011, 2012 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010, 2011, 2012, 2013 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to app supervisor object
@@ -35,7 +35,7 @@
 #define LADISH_APP_STATE_STOPPING   2 /**< @brief app is stopping */
 #define LADISH_APP_STATE_KILL       3 /**< @brief app is being force killed */
 
-#define MAX_LEVEL_CHARCOUNT 12  /* includes terminating nul char */
+#define MAX_LEVEL_CHARCOUNT 12 /**< @brief max size of level string, includes terminating nul char */
 
 /**
  * App supervisor object handle (pointer to opaque data)
@@ -74,6 +74,9 @@ typedef void (* ladish_app_supervisor_on_app_renamed_callback)(
  * @param[in] level The level that app was started in
  * @param[in] pid PID of the app; Zero if app is not started
  * @param[in] uuid uuid of the app
+ *
+ * @retval true Continue iteration
+ * @retval false Stop iteration
  */
 typedef bool (* ladish_app_supervisor_enum_callback)(
   void * context,
@@ -96,7 +99,7 @@ typedef void (* ladish_save_complete_callback)(void * context, bool success);
 /**
  * Check whether app level string is valid.
  *
- * @param [in] app level string
+ * @param [in] level app level string
  * @param [out] len_ptr When not NULL, the pointed variable will receive length of the level string, excluding terminating nul char.
  *
  * @return whether level string is valid
@@ -166,7 +169,10 @@ ladish_app_supervisor_set_project_name(
  *
  * @param[in] supervisor_handle supervisor object handle
  * @param[in] pid pid of the app whose termination was detected
- * @param[in] exit_statis process exit status as returned by waitpid()
+ * @param[in] exit_status process exit status as returned by waitpid()
+ *
+ * @retval true Success
+ * @retval false Unknown pid
  */
 bool
 ladish_app_supervisor_child_exit(
@@ -180,6 +186,9 @@ ladish_app_supervisor_child_exit(
  * @param[in] supervisor_handle supervisor object handle
  * @param[in] context User defined context to be supplied when the callback suppiled through the @c callback parameter is called
  * @param[in] callback Callback to call for each app
+ *
+ * @retval true All apps iterated
+ * @retval false Iteration stopped because callback returned false
  */
 bool
 ladish_app_supervisor_enum(
