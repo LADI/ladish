@@ -54,6 +54,7 @@ def options(opt):
     opt.add_option('--distname', type='string', default=None, help="Name for the distribution tarball")
     opt.add_option('--distsuffix', type='string', default="", help="String to append to the distribution tarball name")
     opt.add_option('--tagdist', action='store_true', default=False, help='Create of git tag for distname')
+    opt.add_option('--libdir', type='string', default=None, help='Define lib dir')
     if parallel_debug:
         opt.load('parallel_debug')
 
@@ -132,7 +133,10 @@ def configure(conf):
     else:
         conf.env['DBUS_SERVICES_DIR'] = os.path.join(os.path.normpath(conf.env['PREFIX']), 'share', 'dbus-1', 'services')
 
-    conf.env['LIBDIR'] = os.path.join(os.path.normpath(conf.env['PREFIX']), 'lib')
+    if Options.options.libdir:
+        conf.env['LIBDIR'] = Options.options.libdir
+    else:
+        conf.env['LIBDIR'] = os.path.join(os.path.normpath(conf.env['PREFIX']), 'lib')
 
     conf.env['BUILD_DOXYGEN_DOCS'] = Options.options.doxygen
 
@@ -629,7 +633,7 @@ def build(bld):
 
         # GtkBuilder UI definitions (XML)
         bld.install_files('${DATA_DIR}', 'gui/gladish.ui')
-    
+
     bld.install_files('${PREFIX}/bin', 'ladish_control', chmod=0755)
 
     # 'Desktop' file (menu entry, icon, etc)
