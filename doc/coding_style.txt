@@ -46,7 +46,7 @@ For other languages, rules should be applied if possible.
  * Conditional statements must contain only checks on booleans. The implicit "non-zero is true" feature of the C must not be used.
    Pointers must be explicitly compared with NULL. Integers must be explicitly compared with 0.
 
-= C/C++ functions and C++ methods ==
+= C/C++ functions and C++ methods =
  * Function calls and declarations must be either one liners or have their name in separate line.
  * 'const type *' must be used for input parameter function parameters that are pointers.
  * For multiline function declarations/calls, grouping of parameters could be used only if parameters are grouped by their semantics.
