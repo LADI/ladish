@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009,2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011,2012,2013 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of the graph virtualizer object
@@ -280,9 +280,9 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
   bool is_a2j;
   ladish_app_handle app;
   uuid_t app_uuid;
-  const char * name;
+  char * client_name;
   pid_t pid;
-  ladish_graph_handle graph;
+  ladish_graph_handle vgraph;
   bool jmcore;
 
   log_info("client_appeared(%"PRIu64", %s)", id, jack_name);
@@ -290,9 +290,9 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
   a2j_name = a2j_proxy_get_jack_client_name_cached();
   is_a2j = a2j_name != NULL && strcmp(a2j_name, jack_name) == 0;
 
-  name = jack_name;
+  client_name = NULL;
   app = NULL;
-  graph = NULL;
+  vgraph = NULL;
   jmcore = false;
 
   if (!graph_proxy_get_client_pid(virtualizer_ptr->jack_graph_proxy, id, &pid))
@@ -312,13 +312,11 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
       }
       else
       {
-        app = ladish_find_app_by_pid(pid, &graph);
+        app = ladish_find_app_by_pid(pid, &vgraph);
         if (app != NULL)
         {
           ladish_app_get_uuid(app, app_uuid);
           ASSERT(!uuid_is_null(app_uuid));
-          name = ladish_app_get_name(app);
-          log_info("app name is '%s'", name);
         }
       }
     }
@@ -334,17 +332,29 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
     {
       if (app != NULL)
       {
-        client = ladish_graph_find_client_by_app(virtualizer_ptr->jack_graph, app_uuid);
+        if (!graph_proxy_get_client_original_name(
+              virtualizer_ptr->jack_graph_proxy,
+              id,
+              &client_name))
+        {
+          log_error("Cannot get original name of client %"PRIu64", falling back to \"%s\"", id, jack_name);
+        }
+        else
+        {
+          log_info("client name is '%s'", client_name);
+        }
+
+        client = ladish_graph_find_app_client(virtualizer_ptr->jack_graph, app_uuid, client_name != NULL ? client_name : jack_name);
         if (client == NULL)
         {
-          log_info("Lookup by app uuid failed, attempting lookup by name '%s'", name);
-          goto find_by_name;
+          log_info("Lookup by app uuid failed, attempting lookup by app name '%s'", ladish_app_get_name(app));
+          client = ladish_graph_find_client_by_name(virtualizer_ptr->jack_graph, ladish_app_get_name(app), false);
         }
       }
       else
       {
-      find_by_name:
-        client = ladish_graph_find_client_by_name(virtualizer_ptr->jack_graph, name, true);
+        /* external client */
+        client = ladish_graph_find_client_by_name(virtualizer_ptr->jack_graph, jack_name, true);
       }
     }
 
@@ -353,7 +363,7 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
       log_info("found existing client");
       if (ladish_client_get_jack_id(client) != 0)
       {
-        log_error("Ignoring client with duplicate name '%s' ('%s')", name, jack_name);
+        log_error("Ignoring client with duplicate name '%s'", jack_name);
         goto unref_client;
       }
 
@@ -374,9 +384,9 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
   ladish_client_set_jack_id(client, id);
   ladish_client_set_jack_name(client, jack_name);
 
-  if (!ladish_graph_add_client(virtualizer_ptr->jack_graph, client, name, false))
+  if (!ladish_graph_add_client(virtualizer_ptr->jack_graph, client, client_name != NULL ? client_name : jack_name, false))
   {
-    log_error("ladish_graph_add_client() failed to add client %"PRIu64" (%s) to JACK graph", id, name);
+    log_error("ladish_graph_add_client() failed to add client %"PRIu64" (%s) to JACK graph", id, jack_name);
     goto unref_client;
   }
 
@@ -389,12 +399,15 @@ done:
   if (app != NULL)
   {
     /* interlink client and app */
+
+    ASSERT(pid != 0);
     ladish_app_add_pid(app, pid);
+    ladish_app_add_client(app, client);
     ladish_client_set_pid(client, pid);
     ladish_client_set_app(client, app_uuid);
 
-    ASSERT(graph);
-    ladish_client_set_vgraph(client, graph);
+    ASSERT(vgraph != NULL);
+    ladish_client_set_vgraph(client, vgraph);
     virtualizer_ptr->our_clients_count++;
   }
   else if (jmcore)
@@ -477,6 +490,7 @@ static void client_disappeared(void * context, uint64_t id)
     if (app != NULL)
     {
       ladish_app_del_pid(app, pid);
+      ladish_app_del_client(app, client);
     }
     else
     {
@@ -838,7 +852,7 @@ port_appeared(
     {
       if (has_app)
       {
-        vclient = ladish_graph_find_client_by_app(vgraph, app_uuid);
+        vclient = ladish_graph_find_app_client(vgraph, app_uuid, NULL);
         if (vclient == NULL)
         {
           log_info("Lookup by app uuid failed, attempting lookup by name '%s'", vclient_name);
@@ -1294,7 +1308,7 @@ ladish_virtualizer_is_hidden_app(
     return false;
   }
 
-  client = ladish_graph_find_client_by_app(jack_graph, app_uuid);
+  client = ladish_graph_find_app_client(jack_graph, app_uuid, NULL);
   if (client == NULL)
   {
     log_info("App without JACK client is treated as hidden one");
@@ -1440,7 +1454,7 @@ ladish_virtualizer_remove_app(
 
   ladish_graph_iterate_nodes(jack_graph, &ctx, NULL, remove_app_port, NULL);
 
-  client = ladish_graph_find_client_by_app(jack_graph, app_uuid);
+  client = ladish_graph_find_app_client(jack_graph, app_uuid, NULL);
   if (client == NULL)
   {
     log_info("removing app without JACK client");
@@ -1518,14 +1532,14 @@ ladish_virtualizer_rename_app(
 {
   ladish_client_handle client;
 
-  client = ladish_graph_find_client_by_app(vgraph, uuid);
+  client = ladish_graph_find_app_client(vgraph, uuid, NULL);
   if (client != NULL)
   {
     ladish_graph_rename_client(vgraph, client, new_app_name);
     ladish_del_ref(client);
   }
 
-  client = ladish_graph_find_client_by_app(g_studio.jack_graph, uuid);
+  client = ladish_graph_find_app_client(g_studio.jack_graph, uuid, NULL);
   if (client != NULL)
   {
     ladish_graph_rename_client(g_studio.jack_graph, client, new_app_name);

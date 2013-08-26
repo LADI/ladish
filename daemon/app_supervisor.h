@@ -29,6 +29,7 @@
 #define APP_SUPERVISOR_H__712E6589_DCB1_4CE9_9812_4F250D55E8A2__INCLUDED
 
 #include "common.h"
+#include "client.h"
 
 #define LADISH_APP_STATE_STOPPED    0 /**< @brief app is stopped (not running) */
 #define LADISH_APP_STATE_STARTED    1 /**< @brief app is running and not stopping */
@@ -95,6 +96,17 @@ typedef bool (* ladish_app_supervisor_enum_callback)(
  * @param[in] success Whether save was successfull or not
  */
 typedef void (* ladish_save_complete_callback)(void * context, bool success);
+
+/**
+ * Type of function that is called during app client enumeration
+ *
+ * @param[in] context User defined context that was supplied to ladish_app_supervisor_enum()
+ * @param[in] client Client handle
+ *
+ * @retval true Continue iteration
+ * @retval false Stop iteration
+ */
+typedef bool (* ladish_app_enum_clients_callback)(void * context, ladish_client_handle client);
 
 /**
  * Check whether app level string is valid.
@@ -458,6 +470,36 @@ void ladish_app_add_pid(ladish_app_handle app_handle, pid_t pid);
  * @param[in] pid PID to deassociate with the app
  */
 void ladish_app_del_pid(ladish_app_handle app_handle, pid_t pid);
+
+/**
+ * Associate client with app.
+ *
+ * @param[in] app_handle Handle of app
+ * @param[in] client Client to associate with the app
+ *
+ * @return success status
+ */
+bool ladish_app_add_client(ladish_app_handle app_handle, ladish_client_handle client);
+
+/**
+ * Deassociate client with app.
+ *
+ * @param[in] app_handle Handle of app
+ * @param[in] client Client to deassociate with the app
+ */
+void ladish_app_del_client(ladish_app_handle app_handle, ladish_client_handle client);
+
+/**
+ * Iterate app clients.
+ *
+ * @param[in] app_handle Handle of app
+ * @param[in] context User defined context to be supplied when the callback suppiled through the @c callback parameter is called
+ * @param[in] callback Callback to be called for each client
+ *
+ * @retval true All clients iterated
+ * @retval false Iteration stopped because callback returned false
+ */
+bool ladish_app_enum_clients(ladish_app_handle app_handle, void * context, ladish_app_enum_clients_callback callback);
 
 /**
  * Set the D-Bus unique name for the app.

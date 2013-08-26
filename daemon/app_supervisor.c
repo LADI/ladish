@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009, 2010, 2011, 2012 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009, 2010, 2011, 2012, 2013 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains implementation of app supervisor object
@@ -61,6 +61,13 @@ struct ladish_app
   unsigned int state;
   char * dbus_name;
   struct ladish_app_supervisor * supervisor;
+  struct list_head clients;
+};
+
+struct ladish_app_client
+{
+  struct list_head siblings;
+  ladish_client_handle client;
 };
 
 struct ladish_app_supervisor
@@ -126,6 +133,27 @@ static int ladish_level_string_to_integer(const char * level)
 
   ASSERT_NO_PASS;
   return 255;
+}
+
+static
+struct ladish_app_client *
+ladish_app_find_client(
+  struct ladish_app * app_ptr,
+  ladish_client_handle client)
+{
+  struct list_head * node_ptr;
+  struct ladish_app_client * app_client_ptr;
+
+  list_for_each(node_ptr, &app_ptr->siblings)
+  {
+    app_client_ptr = list_entry(node_ptr, struct ladish_app_client, siblings);
+    if (app_client_ptr->client == client)
+    {
+      return app_client_ptr;
+    }
+  }
+
+  return NULL;
 }
 
 bool
@@ -223,6 +251,7 @@ void remove_app_internal(struct ladish_app_supervisor * supervisor_ptr, struct l
   free(app_ptr->name);
   free(app_ptr->commandline);
   free(app_ptr->js_commandline);
+  ASSERT(list_empty(&app_ptr->clients));
   free(app_ptr);
 }
 
@@ -476,6 +505,8 @@ ladish_app_supervisor_add(
   app_ptr->autorun = autorun;
   app_ptr->supervisor = supervisor_ptr;
   list_add_tail(&app_ptr->siblings, &supervisor_ptr->applist);
+
+  INIT_LIST_HEAD(&app_ptr->siblings);
 
   supervisor_ptr->version++;
 
@@ -1115,6 +1146,56 @@ void ladish_app_del_pid(ladish_app_handle app_handle, pid_t pid)
     app_ptr->firstborn_pgrp = 0;
     app_ptr->firstborn_refcount = 0;
   }
+}
+
+bool ladish_app_add_client(ladish_app_handle app_handle, ladish_client_handle client)
+{
+  struct ladish_app_client * app_client_ptr;
+
+  app_client_ptr = malloc(sizeof(struct ladish_app_client));
+  if (app_client_ptr == NULL)
+  {
+    return false;
+  }
+
+  ladish_add_ref(client);
+  app_client_ptr->client = client;
+
+  list_add_tail(&app_ptr->siblings, &app_client_ptr->siblings);
+  return true;
+}
+
+void ladish_app_del_client(ladish_app_handle app_handle, ladish_client_handle client)
+{
+  struct ladish_app_client * app_client_ptr;
+
+  app_client_ptr = ladish_app_find_client(app_ptr, client);
+  if (app_client_ptr == NULL)
+  {
+    log_error("Cannot find client '%s' to remove from app '%s'", ladish_client_get_jack_name(client), app_ptr->name);
+    return;
+  }
+
+  list_del(&app_client_ptr->siblings);
+  free(app_client_ptr);
+  ladish_del_ref(client);
+}
+
+bool ladish_app_enum_clients(ladish_app_handle app_handle, void * context, ladish_app_enum_clients_callback callback)
+{
+  struct list_head * node_ptr;
+  struct ladish_app_client * app_client_ptr;
+
+  list_for_each(node_ptr, &app_ptr->siblings)
+  {
+    app_client_ptr = list_entry(node_ptr, struct ladish_app_client, siblings);
+    if (!callback(context, app_client_ptr->client))
+    {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 bool ladish_app_set_dbus_name(ladish_app_handle app_handle, const char * name)

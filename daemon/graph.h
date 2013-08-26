@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2009,2010,2011,2012 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2009,2010,2011,2012,2013 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains interface to the D-Bus patchbay interface helpers
@@ -147,7 +147,7 @@ ladish_port_handle ladish_graph_find_port_by_id(ladish_graph_handle graph_handle
 ladish_client_handle ladish_graph_find_client_by_jack_id(ladish_graph_handle graph_handle, uint64_t client_id);
 ladish_port_handle ladish_graph_find_port_by_jack_id(ladish_graph_handle graph_handle, uint64_t port_id, bool room, bool studio);
 ladish_client_handle ladish_graph_find_client_by_name(ladish_graph_handle graph_handle, const char * name, bool appless);
-ladish_client_handle ladish_graph_find_client_by_app(ladish_graph_handle graph_handle, const uuid_t app_uuid);
+ladish_client_handle ladish_graph_find_app_client(ladish_graph_handle graph_handle, const uuid_t app_uuid, const char * name);
 ladish_port_handle ladish_graph_find_port_by_name(ladish_graph_handle graph_handle, ladish_client_handle client_handle, const char * name, void * vgraph_filter);
 ladish_client_handle ladish_graph_find_client_by_uuid(ladish_graph_handle graph_handle, const uuid_t uuid);
 ladish_port_handle ladish_graph_find_port_by_uuid(ladish_graph_handle graph_handle, const uuid_t uuid, bool use_link_override_uuids, void * vgraph_filter);

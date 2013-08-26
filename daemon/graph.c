@@ -1824,7 +1824,7 @@ ladish_client_handle ladish_graph_find_client_by_name(ladish_graph_handle graph_
   return NULL;
 }
 
-ladish_client_handle ladish_graph_find_client_by_app(ladish_graph_handle graph_handle, const uuid_t app_uuid)
+ladish_client_handle ladish_graph_find_app_client(ladish_graph_handle graph_handle, const uuid_t app_uuid, const char * name)
 {
   struct list_head * node_ptr;
   struct ladish_graph_client * client_ptr;
@@ -1836,11 +1836,14 @@ ladish_client_handle ladish_graph_find_client_by_app(ladish_graph_handle graph_h
     if (!ladish_client_get_app(client_ptr->client, current_uuid))
       continue;
 
-    if (uuid_compare(current_uuid, app_uuid) == 0)
-    {
-      ladish_add_ref(client_ptr->client);
-      return client_ptr->client;
-    }
+    if (uuid_compare(current_uuid, app_uuid) != 0)
+      continue;
+
+    if (name != NULL && strcmp(client_ptr->name, name) != 0)
+      continue;
+
+    ladish_add_ref(client_ptr->client);
+    return client_ptr->client;
   }
 
   return NULL;
