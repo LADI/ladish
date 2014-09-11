@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2011,2014 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains D-Bus related code
@@ -28,7 +28,7 @@
 #include "../cdbus/helpers.h"
 #include <dbus/dbus-glib-lowlevel.h>
 
-void dbus_init(void)
+bool dbus_init(void)
 {
   dbus_error_init(&cdbus_g_dbus_error);
 
@@ -36,12 +36,13 @@ void dbus_init(void)
   cdbus_g_dbus_connection = dbus_bus_get(DBUS_BUS_SESSION, &cdbus_g_dbus_error);
   if (dbus_error_is_set(&cdbus_g_dbus_error))
   {
-    //error_msg("dbus_bus_get() failed");
-    //error_msg(cdbus_g_dbus_error.message);
+    log_error("Cannot connect to session bus: %s", cdbus_g_dbus_error.message);
     dbus_error_free(&cdbus_g_dbus_error);
+    return false;
   }
 
   dbus_connection_setup_with_g_main(cdbus_g_dbus_connection, NULL);
+  return true;
 }
 
 void dbus_uninit(void)

@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2010 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2010,2014 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains declarations of internal stuff used to glue gui modules together
@@ -30,7 +30,7 @@
 #include "common.h"
 
 /* dbus.c */
-void dbus_init(void);
+bool dbus_init(void);
 void dbus_uninit(void);
 
 /* control.c */

@@ -2,7 +2,7 @@
 /*
  * LADI Session Handler (ladish)
  *
- * Copyright (C) 2008,2009,2010,2011 Nedko Arnaudov <nedko@arnaudov.name>
+ * Copyright (C) 2008,2009,2010,2011,2014 Nedko Arnaudov <nedko@arnaudov.name>
  *
  **************************************************************************
  * This file contains the code that implements main() and other top-level functionality
@@ -92,7 +92,10 @@ int main(int argc, char** argv)
 
   gtk_init(&argc, &argv);
 
-  dbus_init();
+  if (!dbus_init())
+  {
+    return 1;
+  }
 
   if (!conf_proxy_init())
   {
