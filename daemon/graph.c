@@ -3043,7 +3043,7 @@ bool ladish_graph_copy(ladish_graph_handle src, ladish_graph_handle dest)
 }
 
 CDBUS_METHOD_ARGS_BEGIN(GetAllPorts, "Get all ports")
-  CDBUS_METHOD_ARG_DESCRIBE_IN("ports_list", "as", "List of all ports")
+  CDBUS_METHOD_ARG_DESCRIBE_OUT("ports_list", "as", "List of all ports")
 CDBUS_METHOD_ARGS_END
 
 CDBUS_METHOD_ARGS_BEGIN(GetGraph, "Get whole graph")
