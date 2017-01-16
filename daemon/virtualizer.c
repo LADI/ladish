@@ -330,7 +330,7 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
     {
       client = ladish_graph_find_client_by_uuid(virtualizer_ptr->jack_graph, g_a2j_uuid);
     }
-    else
+    /*else
     {
       if (app != NULL)
       {
@@ -362,7 +362,7 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
       ladish_client_set_jack_id(client, id);
       ladish_graph_show_client(virtualizer_ptr->jack_graph, client);
       goto done;
-    }
+    }*/
   }
 
   if (!ladish_client_create(is_a2j ? g_a2j_uuid : NULL, &client))
@@ -381,7 +381,7 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
     goto exit;
   }
 
-done:
+//done:
   if (strcmp(jack_name, "system") == 0)
   {
     virtualizer_ptr->system_client_id = id;
@@ -480,7 +480,7 @@ static void client_disappeared(void * context, uint64_t id)
     else
     {
       log_error("app of disappearing client %"PRIu64" not found. pid is %"PRIu64, id, (uint64_t)pid);
-      ASSERT_NO_PASS;
+      // ASSERT_NO_PASS;
     }
   }
 
@@ -534,6 +534,8 @@ port_appeared(
   const char * jack_port_name;
   const char * vport_name;
   ladish_graph_handle vgraph;
+  const char * jack_name;
+  char * jack_port_name0;
 
   log_info("port_appeared(%"PRIu64", %"PRIu64", %s (%s, %s))", client_id, port_id, real_jack_port_name, is_input ? "in" : "out", is_midi ? "midi" : "audio");
 
@@ -670,7 +672,14 @@ port_appeared(
   else
   {
     vclient_name = jack_client_name;
-    jack_port_name = real_jack_port_name;
+    jack_name = ladish_client_get_jack_name(jack_client);
+    jack_port_name0 = malloc(strlen(jack_name) + strlen(real_jack_port_name) + 2);
+    if (jack_port_name0 == NULL)
+      jack_port_name = real_jack_port_name;
+    else {
+      sprintf(jack_port_name0, "%s:%s", jack_name, real_jack_port_name);
+      jack_port_name = jack_port_name0;
+    }
   }
 
   /********************/
