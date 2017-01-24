@@ -276,6 +276,7 @@ static void clear(void * UNUSED(context))
 static void client_appeared(void * context, uint64_t id, const char * jack_name)
 {
   ladish_client_handle client;
+  ladish_client_handle client2;
   const char * a2j_name;
   bool is_a2j;
   ladish_app_handle app;
@@ -330,7 +331,64 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
     {
       client = ladish_graph_find_client_by_uuid(virtualizer_ptr->jack_graph, g_a2j_uuid);
     }
-      }
+    else
+    {
+    	if (app != NULL)
+    	{
+    		client = ladish_graph_find_client_by_app(virtualizer_ptr->jack_graph, app_uuid);
+    		if (client == NULL)
+    		{
+    			log_info("Lookup by app uuid failed, attempting lookup by name '%s'", name);
+    			goto find_by_name;
+    		}
+    	}
+    	else
+    	{
+    		find_by_name:
+			client = ladish_graph_find_client_by_name(virtualizer_ptr->jack_graph, name, true);
+    	}
+  }
+
+    if (client != NULL)
+    {
+    	log_info("found existing client");
+
+     	if (ladish_client_get_jack_id(client) != 0)
+     	{
+     		log_info("Adding client with duplicate name '%s' ('%s')", name, jack_name);
+
+     		if (!ladish_client_create(NULL, &client2))
+     		{
+     			log_error("ladish_client_create() failed. Ignoring client %"PRIu64" (%s)", id, jack_name);
+     			goto exit;
+     		}
+
+     		ladish_client_set_jack_name(client2, jack_name);
+     		ladish_client_set_jack_id(client2, id);
+
+     		if (!ladish_graph_add_client(virtualizer_ptr->jack_graph, client2, name, false))
+     		{
+     			log_error("ladish_graph_add_client() failed to add client %"PRIu64" (%s) to JACK graph", id, name);
+     			ladish_client_destroy(client2);
+     			goto exit;
+     		}
+
+     		client = client2;
+     	}
+     	else
+     	{
+     		log_info("Adding client with name '%s' ('%s')", name, jack_name);
+
+     		ladish_client_set_jack_name(client, jack_name);
+
+     		ladish_client_set_jack_id(client, id);
+     		ladish_graph_show_client(virtualizer_ptr->jack_graph, client);
+     	}
+    	goto done;
+    }
+  }
+
+  log_info("Creating client with name '%s' ('%s')", name, jack_name);
 
   if (!ladish_client_create(is_a2j ? g_a2j_uuid : NULL, &client))
   {
@@ -348,6 +406,7 @@ static void client_appeared(void * context, uint64_t id, const char * jack_name)
     goto exit;
   }
 
+done:
   if (strcmp(jack_name, "system") == 0)
   {
     virtualizer_ptr->system_client_id = id;
