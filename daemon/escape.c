@@ -51,6 +51,7 @@ void escape(const char ** src_ptr, char ** dst_ptr, unsigned int flags)
         break;
       }
       /* fall through intentionally, some compilers are parsing comments */
+      __attribute__ ((fallthrough));
     case '<':               /* invalid attribute value char (XML spec) */
     case '&':               /* invalid attribute value char (XML spec) */
     case '"':               /* we store attribute values in double quotes - invalid attribute value char (XML spec) */

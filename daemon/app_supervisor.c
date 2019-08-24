@@ -620,6 +620,7 @@ static void ladish_app_send_signal(struct ladish_app * app_ptr, int sig, bool pr
       }
     }
     /* fall through to sending signal to pid */
+    __attribute__ ((fallthrough));
   default:
     if (app_ptr->pid <= 1)
     {
