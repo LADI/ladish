@@ -166,7 +166,6 @@ procfs_get_process_link(
   }
   else
   {
-    ASSERT(ret == -1);
     buffer_ptr = NULL;
   }
 
