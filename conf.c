@@ -261,6 +261,7 @@ static bool store_pair(struct pair * pair_ptr)
   {
     log_error("Failed to write() to \"%s\": %d (%s)", filepath, errno, strerror(errno));
     free(filepath);
+    close(fd);
     return false;
   }
 

@@ -174,12 +174,12 @@ static bool ladish_room_save_project_xml(struct ladish_room * room_ptr)
 
   if (!ladish_write_string_escape(fd, room_ptr->project_name))
   {
-    return false;
+    goto close;
   }
 
   if (!ladish_write_string(fd, "\" uuid=\""))
   {
-    return false;
+    goto close;
   }
 
   if (!ladish_write_string(fd, uuid_str))

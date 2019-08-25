@@ -794,14 +794,12 @@ ladish_save_app(
 
   if (!ladish_write_string(fd, "\" uuid=\""))
   {
-    return false;
+    goto free_buffer;
   }
 
   if (!ladish_write_string(fd, str))
   {
-    if (escaped_buffer) free(escaped_buffer);
-    if (escaped_string) free(escaped_string);
-    return false;
+    goto free_buffer;
   }
 
   if (!ladish_write_string(fd, "\" terminal=\""))
@@ -856,7 +854,7 @@ ladish_save_app(
   ret = true;
 
 free_buffer:
-  free(escaped_buffer);
+  if(escaped_buffer) free(escaped_buffer);
 
 exit:
   return ret;

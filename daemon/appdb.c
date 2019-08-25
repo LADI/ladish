@@ -194,7 +194,7 @@ load_file_data(
   if (fread(data_ptr, size, 1, file) != 1)
   {
     log_error("Failed to read %ld bytes of data from file '%s'", size, file_path);
-    goto exit_free_data;
+    goto exit_close;
   }
 
   data_ptr[size] = 0;
@@ -202,13 +202,12 @@ load_file_data(
   *data_ptr_ptr = data_ptr;
   goto exit_close;
 
-exit_free_data:
-  free(data_ptr);
 
 exit_close:
   fclose(file);
 
 exit:
+  if (data_ptr) free(data_ptr);
   return ret;
 }
 
@@ -562,7 +561,6 @@ fail_free_path:
   free(directory_path);
 
 fail:
-  if (dir) closedir(dir);
   return ret;
 }
 
