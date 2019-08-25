@@ -213,7 +213,7 @@ ladish_studio_jack_conf_callback(
     dst += len + 1;
   }
 
-  strcpy(dst, child);
+  strncpy(dst, child, JACK_CONF_MAX_ADDRESS_SIZE);
 
   /* address always is same buffer as the one supplied through context pointer */
   ASSERT(context_ptr->address == address);

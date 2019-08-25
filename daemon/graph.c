@@ -1792,7 +1792,7 @@ ladish_graph_find_connection(
   }
      
   port2_ptr = ladish_graph_find_port(graph_ptr, port2_handle);
-  if (port1_ptr == NULL)
+  if (port2_ptr == NULL)
   {
     return false;
   }
