@@ -149,10 +149,10 @@ load_file_data(
   const char * file_path,
   char ** data_ptr_ptr)
 {
-  FILE * file;
+  FILE * file = NULL;
   long size;
   bool ret;
-  char * data_ptr;
+  char * data_ptr = NULL;
 
   ret = true;
   *data_ptr_ptr = NULL;
@@ -499,7 +499,7 @@ lash_appdb_load_dir(
 {
   char * directory_path;
   bool ret;
-  DIR * dir;
+  DIR * dir = NULL;
   struct dirent * dentry_ptr;
   char * file_path;
 

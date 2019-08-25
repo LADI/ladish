@@ -473,7 +473,9 @@ void ladish_studio_run(void)
       if (g_studio.automatic)
       {
         log_info("Unloading automatic studio.");
-        ladish_command_unload_studio(NULL, &g_studio.cmd_queue);
+        if (!ladish_command_unload_studio(NULL, &g_studio.cmd_queue)) {
+          log_error("Unable to unload automatic studio.");
+        }
 
         ladish_studio_on_event_jack_stopped();
         return;
@@ -853,7 +855,6 @@ bool ladish_studio_delete(void * call_ptr, const char * studio_name)
 {
   char * filename;
   char * bak_filename;
-  struct stat st;
   bool ret;
 
   ret = false;
@@ -873,13 +874,10 @@ bool ladish_studio_delete(void * call_ptr, const char * studio_name)
   }
 
   /* try to delete the backup file */
-  if (stat(bak_filename, &st) == 0)
+  if (unlink(bak_filename) != 0)
   {
-    if (unlink(bak_filename) != 0)
-    {
-      /* failing to delete backup file will not case delete command failure */
-      log_error("unlink(%s) failed: %d (%s)", bak_filename, errno, strerror(errno));
-    }
+    /* failing to delete backup file will not case delete command failure */
+    log_error("unlink(%s) failed: %d (%s)", bak_filename, errno, strerror(errno));
   }
 
   ret = true;

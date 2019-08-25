@@ -334,7 +334,7 @@ static DBusHandlerResult cdbus_object_path_handler(DBusConnection * connection, 
 {
   const char * iface_name;
   const struct cdbus_object_path_interface * iface_ptr;
-  struct cdbus_method_call call;
+  struct cdbus_method_call call = {};
 
   /* Check if the message is a method call. If not, ignore it. */
   if (dbus_message_get_type(message) != DBUS_MESSAGE_TYPE_METHOD_CALL)

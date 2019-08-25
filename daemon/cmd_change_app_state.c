@@ -197,7 +197,7 @@ bool ladish_command_change_app_state(void * call_ptr, struct ladish_cqueue * que
     break;
   default:
     ASSERT_NO_PASS;
-    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "Invalid target state (internal error).", opath);
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "Invalid target (%s) state (internal error).", opath);
     goto fail_destroy_command;
   }
 
