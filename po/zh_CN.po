@@ -1,0 +1,750 @@
+# Chinese translations for PACKAGE package
+# PACKAGE 软件包的简体中文翻译.
+# Copyright (C) 2019 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+#  <liushuyu011@gmail.com>, 2019.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-10-13 01:08+0400\n"
+"PO-Revision-Date: 2019-08-24 19:00+0800\n"
+"Last-Translator: liushuyu <liushuyu011@gmail.com>\n"
+"Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Poedit 2.2.1\n"
+
+#: gui/about.c:48
+msgid "Nedko Arnaudov"
+msgstr "Nedko Arnaudov"
+
+#: gui/about.c:49 gui/about.c:61
+msgid "Nikita Zlobin"
+msgstr "Nikita Zlobin"
+
+#: gui/about.c:50
+msgid "Filipe Alexandre Lopes Coelho"
+msgstr "Filipe Alexandre Lopes Coelho"
+
+#: gui/about.c:55
+msgid "Lapo Calamandrei"
+msgstr "Lapo Calamandrei"
+
+#: gui/about.c:56
+msgid "Nadejda Pancheva-Arnaudova"
+msgstr "Nadejda Pancheva-Arnaudova"
+
+#: gui/about.c:62
+msgid "Alexandre Prokoudine"
+msgstr "Alexandre Prokoudine"
+
+#: gui/about.c:63
+msgid "Olivier Humbert"
+msgstr "Olivier Humbert"
+
+#: gui/about.c:64
+msgid "Frank Kober"
+msgstr "Frank Kober"
+
+#: gui/about.c:65
+msgid "Maxim Kachur"
+msgstr "Maxim Kachur"
+
+#: gui/about.c:66
+msgid "Jof Thibaut"
+msgstr "Jof Thibaut"
+
+#: gui/about.c:85
+#, fuzzy, c-format
+msgid "gladish is built on %s from %s"
+msgstr ""
+"\n"
+"该程序为 %s (%s) 编译\n"
+
+#: gui/action.c:86
+msgid "Clear XRuns and Max DSP Load"
+msgstr ""
+
+#: gui/action.c:87
+msgid "Clear"
+msgstr "清除"
+
+#: gui/action.c:91 gui/action.c:92
+#, fuzzy
+msgid "Zoom 100%"
+msgstr "恢复原始大小"
+
+#: gui/action.c:96 gui/action.c:97
+#, fuzzy
+msgid "Zoom to fit"
+msgstr "缩放以适应"
+
+#: gui/action.c:101 gui/action.c:102
+#, fuzzy
+msgid "Zoom in"
+msgstr "放大"
+
+#: gui/action.c:106 gui/action.c:107
+#, fuzzy
+msgid "Zoom out"
+msgstr "缩小"
+
+#: gui/control.c:136
+msgid "ladishd exit command failed, please inspect logs."
+msgstr ""
+
+#: gui/control.c:146
+#, fuzzy
+msgid "New studio"
+msgstr "ISO 标准工作室钨灯"
+
+#: gui/control.c:146 gui/studio.c:254 gui/studio.c:296
+#, fuzzy
+msgid "Studio name"
+msgstr "ISO 标准工作室钨灯"
+
+#: gui/control.c:150
+msgid "Creation of new studio failed, please inspect logs."
+msgstr ""
+
+#: gui/control.c:163
+msgid "Studio load failed, please inspect logs."
+msgstr ""
+
+#: gui/control.c:171
+msgid "<b><big>Confirm studio delete</big></b>"
+msgstr ""
+
+#: gui/control.c:171
+#, c-format
+msgid "Studio \"%s\" will be deleted. Are you sure?"
+msgstr "您确认要删除工作室“%s”吗?"
+
+#: gui/control.c:180
+msgid "Studio delete failed, please inspect logs."
+msgstr ""
+
+#: gui/create_room_dialog.c:72 gui/world_tree.c:500 gui/gladish.ui:1590
+msgid "Name"
+msgstr "名字"
+
+#: gui/dialogs.c:61
+#, fuzzy
+msgid "New application"
+msgstr "应用程序："
+
+#: gui/dialogs.c:99
+msgid ""
+"Execution failed. I know you want to know more for the reson but currently "
+"you can only check the log file."
+msgstr ""
+
+#: gui/dialogs.c:141
+msgid "<b><big>Error</big></b>"
+msgstr "<b><big>错误</big></b>"
+
+#: gui/dynmenu.c:175
+#, fuzzy
+msgid "Error filling "
+msgstr "填充方法"
+
+#: gui/dynmenu.c:179
+#, fuzzy
+msgid "Empty "
+msgstr "清空(_E)"
+
+#: gui/graph_canvas.c:183
+msgid "Rename client"
+msgstr "重命名客户端"
+
+#: gui/graph_canvas.c:183 gui/graph_canvas.c:317
+msgid "Client name"
+msgstr "客户端名称"
+
+#: gui/graph_canvas.c:215
+msgid "Client rename"
+msgstr "重命名客户端"
+
+#: gui/graph_canvas.c:222 gui/world_tree.c:398
+msgid "Remove"
+msgstr "移除"
+
+#: gui/graph_canvas.c:230
+#, fuzzy
+msgid "Split"
+msgstr "分割"
+
+#: gui/graph_canvas.c:246
+msgid "Rename port"
+msgstr "重命名端口"
+
+#: gui/graph_canvas.c:246
+msgid "Port name"
+msgstr "端口名称"
+
+#: gui/graph_canvas.c:280
+msgid "Rename"
+msgstr "重命名"
+
+#: gui/graph_canvas.c:286
+#, fuzzy
+msgid "Move port"
+msgstr "端口："
+
+#: gui/graph_canvas.c:317 gui/graph_canvas.c:334
+#, fuzzy
+msgid "New client"
+msgstr "在服务器模式下执行新的客户端连接，当客户端仍然是不可信"
+
+#: gui/graph_canvas.c:340
+#, fuzzy
+msgid "Join clients"
+msgstr "加入"
+
+#: gui/graph_view.c:59
+msgid ""
+"If you've started ladish for the first time, you should:\n"
+"\n"
+" 1. Create a new studio (in the menu, Studio -> New Studio)\n"
+" 2. Configure JACK (in the menu, Tools -> Configure JACK)\n"
+" 3. Start the studio (in the menu, Studio -> Start Studio)\n"
+" 4. Start apps (in the menu, Application -> Run)\n"
+" 5. Connect their ports by click & drag on canvas\n"
+" 6. Save the studio (in the menu, Studio -> Save Studio)\n"
+msgstr ""
+
+#: gui/jack.c:59
+#, fuzzy
+msgid "Raw JACK"
+msgstr "Raw"
+
+#: gui/jack.c:95
+#, fuzzy, c-format
+msgid "%4.1f ms (%<PRIu32>)"
+msgstr "%s ms"
+
+#: gui/jack.c:124
+#, c-format
+msgid "%<PRIu32> dropout"
+msgid_plural "%<PRIu32> dropouts"
+msgstr[0] ""
+
+#: gui/jack.c:133
+msgid "error"
+msgstr "错误"
+
+#: gui/jack.c:146
+#, c-format
+msgid "DSP: %5.1f%% (%5.1f%%)"
+msgstr "DSP: %5.1f%% (%5.1f%%)"
+
+#: gui/jack.c:250 gui/jack.c:270
+#, fuzzy
+msgid "<b><big>Are you sure</big></b>"
+msgstr "您确定要永久删除“%B”吗？"
+
+#: gui/jack.c:250
+msgid "jackdbus will be reactivated. Are you sure?"
+msgstr "jackdbus 将会被重启。您确定吗？"
+
+#: gui/jack.c:258
+msgid "jackdbus exit command failed, please inspect logs."
+msgstr ""
+
+#: gui/jack.c:270
+msgid "a2jmidid will be reactivated. Are you sure?"
+msgstr "a2jmidid 将会被重启。您确定吗？"
+
+#: gui/jack.c:278
+msgid "a2jmidid exit command failed, please inspect logs."
+msgstr ""
+
+#: gui/jack.c:302
+msgid ""
+"<b><big>Error executing ladiconf.\n"
+"Are LADI Tools installed?</big></b>"
+msgstr ""
+
+#: gui/jack.c:357
+#, fuzzy, c-format
+msgid "%.1f kHz"
+msgstr "%.1f KiB"
+
+#: gui/jack.c:361
+#, fuzzy, c-format
+msgid "%u kHz"
+msgstr "%2$u 的 %1$u"
+
+#: gui/load_project_dialog.c:187 gui/gladish.ui:655
+msgid "Load project"
+msgstr "加载工程"
+
+#: gui/load_project_dialog.c:211
+msgid "<b><big>Not a project dir</big></b>"
+msgstr ""
+
+#: gui/main.c:62 gui/main.c:68 gui/gladish.ui:8
+msgid "LADI Session Handler"
+msgstr "LADI 会话管理器"
+
+#: gui/menu.c:105
+msgid "Project load failed, please inspect logs."
+msgstr ""
+
+#: gui/menu.c:146
+msgid "Load Project..."
+msgstr "正在加载工程…"
+
+#: gui/menu.c:152
+msgid "Create Project..."
+msgstr "新建工程…"
+
+#: gui/menu.c:155
+msgid "Unload Project"
+msgstr "卸载工程"
+
+#: gui/menu.c:155
+#, fuzzy
+msgid "Clear Room"
+msgstr "房间"
+
+#: gui/menu.c:159
+msgid "Save Project"
+msgstr "保存工程"
+
+#: gui/menu.c:160
+msgid "Save Project As..."
+msgstr "工程另存为…"
+
+#: gui/menu.c:161
+msgid "Project Properties..."
+msgstr "项目属性…"
+
+#: gui/menu.c:396 gui/gladish.ui:205
+#, fuzzy
+msgid "New Application..."
+msgstr "应用程序："
+
+#: gui/menu.c:414
+#, fuzzy
+msgid "Destroy Room"
+msgstr "房间"
+
+#: gui/menu.c:420
+#, fuzzy
+msgid "Create Room..."
+msgstr "房间"
+
+#: gui/project_properties.c:73 gui/project_properties.c:82
+msgid "Setting of project description failed, please inspect logs."
+msgstr ""
+
+#: gui/room.c:49
+msgid "Room creation failed, please inspect logs."
+msgstr ""
+
+#: gui/room.c:72
+msgid "Room deletion failed, please inspect logs."
+msgstr ""
+
+#: gui/settings.c:96
+msgid "Storing settings"
+msgstr "正在保存设置"
+
+#: gui/studio.c:98
+msgid "JACK is sick"
+msgstr ""
+
+#: gui/studio.c:102
+#, fuzzy
+msgid "Stopped"
+msgstr "已终止"
+
+#: gui/studio.c:105
+msgid "xruns"
+msgstr ""
+
+#: gui/studio.c:118
+msgid "ladishd is down"
+msgstr "ladishd 未在工作"
+
+#: gui/studio.c:124
+msgid "ladishd is sick"
+msgstr ""
+
+#: gui/studio.c:128
+msgid "No studio loaded"
+msgstr ""
+
+#: gui/studio.c:132
+msgid "Crashed"
+msgstr "已崩溃"
+
+#: gui/studio.c:227
+msgid ""
+"JACK crashed or stopped unexpectedly. Save your work, then unload and reload "
+"the studio."
+msgstr ""
+
+#: gui/studio.c:244
+msgid "Studio save failed, please inspect logs."
+msgstr ""
+
+#: gui/studio.c:254
+#, fuzzy
+msgid "Save studio as"
+msgstr "ISO 标准工作室钨灯"
+
+#: gui/studio.c:258
+msgid "Saving of studio failed, please inspect logs."
+msgstr ""
+
+#: gui/studio.c:270
+msgid "Studio start failed, please inspect logs."
+msgstr ""
+
+#: gui/studio.c:279
+msgid "Studio stop failed, please inspect logs."
+msgstr ""
+
+#: gui/studio.c:288
+msgid "Studio unload failed, please inspect logs."
+msgstr ""
+
+#: gui/studio.c:296
+msgid "Rename studio"
+msgstr "重命名工作室"
+
+#: gui/studio.c:300
+msgid "Studio rename failed, please inspect logs."
+msgstr ""
+
+#: gui/world_tree.c:255
+#, fuzzy
+msgid "Cannot get app properties"
+msgstr "为对象属性附加注释"
+
+#: gui/world_tree.c:300
+msgid "App properties"
+msgstr "应用属性"
+
+#: gui/world_tree.c:333
+#, fuzzy
+msgid "Cannot set app properties."
+msgstr "设置引导线属性"
+
+#: gui/world_tree.c:376
+msgid "Stop"
+msgstr "停止"
+
+#: gui/world_tree.c:380
+msgid "Kill"
+msgstr "强制关闭"
+
+#: gui/world_tree.c:386
+msgid "Start"
+msgstr "启动"
+
+#: gui/world_tree.c:391
+msgid "Properties"
+msgstr "属性"
+
+#: gui/world_tree.c:671
+#, fuzzy
+msgid " (inactive) "
+msgstr "非活动"
+
+#: gui/canvas.cpp:117 gui/canvas.cpp:171
+msgid "Disconnect All"
+msgstr "断开所有连接"
+
+#: gui/gladish.ui:17
+#, fuzzy
+msgid "_Studio"
+msgstr "ISO 标准工作室钨灯"
+
+#: gui/gladish.ui:24
+msgid "_New Studio..."
+msgstr "新建工作室(_N)"
+
+#: gui/gladish.ui:34
+#, fuzzy
+msgid "_Load Studio"
+msgstr "ISO 标准工作室钨灯"
+
+#: gui/gladish.ui:50
+#, fuzzy
+msgid "Start Studio"
+msgstr "ISO 标准工作室钨灯"
+
+#: gui/gladish.ui:62
+msgid "Stop Studio"
+msgstr "停止工作室"
+
+#: gui/gladish.ui:79
+msgid "_Rename Studio..."
+msgstr "重命名工作室(_R)"
+
+#: gui/gladish.ui:90
+#, fuzzy
+msgid "_Save Studio"
+msgstr "ISO 标准工作室钨灯"
+
+#: gui/gladish.ui:101
+msgid "Save Studio _As..."
+msgstr "工作室另存为…(_A)"
+
+#: gui/gladish.ui:112
+msgid "_Unload Studio"
+msgstr "卸载工作室(_U)"
+
+#: gui/gladish.ui:123
+#, fuzzy
+msgid "_Delete Studio"
+msgstr "ISO 标准工作室钨灯"
+
+#: gui/gladish.ui:151
+#, fuzzy
+msgid "_Room"
+msgstr "房间"
+
+#: gui/gladish.ui:158
+#, fuzzy
+msgid "_Create Room..."
+msgstr "房间"
+
+#: gui/gladish.ui:169
+#, fuzzy
+msgid "_Destroy Room"
+msgstr "房间"
+
+#: gui/gladish.ui:184
+#, fuzzy
+msgid "_Project"
+msgstr "工程"
+
+#: gui/gladish.ui:197
+#, fuzzy
+msgid "_Application"
+msgstr "应用程序："
+
+#: gui/gladish.ui:220
+msgid "_View"
+msgstr "视图(_V)"
+
+#: gui/gladish.ui:227
+msgid "_Toolbar"
+msgstr "工具栏(_T)"
+
+#: gui/gladish.ui:272
+msgid "_JACK"
+msgstr "_JACK"
+
+#: gui/gladish.ui:280
+msgid "_Arrange"
+msgstr "安排(_A)"
+
+#: gui/gladish.ui:296
+msgid "_Tools"
+msgstr "工具(_T)"
+
+#: gui/gladish.ui:314
+msgid "_Settings"
+msgstr "设置(_S)"
+
+#: gui/gladish.ui:323
+#, fuzzy
+msgid "_Configure JACK"
+msgstr "配置"
+
+#: gui/gladish.ui:333
+msgid "Reactivate ladishd"
+msgstr ""
+
+#: gui/gladish.ui:342
+msgid "Reactivate jackdbus"
+msgstr ""
+
+#: gui/gladish.ui:351
+msgid "Reactivate a2jmidid"
+msgstr ""
+
+#: gui/gladish.ui:360
+msgid "JACK _Latency"
+msgstr "JACK 延迟(_L)"
+
+#: gui/gladish.ui:369
+msgid "32"
+msgstr "32"
+
+#: gui/gladish.ui:377
+msgid "64"
+msgstr "64"
+
+#: gui/gladish.ui:385
+msgid "128"
+msgstr "128"
+
+#: gui/gladish.ui:393
+msgid "256"
+msgstr "256"
+
+#: gui/gladish.ui:401
+msgid "512"
+msgstr "512"
+
+#: gui/gladish.ui:409
+msgid "1024"
+msgstr "1024"
+
+#: gui/gladish.ui:417
+msgid "2048"
+msgstr "2048"
+
+#: gui/gladish.ui:425
+msgid "4096"
+msgstr "4096"
+
+#: gui/gladish.ui:433
+msgid "8192"
+msgstr "8192"
+
+#: gui/gladish.ui:447
+msgid "_Help"
+msgstr "帮助(_H)"
+
+#: gui/gladish.ui:480
+#, fuzzy
+msgid "Clear XRuns"
+msgstr "清除(_C)"
+
+#: gui/gladish.ui:619
+msgid ""
+"LADI Session Handler is free software; you can redistribute it and/or "
+"modify\n"
+"it under the terms of the GNU General Public License as published by\n"
+"the Free Software Foundation; either version 2 of the License, or\n"
+"(at your option) any later version.\n"
+"\n"
+"LADI Session Handler is distributed in the hope that it will be useful,\n"
+"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"GNU General Public License for more details.\n"
+"\n"
+"You should have received a copy of the GNU General Public License\n"
+"along with LADI Session Handler; if not, write to the Free Software "
+"Foundation, Inc.,\n"
+"51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA\n"
+msgstr ""
+
+#: gui/gladish.ui:690 gui/gladish.ui:1581
+#, fuzzy
+msgid "Path"
+msgstr "道路"
+
+#: gui/gladish.ui:713
+msgid "Browse..."
+msgstr "浏览…"
+
+#: gui/gladish.ui:786
+msgid "Project properties"
+msgstr "项目属性"
+
+#: gui/gladish.ui:816
+msgid "<b>Project name</b>"
+msgstr "<b>工程名称</b>"
+
+#: gui/gladish.ui:843
+msgid "<b>Description</b>"
+msgstr "<b>描述</b>"
+
+#: gui/gladish.ui:881
+#, fuzzy
+msgid "<b>Notes</b>"
+msgstr "<b>均</b>"
+
+#: gui/gladish.ui:950
+msgid "Set name"
+msgstr "设置名称"
+
+#: gui/gladish.ui:981 gui/gladish.ui:1454
+msgid "<b>Name</b>"
+msgstr "<b>名称</b>"
+
+#: gui/gladish.ui:1130
+msgid "Command:"
+msgstr "命令："
+
+#: gui/gladish.ui:1142
+msgid "Name:"
+msgstr "名称："
+
+#: gui/gladish.ui:1171
+msgid "Run in Terminal"
+msgstr "在终端中运行"
+
+#: gui/gladish.ui:1187
+#, fuzzy
+msgid "Level 0"
+msgstr "Debug level[default 0]"
+
+#: gui/gladish.ui:1204
+#, fuzzy
+msgid "Level 1"
+msgstr "级别 %1"
+
+#: gui/gladish.ui:1236
+#, fuzzy
+msgid "Level 2 (LASH)"
+msgstr "等级 2：困难"
+
+#: gui/gladish.ui:1255
+#, fuzzy
+msgid "Level 2 (jack session)"
+msgstr "从第二级开始展开(_2)"
+
+#: gui/gladish.ui:1428
+#, fuzzy
+msgid "Create room"
+msgstr "房间"
+
+#: gui/gladish.ui:1480
+#, fuzzy
+msgid "<b>Create from template</b>"
+msgstr " <b>创建(_C)</b> "
+
+#: gui/gladish.ui:1604
+#, fuzzy
+msgid "Default is project directory name"
+msgstr "来自项目目录"
+
+#: gui/gladish.ui:1623
+#, fuzzy
+msgid "Default is ~/ladish-projects"
+msgstr "工程"
+
+#: gui/gladish.ui:1724
+#, fuzzy
+msgid "Start studio on load"
+msgstr "ISO 标准工作室钨灯"
+
+#: gui/gladish.ui:1736
+msgid "Send notifications"
+msgstr "发送通知"
+
+#: gui/gladish.ui:1757
+#, fuzzy
+msgid "Shell to use:"
+msgstr "不是登录 shell: 使用 `exit'"
+
+#: gui/gladish.ui:1764
+#, fuzzy
+msgid "Terminal to use:"
+msgstr ""
+"如果为 true，终端将使用桌面全局标准字体(如果是等宽字体，也可能使用的最类似字"
+"体)。"
