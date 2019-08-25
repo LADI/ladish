@@ -77,8 +77,9 @@ void show_about(void)
 
   dialog = get_gtk_builder_widget("about_win");
 
-  st.st_mtime = 0;
-  stat("/proc/self/exe", &st);
+  if (stat("/proc/self/exe", &st) < 0) {
+    st.st_mtime = 0;
+  }
   ctime_r(&st.st_mtime, timestamp_str);
   timestamp_str[24] = 0;
 

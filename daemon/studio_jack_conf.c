@@ -185,7 +185,7 @@ ladish_studio_jack_conf_callback(
   const char * address,
   char * child)
 {
-  char path[JACK_CONF_MAX_ADDRESS_SIZE];
+  char path[JACK_CONF_MAX_ADDRESS_SIZE + 1];
   const char * component;
   char * dst;
   size_t len;
@@ -226,6 +226,7 @@ ladish_studio_jack_conf_callback(
   }
   memcpy(dst, child, len);
 //  strncpy(dst, child, JACK_CONF_MAX_ADDRESS_SIZE);
+//  dst[JACK_CONF_MAX_ADDRESS_SIZE] = '\0';
 
   /* address always is same buffer as the one supplied through context pointer */
   ASSERT(context_ptr->address == address);

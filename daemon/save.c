@@ -855,6 +855,7 @@ ladish_save_app(
 
 free_buffer:
   free(escaped_buffer);
+//  if(escaped_buffer) free(escaped_buffer);
 
 exit:
   return ret;
