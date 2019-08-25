@@ -562,6 +562,7 @@ fail_free_path:
   free(directory_path);
 
 fail:
+  if (dir) closedir(dir);
   return ret;
 }
 
