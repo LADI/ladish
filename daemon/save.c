@@ -799,6 +799,8 @@ ladish_save_app(
 
   if (!ladish_write_string(fd, str))
   {
+    if (escaped_buffer) free(escaped_buffer);
+    if (escaped_string) free(escaped_string);
     return false;
   }
 

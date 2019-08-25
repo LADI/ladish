@@ -268,6 +268,7 @@ static bool store_pair(struct pair * pair_ptr)
   {
     log_error("write() to \"%s\" returned %zd instead of %zu", filepath, written, len);
     free(filepath);
+    close(fd);
     return false;
   }
 

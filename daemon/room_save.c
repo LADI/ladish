@@ -184,7 +184,7 @@ static bool ladish_room_save_project_xml(struct ladish_room * room_ptr)
 
   if (!ladish_write_string(fd, uuid_str))
   {
-    return false;
+    goto close;
   }
 
   if (!ladish_write_string(fd, "\">\n"))
@@ -236,7 +236,7 @@ static bool ladish_room_save_project_xml(struct ladish_room * room_ptr)
   if (!ladish_write_room_link_ports(fd, 2, (ladish_room_handle)room_ptr))
   {
     log_error("ladish_write_room_link_ports() failed");
-    return false;
+    goto close;
   }
 
   if (!ladish_write_indented_string(fd, 1, "</room>\n"))
