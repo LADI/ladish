@@ -144,7 +144,7 @@ procfs_get_process_link(
   int fd;
   ssize_t ret;
   char * buffer_ptr;
-//  char buffer[BUFFER_SIZE];
+//  char buffer[BUFFER_SIZE + 1];
 
   sprintf(g_buffer, "/proc/%llu/%s", pid, filename);
 
@@ -155,7 +155,7 @@ procfs_get_process_link(
   }
 
   ret = readlink(g_buffer, g_buffer_readlink, sizeof(g_buffer_readlink) - 1);
-//  ret = readlink(g_buffer, buffer, sizeof(buffer));
+//  ret = readlink(g_buffer, buffer, sizeof(buffer) - 1);
   if (ret > 0)
   {
     g_buffer_readlink[ret] = 0;
