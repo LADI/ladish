@@ -225,13 +225,15 @@ ladish_studio_jack_conf_callback(
       return false;
   }
   memcpy(dst, child, len);
-//  strncpy(dst, child, JACK_CONF_MAX_ADDRESS_SIZE);
-//  dst[JACK_CONF_MAX_ADDRESS_SIZE] = '\0';
+//  len = JACK_CONF_MAX_ADDRESS_SIZE - (dst - path);
+//  strncpy(dst, child, len);
+//  dst[len] = 0;
 
   /* address always is same buffer as the one supplied through context pointer */
   ASSERT(context_ptr->address == address);
   dst = (char *)component;
 
+//  len = strnlen(child, JACK_CONF_MAX_ADDRESS_SIZE) + 1;
   memcpy(dst, child, len);
   dst[len] = 0;
 
