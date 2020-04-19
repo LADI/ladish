@@ -549,6 +549,7 @@ lash_appdb_load_dir(
     }
 
     closedir(dir);
+    dir = NULL;
   }
   else
   {
