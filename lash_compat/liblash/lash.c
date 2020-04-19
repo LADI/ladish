@@ -1012,7 +1012,7 @@ static void lash_save(struct cdbus_method_call * call_ptr)
 
   if (g_quit != 0)
   {
-    cdbus_error(call_ptr, LADISH_DBUS_ERROR_UNFINISHED_TASK, "App is quitting", g_event.type);
+    cdbus_error(call_ptr, LADISH_DBUS_ERROR_UNFINISHED_TASK, "App is quitting: %d", g_event.type);
     return;
   }
 
@@ -1067,7 +1067,7 @@ static void lash_restore(struct cdbus_method_call * call_ptr)
 
   if (g_quit != 0)
   {
-    cdbus_error(call_ptr, LADISH_DBUS_ERROR_UNFINISHED_TASK, "App is quitting", g_event.type);
+    cdbus_error(call_ptr, LADISH_DBUS_ERROR_UNFINISHED_TASK, "App is quitting: %d", g_event.type);
     return;
   }
 
