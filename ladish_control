@@ -145,7 +145,7 @@ def dump_graph(obj):
     patchbay_iface = dbus.Interface(obj, patchbay_interface_name)
     graph = patchbay_iface.GetGraph(0)
     for client in graph[1]:
-        print '"%s"' % client[1]
+        print('"%s"' % client[1])
         for port in client[2]:
             port_flags = port[2]
             if (port_flags & 1) != 0:
@@ -163,17 +163,17 @@ def dump_graph(obj):
             else:
                 port_type = "unknown"
 
-            print '  "%s" [%s %s]' % (port[1], port_flags, port_type)
+            print('  "%s" [%s %s]' % (port[1], port_flags, port_type))
     print
     if len(graph[2]):
         if len(graph[2]) == 1:
-            print "1 connection:"
+            print("1 connection:")
         else:
-            print "%u connections:" % len(graph[2])
+            print("%u connections:" % len(graph[2]))
         for connection in graph[2]:
-            print '"%s":"%s" -> "%s":"%s"' % (connection[1], connection[3], connection[5], connection[7])
+            print('"%s":"%s" -> "%s":"%s"' % (connection[1], connection[3], connection[5], connection[7]))
     else:
-        print "0 connections."
+        print("0 connections.")
 
 def main():
     if len(sys.argv) == 1:
@@ -522,7 +522,7 @@ def main():
                     patchbay_iface.DisconnectPortsByName(c1, p1, c2, p2)
                 else:
                     print("Unknown command '%s'" % arg)
-        except dbus.DBusException, e:
+        except (dbus.DBusException, e):
             print("DBus exception: %s" % str(e))
 
 if __name__ == '__main__':
