@@ -111,11 +111,13 @@ static int mtime_sorter(GtkTreeModel * model, GtkTreeIter * a, GtkTreeIter * b, 
 }
 #endif
 
+#if 0
 static gboolean reject_filter(const GtkFileFilterInfo * UNUSED(filter_info), gpointer UNUSED(data))
 {
   //log_info("filter: '%s'", filter_info->filename);
   return FALSE;
 }
+#endif
 
 static bool is_project_dir(const char * dir)
 {
@@ -193,9 +195,11 @@ void ladish_run_load_project_dialog(ladish_room_proxy_handle room)
 
   gtk_file_chooser_set_create_folders(GTK_FILE_CHOOSER(dialog), FALSE);
 
+#if 0
   filter = gtk_file_filter_new();
   gtk_file_filter_add_custom(filter, GTK_FILE_FILTER_FILENAME, reject_filter, dialog, NULL); /* reject all files */
   gtk_file_chooser_set_filter(GTK_FILE_CHOOSER(dialog), filter);
+#endif
   //g_signal_connect(G_OBJECT(dialog), "selection-changed", G_CALLBACK(on_dir_select), dialog);
   g_signal_connect(G_OBJECT(dialog), "current-folder-changed", G_CALLBACK(dir_changed), dialog);
 
