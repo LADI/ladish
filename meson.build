@@ -1,4 +1,4 @@
-project('ladish', 'c',
+project('ladish', 'c', 'cpp',
   version : '0.3',
   license : 'MIT')
 
@@ -63,6 +63,11 @@ endif
 
 if get_option('pylash').enabled()
   subdir('lash_compat/pylash')
+endif
+
+if get_option('gladish').enabled()
+  subdir('gui')
+  subdir('art')
 endif
 
 install_data(['AUTHORS', 'README', 'NEWS'], install_dir : data_dir)
