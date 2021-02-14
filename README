@@ -23,7 +23,7 @@ ladish requires D-Bus and JACK compiled with D-Bus support.
 
 LADI Session Handler is rewrite of LASH.
 
-Project goals:
+Features:
  * Save and restore sets of JACK (audio and MIDI) enabled
    applications.
  * Provide JACK clients with virtual hardware ports, so projects can
@@ -37,7 +37,14 @@ Project goals:
    includes storing internal state to non-filesystem place like memory
    of a hardware synth. This also includes storing client internal
    state (client project data) in a way that is not directly bound to
-   ladish project. 
+   ladish project.
+
+Some of the following features may be already implemented
+as part of KXStudio project [1] by its frontend GUI applications
+for ladish backend services. In particular check Claudia [2],
+Claudia-Launcher [3] and Cadence [4].
+
+Planned features:
  * Import/export operations, as opposed to save/load. Save/load
    operate in current system and may cause saving data outside of
    project itself (external storage). Import/export uses/produces
@@ -52,3 +59,8 @@ Project goals:
  * Collaborate with the X11 window manager so window properties like
    window position, virtual desktop and screen (multimonitor) are
    saved/restored.
+
+[1] https://kx.studio/
+[2] https://kx.studio/Applications:Claudia
+[3] https://kx.studio/Applications:Claudia-Launcher
+[4] https://kx.studio/Applications:Cadence
