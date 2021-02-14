@@ -1,0 +1,3 @@
+option('liblash', type : 'feature')
+option('pylash', type : 'feature')
+option('gladish', type : 'feature')
