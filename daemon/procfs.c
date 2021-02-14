@@ -39,6 +39,7 @@
 #define BUFFER_SIZE 4096
 
 static char g_buffer[BUFFER_SIZE];
+static char g_buffer_readlink[BUFFER_SIZE];
 
 static
 bool
@@ -152,11 +153,11 @@ procfs_get_process_link(
     return NULL;
   }
 
-  ret = readlink(g_buffer, g_buffer, sizeof(g_buffer));
+  ret = readlink(g_buffer, g_buffer_readlink, sizeof(g_buffer_readlink));
   if (ret != 0)
   {
-    g_buffer[ret] = 0;
-    buffer_ptr = strdup(g_buffer);
+    g_buffer_readlink[ret] = 0;
+    buffer_ptr = strdup(g_buffer_readlink);
     log_debug("process %llu %s symlink points to \"%s\"", pid, filename, buffer_ptr);
   }
   else

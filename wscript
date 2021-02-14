@@ -224,6 +224,9 @@ def configure(conf):
     if not conf.env['BUILD_PYLASH']:
        add_cflag(conf, '-Wextra')
        conf.env.append_unique('CXXFLAGS', '-Wno-unused-parameter') # the UNUSED() macro doesnt work for C++
+
+    add_cflag(conf, '-Wimplicit-fallthrough=2')
+
     if conf.env['BUILD_WERROR']:
         add_cflag(conf, '-Werror')
         # for pre gcc-4.4, enable optimizations so use of uninitialized variables gets detected
