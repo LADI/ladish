@@ -10,8 +10,8 @@
 /GRTAGS
 /GSYMS
 /GTAGS
-/.waf-*
-/.lock-wafbuild
+/.waf*
+/.lock-waf*
 /build
 *~
 *.pyc

@@ -1,13 +1,8 @@
 #! /usr/bin/env python
 # encoding: utf-8
 
-import os
-import Options
-import Utils
-import shutil
-import re
-import waflib
-from waflib.Scripting import Dist
+from __future__ import with_statement
+
 
 parallel_debug = False
 
@@ -20,19 +15,24 @@ RELEASE = False
 top = '.'
 out = 'build'
 
-from Logs import pprint
+import os, sys, re, io, optparse, shutil, tokenize
+from hashlib import md5
+
+from waflib import Errors, Utils, Options, Logs, Scripting
+from waflib import Configure
+from waflib import Context
 
 def display_msg(conf, msg="", status = None, color = None):
     if status:
         conf.msg(msg, status, color)
     else:
-        pprint('NORMAL', msg)
+        Logs.pprint('NORMAL', msg)
 
 def display_raw_text(conf, text, color = 'NORMAL'):
-    pprint(color, text, sep = '')
+    Logs.pprint(color, text, sep = '')
 
 def display_line(conf, text, color = 'NORMAL'):
-    pprint(color, text, sep = os.linesep)
+    Logs.pprint(color, text, sep = os.linesep)
 
 def yesno(bool):
     if bool:
@@ -55,6 +55,8 @@ def options(opt):
     opt.add_option('--distsuffix', type='string', default="", help="String to append to the distribution tarball name")
     opt.add_option('--tagdist', action='store_true', default=False, help='Create of git tag for distname')
     opt.add_option('--libdir', type='string', default=None, help='Define lib dir')
+
+
     if parallel_debug:
         opt.load('parallel_debug')
 
@@ -201,9 +203,10 @@ def configure(conf):
     if build_gui:
         # We need the boost headers package (e.g. libboost-dev)
         # shared_ptr.hpp and weak_ptr.hpp
-        build_gui = conf.check_boost(
+        conf.check_boost(
             mandatory = False,
             errmsg="not found, see http://boost.org/")
+        build_gui = not not conf.env['BOOST_VERSION']
 
     conf.env['BUILD_GLADISH'] = build_gui
 
@@ -240,10 +243,10 @@ def configure(conf):
                     #print "optimize force enable is required"
                     if not check_gcc_optimizations_enabled(conf.env['CFLAGS']):
                         if Options.options.debug:
-                            print "C optimization must be forced in order to enable -Wuninitialized"
-                            print "However this will not be made because debug compilation is enabled"
+                            print ("C optimization must be forced in order to enable -Wuninitialized")
+                            print ("However this will not be made because debug compilation is enabled")
                         else:
-                            print "C optimization forced in order to enable -Wuninitialized"
+                            print ("C optimization forced in order to enable -Wuninitialized")
                             conf.env.append_unique('CFLAGS', "-O")
         except:
             pass
@@ -273,7 +276,7 @@ def configure(conf):
     version_msg = APPNAME + "-" + VERSION
 
     if os.access('version.h', os.R_OK):
-        data = file('version.h').read()
+        data = open('version.h').read()
         m = re.match(r'^#define GIT_VERSION "([^"]*)"$', data)
         if m != None:
             version_msg += " exported from " + m.group(1)
@@ -319,21 +322,21 @@ def git_ver(self):
     if os.access('./version.h', os.R_OK):
         header = os.path.join(os.getcwd(), out, "version.h")
         shutil.copy('./version.h', header)
-        data = file(header).read()
+        data = open(header).read()
         m = re.match(r'^#define GIT_VERSION "([^"]*)"$', data)
         if m != None:
             self.ver = m.group(1)
-            pprint('BLUE', "tarball from git revision " + self.ver)
+            Logs.pprint('BLUE', "tarball from git revision " + self.ver)
         else:
             self.ver = "tarball"
         return
 
     if bld.srcnode.find_node('.git'):
-        self.ver = bld.cmd_and_log("LANG= git rev-parse HEAD", quiet=waflib.Context.BOTH).splitlines()[0]
-        if bld.cmd_and_log("LANG= git diff-index --name-only HEAD", quiet=waflib.Context.BOTH).splitlines():
+        self.ver = bld.cmd_and_log("LANG= git rev-parse HEAD", quiet=Context.BOTH).splitlines()[0]
+        if bld.cmd_and_log("LANG= git diff-index --name-only HEAD", quiet=Context.BOTH).splitlines():
             self.ver += "-dirty"
 
-        pprint('BLUE', "git revision " + self.ver)
+        Logs.pprint('BLUE', "git revision " + self.ver)
     else:
         self.ver = "unknown"
 
@@ -637,10 +640,10 @@ def build(bld):
         # GtkBuilder UI definitions (XML)
         bld.install_files('${DATA_DIR}', 'gui/gladish.ui')
 
-    bld.install_files('${PREFIX}/bin', 'ladish_control', chmod=0755)
+    bld.install_files('${PREFIX}/bin', 'ladish_control', chmod=0o0755)
 
     # 'Desktop' file (menu entry, icon, etc)
-    bld.install_files('${PREFIX}/share/applications/', 'gui/gladish.desktop', chmod=0644)
+    bld.install_files('${PREFIX}/share/applications/', 'gui/gladish.desktop', chmod=0o0644)
 
     # Icons
     icon_sizes = ['16x16', '22x22', '24x24', '32x32', '48x48', '256x256']
@@ -661,14 +664,14 @@ def build(bld):
         html_docs_source_dir = "build/default/html"
         if bld.cmd == 'clean':
             if os.access(html_docs_source_dir, os.R_OK):
-                pprint('CYAN', "Removing doxygen generated documentation...")
+                Logs.pprint('CYAN', "Removing doxygen generated documentation...")
                 shutil.rmtree(html_docs_source_dir)
-                pprint('CYAN', "Removing doxygen generated documentation done.")
+                Logs.pprint('CYAN', "Removing doxygen generated documentation done.")
         elif bld.cmd == 'build':
             if not os.access(html_docs_source_dir, os.R_OK):
                 os.popen("doxygen").read()
             else:
-                pprint('CYAN', "doxygen documentation already built.")
+                Logs.pprint('CYAN', "doxygen documentation already built.")
 
     bld(features='intltool_po', appname=APPNAME, podir='po', install_path="${LOCALE_DIR}")
 
@@ -701,7 +704,7 @@ def etags(ctx):
     os.system(cmd)
     os.system("stat -c '%y' TAGS")
 
-class ladish_dist(waflib.Scripting.Dist):
+class ladish_dist(Scripting.Dist):
     cmd = 'dist'
     fun = 'dist'
 
@@ -711,7 +714,7 @@ class ladish_dist(waflib.Scripting.Dist):
             self.base_name = Options.options.distname
         else:
             try:
-                self.base_name = self.cmd_and_log("LANG= git describe --tags", quiet=waflib.Context.BOTH).splitlines()[0]
+                self.base_name = self.cmd_and_log("LANG= git describe --tags", quiet=Context.BOTH).splitlines()[0]
             except:
                 self.base_name = APPNAME + '-' + VERSION
         self.base_name += Options.options.distsuffix

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 import signal, time
@@ -15,21 +15,21 @@ class level1app:
         elif signum == signal.SIGINT:
             self.run = False
         else:
-            print "Unknown signal %d received" % signum
+            print ("Unknown signal %d received" % signum)
 
     def run(self):
         signal.signal(signal.SIGUSR1, self.sighandler)
         signal.signal(signal.SIGTERM, self.sighandler)
         signal.signal(signal.SIGINT, self.sighandler)
 
-        print "Waiting for signals..."
+        print ("Waiting for signals...")
 
         while self.run:
             if self.save:
-                print "Save"
+                print ("Save")
                 self.save = False
             time.sleep(0.1)
 
-        print "Exit"
+        print ("Exit")
 
 level1app().run()
