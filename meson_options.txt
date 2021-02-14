@@ -1,0 +1,2 @@
+option('liblash', type : 'feature')
+option('pylash', type : 'feature')

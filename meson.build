@@ -47,6 +47,8 @@ deps = [
   dependency('expat')
 ]
 
+pkg_mod = import('pkgconfig')
+
 subdir('common')
 subdir('proxies')
 subdir('cdbus')
@@ -54,6 +56,14 @@ subdir('alsapid')
 
 # ladishd
 subdir('daemon')
+
+if get_option('liblash').enabled()
+  subdir('lash_compat/liblash')
+endif
+
+if get_option('pylash').enabled()
+  subdir('lash_compat/pylash')
+endif
 
 install_data(['AUTHORS', 'README', 'NEWS'], install_dir : data_dir)
 
