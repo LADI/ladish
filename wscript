@@ -20,6 +20,7 @@ from hashlib import md5
 
 from waflib import Errors, Utils, Options, Logs, Scripting
 from waflib import Configure
+from waflib import Context
 
 def display_msg(conf, msg="", status = None, color = None):
     if status:
@@ -330,8 +331,8 @@ def git_ver(self):
         return
 
     if bld.srcnode.find_node('.git'):
-        self.ver = bld.cmd_and_log("LANG= git rev-parse HEAD", quiet=waflib.Context.BOTH).splitlines()[0]
-        if bld.cmd_and_log("LANG= git diff-index --name-only HEAD", quiet=waflib.Context.BOTH).splitlines():
+        self.ver = bld.cmd_and_log("LANG= git rev-parse HEAD", quiet=Context.BOTH).splitlines()[0]
+        if bld.cmd_and_log("LANG= git diff-index --name-only HEAD", quiet=Context.BOTH).splitlines():
             self.ver += "-dirty"
 
         Logs.pprint('BLUE', "git revision " + self.ver)
@@ -712,7 +713,7 @@ class ladish_dist(Scripting.Dist):
             self.base_name = Options.options.distname
         else:
             try:
-                self.base_name = self.cmd_and_log("LANG= git describe --tags", quiet=waflib.Context.BOTH).splitlines()[0]
+                self.base_name = self.cmd_and_log("LANG= git describe --tags", quiet=Context.BOTH).splitlines()[0]
             except:
                 self.base_name = APPNAME + '-' + VERSION
         self.base_name += Options.options.distsuffix
