@@ -2,8 +2,8 @@
 # encoding: utf-8
 
 import os
-from waflib import Options
-from waflib import Utils
+import Options
+import Utils
 import shutil
 import re
 import waflib
@@ -20,7 +20,7 @@ RELEASE = False
 top = '.'
 out = 'build'
 
-from waflib.Logs import pprint
+from Logs import pprint
 
 def display_msg(conf, msg="", status = None, color = None):
     if status:
@@ -43,7 +43,7 @@ def yesno(bool):
 def options(opt):
     opt.load('compiler_c')
     opt.load('compiler_cxx')
-    #opt.load('boost')
+    opt.load('boost')
     opt.load('python')
     opt.add_option('--enable-pkg-config-dbus-service-dir', action='store_true', default=False, help='force D-Bus service install dir to be one returned by pkg-config')
     opt.add_option('--enable-liblash', action='store_true', default=False, help='Build LASH compatibility library')
@@ -89,7 +89,7 @@ def create_service_taskgen(bld, target, opath, binary):
 def configure(conf):
     conf.load('compiler_c')
     conf.load('compiler_cxx')
-    #conf.load('boost')
+    conf.load('boost')
     conf.load('python')
     conf.load('intltool')
     if parallel_debug:
@@ -240,10 +240,10 @@ def configure(conf):
                     #print "optimize force enable is required"
                     if not check_gcc_optimizations_enabled(conf.env['CFLAGS']):
                         if Options.options.debug:
-                            print("C optimization must be forced in order to enable -Wuninitialized")
-                            print("However this will not be made because debug compilation is enabled")
+                            print "C optimization must be forced in order to enable -Wuninitialized"
+                            print "However this will not be made because debug compilation is enabled"
                         else:
-                            print("C optimization forced in order to enable -Wuninitialized")
+                            print "C optimization forced in order to enable -Wuninitialized"
                             conf.env.append_unique('CFLAGS', "-O")
         except:
             pass
@@ -637,10 +637,10 @@ def build(bld):
         # GtkBuilder UI definitions (XML)
         bld.install_files('${DATA_DIR}', 'gui/gladish.ui')
 
-    bld.install_files('${PREFIX}/bin', 'ladish_control', chmod=0o755)
+    bld.install_files('${PREFIX}/bin', 'ladish_control', chmod=0755)
 
     # 'Desktop' file (menu entry, icon, etc)
-    bld.install_files('${PREFIX}/share/applications/', 'gui/gladish.desktop', chmod=0o644)
+    bld.install_files('${PREFIX}/share/applications/', 'gui/gladish.desktop', chmod=0644)
 
     # Icons
     icon_sizes = ['16x16', '22x22', '24x24', '32x32', '48x48', '256x256']
