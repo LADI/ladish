@@ -9,8 +9,6 @@ dbus_base_path = '/org/ladish'
 
 git_version = run_command(['git', 'rev-parse', '--short', 'HEAD']).stdout().strip()
 
-run_command(['touch', 'build/version.h', 'build/config.h'])
-
 configure_file(output : 'version.h',
     configuration : {
         'GIT_VERSION' : '"@0@"'.format(git_version)
@@ -31,7 +29,7 @@ configure_file(output : 'config.h',
 
 cc = meson.get_compiler('c')
 
-inc = include_directories('build')
+inc = include_directories(meson.build_root().split('/')[-1])
 lash_inc = include_directories('lash_compat/liblash')
 
 dbus_dep = dependency('dbus-1')
