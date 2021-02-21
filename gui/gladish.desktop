@@ -14,4 +14,4 @@ Type=Application
 Terminal=false
 Exec=gladish
 Icon=gladish
-Categories=AudioVideo;Audio;GNOME;
+Categories=AudioVideo;Audio;Engineering;
