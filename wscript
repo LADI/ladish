@@ -55,6 +55,7 @@ def options(opt):
     opt.add_option('--distsuffix', type='string', default="", help="String to append to the distribution tarball name")
     opt.add_option('--tagdist', action='store_true', default=False, help='Create of git tag for distname')
     opt.add_option('--libdir', type='string', default=None, help='Define lib dir')
+    opt.add_option('--docdir', type='string', default=None, help="Define doc dir [default: PREFIX'/share/doc/" + APPNAME + ']')
 
 
     if parallel_debug:
@@ -139,6 +140,11 @@ def configure(conf):
         conf.env['LIBDIR'] = Options.options.libdir
     else:
         conf.env['LIBDIR'] = os.path.join(os.path.normpath(conf.env['PREFIX']), 'lib')
+
+    if Options.options.docdir:
+        conf.env['DOCDIR'] = Options.options.docdir
+    else:
+        conf.env['DOCDIR'] = os.path.join(os.path.normpath(conf.env['PREFIX']), 'share', 'doc', APPNAME)
 
     conf.env['BUILD_DOXYGEN_DOCS'] = Options.options.doxygen
 
@@ -657,7 +663,7 @@ def build(bld):
 
     bld.install_files('${DATA_DIR}', status_images)
     bld.install_files('${DATA_DIR}', "art/ladish-logo-128x128.png")
-    bld.install_files('${DATA_DIR}', ["AUTHORS", "README", "NEWS"])
+    bld.install_files('${DOCDIR}', ["AUTHORS", "README", "NEWS"])
     bld.install_as('${DATA_DIR}/COPYING', "gpl2.txt")
 
     if bld.env['BUILD_DOXYGEN_DOCS'] == True:
