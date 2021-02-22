@@ -22,10 +22,10 @@ set -e
 
 echo -n "Unpacking waf... "
 ./waf --help &>/dev/null
-WAFDIR=`ls .waf-*/`
-mv .waf-*/${WAFDIR} ${WAFDIR}
+WAFDIR=`ls .waf*/`
+mv .waf*/${WAFDIR} ${WAFDIR}
 sed -i '/^#==>$/,$d' waf
-rmdir .waf-*
+rmdir .waf*
 echo "OK."
 
 echo -n "Purging .pyc files... "

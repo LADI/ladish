@@ -17,3 +17,4 @@
 *.pyc
 *.mo
 *.gmo
+waflib
