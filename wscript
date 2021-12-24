@@ -49,6 +49,7 @@ def options(opt):
     opt.add_option('--enable-liblash', action='store_true', default=False, help='Build LASH compatibility library')
     opt.add_option('--enable-pylash', action='store_true', default=False, help='Build python bindings for LASH compatibility library')
     opt.add_option('--debug', action='store_true', default=False, dest='debug', help="Build debuggable binaries")
+    opt.add_option('--siginfo', action='store_true', default=False, dest='siginfo', help="Log backtrace on fatal signal")
     opt.add_option('--doxygen', action='store_true', default=False, help='Enable build of doxygen documentation')
     opt.add_option('--distnodeps', action='store_true', default=False, help="When creating distribution tarball, don't package git submodules")
     opt.add_option('--distname', type='string', default=None, help="Name for the distribution tarball")
@@ -218,6 +219,7 @@ def configure(conf):
 
     conf.env['BUILD_LIBLASH'] = Options.options.enable_liblash
     conf.env['BUILD_PYLASH'] =  Options.options.enable_pylash
+    conf.env['BUILD_SIGINFO'] =  Options.options.siginfo
     if conf.env['BUILD_PYLASH'] and not conf.env['BUILD_LIBLASH']:
         conf.fatal("pylash build was requested but liblash was not")
         conf.env['BUILD_PYLASH'] = False
@@ -273,6 +275,7 @@ def configure(conf):
     conf.define('DBUS_NAME_BASE', DBUS_NAME_BASE)
     conf.define('DBUS_BASE_PATH', '/' + DBUS_NAME_BASE.replace('.', '/'))
     conf.define('BASE_NAME', APPNAME)
+    conf.define('SIGINFO_ENABLED', conf.env['BUILD_SIGINFO'])
     conf.define('_GNU_SOURCE', 1)
     conf.write_config_header('config.h')
 
@@ -297,6 +300,7 @@ def configure(conf):
     display_msg(conf, 'Build gladish', yesno(conf.env['BUILD_GLADISH']))
     display_msg(conf, 'Build liblash', yesno(Options.options.enable_liblash))
     display_msg(conf, 'Build pylash', yesno(conf.env['BUILD_PYLASH']))
+    display_msg(conf, 'Build with siginfo', yesno(conf.env['BUILD_SIGINFO']))
     display_msg(conf, 'Treat warnings as errors', yesno(conf.env['BUILD_WERROR']))
     display_msg(conf, 'Debuggable binaries', yesno(conf.env['BUILD_DEBUG']))
     display_msg(conf, 'Build doxygen documentation', yesno(conf.env['BUILD_DOXYGEN_DOCS']))
@@ -369,7 +373,6 @@ def build(bld):
     for source in [
         'main.c',
         'loader.c',
-        'siginfo.c',
         'proctitle.c',
         'appdb.c',
         'procfs.c',
@@ -415,6 +418,9 @@ def build(bld):
         'jack_session.c',
         ]:
         daemon.source.append(os.path.join("daemon", source))
+
+    if Options.options.siginfo:
+        daemon.source.append(os.path.join("daemon", 'siginfo.c'))
 
     for source in [
         'jack_proxy.c',
