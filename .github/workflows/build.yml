@@ -18,5 +18,5 @@ jobs:
     - name: Build ladish
       shell: bash
       run: |
-        sudo apt-get install libdbus-1-dev gettext intltool
+        sudo apt-get install libdbus-1-dev gettext intltool libasound2-dev
         make
