@@ -18,3 +18,4 @@
 *.mo
 *.gmo
 waflib
+/jack2
