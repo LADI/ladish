@@ -8,9 +8,32 @@ on:
     branches:
       - '*'
 jobs:
-  # ubuntu-20.04
+  ubuntu_22_04:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Build ladish
+      shell: bash
+      run: |
+        sudo apt-get install libdbus-1-dev gettext intltool libasound2-dev
+        make
+
   ubuntu_20_04:
     runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Build ladish
+      shell: bash
+      run: |
+        sudo apt-get install libdbus-1-dev gettext intltool libasound2-dev
+        make
+
+  ubuntu_18_04:
+    runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v2
       with:
