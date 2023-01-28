@@ -41,6 +41,7 @@ struct virtualizer
   graph_proxy_handle jack_graph_proxy;
   ladish_graph_handle jack_graph;
   uint64_t system_client_id;
+  uint64_t system_midi_client_id;
   unsigned int our_clients_count;
 };
 
@@ -387,6 +388,11 @@ done:
     virtualizer_ptr->system_client_id = id;
   }
 
+  if (strcmp(jack_name, "system_midi") == 0)
+  {
+    virtualizer_ptr->system_midi_client_id = id;
+  }
+
   if (app != NULL)
   {
     /* interlink client and app */
@@ -487,6 +493,11 @@ static void client_disappeared(void * context, uint64_t id)
   if (id == virtualizer_ptr->system_client_id)
   {
     virtualizer_ptr->system_client_id = 0;
+  }
+
+  if (id == virtualizer_ptr->system_midi_client_id)
+  {
+    virtualizer_ptr->system_midi_client_id = 0;
   }
 
   if (vgraph != NULL && ladish_graph_is_persist(vgraph)) /* if client is supposed to be persisted */
@@ -780,7 +791,8 @@ port_appeared(
       }
     }
   }
-  else if (client_id == virtualizer_ptr->system_client_id)
+  else if (client_id == virtualizer_ptr->system_client_id ||
+	   client_id == virtualizer_ptr->system_midi_client_id)
   {
     log_info("system client port appeared");
 
@@ -1211,6 +1223,7 @@ ladish_virtualizer_create(
   virtualizer_ptr->jack_graph_proxy = jack_graph_proxy;
   virtualizer_ptr->jack_graph = jack_graph;
   virtualizer_ptr->system_client_id = 0;
+  virtualizer_ptr->system_midi_client_id = 0;
   virtualizer_ptr->our_clients_count = 0;
 
   if (!graph_proxy_attach(
