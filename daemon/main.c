@@ -35,7 +35,9 @@
 #include "version.h"            /* git version define */
 #include "proctitle.h"
 #include "loader.h"
+#if SIGINFO_ENABLED
 #include "siginfo.h"
+#endif
 #include "control.h"
 #include "studio.h"
 #include "../dbus_constants.h"
@@ -328,8 +330,10 @@ int main(int argc, char ** argv, char ** envp)
     log_error("signal(SIGPIPE, SIG_IGN).");
   }
 
+#if SIGINFO_ENABLED
   /* setup our SIGSEGV magic that prints nice stack in our logfile */ 
   setup_siginfo();
+#endif
 
   if (!conf_proxy_init())
   {
