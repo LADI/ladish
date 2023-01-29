@@ -7,9 +7,9 @@ from __future__ import with_statement
 parallel_debug = False
 
 APPNAME='ladish'
-VERSION='2-dev'
+VERSION='1'
 DBUS_NAME_BASE = 'org.ladish'
-RELEASE = False
+RELEASE = True
 
 # these variables are mandatory ('/' are converted automatically)
 top = '.'
