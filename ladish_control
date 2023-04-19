@@ -522,7 +522,7 @@ def main():
                     patchbay_iface.DisconnectPortsByName(c1, p1, c2, p2)
                 else:
                     print("Unknown command '%s'" % arg)
-        except (dbus.DBusException, e):
+        except dbus.DBusException as e:
             print("DBus exception: %s" % str(e))
 
 if __name__ == '__main__':
