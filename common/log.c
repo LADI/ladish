@@ -156,6 +156,12 @@ void ladish_log_uninit()
 
   free(g_log_filename);
 }
+#else
+void ladish_log_init() __attribute__ ((constructor));
+void ladish_log_init()
+{
+  cdbus_log_setup(ladish_log);
+}
 #endif  /* #if !defined(LOG_OUTPUT_STDOUT) */
 
 #if 0
