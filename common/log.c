@@ -25,6 +25,7 @@
  * 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include "config.h"
 #include "../common.h"
 
 #include <errno.h>
@@ -133,6 +134,7 @@ void ladish_log_init()
   }
 
   ladish_log_open();
+  cdbus_log_setup(ladish_log);
 
 free_log_dir:
   free(ladish_log_dir);
@@ -157,11 +159,11 @@ void ladish_log_uninit()
 #endif  /* #if !defined(LOG_OUTPUT_STDOUT) */
 
 #if 0
-# define log_debug(fmt, args...) ladish_log(LADISH_LOG_LEVEL_DEBUG, "%s:%d:%s: " fmt "\n", __FILE__, __LINE__, __func__, ## args)
-# define log_info(fmt, args...) ladish_log(LADISH_LOG_LEVEL_INFO, fmt "\n", ## args)
-# define log_warn(fmt, args...) ladish_log(LADISH_LOG_LEVEL_WARN, ANSI_COLOR_YELLOW "WARNING: " ANSI_RESET "%s: " fmt "\n", __func__, ## args)
-# define log_error(fmt, args...) ladish_log(LADISH_LOG_LEVEL_ERROR, ANSI_COLOR_RED "ERROR: " ANSI_RESET "%s: " fmt "\n", __func__, ## args)
-# define log_error_plain(fmt, args...) ladish_log(LADISH_LOG_LEVEL_ERROR_PLAIN, ANSI_COLOR_RED "ERROR: " ANSI_RESET fmt "\n", ## args)
+# define log_debug(fmt, args...) ladish_log(CDBUS_LOG_LEVEL_DEBUG, "%s:%d:%s: " fmt "\n", __FILE__, __LINE__, __func__, ## args)
+# define log_info(fmt, args...) ladish_log(CDBUS_LOG_LEVEL_INFO, fmt "\n", ## args)
+# define log_warn(fmt, args...) ladish_log(CDBUS_LOG_LEVEL_WARN, ANSI_COLOR_YELLOW "WARNING: " ANSI_RESET "%s: " fmt "\n", __func__, ## args)
+# define log_error(fmt, args...) ladish_log(CDBUS_LOG_LEVEL_ERROR, ANSI_COLOR_RED "ERROR: " ANSI_RESET "%s: " fmt "\n", __func__, ## args)
+# define log_error_plain(fmt, args...) ladish_log(CDBUS_LOG_LEVEL_ERROR_PLAIN, ANSI_COLOR_RED "ERROR: " ANSI_RESET fmt "\n", ## args)
 #endif
 
 static
@@ -172,10 +174,9 @@ ladish_log_enabled(
   unsigned int UNUSED(line),
   const char * UNUSED(func))
 {
-  return level != LADISH_LOG_LEVEL_DEBUG;
+  return level != CDBUS_LOG_LEVEL_DEBUG;
 }
 
-__attribute__((visibility("default")))
 void
 ladish_log(
   unsigned int level,
@@ -208,13 +209,13 @@ ladish_log(
   {
     switch (level)
     {
-    case LADISH_LOG_LEVEL_DEBUG:
-    case LADISH_LOG_LEVEL_INFO:
+    case CDBUS_LOG_LEVEL_DEBUG:
+    case CDBUS_LOG_LEVEL_INFO:
       stream = stdout;
       break;
-    case LADISH_LOG_LEVEL_WARN:
-    case LADISH_LOG_LEVEL_ERROR:
-    case LADISH_LOG_LEVEL_ERROR_PLAIN:
+    case CDBUS_LOG_LEVEL_WARN:
+    case CDBUS_LOG_LEVEL_ERROR:
+    case CDBUS_LOG_LEVEL_ERROR_PLAIN:
     default:
       stream = stderr;
     }
@@ -231,14 +232,14 @@ ladish_log(
   color = NULL;
   switch (level)
   {
-  case LADISH_LOG_LEVEL_DEBUG:
+  case CDBUS_LOG_LEVEL_DEBUG:
     fprintf(stream, "%s:%d:%s ", file, line, func);
     break;
-  case LADISH_LOG_LEVEL_WARN:
+  case CDBUS_LOG_LEVEL_WARN:
     color = ANSI_COLOR_YELLOW;
     break;
-  case LADISH_LOG_LEVEL_ERROR:
-  case LADISH_LOG_LEVEL_ERROR_PLAIN:
+  case CDBUS_LOG_LEVEL_ERROR:
+  case CDBUS_LOG_LEVEL_ERROR_PLAIN:
     color = ANSI_COLOR_RED;
     break;
   }
