@@ -138,6 +138,13 @@ def configure(conf):
     else:
         conf.env['DBUS_SERVICES_DIR'] = os.path.join(os.path.normpath(conf.env['PREFIX']), 'share', 'dbus-1', 'services')
 
+    conf.check_cfg(
+        package = 'cdbus-1',
+        atleast_version = '1.0.0',
+        mandatory = True,
+        errmsg = "not installed, see https://github.com/LADI/cdbus.git",
+        args = '--cflags --libs')
+
     if Options.options.libdir:
         conf.env['LIBDIR'] = Options.options.libdir
     else:
@@ -362,7 +369,7 @@ def build(bld):
 
     daemon = bld.program(source = [], features = 'c cprogram', includes = [bld.path.get_bld()])
     daemon.target = 'ladishd'
-    daemon.uselib = 'DBUS-1 UUID EXPAT DL UTIL'
+    daemon.uselib = 'DBUS-1 CDBUS-1 UUID EXPAT DL UTIL'
     daemon.ver_header = 'version.h'
     # Make backtrace function lookup to work for functions in the executable itself
     daemon.env.append_value("LINKFLAGS", ["-Wl,-E"])
@@ -434,15 +441,6 @@ def build(bld):
         daemon.source.append(os.path.join("proxies", source))
 
     for source in [
-        'signal.c',
-        'method.c',
-        'object_path.c',
-        'interface.c',
-        'helpers.c',
-        ]:
-        daemon.source.append(os.path.join("cdbus", source))
-
-    for source in [
         'log.c',
         'time.c',
         'dirhelpers.c',
@@ -459,7 +457,7 @@ def build(bld):
     # jmcore
     jmcore = bld.program(source = [], features = 'c cprogram', includes = [bld.path.get_bld()])
     jmcore.target = 'jmcore'
-    jmcore.uselib = 'DBUS-1 JACK'
+    jmcore.uselib = 'DBUS-1 CDBUS-1 JACK'
     jmcore.defines = ['LOG_OUTPUT_STDOUT']
     jmcore.source = ['jmcore.c']
 
@@ -468,22 +466,13 @@ def build(bld):
         ]:
         jmcore.source.append(os.path.join("common", source))
 
-    for source in [
-        #'signal.c',
-        'method.c',
-        'object_path.c',
-        'interface.c',
-        'helpers.c',
-        ]:
-        jmcore.source.append(os.path.join("cdbus", source))
-
     create_service_taskgen(bld, DBUS_NAME_BASE + '.jmcore.service', DBUS_NAME_BASE + ".jmcore", jmcore.target)
 
     #####################################################
     # conf
     ladiconfd = bld.program(source = [], features = 'c cprogram', includes = [bld.path.get_bld()])
     ladiconfd.target = 'ladiconfd'
-    ladiconfd.uselib = 'DBUS-1'
+    ladiconfd.uselib = 'DBUS-1 CDBUS-1'
     ladiconfd.defines = ['LOG_OUTPUT_STDOUT']
     ladiconfd.source = ['conf.c']
 
@@ -493,15 +482,6 @@ def build(bld):
         'catdup.c',
         ]:
         ladiconfd.source.append(os.path.join("common", source))
-
-    for source in [
-        'signal.c',
-        'method.c',
-        'object_path.c',
-        'interface.c',
-        'helpers.c',
-        ]:
-        ladiconfd.source.append(os.path.join("cdbus", source))
 
     create_service_taskgen(bld, DBUS_NAME_BASE + '.conf.service', DBUS_NAME_BASE + ".conf", ladiconfd.target)
 
@@ -520,7 +500,7 @@ def build(bld):
     # liblash
     if bld.env['BUILD_LIBLASH']:
         liblash = bld.shlib(source = [], features = 'c cshlib', includes = [bld.path.get_bld()])
-        liblash.uselib = 'DBUS-1'
+        liblash.uselib = 'DBUS-1 CDBUS-1'
         liblash.target = 'lash'
         liblash.vnum = "1.1.1"
         liblash.defines = ['LOG_OUTPUT_STDOUT']
@@ -533,14 +513,6 @@ def build(bld):
             'log.c',
             ]:
             liblash.source.append(os.path.join("common", source))
-
-        for source in [
-            'method.c',
-            'object_path.c',
-            'interface.c',
-            'helpers.c',
-            ]:
-            liblash.source.append(os.path.join("cdbus", source))
 
         bld.install_files('${PREFIX}/include/lash-1.0/lash', bld.path.ant_glob('lash_compat/liblash/lash/*.h'))
 
@@ -578,7 +550,7 @@ def build(bld):
         gladish = bld.program(source = [], features = 'c cxx cxxprogram', includes = [bld.path.get_bld()])
         gladish.target = 'gladish'
         gladish.defines = ['LOG_OUTPUT_STDOUT']
-        gladish.uselib = 'DBUS-1 DBUS-GLIB-1 GTKMM-2.4 LIBGNOMECANVASMM-2.6 GTK+-2.0'
+        gladish.uselib = 'DBUS-1 CDBUS-1 DBUS-GLIB-1 GTKMM-2.4 LIBGNOMECANVASMM-2.6 GTK+-2.0'
 
         gladish.source = ["string_constants.c"]
 
@@ -637,12 +609,6 @@ def build(bld):
             gladish.source.append(os.path.join("proxies", source))
 
         for source in [
-            'method.c',
-            'helpers.c',
-            ]:
-            gladish.source.append(os.path.join("cdbus", source))
-
-        for source in [
             'log.c',
             'catdup.c',
             'file.c',
@@ -693,7 +659,6 @@ def get_tags_dirs():
         source_root = os.path.relpath(source_root)
     paths = source_root
     paths += " " + os.path.join(source_root, "common")
-    paths += " " + os.path.join(source_root, "cdbus")
     paths += " " + os.path.join(source_root, "proxies")
     paths += " " + os.path.join(source_root, "daemon")
     paths += " " + os.path.join(source_root, "gui")

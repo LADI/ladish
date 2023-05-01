@@ -49,6 +49,8 @@
 # endif
 #endif
 
+#define ladish_log cdbus_log
+
 #ifdef __cplusplus
 extern "C"
 #endif

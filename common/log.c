@@ -175,6 +175,7 @@ ladish_log_enabled(
   return level != LADISH_LOG_LEVEL_DEBUG;
 }
 
+__attribute__((visibility("default")))
 void
 ladish_log(
   unsigned int level,
