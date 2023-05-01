@@ -142,7 +142,7 @@ def configure(conf):
         package = 'cdbus-1',
         atleast_version = '1.0.0',
         mandatory = True,
-        errmsg = "not installed, see https://github.com/LADI/cdbus.git",
+        errmsg = "not installed, see https://github.com/LADI/cdbus",
         args = '--cflags --libs')
 
     if Options.options.libdir:
