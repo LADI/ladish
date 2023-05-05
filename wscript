@@ -63,11 +63,11 @@ def options(opt):
         opt.load('parallel_debug')
 
 def add_cflag(conf, flag):
-    conf.env.append_unique('CXXFLAGS', flag)
-    conf.env.append_unique('CFLAGS', flag)
+    conf.env.prepend_unique('CXXFLAGS', flag)
+    conf.env.prepend_unique('CFLAGS', flag)
 
 def add_linkflag(conf, flag):
-    conf.env.append_unique('LINKFLAGS', flag)
+    conf.env.prepend_unique('LINKFLAGS', flag)
 
 def check_gcc_optimizations_enabled(flags):
     gcc_optimizations_enabled = False
