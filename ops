@@ -1,0 +1,1 @@
+{"author":{"id":"00232fc4fbca5357e86409d9e0d71e94e911bd42c06e520295c1a05a03c3f702"},"ops":[{"type":1,"timestamp":1683293872,"nonce":"2U5huNgRAvJXeiMEOZcLMz5mX4A=","title":"jack clients fail to connect to jack server with non-default name","message":"trac ticket T#67","files":null}]}
