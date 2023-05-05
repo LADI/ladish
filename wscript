@@ -63,11 +63,11 @@ def options(opt):
         opt.load('parallel_debug')
 
 def add_cflag(conf, flag):
-    conf.env.prepend_unique('CXXFLAGS', flag)
-    conf.env.prepend_unique('CFLAGS', flag)
+    conf.env.prepend_value('CXXFLAGS', flag)
+    conf.env.prepend_value('CFLAGS', flag)
 
 def add_linkflag(conf, flag):
-    conf.env.prepend_unique('LINKFLAGS', flag)
+    conf.env.prepend_value('LINKFLAGS', flag)
 
 def check_gcc_optimizations_enabled(flags):
     gcc_optimizations_enabled = False
@@ -313,6 +313,7 @@ def configure(conf):
 
     display_msg(conf, 'C compiler flags', repr(conf.env['CFLAGS']))
     display_msg(conf, 'C++ compiler flags', repr(conf.env['CXXFLAGS']))
+    display_msg(conf, 'Linker flags', repr(conf.env['LINKFLAGS']))
 
     if not conf.env['BUILD_GLADISH']:
         display_msg(conf)
