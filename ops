@@ -1,0 +1,1 @@
+{"author":{"id":"00232fc4fbca5357e86409d9e0d71e94e911bd42c06e520295c1a05a03c3f702"},"ops":[{"type":1,"timestamp":1683294008,"nonce":"5gE81M+3HIyJ1t3T+lEZjPzVzZA=","title":"Whysynth and Xsynth-dssi are missing midi inputs but work fine with jack-session","message":"trac ticket T#191","files":null}]}
