@@ -1,0 +1,1 @@
+{"author":{"id":"00232fc4fbca5357e86409d9e0d71e94e911bd42c06e520295c1a05a03c3f702"},"ops":[{"type":1,"timestamp":1683292922,"nonce":"4FspI2T/iv/aDcb8wykX5uIMxvE=","title":"d_type != DT_REG usage in ./daemon/appdb.c","message":"track ticket T#178","files":null}]}
