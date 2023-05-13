@@ -103,7 +103,7 @@ See also:
 
  * https://gitea.ladish.org/LADI/ladish[LADI/ladish at Gitea]
  * https://github.com/LADI/[LADI at GitHub]
- * https://ladish.org/jackdbus.html[jackdbus]
+ * https://jackdbus.ladish.org/[jackdbus]
  * https://lac.linuxaudio.org/2009/cdm/Thursday/02_Alasuutari/02.pdf[Juuso ALASUUTARI, LASH Audio Session Handler: Past, Present, and Future]
 
 For related discussions, you are invited to join
