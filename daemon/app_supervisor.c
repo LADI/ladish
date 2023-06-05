@@ -975,10 +975,13 @@ bool ladish_app_supervisor_start_app(ladish_app_supervisor_handle supervisor_han
   char uuid_str[37];
   char * js_dir;
   bool ret;
+  bool set_env_vars;
 
   app_ptr->zombie = false;
 
   ASSERT(app_ptr->pid == 0);
+
+  set_env_vars = ladish_level_string_to_integer(app_ptr->level) >= 2;
 
   if (strcmp(app_ptr->level, LADISH_APP_LEVEL_JACKSESSION) == 0)
   {
@@ -1003,6 +1006,7 @@ bool ladish_app_supervisor_start_app(ladish_app_supervisor_handle supervisor_han
     js_dir,
     app_ptr->terminal,
     app_ptr->commandline,
+    set_env_vars,
     &app_ptr->pid);
 
   free(js_dir);

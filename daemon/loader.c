@@ -271,7 +271,8 @@ loader_exec_program(
   bool run_in_terminal,
   const char * vgraph_name,
   const char * project_name,
-  const char * app_name)
+  const char * app_name,
+  bool set_env_vars)
 {
   const char * argv[8];
   unsigned int i;
@@ -293,12 +294,15 @@ loader_exec_program(
     fprintf(stderr, "Could not change directory to working dir '%s' for app '%s': %s\n", working_dir, app_name, strerror(errno));
   }
 
-  setenv("LADISH_APP_NAME", app_name, true);
-  setenv("LADISH_VGRAPH_NAME", vgraph_name, true);
-
-  if (project_name != NULL)
+  if (set_env_vars)
   {
-    setenv("LADISH_PROJECT_NAME", project_name, true);
+    setenv("LADISH_APP_NAME", app_name, true);
+    setenv("LADISH_VGRAPH_NAME", vgraph_name, true);
+
+    if (project_name != NULL)
+    {
+      setenv("LADISH_PROJECT_NAME", project_name, true);
+    }
   }
 
   if (session_dir != NULL)
@@ -531,6 +535,7 @@ loader_execute(
   const char * session_dir,
   bool run_in_terminal,
   const char * commandline,
+  bool set_env_vars,
   pid_t * pid_ptr)
 {
   pid_t pid;
@@ -642,7 +647,7 @@ loader_execute(
 
     set_ldpreload();
 
-    loader_exec_program(commandline, working_dir, session_dir, run_in_terminal, vgraph_name, project_name, app_name);
+    loader_exec_program(commandline, working_dir, session_dir, run_in_terminal, vgraph_name, project_name, app_name, set_env_vars);
 
     return false;  /* We should never get here */
   }
