@@ -73,12 +73,12 @@ Among project future goals are:
 
 GIT repositories:
 
- * https://github.com/LADI/ladish.git[LADI/ladish at github.com] +
+ * https://gitea.ladish.org/LADI/ladish[Upstream development GIT repository] +
+   Self-hosted upstream
+ * https://github.com/LADI/ladish.git[Primary backup GIT repository at github.com] +
    Cloud hosted
- * https://repo.or.cz/ladish.git[Primary backup GIT repository at repo.or.cz] +
+ * https://repo.or.cz/ladish.git[Secondary backup GIT repository at repo.or.cz] +
    Cloud hosted
- * https://git.nedk.org/lad/ladish.git[Upstream development GIT repository] +
-   The network node has issues, SSL certificate has expired and node needs reinstall
 
 LADI Session Handler was forked from the
 https://lac.linuxaudio.org/2009/cdm/Thursday/02_Alasuutari/02.pdf[D-Bus-ified LASH project].
@@ -101,8 +101,9 @@ Things that LADISH can do but LASH (D-Bus-ified or not) cannot:
 
 See also:
 
+ * https://gitea.ladish.org/LADI/ladish[LADI/ladish at Gitea]
  * https://github.com/LADI/[LADI at GitHub]
- * https://ladish.org/jackdbus.html[jackdbus]
+ * https://jackdbus.ladish.org/[jackdbus]
  * https://lac.linuxaudio.org/2009/cdm/Thursday/02_Alasuutari/02.pdf[Juuso ALASUUTARI, LASH Audio Session Handler: Past, Present, and Future]
 
 For related discussions, you are invited to join

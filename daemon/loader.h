@@ -38,6 +38,7 @@ loader_execute(
   const char * session_dir,
   bool run_in_terminal,
   const char * commandline,
+  bool set_env_vars,
   pid_t * pid_ptr);
 
 void loader_run(void);
