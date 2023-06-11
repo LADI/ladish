@@ -369,7 +369,6 @@ def build(bld):
         'main.c',
         'loader.c',
         'proctitle.c',
-        'appdb.c',
         'procfs.c',
         'control.c',
         'studio.c',

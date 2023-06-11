@@ -1,5 +1,4 @@
 daemon_sources = [
-  'appdb.c',
   'app_supervisor.c',
   'check_integrity.c',
   'client.c',
