@@ -24,7 +24,7 @@ Features:
    applications.
  * Subgraph management, the Studio & Rooms concept.
    Provide JACK clients with virtual hardware ports, so projects can
-   be transfered (or backups restored) between computers running
+   be transferred (or backups restored) between computers running
    different hardware and backups. 
    Allows to decouple projects (loaded in a Room) from
    hardware audio IO used in particular Studio.
@@ -34,7 +34,7 @@ Features:
    of such library for restoring connections between JACK clients.
    LADISH is able to manage JACK apps that don\'t link to liblash (or liblo).
    This is known as L0 (level zero) in LADISH.
- * Seamless handling of apps using ALSA sequencer ports.
+ * Seamless handling of apps that use ALSA sequencer ports.
    This is achieved by use of a2jmidid and libalsapid.so.
    The former creates jack-midi ports for the alsa sequencer ones.
    The latter reports the alsa application process ID to ladishd,
@@ -49,7 +49,7 @@ Features:
 
 Among project future goals are:
 
- * Support for pipewire setups (in addition JACK1 and JACK2)
+ * Support for pipewire setups (in addition to JACK1 and JACK2)
  * List of available JACK applications.
  * Hierarchical and/or tag-based organization of projects.
  * Support for applications that create more than one jack client per process
@@ -93,7 +93,7 @@ Things that LADISH can do but LASH (D-Bus-ified or not) cannot:
    of such library for restoring connections between JACK clients.
    LADISH is able to manage JACK apps that don\'t link to liblash (or liblo).
    This is known as L0 (level zero) in LADISH.
- * Seamless handling of apps using ALSA sequencer ports.
+ * Seamless handling of apps that use ALSA sequencer ports.
    This is achieved by use of a2jmidid and libalsapid.so.
    The former creates jack-midi ports for the alsa sequencer ones.
    The latter reports the alsa application process ID to ladishd,
