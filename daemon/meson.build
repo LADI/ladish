@@ -39,7 +39,6 @@ daemon_sources = [
   'room_load.c',
   'room_save.c',
   'save.c',
-  'siginfo.c',
   'studio.c',
   'studio_jack_conf.c',
   'studio_list.c',
@@ -50,5 +49,5 @@ daemon_sources = [
 ladishd = executable('ladishd', daemon_sources,
                      dependencies : deps,
                      include_directories : inc,
-                     link_with : [commonlib, cdbuslib, proxieslib, alsapidlib],
+                     link_with : [commonlib, proxieslib, alsapidlib],
                      install : true)

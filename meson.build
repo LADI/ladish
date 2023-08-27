@@ -32,13 +32,15 @@ cc = meson.get_compiler('c')
 inc = include_directories(meson.build_root().split('/')[-1])
 lash_inc = include_directories('lash_compat/liblash')
 
-dbus_dep = dependency('dbus-1')
 jack_dep = dependency('jack')
+dbus_dep = dependency('dbus-1')
+cdbus_dep = dependency('cdbus-1')
 
 deps = [
   cc.find_library('dl'),
   cc.find_library('util'),
   dbus_dep,
+  cdbus_dep,
   jack_dep,
   dependency('alsa'),
   dependency('uuid'),
@@ -49,7 +51,6 @@ pkg_mod = import('pkgconfig')
 
 subdir('common')
 subdir('proxies')
-subdir('cdbus')
 subdir('alsapid')
 
 # ladishd
@@ -59,26 +60,22 @@ if get_option('liblash').enabled()
   subdir('lash_compat/liblash')
 endif
 
-if get_option('pylash').enabled()
-  subdir('lash_compat/pylash')
-endif
-
 if get_option('gladish').enabled()
   subdir('gui')
   subdir('art')
 endif
 
-install_data(['AUTHORS', 'README', 'NEWS'], install_dir : data_dir)
+install_data(['AUTHORS', 'README.adoc', 'NEWS'], install_dir : data_dir)
 
 install_data('ladish_control',
              install_dir : get_option('prefix') / 'bin')
 
 jmcore = executable('jmcore', 'jmcore.c',
                     dependencies : deps,
-                    link_with : [commonlib, cdbuslib],
+                    link_with : [commonlib],
                     install : true)
 
 ladiconfd = executable('ladiconfd', 'conf.c',
                        dependencies : deps,
-                       link_with : [commonlib, cdbuslib],
+                       link_with : [commonlib],
                        install : true)
