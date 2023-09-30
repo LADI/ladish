@@ -653,23 +653,26 @@ def build(bld):
         # GtkBuilder UI definitions (XML)
         bld.install_files('${DATA_DIR}', 'gui/gladish.ui')
 
+        # 'Desktop' file (menu entry, icon, etc)
+        bld.install_files('${PREFIX}/share/applications/', 'gui/gladish.desktop', chmod=0o0644)
+
+        # Icons
+        icon_sizes = ['16x16', '22x22', '24x24', '32x32', '48x48', '256x256']
+        for icon_size in icon_sizes:
+            bld.path.ant_glob('art/' + icon_size + '/apps/*.png')
+            bld.install_files('${PREFIX}/share/icons/hicolor/' + icon_size + '/apps/', 'art/' + icon_size + '/apps/gladish.png')
+
+        status_images = []
+        for status in ["down", "unloaded", "started", "stopped", "warning", "error"]:
+            status_images.append("art/status_" + status + ".png")
+
+        bld.install_files('${DATA_DIR}', status_images)
+        bld.install_files('${DATA_DIR}', "art/ladish-logo-128x128.png")
+
+        bld(features='intltool_po', appname=APPNAME, podir='po', install_path="${LOCALE_DIR}")
+
     bld.install_files('${PREFIX}/bin', 'ladish_control', chmod=0o0755)
 
-    # 'Desktop' file (menu entry, icon, etc)
-    bld.install_files('${PREFIX}/share/applications/', 'gui/gladish.desktop', chmod=0o0644)
-
-    # Icons
-    icon_sizes = ['16x16', '22x22', '24x24', '32x32', '48x48', '256x256']
-    for icon_size in icon_sizes:
-        bld.path.ant_glob('art/' + icon_size + '/apps/*.png')
-        bld.install_files('${PREFIX}/share/icons/hicolor/' + icon_size + '/apps/', 'art/' + icon_size + '/apps/gladish.png')
-
-    status_images = []
-    for status in ["down", "unloaded", "started", "stopped", "warning", "error"]:
-        status_images.append("art/status_" + status + ".png")
-
-    bld.install_files('${DATA_DIR}', status_images)
-    bld.install_files('${DATA_DIR}', "art/ladish-logo-128x128.png")
     bld.install_files('${DOCDIR}', ["AUTHORS", "README.adoc", "NEWS"])
     bld.install_as('${DATA_DIR}/COPYING', "gpl2.txt")
 
@@ -685,8 +688,6 @@ def build(bld):
                 os.popen("doxygen").read()
             else:
                 Logs.pprint('CYAN', "doxygen documentation already built.")
-
-    bld(features='intltool_po', appname=APPNAME, podir='po', install_path="${LOCALE_DIR}")
 
 def get_tags_dirs():
     source_root = os.path.dirname(Utils.g_module.root_path)
