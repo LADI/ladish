@@ -43,7 +43,6 @@ def yesno(bool):
 def options(opt):
     opt.load('compiler_c')
     opt.load('compiler_cxx')
-    opt.load('boost')
     opt.load('python')
     opt.add_option('--enable-pkg-config-dbus-service-dir', action='store_true', default=False, help='force D-Bus service install dir to be one returned by pkg-config')
     opt.add_option('--enable-gladish', action='store_true', default=False, help='Build gladish')
@@ -94,7 +93,6 @@ def create_service_taskgen(bld, target, opath, binary):
 def configure(conf):
     conf.load('compiler_c')
     conf.load('compiler_cxx')
-    conf.load('boost')
     conf.load('python')
     conf.load('intltool')
     if parallel_debug:
@@ -163,58 +161,56 @@ def configure(conf):
 
     conf.env['LIB_EXPAT'] = ['expat']
 
-    build_gui = True
+    if Options.options.enable_gladish:
+        conf.check_cfg(
+            package = 'glib-2.0',
+            errmsg = "not installed, see http://www.gtk.org/",
+            args = '--cflags --libs')
+        conf.check_cfg(
+            package = 'dbus-glib-1',
+            errmsg = "not installed, see http://dbus.freedesktop.org/",
+            args = '--cflags --libs')
+        conf.check_cfg(
+            package = 'gtk+-2.0',
+            atleast_version = '2.20.0',
+            errmsg = "not installed, see http://www.gtk.org/",
+            args = '--cflags --libs')
+        conf.check_cfg(
+            package = 'gtkmm-2.4',
+            atleast_version = '2.10.0',
+            errmsg = "not installed, see http://www.gtkmm.org",
+            args = '--cflags --libs')
 
-    if build_gui and not conf.check_cfg(
-        package = 'glib-2.0',
-        mandatory = False,
-        errmsg = "not installed, see http://www.gtk.org/",
-        args = '--cflags --libs'):
-        build_gui = False
+        conf.check_cfg(
+            package = 'libgnomecanvasmm-2.6',
+            atleast_version = '2.6.0',
+            errmsg = "not installed, see http://www.gtkmm.org",
+            args = '--cflags --libs')
 
-    if build_gui and not conf.check_cfg(
-        package = 'dbus-glib-1',
-        mandatory = False,
-        errmsg = "not installed, see http://dbus.freedesktop.org/",
-        args = '--cflags --libs'):
-        build_gui = False
+        #autowaf.check_pkg(conf, 'libgvc', uselib_store='AGRAPH', atleast_version='2.8', mandatory=False)
 
-    if build_gui and not conf.check_cfg(
-        package = 'gtk+-2.0',
-        mandatory = False,
-        atleast_version = '2.20.0',
-        errmsg = "not installed, see http://www.gtk.org/",
-        args = '--cflags --libs'):
-        build_gui = False
-
-    if build_gui and not conf.check_cfg(
-        package = 'gtkmm-2.4',
-        mandatory = False,
-        atleast_version = '2.10.0',
-        errmsg = "not installed, see http://www.gtkmm.org",
-        args = '--cflags --libs'):
-        build_gui = False
-
-    if build_gui and not conf.check_cfg(
-        package = 'libgnomecanvasmm-2.6',
-        mandatory = False,
-        atleast_version = '2.6.0',
-        errmsg = "not installed, see http://www.gtkmm.org",
-        args = '--cflags --libs'):
-        build_gui = False
-
-    #autowaf.check_pkg(conf, 'gtkmm-2.4', uselib_store='GLIBMM', atleast_version='2.10.0', mandatory=True)
-    #autowaf.check_pkg(conf, 'libgnomecanvasmm-2.6', uselib_store='GNOMECANVASMM', atleast_version='2.6.0', mandatory=True)
-
-    #autowaf.check_pkg(conf, 'libgvc', uselib_store='AGRAPH', atleast_version='2.8', mandatory=False)
-
-    if build_gui:
-        # We need the boost headers package (e.g. libboost-dev)
-        # shared_ptr.hpp and weak_ptr.hpp
-        conf.check_boost(
-            mandatory = False,
-            errmsg="not found, see http://boost.org/")
-        build_gui = not not conf.env['BOOST_VERSION']
+        # The boost headers package (e.g. libboost-dev) is needed
+        conf.multicheck(
+            {'header_name':  "boost/shared_ptr.hpp"},
+            {'header_name':  "boost/weak_ptr.hpp"},
+            {'header_name':  "boost/enable_shared_from_this.hpp"},
+            {'header_name':  "boost/utility.hpp"},
+            msg = "Checking for boost headers",
+            mandatory = False)
+        display_msg(conf, 'Found boost/shared_ptr.hpp',
+                    yesno(conf.env['HAVE_BOOST_SHARED_PTR_HPP']))
+        display_msg(conf, 'Found boost/weak_ptr.hpp',
+                    yesno(conf.env['HAVE_BOOST_WEAK_PTR_HPP']))
+        display_msg(conf, 'Found boost/enable_shared_from_this.hpp',
+                    yesno(conf.env['HAVE_BOOST_ENABLE_SHARED_FROM_THIS_HPP']))
+        display_msg(conf, 'Found boost/utility.hpp',
+                    yesno(conf.env['HAVE_BOOST_UTILITY_HPP']))
+        if not (conf.env['HAVE_BOOST_SHARED_PTR_HPP'] and \
+                conf.env['HAVE_BOOST_WEAK_PTR_HPP'] and \
+                conf.env['HAVE_BOOST_ENABLE_SHARED_FROM_THIS_HPP'] and \
+                conf.env['HAVE_BOOST_UTILITY_HPP']):
+            display_line(conf, "One or more boost headers not found, see http://boost.org/")
+            sys.exit(1)
 
     conf.env['BUILD_GLADISH'] = Options.options.enable_gladish
     conf.env['BUILD_LIBLASH'] = Options.options.enable_liblash
