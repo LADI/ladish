@@ -724,7 +724,8 @@ class ladish_dist(Scripting.Dist):
             self.base_name = Options.options.distname
         else:
             try:
-                self.base_name = self.cmd_and_log("LANG= git describe --tags", quiet=Context.BOTH).splitlines()[0]
+                sha = self.cmd_and_log("LANG= git rev-parse --short HEAD", quiet=Context.BOTH).splitlines()[0]
+                self.base_name = APPNAME + '-' + VERSION + "-g" + sha
             except:
                 self.base_name = APPNAME + '-' + VERSION
         self.base_name += Options.options.distsuffix
