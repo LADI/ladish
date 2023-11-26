@@ -719,7 +719,7 @@ class ladish_dist(Scripting.Dist):
     fun = 'dist'
 
     def __init__(self):
-        Dist.__init__(self)
+        Scripting.Dist.__init__(self)
         if Options.options.distname:
             self.base_name = Options.options.distname
         else:
@@ -740,7 +740,7 @@ class ladish_dist(Scripting.Dist):
         return self.base_name
 
     def get_excl(self):
-        excl = Dist.get_excl(self)
+        excl = Scripting.Dist.get_excl(self)
 
         excl += ' .gitmodules'
         excl += ' GTAGS'
