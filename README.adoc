@@ -71,6 +71,10 @@ Among project future goals are:
    other computer or storing it in a backup archive.
  * Session versioning via Git
 
+Tarballs:
+
+ * https://dl.ladish.org/ladish/
+
 GIT repositories:
 
  * https://gitea.ladish.org/LADI/ladish[Upstream development GIT repository] +
