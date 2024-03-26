@@ -68,7 +68,7 @@ if get_option('gladish').enabled()
   subdir('art')
 endif
 
-install_data(['AUTHORS', 'README', 'NEWS'], install_dir : data_dir)
+install_data(['AUTHORS', 'README.adoc', 'NEWS'], install_dir : data_dir)
 
 install_data('ladish_control',
              install_dir : get_option('prefix') / 'bin')
