@@ -1,5 +1,5 @@
 project('ladish', 'c', 'cpp',
-  version : '0.3',
+  version : '1.2',
   license : 'MIT')
 
 data_dir = get_option('prefix') / 'share' / 'ladish'
