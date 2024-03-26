@@ -1,3 +1,7 @@
+= Version 1.2 on 20XX-XX-XX =
+
+ * Apply downstream patches from FreeBSD
+
 = Version 1.1 on 2023-11-26 =
 
  * waf: Add a script to generate an unpacked instance of the waf
