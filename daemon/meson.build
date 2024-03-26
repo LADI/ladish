@@ -40,13 +40,15 @@ daemon_sources = [
   'room_load.c',
   'room_save.c',
   'save.c',
-  'siginfo.c',
   'studio.c',
   'studio_jack_conf.c',
   'studio_list.c',
   'virtualizer.c',
   '../string_constants.c',
 ]
+
+# define SIGINFO_ENABLED and build
+#  'siginfo.c',
 
 ladishd = executable('ladishd', daemon_sources,
                      dependencies : deps,
