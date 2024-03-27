@@ -1,6 +1,7 @@
 = Version 1.2 on 20XX-XX-XX =
 
  * Apply downstream patches from FreeBSD
+ * meson: Fix project license field (MIT->GPL-2.0-only)
 
 = Version 1.1 on 2023-11-26 =
 
