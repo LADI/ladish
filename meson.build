@@ -7,13 +7,25 @@ locale_dir = get_option('prefix') / 'share' / 'locale'
 dbus_name_base = 'org.ladish'
 dbus_base_path = '/org/ladish'
 
-git_version = run_command(['git', 'rev-parse', '--short', 'HEAD']).stdout().strip()
+fs = import('fs')
+if fs.is_dir(f'.git')
+  # This block handles building from git source tree
+  # version.h is generated during build
+  git_version = run_command(['git', 'rev-parse', '--short', 'HEAD']).stdout().strip()
 
-configure_file(output : 'version.h',
-    configuration : {
-        'GIT_VERSION' : '"@0@"'.format(git_version)
-    }
-)
+  configure_file(output : 'version.h',
+                 configuration : {
+                                   'GIT_VERSION' : '"@0@"'.format(git_version)
+                 }
+  )
+else
+  # Tarballs already have version.h,
+  # Just copy the file in this case
+  configure_file(output : 'version.h',
+                 input : 'version.h',
+                 copy: true
+  )
+endif
 
 configure_file(output : 'config.h',
   configuration : {

@@ -2,6 +2,7 @@
 
  * Apply downstream patches from FreeBSD
  * meson: Fix project license field (MIT->GPL-2.0-only)
+ * meson: Fix version.h when building from tarball
 
 = Version 1.1 on 2023-11-26 =
 
