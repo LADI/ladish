@@ -8,7 +8,7 @@ dbus_name_base = 'org.ladish'
 dbus_base_path = '/org/ladish'
 
 fs = import('fs')
-if fs.is_dir(f'.git')
+if fs.is_dir('.git')
   # This block handles building from git source tree
   # version.h is generated during build
   git_version = run_command(['git', 'rev-parse', '--short', 'HEAD']).stdout().strip()
