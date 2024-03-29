@@ -1,6 +1,12 @@
-= Version 1.2 on 20XX-XX-XX =
+= Version 1.2 on 2023-03-29 =
+
+Changes since 1.1:
 
  * Apply downstream patches from FreeBSD
+ * meson: Fix project license field (MIT->GPL-2.0-only)
+ * meson: Fix version.h when building from tarball
+ * meson: disable siginfo build
+ * meson: Fix after README->README.adoc rename in 1.1
 
 = Version 1.1 on 2023-11-26 =
 

@@ -46,6 +46,9 @@ daemon_sources = [
   '../string_constants.c',
 ]
 
+# define SIGINFO_ENABLED and build
+#  'siginfo.c',
+
 ladishd = executable('ladishd', daemon_sources,
                      dependencies : deps,
                      include_directories : inc,
