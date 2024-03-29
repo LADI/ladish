@@ -1,4 +1,101 @@
-= Version 1 =
+= Version 1.2 on 2023-03-29 =
+
+Changes since 1.1:
+
+ * Apply downstream patches from FreeBSD
+ * meson: Fix project license field (MIT->GPL-2.0-only)
+ * meson: Fix version.h when building from tarball
+ * meson: disable siginfo build
+ * meson: Fix after README->README.adoc rename in 1.1
+
+= Version 1.1 on 2023-11-26 =
+
+ * waf: Add a script to generate an unpacked instance of the waf
+   all-in-one blob. (by Alessio Treglia)
+   http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=654469
+ * liblash: Fix small misspellings (by Alessio Treglia)
+ * Default the name of configuration tool to "ladi-control-center",
+   instead of the older "ladiconf" (by Alessio Treglia)
+ * gladish: embed flowcanvas-0.7.1
+ * fixes of compiler warnings
+ * ladishd: last-rite stdout/stderr output of child subprocesses is
+   not ignored anymore.
+ * ladishd: Fix logging from child processes
+ * ladishd/loader: add includes for getrlimit (build fix)
+ * ladish: Don't notify user about unexpectedly stopped apps that
+   returned 0 exit code. Fixes #197 (from old ladish.org trac
+   instance). The exit code detection for apps ran in terminal is/was
+   not working, at least with xterm. xterm doesnt seem to be able to
+   return exit code of its child process.
+ * ladishd: preload libasound.so.2 instead of libasound.so (by falkTX)
+ * ladishd: fix double free in malloc failure handling code path
+ * ladicore: fix potential access of NULL pointer in catdup
+ * proxies: add assert to disable complain from clang static analyzer
+ * ladishd/rooms: Fix uses of unintialized memory
+ * daemon/room-save: Actually handle project directory
+   existence-check/creation failures.
+ * proxies: Remove useless assignment pointed by clang static analizer
+ * ladishd: Fix memory leak on procfs read() failure
+ * ladishd/loader: Fix use of uninitialized memory in chdir() failure
+   handling code path.
+ * ladicore: Fix memory leak on procfs read() failure
+ * ladishd: Improve assert and fix clang static analyzer report
+ * ladishd: Fix undefined return value in case of error (on studio
+   save)
+ * ladishd/virtualizer: Don't set garbge pid to ports (either new or
+   existing ones).
+ * ladishd/virtualizer: Fix memory leak when a2j mapping fails
+ * gladish: Fix error checks in graph canvas code
+ * gladish: Improved handling of failure to get studio name
+ * gladish: Fix memory leak in strdup() failure handling code path
+ * ladishd/rooms: Fix memory leak in strdup() failure handling code
+   path
+ * gladish: Fix memory leak when separator is added to dynmenu;
+   check for allocation failure otherwise.
+ * gladish/flowcanvas: Comment out useless code in flowcanvas and make
+   the clang static analyzer happy.
+ * Fix formatting errors in log calls
+ * Remove (useless) ifdefs for LADISH_DEBUG
+ * Improved logging, runtime, take advantage of gcc printf format
+   checks.
+ * enable extra compiler warnings and fix the the code
+ * ladishd/loader: add license header text to source file
+ * gladish: quit on ctrl-q
+ * liblash: Install lash include files into /usr/include/lash-1.0/
+   instead of /usr/include/lash/, so to match the lash-0.5.4 and
+   lash-0.6.0~rc2 layout.
+ * ladishd: switch from sigsegv to siginfo
+   (optional and disabled by default)
+ * Fix doxygen warnings
+ * waf: add --libdir option (by Goran Mekić)
+ * gladish: don't crash when unable connect to dbus
+ * ladishd: Fix GetAllPorts D-Bus method declaration
+   (by Markus Kitsinger)
+ * ladish_control: py3 compatibility
+ * ladishd: Fix implicit fallthrough warning with gcc 9.3.0
+ * Apply patch (from openSUSE) for python3 compatibility
+ * ladishd: Fix for -Werror=restrict
+ * gladish: Adjust load project dialog for newer gtk2 versions
+ * meson.build files (by Max Audron)
+ * waf: Disable -Werror
+ * waf: Upgrade to 2.0.26
+ * Remove all git sumodules
+ * gladish.desktop: use Engeneering category
+  (good suggestion by Dominique Michel)
+ * waf: add --docdir option and change the default to
+   PREFIX/share/doc/ladish/
+ * waf: new configure option, --enable-gladish
+   (and disable gladish build by default)
+ * Merge ladish.org index.adoc and README into README.adoc
+ * waf: *prepend* CFLAGS and LINKFLAGS
+  (give priority to distro flags)
+ * ladishd: Don't set LADISH env vars for L0 & L1
+ * gladish: Fix build with recent version of dbus-glib
+ * waf: Install gladish related files only when gladish build is
+   enabled
+ * waf: always put the short sha1 in the ladish tarball name
+
+= Version 1 on 2011-12-19 =
  * vgraph manipulation
  * lash support
  * jack-session support
