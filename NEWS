@@ -4,6 +4,7 @@ Changes since 1.2:
 
  * Add verify-sig_waf.sh waf verification script from waf-2.0.27
  * Upgrade waf to 2.0.27
+ * Update INSTALL
 
 = Version 1.2 on 2023-03-29 =
 
