@@ -21,6 +21,9 @@ The Claudia frontend is alternative GUI in python that uses Qt.
 
 ===================================================
 
+Instructions for building with waf follow.
+As alternative, meson.build is provided.
+
 = Configure it =
 
 ./waf configure
@@ -51,4 +54,4 @@ To adjust the number, use -j option, e.g. for 4 jobs:
 
 ./waf install
 
-You probably want to run later as superuser to install system-wide
+When installing into /usr this command has to be ran as root.
