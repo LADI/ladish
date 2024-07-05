@@ -171,6 +171,9 @@ static void loader_sigchld_handler(int signum)
   pid_t pid;
   struct loader_child *child_ptr;
   int signal;
+  int errno_saved;
+
+  errno_saved = errno;
 
   ASSERT(signum == SIGCHLD);
 
@@ -213,6 +216,8 @@ static void loader_sigchld_handler(int signum)
       log_info("Child was stopped by signal %d", WSTOPSIG(status));
     }
   }
+
+  errno = errno_saved;
 }
 
 void loader_init(void (* on_child_exit)(pid_t pid, int exit_status))
