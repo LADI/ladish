@@ -339,6 +339,12 @@ char * compose_project_dir_from_name(const char * project_name)
   size_t home_dir_len;
 
   home_dir = getenv("HOME");
+  if (home_dir == NULL)
+  {
+    log_error("HOME env var is not set. Cannot decude project directory.");
+    return NULL;
+  }
+
   home_dir_len = strlen(home_dir);
 
   project_dir = malloc(home_dir_len + DEFAULT_PROJECT_BASE_DIR_LEN + max_escaped_length(strlen(project_name)) + 1);
