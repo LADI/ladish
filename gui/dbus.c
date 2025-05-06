@@ -26,7 +26,7 @@
 
 #include "internal.h"
 #include "../cdbus/helpers.h"
-//#include <dbus/dbus-glib-lowlevel.h>
+#include <dbus/dbus-glib-lowlevel.h>
 
 bool dbus_init(void)
 {
