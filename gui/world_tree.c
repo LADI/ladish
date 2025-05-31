@@ -104,6 +104,7 @@ on_select(
         ASSERT_NO_PASS;
         break;
       }
+      /* fall through */
     case entry_type_view:
       //log_info("%s is going to be %s.", get_view_name(view), path_currently_selected ? "unselected" : "selected");
       if (!path_currently_selected)
