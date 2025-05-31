@@ -45,7 +45,7 @@ ladish_dynmenu_create(
       const char * name,
       void * data,
       ladish_dynmenu_item_activate_callback item_activate_callback,
-      void (* data_free)()),
+      void (* data_free)(void * data)),
     void * context),
   const char * description,
   ladish_dynmenu_item_activate_callback item_activate_callback,
