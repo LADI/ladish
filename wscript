@@ -52,11 +52,11 @@ def options(opt):
     opt.add_option('--siginfo', action='store_true', default=False, dest='siginfo', help="Log backtrace on fatal signal")
     opt.add_option('--doxygen', action='store_true', default=False, help='Enable build of doxygen documentation')
     opt.add_option('--distnodeps', action='store_true', default=False, help="When creating distribution tarball, don't package git submodules")
-    opt.add_option('--distname', type='string', default=None, help="Name for the distribution tarball")
-    opt.add_option('--distsuffix', type='string', default="", help="String to append to the distribution tarball name")
+    opt.add_option('--distname', type=str, default=None, help="Name for the distribution tarball")
+    opt.add_option('--distsuffix', type=str, default="", help="String to append to the distribution tarball name")
     opt.add_option('--tagdist', action='store_true', default=False, help='Create of git tag for distname')
-    opt.add_option('--libdir', type='string', default=None, help='Define lib dir')
-    opt.add_option('--docdir', type='string', default=None, help="Define doc dir [default: PREFIX'/share/doc/" + APPNAME + ']')
+    opt.add_option('--libdir', type=str, default=None, help='Define lib dir')
+    opt.add_option('--docdir', type=str, default=None, help="Define doc dir [default: PREFIX'/share/doc/" + APPNAME + ']')
 
 
     if parallel_debug:
