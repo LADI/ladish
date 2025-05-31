@@ -41,7 +41,7 @@ struct ladish_dynmenu
       const char * name,
       void * data,
       ladish_dynmenu_item_activate_callback item_activate_callback,
-      void (* data_free)()),
+      void (* data_free)(void * data)),
     void * context);
   ladish_dynmenu_item_activate_callback item_activate_callback;
   bool add_sensitive;
@@ -53,7 +53,7 @@ struct ladish_dynmenu_item_data
 {
   GtkWidget * item;
   void * data;
-  void (* data_free)();
+  void (* data_free)(void * data);
   ladish_dynmenu_item_activate_callback item_activate_callback;
 };
 
@@ -97,7 +97,7 @@ ladish_dynmenu_add_entry(
   const char * name,
   void * data,
   ladish_dynmenu_item_activate_callback item_activate_callback,
-  void (* data_free)())
+  void (* data_free)(void * data))
 {
   struct ladish_dynmenu_item_data * data_ptr;
   GtkWidget * item;
@@ -214,7 +214,7 @@ ladish_dynmenu_create(
       const char * name,
       void * data,
       ladish_dynmenu_item_activate_callback item_activate_callback,
-      void (* data_free)()),
+      void (* data_free)(void * data)),
     void * context),
   const char * description,
   ladish_dynmenu_item_activate_callback item_activate_callback,
