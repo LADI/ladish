@@ -40,7 +40,7 @@ struct ladish_studio_list_closure
     const char * name,
     void * data,
     ladish_dynmenu_item_activate_callback item_activate_callback,
-    void (* data_free)());
+    void (* data_free)(void * data));
   void * context;
 };
 
@@ -66,7 +66,7 @@ fill_callback(
     const char * name,
     void * data,
     ladish_dynmenu_item_activate_callback item_activate_callback,
-    void (* data_free)()),
+    void (* data_free)(void * data)),
   void * context)
 {
   struct ladish_studio_list_closure closure;
