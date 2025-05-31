@@ -516,7 +516,15 @@ def build(bld):
     if bld.env['BUILD_GLADISH']:
         gladish = bld.program(source = [], features = 'c cxx cxxprogram', includes = [bld.path.get_bld()])
         gladish.target = 'gladish'
-        gladish.defines = ['LOG_OUTPUT_STDOUT']
+        gladish.defines = [
+            'LOG_OUTPUT_STDOUT',
+            # for gtk2 using code, issuing deprecate warnings for unuported upstream gtk2
+            # is non-sense at least and may be harmful
+            # by making sensible warnings lost in in the noise.
+            # glib warnings about gtk2 being deprecated is in same category.
+            'GLIB_DISABLE_DEPRECATION_WARNINGS',
+#            'GTK_DISABLE_DEPRECATION_WARNINGS',
+        ]
         gladish.uselib = 'DBUS-1 CDBUS-1 DBUS-GLIB-1 GTKMM-2.4 LIBGNOMECANVASMM-2.6 GTK+-2.0'
 
         gladish.source = ["string_constants.c"]
