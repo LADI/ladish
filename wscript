@@ -7,7 +7,7 @@ from __future__ import with_statement
 parallel_debug = False
 
 APPNAME='ladish'
-VERSION='1.2'
+VERSION='1.3'
 DBUS_NAME_BASE = 'org.ladish'
 RELEASE = True
 
