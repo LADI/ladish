@@ -8,6 +8,7 @@ Changes since 1.2:
  * daemon/loader.c: save&restore errno in SIGCHLD handler
  * Fix use of invalid NULL pointer when HOME env var is not set
  * Fix gladish build with gcc-15 by setting -std=gnu99 and -std=c++11
+ * Fix build with musl C library
  * In gladish, Re-enable <> inclusion of dbus/dbus-glib-lowlevel.h
  * Fix or suppress warnings during gladish build
 
