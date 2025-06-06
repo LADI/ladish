@@ -66,13 +66,13 @@ struct loader_child
 
   bool terminal;
 
-  int stdout;
+  int stdout_fd;
   char stdout_buffer[CLIENT_OUTPUT_BUFFER_SIZE];
   char stdout_last_line[CLIENT_OUTPUT_BUFFER_SIZE];
   unsigned int stdout_last_line_repeat_count;
   char * stdout_buffer_ptr;
 
-  int stderr;
+  int stderr_fd;
   char stderr_buffer[CLIENT_OUTPUT_BUFFER_SIZE];
   char stderr_last_line[CLIENT_OUTPUT_BUFFER_SIZE];
   unsigned int stderr_last_line_repeat_count;
@@ -155,8 +155,8 @@ loader_childs_bury(void)
 
       if (!child_ptr->terminal)
       {
-        close(child_ptr->stdout);
-        close(child_ptr->stderr);
+        close(child_ptr->stdout_fd);
+        close(child_ptr->stderr_fd);
       }
 
       g_on_child_exit(child_ptr->pid, child_ptr->exit_status);
@@ -481,7 +481,7 @@ loader_read_childs_output(void)
       loader_read_child_output(
         child_ptr->vgraph_name,
         child_ptr->app_name,
-        child_ptr->stdout,
+        child_ptr->stdout_fd,
         false,
         child_ptr->stdout_buffer,
         &child_ptr->stdout_buffer_ptr,
@@ -491,7 +491,7 @@ loader_read_childs_output(void)
       loader_read_child_output(
         child_ptr->vgraph_name,
         child_ptr->app_name,
-        child_ptr->stderr,
+        child_ptr->stderr_fd,
         true,
         child_ptr->stderr_buffer,
         &child_ptr->stderr_buffer_ptr,
@@ -605,9 +605,9 @@ loader_execute(
     }
     else
     {
-      child_ptr->stderr = stderr_pipe[0];
+      child_ptr->stderr_fd = stderr_pipe[0];
 
-      if (fcntl(child_ptr->stderr, F_SETFL, O_NONBLOCK) == -1)
+      if (fcntl(child_ptr->stderr_fd, F_SETFL, O_NONBLOCK) == -1)
       {
         log_error("Failed to set nonblocking mode on "
                    "stderr reading end: %s",
@@ -623,7 +623,7 @@ loader_execute(
   if (!run_in_terminal)
   {
     /* We need pty to disable libc buffering of stdout */
-    pid = forkpty(&child_ptr->stdout, NULL, NULL, NULL);
+    pid = forkpty(&child_ptr->stdout_fd, NULL, NULL, NULL);
   }
   else
   {
@@ -670,12 +670,12 @@ loader_execute(
     /* In parent, close unused writing ends of pipe */
     close(stderr_pipe[1]);
 
-    if (fcntl(child_ptr->stdout, F_SETFL, O_NONBLOCK) == -1)
+    if (fcntl(child_ptr->stdout_fd, F_SETFL, O_NONBLOCK) == -1)
     {
       log_error("Could not set noblocking mode on stdout "
                  "- pty: %s", strerror(errno));
       close(stderr_pipe[0]);
-      close(child_ptr->stdout);
+      close(child_ptr->stdout_fd);
     }
   }
 

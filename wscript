@@ -62,8 +62,14 @@ def options(opt):
         opt.load('parallel_debug')
 
 def add_cflag(conf, flag):
-    conf.env.prepend_value('CXXFLAGS', flag)
     conf.env.prepend_value('CFLAGS', flag)
+
+def add_cxxflag(conf, flag):
+    conf.env.prepend_value('CXXFLAGS', flag)
+
+def add_candcxxflag(conf, flag):
+    add_cflag(conf, flag)
+    add_cxxflag(conf, flag)
 
 def add_linkflag(conf, flag):
     conf.env.prepend_value('LINKFLAGS', flag)
@@ -222,15 +228,21 @@ def configure(conf):
     conf.env['BUILD_LIBLASH'] = Options.options.enable_liblash
     conf.env['BUILD_SIGINFO'] =  Options.options.siginfo
 
-    add_cflag(conf, '-fvisibility=hidden')
+    add_cflag(conf, '-std=gnu99')
+    add_cxxflag(conf, '-std=c++11')
+
+    add_candcxxflag(conf, '-fvisibility=hidden')
 
     conf.env['BUILD_WERROR'] = False #not RELEASE
     add_cflag(conf, '-Wall')
 
-    add_cflag(conf, '-Wimplicit-fallthrough=2')
+    if conf.env['BUILD_GLADISH']:
+        add_cxxflag(conf, '-Wno-deprecated-copy')
+
+    add_candcxxflag(conf, '-Wimplicit-fallthrough=2')
 
     if conf.env['BUILD_WERROR']:
-        add_cflag(conf, '-Werror')
+        add_candcxxflag(conf, '-Werror')
         # for pre gcc-4.4, enable optimizations so use of uninitialized variables gets detected
         try:
             is_gcc = conf.env['CC_NAME'] == 'gcc'
@@ -252,8 +264,8 @@ def configure(conf):
 
     conf.env['BUILD_DEBUG'] = Options.options.debug
     if conf.env['BUILD_DEBUG']:
-        add_cflag(conf, '-g')
-        add_cflag(conf, '-O0')
+        add_candcxxflag(conf, '-g')
+        add_candcxxflag(conf, '-O0')
         add_linkflag(conf, '-g')
 
     conf.env['DATA_DIR'] = os.path.normpath(os.path.join(conf.env['PREFIX'], 'share', APPNAME))
@@ -522,7 +534,7 @@ def build(bld):
             # is non-sense at least and may be harmful
             # by making sensible warnings lost in in the noise.
             # glib warnings about gtk2 being deprecated is in same category.
-#            'GLIB_DISABLE_DEPRECATION_WARNINGS',
+            'GLIB_DISABLE_DEPRECATION_WARNINGS',
 #            'GTK_DISABLE_DEPRECATION_WARNINGS',
         ]
         gladish.uselib = 'DBUS-1 CDBUS-1 DBUS-GLIB-1 GTKMM-2.4 LIBGNOMECANVASMM-2.6 GTK+-2.0'
