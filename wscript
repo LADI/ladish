@@ -228,7 +228,7 @@ def configure(conf):
     conf.env['BUILD_LIBLASH'] = Options.options.enable_liblash
     conf.env['BUILD_SIGINFO'] =  Options.options.siginfo
 
-    add_cflag(conf, '-std=gnu99')
+    add_cflag(conf, '-std=gnu23')
     add_cxxflag(conf, '-std=c++11')
 
     add_candcxxflag(conf, '-fvisibility=hidden')
