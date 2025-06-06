@@ -181,7 +181,7 @@ static void dir_changed(GtkWidget * UNUSED(widget), gpointer data)
 //static void on_browse(GtkWidget * widget, gpointer data)
 void ladish_run_load_project_dialog(ladish_room_proxy_handle room)
 {
-  GtkFileFilter * filter;
+//  GtkFileFilter * filter;
   GtkWidget * dialog;
   char * filename;
 
