@@ -32,7 +32,7 @@
 #include <errno.h>
 #include <uuid/uuid.h>
 
-#include "../cdbus/helpers.h"
+#include <cdbus/cdbus.h>
 
 /* ~/BASE_DIR is where studio, room and project xml files are stored */
 #define BASE_DIR "/." BASE_NAME

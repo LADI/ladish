@@ -1,5 +1,4 @@
 daemon_sources = [
-  'appdb.c',
   'app_supervisor.c',
   'check_integrity.c',
   'client.c',
@@ -53,5 +52,5 @@ daemon_sources = [
 ladishd = executable('ladishd', daemon_sources,
                      dependencies : deps,
                      include_directories : inc,
-                     link_with : [commonlib, cdbuslib, proxieslib, alsapidlib],
+                     link_with : [commonlib, proxieslib, alsapidlib],
                      install : true)

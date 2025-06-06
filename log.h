@@ -36,6 +36,7 @@
 #define ANSI_RESET      "\033[0m"
 
 #include <stdio.h>
+#include <cdbus/log.h>
 
 #include "config.h"
 
@@ -65,16 +66,10 @@ ladish_log(
 #endif
   ;
 
-#define LADISH_LOG_LEVEL_DEBUG        0
-#define LADISH_LOG_LEVEL_INFO         1
-#define LADISH_LOG_LEVEL_WARN         2
-#define LADISH_LOG_LEVEL_ERROR        3
-#define LADISH_LOG_LEVEL_ERROR_PLAIN  4
-
-#define log_debug(fmt, args...)       ladish_log(LADISH_LOG_LEVEL_DEBUG,       __FILE__, __LINE__, __func__, fmt, ## args)
-#define log_info(fmt, args...)        ladish_log(LADISH_LOG_LEVEL_INFO,        __FILE__, __LINE__, __func__, fmt, ## args)
-#define log_warn(fmt, args...)        ladish_log(LADISH_LOG_LEVEL_WARN,        __FILE__, __LINE__, __func__, fmt, ## args)
-#define log_error(fmt, args...)       ladish_log(LADISH_LOG_LEVEL_ERROR,       __FILE__, __LINE__, __func__, fmt, ## args)
-#define log_error_plain(fmt, args...) ladish_log(LADISH_LOG_LEVEL_ERROR_PLAIN, __FILE__, __LINE__, __func__, fmt, ## args)
+#define log_debug(fmt, args...)       ladish_log(CDBUS_LOG_LEVEL_DEBUG,       __FILE__, __LINE__, __func__, fmt, ## args)
+#define log_info(fmt, args...)        ladish_log(CDBUS_LOG_LEVEL_INFO,        __FILE__, __LINE__, __func__, fmt, ## args)
+#define log_warn(fmt, args...)        ladish_log(CDBUS_LOG_LEVEL_WARN,        __FILE__, __LINE__, __func__, fmt, ## args)
+#define log_error(fmt, args...)       ladish_log(CDBUS_LOG_LEVEL_ERROR,       __FILE__, __LINE__, __func__, fmt, ## args)
+#define log_error_plain(fmt, args...) ladish_log(CDBUS_LOG_LEVEL_ERROR_PLAIN, __FILE__, __LINE__, __func__, fmt, ## args)
 
 #endif /* __LADISH_LOG__ */

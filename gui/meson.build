@@ -1,5 +1,7 @@
 gui_deps = [
   dependency('dbus-glib-1'),
+  dbus_dep,
+  cdbus_dep,
 ]
 
 subdir('flowcanvas')
@@ -38,7 +40,7 @@ gladish_sources = [
 gladish = executable('gladish', gladish_sources,
                      dependencies : [gui_deps, flowcanvas_deps],
                      include_directories : [flowcanvas_inc, inc],
-                     link_with : [flowcanvaslib, proxieslib, cdbuslib, commonlib],
+                     link_with : [flowcanvaslib, proxieslib, commonlib],
                      install : true)
 
 install_data('gladish.ui', install_dir : data_dir)

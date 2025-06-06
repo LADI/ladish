@@ -9,8 +9,8 @@ install_headers([
 
 liblash = library('lash', 'lash.c',
                   include_directories : [lash_inc, inc],
-                  dependencies : [dbus_dep],
-                  link_with : [cdbuslib, commonlib],
+                  dependencies : [dbus_dep, cdbus_dep],
+                  link_with : [commonlib],
                   install : true)
 
 pkg_mod.generate(libraries : liblash,

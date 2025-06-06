@@ -93,7 +93,7 @@ struct ladish_recent_projects_list_closure
     const char * name,
     void * data,
     void (* item_activate_callback)(const char * name, void * data),
-    void (* data_free)());
+    void (* data_free)(void * data));
   void * context;
 };
 
@@ -126,7 +126,7 @@ fill_project_dynmenu(
     const char * name,
     void * data,
     void (* item_activate_callback)(const char * name, void * data),
-    void (* data_free)()),
+    void (* data_free)(void * data)),
   void * context)
 {
   struct ladish_recent_projects_list_closure closure;

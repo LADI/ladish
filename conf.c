@@ -33,7 +33,7 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#include "cdbus/helpers.h"
+#include <cdbus/cdbus.h>
 #include "dbus_constants.h"
 #include "common/catdup.h"
 #include "common/dirhelpers.h"

@@ -28,7 +28,7 @@
 #define COMMON_H__0710E3D5_9B69_4C10_BDDB_80E0D92F44AF__INCLUDED
 
 #include "../common.h"
-#include "../cdbus/helpers.h"
+#include <cdbus/cdbus.h>
 #include "../dbus_constants.h"
 
 #endif /* #ifndef COMMON_H__0710E3D5_9B69_4C10_BDDB_80E0D92F44AF__INCLUDED */

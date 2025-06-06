@@ -27,7 +27,10 @@
 #ifndef ALSAPID_H__0A27F284_7538_4791_8023_0FBED929EAF3__INCLUDED
 #define ALSAPID_H__0A27F284_7538_4791_8023_0FBED929EAF3__INCLUDED
 
-#include "../common.h"
+#include "config.h"             /* configure stage result */
+
+#include <stdbool.h>            /* C99 bool */
+#include <stdlib.h>             /* pid_t */
 
 #include <unistd.h> // for pid_t
 
@@ -36,5 +39,7 @@ void alsapid_compose_dst_link(char * buffer);
 bool alsapid_get_pid(int alsa_client_id, pid_t * pid_ptr);
 
 #define MAX_ALSAPID_PATH 255
+
+#define LADISH_PUBLIC __attribute__ ((visibility ("default")))
 
 #endif /* #ifndef ALSAPID_H__0A27F284_7538_4791_8023_0FBED929EAF3__INCLUDED */
