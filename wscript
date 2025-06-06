@@ -228,8 +228,14 @@ def configure(conf):
     conf.env['BUILD_LIBLASH'] = Options.options.enable_liblash
     conf.env['BUILD_SIGINFO'] =  Options.options.siginfo
 
-    add_cflag(conf, '-std=gnu23')
-    add_cxxflag(conf, '-std=c++11')
+    add_cflag(conf, '-std=c23')
+    add_cxxflag(conf, '-std=c++23')
+
+    add_candcxxflag(conf, '-D_DEFAULT_SOURCE')
+#    add_candcxxflag(conf, '-D_GNU_SOURCE')
+#    add_candcxxflag(conf, '-D_POSIX_C_SOURCE=200112L')
+    add_candcxxflag(conf, '-D_POSIX_C_SOURCE=200809L')
+#    add_candcxxflag(conf, '-D_XOPEN_SOURCE=500')
 
     add_candcxxflag(conf, '-fvisibility=hidden')
 
