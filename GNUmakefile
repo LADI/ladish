@@ -15,5 +15,11 @@ ladish:
 	python3 ./waf
 	python3 ./waf install
 
+.PHONY: html
+html: index.html LADI.html
+
 index.html: README.adoc README-docinfo.html README-docinfo-header.html
 	asciidoc -b html5 -a data-uri -a icons --theme ladi -o index.html README.adoc
+
+LADI.html: doc/LADI.adoc README-docinfo.html README-docinfo-header.html
+	asciidoc -b html5 -a data-uri -a icons --theme ladi -o LADI.html doc/LADI.adoc
