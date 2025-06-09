@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-10 00:27+0300\n"
-"PO-Revision-Date: 2025-06-10 00:28+0300\n"
+"PO-Revision-Date: 2025-06-10 01:26+0300\n"
 "Last-Translator: liushuyu <liushuyu011@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "Language: zh_CN\n"
@@ -62,7 +62,7 @@ msgstr "Jof Thibaut"
 #: gui/about.c:86
 #, c-format
 msgid "gladish is built on %s from %s"
-msgstr "该程序为 %s (%s) 编译"
+msgstr "gladish 是基于 %s 构建的，来自 %s"
 
 #: gui/action.c:86
 msgid "Clear XRuns and Max DSP Load"
@@ -73,22 +73,18 @@ msgid "Clear"
 msgstr "清除"
 
 #: gui/action.c:91 gui/action.c:92
-#, fuzzy
 msgid "Zoom 100%"
 msgstr "恢复原始大小"
 
 #: gui/action.c:96 gui/action.c:97
-#, fuzzy
 msgid "Zoom to fit"
 msgstr "缩放以适应"
 
 #: gui/action.c:101 gui/action.c:102
-#, fuzzy
 msgid "Zoom in"
 msgstr "放大"
 
 #: gui/action.c:106 gui/action.c:107
-#, fuzzy
 msgid "Zoom out"
 msgstr "缩小"
 
@@ -97,12 +93,10 @@ msgid "ladishd exit command failed, please inspect logs."
 msgstr ""
 
 #: gui/control.c:146
-#, fuzzy
 msgid "New studio"
-msgstr "ISO 标准工作室钨灯"
+msgstr "新工作室 ---- 音乐工作室"
 
 #: gui/control.c:146 gui/studio.c:255 gui/studio.c:297
-#, fuzzy
 msgid "Studio name"
 msgstr "ISO 标准工作室钨灯"
 
@@ -132,7 +126,6 @@ msgid "Name"
 msgstr "名字"
 
 #: gui/dialogs.c:61
-#, fuzzy
 msgid "New application"
 msgstr "应用程序："
 
@@ -147,12 +140,10 @@ msgid "<b><big>Error</big></b>"
 msgstr "<b><big>错误</big></b>"
 
 #: gui/dynmenu.c:186
-#, fuzzy
 msgid "Error filling "
 msgstr "填充方法"
 
 #: gui/dynmenu.c:190
-#, fuzzy
 msgid "Empty "
 msgstr "清空(_E)"
 
@@ -173,7 +164,6 @@ msgid "Remove"
 msgstr "移除"
 
 #: gui/graph_canvas.c:230
-#, fuzzy
 msgid "Split"
 msgstr "分割"
 
@@ -190,19 +180,16 @@ msgid "Rename"
 msgstr "重命名"
 
 #: gui/graph_canvas.c:286
-#, fuzzy
 msgid "Move port"
 msgstr "端口："
 
 #: gui/graph_canvas.c:317 gui/graph_canvas.c:334
-#, fuzzy
 msgid "New client"
-msgstr "在服务器模式下执行新的客户端连接，当客户端仍然是不可信"
+msgstr "新客户"
 
 #: gui/graph_canvas.c:340
-#, fuzzy
 msgid "Join clients"
-msgstr "加入"
+msgstr "加入客户"
 
 #: gui/graph_view.c:59
 msgid ""
@@ -217,9 +204,8 @@ msgid ""
 msgstr ""
 
 #: gui/jack.c:60
-#, fuzzy
 msgid "Raw JACK"
-msgstr "Raw"
+msgstr "Raw JACK"
 
 #: gui/jack.c:96
 #, c-format
@@ -242,9 +228,8 @@ msgid "DSP: %5.1f%% (%5.1f%%)"
 msgstr "DSP: %5.1f%% (%5.1f%%)"
 
 #: gui/jack.c:251 gui/jack.c:271
-#, fuzzy
 msgid "<b><big>Are you sure</big></b>"
-msgstr "您确定要永久删除“%B”吗？"
+msgstr "您确定吗？"
 
 #: gui/jack.c:251
 msgid "jackdbus will be reactivated. Are you sure?"
@@ -307,7 +292,6 @@ msgid "Unload Project"
 msgstr "卸载工程"
 
 #: gui/menu.c:155
-#, fuzzy
 msgid "Clear Room"
 msgstr "房间"
 
@@ -324,17 +308,14 @@ msgid "Project Properties..."
 msgstr "项目属性…"
 
 #: gui/menu.c:396 gui/gladish.ui:206
-#, fuzzy
 msgid "New Application..."
 msgstr "应用程序："
 
 #: gui/menu.c:414
-#, fuzzy
 msgid "Destroy Room"
 msgstr "房间"
 
 #: gui/menu.c:420
-#, fuzzy
 msgid "Create Room..."
 msgstr "房间"
 
@@ -359,7 +340,6 @@ msgid "JACK is sick"
 msgstr ""
 
 #: gui/studio.c:102
-#, fuzzy
 msgid "Stopped"
 msgstr "已终止"
 
@@ -394,7 +374,6 @@ msgid "Studio save failed, please inspect logs."
 msgstr ""
 
 #: gui/studio.c:255
-#, fuzzy
 msgid "Save studio as"
 msgstr "ISO 标准工作室钨灯"
 
@@ -423,7 +402,6 @@ msgid "Studio rename failed, please inspect logs."
 msgstr ""
 
 #: gui/world_tree.c:256
-#, fuzzy
 msgid "Cannot get app properties"
 msgstr "为对象属性附加注释"
 
@@ -432,7 +410,6 @@ msgid "App properties"
 msgstr "应用属性"
 
 #: gui/world_tree.c:334
-#, fuzzy
 msgid "Cannot set app properties."
 msgstr "设置引导线属性"
 
@@ -453,7 +430,6 @@ msgid "Properties"
 msgstr "属性"
 
 #: gui/world_tree.c:678
-#, fuzzy
 msgid " (inactive) "
 msgstr "非活动"
 
@@ -462,7 +438,6 @@ msgid "Disconnect All"
 msgstr "断开所有连接"
 
 #: gui/gladish.ui:17
-#, fuzzy
 msgid "_Studio"
 msgstr "ISO 标准工作室钨灯"
 
@@ -471,12 +446,10 @@ msgid "_New Studio..."
 msgstr "新建工作室(_N)"
 
 #: gui/gladish.ui:34
-#, fuzzy
 msgid "_Load Studio"
 msgstr "ISO 标准工作室钨灯"
 
 #: gui/gladish.ui:50
-#, fuzzy
 msgid "Start Studio"
 msgstr "ISO 标准工作室钨灯"
 
@@ -489,7 +462,6 @@ msgid "_Rename Studio..."
 msgstr "重命名工作室(_R)"
 
 #: gui/gladish.ui:90
-#, fuzzy
 msgid "_Save Studio"
 msgstr "ISO 标准工作室钨灯"
 
@@ -502,32 +474,26 @@ msgid "_Unload Studio"
 msgstr "卸载工作室(_U)"
 
 #: gui/gladish.ui:123
-#, fuzzy
 msgid "_Delete Studio"
 msgstr "ISO 标准工作室钨灯"
 
 #: gui/gladish.ui:152
-#, fuzzy
 msgid "_Room"
 msgstr "房间"
 
 #: gui/gladish.ui:159
-#, fuzzy
 msgid "_Create Room..."
 msgstr "房间"
 
 #: gui/gladish.ui:170
-#, fuzzy
 msgid "_Destroy Room"
 msgstr "房间"
 
 #: gui/gladish.ui:185
-#, fuzzy
 msgid "_Project"
 msgstr "工程"
 
 #: gui/gladish.ui:198
-#, fuzzy
 msgid "_Application"
 msgstr "应用程序："
 
@@ -556,7 +522,6 @@ msgid "_Settings"
 msgstr "设置(_S)"
 
 #: gui/gladish.ui:324
-#, fuzzy
 msgid "_Configure JACK"
 msgstr "配置"
 
@@ -617,7 +582,6 @@ msgid "_Help"
 msgstr "帮助(_H)"
 
 #: gui/gladish.ui:481
-#, fuzzy
 msgid "Clear XRuns"
 msgstr "清除(_C)"
 
@@ -641,7 +605,6 @@ msgid ""
 msgstr ""
 
 #: gui/gladish.ui:690 gui/gladish.ui:1575
-#, fuzzy
 msgid "Path"
 msgstr "道路"
 
@@ -662,7 +625,6 @@ msgid "<b>Description</b>"
 msgstr "<b>描述</b>"
 
 #: gui/gladish.ui:880
-#, fuzzy
 msgid "<b>Notes</b>"
 msgstr "<b>均</b>"
 
@@ -687,47 +649,38 @@ msgid "Run in Terminal"
 msgstr "在终端中运行"
 
 #: gui/gladish.ui:1185
-#, fuzzy
 msgid "Level 0"
 msgstr "Debug level[default 0]"
 
 #: gui/gladish.ui:1202
-#, fuzzy
 msgid "Level 1"
-msgstr "级别 %1"
+msgstr "级别 1"
 
 #: gui/gladish.ui:1234
-#, fuzzy
 msgid "Level 2 (LASH)"
 msgstr "等级 2：困难"
 
 #: gui/gladish.ui:1252
-#, fuzzy
 msgid "Level 2 (jack session)"
 msgstr "从第二级开始展开(_2)"
 
 #: gui/gladish.ui:1423
-#, fuzzy
 msgid "Create room"
 msgstr "房间"
 
 #: gui/gladish.ui:1475
-#, fuzzy
 msgid "<b>Create from template</b>"
 msgstr " <b>创建(_C)</b> "
 
 #: gui/gladish.ui:1598
-#, fuzzy
 msgid "Default is project directory name"
 msgstr "来自项目目录"
 
 #: gui/gladish.ui:1617
-#, fuzzy
 msgid "Default is ~/ladish-projects"
 msgstr "工程"
 
 #: gui/gladish.ui:1717
-#, fuzzy
 msgid "Start studio on load"
 msgstr "ISO 标准工作室钨灯"
 
@@ -736,16 +689,12 @@ msgid "Send notifications"
 msgstr "发送通知"
 
 #: gui/gladish.ui:1750
-#, fuzzy
 msgid "Shell to use:"
 msgstr "不是登录 shell: 使用 `exit'"
 
 #: gui/gladish.ui:1757
-#, fuzzy
 msgid "Terminal to use:"
 msgstr ""
-"如果为 true，终端将使用桌面全局标准字体(如果是等宽字体，也可能使用的最类似字"
-"体)。"
 
 #: gui/gladish.ui:1792
 msgid "JS delay (seconds):"
