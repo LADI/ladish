@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-06-10 00:27+0300\n"
-"PO-Revision-Date: 2025-06-10 01:26+0300\n"
+"PO-Revision-Date: 2025-06-10 01:43+0300\n"
 "Last-Translator: liushuyu <liushuyu011@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "Language: zh_CN\n"
@@ -94,7 +94,7 @@ msgstr ""
 
 #: gui/control.c:146
 msgid "New studio"
-msgstr "新工作室 ---- 音乐工作室"
+msgstr "新工作室"
 
 #: gui/control.c:146 gui/studio.c:255 gui/studio.c:297
 msgid "Studio name"
@@ -431,7 +431,7 @@ msgstr "属性"
 
 #: gui/world_tree.c:678
 msgid " (inactive) "
-msgstr "非活动"
+msgstr " (非活动) "
 
 #: gui/canvas.cpp:117 gui/canvas.cpp:171
 msgid "Disconnect All"
@@ -650,7 +650,7 @@ msgstr "在终端中运行"
 
 #: gui/gladish.ui:1185
 msgid "Level 0"
-msgstr "Debug level[default 0]"
+msgstr "级别 0"
 
 #: gui/gladish.ui:1202
 msgid "Level 1"
@@ -658,11 +658,11 @@ msgstr "级别 1"
 
 #: gui/gladish.ui:1234
 msgid "Level 2 (LASH)"
-msgstr "等级 2：困难"
+msgstr "级别 2 (LASH)"
 
 #: gui/gladish.ui:1252
 msgid "Level 2 (jack session)"
-msgstr "从第二级开始展开(_2)"
+msgstr "级别 2 (jack session)"
 
 #: gui/gladish.ui:1423
 msgid "Create room"
@@ -670,7 +670,7 @@ msgstr "房间"
 
 #: gui/gladish.ui:1475
 msgid "<b>Create from template</b>"
-msgstr " <b>创建(_C)</b> "
+msgstr " <b>从模板创建</b> "
 
 #: gui/gladish.ui:1598
 msgid "Default is project directory name"
@@ -682,7 +682,7 @@ msgstr "工程"
 
 #: gui/gladish.ui:1717
 msgid "Start studio on load"
-msgstr "ISO 标准工作室钨灯"
+msgstr "加载时启动工作室"
 
 #: gui/gladish.ui:1729
 msgid "Send notifications"
@@ -690,7 +690,7 @@ msgstr "发送通知"
 
 #: gui/gladish.ui:1750
 msgid "Shell to use:"
-msgstr "不是登录 shell: 使用 `exit'"
+msgstr ""
 
 #: gui/gladish.ui:1757
 msgid "Terminal to use:"
