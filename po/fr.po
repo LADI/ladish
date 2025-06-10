@@ -7,13 +7,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LADISH 0.3-rc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-13 01:08+0400\n"
+"POT-Creation-Date: 2025-06-10 22:21+0300\n"
 "PO-Revision-Date: 2011-10-12 18:25+0400\n"
 "Last-Translator: Maxim Kachur <mcdebugger@duganet.ru>\n"
 "Language-Team: \n"
 "Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Poedit-Language: French\n"
 "X-Poedit-Country: FRANCE\n"
@@ -95,7 +95,7 @@ msgstr "ladishd n'a pas pu être arrêté, veuillez inspecter les logs."
 msgid "New studio"
 msgstr "Nouveau studio"
 
-#: gui/control.c:146 gui/studio.c:254 gui/studio.c:296
+#: gui/control.c:146 gui/studio.c:255 gui/studio.c:297
 msgid "Studio name"
 msgstr "Nom du studio"
 
@@ -120,7 +120,7 @@ msgstr "Le studio \"%s\" sera effacé. Êtes-vous sûr ?"
 msgid "Studio delete failed, please inspect logs."
 msgstr "Échec de l'effacement du studio, veuillez inspecter les logs."
 
-#: gui/create_room_dialog.c:72 gui/world_tree.c:500 gui/gladish.ui:1590
+#: gui/create_room_dialog.c:78 gui/world_tree.c:507 gui/gladish.ui:1584
 msgid "Name"
 msgstr "Nom"
 
@@ -140,11 +140,11 @@ msgstr ""
 msgid "<b><big>Error</big></b>"
 msgstr "<b><big>Erreur</big></b>"
 
-#: gui/dynmenu.c:175
+#: gui/dynmenu.c:186
 msgid "Error filling "
 msgstr "Remplissage des erreurs"
 
-#: gui/dynmenu.c:179
+#: gui/dynmenu.c:190
 msgid "Empty "
 msgstr "Vide"
 
@@ -160,7 +160,7 @@ msgstr "Nom du client"
 msgid "Client rename"
 msgstr "Renommer le client"
 
-#: gui/graph_canvas.c:222 gui/world_tree.c:398
+#: gui/graph_canvas.c:222 gui/world_tree.c:399
 msgid "Remove"
 msgstr "Supprimer"
 
@@ -208,78 +208,77 @@ msgstr ""
 " 1. Créer un nouveau studio (dans le menu, Studio -> Nouveau...)\n"
 " 2. Configurer JACK (dans le menu, Outils -> Configurer JACK)\n"
 " 3. Démarrer le studio (dans le menu, Studio -> Démarrer)\n"
-" 4. Lancer des applications (dans le menu, Application -> Nouvelle application...)\n"
+" 4. Lancer des applications (dans le menu, Application -> Nouvelle "
+"application...)\n"
 " 5. Connecter leurs ports en cliquant et traînant sur le canvas\n"
 " 6. Enregistrer le studio (dans le menu, Studio -> Enregistrer)\n"
 
-#: gui/jack.c:59
+#: gui/jack.c:60
 msgid "Raw JACK"
 msgstr "Raw JACK"
 
-#: gui/jack.c:95
+#: gui/jack.c:96
 #, c-format
 msgid "%4.1f ms (%<PRIu32>)"
 msgstr "%4.1f ms (%<PRIu32>)"
 
-#: gui/jack.c:124
+#: gui/jack.c:125
 #, c-format
 msgid "%<PRIu32> dropout"
 msgid_plural "%<PRIu32> dropouts"
 msgstr[0] "%<PRIu32> dropouts"
 msgstr[1] "%<PRIu32> dropouts"
 
-#: gui/jack.c:133
+#: gui/jack.c:134
 msgid "error"
 msgstr "erreur"
 
-#: gui/jack.c:146
+#: gui/jack.c:147
 #, c-format
 msgid "DSP: %5.1f%% (%5.1f%%)"
 msgstr "DSP: %5.1f%% (%5.1f%%)"
 
-#: gui/jack.c:250 gui/jack.c:270
+#: gui/jack.c:251 gui/jack.c:271
 msgid "<b><big>Are you sure</big></b>"
 msgstr "<b><big>Êtes-vous sûr</big></b>"
 
-#: gui/jack.c:250
+#: gui/jack.c:251
 msgid "jackdbus will be reactivated. Are you sure?"
 msgstr "jackdbus sera réactivé. Êtes-vous sûr?"
 
-#: gui/jack.c:258
+#: gui/jack.c:259
 msgid "jackdbus exit command failed, please inspect logs."
 msgstr "jackdbus n'a pas pu être arrêté, veuillez inspecter les logs."
 
-#: gui/jack.c:270
+#: gui/jack.c:271
 msgid "a2jmidid will be reactivated. Are you sure?"
 msgstr "a2jmidid sera ré-activé. Êtes-vous sûr?"
 
-#: gui/jack.c:278
+#: gui/jack.c:279
 msgid "a2jmidid exit command failed, please inspect logs."
 msgstr "a2jmidid n'a pas pu être arrêté, veuillez inspecter les logs."
 
-#: gui/jack.c:302
+#: gui/jack.c:311
 msgid ""
-"<b><big>Error executing ladiconf.\n"
-"Are LADI Tools installed?</big></b>"
+"<b><big>Error executing JACK configuration tool.\n"
+"</big></b>"
 msgstr ""
-"<b><big>Erreur lors de l'exécution de ladiconf.\n"
-"Les LADI Tools sont-ils installés ?</big></b>"
 
-#: gui/jack.c:357
+#: gui/jack.c:366
 #, c-format
 msgid "%.1f kHz"
 msgstr "%.1f kHz"
 
-#: gui/jack.c:361
+#: gui/jack.c:370
 #, c-format
 msgid "%u kHz"
 msgstr "%u kHz"
 
-#: gui/load_project_dialog.c:187 gui/gladish.ui:655
+#: gui/load_project_dialog.c:189 gui/gladish.ui:655
 msgid "Load project"
 msgstr "Ouvrir un projet"
 
-#: gui/load_project_dialog.c:211
+#: gui/load_project_dialog.c:215
 msgid "<b><big>Not a project dir</big></b>"
 msgstr "<b><big>Ce n'est pas un répertoire de projet</big></b>"
 
@@ -319,7 +318,7 @@ msgstr "Enregistrer le projet sous..."
 msgid "Project Properties..."
 msgstr "Propriétés du projet..."
 
-#: gui/menu.c:396 gui/gladish.ui:205
+#: gui/menu.c:396 gui/gladish.ui:206
 msgid "New Application..."
 msgstr "Nouvelle application..."
 
@@ -344,7 +343,7 @@ msgstr "Échec de la création du local, veuillez inspecter les logs."
 msgid "Room deletion failed, please inspect logs."
 msgstr "Échec de l'effacement du local, veuillez inspecter les logs."
 
-#: gui/settings.c:96
+#: gui/settings.c:121
 msgid "Storing settings"
 msgstr "Enregistrement des préférences"
 
@@ -376,7 +375,7 @@ msgstr "Pas de studio présent"
 msgid "Crashed"
 msgstr "Planté"
 
-#: gui/studio.c:227
+#: gui/studio.c:228
 msgid ""
 "JACK crashed or stopped unexpectedly. Save your work, then unload and reload "
 "the studio."
@@ -384,67 +383,67 @@ msgstr ""
 "JACK s'est planté ou s'est arrêté sans le vouloir. Enregistrer votre "
 "travail, puis décharger et recharger le studio."
 
-#: gui/studio.c:244
+#: gui/studio.c:245
 msgid "Studio save failed, please inspect logs."
 msgstr "Échec de l'enregistrement du studio, veuillez inspecter les logs."
 
-#: gui/studio.c:254
+#: gui/studio.c:255
 msgid "Save studio as"
 msgstr "Enregistrer le studio sous"
 
-#: gui/studio.c:258
+#: gui/studio.c:259
 msgid "Saving of studio failed, please inspect logs."
 msgstr "Échec de l'enregistrement du studio, veuillez inspecter les logs."
 
-#: gui/studio.c:270
+#: gui/studio.c:271
 msgid "Studio start failed, please inspect logs."
 msgstr "Échec du démarrage du studio, veuillez inspecter les logs."
 
-#: gui/studio.c:279
+#: gui/studio.c:280
 msgid "Studio stop failed, please inspect logs."
 msgstr "Échec de l'arrêt du studio, veuillez inspecter les logs."
 
-#: gui/studio.c:288
+#: gui/studio.c:289
 msgid "Studio unload failed, please inspect logs."
 msgstr "Échec du déchargement du studio, veuillez inspecter les logs."
 
-#: gui/studio.c:296
+#: gui/studio.c:297
 msgid "Rename studio"
 msgstr "Renommer le studio"
 
-#: gui/studio.c:300
+#: gui/studio.c:301
 msgid "Studio rename failed, please inspect logs."
 msgstr "Échec du renommage du studio, veuillez inspecter les logs."
 
-#: gui/world_tree.c:255
+#: gui/world_tree.c:256
 msgid "Cannot get app properties"
 msgstr "Ne parvient pas à trouver les propriétés de l'application"
 
-#: gui/world_tree.c:300
+#: gui/world_tree.c:301
 msgid "App properties"
 msgstr "Propriétés de l'application"
 
-#: gui/world_tree.c:333
+#: gui/world_tree.c:334
 msgid "Cannot set app properties."
 msgstr "Ne parvient pas à attribuer les propriétés de l'application"
 
-#: gui/world_tree.c:376
+#: gui/world_tree.c:377
 msgid "Stop"
 msgstr "Arrêter"
 
-#: gui/world_tree.c:380
+#: gui/world_tree.c:381
 msgid "Kill"
 msgstr "Tuer"
 
-#: gui/world_tree.c:386
+#: gui/world_tree.c:387
 msgid "Start"
 msgstr "Démarrer"
 
-#: gui/world_tree.c:391
+#: gui/world_tree.c:392
 msgid "Properties"
 msgstr "Propriétés"
 
-#: gui/world_tree.c:671
+#: gui/world_tree.c:678
 msgid " (inactive) "
 msgstr " (inactif) "
 
@@ -492,115 +491,115 @@ msgstr "_Fermer"
 msgid "_Delete Studio"
 msgstr "_Effacer"
 
-#: gui/gladish.ui:151
+#: gui/gladish.ui:152
 msgid "_Room"
 msgstr "_Local"
 
-#: gui/gladish.ui:158
+#: gui/gladish.ui:159
 msgid "_Create Room..."
 msgstr "_Nouveau local..."
 
-#: gui/gladish.ui:169
+#: gui/gladish.ui:170
 msgid "_Destroy Room"
 msgstr "_Fermer ce local"
 
-#: gui/gladish.ui:184
+#: gui/gladish.ui:185
 msgid "_Project"
 msgstr "_Projet"
 
-#: gui/gladish.ui:197
+#: gui/gladish.ui:198
 msgid "_Application"
 msgstr "_Application"
 
-#: gui/gladish.ui:220
+#: gui/gladish.ui:221
 msgid "_View"
 msgstr "_Affichage"
 
-#: gui/gladish.ui:227
+#: gui/gladish.ui:228
 msgid "_Toolbar"
 msgstr "Barre d'_outils"
 
-#: gui/gladish.ui:272
+#: gui/gladish.ui:273
 msgid "_JACK"
 msgstr "_JACK"
 
-#: gui/gladish.ui:280
+#: gui/gladish.ui:281
 msgid "_Arrange"
 msgstr "_Arranger"
 
-#: gui/gladish.ui:296
+#: gui/gladish.ui:297
 msgid "_Tools"
 msgstr "_Outils"
 
-#: gui/gladish.ui:314
+#: gui/gladish.ui:315
 msgid "_Settings"
 msgstr "_Préférences"
 
-#: gui/gladish.ui:323
+#: gui/gladish.ui:324
 msgid "_Configure JACK"
 msgstr "_Configurer JACK"
 
-#: gui/gladish.ui:333
+#: gui/gladish.ui:334
 msgid "Reactivate ladishd"
 msgstr "Ré-activer ladishd"
 
-#: gui/gladish.ui:342
+#: gui/gladish.ui:343
 msgid "Reactivate jackdbus"
 msgstr "Ré-activer jackdbus"
 
-#: gui/gladish.ui:351
+#: gui/gladish.ui:352
 msgid "Reactivate a2jmidid"
 msgstr "Ré-activer a2jmidid"
 
-#: gui/gladish.ui:360
+#: gui/gladish.ui:361
 msgid "JACK _Latency"
 msgstr "_Latence JACK"
 
-#: gui/gladish.ui:369
+#: gui/gladish.ui:370
 msgid "32"
 msgstr "32"
 
-#: gui/gladish.ui:377
+#: gui/gladish.ui:378
 msgid "64"
 msgstr "64"
 
-#: gui/gladish.ui:385
+#: gui/gladish.ui:386
 msgid "128"
 msgstr "128"
 
-#: gui/gladish.ui:393
+#: gui/gladish.ui:394
 msgid "256"
 msgstr "256"
 
-#: gui/gladish.ui:401
+#: gui/gladish.ui:402
 msgid "512"
 msgstr "512"
 
-#: gui/gladish.ui:409
+#: gui/gladish.ui:410
 msgid "1024"
 msgstr "1024"
 
-#: gui/gladish.ui:417
+#: gui/gladish.ui:418
 msgid "2048"
 msgstr "2048"
 
-#: gui/gladish.ui:425
+#: gui/gladish.ui:426
 msgid "4096"
 msgstr "4096"
 
-#: gui/gladish.ui:433
+#: gui/gladish.ui:434
 msgid "8192"
 msgstr "8192"
 
-#: gui/gladish.ui:447
+#: gui/gladish.ui:448
 msgid "_Help"
 msgstr "_Aide"
 
-#: gui/gladish.ui:480
+#: gui/gladish.ui:481
 msgid "Clear XRuns"
 msgstr "Effacer les _XRuns"
 
-#: gui/gladish.ui:619
+#: gui/gladish.ui:620
 msgid ""
 "LADI Session Handler is free software; you can redistribute it and/or "
 "modify\n"
@@ -636,7 +635,7 @@ msgstr ""
 "Inc.,\n"
 "51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA\n"
 
-#: gui/gladish.ui:690 gui/gladish.ui:1581
+#: gui/gladish.ui:690 gui/gladish.ui:1575
 msgid "Path"
 msgstr "Chemin"
 
@@ -644,89 +643,104 @@ msgstr "Chemin"
 msgid "Browse..."
 msgstr "Naviguer..."
 
-#: gui/gladish.ui:786
+#: gui/gladish.ui:785
 msgid "Project properties"
 msgstr "Propriétés du projet"
 
-#: gui/gladish.ui:816
+#: gui/gladish.ui:815
 msgid "<b>Project name</b>"
 msgstr "<b>Nom du projet</b>"
 
-#: gui/gladish.ui:843
+#: gui/gladish.ui:842
 msgid "<b>Description</b>"
 msgstr "<b>Description</b>"
 
-#: gui/gladish.ui:881
+#: gui/gladish.ui:880
 msgid "<b>Notes</b>"
 msgstr "<b>Notes</b>"
 
-#: gui/gladish.ui:950
+#: gui/gladish.ui:948
 msgid "Set name"
 msgstr "Choisir un nom"
 
-#: gui/gladish.ui:981 gui/gladish.ui:1454
+#: gui/gladish.ui:979 gui/gladish.ui:1449
 msgid "<b>Name</b>"
 msgstr "<b>Nom</b>"
 
-#: gui/gladish.ui:1130
+#: gui/gladish.ui:1128
 msgid "Command:"
 msgstr "Commande :"
 
-#: gui/gladish.ui:1142
+#: gui/gladish.ui:1140
 msgid "Name:"
 msgstr "Nom :"
 
-#: gui/gladish.ui:1171
+#: gui/gladish.ui:1169
 msgid "Run in Terminal"
 msgstr "Lancer dans un terminal"
 
-#: gui/gladish.ui:1187
+#: gui/gladish.ui:1185
 msgid "Level 0"
 msgstr "Level 0"
 
-#: gui/gladish.ui:1204
+#: gui/gladish.ui:1202
 msgid "Level 1"
 msgstr "Level 1"
 
-#: gui/gladish.ui:1236
+#: gui/gladish.ui:1234
 msgid "Level 2 (LASH)"
 msgstr "Level 2 (LASH)"
 
-#: gui/gladish.ui:1255
+#: gui/gladish.ui:1252
 msgid "Level 2 (jack session)"
 msgstr "Level 2 (jack session)"
 
-#: gui/gladish.ui:1428
+#: gui/gladish.ui:1423
 msgid "Create room"
 msgstr "Créer un local"
 
-#: gui/gladish.ui:1480
+#: gui/gladish.ui:1475
 msgid "<b>Create from template</b>"
 msgstr "<b>Créer depuis le gabarit</b>"
 
-#: gui/gladish.ui:1604
+#: gui/gladish.ui:1598
 msgid "Default is project directory name"
 msgstr "Par défaut, le nom du répertoire du projet"
 
-#: gui/gladish.ui:1623
+#: gui/gladish.ui:1617
 msgid "Default is ~/ladish-projects"
 msgstr "Par défaut, ~/ladish-projects"
 
-#: gui/gladish.ui:1724
+#: gui/gladish.ui:1717
 msgid "Start studio on load"
 msgstr "Démarrer le studio après l'ouverture"
 
-#: gui/gladish.ui:1736
+#: gui/gladish.ui:1729
 msgid "Send notifications"
 msgstr "Envoyer les notifications"
 
-#: gui/gladish.ui:1757
+#: gui/gladish.ui:1750
 msgid "Shell to use:"
 msgstr "Shell à utiliser :"
 
-#: gui/gladish.ui:1764
+#: gui/gladish.ui:1757
 msgid "Terminal to use:"
 msgstr "Terminal à utiliser :"
+
+#: gui/gladish.ui:1792
+msgid "JS delay (seconds):"
+msgstr ""
+
+#: gui/gladish.ui:1819
+msgid "JACK conf tool:"
+msgstr ""
+
+#~ msgid ""
+#~ "<b><big>Error executing ladiconf.\n"
+#~ "Are LADI Tools installed?</big></b>"
+#~ msgstr ""
+#~ "<b><big>Erreur lors de l'exécution de ladiconf.\n"
+#~ "Les LADI Tools sont-ils installés ?</big></b>"
 
 #~ msgid "Internal error - unknown jack state"
 #~ msgstr "Erreur interne - état de JACK inconnu"
