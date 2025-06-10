@@ -143,7 +143,7 @@ msgstr "Грешка при попълване на "
 
 #: gui/dynmenu.c:190
 msgid "Empty "
-msgstr "Празно"
+msgstr "Празно "
 
 #: gui/graph_canvas.c:183
 msgid "Rename client"
@@ -171,7 +171,7 @@ msgstr "Преименувай порт"
 
 #: gui/graph_canvas.c:246
 msgid "Port name"
-msgstr "Имя на порт"
+msgstr "Име на порт"
 
 #: gui/graph_canvas.c:280
 msgid "Rename"
@@ -187,7 +187,7 @@ msgstr "Нов клиент"
 
 #: gui/graph_canvas.c:340
 msgid "Join clients"
-msgstr "Объедини клиенти"
+msgstr "Обедини клиенти"
 
 #: gui/graph_view.c:59
 msgid ""
@@ -224,11 +224,10 @@ msgid "%<PRIu32> dropout"
 msgid_plural "%<PRIu32> dropouts"
 msgstr[0] "%<PRIu32> дропаут"
 msgstr[1] "%<PRIu32> дропаута"
-msgstr[2] "%<PRIu32> пропусков"
 
 #: gui/jack.c:134
 msgid "error"
-msgstr "ошибка"
+msgstr "грешка"
 
 #: gui/jack.c:147
 #, c-format
@@ -339,7 +338,7 @@ msgstr "Създаването на стая не успя, проверете �
 
 #: gui/room.c:72
 msgid "Room deletion failed, please inspect logs."
-msgstr "Изтриването на стайа не успя, проверете лога."
+msgstr "Изтриването на стая не успя, проверете лога."
 
 #: gui/settings.c:121
 msgid "Storing settings"
@@ -698,7 +697,7 @@ msgstr "Пусни студиото след зареждане"
 
 #: gui/gladish.ui:1729
 msgid "Send notifications"
-msgstr "Пращай  уведомления"
+msgstr "Пращай уведомления"
 
 #: gui/gladish.ui:1750
 msgid "Shell to use:"
