@@ -11,6 +11,7 @@ Changes since 1.2:
  * Fix build with musl C library
  * In gladish, Re-enable <> inclusion of dbus/dbus-glib-lowlevel.h
  * Fix or suppress warnings during gladish build
+ * Bulgarian translation for gladish
 
 = Version 1.2 on 2023-03-29 =
 
