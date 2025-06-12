@@ -29,7 +29,7 @@
 #include "cmd.h"
 #include "studio_internal.h"
 #include "loader.h"
-#include "../common/time.h"
+#include "../common/ladish_time.h"
 #include "../proxies/notify_proxy.h"
 
 struct ladish_command_start_studio

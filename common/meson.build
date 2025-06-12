@@ -8,4 +8,5 @@ common_sources = [
 
 commonlib = static_library('common', common_sources,
                            include_directories : inc,
+                           c_args : c_args,
                            install : false)

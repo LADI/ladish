@@ -29,7 +29,7 @@
 #include "cmd.h"
 #include "studio_internal.h"
 #include "loader.h"
-#include "../common/time.h"
+#include "../common/ladish_time.h"
 #include "studio.h"
 
 #define STOP_STATE_WAITING_FOR_ROOM_STOP                1

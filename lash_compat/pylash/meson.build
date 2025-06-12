@@ -1,6 +1,6 @@
-project('lash-bindings', 'c',
-  version : '1.1',
-  license : 'GPL-or-later')
+#project('lash-bindings', 'c',
+#  version : '1.1',
+#  license : 'GPL-or-later')
 
 py = import('python')
 py = py.find_installation('python2')

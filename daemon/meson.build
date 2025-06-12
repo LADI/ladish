@@ -53,5 +53,6 @@ daemon_sources = [
 ladishd = executable('ladishd', daemon_sources,
                      dependencies : deps,
                      include_directories : inc,
+		     c_args : c_args,
                      link_with : [commonlib, cdbuslib, proxieslib, alsapidlib],
                      install : true)
