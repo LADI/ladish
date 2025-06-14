@@ -1,4 +1,5 @@
-project('ladish', 'c', 'cpp',
+project(
+  'ladish', 'c', 'cpp',
   version : '1.2',
   license : 'GPL-2.0-only')
 
@@ -11,7 +12,11 @@ fs = import('fs')
 if fs.is_dir('.git')
   # This block handles building from git source tree
   # version.h is generated during build
-  git_version = run_command(['git', 'rev-parse', '--short', 'HEAD']).stdout().strip()
+  git_version = run_command(
+    ['git', 'rev-parse', '--short', 'HEAD'],
+    check : true,
+    capture : true,
+  ).stdout().strip()
 
   configure_file(output : 'version.h',
                  configuration : {
@@ -35,13 +40,22 @@ configure_file(output : 'config.h',
     'LOCALE_DIR' : '"@0@"'.format(locale_dir),
     'DBUS_NAME_BASE' : '"@0@"'.format(dbus_name_base),
     'DBUS_BASE_PATH' : '"@0@"'.format(dbus_base_path),
+#    '_DEFAULT_SOURCE' : 1,
     '_GNU_SOURCE' : 1,
+#    '_POSIX_C_SOURCE' : '200809L',
   }
 )
 
 cc = meson.get_compiler('c')
 
-inc = include_directories(meson.build_root().split('/')[-1])
+c_args = [
+  '-std=gnu99',
+#  '-D_GNU_SOURCE',
+#  '-D_DEFAULT_SOURCE',
+#  '-D_POSIX_C_SOURCE=200112L',
+]
+
+inc = include_directories(meson.global_build_root().split('/')[-1])
 lash_inc = include_directories('lash_compat/liblash')
 
 jack_dep = dependency('jack')

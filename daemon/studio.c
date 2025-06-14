@@ -473,7 +473,9 @@ void ladish_studio_run(void)
       if (g_studio.automatic)
       {
         log_info("Unloading automatic studio.");
-        ladish_command_unload_studio(NULL, &g_studio.cmd_queue);
+        if (!ladish_command_unload_studio(NULL, &g_studio.cmd_queue)) {
+          log_error("Unable to unload automatic studio.");
+        }
 
         ladish_studio_on_event_jack_stopped();
         return;

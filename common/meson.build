@@ -9,4 +9,5 @@ common_sources = [
 commonlib = static_library('common', common_sources,
                            dependencies : [dbus_dep, cdbus_dep],
                            include_directories : inc,
+                           c_args : c_args,
                            install : false)

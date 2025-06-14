@@ -794,12 +794,12 @@ ladish_save_app(
 
   if (!ladish_write_string(fd, "\" uuid=\""))
   {
-    return false;
+    goto free_buffer;
   }
 
   if (!ladish_write_string(fd, str))
   {
-    return false;
+    goto free_buffer;
   }
 
   if (!ladish_write_string(fd, "\" terminal=\""))
