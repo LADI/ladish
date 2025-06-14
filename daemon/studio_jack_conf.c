@@ -207,19 +207,29 @@ ladish_studio_jack_conf_callback(
   while (*component != 0)
   {
     len = strlen(component);
+    if ((size_t)JACK_CONF_MAX_ADDRESS_SIZE - (size_t)(dst - path) < len + 1)
+    {
+	log_error("jack conf component address too long");
+	return false;
+    }
     memcpy(dst, component, len);
     dst[len] = ':';
     component += len + 1;
     dst += len + 1;
   }
 
-  strcpy(dst, child);
+  len = strlen(child) + 1;
+  if ((size_t)JACK_CONF_MAX_ADDRESS_SIZE - (size_t)(dst - path) < len + 1)
+  {
+      log_error("jack conf component address leaf too long (%zu < %zu)", /*(size_t)*/(dst - path), len + 1);
+      return false;
+  }
+  memcpy(dst, child, len);
 
   /* address always is same buffer as the one supplied through context pointer */
   ASSERT(context_ptr->address == address);
   dst = (char *)component;
 
-  len = strlen(child) + 1;
   memcpy(dst, child, len);
   dst[len] = 0;
 
