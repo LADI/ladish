@@ -4,6 +4,7 @@ Changes since 1.2:
 
  * Add verify-sig_waf.sh waf verification script (from waf-2.0.27)
  * Upgrade waf to 2.1.5
+ * Update meson build system files (works with 1.8.2)
  * Update INSTALL
  * daemon/loader.c: save&restore errno in SIGCHLD handler
  * Fix use of invalid NULL pointer when HOME env var is not set
@@ -12,6 +13,7 @@ Changes since 1.2:
  * In gladish, Re-enable <> inclusion of dbus/dbus-glib-lowlevel.h
  * Fix or suppress warnings during gladish build
  * Bulgarian translation for gladish
+ * Various memory and handle fixes from aosc (by liushuyu)
 
 = Version 1.2 on 2023-03-29 =
 
