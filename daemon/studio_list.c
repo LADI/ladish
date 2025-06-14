@@ -119,6 +119,7 @@ bool ladish_studios_iterate(void * call_ptr, void * context, bool (* callback)(v
     if (path == NULL)
     {
       cdbus_error(call_ptr, DBUS_ERROR_FAILED, "catdup() failed");
+      closedir(dir);
       return false;
     }
 
@@ -126,6 +127,7 @@ bool ladish_studios_iterate(void * call_ptr, void * context, bool (* callback)(v
     {
       cdbus_error(call_ptr, DBUS_ERROR_FAILED, "failed to stat '%s': %d (%s)", path, errno, strerror(errno));
       free(path);
+      closedir(dir);
       return false;
     }
 
