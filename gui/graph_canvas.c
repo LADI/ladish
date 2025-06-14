@@ -662,7 +662,7 @@ port_disappeared(
   }
 
   port_ptr = find_port(client_ptr, port_id);
-  if (client_ptr == NULL)
+  if (port_ptr == NULL)
   {
     log_error("cannot find disappearing port %"PRIu64" of client %"PRIu64"", port_id, client_id);
     return;
