@@ -12,7 +12,11 @@ fs = import('fs')
 if fs.is_dir('.git')
   # This block handles building from git source tree
   # version.h is generated during build
-  git_version = run_command(['git', 'rev-parse', '--short', 'HEAD']).stdout().strip()
+  git_version = run_command(
+    ['git', 'rev-parse', '--short', 'HEAD'],
+    check : true,
+    capture : true,
+  ).stdout().strip()
 
   configure_file(output : 'version.h',
                  configuration : {
@@ -51,7 +55,7 @@ c_args = [
 #  '-D_POSIX_C_SOURCE=200112L',
 ]
 
-inc = include_directories(meson.build_root().split('/')[-1])
+inc = include_directories(meson.global_build_root().split('/')[-1])
 lash_inc = include_directories('lash_compat/liblash')
 
 dbus_dep = dependency('dbus-1')
