@@ -524,7 +524,7 @@ static void ladish_app_send_signal(struct ladish_app * app_ptr, int sig, bool pr
   pid_t pid;
   const char * signal_name;
 
-  ASSERT(app_ptr->state = LADISH_APP_STATE_STARTED);
+  ASSERT(app_ptr->state == LADISH_APP_STATE_STARTED);
 
   switch (sig)
   {
@@ -1265,7 +1265,7 @@ exit:
        In former case callback will be NULL.
        In latter case pending_js_saves will be greater than zero. */
     ASSERT(supervisor_ptr->save_callback == callback);
-    ASSERT(supervisor_ptr->save_callback_context = context);
+    ASSERT(supervisor_ptr->save_callback_context == context);
     callback(context, success);
     supervisor_ptr->save_callback = NULL;
     supervisor_ptr->save_callback_context = NULL;
