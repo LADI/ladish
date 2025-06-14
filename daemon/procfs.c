@@ -153,7 +153,7 @@ procfs_get_process_link(
     return NULL;
   }
 
-  ret = readlink(g_buffer, g_buffer_readlink, sizeof(g_buffer_readlink));
+  ret = readlink(g_buffer, g_buffer_readlink, sizeof(g_buffer_readlink) - 1);
   if (ret != 0)
   {
     g_buffer_readlink[ret] = 0;
