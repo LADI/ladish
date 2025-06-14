@@ -38,7 +38,13 @@ gladish_sources = [
 gladish = executable('gladish', gladish_sources,
                      dependencies : [gui_deps, flowcanvas_deps],
                      include_directories : [flowcanvas_inc, inc],
-                     c_args : c_args,
+                     c_args : c_args + [
+                       '-DGLIB_DISABLE_DEPRECATION_WARNINGS'
+                     ],
+                     cpp_args : [
+                       '-std=c++11',
+                       '-DGLIB_DISABLE_DEPRECATION_WARNINGS'
+                     ],
                      link_with : [flowcanvaslib, proxieslib, cdbuslib, commonlib],
                      install : true)
 

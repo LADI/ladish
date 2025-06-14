@@ -18,6 +18,10 @@ flowcanvas_sources = [
 ]
 
 flowcanvaslib = static_library('flowcanvas', flowcanvas_sources,
+                               cpp_args : [
+                                 '-std=c++11',
+                                 '-DGLIB_DISABLE_DEPRECATION_WARNINGS'
+                               ],
                                include_directories : [flowcanvas_inc, inc],
                                dependencies : flowcanvas_deps,
                                install : false)
