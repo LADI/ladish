@@ -253,6 +253,7 @@ ladish_studio_jack_conf_callback(
     if (!jack_proxy_get_parameter_value(context_ptr->address, &is_set, &parameter_ptr->parameter))
     {
       log_error("cannot get value of %s", path);
+      ladish_studio_jack_conf_parameter_destroy(parameter_ptr);
       return false;
     }
 

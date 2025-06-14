@@ -108,7 +108,7 @@ void ladish_dict_set_dbus(struct cdbus_method_call * call_ptr)
 
   if (!ladish_dict_set(dict, key, value))
   {
-    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "ladish_dict_set(\"%s\", \"%s\") failed.");
+    cdbus_error(call_ptr, DBUS_ERROR_FAILED, "ladish_dict_set(\"%s\", \"%s\") failed.", key, value);
     return;
   }
 

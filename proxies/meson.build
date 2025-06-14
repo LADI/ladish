@@ -13,6 +13,7 @@ proxies_sources = [
 ]
 
 proxieslib = static_library('proxies', proxies_sources,
+                            c_args : c_args,
                             include_directories : inc,
                             dependencies : [dbus_dep, cdbus_dep,],
                             install : false)
