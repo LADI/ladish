@@ -941,6 +941,7 @@ static void project_name_elstart_callback(void * data, const char * el, const ch
       if (context_ptr->str == NULL)
       {
         log_error("malloc() failed for project name with length %zu", len);
+        return;
       }
 
       unescape(name, len, context_ptr->str);
