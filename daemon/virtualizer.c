@@ -34,7 +34,9 @@
 #include "../common/catdup.h"
 #include "room.h"
 #include "studio.h"
+#if BUILD_ALSAPID
 #include "../alsapid/alsapid.h"
+#endif
 
 struct virtualizer
 {
@@ -535,13 +537,17 @@ port_appeared(
   bool is_a2j;
   uuid_t vclient_uuid;
   pid_t pid;
+#if BUILD_ALSAPID
   ladish_app_handle app;
+#endif
   bool has_app;
   uuid_t app_uuid;
   char * alsa_client_name;
   char * alsa_port_name;
   char * a2j_fake_jack_port_name;
+#if BUILD_ALSAPID
   uint32_t alsa_client_id;
+#endif
   const char * jack_port_name;
   const char * vport_name;
   ladish_graph_handle vgraph;
@@ -620,6 +626,7 @@ port_appeared(
 
   jack_client_name = ladish_graph_get_client_name(virtualizer_ptr->jack_graph, jack_client);
 
+#if BUILD_ALSAPID
   is_a2j = ladish_virtualizer_is_a2j_client(jack_client);
   if (is_a2j)
   {
@@ -679,6 +686,9 @@ port_appeared(
     jack_port_name = a2j_fake_jack_port_name;
   }
   else
+#else // if BUILD_ALSAPID
+  is_a2j = false;
+#endif
   {
     vclient_name = jack_client_name;
     jack_port_name = real_jack_port_name;

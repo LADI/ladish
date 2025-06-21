@@ -1,2 +1,6 @@
+option('ladishd', type : 'feature', value: 'enabled')
+option('ladiconfd', type : 'feature', value: 'enabled')
+option('alsapid', type : 'feature', value: 'enabled')
+option('jmcore', type : 'feature', value: 'enabled')
 option('liblash', type : 'feature')
 option('gladish', type : 'feature')
