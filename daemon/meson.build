@@ -49,9 +49,15 @@ daemon_sources = [
 # define SIGINFO_ENABLED and build
 #  'siginfo.c',
 
+ladishd_libs = [commonlib, cdbuslib, proxieslib]
+ladishd_libs += cdbuslib
+if get_option('alsapid').enabled()
+  ladishd_libs += alsapidlib
+endif
+
 ladishd = executable('ladishd', daemon_sources,
                      dependencies : deps,
                      include_directories : inc,
 		     c_args : c_args,
-                     link_with : [commonlib, proxieslib, alsapidlib],
+                     link_with : ladishd_libs,
                      install : true)

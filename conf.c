@@ -293,21 +293,21 @@ static struct pair * load_pair(const char * key)
   path = catdupv(getenv("HOME"), STORAGE_BASE_DIR, key, "/value", NULL);
   if (path == NULL)
   {
-    return false;
+    return NULL;
   }
 
   if (stat(path, &st) != 0)
   {
     log_error("Failed to stat \"%s\": %d (%s)", path, errno, strerror(errno));
     free(path);
-    return false;
+    return NULL;
   }
 
   if (!S_ISREG(st.st_mode))
   {
     log_error("\"%s\" is not a regular file.", path);
     free(path);
-    return false;
+    return NULL;
   }
 
   fd = open(path, O_RDONLY);
@@ -315,7 +315,7 @@ static struct pair * load_pair(const char * key)
   {
     log_error("Failed to open \"%s\": %d (%s)", path, errno, strerror(errno));
     free(path);
-    return false;
+    return NULL;
   }
 
   buffer = malloc((size_t)st.st_size + 1);
@@ -324,7 +324,7 @@ static struct pair * load_pair(const char * key)
     log_error("malloc() failed to allocate %zu bytes of memory for value", (size_t)st.st_size + 1);
     close(fd);
     free(path);
-    return false;
+    return NULL;
   }
 
   bytes_read = read(fd, buffer, st.st_size);
@@ -334,7 +334,7 @@ static struct pair * load_pair(const char * key)
     free(buffer);
     close(fd);
     free(path);
-    return false;
+    return NULL;
   }
 
   if (bytes_read != st.st_size)
@@ -343,7 +343,7 @@ static struct pair * load_pair(const char * key)
     free(buffer);
     close(fd);
     free(path);
-    return false;
+    return NULL;
   }
 
   buffer[st.st_size] = 0;
@@ -354,7 +354,7 @@ static struct pair * load_pair(const char * key)
     free(buffer);
     close(fd);
     free(path);
-    return false;
+    return NULL;
   }
 
   pair_ptr->value = buffer;

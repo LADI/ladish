@@ -32,6 +32,11 @@ else
   )
 endif
 
+alsapid_enabled = 0
+if get_option('alsapid').enabled()
+  alsapid_enabled = 1
+endif
+
 configure_file(output : 'config.h',
   configuration : {
     'PACKAGE_VERSION' : '"@0@"'.format(meson.project_version()),
@@ -43,6 +48,7 @@ configure_file(output : 'config.h',
 #    '_DEFAULT_SOURCE' : 1,
     '_GNU_SOURCE' : 1,
 #    '_POSIX_C_SOURCE' : '200809L',
+    'BUILD_ALSAPID' : alsapid_enabled,
   }
 )
 
@@ -77,10 +83,14 @@ pkg_mod = import('pkgconfig')
 
 subdir('common')
 subdir('proxies')
-subdir('alsapid')
+if get_option('alsapid').enabled()
+  subdir('alsapid')
+endif
 
 # ladishd
-subdir('daemon')
+if get_option('ladishd').enabled()
+  subdir('daemon')
+endif
 
 if get_option('liblash').enabled()
   subdir('lash_compat/liblash')
@@ -96,12 +106,30 @@ install_data(['AUTHORS', 'README.adoc', 'NEWS'], install_dir : data_dir)
 install_data('ladish_control',
              install_dir : get_option('prefix') / 'bin')
 
+if get_option('jmcore').enabled()
 jmcore = executable('jmcore', 'jmcore.c',
                     dependencies : deps,
                     link_with : [commonlib],
                     install : true)
+endif
 
+if get_option('ladiconfd').enabled()
 ladiconfd = executable('ladiconfd', 'conf.c',
                        dependencies : deps,
                        link_with : [commonlib],
                        install : true)
+endif
+
+summary(
+  {
+    'ladishd': get_option('ladishd').enabled(),
+    'ladiconfd': get_option('ladiconfd').enabled(),
+    'jmcore': get_option('jmcore').enabled(),
+    'alsapid': get_option('alsapid').enabled(),
+    'liblash': get_option('liblash').enabled(),
+    'pylash': get_option('pylash').enabled(),
+    'gladish': get_option('gladish').enabled(),
+  },
+  bool_yn: true,
+  section: 'Configuration',
+)

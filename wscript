@@ -45,6 +45,10 @@ def options(opt):
     opt.load('compiler_cxx')
     opt.load('python')
     opt.add_option('--enable-pkg-config-dbus-service-dir', action='store_true', default=False, help='force D-Bus service install dir to be one returned by pkg-config')
+    opt.add_option('--disable-ladishd', action='store_true', default=False, help='Do not build ladishd')
+    opt.add_option('--disable-ladiconfd', action='store_true', default=False, help='Do not build ladiconfd')
+    opt.add_option('--disable-alsapid', action='store_true', default=False, help='Do not build alsapid')
+    opt.add_option('--disable-jmcore', action='store_true', default=False, help='Do not build jmcore (JACK multicore)')
     opt.add_option('--enable-gladish', action='store_true', default=False, help='Build gladish')
     opt.add_option('--enable-liblash', action='store_true', default=False, help='Build LASH compatibility library')
     opt.add_option('--debug', action='store_true', default=False, dest='debug', help="Build debuggable binaries")
@@ -224,6 +228,10 @@ def configure(conf):
             display_line(conf, "One or more boost headers not found, see http://boost.org/")
             sys.exit(1)
 
+    conf.env['BUILD_LADISHD'] = not Options.options.disable_ladishd
+    conf.env['BUILD_LADICONFD'] = not Options.options.disable_ladiconfd
+    conf.env['BUILD_ALSAPID'] = not Options.options.disable_alsapid
+    conf.env['BUILD_JMCORE'] = not Options.options.disable_jmcore
     conf.env['BUILD_GLADISH'] = Options.options.enable_gladish
     conf.env['BUILD_LIBLASH'] = Options.options.enable_liblash
     conf.env['BUILD_SIGINFO'] =  Options.options.siginfo
@@ -306,6 +314,10 @@ def configure(conf):
     display_msg(conf)
     display_msg(conf, "Install prefix", conf.env['PREFIX'], 'CYAN')
 
+    display_msg(conf, 'Build ladishd', yesno(conf.env['BUILD_LADISHD']))
+    display_msg(conf, 'Build ladiconfd', yesno(conf.env['BUILD_LADICONFD']))
+    display_msg(conf, 'Build alsapid', yesno(conf.env['BUILD_ALSAPID']))
+    display_msg(conf, 'Build jmcore', yesno(conf.env['BUILD_JMCORE']))
     display_msg(conf, 'Build gladish', yesno(conf.env['BUILD_GLADISH']))
     display_msg(conf, 'Build liblash', yesno(Options.options.enable_liblash))
     display_msg(conf, 'Build with siginfo', yesno(conf.env['BUILD_SIGINFO']))
@@ -369,133 +381,131 @@ def build(bld):
 
     bld(rule=git_ver, target='version.h', update_outputs=True, always=True, ext_out=['.h'])
 
-    daemon = bld.program(source = [], features = 'c cprogram', includes = [bld.path.get_bld()])
-    daemon.target = 'ladishd'
-    daemon.uselib = 'DBUS-1 CDBUS-1 UUID EXPAT DL UTIL'
-    daemon.ver_header = 'version.h'
-    # Make backtrace function lookup to work for functions in the executable itself
-    daemon.env.append_value("LINKFLAGS", ["-Wl,-E"])
-    daemon.defines = ["HAVE_CONFIG_H"]
+    if bld.env['BUILD_LADISHD']:
+        daemon = bld.program(source = [], features = 'c cprogram', includes = [bld.path.get_bld()])
+        daemon.target = 'ladishd'
+        daemon.uselib = 'DBUS-1 CDBUS-1 UUID EXPAT DL UTIL'
+        daemon.ver_header = 'version.h'
+        # Make backtrace function lookup to work for functions in the executable itself
+        daemon.env.append_value("LINKFLAGS", ["-Wl,-E"])
+        daemon.defines = ["HAVE_CONFIG_H"]
 
-    daemon.source = ["string_constants.c"]
+        daemon.source = ["string_constants.c"]
 
-    for source in [
-        'main.c',
-        'loader.c',
-        'proctitle.c',
-        'procfs.c',
-        'control.c',
-        'studio.c',
-        'graph.c',
-        'graph_manager.c',
-        'client.c',
-        'port.c',
-        'virtualizer.c',
-        'dict.c',
-        'graph_dict.c',
-        'escape.c',
-        'studio_jack_conf.c',
-        'studio_list.c',
-        'save.c',
-        'load.c',
-        'cmd_load_studio.c',
-        'cmd_new_studio.c',
-        'cmd_rename_studio.c',
-        'cmd_save_studio.c',
-        'cmd_start_studio.c',
-        'cmd_stop_studio.c',
-        'cmd_unload_studio.c',
-        'cmd_new_app.c',
-        'cmd_change_app_state.c',
-        'cmd_remove_app.c',
-        'cmd_create_room.c',
-        'cmd_delete_room.c',
-        'cmd_save_project.c',
-        'cmd_unload_project.c',
-        'cmd_load_project.c',
-        'cmd_exit.c',
-        'cqueue.c',
-        'app_supervisor.c',
-        'room.c',
-        'room_save.c',
-        'room_load.c',
-        'recent_store.c',
-        'recent_projects.c',
-        'check_integrity.c',
-        'lash_server.c',
-        'jack_session.c',
-        ]:
-        daemon.source.append(os.path.join("daemon", source))
+        for source in [
+                'main.c',
+                'loader.c',
+                'proctitle.c',
+                'procfs.c',
+                'control.c',
+                'studio.c',
+                'graph.c',
+                'graph_manager.c',
+                'client.c',
+                'port.c',
+                'virtualizer.c',
+                'dict.c',
+                'graph_dict.c',
+                'escape.c',
+                'studio_jack_conf.c',
+                'studio_list.c',
+                'save.c',
+                'load.c',
+                'cmd_load_studio.c',
+                'cmd_new_studio.c',
+                'cmd_rename_studio.c',
+                'cmd_save_studio.c',
+                'cmd_start_studio.c',
+                'cmd_stop_studio.c',
+                'cmd_unload_studio.c',
+                'cmd_new_app.c',
+                'cmd_change_app_state.c',
+                'cmd_remove_app.c',
+                'cmd_create_room.c',
+                'cmd_delete_room.c',
+                'cmd_save_project.c',
+                'cmd_unload_project.c',
+                'cmd_load_project.c',
+                'cmd_exit.c',
+                'cqueue.c',
+                'app_supervisor.c',
+                'room.c',
+                'room_save.c',
+                'room_load.c',
+                'recent_store.c',
+                'recent_projects.c',
+                'check_integrity.c',
+                'lash_server.c',
+                'jack_session.c',
+        ]: daemon.source.append(os.path.join("daemon", source))
 
-    if Options.options.siginfo:
-        daemon.source.append(os.path.join("daemon", 'siginfo.c'))
+        if Options.options.siginfo:
+            daemon.source.append(os.path.join("daemon", 'siginfo.c'))
 
-    for source in [
-        'jack_proxy.c',
-        'graph_proxy.c',
-        'a2j_proxy.c',
-        "jmcore_proxy.c",
-        "notify_proxy.c",
-        "conf_proxy.c",
-        "lash_client_proxy.c",
-        ]:
-        daemon.source.append(os.path.join("proxies", source))
+        for source in [
+                'jack_proxy.c',
+                'graph_proxy.c',
+                'a2j_proxy.c',
+                "jmcore_proxy.c",
+                "notify_proxy.c",
+                "conf_proxy.c",
+                "lash_client_proxy.c",
+        ]: daemon.source.append(os.path.join("proxies", source))
 
-    for source in [
-        'log.c',
-        'time.c',
-        'dirhelpers.c',
-        'catdup.c',
-        ]:
-        daemon.source.append(os.path.join("common", source))
+        for source in [
+                'log.c',
+                'time.c',
+                'dirhelpers.c',
+                'catdup.c',
+        ]: daemon.source.append(os.path.join("common", source))
 
-    daemon.source.append(os.path.join("alsapid", "helper.c"))
+        daemon.source.append(os.path.join("alsapid", "helper.c"))
 
-    # process dbus.service.in -> ladish.service
-    create_service_taskgen(bld, DBUS_NAME_BASE + '.service', DBUS_NAME_BASE, daemon.target)
+        # process dbus.service.in -> ladish.service
+        create_service_taskgen(bld, DBUS_NAME_BASE + '.service', DBUS_NAME_BASE, daemon.target)
 
     #####################################################
     # jmcore
-    jmcore = bld.program(source = [], features = 'c cprogram', includes = [bld.path.get_bld()])
-    jmcore.target = 'jmcore'
-    jmcore.uselib = 'DBUS-1 CDBUS-1 JACK'
-    jmcore.defines = ['LOG_OUTPUT_STDOUT']
-    jmcore.source = ['jmcore.c']
+    if bld.env['BUILD_JMCORE']:
+        jmcore = bld.program(source = [], features = 'c cprogram', includes = [bld.path.get_bld()])
+        jmcore.target = 'jmcore'
+        jmcore.uselib = 'DBUS-1 CDBUS-1 JACK'
+        jmcore.defines = ['LOG_OUTPUT_STDOUT']
+        jmcore.source = ['jmcore.c']
 
-    for source in [
-        'log.c',
-        ]:
-        jmcore.source.append(os.path.join("common", source))
+        for source in [
+                'log.c',
+        ]: jmcore.source.append(os.path.join("common", source))
 
-    create_service_taskgen(bld, DBUS_NAME_BASE + '.jmcore.service', DBUS_NAME_BASE + ".jmcore", jmcore.target)
+        create_service_taskgen(bld, DBUS_NAME_BASE + '.jmcore.service', DBUS_NAME_BASE + ".jmcore", jmcore.target)
 
     #####################################################
     # conf
-    ladiconfd = bld.program(source = [], features = 'c cprogram', includes = [bld.path.get_bld()])
-    ladiconfd.target = 'ladiconfd'
-    ladiconfd.uselib = 'DBUS-1 CDBUS-1'
-    ladiconfd.defines = ['LOG_OUTPUT_STDOUT']
-    ladiconfd.source = ['conf.c']
+    if bld.env['BUILD_LADICONFD']:
+        ladiconfd = bld.program(source = [], features = 'c cprogram', includes = [bld.path.get_bld()])
+        ladiconfd.target = 'ladiconfd'
+        ladiconfd.uselib = 'DBUS-1 CDBUS-1'
+        ladiconfd.defines = ['LOG_OUTPUT_STDOUT']
+        ladiconfd.source = ['conf.c']
 
-    for source in [
-        'log.c',
-        'dirhelpers.c',
-        'catdup.c',
-        ]:
-        ladiconfd.source.append(os.path.join("common", source))
+        for source in [
+                'log.c',
+                'dirhelpers.c',
+                'catdup.c',
+        ]: ladiconfd.source.append(os.path.join("common", source))
 
-    create_service_taskgen(bld, DBUS_NAME_BASE + '.conf.service', DBUS_NAME_BASE + ".conf", ladiconfd.target)
+        create_service_taskgen(bld, DBUS_NAME_BASE + '.conf.service', DBUS_NAME_BASE + ".conf", ladiconfd.target)
 
     #####################################################
     # alsapid
-    alsapid = bld.shlib(source = [], features = 'c cshlib', includes = [bld.path.get_bld()])
-    alsapid.uselib = 'DL'
-    alsapid.target = 'alsapid'
-    for source in [
-        'lib.c',
-        'helper.c',
-        ]:
-        alsapid.source.append(os.path.join("alsapid", source))
+    if bld.env['BUILD_ALSAPID']:
+        alsapid = bld.shlib(source = [], features = 'c cshlib', includes = [bld.path.get_bld()])
+        alsapid.uselib = 'DL'
+        alsapid.target = 'alsapid'
+        for source in [
+                'lib.c',
+                'helper.c',
+        ]: alsapid.source.append(os.path.join("alsapid", source))
 
     #####################################################
     # liblash
