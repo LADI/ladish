@@ -79,9 +79,11 @@ GIT repositories:
 
  * https://gitea.ladish.org/LADI/ladish[Upstream development GIT repository] +
    Self-hosted upstream
- * https://github.com/LADI/ladish.git[Primary backup GIT repository at github.com] +
+ * https://codeberg.org/LADI/ladish.git[Primary backup GIT repository at codeberg.org] +
    Cloud hosted
  * https://repo.or.cz/ladish.git[Secondary backup GIT repository at repo.or.cz] +
+   Cloud hosted
+ * https://github.com/LADI/ladish.git[Secondary backup GIT repository at github.com] +
    Cloud hosted
 
 LADI Session Handler was forked from the
@@ -105,8 +107,7 @@ Things that LADISH can do but LASH (D-Bus-ified or not) cannot:
 
 See also:
 
- * https://gitea.ladish.org/LADI/ladish[LADI/ladish at Gitea]
- * https://github.com/LADI/[LADI at GitHub]
+ * https://cоdeberg.com/LADI/[LADI at Codeberg.org]
  * https://jackdbus.ladish.org/[jackdbus]
  * https://lac.linuxaudio.org/2009/cdm/Thursday/02_Alasuutari/02.pdf[Juuso ALASUUTARI, LASH Audio Session Handler: Past, Present, and Future]
 
