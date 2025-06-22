@@ -107,7 +107,7 @@ Things that LADISH can do but LASH (D-Bus-ified or not) cannot:
 
 See also:
 
- * https://cоdeberg.com/LADI/[LADI at Codeberg.org]
+ * https://codeberg.org/LADI/[LADI at Codeberg.org]
  * https://jackdbus.ladish.org/[jackdbus]
  * https://lac.linuxaudio.org/2009/cdm/Thursday/02_Alasuutari/02.pdf[Juuso ALASUUTARI, LASH Audio Session Handler: Past, Present, and Future]
 
