@@ -289,8 +289,9 @@ int main(int argc, char ** argv, char ** envp)
   char timestamp_str[26];
   int ret;
 
-  st.st_mtime = 0;
-  stat(argv[0], &st);
+  if (stat(argv[0], &st) < 0) {
+    st.st_mtime = 0;
+  }
   ctime_r(&st.st_mtime, timestamp_str);
   timestamp_str[24] = 0;
 
