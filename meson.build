@@ -105,6 +105,8 @@ if get_option('gladish').enabled()
   subdir('art')
 endif
 
+subdir('po')
+
 install_data(['AUTHORS', 'README.adoc', 'NEWS'], install_dir : data_dir)
 
 install_data('ladish_control',
