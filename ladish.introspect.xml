@@ -1,0 +1,318 @@
+method return time=1772998181.742043 sender=:1.8 -> destination=:1.93 serial=40882 reply_serial=2
+   string "<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+ "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node name="/org/ladish/Studio">
+  <interface name="org.ladish.Studio">
+    <method name="GetName">
+      <arg name="studio_name" type="s" direction="out" />
+    </method>
+    <method name="Rename">
+      <arg name="studio_name" type="s" direction="in" />
+    </method>
+    <method name="Save">
+    </method>
+    <method name="SaveAs">
+      <arg name="studio_name" type="s" direction="in" />
+    </method>
+    <method name="Unload">
+    </method>
+    <method name="Start">
+    </method>
+    <method name="Stop">
+    </method>
+    <method name="IsStarted">
+      <arg name="started" type="b" direction="out" />
+    </method>
+    <method name="CreateRoom">
+      <arg name="room_name" type="s" direction="in" />
+      <arg name="room_template_name" type="s" direction="in" />
+    </method>
+    <method name="GetRoomList">
+      <arg name="room_list" type="a(sa{sv})" direction="out" />
+    </method>
+    <method name="DeleteRoom">
+      <arg name="room_name" type="s" direction="in" />
+    </method>
+    <signal name="StudioRenamed">
+      <arg name="studio_name" type="s" />
+    </signal>
+    <signal name="StudioStarted">
+    </signal>
+    <signal name="StudioCrashed">
+    </signal>
+    <signal name="StudioStopped">
+    </signal>
+    <signal name="RoomAppeared">
+      <arg name="opath" type="s" />
+      <arg name="properties" type="a{sv}" />
+    </signal>
+    <signal name="RoomDisappeared">
+      <arg name="opath" type="s" />
+      <arg name="properties" type="a{sv}" />
+    </signal>
+    <signal name="RoomChanged">
+      <arg name="opath" type="s" />
+      <arg name="properties" type="a{sv}" />
+    </signal>
+  </interface>
+  <interface name="org.jackaudio.JackPatchbay">
+    <method name="GetAllPorts">
+      <arg name="ports_list" type="as" direction="out" />
+    </method>
+    <method name="GetGraph">
+      <arg name="known_graph_version" type="t" direction="in" />
+      <arg name="current_graph_version" type="t" direction="out" />
+      <arg name="clients_and_ports" type="a(tsa(tsuu))" direction="out" />
+      <arg name="connections" type="a(tstststst)" direction="out" />
+    </method>
+    <method name="ConnectPortsByName">
+      <arg name="client1_name" type="s" direction="in" />
+      <arg name="port1_name" type="s" direction="in" />
+      <arg name="client2_name" type="s" direction="in" />
+      <arg name="port2_name" type="s" direction="in" />
+    </method>
+    <method name="ConnectPortsByID">
+      <arg name="port1_id" type="t" direction="in" />
+      <arg name="port2_id" type="t" direction="in" />
+    </method>
+    <method name="DisconnectPortsByName">
+      <arg name="client1_name" type="s" direction="in" />
+      <arg name="port1_name" type="s" direction="in" />
+      <arg name="client2_name" type="s" direction="in" />
+      <arg name="port2_name" type="s" direction="in" />
+    </method>
+    <method name="DisconnectPortsByID">
+      <arg name="port1_id" type="t" direction="in" />
+      <arg name="port2_id" type="t" direction="in" />
+    </method>
+    <method name="DisconnectPortsByConnectionID">
+      <arg name="connection_id" type="t" direction="in" />
+    </method>
+    <method name="GetClientPID">
+      <arg name="client_id" type="t" direction="in" />
+      <arg name="process_id" type="x" direction="out" />
+    </method>
+    <signal name="GraphChanged">
+      <arg name="new_graph_version" type="t" />
+    </signal>
+    <signal name="ClientAppeared">
+      <arg name="new_graph_version" type="t" />
+      <arg name="client_id" type="t" />
+      <arg name="client_name" type="s" />
+    </signal>
+    <signal name="ClientDisappeared">
+      <arg name="new_graph_version" type="t" />
+      <arg name="client_id" type="t" />
+      <arg name="client_name" type="s" />
+    </signal>
+    <signal name="ClientRenamed">
+      <arg name="new_graph_version" type="t" />
+      <arg name="client_id" type="t" />
+      <arg name="old_client_name" type="s" />
+      <arg name="new_client_name" type="s" />
+    </signal>
+    <signal name="PortAppeared">
+      <arg name="new_graph_version" type="t" />
+      <arg name="client_id" type="t" />
+      <arg name="client_name" type="s" />
+      <arg name="port_id" type="t" />
+      <arg name="port_name" type="s" />
+      <arg name="port_flags" type="u" />
+      <arg name="port_type" type="u" />
+    </signal>
+    <signal name="PortDisappeared">
+      <arg name="new_graph_version" type="t" />
+      <arg name="client_id" type="t" />
+      <arg name="client_name" type="s" />
+      <arg name="port_id" type="t" />
+      <arg name="port_name" type="s" />
+    </signal>
+    <signal name="PortRenamed">
+      <arg name="new_graph_version" type="t" />
+      <arg name="client_id" type="t" />
+      <arg name="client_name" type="s" />
+      <arg name="port_id" type="t" />
+      <arg name="old_port_name" type="s" />
+      <arg name="new_port_name" type="s" />
+    </signal>
+    <signal name="PortsConnected">
+      <arg name="new_graph_version" type="t" />
+      <arg name="client1_id" type="t" />
+      <arg name="client1_name" type="s" />
+      <arg name="port1_id" type="t" />
+      <arg name="port1_name" type="s" />
+      <arg name="client2_id" type="t" />
+      <arg name="client2_name" type="s" />
+      <arg name="port2_id" type="t" />
+      <arg name="port2_name" type="s" />
+      <arg name="connection_id" type="t" />
+    </signal>
+    <signal name="PortsDisconnected">
+      <arg name="new_graph_version" type="t" />
+      <arg name="client1_id" type="t" />
+      <arg name="client1_name" type="s" />
+      <arg name="port1_id" type="t" />
+      <arg name="port1_name" type="s" />
+      <arg name="client2_id" type="t" />
+      <arg name="client2_name" type="s" />
+      <arg name="port2_id" type="t" />
+      <arg name="port2_name" type="s" />
+      <arg name="connection_id" type="t" />
+    </signal>
+  </interface>
+  <interface name="org.ladish.GraphDict">
+    <method name="Set">
+      <arg name="object_type" type="u" direction="in" />
+      <arg name="object_id" type="t" direction="in" />
+      <arg name="key" type="s" direction="in" />
+      <arg name="value" type="s" direction="in" />
+    </method>
+    <method name="Get">
+      <arg name="object_type" type="u" direction="in" />
+      <arg name="object_id" type="t" direction="in" />
+      <arg name="key" type="s" direction="in" />
+      <arg name="value" type="s" direction="out" />
+    </method>
+    <method name="Drop">
+      <arg name="object_type" type="u" direction="in" />
+      <arg name="object_id" type="t" direction="in" />
+      <arg name="key" type="s" direction="in" />
+    </method>
+  </interface>
+  <interface name="org.ladish.GraphManager">
+    <method name="Split">
+      <arg name="client_id" type="t" direction="in" />
+    </method>
+    <method name="Join">
+      <arg name="client1_id" type="t" direction="in" />
+      <arg name="client2_id" type="t" direction="in" />
+    </method>
+    <method name="RenameClient">
+      <arg name="client_id" type="t" direction="in" />
+      <arg name="newname" type="s" direction="in" />
+    </method>
+    <method name="RenamePort">
+      <arg name="port_id" type="t" direction="in" />
+      <arg name="newname" type="s" direction="in" />
+    </method>
+    <method name="MovePort">
+      <arg name="port_id" type="t" direction="in" />
+      <arg name="client_id" type="t" direction="in" />
+    </method>
+    <method name="NewClient">
+      <arg name="name" type="s" direction="in" />
+      <arg name="client_id" type="t" direction="out" />
+    </method>
+    <method name="RemoveClient">
+      <arg name="client_id" type="t" direction="in" />
+    </method>
+  </interface>
+  <interface name="org.ladish.AppSupervisor">
+    <method name="GetInterfaceVersion">
+      <arg name="running" type="u" direction="out" />
+    </method>
+    <method name="GetAll">
+      <arg name="list_version" type="t" direction="out" />
+      <arg name="apps_list" type="a(tsbby)" direction="out" />
+    </method>
+    <method name="GetAll2">
+      <arg name="list_version" type="t" direction="out" />
+      <arg name="apps_list" type="a(tsbbs)" direction="out" />
+    </method>
+    <method name="RunCustom">
+      <arg name="terminal" type="b" direction="in" />
+      <arg name="commandline" type="s" direction="in" />
+      <arg name="name" type="s" direction="in" />
+      <arg name="level" type="y" direction="in" />
+    </method>
+    <method name="RunCustom2">
+      <arg name="terminal" type="b" direction="in" />
+      <arg name="commandline" type="s" direction="in" />
+      <arg name="name" type="s" direction="in" />
+      <arg name="level" type="s" direction="in" />
+    </method>
+    <method name="StartApp">
+      <arg name="id" type="t" direction="in" />
+    </method>
+    <method name="StopApp">
+      <arg name="id" type="t" direction="in" />
+    </method>
+    <method name="KillApp">
+      <arg name="id" type="t" direction="in" />
+    </method>
+    <method name="GetAppProperties">
+      <arg name="id" type="t" direction="in" />
+      <arg name="name" type="s" direction="out" />
+      <arg name="commandline" type="s" direction="out" />
+      <arg name="running" type="b" direction="out" />
+      <arg name="terminal" type="b" direction="out" />
+      <arg name="level" type="y" direction="out" />
+    </method>
+    <method name="GetAppProperties2">
+      <arg name="id" type="t" direction="in" />
+      <arg name="name" type="s" direction="out" />
+      <arg name="commandline" type="s" direction="out" />
+      <arg name="running" type="b" direction="out" />
+      <arg name="terminal" type="b" direction="out" />
+      <arg name="level" type="s" direction="out" />
+    </method>
+    <method name="SetAppProperties">
+      <arg name="id" type="t" direction="in" />
+      <arg name="name" type="s" direction="in" />
+      <arg name="commandline" type="s" direction="in" />
+      <arg name="terminal" type="b" direction="in" />
+      <arg name="level" type="y" direction="in" />
+    </method>
+    <method name="SetAppProperties2">
+      <arg name="id" type="t" direction="in" />
+      <arg name="name" type="s" direction="in" />
+      <arg name="commandline" type="s" direction="in" />
+      <arg name="terminal" type="b" direction="in" />
+      <arg name="level" type="s" direction="in" />
+    </method>
+    <method name="RemoveApp">
+      <arg name="id" type="t" direction="in" />
+    </method>
+    <method name="IsAppRunning">
+      <arg name="id" type="t" direction="in" />
+      <arg name="running" type="b" direction="out" />
+    </method>
+    <signal name="AppAdded">
+      <arg name="new_list_version" type="t" />
+      <arg name="id" type="t" />
+      <arg name="name" type="s" />
+      <arg name="running" type="b" />
+      <arg name="terminal" type="b" />
+      <arg name="level" type="y" />
+    </signal>
+    <signal name="AppAdded2">
+      <arg name="new_list_version" type="t" />
+      <arg name="id" type="t" />
+      <arg name="name" type="s" />
+      <arg name="running" type="b" />
+      <arg name="terminal" type="b" />
+      <arg name="level" type="s" />
+    </signal>
+    <signal name="AppRemoved">
+      <arg name="new_list_version" type="t" />
+      <arg name="id" type="t" />
+    </signal>
+    <signal name="AppStateChanged">
+      <arg name="new_list_version" type="t" />
+      <arg name="id" type="t" />
+      <arg name="name" type="s" />
+      <arg name="running" type="b" />
+      <arg name="terminal" type="b" />
+      <arg name="level" type="y" />
+    </signal>
+    <signal name="AppStateChanged2">
+      <arg name="new_list_version" type="t" />
+      <arg name="id" type="t" />
+      <arg name="name" type="s" />
+      <arg name="running" type="b" />
+      <arg name="terminal" type="b" />
+      <arg name="level" type="s" />
+    </signal>
+  </interface>
+</node>
+"
